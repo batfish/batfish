@@ -79,24 +79,6 @@ public class CiscoXrConversionsTest extends TestCase {
   }
 
   @Test
-  public void testGetOspfInboundDistributeListPolicy_undefinedPrefixList() {
-    DistributeList distList =
-        new DistributeList("pl", DistributeList.DistributeListFilterType.PREFIX_LIST);
-    Configuration c = new Configuration("c", ConfigurationFormat.CISCO_IOS_XR);
-    Warnings w = new Warnings(true, true, true);
-    assertNull(getOspfInboundDistributeListPolicy(distList, "vrf", "proc", 0, "iface", c, w));
-    assertThat(
-        w,
-        hasRedFlags(
-            contains(
-                hasText(
-                    String.format(
-                        "Ignoring OSPF distribute-list %s: prefix-list is not defined or failed to"
-                            + " convert",
-                        distList.getFilterName())))));
-  }
-
-  @Test
   public void testGetOspfInboundDistributeListPolicy_undefinedRoutePolicy() {
     DistributeList distList =
         new DistributeList("rp", DistributeList.DistributeListFilterType.ROUTE_POLICY);
@@ -129,39 +111,6 @@ public class CiscoXrConversionsTest extends TestCase {
     Warnings w = new Warnings(true, true, true);
 
     // Function should create a routing policy corresponding to the ACL's route filter list
-    String vrfName = "vrf";
-    String procName = "proc";
-    long areaNum = 0;
-    String ifaceName = "iface";
-    String rpName = generatedOspfInboundDistributeListName(vrfName, procName, areaNum, ifaceName);
-    assertThat(
-        getOspfInboundDistributeListPolicy(distList, vrfName, procName, areaNum, ifaceName, c, w),
-        equalTo(rpName));
-    assertThat(w, hasRedFlags(empty()));
-
-    // Test the generated routing policy
-    RoutingPolicy generatedRp = c.getRoutingPolicies().get(rpName);
-    StaticRoute permittedRoute = StaticRoute.testBuilder().setNetwork(permitted).build();
-    StaticRoute deniedRoute = StaticRoute.testBuilder().setNetwork(Prefix.ZERO).build();
-    assertTrue(generatedRp.process(permittedRoute, permittedRoute.toBuilder(), Direction.IN));
-    assertFalse(generatedRp.process(deniedRoute, deniedRoute.toBuilder(), Direction.IN));
-  }
-
-  @Test
-  public void testGetOspfInboundDistributeListPolicy_pl() {
-    DistributeList distList =
-        new DistributeList("pl", DistributeList.DistributeListFilterType.PREFIX_LIST);
-    Configuration c = new Configuration("c", ConfigurationFormat.CISCO_IOS_XR);
-    Prefix permitted = Prefix.parse("1.1.1.0/24");
-    RouteFilterList rfl =
-        new RouteFilterList(
-            distList.getFilterName(),
-            ImmutableList.of(
-                new RouteFilterLine(LineAction.PERMIT, PrefixRange.fromPrefix(permitted))));
-    c.getRouteFilterLists().put(rfl.getName(), rfl);
-    Warnings w = new Warnings(true, true, true);
-
-    // Function should create a routing policy corresponding to the prefix-list
     String vrfName = "vrf";
     String procName = "proc";
     long areaNum = 0;
