@@ -116,13 +116,8 @@ ro_default_information
 :
    DEFAULT_INFORMATION ORIGINATE
    (
-      (
-         METRIC metric = uint_legacy
-      )
-      |
-      (
-         METRIC_TYPE metric_type = uint_legacy
-      )
+      METRIC metric = uint_legacy
+      | METRIC_TYPE metric_type = uint_legacy
       | ALWAYS
       | ROUTE_POLICY policy = route_policy_name
       | TAG uint_legacy
@@ -131,7 +126,7 @@ ro_default_information
 
 ro_default_metric
 :
-   NO? DEFAULT_METRIC metric = uint_legacy NEWLINE
+   DEFAULT_METRIC metric = uint_legacy NEWLINE
 ;
 
 ro_distance
@@ -198,6 +193,14 @@ ro_maximum_paths
 
 roc_network: NETWORK ospf_network_type NEWLINE;
 
+ro_no
+:
+   NO (
+      DEFAULT_INFORMATION ORIGINATE
+      | DEFAULT_METRIC uint_legacy
+   ) NEWLINE
+;
+
 roa_nssa
 :
    NSSA
@@ -223,48 +226,18 @@ roc_null
 :
    NO?
    (
-      (
-         AREA variable AUTHENTICATION
-      )
+      AREA variable AUTHENTICATION
       | AUTO_COST
       | BFD
       | CAPABILITY
       | DEAD_INTERVAL
-      | DISCARD_ROUTE
       | FAST_REROUTE
-      | GRACEFUL_RESTART
       | HELLO_INTERVAL
-      |
-      (
-         IP
-         (
-            OSPF
-            (
-               EVENT_HISTORY
-            )
-         )
-      )
-      | ISPF
       | LOG
-      | LOG_ADJ_CHANGES
-      | LOG_ADJACENCY_CHANGES
       | MAX_LSA
-      |
-      (
-         MAXIMUM
-         (
-            REDISTRIBUTED_PREFIXES
-         )
-      )
+      | MAXIMUM REDISTRIBUTED_PREFIXES
       | MESSAGE_DIGEST_KEY
       | MTU_IGNORE
-      |
-      (
-         NO
-         (
-            DEFAULT_INFORMATION
-         )
-      )
       | NSF
       | NSR
       | SNMP
@@ -431,6 +404,7 @@ s_router_ospf
       | ro_max_metric
       | ro_maximum_paths
       | ro_mpls
+      | ro_no
       | ro_redistribute
       | ro_router_id
       | ro_summary_address

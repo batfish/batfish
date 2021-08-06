@@ -9,6 +9,8 @@ import static org.batfish.datamodel.Interface.isRealInterfaceName;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
 import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
+import static org.batfish.datamodel.Names.generatedOspfDefaultRouteGenerationPolicyName;
+import static org.batfish.datamodel.Names.generatedOspfExportPolicyName;
 import static org.batfish.datamodel.routing_policy.Common.initDenyAllBgpRedistributionPolicy;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
 import static org.batfish.representation.arista.AristaConversions.getVrfForVlan;
@@ -281,10 +283,6 @@ public final class AristaConfiguration extends VendorConfiguration {
         .filter(e -> Objects.nonNull(e.getValue().getAddress()))
         .collect(
             ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getAddress().getIp()));
-  }
-
-  public static String computeOspfDefaultRouteGenerationPolicyName(String vrf, String proc) {
-    return String.format("~OSPF_DEFAULT_ROUTE_GENERATION_POLICY:%s:%s~", vrf, proc);
   }
 
   @Override
@@ -1462,7 +1460,7 @@ public final class AristaConfiguration extends VendorConfiguration {
     }
     newProcess.setAreas(toImmutableSortedMap(areas, Entry::getKey, e -> e.getValue().build()));
 
-    String ospfExportPolicyName = "~OSPF_EXPORT_POLICY:" + vrfName + "~";
+    String ospfExportPolicyName = generatedOspfExportPolicyName(vrfName, proc.getName());
     RoutingPolicy ospfExportPolicy = new RoutingPolicy(ospfExportPolicyName, c);
     c.getRoutingPolicies().put(ospfExportPolicyName, ospfExportPolicy);
     List<Statement> ospfExportStatements = ospfExportPolicy.getStatements();
@@ -1500,7 +1498,7 @@ public final class AristaConfiguration extends VendorConfiguration {
       } else {
         // Use a generated route that will only be generated if a default route exists in RIB
         String defaultRouteGenerationPolicyName =
-            computeOspfDefaultRouteGenerationPolicyName(vrfName, proc.getName());
+            generatedOspfDefaultRouteGenerationPolicyName(vrfName, proc.getName());
         RoutingPolicy.builder()
             .setOwner(c)
             .setName(defaultRouteGenerationPolicyName)
