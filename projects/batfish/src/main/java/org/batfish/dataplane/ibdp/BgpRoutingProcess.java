@@ -1670,7 +1670,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     return transformedOutgoingRoute;
   }
 
-  private void processExternalBgpAdvertisement(
+  @VisibleForTesting
+  void processExternalBgpAdvertisement(
       BgpAdvertisement advert, Map<Bgpv4Rib, RibDelta.Builder<Bgpv4Route>> ribDeltas) {
     Ip srcIp = advert.getSrcIp();
     // TODO: support passive and unnumbered bgp connections
@@ -1753,40 +1754,22 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                   transformedOutgoingRoute.getReceivedFromRouteReflectorClient())
               .setProtocol(targetProtocol)
               .setSrcProtocol(targetProtocol);
-      String importPolicyName = neighbor.getIpv4UnicastAddressFamily().getImportPolicy();
+      String ipv4ImportPolicyName = neighbor.getIpv4UnicastAddressFamily().getImportPolicy();
       // TODO: ensure there is always an import policy
 
       /*
        * CREATE INCOMING ROUTE
        */
       boolean acceptIncoming = true;
-      if (importPolicyName != null) {
-        RoutingPolicy importPolicy = _policies.get(importPolicyName).orElse(null);
-        if (importPolicy != null) {
-          // concoct a minimal session properties object: helps with route map constructs like
-          // next-hop peer-address
-          BgpSessionProperties bgpSessionProperties =
-              (neighbor.getLocalAs() != null
-                      && !neighbor.getRemoteAsns().isEmpty()
-                      && neighbor.getLocalIp() != null
-                      && neighbor.getPeerAddress() != null)
-                  ? BgpSessionProperties.builder()
-                      .setHeadAs(neighbor.getLocalAs())
-                      .setTailAs(neighbor.getRemoteAsns().least())
-                      .setHeadIp(neighbor.getLocalIp())
-                      .setTailIp(neighbor.getPeerAddress())
-                      .setAddressFamilies(
-                          ImmutableSet.of(Type.IPV4_UNICAST)) // the import policy is IPV4 itself
-                      .build()
-                  : null;
-
-          // TODO Figure out whether transformedOutgoingRoute ought to have an annotation
+      if (ipv4ImportPolicyName != null) {
+        RoutingPolicy ipv4ImportPolicy = _policies.get(ipv4ImportPolicyName).orElse(null);
+        if (ipv4ImportPolicy != null) {
           acceptIncoming =
-              importPolicy.process(
+              processExternalBgpAdvertisementImport(
                   transformedOutgoingRoute,
                   transformedIncomingRouteBuilder,
-                  bgpSessionProperties,
-                  IN,
+                  neighbor,
+                  ipv4ImportPolicy,
                   _ribExprEvaluator);
         }
       }
@@ -1795,6 +1778,35 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         ribDeltas.get(targetRib).from(targetRib.mergeRouteGetDelta(transformedIncomingRoute));
       }
     }
+  }
+
+  @VisibleForTesting
+  static boolean processExternalBgpAdvertisementImport(
+      Bgpv4Route inputRoute,
+      Bgpv4Route.Builder outputRouteBuilder,
+      BgpActivePeerConfig neighbor,
+      RoutingPolicy ipv4ImportPolicy,
+      RibExprEvaluator ribExprEvaluator) {
+    // concoct a minimal session properties object: helps with route map constructs like
+    // next-hop peer-address
+    BgpSessionProperties bgpSessionProperties =
+        (neighbor.getLocalAs() != null
+                && !neighbor.getRemoteAsns().isEmpty()
+                && neighbor.getLocalIp() != null
+                && neighbor.getPeerAddress() != null)
+            ? BgpSessionProperties.builder()
+                .setHeadAs(neighbor.getLocalAs())
+                .setTailAs(neighbor.getRemoteAsns().least())
+                .setHeadIp(neighbor.getLocalIp())
+                .setTailIp(neighbor.getPeerAddress())
+                .setAddressFamilies(
+                    ImmutableSet.of(Type.IPV4_UNICAST)) // the import policy is IPV4 itself
+                .build()
+            : null;
+
+    // TODO Figure out whether transformedOutgoingRoute ought to have an annotation
+    return ipv4ImportPolicy.process(
+        inputRoute, outputRouteBuilder, bgpSessionProperties, IN, ribExprEvaluator);
   }
 
   /**
