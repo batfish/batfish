@@ -1,0 +1,36 @@
+#
+# Configuration of hostname
+# Language version: 13.4v1
+#
+# Exported by admin on Wed Jun 23 16:11:18 2021
+#
+set hostname vlan_interface
+#
+add bonding group 2 interface eth0
+add bonding group 3 interface eth1
+#
+add interface bond2 vlan 2
+add interface bond3 vlan 3
+#
+set interface bond2.2 state on
+set interface bond2.2 ipv4-address 2.2.2.1 mask-length 24
+set interface bond3.3 state off
+#
+# in bond groups
+set interface eth0 state on
+set interface eth1 state on
+#
+set interface eth10 state on
+set interface eth11 state off
+set interface eth12 state on
+#
+add interface eth10 vlan 4092
+add interface eth11 vlan 4093
+add interface eth12 vlan 4094
+#
+set interface eth10.4092 state on
+set interface eth10.4092 ipv4-address 10.10.10.1 mask-length 24
+set interface eth11.4093 state on
+set interface eth11.4093 ipv4-address 11.11.11.1 mask-length 24
+set interface eth12.4094 state off
+#
