@@ -28,7 +28,9 @@ import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.A_bonding_groupContext;
+import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.A_interfaceContext;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Abg_interfaceContext;
+import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Ai_vlanContext;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Bonding_group_member_interface_nameContext;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Bonding_group_modeContext;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Bonding_group_numberContext;
@@ -70,6 +72,7 @@ import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.St
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Uint16Context;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Uint32Context;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Uint8Context;
+import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Vlan_idContext;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.WordContext;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Xmit_hash_policyContext;
 import org.batfish.vendor.check_point_gateway.representation.BondingGroup;
@@ -263,6 +266,46 @@ public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayPars
   @Override
   public void exitS_hostname(S_hostnameContext ctx) {
     toString(ctx, ctx.hostname()).ifPresent(_configuration::setHostname);
+  }
+
+  @Override
+  public void enterA_interface(A_interfaceContext ctx) {
+    String ifaceName = toString(ctx.interface_name().word());
+    _currentInterface = _configuration.getInterfaces().get(ifaceName);
+    _currentInterfaceInBondingGroup =
+        _currentInterface != null && isInterfaceInBondingGroup(_currentInterface);
+    if (_currentInterface == null) {
+      warn(ctx, String.format("Cannot add to interface %s because it does not exist.", ifaceName));
+      _currentInterface = new Interface(ifaceName);
+    }
+  }
+
+  @Override
+  public void exitA_interface(A_interfaceContext ctx) {
+    _currentInterface = null;
+    _currentInterfaceInBondingGroup = null;
+  }
+
+  @Override
+  public void exitAi_vlan(Ai_vlanContext ctx) {
+    if (!_configuration.getInterfaces().containsKey(_currentInterface.getName())) {
+      // Current interface is a dummy that was not initialized. Do not create VLAN iface
+      return;
+    }
+    if (_currentInterfaceInBondingGroup) {
+      warn(ctx, "Interface is a member of a bonding group and cannot be configured directly.");
+      return;
+    }
+    Optional<Integer> vlanId = toInteger(ctx, ctx.vlan_id());
+    if (!vlanId.isPresent()) {
+      warn(ctx, "Invalid VLAN ID");
+      return;
+    }
+    String vlanIfaceName = String.format("%s.%d", _currentInterface.getName(), vlanId.get());
+    Interface vlanIface =
+        _configuration.getInterfaces().computeIfAbsent(vlanIfaceName, Interface::new);
+    vlanIface.setParentInterface(_currentInterface.getName());
+    vlanIface.setVlanId(vlanId.get());
   }
 
   @Override
@@ -494,6 +537,10 @@ public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayPars
         "static-route nexthop priority");
   }
 
+  private @Nonnull Optional<Integer> toInteger(ParserRuleContext messageCtx, Vlan_idContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx.uint16(), VLAN_ID_SPACE, "vlan ID");
+  }
+
   private @Nonnull Optional<Integer> toSubnetBits(
       ParserRuleContext messageCtx, Siia_maskContext ctx) {
     if (ctx.siia_mask_length() != null) {
@@ -666,6 +713,7 @@ public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayPars
   private static final IntegerSpace MTU_SPACE = IntegerSpace.of(Range.closed(68, 16000));
   private static final IntegerSpace STATIC_ROUTE_NEXTHOP_PRIORITY_SPACE =
       IntegerSpace.of(Range.closed(1, 8));
+  private static final IntegerSpace VLAN_ID_SPACE = IntegerSpace.of(Range.closed(2, 4094));
 
   private BondingGroup _currentBondingGroup;
 

@@ -62,9 +62,17 @@ public class Interface implements Serializable {
     return _name;
   }
 
+  public @Nullable String getParentInterface() {
+    return _parentInterface;
+  }
+
   /** Boolean representation of {@code state}, where {@code true} corresponds to {@code on}. */
   public boolean getState() {
     return _state;
+  }
+
+  public @Nullable Integer getVlanId() {
+    return _vlanId;
   }
 
   public void setAddress(ConcreteInterfaceAddress address) {
@@ -87,8 +95,16 @@ public class Interface implements Serializable {
     _mtu = mtu;
   }
 
+  public void setParentInterface(@Nullable String parentInterface) {
+    _parentInterface = parentInterface;
+  }
+
   public void setState(boolean state) {
     _state = state;
+  }
+
+  public void setVlanId(@Nullable Integer vlanId) {
+    _vlanId = vlanId;
   }
 
   @Nullable private ConcreteInterfaceAddress _address;
@@ -97,5 +113,7 @@ public class Interface implements Serializable {
   @Nullable private LinkSpeed _linkSpeed;
   @Nullable private Integer _mtu;
   @Nonnull private final String _name;
+  @Nullable private String _parentInterface;
   private boolean _state;
+  @Nullable private Integer _vlanId;
 }

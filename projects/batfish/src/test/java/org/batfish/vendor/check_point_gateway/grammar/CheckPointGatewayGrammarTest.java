@@ -594,4 +594,114 @@ public class CheckPointGatewayGrammarTest {
     Configuration c = parseConfig(hostname);
     assertThat(c, hasInterface("bond1001", isActive(false)));
   }
+
+  @Test
+  public void testVlanInterfaceExtraction() {
+    String hostname = "vlan_interface";
+    CheckPointGatewayConfiguration c = parseVendorConfig(hostname);
+    assertThat(
+        c.getInterfaces(),
+        hasKeys(
+            "bond2",
+            "bond3",
+            "eth0",
+            "eth1",
+            "eth10",
+            "eth11",
+            "eth12",
+            "bond2.2",
+            "bond3.3",
+            "eth10.4092",
+            "eth11.4093",
+            "eth12.4094"));
+    {
+      Interface iface = c.getInterfaces().get("bond2.2");
+      assertTrue(iface.getState());
+      assertThat(iface.getAddress(), equalTo(ConcreteInterfaceAddress.parse("2.2.2.1/24")));
+      assertThat(iface.getVlanId(), equalTo(2));
+      assertThat(iface.getParentInterface(), equalTo("bond2"));
+    }
+    {
+      Interface iface = c.getInterfaces().get("bond3.3");
+      assertFalse(iface.getState());
+      assertThat(iface.getVlanId(), equalTo(3));
+      assertThat(iface.getParentInterface(), equalTo("bond3"));
+    }
+    {
+      Interface iface = c.getInterfaces().get("eth10.4092");
+      assertTrue(iface.getState());
+      assertThat(iface.getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.10.10.1/24")));
+      assertThat(iface.getVlanId(), equalTo(4092));
+      assertThat(iface.getParentInterface(), equalTo("eth10"));
+    }
+    {
+      Interface iface = c.getInterfaces().get("eth11.4093");
+      assertTrue(iface.getState());
+      assertThat(iface.getAddress(), equalTo(ConcreteInterfaceAddress.parse("11.11.11.1/24")));
+      assertThat(iface.getVlanId(), equalTo(4093));
+      assertThat(iface.getParentInterface(), equalTo("eth11"));
+    }
+    {
+      Interface iface = c.getInterfaces().get("eth12.4094");
+      assertFalse(iface.getState());
+      assertThat(iface.getVlanId(), equalTo(4094));
+      assertThat(iface.getParentInterface(), equalTo("eth12"));
+    }
+  }
+
+  @Test
+  public void testVlanInterfaceConversion() {
+    String hostname = "vlan_interface";
+    Configuration c = parseConfig(hostname);
+    assertThat(
+        c.getAllInterfaces(),
+        hasKeys(
+            "bond2",
+            "bond3",
+            "eth0",
+            "eth1",
+            "eth10",
+            "eth11",
+            "eth12",
+            "bond2.2",
+            "bond3.3",
+            "eth10.4092",
+            "eth11.4093",
+            "eth12.4094"));
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("bond2.2");
+      assertTrue(iface.getActive());
+      assertThat(iface.getAddress(), equalTo(ConcreteInterfaceAddress.parse("2.2.2.1/24")));
+      assertThat(iface.getEncapsulationVlan(), equalTo(2));
+      assertThat(iface.getInterfaceType(), equalTo(InterfaceType.AGGREGATE_CHILD));
+    }
+    {
+      // bond3.3 is on, but bond3 is off
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("bond3.3");
+      assertFalse(iface.getActive());
+      assertThat(iface.getEncapsulationVlan(), equalTo(3));
+      assertThat(iface.getInterfaceType(), equalTo(InterfaceType.AGGREGATE_CHILD));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("eth10.4092");
+      assertTrue(iface.getActive());
+      assertThat(iface.getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.10.10.1/24")));
+      assertThat(iface.getEncapsulationVlan(), equalTo(4092));
+      assertThat(iface.getInterfaceType(), equalTo(InterfaceType.LOGICAL));
+    }
+    {
+      // eth11.4093 is on, but eth11 is off
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("eth11.4093");
+      assertFalse(iface.getActive());
+      assertThat(iface.getAddress(), equalTo(ConcreteInterfaceAddress.parse("11.11.11.1/24")));
+      assertThat(iface.getEncapsulationVlan(), equalTo(4093));
+      assertThat(iface.getInterfaceType(), equalTo(InterfaceType.LOGICAL));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("eth12.4094");
+      assertFalse(iface.getActive());
+      assertThat(iface.getEncapsulationVlan(), equalTo(4094));
+      assertThat(iface.getInterfaceType(), equalTo(InterfaceType.LOGICAL));
+    }
+  }
 }
