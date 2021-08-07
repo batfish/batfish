@@ -13,77 +13,48 @@ ro_address_family
 
 ro_area
 :
-   AREA area = ospf_area NEWLINE ro_area_inner*
+   AREA area = ospf_area
+   (
+      ro_area_block
+      // Single line area commands below this
+      | roa_default_cost
+      | roa_filterlist
+      | roa_mpls
+      | roa_nssa
+      | roa_range
+      | roa_stub
+   )
+;
+
+ro_area_block
+:
+   NEWLINE ro_area_inner*
 ;
 
 ro_area_inner
 :
   ro_common
+  | roa_default_cost
+  | roa_filterlist
   | roa_interface
   | roa_mpls
   | roa_nssa
   | roa_range
+  | roa_stub
 ;
 
-ro_area_default_cost
+roa_default_cost
 :
-   AREA ospf_area DEFAULT_COST cost = uint_legacy NEWLINE
+   DEFAULT_COST cost = uint_legacy NEWLINE
 ;
 
-ro_area_filterlist
+roa_filterlist
 :
-   AREA area = ospf_area FILTER_LIST PREFIX list = variable
+   FILTER_LIST PREFIX list = variable
    (
       IN
       | OUT
    ) NEWLINE
-;
-
-ro_area_nssa
-:
-   AREA area = ospf_area NSSA
-   (
-      (
-         default_information_originate = DEFAULT_INFORMATION_ORIGINATE
-         (
-            (
-               METRIC metric = uint_legacy
-            )
-            |
-            (
-               METRIC_TYPE metric_type = uint_legacy
-            )
-         )*
-      )
-      | no_redistribution = NO_REDISTRIBUTION
-      | no_summary = NO_SUMMARY
-   )* NEWLINE
-;
-
-ro_area_range
-:
-   AREA area = ospf_area RANGE
-   (
-      (
-         area_ip = IP_ADDRESS area_subnet = IP_ADDRESS
-      )
-      | area_prefix = IP_PREFIX
-   )
-   (
-      ADVERTISE
-      | NOT_ADVERTISE
-   )?
-   (
-      COST cost = uint_legacy
-   )? NEWLINE
-;
-
-ro_area_stub
-:
-   AREA area = ospf_area STUB
-   (
-      no_summary = NO_SUMMARY
-   )* NEWLINE
 ;
 
 roc_authentication
@@ -194,7 +165,7 @@ roa_nssa
    NSSA
    (
       (
-         DEFAULT_INFORMATION_ORIGINATE
+         default_information_originate = DEFAULT_INFORMATION_ORIGINATE
          (
             (
                METRIC uint_legacy
@@ -205,8 +176,16 @@ roa_nssa
             )
          )*
       )
-      | NO_REDISTRIBUTION
-      | NO_SUMMARY
+      | no_redistribution = NO_REDISTRIBUTION
+      | no_summary = NO_SUMMARY
+   )* NEWLINE
+;
+
+roa_stub
+:
+   STUB
+   (
+      no_summary = NO_SUMMARY
    )* NEWLINE
 ;
 
@@ -214,8 +193,7 @@ roc_null
 :
    NO?
    (
-      AREA variable AUTHENTICATION
-      | AUTO_COST
+      AUTO_COST
       | BFD
       | CAPABILITY
       | DEAD_INTERVAL
@@ -378,11 +356,6 @@ s_router_ospf
    (
       ro_address_family
       | ro_area
-      | ro_area_default_cost
-      | ro_area_filterlist
-      | ro_area_nssa
-      | ro_area_range
-      | ro_area_stub
       | ro_auto_cost
       | ro_common
       | ro_default_information
