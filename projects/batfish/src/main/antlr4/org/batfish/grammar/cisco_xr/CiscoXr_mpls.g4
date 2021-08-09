@@ -68,7 +68,7 @@ mldp_null
 :
   NO?
   (
-    | GRACEFUL_RESTART
+    GRACEFUL_RESTART
     | IGP
     | NSR
   ) null_rest_of_line
@@ -93,7 +93,7 @@ mldpaf_discovery
   )
 ;
 
-mldpafd_targeted_hello: TARGETED_HELLO ACCEPT FROM name = access_list_name NEWLINE;
+mldpafd_targeted_hello: TARGETED_HELLO ACCEPT (FROM name = access_list_name)? NEWLINE;
 
 mldpafd_transport_address: TRANSPORT_ADDRESS IP_ADDRESS NEWLINE;
 

@@ -10,7 +10,6 @@ public final class DistributeList implements Serializable {
   /** OSPF distribute-list can be route-policy (in) or ACL (in | out). */
   public enum DistributeListFilterType {
     ACCESS_LIST,
-    PREFIX_LIST,
     ROUTE_POLICY,
   }
 

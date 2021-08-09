@@ -22,6 +22,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.SortedMap;
+import javax.annotation.Nonnull;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.common.topology.Layer1Edge;
@@ -122,14 +123,20 @@ public final class EdgesTest {
           public TopologyProvider getTopologyProvider() {
             return new TopologyProviderTestAdapter(this) {
               @Override
-              public Optional<Layer1Topology> getLayer1PhysicalTopology(
+              public Topology getInitialLayer3Topology(NetworkSnapshot networkSnapshot) {
+                return new Topology(ImmutableSortedSet.of());
+              }
+
+              @Override
+              public @Nonnull Optional<Layer1Topology> getRawLayer1PhysicalTopology(
                   NetworkSnapshot networkSnapshot) {
                 return Optional.of(layer1PhysicalTopology);
               }
 
               @Override
-              public Topology getInitialLayer3Topology(NetworkSnapshot networkSnapshot) {
-                return new Topology(ImmutableSortedSet.of());
+              public @Nonnull Optional<Layer1Topology> getSynthesizedLayer1Topology(
+                  @Nonnull NetworkSnapshot networkSnapshot) {
+                return Optional.of(Layer1Topology.EMPTY);
               }
             };
           }

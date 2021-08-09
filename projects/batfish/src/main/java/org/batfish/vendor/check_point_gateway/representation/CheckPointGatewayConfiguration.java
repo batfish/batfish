@@ -150,10 +150,16 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
   InterfaceType getInterfaceType(Interface iface) {
     String name = iface.getName();
     if (name.startsWith("eth")) {
+      if (name.contains(".")) {
+        return InterfaceType.LOGICAL;
+      }
       return InterfaceType.PHYSICAL;
     } else if (name.startsWith("lo")) {
       return InterfaceType.LOOPBACK;
     } else if (name.startsWith("bond")) {
+      if (name.contains(".")) {
+        return InterfaceType.AGGREGATE_CHILD;
+      }
       return InterfaceType.AGGREGATED;
     }
     return InterfaceType.UNKNOWN;
@@ -183,6 +189,15 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
           .setAddress(iface.getAddress())
           .setActive(iface.getState())
           .setMtu(iface.getMtuEffective());
+    }
+
+    if (iface.getVlanId() != null) {
+      newIface.setEncapsulationVlan(iface.getVlanId());
+    }
+    if (iface.getParentInterface() != null) {
+      assert _interfaces.containsKey(iface.getParentInterface());
+      newIface.setDependencies(
+          ImmutableList.of(new Dependency(iface.getParentInterface(), DependencyType.BIND)));
     }
 
     getBondingGroup(ifaceName)

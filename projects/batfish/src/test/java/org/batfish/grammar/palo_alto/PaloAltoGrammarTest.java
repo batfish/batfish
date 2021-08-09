@@ -920,8 +920,8 @@ public final class PaloAltoGrammarTest {
     assertThat(c, hasVrf("BGP", hasBgpProcess(any(BgpProcess.class))));
     BgpProcess proc = c.getVrfs().get("BGP").getBgpProcess();
     assertThat(proc, hasRouterId(Ip.parse("1.2.3.4")));
-    assertThat(proc.getActiveNeighbors().keySet(), contains(Prefix.parse("5.4.3.2/32")));
-    BgpActivePeerConfig peer = proc.getActiveNeighbors().get(Prefix.parse("5.4.3.2/32"));
+    assertThat(proc.getActiveNeighbors().keySet(), contains(Ip.parse("5.4.3.2")));
+    BgpActivePeerConfig peer = proc.getActiveNeighbors().get(Ip.parse("5.4.3.2"));
     assertThat(peer.getDescription(), equalTo("PEER"));
     assertThat(peer.getGroup(), equalTo("PG"));
     assertThat(peer.getLocalIp(), equalTo(Ip.parse("1.2.3.6")));
@@ -3846,7 +3846,7 @@ public final class PaloAltoGrammarTest {
             .get("vr1")
             .getBgpProcess()
             .getActiveNeighbors()
-            .get(Prefix.parse("120.120.120.120/32"))
+            .get(Ip.parse("120.120.120.120"))
             .getEbgpMultihop());
   }
 

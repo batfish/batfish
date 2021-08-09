@@ -739,7 +739,7 @@ public final class FlatJuniperGrammarTest {
     String c1Name = "as1";
     String c2Name = "as2";
     String c3Name = "as3";
-    Prefix neighborPrefix = Prefix.parse("1.0.0.1/32");
+    Ip neighborIp = Ip.parse("1.0.0.1");
 
     List<String> configurationNames = ImmutableList.of(c1Name, c2Name, c3Name);
     Batfish batfish =
@@ -753,9 +753,9 @@ public final class FlatJuniperGrammarTest {
     Configuration c2 = configurations.get(c2Name);
     Configuration c3 = configurations.get(c3Name);
 
-    assertThat(c1, hasDefaultVrf(hasBgpProcess(hasActiveNeighbor(neighborPrefix, hasLocalAs(1L)))));
-    assertThat(c2, hasDefaultVrf(hasBgpProcess(hasActiveNeighbor(neighborPrefix, hasLocalAs(1L)))));
-    assertThat(c3, hasDefaultVrf(hasBgpProcess(hasActiveNeighbor(neighborPrefix, hasLocalAs(1L)))));
+    assertThat(c1, hasDefaultVrf(hasBgpProcess(hasActiveNeighbor(neighborIp, hasLocalAs(1L)))));
+    assertThat(c2, hasDefaultVrf(hasBgpProcess(hasActiveNeighbor(neighborIp, hasLocalAs(1L)))));
+    assertThat(c3, hasDefaultVrf(hasBgpProcess(hasActiveNeighbor(neighborIp, hasLocalAs(1L)))));
   }
 
   @Test
@@ -801,7 +801,7 @@ public final class FlatJuniperGrammarTest {
         hasDefaultVrf(
             hasBgpProcess(
                 hasActiveNeighbor(
-                    Prefix.parse("2.2.2.2/32"),
+                    Ip.parse("2.2.2.2"),
                     allOf(
                         hasIpv4UnicastAddressFamily(
                             hasAddressFamilyCapabilites(hasAllowLocalAsIn(true))),
@@ -812,7 +812,7 @@ public final class FlatJuniperGrammarTest {
             "FOO",
             hasBgpProcess(
                 hasActiveNeighbor(
-                    Prefix.parse("3.3.3.3/32"),
+                    Ip.parse("3.3.3.3"),
                     allOf(
                         hasIpv4UnicastAddressFamily(
                             hasAddressFamilyCapabilites(hasAllowLocalAsIn(true))),
@@ -828,7 +828,7 @@ public final class FlatJuniperGrammarTest {
             "FOO",
             hasBgpProcess(
                 hasActiveNeighbor(
-                    Prefix.parse("2.2.2.2/32"),
+                    Ip.parse("2.2.2.2"),
                     allOf(
                         hasIpv4UnicastAddressFamily(
                             hasAddressFamilyCapabilites(hasAllowLocalAsIn(true))),
@@ -983,8 +983,8 @@ public final class FlatJuniperGrammarTest {
 
     Configuration rr = configurations.get(configName);
     BgpProcess proc = rr.getDefaultVrf().getBgpProcess();
-    BgpPeerConfig neighbor1 = proc.getActiveNeighbors().get(neighbor1Ip.toPrefix());
-    BgpPeerConfig neighbor2 = proc.getActiveNeighbors().get(neighbor2Ip.toPrefix());
+    BgpPeerConfig neighbor1 = proc.getActiveNeighbors().get(neighbor1Ip);
+    BgpPeerConfig neighbor2 = proc.getActiveNeighbors().get(neighbor2Ip);
 
     assertThat(neighbor1, hasClusterId(Ip.parse("3.3.3.3").asLong()));
     assertThat(neighbor2, hasClusterId(Ip.parse("1.1.1.1").asLong()));
@@ -1006,18 +1006,17 @@ public final class FlatJuniperGrammarTest {
         bgpProcess.getConfederation(),
         equalTo(new BgpConfederation(7L, ImmutableSet.of(65001L, 65002L, 65003L))));
     assertThat(
-        bgpProcess.getActiveNeighbors().get(Prefix.parse("1.1.1.1/32")).getConfederationAsn(),
+        bgpProcess.getActiveNeighbors().get(Ip.parse("1.1.1.1")).getConfederationAsn(),
         equalTo(7L));
   }
 
   @Test
   public void testBgpDescription() {
     Configuration c = parseConfig("bgp-description");
-    Map<Prefix, BgpActivePeerConfig> neighbors =
-        c.getDefaultVrf().getBgpProcess().getActiveNeighbors();
-    assertThat(neighbors, hasKeys(Prefix.parse("1.2.3.4/32"), Prefix.parse("2.3.4.5/32")));
-    assertThat(neighbors.get(Prefix.parse("1.2.3.4/32")).getDescription(), equalTo("N"));
-    assertThat(neighbors.get(Prefix.parse("2.3.4.5/32")).getDescription(), nullValue());
+    Map<Ip, BgpActivePeerConfig> neighbors = c.getDefaultVrf().getBgpProcess().getActiveNeighbors();
+    assertThat(neighbors, hasKeys(Ip.parse("1.2.3.4"), Ip.parse("2.3.4.5")));
+    assertThat(neighbors.get(Ip.parse("1.2.3.4")).getDescription(), equalTo("N"));
+    assertThat(neighbors.get(Ip.parse("2.3.4.5")).getDescription(), nullValue());
   }
 
   @Test
@@ -1068,11 +1067,11 @@ public final class FlatJuniperGrammarTest {
     // Peer in group_a should pick up local-as
     assertThat(
         def.getBgpProcess().getActiveNeighbors(),
-        hasEntry(equalTo(Prefix.parse("10.255.16.23/32")), hasLocalAs(64611L)));
+        hasEntry(equalTo(Ip.parse("10.255.16.23")), hasLocalAs(64611L)));
     // Peer in group_b should pick up routing-options autonomous-system
     assertThat(
         def.getBgpProcess().getActiveNeighbors(),
-        hasEntry(equalTo(Prefix.parse("10.255.42.23/32")), hasLocalAs(1111L)));
+        hasEntry(equalTo(Ip.parse("10.255.42.23")), hasLocalAs(1111L)));
 
     List<ParseWarning> parseWarnings =
         batfish
@@ -1150,9 +1149,7 @@ public final class FlatJuniperGrammarTest {
     String hostname = "bgp-type-internal";
     Configuration c = parseConfig(hostname);
     assertThat(
-        c,
-        hasDefaultVrf(
-            hasBgpProcess(hasActiveNeighbor(Prefix.parse("1.1.1.1/32"), hasRemoteAs(1L)))));
+        c, hasDefaultVrf(hasBgpProcess(hasActiveNeighbor(Ip.parse("1.1.1.1"), hasRemoteAs(1L)))));
   }
 
   @Test
@@ -2496,6 +2493,18 @@ public final class FlatJuniperGrammarTest {
 
     // Confirm extraction works for nested configs even in the presence of multiline comments
     assertThat(parseTextConfigs(hostname).keySet(), contains(hostname));
+  }
+
+  /** Test for https://github.com/batfish/batfish/issues/7225. */
+  @Test
+  public void testNestedConfigWithSecretData() {
+    String hostname = "nested-config-with-secret-data";
+    Configuration c = parseConfig(hostname);
+    assertThat(c.getVrfs(), hasKey("VRF_NAME"));
+    Vrf v = c.getVrfs().get("VRF_NAME");
+    assertThat(v.getBgpProcess().getActiveNeighbors(), hasKey(Ip.parse("8.8.8.8")));
+    BgpActivePeerConfig peer = v.getBgpProcess().getActiveNeighbors().get(Ip.parse("8.8.8.8"));
+    assertThat(peer, allOf(hasLocalAs(1L), hasRemoteAs(60951L)));
   }
 
   @Test
@@ -4016,7 +4025,7 @@ public final class FlatJuniperGrammarTest {
     String prefixList1 = "p1";
     String prefixList2 = "p2";
     String prefixList3 = "p3";
-    Prefix neighborPrefix = Prefix.parse("2.2.2.2/32");
+    Ip neighborIp = Ip.parse("2.2.2.2");
 
     Configuration c = parseConfig(hostname);
 
@@ -4046,7 +4055,7 @@ public final class FlatJuniperGrammarTest {
         c, hasRouteFilterList(prefixList3, RouteFilterListMatchers.rejects(Prefix.parse(prefix2))));
 
     /* The wildcard-looking BGP group name should not be pruned since its parse-tree node was not created via preprocessor. */
-    assertThat(c, hasDefaultVrf(hasBgpProcess(hasNeighbors(hasKey(neighborPrefix)))));
+    assertThat(c, hasDefaultVrf(hasBgpProcess(hasNeighbors(hasKey(neighborIp)))));
   }
 
   @Test
@@ -5769,7 +5778,7 @@ public final class FlatJuniperGrammarTest {
         c.getDefaultVrf()
             .getBgpProcess()
             .getActiveNeighbors()
-            .get(Prefix.parse("1.1.1.3/32"))
+            .get(Ip.parse("1.1.1.3"))
             .getAppliedRibGroup()
             .getName(),
         equalTo("RIB_GROUP_1"));
@@ -5777,7 +5786,7 @@ public final class FlatJuniperGrammarTest {
         c.getDefaultVrf()
             .getBgpProcess()
             .getActiveNeighbors()
-            .get(Prefix.parse("1.1.1.5/32"))
+            .get(Ip.parse("1.1.1.5"))
             .getAppliedRibGroup()
             .getName(),
         equalTo("RIB_GROUP_2"));

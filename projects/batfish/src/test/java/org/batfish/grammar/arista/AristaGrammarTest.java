@@ -695,7 +695,7 @@ public class AristaGrammarTest {
             .getDefaultVrf()
             .getBgpProcess()
             .getActiveNeighbors()
-            .get(Prefix.parse("1.1.1.1/32"))
+            .get(Ip.parse("1.1.1.1"))
             .getIpv4UnicastAddressFamily()
             .getAddressFamilyCapabilities()
             .getAdvertiseInactive());
@@ -709,7 +709,7 @@ public class AristaGrammarTest {
             .getDefaultVrf()
             .getBgpProcess()
             .getActiveNeighbors()
-            .get(Prefix.parse("1.1.1.1/32"))
+            .get(Ip.parse("1.1.1.1"))
             .getIpv4UnicastAddressFamily()
             .getAddressFamilyCapabilities()
             .getAdvertiseInactive());
@@ -1350,8 +1350,8 @@ public class AristaGrammarTest {
   @Test
   public void testEosBgpPeers() throws IOException {
     String hostname = "eos-bgp-peers";
-    Prefix neighborWithRemoteAs = Prefix.parse("1.1.1.1/32");
-    Prefix neighborWithoutRemoteAs = Prefix.parse("2.2.2.2/32");
+    Ip neighborWithRemoteAs = Ip.parse("1.1.1.1");
+    Ip neighborWithoutRemoteAs = Ip.parse("2.2.2.2");
     Prefix dynamicNeighborWithoutRemoteAs = Prefix.parse("3.3.3.0/24");
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -1376,7 +1376,7 @@ public class AristaGrammarTest {
             containsString(
                 String.format(
                     "No remote-as configured for BGP neighbor %s in vrf default",
-                    neighborWithoutRemoteAs.getStartIp()))));
+                    neighborWithoutRemoteAs))));
     assertThat(
         c,
         hasDefaultVrf(
@@ -1717,9 +1717,9 @@ public class AristaGrammarTest {
     BgpProcess proc = c.getDefaultVrf().getBgpProcess();
     assertThat(proc, notNullValue());
     {
-      Prefix neighborPrefix = Prefix.parse("1.1.1.1/32");
-      assertThat(proc.getActiveNeighbors(), hasKey(neighborPrefix));
-      BgpActivePeerConfig neighbor = proc.getActiveNeighbors().get(neighborPrefix);
+      Ip neighborIp = Ip.parse("1.1.1.1");
+      assertThat(proc.getActiveNeighbors(), hasKey(neighborIp));
+      BgpActivePeerConfig neighbor = proc.getActiveNeighbors().get(neighborIp);
       assertThat(neighbor.getClusterId(), equalTo(Ip.parse("99.99.99.99").asLong()));
       assertThat(neighbor.getEnforceFirstAs(), equalTo(true));
       assertThat(neighbor.getIpv4UnicastAddressFamily(), notNullValue());
@@ -1733,14 +1733,14 @@ public class AristaGrammarTest {
       assertThat(af.getRouteReflectorClient(), equalTo(false));
     }
     {
-      Prefix neighborPrefix = Prefix.parse("2.2.2.2/32");
+      Ip neighborIp = Ip.parse("2.2.2.2");
       // shutdown neighbor is not converted
-      assertThat(proc.getActiveNeighbors(), not(hasKey(neighborPrefix)));
+      assertThat(proc.getActiveNeighbors(), not(hasKey(neighborIp)));
     }
     {
-      Prefix neighborPrefix = Prefix.parse("3.3.3.3/32");
-      assertThat(proc.getActiveNeighbors(), hasKey(neighborPrefix));
-      BgpActivePeerConfig neighbor = proc.getActiveNeighbors().get(neighborPrefix);
+      Ip neighborIp = Ip.parse("3.3.3.3");
+      assertThat(proc.getActiveNeighbors(), hasKey(neighborIp));
+      BgpActivePeerConfig neighbor = proc.getActiveNeighbors().get(neighborIp);
       assertThat(neighbor.getEnforceFirstAs(), equalTo(false));
       assertThat(neighbor.getGeneratedRoutes(), empty());
       Ipv4UnicastAddressFamily af = neighbor.getIpv4UnicastAddressFamily();
@@ -1758,10 +1758,10 @@ public class AristaGrammarTest {
       assertThat(af.getRouteReflectorClient(), equalTo(false));
     }
     {
-      Prefix neighborPrefix = Prefix.parse("5.5.5.5/32");
+      Ip neighborIp = Ip.parse("5.5.5.5");
       // neighbor with missing remote-as is converted to empty longspace
-      assertThat(proc.getActiveNeighbors(), hasKey(neighborPrefix));
-      BgpActivePeerConfig neighbor = proc.getActiveNeighbors().get(neighborPrefix);
+      assertThat(proc.getActiveNeighbors(), hasKey(neighborIp));
+      BgpActivePeerConfig neighbor = proc.getActiveNeighbors().get(neighborIp);
       assertThat(neighbor.getRemoteAsns(), equalTo(LongSpace.EMPTY));
     }
   }
@@ -1773,9 +1773,9 @@ public class AristaGrammarTest {
     assertThat(c.getDefaultVrf(), notNullValue());
     BgpProcess proc = c.getDefaultVrf().getBgpProcess();
     assertThat(proc, notNullValue());
-    Prefix neighborPrefix = Prefix.parse("10.0.0.11/32");
-    assertThat(proc.getActiveNeighbors(), hasKey(neighborPrefix));
-    BgpActivePeerConfig neighbor = proc.getActiveNeighbors().get(neighborPrefix);
+    Ip neighborIp = Ip.parse("10.0.0.11");
+    assertThat(proc.getActiveNeighbors(), hasKey(neighborIp));
+    BgpActivePeerConfig neighbor = proc.getActiveNeighbors().get(neighborIp);
     assertThat(neighbor.getEvpnAddressFamily(), notNullValue());
     assertThat(neighbor.getIpv4UnicastAddressFamily(), nullValue());
   }
@@ -2128,9 +2128,7 @@ public class AristaGrammarTest {
     Configuration c = parseConfig("arista_evpn");
     Ip[] neighborIPs = {Ip.parse("192.168.255.1"), Ip.parse("192.168.255.2")};
     for (Ip ip : neighborIPs) {
-
-      BgpActivePeerConfig neighbor =
-          c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(ip.toPrefix());
+      BgpActivePeerConfig neighbor = c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(ip);
       assertThat(neighbor.getEvpnAddressFamily(), notNullValue());
       assertThat(
           neighbor.getEvpnAddressFamily().getAddressFamilyCapabilities().getAllowRemoteAsOut(),
@@ -2254,115 +2252,115 @@ public class AristaGrammarTest {
     Configuration config = parseConfig("arista_bgp_send_community");
     BgpProcess proc = config.getDefaultVrf().getBgpProcess();
     {
-      Prefix prefix = Prefix.parse("1.1.1.1/32");
+      Ip ip = Ip.parse("1.1.1.1");
       assertThat(
           proc,
           hasActiveNeighbor(
-              prefix,
+              ip,
               hasIpv4UnicastAddressFamily(hasAddressFamilyCapabilites(hasSendCommunity(true)))));
       assertThat(
           proc,
           hasActiveNeighbor(
-              prefix,
+              ip,
               hasIpv4UnicastAddressFamily(
                   hasAddressFamilyCapabilites(hasSendExtendedCommunity(true)))));
     }
     {
-      Prefix prefix = Prefix.parse("1.1.1.2/32");
+      Ip ip = Ip.parse("1.1.1.2");
       assertThat(
           proc,
           hasActiveNeighbor(
-              prefix,
+              ip,
               hasIpv4UnicastAddressFamily(hasAddressFamilyCapabilites(hasSendCommunity(true)))));
       assertThat(
           proc,
           hasActiveNeighbor(
-              prefix,
+              ip,
               hasIpv4UnicastAddressFamily(
                   hasAddressFamilyCapabilites(hasSendExtendedCommunity(false)))));
     }
     {
-      Prefix prefix = Prefix.parse("1.1.1.3/32");
+      Ip ip = Ip.parse("1.1.1.3");
       assertThat(
           proc,
           hasActiveNeighbor(
-              prefix,
+              ip,
               hasIpv4UnicastAddressFamily(hasAddressFamilyCapabilites(hasSendCommunity(false)))));
       assertThat(
           proc,
           hasActiveNeighbor(
-              prefix,
+              ip,
               hasIpv4UnicastAddressFamily(
                   hasAddressFamilyCapabilites(hasSendExtendedCommunity(true)))));
     }
     {
-      Prefix prefix = Prefix.parse("1.1.1.4/32");
+      Ip ip = Ip.parse("1.1.1.4");
       assertThat(
           proc,
           hasActiveNeighbor(
-              prefix,
+              ip,
               hasIpv4UnicastAddressFamily(hasAddressFamilyCapabilites(hasSendCommunity(true)))));
       assertThat(
           proc,
           hasActiveNeighbor(
-              prefix,
+              ip,
               hasIpv4UnicastAddressFamily(
                   hasAddressFamilyCapabilites(hasSendExtendedCommunity(true)))));
     }
     {
-      Prefix prefix = Prefix.parse("1.1.1.5/32");
+      Ip ip = Ip.parse("1.1.1.5");
       assertThat(
           proc,
           hasActiveNeighbor(
-              prefix,
+              ip,
               hasIpv4UnicastAddressFamily(hasAddressFamilyCapabilites(hasSendCommunity(true)))));
       assertThat(
           proc,
           hasActiveNeighbor(
-              prefix,
+              ip,
               hasIpv4UnicastAddressFamily(
                   hasAddressFamilyCapabilites(hasSendExtendedCommunity(false)))));
     }
     {
-      Prefix prefix = Prefix.parse("1.1.1.6/32");
+      Ip ip = Ip.parse("1.1.1.6");
       assertThat(
           proc,
           hasActiveNeighbor(
-              prefix,
+              ip,
               hasIpv4UnicastAddressFamily(hasAddressFamilyCapabilites(hasSendCommunity(false)))));
       assertThat(
           proc,
           hasActiveNeighbor(
-              prefix,
+              ip,
               hasIpv4UnicastAddressFamily(
                   hasAddressFamilyCapabilites(hasSendExtendedCommunity(true)))));
     }
     {
-      Prefix prefix = Prefix.parse("1.1.1.7/32");
+      Ip ip = Ip.parse("1.1.1.7");
       assertThat(
           proc,
           hasActiveNeighbor(
-              prefix,
+              ip,
               hasIpv4UnicastAddressFamily(hasAddressFamilyCapabilites(hasSendCommunity(true)))));
       assertThat(
           proc,
           hasActiveNeighbor(
-              prefix,
+              ip,
               hasIpv4UnicastAddressFamily(
                   hasAddressFamilyCapabilites(hasSendExtendedCommunity(true)))));
     }
     {
       // honor inheritance
-      Prefix prefix = Prefix.parse("1.1.1.8/32");
+      Ip ip = Ip.parse("1.1.1.8");
       assertThat(
           proc,
           hasActiveNeighbor(
-              prefix,
+              ip,
               hasIpv4UnicastAddressFamily(hasAddressFamilyCapabilites(hasSendCommunity(true)))));
       assertThat(
           proc,
           hasActiveNeighbor(
-              prefix,
+              ip,
               hasIpv4UnicastAddressFamily(
                   hasAddressFamilyCapabilites(hasSendExtendedCommunity(true)))));
     }
@@ -2379,7 +2377,7 @@ public class AristaGrammarTest {
     Configuration c = parseConfig("arista_bgp_allowas_in");
     {
       BgpActivePeerConfig peerConfig =
-          c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Prefix.parse("1.1.1.1/32"));
+          c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Ip.parse("1.1.1.1"));
       assertTrue(
           peerConfig
               .getIpv4UnicastAddressFamily()
@@ -2388,7 +2386,7 @@ public class AristaGrammarTest {
     }
     {
       BgpActivePeerConfig peerConfig =
-          c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Prefix.parse("2.2.2.2/32"));
+          c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Ip.parse("2.2.2.2"));
       assertTrue(
           peerConfig
               .getIpv4UnicastAddressFamily()
@@ -2723,7 +2721,7 @@ public class AristaGrammarTest {
   public void testEnforceFirstAsConversion() {
     Configuration c = parseConfig("arista_bgp_enforce_first_as");
     BgpActivePeerConfig peerConfig =
-        c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Prefix.parse("1.1.1.1/32"));
+        c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Ip.parse("1.1.1.1"));
     assertTrue(peerConfig.getEnforceFirstAs());
   }
 
@@ -2760,7 +2758,7 @@ public class AristaGrammarTest {
                 c.getDefaultVrf()
                     .getBgpProcess()
                     .getActiveNeighbors()
-                    .get(Prefix.parse("1.1.1.1/32"))
+                    .get(Ip.parse("1.1.1.1"))
                     .getIpv4UnicastAddressFamily()
                     .getExportPolicy());
     RoutingPolicy importPolicy =
@@ -2769,7 +2767,7 @@ public class AristaGrammarTest {
                 c.getDefaultVrf()
                     .getBgpProcess()
                     .getActiveNeighbors()
-                    .get(Prefix.parse("1.1.1.1/32"))
+                    .get(Ip.parse("1.1.1.1"))
                     .getIpv4UnicastAddressFamily()
                     .getImportPolicy());
 
@@ -3000,7 +2998,7 @@ public class AristaGrammarTest {
             .getDefaultVrf()
             .getBgpProcess()
             .getActiveNeighbors()
-            .get(Prefix.parse("2.2.2.2/32"))
+            .get(Ip.parse("2.2.2.2"))
             .getEvpnAddressFamily()
             .getImportPolicy();
     RoutingPolicy policy = config.getRoutingPolicies().get(policyName);

@@ -800,7 +800,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     }
 
     // Process active neighbors first.
-    Map<Prefix, BgpActivePeerConfig> activeNeighbors =
+    Map<Ip, BgpActivePeerConfig> activeNeighbors =
         Conversions.getNeighbors(c, this, v, newBgpProcess, nxBgpGlobal, nxBgpVrf, _w);
     newBgpProcess.setNeighbors(ImmutableSortedMap.copyOf(activeNeighbors));
 

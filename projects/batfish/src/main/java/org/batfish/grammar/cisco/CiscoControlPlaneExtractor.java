@@ -8,6 +8,7 @@ import static org.batfish.datamodel.ConfigurationFormat.CISCO_ASA;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
 import static org.batfish.representation.cisco.CiscoConfiguration.DEFAULT_STATIC_ROUTE_DISTANCE;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeRouteMapClauseName;
+import static org.batfish.representation.cisco.CiscoConversions.aclLineStructureName;
 import static org.batfish.representation.cisco.CiscoStructureType.ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.AS_PATH_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.BFD_TEMPLATE;
@@ -40,7 +41,9 @@ import static org.batfish.representation.cisco.CiscoStructureType.IPSEC_PROFILE;
 import static org.batfish.representation.cisco.CiscoStructureType.IPSEC_TRANSFORM_SET;
 import static org.batfish.representation.cisco.CiscoStructureType.IPV4_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED;
+import static org.batfish.representation.cisco.CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED_LINE;
 import static org.batfish.representation.cisco.CiscoStructureType.IPV4_ACCESS_LIST_STANDARD;
+import static org.batfish.representation.cisco.CiscoStructureType.IPV4_ACCESS_LIST_STANDARD_LINE;
 import static org.batfish.representation.cisco.CiscoStructureType.IPV6_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.IPV6_ACCESS_LIST_EXTENDED;
 import static org.batfish.representation.cisco.CiscoStructureType.IPV6_ACCESS_LIST_STANDARD;
@@ -180,6 +183,8 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_TRA
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_ZONE_MEMBER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IPSEC_PROFILE_ISAKMP_PROFILE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IPSEC_PROFILE_TRANSFORM_SET;
+import static org.batfish.representation.cisco.CiscoStructureUsage.IPV4_ACCESS_LIST_EXTENDED_LINE_SELF_REF;
+import static org.batfish.representation.cisco.CiscoStructureUsage.IPV4_ACCESS_LIST_STANDARD_LINE_SELF_REF;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IPV6_LOCAL_POLICY_ROUTE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IP_DOMAIN_LOOKUP_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IP_LOCAL_POLICY_ROUTE_MAP;
@@ -4393,6 +4398,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             .setSrcAddressSpecifier(srcAddressSpecifier)
             .build();
     _currentExtendedAcl.addLine(line);
+
+    // definition tracking
+    int cfgLine = ctx.getStart().getLine();
+    String structName = aclLineStructureName(_currentExtendedAcl.getName(), name);
+    _configuration.defineSingleLineStructure(IPV4_ACCESS_LIST_EXTENDED_LINE, structName, cfgLine);
+    _configuration.referenceStructure(
+        IPV4_ACCESS_LIST_EXTENDED_LINE,
+        structName,
+        IPV4_ACCESS_LIST_EXTENDED_LINE_SELF_REF,
+        cfgLine);
   }
 
   private AccessListServiceSpecifier computeExtendedAccessListServiceSpecifier(
@@ -8907,6 +8922,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     StandardAccessListLine line =
         new StandardAccessListLine(action, name, serviceSpecifer, srcAddressSpecifier);
     _currentStandardAcl.addLine(line);
+
+    // definition tracking
+    int cfgLine = ctx.getStart().getLine();
+    String structName = aclLineStructureName(_currentStandardAcl.getName(), name);
+    _configuration.defineSingleLineStructure(IPV4_ACCESS_LIST_STANDARD_LINE, structName, cfgLine);
+    _configuration.referenceStructure(
+        IPV4_ACCESS_LIST_STANDARD_LINE,
+        structName,
+        IPV4_ACCESS_LIST_STANDARD_LINE_SELF_REF,
+        cfgLine);
   }
 
   private StandardAccessListServiceSpecifier computeStandardAccessListServiceSpecifier(

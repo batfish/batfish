@@ -22788,223 +22788,222 @@
             "        (mldp_address_family",
             "          ADDRESS_FAMILY:'address-family'",
             "          IPV4:'ipv4'",
-            "          NEWLINE:'\\n')",
-            "        (mldp_null*",
-            "          (null_rest_of_line*",
+            "          NEWLINE:'\\n'",
+            "          (mldpaf_discovery*",
             "            DISCOVERY:'discovery'",
-            "            TARGETED_HELLO:'targeted-hello'",
-            "            ACCEPT:'accept'",
-            "            NEWLINE:'\\n'))",
-            "        (mldp_null*",
-            "          (null_rest_of_line*",
+            "            (mldpafd_targeted_hello",
+            "              TARGETED_HELLO:'targeted-hello'",
+            "              ACCEPT:'accept'",
+            "              NEWLINE:'\\n'))",
+            "          (mldpaf_label*",
             "            LABEL:'label'",
-            "            NEWLINE:'\\n'))",
-            "        (mldp_null*",
-            "          (null_rest_of_line*",
-            "            LOCAL:'local'",
-            "            NEWLINE:'\\n'))",
-            "        (mldp_null*",
-            "          (null_rest_of_line*",
-            "            ALLOCATE:'allocate'",
-            "            FOR:'for'",
-            "            VARIABLE:'host-routes'",
-            "            NEWLINE:'\\n'))",
-            "        (mldp_null*",
-            "          (null_rest_of_line*",
-            "            ADVERTISE:'advertise'",
-            "            NEWLINE:'\\n'))",
-            "        (mldp_null*",
-            "          (null_rest_of_line*",
-            "            DISABLE:'disable'",
-            "            NEWLINE:'\\n'))",
-            "        (mldp_null*",
-            "          (null_rest_of_line*",
-            "            FOR:'for'",
-            "            VARIABLE:'mpls-ldp'",
-            "            NEWLINE:'\\n'))",
-            "        (mldp_null*",
-            "          (null_rest_of_line*",
-            "            EXPLICIT_NULL:'explicit-null'",
-            "            FOR:'for'",
-            "            VARIABLE:'mpls-ldp'",
-            "            NEWLINE:'\\n'))",
-            "        (mldp_null*",
-            "          (null_rest_of_line*",
-            "            IGP:'igp'",
-            "            SYNC:'sync'",
-            "            DELAY:'delay'",
-            "            VARIABLE:'on-session-up'",
-            "            UINT8:'60'",
-            "            NEWLINE:'\\n'))",
-            "        (mldp_interface*",
-            "          INTERFACE:'interface'",
-            "          (null_rest_of_line*",
-            "            M_Interface_PREFIX:'TenGigE'  <== mode:M_Interface",
-            "            UINT_BIG:'0'  <== mode:M_Interface",
-            "            FORWARD_SLASH:'/'  <== mode:M_Interface",
-            "            UINT_BIG:'0'  <== mode:M_Interface",
-            "            FORWARD_SLASH:'/'  <== mode:M_Interface",
-            "            UINT_BIG:'2'  <== mode:M_Interface",
-            "            FORWARD_SLASH:'/'  <== mode:M_Interface",
-            "            UINT_BIG:'0'  <== mode:M_Interface",
-            "            NEWLINE:'\\n'  <== mode:M_Interface))",
-            "        (mldp_log*",
-            "          LOG:'log'",
-            "          (null_rest_of_line*",
-            "            NEWLINE:'\\n'))",
-            "        (mldp_null*",
-            "          (null_rest_of_line*",
-            "            ADJACENCY:'adjacency'",
-            "            NEWLINE:'\\n'))",
-            "        (mldp_neighbor*",
-            "          NEIGHBOR:'neighbor'",
-            "          (null_rest_of_line*",
-            "            NEWLINE:'\\n'  <== mode:M_NEIGHBOR))",
-            "        (mldp_null*",
-            "          (null_rest_of_line*",
-            "            NSR:'nsr'",
-            "            NEWLINE:'\\n'))",
-            "        (mldp_null*",
-            "          (null_rest_of_line*",
-            "            SESSION_PROTECTION:'session-protection'",
-            "            NEWLINE:'\\n'))",
-            "        (mldp_neighbor*",
-            "          NEIGHBOR:'neighbor'",
-            "          (null_rest_of_line*",
-            "            NEWLINE:'\\n'  <== mode:M_NEIGHBOR)",
-            "          (mldpn_null*",
-            "            PASSWORD:'password'",
-            "            (null_rest_of_line*",
-            "              ENCRYPTED:'encrypted'",
-            "              UINT16:'12345'",
-            "              NEWLINE:'\\n')))",
-            "        (mldp_null*",
-            "          (null_rest_of_line*",
-            "            NSR:'nsr'",
-            "            NEWLINE:'\\n'))",
-            "        (mldp_router_id*",
-            "          ROUTER_ID:'router-id'",
-            "          IP_ADDRESS:'1.2.3.4'",
-            "          NEWLINE:'\\n')",
-            "        (mldp_session_protection*",
-            "          SESSION:'session'",
-            "          PROTECTION:'protection'",
-            "          NEWLINE:'\\n')",
-            "        (mldp_null*",
-            "          (null_rest_of_line*",
-            "            MPLS:'mpls'",
-            "            LDP:'ldp'",
-            "            SESSION:'session'",
-            "            PROTECTION:'protection'",
-            "            NEWLINE:'\\n'))",
-            "        (mldp_null*",
-            "          (null_rest_of_line*",
-            "            MPLS:'mpls'",
-            "            TRAFFIC_ENG:'traffic-eng'",
-            "            NEWLINE:'\\n'))",
-            "        (mldp_null*",
-            "          (null_rest_of_line*",
-            "            AFFINITY_MAP:'affinity-map'",
-            "            VARIABLE:'bippety'",
-            "            VARIABLE:'bit-position'",
-            "            UINT8:'1'",
-            "            NEWLINE:'\\n'))",
-            "        (mldp_null*",
-            "          (null_rest_of_line*",
-            "            ATTRIBUTE_SET:'attribute-set'",
-            "            VARIABLE:'auto-backup'",
-            "            VARIABLE:'boo'",
-            "            NEWLINE:'\\n'))",
-            "        (mldp_null*",
-            "          (null_rest_of_line*",
-            "            AFFINITY:'affinity'",
-            "            INCLUDE:'include'",
-            "            VARIABLE:'bippety'",
-            "            NEWLINE:'\\n'))",
-            "        (mldp_null*",
-            "          (null_rest_of_line*",
-            "            AUTO_TUNNEL:'auto-tunnel'",
-            "            BACKUP:'backup'",
-            "            NEWLINE:'\\n'))",
-            "        (mldp_null*",
-            "          (null_rest_of_line*",
-            "            TUNNEL_ID:'tunnel-id'",
-            "            VARIABLE:'min'",
-            "            UINT16:'10000'",
-            "            VARIABLE:'max'",
-            "            UINT16:'11000'",
-            "            NEWLINE:'\\n'))",
-            "        (mldp_interface*",
-            "          INTERFACE:'interface'",
-            "          (null_rest_of_line*",
-            "            M_Interface_PREFIX:'Bundle-Ether'  <== mode:M_Interface",
-            "            UINT_BIG:'1'  <== mode:M_Interface",
-            "            NEWLINE:'\\n'  <== mode:M_Interface))",
-            "        (mldp_null*",
-            "          (null_rest_of_line*",
-            "            ATTRIBUTE_NAMES:'attribute-names'",
-            "            VARIABLE:'bippety'",
-            "            VARIABLE:'boppety'",
-            "            NEWLINE:'\\n'))",
-            "        (mldp_null*",
-            "          (null_rest_of_line*",
-            "            AUTO_TUNNEL:'auto-tunnel'",
-            "            BACKUP:'backup'",
-            "            NEWLINE:'\\n'))",
-            "        (mldp_null*",
-            "          (null_rest_of_line*",
-            "            ATTRIBUTE_SET:'attribute-set'",
-            "            VARIABLE:'boo'",
-            "            NEWLINE:'\\n'))",
-            "        (mldp_null*",
-            "          (null_rest_of_line*",
-            "            NHOP_ONLY:'nhop-only'",
-            "            NEWLINE:'\\n'))",
-            "        (mldp_null*",
-            "          (null_rest_of_line*",
-            "            EXCLUDE:'exclude'",
-            "            SRLG:'srlg'",
-            "            PREFERRED:'preferred'",
-            "            NEWLINE:'\\n'))",
-            "        (mldp_null*",
-            "          (null_rest_of_line*",
-            "            LOGGING:'logging'",
-            "            EVENTS:'events'",
-            "            VARIABLE:'frr-protection'",
-            "            NEWLINE:'\\n'))",
-            "        (mldp_null*",
-            "          (null_rest_of_line*",
-            "            LOGGING:'logging'",
-            "            EVENTS:'events'",
-            "            VARIABLE:'issu'",
-            "            NEWLINE:'\\n'))",
-            "        (mldp_null*",
-            "          (null_rest_of_line*",
-            "            LOGGING:'logging'",
-            "            EVENTS:'events'",
-            "            NSR:'nsr'",
-            "            NEWLINE:'\\n'))",
-            "        (mldp_null*",
-            "          (null_rest_of_line*",
-            "            REOPTIMIZE:'reoptimize'",
-            "            UINT16:'900'",
-            "            NEWLINE:'\\n'))",
-            "        (mldp_null*",
-            "          (null_rest_of_line*",
-            "            REOPTIMIZE:'reoptimize'",
-            "            TIMERS:'timers'",
-            "            DELAY:'delay'",
-            "            VARIABLE:'after-frr'",
-            "            UINT8:'50'",
-            "            NEWLINE:'\\n'))",
-            "        (mldp_null*",
-            "          (null_rest_of_line*",
-            "            REOPTIMIZE:'reoptimize'",
-            "            TIMERS:'timers'",
-            "            DELAY:'delay'",
-            "            VARIABLE:'cleanup'",
-            "            UINT8:'60'",
-            "            NEWLINE:'\\n')))))",
+            "            NEWLINE:'\\n'",
+            "            (mldpafl_local*",
+            "              LOCAL:'local'",
+            "              NEWLINE:'\\n'",
+            "              (mldpafll_null*",
+            "                ALLOCATE:'allocate'",
+            "                (null_rest_of_line*",
+            "                  FOR:'for'",
+            "                  VARIABLE:'host-routes'",
+            "                  NEWLINE:'\\n'))",
+            "              (mldpafll_advertise*",
+            "                ADVERTISE:'advertise'",
+            "                NEWLINE:'\\n'",
+            "                (mldpaflla_null*",
+            "                  (null_rest_of_line*",
+            "                    DISABLE:'disable'",
+            "                    NEWLINE:'\\n'))",
+            "                (mldpaflla_null*",
+            "                  (null_rest_of_line*",
+            "                    FOR:'for'",
+            "                    VARIABLE:'mpls-ldp'",
+            "                    NEWLINE:'\\n'))",
+            "                (mldpaflla_null*",
+            "                  (null_rest_of_line*",
+            "                    EXPLICIT_NULL:'explicit-null'",
+            "                    FOR:'for'",
+            "                    VARIABLE:'mpls-ldp'",
+            "                    NEWLINE:'\\n'))",
+            "                (mldpaflla_null*",
+            "                  (null_rest_of_line*",
+            "                    IGP:'igp'",
+            "                    SYNC:'sync'",
+            "                    DELAY:'delay'",
+            "                    VARIABLE:'on-session-up'",
+            "                    UINT8:'60'",
+            "                    NEWLINE:'\\n'))",
+            "                (mldpaflla_null*",
+            "                  (null_rest_of_line*",
+            "                    INTERFACE:'interface'",
+            "                    M_Interface_PREFIX:'TenGigE'  <== mode:M_Interface",
+            "                    UINT_BIG:'0'  <== mode:M_Interface",
+            "                    FORWARD_SLASH:'/'  <== mode:M_Interface",
+            "                    UINT_BIG:'0'  <== mode:M_Interface",
+            "                    FORWARD_SLASH:'/'  <== mode:M_Interface",
+            "                    UINT_BIG:'2'  <== mode:M_Interface",
+            "                    FORWARD_SLASH:'/'  <== mode:M_Interface",
+            "                    UINT_BIG:'0'  <== mode:M_Interface",
+            "                    NEWLINE:'\\n'  <== mode:M_Interface))",
+            "                (mldpaflla_null*",
+            "                  (null_rest_of_line*",
+            "                    LOG:'log'",
+            "                    NEWLINE:'\\n'))",
+            "                (mldpaflla_null*",
+            "                  (null_rest_of_line*",
+            "                    ADJACENCY:'adjacency'",
+            "                    NEWLINE:'\\n'))",
+            "                (mldpaflla_null*",
+            "                  (null_rest_of_line*",
+            "                    NEIGHBOR:'neighbor'",
+            "                    NEWLINE:'\\n'  <== mode:M_NEIGHBOR))",
+            "                (mldpaflla_null*",
+            "                  (null_rest_of_line*",
+            "                    NSR:'nsr'",
+            "                    NEWLINE:'\\n'))",
+            "                (mldpaflla_null*",
+            "                  (null_rest_of_line*",
+            "                    SESSION_PROTECTION:'session-protection'",
+            "                    NEWLINE:'\\n'))",
+            "                (mldpaflla_null*",
+            "                  (null_rest_of_line*",
+            "                    NEIGHBOR:'neighbor'",
+            "                    NEWLINE:'\\n'  <== mode:M_NEIGHBOR))",
+            "                (mldpaflla_null*",
+            "                  (null_rest_of_line*",
+            "                    PASSWORD:'password'",
+            "                    ENCRYPTED:'encrypted'",
+            "                    UINT16:'12345'",
+            "                    NEWLINE:'\\n'))",
+            "                (mldpaflla_null*",
+            "                  (null_rest_of_line*",
+            "                    NSR:'nsr'",
+            "                    NEWLINE:'\\n'))",
+            "                (mldpaflla_null*",
+            "                  (null_rest_of_line*",
+            "                    ROUTER_ID:'router-id'",
+            "                    IP_ADDRESS:'1.2.3.4'",
+            "                    NEWLINE:'\\n'))",
+            "                (mldpaflla_null*",
+            "                  (null_rest_of_line*",
+            "                    SESSION:'session'",
+            "                    PROTECTION:'protection'",
+            "                    NEWLINE:'\\n'))",
+            "                (mldpaflla_null*",
+            "                  (null_rest_of_line*",
+            "                    MPLS:'mpls'",
+            "                    LDP:'ldp'",
+            "                    SESSION:'session'",
+            "                    PROTECTION:'protection'",
+            "                    NEWLINE:'\\n'))",
+            "                (mldpaflla_null*",
+            "                  (null_rest_of_line*",
+            "                    MPLS:'mpls'",
+            "                    TRAFFIC_ENG:'traffic-eng'",
+            "                    NEWLINE:'\\n'))",
+            "                (mldpaflla_null*",
+            "                  (null_rest_of_line*",
+            "                    AFFINITY_MAP:'affinity-map'",
+            "                    VARIABLE:'bippety'",
+            "                    VARIABLE:'bit-position'",
+            "                    UINT8:'1'",
+            "                    NEWLINE:'\\n'))",
+            "                (mldpaflla_null*",
+            "                  (null_rest_of_line*",
+            "                    ATTRIBUTE_SET:'attribute-set'",
+            "                    VARIABLE:'auto-backup'",
+            "                    VARIABLE:'boo'",
+            "                    NEWLINE:'\\n'))",
+            "                (mldpaflla_null*",
+            "                  (null_rest_of_line*",
+            "                    AFFINITY:'affinity'",
+            "                    INCLUDE:'include'",
+            "                    VARIABLE:'bippety'",
+            "                    NEWLINE:'\\n'))",
+            "                (mldpaflla_null*",
+            "                  (null_rest_of_line*",
+            "                    AUTO_TUNNEL:'auto-tunnel'",
+            "                    BACKUP:'backup'",
+            "                    NEWLINE:'\\n'))",
+            "                (mldpaflla_null*",
+            "                  (null_rest_of_line*",
+            "                    TUNNEL_ID:'tunnel-id'",
+            "                    VARIABLE:'min'",
+            "                    UINT16:'10000'",
+            "                    VARIABLE:'max'",
+            "                    UINT16:'11000'",
+            "                    NEWLINE:'\\n'))",
+            "                (mldpaflla_null*",
+            "                  (null_rest_of_line*",
+            "                    INTERFACE:'interface'",
+            "                    M_Interface_PREFIX:'Bundle-Ether'  <== mode:M_Interface",
+            "                    UINT_BIG:'1'  <== mode:M_Interface",
+            "                    NEWLINE:'\\n'  <== mode:M_Interface))",
+            "                (mldpaflla_null*",
+            "                  (null_rest_of_line*",
+            "                    ATTRIBUTE_NAMES:'attribute-names'",
+            "                    VARIABLE:'bippety'",
+            "                    VARIABLE:'boppety'",
+            "                    NEWLINE:'\\n'))",
+            "                (mldpaflla_null*",
+            "                  (null_rest_of_line*",
+            "                    AUTO_TUNNEL:'auto-tunnel'",
+            "                    BACKUP:'backup'",
+            "                    NEWLINE:'\\n'))",
+            "                (mldpaflla_null*",
+            "                  (null_rest_of_line*",
+            "                    ATTRIBUTE_SET:'attribute-set'",
+            "                    VARIABLE:'boo'",
+            "                    NEWLINE:'\\n'))",
+            "                (mldpaflla_null*",
+            "                  (null_rest_of_line*",
+            "                    NHOP_ONLY:'nhop-only'",
+            "                    NEWLINE:'\\n'))",
+            "                (mldpaflla_null*",
+            "                  (null_rest_of_line*",
+            "                    EXCLUDE:'exclude'",
+            "                    SRLG:'srlg'",
+            "                    PREFERRED:'preferred'",
+            "                    NEWLINE:'\\n'))",
+            "                (mldpaflla_null*",
+            "                  (null_rest_of_line*",
+            "                    LOGGING:'logging'",
+            "                    EVENTS:'events'",
+            "                    VARIABLE:'frr-protection'",
+            "                    NEWLINE:'\\n'))",
+            "                (mldpaflla_null*",
+            "                  (null_rest_of_line*",
+            "                    LOGGING:'logging'",
+            "                    EVENTS:'events'",
+            "                    VARIABLE:'issu'",
+            "                    NEWLINE:'\\n'))",
+            "                (mldpaflla_null*",
+            "                  (null_rest_of_line*",
+            "                    LOGGING:'logging'",
+            "                    EVENTS:'events'",
+            "                    NSR:'nsr'",
+            "                    NEWLINE:'\\n'))",
+            "                (mldpaflla_null*",
+            "                  (null_rest_of_line*",
+            "                    REOPTIMIZE:'reoptimize'",
+            "                    UINT16:'900'",
+            "                    NEWLINE:'\\n'))",
+            "                (mldpaflla_null*",
+            "                  (null_rest_of_line*",
+            "                    REOPTIMIZE:'reoptimize'",
+            "                    TIMERS:'timers'",
+            "                    DELAY:'delay'",
+            "                    VARIABLE:'after-frr'",
+            "                    UINT8:'50'",
+            "                    NEWLINE:'\\n'))",
+            "                (mldpaflla_null*",
+            "                  (null_rest_of_line*",
+            "                    REOPTIMIZE:'reoptimize'",
+            "                    TIMERS:'timers'",
+            "                    DELAY:'delay'",
+            "                    VARIABLE:'cleanup'",
+            "                    UINT8:'60'",
+            "                    NEWLINE:'\\n')))))))))",
             "  EOF:<EOF>)"
           ]
         },
@@ -71821,6 +71820,224 @@
               "numReferrers" : 0
             }
           },
+          "extended ipv4 access-list line" : {
+            "BLAH-BLAH: 10 permit icmp any any packet-too-big" : {
+              "definitionLines" : "5",
+              "numReferrers" : 1
+            },
+            "BLAH-BLAH: 100 permit pim any any" : {
+              "definitionLines" : "14",
+              "numReferrers" : 1
+            },
+            "BLAH-BLAH: 110 permit igmp any any" : {
+              "definitionLines" : "15",
+              "numReferrers" : 1
+            },
+            "BLAH-BLAH: 120 permit tcp any any range 1 10" : {
+              "definitionLines" : "16",
+              "numReferrers" : 1
+            },
+            "BLAH-BLAH: 140 permit udp 10.0.0.0/19 any eq snmp" : {
+              "definitionLines" : "18",
+              "numReferrers" : 1
+            },
+            "BLAH-BLAH: 180 permit udp host 10.0.0.0 any eq snmp" : {
+              "definitionLines" : "19",
+              "numReferrers" : 1
+            },
+            "BLAH-BLAH: 20 permit ip any any tracked" : {
+              "definitionLines" : "6",
+              "numReferrers" : 1
+            },
+            "BLAH-BLAH: 220 permit tcp 10.0.0.0/19 any eq ssh" : {
+              "definitionLines" : "21",
+              "numReferrers" : 1
+            },
+            "BLAH-BLAH: 260 permit tcp host 10.0.0.0 any eq ssh" : {
+              "definitionLines" : "22",
+              "numReferrers" : 1
+            },
+            "BLAH-BLAH: 270 permit tcp any any eq microsoft-ds 5432" : {
+              "definitionLines" : "23",
+              "numReferrers" : 1
+            },
+            "BLAH-BLAH: 280 permit icmp any any 5 2" : {
+              "definitionLines" : "25",
+              "numReferrers" : 1
+            },
+            "BLAH-BLAH: 290 permit icmp any any time-exceeded ! believe this is type 11, any code" : {
+              "definitionLines" : "26",
+              "numReferrers" : 1
+            },
+            "BLAH-BLAH: 30 permit ospf any any" : {
+              "definitionLines" : "7",
+              "numReferrers" : 1
+            },
+            "BLAH-BLAH: 300 permit icmp any any ttl-exceeded  ! type 11, code 0" : {
+              "definitionLines" : "27",
+              "numReferrers" : 1
+            },
+            "BLAH-BLAH: 40 permit tcp any any eq bgp" : {
+              "definitionLines" : "8",
+              "numReferrers" : 1
+            },
+            "BLAH-BLAH: 410 deny ip any any log" : {
+              "definitionLines" : "28",
+              "numReferrers" : 1
+            },
+            "BLAH-BLAH: 50 permit udp any any eq bootps bootpc ntp" : {
+              "definitionLines" : "9",
+              "numReferrers" : 1
+            },
+            "BLAH-BLAH: 60 permit tcp any any eq mlag ttl eq 255" : {
+              "definitionLines" : "10",
+              "numReferrers" : 1
+            },
+            "BLAH-BLAH: 70 permit udp any any eq mlag ttl eq 255" : {
+              "definitionLines" : "11",
+              "numReferrers" : 1
+            },
+            "BLAH-BLAH: 80 permit vrrp any any" : {
+              "definitionLines" : "12",
+              "numReferrers" : 1
+            },
+            "BLAH-BLAH: 90 permit ahp any any" : {
+              "definitionLines" : "13",
+              "numReferrers" : 1
+            },
+            "PROTOCOLS: 10 permit ah any any" : {
+              "definitionLines" : "73",
+              "numReferrers" : 1
+            },
+            "PROTOCOLS: 100 permit igmp any any" : {
+              "definitionLines" : "82",
+              "numReferrers" : 1
+            },
+            "PROTOCOLS: 110 permit igrp any any" : {
+              "definitionLines" : "83",
+              "numReferrers" : 1
+            },
+            "PROTOCOLS: 120 permit ip any any" : {
+              "definitionLines" : "84",
+              "numReferrers" : 1
+            },
+            "PROTOCOLS: 130 permit ipinip any any" : {
+              "definitionLines" : "85",
+              "numReferrers" : 1
+            },
+            "PROTOCOLS: 140 permit ipsec any any" : {
+              "definitionLines" : "86",
+              "numReferrers" : 1
+            },
+            "PROTOCOLS: 150 permit ipv4 any any" : {
+              "definitionLines" : "87",
+              "numReferrers" : 1
+            },
+            "PROTOCOLS: 160 permit ipv6 any any" : {
+              "definitionLines" : "88",
+              "numReferrers" : 1
+            },
+            "PROTOCOLS: 170 permit nd any any" : {
+              "definitionLines" : "89",
+              "numReferrers" : 1
+            },
+            "PROTOCOLS: 180 permit nos any any" : {
+              "definitionLines" : "90",
+              "numReferrers" : 1
+            },
+            "PROTOCOLS: 190 permit ospf any any" : {
+              "definitionLines" : "91",
+              "numReferrers" : 1
+            },
+            "PROTOCOLS: 20 permit ahp any any" : {
+              "definitionLines" : "74",
+              "numReferrers" : 1
+            },
+            "PROTOCOLS: 200 permit pim any any" : {
+              "definitionLines" : "92",
+              "numReferrers" : 1
+            },
+            "PROTOCOLS: 210 permit pptp any any" : {
+              "definitionLines" : "93",
+              "numReferrers" : 1
+            },
+            "PROTOCOLS: 220 permit sctp any any" : {
+              "definitionLines" : "94",
+              "numReferrers" : 1
+            },
+            "PROTOCOLS: 230 permit snp any any" : {
+              "definitionLines" : "95",
+              "numReferrers" : 1
+            },
+            "PROTOCOLS: 240 permit tcp any any" : {
+              "definitionLines" : "96",
+              "numReferrers" : 1
+            },
+            "PROTOCOLS: 250 permit tcp-udp any any" : {
+              "definitionLines" : "97",
+              "numReferrers" : 1
+            },
+            "PROTOCOLS: 260 permit udp any any" : {
+              "definitionLines" : "98",
+              "numReferrers" : 1
+            },
+            "PROTOCOLS: 270 permit vrrp any any" : {
+              "definitionLines" : "99",
+              "numReferrers" : 1
+            },
+            "PROTOCOLS: 30 permit 5 any any" : {
+              "definitionLines" : "75",
+              "numReferrers" : 1
+            },
+            "PROTOCOLS: 40 permit eigrp any any" : {
+              "definitionLines" : "76",
+              "numReferrers" : 1
+            },
+            "PROTOCOLS: 50 permit esp any any" : {
+              "definitionLines" : "77",
+              "numReferrers" : 1
+            },
+            "PROTOCOLS: 60 permit gre any any" : {
+              "definitionLines" : "78",
+              "numReferrers" : 1
+            },
+            "PROTOCOLS: 70 permit icmp any any" : {
+              "definitionLines" : "79",
+              "numReferrers" : 1
+            },
+            "PROTOCOLS: 80 permit icmp6 any any" : {
+              "definitionLines" : "80",
+              "numReferrers" : 1
+            },
+            "PROTOCOLS: 90 permit icmpv6 any any" : {
+              "definitionLines" : "81",
+              "numReferrers" : 1
+            },
+            "TEST: deny ip any any log 7 interval 600" : {
+              "definitionLines" : "66",
+              "numReferrers" : 1
+            },
+            "TEST: deny ip any any log default" : {
+              "definitionLines" : "67",
+              "numReferrers" : 1
+            },
+            "TEST: deny ip any any log disable" : {
+              "definitionLines" : "68",
+              "numReferrers" : 1
+            },
+            "blah: 10 permit ip any any" : {
+              "definitionLines" : "36",
+              "numReferrers" : 1
+            },
+            "test-codes: 10 permit udp any any eq bfd" : {
+              "definitionLines" : "63",
+              "numReferrers" : 1
+            },
+            "test-codes: 20 permit udp any any eq bfd-echo" : {
+              "definitionLines" : "64",
+              "numReferrers" : 1
+            }
+          },
           "ipv4 prefix-list" : {
             "allowprefix" : {
               "definitionLines" : "38-39",
@@ -71931,6 +72148,12 @@
             "5" : {
               "definitionLines" : "63",
               "numReferrers" : 2
+            }
+          },
+          "standard ipv4 access-list line" : {
+            "5: deny any" : {
+              "definitionLines" : "63",
+              "numReferrers" : 1
             }
           }
         },
@@ -72091,6 +72314,32 @@
               "numReferrers" : 0
             }
           },
+          "extended ipv4 access-list line" : {
+            "bippety: permit tcp 30.9.132.0 0.0.1.255 host 1.1.1.1 range 48000 48060" : {
+              "definitionLines" : "54",
+              "numReferrers" : 1
+            },
+            "bippety: permit tcp any host 1.1.1.1 eq 65001" : {
+              "definitionLines" : "57",
+              "numReferrers" : 1
+            },
+            "bippety: permit tcp any host 1.1.1.1 eq 65111" : {
+              "definitionLines" : "59",
+              "numReferrers" : 1
+            },
+            "bippety: permit tcp host 1.1.1.1 any eq 20000" : {
+              "definitionLines" : "58",
+              "numReferrers" : 1
+            },
+            "bippety: permit tcp host 1.1.1.1 any eq 27401" : {
+              "definitionLines" : "56",
+              "numReferrers" : 1
+            },
+            "bloop_blop: permit tcp addrgroup bleep_blorp any eq 13000" : {
+              "definitionLines" : "123",
+              "numReferrers" : 1
+            }
+          },
           "interface" : {
             "Ethernet0" : {
               "definitionLines" : "169",
@@ -72121,6 +72370,12 @@
             "abc" : {
               "definitionLines" : "4-5",
               "numReferrers" : 0
+            }
+          },
+          "extended ipv4 access-list line" : {
+            "abc: 10 permit tcp any any" : {
+              "definitionLines" : "5",
+              "numReferrers" : 1
             }
           },
           "interface" : {
@@ -72571,6 +72826,12 @@
               "definitionLines" : "1-2",
               "numReferrers" : 0
             }
+          },
+          "extended ipv4 access-list line" : {
+            "blah: permit ip any any" : {
+              "definitionLines" : "2",
+              "numReferrers" : 1
+            }
           }
         },
         "configs/cisco_style_acl2" : {
@@ -72578,6 +72839,12 @@
             "1" : {
               "definitionLines" : "1",
               "numReferrers" : 0
+            }
+          },
+          "standard ipv4 access-list line" : {
+            "1: permit any" : {
+              "definitionLines" : "1",
+              "numReferrers" : 1
             }
           }
         },
@@ -73678,6 +73945,188 @@
             "ICMP" : {
               "definitionLines" : "12-56",
               "numReferrers" : 0
+            }
+          },
+          "ipv4 access-list line" : {
+            "DENY_ALL: 5 deny ipv4 any any icmp-off" : {
+              "definitionLines" : "10",
+              "numReferrers" : 1
+            },
+            "ICMP: 10 deny icmp any any administratively-prohibited" : {
+              "definitionLines" : "13",
+              "numReferrers" : 1
+            },
+            "ICMP: 100 deny icmp any any host-precedence-unreachable" : {
+              "definitionLines" : "22",
+              "numReferrers" : 1
+            },
+            "ICMP: 110 deny icmp any any host-redirect" : {
+              "definitionLines" : "23",
+              "numReferrers" : 1
+            },
+            "ICMP: 120 deny icmp any any host-tos-redirect" : {
+              "definitionLines" : "24",
+              "numReferrers" : 1
+            },
+            "ICMP: 130 deny icmp any any host-tos-unreachable" : {
+              "definitionLines" : "25",
+              "numReferrers" : 1
+            },
+            "ICMP: 140 deny icmp any any host-unknown" : {
+              "definitionLines" : "26",
+              "numReferrers" : 1
+            },
+            "ICMP: 150 deny icmp any any host-unreachable" : {
+              "definitionLines" : "27",
+              "numReferrers" : 1
+            },
+            "ICMP: 160 deny icmp any any information-reply" : {
+              "definitionLines" : "28",
+              "numReferrers" : 1
+            },
+            "ICMP: 170 deny icmp any any information-request" : {
+              "definitionLines" : "29",
+              "numReferrers" : 1
+            },
+            "ICMP: 180 deny icmp any any mask-reply" : {
+              "definitionLines" : "30",
+              "numReferrers" : 1
+            },
+            "ICMP: 190 deny icmp any any mask-request" : {
+              "definitionLines" : "31",
+              "numReferrers" : 1
+            },
+            "ICMP: 20 deny icmp any any alternate-address" : {
+              "definitionLines" : "14",
+              "numReferrers" : 1
+            },
+            "ICMP: 200 deny icmp any any mobile-redirect" : {
+              "definitionLines" : "32",
+              "numReferrers" : 1
+            },
+            "ICMP: 210 deny icmp any any net-redirect" : {
+              "definitionLines" : "33",
+              "numReferrers" : 1
+            },
+            "ICMP: 220 deny icmp any any net-tos-redirect" : {
+              "definitionLines" : "34",
+              "numReferrers" : 1
+            },
+            "ICMP: 230 deny icmp any any net-tos-unreachable" : {
+              "definitionLines" : "35",
+              "numReferrers" : 1
+            },
+            "ICMP: 240 deny icmp any any net-unreachable" : {
+              "definitionLines" : "36",
+              "numReferrers" : 1
+            },
+            "ICMP: 250 deny icmp any any network-unknown" : {
+              "definitionLines" : "37",
+              "numReferrers" : 1
+            },
+            "ICMP: 260 deny icmp any any no-room-for-option" : {
+              "definitionLines" : "38",
+              "numReferrers" : 1
+            },
+            "ICMP: 270 deny icmp any any option-missing" : {
+              "definitionLines" : "39",
+              "numReferrers" : 1
+            },
+            "ICMP: 280 deny icmp any any packet-too-big" : {
+              "definitionLines" : "40",
+              "numReferrers" : 1
+            },
+            "ICMP: 290 deny icmp any any parameter-problem" : {
+              "definitionLines" : "41",
+              "numReferrers" : 1
+            },
+            "ICMP: 30 deny icmp any any conversion-error" : {
+              "definitionLines" : "15",
+              "numReferrers" : 1
+            },
+            "ICMP: 300 deny icmp any any port-unreachable" : {
+              "definitionLines" : "42",
+              "numReferrers" : 1
+            },
+            "ICMP: 310 deny icmp any any precedence-unreachable" : {
+              "definitionLines" : "43",
+              "numReferrers" : 1
+            },
+            "ICMP: 320 deny icmp any any protocol-unreachable" : {
+              "definitionLines" : "44",
+              "numReferrers" : 1
+            },
+            "ICMP: 330 deny icmp any any reassembly-timeout" : {
+              "definitionLines" : "45",
+              "numReferrers" : 1
+            },
+            "ICMP: 340 deny icmp any any redirect" : {
+              "definitionLines" : "46",
+              "numReferrers" : 1
+            },
+            "ICMP: 350 deny icmp any any router-advertisement" : {
+              "definitionLines" : "47",
+              "numReferrers" : 1
+            },
+            "ICMP: 360 deny icmp any any router-solicitation" : {
+              "definitionLines" : "48",
+              "numReferrers" : 1
+            },
+            "ICMP: 370 deny icmp any any source-quench" : {
+              "definitionLines" : "49",
+              "numReferrers" : 1
+            },
+            "ICMP: 380 deny icmp any any source-route-failed" : {
+              "definitionLines" : "50",
+              "numReferrers" : 1
+            },
+            "ICMP: 390 deny icmp any any time-exceeded" : {
+              "definitionLines" : "51",
+              "numReferrers" : 1
+            },
+            "ICMP: 40 deny icmp any any dod-host-prohibited" : {
+              "definitionLines" : "16",
+              "numReferrers" : 1
+            },
+            "ICMP: 400 deny icmp any any timestamp-reply" : {
+              "definitionLines" : "52",
+              "numReferrers" : 1
+            },
+            "ICMP: 410 deny icmp any any timestamp-request" : {
+              "definitionLines" : "53",
+              "numReferrers" : 1
+            },
+            "ICMP: 420 deny icmp any any traceroute" : {
+              "definitionLines" : "54",
+              "numReferrers" : 1
+            },
+            "ICMP: 430 deny icmp any any ttl-exceeded" : {
+              "definitionLines" : "55",
+              "numReferrers" : 1
+            },
+            "ICMP: 440 deny icmp any any unreachable" : {
+              "definitionLines" : "56",
+              "numReferrers" : 1
+            },
+            "ICMP: 50 deny icmp any any dod-net-prohibited" : {
+              "definitionLines" : "17",
+              "numReferrers" : 1
+            },
+            "ICMP: 60 deny icmp any any echo" : {
+              "definitionLines" : "18",
+              "numReferrers" : 1
+            },
+            "ICMP: 70 deny icmp any any echo-reply" : {
+              "definitionLines" : "19",
+              "numReferrers" : 1
+            },
+            "ICMP: 80 deny icmp any any general-parameter-problem" : {
+              "definitionLines" : "20",
+              "numReferrers" : 1
+            },
+            "ICMP: 90 deny icmp any any host-isolated" : {
+              "definitionLines" : "21",
+              "numReferrers" : 1
             }
           }
         },
@@ -75239,6 +75688,12 @@
               "definitionLines" : "7",
               "numReferrers" : 0
             }
+          },
+          "extended ipv4 access-list line" : {
+            "blah: 10 permit ip any any" : {
+              "definitionLines" : "10",
+              "numReferrers" : 1
+            }
           }
         },
         "configs/openflow" : { },
@@ -75493,6 +75948,28 @@
             "100" : {
               "definitionLines" : "4-9",
               "numReferrers" : 0
+            }
+          },
+          "extended ipv4 access-list line" : {
+            "100: permit tcp 1.2.3.4/31 any ack" : {
+              "definitionLines" : "5",
+              "numReferrers" : 1
+            },
+            "100: permit tcp 1.2.3.4/31 any fin" : {
+              "definitionLines" : "8",
+              "numReferrers" : 1
+            },
+            "100: permit tcp 1.2.3.4/31 any fin ack" : {
+              "definitionLines" : "9",
+              "numReferrers" : 1
+            },
+            "100: permit tcp 1.2.3.4/31 any rst" : {
+              "definitionLines" : "6",
+              "numReferrers" : 1
+            },
+            "100: permit tcp 1.2.3.4/31 any syn ack urg psh rst ece fin cwr" : {
+              "definitionLines" : "7",
+              "numReferrers" : 1
             }
           }
         },
@@ -76757,6 +77234,280 @@
             }
           }
         },
+        "configs/cisco_acl" : {
+          "extended ipv4 access-list line" : {
+            "BLAH-BLAH: 10 permit icmp any any packet-too-big" : {
+              "extended ipv4 access-list line" : [
+                5
+              ]
+            },
+            "BLAH-BLAH: 100 permit pim any any" : {
+              "extended ipv4 access-list line" : [
+                14
+              ]
+            },
+            "BLAH-BLAH: 110 permit igmp any any" : {
+              "extended ipv4 access-list line" : [
+                15
+              ]
+            },
+            "BLAH-BLAH: 120 permit tcp any any range 1 10" : {
+              "extended ipv4 access-list line" : [
+                16
+              ]
+            },
+            "BLAH-BLAH: 140 permit udp 10.0.0.0/19 any eq snmp" : {
+              "extended ipv4 access-list line" : [
+                18
+              ]
+            },
+            "BLAH-BLAH: 180 permit udp host 10.0.0.0 any eq snmp" : {
+              "extended ipv4 access-list line" : [
+                19
+              ]
+            },
+            "BLAH-BLAH: 20 permit ip any any tracked" : {
+              "extended ipv4 access-list line" : [
+                6
+              ]
+            },
+            "BLAH-BLAH: 220 permit tcp 10.0.0.0/19 any eq ssh" : {
+              "extended ipv4 access-list line" : [
+                21
+              ]
+            },
+            "BLAH-BLAH: 260 permit tcp host 10.0.0.0 any eq ssh" : {
+              "extended ipv4 access-list line" : [
+                22
+              ]
+            },
+            "BLAH-BLAH: 270 permit tcp any any eq microsoft-ds 5432" : {
+              "extended ipv4 access-list line" : [
+                23
+              ]
+            },
+            "BLAH-BLAH: 280 permit icmp any any 5 2" : {
+              "extended ipv4 access-list line" : [
+                25
+              ]
+            },
+            "BLAH-BLAH: 290 permit icmp any any time-exceeded ! believe this is type 11, any code" : {
+              "extended ipv4 access-list line" : [
+                26
+              ]
+            },
+            "BLAH-BLAH: 30 permit ospf any any" : {
+              "extended ipv4 access-list line" : [
+                7
+              ]
+            },
+            "BLAH-BLAH: 300 permit icmp any any ttl-exceeded  ! type 11, code 0" : {
+              "extended ipv4 access-list line" : [
+                27
+              ]
+            },
+            "BLAH-BLAH: 40 permit tcp any any eq bgp" : {
+              "extended ipv4 access-list line" : [
+                8
+              ]
+            },
+            "BLAH-BLAH: 410 deny ip any any log" : {
+              "extended ipv4 access-list line" : [
+                28
+              ]
+            },
+            "BLAH-BLAH: 50 permit udp any any eq bootps bootpc ntp" : {
+              "extended ipv4 access-list line" : [
+                9
+              ]
+            },
+            "BLAH-BLAH: 60 permit tcp any any eq mlag ttl eq 255" : {
+              "extended ipv4 access-list line" : [
+                10
+              ]
+            },
+            "BLAH-BLAH: 70 permit udp any any eq mlag ttl eq 255" : {
+              "extended ipv4 access-list line" : [
+                11
+              ]
+            },
+            "BLAH-BLAH: 80 permit vrrp any any" : {
+              "extended ipv4 access-list line" : [
+                12
+              ]
+            },
+            "BLAH-BLAH: 90 permit ahp any any" : {
+              "extended ipv4 access-list line" : [
+                13
+              ]
+            },
+            "PROTOCOLS: 10 permit ah any any" : {
+              "extended ipv4 access-list line" : [
+                73
+              ]
+            },
+            "PROTOCOLS: 100 permit igmp any any" : {
+              "extended ipv4 access-list line" : [
+                82
+              ]
+            },
+            "PROTOCOLS: 110 permit igrp any any" : {
+              "extended ipv4 access-list line" : [
+                83
+              ]
+            },
+            "PROTOCOLS: 120 permit ip any any" : {
+              "extended ipv4 access-list line" : [
+                84
+              ]
+            },
+            "PROTOCOLS: 130 permit ipinip any any" : {
+              "extended ipv4 access-list line" : [
+                85
+              ]
+            },
+            "PROTOCOLS: 140 permit ipsec any any" : {
+              "extended ipv4 access-list line" : [
+                86
+              ]
+            },
+            "PROTOCOLS: 150 permit ipv4 any any" : {
+              "extended ipv4 access-list line" : [
+                87
+              ]
+            },
+            "PROTOCOLS: 160 permit ipv6 any any" : {
+              "extended ipv4 access-list line" : [
+                88
+              ]
+            },
+            "PROTOCOLS: 170 permit nd any any" : {
+              "extended ipv4 access-list line" : [
+                89
+              ]
+            },
+            "PROTOCOLS: 180 permit nos any any" : {
+              "extended ipv4 access-list line" : [
+                90
+              ]
+            },
+            "PROTOCOLS: 190 permit ospf any any" : {
+              "extended ipv4 access-list line" : [
+                91
+              ]
+            },
+            "PROTOCOLS: 20 permit ahp any any" : {
+              "extended ipv4 access-list line" : [
+                74
+              ]
+            },
+            "PROTOCOLS: 200 permit pim any any" : {
+              "extended ipv4 access-list line" : [
+                92
+              ]
+            },
+            "PROTOCOLS: 210 permit pptp any any" : {
+              "extended ipv4 access-list line" : [
+                93
+              ]
+            },
+            "PROTOCOLS: 220 permit sctp any any" : {
+              "extended ipv4 access-list line" : [
+                94
+              ]
+            },
+            "PROTOCOLS: 230 permit snp any any" : {
+              "extended ipv4 access-list line" : [
+                95
+              ]
+            },
+            "PROTOCOLS: 240 permit tcp any any" : {
+              "extended ipv4 access-list line" : [
+                96
+              ]
+            },
+            "PROTOCOLS: 250 permit tcp-udp any any" : {
+              "extended ipv4 access-list line" : [
+                97
+              ]
+            },
+            "PROTOCOLS: 260 permit udp any any" : {
+              "extended ipv4 access-list line" : [
+                98
+              ]
+            },
+            "PROTOCOLS: 270 permit vrrp any any" : {
+              "extended ipv4 access-list line" : [
+                99
+              ]
+            },
+            "PROTOCOLS: 30 permit 5 any any" : {
+              "extended ipv4 access-list line" : [
+                75
+              ]
+            },
+            "PROTOCOLS: 40 permit eigrp any any" : {
+              "extended ipv4 access-list line" : [
+                76
+              ]
+            },
+            "PROTOCOLS: 50 permit esp any any" : {
+              "extended ipv4 access-list line" : [
+                77
+              ]
+            },
+            "PROTOCOLS: 60 permit gre any any" : {
+              "extended ipv4 access-list line" : [
+                78
+              ]
+            },
+            "PROTOCOLS: 70 permit icmp any any" : {
+              "extended ipv4 access-list line" : [
+                79
+              ]
+            },
+            "PROTOCOLS: 80 permit icmp6 any any" : {
+              "extended ipv4 access-list line" : [
+                80
+              ]
+            },
+            "PROTOCOLS: 90 permit icmpv6 any any" : {
+              "extended ipv4 access-list line" : [
+                81
+              ]
+            },
+            "TEST: deny ip any any log 7 interval 600" : {
+              "extended ipv4 access-list line" : [
+                66
+              ]
+            },
+            "TEST: deny ip any any log default" : {
+              "extended ipv4 access-list line" : [
+                67
+              ]
+            },
+            "TEST: deny ip any any log disable" : {
+              "extended ipv4 access-list line" : [
+                68
+              ]
+            },
+            "blah: 10 permit ip any any" : {
+              "extended ipv4 access-list line" : [
+                36
+              ]
+            },
+            "test-codes: 10 permit udp any any eq bfd" : {
+              "extended ipv4 access-list line" : [
+                63
+              ]
+            },
+            "test-codes: 20 permit udp any any eq bfd-echo" : {
+              "extended ipv4 access-list line" : [
+                64
+              ]
+            }
+          }
+        },
         "configs/cisco_additional_paths" : {
           "undeclared bgp peer" : {
             "1.2.3.4" : {
@@ -76913,6 +77664,13 @@
             "ospfv3_map 10" : {
               "route-map clause" : [
                 55
+              ]
+            }
+          },
+          "standard ipv4 access-list line" : {
+            "5: deny any" : {
+              "standard ipv4 access-list line" : [
+                63
               ]
             }
           },
@@ -77175,6 +77933,38 @@
           }
         },
         "configs/cisco_eigrp" : {
+          "extended ipv4 access-list line" : {
+            "bippety: permit tcp 30.9.132.0 0.0.1.255 host 1.1.1.1 range 48000 48060" : {
+              "extended ipv4 access-list line" : [
+                54
+              ]
+            },
+            "bippety: permit tcp any host 1.1.1.1 eq 65001" : {
+              "extended ipv4 access-list line" : [
+                57
+              ]
+            },
+            "bippety: permit tcp any host 1.1.1.1 eq 65111" : {
+              "extended ipv4 access-list line" : [
+                59
+              ]
+            },
+            "bippety: permit tcp host 1.1.1.1 any eq 20000" : {
+              "extended ipv4 access-list line" : [
+                58
+              ]
+            },
+            "bippety: permit tcp host 1.1.1.1 any eq 27401" : {
+              "extended ipv4 access-list line" : [
+                56
+              ]
+            },
+            "bloop_blop: permit tcp addrgroup bleep_blorp any eq 13000" : {
+              "extended ipv4 access-list line" : [
+                123
+              ]
+            }
+          },
           "interface" : {
             "Ethernet0" : {
               "eigrp address-family af-interface" : [
@@ -77267,6 +78057,13 @@
           }
         },
         "configs/cisco_interface" : {
+          "extended ipv4 access-list line" : {
+            "abc: 10 permit tcp any any" : {
+              "extended ipv4 access-list line" : [
+                5
+              ]
+            }
+          },
           "interface" : {
             "Async1" : {
               "interface" : [
@@ -78170,6 +78967,24 @@
             "to-VTY" : {
               "snmp server community ipv6 acl" : [
                 16
+              ]
+            }
+          }
+        },
+        "configs/cisco_style_acl1" : {
+          "extended ipv4 access-list line" : {
+            "blah: permit ip any any" : {
+              "extended ipv4 access-list line" : [
+                2
+              ]
+            }
+          }
+        },
+        "configs/cisco_style_acl2" : {
+          "standard ipv4 access-list line" : {
+            "1: permit any" : {
+              "standard ipv4 access-list line" : [
+                1
               ]
             }
           }
@@ -79591,6 +80406,235 @@
             "MAP" : {
               "bgp inbound route-map" : [
                 6
+              ]
+            }
+          }
+        },
+        "configs/ios_xr_acl" : {
+          "ipv4 access-list line" : {
+            "DENY_ALL: 5 deny ipv4 any any icmp-off" : {
+              "ipv4 access-list line" : [
+                10
+              ]
+            },
+            "ICMP: 10 deny icmp any any administratively-prohibited" : {
+              "ipv4 access-list line" : [
+                13
+              ]
+            },
+            "ICMP: 100 deny icmp any any host-precedence-unreachable" : {
+              "ipv4 access-list line" : [
+                22
+              ]
+            },
+            "ICMP: 110 deny icmp any any host-redirect" : {
+              "ipv4 access-list line" : [
+                23
+              ]
+            },
+            "ICMP: 120 deny icmp any any host-tos-redirect" : {
+              "ipv4 access-list line" : [
+                24
+              ]
+            },
+            "ICMP: 130 deny icmp any any host-tos-unreachable" : {
+              "ipv4 access-list line" : [
+                25
+              ]
+            },
+            "ICMP: 140 deny icmp any any host-unknown" : {
+              "ipv4 access-list line" : [
+                26
+              ]
+            },
+            "ICMP: 150 deny icmp any any host-unreachable" : {
+              "ipv4 access-list line" : [
+                27
+              ]
+            },
+            "ICMP: 160 deny icmp any any information-reply" : {
+              "ipv4 access-list line" : [
+                28
+              ]
+            },
+            "ICMP: 170 deny icmp any any information-request" : {
+              "ipv4 access-list line" : [
+                29
+              ]
+            },
+            "ICMP: 180 deny icmp any any mask-reply" : {
+              "ipv4 access-list line" : [
+                30
+              ]
+            },
+            "ICMP: 190 deny icmp any any mask-request" : {
+              "ipv4 access-list line" : [
+                31
+              ]
+            },
+            "ICMP: 20 deny icmp any any alternate-address" : {
+              "ipv4 access-list line" : [
+                14
+              ]
+            },
+            "ICMP: 200 deny icmp any any mobile-redirect" : {
+              "ipv4 access-list line" : [
+                32
+              ]
+            },
+            "ICMP: 210 deny icmp any any net-redirect" : {
+              "ipv4 access-list line" : [
+                33
+              ]
+            },
+            "ICMP: 220 deny icmp any any net-tos-redirect" : {
+              "ipv4 access-list line" : [
+                34
+              ]
+            },
+            "ICMP: 230 deny icmp any any net-tos-unreachable" : {
+              "ipv4 access-list line" : [
+                35
+              ]
+            },
+            "ICMP: 240 deny icmp any any net-unreachable" : {
+              "ipv4 access-list line" : [
+                36
+              ]
+            },
+            "ICMP: 250 deny icmp any any network-unknown" : {
+              "ipv4 access-list line" : [
+                37
+              ]
+            },
+            "ICMP: 260 deny icmp any any no-room-for-option" : {
+              "ipv4 access-list line" : [
+                38
+              ]
+            },
+            "ICMP: 270 deny icmp any any option-missing" : {
+              "ipv4 access-list line" : [
+                39
+              ]
+            },
+            "ICMP: 280 deny icmp any any packet-too-big" : {
+              "ipv4 access-list line" : [
+                40
+              ]
+            },
+            "ICMP: 290 deny icmp any any parameter-problem" : {
+              "ipv4 access-list line" : [
+                41
+              ]
+            },
+            "ICMP: 30 deny icmp any any conversion-error" : {
+              "ipv4 access-list line" : [
+                15
+              ]
+            },
+            "ICMP: 300 deny icmp any any port-unreachable" : {
+              "ipv4 access-list line" : [
+                42
+              ]
+            },
+            "ICMP: 310 deny icmp any any precedence-unreachable" : {
+              "ipv4 access-list line" : [
+                43
+              ]
+            },
+            "ICMP: 320 deny icmp any any protocol-unreachable" : {
+              "ipv4 access-list line" : [
+                44
+              ]
+            },
+            "ICMP: 330 deny icmp any any reassembly-timeout" : {
+              "ipv4 access-list line" : [
+                45
+              ]
+            },
+            "ICMP: 340 deny icmp any any redirect" : {
+              "ipv4 access-list line" : [
+                46
+              ]
+            },
+            "ICMP: 350 deny icmp any any router-advertisement" : {
+              "ipv4 access-list line" : [
+                47
+              ]
+            },
+            "ICMP: 360 deny icmp any any router-solicitation" : {
+              "ipv4 access-list line" : [
+                48
+              ]
+            },
+            "ICMP: 370 deny icmp any any source-quench" : {
+              "ipv4 access-list line" : [
+                49
+              ]
+            },
+            "ICMP: 380 deny icmp any any source-route-failed" : {
+              "ipv4 access-list line" : [
+                50
+              ]
+            },
+            "ICMP: 390 deny icmp any any time-exceeded" : {
+              "ipv4 access-list line" : [
+                51
+              ]
+            },
+            "ICMP: 40 deny icmp any any dod-host-prohibited" : {
+              "ipv4 access-list line" : [
+                16
+              ]
+            },
+            "ICMP: 400 deny icmp any any timestamp-reply" : {
+              "ipv4 access-list line" : [
+                52
+              ]
+            },
+            "ICMP: 410 deny icmp any any timestamp-request" : {
+              "ipv4 access-list line" : [
+                53
+              ]
+            },
+            "ICMP: 420 deny icmp any any traceroute" : {
+              "ipv4 access-list line" : [
+                54
+              ]
+            },
+            "ICMP: 430 deny icmp any any ttl-exceeded" : {
+              "ipv4 access-list line" : [
+                55
+              ]
+            },
+            "ICMP: 440 deny icmp any any unreachable" : {
+              "ipv4 access-list line" : [
+                56
+              ]
+            },
+            "ICMP: 50 deny icmp any any dod-net-prohibited" : {
+              "ipv4 access-list line" : [
+                17
+              ]
+            },
+            "ICMP: 60 deny icmp any any echo" : {
+              "ipv4 access-list line" : [
+                18
+              ]
+            },
+            "ICMP: 70 deny icmp any any echo-reply" : {
+              "ipv4 access-list line" : [
+                19
+              ]
+            },
+            "ICMP: 80 deny icmp any any general-parameter-problem" : {
+              "ipv4 access-list line" : [
+                20
+              ]
+            },
+            "ICMP: 90 deny icmp any any host-isolated" : {
+              "ipv4 access-list line" : [
+                21
               ]
             }
           }
@@ -81852,6 +82896,15 @@
             }
           }
         },
+        "configs/nxos_acl" : {
+          "extended ipv4 access-list line" : {
+            "blah: 10 permit ip any any" : {
+              "extended ipv4 access-list line" : [
+                10
+              ]
+            }
+          }
+        },
         "configs/palo_alto/applications" : {
           "application-group or application or none" : {
             "ssh~panorama" : {
@@ -82215,6 +83268,35 @@
             "FastEthernet0/1" : {
               "interface" : [
                 4
+              ]
+            }
+          }
+        },
+        "configs/tcpflags" : {
+          "extended ipv4 access-list line" : {
+            "100: permit tcp 1.2.3.4/31 any ack" : {
+              "extended ipv4 access-list line" : [
+                5
+              ]
+            },
+            "100: permit tcp 1.2.3.4/31 any fin" : {
+              "extended ipv4 access-list line" : [
+                8
+              ]
+            },
+            "100: permit tcp 1.2.3.4/31 any fin ack" : {
+              "extended ipv4 access-list line" : [
+                9
+              ]
+            },
+            "100: permit tcp 1.2.3.4/31 any rst" : {
+              "extended ipv4 access-list line" : [
+                6
+              ]
+            },
+            "100: permit tcp 1.2.3.4/31 any syn ack urg psh rst ece fin cwr" : {
+              "extended ipv4 access-list line" : [
+                7
               ]
             }
           }

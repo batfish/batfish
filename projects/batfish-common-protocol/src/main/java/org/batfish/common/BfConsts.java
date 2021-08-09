@@ -127,6 +127,7 @@ public class BfConsts {
   public static final String RELPATH_CONFIGURATIONS_DIR = "configs";
   public static final String RELPATH_EDGE_BLACKLIST_FILE = "edge_blacklist";
   public static final String RELPATH_ENVIRONMENT_BGP_TABLES = "bgp";
+  public static final String RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS = "external_bgp_announcements.json";
   public static final String RELPATH_HOST_CONFIGS_DIR = "hosts";
   public static final String RELPATH_INPUT = "input";
   public static final String RELPATH_INTERFACE_BLACKLIST_FILE = "interface_blacklist";

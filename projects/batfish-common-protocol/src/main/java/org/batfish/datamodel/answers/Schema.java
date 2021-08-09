@@ -18,7 +18,6 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.collections.FileLines;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.Trace;
-import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.BgpRoute;
 import org.batfish.datamodel.questions.BgpRouteDiffs;
@@ -46,7 +45,6 @@ public class Schema {
           .put("BgpRouteDiffs", getClassString(BgpRouteDiffs.class))
           .put("Boolean", getClassString(Boolean.class))
           .put("Double", getClassString(Double.class))
-          .put("Environment", getClassString(Environment.class))
           .put("FileLines", getClassString(FileLines.class))
           .put("Flow", getClassString(Flow.class))
           .put("Integer", getClassString(Integer.class))

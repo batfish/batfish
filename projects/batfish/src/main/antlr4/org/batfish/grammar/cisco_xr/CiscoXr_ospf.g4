@@ -116,13 +116,8 @@ ro_default_information
 :
    DEFAULT_INFORMATION ORIGINATE
    (
-      (
-         METRIC metric = uint_legacy
-      )
-      |
-      (
-         METRIC_TYPE metric_type = uint_legacy
-      )
+      METRIC metric = uint_legacy
+      | METRIC_TYPE metric_type = uint_legacy
       | ALWAYS
       | ROUTE_POLICY policy = route_policy_name
       | TAG uint_legacy
@@ -131,7 +126,7 @@ ro_default_information
 
 ro_default_metric
 :
-   NO? DEFAULT_METRIC metric = uint_legacy NEWLINE
+   DEFAULT_METRIC metric = uint_legacy NEWLINE
 ;
 
 ro_distance
@@ -139,28 +134,16 @@ ro_distance
    DISTANCE value = uint_legacy NEWLINE
 ;
 
-roc_distribute_list_in
-:
-  DISTRIBUTE_LIST
-  (
-    rodl_acl_in
-    | rodl_prefix_list_in
-    | rodl_route_policy
-  )
-;
+roc_distribute_list_in: DISTRIBUTE_LIST (rodl_acl_in | rodl_route_policy);
 
-ro_distribute_list_out: DISTRIBUTE_LIST (rodl_acl_out | rodl_prefix_list_out);
+ro_distribute_list_out: DISTRIBUTE_LIST rodl_acl_out;
 
 rodl_acl_in: acl = access_list_name IN NEWLINE;
-
-rodl_prefix_list_in: PREFIX_LIST pl = prefix_list_name IN NEWLINE;
 
 // route-policies can't be used on outbound traffic
 rodl_route_policy: ROUTE_POLICY rp = route_policy_name IN NEWLINE;
 
 rodl_acl_out: acl = access_list_name OUT NEWLINE;
-
-rodl_prefix_list_out: PREFIX_LIST pl = prefix_list_name OUT NEWLINE;
 
 ro_max_metric
 :
@@ -198,6 +181,14 @@ ro_maximum_paths
 
 roc_network: NETWORK ospf_network_type NEWLINE;
 
+ro_no
+:
+   NO (
+      DEFAULT_INFORMATION ORIGINATE
+      | DEFAULT_METRIC uint_legacy
+   ) NEWLINE
+;
+
 roa_nssa
 :
    NSSA
@@ -223,48 +214,18 @@ roc_null
 :
    NO?
    (
-      (
-         AREA variable AUTHENTICATION
-      )
+      AREA variable AUTHENTICATION
       | AUTO_COST
       | BFD
       | CAPABILITY
       | DEAD_INTERVAL
-      | DISCARD_ROUTE
       | FAST_REROUTE
-      | GRACEFUL_RESTART
       | HELLO_INTERVAL
-      |
-      (
-         IP
-         (
-            OSPF
-            (
-               EVENT_HISTORY
-            )
-         )
-      )
-      | ISPF
       | LOG
-      | LOG_ADJ_CHANGES
-      | LOG_ADJACENCY_CHANGES
       | MAX_LSA
-      |
-      (
-         MAXIMUM
-         (
-            REDISTRIBUTED_PREFIXES
-         )
-      )
+      | MAXIMUM REDISTRIBUTED_PREFIXES
       | MESSAGE_DIGEST_KEY
       | MTU_IGNORE
-      |
-      (
-         NO
-         (
-            DEFAULT_INFORMATION
-         )
-      )
       | NSF
       | NSR
       | SNMP
@@ -431,6 +392,7 @@ s_router_ospf
       | ro_max_metric
       | ro_maximum_paths
       | ro_mpls
+      | ro_no
       | ro_redistribute
       | ro_router_id
       | ro_summary_address

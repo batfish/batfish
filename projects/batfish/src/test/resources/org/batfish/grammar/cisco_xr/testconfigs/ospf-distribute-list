@@ -20,22 +20,12 @@ interface GigabitEthernet0/0/0/5
 interface GigabitEthernet0/0/0/6
  no shutdown
 !
-interface GigabitEthernet0/0/0/7
- no shutdown
-!
 ipv4 access-list ACL1
  permit tcp host 1.1.1.0 host 255.255.255.0
 ipv4 access-list ACL2
  permit tcp host 2.2.2.0 host 255.255.255.0
 ipv4 access-list ACL3
  permit tcp host 3.3.3.0 host 255.255.255.0
-!
-prefix-set PL1
-  5.5.5.5/32
-end-set
-prefix-set PL2
-  6.6.6.6/32
-end-set
 !
 route-policy RP
 end-policy
@@ -57,28 +47,21 @@ router ospf 2
 !
 router ospf 3
   router-id 3.3.3.3
-  distribute-list prefix-list PL1 in
-  distribute-list prefix-list PL2 out
-  area 3
-    interface GigabitEthernet0/0/0/3
-!
-router ospf 4
-  router-id 4.4.4.4
   distribute-list ACL1 in
   # Inherits from router level
-  area 4
-    interface GigabitEthernet0/0/0/4
+  area 3
+    interface GigabitEthernet0/0/0/3
   # Inherits from area level, overrides router level
-  area 5
+  area 4
     distribute-list ACL2 in
-    interface GigabitEthernet0/0/0/5
+    interface GigabitEthernet0/0/0/4
   # Uses interface settings, overrides router level
-  area 6
-    interface GigabitEthernet0/0/0/6
+  area 5
+    interface GigabitEthernet0/0/0/5
       distribute-list ACL3 in
   # Uses interface settings, overrides router and area levels
-  area 7
+  area 6
     distribute-list ACL2 in
-    interface GigabitEthernet0/0/0/7
+    interface GigabitEthernet0/0/0/6
       distribute-list ACL3 in
 !

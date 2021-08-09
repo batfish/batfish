@@ -2,17 +2,16 @@ package org.batfish.datamodel.bgp;
 
 import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
-import static org.batfish.datamodel.bgp.BgpTopologyUtils.bgpCandidateHasCompatibleIpOrPrefix;
 import static org.batfish.datamodel.bgp.BgpTopologyUtils.computeAsPair;
+import static org.batfish.datamodel.bgp.BgpTopologyUtils.getFeasibleLocalIps;
 import static org.batfish.datamodel.bgp.BgpTopologyUtils.initBgpTopology;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -107,7 +106,6 @@ public class BgpTopologyUtilsTest {
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip2 = Ip.parse("2.2.2.2");
 
-    Prefix peer1PeerPrefix = ip2.toPrefix();
     BgpActivePeerConfig peer1 =
         BgpActivePeerConfig.builder()
             .setLocalIp(ip1)
@@ -119,7 +117,7 @@ public class BgpTopologyUtilsTest {
                     .setAddressFamilyCapabilities(AddressFamilyCapabilities.builder().build())
                     .build())
             .build();
-    _node1BgpProcess.setNeighbors(ImmutableSortedMap.of(peer1PeerPrefix, peer1));
+    _node1BgpProcess.setNeighbors(ImmutableSortedMap.of(ip2, peer1));
 
     Prefix peer2PeerPrefix = Prefix.create(ip1, 24);
     BgpPassivePeerConfig peer2 =
@@ -143,7 +141,7 @@ public class BgpTopologyUtilsTest {
             ImmutableMap.of(NODE2, ImmutableSet.of(DEFAULT_VRF_NAME)));
 
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
-        initBgpTopology(_configs, ipOwners, true, false, null, null).getGraph();
+        initBgpTopology(_configs, ipOwners, true, null).getGraph();
     assertThat(bgpTopology.edges(), hasSize(2));
     EndpointPair<BgpPeerConfigId> edge = bgpTopology.edges().iterator().next();
     assertThat(edge.source().getHostname(), equalTo(NODE1));
@@ -157,7 +155,6 @@ public class BgpTopologyUtilsTest {
 
     Ip ip = Ip.parse("1.1.1.1");
 
-    Prefix peer1PeerPrefix = ip.toPrefix();
     BgpActivePeerConfig peer1 =
         BgpActivePeerConfig.builder()
             .setLocalIp(ip)
@@ -169,13 +166,13 @@ public class BgpTopologyUtilsTest {
                     .setAddressFamilyCapabilities(AddressFamilyCapabilities.builder().build())
                     .build())
             .build();
-    _node1BgpProcess.setNeighbors(ImmutableSortedMap.of(peer1PeerPrefix, peer1));
+    _node1BgpProcess.setNeighbors(ImmutableSortedMap.of(ip, peer1));
 
     Map<Ip, Map<String, Set<String>>> ipOwners =
         ImmutableMap.of(ip, ImmutableMap.of(NODE1, ImmutableSet.of(DEFAULT_VRF_NAME)));
 
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
-        initBgpTopology(_configs, ipOwners, true, false, null, null).getGraph();
+        initBgpTopology(_configs, ipOwners, true, null).getGraph();
     assertThat(bgpTopology.edges(), empty());
   }
 
@@ -190,7 +187,6 @@ public class BgpTopologyUtilsTest {
     Ip ip2 = Ip.parse("1.1.1.2");
     Ip ip3 = Ip.parse("1.1.1.3");
 
-    Prefix peer1PeerPrefix = ip2.toPrefix();
     BgpActivePeerConfig peer1 =
         BgpActivePeerConfig.builder()
             .setLocalIp(ip1)
@@ -199,7 +195,7 @@ public class BgpTopologyUtilsTest {
             .setRemoteAs(2L)
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
-    _node1BgpProcess.setNeighbors(ImmutableSortedMap.of(peer1PeerPrefix, peer1));
+    _node1BgpProcess.setNeighbors(ImmutableSortedMap.of(ip2, peer1));
 
     Prefix prefixForPeer1 = Prefix.create(ip1, 24);
     BgpPassivePeerConfig.Builder passivePeerBuilder =
@@ -225,7 +221,7 @@ public class BgpTopologyUtilsTest {
             ImmutableMap.of(NODE3, ImmutableSet.of(DEFAULT_VRF_NAME)));
 
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
-        initBgpTopology(_configs, ipOwners, true, false, null, null).getGraph();
+        initBgpTopology(_configs, ipOwners, true, null).getGraph();
     assertThat(bgpTopology.edges(), hasSize(2));
     EndpointPair<BgpPeerConfigId> edge = bgpTopology.edges().iterator().next();
     assertThat(edge.source().getHostname(), equalTo(NODE1));
@@ -266,17 +262,14 @@ public class BgpTopologyUtilsTest {
 
     // Shouldn't see session come up if nodes are not connected in layer 2
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
-        initBgpTopology(
-                _configs, ImmutableMap.of(), true, false, null, new FixedL3Adjacencies(false))
+        initBgpTopology(_configs, ImmutableMap.of(), true, new FixedL3Adjacencies(false))
             .getGraph();
     assertThat(bgpTopology.nodes(), hasSize(2));
     assertThat(bgpTopology.edges(), empty());
 
     // Should see session if they're connected
     bgpTopology =
-        initBgpTopology(
-                _configs, ImmutableMap.of(), true, false, null, new FixedL3Adjacencies(true))
-            .getGraph();
+        initBgpTopology(_configs, ImmutableMap.of(), true, new FixedL3Adjacencies(true)).getGraph();
     BgpPeerConfigId peer1Id = new BgpPeerConfigId(NODE1, DEFAULT_VRF_NAME, iface1);
     BgpPeerConfigId peer2To1Id = new BgpPeerConfigId(NODE2, DEFAULT_VRF_NAME, iface2);
     assertThat(bgpTopology.nodes(), hasSize(2));
@@ -346,9 +339,7 @@ public class BgpTopologyUtilsTest {
     _node2BgpProcess.setInterfaceNeighbors(ImmutableSortedMap.of(iface2, peer2));
 
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
-        initBgpTopology(
-                _configs, ImmutableMap.of(), true, false, null, new FixedL3Adjacencies(true))
-            .getGraph();
+        initBgpTopology(_configs, ImmutableMap.of(), true, new FixedL3Adjacencies(true)).getGraph();
     BgpPeerConfigId peer1Id = new BgpPeerConfigId(NODE1, DEFAULT_VRF_NAME, iface1);
     BgpPeerConfigId peer2To1Id = new BgpPeerConfigId(NODE2, DEFAULT_VRF_NAME, iface2);
     assertThat(bgpTopology.nodes(), hasSize(2));
@@ -390,9 +381,7 @@ public class BgpTopologyUtilsTest {
 
     // Shouldn't see session come up because of incompatible remote AS
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
-        initBgpTopology(
-                _configs, ImmutableMap.of(), true, false, null, new FixedL3Adjacencies(true))
-            .getGraph();
+        initBgpTopology(_configs, ImmutableMap.of(), true, new FixedL3Adjacencies(true)).getGraph();
     assertThat(bgpTopology.nodes(), hasSize(2));
     assertThat(bgpTopology.edges(), empty());
   }
@@ -499,62 +488,39 @@ public class BgpTopologyUtilsTest {
   }
 
   @Test
-  public void testBgpCandidateHasCompatibleIpOrPrefix() {
-    BgpActivePeerConfig initiator =
-        BgpActivePeerConfig.builder()
-            .setLocalIp(Ip.parse("2.2.2.2"))
-            .setPeerAddress(Ip.parse("4.4.4.4"))
-            .build();
+  public void testGetFeasibleLocalIps_passiveCandidate() {
+    Ip ip2210 = Ip.parse("2.2.1.0");
+    Ip ip2220 = Ip.parse("2.2.2.0");
+    Ip ip2222 = Ip.parse("2.2.2.2");
+    Set<Ip> potentialLocalIps = ImmutableSet.of(ip2210, ip2220, ip2222);
+    assertThat(
+        getFeasibleLocalIps(
+            potentialLocalIps,
+            BgpPassivePeerConfig.builder().setPeerPrefix(Prefix.parse("2.2.2.0/24")).build()),
+        containsInAnyOrder(ip2220, ip2222));
+  }
 
-    {
-      // passive candidate case
-      assertTrue(
-          bgpCandidateHasCompatibleIpOrPrefix(
-              initiator,
-              BgpPassivePeerConfig.builder().setPeerPrefix(Prefix.parse("2.2.2.0/24")).build()));
-      assertFalse(
-          bgpCandidateHasCompatibleIpOrPrefix(
-              initiator,
-              BgpPassivePeerConfig.builder().setPeerPrefix(Prefix.parse("3.3.3.0/24")).build()));
-    }
-    {
-      // active candidate
+  @Test
+  public void testGetFeasibleLocalIps_activeCandidate() {
+    Ip ip2221 = Ip.parse("2.2.2.1");
+    Ip ip2222 = Ip.parse("2.2.2.2");
+    Set<Ip> potentialLocalIps = ImmutableSet.of(ip2221, ip2222);
 
-      // candidate without local IP and matching peer address
-      assertTrue(
-          bgpCandidateHasCompatibleIpOrPrefix(
-              initiator,
-              BgpActivePeerConfig.builder()
-                  .setPeerAddress(Ip.parse("2.2.2.2"))
-                  .setEbgpMultihop(true)
-                  .build()));
+    // Candidate has no peer address
+    assertThat(
+        getFeasibleLocalIps(potentialLocalIps, BgpActivePeerConfig.builder().build()), empty());
 
-      // candidate without local IP and incompatible peer address
-      assertFalse(
-          bgpCandidateHasCompatibleIpOrPrefix(
-              initiator,
-              BgpActivePeerConfig.builder()
-                  .setPeerAddress(Ip.parse("3.3.3.3"))
-                  .setEbgpMultihop(true)
-                  .build()));
+    // Candidate has an incompatible peer address
+    assertThat(
+        getFeasibleLocalIps(
+            potentialLocalIps,
+            BgpActivePeerConfig.builder().setPeerAddress(Ip.parse("2.2.2.3")).build()),
+        empty());
 
-      // candidate with compatible local IP
-      assertTrue(
-          bgpCandidateHasCompatibleIpOrPrefix(
-              initiator,
-              BgpActivePeerConfig.builder()
-                  .setPeerAddress(Ip.parse("2.2.2.2"))
-                  .setLocalIp(Ip.parse("4.4.4.4"))
-                  .build()));
-
-      // candidate with incompatible local IP
-      assertFalse(
-          bgpCandidateHasCompatibleIpOrPrefix(
-              initiator,
-              BgpActivePeerConfig.builder()
-                  .setPeerAddress(Ip.parse("2.2.2.2"))
-                  .setLocalIp(Ip.parse("3.3.3.3"))
-                  .build()));
-    }
+    // Candidate has a compatible peer address
+    assertThat(
+        getFeasibleLocalIps(
+            potentialLocalIps, BgpActivePeerConfig.builder().setPeerAddress(ip2222).build()),
+        contains(ip2222));
   }
 }

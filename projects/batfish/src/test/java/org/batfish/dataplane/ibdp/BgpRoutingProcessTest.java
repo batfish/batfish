@@ -13,6 +13,7 @@ import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasWeight;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpv4RouteThat;
 import static org.batfish.datamodel.vxlan.Layer2Vni.testBuilder;
 import static org.batfish.dataplane.ibdp.BgpRoutingProcess.initEvpnType3Route;
+import static org.batfish.dataplane.ibdp.BgpRoutingProcess.processExternalBgpAdvertisementImport;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
@@ -73,11 +74,13 @@ import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopVrf;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.BgpPeerAddressNextHop;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.dataplane.rib.Rib;
@@ -203,7 +206,7 @@ public class BgpRoutingProcessTest {
                     .setPropagateUnmatched(true)
                     .build())
             .build();
-    _bgpProcess.getActiveNeighbors().put(localIp.toPrefix(), evpnPeer);
+    _bgpProcess.getActiveNeighbors().put(localIp, evpnPeer);
     _vrf.addLayer2Vni(
         testBuilder()
             .setVni(vni)
@@ -297,7 +300,7 @@ public class BgpRoutingProcessTest {
                     .setPropagateUnmatched(true)
                     .build())
             .build();
-    _bgpProcess.getActiveNeighbors().put(peerAddress.toPrefix(), evpnPeer);
+    _bgpProcess.getActiveNeighbors().put(peerAddress, evpnPeer);
 
     Map<String, String> actual = BgpRoutingProcess.computeRouteTargetToVrfMap(Stream.of(evpnPeer));
     assertThat(
@@ -316,7 +319,6 @@ public class BgpRoutingProcessTest {
     Ip ip2 = Ip.parse("2.2.2.2");
     long localAs = 1;
     long remoteAs = 1;
-    Prefix remotePeerPrefix = ip1.toPrefix();
     BgpActivePeerConfig peer1 =
         BgpActivePeerConfig.builder()
             .setLocalIp(ip1)
@@ -331,12 +333,12 @@ public class BgpRoutingProcessTest {
             .setRouterId(Ip.ZERO)
             .setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS)
             .build();
-    bgpProc.setNeighbors(ImmutableSortedMap.of(remotePeerPrefix, peer1));
+    bgpProc.setNeighbors(ImmutableSortedMap.of(ip1, peer1));
     MutableValueGraph<BgpPeerConfigId, BgpSessionProperties> graph =
         ValueGraphBuilder.directed().build();
 
     BgpPeerConfigId peer1Id =
-        new BgpPeerConfigId(_c.getHostname(), DEFAULT_VRF_NAME, remotePeerPrefix, false);
+        new BgpPeerConfigId(_c.getHostname(), DEFAULT_VRF_NAME, ip1.toPrefix(), false);
     BgpPeerConfigId peer2Id =
         new BgpPeerConfigId("someHost", DEFAULT_VRF_NAME, ip1.toPrefix(), false);
     BgpSessionProperties.Builder sessionBuilderForward =
@@ -424,7 +426,7 @@ public class BgpRoutingProcessTest {
         .setName(policyName)
         .setStatements(Collections.singletonList(Statements.ExitAccept.toStaticStatement()))
         .build();
-    _bgpProcess.getActiveNeighbors().put(peerIp.toPrefix(), evpnPeer);
+    _bgpProcess.getActiveNeighbors().put(peerIp, evpnPeer);
     _vrf.addLayer2Vni(
         testBuilder()
             .setVni(vni)
@@ -471,7 +473,7 @@ public class BgpRoutingProcessTest {
                     .setPropagateUnmatched(true)
                     .build())
             .build();
-    bgp2.getActiveNeighbors().put(localIp.toPrefix(), node2Peer);
+    bgp2.getActiveNeighbors().put(localIp, node2Peer);
     Node node2 = new Node(c2);
     BgpRoutingProcess routingProcNode2 =
         node2.getVirtualRouterOrThrow(DEFAULT_VRF_NAME).getBgpRoutingProcess();
@@ -841,5 +843,45 @@ public class BgpRoutingProcessTest {
     // Initially, there should only be adds.
     deltaAdverts.forEach(advert -> assertThat(advert.getReason(), equalTo(Reason.ADD)));
     return deltaAdverts;
+  }
+
+  @Test
+  public void testProcessExternalBgpAdvertisementImport() {
+    Ip neighborIp = Ip.parse("1.1.1.1");
+
+    BgpActivePeerConfig peer =
+        BgpActivePeerConfig.builder()
+            .setLocalIp(Ip.parse("1.1.1.2"))
+            .setLocalAs(1L)
+            .setRemoteAs(2L)
+            .setPeerAddress(neighborIp)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+            .build();
+
+    // Create a routing policy that sets next-hop peer-address, which relies on method under test
+    // having created a BGP session properties object
+    RoutingPolicy policy =
+        RoutingPolicy.builder()
+            .setOwner(_c)
+            .setName("policy")
+            .setStatements(
+                Collections.singletonList(new SetNextHop(BgpPeerAddressNextHop.getInstance())))
+            .build();
+
+    Bgpv4Route.Builder routeBuilder =
+        Bgpv4Route.builder()
+            .setNetwork(Prefix.ZERO)
+            .setOriginatorIp(neighborIp)
+            .setOriginType(OriginType.EGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(Ip.parse("2.2.2.2"));
+
+    Bgpv4Route inputRoute = routeBuilder.build();
+    Bgpv4Route.Builder outputRouteBuilder = routeBuilder;
+
+    processExternalBgpAdvertisementImport(inputRoute, outputRouteBuilder, peer, policy, null);
+
+    // policy application will overwrite the next hop ip
+    assertThat(outputRouteBuilder.build().getNextHopIp(), equalTo(neighborIp));
   }
 }

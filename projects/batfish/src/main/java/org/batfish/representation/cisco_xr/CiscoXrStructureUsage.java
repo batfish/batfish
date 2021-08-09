@@ -71,6 +71,7 @@ public enum CiscoXrStructureUsage implements StructureUsage {
   IP_TACACS_SOURCE_INTERFACE("ip tacacs source-interface"),
   IPSEC_PROFILE_ISAKMP_PROFILE("ipsec profile set isakmp-profile"),
   IPSEC_PROFILE_TRANSFORM_SET("ipsec profile set transform-set"),
+  IPV4_ACCESS_LIST_LINE_SELF_REF("ipv4 access-list line"),
   ISAKMP_POLICY_SELF_REF("isakmp policy"),
   ISAKMP_PROFILE_KEYRING("isakmp profile keyring"),
   ISAKMP_PROFILE_SELF_REF("isakmp profile"),

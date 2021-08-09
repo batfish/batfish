@@ -48,6 +48,7 @@ SLOW: 'slow';
 STATE: 'state';
 STATIC_ROUTE: 'static-route';
 SUBNET_MASK: 'subnet-mask';
+VLAN: 'vlan';
 XMIT_HASH_POLICY: 'xmit-hash-policy';
 XOR: 'xor';
 

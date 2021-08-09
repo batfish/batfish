@@ -173,6 +173,7 @@ import static org.batfish.representation.cisco.CiscoConfiguration.computeZonePai
 import static org.batfish.representation.cisco.CiscoConfiguration.eigrpNeighborExportPolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.eigrpNeighborImportPolicyName;
 import static org.batfish.representation.cisco.CiscoConversions.BGP_VRF_LEAK_IGP_WEIGHT;
+import static org.batfish.representation.cisco.CiscoConversions.aclLineStructureName;
 import static org.batfish.representation.cisco.CiscoConversions.computeVrfExportImportPolicyName;
 import static org.batfish.representation.cisco.CiscoIosDynamicNat.computeDynamicDestinationNatAclName;
 import static org.batfish.representation.cisco.CiscoStructureType.ACCESS_LIST;
@@ -184,7 +185,9 @@ import static org.batfish.representation.cisco.CiscoStructureType.INSPECT_POLICY
 import static org.batfish.representation.cisco.CiscoStructureType.INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureType.IPV4_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED;
+import static org.batfish.representation.cisco.CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED_LINE;
 import static org.batfish.representation.cisco.CiscoStructureType.IPV4_ACCESS_LIST_STANDARD;
+import static org.batfish.representation.cisco.CiscoStructureType.IPV4_ACCESS_LIST_STANDARD_LINE;
 import static org.batfish.representation.cisco.CiscoStructureType.IPV6_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.IPV6_ACCESS_LIST_EXTENDED;
 import static org.batfish.representation.cisco.CiscoStructureType.IPV6_ACCESS_LIST_STANDARD;
@@ -235,6 +238,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -254,6 +258,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -267,6 +272,7 @@ import org.batfish.common.util.IpsecUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRouteDecorator;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsSet;
@@ -286,7 +292,6 @@ import org.batfish.datamodel.EigrpExternalRoute;
 import org.batfish.datamodel.EigrpInternalRoute;
 import org.batfish.datamodel.EigrpRoute;
 import org.batfish.datamodel.EncryptionAlgorithm;
-import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo.Action;
 import org.batfish.datamodel.Flow;
@@ -352,6 +357,7 @@ import org.batfish.datamodel.eigrp.WideMetric;
 import org.batfish.datamodel.matchers.ConfigurationMatchers;
 import org.batfish.datamodel.matchers.EigrpInterfaceSettingsMatchers;
 import org.batfish.datamodel.matchers.EigrpMetricMatchers;
+import org.batfish.datamodel.matchers.ExprAclLineMatchers;
 import org.batfish.datamodel.matchers.HsrpGroupMatchers;
 import org.batfish.datamodel.matchers.IkePhase1KeyMatchers;
 import org.batfish.datamodel.matchers.IkePhase1ProposalMatchers;
@@ -418,6 +424,7 @@ import org.batfish.representation.cisco.StandardCommunityList;
 import org.batfish.representation.cisco.StandardCommunityListLine;
 import org.batfish.representation.cisco.Tunnel.TunnelMode;
 import org.batfish.representation.cisco.VrfAddressFamily;
+import org.batfish.vendor.VendorStructureId;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
@@ -835,6 +842,40 @@ public final class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosAclLineVsids() throws IOException {
+    String hostname = "ios-acl";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+
+    // standard
+    {
+      IpAccessList acl = c.getIpAccessLists().get("AL_standard");
+      AclLine line = acl.getLines().get(0);
+      assertEquals(
+          Optional.of(
+              new VendorStructureId(
+                  filename,
+                  IPV4_ACCESS_LIST_STANDARD_LINE.getDescription(),
+                  aclLineStructureName(acl.getName(), line.getName()))),
+          line.getVendorStructureId());
+    }
+
+    // extended
+    {
+      IpAccessList acl = c.getIpAccessLists().get("AL_extended");
+      AclLine line = acl.getLines().get(0);
+      assertEquals(
+          Optional.of(
+              new VendorStructureId(
+                  filename,
+                  IPV4_ACCESS_LIST_EXTENDED_LINE.getDescription(),
+                  aclLineStructureName(acl.getName(), line.getName()))),
+          line.getVendorStructureId());
+    }
+  }
+
+  @Test
   public void testIosBfdTemplate() throws IOException {
     String hostname = "ios-bfd-template";
     String filename = "configs/" + hostname;
@@ -866,15 +907,15 @@ public final class CiscoGrammarTest {
     assertThat(p, notNullValue());
     assertThat(p.getConfederation(), equalTo(new BgpConfederation(65100, ImmutableSet.of(65134L))));
     {
-      assertThat(p.getActiveNeighbors(), hasKey(Prefix.parse("192.168.123.2/32")));
-      BgpActivePeerConfig neighbor = p.getActiveNeighbors().get(Prefix.parse("192.168.123.2/32"));
+      assertThat(p.getActiveNeighbors(), hasKey(Ip.parse("192.168.123.2")));
+      BgpActivePeerConfig neighbor = p.getActiveNeighbors().get(Ip.parse("192.168.123.2"));
       assertThat(neighbor.getConfederationAsn(), equalTo(65100L));
       assertThat(neighbor.getLocalAs(), equalTo(65112L));
       assertThat(neighbor.getRemoteAsns().enumerate(), contains(65112L));
     }
     {
-      assertThat(p.getActiveNeighbors(), hasKey(Prefix.parse("192.168.123.3/32")));
-      BgpActivePeerConfig neighbor = p.getActiveNeighbors().get(Prefix.parse("192.168.123.3/32"));
+      assertThat(p.getActiveNeighbors(), hasKey(Ip.parse("192.168.123.3")));
+      BgpActivePeerConfig neighbor = p.getActiveNeighbors().get(Ip.parse("192.168.123.3"));
       assertThat(neighbor.getConfederationAsn(), equalTo(65100L));
       assertThat(neighbor.getLocalAs(), equalTo(65112L));
       assertThat(neighbor.getRemoteAsns().enumerate(), contains(65134L));
@@ -946,29 +987,29 @@ public final class CiscoGrammarTest {
 
   @Test
   public void testIosBgpEnforceAsConversion() throws IOException {
-    Prefix peer = Prefix.parse("1.2.3.4/32");
+    Ip ip = Ip.parse("1.2.3.4");
     {
       Configuration c = parseConfig("ios-bgp-enforce-first-as-disabled");
       BgpProcess p = c.getDefaultVrf().getBgpProcess();
       assertThat(p, notNullValue());
-      assertThat(p.getActiveNeighbors(), hasKeys(peer));
-      BgpActivePeerConfig n = p.getActiveNeighbors().get(peer);
+      assertThat(p.getActiveNeighbors(), hasKeys(ip));
+      BgpActivePeerConfig n = p.getActiveNeighbors().get(ip);
       assertFalse(n.getEnforceFirstAs());
     }
     {
       Configuration c = parseConfig("ios-bgp-enforce-first-as-explicit");
       BgpProcess p = c.getDefaultVrf().getBgpProcess();
       assertThat(p, notNullValue());
-      assertThat(p.getActiveNeighbors(), hasKeys(peer));
-      BgpActivePeerConfig n = p.getActiveNeighbors().get(peer);
+      assertThat(p.getActiveNeighbors(), hasKeys(ip));
+      BgpActivePeerConfig n = p.getActiveNeighbors().get(ip);
       assertTrue(n.getEnforceFirstAs());
     }
     {
       Configuration c = parseConfig("ios-bgp-enforce-first-as-default");
       BgpProcess p = c.getDefaultVrf().getBgpProcess();
       assertThat(p, notNullValue());
-      assertThat(p.getActiveNeighbors(), hasKeys(peer));
-      BgpActivePeerConfig n = p.getActiveNeighbors().get(peer);
+      assertThat(p.getActiveNeighbors(), hasKeys(ip));
+      BgpActivePeerConfig n = p.getActiveNeighbors().get(ip);
       assertTrue(n.getEnforceFirstAs());
     }
   }
@@ -1034,9 +1075,9 @@ public final class CiscoGrammarTest {
             _folder);
 
     // Confirm that BGP peer on r1 is missing its local IP, as expected
-    Prefix r1NeighborPeerAddress = Prefix.parse("2.2.2.2/32");
+    Ip r1NeighborPeerAddress = Ip.parse("2.2.2.2");
     Configuration r1 = batfish.loadConfigurations(batfish.getSnapshot()).get("r1");
-    SortedMap<Prefix, BgpActivePeerConfig> r1Peers =
+    SortedMap<Ip, BgpActivePeerConfig> r1Peers =
         r1.getVrfs().get(DEFAULT_VRF_NAME).getBgpProcess().getActiveNeighbors();
     assertTrue(r1Peers.containsKey(r1NeighborPeerAddress));
     assertThat(r1Peers.get(r1NeighborPeerAddress).getLocalIp(), nullValue());
@@ -3677,7 +3718,7 @@ public final class CiscoGrammarTest {
               .get(DEFAULT_VRF_NAME)
               .getBgpProcess()
               .getActiveNeighbors()
-              .get(Prefix.parse("2.2.2.3/32"))
+              .get(Ip.parse("2.2.2.3"))
               .getLocalAs(),
           equalTo(4123456789L));
     }
@@ -3972,26 +4013,25 @@ public final class CiscoGrammarTest {
   public void testCryptoMapsAndTunnelsToIpsecPeerConfigs() throws IOException {
     Configuration c = parseConfig("ios-crypto-map");
 
-    List<ExprAclLine> expectedAclLines =
-        ImmutableList.of(
-            ExprAclLine.accepting()
-                .setName("permit ip 1.1.1.1 0.0.0.0 2.2.2.2 0.0.0.0")
-                .setMatchCondition(
-                    new MatchHeaderSpace(
-                        HeaderSpace.builder()
-                            .setSrcIps(IpWildcard.parse("1.1.1.1").toIpSpace())
-                            .setDstIps(IpWildcard.parse("2.2.2.2").toIpSpace())
-                            .build()))
-                .build(),
-            ExprAclLine.accepting()
-                .setMatchCondition(
-                    new MatchHeaderSpace(
-                        HeaderSpace.builder()
-                            .setSrcIps(IpWildcard.parse("2.2.2.2").toIpSpace())
-                            .setDstIps(IpWildcard.parse("1.1.1.1").toIpSpace())
-                            .build()))
-                .build());
-
+    Matcher<IpAccessList> policyAclMatcher =
+        hasLines(
+            contains(
+                isExprAclLineThat(
+                    allOf(
+                        ExprAclLineMatchers.hasName("permit ip 1.1.1.1 0.0.0.0 2.2.2.2 0.0.0.0"),
+                        hasMatchCondition(
+                            new MatchHeaderSpace(
+                                HeaderSpace.builder()
+                                    .setSrcIps(IpWildcard.parse("1.1.1.1").toIpSpace())
+                                    .setDstIps(IpWildcard.parse("2.2.2.2").toIpSpace())
+                                    .build())))),
+                isExprAclLineThat(
+                    hasMatchCondition(
+                        new MatchHeaderSpace(
+                            HeaderSpace.builder()
+                                .setSrcIps(IpWildcard.parse("2.2.2.2").toIpSpace())
+                                .setDstIps(IpWildcard.parse("1.1.1.1").toIpSpace())
+                                .build())))));
     assertThat(
         c,
         hasIpsecPeerConfig(
@@ -4002,7 +4042,7 @@ public final class CiscoGrammarTest {
                     IpsecPeerConfigMatchers.hasIkePhase1Policy("ISAKMP-PROFILE-MATCHED"),
                     IpsecPeerConfigMatchers.hasIpsecPolicy("~IPSEC_PHASE2_POLICY:mymap:20~"),
                     hasSourceInterface("TenGigabitEthernet0/0"),
-                    hasPolicyAccessList(hasLines(equalTo(expectedAclLines))),
+                    hasPolicyAccessList(policyAclMatcher),
                     hasLocalAddress(Ip.parse("2.3.4.6"))))));
     assertThat(
         c,
@@ -4014,7 +4054,7 @@ public final class CiscoGrammarTest {
                     IpsecPeerConfigMatchers.hasIkePhase1Policy("ISAKMP-PROFILE"),
                     IpsecPeerConfigMatchers.hasIpsecPolicy("~IPSEC_PHASE2_POLICY:mymap:10~"),
                     hasSourceInterface("TenGigabitEthernet0/0"),
-                    hasPolicyAccessList(hasLines(equalTo(expectedAclLines))),
+                    hasPolicyAccessList(policyAclMatcher),
                     hasLocalAddress(Ip.parse("2.3.4.6"))))));
 
     assertThat(
@@ -4027,7 +4067,7 @@ public final class CiscoGrammarTest {
                         equalTo(ImmutableList.of("ISAKMP-PROFILE", "ISAKMP-PROFILE-MATCHED"))),
                     IpsecPeerConfigMatchers.hasIpsecPolicy("~IPSEC_PHASE2_POLICY:mymap:30:15~"),
                     hasSourceInterface("TenGigabitEthernet0/0"),
-                    hasPolicyAccessList(hasLines(equalTo(expectedAclLines))),
+                    hasPolicyAccessList(policyAclMatcher),
                     hasLocalAddress(Ip.parse("2.3.4.6")),
                     hasTunnelInterface(nullValue())))));
 
@@ -4041,7 +4081,7 @@ public final class CiscoGrammarTest {
                         equalTo(ImmutableList.of("ISAKMP-PROFILE", "ISAKMP-PROFILE-MATCHED"))),
                     IpsecPeerConfigMatchers.hasIpsecPolicy("~IPSEC_PHASE2_POLICY:mymap:30:5~"),
                     hasSourceInterface("TenGigabitEthernet0/0"),
-                    hasPolicyAccessList(hasLines(equalTo(expectedAclLines))),
+                    hasPolicyAccessList(policyAclMatcher),
                     hasLocalAddress(Ip.parse("2.3.4.6")),
                     hasTunnelInterface(nullValue())))));
 
@@ -5497,7 +5537,7 @@ public final class CiscoGrammarTest {
             .getDefaultVrf()
             .getBgpProcess()
             .getActiveNeighbors()
-            .get(Prefix.parse("1.1.1.1/32"))
+            .get(Ip.parse("1.1.1.1"))
             .getIpv4UnicastAddressFamily()
             .getAddressFamilyCapabilities()
             .getAdvertiseInactive());
@@ -5561,13 +5601,9 @@ public final class CiscoGrammarTest {
   public void testRenterBgpStanza() throws IOException {
     Configuration c = parseConfig("ios-bgp-reenter-process");
     assertThat(
-        c,
-        hasDefaultVrf(
-            hasBgpProcess(hasActiveNeighbor(Prefix.parse("2.2.2.3/32"), hasRemoteAs(3L)))));
+        c, hasDefaultVrf(hasBgpProcess(hasActiveNeighbor(Ip.parse("2.2.2.3"), hasRemoteAs(3L)))));
     assertThat(
-        c,
-        hasDefaultVrf(
-            hasBgpProcess(hasActiveNeighbor(Prefix.parse("2.2.2.4/32"), hasRemoteAs(4L)))));
+        c, hasDefaultVrf(hasBgpProcess(hasActiveNeighbor(Ip.parse("2.2.2.4"), hasRemoteAs(4L)))));
   }
 
   @Test

@@ -328,7 +328,7 @@ public class CumulusConcatenatedGrammarTest {
     BgpProcess bgpProcess = c.getDefaultVrf().getBgpProcess();
     assertThat(
         bgpProcess.getConfederation(), equalTo(new BgpConfederation(12, ImmutableSet.of(65000L))));
-    BgpActivePeerConfig neighbor = bgpProcess.getActiveNeighbors().get(Prefix.parse("1.1.1.1/32"));
+    BgpActivePeerConfig neighbor = bgpProcess.getActiveNeighbors().get(Ip.parse("1.1.1.1"));
     assertThat(neighbor.getConfederationAsn(), equalTo(12L));
     assertThat(neighbor.getLocalAs(), equalTo(65000L));
   }
@@ -784,7 +784,7 @@ public class CumulusConcatenatedGrammarTest {
             .getVrf()
             .getBgpProcess()
             .getActiveNeighbors()
-            .get(Ip.parse("10.20.40.0").toPrefix())
+            .get(Ip.parse("10.20.40.0"))
             .getIpv4UnicastAddressFamily()
             .getExportPolicySources(),
         hasSize(1));
@@ -794,7 +794,7 @@ public class CumulusConcatenatedGrammarTest {
             .getVrf()
             .getBgpProcess()
             .getActiveNeighbors()
-            .get(Ip.parse("10.20.50.0").toPrefix())
+            .get(Ip.parse("10.20.50.0"))
             .getIpv4UnicastAddressFamily()
             .getExportPolicySources(),
         hasSize(1));
@@ -804,7 +804,7 @@ public class CumulusConcatenatedGrammarTest {
             .getVrf()
             .getBgpProcess()
             .getActiveNeighbors()
-            .get(Ip.parse("10.20.60.0").toPrefix())
+            .get(Ip.parse("10.20.60.0"))
             .getIpv4UnicastAddressFamily()
             .getExportPolicySources(),
         hasSize(1));
@@ -814,7 +814,7 @@ public class CumulusConcatenatedGrammarTest {
             .getVrf()
             .getBgpProcess()
             .getActiveNeighbors()
-            .get(Ip.parse("10.20.70.0").toPrefix())
+            .get(Ip.parse("10.20.70.0"))
             .getIpv4UnicastAddressFamily()
             .getExportPolicySources(),
         hasSize(1));
@@ -829,7 +829,7 @@ public class CumulusConcatenatedGrammarTest {
             .getVrf()
             .getBgpProcess()
             .getActiveNeighbors()
-            .get(Ip.parse("10.20.50.0").toPrefix())
+            .get(Ip.parse("10.20.50.0"))
             .getIpv4UnicastAddressFamily()
             .getExportPolicySources(),
         hasSize(1));
@@ -839,7 +839,7 @@ public class CumulusConcatenatedGrammarTest {
             .getVrf()
             .getBgpProcess()
             .getActiveNeighbors()
-            .get(Ip.parse("10.20.60.0").toPrefix())
+            .get(Ip.parse("10.20.60.0"))
             .getIpv4UnicastAddressFamily()
             .getExportPolicySources(),
         hasSize(1));
@@ -856,11 +856,7 @@ public class CumulusConcatenatedGrammarTest {
     Configuration c = parseConfig("local_as_test");
     org.batfish.datamodel.Vrf defaultVrf = c.getDefaultVrf();
     Long neighbor_ip_local_as =
-        defaultVrf
-            .getBgpProcess()
-            .getActiveNeighbors()
-            .get(Prefix.parse("2.2.2.2/32"))
-            .getLocalAs();
+        defaultVrf.getBgpProcess().getActiveNeighbors().get(Ip.parse("2.2.2.2")).getLocalAs();
     assertThat(neighbor_ip_local_as, equalTo(10L));
     Long neighbor_iface_local_as =
         defaultVrf.getBgpProcess().getInterfaceNeighbors().get("bond2").getLocalAs();
