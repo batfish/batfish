@@ -13,6 +13,7 @@ import static org.batfish.datamodel.InterfaceType.AGGREGATED;
 import static org.batfish.datamodel.InterfaceType.PHYSICAL;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRedFlagWarning;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasChannelGroup;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasChannelGroupMembers;
@@ -532,42 +533,58 @@ public class CheckPointGatewayGrammarTest {
   public void testBondInterfaceConversion() {
     String hostname = "bond_interface_conversion";
     Configuration c = parseConfig(hostname);
-    assertThat(c, notNullValue());
-    assertThat(c.getAllInterfaces(), hasKeys("bond0", "bond1", "eth0", "eth1"));
 
     String bond0Name = "bond0";
     String bond1Name = "bond1";
     String eth0Name = "eth0";
     String eth1Name = "eth1";
-
-    assertThat(c, hasInterface(bond0Name, isActive(true)));
-    assertThat(c, hasInterface(bond0Name, hasInterfaceType(AGGREGATED)));
-    assertThat(
-        c,
-        hasInterface(
-            bond0Name,
-            hasDependencies(
-                containsInAnyOrder(
-                    new Dependency(eth0Name, AGGREGATE), new Dependency(eth1Name, AGGREGATE)))));
-    assertThat(
-        c, hasInterface(bond0Name, hasChannelGroupMembers(containsInAnyOrder(eth0Name, eth1Name))));
-    assertThat(c, hasInterface(bond0Name, hasChannelGroup(nullValue())));
-    assertThat(c, hasInterface(bond0Name, hasMtu(1234)));
-
-    assertThat(c, hasInterface(bond1Name, isActive(false)));
-    assertThat(c, hasInterface(bond1Name, hasInterfaceType(AGGREGATED)));
-    assertThat(c, hasInterface(bond1Name, hasDependencies(emptyIterable())));
-    assertThat(c, hasInterface(bond1Name, hasChannelGroupMembers(emptyIterable())));
-    assertThat(c, hasInterface(bond1Name, hasChannelGroup(nullValue())));
-
-    assertThat(c, hasInterface(eth0Name, isActive(true)));
-    assertThat(c, hasInterface(eth0Name, hasInterfaceType(PHYSICAL)));
-    assertThat(c, hasInterface(eth0Name, hasChannelGroup(equalTo("0"))));
-    assertThat(c, hasInterface(eth0Name, hasMtu(1234)));
-
-    assertThat(c, hasInterface(eth1Name, isActive(true)));
-    assertThat(c, hasInterface(eth1Name, hasInterfaceType(PHYSICAL)));
-    assertThat(c, hasInterface(eth1Name, hasChannelGroup(equalTo("0"))));
+    String eth2Name = "eth2";
+    assertThat(c.getAllInterfaces(), hasKeys(bond0Name, bond1Name, eth0Name, eth1Name, eth2Name));
+    {
+      org.batfish.datamodel.Interface bond0 = c.getAllInterfaces().get(bond0Name);
+      assertThat(bond0, isActive(true));
+      assertThat(bond0, hasInterfaceType(AGGREGATED));
+      assertThat(
+          bond0,
+          hasDependencies(
+              containsInAnyOrder(
+                  new Dependency(eth0Name, AGGREGATE), new Dependency(eth1Name, AGGREGATE))));
+      assertThat(bond0, hasChannelGroupMembers(containsInAnyOrder(eth0Name, eth1Name)));
+      assertThat(bond0, hasChannelGroup(nullValue()));
+      assertThat(bond0, hasMtu(1234));
+      assertThat(bond0, hasBandwidth(2E9));
+    }
+    {
+      org.batfish.datamodel.Interface bond1 = c.getAllInterfaces().get(bond1Name);
+      assertThat(bond1, isActive(false));
+      assertThat(bond1, hasInterfaceType(AGGREGATED));
+      assertThat(bond1, hasDependencies(emptyIterable()));
+      assertThat(bond1, hasChannelGroupMembers(emptyIterable()));
+      assertThat(bond1, hasChannelGroup(nullValue()));
+      assertThat(bond1, hasBandwidth(0D));
+    }
+    {
+      org.batfish.datamodel.Interface eth0 = c.getAllInterfaces().get(eth0Name);
+      assertThat(eth0, isActive(true));
+      assertThat(eth0, hasInterfaceType(PHYSICAL));
+      assertThat(eth0, hasChannelGroup(equalTo("0")));
+      assertThat(eth0, hasMtu(1234));
+      assertThat(eth0, hasBandwidth(1E9));
+    }
+    {
+      org.batfish.datamodel.Interface eth1 = c.getAllInterfaces().get(eth1Name);
+      assertThat(eth1, isActive(true));
+      assertThat(eth1, hasInterfaceType(PHYSICAL));
+      assertThat(eth1, hasChannelGroup(equalTo("0")));
+      assertThat(eth1, hasBandwidth(1E9));
+    }
+    {
+      org.batfish.datamodel.Interface eth2 = c.getAllInterfaces().get(eth2Name);
+      assertThat(eth2, isActive(true));
+      assertThat(eth2, hasInterfaceType(PHYSICAL));
+      assertThat(eth2, hasChannelGroup(nullValue()));
+      assertThat(eth2, hasBandwidth(1E7));
+    }
   }
 
   @Test

@@ -13,6 +13,8 @@ add bonding group 1
 #
 set interface eth0 state on
 set interface eth1 state on
+set interface eth2 state on
+set interface eth2 link-speed 10M/half
 set interface bond0 ipv4-address 10.10.10.10 mask-length 24
 set interface bond0 mtu 1234
 set interface bond1 state off

@@ -47,6 +47,28 @@ public class Interface implements Serializable {
     return _linkSpeed;
   }
 
+  /**
+   * Returns effective link speed in bits per second, or null if not applicable (e.g., this is an
+   * aggregated or logical interface)
+   */
+  public @Nullable Double getLinkSpeedEffective() {
+    if (_linkSpeed == null) {
+      return getDefaultSpeed(_name);
+    }
+    switch (_linkSpeed) {
+      case TEN_M_FULL:
+      case TEN_M_HALF:
+        return 1E7;
+      case HUNDRED_M_FULL:
+      case HUNDRED_M_HALF:
+        return 1E8;
+      case THOUSAND_M_FULL:
+        return 1E9;
+      default:
+        throw new IllegalStateException("Unsupported link speed " + _linkSpeed);
+    }
+  }
+
   @Nullable
   public Integer getMtu() {
     return _mtu;
@@ -105,6 +127,14 @@ public class Interface implements Serializable {
 
   public void setVlanId(@Nullable Integer vlanId) {
     _vlanId = vlanId;
+  }
+
+  /** Default link speed in bits per second for an interface with the given name */
+  public static @Nullable Double getDefaultSpeed(String name) {
+    if (name.startsWith("eth")) {
+      return 1E9;
+    }
+    return null;
   }
 
   @Nullable private ConcreteInterfaceAddress _address;

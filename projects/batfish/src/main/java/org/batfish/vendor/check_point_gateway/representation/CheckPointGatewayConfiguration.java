@@ -191,6 +191,11 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
           .setMtu(iface.getMtuEffective());
     }
 
+    Double speed = iface.getLinkSpeedEffective();
+    if (speed != null) {
+      newIface.setSpeed(speed);
+      newIface.setBandwidth(speed);
+    }
     if (iface.getVlanId() != null) {
       newIface.setEncapsulationVlan(iface.getVlanId());
     }
