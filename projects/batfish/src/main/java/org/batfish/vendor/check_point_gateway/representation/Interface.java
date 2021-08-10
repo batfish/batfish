@@ -1,7 +1,5 @@
 package org.batfish.vendor.check_point_gateway.representation;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
-
 import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -76,7 +74,7 @@ public class Interface implements Serializable {
 
   /** Returns the effective MTU for this interface, even if not explicitly configured. */
   public int getMtuEffective() {
-    return firstNonNull(_mtu, DEFAULT_INTERFACE_MTU);
+    return _mtu != null ? _mtu : getDefaultMtu(_name);
   }
 
   @Nonnull
@@ -127,6 +125,14 @@ public class Interface implements Serializable {
 
   public void setVlanId(@Nullable Integer vlanId) {
     _vlanId = vlanId;
+  }
+
+  /** Default MTU for an interface with the given name */
+  public static int getDefaultMtu(String name) {
+    if (name.startsWith("lo")) {
+      return 65536;
+    }
+    return DEFAULT_INTERFACE_MTU;
   }
 
   /** Default link speed in bits per second for an interface with the given name */
