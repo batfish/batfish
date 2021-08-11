@@ -1,2 +1,0 @@
-init-snapshot networks/fattree/fattree2
-test concrete get smt-reachability finalIfaceRegex="Ethernet.*", stats=True
