@@ -25,6 +25,9 @@ import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
+import static org.batfish.vendor.check_point_gateway.representation.Interface.DEFAULT_ETH_SPEED;
+import static org.batfish.vendor.check_point_gateway.representation.Interface.DEFAULT_INTERFACE_MTU;
+import static org.batfish.vendor.check_point_gateway.representation.Interface.DEFAULT_LOOPBACK_MTU;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.contains;
@@ -237,23 +240,37 @@ public class CheckPointGatewayGrammarTest {
     String hostname = "interface_conversion";
     Configuration c = parseConfig(hostname);
     assertThat(c, notNullValue());
-    assertThat(c.getAllInterfaces(), hasKeys("eth0", "eth1", "lo"));
+    assertThat(c.getAllInterfaces(), hasKeys("eth0", "eth1", "eth2", "eth3", "eth4", "eth5", "lo"));
 
     org.batfish.datamodel.Interface eth0 = c.getAllInterfaces().get("eth0");
     org.batfish.datamodel.Interface eth1 = c.getAllInterfaces().get("eth1");
+    org.batfish.datamodel.Interface eth2 = c.getAllInterfaces().get("eth2");
+    org.batfish.datamodel.Interface eth3 = c.getAllInterfaces().get("eth3");
+    org.batfish.datamodel.Interface eth4 = c.getAllInterfaces().get("eth4");
+    org.batfish.datamodel.Interface eth5 = c.getAllInterfaces().get("eth5");
     org.batfish.datamodel.Interface lo = c.getAllInterfaces().get("lo");
 
     assertTrue(eth0.getActive());
     assertThat(eth0.getAddress(), equalTo(ConcreteInterfaceAddress.parse("192.168.1.1/24")));
     assertThat(eth0.getMtu(), equalTo(1234));
     assertThat(eth0.getInterfaceType(), equalTo(InterfaceType.PHYSICAL));
+    assertThat(eth0.getBandwidth(), equalTo(1000e6));
 
     assertFalse(eth1.getActive());
     assertNull(eth1.getAddress());
     assertThat(eth1.getInterfaceType(), equalTo(InterfaceType.PHYSICAL));
+    assertThat(eth1.getMtu(), equalTo(DEFAULT_INTERFACE_MTU));
+    assertThat(eth1.getBandwidth(), equalTo(DEFAULT_ETH_SPEED));
+
+    assertThat(eth2.getBandwidth(), equalTo(100e6));
+    assertThat(eth3.getBandwidth(), equalTo(100e6));
+    assertThat(eth4.getBandwidth(), equalTo(10e6));
+    assertThat(eth5.getBandwidth(), equalTo(10e6));
 
     assertThat(lo.getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.10.10.10/32")));
     assertThat(lo.getInterfaceType(), equalTo(InterfaceType.LOOPBACK));
+    assertThat(lo.getMtu(), equalTo(DEFAULT_LOOPBACK_MTU));
+    assertNull(lo.getBandwidth());
   }
 
   @Test
@@ -538,8 +555,7 @@ public class CheckPointGatewayGrammarTest {
     String bond1Name = "bond1";
     String eth0Name = "eth0";
     String eth1Name = "eth1";
-    String eth2Name = "eth2";
-    assertThat(c.getAllInterfaces(), hasKeys(bond0Name, bond1Name, eth0Name, eth1Name, eth2Name));
+    assertThat(c.getAllInterfaces(), hasKeys(bond0Name, bond1Name, eth0Name, eth1Name));
     {
       org.batfish.datamodel.Interface bond0 = c.getAllInterfaces().get(bond0Name);
       assertThat(bond0, isActive(true));
@@ -577,13 +593,6 @@ public class CheckPointGatewayGrammarTest {
       assertThat(eth1, hasInterfaceType(PHYSICAL));
       assertThat(eth1, hasChannelGroup(equalTo("0")));
       assertThat(eth1, hasBandwidth(1E9));
-    }
-    {
-      org.batfish.datamodel.Interface eth2 = c.getAllInterfaces().get(eth2Name);
-      assertThat(eth2, isActive(true));
-      assertThat(eth2, hasInterfaceType(PHYSICAL));
-      assertThat(eth2, hasChannelGroup(nullValue()));
-      assertThat(eth2, hasBandwidth(1E7));
     }
   }
 
@@ -623,6 +632,7 @@ public class CheckPointGatewayGrammarTest {
             "bond3",
             "eth0",
             "eth1",
+            "eth2",
             "eth10",
             "eth11",
             "eth12",
@@ -677,6 +687,7 @@ public class CheckPointGatewayGrammarTest {
             "bond3",
             "eth0",
             "eth1",
+            "eth2",
             "eth10",
             "eth11",
             "eth12",
@@ -691,6 +702,8 @@ public class CheckPointGatewayGrammarTest {
       assertThat(iface.getAddress(), equalTo(ConcreteInterfaceAddress.parse("2.2.2.1/24")));
       assertThat(iface.getEncapsulationVlan(), equalTo(2));
       assertThat(iface.getInterfaceType(), equalTo(InterfaceType.AGGREGATE_CHILD));
+      // Parent bond group contains two physical interfaces
+      assertThat(iface.getBandwidth(), equalTo(2 * DEFAULT_ETH_SPEED));
     }
     {
       // bond3.3 is on, but bond3 is off
@@ -698,6 +711,8 @@ public class CheckPointGatewayGrammarTest {
       assertFalse(iface.getActive());
       assertThat(iface.getEncapsulationVlan(), equalTo(3));
       assertThat(iface.getInterfaceType(), equalTo(InterfaceType.AGGREGATE_CHILD));
+      // Parent bond group contains one physical interface
+      assertThat(iface.getBandwidth(), equalTo(DEFAULT_ETH_SPEED));
     }
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("eth10.4092");
@@ -705,6 +720,8 @@ public class CheckPointGatewayGrammarTest {
       assertThat(iface.getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.10.10.1/24")));
       assertThat(iface.getEncapsulationVlan(), equalTo(4092));
       assertThat(iface.getInterfaceType(), equalTo(InterfaceType.LOGICAL));
+      // Parent interface has configured speed 10Mbps
+      assertThat(iface.getBandwidth(), equalTo(10e6));
     }
     {
       // eth11.4093 is on, but eth11 is off
@@ -713,6 +730,8 @@ public class CheckPointGatewayGrammarTest {
       assertThat(iface.getAddress(), equalTo(ConcreteInterfaceAddress.parse("11.11.11.1/24")));
       assertThat(iface.getEncapsulationVlan(), equalTo(4093));
       assertThat(iface.getInterfaceType(), equalTo(InterfaceType.LOGICAL));
+      // Parent interface has no configured speed
+      assertThat(iface.getBandwidth(), equalTo(DEFAULT_ETH_SPEED));
     }
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("eth12.4094");

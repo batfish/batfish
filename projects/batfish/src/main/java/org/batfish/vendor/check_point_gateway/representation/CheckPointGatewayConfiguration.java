@@ -200,7 +200,14 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
       newIface.setEncapsulationVlan(iface.getVlanId());
     }
     if (iface.getParentInterface() != null) {
-      assert _interfaces.containsKey(iface.getParentInterface());
+      Interface parent = _interfaces.get(iface.getParentInterface());
+      assert parent != null;
+      Double parentSpeed = parent.getLinkSpeedEffective();
+      if (parentSpeed != null) {
+        // Don't worry about overwriting because speed can't be configured on vlan interfaces
+        newIface.setSpeed(parentSpeed);
+        newIface.setBandwidth(parentSpeed);
+      }
       newIface.setDependencies(
           ImmutableList.of(new Dependency(iface.getParentInterface(), DependencyType.BIND)));
     }

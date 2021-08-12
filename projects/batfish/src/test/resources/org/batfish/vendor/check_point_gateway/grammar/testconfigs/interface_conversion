@@ -9,7 +9,16 @@ set hostname interface_conversion
 set interface eth0 state on
 set interface eth0 ipv4-address 192.168.1.1 mask-length 24
 set interface eth0 mtu 1234
+set interface eth0 link-speed 1000M/full
 #
 set interface eth1 state off
+#
+set interface eth2 link-speed 100M/full
+#
+set interface eth3 link-speed 100M/half
+#
+set interface eth4 link-speed 10M/half
+#
+set interface eth5 link-speed 10M/full
 #
 set interface lo ipv4-address 10.10.10.10 mask-length 32

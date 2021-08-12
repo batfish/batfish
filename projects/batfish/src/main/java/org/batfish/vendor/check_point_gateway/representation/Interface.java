@@ -15,7 +15,9 @@ public class Interface implements Serializable {
     THOUSAND_M_FULL,
   }
 
+  public static final double DEFAULT_ETH_SPEED = 1E9;
   public static final int DEFAULT_INTERFACE_MTU = 1500;
+  public static final int DEFAULT_LOOPBACK_MTU = 65536;
 
   public Interface(String name) {
     _state = true;
@@ -56,12 +58,12 @@ public class Interface implements Serializable {
     switch (_linkSpeed) {
       case TEN_M_FULL:
       case TEN_M_HALF:
-        return 1E7;
+        return 10E6;
       case HUNDRED_M_FULL:
       case HUNDRED_M_HALF:
-        return 1E8;
+        return 100E6;
       case THOUSAND_M_FULL:
-        return 1E9;
+        return 1000E6;
       default:
         throw new IllegalStateException("Unsupported link speed " + _linkSpeed);
     }
@@ -130,15 +132,15 @@ public class Interface implements Serializable {
   /** Default MTU for an interface with the given name */
   public static int getDefaultMtu(String name) {
     if (name.startsWith("lo")) {
-      return 65536;
+      return DEFAULT_LOOPBACK_MTU;
     }
     return DEFAULT_INTERFACE_MTU;
   }
 
   /** Default link speed in bits per second for an interface with the given name */
   public static @Nullable Double getDefaultSpeed(String name) {
-    if (name.startsWith("eth")) {
-      return 1E9;
+    if (name.startsWith("eth") && !name.contains(".")) {
+      return DEFAULT_ETH_SPEED;
     }
     return null;
   }
