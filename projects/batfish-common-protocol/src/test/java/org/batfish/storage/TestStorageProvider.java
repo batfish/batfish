@@ -132,27 +132,30 @@ public class TestStorageProvider implements StorageProvider {
   }
 
   @Override
-  public void storeAnswer(String answerStr, AnswerId answerId) {
+  public void storeAnswer(
+      NetworkId network, SnapshotId snapshot, String answerStr, AnswerId answerId) {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
-  public void storeAnswerMetadata(AnswerMetadata answerMetadata, AnswerId answerId) {
+  public void storeAnswerMetadata(
+      NetworkId network, SnapshotId snapshot, AnswerMetadata answerMetadata, AnswerId answerId) {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
-  public String loadAnswer(AnswerId answerId) {
+  public String loadAnswer(NetworkId network, SnapshotId snapshot, AnswerId answerId) {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
-  public AnswerMetadata loadAnswerMetadata(AnswerId answerId) {
+  public AnswerMetadata loadAnswerMetadata(
+      NetworkId network, SnapshotId snapshot, AnswerId answerId) {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
-  public boolean hasAnswerMetadata(AnswerId answerId) {
+  public boolean hasAnswerMetadata(NetworkId network, SnapshotId snapshot, AnswerId answerId) {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
@@ -190,17 +193,18 @@ public class TestStorageProvider implements StorageProvider {
   }
 
   @Override
-  public void storeNodeRoles(NodeRolesData nodeRolesData, NodeRolesId nodeRolesId) {
+  public void storeNodeRoles(
+      NetworkId network, NodeRolesData nodeRolesData, NodeRolesId nodeRolesId) {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
-  public String loadNodeRoles(NodeRolesId nodeRolesId) {
+  public String loadNodeRoles(NetworkId network, NodeRolesId nodeRolesId) {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
-  public boolean hasNodeRoles(NodeRolesId nodeRolesId) {
+  public boolean hasNodeRoles(NetworkId network, NodeRolesId nodeRolesId) {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
@@ -208,7 +212,7 @@ public class TestStorageProvider implements StorageProvider {
   public void initNetwork(NetworkId networkId) {}
 
   @Override
-  public void deleteAnswerMetadata(AnswerId answerId) {
+  public void deleteAnswerMetadata(NetworkId networkId, SnapshotId snapshotId, AnswerId answerId) {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
