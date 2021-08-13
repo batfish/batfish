@@ -139,6 +139,8 @@ public class Interface implements Serializable {
 
   /** Default link speed in bits per second for an interface with the given name */
   public static @Nullable Double getDefaultSpeed(String name) {
+    // Use default ethernet speed for physical interfaces.
+    // Exclude subinterfaces (their speed should equal their parent's speed).
     if (name.startsWith("eth") && !name.contains(".")) {
       return DEFAULT_ETH_SPEED;
     }

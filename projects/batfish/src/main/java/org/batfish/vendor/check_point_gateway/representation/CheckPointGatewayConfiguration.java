@@ -201,10 +201,13 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     }
     if (iface.getParentInterface() != null) {
       Interface parent = _interfaces.get(iface.getParentInterface());
+      // This is a subinterface. Its speed can't be set explicitly.
+      // If its parent is physical, this interface should inherit the parent's speed/bw now.
+      // If its parent is a bond interface, then this interface's bandwidth will be set after
+      // the parent's bandwidth is calculated post-conversion.
       assert parent != null;
       Double parentSpeed = parent.getLinkSpeedEffective();
       if (parentSpeed != null) {
-        // Don't worry about overwriting because speed can't be configured on vlan interfaces
         newIface.setSpeed(parentSpeed);
         newIface.setBandwidth(parentSpeed);
       }
