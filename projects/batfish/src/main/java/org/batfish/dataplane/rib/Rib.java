@@ -78,7 +78,7 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
 
     private @Nonnull RibDelta<AnnotatedRoute<AbstractRoute>> mergeRouteGetDelta(
         AnnotatedRoute<AbstractRoute> route) {
-      if (isRecursiveNextHopIpRoute(route)) {
+      if (isNextHopIpRoute(route)) {
         Ip nextHopIp = route.getAbstractRoute().getNextHopIp();
         _routesByNextHopIp.put(nextHopIp, route);
         _ribResolutionTrie.addNextHopIp(nextHopIp);
@@ -89,7 +89,7 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
     private @Nonnull RibDelta<AnnotatedRoute<AbstractRoute>> removeRouteGetDelta(
         AnnotatedRoute<AbstractRoute> route) {
       _resolutionRestrictionCache.remove(route);
-      if (isRecursiveNextHopIpRoute(route)) {
+      if (isNextHopIpRoute(route)) {
         Ip nextHopIp = route.getAbstractRoute().getNextHopIp();
         if (_routesByNextHopIp.remove(nextHopIp, route)
             && _routesByNextHopIp.get(nextHopIp).isEmpty()) {
@@ -214,10 +214,13 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
       RibDelta<AnnotatedRoute<AbstractRoute>> delta;
       boolean isNextHopIpRoute = isNextHopIpRoute(affectedRoute);
       if (isNextHopIpRoute) {
-        if (!_routesByNextHopIp
-            .get(affectedRoute.getRoute().getNextHopIp())
-            .contains(affectedRoute)) {
-          // This route was explicitly removed and should not be re-evaluated.
+        if (!_routesByNextHopIp.get(affectedRoute.getRoute().getNextHopIp()).contains(affectedRoute)
+            || (_backupRoutes.containsEntry(affectedRoute.getNetwork(), affectedRoute)
+                && !extractRoutes(affectedRoute.getNetwork()).contains(affectedRoute))) {
+          // This route was either explicitly removed by a client merge or remove call, or it became
+          // a backup route. Such a route cannot be re-activated, so there are no further side
+          // effects to process.
+          assert !_resolutionGraph.containsVertex(affectedRoute);
           return RibDelta.empty();
         }
         Set<AnnotatedRoute<AbstractRoute>> initialLpm = lpmIfValid(affectedRoute);
