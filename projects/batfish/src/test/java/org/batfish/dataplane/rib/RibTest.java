@@ -689,29 +689,16 @@ public class RibTest {
                 .setRecursive(true)
                 .build());
 
-    // non-recursive route cannot be activated without connected route
-    assertThat(rib.mergeRouteGetDelta(nonrecursiveRoute), equalTo(RibDelta.empty()));
-    // Adding connected route activates nonrecursive route
-    assertThat(
-        rib.mergeRouteGetDelta(activatingRoute)
-            .getActions()
-            .collect(ImmutableList.toImmutableList()),
-        containsInAnyOrder(
-            RouteAdvertisement.adding(activatingRoute),
-            RouteAdvertisement.adding(nonrecursiveRoute)));
-    // Recursive route resolves via nonrecursive route
-    assertThat(
-        rib.mergeRouteGetDelta(recursiveRoute),
-        equalTo(RibDelta.of(RouteAdvertisement.adding(recursiveRoute))));
+    rib.mergeRoute(activatingRoute);
+    rib.mergeRoute(nonrecursiveRoute);
+    rib.mergeRoute(recursiveRoute);
 
-    // Removing connected route deactivates nonrecursive route, which should then deactivate
-    // recursive route.
+    // Removing nonrecursive route deactivates recursive route.
     assertThat(
-        rib.removeRouteGetDelta(activatingRoute)
+        rib.removeRouteGetDelta(nonrecursiveRoute)
             .getActions()
             .collect(ImmutableList.toImmutableList()),
         containsInAnyOrder(
-            RouteAdvertisement.withdrawing(activatingRoute),
             RouteAdvertisement.withdrawing(nonrecursiveRoute),
             RouteAdvertisement.withdrawing(recursiveRoute)));
   }

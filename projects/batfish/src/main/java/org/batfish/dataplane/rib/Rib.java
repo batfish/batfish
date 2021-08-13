@@ -78,7 +78,7 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
 
     private @Nonnull RibDelta<AnnotatedRoute<AbstractRoute>> mergeRouteGetDelta(
         AnnotatedRoute<AbstractRoute> route) {
-      if (isNextHopIpRoute(route)) {
+      if (isRecursiveNextHopIpRoute(route)) {
         Ip nextHopIp = route.getAbstractRoute().getNextHopIp();
         _routesByNextHopIp.put(nextHopIp, route);
         _ribResolutionTrie.addNextHopIp(nextHopIp);
@@ -89,7 +89,7 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
     private @Nonnull RibDelta<AnnotatedRoute<AbstractRoute>> removeRouteGetDelta(
         AnnotatedRoute<AbstractRoute> route) {
       _resolutionRestrictionCache.remove(route);
-      if (isNextHopIpRoute(route)) {
+      if (isRecursiveNextHopIpRoute(route)) {
         Ip nextHopIp = route.getAbstractRoute().getNextHopIp();
         if (_routesByNextHopIp.remove(nextHopIp, route)
             && _routesByNextHopIp.get(nextHopIp).isEmpty()) {
@@ -212,8 +212,11 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
         AnnotatedRoute<AbstractRoute> affectedRoute,
         Collection<AnnotatedRoute<AbstractRoute>> remainingAffectedRoutes) {
       RibDelta<AnnotatedRoute<AbstractRoute>> delta;
-      boolean isNextHopIpRoute = isNextHopIpRoute(affectedRoute);
-      if (isNextHopIpRoute) {
+      // TODO: Change to checking for just isNextHopIpRoute when this class handles (de)activation
+      //       of nonrecursive static routes instead of relying on StaticRouteHelper in subsequent
+      //       iteration.
+      boolean isRecursiveNextHopIpRoute = isRecursiveNextHopIpRoute(affectedRoute);
+      if (isRecursiveNextHopIpRoute) {
         if (!_routesByNextHopIp.get(affectedRoute.getRoute().getNextHopIp()).contains(affectedRoute)
             || (_backupRoutes.containsEntry(affectedRoute.getNetwork(), affectedRoute)
                 && !extractRoutes(affectedRoute.getNetwork()).contains(affectedRoute))) {
@@ -243,7 +246,8 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
       } else {
         delta = RibDelta.empty();
       }
-      if (_resolutionRestriction.test(affectedRoute) && (!isNextHopIpRoute || !delta.isEmpty())) {
+      if (_resolutionRestriction.test(affectedRoute)
+          && (!isRecursiveNextHopIpRoute || !delta.isEmpty())) {
         getAffectedRoutes(affectedRoute.getNetwork()).forEach(remainingAffectedRoutes::add);
       }
       return delta;
