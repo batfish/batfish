@@ -642,4 +642,64 @@ public class RibTest {
         rib.mergeRouteGetDelta(recursiveRoute),
         equalTo(RibDelta.of(RouteAdvertisement.adding(recursiveRoute))));
   }
+
+  @Test
+  public void testEnforceResolvabilityReplaceSucceeds() {
+    Rib rib = new Rib(ResolutionRestriction.alwaysTrue());
+    AnnotatedRoute<AbstractRoute> activatingRoute =
+        annotateRoute(new ConnectedRoute(Prefix.strict("10.0.0.1/32"), "i1"));
+    AnnotatedRoute<AbstractRoute> worseRoute =
+        annotateRoute(
+            StaticRoute.testBuilder()
+                .setNetwork(Prefix.strict("10.0.0.2/32"))
+                .setNextHop(NextHopIp.of(Ip.parse("10.0.0.1")))
+                .setRecursive(true)
+                .build());
+    AnnotatedRoute<AbstractRoute> betterRoute =
+        annotateRoute(new ConnectedRoute(Prefix.strict("10.0.0.2/32"), "i2"));
+
+    rib.mergeRoute(activatingRoute);
+    rib.mergeRoute(worseRoute);
+
+    // Replacing worse recursive route with better route should succeed, and worse route should
+    // become backup.
+    assertThat(
+        rib.mergeRouteGetDelta(betterRoute).getActions().collect(ImmutableList.toImmutableList()),
+        containsInAnyOrder(
+            RouteAdvertisement.replacing(worseRoute), RouteAdvertisement.adding(betterRoute)));
+  }
+
+  @Test
+  public void testEnforceResolvabilityNonrecursiveRoute() {
+    Rib rib = new Rib(ResolutionRestriction.alwaysTrue());
+    AnnotatedRoute<AbstractRoute> activatingRoute =
+        annotateRoute(new ConnectedRoute(Prefix.strict("10.0.0.1/32"), "i1"));
+    AnnotatedRoute<AbstractRoute> nonrecursiveRoute =
+        annotateRoute(
+            StaticRoute.testBuilder()
+                .setNetwork(Prefix.strict("10.0.0.2/32"))
+                .setNextHop(NextHopIp.of(Ip.parse("10.0.0.1")))
+                .setRecursive(false)
+                .build());
+    AnnotatedRoute<AbstractRoute> recursiveRoute =
+        annotateRoute(
+            StaticRoute.testBuilder()
+                .setNetwork(Prefix.strict("10.0.0.3/32"))
+                .setNextHop(NextHopIp.of(Ip.parse("10.0.0.2")))
+                .setRecursive(true)
+                .build());
+
+    rib.mergeRoute(activatingRoute);
+    rib.mergeRoute(nonrecursiveRoute);
+    rib.mergeRoute(recursiveRoute);
+
+    // Removing nonrecursive route deactivates recursive route.
+    assertThat(
+        rib.removeRouteGetDelta(nonrecursiveRoute)
+            .getActions()
+            .collect(ImmutableList.toImmutableList()),
+        containsInAnyOrder(
+            RouteAdvertisement.withdrawing(nonrecursiveRoute),
+            RouteAdvertisement.withdrawing(recursiveRoute)));
+  }
 }
