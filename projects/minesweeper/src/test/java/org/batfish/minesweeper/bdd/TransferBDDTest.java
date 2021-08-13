@@ -99,7 +99,6 @@ import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.Graph;
-import org.batfish.minesweeper.Protocol;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
@@ -1088,10 +1087,8 @@ public class TransferBDDTest {
     // the policy is applicable to all announcements
     assertTrue(acceptedAnnouncements.isOne());
 
-    // the metric is now 50, if the protocol is BGP
-    BDDInteger expectedMed =
-        BDDInteger.makeFromValue(_anyRoute.getFactory(), 32, 50)
-            .ite(_anyRoute.getProtocolHistory().value(Protocol.BGP), _anyRoute.getMed());
+    // the metric is now 50
+    BDDInteger expectedMed = BDDInteger.makeFromValue(_anyRoute.getFactory(), 32, 50);
     assertEquals(expectedMed, outAnnouncements.getMed());
   }
 
