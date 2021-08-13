@@ -211,18 +211,27 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
     private @Nonnull RibDelta<AnnotatedRoute<AbstractRoute>> processAffectedRoute(
         AnnotatedRoute<AbstractRoute> affectedRoute,
         Collection<AnnotatedRoute<AbstractRoute>> remainingAffectedRoutes) {
+      if (_backupRoutes.containsEntry(affectedRoute.getNetwork(), affectedRoute)
+          && !extractRoutes(affectedRoute.getNetwork()).contains(affectedRoute)) {
+        // The affected route is currently in backup. It cannot be activated nor deactivated until
+        // all better routes have been removed/deactivated. It has already been removed from the
+        // resolution graph, and its affected routes should have already been queued when a better
+        // route was activated.
+        assert !_resolutionGraph.containsVertex(affectedRoute);
+        return RibDelta.empty();
+      }
       RibDelta<AnnotatedRoute<AbstractRoute>> delta;
       // TODO: Change to checking for just isNextHopIpRoute when this class handles (de)activation
       //       of nonrecursive static routes instead of relying on StaticRouteHelper in subsequent
       //       iteration.
       boolean isRecursiveNextHopIpRoute = isRecursiveNextHopIpRoute(affectedRoute);
       if (isRecursiveNextHopIpRoute) {
-        if (!_routesByNextHopIp.get(affectedRoute.getRoute().getNextHopIp()).contains(affectedRoute)
-            || (_backupRoutes.containsEntry(affectedRoute.getNetwork(), affectedRoute)
-                && !extractRoutes(affectedRoute.getNetwork()).contains(affectedRoute))) {
-          // This route was either explicitly removed by a client merge or remove call, or it became
-          // a backup route. Such a route cannot be re-activated, so there are no further side
-          // effects to process.
+        if (!_routesByNextHopIp
+            .get(affectedRoute.getRoute().getNextHopIp())
+            .contains(affectedRoute)) {
+          // The affected route was explicitly removed by a client merge or remove call. Such a
+          // route cannot be re-activated, has already been removed from the resolution graph, and
+          // its affected routes should already have been queued.
           assert !_resolutionGraph.containsVertex(affectedRoute);
           return RibDelta.empty();
         }
