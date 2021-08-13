@@ -252,7 +252,6 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
 
     builder.setLocalPreference(r.getLocalPref().satAssignmentToLong(fullModel));
     builder.setAdmin((int) (long) r.getAdminDist().satAssignmentToLong(fullModel));
-    // the BDDRoute also tracks a metric but I believe for BGP we should use the MED
     builder.setMetric(r.getMed().satAssignmentToLong(fullModel));
     builder.setTag(r.getTag().satAssignmentToLong(fullModel));
 

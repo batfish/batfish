@@ -37,7 +37,6 @@ import org.batfish.datamodel.routing_policy.as_path.MatchAsPath;
 import org.batfish.datamodel.routing_policy.communities.InputCommunities;
 import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
-import org.batfish.datamodel.routing_policy.expr.AsPathListExpr;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetElem;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
@@ -52,11 +51,9 @@ import org.batfish.datamodel.routing_policy.expr.ExplicitAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
-import org.batfish.datamodel.routing_policy.expr.IntExpr;
 import org.batfish.datamodel.routing_policy.expr.IpNextHop;
 import org.batfish.datamodel.routing_policy.expr.IpPrefix;
 import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
-import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
@@ -66,7 +63,6 @@ import org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.MatchTag;
-import org.batfish.datamodel.routing_policy.expr.MultipliedAs;
 import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.NextHopExpr;
@@ -78,7 +74,6 @@ import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.If;
-import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
@@ -621,23 +616,10 @@ public class TransferBDD {
       curP.debug("SetMetric");
       SetMetric sm = (SetMetric) stmt;
       LongExpr ie = sm.getMetric();
-      BDD isBGP = curP.getData().getProtocolHistory().value(Protocol.BGP);
-      // update the MED if the protocol is BGP, and otherwise update the metric
-      // TODO: is this the right thing to do?
-      BDD ignoreMed = isBGP.not().or(unreachable(result));
-      BDD ignoreMet = isBGP.or(unreachable(result));
+      BDDInteger curMed = curP.getData().getMed();
       BDDInteger med =
-          ite(
-              ignoreMed,
-              curP.getData().getMed(),
-              applyLongExprModification(curP.indent(), curP.getData().getMed(), ie));
-      BDDInteger met =
-          ite(
-              ignoreMet,
-              curP.getData().getMetric(),
-              applyLongExprModification(curP.indent(), curP.getData().getMetric(), ie));
+          ite(unreachable(result), curMed, applyLongExprModification(curP.indent(), curMed, ie));
       curP.getData().setMed(med);
-      curP.getData().setMetric(met);
 
     } else if (stmt instanceof SetOspfMetricType) {
       curP.debug("SetOspfMetricType");
@@ -721,15 +703,6 @@ public class TransferBDD {
        * ignore it.
        */
       return compute(bufStmt.getStatement(), state);
-    } else if (stmt instanceof PrependAsPath) {
-      curP.debug("PrependAsPath");
-      PrependAsPath pap = (PrependAsPath) stmt;
-      int prependCost = prependLength(pap.getExpr());
-      curP.indent().debug("Cost: " + prependCost);
-      BDDInteger met = curP.getData().getMetric();
-      BDDInteger newValue = met.add(BDDInteger.makeFromValue(met.getFactory(), 32, prependCost));
-      newValue = ite(unreachable(result), curP.getData().getMetric(), newValue);
-      curP.getData().setMetric(newValue);
 
     } else if (stmt instanceof SetOrigin) {
       curP.debug("SetOrigin");
@@ -875,10 +848,6 @@ public class TransferBDD {
     x = r1.getLocalPref();
     y = r2.getLocalPref();
     ret.getLocalPref().setValue(ite(guard, x, y));
-
-    x = r1.getMetric();
-    y = r2.getMetric();
-    ret.getMetric().setValue(ite(guard, x, y));
 
     x = r1.getMed();
     y = r2.getMed();
@@ -1080,23 +1049,6 @@ public class TransferBDD {
     return b ? factory.one() : factory.zero();
   }
 
-  /*
-   * Compute how many times to prepend to a path from the AST
-   */
-  private int prependLength(AsPathListExpr expr) {
-    if (expr instanceof MultipliedAs) {
-      MultipliedAs x = (MultipliedAs) expr;
-      IntExpr e = x.getNumber();
-      LiteralInt i = (LiteralInt) e;
-      return i.getValue();
-    }
-    if (expr instanceof LiteralAsList) {
-      LiteralAsList x = (LiteralAsList) expr;
-      return x.getList().size();
-    }
-    throw new BatfishException("Error[prependLength]: unreachable");
-  }
-
   private void setNextHop(NextHopExpr expr, BDDRoute route) {
     // record the fact that the next-hop has been explicitly set by the route-map
     route.setNextHopSet(factory.one());
@@ -1191,7 +1143,6 @@ public class TransferBDD {
         new BDDRoute(
             _graph.getCommunityAtomicPredicates().getNumAtomicPredicates(),
             _graph.getAsPathRegexAtomicPredicates().getNumAtomicPredicates());
-    rec.getMetric().setValue(0);
     rec.getLocalPref().setValue(0);
     rec.getAdminDist().setValue(0);
     rec.getPrefixLength().setValue(0);
