@@ -229,9 +229,9 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
         if (!_routesByNextHopIp
             .get(affectedRoute.getRoute().getNextHopIp())
             .contains(affectedRoute)) {
-          // The affected route was explicitly removed by a client merge or remove call. Such a
-          // route cannot be re-activated, has already been removed from the resolution graph, and
-          // its affected routes should already have been queued.
+          // The affected route was explicitly removed by a client remove call. Such a route cannot
+          // be re-activated, has already been removed from the resolution graph, and its affected
+          // routes should already have been queued.
           assert !_resolutionGraph.containsVertex(affectedRoute);
           return RibDelta.empty();
         }
