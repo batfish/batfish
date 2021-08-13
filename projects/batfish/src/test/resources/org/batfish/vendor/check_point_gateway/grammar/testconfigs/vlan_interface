@@ -7,7 +7,8 @@
 set hostname vlan_interface
 #
 add bonding group 2 interface eth0
-add bonding group 3 interface eth1
+add bonding group 2 interface eth1
+add bonding group 3 interface eth2
 #
 add interface bond2 vlan 2
 add interface bond3 vlan 3
@@ -19,8 +20,10 @@ set interface bond3.3 state off
 # in bond groups
 set interface eth0 state on
 set interface eth1 state on
+set interface eth2 state on
 #
 set interface eth10 state on
+set interface eth10 link-speed 10M/half
 set interface eth11 state off
 set interface eth12 state on
 #
