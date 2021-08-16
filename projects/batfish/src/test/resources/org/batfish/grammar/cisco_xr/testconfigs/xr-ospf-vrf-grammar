@@ -1,0 +1,25 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname xr-ospf-vrf-grammar
+!
+
+router ospf 1
+ router-id 1.1.1.1
+ vrf FOO
+  dead-interval 10
+  hello-interval 3
+  default-information originate
+  no default-information originate
+  redistribute connected route-policy RP
+  area 0
+   distribute-list route-policy RP in
+   interface Ethernet1
+    cost 100
+    authentication message-digest
+    message-digest-key 1 md5 encrypted 00000000000000000000
+    network point-to-point
+   !
+  ! keep router-id last to ensure we stay within vrf context the whole time
+  router-id 2.2.2.2
+ !
+!

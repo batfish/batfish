@@ -1124,14 +1124,14 @@
         "Filename" : "configs/ios_xr_ospf",
         "Line" : 10,
         "Text" : "maximum paths 16",
-        "Parser_Context" : "[ro_maximum_paths s_router_ospf stanza cisco_xr_configuration]",
+        "Parser_Context" : "[ro_maximum_paths ro_vrf_common s_router_ospf stanza cisco_xr_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/ios_xr_ospf",
         "Line" : 15,
         "Text" : "default-information originate metric 10 route-policy ospf_default_ipv4",
-        "Parser_Context" : "[ro_default_information s_router_ospf stanza cisco_xr_configuration]",
+        "Parser_Context" : "[ro_default_information ro_vrf_common s_router_ospf stanza cisco_xr_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
