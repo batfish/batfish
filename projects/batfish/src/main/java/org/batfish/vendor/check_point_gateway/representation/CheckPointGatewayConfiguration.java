@@ -150,10 +150,16 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
   InterfaceType getInterfaceType(Interface iface) {
     String name = iface.getName();
     if (name.startsWith("eth")) {
+      if (name.contains(".")) {
+        return InterfaceType.LOGICAL;
+      }
       return InterfaceType.PHYSICAL;
     } else if (name.startsWith("lo")) {
       return InterfaceType.LOOPBACK;
     } else if (name.startsWith("bond")) {
+      if (name.contains(".")) {
+        return InterfaceType.AGGREGATE_CHILD;
+      }
       return InterfaceType.AGGREGATED;
     }
     return InterfaceType.UNKNOWN;
@@ -183,6 +189,30 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
           .setAddress(iface.getAddress())
           .setActive(iface.getState())
           .setMtu(iface.getMtuEffective());
+    }
+
+    Double speed = iface.getLinkSpeedEffective();
+    if (speed != null) {
+      newIface.setSpeed(speed);
+      newIface.setBandwidth(speed);
+    }
+    if (iface.getVlanId() != null) {
+      newIface.setEncapsulationVlan(iface.getVlanId());
+    }
+    if (iface.getParentInterface() != null) {
+      Interface parent = _interfaces.get(iface.getParentInterface());
+      // This is a subinterface. Its speed can't be set explicitly.
+      // If its parent is physical, this interface should inherit the parent's speed/bw now.
+      // If its parent is a bond interface, then this interface's bandwidth will be set after
+      // the parent's bandwidth is calculated post-conversion.
+      assert parent != null;
+      Double parentSpeed = parent.getLinkSpeedEffective();
+      if (parentSpeed != null) {
+        newIface.setSpeed(parentSpeed);
+        newIface.setBandwidth(parentSpeed);
+      }
+      newIface.setDependencies(
+          ImmutableList.of(new Dependency(iface.getParentInterface(), DependencyType.BIND)));
     }
 
     getBondingGroup(ifaceName)
