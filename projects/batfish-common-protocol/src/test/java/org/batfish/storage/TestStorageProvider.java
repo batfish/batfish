@@ -42,6 +42,7 @@ import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
+import org.batfish.vendor.ConversionContext;
 import org.batfish.vendor.VendorConfiguration;
 
 public class TestStorageProvider implements StorageProvider {
@@ -49,6 +50,12 @@ public class TestStorageProvider implements StorageProvider {
   @Override
   public SortedMap<String, Configuration> loadConfigurations(
       NetworkId network, SnapshotId snapshot) {
+    throw new UnsupportedOperationException("no implementation for generated method");
+  }
+
+  @Nullable
+  @Override
+  public ConversionContext loadConversionContext(NetworkSnapshot snapshot) {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
@@ -107,6 +114,12 @@ public class TestStorageProvider implements StorageProvider {
       Layer1Topology synthesizedLayer1Topology,
       NetworkId network,
       SnapshotId snapshot) {
+    throw new UnsupportedOperationException("no implementation for generated method");
+  }
+
+  @Override
+  public void storeConversionContext(
+      ConversionContext conversionContext, NetworkSnapshot snapshot) {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 

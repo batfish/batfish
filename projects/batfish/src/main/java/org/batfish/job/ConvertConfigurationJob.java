@@ -38,21 +38,25 @@ import org.batfish.datamodel.routing_policy.as_path.AsPathStructuresVerifier;
 import org.batfish.main.Batfish;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.representation.iptables.IptablesVendorConfiguration;
+import org.batfish.vendor.ConversionContext;
 import org.batfish.vendor.VendorConfiguration;
 
 public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResult> {
 
   private Object _configObject;
+  @Nullable private final ConversionContext _conversionContext;
   @Nonnull private final SnapshotRuntimeData _runtimeData;
   private String _name;
 
   public ConvertConfigurationJob(
       Settings settings,
+      @Nullable ConversionContext conversionContext,
       @Nullable SnapshotRuntimeData runtimeData,
       Object configObject,
       String name) {
     super(settings);
     _configObject = configObject;
+    _conversionContext = conversionContext;
     _runtimeData = firstNonNull(runtimeData, SnapshotRuntimeData.EMPTY_SNAPSHOT_RUNTIME_DATA);
     _name = name;
   }
@@ -279,6 +283,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
       String filename = vendorConfiguration.getFilename();
       vendorConfiguration.setWarnings(warnings);
       vendorConfiguration.setAnswerElement(answerElement);
+      vendorConfiguration.setConversionContext(_conversionContext);
       vendorConfiguration.setRuntimeData(_runtimeData);
       for (Configuration configuration : vendorConfiguration.toVendorIndependentConfigurations()) {
 

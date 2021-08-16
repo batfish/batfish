@@ -97,6 +97,7 @@ import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
+import org.batfish.vendor.ConversionContext;
 import org.batfish.vendor.VendorConfiguration;
 
 /** A utility class that abstracts the underlying file system storage used by Batfish. */
@@ -124,6 +125,7 @@ public class FileBasedStorage implements StorageProvider {
   private static final String RELPATH_METADATA_FILE = "metadata.json";
   private static final String RELPATH_FORK_REQUEST_FILE = "fork_request";
   private static final String RELPATH_ENV_TOPOLOGY_FILE = "env_topology";
+  private static final String RELPATH_CONVERSION_CONTEXT = "conversion_context";
   private static final String RELPATH_CONVERT_ANSWER_PATH = "convert_answer";
   private static final String RELPATH_ANSWERS_DIR = "answers";
   private static final String RELPATH_ANSWER_METADATA = "answer_metadata.json";
@@ -206,6 +208,23 @@ public class FileBasedStorage implements StorageProvider {
     try {
       return deserializeObjects(namesByPath, Configuration.class);
     } catch (BatfishException e) {
+      return null;
+    }
+  }
+
+  @Nullable
+  @Override
+  public ConversionContext loadConversionContext(NetworkSnapshot snapshot) {
+    Path ccPath = getConversionContextPath(snapshot.getNetwork(), snapshot.getSnapshot());
+    if (!Files.exists(ccPath)) {
+      return null;
+    }
+    try {
+      return deserializeObject(ccPath, ConversionContext.class);
+    } catch (BatfishException e) {
+      _logger.errorf(
+          "Failed to deserialize ConversionContext: %s", Throwables.getStackTraceAsString(e));
+      LOGGER.error("Failed to deserialize ConversionContext", e);
       return null;
     }
   }
@@ -456,6 +475,18 @@ public class FileBasedStorage implements StorageProvider {
             configurations.size(), snapshot);
 
     storeConfigurations(outputDir, batchName, configurations);
+  }
+
+  @Override
+  public void storeConversionContext(ConversionContext conversionContext, NetworkSnapshot snapshot)
+      throws IOException {
+    Path ccPath = getConversionContextPath(snapshot.getNetwork(), snapshot.getSnapshot());
+    mkdirs(ccPath.getParent());
+    serializeObject(conversionContext, ccPath);
+  }
+
+  private @Nonnull Path getConversionContextPath(NetworkId network, SnapshotId snapshot) {
+    return getSnapshotOutputDir(network, snapshot).resolve(RELPATH_CONVERSION_CONTEXT);
   }
 
   private @Nonnull Path getConvertAnswerPath(NetworkId network, SnapshotId snapshot) {
