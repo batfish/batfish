@@ -1,0 +1,85 @@
+package org.batfish.vendor.check_point_management;
+
+import static com.google.common.base.Preconditions.checkArgument;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.TextNode;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import java.util.List;
+import java.util.Objects;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import org.batfish.common.util.BatfishObjectMapper;
+
+/** Data model for a package from the response to the {@code show-packages} command. */
+public final class Package extends TypedManagementObject {
+
+  @VisibleForTesting
+  Package(InstallationTargets installationTargets, String name, boolean natPolicy, Uid uid) {
+    super(name, uid);
+    _installationTargets = installationTargets;
+    _natPolicy = natPolicy;
+  }
+
+  @JsonCreator
+  private static @Nonnull Package create(
+      @JsonProperty(PROP_INSTALLATION_TARGETS) @Nullable JsonNode installationTargets,
+      @JsonProperty(PROP_NAME) @Nullable String name,
+      @JsonProperty(PROP_NAT_POLICY) @Nullable Boolean natPolicy,
+      @JsonProperty(PROP_UID) @Nullable Uid uid) {
+    checkArgument(installationTargets != null, "Missing %s", PROP_INSTALLATION_TARGETS);
+    checkArgument(name != null, "Missing %s", PROP_NAME);
+    checkArgument(natPolicy != null, "Missing %s", PROP_NAT_POLICY);
+    checkArgument(uid != null, "Missing %s", PROP_UID);
+    return new Package(deserializeInstallationTargets(installationTargets), name, natPolicy, uid);
+  }
+
+  private static @Nonnull InstallationTargets deserializeInstallationTargets(
+      JsonNode installationTargets) {
+    if (installationTargets instanceof TextNode) {
+      String text = ((TextNode) installationTargets).textValue();
+      checkArgument(
+          text.equals("all"),
+          "Unsupported text value for installation-targets (expected \"all\"): %s",
+          text);
+      return AllInstallationTargets.instance();
+    } else if (installationTargets instanceof ArrayNode) {
+      List<GatewayOrServer> targets =
+          ImmutableList.copyOf(
+              BatfishObjectMapper.ignoreUnknownMapper()
+                  .convertValue(
+                      installationTargets, new TypeReference<List<GatewayOrServer>>() {}));
+      return new ListInstallationTargets(targets);
+    } else {
+      throw new IllegalArgumentException(
+          String.format(
+              "Unsupporeted JSON node type for value of %s field: %s",
+              PROP_INSTALLATION_TARGETS, installationTargets.getClass()));
+    }
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (!baseEquals(obj)) {
+      return false;
+    }
+    Package that = (Package) obj;
+    return _installationTargets.equals(that._installationTargets) && _natPolicy == that._natPolicy;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(baseHashcode(), _installationTargets, _natPolicy);
+  }
+
+  private static final String PROP_INSTALLATION_TARGETS = "installation-targets";
+  private static final String PROP_NAT_POLICY = "nat-policy";
+
+  private final @Nonnull InstallationTargets _installationTargets;
+  private final boolean _natPolicy;
+}

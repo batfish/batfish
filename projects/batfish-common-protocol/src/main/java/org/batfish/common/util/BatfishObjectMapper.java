@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.core.util.DefaultIndenter;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -19,6 +20,9 @@ import org.batfish.common.util.serialization.BatfishThirdPartySerializationModul
 
 public final class BatfishObjectMapper {
   private static final ObjectMapper MAPPER = baseMapper();
+
+  private static final ObjectMapper IGNORE_UNKNOWN_MAPPER =
+      baseMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
   private static final ObjectWriter ALWAYS_WRITER =
       baseMapper().setSerializationInclusion(Include.ALWAYS).writer();
@@ -87,6 +91,14 @@ public final class BatfishObjectMapper {
    */
   public static ObjectMapper verboseMapper() {
     return VERBOSE_MAPPER;
+  }
+
+  /**
+   * Returns a {@link ObjectMapper} configured to Batfish JSON standards. Relative to {@link
+   * #mapper()}, it ignores unknown properties during deserialization.
+   */
+  public static ObjectMapper ignoreUnknownMapper() {
+    return IGNORE_UNKNOWN_MAPPER;
   }
 
   /**
