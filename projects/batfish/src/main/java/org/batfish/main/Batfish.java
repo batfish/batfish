@@ -2387,6 +2387,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       try {
         conversionContext = _storage.loadConversionContext(snapshot);
       } catch (FileNotFoundException ignored) {
+        // No conversion context for this snapshot.
       } catch (IOException e) {
         LOGGER.warn("Failed to load conversion context: {}", Throwables.getStackTraceAsString(e));
       }
