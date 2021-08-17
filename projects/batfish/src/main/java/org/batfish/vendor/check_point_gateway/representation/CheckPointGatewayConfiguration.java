@@ -176,12 +176,11 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
 
     Optional<Integer> parentBondingGroupOpt = getParentBondingGroupNumber(iface);
     if (parentBondingGroupOpt.isPresent()) {
-      Integer parentBondingGroup = parentBondingGroupOpt.get();
-      newIface.setChannelGroup(parentBondingGroup.toString());
-      Interface parentBondInterface = _interfaces.get(getBondInterfaceName(parentBondingGroup));
+      String parentBondIfaceName = getBondInterfaceName(parentBondingGroupOpt.get());
+      Interface parentBondInterface = _interfaces.get(parentBondIfaceName);
       assert parentBondInterface != null;
       newIface
-          .setChannelGroup(parentBondingGroup.toString())
+          .setChannelGroup(parentBondIfaceName)
           // Member interface inherits some configuration from parent bonding group
           .setMtu(parentBondInterface.getMtuEffective());
     } else {
