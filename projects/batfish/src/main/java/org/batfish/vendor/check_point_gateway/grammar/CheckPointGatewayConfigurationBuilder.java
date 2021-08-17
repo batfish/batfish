@@ -193,7 +193,9 @@ public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayPars
       _currentBondingGroupLineIsValid = false;
       return;
     }
-
+    // If the interface has not yet been configured, create it. (This bonding group may be the only
+    // place in the config where it is referenced.)
+    _configuration.getInterfaces().computeIfAbsent(ifaceNameOpt.get(), Interface::new);
     _currentBondingGroup.getInterfaces().add(ifaceNameOpt.get());
   }
 
@@ -202,21 +204,15 @@ public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayPars
    * not.
    */
   private boolean isValidBondGroupMember(ParserRuleContext ctx, String ifaceName) {
-    if (_configuration.getBondingGroups().values().stream()
-        .anyMatch(bg -> bg.getInterfaces().contains(ifaceName))) {
-      warn(ctx, "Interface can only be added to one bonding group.");
-      return false;
-    }
-
-    // Trust interface references are valid if interfaces haven't been explicitly configured yet
-    // i.e. looks like we're parsing `show configuration` data which has interface refs before defs
-    if (!_firstInterfaceHasBeenConfigured) {
+    Interface candidate = _configuration.getInterfaces().get(ifaceName);
+    if (candidate == null) {
+      // This is the first reference to this interface, which means it isn't in any other bonding
+      // groups and doesn't have an address. It will be created by caller.
       return true;
     }
 
-    Interface candidate = _configuration.getInterfaces().get(ifaceName);
-    if (candidate == null) {
-      warn(ctx, "Cannot add non-existent interface to a bonding group.");
+    if (isInterfaceInBondingGroup(candidate)) {
+      warn(ctx, "Interface can only be added to one bonding group.");
       return false;
     }
 
@@ -315,7 +311,6 @@ public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayPars
             .map(n -> _configuration.getInterfaces().computeIfAbsent(n, Interface::new))
             .orElse(new Interface(ctx.interface_name().getText()));
     _currentInterfaceInBondingGroup = isInterfaceInBondingGroup(_currentInterface);
-    _firstInterfaceHasBeenConfigured = true;
   }
 
   /** Indicates if the specified interface is already a member of a bonding group. */
@@ -731,18 +726,6 @@ public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayPars
   private StaticRoute _currentStaticRoute;
 
   private Nexthop _currentStaticRouteNextHop;
-
-  /**
-   * This indicates if any interfaces have been explicitly configured up to this point in parsing.
-   *
-   * <p>This is used in heuristics to determine when Batfish should be strict about bonding group
-   * member interfaces, i.e. disallow adding undefined interfaces as bonding group members.
-   *
-   * <p>This is needed because Check Point gateways will print output for {@code show configuration}
-   * where bonding group members are referenced before their definition. This is in contrast to
-   * "reconfiguration" lines, which cannot reference undefined ifaces/come after their definitions.
-   */
-  private boolean _firstInterfaceHasBeenConfigured;
 
   @Nonnull private CheckPointGatewayConfiguration _configuration;
 

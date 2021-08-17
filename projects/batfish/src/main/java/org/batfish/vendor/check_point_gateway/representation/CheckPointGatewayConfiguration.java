@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -217,10 +216,9 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     getBondingGroup(ifaceName)
         .ifPresent(
             bg -> {
-              Set<String> members = getValidMembers(bg);
-              newIface.setChannelGroupMembers(members);
+              newIface.setChannelGroupMembers(bg.getInterfaces());
               newIface.setDependencies(
-                  members.stream()
+                  bg.getInterfaces().stream()
                       .map(member -> new Dependency(member, DependencyType.AGGREGATE))
                       .collect(ImmutableSet.toImmutableSet()));
 
@@ -267,29 +265,6 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
   @Nonnull
   public static String getBondInterfaceName(int groupNumber) {
     return "bond" + groupNumber;
-  }
-
-  /**
-   * Returns a {@link Set} of valid members for the specified bonding group. Adds warnings if any
-   * member interfaces are invalid.
-   *
-   * <p>Filters out things like non-existent interfaces.
-   */
-  @Nonnull
-  private Set<String> getValidMembers(BondingGroup bondingGroup) {
-    return bondingGroup.getInterfaces().stream()
-        .filter(
-            m -> {
-              boolean exists = _interfaces.containsKey(m);
-              if (!exists) {
-                _w.redFlag(
-                    String.format(
-                        "Cannot reference non-existent interface %s in bonding group %d.",
-                        m, bondingGroup.getNumber()));
-              }
-              return exists;
-            })
-        .collect(ImmutableSet.toImmutableSet());
   }
 
   @Nonnull private Map<Integer, BondingGroup> _bondingGroups;
