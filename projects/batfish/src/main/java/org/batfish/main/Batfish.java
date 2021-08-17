@@ -25,6 +25,7 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
 import static org.batfish.main.ReachabilityParametersResolver.resolveReachabilityParameters;
 import static org.batfish.main.StreamDecoder.decodeStreamAndAppendNewline;
 import static org.batfish.specifier.LocationInfoUtils.computeLocationInfo;
+import static org.batfish.vendor.ConversionContext.EMPTY_CONVERSION_CONTEXT;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -2383,13 +2384,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
         answer.addAnswerElement(answerElement);
       }
 
-      ConversionContext conversionContext = null;
+      ConversionContext conversionContext;
       try {
         conversionContext = _storage.loadConversionContext(snapshot);
-      } catch (FileNotFoundException ignored) {
-        // No conversion context for this snapshot.
       } catch (IOException e) {
-        LOGGER.warn("Failed to load conversion context: {}", Throwables.getStackTraceAsString(e));
+        throw new UncheckedIOException(e);
       }
       SnapshotRuntimeData runtimeData =
           firstNonNull(
@@ -2850,6 +2849,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     if (!configsFound) {
       throw new BatfishException("No valid configurations found in snapshot");
+    }
+
+    // serialize any context needed for conversion (this does not include any configs)
+    try {
+      // TODO Populate conversion context
+      _storage.storeConversionContext(EMPTY_CONVERSION_CONTEXT, snapshot);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
     }
 
     // serialize warnings

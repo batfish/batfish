@@ -1,6 +1,7 @@
 package org.batfish.job;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.batfish.vendor.ConversionContext.EMPTY_CONVERSION_CONTEXT;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
@@ -44,7 +45,7 @@ import org.batfish.vendor.VendorConfiguration;
 public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResult> {
 
   private Object _configObject;
-  @Nullable private final ConversionContext _conversionContext;
+  @Nonnull private final ConversionContext _conversionContext;
   @Nonnull private final SnapshotRuntimeData _runtimeData;
   private String _name;
 
@@ -56,7 +57,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
       String name) {
     super(settings);
     _configObject = configObject;
-    _conversionContext = conversionContext;
+    _conversionContext = firstNonNull(conversionContext, EMPTY_CONVERSION_CONTEXT);
     _runtimeData = firstNonNull(runtimeData, SnapshotRuntimeData.EMPTY_SNAPSHOT_RUNTIME_DATA);
     _name = name;
   }
