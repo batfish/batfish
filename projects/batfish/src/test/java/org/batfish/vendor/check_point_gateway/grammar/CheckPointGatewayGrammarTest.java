@@ -583,7 +583,7 @@ public class CheckPointGatewayGrammarTest {
       org.batfish.datamodel.Interface eth0 = c.getAllInterfaces().get(eth0Name);
       assertThat(eth0, isActive(true));
       assertThat(eth0, hasInterfaceType(PHYSICAL));
-      assertThat(eth0, hasChannelGroup(equalTo("0")));
+      assertThat(eth0, hasChannelGroup("bond0"));
       assertThat(eth0, hasMtu(1234));
       assertThat(eth0, hasBandwidth(1E9));
     }
@@ -591,7 +591,7 @@ public class CheckPointGatewayGrammarTest {
       org.batfish.datamodel.Interface eth1 = c.getAllInterfaces().get(eth1Name);
       assertThat(eth1, isActive(true));
       assertThat(eth1, hasInterfaceType(PHYSICAL));
-      assertThat(eth1, hasChannelGroup(equalTo("0")));
+      assertThat(eth1, hasChannelGroup("bond0"));
       assertThat(eth1, hasBandwidth(1E9));
     }
   }
