@@ -311,7 +311,7 @@ public final class BatfishLogger {
   }
 
   public void redflag(String msg) {
-    LOGGER.warn(msg);
+    LOGGER.debug(msg);
     write(LEVEL_REDFLAG, msg);
   }
 
