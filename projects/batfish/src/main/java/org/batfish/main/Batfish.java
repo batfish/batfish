@@ -2383,7 +2383,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
         answer.addAnswerElement(answerElement);
       }
 
-      ConversionContext conversionContext = _storage.loadConversionContext(snapshot);
+      ConversionContext conversionContext = null;
+      try {
+        conversionContext = _storage.loadConversionContext(snapshot);
+      } catch (FileNotFoundException ignored) {
+      } catch (IOException e) {
+        LOGGER.warn("Failed to load conversion context: {}", Throwables.getStackTraceAsString(e));
+      }
       SnapshotRuntimeData runtimeData =
           firstNonNull(
               _storage.loadRuntimeData(snapshot.getNetwork(), snapshot.getSnapshot()),

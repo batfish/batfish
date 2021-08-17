@@ -818,10 +818,11 @@ public interface StorageProvider {
   /**
    * Loads the {@link ConversionContext} for the given {@link NetworkSnapshot}, if present.
    *
-   * @throws IOException if there is an error
+   * @throws FileNotFoundException if there is no serialized {@link ConversionContext}
+   * @throws IOException if there is an error deserializing
    */
-  @Nullable
-  ConversionContext loadConversionContext(NetworkSnapshot snapshot);
+  @Nonnull
+  ConversionContext loadConversionContext(NetworkSnapshot snapshot) throws IOException;
 
   /**
    * Stores the {@link ConversionContext} for the given {@link NetworkSnapshot}.

@@ -212,20 +212,19 @@ public class FileBasedStorage implements StorageProvider {
     }
   }
 
-  @Nullable
   @Override
-  public ConversionContext loadConversionContext(NetworkSnapshot snapshot) {
+  public @Nonnull ConversionContext loadConversionContext(NetworkSnapshot snapshot)
+      throws IOException {
     Path ccPath = getConversionContextPath(snapshot.getNetwork(), snapshot.getSnapshot());
     if (!Files.exists(ccPath)) {
-      return null;
+      throw new FileNotFoundException();
     }
     try {
       return deserializeObject(ccPath, ConversionContext.class);
     } catch (BatfishException e) {
-      _logger.errorf(
-          "Failed to deserialize ConversionContext: %s", Throwables.getStackTraceAsString(e));
-      LOGGER.error("Failed to deserialize ConversionContext", e);
-      return null;
+      throw new IOException(
+          String.format(
+              "Failed to deserialize ConversionContext: %s", Throwables.getStackTraceAsString(e)));
     }
   }
 
@@ -485,7 +484,9 @@ public class FileBasedStorage implements StorageProvider {
     serializeObject(conversionContext, ccPath);
   }
 
-  private @Nonnull Path getConversionContextPath(NetworkId network, SnapshotId snapshot) {
+  @VisibleForTesting
+  @Nonnull
+  Path getConversionContextPath(NetworkId network, SnapshotId snapshot) {
     return getSnapshotOutputDir(network, snapshot).resolve(RELPATH_CONVERSION_CONTEXT);
   }
 
@@ -595,7 +596,8 @@ public class FileBasedStorage implements StorageProvider {
    * Writes a single object of the given class to the given file. Uses the {@link FileBasedStorage}
    * default file encoding including serialization format and compression.
    */
-  private void serializeObject(Serializable object, Path outputFile) {
+  @VisibleForTesting
+  void serializeObject(Serializable object, Path outputFile) {
     Path sanitizedOutputFile = validatePath(outputFile);
     try {
       Path tmpFile = Files.createTempFile(null, null);

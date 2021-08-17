@@ -2,4 +2,14 @@ package org.batfish.vendor;
 
 import java.io.Serializable;
 
-public class ConversionContext implements Serializable {}
+public final class ConversionContext implements Serializable {
+  @Override
+  public boolean equals(Object obj) {
+    return obj instanceof ConversionContext;
+  }
+
+  @Override
+  public int hashCode() {
+    return 0;
+  }
+}
