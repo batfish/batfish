@@ -13,6 +13,7 @@ import static org.batfish.datamodel.InterfaceType.AGGREGATED;
 import static org.batfish.datamodel.InterfaceType.PHYSICAL;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRedFlagWarning;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasChannelGroup;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasChannelGroupMembers;
@@ -24,6 +25,9 @@ import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
+import static org.batfish.vendor.check_point_gateway.representation.Interface.DEFAULT_ETH_SPEED;
+import static org.batfish.vendor.check_point_gateway.representation.Interface.DEFAULT_INTERFACE_MTU;
+import static org.batfish.vendor.check_point_gateway.representation.Interface.DEFAULT_LOOPBACK_MTU;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.contains;
@@ -236,23 +240,37 @@ public class CheckPointGatewayGrammarTest {
     String hostname = "interface_conversion";
     Configuration c = parseConfig(hostname);
     assertThat(c, notNullValue());
-    assertThat(c.getAllInterfaces(), hasKeys("eth0", "eth1", "lo"));
+    assertThat(c.getAllInterfaces(), hasKeys("eth0", "eth1", "eth2", "eth3", "eth4", "eth5", "lo"));
 
     org.batfish.datamodel.Interface eth0 = c.getAllInterfaces().get("eth0");
     org.batfish.datamodel.Interface eth1 = c.getAllInterfaces().get("eth1");
+    org.batfish.datamodel.Interface eth2 = c.getAllInterfaces().get("eth2");
+    org.batfish.datamodel.Interface eth3 = c.getAllInterfaces().get("eth3");
+    org.batfish.datamodel.Interface eth4 = c.getAllInterfaces().get("eth4");
+    org.batfish.datamodel.Interface eth5 = c.getAllInterfaces().get("eth5");
     org.batfish.datamodel.Interface lo = c.getAllInterfaces().get("lo");
 
     assertTrue(eth0.getActive());
     assertThat(eth0.getAddress(), equalTo(ConcreteInterfaceAddress.parse("192.168.1.1/24")));
     assertThat(eth0.getMtu(), equalTo(1234));
     assertThat(eth0.getInterfaceType(), equalTo(InterfaceType.PHYSICAL));
+    assertThat(eth0.getBandwidth(), equalTo(1000e6));
 
     assertFalse(eth1.getActive());
     assertNull(eth1.getAddress());
     assertThat(eth1.getInterfaceType(), equalTo(InterfaceType.PHYSICAL));
+    assertThat(eth1.getMtu(), equalTo(DEFAULT_INTERFACE_MTU));
+    assertThat(eth1.getBandwidth(), equalTo(DEFAULT_ETH_SPEED));
+
+    assertThat(eth2.getBandwidth(), equalTo(100e6));
+    assertThat(eth3.getBandwidth(), equalTo(100e6));
+    assertThat(eth4.getBandwidth(), equalTo(10e6));
+    assertThat(eth5.getBandwidth(), equalTo(10e6));
 
     assertThat(lo.getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.10.10.10/32")));
     assertThat(lo.getInterfaceType(), equalTo(InterfaceType.LOOPBACK));
+    assertThat(lo.getMtu(), equalTo(DEFAULT_LOOPBACK_MTU));
+    assertNull(lo.getBandwidth());
   }
 
   @Test
@@ -532,42 +550,50 @@ public class CheckPointGatewayGrammarTest {
   public void testBondInterfaceConversion() {
     String hostname = "bond_interface_conversion";
     Configuration c = parseConfig(hostname);
-    assertThat(c, notNullValue());
-    assertThat(c.getAllInterfaces(), hasKeys("bond0", "bond1", "eth0", "eth1"));
 
     String bond0Name = "bond0";
     String bond1Name = "bond1";
     String eth0Name = "eth0";
     String eth1Name = "eth1";
-
-    assertThat(c, hasInterface(bond0Name, isActive(true)));
-    assertThat(c, hasInterface(bond0Name, hasInterfaceType(AGGREGATED)));
-    assertThat(
-        c,
-        hasInterface(
-            bond0Name,
-            hasDependencies(
-                containsInAnyOrder(
-                    new Dependency(eth0Name, AGGREGATE), new Dependency(eth1Name, AGGREGATE)))));
-    assertThat(
-        c, hasInterface(bond0Name, hasChannelGroupMembers(containsInAnyOrder(eth0Name, eth1Name))));
-    assertThat(c, hasInterface(bond0Name, hasChannelGroup(nullValue())));
-    assertThat(c, hasInterface(bond0Name, hasMtu(1234)));
-
-    assertThat(c, hasInterface(bond1Name, isActive(false)));
-    assertThat(c, hasInterface(bond1Name, hasInterfaceType(AGGREGATED)));
-    assertThat(c, hasInterface(bond1Name, hasDependencies(emptyIterable())));
-    assertThat(c, hasInterface(bond1Name, hasChannelGroupMembers(emptyIterable())));
-    assertThat(c, hasInterface(bond1Name, hasChannelGroup(nullValue())));
-
-    assertThat(c, hasInterface(eth0Name, isActive(true)));
-    assertThat(c, hasInterface(eth0Name, hasInterfaceType(PHYSICAL)));
-    assertThat(c, hasInterface(eth0Name, hasChannelGroup(equalTo("0"))));
-    assertThat(c, hasInterface(eth0Name, hasMtu(1234)));
-
-    assertThat(c, hasInterface(eth1Name, isActive(true)));
-    assertThat(c, hasInterface(eth1Name, hasInterfaceType(PHYSICAL)));
-    assertThat(c, hasInterface(eth1Name, hasChannelGroup(equalTo("0"))));
+    assertThat(c.getAllInterfaces(), hasKeys(bond0Name, bond1Name, eth0Name, eth1Name));
+    {
+      org.batfish.datamodel.Interface bond0 = c.getAllInterfaces().get(bond0Name);
+      assertThat(bond0, isActive(true));
+      assertThat(bond0, hasInterfaceType(AGGREGATED));
+      assertThat(
+          bond0,
+          hasDependencies(
+              containsInAnyOrder(
+                  new Dependency(eth0Name, AGGREGATE), new Dependency(eth1Name, AGGREGATE))));
+      assertThat(bond0, hasChannelGroupMembers(containsInAnyOrder(eth0Name, eth1Name)));
+      assertThat(bond0, hasChannelGroup(nullValue()));
+      assertThat(bond0, hasMtu(1234));
+      assertThat(bond0, hasBandwidth(2E9));
+    }
+    {
+      org.batfish.datamodel.Interface bond1 = c.getAllInterfaces().get(bond1Name);
+      assertThat(bond1, isActive(false));
+      assertThat(bond1, hasInterfaceType(AGGREGATED));
+      assertThat(bond1, hasDependencies(emptyIterable()));
+      assertThat(bond1, hasChannelGroupMembers(emptyIterable()));
+      assertThat(bond1, hasChannelGroup(nullValue()));
+      assertThat(bond1, hasBandwidth(0D));
+    }
+    {
+      org.batfish.datamodel.Interface eth0 = c.getAllInterfaces().get(eth0Name);
+      assertThat(eth0, isActive(true));
+      assertThat(eth0, hasInterfaceType(PHYSICAL));
+      assertThat(eth0, hasChannelGroup("bond0"));
+      assertThat(eth0, hasMtu(1234));
+      assertThat(eth0, hasBandwidth(1E9));
+    }
+    {
+      org.batfish.datamodel.Interface eth1 = c.getAllInterfaces().get(eth1Name);
+      assertThat(eth1, isActive(true));
+      assertThat(eth1, hasInterfaceType(PHYSICAL));
+      assertThat(eth1, hasChannelGroup("bond0"));
+      assertThat(eth1, hasBandwidth(1E9));
+    }
   }
 
   @Test
@@ -606,6 +632,7 @@ public class CheckPointGatewayGrammarTest {
             "bond3",
             "eth0",
             "eth1",
+            "eth2",
             "eth10",
             "eth11",
             "eth12",
@@ -660,6 +687,7 @@ public class CheckPointGatewayGrammarTest {
             "bond3",
             "eth0",
             "eth1",
+            "eth2",
             "eth10",
             "eth11",
             "eth12",
@@ -674,6 +702,8 @@ public class CheckPointGatewayGrammarTest {
       assertThat(iface.getAddress(), equalTo(ConcreteInterfaceAddress.parse("2.2.2.1/24")));
       assertThat(iface.getEncapsulationVlan(), equalTo(2));
       assertThat(iface.getInterfaceType(), equalTo(InterfaceType.AGGREGATE_CHILD));
+      // Parent bond group contains two physical interfaces
+      assertThat(iface.getBandwidth(), equalTo(2 * DEFAULT_ETH_SPEED));
     }
     {
       // bond3.3 is on, but bond3 is off
@@ -681,6 +711,8 @@ public class CheckPointGatewayGrammarTest {
       assertFalse(iface.getActive());
       assertThat(iface.getEncapsulationVlan(), equalTo(3));
       assertThat(iface.getInterfaceType(), equalTo(InterfaceType.AGGREGATE_CHILD));
+      // Parent bond group contains one physical interface
+      assertThat(iface.getBandwidth(), equalTo(DEFAULT_ETH_SPEED));
     }
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("eth10.4092");
@@ -688,6 +720,8 @@ public class CheckPointGatewayGrammarTest {
       assertThat(iface.getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.10.10.1/24")));
       assertThat(iface.getEncapsulationVlan(), equalTo(4092));
       assertThat(iface.getInterfaceType(), equalTo(InterfaceType.LOGICAL));
+      // Parent interface has configured speed 10Mbps
+      assertThat(iface.getBandwidth(), equalTo(10e6));
     }
     {
       // eth11.4093 is on, but eth11 is off
@@ -696,6 +730,8 @@ public class CheckPointGatewayGrammarTest {
       assertThat(iface.getAddress(), equalTo(ConcreteInterfaceAddress.parse("11.11.11.1/24")));
       assertThat(iface.getEncapsulationVlan(), equalTo(4093));
       assertThat(iface.getInterfaceType(), equalTo(InterfaceType.LOGICAL));
+      // Parent interface has no configured speed
+      assertThat(iface.getBandwidth(), equalTo(DEFAULT_ETH_SPEED));
     }
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("eth12.4094");

@@ -740,9 +740,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Rmsdp_cache_sa_stateContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rmsdp_sa_filterContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rmsdpp_sa_filterContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_areaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_area_filterlistContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_area_nssaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_area_stubContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_auto_costContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_default_informationContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_default_metricContext;
@@ -750,8 +747,11 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_max_metricContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_maximum_pathsContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_router_idContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_vrfContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Roa_filterlistContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Roa_interfaceContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Roa_nssaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Roa_rangeContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Roa_stubContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Roc_networkContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Roc_passiveContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rodl_acl_inContext;
@@ -770,6 +770,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Route_targetContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Router_bgp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Router_id_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Router_isis_stanzaContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rovc_noContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rp_extcommunity_set_rtContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rp_isis_metric_typeContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rp_metric_typeContext;
@@ -2528,13 +2529,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void enterRo_area(Ro_areaContext ctx) {
-    long areaNum = toLong(ctx.area);
-    _currentOspfArea = _currentOspfProcess.getAreas().computeIfAbsent(areaNum, OspfArea::new);
-    _currentOspfSettings = _currentOspfArea.getOspfSettings();
-  }
-
-  @Override
   public void enterRo_vrf(Ro_vrfContext ctx) {
     Ip routerId = _currentOspfProcess.getRouterId();
     _lastKnownOspfProcess = _currentOspfProcess.getName();
@@ -2815,9 +2809,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void enterS_router_ospf(S_router_ospfContext ctx) {
     String procName = ctx.name.getText();
-    if (ctx.vrf != null) {
-      _currentVrf = ctx.vrf.getText();
-    }
     _currentOspfProcess =
         currentVrf().getOspfProcesses().computeIfAbsent(procName, OspfProcess::new);
     _currentOspfSettings = _currentOspfProcess.getOspfSettings();
@@ -5906,13 +5897,20 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
+  public void enterRo_area(Ro_areaContext ctx) {
+    long areaNum = toLong(ctx.area);
+    _currentOspfArea = _currentOspfProcess.getAreas().computeIfAbsent(areaNum, OspfArea::new);
+    _currentOspfSettings = _currentOspfArea.getOspfSettings();
+  }
+
+  @Override
   public void exitRo_area(Ro_areaContext ctx) {
     _currentOspfArea = null;
     _currentOspfSettings = _currentOspfProcess.getOspfSettings();
   }
 
   @Override
-  public void exitRo_area_filterlist(Ro_area_filterlistContext ctx) {
+  public void exitRoa_filterlist(Roa_filterlistContext ctx) {
     String prefixListName = ctx.list.getText();
     _configuration.referenceStructure(
         PREFIX_LIST, prefixListName, OSPF_AREA_FILTER_LIST, ctx.list.getStart().getLine());
@@ -5920,9 +5918,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void exitRo_area_nssa(Ro_area_nssaContext ctx) {
-    long areaNum = toLong(ctx.area);
-    OspfArea area = _currentOspfProcess.getAreas().computeIfAbsent(areaNum, OspfArea::new);
+  public void exitRoa_nssa(Roa_nssaContext ctx) {
+    OspfArea area = _currentOspfArea;
     NssaSettings settings = area.getOrCreateNssaSettings();
     if (ctx.default_information_originate != null) {
       settings.setDefaultInformationOriginate(true);
@@ -5936,33 +5933,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void exitRo_area_range(CiscoXrParser.Ro_area_rangeContext ctx) {
-    long areaNum = toLong(ctx.area);
-    OspfArea area = _currentOspfProcess.getAreas().computeIfAbsent(areaNum, OspfArea::new);
-    Prefix prefix;
-    if (ctx.area_prefix != null) {
-      prefix = Prefix.parse(ctx.area_prefix.getText());
-    } else {
-      prefix = Prefix.create(toIp(ctx.area_ip), toIp(ctx.area_subnet));
-    }
-    boolean advertise = ctx.NOT_ADVERTISE() == null;
-    Long cost = ctx.cost == null ? null : toLong(ctx.cost);
-
-    area.getSummaries()
-        .put(
-            prefix,
-            new OspfAreaSummary(
-                advertise
-                    ? SummaryRouteBehavior.ADVERTISE_AND_INSTALL_DISCARD
-                    : SummaryRouteBehavior.NOT_ADVERTISE_AND_NO_DISCARD,
-                cost));
-  }
-
-  @Override
-  public void exitRo_area_stub(Ro_area_stubContext ctx) {
-    long areaNum = toLong(ctx.area);
-    OspfArea area = _currentOspfProcess.getAreas().computeIfAbsent(areaNum, OspfArea::new);
-    StubSettings settings = area.getOrCreateStubSettings();
+  public void exitRoa_stub(Roa_stubContext ctx) {
+    StubSettings settings = _currentOspfArea.getOrCreateStubSettings();
     if (ctx.no_summary != null) {
       settings.setNoSummary(true);
     }
@@ -6042,7 +6014,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void exitRo_no(CiscoXrParser.Ro_noContext ctx) {
+  public void exitRovc_no(Rovc_noContext ctx) {
     OspfProcess proc = _currentOspfProcess;
     if (ctx.DEFAULT_INFORMATION() != null) {
       proc.setDefaultInformationOriginate(null);

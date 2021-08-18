@@ -13,77 +13,48 @@ ro_address_family
 
 ro_area
 :
-   AREA area = ospf_area NEWLINE ro_area_inner*
+   AREA area = ospf_area
+   (
+      ro_area_block
+      // Single line area commands below this
+      | roa_default_cost
+      | roa_filterlist
+      | roa_mpls
+      | roa_nssa
+      | roa_range
+      | roa_stub
+   )
+;
+
+ro_area_block
+:
+   NEWLINE ro_area_inner*
 ;
 
 ro_area_inner
 :
   ro_common
+  | roa_default_cost
+  | roa_filterlist
   | roa_interface
   | roa_mpls
   | roa_nssa
   | roa_range
+  | roa_stub
 ;
 
-ro_area_default_cost
+roa_default_cost
 :
-   AREA ospf_area DEFAULT_COST cost = uint_legacy NEWLINE
+   DEFAULT_COST cost = uint_legacy NEWLINE
 ;
 
-ro_area_filterlist
+roa_filterlist
 :
-   AREA area = ospf_area FILTER_LIST PREFIX list = variable
+   FILTER_LIST PREFIX list = variable
    (
       IN
       | OUT
    ) NEWLINE
-;
-
-ro_area_nssa
-:
-   AREA area = ospf_area NSSA
-   (
-      (
-         default_information_originate = DEFAULT_INFORMATION_ORIGINATE
-         (
-            (
-               METRIC metric = uint_legacy
-            )
-            |
-            (
-               METRIC_TYPE metric_type = uint_legacy
-            )
-         )*
-      )
-      | no_redistribution = NO_REDISTRIBUTION
-      | no_summary = NO_SUMMARY
-   )* NEWLINE
-;
-
-ro_area_range
-:
-   AREA area = ospf_area RANGE
-   (
-      (
-         area_ip = IP_ADDRESS area_subnet = IP_ADDRESS
-      )
-      | area_prefix = IP_PREFIX
-   )
-   (
-      ADVERTISE
-      | NOT_ADVERTISE
-   )?
-   (
-      COST cost = uint_legacy
-   )? NEWLINE
-;
-
-ro_area_stub
-:
-   AREA area = ospf_area STUB
-   (
-      no_summary = NO_SUMMARY
-   )* NEWLINE
 ;
 
 roc_authentication
@@ -181,20 +152,12 @@ ro_maximum_paths
 
 roc_network: NETWORK ospf_network_type NEWLINE;
 
-ro_no
-:
-   NO (
-      DEFAULT_INFORMATION ORIGINATE
-      | DEFAULT_METRIC uint_legacy
-   ) NEWLINE
-;
-
 roa_nssa
 :
    NSSA
    (
       (
-         DEFAULT_INFORMATION_ORIGINATE
+         default_information_originate = DEFAULT_INFORMATION_ORIGINATE
          (
             (
                METRIC uint_legacy
@@ -205,8 +168,16 @@ roa_nssa
             )
          )*
       )
-      | NO_REDISTRIBUTION
-      | NO_SUMMARY
+      | no_redistribution = NO_REDISTRIBUTION
+      | no_summary = NO_SUMMARY
+   )* NEWLINE
+;
+
+roa_stub
+:
+   STUB
+   (
+      no_summary = NO_SUMMARY
    )* NEWLINE
 ;
 
@@ -214,8 +185,7 @@ roc_null
 :
    NO?
    (
-      AREA variable AUTHENTICATION
-      | AUTO_COST
+      AUTO_COST
       | BFD
       | CAPABILITY
       | DEAD_INTERVAL
@@ -273,19 +243,38 @@ ro_router_id
    ROUTER_ID ip = IP_ADDRESS NEWLINE
 ;
 
-ro_summary_address
+// Configuration for the current (VRF-level) OSPF process. See rovc_no.
+ro_vrf_common
 :
-   SUMMARY_ADDRESS network = IP_ADDRESS mask = IP_ADDRESS NOT_ADVERTISE?
-   NEWLINE
+  ro_address_family
+  | ro_area
+  | ro_auto_cost
+  | ro_common
+  | ro_default_information
+  | ro_default_metric
+  | ro_distance
+  | ro_distribute_list_out
+  | ro_max_metric
+  | ro_maximum_paths
+  | ro_mpls
+  | rovc_no
+  | ro_redistribute
+  | ro_router_id
+;
+
+// Negated configuration for the current (VRF-level) OSPF process. See ro_vrf_common
+rovc_no
+:
+  NO (
+    DEFAULT_INFORMATION ORIGINATE
+    | DEFAULT_METRIC uint_legacy
+  ) NEWLINE
 ;
 
 ro_vrf
 :
    VRF name = variable NEWLINE
-   (
-      ro_max_metric
-      | ro_redistribute
-   )*
+   ro_vrf_common*
 ;
 
 roc_cost
@@ -371,31 +360,9 @@ rov3_null
 
 s_router_ospf
 :
-   ROUTER OSPF name = variable
+   ROUTER OSPF name = variable NEWLINE
    (
-      VRF vrf = variable
-   )? NEWLINE
-   (
-      ro_address_family
-      | ro_area
-      | ro_area_default_cost
-      | ro_area_filterlist
-      | ro_area_nssa
-      | ro_area_range
-      | ro_area_stub
-      | ro_auto_cost
-      | ro_common
-      | ro_default_information
-      | ro_default_metric
-      | ro_distance
-      | ro_distribute_list_out
-      | ro_max_metric
-      | ro_maximum_paths
-      | ro_mpls
-      | ro_no
-      | ro_redistribute
-      | ro_router_id
-      | ro_summary_address
+      ro_vrf_common
       | ro_vrf
    )*
 ;

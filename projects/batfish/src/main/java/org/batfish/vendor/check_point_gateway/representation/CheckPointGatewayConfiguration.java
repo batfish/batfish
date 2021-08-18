@@ -176,12 +176,11 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
 
     Optional<Integer> parentBondingGroupOpt = getParentBondingGroupNumber(iface);
     if (parentBondingGroupOpt.isPresent()) {
-      Integer parentBondingGroup = parentBondingGroupOpt.get();
-      newIface.setChannelGroup(parentBondingGroup.toString());
-      Interface parentBondInterface = _interfaces.get(getBondInterfaceName(parentBondingGroup));
+      String parentBondIfaceName = getBondInterfaceName(parentBondingGroupOpt.get());
+      Interface parentBondInterface = _interfaces.get(parentBondIfaceName);
       assert parentBondInterface != null;
       newIface
-          .setChannelGroup(parentBondingGroup.toString())
+          .setChannelGroup(parentBondIfaceName)
           // Member interface inherits some configuration from parent bonding group
           .setMtu(parentBondInterface.getMtuEffective());
     } else {
@@ -191,11 +190,26 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
           .setMtu(iface.getMtuEffective());
     }
 
+    Double speed = iface.getLinkSpeedEffective();
+    if (speed != null) {
+      newIface.setSpeed(speed);
+      newIface.setBandwidth(speed);
+    }
     if (iface.getVlanId() != null) {
       newIface.setEncapsulationVlan(iface.getVlanId());
     }
     if (iface.getParentInterface() != null) {
-      assert _interfaces.containsKey(iface.getParentInterface());
+      Interface parent = _interfaces.get(iface.getParentInterface());
+      // This is a subinterface. Its speed can't be set explicitly.
+      // If its parent is physical, this interface should inherit the parent's speed/bw now.
+      // If its parent is a bond interface, then this interface's bandwidth will be set after
+      // the parent's bandwidth is calculated post-conversion.
+      assert parent != null;
+      Double parentSpeed = parent.getLinkSpeedEffective();
+      if (parentSpeed != null) {
+        newIface.setSpeed(parentSpeed);
+        newIface.setBandwidth(parentSpeed);
+      }
       newIface.setDependencies(
           ImmutableList.of(new Dependency(iface.getParentInterface(), DependencyType.BIND)));
     }

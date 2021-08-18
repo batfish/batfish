@@ -211,13 +211,28 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
     private @Nonnull RibDelta<AnnotatedRoute<AbstractRoute>> processAffectedRoute(
         AnnotatedRoute<AbstractRoute> affectedRoute,
         Collection<AnnotatedRoute<AbstractRoute>> remainingAffectedRoutes) {
+      if (_backupRoutes.containsEntry(affectedRoute.getNetwork(), affectedRoute)
+          && !extractRoutes(affectedRoute.getNetwork()).contains(affectedRoute)) {
+        // The affected route is currently in backup. It cannot be activated nor deactivated until
+        // all better routes have been removed/deactivated. It has already been removed from the
+        // resolution graph, and its affected routes should have already been queued when a better
+        // route was activated.
+        assert !_resolutionGraph.containsVertex(affectedRoute);
+        return RibDelta.empty();
+      }
       RibDelta<AnnotatedRoute<AbstractRoute>> delta;
-      boolean isNextHopIpRoute = isNextHopIpRoute(affectedRoute);
-      if (isNextHopIpRoute) {
+      // TODO: Change to checking for just isNextHopIpRoute when this class handles (de)activation
+      //       of nonrecursive static routes instead of relying on StaticRouteHelper in subsequent
+      //       iteration.
+      boolean isRecursiveNextHopIpRoute = isRecursiveNextHopIpRoute(affectedRoute);
+      if (isRecursiveNextHopIpRoute) {
         if (!_routesByNextHopIp
             .get(affectedRoute.getRoute().getNextHopIp())
             .contains(affectedRoute)) {
-          // This route was explicitly removed and should not be re-evaluated.
+          // The affected route was explicitly removed by a client remove call. Such a route cannot
+          // be re-activated, has already been removed from the resolution graph, and its affected
+          // routes should already have been queued.
+          assert !_resolutionGraph.containsVertex(affectedRoute);
           return RibDelta.empty();
         }
         Set<AnnotatedRoute<AbstractRoute>> initialLpm = lpmIfValid(affectedRoute);
@@ -240,7 +255,8 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
       } else {
         delta = RibDelta.empty();
       }
-      if (_resolutionRestriction.test(affectedRoute) && (!isNextHopIpRoute || !delta.isEmpty())) {
+      if (_resolutionRestriction.test(affectedRoute)
+          && (!isRecursiveNextHopIpRoute || !delta.isEmpty())) {
         getAffectedRoutes(affectedRoute.getNetwork()).forEach(remainingAffectedRoutes::add);
       }
       return delta;

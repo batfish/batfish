@@ -1,7 +1,5 @@
 package org.batfish.vendor.check_point_gateway.representation;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
-
 import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -17,7 +15,9 @@ public class Interface implements Serializable {
     THOUSAND_M_FULL,
   }
 
+  public static final double DEFAULT_ETH_SPEED = 1E9;
   public static final int DEFAULT_INTERFACE_MTU = 1500;
+  public static final int DEFAULT_LOOPBACK_MTU = 65536;
 
   public Interface(String name) {
     _state = true;
@@ -47,6 +47,28 @@ public class Interface implements Serializable {
     return _linkSpeed;
   }
 
+  /**
+   * Returns effective link speed in bits per second, or null if not applicable (e.g., this is an
+   * aggregated or logical interface)
+   */
+  public @Nullable Double getLinkSpeedEffective() {
+    if (_linkSpeed == null) {
+      return getDefaultSpeed(_name);
+    }
+    switch (_linkSpeed) {
+      case TEN_M_FULL:
+      case TEN_M_HALF:
+        return 10E6;
+      case HUNDRED_M_FULL:
+      case HUNDRED_M_HALF:
+        return 100E6;
+      case THOUSAND_M_FULL:
+        return 1000E6;
+      default:
+        throw new IllegalStateException("Unsupported link speed " + _linkSpeed);
+    }
+  }
+
   @Nullable
   public Integer getMtu() {
     return _mtu;
@@ -54,7 +76,7 @@ public class Interface implements Serializable {
 
   /** Returns the effective MTU for this interface, even if not explicitly configured. */
   public int getMtuEffective() {
-    return firstNonNull(_mtu, DEFAULT_INTERFACE_MTU);
+    return _mtu != null ? _mtu : getDefaultMtu(_name);
   }
 
   @Nonnull
@@ -105,6 +127,24 @@ public class Interface implements Serializable {
 
   public void setVlanId(@Nullable Integer vlanId) {
     _vlanId = vlanId;
+  }
+
+  /** Default MTU for an interface with the given name */
+  public static int getDefaultMtu(String name) {
+    if (name.startsWith("lo")) {
+      return DEFAULT_LOOPBACK_MTU;
+    }
+    return DEFAULT_INTERFACE_MTU;
+  }
+
+  /** Default link speed in bits per second for an interface with the given name */
+  public static @Nullable Double getDefaultSpeed(String name) {
+    // Use default ethernet speed for physical interfaces.
+    // Exclude subinterfaces (their speed should equal their parent's speed).
+    if (name.startsWith("eth") && !name.contains(".")) {
+      return DEFAULT_ETH_SPEED;
+    }
+    return null;
   }
 
   @Nullable private ConcreteInterfaceAddress _address;
