@@ -2392,6 +2392,19 @@ public final class XrGrammarTest {
     assertNotNull(parseVendorConfig(hostname));
   }
 
+  /** Test that the parser stays within a vrf context the entire time. */
+  @Test
+  public void testOspfVrfGrammar() {
+    String hostname = "xr-ospf-vrf-grammar";
+    CiscoXrConfiguration vc = parseVendorConfig(hostname);
+    assertThat(
+        vc.getVrfs().get("FOO").getOspfProcesses().get("1").getRouterId(),
+        equalTo(Ip.parse("2.2.2.2")));
+    assertThat(
+        vc.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcesses().get("1").getRouterId(),
+        equalTo(Ip.parse("1.1.1.1")));
+  }
+
   @Test
   public void testTftpParsing() {
     String hostname = "xr-tftp";

@@ -152,14 +152,6 @@ ro_maximum_paths
 
 roc_network: NETWORK ospf_network_type NEWLINE;
 
-ro_no
-:
-   NO (
-      DEFAULT_INFORMATION ORIGINATE
-      | DEFAULT_METRIC uint_legacy
-   ) NEWLINE
-;
-
 roa_nssa
 :
    NSSA
@@ -251,19 +243,38 @@ ro_router_id
    ROUTER_ID ip = IP_ADDRESS NEWLINE
 ;
 
-ro_summary_address
+// Configuration for the current (VRF-level) OSPF process. See rovc_no.
+ro_vrf_common
 :
-   SUMMARY_ADDRESS network = IP_ADDRESS mask = IP_ADDRESS NOT_ADVERTISE?
-   NEWLINE
+  ro_address_family
+  | ro_area
+  | ro_auto_cost
+  | ro_common
+  | ro_default_information
+  | ro_default_metric
+  | ro_distance
+  | ro_distribute_list_out
+  | ro_max_metric
+  | ro_maximum_paths
+  | ro_mpls
+  | rovc_no
+  | ro_redistribute
+  | ro_router_id
+;
+
+// Negated configuration for the current (VRF-level) OSPF process. See ro_vrf_common
+rovc_no
+:
+  NO (
+    DEFAULT_INFORMATION ORIGINATE
+    | DEFAULT_METRIC uint_legacy
+  ) NEWLINE
 ;
 
 ro_vrf
 :
    VRF name = variable NEWLINE
-   (
-      ro_max_metric
-      | ro_redistribute
-   )*
+   ro_vrf_common*
 ;
 
 roc_cost
@@ -349,26 +360,9 @@ rov3_null
 
 s_router_ospf
 :
-   ROUTER OSPF name = variable
+   ROUTER OSPF name = variable NEWLINE
    (
-      VRF vrf = variable
-   )? NEWLINE
-   (
-      ro_address_family
-      | ro_area
-      | ro_auto_cost
-      | ro_common
-      | ro_default_information
-      | ro_default_metric
-      | ro_distance
-      | ro_distribute_list_out
-      | ro_max_metric
-      | ro_maximum_paths
-      | ro_mpls
-      | ro_no
-      | ro_redistribute
-      | ro_router_id
-      | ro_summary_address
+      ro_vrf_common
       | ro_vrf
    )*
 ;
