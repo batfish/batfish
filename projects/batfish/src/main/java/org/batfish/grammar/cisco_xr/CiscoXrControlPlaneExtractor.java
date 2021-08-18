@@ -770,6 +770,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Route_targetContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Router_bgp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Router_id_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Router_isis_stanzaContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rovc_noContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rp_extcommunity_set_rtContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rp_isis_metric_typeContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rp_metric_typeContext;
@@ -2808,9 +2809,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void enterS_router_ospf(S_router_ospfContext ctx) {
     String procName = ctx.name.getText();
-    if (ctx.vrf != null) {
-      _currentVrf = ctx.vrf.getText();
-    }
     _currentOspfProcess =
         currentVrf().getOspfProcesses().computeIfAbsent(procName, OspfProcess::new);
     _currentOspfSettings = _currentOspfProcess.getOspfSettings();
@@ -6016,7 +6014,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void exitRo_no(CiscoXrParser.Ro_noContext ctx) {
+  public void exitRovc_no(Rovc_noContext ctx) {
     OspfProcess proc = _currentOspfProcess;
     if (ctx.DEFAULT_INFORMATION() != null) {
       proc.setDefaultInformationOriginate(null);
