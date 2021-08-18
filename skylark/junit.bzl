@@ -76,38 +76,42 @@ def junit_tests(name, srcs, skip_pmd = False, **kwargs):
     if len(srcs) == 0:
         return
 
+    # Create a java library containing all the test sources
+    lib_kwargs = dict(**kwargs)  # have to remove non-java_library args
+    lib_kwargs.pop("size", "")
+    testlib_name = name + "_testlib"
+    java_library(
+        name = testlib_name,
+        srcs = srcs,
+        testonly = True,
+        **lib_kwargs
+    )
+
+    # generate a JUnit Suite java file for all the test sources
     s_name = name.replace("-", "_") + "TestSuite"
     test_files = [s for s in srcs if s.endswith("Test.java")]
-
-    # generate a JUnit suite and a java_test that runs it
     _GenSuite(
         name = s_name,
         srcs = test_files,
         outname = s_name,
     )
+
+    # Run a Java test with suite source file, and existing deps + new testlib
+    test_kwargs = dict(**kwargs)
+    test_deps = list(kwargs.pop("deps", []))
     java_test(
         name = name,
         test_class = s_name,
-        srcs = srcs + [":" + s_name],
+        srcs = [":" + s_name],
+        deps = test_deps + [":" + testlib_name],
         **kwargs
     )
 
-    # Generate a java library and a pmd_test that checks it
+    # If PMD is on, generate the pmd_test
     if skip_pmd:
         return
 
-    lib_kwargs = dict(**kwargs)  # have to remove non-java_library args
-    lib_kwargs.pop("size", "")
-    lib_tags = lib_kwargs.pop("tags", [])
-    lib_tags.append("pmd_test")
-    java_library(
-        name = name + "_pmdlib",
-        srcs = srcs,
-        testonly = True,
-        tags = lib_tags,
-        **lib_kwargs
-    )
     pmd_test(
         name = name + "_pmd",
-        lib = name + "_pmdlib",
+        lib = testlib_name,
     )
