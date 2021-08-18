@@ -45,6 +45,7 @@ import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
+import org.batfish.vendor.ConversionContext;
 import org.batfish.vendor.VendorConfiguration;
 
 /** Storage backend for loading and storing persistent data used by Batfish */
@@ -813,6 +814,23 @@ public interface StorageProvider {
    */
   @Nonnull
   Optional<String> loadExternalBgpAnnouncementsFile(NetworkSnapshot snapshot) throws IOException;
+
+  /**
+   * Loads the {@link ConversionContext} for the given {@link NetworkSnapshot}, if present.
+   *
+   * @throws FileNotFoundException if there is no serialized {@link ConversionContext}
+   * @throws IOException if there is an error deserializing
+   */
+  @Nonnull
+  ConversionContext loadConversionContext(NetworkSnapshot snapshot) throws IOException;
+
+  /**
+   * Stores the {@link ConversionContext} for the given {@link NetworkSnapshot}.
+   *
+   * @throws IOException if there is an error
+   */
+  void storeConversionContext(ConversionContext conversionContext, NetworkSnapshot snapshot)
+      throws IOException;
 
   /**
    * Loads the answer element that is the result of parsing vendor configurations for the given
