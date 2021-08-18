@@ -679,23 +679,33 @@ public class FileBasedStorage implements StorageProvider {
   public @Nonnull String loadAnswer(NetworkId networkId, SnapshotId snapshotId, AnswerId answerId)
       throws IOException {
     Path answerPath = getAnswerPath(networkId, snapshotId, answerId);
-    if (!Files.exists(answerPath)) {
-      throw new FileNotFoundException(String.format("Could not find answer with ID: %s", answerId));
+    if (Files.exists(answerPath)) {
+      return readFileToString(answerPath, UTF_8);
     }
-    return readFileToString(answerPath, UTF_8);
+    // look for the answer in the legacy location
+    Path oldAnswerPath = getOldAnswerPath(answerId);
+    if (Files.exists(oldAnswerPath)) {
+      return readFileToString(oldAnswerPath, UTF_8);
+    }
+    throw new FileNotFoundException(String.format("Could not find answer with ID: %s", answerId));
   }
 
   @Override
   public @Nonnull AnswerMetadata loadAnswerMetadata(
-      NetworkId networkId, SnapshotId snapshotId, AnswerId answerId)
-      throws FileNotFoundException, IOException {
+      NetworkId networkId, SnapshotId snapshotId, AnswerId answerId) throws IOException {
     Path answerMetadataPath = getAnswerMetadataPath(networkId, snapshotId, answerId);
-    if (!Files.exists(answerMetadataPath)) {
-      throw new FileNotFoundException(
-          String.format("Could not find answer metadata for ID: %s", answerId));
+    if (Files.exists(answerMetadataPath)) {
+      return BatfishObjectMapper.mapper()
+          .readValue(answerMetadataPath.toFile(), new TypeReference<AnswerMetadata>() {});
     }
-    return BatfishObjectMapper.mapper()
-        .readValue(answerMetadataPath.toFile(), new TypeReference<AnswerMetadata>() {});
+    // look for the answer metadata in the legacy location
+    Path oldAnswerMetadataPath = getOldAnswerMetadataPath(answerId);
+    if (Files.exists(oldAnswerMetadataPath)) {
+      return BatfishObjectMapper.mapper()
+          .readValue(oldAnswerMetadataPath.toFile(), new TypeReference<AnswerMetadata>() {});
+    }
+    throw new FileNotFoundException(
+        String.format("Could not find answer metadata for ID: %s", answerId));
   }
 
   @VisibleForTesting
@@ -704,9 +714,20 @@ public class FileBasedStorage implements StorageProvider {
     return getAnswerDir(networkId, snapshotId, answerId).resolve(RELPATH_ANSWER_JSON);
   }
 
+  @VisibleForTesting
+  @Nonnull
+  Path getOldAnswerPath(AnswerId answerId) {
+    return getOldAnswerDir(answerId).resolve(RELPATH_ANSWER_JSON);
+  }
+
   private @Nonnull Path getAnswerMetadataPath(
       NetworkId networkId, SnapshotId snapshotId, AnswerId answerId) {
     return getAnswerDir(networkId, snapshotId, answerId).resolve(RELPATH_ANSWER_METADATA);
+  }
+
+  @Nonnull
+  Path getOldAnswerMetadataPath(AnswerId answerId) {
+    return getOldAnswerDir(answerId).resolve(RELPATH_ANSWER_METADATA);
   }
 
   @Override
@@ -725,7 +746,8 @@ public class FileBasedStorage implements StorageProvider {
 
   @Override
   public boolean hasAnswerMetadata(NetworkId networkId, SnapshotId snapshotId, AnswerId answerId) {
-    return Files.exists(getAnswerMetadataPath(networkId, snapshotId, answerId));
+    return Files.exists(getAnswerMetadataPath(networkId, snapshotId, answerId))
+        || Files.exists(getOldAnswerMetadataPath(answerId));
   }
 
   @Override
@@ -784,15 +806,26 @@ public class FileBasedStorage implements StorageProvider {
     return getNodeRolesDir(networkId).resolve(String.format("%s%s", nodeRolesId.getId(), ".json"));
   }
 
+  @VisibleForTesting
+  @Nonnull
+  Path getOldNodeRolesPath(NodeRolesId nodeRolesId) {
+    return getOldNodeRolesDir().resolve(String.format("%s%s", nodeRolesId.getId(), ".json"));
+  }
+
   @Override
-  public String loadNodeRoles(NetworkId networkId, NodeRolesId nodeRolesId)
-      throws FileNotFoundException, IOException {
-    return readFileToString(getNodeRolesPath(networkId, nodeRolesId), UTF_8);
+  public String loadNodeRoles(NetworkId networkId, NodeRolesId nodeRolesId) throws IOException {
+    Path nodeRolesPath = getNodeRolesPath(networkId, nodeRolesId);
+    if (Files.exists(nodeRolesPath)) {
+      return readFileToString(getNodeRolesPath(networkId, nodeRolesId), UTF_8);
+    }
+    // try at the legacy location
+    return readFileToString(getOldNodeRolesPath(nodeRolesId), UTF_8);
   }
 
   @Override
   public boolean hasNodeRoles(NetworkId networkId, NodeRolesId nodeRolesId) {
-    return Files.exists(getNodeRolesPath(networkId, nodeRolesId));
+    return Files.exists(getNodeRolesPath(networkId, nodeRolesId))
+        || Files.exists(getOldNodeRolesPath(nodeRolesId));
   }
 
   @Override
@@ -1224,7 +1257,8 @@ public class FileBasedStorage implements StorageProvider {
     }
   }
 
-  private void writeStringToFile(Path file, CharSequence data, Charset charset) throws IOException {
+  @VisibleForTesting
+  void writeStringToFile(Path file, CharSequence data, Charset charset) throws IOException {
     Path sanitizedFile = validatePath(file);
     Path tmpFile = Files.createTempFile(null, null);
     try {
@@ -1687,10 +1721,19 @@ public class FileBasedStorage implements StorageProvider {
     return getSnapshotOutputDir(networkId, snapshotId).resolve(RELPATH_ANSWERS_DIR);
   }
 
+  private @Nonnull Path getOldAnswersDir() {
+    return _baseDir.resolve(RELPATH_ANSWERS_DIR);
+  }
+
   @VisibleForTesting
   @Nonnull
   Path getAnswerDir(NetworkId networkId, SnapshotId snapshotId, AnswerId answerId) {
     return getAnswersDir(networkId, snapshotId).resolve(answerId.getId());
+  }
+
+  @Nonnull
+  private Path getOldAnswerDir(AnswerId answerId) {
+    return getOldAnswersDir().resolve(answerId.getId());
   }
 
   private @Nonnull Path getNetworkAnalysisDir(NetworkId network, AnalysisId analysis) {
@@ -1720,6 +1763,10 @@ public class FileBasedStorage implements StorageProvider {
 
   private Path getNodeRolesDir(NetworkId networkId) {
     return getNetworkDir(networkId).resolve(RELPATH_NODE_ROLES_DIR);
+  }
+
+  private Path getOldNodeRolesDir() {
+    return _baseDir.resolve(RELPATH_NODE_ROLES_DIR);
   }
 
   private @Nonnull Path getQuestionDir(

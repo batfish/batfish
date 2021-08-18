@@ -66,6 +66,8 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.SnapshotMetadata;
+import org.batfish.datamodel.answers.AnswerMetadata;
+import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
@@ -74,6 +76,7 @@ import org.batfish.datamodel.isp_configuration.IspFilter;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
 import org.batfish.identifiers.NetworkId;
+import org.batfish.identifiers.NodeRolesId;
 import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.specifier.InterfaceLocation;
@@ -345,6 +348,41 @@ public final class FileBasedStorageTest {
     assertThat(content, equalTo(loaded));
   }
 
+  /**
+   * Test that node roles are loaded from the legacy location if nothing is found in the primary
+   * location
+   */
+  @Test
+  public void testLoadNodeRoles_old() throws IOException {
+    NetworkId networkId = new NetworkId("network");
+    NodeRolesId nodeRolesId = new NodeRolesId("nodeRoles");
+    String nodeRolesData = "stringData";
+
+    Path nodeRolesPath = _storage.getOldNodeRolesPath(nodeRolesId);
+    _storage.mkdirs(nodeRolesPath.getParent());
+    _storage.writeStringToFile(nodeRolesPath, nodeRolesData, UTF_8);
+
+    assertThat(_storage.loadNodeRoles(networkId, nodeRolesId), equalTo(nodeRolesData));
+
+    _thrown.expect(FileNotFoundException.class);
+    _storage.loadNodeRoles(networkId, new NodeRolesId("missing"));
+  }
+
+  /** Test that the response considers the old location of node roles */
+  @Test
+  public void testHasLoadNodeRoles_old() throws IOException {
+    NetworkId networkId = new NetworkId("network");
+    NodeRolesId nodeRolesId = new NodeRolesId("nodeRoles");
+    String nodeRolesData = "stringData";
+
+    Path nodeRolesPath = _storage.getOldNodeRolesPath(nodeRolesId);
+    _storage.mkdirs(nodeRolesPath.getParent());
+    _storage.writeStringToFile(nodeRolesPath, nodeRolesData, UTF_8);
+
+    assertTrue(_storage.hasNodeRoles(networkId, nodeRolesId));
+    assertFalse(_storage.hasNodeRoles(networkId, new NodeRolesId("missing")));
+  }
+
   @Test
   public void testLoadSnapshotInputObjectFile() throws IOException {
     NetworkId network = new NetworkId("network");
@@ -464,6 +502,73 @@ public final class FileBasedStorageTest {
         containsInAnyOrder(
             new StoredObjectMetadata(key1, content1.getBytes().length),
             new StoredObjectMetadata(key2, content2.getBytes().length)));
+  }
+
+  /**
+   * Test that the answer is loaded from the legacy location if nothing is found in the primary
+   * location
+   */
+  @Test
+  public void testLoadAnswer_old() throws IOException {
+    NetworkId networkId = new NetworkId("network");
+    SnapshotId snapshotId = new SnapshotId("snapshot");
+    AnswerId answerId = new AnswerId("answerId");
+    String answerStr = "answerStr";
+
+    Path answerPath = _storage.getOldAnswerPath(answerId);
+    _storage.mkdirs(answerPath);
+    _storage.writeStringToFile(answerPath, answerStr, UTF_8);
+
+    assertThat(_storage.loadAnswer(networkId, snapshotId, answerId), equalTo(answerStr));
+
+    _thrown.expect(FileNotFoundException.class);
+    _storage.loadAnswer(networkId, snapshotId, new AnswerId("missing"));
+  }
+
+  /**
+   * Test that the answer metadata is loaded from the legacy location if nothing is found in the
+   * primary location
+   */
+  @Test
+  public void testLoadAnswerMetadata_old() throws IOException {
+    NetworkId networkId = new NetworkId("network");
+    SnapshotId snapshotId = new SnapshotId("snapshot");
+    AnswerId answerId = new AnswerId("answerId");
+    AnswerMetadata answerMetadata =
+        AnswerMetadata.builder().setStatus(AnswerStatus.SUCCESS).build();
+
+    Path answerMetadataPath = _storage.getOldAnswerMetadataPath(answerId);
+    _storage.mkdirs(answerMetadataPath.getParent());
+    _storage.writeStringToFile(
+        answerMetadataPath, BatfishObjectMapper.writeString(answerMetadata), UTF_8);
+
+    assertThat(
+        _storage.loadAnswerMetadata(networkId, snapshotId, answerId), equalTo(answerMetadata));
+
+    _thrown.expect(FileNotFoundException.class);
+    _storage.loadAnswerMetadata(networkId, snapshotId, new AnswerId("missing"));
+  }
+
+  /**
+   * Test that response considers the legacy location if nothing is found in the primary location of
+   * the metadata
+   */
+  @Test
+  public void testHasAnswerMetadata_old() throws IOException {
+    NetworkId networkId = new NetworkId("network");
+    SnapshotId snapshotId = new SnapshotId("snapshot");
+    AnswerId answerId = new AnswerId("answerId");
+    AnswerMetadata answerMetadata =
+        AnswerMetadata.builder().setStatus(AnswerStatus.SUCCESS).build();
+
+    Path answerMetadataPath = _storage.getOldAnswerMetadataPath(answerId);
+    _storage.mkdirs(answerMetadataPath.getParent());
+    _storage.writeStringToFile(
+        answerMetadataPath, BatfishObjectMapper.writeString(answerMetadata), UTF_8);
+
+    assertTrue(_storage.hasAnswerMetadata(networkId, snapshotId, answerId));
+
+    assertFalse(_storage.hasAnswerMetadata(networkId, snapshotId, new AnswerId("missing")));
   }
 
   @Test
