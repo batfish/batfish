@@ -77,6 +77,7 @@ import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.specifier.InterfaceLocation;
+import org.batfish.vendor.ConversionContext;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -124,6 +125,39 @@ public final class FileBasedStorageTest {
     assertThat(
         _storage.loadConfigurations(new NetworkId("nonexistent"), new SnapshotId("nonexistent")),
         nullValue());
+  }
+
+  @Test
+  public void testStoreAndLoadConversionContext() throws IOException {
+    NetworkSnapshot snapshot =
+        new NetworkSnapshot(new NetworkId("network"), new SnapshotId("snapshot"));
+
+    ConversionContext conversionContext = new ConversionContext();
+    _storage.storeConversionContext(conversionContext, snapshot);
+
+    ConversionContext loadedContext = _storage.loadConversionContext(snapshot);
+    assertThat(loadedContext, instanceOf(ConversionContext.class));
+  }
+
+  @Test
+  public void testLoadConversionContext_fileNotFound() throws IOException {
+    _thrown.expect(FileNotFoundException.class);
+    _storage.loadConversionContext(
+        new NetworkSnapshot(new NetworkId("network"), new SnapshotId("snapshot")));
+  }
+
+  @Test
+  public void testLoadConversionContext_deserializationFailure() throws IOException {
+    NetworkId networkId = new NetworkId("network");
+    SnapshotId snapshotId = new SnapshotId("snapshot");
+
+    String fooString = "foo"; // not a ConversionContext
+    Path conversionContextPath = _storage.getConversionContextPath(networkId, snapshotId);
+    _storage.serializeObject(fooString, conversionContextPath);
+
+    _thrown.expect(IOException.class);
+    _thrown.expectMessage(containsString("Failed to deserialize ConversionContext"));
+    _storage.loadConversionContext(new NetworkSnapshot(networkId, snapshotId));
   }
 
   @Test

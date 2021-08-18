@@ -25,6 +25,7 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
 import static org.batfish.main.ReachabilityParametersResolver.resolveReachabilityParameters;
 import static org.batfish.main.StreamDecoder.decodeStreamAndAppendNewline;
 import static org.batfish.specifier.LocationInfoUtils.computeLocationInfo;
+import static org.batfish.vendor.ConversionContext.EMPTY_CONVERSION_CONTEXT;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -235,6 +236,7 @@ import org.batfish.storage.FileBasedStorage;
 import org.batfish.storage.StorageProvider;
 import org.batfish.symbolic.IngressLocation;
 import org.batfish.topology.TopologyProviderImpl;
+import org.batfish.vendor.ConversionContext;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.version.BatfishVersion;
 import org.codehaus.jettison.json.JSONException;
@@ -864,6 +866,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private Map<String, Configuration> convertConfigurations(
       Map<String, VendorConfiguration> vendorConfigurations,
+      ConversionContext conversionContext,
       SnapshotRuntimeData runtimeData,
       ConvertConfigurationAnswerElement answerElement) {
     _logger.info("\n*** CONVERTING VENDOR CONFIGURATIONS TO INDEPENDENT FORMAT ***\n");
@@ -873,7 +876,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     for (Entry<String, VendorConfiguration> config : vendorConfigurations.entrySet()) {
       VendorConfiguration vc = config.getValue();
       ConvertConfigurationJob job =
-          new ConvertConfigurationJob(_settings, runtimeData, vc, config.getKey());
+          new ConvertConfigurationJob(
+              _settings, conversionContext, runtimeData, vc, config.getKey());
       jobs.add(job);
     }
     BatfishJobExecutor.runJobsInExecutor(
@@ -974,10 +978,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
   /** Returns a map of hostname to VI {@link Configuration} */
   public Map<String, Configuration> getConfigurations(
       Map<String, VendorConfiguration> vendorConfigurations,
+      ConversionContext conversionContext,
       SnapshotRuntimeData runtimeData,
       ConvertConfigurationAnswerElement answerElement) {
     Map<String, Configuration> configurations =
-        convertConfigurations(vendorConfigurations, runtimeData, answerElement);
+        convertConfigurations(vendorConfigurations, conversionContext, runtimeData, answerElement);
 
     identifyDeviceTypes(configurations.values());
     return configurations;
@@ -2378,6 +2383,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
         answer.addAnswerElement(answerElement);
       }
 
+      ConversionContext conversionContext;
+      try {
+        conversionContext = _storage.loadConversionContext(snapshot);
+      } catch (IOException e) {
+        throw new UncheckedIOException(e);
+      }
       SnapshotRuntimeData runtimeData =
           firstNonNull(
               _storage.loadRuntimeData(snapshot.getNetwork(), snapshot.getSnapshot()),
@@ -2390,7 +2401,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
       try (Scope childScope = GlobalTracer.get().scopeManager().activate(span)) {
         assert childScope != null; // avoid unused warning
         vendorConfigs = _storage.loadVendorConfigurations(snapshot);
-        configurations = getConfigurations(vendorConfigs, runtimeData, answerElement);
+        configurations =
+            getConfigurations(vendorConfigs, conversionContext, runtimeData, answerElement);
       } catch (IOException e) {
         throw new UncheckedIOException(e);
       } finally {
@@ -2836,6 +2848,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     if (!configsFound) {
       throw new BatfishException("No valid configurations found in snapshot");
+    }
+
+    // serialize any context needed for conversion (this does not include any configs)
+    try {
+      // TODO Populate conversion context
+      _storage.storeConversionContext(EMPTY_CONVERSION_CONTEXT, snapshot);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
     }
 
     // serialize warnings

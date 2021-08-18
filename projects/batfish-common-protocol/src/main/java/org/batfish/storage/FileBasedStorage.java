@@ -97,6 +97,7 @@ import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
+import org.batfish.vendor.ConversionContext;
 import org.batfish.vendor.VendorConfiguration;
 
 /** A utility class that abstracts the underlying file system storage used by Batfish. */
@@ -124,6 +125,7 @@ public class FileBasedStorage implements StorageProvider {
   private static final String RELPATH_METADATA_FILE = "metadata.json";
   private static final String RELPATH_FORK_REQUEST_FILE = "fork_request";
   private static final String RELPATH_ENV_TOPOLOGY_FILE = "env_topology";
+  private static final String RELPATH_CONVERSION_CONTEXT = "conversion_context";
   private static final String RELPATH_CONVERT_ANSWER_PATH = "convert_answer";
   private static final String RELPATH_ANSWERS_DIR = "answers";
   private static final String RELPATH_ANSWER_METADATA = "answer_metadata.json";
@@ -207,6 +209,22 @@ public class FileBasedStorage implements StorageProvider {
       return deserializeObjects(namesByPath, Configuration.class);
     } catch (BatfishException e) {
       return null;
+    }
+  }
+
+  @Override
+  public @Nonnull ConversionContext loadConversionContext(NetworkSnapshot snapshot)
+      throws IOException {
+    Path ccPath = getConversionContextPath(snapshot.getNetwork(), snapshot.getSnapshot());
+    if (!Files.exists(ccPath)) {
+      throw new FileNotFoundException();
+    }
+    try {
+      return deserializeObject(ccPath, ConversionContext.class);
+    } catch (BatfishException e) {
+      throw new IOException(
+          String.format(
+              "Failed to deserialize ConversionContext: %s", Throwables.getStackTraceAsString(e)));
     }
   }
 
@@ -458,6 +476,20 @@ public class FileBasedStorage implements StorageProvider {
     storeConfigurations(outputDir, batchName, configurations);
   }
 
+  @Override
+  public void storeConversionContext(ConversionContext conversionContext, NetworkSnapshot snapshot)
+      throws IOException {
+    Path ccPath = getConversionContextPath(snapshot.getNetwork(), snapshot.getSnapshot());
+    mkdirs(ccPath.getParent());
+    serializeObject(conversionContext, ccPath);
+  }
+
+  @VisibleForTesting
+  @Nonnull
+  Path getConversionContextPath(NetworkId network, SnapshotId snapshot) {
+    return getSnapshotOutputDir(network, snapshot).resolve(RELPATH_CONVERSION_CONTEXT);
+  }
+
   private @Nonnull Path getConvertAnswerPath(NetworkId network, SnapshotId snapshot) {
     return getSnapshotOutputDir(network, snapshot).resolve(RELPATH_CONVERT_ANSWER_PATH);
   }
@@ -564,7 +596,8 @@ public class FileBasedStorage implements StorageProvider {
    * Writes a single object of the given class to the given file. Uses the {@link FileBasedStorage}
    * default file encoding including serialization format and compression.
    */
-  private void serializeObject(Serializable object, Path outputFile) {
+  @VisibleForTesting
+  void serializeObject(Serializable object, Path outputFile) {
     Path sanitizedOutputFile = validatePath(outputFile);
     try {
       Path tmpFile = Files.createTempFile(null, null);
