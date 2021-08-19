@@ -2116,6 +2116,41 @@ public final class WorkMgrTest {
     assertThat(filtered.getSummary().getNumResults(), equalTo(1));
   }
 
+  /** Test that you can filter by a value column. */
+  @Test
+  public void testProcessAnswerTable2FilteredValue() {
+    TableAnswerElement table =
+        new TableAnswerElement(
+            new TableMetadata(
+                ImmutableList.of(
+                    new ColumnMetadata("key", Schema.STRING, "the key column", true, false),
+                    new ColumnMetadata("value", Schema.STRING, "the value column", false, true))));
+    Row row1 = Row.of("key", "key1", "value", "value1");
+    Row row2 = Row.of("key", "key2", "value", "value2");
+    table.addRow(row1);
+    table.addRow(row2);
+    AnswerRowsOptions optionsNotFiltered =
+        new AnswerRowsOptions(
+            ImmutableSet.of(), ImmutableList.of(), Integer.MAX_VALUE, 0, ImmutableList.of(), false);
+    AnswerRowsOptions optionsFiltered =
+        new AnswerRowsOptions(
+            ImmutableSet.of("value"), // project onto the value column
+            ImmutableList.of(new ColumnFilter("value", "2")),
+            Integer.MAX_VALUE,
+            0,
+            ImmutableList.of(),
+            false);
+
+    TableView notFiltered = _manager.processAnswerTable2(table, optionsNotFiltered);
+    TableView filtered = _manager.processAnswerTable2(table, optionsFiltered);
+
+    assertThat(notFiltered.getInnerRows(), equalTo(ImmutableList.of(row1, row2)));
+    assertThat(filtered.getInnerRows(), equalTo(ImmutableList.of(Row.of("value", "value2"))));
+
+    assertThat(notFiltered.getSummary().getNumResults(), equalTo(2));
+    assertThat(filtered.getSummary().getNumResults(), equalTo(1));
+  }
+
   @Test
   public void testProcessAnswerTable2Filtered() {
     String columnName = "val";

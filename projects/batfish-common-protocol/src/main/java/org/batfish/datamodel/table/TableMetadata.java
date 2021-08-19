@@ -46,11 +46,6 @@ public class TableMetadata {
       }
     }
 
-    checkArgument(
-        columnMetadata.stream().anyMatch(ColumnMetadata::getIsKey),
-        "Invalid TableMetadata: no key columns in %s",
-        columnMetadata);
-
     // if textDesc is null, make one up using key columns
     String desc = textDesc;
     if (desc == null) {
