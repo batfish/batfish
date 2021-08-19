@@ -9,6 +9,9 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import org.batfish.datamodel.TraceElement;
+import org.batfish.datamodel.routing_policy.expr.ExplicitAs;
+import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
+import org.batfish.datamodel.routing_policy.statement.ExcludeAsPath;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
@@ -61,5 +64,14 @@ public class TracingHintsStripperTest {
                 ImmutableList.of(
                     new TraceableStatement(
                         TraceElement.of(STRIP_TOKEN), ImmutableList.of(new If()))))));
+  }
+
+  @Test
+  public void testVisitExcludeAsPath() {
+    ExcludeAsPath excludeAsPath =
+        new ExcludeAsPath(new LiteralAsList(ImmutableList.of(new ExplicitAs(1L))));
+
+    assertThat(
+        excludeAsPath, equalTo((ExcludeAsPath) excludeAsPath.accept(TRACING_HINTS_STRIPPER, null)));
   }
 }

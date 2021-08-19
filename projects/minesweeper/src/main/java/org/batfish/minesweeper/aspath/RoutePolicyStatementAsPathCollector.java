@@ -76,8 +76,6 @@ public class RoutePolicyStatementAsPathCollector
   @Override
   public Set<SymbolicAsPathRegex> visitExcludeAsPath(
       ExcludeAsPath excludeAsPath, Configuration arg) {
-    // if/when we update TransferBDD to support AS-path prepending, we will need to update this as
-    // well
     return ImmutableSet.of();
   }
 

@@ -1278,6 +1278,14 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testCumulusFrrVrfRouteMapSetExcludeAsPath() {
+    String name = "ROUTE-MAP-NAME";
+    parse(String.format("route-map %s permit 10\nset as-path exclude 11111 22222 33333\n", name));
+    RouteMapEntry entry = _frr.getRouteMaps().get(name).getEntries().get(10);
+    assertThat(entry.getSetExcludeAsPath().getAsns(), contains(11111L, 22222L, 33333L));
+  }
+
+  @Test
   public void testCumulusFrrVrfRouteMapSetMetric() {
     String name = "ROUTE-MAP-NAME";
 

@@ -19,7 +19,10 @@ import org.batfish.datamodel.routing_policy.communities.InputCommunities;
 import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
+import org.batfish.datamodel.routing_policy.expr.ExplicitAs;
+import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
 import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
+import org.batfish.datamodel.routing_policy.statement.ExcludeAsPath;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.minesweeper.CommunityVar;
@@ -97,5 +100,13 @@ public class RoutePolicyStatementVarCollectorTest {
     assertEquals(
         _varCollector.visitTraceableStatement(traceableStatement, _baseConfig),
         ImmutableSet.of(CommunityVar.from(COMM1)));
+  }
+
+  @Test
+  public void testVisitExcludeAsPath() {
+    ExcludeAsPath excludeAsPath =
+        new ExcludeAsPath(new LiteralAsList(ImmutableList.of(new ExplicitAs(1L))));
+
+    assertEquals(ImmutableSet.of(), _varCollector.visitExcludeAsPath(excludeAsPath, _baseConfig));
   }
 }

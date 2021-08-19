@@ -76,7 +76,7 @@ public final class ExcludeAsPath extends Statement {
               AsPath.of(
                   ImmutableList.<AsSet>builder()
                       .addAll(
-                          outputRoute.getAsPath().getAsSets().stream()
+                          ir.getAsPath().getAsSets().stream()
                               .filter(currentAsSet -> !excludeAsPath.contains(currentAsSet))
                               .collect(Collectors.toSet()))
                       .build()));
