@@ -19,15 +19,17 @@ public class RouteMapSetExcludeAsPath implements RouteMapSet {
     _asns = asns;
   }
 
-  @Nonnull @Override public Stream<Statement> toStatements(Configuration c,
-      CumulusConcatenatedConfiguration vc, Warnings w) {
-    List<AsExpr> asExprs = _asns.stream()
-        .map(ExplicitAs::new)
-        .collect(ImmutableList.toImmutableList());
+  @Nonnull
+  @Override
+  public Stream<Statement> toStatements(
+      Configuration c, CumulusConcatenatedConfiguration vc, Warnings w) {
+    List<AsExpr> asExprs =
+        _asns.stream().map(ExplicitAs::new).collect(ImmutableList.toImmutableList());
     return Stream.of(new ExcludeAsPath(new LiteralAsList(asExprs)));
   }
 
-  @Nonnull public List<Long> getAsns() {
+  @Nonnull
+  public List<Long> getAsns() {
     return _asns;
   }
 }
