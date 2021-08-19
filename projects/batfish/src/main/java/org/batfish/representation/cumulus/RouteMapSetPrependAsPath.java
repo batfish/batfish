@@ -14,7 +14,6 @@ import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 
 /** Clause of set as-path prepend in route map. */
-// TODO rename RouteMapSetPrependAsPath
 @ParametersAreNonnullByDefault
 public class RouteMapSetPrependAsPath implements RouteMapSet {
 

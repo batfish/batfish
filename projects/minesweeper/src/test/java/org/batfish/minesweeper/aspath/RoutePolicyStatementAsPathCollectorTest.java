@@ -10,10 +10,13 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.TraceElement;
+import org.batfish.datamodel.routing_policy.expr.ExplicitAs;
 import org.batfish.datamodel.routing_policy.expr.ExplicitAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
+import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
 import org.batfish.datamodel.routing_policy.expr.RegexAsPathSetElem;
 import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
+import org.batfish.datamodel.routing_policy.statement.ExcludeAsPath;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
@@ -100,5 +103,14 @@ public class RoutePolicyStatementAsPathCollectorTest {
     assertEquals(
         ImmutableSet.of(new SymbolicAsPathRegex(ASPATH1), new SymbolicAsPathRegex(ASPATH2)),
         result);
+  }
+
+  @Test
+  public void testVisitExcludeAsPath() {
+    ExcludeAsPath excludeAsPath =
+        new ExcludeAsPath(new LiteralAsList(ImmutableList.of(new ExplicitAs(1L))));
+
+    assertEquals(
+        ImmutableSet.of(), _asPathCollector.visitExcludeAsPath(excludeAsPath, _baseConfig));
   }
 }

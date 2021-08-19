@@ -186,7 +186,6 @@ public final class RouteMapEntry implements Serializable {
     _description = description;
   }
 
-  // TODO: check usage
   public void setSetAsPath(@Nullable RouteMapSetPrependAsPath setAsPath) {
     _setAsPath = setAsPath;
   }

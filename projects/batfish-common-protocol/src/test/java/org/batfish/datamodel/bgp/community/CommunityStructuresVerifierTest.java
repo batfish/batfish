@@ -89,6 +89,7 @@ import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.Comment;
+import org.batfish.datamodel.routing_policy.statement.ExcludeAsPath;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
@@ -162,6 +163,8 @@ public final class CommunityStructuresVerifierTest {
     assertNull(new Comment("a").accept(STATEMENT_VERIFIER, ctx));
     assertNull(
         new PrependAsPath(new LiteralAsList(ImmutableList.of())).accept(STATEMENT_VERIFIER, ctx));
+    assertNull(
+        new ExcludeAsPath(new LiteralAsList(ImmutableList.of())).accept(STATEMENT_VERIFIER, ctx));
     assertNull(new SetAdministrativeCost(new LiteralInt(1)).accept(STATEMENT_VERIFIER, ctx));
     assertNull(new SetDefaultPolicy("a").accept(STATEMENT_VERIFIER, ctx));
     assertNull(
