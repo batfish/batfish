@@ -1038,7 +1038,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
         return null;
       }
       return BatfishObjectMapper.mapper()
-          .readValue(_storage.loadNodeRoles(networkNodeRolesIdOpt.get()), NodeRolesData.class);
+          .readValue(
+              _storage.loadNodeRoles(networkId, networkNodeRolesIdOpt.get()), NodeRolesData.class);
     } catch (IOException e) {
       _logger.errorf("Could not read roles data: %s", e);
       return null;
@@ -1507,7 +1508,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
             networkId, _snapshot, questionId, networkNodeRolesId, referenceSnapshot, analysisId);
 
     _storage.storeAnswerMetadata(
-        AnswerMetadataUtil.computeAnswerMetadata(answer, _logger), baseAnswerId);
+        networkId,
+        _snapshot,
+        AnswerMetadataUtil.computeAnswerMetadata(answer, _logger),
+        baseAnswerId);
   }
 
   /** Parse AWS configurations for a single account (possibly with multiple regions) */
@@ -2542,7 +2546,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
         snapshotNodeRoles.setRoleMappings(ImmutableList.of(autoRoles.get()));
         snapshotNodeRoles.setType(Type.AUTO);
       }
-      _storage.storeNodeRoles(snapshotNodeRoles.build(), snapshotNodeRolesId);
+      _storage.storeNodeRoles(
+          snapshot.getNetwork(), snapshotNodeRoles.build(), snapshotNodeRolesId);
     } catch (IOException e) {
       _logger.warnf("Could not update node roles: %s", e);
     }
@@ -3221,7 +3226,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     AnswerId baseAnswerId =
         _idResolver.getAnswerId(
             networkId, _snapshot, questionId, networkNodeRolesId, referenceSnapshot, analysisId);
-    _storage.storeAnswer(structuredAnswerString, baseAnswerId);
+    _storage.storeAnswer(networkId, _snapshot, structuredAnswerString, baseAnswerId);
   }
 
   private void writeJsonAnswerWithLog(

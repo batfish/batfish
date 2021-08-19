@@ -148,20 +148,27 @@ public interface StorageProvider {
   /**
    * Store the answer to an ad-hoc or analysis question.
    *
+   * @param network The id of the network
+   * @param snapshot The id of the snapshot
    * @param answerStr The text of the answer
    * @param answerId The ID of the answer
    * @throws IOException if there is an error
    */
-  void storeAnswer(String answerStr, AnswerId answerId) throws IOException;
+  void storeAnswer(NetworkId network, SnapshotId snapshot, String answerStr, AnswerId answerId)
+      throws IOException;
 
   /**
    * Store the metadata for the answer to an ad-hoc or analysis question.
    *
+   * @param network The id of the network
+   * @param snapshot The id of the snapshot
    * @param answerMetadata The metadata to store
    * @param answerId The ID of the answer
    * @throws IOException if there is an error
    */
-  void storeAnswerMetadata(AnswerMetadata answerMetadata, AnswerId answerId) throws IOException;
+  void storeAnswerMetadata(
+      NetworkId network, SnapshotId snapshot, AnswerMetadata answerMetadata, AnswerId answerId)
+      throws IOException;
 
   /**
    * Load the text of a JSON-serialized ad-hoc or analysis question
@@ -190,30 +197,38 @@ public interface StorageProvider {
   /**
    * Load the JSON-serialized answer to an ad-hoc or analysis question.
    *
+   * @param network The id of the network
+   * @param snapshot The id of the snapshot
    * @param answerId The ID of the answer
    * @throws FileNotFoundException if answer does not exist; {@link IOException} if there is an
    *     error reading the answer.
    */
   @Nonnull
-  String loadAnswer(AnswerId answerId) throws FileNotFoundException, IOException;
+  String loadAnswer(NetworkId network, SnapshotId snapshot, AnswerId answerId)
+      throws FileNotFoundException, IOException;
 
   /**
    * Load the metadata for the answer to an ad-hoc or analysis question.
    *
+   * @param network The id of the network
+   * @param snapshot The id of the snapshot
    * @param answerId The ID of the answer
    * @throws FileNotFoundException if answer metadata does not exist; {@link IOException} if there
    *     is an error reading the answer metadata.
    */
   @Nonnull
-  AnswerMetadata loadAnswerMetadata(AnswerId answerId) throws FileNotFoundException, IOException;
+  AnswerMetadata loadAnswerMetadata(NetworkId network, SnapshotId snapshot, AnswerId answerId)
+      throws FileNotFoundException, IOException;
 
   /**
    * Returns {@code true} iff the answer metadata for the specified ID exists.
    *
+   * @param network The id of the network
+   * @param snapshot The id of the snapshot
    * @param answerId The ID of the answer
    */
   @Nonnull
-  boolean hasAnswerMetadata(AnswerId answerId);
+  boolean hasAnswerMetadata(NetworkId network, SnapshotId snapshot, AnswerId answerId);
 
   /**
    * Stores a question with the specified name and text.
@@ -300,27 +315,32 @@ public interface StorageProvider {
   /**
    * Write the node roles data for the given ID.
    *
+   * @param network The id of the network
    * @throws IOException if there is an error
    */
-  void storeNodeRoles(NodeRolesData nodeRolesData, NodeRolesId nodeRolesId) throws IOException;
+  void storeNodeRoles(NetworkId network, NodeRolesData nodeRolesData, NodeRolesId nodeRolesId)
+      throws IOException;
 
   /**
    * Read the node roles data with the given ID.
    *
+   * @param network The id of the network
    * @throws FileNotFoundException if the roles do not exist
    * @throws IOException if there is an error reading the roles.
    */
   @Nonnull
-  String loadNodeRoles(NodeRolesId nodeRolesId) throws FileNotFoundException, IOException;
+  String loadNodeRoles(NetworkId network, NodeRolesId nodeRolesId)
+      throws FileNotFoundException, IOException;
 
   /** Returns true iff the network with the specified ID has node roles */
-  boolean hasNodeRoles(NodeRolesId nodeRolesId);
+  boolean hasNodeRoles(NetworkId network, NodeRolesId nodeRolesId);
 
   /** Initialize an empty network */
   void initNetwork(NetworkId networkId);
 
   /** Delete answer metadata for given ID */
-  void deleteAnswerMetadata(AnswerId answerId) throws FileNotFoundException, IOException;
+  void deleteAnswerMetadata(NetworkId network, SnapshotId snapshot, AnswerId answerId)
+      throws IOException;
 
   /**
    * Provide a stream from which a network-wide extended object for the given key may be read
