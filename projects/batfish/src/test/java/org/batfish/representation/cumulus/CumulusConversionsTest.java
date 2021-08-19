@@ -269,10 +269,10 @@ public final class CumulusConversionsTest {
     // Cache initialization only happens in AsPathAccessList on deserialization o.O
     viList = SerializationUtils.clone(viList);
 
-    List<AsPathAccessListLine> expectedViLines = ImmutableList.of(new AsPathAccessListLine(
-            LineAction.DENY,
-            denied_regex),
-        new AsPathAccessListLine(LineAction.PERMIT, permitted_regex));
+    List<AsPathAccessListLine> expectedViLines =
+        ImmutableList.of(
+            new AsPathAccessListLine(LineAction.DENY, denied_regex),
+            new AsPathAccessListLine(LineAction.PERMIT, permitted_regex));
     assertThat(viList, equalTo(new AsPathAccessList("name", expectedViLines)));
 
     // Matches paths containing permitted ASN

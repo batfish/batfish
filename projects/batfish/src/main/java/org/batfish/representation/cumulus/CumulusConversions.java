@@ -135,7 +135,6 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.Layer3Vni;
 import org.batfish.datamodel.vxlan.Vni;
-import org.batfish.representation.cumulus.IpAsPathAccessListLine;
 import org.batfish.vendor.VendorStructureId;
 
 /** Utilities that convert Cumulus-specific representations to vendor-independent model. */
