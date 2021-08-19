@@ -1782,14 +1782,14 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     } else if (ctx.DENY() != null) {
       return LineAction.DENY;
     } else {
-      throw new BatfishException(String.format(
-          "Could not convert to %s: %s",
-          LineAction.class.getSimpleName(),
-          getFullText(ctx)));
+      throw new BatfishException(
+          String.format(
+              "Could not convert to %s: %s", LineAction.class.getSimpleName(), getFullText(ctx)));
     }
   }
 
-  @Override public void exitIp_as_path(Ip_as_pathContext ctx) {
+  @Override
+  public void exitIp_as_path(Ip_as_pathContext ctx) {
     String name = ctx.name.getText();
     LineAction action = toLineAction(ctx.action);
     String regex = ctx.as_path_regex.getText();
