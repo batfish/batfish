@@ -241,7 +241,6 @@ import org.batfish.representation.cumulus.RouteMapMatchSourceProtocol;
 import org.batfish.representation.cumulus.RouteMapMatchSourceProtocol.Protocol;
 import org.batfish.representation.cumulus.RouteMapMatchTag;
 import org.batfish.representation.cumulus.RouteMapMetricType;
-import org.batfish.representation.cumulus.RouteMapSetPrependAsPath;
 import org.batfish.representation.cumulus.RouteMapSetCommListDelete;
 import org.batfish.representation.cumulus.RouteMapSetCommunity;
 import org.batfish.representation.cumulus.RouteMapSetExcludeAsPath;
@@ -249,6 +248,7 @@ import org.batfish.representation.cumulus.RouteMapSetIpNextHopLiteral;
 import org.batfish.representation.cumulus.RouteMapSetLocalPreference;
 import org.batfish.representation.cumulus.RouteMapSetMetric;
 import org.batfish.representation.cumulus.RouteMapSetMetricType;
+import org.batfish.representation.cumulus.RouteMapSetPrependAsPath;
 import org.batfish.representation.cumulus.RouteMapSetTag;
 import org.batfish.representation.cumulus.RouteMapSetWeight;
 import org.batfish.representation.cumulus.StaticRoute;
@@ -1579,7 +1579,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
     if (ctx.action.prepend != null) {
       _currentRouteMapEntry.setSetAsPath(new RouteMapSetPrependAsPath(asns));
-    }else if (ctx.action.exclude != null){
+    } else if (ctx.action.exclude != null) {
       _currentRouteMapEntry.setSetExcludeAsPath(new RouteMapSetExcludeAsPath(asns));
     }
   }
