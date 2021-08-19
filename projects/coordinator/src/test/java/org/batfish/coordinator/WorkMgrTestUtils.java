@@ -80,7 +80,7 @@ public final class WorkMgrTestUtils {
     NetworkId networkId = idManager.getNetworkId(network).get();
     SnapshotId snapshotId = idManager.getSnapshotId(snapshot, networkId).get();
     NodeRolesId snapshotNodeRolesId = idManager.getSnapshotNodeRolesId(networkId, snapshotId);
-    Main.getWorkMgr().getStorage().storeNodeRoles(nodeRolesData, snapshotNodeRolesId);
+    Main.getWorkMgr().getStorage().storeNodeRoles(networkId, nodeRolesData, snapshotNodeRolesId);
   }
 
   public static void initWorkManager(IdManager idManager, StorageProvider storage) {
@@ -196,8 +196,8 @@ public final class WorkMgrTestUtils {
       String answerStr = BatfishObjectMapper.writeString(answer);
       AnswerMetadata answerMetadata =
           AnswerMetadataUtil.computeAnswerMetadata(answer, Main.getLogger());
-      storage.storeAnswer(answerStr, answerId);
-      storage.storeAnswerMetadata(answerMetadata, answerId);
+      storage.storeAnswer(networkId, snapshotId, answerStr, answerId);
+      storage.storeAnswerMetadata(networkId, snapshotId, answerMetadata, answerId);
     }
   }
 }
