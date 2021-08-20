@@ -51,7 +51,7 @@ public final class Package extends TypedManagementObject {
   private static @Nonnull InstallationTargets deserializeInstallationTargets(
       JsonNode installationTargets) {
     if (installationTargets instanceof TextNode) {
-      String text = ((TextNode) installationTargets).textValue();
+      String text = installationTargets.textValue();
       checkArgument(
           text.equals("all"),
           "Unsupported text value for installation-targets (expected \"all\"): %s",

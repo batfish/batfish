@@ -19,12 +19,18 @@ public final class NatRulebase extends ManagementObject {
     return _addressSpaces;
   }
 
+  public @Nonnull List<NatRuleOrSection> getRulebase() {
+    return _rulebase;
+  }
+
   @JsonCreator
   private static @Nonnull NatRulebase create(
       @JsonProperty(PROP_OBJECTS_DICTIONARY) @Nullable
           List<TypedManagementObject> objectsDictionary,
+      @JsonProperty(PROP_RULEBASE) @Nullable List<NatRuleOrSection> rulebase,
       @JsonProperty(PROP_UID) @Nullable Uid uid) {
     checkArgument(objectsDictionary != null, "Missing %s", PROP_OBJECTS_DICTIONARY);
+    checkArgument(rulebase != null, "Missing %s", PROP_RULEBASE);
     checkArgument(uid != null, "Missing %s", PROP_UID);
     Map<Uid, AddressSpace> addressSpaces =
         objectsDictionary.stream()
@@ -32,13 +38,14 @@ public final class NatRulebase extends ManagementObject {
             .collect(
                 ImmutableMap.toImmutableMap(
                     TypedManagementObject::getUid, obj -> (AddressSpace) obj));
-    return new NatRulebase(addressSpaces, uid);
+    return new NatRulebase(addressSpaces, rulebase, uid);
   }
 
   @VisibleForTesting
-  NatRulebase(Map<Uid, AddressSpace> addressSpaces, Uid uid) {
+  NatRulebase(Map<Uid, AddressSpace> addressSpaces, List<NatRuleOrSection> rulebase, Uid uid) {
     super(uid);
     _addressSpaces = addressSpaces;
+    _rulebase = rulebase;
   }
 
   @Override
@@ -47,15 +54,17 @@ public final class NatRulebase extends ManagementObject {
       return false;
     }
     NatRulebase that = (NatRulebase) o;
-    return _addressSpaces.equals(that._addressSpaces);
+    return _addressSpaces.equals(that._addressSpaces) && _rulebase.equals(that._rulebase);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(baseHashcode(), _addressSpaces);
+    return Objects.hash(baseHashcode(), _addressSpaces, _rulebase);
   }
 
   private static final String PROP_OBJECTS_DICTIONARY = "objects-dictionary";
+  private static final String PROP_RULEBASE = "rulebase";
 
   private final @Nonnull Map<Uid, AddressSpace> _addressSpaces;
+  private final @Nonnull List<NatRuleOrSection> _rulebase;
 }
