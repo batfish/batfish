@@ -20,23 +20,32 @@ import org.batfish.common.util.BatfishObjectMapper;
 public final class Package extends TypedManagementObject {
 
   @VisibleForTesting
-  Package(InstallationTargets installationTargets, String name, boolean natPolicy, Uid uid) {
+  Package(
+      Domain domain,
+      InstallationTargets installationTargets,
+      String name,
+      boolean natPolicy,
+      Uid uid) {
     super(name, uid);
+    _domain = domain;
     _installationTargets = installationTargets;
     _natPolicy = natPolicy;
   }
 
   @JsonCreator
   private static @Nonnull Package create(
+      @JsonProperty(PROP_DOMAIN) @Nullable Domain domain,
       @JsonProperty(PROP_INSTALLATION_TARGETS) @Nullable JsonNode installationTargets,
       @JsonProperty(PROP_NAME) @Nullable String name,
       @JsonProperty(PROP_NAT_POLICY) @Nullable Boolean natPolicy,
       @JsonProperty(PROP_UID) @Nullable Uid uid) {
+    checkArgument(domain != null, "Missing %s", PROP_DOMAIN);
     checkArgument(installationTargets != null, "Missing %s", PROP_INSTALLATION_TARGETS);
     checkArgument(name != null, "Missing %s", PROP_NAME);
     checkArgument(natPolicy != null, "Missing %s", PROP_NAT_POLICY);
     checkArgument(uid != null, "Missing %s", PROP_UID);
-    return new Package(deserializeInstallationTargets(installationTargets), name, natPolicy, uid);
+    return new Package(
+        domain, deserializeInstallationTargets(installationTargets), name, natPolicy, uid);
   }
 
   private static @Nonnull InstallationTargets deserializeInstallationTargets(
@@ -69,17 +78,21 @@ public final class Package extends TypedManagementObject {
       return false;
     }
     Package that = (Package) obj;
-    return _installationTargets.equals(that._installationTargets) && _natPolicy == that._natPolicy;
+    return _domain.equals(that._domain)
+        && _installationTargets.equals(that._installationTargets)
+        && _natPolicy == that._natPolicy;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(baseHashcode(), _installationTargets, _natPolicy);
+    return Objects.hash(baseHashcode(), _domain, _installationTargets, _natPolicy);
   }
 
+  private static final String PROP_DOMAIN = "domain";
   private static final String PROP_INSTALLATION_TARGETS = "installation-targets";
   private static final String PROP_NAT_POLICY = "nat-policy";
 
+  private final @Nonnull Domain _domain;
   private final @Nonnull InstallationTargets _installationTargets;
   private final boolean _natPolicy;
 }

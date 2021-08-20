@@ -17,6 +17,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
   @JsonSubTypes.Type(value = CpmiVsxClusterMember.class, name = "CpmiVsxClusterMember"),
   @JsonSubTypes.Type(value = CpmiVsxClusterNetobj.class, name = "CpmiVsxClusterNetobj"),
   @JsonSubTypes.Type(value = CpmiVsxNetobj.class, name = "CpmiVsxNetobj"),
+  @JsonSubTypes.Type(value = Domain.class, name = "domain"),
   @JsonSubTypes.Type(value = Global.class, name = "Global"),
   @JsonSubTypes.Type(value = Group.class, name = "group"),
   @JsonSubTypes.Type(value = Host.class, name = "host"),

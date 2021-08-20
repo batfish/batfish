@@ -24,13 +24,24 @@ public final class PackageTest {
               + "\"type\":\"package\","
               + "\"uid\":\"0\","
               + "\"name\":\"foo\","
+              + "\"domain\":{"
+              + "\"type\":\"domain\","
+              + "\"uid\":\"1\","
+              + "\"name\":\"bar\""
+              + "}," // domain
               + "\"installation-targets\":\"all\","
               + "\"nat-policy\":true"
               + "}"; // Package
 
       assertThat(
           BatfishObjectMapper.ignoreUnknownMapper().readValue(input, Package.class),
-          equalTo(new Package(AllInstallationTargets.instance(), "foo", true, Uid.of("0"))));
+          equalTo(
+              new Package(
+                  new Domain("bar", Uid.of("1")),
+                  AllInstallationTargets.instance(),
+                  "foo",
+                  true,
+                  Uid.of("0"))));
     }
     {
       String input =
@@ -39,6 +50,11 @@ public final class PackageTest {
               + "\"type\":\"package\","
               + "\"uid\":\"1\","
               + "\"name\":\"foo\","
+              + "\"domain\":{"
+              + "\"type\":\"domain\","
+              + "\"uid\":\"2\","
+              + "\"name\":\"bar\""
+              + "}," // domain
               + "\"installation-targets\":["
               + "{" // object: simple-gateway
               + "\"type\":\"simple-gateway\","
@@ -54,6 +70,7 @@ public final class PackageTest {
           BatfishObjectMapper.ignoreUnknownMapper().readValue(input, Package.class),
           equalTo(
               new Package(
+                  new Domain("bar", Uid.of("2")),
                   new ListInstallationTargets(
                       ImmutableList.of(new SimpleGateway(Ip.ZERO, "foo", Uid.of("0")))),
                   "foo",
@@ -64,26 +81,70 @@ public final class PackageTest {
 
   @Test
   public void testJavaSerialization() {
-    Package obj = new Package(AllInstallationTargets.instance(), "foo", true, Uid.of("0"));
+    Package obj =
+        new Package(
+            new Domain("bar", Uid.of("1")),
+            AllInstallationTargets.instance(),
+            "foo",
+            true,
+            Uid.of("0"));
     assertEquals(obj, SerializationUtils.clone(obj));
   }
 
   @Test
   public void testEquals() {
-    Package obj = new Package(AllInstallationTargets.instance(), "foo", true, Uid.of("0"));
+    Package obj =
+        new Package(
+            new Domain("bar", Uid.of("1")),
+            AllInstallationTargets.instance(),
+            "foo",
+            true,
+            Uid.of("0"));
     new EqualsTester()
         .addEqualityGroup(
-            obj, new Package(AllInstallationTargets.instance(), "foo", true, Uid.of("0")))
+            obj,
+            new Package(
+                new Domain("bar", Uid.of("1")),
+                AllInstallationTargets.instance(),
+                "foo",
+                true,
+                Uid.of("0")))
         .addEqualityGroup(
             new Package(
+                new Domain("bar", Uid.of("2")),
+                AllInstallationTargets.instance(),
+                "foo",
+                true,
+                Uid.of("0")))
+        .addEqualityGroup(
+            new Package(
+                new Domain("bar", Uid.of("1")),
                 new ListInstallationTargets(
                     ImmutableList.of(new SimpleGateway(Ip.ZERO, "foo", Uid.of("0")))),
                 "foo",
                 true,
                 Uid.of("0")))
-        .addEqualityGroup(new Package(AllInstallationTargets.instance(), "bar", true, Uid.of("0")))
-        .addEqualityGroup(new Package(AllInstallationTargets.instance(), "foo", false, Uid.of("0")))
-        .addEqualityGroup(new Package(AllInstallationTargets.instance(), "foo", true, Uid.of("1")))
+        .addEqualityGroup(
+            new Package(
+                new Domain("bar", Uid.of("1")),
+                AllInstallationTargets.instance(),
+                "bar",
+                true,
+                Uid.of("0")))
+        .addEqualityGroup(
+            new Package(
+                new Domain("bar", Uid.of("1")),
+                AllInstallationTargets.instance(),
+                "foo",
+                false,
+                Uid.of("0")))
+        .addEqualityGroup(
+            new Package(
+                new Domain("bar", Uid.of("1")),
+                AllInstallationTargets.instance(),
+                "foo",
+                true,
+                Uid.of("1")))
         .testEquals();
   }
 }
