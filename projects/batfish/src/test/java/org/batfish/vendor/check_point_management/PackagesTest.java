@@ -23,6 +23,11 @@ public final class PackagesTest {
             + "\"type\":\"package\","
             + "\"uid\":\"0\","
             + "\"name\":\"foo\","
+            + "\"domain\":{"
+            + "\"domain-type\":\"domain\","
+            + "\"uid\":\"1\","
+            + "\"name\":\"bar\""
+            + "}," // domain
             + "\"installation-targets\":\"all\","
             + "\"nat-policy\":true"
             + "}" // package
@@ -34,7 +39,12 @@ public final class PackagesTest {
             new Packages(
                 ImmutableMap.of(
                     Uid.of("0"),
-                    new Package(AllInstallationTargets.instance(), "foo", true, Uid.of("0"))))));
+                    new Package(
+                        new Domain("bar", Uid.of("1")),
+                        AllInstallationTargets.instance(),
+                        "foo",
+                        true,
+                        Uid.of("0"))))));
   }
 
   @Test
@@ -43,7 +53,12 @@ public final class PackagesTest {
         new Packages(
             ImmutableMap.of(
                 Uid.of("0"),
-                new Package(AllInstallationTargets.instance(), "foo", true, Uid.of("0"))));
+                new Package(
+                    new Domain("bar", Uid.of("1")),
+                    AllInstallationTargets.instance(),
+                    "foo",
+                    true,
+                    Uid.of("0"))));
     assertEquals(obj, SerializationUtils.clone(obj));
   }
 
@@ -56,7 +71,12 @@ public final class PackagesTest {
             new Packages(
                 ImmutableMap.of(
                     Uid.of("0"),
-                    new Package(AllInstallationTargets.instance(), "foo", true, Uid.of("0")))))
+                    new Package(
+                        new Domain("bar", Uid.of("1")),
+                        AllInstallationTargets.instance(),
+                        "foo",
+                        true,
+                        Uid.of("0")))))
         .testEquals();
   }
 }
