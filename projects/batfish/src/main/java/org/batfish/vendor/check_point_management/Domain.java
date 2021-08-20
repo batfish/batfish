@@ -9,7 +9,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /** Data model for a domain (of exact type {@code domain}'). */
-public final class Domain extends TypedManagementObject {
+public final class Domain extends NamedManagementObject {
 
   @VisibleForTesting
   Domain(String name, Uid uid) {

@@ -25,7 +25,7 @@ public final class PackageTest {
               + "\"uid\":\"0\","
               + "\"name\":\"foo\","
               + "\"domain\":{"
-              + "\"type\":\"domain\","
+              + "\"domain-type\":\"domain\","
               + "\"uid\":\"1\","
               + "\"name\":\"bar\""
               + "}," // domain
@@ -51,7 +51,7 @@ public final class PackageTest {
               + "\"uid\":\"1\","
               + "\"name\":\"foo\","
               + "\"domain\":{"
-              + "\"type\":\"domain\","
+              + "\"domain-type\":\"domain\","
               + "\"uid\":\"2\","
               + "\"name\":\"bar\""
               + "}," // domain

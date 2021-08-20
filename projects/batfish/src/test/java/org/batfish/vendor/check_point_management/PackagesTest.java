@@ -24,7 +24,7 @@ public final class PackagesTest {
             + "\"uid\":\"0\","
             + "\"name\":\"foo\","
             + "\"domain\":{"
-            + "\"type\":\"domain\","
+            + "\"domain-type\":\"domain\","
             + "\"uid\":\"1\","
             + "\"name\":\"bar\""
             + "}," // domain

@@ -18,7 +18,7 @@ public final class DomainTest {
     String input =
         "{"
             + "\"GARBAGE\":0,"
-            + "\"type\":\"domain\","
+            + "\"domain-type\":\"domain\","
             + "\"uid\":\"1\","
             + "\"name\":\"bar\""
             + "}"; // Domain
