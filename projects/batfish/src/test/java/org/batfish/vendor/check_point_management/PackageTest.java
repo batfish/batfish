@@ -1,0 +1,89 @@
+package org.batfish.vendor.check_point_management;
+
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.collect.ImmutableList;
+import com.google.common.testing.EqualsTester;
+import org.apache.commons.lang3.SerializationUtils;
+import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.Ip;
+import org.junit.Test;
+
+/** Test of {@link Package}. */
+public final class PackageTest {
+
+  @Test
+  public void testJacksonDeserialization() throws JsonProcessingException {
+    {
+      String input =
+          "{"
+              + "\"GARBAGE\":0,"
+              + "\"type\":\"package\","
+              + "\"uid\":\"0\","
+              + "\"name\":\"foo\","
+              + "\"installation-targets\":\"all\","
+              + "\"nat-policy\":true"
+              + "}"; // Package
+
+      assertThat(
+          BatfishObjectMapper.ignoreUnknownMapper().readValue(input, Package.class),
+          equalTo(new Package(AllInstallationTargets.instance(), "foo", true, Uid.of("0"))));
+    }
+    {
+      String input =
+          "{"
+              + "\"GARBAGE\":0,"
+              + "\"type\":\"package\","
+              + "\"uid\":\"1\","
+              + "\"name\":\"foo\","
+              + "\"installation-targets\":["
+              + "{" // object: simple-gateway
+              + "\"type\":\"simple-gateway\","
+              + "\"uid\":\"0\","
+              + "\"name\":\"foo\","
+              + "\"ipv4-address\":\"0.0.0.0\""
+              + "}" // object: simple-gateway
+              + "]," // installation-targets
+              + "\"nat-policy\":true"
+              + "}"; // Package
+
+      assertThat(
+          BatfishObjectMapper.ignoreUnknownMapper().readValue(input, Package.class),
+          equalTo(
+              new Package(
+                  new ListInstallationTargets(
+                      ImmutableList.of(new SimpleGateway(Ip.ZERO, "foo", Uid.of("0")))),
+                  "foo",
+                  true,
+                  Uid.of("1"))));
+    }
+  }
+
+  @Test
+  public void testJavaSerialization() {
+    Package obj = new Package(AllInstallationTargets.instance(), "foo", true, Uid.of("0"));
+    assertEquals(obj, SerializationUtils.clone(obj));
+  }
+
+  @Test
+  public void testEquals() {
+    Package obj = new Package(AllInstallationTargets.instance(), "foo", true, Uid.of("0"));
+    new EqualsTester()
+        .addEqualityGroup(
+            obj, new Package(AllInstallationTargets.instance(), "foo", true, Uid.of("0")))
+        .addEqualityGroup(
+            new Package(
+                new ListInstallationTargets(
+                    ImmutableList.of(new SimpleGateway(Ip.ZERO, "foo", Uid.of("0")))),
+                "foo",
+                true,
+                Uid.of("0")))
+        .addEqualityGroup(new Package(AllInstallationTargets.instance(), "bar", true, Uid.of("0")))
+        .addEqualityGroup(new Package(AllInstallationTargets.instance(), "foo", false, Uid.of("0")))
+        .addEqualityGroup(new Package(AllInstallationTargets.instance(), "foo", true, Uid.of("1")))
+        .testEquals();
+  }
+}
