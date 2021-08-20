@@ -510,9 +510,6 @@ public class CheckPointGatewayGrammarTest {
                         "Cannot add an interface with a configured address to a bonding group."),
                     hasText(containsString("interface eth1"))),
                 allOf(
-                    hasComment("Cannot add non-existent interface to a bonding group."),
-                    hasText(containsString("interface eth2"))),
-                allOf(
                     hasComment(
                         "Interface is a member of a bonding group and cannot be configured"
                             + " directly."),
@@ -555,7 +552,8 @@ public class CheckPointGatewayGrammarTest {
     String bond1Name = "bond1";
     String eth0Name = "eth0";
     String eth1Name = "eth1";
-    assertThat(c.getAllInterfaces(), hasKeys(bond0Name, bond1Name, eth0Name, eth1Name));
+    String eth2Name = "eth2";
+    assertThat(c.getAllInterfaces(), hasKeys(bond0Name, bond1Name, eth0Name, eth1Name, eth2Name));
     {
       org.batfish.datamodel.Interface bond0 = c.getAllInterfaces().get(bond0Name);
       assertThat(bond0, isActive(true));
@@ -564,11 +562,13 @@ public class CheckPointGatewayGrammarTest {
           bond0,
           hasDependencies(
               containsInAnyOrder(
-                  new Dependency(eth0Name, AGGREGATE), new Dependency(eth1Name, AGGREGATE))));
-      assertThat(bond0, hasChannelGroupMembers(containsInAnyOrder(eth0Name, eth1Name)));
+                  new Dependency(eth0Name, AGGREGATE),
+                  new Dependency(eth1Name, AGGREGATE),
+                  new Dependency(eth2Name, AGGREGATE))));
+      assertThat(bond0, hasChannelGroupMembers(containsInAnyOrder(eth0Name, eth1Name, eth2Name)));
       assertThat(bond0, hasChannelGroup(nullValue()));
       assertThat(bond0, hasMtu(1234));
-      assertThat(bond0, hasBandwidth(2E9));
+      assertThat(bond0, hasBandwidth(3E9));
     }
     {
       org.batfish.datamodel.Interface bond1 = c.getAllInterfaces().get(bond1Name);
@@ -594,6 +594,14 @@ public class CheckPointGatewayGrammarTest {
       assertThat(eth1, hasChannelGroup("bond0"));
       assertThat(eth1, hasBandwidth(1E9));
     }
+    {
+      // Only referenced when adding to bonding group
+      org.batfish.datamodel.Interface eth2 = c.getAllInterfaces().get(eth2Name);
+      assertThat(eth2, isActive(true));
+      assertThat(eth2, hasInterfaceType(PHYSICAL));
+      assertThat(eth2, hasChannelGroup("bond0"));
+      assertThat(eth2, hasBandwidth(1E9));
+    }
   }
 
   @Test
@@ -602,12 +610,6 @@ public class CheckPointGatewayGrammarTest {
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
-
-    assertThat(
-        ccae,
-        hasRedFlagWarning(
-            hostname,
-            containsString("Cannot reference non-existent interface eth1 in bonding group 1000.")));
     assertThat(
         ccae,
         hasRedFlagWarning(
