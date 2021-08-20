@@ -64,8 +64,7 @@ public final class AddressRange extends AddressSpace {
       return false;
     }
     AddressRange that = (AddressRange) o;
-    return baseEquals(that)
-        && Objects.equals(_ipv4AddressFirst, that._ipv4AddressFirst)
+    return Objects.equals(_ipv4AddressFirst, that._ipv4AddressFirst)
         && Objects.equals(_ipv4AddressLast, that._ipv4AddressLast)
         && Objects.equals(_ipv6AddressFirst, that._ipv6AddressFirst)
         && Objects.equals(_ipv6AddressLast, that._ipv6AddressLast);
