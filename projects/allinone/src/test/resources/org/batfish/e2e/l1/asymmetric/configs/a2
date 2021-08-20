@@ -1,0 +1,6 @@
+!RANCID-CONTENT-TYPE: cisco
+hostname a2
+interface Ethernet1
+  no shutdown
+  no switchport
+  ip address 1.2.3.4 255.255.255.0
