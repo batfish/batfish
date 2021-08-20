@@ -66,44 +66,38 @@ public final class TableDiff {
    * keys nor values), two columns are included for base and delta values.
    */
   public static TableMetadata diffMetadata(TableMetadata inputMetadata) {
-    List<ColumnMetadata> columnMetadata = inputMetadata.getColumnMetadata();
-    checkArgument(
-        columnMetadata.stream().anyMatch(ColumnMetadata::getIsKey),
-        "Invalid TableMetadata: no key columns in %s",
-        columnMetadata);
-
-    ImmutableList.Builder<ColumnMetadata> diffColumnMetadata = ImmutableList.builder();
+    ImmutableList.Builder<ColumnMetadata> diffColumnMetatadata = ImmutableList.builder();
     // 1. Insert all key columns
-    for (ColumnMetadata cm : columnMetadata) {
+    for (ColumnMetadata cm : inputMetadata.getColumnMetadata()) {
       if (cm.getIsKey()) {
-        diffColumnMetadata.add(
+        diffColumnMetatadata.add(
             new ColumnMetadata(cm.getName(), cm.getSchema(), cm.getDescription(), true, false));
       }
     }
     String dhintText =
         "["
-            + diffColumnMetadata.build().stream()
+            + diffColumnMetatadata.build().stream()
                 .map(ColumnMetadata::getName)
                 .collect(Collectors.joining(", "))
             + "]";
 
     // 2. Insert the key status column
-    diffColumnMetadata.add(
+    diffColumnMetatadata.add(
         new ColumnMetadata(COL_KEY_PRESENCE, Schema.STRING, COL_KEY_PRESENCE_DESC, false, true));
 
     // 3. Add other columns
-    for (ColumnMetadata cm : columnMetadata) {
+    for (ColumnMetadata cm : inputMetadata.getColumnMetadata()) {
       if (cm.getIsKey()) {
         continue;
       }
-      diffColumnMetadata.add(
+      diffColumnMetatadata.add(
           new ColumnMetadata(
               baseColumnName(cm.getName()), cm.getSchema(), cm.getDescription(), false, false),
           new ColumnMetadata(
               deltaColumnName(cm.getName()), cm.getSchema(), cm.getDescription(), false, false));
     }
 
-    return new TableMetadata(diffColumnMetadata.build(), dhintText);
+    return new TableMetadata(diffColumnMetatadata.build(), dhintText);
   }
 
   /**
