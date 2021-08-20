@@ -17,6 +17,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
@@ -2212,8 +2213,22 @@ public class WorkMgr extends AbstractCoordinator {
                 rowIds.put(row, rowIds.get(rawRow));
                 return row;
               });
-      Map<String, ColumnMetadata> columnMap = new LinkedHashMap<>(rawColumnMap);
-      columnMap.keySet().retainAll(options.getColumns());
+      // TableMetadata requires at least one key. For simplicity, make them all keys.
+      Map<String, ColumnMetadata> columnMap =
+          options.getColumns().stream()
+              .collect(
+                  ImmutableMap.toImmutableMap(
+                      Function.identity(),
+                      col -> {
+                        ColumnMetadata colMetadata = rawColumnMap.get(col);
+                        return new ColumnMetadata(
+                            colMetadata.getName(),
+                            colMetadata.getSchema(),
+                            colMetadata.getDescription(),
+                            true, // isKey
+                            false // isValue
+                            );
+                      }));
       List<ColumnMetadata> columnMetadata =
           columnMap.values().stream().collect(ImmutableList.toImmutableList());
       tableMetadata = new TableMetadata(columnMetadata, rawTable.getMetadata().getTextDesc());
