@@ -38,6 +38,14 @@ public final class ManagementDomain extends NamedManagementObject {
     return Objects.hash(baseHashcode(), _gatewaysAndServers, _packages);
   }
 
+  @Override
+  public String toString() {
+    return baseToStringHelper()
+        .add("_gatewaysAndServers", _gatewaysAndServers)
+        .add("_packages", _packages)
+        .toString();
+  }
+
   private final @Nonnull Map<Uid, GatewayOrServer> _gatewaysAndServers;
   private final @Nonnull Map<Uid, ManagementPackage> _packages;
 }

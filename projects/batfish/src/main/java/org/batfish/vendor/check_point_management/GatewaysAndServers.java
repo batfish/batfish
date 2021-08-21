@@ -1,5 +1,6 @@
 package org.batfish.vendor.check_point_management;
 
+import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -54,4 +55,9 @@ public final class GatewaysAndServers implements Serializable {
   private static final String PROP_OBJECTS = "objects";
 
   private final @Nonnull Map<Uid, GatewayOrServer> _gatewaysAndServers;
+
+  @Override
+  public String toString() {
+    return toStringHelper(this).add("_gatewaysAndServers", _gatewaysAndServers).toString();
+  }
 }

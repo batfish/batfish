@@ -55,6 +55,14 @@ public final class Network extends AddressSpace {
     return Objects.hash(baseHashcode(), _subnet4, _subnetMask);
   }
 
+  @Override
+  public String toString() {
+    return baseToStringHelper()
+        .add(PROP_SUBNET4, _subnet4)
+        .add(PROP_SUBNET_MASK, _subnetMask)
+        .toString();
+  }
+
   private static final String PROP_SUBNET4 = "subnet4";
   private static final String PROP_SUBNET_MASK = "subnet-mask";
 

@@ -1,5 +1,6 @@
 package org.batfish.vendor.check_point_management;
 
+import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -45,6 +46,11 @@ public final class Packages implements Serializable {
   @Override
   public int hashCode() {
     return _packages.hashCode();
+  }
+
+  @Override
+  public String toString() {
+    return toStringHelper(this).add("_packages", _packages).toString();
   }
 
   public @Nonnull Map<Uid, Package> getPackages() {
