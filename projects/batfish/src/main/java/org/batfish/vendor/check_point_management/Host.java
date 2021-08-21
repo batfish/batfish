@@ -1,5 +1,6 @@
 package org.batfish.vendor.check_point_management;
 
+import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -46,6 +47,15 @@ public final class Host extends AddressSpace {
   @Override
   public int hashCode() {
     return Objects.hash(baseHashcode(), _ipv4Address);
+  }
+
+  @Override
+  public String toString() {
+    return toStringHelper(this)
+        .add(PROP_IPV4_ADDRESS, _ipv4Address)
+        .add(PROP_NAME, getName())
+        .add(PROP_UID, getUid())
+        .toString();
   }
 
   private static final String PROP_IPV4_ADDRESS = "ipv4-address";
