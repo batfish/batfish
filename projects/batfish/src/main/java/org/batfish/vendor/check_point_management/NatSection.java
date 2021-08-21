@@ -47,6 +47,11 @@ public final class NatSection extends NamedManagementObject implements NatRuleOr
     return Objects.hash(baseHashcode(), _rulebase);
   }
 
+  @Override
+  public String toString() {
+    return baseToStringHelper().add(PROP_RULEBASE, _rulebase).toString();
+  }
+
   private static final String PROP_RULEBASE = "rulebase";
 
   private final @Nonnull List<NatRule> _rulebase;

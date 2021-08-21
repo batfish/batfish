@@ -1,6 +1,5 @@
 package org.batfish.vendor.check_point_management;
 
-import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -23,7 +22,7 @@ public final class ServiceGroup extends TypedManagementObject {
 
   @Override
   public String toString() {
-    return toStringHelper(this).add(PROP_NAME, getName()).add(PROP_UID, getUid()).toString();
+    return baseToStringHelper().toString();
   }
 
   @JsonCreator

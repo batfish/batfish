@@ -1,6 +1,5 @@
 package org.batfish.vendor.check_point_management;
 
-import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -22,8 +21,8 @@ public abstract class Global extends TypedManagementObject {
   }
 
   @Override
-  public String toString() {
-    return toStringHelper(this).add(PROP_UID, getUid()).toString();
+  public final String toString() {
+    return baseToStringHelper().toString();
   }
 
   protected static final String NAME_ORIGINAL = "Original";

@@ -1,5 +1,7 @@
 package org.batfish.vendor.check_point_management;
 
+import static com.google.common.base.MoreObjects.toStringHelper;
+
 import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -35,6 +37,14 @@ public final class ManagementPackage implements Serializable {
   @Override
   public int hashCode() {
     return Objects.hash(_natRulebase, _package);
+  }
+
+  @Override
+  public String toString() {
+    return toStringHelper(this)
+        .add("_natRulebase", _natRulebase)
+        .add("_package", _package)
+        .toString();
   }
 
   private final @Nullable NatRulebase _natRulebase;
