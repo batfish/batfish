@@ -39,9 +39,7 @@ public final class CpmiAnyObject extends TypedManagementObject {
   private static final String NAME_ANY = "Any";
 
   @JsonCreator
-  private static @Nonnull CpmiAnyObject create(
-      @JsonProperty(PROP_NAME) @Nullable String name, @JsonProperty(PROP_UID) @Nullable Uid uid) {
-    checkArgument(name != null, "Missing %s", PROP_NAME);
+  private static @Nonnull CpmiAnyObject create(@JsonProperty(PROP_UID) @Nullable Uid uid) {
     checkArgument(uid != null, "Missing %s", PROP_UID);
     return new CpmiAnyObject(uid);
   }
