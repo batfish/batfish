@@ -33,12 +33,12 @@ public final class NatRulebaseTest {
             + "{" // object: CpmiAnyObject
             + "\"type\":\"CpmiAnyObject\","
             + "\"uid\":\"2\","
-            + "\"name\":\"foo\""
+            + "\"name\":\"Any\""
             + "}," // object: CpmiAnyObject
             + "{" // object: Global
             + "\"type\":\"Global\","
             + "\"uid\":\"3\","
-            + "\"name\":\"foo\""
+            + "\"name\":\"Original\""
             + "}," // object: Global
             + "{" // object: group
             + "\"type\":\"group\","
@@ -113,13 +113,18 @@ public final class NatRulebaseTest {
         BatfishObjectMapper.ignoreUnknownMapper().readValue(input, NatRulebase.class),
         equalTo(
             new NatRulebase(
-                ImmutableMap.<Uid, AddressSpace>builder()
+                ImmutableMap.<Uid, TypedManagementObject>builder()
                     .put(
                         Uid.of("1"),
                         new AddressRange(
                             Ip.ZERO, Ip.parse("0.0.0.1"), null, null, "foo", Uid.of("1")))
+                    .put(Uid.of("2"), new CpmiAnyObject(Uid.of("2")))
+                    .put(Uid.of("3"), new Original(Uid.of("3")))
+                    .put(Uid.of("4"), new Group("foo", Uid.of("4")))
                     .put(Uid.of("5"), new Host(Ip.ZERO, "foo", Uid.of("5")))
                     .put(Uid.of("6"), new Network("foo", Ip.ZERO, Ip.MAX, Uid.of("6")))
+                    .put(Uid.of("7"), new ServiceGroup("foo", Uid.of("7")))
+                    .put(Uid.of("8"), new ServiceTcp("foo", Uid.of("8")))
                     .build(),
                 ImmutableList.of(
                     new NatRule(

@@ -1,5 +1,6 @@
 package org.batfish.vendor.check_point_management;
 
+import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -74,6 +75,19 @@ public final class AddressRange extends AddressSpace {
   public int hashCode() {
     return Objects.hash(
         baseHashcode(), _ipv4AddressFirst, _ipv4AddressLast, _ipv6AddressFirst, _ipv6AddressLast);
+  }
+
+  @Override
+  public String toString() {
+    return toStringHelper(this)
+        .omitNullValues()
+        .add(PROP_IPV4_ADDRESS_FIRST, _ipv4AddressFirst)
+        .add(PROP_IPV4_ADDRESS_LAST, _ipv4AddressLast)
+        .add(PROP_IPV6_ADDRESS_FIRST, _ipv6AddressFirst)
+        .add(PROP_IPV6_ADDRESS_LAST, _ipv6AddressLast)
+        .add(PROP_NAME, getName())
+        .add(PROP_UID, getUid())
+        .toString();
   }
 
   private static final String PROP_IPV4_ADDRESS_FIRST = "ipv4-address-first";
