@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -22,27 +23,34 @@ public final class CpmiVsxClusterNetobjTest {
             + "\"type\":\"CpmiVsxClusterNetobj\","
             + "\"uid\":\"0\","
             + "\"name\":\"foo\","
-            + "\"ipv4-address\":\"0.0.0.0\""
+            + "\"ipv4-address\":\"0.0.0.0\","
+            + "\"cluster-member-names\":[\"m1\"]"
             + "}";
     assertThat(
         BatfishObjectMapper.ignoreUnknownMapper().readValue(input, CpmiVsxClusterNetobj.class),
-        equalTo(new CpmiVsxClusterNetobj(Ip.ZERO, "foo", Uid.of("0"))));
+        equalTo(new CpmiVsxClusterNetobj(ImmutableList.of("m1"), Ip.ZERO, "foo", Uid.of("0"))));
   }
 
   @Test
   public void testJavaSerialization() {
-    CpmiVsxClusterNetobj obj = new CpmiVsxClusterNetobj(Ip.ZERO, "foo", Uid.of("0"));
+    CpmiVsxClusterNetobj obj =
+        new CpmiVsxClusterNetobj(ImmutableList.of(), Ip.ZERO, "foo", Uid.of("0"));
     assertEquals(obj, SerializationUtils.clone(obj));
   }
 
   @Test
   public void testEquals() {
-    CpmiVsxClusterNetobj obj = new CpmiVsxClusterNetobj(Ip.ZERO, "foo", Uid.of("0"));
+    CpmiVsxClusterNetobj obj =
+        new CpmiVsxClusterNetobj(ImmutableList.of(), Ip.ZERO, "foo", Uid.of("0"));
     new EqualsTester()
-        .addEqualityGroup(obj, new CpmiVsxClusterNetobj(Ip.ZERO, "foo", Uid.of("0")))
-        .addEqualityGroup(new CpmiVsxClusterNetobj(Ip.parse("0.0.0.1"), "foo", Uid.of("0")))
-        .addEqualityGroup(new CpmiVsxClusterNetobj(Ip.ZERO, "bar", Uid.of("0")))
-        .addEqualityGroup(new CpmiVsxClusterNetobj(Ip.ZERO, "foo", Uid.of("1")))
+        .addEqualityGroup(
+            obj, new CpmiVsxClusterNetobj(ImmutableList.of(), Ip.ZERO, "foo", Uid.of("0")))
+        .addEqualityGroup(
+            new CpmiVsxClusterNetobj(ImmutableList.of("m1"), Ip.ZERO, "foo", Uid.of("0")))
+        .addEqualityGroup(
+            new CpmiVsxClusterNetobj(ImmutableList.of(), Ip.parse("0.0.0.1"), "foo", Uid.of("0")))
+        .addEqualityGroup(new CpmiVsxClusterNetobj(ImmutableList.of(), Ip.ZERO, "bar", Uid.of("0")))
+        .addEqualityGroup(new CpmiVsxClusterNetobj(ImmutableList.of(), Ip.ZERO, "foo", Uid.of("1")))
         .testEquals();
   }
 }

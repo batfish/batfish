@@ -1,5 +1,8 @@
 package org.batfish.vendor.check_point_management;
 
+import static com.google.common.base.MoreObjects.toStringHelper;
+
+import com.google.common.base.MoreObjects.ToStringHelper;
 import java.io.Serializable;
 import javax.annotation.Nonnull;
 
@@ -28,6 +31,10 @@ public abstract class ManagementObject implements Serializable {
 
   protected int baseHashcode() {
     return _uid.hashCode();
+  }
+
+  protected @Nonnull ToStringHelper baseToStringHelper() {
+    return toStringHelper(this).add(PROP_UID, _uid);
   }
 
   private final @Nonnull Uid _uid;

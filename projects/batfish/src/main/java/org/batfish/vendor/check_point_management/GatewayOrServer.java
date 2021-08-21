@@ -1,5 +1,6 @@
 package org.batfish.vendor.check_point_management;
 
+import com.google.common.base.MoreObjects.ToStringHelper;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Ip;
@@ -31,6 +32,11 @@ public abstract class GatewayOrServer extends TypedManagementObject {
   @Override
   protected int baseHashcode() {
     return Objects.hash(super.baseHashcode(), _ipv4Address);
+  }
+
+  @Override
+  protected @Nonnull ToStringHelper baseToStringHelper() {
+    return super.baseToStringHelper().add(PROP_IPV4_ADDRESS, _ipv4Address);
   }
 
   protected static final String PROP_IPV4_ADDRESS = "ipv4-address";
