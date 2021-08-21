@@ -2,6 +2,7 @@ package org.batfish.vendor.check_point_management;
 
 import static org.junit.Assert.assertEquals;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
@@ -48,7 +49,7 @@ public final class ManagementPackageTest {
                     Uid.of("1"))))
         .addEqualityGroup(
             new ManagementPackage(
-                new NatRulebase(ImmutableMap.of(), Uid.of("1")),
+                new NatRulebase(ImmutableMap.of(), ImmutableList.of(), Uid.of("1")),
                 new Package(
                     new Domain("a", Uid.of("1")),
                     AllInstallationTargets.instance(),
