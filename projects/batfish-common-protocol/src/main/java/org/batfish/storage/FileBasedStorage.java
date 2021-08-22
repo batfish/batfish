@@ -3,6 +3,7 @@ package org.batfish.storage;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Streams.stream;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.BfConsts.RELPATH_INPUT;
 import static org.batfish.common.plugin.PluginConsumer.DEFAULT_HEADER_LENGTH_BYTES;
 import static org.batfish.common.plugin.PluginConsumer.detectFormat;
 
@@ -12,6 +13,7 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Streams;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Closer;
 import com.google.common.io.MoreFiles;
@@ -41,6 +43,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
@@ -252,10 +255,8 @@ public class FileBasedStorage implements StorageProvider {
     // Prefer runtime data inside of batfish/ subfolder over top level
     Path insideBatfish =
         Paths.get(
-            BfConsts.RELPATH_INPUT,
-            RELPATH_BATFISH_CONFIGS_DIR,
-            BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE);
-    Path topLevel = Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE);
+            RELPATH_INPUT, RELPATH_BATFISH_CONFIGS_DIR, BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE);
+    Path topLevel = Paths.get(RELPATH_INPUT, BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE);
     Optional<Path> path =
         Stream.of(insideBatfish, topLevel)
             .map(p -> getSnapshotDir(network, snapshot).resolve(p))
@@ -315,11 +316,8 @@ public class FileBasedStorage implements StorageProvider {
   public @Nullable SortedSet<String> loadNodeBlacklist(NetworkId network, SnapshotId snapshot) {
     // Prefer runtime data inside of batfish/ subfolder over top level
     Path insideBatfish =
-        Paths.get(
-            BfConsts.RELPATH_INPUT,
-            RELPATH_BATFISH_CONFIGS_DIR,
-            BfConsts.RELPATH_NODE_BLACKLIST_FILE);
-    Path topLevel = Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_NODE_BLACKLIST_FILE);
+        Paths.get(RELPATH_INPUT, RELPATH_BATFISH_CONFIGS_DIR, BfConsts.RELPATH_NODE_BLACKLIST_FILE);
+    Path topLevel = Paths.get(RELPATH_INPUT, BfConsts.RELPATH_NODE_BLACKLIST_FILE);
     Optional<Path> path =
         Stream.of(insideBatfish, topLevel)
             .map(p -> getSnapshotDir(network, snapshot).resolve(p))
@@ -349,10 +347,9 @@ public class FileBasedStorage implements StorageProvider {
   public @Nullable Layer1Topology loadLayer1Topology(NetworkId network, SnapshotId snapshot) {
     // Prefer runtime data inside of batfish/ subfolder over top level
     Path insideBatfish =
-        Paths.get(
-            BfConsts.RELPATH_INPUT, RELPATH_BATFISH_CONFIGS_DIR, BfConsts.RELPATH_L1_TOPOLOGY_PATH);
-    Path topLevel = Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_L1_TOPOLOGY_PATH);
-    Path deprecated = Paths.get(BfConsts.RELPATH_INPUT, "testrig_layer1_topology");
+        Paths.get(RELPATH_INPUT, RELPATH_BATFISH_CONFIGS_DIR, BfConsts.RELPATH_L1_TOPOLOGY_PATH);
+    Path topLevel = Paths.get(RELPATH_INPUT, BfConsts.RELPATH_L1_TOPOLOGY_PATH);
+    Path deprecated = Paths.get(RELPATH_INPUT, "testrig_layer1_topology");
     Optional<Path> path =
         Stream.of(insideBatfish, topLevel, deprecated)
             .map(p -> getSnapshotDir(network, snapshot).resolve(p))
@@ -409,11 +406,8 @@ public class FileBasedStorage implements StorageProvider {
   public @Nullable SnapshotRuntimeData loadRuntimeData(NetworkId network, SnapshotId snapshot) {
     // Prefer runtime data inside of batfish/ subfolder over top level
     Path insideBatfish =
-        Paths.get(
-            BfConsts.RELPATH_INPUT,
-            RELPATH_BATFISH_CONFIGS_DIR,
-            BfConsts.RELPATH_RUNTIME_DATA_FILE);
-    Path topLevel = Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_RUNTIME_DATA_FILE);
+        Paths.get(RELPATH_INPUT, RELPATH_BATFISH_CONFIGS_DIR, BfConsts.RELPATH_RUNTIME_DATA_FILE);
+    Path topLevel = Paths.get(RELPATH_INPUT, BfConsts.RELPATH_RUNTIME_DATA_FILE);
     Optional<Path> path =
         Stream.of(insideBatfish, topLevel)
             .map(p -> getSnapshotDir(network, snapshot).resolve(p))
@@ -884,7 +878,9 @@ public class FileBasedStorage implements StorageProvider {
     }
   }
 
-  private @Nonnull Path getNetworkBlobPath(NetworkId networkId, String key) {
+  @VisibleForTesting
+  @Nonnull
+  Path getNetworkBlobPath(NetworkId networkId, String key) {
     String encodedKey = toBase64(key);
     return getNetworkBlobsDir(networkId).resolve(encodedKey);
   }
@@ -1465,6 +1461,40 @@ public class FileBasedStorage implements StorageProvider {
     }
   }
 
+  private @Nonnull Set<String> listResolvableIds(Class<? extends Id> type, Id... ancestors)
+      throws IOException {
+    Path idsDir = getIdsDir(type, ancestors);
+    if (!Files.exists(idsDir)) {
+      return ImmutableSet.of();
+    }
+    try (Stream<Path> files = list(idsDir)) {
+      return files
+          .filter(
+              path -> {
+                try {
+                  return fromBase64(path.getFileName().toString()).endsWith(ID_EXTENSION);
+                } catch (IllegalArgumentException e) {
+                  return false;
+                }
+              })
+          .map(
+              file -> {
+                try {
+                  return readFileToString(file, UTF_8);
+                } catch (IOException e) {
+                  _logger.errorf(
+                      "Failed to read ID file '%s': %s",
+                      file.toString(), Throwables.getStackTraceAsString(e));
+                  return null;
+                }
+              })
+          .filter(Objects::nonNull)
+          .collect(ImmutableSet.toImmutableSet());
+    } catch (IOException e) {
+      throw new IOException("Could not list files in '" + idsDir + "'", e);
+    }
+  }
+
   @Nonnull
   @Override
   public Optional<ReferenceLibrary> loadReferenceLibrary(NetworkId network) throws IOException {
@@ -1776,7 +1806,9 @@ public class FileBasedStorage implements StorageProvider {
         : getAdHocQuestionDir(network, question);
   }
 
-  private @Nonnull Path getSnapshotsDir(NetworkId network) {
+  @VisibleForTesting
+  @Nonnull
+  Path getSnapshotsDir(NetworkId network) {
     return getNetworkDir(network).resolve(RELPATH_SNAPSHOTS_DIR);
   }
 
@@ -1811,10 +1843,11 @@ public class FileBasedStorage implements StorageProvider {
   @VisibleForTesting
   @Nonnull
   Path getSnapshotInputObjectsDir(NetworkId networkId, SnapshotId snapshotId) {
-    return getSnapshotDir(networkId, snapshotId).resolve(BfConsts.RELPATH_INPUT);
+    return getSnapshotDir(networkId, snapshotId).resolve(RELPATH_INPUT);
   }
 
-  private Path getSnapshotOutputDir(NetworkId networkId, SnapshotId snapshotId) {
+  @VisibleForTesting
+  Path getSnapshotOutputDir(NetworkId networkId, SnapshotId snapshotId) {
     return getSnapshotDir(networkId, snapshotId).resolve(RELPATH_OUTPUT);
   }
 
@@ -1939,87 +1972,107 @@ public class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public void runGarbageCollection(Instant expungeBeforeDate) throws IOException {
+  public void runGarbageCollection() throws IOException {
     // Go back GC_SKEW_ALLOWANCE_MINUTES minutes to account for skew. This should safely
-    // underapproximate data to delete.
-    Instant safeExpungeBeforeDate = expungeBeforeDate.minus(GC_SKEW_ALLOWANCE);
-    _logger.debugf("FBS GC: Expunge before: %s\n", safeExpungeBeforeDate);
+    // under-approximate data to delete.
+    Instant safeExpungeBeforeDate = Instant.now().minus(GC_SKEW_ALLOWANCE);
 
-    // Iterate over network dirs directly so we can expunge data from both extant and deleted
-    // networks.
+    // Iterate over network dirs directly so we get both extant and deleted networks.
     if (exists(getNetworksDir())) {
+      Set<String> extantNetworkIds = listResolvableIds(NetworkId.class);
+      ImmutableList.Builder<Path> dirsToExpunge = ImmutableList.builder();
       try (Stream<Path> networkDirStream = list(getNetworksDir())) {
         networkDirStream
             .map(networkDir -> new NetworkId(networkDir.getFileName().toString()))
             .forEach(
                 networkId -> {
                   try {
-                    expungeOldNetworkData(safeExpungeBeforeDate, networkId);
+                    if (extantNetworkIds.contains(networkId.toString())) {
+                      dirsToExpunge.addAll(
+                          getSnapshotDirsToExpunge(networkId, safeExpungeBeforeDate));
+                    } else {
+                      if (canExpungeNetwork(networkId, safeExpungeBeforeDate)) {
+                        dirsToExpunge.add(getNetworkDir(networkId));
+                      }
+                    }
                   } catch (IOException e) {
                     _logger.errorf(
-                        "Failed to expunge old data for network with ID '%s': %s",
+                        "Failed to garbage collect network with ID '%s': %s",
                         networkId, Throwables.getStackTraceAsString(e));
                     LOGGER.error(
-                        String.format("Failed to expunge old data for network %s", networkId), e);
+                        String.format("Failed to garbage collect network with ID %s", networkId),
+                        e);
                   }
                 });
       }
+      dirsToExpunge
+          .build()
+          .forEach(
+              dir -> {
+                try {
+                  deleteDirectory(dir);
+                } catch (IOException e) {
+                  _logger.errorf(
+                      "Failed to expunge directory '%s': %s",
+                      dir, Throwables.getStackTraceAsString(e));
+                  LOGGER.error(String.format("Failed to expunge directory %s", dir), e);
+                }
+              });
     }
-  }
-
-  private void expungeOldNetworkData(Instant expungeBeforeDate, NetworkId networkId)
-      throws IOException {
-    // expunge snapshots
-    expungeOldEntries(expungeBeforeDate, getSnapshotsDir(networkId), true);
-
-    // expunge original uploads
-    expungeOldEntries(expungeBeforeDate, getOriginalsDir(networkId), true);
-
-    // TODO: expunge question IDs, questions, analysis IDs, analyses, node roles IDs, node roles
   }
 
   /**
-   * Deletes filesystem entries in {@code dir} whose last modified time precedes {@code
-   * expungeBeforeDate}. When deleting regular files, {@code directories} should be {@code false}.
-   * When deleting directories, {@code directories} should be {@code true}. Has no effect if {@code
-   * dir} does not exist.
-   *
-   * @throws IOException if there is an error
+   * Returns if it is safe to delete this network's folder, based on the last modified of its
+   * subdirs and snapshots.
    */
-  @VisibleForTesting
-  void expungeOldEntries(Instant expungeBeforeDate, Path dir, boolean directories)
+  private boolean canExpungeNetwork(NetworkId networkId, Instant expungeBeforeDate)
       throws IOException {
-    if (!exists(dir)) {
-      return;
-    }
-    List<Path> toDelete;
-    try (Stream<Path> fsEntryStream = list(dir)) {
-      toDelete =
-          fsEntryStream
-              .filter(
-                  path -> {
-                    if (directories ? !isDirectory(path) : !isRegularFile(path)) {
-                      // If this is not the type of filesystem entry we want to delete, ignore this
-                      // path.
-                      return false;
-                    }
-                    try {
-                      return getLastModifiedTime(path).compareTo(expungeBeforeDate) < 0;
-                    } catch (IOException e) {
-                      // If for some reason the last modified time of the entry cannot be fetched
-                      // (e.g. it was just deleted), ignore this path.
-                      return false;
-                    }
-                  })
-              .collect(ImmutableList.toImmutableList());
-    }
-    for (Path path : toDelete) {
-      if (directories) {
-        deleteDirectory(path);
-      } else {
-        deleteIfExists(path);
+    Path networkDir = getNetworkDir(networkId);
+    try (Stream<Path> subdirs = list(networkDir)) {
+      try (Stream<Path> snapshotsDirs = list(getSnapshotsDir(networkId))) {
+        return canExpunge(expungeBeforeDate, Streams.concat(subdirs, snapshotsDirs));
       }
-      _logger.debugf("FBS GC: deleted: %s\n", path);
     }
+  }
+
+  private List<Path> getSnapshotDirsToExpunge(NetworkId networkId, Instant expungeBeforeDate)
+      throws IOException {
+    ImmutableList.Builder<Path> snapshotDirsToDelete = ImmutableList.builder();
+    Set<String> extantSnapshotIds = listResolvableIds(SnapshotId.class, networkId);
+    try (Stream<Path> snapshotsDirStream = list(getSnapshotsDir(networkId))) {
+      snapshotsDirStream
+          .map(snapshotDir -> new SnapshotId(snapshotDir.getFileName().toString()))
+          .filter(snapshotId -> !extantSnapshotIds.contains(snapshotId.toString()))
+          .forEach(
+              snapshotId -> {
+                Path snapshotDir = getSnapshotDir(networkId, snapshotId);
+                if (canExpunge(expungeBeforeDate, Stream.of(snapshotDir))) {
+                  snapshotDirsToDelete.add(snapshotDir);
+                }
+              });
+    }
+    return snapshotDirsToDelete.build();
+  }
+
+  /**
+   * Returns if all paths in {@code pathStream} have a last modified time less than the {@code
+   * expungeBeforeDate}..
+   */
+  private boolean canExpunge(Instant expungeBeforeDate, Stream<Path> pathStream) {
+    Instant lastModifiedTime =
+        pathStream
+            .map(
+                path -> {
+                  try {
+                    return getLastModifiedTime(path);
+                  } catch (IOException e) {
+                    // If for some reason the last modified time of the entry cannot be fetched
+                    // (e.g. it was just deleted), ignore this path.
+                    return Instant.MIN;
+                  }
+                })
+            .max(Instant::compareTo)
+            .orElse(Instant.MIN);
+    return lastModifiedTime.compareTo(expungeBeforeDate) < 0;
   }
 }
