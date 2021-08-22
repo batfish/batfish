@@ -8,6 +8,7 @@ set hostname bond_interface_conversion
 #
 add bonding group 0 interface eth0
 add bonding group 0 interface eth1
+add bonding group 0 interface eth2
 #
 add bonding group 1
 #

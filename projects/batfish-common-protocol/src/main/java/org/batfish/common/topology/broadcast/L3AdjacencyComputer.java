@@ -16,6 +16,7 @@ import javax.annotation.Nonnull;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.batfish.common.topology.Layer1Edge;
+import org.batfish.common.topology.Layer1Topologies;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
@@ -29,7 +30,7 @@ import org.jgrapht.alg.util.UnionFind;
 /** Computes the set of L3 interfaces that are in the same broadcast domain as a given interface. */
 public class L3AdjacencyComputer {
   private static final Logger LOGGER = LogManager.getLogger(L3AdjacencyComputer.class);
-  private final @Nonnull Layer1Topology _layer1Topology;
+  private final @Nonnull Layer1Topologies _layer1Topologies;
   private final @Nonnull Map<NodeInterfacePair, PhysicalInterface> _physicalInterfaces;
   private final @Nonnull Map<NodeInterfacePair, L3Interface> _layer3Interfaces;
 
@@ -42,10 +43,12 @@ public class L3AdjacencyComputer {
       EnumSet.of(InterfaceType.PHYSICAL, InterfaceType.AGGREGATED);
   @VisibleForTesting static final String BATFISH_GLOBAL_HUB = "Batfish Global Ethernet Hub";
 
-  public L3AdjacencyComputer(Map<String, Configuration> configs, Layer1Topology layer1Topology) {
-    _layer1Topology = layer1Topology;
+  public L3AdjacencyComputer(
+      Map<String, Configuration> configs, Layer1Topologies layer1Topologies) {
+    _layer1Topologies = layer1Topologies;
     _physicalInterfaces = computePhysicalInterfaces(configs);
-    _ethernetHubs = computeEthernetHubs(configs, _physicalInterfaces, _layer1Topology);
+    _ethernetHubs =
+        computeEthernetHubs(configs, _physicalInterfaces, _layer1Topologies.getLogicalL1());
     _deviceBroadcastDomains = computeDeviceBroadcastDomains(configs, _physicalInterfaces);
     _layer3Interfaces =
         computeLayer3Interfaces(configs, _deviceBroadcastDomains, _physicalInterfaces);

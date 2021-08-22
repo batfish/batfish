@@ -21,10 +21,21 @@ public class ExprAclLineMatchersImpl {
     }
   }
 
+  static class HasName extends FeatureMatcher<ExprAclLine, String> {
+    public HasName(@Nonnull Matcher<? super String> subMatcher) {
+      super(subMatcher, "An IpAccessListLine with name:", "name");
+    }
+
+    @Override
+    protected String featureValueOf(ExprAclLine actual) {
+      return actual.getName();
+    }
+  }
+
   static class HasMatchCondition extends FeatureMatcher<ExprAclLine, AclLineMatchExpr> {
 
     public HasMatchCondition(@Nonnull Matcher<? super AclLineMatchExpr> subMatcher) {
-      super(subMatcher, "An IpAcessListLine with matchCondition:", "matchCondition");
+      super(subMatcher, "An IpAccessListLine with matchCondition:", "matchCondition");
     }
 
     @Override

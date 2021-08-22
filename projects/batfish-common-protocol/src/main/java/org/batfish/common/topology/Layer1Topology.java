@@ -51,6 +51,12 @@ public final class Layer1Topology {
     return _graph;
   }
 
+  /** Returns true if this {@link Layer1Topology} has no edges (it may have nodes). */
+  @JsonIgnore
+  public boolean isEmpty() {
+    return _graph.edges().isEmpty();
+  }
+
   @JsonProperty(PROP_EDGES)
   private SortedSet<Layer1Edge> getJsonEdges() {
     return ImmutableSortedSet.copyOf(_graph.edges());

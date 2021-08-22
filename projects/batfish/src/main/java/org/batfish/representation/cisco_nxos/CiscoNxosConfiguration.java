@@ -298,6 +298,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     return null;
   }
 
+  public static String getAclLineName(String aclName, long lineNum) {
+    return String.format("%s:%s", aclName, lineNum);
+  }
+
   private static final IntegerSpace DEFAULT_RESERVED_VLAN_RANGE =
       IntegerSpace.of(Range.closed(3968, 4094));
 
@@ -796,7 +800,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     }
 
     // Process active neighbors first.
-    Map<Prefix, BgpActivePeerConfig> activeNeighbors =
+    Map<Ip, BgpActivePeerConfig> activeNeighbors =
         Conversions.getNeighbors(c, this, v, newBgpProcess, nxBgpGlobal, nxBgpVrf, _w);
     newBgpProcess.setNeighbors(ImmutableSortedMap.copyOf(activeNeighbors));
 
@@ -2270,7 +2274,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         .setSourceType(CiscoNxosStructureType.IP_ACCESS_LIST.getDescription())
         .setLines(
             list.getLines().values().stream()
-                .map(this::toExprAclLine)
+                .map(line -> toExprAclLine(list.getName(), line))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(ImmutableList.toImmutableList()))
@@ -2281,7 +2285,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
    * Converts the supplied {@code line} to zero or one vendor-independent {@link ExprAclLine}s
    * depending on semantics.
    */
-  private @Nonnull Optional<ExprAclLine> toExprAclLine(IpAccessListLine line) {
+  private @Nonnull Optional<ExprAclLine> toExprAclLine(String aclName, IpAccessListLine line) {
     return line.accept(
         new IpAccessListLineVisitor<Optional<ExprAclLine>>() {
           @Override
@@ -2296,8 +2300,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                     .setVendorStructureId(
                         new VendorStructureId(
                             _filename,
-                            CiscoNxosStructureType.IP_ACCESS_LIST.getDescription(),
-                            actionIpAccessListLine.getText()))
+                            CiscoNxosStructureType.IP_ACCESS_LIST_LINE.getDescription(),
+                            getAclLineName(aclName, line.getLine())))
                     .build());
           }
 
@@ -3710,6 +3714,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _c.setDefaultInboundAction(LineAction.PERMIT);
     _c.setDefaultCrossZoneAction(LineAction.PERMIT);
     _c.setExportBgpFromBgpRib(true);
+    _c.setMainRibEnforceResolvability(true);
 
     convertDomainName();
     convertObjectGroups();

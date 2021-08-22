@@ -271,9 +271,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 1.0.1.0 host 255.255.255.0"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip host 1.0.1.0 host 255.255.255.0",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as1border1.cfg",
+                        "structureName" : "101: permit ip host 1.0.1.0 host 255.255.255.0",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as1border1.cfg",
+                  "structureName" : "101: permit ip host 1.0.1.0 host 255.255.255.0",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               },
               {
@@ -298,9 +312,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 1.0.2.0 host 255.255.255.0"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip host 1.0.2.0 host 255.255.255.0",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as1border1.cfg",
+                        "structureName" : "101: permit ip host 1.0.2.0 host 255.255.255.0",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as1border1.cfg",
+                  "structureName" : "101: permit ip host 1.0.2.0 host 255.255.255.0",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               }
             ],
@@ -332,9 +360,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 2.0.0.0 host 255.0.0.0"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip host 2.0.0.0 host 255.0.0.0",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as1border1.cfg",
+                        "structureName" : "102: permit ip host 2.0.0.0 host 255.0.0.0",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as1border1.cfg",
+                  "structureName" : "102: permit ip host 2.0.0.0 host 255.0.0.0",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               },
               {
@@ -359,9 +401,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 2.128.0.0 host 255.255.0.0"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip host 2.128.0.0 host 255.255.0.0",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as1border1.cfg",
+                        "structureName" : "102: permit ip host 2.128.0.0 host 255.255.0.0",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as1border1.cfg",
+                  "structureName" : "102: permit ip host 2.128.0.0 host 255.255.0.0",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               }
             ],
@@ -393,9 +449,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 3.0.1.0 host 255.255.255.0"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip host 3.0.1.0 host 255.255.255.0",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as1border1.cfg",
+                        "structureName" : "103: permit ip host 3.0.1.0 host 255.255.255.0",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as1border1.cfg",
+                  "structureName" : "103: permit ip host 3.0.1.0 host 255.255.255.0",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               },
               {
@@ -420,9 +490,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 3.0.2.0 host 255.255.255.0"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip host 3.0.2.0 host 255.255.255.0",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as1border1.cfg",
+                        "structureName" : "103: permit ip host 3.0.2.0 host 255.255.255.0",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as1border1.cfg",
+                  "structureName" : "103: permit ip host 3.0.2.0 host 255.255.255.0",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               }
             ],
@@ -1225,8 +1309,8 @@
               }
             ]
           },
-          "~OSPF_EXPORT_POLICY:default~" : {
-            "name" : "~OSPF_EXPORT_POLICY:default~",
+          "~OSPF_EXPORT_POLICY:default:1~" : {
+            "name" : "~OSPF_EXPORT_POLICY:default:1~",
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -1424,7 +1508,7 @@
                     "stubType" : "NONE"
                   }
                 },
-                "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+                "exportPolicy" : "~OSPF_EXPORT_POLICY:default:1~",
                 "processId" : "1",
                 "referenceBandwidth" : 1.0E8,
                 "routerId" : "1.1.1.1",
@@ -1442,7 +1526,7 @@
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : true,
               "neighbors" : {
-                "1.10.1.1/32" : {
+                "1.10.1.1" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "clusterId" : 16843009,
                   "defaultMetric" : 0,
@@ -1469,7 +1553,7 @@
                   "peerAddress" : "1.10.1.1",
                   "remoteAsns" : "1"
                 },
-                "3.2.2.2/32" : {
+                "3.2.2.2" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "clusterId" : 16843009,
                   "defaultMetric" : 0,
@@ -1495,7 +1579,7 @@
                   "peerAddress" : "3.2.2.2",
                   "remoteAsns" : "666"
                 },
-                "5.6.7.8/32" : {
+                "5.6.7.8" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "clusterId" : 16843009,
                   "defaultMetric" : 0,
@@ -1521,7 +1605,7 @@
                   "peerAddress" : "5.6.7.8",
                   "remoteAsns" : "555"
                 },
-                "10.12.11.2/32" : {
+                "10.12.11.2" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "clusterId" : 16843009,
                   "defaultMetric" : 0,
@@ -1892,9 +1976,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 1.0.1.0 host 255.255.255.0"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip host 1.0.1.0 host 255.255.255.0",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as1border2.cfg",
+                        "structureName" : "101: permit ip host 1.0.1.0 host 255.255.255.0",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as1border2.cfg",
+                  "structureName" : "101: permit ip host 1.0.1.0 host 255.255.255.0",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               },
               {
@@ -1919,9 +2017,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 1.0.2.0 host 255.255.255.0"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip host 1.0.2.0 host 255.255.255.0",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as1border2.cfg",
+                        "structureName" : "101: permit ip host 1.0.2.0 host 255.255.255.0",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as1border2.cfg",
+                  "structureName" : "101: permit ip host 1.0.2.0 host 255.255.255.0",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               }
             ],
@@ -1953,9 +2065,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 2.0.0.0 host 255.0.0.0"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip host 2.0.0.0 host 255.0.0.0",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as1border2.cfg",
+                        "structureName" : "102: permit ip host 2.0.0.0 host 255.0.0.0",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as1border2.cfg",
+                  "structureName" : "102: permit ip host 2.0.0.0 host 255.0.0.0",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               },
               {
@@ -1980,9 +2106,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 2.128.0.0 host 255.255.0.0"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip host 2.128.0.0 host 255.255.0.0",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as1border2.cfg",
+                        "structureName" : "102: permit ip host 2.128.0.0 host 255.255.0.0",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as1border2.cfg",
+                  "structureName" : "102: permit ip host 2.128.0.0 host 255.255.0.0",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               }
             ],
@@ -2014,9 +2154,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 3.0.1.0 host 255.255.255.0"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip host 3.0.1.0 host 255.255.255.0",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as1border2.cfg",
+                        "structureName" : "103: permit ip host 3.0.1.0 host 255.255.255.0",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as1border2.cfg",
+                  "structureName" : "103: permit ip host 3.0.1.0 host 255.255.255.0",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               }
             ],
@@ -2864,8 +3018,8 @@
               }
             ]
           },
-          "~OSPF_EXPORT_POLICY:default~" : {
-            "name" : "~OSPF_EXPORT_POLICY:default~",
+          "~OSPF_EXPORT_POLICY:default:1~" : {
+            "name" : "~OSPF_EXPORT_POLICY:default:1~",
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -3073,7 +3227,7 @@
                     "stubType" : "NONE"
                   }
                 },
-                "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+                "exportPolicy" : "~OSPF_EXPORT_POLICY:default:1~",
                 "processId" : "1",
                 "referenceBandwidth" : 1.0E8,
                 "routerId" : "1.2.2.2",
@@ -3091,7 +3245,7 @@
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : true,
               "neighbors" : {
-                "1.10.1.1/32" : {
+                "1.10.1.1" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "clusterId" : 16908802,
                   "defaultMetric" : 0,
@@ -3118,7 +3272,7 @@
                   "peerAddress" : "1.10.1.1",
                   "remoteAsns" : "1"
                 },
-                "10.13.22.3/32" : {
+                "10.13.22.3" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "clusterId" : 16908802,
                   "defaultMetric" : 0,
@@ -3152,7 +3306,7 @@
                   "peerAddress" : "10.13.22.3",
                   "remoteAsns" : "3"
                 },
-                "10.14.22.4/32" : {
+                "10.14.22.4" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "clusterId" : 16908802,
                   "defaultMetric" : 0,
@@ -3419,8 +3573,8 @@
               }
             ]
           },
-          "~OSPF_EXPORT_POLICY:default~" : {
-            "name" : "~OSPF_EXPORT_POLICY:default~"
+          "~OSPF_EXPORT_POLICY:default:1~" : {
+            "name" : "~OSPF_EXPORT_POLICY:default:1~"
           },
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -3577,7 +3731,7 @@
                     "stubType" : "NONE"
                   }
                 },
-                "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+                "exportPolicy" : "~OSPF_EXPORT_POLICY:default:1~",
                 "processId" : "1",
                 "referenceBandwidth" : 1.0E8,
                 "routerId" : "1.10.1.1",
@@ -3595,7 +3749,7 @@
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : true,
               "neighbors" : {
-                "1.1.1.1/32" : {
+                "1.1.1.1" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "clusterId" : 17432833,
                   "defaultMetric" : 0,
@@ -3622,7 +3776,7 @@
                   "peerAddress" : "1.1.1.1",
                   "remoteAsns" : "1"
                 },
-                "1.2.2.2/32" : {
+                "1.2.2.2" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "clusterId" : 17432833,
                   "defaultMetric" : 0,
@@ -3966,9 +4120,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 1.0.1.0 host 255.255.255.0"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip host 1.0.1.0 host 255.255.255.0",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as2border1.cfg",
+                        "structureName" : "101: permit ip host 1.0.1.0 host 255.255.255.0",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as2border1.cfg",
+                  "structureName" : "101: permit ip host 1.0.1.0 host 255.255.255.0",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               },
               {
@@ -3993,9 +4161,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 1.0.2.0 host 255.255.255.0"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip host 1.0.2.0 host 255.255.255.0",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as2border1.cfg",
+                        "structureName" : "101: permit ip host 1.0.2.0 host 255.255.255.0",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as2border1.cfg",
+                  "structureName" : "101: permit ip host 1.0.2.0 host 255.255.255.0",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               }
             ],
@@ -4027,9 +4209,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 3.0.1.0 host 255.255.255.0"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip host 3.0.1.0 host 255.255.255.0",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as2border1.cfg",
+                        "structureName" : "103: permit ip host 3.0.1.0 host 255.255.255.0",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as2border1.cfg",
+                  "structureName" : "103: permit ip host 3.0.1.0 host 255.255.255.0",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               },
               {
@@ -4054,9 +4250,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 3.0.2.0 host 255.255.255.0"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip host 3.0.2.0 host 255.255.255.0",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as2border1.cfg",
+                        "structureName" : "103: permit ip host 3.0.2.0 host 255.255.255.0",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as2border1.cfg",
+                  "structureName" : "103: permit ip host 3.0.2.0 host 255.255.255.0",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               }
             ],
@@ -4088,9 +4298,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip 2.0.0.0 0.255.255.255 1.0.0.0 0.255.255.255"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip 2.0.0.0 0.255.255.255 1.0.0.0 0.255.255.255",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as2border1.cfg",
+                        "structureName" : "INSIDE_TO_AS1: permit ip 2.0.0.0 0.255.255.255 1.0.0.0 0.255.255.255",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as2border1.cfg",
+                  "structureName" : "INSIDE_TO_AS1: permit ip 2.0.0.0 0.255.255.255 1.0.0.0 0.255.255.255",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               },
               {
@@ -4115,9 +4339,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip 10.12.11.2 0.0.0.0 10.12.11.1 0.0.0.0"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip 10.12.11.2 0.0.0.0 10.12.11.1 0.0.0.0",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as2border1.cfg",
+                        "structureName" : "INSIDE_TO_AS1: permit ip 10.12.11.2 0.0.0.0 10.12.11.1 0.0.0.0",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as2border1.cfg",
+                  "structureName" : "INSIDE_TO_AS1: permit ip 10.12.11.2 0.0.0.0 10.12.11.1 0.0.0.0",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               },
               {
@@ -4142,9 +4380,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line deny   ip any any"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "deny   ip any any",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as2border1.cfg",
+                        "structureName" : "INSIDE_TO_AS1: deny   ip any any",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as2border1.cfg",
+                  "structureName" : "INSIDE_TO_AS1: deny   ip any any",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               }
             ],
@@ -4176,9 +4428,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line deny   ip 2.0.0.0 0.255.255.255 any"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "deny   ip 2.0.0.0 0.255.255.255 any",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as2border1.cfg",
+                        "structureName" : "OUTSIDE_TO_INSIDE: deny   ip 2.0.0.0 0.255.255.255 any",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as2border1.cfg",
+                  "structureName" : "OUTSIDE_TO_INSIDE: deny   ip 2.0.0.0 0.255.255.255 any",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               },
               {
@@ -4203,9 +4469,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line deny   ip any host 2.128.1.101"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "deny   ip any host 2.128.1.101",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as2border1.cfg",
+                        "structureName" : "OUTSIDE_TO_INSIDE: deny   ip any host 2.128.1.101",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as2border1.cfg",
+                  "structureName" : "OUTSIDE_TO_INSIDE: deny   ip any host 2.128.1.101",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               },
               {
@@ -4230,9 +4510,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip any any"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip any any",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as2border1.cfg",
+                        "structureName" : "OUTSIDE_TO_INSIDE: permit ip any any",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as2border1.cfg",
+                  "structureName" : "OUTSIDE_TO_INSIDE: permit ip any any",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               }
             ],
@@ -4900,8 +5194,8 @@
               }
             ]
           },
-          "~OSPF_EXPORT_POLICY:default~" : {
-            "name" : "~OSPF_EXPORT_POLICY:default~",
+          "~OSPF_EXPORT_POLICY:default:1~" : {
+            "name" : "~OSPF_EXPORT_POLICY:default:1~",
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -5154,7 +5448,7 @@
                     "stubType" : "NONE"
                   }
                 },
-                "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+                "exportPolicy" : "~OSPF_EXPORT_POLICY:default:1~",
                 "processId" : "1",
                 "referenceBandwidth" : 1.0E8,
                 "routerId" : "2.1.1.1",
@@ -5178,7 +5472,7 @@
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : true,
               "neighbors" : {
-                "2.1.2.1/32" : {
+                "2.1.2.1" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "clusterId" : 33620225,
                   "defaultMetric" : 0,
@@ -5205,7 +5499,7 @@
                   "peerAddress" : "2.1.2.1",
                   "remoteAsns" : "2"
                 },
-                "2.1.2.2/32" : {
+                "2.1.2.2" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "clusterId" : 33620225,
                   "defaultMetric" : 0,
@@ -5232,7 +5526,7 @@
                   "peerAddress" : "2.1.2.2",
                   "remoteAsns" : "2"
                 },
-                "10.12.11.1/32" : {
+                "10.12.11.1" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "clusterId" : 33620225,
                   "defaultMetric" : 0,
@@ -5583,9 +5877,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 1.0.1.0 host 255.255.255.0"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip host 1.0.1.0 host 255.255.255.0",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as2border2.cfg",
+                        "structureName" : "101: permit ip host 1.0.1.0 host 255.255.255.0",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as2border2.cfg",
+                  "structureName" : "101: permit ip host 1.0.1.0 host 255.255.255.0",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               },
               {
@@ -5610,9 +5918,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 1.0.2.0 host 255.255.255.0"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip host 1.0.2.0 host 255.255.255.0",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as2border2.cfg",
+                        "structureName" : "101: permit ip host 1.0.2.0 host 255.255.255.0",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as2border2.cfg",
+                  "structureName" : "101: permit ip host 1.0.2.0 host 255.255.255.0",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               }
             ],
@@ -5644,9 +5966,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 3.0.1.0 host 255.255.255.0"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip host 3.0.1.0 host 255.255.255.0",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as2border2.cfg",
+                        "structureName" : "103: permit ip host 3.0.1.0 host 255.255.255.0",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as2border2.cfg",
+                  "structureName" : "103: permit ip host 3.0.1.0 host 255.255.255.0",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               },
               {
@@ -5671,9 +6007,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 3.0.2.0 host 255.255.255.0"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip host 3.0.2.0 host 255.255.255.0",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as2border2.cfg",
+                        "structureName" : "103: permit ip host 3.0.2.0 host 255.255.255.0",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as2border2.cfg",
+                  "structureName" : "103: permit ip host 3.0.2.0 host 255.255.255.0",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               }
             ],
@@ -5705,9 +6055,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip 2.0.0.0 0.255.255.255 3.0.0.0 0.255.255.255"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip 2.0.0.0 0.255.255.255 3.0.0.0 0.255.255.255",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as2border2.cfg",
+                        "structureName" : "INSIDE_TO_AS3: permit ip 2.0.0.0 0.255.255.255 3.0.0.0 0.255.255.255",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as2border2.cfg",
+                  "structureName" : "INSIDE_TO_AS3: permit ip 2.0.0.0 0.255.255.255 3.0.0.0 0.255.255.255",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               },
               {
@@ -5732,9 +6096,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip 10.23.21.2 0.0.0.0 10.23.21.3 0.0.0.0"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip 10.23.21.2 0.0.0.0 10.23.21.3 0.0.0.0",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as2border2.cfg",
+                        "structureName" : "INSIDE_TO_AS3: permit ip 10.23.21.2 0.0.0.0 10.23.21.3 0.0.0.0",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as2border2.cfg",
+                  "structureName" : "INSIDE_TO_AS3: permit ip 10.23.21.2 0.0.0.0 10.23.21.3 0.0.0.0",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               },
               {
@@ -5759,9 +6137,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line deny   ip any any"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "deny   ip any any",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as2border2.cfg",
+                        "structureName" : "INSIDE_TO_AS3: deny   ip any any",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as2border2.cfg",
+                  "structureName" : "INSIDE_TO_AS3: deny   ip any any",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               }
             ],
@@ -5793,9 +6185,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line deny   ip 2.0.0.0 0.255.255.255 any"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "deny   ip 2.0.0.0 0.255.255.255 any",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as2border2.cfg",
+                        "structureName" : "OUTSIDE_TO_INSIDE: deny   ip 2.0.0.0 0.255.255.255 any",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as2border2.cfg",
+                  "structureName" : "OUTSIDE_TO_INSIDE: deny   ip 2.0.0.0 0.255.255.255 any",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               },
               {
@@ -5820,9 +6226,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip any any"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip any any",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as2border2.cfg",
+                        "structureName" : "OUTSIDE_TO_INSIDE: permit ip any any",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as2border2.cfg",
+                  "structureName" : "OUTSIDE_TO_INSIDE: permit ip any any",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               }
             ],
@@ -6489,8 +6909,8 @@
               }
             ]
           },
-          "~OSPF_EXPORT_POLICY:default~" : {
-            "name" : "~OSPF_EXPORT_POLICY:default~",
+          "~OSPF_EXPORT_POLICY:default:1~" : {
+            "name" : "~OSPF_EXPORT_POLICY:default:1~",
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -6705,7 +7125,7 @@
                     "stubType" : "NONE"
                   }
                 },
-                "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+                "exportPolicy" : "~OSPF_EXPORT_POLICY:default:1~",
                 "processId" : "1",
                 "referenceBandwidth" : 1.0E8,
                 "routerId" : "2.1.1.2",
@@ -6729,7 +7149,7 @@
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : true,
               "neighbors" : {
-                "2.1.2.1/32" : {
+                "2.1.2.1" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "clusterId" : 33620226,
                   "defaultMetric" : 0,
@@ -6756,7 +7176,7 @@
                   "peerAddress" : "2.1.2.1",
                   "remoteAsns" : "2"
                 },
-                "2.1.2.2/32" : {
+                "2.1.2.2" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "clusterId" : 33620226,
                   "defaultMetric" : 0,
@@ -6783,7 +7203,7 @@
                   "peerAddress" : "2.1.2.2",
                   "remoteAsns" : "2"
                 },
-                "10.23.21.3/32" : {
+                "10.23.21.3" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "clusterId" : 33620226,
                   "defaultMetric" : 0,
@@ -7087,9 +7507,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line deny   tcp any any eq telnet"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "deny   tcp any any eq telnet",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as2core1.cfg",
+                        "structureName" : "blocktelnet: deny   tcp any any eq telnet",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as2core1.cfg",
+                  "structureName" : "blocktelnet: deny   tcp any any eq telnet",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               },
               {
@@ -7114,9 +7548,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip any any"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip any any",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as2core1.cfg",
+                        "structureName" : "blocktelnet: permit ip any any",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as2core1.cfg",
+                  "structureName" : "blocktelnet: permit ip any any",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               }
             ],
@@ -7249,8 +7697,8 @@
               }
             ]
           },
-          "~OSPF_EXPORT_POLICY:default~" : {
-            "name" : "~OSPF_EXPORT_POLICY:default~"
+          "~OSPF_EXPORT_POLICY:default:1~" : {
+            "name" : "~OSPF_EXPORT_POLICY:default:1~"
           },
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -7409,7 +7857,7 @@
                     "stubType" : "NONE"
                   }
                 },
-                "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+                "exportPolicy" : "~OSPF_EXPORT_POLICY:default:1~",
                 "processId" : "1",
                 "referenceBandwidth" : 1.0E8,
                 "routerId" : "2.1.2.1",
@@ -7427,7 +7875,7 @@
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : true,
               "neighbors" : {
-                "2.1.1.1/32" : {
+                "2.1.1.1" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "clusterId" : 33620481,
                   "defaultMetric" : 0,
@@ -7454,7 +7902,7 @@
                   "peerAddress" : "2.1.1.1",
                   "remoteAsns" : "2"
                 },
-                "2.1.1.2/32" : {
+                "2.1.1.2" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "clusterId" : 33620481,
                   "defaultMetric" : 0,
@@ -7481,7 +7929,7 @@
                   "peerAddress" : "2.1.1.2",
                   "remoteAsns" : "2"
                 },
-                "2.1.3.1/32" : {
+                "2.1.3.1" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "clusterId" : 33620481,
                   "defaultMetric" : 0,
@@ -7508,7 +7956,7 @@
                   "peerAddress" : "2.1.3.1",
                   "remoteAsns" : "2"
                 },
-                "2.1.3.2/32" : {
+                "2.1.3.2" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "clusterId" : 33620481,
                   "defaultMetric" : 0,
@@ -7896,8 +8344,8 @@
               }
             ]
           },
-          "~OSPF_EXPORT_POLICY:default~" : {
-            "name" : "~OSPF_EXPORT_POLICY:default~"
+          "~OSPF_EXPORT_POLICY:default:1~" : {
+            "name" : "~OSPF_EXPORT_POLICY:default:1~"
           },
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -8056,7 +8504,7 @@
                     "stubType" : "NONE"
                   }
                 },
-                "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+                "exportPolicy" : "~OSPF_EXPORT_POLICY:default:1~",
                 "processId" : "1",
                 "referenceBandwidth" : 1.0E8,
                 "routerId" : "2.1.2.2",
@@ -8074,7 +8522,7 @@
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : true,
               "neighbors" : {
-                "2.1.1.1/32" : {
+                "2.1.1.1" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "clusterId" : 33620482,
                   "defaultMetric" : 0,
@@ -8101,7 +8549,7 @@
                   "peerAddress" : "2.1.1.1",
                   "remoteAsns" : "2"
                 },
-                "2.1.1.2/32" : {
+                "2.1.1.2" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "clusterId" : 33620482,
                   "defaultMetric" : 0,
@@ -8128,7 +8576,7 @@
                   "peerAddress" : "2.1.1.2",
                   "remoteAsns" : "2"
                 },
-                "2.1.3.1/32" : {
+                "2.1.3.1" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "clusterId" : 33620482,
                   "defaultMetric" : 0,
@@ -8155,7 +8603,7 @@
                   "peerAddress" : "2.1.3.1",
                   "remoteAsns" : "2"
                 },
-                "2.1.3.2/32" : {
+                "2.1.3.2" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "clusterId" : 33620482,
                   "defaultMetric" : 0,
@@ -8428,9 +8876,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 2.128.0.0 host 255.255.255.0"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip host 2.128.0.0 host 255.255.255.0",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as2dept1.cfg",
+                        "structureName" : "102: permit ip host 2.128.0.0 host 255.255.255.0",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as2dept1.cfg",
+                  "structureName" : "102: permit ip host 2.128.0.0 host 255.255.255.0",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               },
               {
@@ -8455,9 +8917,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 2.128.1.0 host 255.255.255.0"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip host 2.128.1.0 host 255.255.255.0",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as2dept1.cfg",
+                        "structureName" : "102: permit ip host 2.128.1.0 host 255.255.255.0",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as2dept1.cfg",
+                  "structureName" : "102: permit ip host 2.128.1.0 host 255.255.255.0",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               }
             ],
@@ -8489,9 +8965,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 1.0.1.0 host 255.255.255.0"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip host 1.0.1.0 host 255.255.255.0",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as2dept1.cfg",
+                        "structureName" : "105: permit ip host 1.0.1.0 host 255.255.255.0",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as2dept1.cfg",
+                  "structureName" : "105: permit ip host 1.0.1.0 host 255.255.255.0",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               },
               {
@@ -8516,9 +9006,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 1.0.2.0 host 255.255.255.0"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip host 1.0.2.0 host 255.255.255.0",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as2dept1.cfg",
+                        "structureName" : "105: permit ip host 1.0.2.0 host 255.255.255.0",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as2dept1.cfg",
+                  "structureName" : "105: permit ip host 1.0.2.0 host 255.255.255.0",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               },
               {
@@ -8543,9 +9047,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 3.0.1.0 host 255.255.255.0"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip host 3.0.1.0 host 255.255.255.0",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as2dept1.cfg",
+                        "structureName" : "105: permit ip host 3.0.1.0 host 255.255.255.0",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as2dept1.cfg",
+                  "structureName" : "105: permit ip host 3.0.1.0 host 255.255.255.0",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               },
               {
@@ -8570,9 +9088,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 3.0.2.0 host 255.255.255.0"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip host 3.0.2.0 host 255.255.255.0",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as2dept1.cfg",
+                        "structureName" : "105: permit ip host 3.0.2.0 host 255.255.255.0",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as2dept1.cfg",
+                  "structureName" : "105: permit ip host 3.0.2.0 host 255.255.255.0",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               }
             ],
@@ -8604,9 +9136,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip 2.128.0.0 0.0.255.255 any"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip 2.128.0.0 0.0.255.255 any",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as2dept1.cfg",
+                        "structureName" : "RESTRICT_HOST_TRAFFIC_IN: permit ip 2.128.0.0 0.0.255.255 any",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as2dept1.cfg",
+                  "structureName" : "RESTRICT_HOST_TRAFFIC_IN: permit ip 2.128.0.0 0.0.255.255 any",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               },
               {
@@ -8631,9 +9177,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line deny   ip any any"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "deny   ip any any",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as2dept1.cfg",
+                        "structureName" : "RESTRICT_HOST_TRAFFIC_IN: deny   ip any any",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as2dept1.cfg",
+                  "structureName" : "RESTRICT_HOST_TRAFFIC_IN: deny   ip any any",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               },
               {
@@ -8661,9 +9221,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit icmp any any"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit icmp any any",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as2dept1.cfg",
+                        "structureName" : "RESTRICT_HOST_TRAFFIC_IN: permit icmp any any",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as2dept1.cfg",
+                  "structureName" : "RESTRICT_HOST_TRAFFIC_IN: permit icmp any any",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               }
             ],
@@ -8695,9 +9269,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip any 2.128.0.0 0.0.255.255"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip any 2.128.0.0 0.0.255.255",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as2dept1.cfg",
+                        "structureName" : "RESTRICT_HOST_TRAFFIC_OUT: permit ip any 2.128.0.0 0.0.255.255",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as2dept1.cfg",
+                  "structureName" : "RESTRICT_HOST_TRAFFIC_OUT: permit ip any 2.128.0.0 0.0.255.255",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               },
               {
@@ -8722,9 +9310,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line deny   ip 1.128.0.0 0.0.255.255 2.128.0.0 0.0.255.255"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "deny   ip 1.128.0.0 0.0.255.255 2.128.0.0 0.0.255.255",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as2dept1.cfg",
+                        "structureName" : "RESTRICT_HOST_TRAFFIC_OUT: deny   ip 1.128.0.0 0.0.255.255 2.128.0.0 0.0.255.255",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as2dept1.cfg",
+                  "structureName" : "RESTRICT_HOST_TRAFFIC_OUT: deny   ip 1.128.0.0 0.0.255.255 2.128.0.0 0.0.255.255",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               },
               {
@@ -8749,9 +9351,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line deny   ip any any"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "deny   ip any any",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as2dept1.cfg",
+                        "structureName" : "RESTRICT_HOST_TRAFFIC_OUT: deny   ip any any",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as2dept1.cfg",
+                  "structureName" : "RESTRICT_HOST_TRAFFIC_OUT: deny   ip any any",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               }
             ],
@@ -9232,7 +9848,7 @@
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : true,
               "neighbors" : {
-                "2.34.101.3/32" : {
+                "2.34.101.3" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "clusterId" : 33620993,
                   "defaultMetric" : 0,
@@ -9266,7 +9882,7 @@
                   "peerAddress" : "2.34.101.3",
                   "remoteAsns" : "2"
                 },
-                "2.34.201.3/32" : {
+                "2.34.201.3" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "clusterId" : 33620993,
                   "defaultMetric" : 0,
@@ -9549,9 +10165,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 2.128.0.0 host 255.255.0.0"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip host 2.128.0.0 host 255.255.0.0",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as2dist1.cfg",
+                        "structureName" : "102: permit ip host 2.128.0.0 host 255.255.0.0",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as2dist1.cfg",
+                  "structureName" : "102: permit ip host 2.128.0.0 host 255.255.0.0",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               }
             ],
@@ -9583,9 +10213,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 1.0.1.0 host 255.255.255.0"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip host 1.0.1.0 host 255.255.255.0",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as2dist1.cfg",
+                        "structureName" : "105: permit ip host 1.0.1.0 host 255.255.255.0",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as2dist1.cfg",
+                  "structureName" : "105: permit ip host 1.0.1.0 host 255.255.255.0",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               },
               {
@@ -9610,9 +10254,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 1.0.2.0 host 255.255.255.0"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip host 1.0.2.0 host 255.255.255.0",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as2dist1.cfg",
+                        "structureName" : "105: permit ip host 1.0.2.0 host 255.255.255.0",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as2dist1.cfg",
+                  "structureName" : "105: permit ip host 1.0.2.0 host 255.255.255.0",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               },
               {
@@ -9637,9 +10295,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 3.0.1.0 host 255.255.255.0"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip host 3.0.1.0 host 255.255.255.0",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as2dist1.cfg",
+                        "structureName" : "105: permit ip host 3.0.1.0 host 255.255.255.0",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as2dist1.cfg",
+                  "structureName" : "105: permit ip host 3.0.1.0 host 255.255.255.0",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               },
               {
@@ -9664,9 +10336,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 3.0.2.0 host 255.255.255.0"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip host 3.0.2.0 host 255.255.255.0",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as2dist1.cfg",
+                        "structureName" : "105: permit ip host 3.0.2.0 host 255.255.255.0",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as2dist1.cfg",
+                  "structureName" : "105: permit ip host 3.0.2.0 host 255.255.255.0",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               }
             ],
@@ -9948,8 +10634,8 @@
               }
             ]
           },
-          "~OSPF_EXPORT_POLICY:default~" : {
-            "name" : "~OSPF_EXPORT_POLICY:default~",
+          "~OSPF_EXPORT_POLICY:default:1~" : {
+            "name" : "~OSPF_EXPORT_POLICY:default:1~",
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -10148,7 +10834,7 @@
                     "stubType" : "NONE"
                   }
                 },
-                "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+                "exportPolicy" : "~OSPF_EXPORT_POLICY:default:1~",
                 "processId" : "1",
                 "referenceBandwidth" : 1.0E8,
                 "routerId" : "2.1.3.1",
@@ -10166,7 +10852,7 @@
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : true,
               "neighbors" : {
-                "2.1.2.1/32" : {
+                "2.1.2.1" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "clusterId" : 33620737,
                   "defaultMetric" : 0,
@@ -10193,7 +10879,7 @@
                   "peerAddress" : "2.1.2.1",
                   "remoteAsns" : "2"
                 },
-                "2.1.2.2/32" : {
+                "2.1.2.2" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "clusterId" : 33620737,
                   "defaultMetric" : 0,
@@ -10220,7 +10906,7 @@
                   "peerAddress" : "2.1.2.2",
                   "remoteAsns" : "2"
                 },
-                "2.34.101.4/32" : {
+                "2.34.101.4" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "clusterId" : 33620737,
                   "defaultMetric" : 0,
@@ -10503,9 +11189,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 2.128.0.0 host 255.255.0.0"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip host 2.128.0.0 host 255.255.0.0",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as2dist2.cfg",
+                        "structureName" : "102: permit ip host 2.128.0.0 host 255.255.0.0",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as2dist2.cfg",
+                  "structureName" : "102: permit ip host 2.128.0.0 host 255.255.0.0",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               }
             ],
@@ -10537,9 +11237,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 1.0.1.0 host 255.255.255.0"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip host 1.0.1.0 host 255.255.255.0",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as2dist2.cfg",
+                        "structureName" : "105: permit ip host 1.0.1.0 host 255.255.255.0",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as2dist2.cfg",
+                  "structureName" : "105: permit ip host 1.0.1.0 host 255.255.255.0",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               },
               {
@@ -10564,9 +11278,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 1.0.2.0 host 255.255.255.0"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip host 1.0.2.0 host 255.255.255.0",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as2dist2.cfg",
+                        "structureName" : "105: permit ip host 1.0.2.0 host 255.255.255.0",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as2dist2.cfg",
+                  "structureName" : "105: permit ip host 1.0.2.0 host 255.255.255.0",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               },
               {
@@ -10591,9 +11319,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 3.0.1.0 host 255.255.255.0"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip host 3.0.1.0 host 255.255.255.0",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as2dist2.cfg",
+                        "structureName" : "105: permit ip host 3.0.1.0 host 255.255.255.0",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as2dist2.cfg",
+                  "structureName" : "105: permit ip host 3.0.1.0 host 255.255.255.0",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               },
               {
@@ -10618,9 +11360,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 3.0.2.0 host 255.255.255.0"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip host 3.0.2.0 host 255.255.255.0",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as2dist2.cfg",
+                        "structureName" : "105: permit ip host 3.0.2.0 host 255.255.255.0",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as2dist2.cfg",
+                  "structureName" : "105: permit ip host 3.0.2.0 host 255.255.255.0",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               }
             ],
@@ -10902,8 +11658,8 @@
               }
             ]
           },
-          "~OSPF_EXPORT_POLICY:default~" : {
-            "name" : "~OSPF_EXPORT_POLICY:default~",
+          "~OSPF_EXPORT_POLICY:default:1~" : {
+            "name" : "~OSPF_EXPORT_POLICY:default:1~",
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -11102,7 +11858,7 @@
                     "stubType" : "NONE"
                   }
                 },
-                "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+                "exportPolicy" : "~OSPF_EXPORT_POLICY:default:1~",
                 "processId" : "1",
                 "referenceBandwidth" : 1.0E8,
                 "routerId" : "2.1.3.2",
@@ -11120,7 +11876,7 @@
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : true,
               "neighbors" : {
-                "2.1.2.1/32" : {
+                "2.1.2.1" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "clusterId" : 33620738,
                   "defaultMetric" : 0,
@@ -11147,7 +11903,7 @@
                   "peerAddress" : "2.1.2.1",
                   "remoteAsns" : "2"
                 },
-                "2.1.2.2/32" : {
+                "2.1.2.2" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "clusterId" : 33620738,
                   "defaultMetric" : 0,
@@ -11174,7 +11930,7 @@
                   "peerAddress" : "2.1.2.2",
                   "remoteAsns" : "2"
                 },
-                "2.34.201.4/32" : {
+                "2.34.201.4" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "clusterId" : 33620738,
                   "defaultMetric" : 0,
@@ -11484,9 +12240,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 1.0.1.0 host 255.255.255.0"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip host 1.0.1.0 host 255.255.255.0",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as3border1.cfg",
+                        "structureName" : "101: permit ip host 1.0.1.0 host 255.255.255.0",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as3border1.cfg",
+                  "structureName" : "101: permit ip host 1.0.1.0 host 255.255.255.0",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               },
               {
@@ -11511,9 +12281,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 1.0.2.0 host 255.255.255.0"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip host 1.0.2.0 host 255.255.255.0",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as3border1.cfg",
+                        "structureName" : "101: permit ip host 1.0.2.0 host 255.255.255.0",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as3border1.cfg",
+                  "structureName" : "101: permit ip host 1.0.2.0 host 255.255.255.0",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               }
             ],
@@ -11545,9 +12329,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 2.0.0.0 host 255.0.0.0"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip host 2.0.0.0 host 255.0.0.0",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as3border1.cfg",
+                        "structureName" : "102: permit ip host 2.0.0.0 host 255.0.0.0",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as3border1.cfg",
+                  "structureName" : "102: permit ip host 2.0.0.0 host 255.0.0.0",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               },
               {
@@ -11572,9 +12370,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 2.128.0.0 host 255.255.0.0"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip host 2.128.0.0 host 255.255.0.0",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as3border1.cfg",
+                        "structureName" : "102: permit ip host 2.128.0.0 host 255.255.0.0",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as3border1.cfg",
+                  "structureName" : "102: permit ip host 2.128.0.0 host 255.255.0.0",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               }
             ],
@@ -11606,9 +12418,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 3.0.1.0 host 255.255.255.0"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip host 3.0.1.0 host 255.255.255.0",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as3border1.cfg",
+                        "structureName" : "103: permit ip host 3.0.1.0 host 255.255.255.0",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as3border1.cfg",
+                  "structureName" : "103: permit ip host 3.0.1.0 host 255.255.255.0",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               },
               {
@@ -11633,9 +12459,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 3.0.2.0 host 255.255.255.0"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip host 3.0.2.0 host 255.255.255.0",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as3border1.cfg",
+                        "structureName" : "103: permit ip host 3.0.2.0 host 255.255.255.0",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as3border1.cfg",
+                  "structureName" : "103: permit ip host 3.0.2.0 host 255.255.255.0",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               }
             ],
@@ -12392,8 +13232,8 @@
               }
             ]
           },
-          "~OSPF_EXPORT_POLICY:default~" : {
-            "name" : "~OSPF_EXPORT_POLICY:default~",
+          "~OSPF_EXPORT_POLICY:default:1~" : {
+            "name" : "~OSPF_EXPORT_POLICY:default:1~",
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -12601,7 +13441,7 @@
                     "stubType" : "NONE"
                   }
                 },
-                "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+                "exportPolicy" : "~OSPF_EXPORT_POLICY:default:1~",
                 "processId" : "1",
                 "referenceBandwidth" : 1.0E8,
                 "routerId" : "3.1.1.1",
@@ -12619,7 +13459,7 @@
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : true,
               "neighbors" : {
-                "3.10.1.1/32" : {
+                "3.10.1.1" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "clusterId" : 50397441,
                   "defaultMetric" : 0,
@@ -12646,7 +13486,7 @@
                   "peerAddress" : "3.10.1.1",
                   "remoteAsns" : "3"
                 },
-                "10.23.21.2/32" : {
+                "10.23.21.2" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "clusterId" : 50397441,
                   "defaultMetric" : 0,
@@ -12956,9 +13796,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 1.0.1.0 host 255.255.255.0"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip host 1.0.1.0 host 255.255.255.0",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as3border2.cfg",
+                        "structureName" : "101: permit ip host 1.0.1.0 host 255.255.255.0",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as3border2.cfg",
+                  "structureName" : "101: permit ip host 1.0.1.0 host 255.255.255.0",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               },
               {
@@ -12983,9 +13837,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 1.0.2.0 host 255.255.255.0"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip host 1.0.2.0 host 255.255.255.0",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as3border2.cfg",
+                        "structureName" : "101: permit ip host 1.0.2.0 host 255.255.255.0",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as3border2.cfg",
+                  "structureName" : "101: permit ip host 1.0.2.0 host 255.255.255.0",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               }
             ],
@@ -13017,9 +13885,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 2.0.0.0 host 255.0.0.0"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip host 2.0.0.0 host 255.0.0.0",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as3border2.cfg",
+                        "structureName" : "102: permit ip host 2.0.0.0 host 255.0.0.0",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as3border2.cfg",
+                  "structureName" : "102: permit ip host 2.0.0.0 host 255.0.0.0",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               },
               {
@@ -13044,9 +13926,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 2.128.0.0 host 255.255.0.0"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip host 2.128.0.0 host 255.255.0.0",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as3border2.cfg",
+                        "structureName" : "102: permit ip host 2.128.0.0 host 255.255.0.0",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as3border2.cfg",
+                  "structureName" : "102: permit ip host 2.128.0.0 host 255.255.0.0",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               }
             ],
@@ -13078,9 +13974,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 3.0.1.0 host 255.255.255.0"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip host 3.0.1.0 host 255.255.255.0",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as3border2.cfg",
+                        "structureName" : "103: permit ip host 3.0.1.0 host 255.255.255.0",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as3border2.cfg",
+                  "structureName" : "103: permit ip host 3.0.1.0 host 255.255.255.0",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               },
               {
@@ -13105,9 +14015,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 3.0.2.0 host 255.255.255.0"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip host 3.0.2.0 host 255.255.255.0",
+                      "vendorStructureId" : {
+                        "filename" : "configs/as3border2.cfg",
+                        "structureName" : "103: permit ip host 3.0.2.0 host 255.255.255.0",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/as3border2.cfg",
+                  "structureName" : "103: permit ip host 3.0.2.0 host 255.255.255.0",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               }
             ],
@@ -13781,8 +14705,8 @@
               }
             ]
           },
-          "~OSPF_EXPORT_POLICY:default~" : {
-            "name" : "~OSPF_EXPORT_POLICY:default~",
+          "~OSPF_EXPORT_POLICY:default:1~" : {
+            "name" : "~OSPF_EXPORT_POLICY:default:1~",
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -13990,7 +14914,7 @@
                     "stubType" : "NONE"
                   }
                 },
-                "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+                "exportPolicy" : "~OSPF_EXPORT_POLICY:default:1~",
                 "processId" : "1",
                 "referenceBandwidth" : 1.0E8,
                 "routerId" : "3.2.2.2",
@@ -14008,7 +14932,7 @@
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : true,
               "neighbors" : {
-                "3.10.1.1/32" : {
+                "3.10.1.1" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "clusterId" : 50463234,
                   "defaultMetric" : 0,
@@ -14035,7 +14959,7 @@
                   "peerAddress" : "3.10.1.1",
                   "remoteAsns" : "3"
                 },
-                "10.13.22.1/32" : {
+                "10.13.22.1" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "clusterId" : 50463234,
                   "defaultMetric" : 0,
@@ -14448,8 +15372,8 @@
               }
             ]
           },
-          "~OSPF_EXPORT_POLICY:default~" : {
-            "name" : "~OSPF_EXPORT_POLICY:default~"
+          "~OSPF_EXPORT_POLICY:default:1~" : {
+            "name" : "~OSPF_EXPORT_POLICY:default:1~"
           },
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -14606,7 +15530,7 @@
                     "stubType" : "NONE"
                   }
                 },
-                "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+                "exportPolicy" : "~OSPF_EXPORT_POLICY:default:1~",
                 "processId" : "1",
                 "referenceBandwidth" : 1.0E8,
                 "routerId" : "3.10.1.1",
@@ -14624,7 +15548,7 @@
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : true,
               "neighbors" : {
-                "3.1.1.1/32" : {
+                "3.1.1.1" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "clusterId" : 50987265,
                   "defaultMetric" : 0,
@@ -14651,7 +15575,7 @@
                   "peerAddress" : "3.1.1.1",
                   "remoteAsns" : "3"
                 },
-                "3.2.2.2/32" : {
+                "3.2.2.2" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "clusterId" : 50987265,
                   "defaultMetric" : 0,

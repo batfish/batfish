@@ -123,8 +123,7 @@ public class EvpnL3VniPropertiesAnswererTest {
                     .build())
             .build();
     bgpProc.setNeighbors(
-        ImmutableSortedMap.of(
-            peer1.getPeerAddress().toPrefix(), peer1, peer2.getPeerAddress().toPrefix(), peer2));
+        ImmutableSortedMap.of(peer1.getPeerAddress(), peer1, peer2.getPeerAddress(), peer2));
 
     ImmutableMap<String, Configuration> configs = ImmutableMap.of(c1.getHostname(), c1);
     Map<String, ColumnMetadata> columnMap =

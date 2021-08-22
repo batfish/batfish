@@ -1,6 +1,5 @@
 package org.batfish.common.topology;
 
-import static org.batfish.common.topology.TopologyUtil.computeLayer1LogicalTopology;
 import static org.batfish.common.topology.TopologyUtil.computeLayer2Topology;
 import static org.batfish.common.topology.TopologyUtil.computeRawLayer3Topology;
 import static org.batfish.common.util.isp.IspModelingUtils.INTERNET_HOST_NAME;
@@ -182,13 +181,14 @@ public class TopologyUtilIspTest {
 
   /** The default way to go from topology setup to layer3 */
   private static Topology computeLayer3(TopologySetup topo) {
-    Layer1Topology logicalLayer1 =
-        computeLayer1LogicalTopology(topo._layer1Topology, topo._configurations);
+    Layer1Topologies l1Topologies =
+        Layer1TopologiesFactory.create(
+            topo._layer1Topology, Layer1Topology.EMPTY, topo._configurations);
     Layer2Topology layer2 =
-        computeLayer2Topology(logicalLayer1, VxlanTopology.EMPTY, topo._configurations);
+        computeLayer2Topology(
+            l1Topologies.getActiveLogicalL1(), VxlanTopology.EMPTY, topo._configurations);
     return computeRawLayer3Topology(
-        HybridL3Adjacencies.create(
-            topo._layer1Topology, logicalLayer1, layer2, topo._configurations),
+        HybridL3Adjacencies.create(l1Topologies, layer2, topo._configurations),
         topo._configurations);
   }
 

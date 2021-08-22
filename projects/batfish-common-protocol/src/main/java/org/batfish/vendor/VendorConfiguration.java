@@ -40,31 +40,25 @@ import org.batfish.grammar.BatfishCombinedParser;
 
 public abstract class VendorConfiguration implements Serializable {
 
+  private transient @Nullable ConversionContext _conversionContext;
   private transient ConvertConfigurationAnswerElement _answerElement;
-
   protected String _filename;
-
   @Nonnull protected transient SnapshotRuntimeData _runtimeData;
-
   private VendorConfiguration _overlayConfiguration;
-
-  // Type description -> Name -> DefinedStructureInfo
+  /** Type description -> Name -> DefinedStructureInfo */
   @Nonnull
   protected final SortedMap<String, SortedMap<String, DefinedStructureInfo>> _structureDefinitions;
-
-  // StructureType -> Name -> StructureUsage
+  /** StructureType -> Name -> StructureUsage */
   @Nonnull
   protected final SortedMap<
           StructureType, SortedMap<String, SortedMap<StructureUsage, SortedMultiset<Integer>>>>
       _structureReferences;
-
-  // structType -> structName -> usage -> lines
+  /** structType -> structName -> usage -> lines */
   @Nonnull
   protected final SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>
       _undefinedReferences;
 
   private transient boolean _unrecognized;
-
   protected transient Warnings _w;
 
   public VendorConfiguration() {
@@ -81,6 +75,10 @@ public abstract class VendorConfiguration implements Serializable {
   @JsonIgnore
   public final ConvertConfigurationAnswerElement getAnswerElement() {
     return _answerElement;
+  }
+
+  public @Nullable ConversionContext getConversionContext() {
+    return _conversionContext;
   }
 
   public String getFilename() {
@@ -354,6 +352,10 @@ public abstract class VendorConfiguration implements Serializable {
       deleteStructureReferences(name, type);
     }
     return succeeded;
+  }
+
+  public void setConversionContext(@Nullable ConversionContext conversionContext) {
+    _conversionContext = conversionContext;
   }
 
   public void setFilename(String filename) {

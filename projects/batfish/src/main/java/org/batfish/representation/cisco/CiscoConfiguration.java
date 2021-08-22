@@ -10,6 +10,8 @@ import static org.batfish.datamodel.Interface.isRealInterfaceName;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
 import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
+import static org.batfish.datamodel.Names.generatedOspfDefaultRouteGenerationPolicyName;
+import static org.batfish.datamodel.Names.generatedOspfExportPolicyName;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.routing_policy.Common.initDenyAllBgpRedistributionPolicy;
@@ -333,10 +335,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
         .filter(e -> Objects.nonNull(e.getValue().getAddress()))
         .collect(
             ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getAddress().getIp()));
-  }
-
-  public static String computeOspfDefaultRouteGenerationPolicyName(String vrf, String proc) {
-    return String.format("~OSPF_DEFAULT_ROUTE_GENERATION_POLICY:%s:%s~", vrf, proc);
   }
 
   public static String computeProtocolObjectGroupAclName(String name) {
@@ -1887,7 +1885,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
     newProcess.setAreas(toImmutableSortedMap(areas, Entry::getKey, e -> e.getValue().build()));
 
-    String ospfExportPolicyName = "~OSPF_EXPORT_POLICY:" + vrfName + "~";
+    String ospfExportPolicyName = generatedOspfExportPolicyName(vrfName, proc.getName());
     RoutingPolicy ospfExportPolicy = new RoutingPolicy(ospfExportPolicyName, c);
     c.getRoutingPolicies().put(ospfExportPolicyName, ospfExportPolicy);
     List<Statement> ospfExportStatements = ospfExportPolicy.getStatements();
@@ -1925,7 +1923,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       } else {
         // Use a generated route that will only be generated if a default route exists in RIB
         String defaultRouteGenerationPolicyName =
-            computeOspfDefaultRouteGenerationPolicyName(vrfName, proc.getName());
+            generatedOspfDefaultRouteGenerationPolicyName(vrfName, proc.getName());
         RoutingPolicy.builder()
             .setOwner(c)
             .setName(defaultRouteGenerationPolicyName)
@@ -2469,14 +2467,16 @@ public final class CiscoConfiguration extends VendorConfiguration {
         c.getRouteFilterLists().put(rfList.getName(), rfList);
       }
       c.getIpAccessLists()
-          .put(saList.getName(), toIpAccessList(saList.toExtendedAccessList(), _objectGroups));
+          .put(
+              saList.getName(),
+              toIpAccessList(saList.toExtendedAccessList(), _objectGroups, _filename));
     }
     for (ExtendedAccessList eaList : _extendedAccessLists.values()) {
       if (isAclUsedForRouting(eaList.getName())) {
         RouteFilterList rfList = CiscoConversions.toRouteFilterList(eaList, _filename);
         c.getRouteFilterLists().put(rfList.getName(), rfList);
       }
-      IpAccessList ipaList = toIpAccessList(eaList, _objectGroups);
+      IpAccessList ipaList = toIpAccessList(eaList, _objectGroups, _filename);
       c.getIpAccessLists().put(ipaList.getName(), ipaList);
     }
 
@@ -3048,6 +3048,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.WCCP_GROUP_LIST,
         CiscoStructureUsage.WCCP_REDIRECT_LIST,
         CiscoStructureUsage.WCCP_SERVICE_LIST);
+    markConcreteStructure(CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED_LINE);
+    markConcreteStructure(CiscoStructureType.IPV4_ACCESS_LIST_STANDARD_LINE);
 
     markCommunityLists(
         CiscoStructureUsage.ROUTE_MAP_ADD_COMMUNITY,

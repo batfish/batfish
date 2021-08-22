@@ -1368,10 +1368,10 @@ public final class WorkMgrTest {
         AnswerMetadataUtil.computeAnswerMetadata(answer1, Main.getLogger());
     AnswerMetadata answerMetadata2 =
         AnswerMetadataUtil.computeAnswerMetadata(answer1, Main.getLogger());
-    _storage.storeAnswer(answer1Str, baseAnswerId1);
-    _storage.storeAnswer(answer2Str, baseAnswerId2);
-    _storage.storeAnswerMetadata(answerMetadata1, baseAnswerId1);
-    _storage.storeAnswerMetadata(answerMetadata2, baseAnswerId2);
+    _storage.storeAnswer(networkId, snapshotId, answer1Str, baseAnswerId1);
+    _storage.storeAnswer(networkId, snapshotId, answer2Str, baseAnswerId2);
+    _storage.storeAnswerMetadata(networkId, snapshotId, answerMetadata1, baseAnswerId1);
+    _storage.storeAnswerMetadata(networkId, snapshotId, answerMetadata2, baseAnswerId2);
 
     String answer1Output =
         _manager.getAnswerString(containerName, testrigName, question1Name, null, analysisName);
@@ -1444,10 +1444,10 @@ public final class WorkMgrTest {
         AnswerMetadataUtil.computeAnswerMetadata(answer1, Main.getLogger());
     AnswerMetadata answerMetadata2 =
         AnswerMetadataUtil.computeAnswerMetadata(answer1, Main.getLogger());
-    _storage.storeAnswer(answer1Str, baseAnswerId1);
-    _storage.storeAnswer(answer2Str, baseAnswerId2);
-    _storage.storeAnswerMetadata(answerMetadata1, baseAnswerId1);
-    _storage.storeAnswerMetadata(answerMetadata2, baseAnswerId2);
+    _storage.storeAnswer(networkId, snapshotId, answer1Str, baseAnswerId1);
+    _storage.storeAnswer(networkId, snapshotId, answer2Str, baseAnswerId2);
+    _storage.storeAnswerMetadata(networkId, snapshotId, answerMetadata1, baseAnswerId1);
+    _storage.storeAnswerMetadata(networkId, snapshotId, answerMetadata2, baseAnswerId2);
 
     Map<String, String> answers1 =
         _manager.getAnalysisAnswers(
@@ -1522,8 +1522,8 @@ public final class WorkMgrTest {
     String answerStr = BatfishObjectMapper.writeString(answer);
     AnswerMetadata answerMetadata =
         AnswerMetadataUtil.computeAnswerMetadata(answer, Main.getLogger());
-    _storage.storeAnswer(answerStr, baseAnswerId);
-    _storage.storeAnswerMetadata(answerMetadata, baseAnswerId);
+    _storage.storeAnswer(networkId, snapshotId, answerStr, baseAnswerId);
+    _storage.storeAnswerMetadata(networkId, snapshotId, answerMetadata, baseAnswerId);
     AnswerMetadata answerResult =
         _manager.getAnswerMetadata(networkName, snapshotName, questionName, null, analysisName);
 
@@ -1576,11 +1576,11 @@ public final class WorkMgrTest {
     answer.addAnswerElement(new TableAnswerElement(MOCK_TABLE_METADATA));
     AnswerMetadata answerMetadata =
         AnswerMetadataUtil.computeAnswerMetadata(answer, Main.getLogger());
-    _storage.storeAnswerMetadata(answerMetadata, baseAnswerId);
+    _storage.storeAnswerMetadata(networkId, snapshotId, answerMetadata, baseAnswerId);
     String answerStr = BatfishObjectMapper.writeString(answer);
-    _storage.storeAnswer(answerStr, baseAnswerId);
+    _storage.storeAnswer(networkId, snapshotId, answerStr, baseAnswerId);
     // remove answer metadata
-    _storage.deleteAnswerMetadata(baseAnswerId);
+    _storage.deleteAnswerMetadata(networkId, snapshotId, baseAnswerId);
 
     assertThat(
         _manager.getAnswerMetadata(networkName, snapshotName, questionName, null, analysisName),
@@ -1624,9 +1624,9 @@ public final class WorkMgrTest {
     answer.addAnswerElement(new TableAnswerElement(MOCK_TABLE_METADATA));
     AnswerMetadata answerMetadata =
         AnswerMetadataUtil.computeAnswerMetadata(answer, Main.getLogger());
-    _storage.storeAnswerMetadata(answerMetadata, baseAnswerId);
+    _storage.storeAnswerMetadata(networkId, snapshotId, answerMetadata, baseAnswerId);
     String answerStr = BatfishObjectMapper.writeString(answer);
-    _storage.storeAnswer(answerStr, baseAnswerId);
+    _storage.storeAnswer(networkId, snapshotId, answerStr, baseAnswerId);
     AnswerMetadata answerResult =
         _manager.getAnswerMetadata(networkName, snapshotName, questionName, null, null);
 
@@ -1653,11 +1653,11 @@ public final class WorkMgrTest {
     answer.addAnswerElement(new TableAnswerElement(MOCK_TABLE_METADATA));
     AnswerMetadata answerMetadata =
         AnswerMetadataUtil.computeAnswerMetadata(answer, Main.getLogger());
-    _storage.storeAnswerMetadata(answerMetadata, baseAnswerId);
+    _storage.storeAnswerMetadata(networkId, snapshotId, answerMetadata, baseAnswerId);
     String answerStr = BatfishObjectMapper.writeString(answer);
-    _storage.storeAnswer(answerStr, baseAnswerId);
+    _storage.storeAnswer(networkId, snapshotId, answerStr, baseAnswerId);
     // remove answer metadata
-    _storage.deleteAnswerMetadata(baseAnswerId);
+    _storage.deleteAnswerMetadata(networkId, snapshotId, baseAnswerId);
 
     assertThat(
         _manager.getAnswerMetadata(networkName, snapshotName, questionName, null, null),
@@ -1684,9 +1684,9 @@ public final class WorkMgrTest {
     answer.addAnswerElement(new TableAnswerElement(MOCK_TABLE_METADATA));
     AnswerMetadata answerMetadata =
         AnswerMetadataUtil.computeAnswerMetadata(answer, Main.getLogger());
-    _storage.storeAnswerMetadata(answerMetadata, answerId);
+    _storage.storeAnswerMetadata(networkId, snapshotId, answerMetadata, answerId);
     String answerStr = BatfishObjectMapper.writeString(answer);
-    _storage.storeAnswer(answerStr, answerId);
+    _storage.storeAnswer(networkId, snapshotId, answerStr, answerId);
     // remove question
     _idManager.deleteQuestion(questionName, networkId, null);
 
@@ -2111,6 +2111,41 @@ public final class WorkMgrTest {
 
     assertThat(notFiltered.getRowsList(), equalTo(ImmutableList.of(row1, row2)));
     assertThat(filtered.getRowsList(), equalTo(ImmutableList.of(row1)));
+
+    assertThat(notFiltered.getSummary().getNumResults(), equalTo(2));
+    assertThat(filtered.getSummary().getNumResults(), equalTo(1));
+  }
+
+  /** Test that you can filter by a value column. */
+  @Test
+  public void testProcessAnswerTable2FilteredValue() {
+    TableAnswerElement table =
+        new TableAnswerElement(
+            new TableMetadata(
+                ImmutableList.of(
+                    new ColumnMetadata("key", Schema.STRING, "the key column", true, false),
+                    new ColumnMetadata("value", Schema.STRING, "the value column", false, true))));
+    Row row1 = Row.of("key", "key1", "value", "value1");
+    Row row2 = Row.of("key", "key2", "value", "value2");
+    table.addRow(row1);
+    table.addRow(row2);
+    AnswerRowsOptions optionsNotFiltered =
+        new AnswerRowsOptions(
+            ImmutableSet.of(), ImmutableList.of(), Integer.MAX_VALUE, 0, ImmutableList.of(), false);
+    AnswerRowsOptions optionsFiltered =
+        new AnswerRowsOptions(
+            ImmutableSet.of("value"), // project onto the value column
+            ImmutableList.of(new ColumnFilter("value", "2")),
+            Integer.MAX_VALUE,
+            0,
+            ImmutableList.of(),
+            false);
+
+    TableView notFiltered = _manager.processAnswerTable2(table, optionsNotFiltered);
+    TableView filtered = _manager.processAnswerTable2(table, optionsFiltered);
+
+    assertThat(notFiltered.getInnerRows(), equalTo(ImmutableList.of(row1, row2)));
+    assertThat(filtered.getInnerRows(), equalTo(ImmutableList.of(Row.of("value", "value2"))));
 
     assertThat(notFiltered.getSummary().getNumResults(), equalTo(2));
     assertThat(filtered.getSummary().getNumResults(), equalTo(1));
@@ -2682,8 +2717,10 @@ public final class WorkMgrTest {
                                     "(" + node + ")", null, ImmutableMap.of(node, "role1"))))
                         .build()))
             .build();
-    _manager.getStorage().storeNodeRoles(networkNodeRoles, networkNodeRolesId);
-    _idManager.assignNetworkNodeRolesId(_idManager.getNetworkId(network).get(), networkNodeRolesId);
+
+    NetworkId networkId = _idManager.getNetworkId(network).get();
+    _manager.getStorage().storeNodeRoles(networkId, networkNodeRoles, networkNodeRolesId);
+    _idManager.assignNetworkNodeRolesId(networkId, networkNodeRolesId);
 
     // inferred roles for first snapshot should have been set network-wide
     assertThat(_manager.getNetworkNodeRoles(network), equalTo(networkNodeRoles));
@@ -2804,9 +2841,9 @@ public final class WorkMgrTest {
     answer.addAnswerElement(new TableAnswerElement(MOCK_TABLE_METADATA));
     AnswerMetadata answerMetadata =
         AnswerMetadataUtil.computeAnswerMetadata(answer, Main.getLogger());
-    _storage.storeAnswerMetadata(answerMetadata, baseAnswerId);
+    _storage.storeAnswerMetadata(networkId, snapshotId, answerMetadata, baseAnswerId);
     String answerStr = BatfishObjectMapper.writeString(answer);
-    _storage.storeAnswer(answerStr, baseAnswerId);
+    _storage.storeAnswer(networkId, snapshotId, answerStr, baseAnswerId);
     Answer answerBeforeUpdate =
         BatfishObjectMapper.mapper()
             .readValue(

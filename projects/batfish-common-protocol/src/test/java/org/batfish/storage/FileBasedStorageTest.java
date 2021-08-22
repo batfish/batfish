@@ -66,6 +66,8 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.SnapshotMetadata;
+import org.batfish.datamodel.answers.AnswerMetadata;
+import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
@@ -74,9 +76,11 @@ import org.batfish.datamodel.isp_configuration.IspFilter;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
 import org.batfish.identifiers.NetworkId;
+import org.batfish.identifiers.NodeRolesId;
 import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.specifier.InterfaceLocation;
+import org.batfish.vendor.ConversionContext;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -124,6 +128,39 @@ public final class FileBasedStorageTest {
     assertThat(
         _storage.loadConfigurations(new NetworkId("nonexistent"), new SnapshotId("nonexistent")),
         nullValue());
+  }
+
+  @Test
+  public void testStoreAndLoadConversionContext() throws IOException {
+    NetworkSnapshot snapshot =
+        new NetworkSnapshot(new NetworkId("network"), new SnapshotId("snapshot"));
+
+    ConversionContext conversionContext = new ConversionContext();
+    _storage.storeConversionContext(conversionContext, snapshot);
+
+    ConversionContext loadedContext = _storage.loadConversionContext(snapshot);
+    assertThat(loadedContext, instanceOf(ConversionContext.class));
+  }
+
+  @Test
+  public void testLoadConversionContext_fileNotFound() throws IOException {
+    _thrown.expect(FileNotFoundException.class);
+    _storage.loadConversionContext(
+        new NetworkSnapshot(new NetworkId("network"), new SnapshotId("snapshot")));
+  }
+
+  @Test
+  public void testLoadConversionContext_deserializationFailure() throws IOException {
+    NetworkId networkId = new NetworkId("network");
+    SnapshotId snapshotId = new SnapshotId("snapshot");
+
+    String fooString = "foo"; // not a ConversionContext
+    Path conversionContextPath = _storage.getConversionContextPath(networkId, snapshotId);
+    _storage.serializeObject(fooString, conversionContextPath);
+
+    _thrown.expect(IOException.class);
+    _thrown.expectMessage(containsString("Failed to deserialize ConversionContext"));
+    _storage.loadConversionContext(new NetworkSnapshot(networkId, snapshotId));
   }
 
   @Test
@@ -311,6 +348,41 @@ public final class FileBasedStorageTest {
     assertThat(content, equalTo(loaded));
   }
 
+  /**
+   * Test that node roles are loaded from the legacy location if nothing is found in the primary
+   * location
+   */
+  @Test
+  public void testLoadNodeRoles_old() throws IOException {
+    NetworkId networkId = new NetworkId("network");
+    NodeRolesId nodeRolesId = new NodeRolesId("nodeRoles");
+    String nodeRolesData = "stringData";
+
+    Path nodeRolesPath = _storage.getOldNodeRolesPath(nodeRolesId);
+    _storage.mkdirs(nodeRolesPath.getParent());
+    _storage.writeStringToFile(nodeRolesPath, nodeRolesData, UTF_8);
+
+    assertThat(_storage.loadNodeRoles(networkId, nodeRolesId), equalTo(nodeRolesData));
+
+    _thrown.expect(FileNotFoundException.class);
+    _storage.loadNodeRoles(networkId, new NodeRolesId("missing"));
+  }
+
+  /** Test that the response considers the old location of node roles */
+  @Test
+  public void testHasLoadNodeRoles_old() throws IOException {
+    NetworkId networkId = new NetworkId("network");
+    NodeRolesId nodeRolesId = new NodeRolesId("nodeRoles");
+    String nodeRolesData = "stringData";
+
+    Path nodeRolesPath = _storage.getOldNodeRolesPath(nodeRolesId);
+    _storage.mkdirs(nodeRolesPath.getParent());
+    _storage.writeStringToFile(nodeRolesPath, nodeRolesData, UTF_8);
+
+    assertTrue(_storage.hasNodeRoles(networkId, nodeRolesId));
+    assertFalse(_storage.hasNodeRoles(networkId, new NodeRolesId("missing")));
+  }
+
   @Test
   public void testLoadSnapshotInputObjectFile() throws IOException {
     NetworkId network = new NetworkId("network");
@@ -430,6 +502,73 @@ public final class FileBasedStorageTest {
         containsInAnyOrder(
             new StoredObjectMetadata(key1, content1.getBytes().length),
             new StoredObjectMetadata(key2, content2.getBytes().length)));
+  }
+
+  /**
+   * Test that the answer is loaded from the legacy location if nothing is found in the primary
+   * location
+   */
+  @Test
+  public void testLoadAnswer_old() throws IOException {
+    NetworkId networkId = new NetworkId("network");
+    SnapshotId snapshotId = new SnapshotId("snapshot");
+    AnswerId answerId = new AnswerId("answerId");
+    String answerStr = "answerStr";
+
+    Path answerPath = _storage.getOldAnswerPath(answerId);
+    _storage.mkdirs(answerPath);
+    _storage.writeStringToFile(answerPath, answerStr, UTF_8);
+
+    assertThat(_storage.loadAnswer(networkId, snapshotId, answerId), equalTo(answerStr));
+
+    _thrown.expect(FileNotFoundException.class);
+    _storage.loadAnswer(networkId, snapshotId, new AnswerId("missing"));
+  }
+
+  /**
+   * Test that the answer metadata is loaded from the legacy location if nothing is found in the
+   * primary location
+   */
+  @Test
+  public void testLoadAnswerMetadata_old() throws IOException {
+    NetworkId networkId = new NetworkId("network");
+    SnapshotId snapshotId = new SnapshotId("snapshot");
+    AnswerId answerId = new AnswerId("answerId");
+    AnswerMetadata answerMetadata =
+        AnswerMetadata.builder().setStatus(AnswerStatus.SUCCESS).build();
+
+    Path answerMetadataPath = _storage.getOldAnswerMetadataPath(answerId);
+    _storage.mkdirs(answerMetadataPath.getParent());
+    _storage.writeStringToFile(
+        answerMetadataPath, BatfishObjectMapper.writeString(answerMetadata), UTF_8);
+
+    assertThat(
+        _storage.loadAnswerMetadata(networkId, snapshotId, answerId), equalTo(answerMetadata));
+
+    _thrown.expect(FileNotFoundException.class);
+    _storage.loadAnswerMetadata(networkId, snapshotId, new AnswerId("missing"));
+  }
+
+  /**
+   * Test that response considers the legacy location if nothing is found in the primary location of
+   * the metadata
+   */
+  @Test
+  public void testHasAnswerMetadata_old() throws IOException {
+    NetworkId networkId = new NetworkId("network");
+    SnapshotId snapshotId = new SnapshotId("snapshot");
+    AnswerId answerId = new AnswerId("answerId");
+    AnswerMetadata answerMetadata =
+        AnswerMetadata.builder().setStatus(AnswerStatus.SUCCESS).build();
+
+    Path answerMetadataPath = _storage.getOldAnswerMetadataPath(answerId);
+    _storage.mkdirs(answerMetadataPath.getParent());
+    _storage.writeStringToFile(
+        answerMetadataPath, BatfishObjectMapper.writeString(answerMetadata), UTF_8);
+
+    assertTrue(_storage.hasAnswerMetadata(networkId, snapshotId, answerId));
+
+    assertFalse(_storage.hasAnswerMetadata(networkId, snapshotId, new AnswerId("missing")));
   }
 
   @Test
@@ -649,13 +788,13 @@ public final class FileBasedStorageTest {
           @Nonnull
           @Override
           Instant getLastModifiedTime(Path path) throws IOException {
-            if (path.equals(getAnswerDir(oldAnswerId))
+            if (path.equals(getAnswerDir(networkToDeleteId, snapshotOldId, oldAnswerId))
                 || path.equals(getOriginalDir(oldUploadKey, networkId))
                 || path.equals(getOriginalDir(oldUploadKey, networkToDeleteId))
                 || path.startsWith(getSnapshotDir(networkId, snapshotOldId))
                 || path.startsWith(getSnapshotDir(networkToDeleteId, snapshotOldId))) {
               return oldTime;
-            } else if (path.equals(getAnswerDir(newAnswerId))
+            } else if (path.equals(getAnswerDir(networkId, snapshotNewId, newAnswerId))
                 || path.equals(getOriginalDir(newUploadKey, networkId))
                 || path.startsWith(getSnapshotDir(networkId, snapshotNewId))) {
               return newTime;
@@ -669,10 +808,10 @@ public final class FileBasedStorageTest {
     storage.writeId(networkToDeleteId, networkToDelete);
 
     // write old answer
-    storage.storeAnswer("", oldAnswerId);
+    storage.storeAnswer(networkToDeleteId, snapshotOldId, "", oldAnswerId);
 
     // write new answer
-    storage.storeAnswer("", newAnswerId);
+    storage.storeAnswer(networkId, snapshotNewId, "", newAnswerId);
 
     // write old original upload
     storage.storeUploadSnapshotZip(new NullInputStream(0), oldUploadKey, networkId);
@@ -703,8 +842,8 @@ public final class FileBasedStorageTest {
     storage.deleteNameIdMapping(NetworkId.class, networkToDelete);
 
     // should exist before garbage collection
-    storage.loadAnswer(oldAnswerId);
-    storage.loadAnswer(newAnswerId);
+    storage.loadAnswer(networkToDeleteId, snapshotOldId, oldAnswerId);
+    storage.loadAnswer(networkId, snapshotNewId, newAnswerId);
     storage.loadUploadSnapshotZip(oldUploadKey, networkId).close();
     storage.loadUploadSnapshotZip(oldUploadKey, networkToDeleteId).close();
     storage.loadUploadSnapshotZip(newUploadKey, networkId).close();
@@ -714,12 +853,13 @@ public final class FileBasedStorageTest {
     storage.runGarbageCollection(newTime);
 
     // should have survived garbage collection, so should not throw
-    storage.loadAnswer(newAnswerId);
+    storage.loadAnswer(networkId, snapshotNewId, newAnswerId);
     storage.loadUploadSnapshotZip(newUploadKey, networkId).close();
     storage.loadSnapshotMetadata(networkId, snapshotNewId);
 
     // should throw because data should have been garbage collected
-    expectFileNotFoundException(() -> storage.loadAnswer(oldAnswerId));
+    expectFileNotFoundException(
+        () -> storage.loadAnswer(networkToDeleteId, snapshotOldId, oldAnswerId));
     expectFileNotFoundException(() -> storage.loadUploadSnapshotZip(oldUploadKey, networkId));
     expectFileNotFoundException(
         () -> storage.loadUploadSnapshotZip(oldUploadKey, networkToDeleteId));

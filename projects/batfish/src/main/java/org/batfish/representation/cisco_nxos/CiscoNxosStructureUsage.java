@@ -86,6 +86,7 @@ public enum CiscoNxosStructureUsage implements StructureUsage {
   IP_ACCESS_LIST_DESTINATION_PORTGROUP("ip access-list destination portgroup"),
   IP_ACCESS_LIST_SOURCE_ADDRGROUP("ip access-list source addrgroup"),
   IP_ACCESS_LIST_SOURCE_PORTGROUP("ip access-list source portgroup"),
+  IP_ACCESS_LIST_LINE_SELF_REFERENCE("ip access-list line"),
   IP_PIM_RP_ADDRESS_PREFIX_LIST("ip pim rp-address prefix-list"),
   IP_PIM_RP_ADDRESS_ROUTE_MAP("ip pim rp-address route-map"),
   IP_PIM_RP_CANDIDATE_INTERFACE("ip pim rp-candidate interface"),

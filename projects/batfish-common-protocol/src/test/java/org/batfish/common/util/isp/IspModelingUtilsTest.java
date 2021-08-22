@@ -697,7 +697,7 @@ public class IspModelingUtilsTest {
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
     BgpProcess bgpProcess = new BgpProcess(Ip.ZERO, ConfigurationFormat.CISCO_IOS);
-    bgpProcess.getActiveNeighbors().put(Prefix.parse("1.1.1.1/32"), peer);
+    bgpProcess.getActiveNeighbors().put(Ip.parse("1.1.1.1"), peer);
     ispConfiguration.getDefaultVrf().setBgpProcess(bgpProcess);
 
     assertThat(IspModelingUtils.getAsnOfIspNode(ispConfiguration), equalTo(2L));
@@ -780,7 +780,7 @@ public class IspModelingUtilsTest {
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
     BgpProcess bgpProcess = new BgpProcess(Ip.ZERO, ConfigurationFormat.CISCO_IOS);
-    bgpProcess.getActiveNeighbors().put(Prefix.parse("1.1.1.1/32"), peer);
+    bgpProcess.getActiveNeighbors().put(Ip.parse("1.1.1.1"), peer);
     configuration.getDefaultVrf().setBgpProcess(bgpProcess);
 
     Map<String, Configuration> internetAndIsps =
@@ -822,7 +822,7 @@ public class IspModelingUtilsTest {
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
     BgpProcess bgpProcess = new BgpProcess(Ip.ZERO, ConfigurationFormat.CISCO_IOS);
-    bgpProcess.getActiveNeighbors().put(Prefix.parse("1.1.1.1/32"), peer);
+    bgpProcess.getActiveNeighbors().put(Ip.parse("1.1.1.1"), peer);
     configuration.getDefaultVrf().setBgpProcess(bgpProcess);
 
     ModeledNodes modeledNodes =
@@ -888,7 +888,7 @@ public class IspModelingUtilsTest {
                     hasNeighbors(
                         equalTo(
                             ImmutableMap.of(
-                                Prefix.parse("2.2.2.2/32"),
+                                Ip.parse("2.2.2.2"),
                                 BgpActivePeerConfig.builder()
                                     .setPeerAddress(Ip.parse("2.2.2.2"))
                                     .setRemoteAs(2L)

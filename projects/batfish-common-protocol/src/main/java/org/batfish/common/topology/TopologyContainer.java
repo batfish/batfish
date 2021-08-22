@@ -22,6 +22,9 @@ public interface TopologyContainer {
   IsisTopology getIsisTopology();
 
   @Nonnull
+  Layer1Topologies getLayer1Topologies();
+
+  @Nonnull
   L3Adjacencies getL3Adjacencies();
 
   @Nonnull

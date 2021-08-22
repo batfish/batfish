@@ -1,6 +1,7 @@
 package org.batfish.grammar.silent_syntax;
 
 import com.google.common.collect.ImmutableList;
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -10,11 +11,11 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 /** A collection of silent syntax elements. */
 @ParametersAreNonnullByDefault
-public final class SilentSyntaxCollection {
+public final class SilentSyntaxCollection implements Serializable {
 
   /** Data for an instance of silent syntax in a parse tree. */
   @ParametersAreNonnullByDefault
-  public static final class SilentSyntaxElem {
+  public static final class SilentSyntaxElem implements Serializable {
 
     public SilentSyntaxElem(String ruleName, int line, String text) {
       _ruleName = ruleName;

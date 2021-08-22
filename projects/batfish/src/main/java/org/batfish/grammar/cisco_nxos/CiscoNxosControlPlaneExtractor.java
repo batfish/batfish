@@ -8,6 +8,7 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.DEFAU
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.DEFAULT_VRF_NAME;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.MANAGEMENT_VRF_NAME;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.computeRouteMapEntryName;
+import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.getAclLineName;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.getCanonicalInterfaceNamePrefix;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.BGP_TEMPLATE_PEER;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.BGP_TEMPLATE_PEER_POLICY;
@@ -24,6 +25,7 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IPV6_
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IPV6_PREFIX_LIST;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IP_ACCESS_LIST;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IP_ACCESS_LIST_ABSTRACT_REF;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IP_ACCESS_LIST_LINE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IP_AS_PATH_ACCESS_LIST;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IP_COMMUNITY_LIST_ABSTRACT_REF;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IP_COMMUNITY_LIST_EXPANDED;
@@ -126,6 +128,7 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IPV6
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IPV6_ROUTE_NEXT_HOP_VRF;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_ACCESS_LIST_DESTINATION_ADDRGROUP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_ACCESS_LIST_DESTINATION_PORTGROUP;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_ACCESS_LIST_LINE_SELF_REFERENCE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_ACCESS_LIST_SOURCE_ADDRGROUP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_ACCESS_LIST_SOURCE_PORTGROUP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_PIM_RP_ADDRESS_PREFIX_LIST;
@@ -5010,6 +5013,15 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
                     .build();
           }
 
+          {
+            // structure definition tracking
+            String structName = getAclLineName(_currentIpAccessList.getName(), num);
+            int configLine = ctx.start.getLine();
+            _c.defineSingleLineStructure(IP_ACCESS_LIST_LINE, structName, configLine);
+            _c.referenceStructure(
+                IP_ACCESS_LIST_LINE, structName, IP_ACCESS_LIST_LINE_SELF_REFERENCE, configLine);
+          }
+
           _currentIpAccessList.getLines().put(num, line);
         });
     _currentActionIpAccessListLineBuilder = null;
@@ -5743,7 +5755,10 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     }
     _currentInterfaces.forEach(
         iface -> {
-          iface.setSwitchportMode(SwitchportMode.ACCESS);
+          if (iface.getSwitchportMode() == null) {
+            // NX-OS has these commands in show run all even for interfaces in other modes.
+            iface.setSwitchportMode(SwitchportMode.ACCESS);
+          }
           iface.setAccessVlan(vlanId);
         });
   }
@@ -5802,7 +5817,10 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     }
     _currentInterfaces.forEach(
         iface -> {
-          iface.setSwitchportMode(SwitchportMode.TRUNK);
+          if (iface.getSwitchportMode() == null) {
+            // NX-OS has these commands in show run all even for interfaces in other modes.
+            iface.setSwitchportMode(SwitchportMode.TRUNK);
+          }
           if (ctx.ADD() != null) {
             iface.setAllowedVlans(iface.getAllowedVlans().union(vlans));
           } else if (ctx.REMOVE() != null) {
@@ -5821,7 +5839,10 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     }
     _currentInterfaces.forEach(
         iface -> {
-          iface.setSwitchportMode(SwitchportMode.TRUNK);
+          if (iface.getSwitchportMode() == null) {
+            // NX-OS has these commands in show run all even for interfaces in other modes.
+            iface.setSwitchportMode(SwitchportMode.TRUNK);
+          }
           iface.setNativeVlan(vlanId);
         });
   }

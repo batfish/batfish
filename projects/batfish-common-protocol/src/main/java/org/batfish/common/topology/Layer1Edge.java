@@ -10,7 +10,6 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.NetworkConfigurations;
 
 @ParametersAreNonnullByDefault
 public final class Layer1Edge implements Comparable<Layer1Edge> {
@@ -79,20 +78,6 @@ public final class Layer1Edge implements Comparable<Layer1Edge> {
   /** Returns the reverse of this directed {@link Layer1Edge}. */
   public @Nonnull Layer1Edge reverse() {
     return new Layer1Edge(_node2, _node1);
-  }
-
-  /**
-   * Maps a layer-1 physical edge to a layer-1 logical edge by mapping each constituent layer-1
-   * physical node to its corresponding logical node, if possible. Returns the new layer-1 logical
-   * edge if both nodes can be successfully mapped, or else {@code null}.
-   */
-  public @Nullable Layer1Edge toLogicalEdge(NetworkConfigurations networkConfigurations) {
-    Layer1Node node1 = _node1.toLogicalNode(networkConfigurations);
-    Layer1Node node2 = _node2.toLogicalNode(networkConfigurations);
-    if (node1 == null || node2 == null) {
-      return null;
-    }
-    return new Layer1Edge(node1, node2);
   }
 
   @Override

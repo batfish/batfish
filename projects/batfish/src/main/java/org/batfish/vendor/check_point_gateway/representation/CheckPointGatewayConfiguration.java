@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -150,10 +149,16 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
   InterfaceType getInterfaceType(Interface iface) {
     String name = iface.getName();
     if (name.startsWith("eth")) {
+      if (name.contains(".")) {
+        return InterfaceType.LOGICAL;
+      }
       return InterfaceType.PHYSICAL;
     } else if (name.startsWith("lo")) {
       return InterfaceType.LOOPBACK;
     } else if (name.startsWith("bond")) {
+      if (name.contains(".")) {
+        return InterfaceType.AGGREGATE_CHILD;
+      }
       return InterfaceType.AGGREGATED;
     }
     return InterfaceType.UNKNOWN;
@@ -170,12 +175,11 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
 
     Optional<Integer> parentBondingGroupOpt = getParentBondingGroupNumber(iface);
     if (parentBondingGroupOpt.isPresent()) {
-      Integer parentBondingGroup = parentBondingGroupOpt.get();
-      newIface.setChannelGroup(parentBondingGroup.toString());
-      Interface parentBondInterface = _interfaces.get(getBondInterfaceName(parentBondingGroup));
+      String parentBondIfaceName = getBondInterfaceName(parentBondingGroupOpt.get());
+      Interface parentBondInterface = _interfaces.get(parentBondIfaceName);
       assert parentBondInterface != null;
       newIface
-          .setChannelGroup(parentBondingGroup.toString())
+          .setChannelGroup(parentBondIfaceName)
           // Member interface inherits some configuration from parent bonding group
           .setMtu(parentBondInterface.getMtuEffective());
     } else {
@@ -185,13 +189,36 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
           .setMtu(iface.getMtuEffective());
     }
 
+    Double speed = iface.getLinkSpeedEffective();
+    if (speed != null) {
+      newIface.setSpeed(speed);
+      newIface.setBandwidth(speed);
+    }
+    if (iface.getVlanId() != null) {
+      newIface.setEncapsulationVlan(iface.getVlanId());
+    }
+    if (iface.getParentInterface() != null) {
+      Interface parent = _interfaces.get(iface.getParentInterface());
+      // This is a subinterface. Its speed can't be set explicitly.
+      // If its parent is physical, this interface should inherit the parent's speed/bw now.
+      // If its parent is a bond interface, then this interface's bandwidth will be set after
+      // the parent's bandwidth is calculated post-conversion.
+      assert parent != null;
+      Double parentSpeed = parent.getLinkSpeedEffective();
+      if (parentSpeed != null) {
+        newIface.setSpeed(parentSpeed);
+        newIface.setBandwidth(parentSpeed);
+      }
+      newIface.setDependencies(
+          ImmutableList.of(new Dependency(iface.getParentInterface(), DependencyType.BIND)));
+    }
+
     getBondingGroup(ifaceName)
         .ifPresent(
             bg -> {
-              Set<String> members = getValidMembers(bg);
-              newIface.setChannelGroupMembers(members);
+              newIface.setChannelGroupMembers(bg.getInterfaces());
               newIface.setDependencies(
-                  members.stream()
+                  bg.getInterfaces().stream()
                       .map(member -> new Dependency(member, DependencyType.AGGREGATE))
                       .collect(ImmutableSet.toImmutableSet()));
 
@@ -238,29 +265,6 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
   @Nonnull
   public static String getBondInterfaceName(int groupNumber) {
     return "bond" + groupNumber;
-  }
-
-  /**
-   * Returns a {@link Set} of valid members for the specified bonding group. Adds warnings if any
-   * member interfaces are invalid.
-   *
-   * <p>Filters out things like non-existent interfaces.
-   */
-  @Nonnull
-  private Set<String> getValidMembers(BondingGroup bondingGroup) {
-    return bondingGroup.getInterfaces().stream()
-        .filter(
-            m -> {
-              boolean exists = _interfaces.containsKey(m);
-              if (!exists) {
-                _w.redFlag(
-                    String.format(
-                        "Cannot reference non-existent interface %s in bonding group %d.",
-                        m, bondingGroup.getNumber()));
-              }
-              return exists;
-            })
-        .collect(ImmutableSet.toImmutableSet());
   }
 
   @Nonnull private Map<Integer, BondingGroup> _bondingGroups;

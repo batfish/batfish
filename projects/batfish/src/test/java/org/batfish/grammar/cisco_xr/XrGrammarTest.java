@@ -9,6 +9,8 @@ import static org.batfish.common.matchers.WarningsMatchers.hasParseWarnings;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.AsPath.ofSingletonAsSets;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.Names.generatedOspfDefaultRouteGenerationPolicyName;
+import static org.batfish.datamodel.Names.generatedOspfExportPolicyName;
 import static org.batfish.datamodel.Names.generatedOspfInboundDistributeListName;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
@@ -35,11 +37,13 @@ import static org.batfish.datamodel.routing_policy.expr.IntComparator.GE;
 import static org.batfish.datamodel.routing_policy.expr.IntComparator.LE;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
+import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.MAX_ADMINISTRATIVE_COST;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.RESOLUTION_POLICY_NAME;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeAbfIpv4PolicyName;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeCommunitySetMatchAnyName;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeCommunitySetMatchEveryName;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeExtcommunitySetRtName;
+import static org.batfish.representation.cisco_xr.CiscoXrConversions.aclLineName;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.CLASS_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.DYNAMIC_TEMPLATE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.ETHERNET_SERVICES_ACCESS_LIST;
@@ -116,6 +120,8 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_EXPO
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_EXPORT_TO_DEFAULT_VRF_ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_IMPORT_FROM_DEFAULT_VRF_ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_IMPORT_ROUTE_POLICY;
+import static org.batfish.representation.cisco_xr.OspfDefaultInformationOriginate.DEFAULT_METRIC;
+import static org.batfish.representation.cisco_xr.OspfDefaultInformationOriginate.DEFAULT_METRIC_TYPE;
 import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
@@ -134,6 +140,7 @@ import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -149,6 +156,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -174,6 +182,7 @@ import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.DscpType;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -224,6 +233,7 @@ import org.batfish.representation.cisco_xr.AsPathSetVariable;
 import org.batfish.representation.cisco_xr.BgpAggregateIpv4Network;
 import org.batfish.representation.cisco_xr.BridgeDomain;
 import org.batfish.representation.cisco_xr.CiscoXrConfiguration;
+import org.batfish.representation.cisco_xr.CiscoXrStructureType;
 import org.batfish.representation.cisco_xr.DfaRegexAsPathSetElem;
 import org.batfish.representation.cisco_xr.DistributeList;
 import org.batfish.representation.cisco_xr.DistributeList.DistributeListFilterType;
@@ -291,6 +301,7 @@ import org.batfish.representation.cisco_xr.XrRoutePolicyBooleanCommunityMatchesE
 import org.batfish.representation.cisco_xr.XrRoutePolicyDeleteCommunityStatement;
 import org.batfish.representation.cisco_xr.XrRoutePolicySetCommunity;
 import org.batfish.representation.cisco_xr.XrWildcardCommunitySetElem;
+import org.batfish.vendor.VendorStructureId;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -417,6 +428,18 @@ public final class XrGrammarTest {
               .build();
       assertThat(bdds.getPermitBdd(), equalTo(_aclToBdd.getHeaderSpaceToBDD().toBDD(expected)));
       assertThat(bdds.getDenyBdd(), isZero());
+    }
+
+    // test line VendorStructureIds
+    {
+      AclLine line = acl.getLines().get(0);
+      assertEquals(
+          Optional.of(
+              new VendorStructureId(
+                  "configs/acl",
+                  CiscoXrStructureType.IPV4_ACCESS_LIST_LINE.getDescription(),
+                  aclLineName(acl.getName(), line.getName()))),
+          line.getVendorStructureId());
     }
 
     assertThat(c.getIp6AccessLists(), hasKeys("aclv6"));
@@ -1256,9 +1279,140 @@ public final class XrGrammarTest {
   }
 
   @Test
+  public void testOspfDefaultInformationOriginateExtraction() {
+    CiscoXrConfiguration c = parseVendorConfig("ospf-default-information");
+    assertThat(c.getDefaultVrf().getOspfProcesses(), hasKeys("1", "2", "3", "4"));
+    {
+      // default-information originate
+      OspfProcess proc = c.getDefaultVrf().getOspfProcesses().get("1");
+      assertThat(proc.getDefaultInformationOriginate().getAlways(), equalTo(false));
+      assertThat(proc.getDefaultInformationOriginate().getMetric(), equalTo(DEFAULT_METRIC));
+      assertThat(
+          proc.getDefaultInformationOriginate().getMetricType(), equalTo(DEFAULT_METRIC_TYPE));
+    }
+    {
+      // Second line completely overrides first line.
+      // default-information originate always metric 10 metric-type 2 route-policy RP
+      // default-information originate metric 12 metric-type 1
+      OspfProcess proc = c.getDefaultVrf().getOspfProcesses().get("2");
+      assertThat(proc.getDefaultInformationOriginate().getAlways(), equalTo(false));
+      assertThat(proc.getDefaultInformationOriginate().getMetric(), equalTo(12L));
+      assertThat(proc.getDefaultInformationOriginate().getMetricType(), equalTo(OspfMetricType.E1));
+    }
+    {
+      // default-information originate always metric 10 metric-type 2
+      // no default-information originate
+      OspfProcess proc = c.getDefaultVrf().getOspfProcesses().get("3");
+      assertNull(proc.getDefaultInformationOriginate());
+    }
+    {
+      // default-information originate metric 12 metric-type 1
+      // no default-information originate
+      // default-information originate always metric 10 route-policy RP
+      OspfProcess proc = c.getDefaultVrf().getOspfProcesses().get("4");
+      assertThat(proc.getDefaultInformationOriginate().getAlways(), equalTo(true));
+      assertThat(proc.getDefaultInformationOriginate().getMetric(), equalTo(10L));
+      assertThat(
+          proc.getDefaultInformationOriginate().getMetricType(), equalTo(DEFAULT_METRIC_TYPE));
+    }
+  }
+
+  @Test
+  public void testOspfDefaultInformationOriginateConversion() {
+    Configuration c = parseConfig("ospf-default-information");
+    assertThat(c.getDefaultVrf().getOspfProcesses(), hasKeys("1", "2", "3", "4"));
+    GeneratedRoute.Builder defaultRouteBuilder =
+        GeneratedRoute.builder()
+            .setNetwork(Prefix.ZERO)
+            .setNonRouting(true)
+            .setAdmin(MAX_ADMINISTRATIVE_COST);
+    OspfExternalRoute.Builder exportedRouteBuilder =
+        OspfExternalRoute.builder()
+            // arbitrary values; route is used to check values set on export
+            .setNetwork(Prefix.ZERO)
+            .setNextHop(NextHopDiscard.instance())
+            .setAdvertiser("")
+            .setArea(1)
+            .setCostToAdvertiser(1)
+            .setLsaMetric(1);
+    {
+      // default-information originate
+      org.batfish.datamodel.ospf.OspfProcess proc = c.getDefaultVrf().getOspfProcesses().get("1");
+      String defaultRouteGenerationPolicyName =
+          generatedOspfDefaultRouteGenerationPolicyName(DEFAULT_VRF_NAME, proc.getProcessId());
+      GeneratedRoute route =
+          defaultRouteBuilder.setGenerationPolicy(defaultRouteGenerationPolicyName).build();
+      assertThat(proc.getGeneratedRoutes(), contains(route));
+      // Export policy should permit the generated route and set its metric and metric type
+      RoutingPolicy exportPolicy =
+          c.getRoutingPolicies()
+              .get(generatedOspfExportPolicyName(DEFAULT_VRF_NAME, proc.getProcessId()));
+      assert exportPolicy != null;
+      // set export route's values to non-defaults to confirm they really get set by the policy
+      exportedRouteBuilder.setMetric(2L).setOspfMetricType(OspfMetricType.E1);
+      assertRoutingPolicyPermitsRoute(exportPolicy, route, exportedRouteBuilder);
+      OspfExternalRoute exportedRoute = exportedRouteBuilder.build();
+      assertThat(exportedRoute.getMetric(), equalTo(DEFAULT_METRIC));
+      assertThat(exportedRoute.getOspfMetricType(), equalTo(DEFAULT_METRIC_TYPE));
+    }
+    {
+      // Second line completely overrides first line.
+      // default-information originate always metric 10 metric-type 2 route-policy RP
+      // default-information originate metric 12 metric-type 1
+      org.batfish.datamodel.ospf.OspfProcess proc = c.getDefaultVrf().getOspfProcesses().get("2");
+      String defaultRouteGenerationPolicyName =
+          generatedOspfDefaultRouteGenerationPolicyName(DEFAULT_VRF_NAME, proc.getProcessId());
+      GeneratedRoute route =
+          defaultRouteBuilder.setGenerationPolicy(defaultRouteGenerationPolicyName).build();
+      assertThat(proc.getGeneratedRoutes(), contains(route));
+      // Export policy should permit the generated route and set its metric and metric type
+      RoutingPolicy exportPolicy =
+          c.getRoutingPolicies()
+              .get(generatedOspfExportPolicyName(DEFAULT_VRF_NAME, proc.getProcessId()));
+      assert exportPolicy != null;
+      // set export route's values to confirm they really get rewritten by the policy
+      exportedRouteBuilder.setMetric(2L).setOspfMetricType(OspfMetricType.E2);
+      assertRoutingPolicyPermitsRoute(exportPolicy, route, exportedRouteBuilder);
+      OspfExternalRoute exportedRoute = exportedRouteBuilder.build();
+      assertThat(exportedRoute.getMetric(), equalTo(12L));
+      assertThat(exportedRoute.getOspfMetricType(), equalTo(OspfMetricType.E1));
+    }
+    {
+      // default-information originate always metric 10 metric-type 2
+      // no default-information originate
+      org.batfish.datamodel.ospf.OspfProcess proc = c.getDefaultVrf().getOspfProcesses().get("3");
+      assertThat(proc.getGeneratedRoutes(), empty());
+      RoutingPolicy exportPolicy =
+          c.getRoutingPolicies()
+              .get(generatedOspfExportPolicyName(DEFAULT_VRF_NAME, proc.getProcessId()));
+      assertRoutingPolicyDeniesRoute(exportPolicy, defaultRouteBuilder.build());
+    }
+    {
+      // default-information originate metric 12 metric-type 1
+      // no default-information originate
+      // default-information originate always metric 10 route-policy RP
+      org.batfish.datamodel.ospf.OspfProcess proc = c.getDefaultVrf().getOspfProcesses().get("4");
+      GeneratedRoute route = defaultRouteBuilder.setGenerationPolicy(null).build();
+      assertThat(proc.getGeneratedRoutes(), contains(route));
+      // Export policy should permit the generated route and set its metric and metric type
+      // TODO: Account for route-policy
+      RoutingPolicy exportPolicy =
+          c.getRoutingPolicies()
+              .get(generatedOspfExportPolicyName(DEFAULT_VRF_NAME, proc.getProcessId()));
+      assert exportPolicy != null;
+      // set export route's values to confirm they really get rewritten by the policy
+      exportedRouteBuilder.setMetric(2L).setOspfMetricType(OspfMetricType.E1);
+      assertRoutingPolicyPermitsRoute(exportPolicy, route, exportedRouteBuilder);
+      OspfExternalRoute exportedRoute = exportedRouteBuilder.build();
+      assertThat(exportedRoute.getMetric(), equalTo(10L));
+      assertThat(exportedRoute.getOspfMetricType(), equalTo(DEFAULT_METRIC_TYPE));
+    }
+  }
+
+  @Test
   public void testOspfDistributeListExtraction() {
     CiscoXrConfiguration c = parseVendorConfig("ospf-distribute-list");
-    assertThat(c.getDefaultVrf().getOspfProcesses(), hasKeys("1", "2", "3", "4"));
+    assertThat(c.getDefaultVrf().getOspfProcesses(), hasKeys("1", "2", "3"));
     OspfProcess proc1 = c.getDefaultVrf().getOspfProcesses().get("1");
     OspfSettings settings1 = proc1.getOspfSettings();
     assertThat(
@@ -1273,62 +1427,54 @@ public final class XrGrammarTest {
         settings2.getDistributeListIn(),
         equalTo(new DistributeList("ACL3", DistributeListFilterType.ACCESS_LIST)));
     assertThat(proc2.getDistributeListOut(), nullValue());
-    OspfProcess proc3 = c.getDefaultVrf().getOspfProcesses().get("3");
-    OspfSettings settings3 = proc3.getOspfSettings();
-    assertThat(
-        settings3.getDistributeListIn(),
-        equalTo(new DistributeList("PL1", DistributeListFilterType.PREFIX_LIST)));
-    assertThat(
-        proc3.getDistributeListOut(),
-        equalTo(new DistributeList("PL2", DistributeListFilterType.PREFIX_LIST)));
 
-    // Process 4 has inbound distribute lists set at process, area, and interface levels.
+    // Process 3 has inbound distribute lists set at process, area, and interface levels.
     // (Outbound distribute lists can only be configured at process level.)
-    OspfProcess proc4 = c.getDefaultVrf().getOspfProcesses().get("4");
-    OspfSettings proc4Settings = proc4.getOspfSettings();
+    OspfProcess proc3 = c.getDefaultVrf().getOspfProcesses().get("3");
+    OspfSettings proc3Settings = proc3.getOspfSettings();
     assertThat(
-        proc4Settings.getDistributeListIn(),
+        proc3Settings.getDistributeListIn(),
         equalTo(new DistributeList("ACL1", DistributeListFilterType.ACCESS_LIST)));
     {
-      // Area 4 does not have distribute lists at area or interface levels
-      OspfArea area = proc4.getAreas().get(4L);
+      // Area 3 does not have distribute lists at area or interface levels
+      OspfArea area = proc3.getAreas().get(3L);
       OspfSettings areaSettings = area.getOspfSettings();
       assertNull(areaSettings.getDistributeListIn());
+      OspfSettings ifaceSettings =
+          area.getInterfaceSettings().get("GigabitEthernet0/0/0/3").getOspfSettings();
+      assertNull(ifaceSettings.getDistributeListIn());
+    }
+    {
+      // Area 4 has distribute lists at area level but not interface level
+      OspfArea area = proc3.getAreas().get(4L);
+      OspfSettings areaSettings = area.getOspfSettings();
+      assertThat(
+          areaSettings.getDistributeListIn(),
+          equalTo(new DistributeList("ACL2", DistributeListFilterType.ACCESS_LIST)));
       OspfSettings ifaceSettings =
           area.getInterfaceSettings().get("GigabitEthernet0/0/0/4").getOspfSettings();
       assertNull(ifaceSettings.getDistributeListIn());
     }
     {
-      // Area 5 has distribute lists at area level but not interface level
-      OspfArea area = proc4.getAreas().get(5L);
-      OspfSettings areaSettings = area.getOspfSettings();
-      assertThat(
-          areaSettings.getDistributeListIn(),
-          equalTo(new DistributeList("ACL2", DistributeListFilterType.ACCESS_LIST)));
-      OspfSettings ifaceSettings =
-          area.getInterfaceSettings().get("GigabitEthernet0/0/0/5").getOspfSettings();
-      assertNull(ifaceSettings.getDistributeListIn());
-    }
-    {
-      // Area 6 has distribute lists at interface level but not area level
-      OspfArea area = proc4.getAreas().get(6L);
+      // Area 5 has distribute lists at interface level but not area level
+      OspfArea area = proc3.getAreas().get(5L);
       OspfSettings areaSettings = area.getOspfSettings();
       assertNull(areaSettings.getDistributeListIn());
       OspfSettings ifaceSettings =
-          area.getInterfaceSettings().get("GigabitEthernet0/0/0/6").getOspfSettings();
+          area.getInterfaceSettings().get("GigabitEthernet0/0/0/5").getOspfSettings();
       assertThat(
           ifaceSettings.getDistributeListIn(),
           equalTo(new DistributeList("ACL3", DistributeListFilterType.ACCESS_LIST)));
     }
     {
-      // Area 7 has distribute lists at both area and interface levels
-      OspfArea area = proc4.getAreas().get(7L);
+      // Area 6 has distribute lists at both area and interface levels
+      OspfArea area = proc3.getAreas().get(6L);
       OspfSettings areaSettings = area.getOspfSettings();
       assertThat(
           areaSettings.getDistributeListIn(),
           equalTo(new DistributeList("ACL2", DistributeListFilterType.ACCESS_LIST)));
       OspfSettings ifaceSettings =
-          area.getInterfaceSettings().get("GigabitEthernet0/0/0/7").getOspfSettings();
+          area.getInterfaceSettings().get("GigabitEthernet0/0/0/6").getOspfSettings();
       assertThat(
           ifaceSettings.getDistributeListIn(),
           equalTo(new DistributeList("ACL3", DistributeListFilterType.ACCESS_LIST)));
@@ -1338,7 +1484,7 @@ public final class XrGrammarTest {
   @Test
   public void testOspfDistributeListConversion() {
     Configuration c = parseConfig("ospf-distribute-list");
-    assertThat(c.getDefaultVrf().getOspfProcesses(), hasKeys("1", "2", "3", "4"));
+    assertThat(c.getDefaultVrf().getOspfProcesses(), hasKeys("1", "2", "3"));
     {
       // First OSPF process uses a routing policy called RP for inbound distribute-list
       Interface iface = c.getActiveInterfaces().get("GigabitEthernet0/0/0/1");
@@ -1354,17 +1500,8 @@ public final class XrGrammarTest {
       assertThat(iface.getOspfSettings().getInboundDistributeListPolicy(), equalTo(rpName));
       assertThat(c.getRoutingPolicies(), hasKey(rpName));
     }
-    {
-      // Third OSPF process uses a prefix-set for inbound distribute-list.
-      // Semantics of the generated routing policy are tested elsewhere.
-      String ifaceName = "GigabitEthernet0/0/0/3";
-      String rpName = generatedOspfInboundDistributeListName(DEFAULT_VRF_NAME, "3", 3, ifaceName);
-      Interface iface = c.getActiveInterfaces().get(ifaceName);
-      assertThat(iface.getOspfSettings().getInboundDistributeListPolicy(), equalTo(rpName));
-      assertThat(c.getRoutingPolicies(), hasKey(rpName));
-    }
     /*
-    Fourth OSPF process is for testing inheritance. When configured:
+    Third OSPF process is for testing inheritance. When configured:
     - Process-level distribute list permits 1.1.1.0/24
     - Area-level distribute list permits 2.2.2.0/24
     - Interface-level distribute list permits 3.3.3.0/24
@@ -1374,9 +1511,9 @@ public final class XrGrammarTest {
     StaticRoute permittedByAreaList = srb.setNetwork(Prefix.parse("2.2.2.0/24")).build();
     StaticRoute permittedByIfaceList = srb.setNetwork(Prefix.parse("3.3.3.0/24")).build();
     {
-      // Area 4: Interface inherits process-level distribute list
-      String ifaceName = "GigabitEthernet0/0/0/4";
-      String rpName = generatedOspfInboundDistributeListName(DEFAULT_VRF_NAME, "4", 4, ifaceName);
+      // Area 3: Interface inherits process-level distribute list
+      String ifaceName = "GigabitEthernet0/0/0/3";
+      String rpName = generatedOspfInboundDistributeListName(DEFAULT_VRF_NAME, "3", 3, ifaceName);
       Interface iface = c.getActiveInterfaces().get(ifaceName);
       assertThat(iface.getOspfSettings().getInboundDistributeListPolicy(), equalTo(rpName));
       RoutingPolicy rp = c.getRoutingPolicies().get(rpName);
@@ -1385,9 +1522,9 @@ public final class XrGrammarTest {
       assertRoutingPolicyDeniesRoute(rp, permittedByIfaceList);
     }
     {
-      // Area 5: Interface inherits area-level distribute list
-      String ifaceName = "GigabitEthernet0/0/0/5";
-      String rpName = generatedOspfInboundDistributeListName(DEFAULT_VRF_NAME, "4", 5, ifaceName);
+      // Area 4: Interface inherits area-level distribute list
+      String ifaceName = "GigabitEthernet0/0/0/4";
+      String rpName = generatedOspfInboundDistributeListName(DEFAULT_VRF_NAME, "3", 4, ifaceName);
       Interface iface = c.getActiveInterfaces().get(ifaceName);
       assertThat(iface.getOspfSettings().getInboundDistributeListPolicy(), equalTo(rpName));
       RoutingPolicy rp = c.getRoutingPolicies().get(rpName);
@@ -1396,9 +1533,9 @@ public final class XrGrammarTest {
       assertRoutingPolicyDeniesRoute(rp, permittedByIfaceList);
     }
     {
-      // Area 6: Interface has its own distribute lists, overriding process-level lists
-      String ifaceName = "GigabitEthernet0/0/0/6";
-      String rpName = generatedOspfInboundDistributeListName(DEFAULT_VRF_NAME, "4", 6, ifaceName);
+      // Area 5: Interface has its own distribute lists, overriding process-level lists
+      String ifaceName = "GigabitEthernet0/0/0/5";
+      String rpName = generatedOspfInboundDistributeListName(DEFAULT_VRF_NAME, "3", 5, ifaceName);
       Interface iface = c.getActiveInterfaces().get(ifaceName);
       assertThat(iface.getOspfSettings().getInboundDistributeListPolicy(), equalTo(rpName));
       RoutingPolicy rp = c.getRoutingPolicies().get(rpName);
@@ -1407,9 +1544,9 @@ public final class XrGrammarTest {
       assertRoutingPolicyPermitsRoute(rp, permittedByIfaceList);
     }
     {
-      // Area 7: Interface has its own distribute lists, overriding both process and area lists
-      String ifaceName = "GigabitEthernet0/0/0/7";
-      String rpName = generatedOspfInboundDistributeListName(DEFAULT_VRF_NAME, "4", 7, ifaceName);
+      // Area 6: Interface has its own distribute lists, overriding both process and area lists
+      String ifaceName = "GigabitEthernet0/0/0/6";
+      String rpName = generatedOspfInboundDistributeListName(DEFAULT_VRF_NAME, "3", 6, ifaceName);
       Interface iface = c.getActiveInterfaces().get(ifaceName);
       assertThat(iface.getOspfSettings().getInboundDistributeListPolicy(), equalTo(rpName));
       RoutingPolicy rp = c.getRoutingPolicies().get(rpName);
@@ -1542,7 +1679,7 @@ public final class XrGrammarTest {
 
     // The BGP peer export policy also accepts and rejects the same prefixes.
     BgpActivePeerConfig bgpCfg =
-        c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Prefix.parse("10.1.1.1/32"));
+        c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Ip.parse("10.1.1.1"));
     assertThat(bgpCfg, notNullValue());
     RoutingPolicy bgpRpOut =
         c.getRoutingPolicies().get(bgpCfg.getIpv4UnicastAddressFamily().getExportPolicy());
@@ -2255,6 +2392,19 @@ public final class XrGrammarTest {
     assertNotNull(parseVendorConfig(hostname));
   }
 
+  /** Test that the parser stays within a vrf context the entire time. */
+  @Test
+  public void testOspfVrfGrammar() {
+    String hostname = "xr-ospf-vrf-grammar";
+    CiscoXrConfiguration vc = parseVendorConfig(hostname);
+    assertThat(
+        vc.getVrfs().get("FOO").getOspfProcesses().get("1").getRouterId(),
+        equalTo(Ip.parse("2.2.2.2")));
+    assertThat(
+        vc.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcesses().get("1").getRouterId(),
+        equalTo(Ip.parse("1.1.1.1")));
+  }
+
   @Test
   public void testTftpParsing() {
     String hostname = "xr-tftp";
@@ -2786,13 +2936,12 @@ public final class XrGrammarTest {
     // BGP peers with no import/export filters defined deny all routes in XR
     String hostname = "bgp-default-import-export";
     Configuration c = parseConfig(hostname);
-    Map<Prefix, BgpActivePeerConfig> peers = c.getDefaultVrf().getBgpProcess().getActiveNeighbors();
+    Map<Ip, BgpActivePeerConfig> peers = c.getDefaultVrf().getBgpProcess().getActiveNeighbors();
     Bgpv4Route route = Bgpv4Route.testBuilder().setNetwork(Prefix.parse("1.1.1.0/24")).build();
 
     // EBGP peers with unconfigured or undefined import/export policies should deny all routes
-    for (Prefix ebgpPeerPrefix :
-        ImmutableList.of(Prefix.parse("10.1.0.2/32"), Prefix.parse("10.1.0.3/32"))) {
-      BgpActivePeerConfig ebgpPeer = peers.get(ebgpPeerPrefix);
+    for (Ip ebgpPeerIp : ImmutableList.of(Ip.parse("10.1.0.2"), Ip.parse("10.1.0.3"))) {
+      BgpActivePeerConfig ebgpPeer = peers.get(ebgpPeerIp);
       RoutingPolicy importPolicy =
           c.getRoutingPolicies().get(ebgpPeer.getIpv4UnicastAddressFamily().getImportPolicy());
       RoutingPolicy exportPolicy =
@@ -2802,9 +2951,8 @@ public final class XrGrammarTest {
     }
 
     // IBGP peers with unconfigured or undefined import/export policies should permit all BGP routes
-    for (Prefix ibgpPeerPrefix :
-        ImmutableList.of(Prefix.parse("10.1.0.4/32"), Prefix.parse("10.1.0.5/32"))) {
-      BgpActivePeerConfig ibgpPeer = peers.get(ibgpPeerPrefix);
+    for (Ip ibgpPeerIp : ImmutableList.of(Ip.parse("10.1.0.4"), Ip.parse("10.1.0.5"))) {
+      BgpActivePeerConfig ibgpPeer = peers.get(ibgpPeerIp);
       RoutingPolicy exportPolicy =
           c.getRoutingPolicies().get(ibgpPeer.getIpv4UnicastAddressFamily().getExportPolicy());
       // Currently, there is no import policy in this case because import is completely unrestricted

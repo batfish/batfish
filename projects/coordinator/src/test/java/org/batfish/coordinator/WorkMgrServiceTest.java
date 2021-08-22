@@ -232,8 +232,10 @@ public class WorkMgrServiceTest {
     String testAnswerStr = BatfishObjectMapper.writeString(testAnswer);
     AnswerMetadata answerMetadata =
         AnswerMetadataUtil.computeAnswerMetadata(testAnswer, Main.getLogger());
-    Main.getWorkMgr().getStorage().storeAnswer(testAnswerStr, answerId);
-    Main.getWorkMgr().getStorage().storeAnswerMetadata(answerMetadata, answerId);
+    Main.getWorkMgr().getStorage().storeAnswer(_networkId, _snapshotId, testAnswerStr, answerId);
+    Main.getWorkMgr()
+        .getStorage()
+        .storeAnswerMetadata(_networkId, _snapshotId, answerMetadata, answerId);
 
     WorkItem workItem = new WorkItem(_networkName, _snapshotName);
     String workItemString = BatfishObjectMapper.mapper().writeValueAsString(workItem);
@@ -464,11 +466,14 @@ public class WorkMgrServiceTest {
     testAnswer.setStatus(AnswerStatus.SUCCESS);
     testAnswer.addAnswerElement(new StringAnswerElement("foo"));
     String testAnswerStr = BatfishObjectMapper.writeString(testAnswer);
-    Main.getWorkMgr().getStorage().storeAnswer(testAnswerStr, answerId);
+    Main.getWorkMgr().getStorage().storeAnswer(_networkId, _snapshotId, testAnswerStr, answerId);
     Main.getWorkMgr()
         .getStorage()
         .storeAnswerMetadata(
-            AnswerMetadataUtil.computeAnswerMetadata(testAnswer, Main.getLogger()), answerId);
+            _networkId,
+            _snapshotId,
+            AnswerMetadataUtil.computeAnswerMetadata(testAnswer, Main.getLogger()),
+            answerId);
 
     WorkItem workItem = new WorkItem(_networkName, _snapshotName);
     String workItemString = BatfishObjectMapper.mapper().writeValueAsString(workItem);
@@ -546,8 +551,10 @@ public class WorkMgrServiceTest {
     String testAnswerStr = BatfishObjectMapper.writeString(testAnswer);
     AnswerMetadata answerMetadata =
         AnswerMetadataUtil.computeAnswerMetadata(testAnswer, Main.getLogger());
-    Main.getWorkMgr().getStorage().storeAnswer(testAnswerStr, answerId);
-    Main.getWorkMgr().getStorage().storeAnswerMetadata(answerMetadata, answerId);
+    Main.getWorkMgr().getStorage().storeAnswer(_networkId, _snapshotId, testAnswerStr, answerId);
+    Main.getWorkMgr()
+        .getStorage()
+        .storeAnswerMetadata(_networkId, _snapshotId, answerMetadata, answerId);
 
     JSONArray answerOutput =
         _service.getAnalysisAnswersMetrics(
@@ -631,8 +638,10 @@ public class WorkMgrServiceTest {
     String testAnswerStr = BatfishObjectMapper.writeString(testAnswer);
     AnswerMetadata answerMetadata =
         AnswerMetadataUtil.computeAnswerMetadata(testAnswer, Main.getLogger());
-    Main.getWorkMgr().getStorage().storeAnswer(testAnswerStr, answerId);
-    Main.getWorkMgr().getStorage().storeAnswerMetadata(answerMetadata, answerId);
+    Main.getWorkMgr().getStorage().storeAnswer(_networkId, _snapshotId, testAnswerStr, answerId);
+    Main.getWorkMgr()
+        .getStorage()
+        .storeAnswerMetadata(_networkId, _snapshotId, answerMetadata, answerId);
 
     JSONArray answerOutput =
         _service.getAnalysisAnswersRows(
@@ -701,8 +710,10 @@ public class WorkMgrServiceTest {
     String testAnswerStr = BatfishObjectMapper.writeString(testAnswer);
     AnswerMetadata answerMetadata =
         AnswerMetadataUtil.computeAnswerMetadata(testAnswer, Main.getLogger());
-    Main.getWorkMgr().getStorage().storeAnswer(testAnswerStr, answerId);
-    Main.getWorkMgr().getStorage().storeAnswerMetadata(answerMetadata, answerId);
+    Main.getWorkMgr().getStorage().storeAnswer(_networkId, _snapshotId, testAnswerStr, answerId);
+    Main.getWorkMgr()
+        .getStorage()
+        .storeAnswerMetadata(_networkId, _snapshotId, answerMetadata, answerId);
 
     JSONArray answerOutput =
         _service.getAnswerMetrics(
@@ -745,8 +756,10 @@ public class WorkMgrServiceTest {
     String testAnswerStr = BatfishObjectMapper.writeString(testAnswer);
     AnswerMetadata answerMetadata =
         AnswerMetadataUtil.computeAnswerMetadata(testAnswer, Main.getLogger());
-    Main.getWorkMgr().getStorage().storeAnswer(testAnswerStr, answerId);
-    Main.getWorkMgr().getStorage().storeAnswerMetadata(answerMetadata, answerId);
+    Main.getWorkMgr().getStorage().storeAnswer(_networkId, _snapshotId, testAnswerStr, answerId);
+    Main.getWorkMgr()
+        .getStorage()
+        .storeAnswerMetadata(_networkId, _snapshotId, answerMetadata, answerId);
 
     JSONArray answerOutput =
         _service.getAnswerMetrics(
@@ -823,11 +836,14 @@ public class WorkMgrServiceTest {
                 null,
                 analysisId);
 
-    Main.getWorkMgr().getStorage().storeAnswer(answer, answerId);
+    Main.getWorkMgr().getStorage().storeAnswer(_networkId, _snapshotId, answer, answerId);
     Main.getWorkMgr()
         .getStorage()
         .storeAnswerMetadata(
-            AnswerMetadataUtil.computeAnswerMetadata(testAnswer, Main.getLogger()), answerId);
+            _networkId,
+            _snapshotId,
+            AnswerMetadataUtil.computeAnswerMetadata(testAnswer, Main.getLogger()),
+            answerId);
 
     JSONArray answerOutput =
         _service.getAnswerRows(
@@ -894,11 +910,14 @@ public class WorkMgrServiceTest {
         idm()
             .getAnswerId(
                 _networkId, _snapshotId, questionId, DEFAULT_NETWORK_NODE_ROLES_ID, null, null);
-    Main.getWorkMgr().getStorage().storeAnswer(answer, answerId);
+    Main.getWorkMgr().getStorage().storeAnswer(_networkId, _snapshotId, answer, answerId);
     Main.getWorkMgr()
         .getStorage()
         .storeAnswerMetadata(
-            AnswerMetadataUtil.computeAnswerMetadata(testAnswer, Main.getLogger()), answerId);
+            _networkId,
+            _snapshotId,
+            AnswerMetadataUtil.computeAnswerMetadata(testAnswer, Main.getLogger()),
+            answerId);
 
     JSONArray answerOutput =
         _service.getAnswerRows(
@@ -979,11 +998,14 @@ public class WorkMgrServiceTest {
                 null,
                 analysisId);
 
-    Main.getWorkMgr().getStorage().storeAnswer(answer, answerId);
+    Main.getWorkMgr().getStorage().storeAnswer(_networkId, _snapshotId, answer, answerId);
     Main.getWorkMgr()
         .getStorage()
         .storeAnswerMetadata(
-            AnswerMetadataUtil.computeAnswerMetadata(testAnswer, Main.getLogger()), answerId);
+            _networkId,
+            _snapshotId,
+            AnswerMetadataUtil.computeAnswerMetadata(testAnswer, Main.getLogger()),
+            answerId);
 
     JSONArray answerOutput =
         _service.getAnswerRows2(
@@ -1045,11 +1067,14 @@ public class WorkMgrServiceTest {
         idm()
             .getAnswerId(
                 _networkId, _snapshotId, questionId, DEFAULT_NETWORK_NODE_ROLES_ID, null, null);
-    Main.getWorkMgr().getStorage().storeAnswer(answer, answerId);
+    Main.getWorkMgr().getStorage().storeAnswer(_networkId, _snapshotId, answer, answerId);
     Main.getWorkMgr()
         .getStorage()
         .storeAnswerMetadata(
-            AnswerMetadataUtil.computeAnswerMetadata(testAnswer, Main.getLogger()), answerId);
+            _networkId,
+            _snapshotId,
+            AnswerMetadataUtil.computeAnswerMetadata(testAnswer, Main.getLogger()),
+            answerId);
 
     JSONArray answerOutput =
         _service.getAnswerRows2(

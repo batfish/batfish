@@ -17,7 +17,11 @@ line: add_line | set_line;
 
 add_line: ADD add_line_tail NEWLINE+;
 
-add_line_tail: a_bonding_group;
+add_line_tail
+:
+   a_bonding_group
+   | a_interface
+;
 
 set_line: SET set_line_tail NEWLINE+;
 

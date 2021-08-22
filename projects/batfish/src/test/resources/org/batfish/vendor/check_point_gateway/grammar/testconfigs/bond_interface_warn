@@ -23,7 +23,6 @@ set interface lo state on
 #
 # "Reconfiguration" section
 add bonding group 1000 interface eth1
-add bonding group 1000 interface eth2
 set interface eth0 state off
 set interface eth0 mtu 2345
 set interface eth0 ipv4-address 10.20.30.40 mask-length 24

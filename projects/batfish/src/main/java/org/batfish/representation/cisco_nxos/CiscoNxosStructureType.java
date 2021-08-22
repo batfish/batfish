@@ -21,6 +21,7 @@ public enum CiscoNxosStructureType implements StructureType {
   FLOW_RECORD("flow record"),
   INTERFACE("interface"),
   IP_ACCESS_LIST("ip access-list"),
+  IP_ACCESS_LIST_LINE("ip access-list line"),
   IP_ACCESS_LIST_ABSTRACT_REF("ip[v4|v6] access-list"),
   IP_AS_PATH_ACCESS_LIST("ip as-path access-list"),
   IP_COMMUNITY_LIST_ABSTRACT_REF("ip community-list [expanded|standard]"),

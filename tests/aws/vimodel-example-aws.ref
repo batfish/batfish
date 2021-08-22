@@ -60884,9 +60884,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit icmp 10.100.0.0 0.0.255.255 any"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit icmp 10.100.0.0 0.0.255.255 any",
+                      "vendorStructureId" : {
+                        "filename" : "configs/lhr-border-02.cfg",
+                        "structureName" : "2001: permit icmp 10.100.0.0 0.0.255.255 any",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/lhr-border-02.cfg",
+                  "structureName" : "2001: permit icmp 10.100.0.0 0.0.255.255 any",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               },
               {
@@ -60914,9 +60928,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit icmp any 10.100.0.0 0.0.255.255"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit icmp any 10.100.0.0 0.0.255.255",
+                      "vendorStructureId" : {
+                        "filename" : "configs/lhr-border-02.cfg",
+                        "structureName" : "2001: permit icmp any 10.100.0.0 0.0.255.255",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/lhr-border-02.cfg",
+                  "structureName" : "2001: permit icmp any 10.100.0.0 0.0.255.255",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               }
             ],
@@ -60948,9 +60976,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip 10.1.30.0 0.0.0.255 any"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip 10.1.30.0 0.0.0.255 any",
+                      "vendorStructureId" : {
+                        "filename" : "configs/lhr-border-02.cfg",
+                        "structureName" : "LIMIT_PEER: permit ip 10.1.30.0 0.0.0.255 any",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/lhr-border-02.cfg",
+                  "structureName" : "LIMIT_PEER: permit ip 10.1.30.0 0.0.0.255 any",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               },
               {
@@ -60975,9 +61017,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 10.10.30.2 host 10.10.30.1"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip host 10.10.30.2 host 10.10.30.1",
+                      "vendorStructureId" : {
+                        "filename" : "configs/lhr-border-02.cfg",
+                        "structureName" : "LIMIT_PEER: permit ip host 10.10.30.2 host 10.10.30.1",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/lhr-border-02.cfg",
+                  "structureName" : "LIMIT_PEER: permit ip host 10.10.30.2 host 10.10.30.1",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               }
             ],
@@ -61009,9 +61065,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip any any"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip any any",
+                      "vendorStructureId" : {
+                        "filename" : "configs/lhr-border-02.cfg",
+                        "structureName" : "MATCH_ALL_BGP: permit ip any any",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/lhr-border-02.cfg",
+                  "structureName" : "MATCH_ALL_BGP: permit ip any any",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               }
             ],
@@ -61547,8 +61617,8 @@
               }
             ]
           },
-          "~OSPF_EXPORT_POLICY:default~" : {
-            "name" : "~OSPF_EXPORT_POLICY:default~"
+          "~OSPF_EXPORT_POLICY:default:1~" : {
+            "name" : "~OSPF_EXPORT_POLICY:default:1~"
           },
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -61765,7 +61835,7 @@
                     "stubType" : "NONE"
                   }
                 },
-                "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+                "exportPolicy" : "~OSPF_EXPORT_POLICY:default:1~",
                 "processId" : "1",
                 "referenceBandwidth" : 1.0E8,
                 "routerId" : "10.10.255.8",
@@ -61783,7 +61853,7 @@
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : false,
               "neighbors" : {
-                "10.10.10.37/32" : {
+                "10.10.10.37" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "clusterId" : 168492808,
                   "defaultMetric" : 0,
@@ -61814,7 +61884,7 @@
                   "peerAddress" : "10.10.10.37",
                   "remoteAsns" : "65201"
                 },
-                "10.10.10.45/32" : {
+                "10.10.10.45" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "clusterId" : 168492808,
                   "defaultMetric" : 0,
@@ -61841,7 +61911,7 @@
                   "peerAddress" : "10.10.10.45",
                   "remoteAsns" : "65202"
                 },
-                "10.10.30.2/32" : {
+                "10.10.30.2" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "clusterId" : 168492808,
                   "defaultMetric" : 0,
@@ -61871,7 +61941,7 @@
                   "peerAddress" : "10.10.30.2",
                   "remoteAsns" : "65331"
                 },
-                "10.10.255.7/32" : {
+                "10.10.255.7" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "clusterId" : 168492808,
                   "defaultMetric" : 0,
@@ -61897,7 +61967,7 @@
                   "peerAddress" : "10.10.255.7",
                   "remoteAsns" : "65301"
                 },
-                "169.254.13.237/32" : {
+                "169.254.13.237" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "clusterId" : 168492808,
                   "defaultMetric" : 0,
@@ -61944,7 +62014,7 @@
                   "peerAddress" : "169.254.13.237",
                   "remoteAsns" : "65401"
                 },
-                "169.254.15.193/32" : {
+                "169.254.15.193" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "clusterId" : 168492808,
                   "defaultMetric" : 0,
@@ -65112,7 +65182,7 @@
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : false,
               "neighbors" : {
-                "169.254.13.238/32" : {
+                "169.254.13.238" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
@@ -65138,7 +65208,7 @@
                   "peerAddress" : "169.254.13.238",
                   "remoteAsns" : "65301"
                 },
-                "169.254.15.194/32" : {
+                "169.254.15.194" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,

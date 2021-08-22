@@ -202,7 +202,7 @@ public class RoutingPolicy implements Serializable {
    */
   public boolean processReadOnly(AbstractRouteDecorator inputRoute) {
     // arbitrarily choose OUT direction, BGP route builder.
-    return process(inputRoute, Bgpv4Route.builder(), null, Direction.OUT, null);
+    return process(inputRoute, Bgpv4Route.builder(), (EigrpProcess) null, Direction.OUT, null);
   }
 
   /** @return True if the policy accepts the route. */

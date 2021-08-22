@@ -17,6 +17,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
@@ -928,10 +929,10 @@ public class WorkMgr extends AbstractCoordinator {
         _idManager.getAnswerId(
             networkId, snapshotId, questionId, networkNodeRolesId, referenceSnapshotId, analysisId);
     // No metadata means the question has not been answered
-    if (!_storage.hasAnswerMetadata(answerId)) {
+    if (!_storage.hasAnswerMetadata(networkId, snapshotId, answerId)) {
       return null;
     }
-    return _storage.loadAnswer(answerId);
+    return _storage.loadAnswer(networkId, snapshotId, answerId);
   }
 
   /**
@@ -1057,10 +1058,10 @@ public class WorkMgr extends AbstractCoordinator {
               networkNodeRolesId,
               referenceSnapshotId,
               analysisId);
-      if (!_storage.hasAnswerMetadata(answerId)) {
+      if (!_storage.hasAnswerMetadata(networkId, snapshotId, answerId)) {
         return AnswerMetadata.forStatus(AnswerStatus.NOTFOUND);
       }
-      return _storage.loadAnswerMetadata(answerId);
+      return _storage.loadAnswerMetadata(networkId, snapshotId, answerId);
     } catch (IOException e) {
       _logger.errorf(
           "Could not get answer metadata: network=%s, snapshot=%s, question=%s,"
@@ -2212,8 +2213,22 @@ public class WorkMgr extends AbstractCoordinator {
                 rowIds.put(row, rowIds.get(rawRow));
                 return row;
               });
-      Map<String, ColumnMetadata> columnMap = new LinkedHashMap<>(rawColumnMap);
-      columnMap.keySet().retainAll(options.getColumns());
+      // TableMetadata requires at least one key. For simplicity, make them all keys.
+      Map<String, ColumnMetadata> columnMap =
+          options.getColumns().stream()
+              .collect(
+                  ImmutableMap.toImmutableMap(
+                      Function.identity(),
+                      col -> {
+                        ColumnMetadata colMetadata = rawColumnMap.get(col);
+                        return new ColumnMetadata(
+                            colMetadata.getName(),
+                            colMetadata.getSchema(),
+                            colMetadata.getDescription(),
+                            true, // isKey
+                            false // isValue
+                            );
+                      }));
       List<ColumnMetadata> columnMetadata =
           columnMap.values().stream().collect(ImmutableList.toImmutableList());
       tableMetadata = new TableMetadata(columnMetadata, rawTable.getMetadata().getTextDesc());
@@ -2368,7 +2383,7 @@ public class WorkMgr extends AbstractCoordinator {
     NodeRolesId networkNodeRolesId = networkNodeRolesIdOpt.get();
     try {
       return BatfishObjectMapper.mapper()
-          .readValue(_storage.loadNodeRoles(networkNodeRolesId), NodeRolesData.class);
+          .readValue(_storage.loadNodeRoles(networkId, networkNodeRolesId), NodeRolesData.class);
     } catch (IOException e) {
       throw new IOException("Failed to read network node roles", e);
     }
@@ -2404,7 +2419,7 @@ public class WorkMgr extends AbstractCoordinator {
       @Nonnull NetworkId networkId, @Nonnull SnapshotId snapshotId) throws IOException {
     NodeRolesId snapshotNodeRolesId = _idManager.getSnapshotNodeRolesId(networkId, snapshotId);
     return BatfishObjectMapper.mapper()
-        .readValue(_storage.loadNodeRoles(snapshotNodeRolesId), NodeRolesData.class);
+        .readValue(_storage.loadNodeRoles(networkId, snapshotNodeRolesId), NodeRolesData.class);
   }
 
   /**
@@ -2707,7 +2722,7 @@ public class WorkMgr extends AbstractCoordinator {
       @Nonnull NetworkId networkId,
       @Nonnull NodeRolesId nodeRolesId)
       throws IOException {
-    _storage.storeNodeRoles(nodeRolesData, nodeRolesId);
+    _storage.storeNodeRoles(networkId, nodeRolesData, nodeRolesId);
     _idManager.assignNetworkNodeRolesId(networkId, nodeRolesId);
   }
 

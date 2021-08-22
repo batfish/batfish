@@ -97,6 +97,7 @@ import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
+import org.batfish.vendor.ConversionContext;
 import org.batfish.vendor.VendorConfiguration;
 
 /** A utility class that abstracts the underlying file system storage used by Batfish. */
@@ -124,6 +125,7 @@ public class FileBasedStorage implements StorageProvider {
   private static final String RELPATH_METADATA_FILE = "metadata.json";
   private static final String RELPATH_FORK_REQUEST_FILE = "fork_request";
   private static final String RELPATH_ENV_TOPOLOGY_FILE = "env_topology";
+  private static final String RELPATH_CONVERSION_CONTEXT = "conversion_context";
   private static final String RELPATH_CONVERT_ANSWER_PATH = "convert_answer";
   private static final String RELPATH_ANSWERS_DIR = "answers";
   private static final String RELPATH_ANSWER_METADATA = "answer_metadata.json";
@@ -135,8 +137,6 @@ public class FileBasedStorage implements StorageProvider {
   private static final String RELPATH_DATA_PLANE = "dp";
   private static final String RELPATH_SERIALIZED_ENVIRONMENT_BGP_TABLES = "bgp_processed";
   private static final String RELPATH_ENVIRONMENT_BGP_TABLES_ANSWER = "bgp_answer";
-  private static final String RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS =
-      "external_bgp_announcements.json";
   private static final String RELPATH_PARSE_ANSWER_PATH = "parse_answer";
   private static final String RELPATH_VENDOR_SPECIFIC_CONFIG_DIR = "vendor";
   private static final String RELPATH_AWS_ACCOUNTS_DIR = "accounts";
@@ -209,6 +209,22 @@ public class FileBasedStorage implements StorageProvider {
       return deserializeObjects(namesByPath, Configuration.class);
     } catch (BatfishException e) {
       return null;
+    }
+  }
+
+  @Override
+  public @Nonnull ConversionContext loadConversionContext(NetworkSnapshot snapshot)
+      throws IOException {
+    Path ccPath = getConversionContextPath(snapshot.getNetwork(), snapshot.getSnapshot());
+    if (!Files.exists(ccPath)) {
+      throw new FileNotFoundException();
+    }
+    try {
+      return deserializeObject(ccPath, ConversionContext.class);
+    } catch (BatfishException e) {
+      throw new IOException(
+          String.format(
+              "Failed to deserialize ConversionContext: %s", Throwables.getStackTraceAsString(e)));
     }
   }
 
@@ -460,6 +476,20 @@ public class FileBasedStorage implements StorageProvider {
     storeConfigurations(outputDir, batchName, configurations);
   }
 
+  @Override
+  public void storeConversionContext(ConversionContext conversionContext, NetworkSnapshot snapshot)
+      throws IOException {
+    Path ccPath = getConversionContextPath(snapshot.getNetwork(), snapshot.getSnapshot());
+    mkdirs(ccPath.getParent());
+    serializeObject(conversionContext, ccPath);
+  }
+
+  @VisibleForTesting
+  @Nonnull
+  Path getConversionContextPath(NetworkId network, SnapshotId snapshot) {
+    return getSnapshotOutputDir(network, snapshot).resolve(RELPATH_CONVERSION_CONTEXT);
+  }
+
   private @Nonnull Path getConvertAnswerPath(NetworkId network, SnapshotId snapshot) {
     return getSnapshotOutputDir(network, snapshot).resolve(RELPATH_CONVERT_ANSWER_PATH);
   }
@@ -488,16 +518,19 @@ public class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public void storeAnswer(String answerStr, AnswerId answerId) throws IOException {
-    Path answerPath = getAnswerPath(answerId);
+  public void storeAnswer(
+      NetworkId network, SnapshotId snapshot, String answerStr, AnswerId answerId)
+      throws IOException {
+    Path answerPath = getAnswerPath(network, snapshot, answerId);
     mkdirs(answerPath.getParent());
     writeStringToFile(answerPath, answerStr, UTF_8);
   }
 
   @Override
-  public void storeAnswerMetadata(AnswerMetadata answerMetadata, AnswerId answerId)
+  public void storeAnswerMetadata(
+      NetworkId networkId, SnapshotId snapshotId, AnswerMetadata answerMetadata, AnswerId answerId)
       throws IOException {
-    Path answerMetadataPath = getAnswerMetadataPath(answerId);
+    Path answerMetadataPath = getAnswerMetadataPath(networkId, snapshotId, answerId);
     mkdirs(answerMetadataPath.getParent());
     writeJsonFile(answerMetadataPath, answerMetadata);
   }
@@ -566,7 +599,8 @@ public class FileBasedStorage implements StorageProvider {
    * Writes a single object of the given class to the given file. Uses the {@link FileBasedStorage}
    * default file encoding including serialization format and compression.
    */
-  private void serializeObject(Serializable object, Path outputFile) {
+  @VisibleForTesting
+  void serializeObject(Serializable object, Path outputFile) {
     Path sanitizedOutputFile = validatePath(outputFile);
     try {
       Path tmpFile = Files.createTempFile(null, null);
@@ -642,34 +676,58 @@ public class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public @Nonnull String loadAnswer(AnswerId answerId) throws FileNotFoundException, IOException {
-    Path answerPath = getAnswerPath(answerId);
-    if (!Files.exists(answerPath)) {
-      throw new FileNotFoundException(String.format("Could not find answer with ID: %s", answerId));
+  public @Nonnull String loadAnswer(NetworkId networkId, SnapshotId snapshotId, AnswerId answerId)
+      throws IOException {
+    Path answerPath = getAnswerPath(networkId, snapshotId, answerId);
+    if (Files.exists(answerPath)) {
+      return readFileToString(answerPath, UTF_8);
     }
-    return readFileToString(answerPath, UTF_8);
+    // look for the answer in the legacy location
+    Path oldAnswerPath = getOldAnswerPath(answerId);
+    if (Files.exists(oldAnswerPath)) {
+      return readFileToString(oldAnswerPath, UTF_8);
+    }
+    throw new FileNotFoundException(String.format("Could not find answer with ID: %s", answerId));
   }
 
   @Override
-  public @Nonnull AnswerMetadata loadAnswerMetadata(AnswerId answerId)
-      throws FileNotFoundException, IOException {
-    Path answerMetadataPath = getAnswerMetadataPath(answerId);
-    if (!Files.exists(answerMetadataPath)) {
-      throw new FileNotFoundException(
-          String.format("Could not find answer metadata for ID: %s", answerId));
+  public @Nonnull AnswerMetadata loadAnswerMetadata(
+      NetworkId networkId, SnapshotId snapshotId, AnswerId answerId) throws IOException {
+    Path answerMetadataPath = getAnswerMetadataPath(networkId, snapshotId, answerId);
+    if (Files.exists(answerMetadataPath)) {
+      return BatfishObjectMapper.mapper()
+          .readValue(answerMetadataPath.toFile(), new TypeReference<AnswerMetadata>() {});
     }
-    return BatfishObjectMapper.mapper()
-        .readValue(answerMetadataPath.toFile(), new TypeReference<AnswerMetadata>() {});
+    // look for the answer metadata in the legacy location
+    Path oldAnswerMetadataPath = getOldAnswerMetadataPath(answerId);
+    if (Files.exists(oldAnswerMetadataPath)) {
+      return BatfishObjectMapper.mapper()
+          .readValue(oldAnswerMetadataPath.toFile(), new TypeReference<AnswerMetadata>() {});
+    }
+    throw new FileNotFoundException(
+        String.format("Could not find answer metadata for ID: %s", answerId));
   }
 
   @VisibleForTesting
   @Nonnull
-  Path getAnswerPath(AnswerId answerId) {
-    return getAnswerDir(answerId).resolve(RELPATH_ANSWER_JSON);
+  Path getAnswerPath(NetworkId networkId, SnapshotId snapshotId, AnswerId answerId) {
+    return getAnswerDir(networkId, snapshotId, answerId).resolve(RELPATH_ANSWER_JSON);
   }
 
-  private @Nonnull Path getAnswerMetadataPath(AnswerId answerId) {
-    return getAnswerDir(answerId).resolve(RELPATH_ANSWER_METADATA);
+  @VisibleForTesting
+  @Nonnull
+  Path getOldAnswerPath(AnswerId answerId) {
+    return getOldAnswerDir(answerId).resolve(RELPATH_ANSWER_JSON);
+  }
+
+  private @Nonnull Path getAnswerMetadataPath(
+      NetworkId networkId, SnapshotId snapshotId, AnswerId answerId) {
+    return getAnswerDir(networkId, snapshotId, answerId).resolve(RELPATH_ANSWER_METADATA);
+  }
+
+  @Nonnull
+  Path getOldAnswerMetadataPath(AnswerId answerId) {
+    return getOldAnswerDir(answerId).resolve(RELPATH_ANSWER_METADATA);
   }
 
   @Override
@@ -687,8 +745,9 @@ public class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public boolean hasAnswerMetadata(AnswerId answerId) {
-    return Files.exists(getAnswerMetadataPath(answerId));
+  public boolean hasAnswerMetadata(NetworkId networkId, SnapshotId snapshotId, AnswerId answerId) {
+    return Files.exists(getAnswerMetadataPath(networkId, snapshotId, answerId))
+        || Files.exists(getOldAnswerMetadataPath(answerId));
   }
 
   @Override
@@ -737,23 +796,36 @@ public class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public void storeNodeRoles(NodeRolesData nodeRolesData, NodeRolesId nodeRolesId)
+  public void storeNodeRoles(
+      NetworkId networkId, NodeRolesData nodeRolesData, NodeRolesId nodeRolesId)
       throws IOException {
-    writeJsonFile(getNodeRolesPath(nodeRolesId), nodeRolesData);
+    writeJsonFile(getNodeRolesPath(networkId, nodeRolesId), nodeRolesData);
   }
 
-  private @Nonnull Path getNodeRolesPath(NodeRolesId nodeRolesId) {
-    return getNodeRolesDir().resolve(String.format("%s%s", nodeRolesId.getId(), ".json"));
+  private @Nonnull Path getNodeRolesPath(NetworkId networkId, NodeRolesId nodeRolesId) {
+    return getNodeRolesDir(networkId).resolve(String.format("%s%s", nodeRolesId.getId(), ".json"));
+  }
+
+  @VisibleForTesting
+  @Nonnull
+  Path getOldNodeRolesPath(NodeRolesId nodeRolesId) {
+    return getOldNodeRolesDir().resolve(String.format("%s%s", nodeRolesId.getId(), ".json"));
   }
 
   @Override
-  public String loadNodeRoles(NodeRolesId nodeRolesId) throws FileNotFoundException, IOException {
-    return readFileToString(getNodeRolesPath(nodeRolesId), UTF_8);
+  public String loadNodeRoles(NetworkId networkId, NodeRolesId nodeRolesId) throws IOException {
+    Path nodeRolesPath = getNodeRolesPath(networkId, nodeRolesId);
+    if (Files.exists(nodeRolesPath)) {
+      return readFileToString(getNodeRolesPath(networkId, nodeRolesId), UTF_8);
+    }
+    // try at the legacy location
+    return readFileToString(getOldNodeRolesPath(nodeRolesId), UTF_8);
   }
 
   @Override
-  public boolean hasNodeRoles(NodeRolesId nodeRolesId) {
-    return Files.exists(getNodeRolesPath(nodeRolesId));
+  public boolean hasNodeRoles(NetworkId networkId, NodeRolesId nodeRolesId) {
+    return Files.exists(getNodeRolesPath(networkId, nodeRolesId))
+        || Files.exists(getOldNodeRolesPath(nodeRolesId));
   }
 
   @Override
@@ -762,8 +834,9 @@ public class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public void deleteAnswerMetadata(AnswerId answerId) throws FileNotFoundException, IOException {
-    Files.delete(getAnswerMetadataPath(answerId));
+  public void deleteAnswerMetadata(NetworkId networkId, SnapshotId snapshotId, AnswerId answerId)
+      throws FileNotFoundException, IOException {
+    Files.delete(getAnswerMetadataPath(networkId, snapshotId, answerId));
   }
 
   /** {@code key} must be relative normalized path. */
@@ -799,6 +872,7 @@ public class FileBasedStorage implements StorageProvider {
   }
 
   @Override
+  @SuppressWarnings("PMD.UseTryWithResources") // syntax is awkward to close stream you don't open
   public void storeNetworkObject(InputStream inputStream, NetworkId networkId, String key)
       throws IOException {
     Path objectPath = getNetworkObjectPath(networkId, key);
@@ -826,6 +900,7 @@ public class FileBasedStorage implements StorageProvider {
   }
 
   @Override
+  @SuppressWarnings("PMD.UseTryWithResources") // syntax is awkward to close stream you don't open
   public void storeNetworkBlob(InputStream inputStream, NetworkId networkId, String key)
       throws IOException {
     Path objectPath = getNetworkBlobPath(networkId, key);
@@ -873,6 +948,7 @@ public class FileBasedStorage implements StorageProvider {
   }
 
   @Override
+  @SuppressWarnings("PMD.UseTryWithResources") // syntax is awkward to close stream you don't open
   public void storeSnapshotObject(
       InputStream inputStream, NetworkId networkId, SnapshotId snapshotId, String key)
       throws IOException {
@@ -1181,7 +1257,8 @@ public class FileBasedStorage implements StorageProvider {
     }
   }
 
-  private void writeStringToFile(Path file, CharSequence data, Charset charset) throws IOException {
+  @VisibleForTesting
+  void writeStringToFile(Path file, CharSequence data, Charset charset) throws IOException {
     Path sanitizedFile = validatePath(file);
     Path tmpFile = Files.createTempFile(null, null);
     try {
@@ -1580,7 +1657,9 @@ public class FileBasedStorage implements StorageProvider {
       throws IOException {
     Path path =
         getSnapshotInputObjectPath(
-            snapshot.getNetwork(), snapshot.getSnapshot(), RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS);
+            snapshot.getNetwork(),
+            snapshot.getSnapshot(),
+            BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS);
     if (!Files.exists(path)) {
       return Optional.empty();
     }
@@ -1638,14 +1717,23 @@ public class FileBasedStorage implements StorageProvider {
     return getNetworkAnalysisDir(network, analysis).resolve(RELPATH_QUESTIONS_DIR);
   }
 
-  private @Nonnull Path getAnswersDir() {
+  private @Nonnull Path getAnswersDir(NetworkId networkId, SnapshotId snapshotId) {
+    return getSnapshotOutputDir(networkId, snapshotId).resolve(RELPATH_ANSWERS_DIR);
+  }
+
+  private @Nonnull Path getOldAnswersDir() {
     return _baseDir.resolve(RELPATH_ANSWERS_DIR);
   }
 
   @VisibleForTesting
   @Nonnull
-  Path getAnswerDir(AnswerId answerId) {
-    return getAnswersDir().resolve(answerId.getId());
+  Path getAnswerDir(NetworkId networkId, SnapshotId snapshotId, AnswerId answerId) {
+    return getAnswersDir(networkId, snapshotId).resolve(answerId.getId());
+  }
+
+  @Nonnull
+  private Path getOldAnswerDir(AnswerId answerId) {
+    return getOldAnswersDir().resolve(answerId.getId());
   }
 
   private @Nonnull Path getNetworkAnalysisDir(NetworkId network, AnalysisId analysis) {
@@ -1673,7 +1761,11 @@ public class FileBasedStorage implements StorageProvider {
     return getOriginalsDir(network).resolve(toBase64(key));
   }
 
-  private Path getNodeRolesDir() {
+  private Path getNodeRolesDir(NetworkId networkId) {
+    return getNetworkDir(networkId).resolve(RELPATH_NODE_ROLES_DIR);
+  }
+
+  private Path getOldNodeRolesDir() {
     return _baseDir.resolve(RELPATH_NODE_ROLES_DIR);
   }
 
@@ -1873,8 +1965,6 @@ public class FileBasedStorage implements StorageProvider {
                 });
       }
     }
-    // expunge answers
-    expungeOldEntries(safeExpungeBeforeDate, getAnswersDir(), true);
   }
 
   private void expungeOldNetworkData(Instant expungeBeforeDate, NetworkId networkId)

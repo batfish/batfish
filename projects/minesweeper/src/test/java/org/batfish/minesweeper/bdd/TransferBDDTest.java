@@ -1090,12 +1090,8 @@ public class TransferBDDTest {
     // the policy is applicable to all announcements
     assertTrue(acceptedAnnouncements.isOne());
 
-    // the metric is now 50, if the protocol is BGP
-    BDDInteger expectedMed =
-        BDDInteger.makeFromValue(_anyRoute.getFactory(), 32, 50)
-            .ite(
-                _anyRoute.getProtocolHistory().getConstraintForValue(RoutingProtocol.BGP),
-                _anyRoute.getMed());
+    // the metric is now 50
+    BDDInteger expectedMed = BDDInteger.makeFromValue(_anyRoute.getFactory(), 32, 50);
     assertEquals(expectedMed, outAnnouncements.getMed());
   }
 

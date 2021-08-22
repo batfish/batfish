@@ -37,7 +37,8 @@ import org.batfish.common.topology.GlobalBroadcastNoPointToPoint;
 import org.batfish.common.topology.HybridL3Adjacencies;
 import org.batfish.common.topology.IpOwners;
 import org.batfish.common.topology.L3Adjacencies;
-import org.batfish.common.topology.Layer1Topology;
+import org.batfish.common.topology.Layer1Topologies;
+import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.topology.TunnelTopology;
 import org.batfish.common.topology.broadcast.BroadcastL3Adjacencies;
 import org.batfish.datamodel.AbstractRoute;
@@ -151,6 +152,7 @@ final class IncrementalBdpEngine {
             false,
             true,
             trEngCurrentL3Topology,
+            partialDataplane.getFibs(),
             currentTopologyContext.getL3Adjacencies());
 
     // Update L3 adjacencies if necessary.
@@ -160,27 +162,17 @@ final class IncrementalBdpEngine {
       if (L3Adjacencies.USE_NEW_METHOD) {
         newAdjacencies =
             BroadcastL3Adjacencies.create(
-                initialTopologyContext.getLayer1LogicalTopology().orElse(Layer1Topology.EMPTY),
-                newVxlanTopology,
-                configurations);
+                initialTopologyContext.getLayer1Topologies(), newVxlanTopology, configurations);
       } else {
-        newAdjacencies =
-            initialTopologyContext // not updated across rounds
-                .getLayer1LogicalTopology()
-                .map(l1 -> computeLayer2Topology(l1, newVxlanTopology, configurations))
-                .<L3Adjacencies>map(
-                    l2 ->
-                        HybridL3Adjacencies.create(
-                            // neither L1 topology is updated across rounds
-                            initialTopologyContext
-                                .getRawLayer1PhysicalTopology()
-                                .orElse(Layer1Topology.EMPTY),
-                            initialTopologyContext
-                                .getLayer1LogicalTopology()
-                                .orElse(Layer1Topology.EMPTY),
-                            l2,
-                            configurations))
-                .orElse(GlobalBroadcastNoPointToPoint.instance());
+        Layer1Topologies topologies = initialTopologyContext.getLayer1Topologies();
+        if (topologies.getCombinedL1().isEmpty()) {
+          newAdjacencies = GlobalBroadcastNoPointToPoint.instance();
+        } else {
+          Layer2Topology l2 =
+              computeLayer2Topology(
+                  topologies.getActiveLogicalL1(), newVxlanTopology, configurations);
+          newAdjacencies = HybridL3Adjacencies.create(topologies, l2, configurations);
+        }
       }
     } else {
       newAdjacencies = currentTopologyContext.getL3Adjacencies();

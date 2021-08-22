@@ -1329,6 +1329,7 @@ public final class WorkQueueMgrTest {
     Main.getWorkMgr()
         .getStorage()
         .storeNodeRoles(
+            _networkId,
             NodeRolesData.builder().build(),
             _idManager.getSnapshotNodeRolesId(_networkId, snapshotId));
     doAction(new Action(ActionType.STATUS_TERMINATED_NORMALLY, aWork1));
@@ -1377,6 +1378,7 @@ public final class WorkQueueMgrTest {
     Main.getWorkMgr()
         .getStorage()
         .storeNodeRoles(
+            _networkId,
             NodeRolesData.builder().build(),
             _idManager.getSnapshotNodeRolesId(_networkId, snapshotId));
     doAction(new Action(ActionType.STATUS_TERMINATED_NORMALLY, aWork1));
@@ -1427,7 +1429,7 @@ public final class WorkQueueMgrTest {
     NodeRolesId snapshotNodeRolesId = _idManager.getSnapshotNodeRolesId(_networkId, snapshotId);
     Main.getWorkMgr()
         .getStorage()
-        .storeNodeRoles(NodeRolesData.builder().build(), snapshotNodeRolesId);
+        .storeNodeRoles(_networkId, NodeRolesData.builder().build(), snapshotNodeRolesId);
 
     assertFalse(_idManager.hasNetworkNodeRolesId(_networkId));
 
@@ -1454,7 +1456,7 @@ public final class WorkQueueMgrTest {
     NodeRolesId snapshotNodeRolesId = _idManager.getSnapshotNodeRolesId(_networkId, snapshotId);
     Main.getWorkMgr()
         .getStorage()
-        .storeNodeRoles(NodeRolesData.builder().build(), snapshotNodeRolesId);
+        .storeNodeRoles(_networkId, NodeRolesData.builder().build(), snapshotNodeRolesId);
 
     assertFalse(_idManager.hasNetworkNodeRolesId(_networkId));
 
@@ -1481,7 +1483,7 @@ public final class WorkQueueMgrTest {
     NodeRolesId snapshotNodeRolesId = _idManager.getSnapshotNodeRolesId(_networkId, snapshotId);
     Main.getWorkMgr()
         .getStorage()
-        .storeNodeRoles(NodeRolesData.builder().build(), snapshotNodeRolesId);
+        .storeNodeRoles(_networkId, NodeRolesData.builder().build(), snapshotNodeRolesId);
     NodeRolesId oldNodeRolesId = new NodeRolesId("old");
     _idManager.assignNetworkNodeRolesId(_networkId, oldNodeRolesId);
 

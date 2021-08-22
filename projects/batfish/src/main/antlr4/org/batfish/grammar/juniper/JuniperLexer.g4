@@ -83,7 +83,7 @@ OPEN_PAREN
 
 SEMICOLON
 :
-   ';'
+   ';' F_SECRET_DATA?
 ;
 
 WORD
@@ -143,6 +143,14 @@ fragment
 F_QuotedString
 :
    '"' ~'"'* '"'
+;
+
+// This may appear after a semicolon when there is a secret key in the file
+// Search for examples online.
+fragment
+F_SECRET_DATA
+:
+   ' '* '## SECRET-DATA'
 ;
 
 fragment
