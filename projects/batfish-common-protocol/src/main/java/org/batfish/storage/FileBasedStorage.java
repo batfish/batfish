@@ -43,7 +43,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
@@ -1463,36 +1462,19 @@ public class FileBasedStorage implements StorageProvider {
 
   private @Nonnull Set<String> listResolvableIds(Class<? extends Id> type, Id... ancestors)
       throws IOException {
-    Path idsDir = getIdsDir(type, ancestors);
-    if (!Files.exists(idsDir)) {
-      return ImmutableSet.of();
-    }
-    try (Stream<Path> files = list(idsDir)) {
-      return files
-          .filter(
-              path -> {
-                try {
-                  return fromBase64(path.getFileName().toString()).endsWith(ID_EXTENSION);
-                } catch (IllegalArgumentException e) {
-                  return false;
-                }
-              })
-          .map(
-              file -> {
-                try {
-                  return readFileToString(file, UTF_8);
-                } catch (IOException e) {
-                  _logger.errorf(
-                      "Failed to read ID file '%s': %s",
-                      file.toString(), Throwables.getStackTraceAsString(e));
-                  return null;
-                }
-              })
-          .filter(Objects::nonNull)
-          .collect(ImmutableSet.toImmutableSet());
-    } catch (IOException e) {
-      throw new IOException("Could not list files in '" + idsDir + "'", e);
-    }
+    return listResolvableNames(type, ancestors).stream()
+        .map(
+            name -> {
+              try {
+                return readId(type, name, ancestors);
+              } catch (IOException e) {
+                _logger.errorf("Could not read id for '%s' (type '%s')", name, type);
+                return Optional.<String>empty();
+              }
+            })
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   @Nonnull
