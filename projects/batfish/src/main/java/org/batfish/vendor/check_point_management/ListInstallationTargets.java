@@ -8,15 +8,15 @@ import javax.annotation.Nonnull;
 /** Indicates that package should be applied to listed installation targets. */
 public final class ListInstallationTargets extends InstallationTargets {
 
-  ListInstallationTargets(List<GatewayOrServer> installationTargets) {
+  ListInstallationTargets(List<PackageInstallationTarget> installationTargets) {
     _installationTargets = installationTargets;
   }
 
-  public @Nonnull List<GatewayOrServer> getInstallationTargets() {
+  public @Nonnull List<PackageInstallationTarget> getInstallationTargets() {
     return _installationTargets;
   }
 
-  private final @Nonnull List<GatewayOrServer> _installationTargets;
+  private final @Nonnull List<PackageInstallationTarget> _installationTargets;
 
   @Override
   public boolean equals(Object o) {

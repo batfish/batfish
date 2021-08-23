@@ -58,11 +58,12 @@ public final class Package extends TypedManagementObject {
           text);
       return AllInstallationTargets.instance();
     } else if (installationTargets instanceof ArrayNode) {
-      List<GatewayOrServer> targets =
+      List<PackageInstallationTarget> targets =
           ImmutableList.copyOf(
               BatfishObjectMapper.ignoreUnknownMapper()
                   .convertValue(
-                      installationTargets, new TypeReference<List<GatewayOrServer>>() {}));
+                      installationTargets,
+                      new TypeReference<List<PackageInstallationTarget>>() {}));
       return new ListInstallationTargets(targets);
     } else {
       throw new IllegalArgumentException(
@@ -70,6 +71,10 @@ public final class Package extends TypedManagementObject {
               "Unsupporeted JSON node type for value of %s field: %s",
               PROP_INSTALLATION_TARGETS, installationTargets.getClass()));
     }
+  }
+
+  public @Nonnull Domain getDomain() {
+    return _domain;
   }
 
   @Override
