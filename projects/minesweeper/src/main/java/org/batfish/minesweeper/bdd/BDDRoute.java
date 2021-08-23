@@ -128,6 +128,10 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
   private BDDInteger _tag;
 
+  /**
+   * The routing protocols allowed in a BGP route announcement (see {@link
+   * org.batfish.datamodel.BgpRoute}).
+   */
   public static final Set<RoutingProtocol> ALL_BGP_PROTOCOLS =
       ImmutableSet.of(RoutingProtocol.AGGREGATE, RoutingProtocol.BGP, RoutingProtocol.IBGP);
 
@@ -269,6 +273,13 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     return factory.orAll(_communityAtomicPredicates);
   }
 
+  /**
+   * Create a BDD representing the constraint that the route announcement's protocol is in the given
+   * set.
+   *
+   * @param protocols the set of protocols that are allowed
+   * @return the BDD representing this constraint
+   */
   public BDD anyProtocolIn(Set<RoutingProtocol> protocols) {
     return factory.orAll(
         protocols.stream()

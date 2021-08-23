@@ -29,7 +29,6 @@ import net.sf.javabdd.BDDFactory;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.NetworkSnapshot;
-import org.batfish.common.bdd.BDDFiniteDomain;
 import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.plugin.IBatfish;
@@ -269,9 +268,10 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     return builder.build();
   }
 
-  // Produces a full model of the given constraints, which represents a concrete input/output route
-  // consistent with the constraints.  Default values are chosen for particular fields of the input
-  // route if they are consistent with the constraints.
+  // Produces a full model of the given constraints, which represents a concrete route announcement
+  // that is consistent with the constraints.  The protocol defaults to BGP if it is consistent with
+  // the constraints.  The same approach could be used to provide default values for other fields in
+  // the future.
   private BDD constraintsToModel(BDD constraints, Graph g) {
     BDDRoute route = new BDDRoute(g);
     // set the protocol field to BGP if it is consistent with the constraints
@@ -425,17 +425,11 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     return positiveConstraints.diffWith(negativeConstraints);
   }
 
-  private BDD protocolSetToBDD(
-      Set<RoutingProtocol> protocolSet,
-      BDDFiniteDomain<RoutingProtocol> protocolBDD,
-      BDDFactory factory) {
+  private BDD protocolSetToBDD(Set<RoutingProtocol> protocolSet, BDDRoute bddRoute) {
     if (protocolSet.isEmpty()) {
-      return factory.one();
+      return bddRoute.getFactory().one();
     } else {
-      return factory.orAll(
-          protocolSet.stream()
-              .map(protocolBDD::getConstraintForValue)
-              .collect(Collectors.toList()));
+      return bddRoute.anyProtocolIn(protocolSet);
     }
   }
 
@@ -467,8 +461,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
             r.getAsPathRegexAtomicPredicates(),
             r.getFactory()));
     result.andWith(nextHopIpConstraintsToBDD(constraints.getNextHopIp(), r, outputRoute));
-    result.andWith(
-        protocolSetToBDD(constraints.getProtocol(), r.getProtocolHistory(), r.getFactory()));
+    result.andWith(protocolSetToBDD(constraints.getProtocol(), r));
 
     return result;
   }
