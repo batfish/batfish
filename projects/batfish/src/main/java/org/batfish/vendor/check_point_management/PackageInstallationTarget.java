@@ -8,7 +8,8 @@ import com.google.common.annotations.VisibleForTesting;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class PackageInstallationTarget extends NamedManagementObject {
+/** Data model for an installation target under a {@link Package}. */
+public final class PackageInstallationTarget extends NamedManagementObject {
 
   @VisibleForTesting
   PackageInstallationTarget(String name, Uid uid) {

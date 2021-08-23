@@ -1,3 +1,6 @@
 package org.batfish.vendor;
 
-public abstract class VendorSupplementalInformation {}
+import java.io.Serializable;
+
+/** Supplemental information to use when converting a {@link VendorConfiguration}. */
+public interface VendorSupplementalInformation extends Serializable {}

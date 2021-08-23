@@ -2,14 +2,12 @@ package org.batfish.vendor.check_point_management;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
 
-import java.io.Serializable;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import org.batfish.vendor.VendorSupplementalInformation;
 
 /** Configuration encompassing settings for all CheckPoint management servers in a snapshot. */
-public final class CheckpointManagementConfiguration extends VendorSupplementalInformation
-    implements Serializable {
+public final class CheckpointManagementConfiguration implements VendorSupplementalInformation {
 
   public CheckpointManagementConfiguration(Map<String, ManagementServer> servers) {
     _servers = servers;

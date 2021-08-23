@@ -77,6 +77,10 @@ public final class Package extends TypedManagementObject {
     return _domain;
   }
 
+  public boolean hasNatPolicy() {
+    return _natPolicy;
+  }
+
   @Override
   public boolean equals(Object obj) {
     if (!baseEquals(obj)) {

@@ -1579,8 +1579,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return config;
   }
 
-  private CheckpointManagementConfiguration parseCheckpointManagementData(
-      Map<String, String> cpManagementData, ParseVendorConfigurationAnswerElement pvcae)
+  private @Nonnull CheckpointManagementConfiguration parseCheckpointManagementData(
+      @Nonnull Map<String, String> cpManagementData,
+      @Nonnull ParseVendorConfigurationAnswerElement pvcae)
       throws IOException {
     /* Organize server data into maps */
     // server -> domain -> filename -> file contents
@@ -1631,9 +1632,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
               BfConsts.RELPATH_CHECKPOINT_MANAGEMENT_DIR,
               new Warning(
                   String.format(
-                      "Checkpoint management domain %s on server %s missing"
-                          + " show-gateways-and-servers.json",
-                      domainName, serverName),
+                      "Checkpoint management domain %s on server %s missing %s",
+                      domainName, serverName, RELPATH_CHECKPOINT_SHOW_GATEWAYS_AND_SERVERS),
                   "Checkpoint"));
           continue;
         }
@@ -1649,34 +1649,44 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 BfConsts.RELPATH_CHECKPOINT_MANAGEMENT_DIR,
                 new Warning(
                     String.format(
-                        "Checkpoint management package %s in domain %s on server %s missing"
-                            + " show-package.json",
-                        packageEntry.getKey(), domainName, serverName),
+                        "Checkpoint management package %s in domain %s on server %s missing %s",
+                        packageEntry.getKey(),
+                        domainName,
+                        serverName,
+                        RELPATH_CHECKPOINT_SHOW_PACKAGE),
                     "Checkpoint"));
             continue;
           }
           Package pakij =
               BatfishObjectMapper.ignoreUnknownMapper()
                   .readValue(packageFiles.get(RELPATH_CHECKPOINT_SHOW_PACKAGE), Package.class);
-          List<NatRulebase> natRulebases =
-              packageFiles.containsKey(RELPATH_CHECKPOINT_SHOW_NAT_RULEBASE)
-                  ? BatfishObjectMapper.ignoreUnknownMapper()
-                      .readValue(
-                          packageFiles.get(RELPATH_CHECKPOINT_SHOW_NAT_RULEBASE),
-                          new TypeReference<List<NatRulebase>>() {})
-                  : ImmutableList.of();
-          NatRulebase natRulebase = natRulebases.isEmpty() ? null : natRulebases.get(0);
-          if (natRulebases.size() > 1) {
-            pvcae.addRedFlagWarning(
-                BfConsts.RELPATH_CHECKPOINT_MANAGEMENT_DIR,
-                new Warning(
-                    String.format(
-                        "Checkpoint package %s in domain %s on server %s contains multiple NAT"
-                            + " rulebases. Should only contain one",
-                        packageEntry.getKey(), domainName, serverName),
-                    "Checkpoint"));
+          ManagementPackage mgmtPackage;
+          if (!pakij.hasNatPolicy()) {
+            mgmtPackage = new ManagementPackage(null, pakij);
+          } else {
+            List<NatRulebase> natRulebases =
+                packageFiles.containsKey(RELPATH_CHECKPOINT_SHOW_NAT_RULEBASE)
+                    ? BatfishObjectMapper.ignoreUnknownMapper()
+                        .readValue(
+                            packageFiles.get(RELPATH_CHECKPOINT_SHOW_NAT_RULEBASE),
+                            new TypeReference<List<NatRulebase>>() {})
+                    : ImmutableList.of();
+            if (natRulebases.size() != 1) {
+              pvcae.addRedFlagWarning(
+                  BfConsts.RELPATH_CHECKPOINT_MANAGEMENT_DIR,
+                  new Warning(
+                      String.format(
+                          "Checkpoint package %s in domain %s on server %s should contain exactly"
+                              + " one NAT rulebase, but contains %s",
+                          pakij.getName(),
+                          pakij.getDomain().getName(),
+                          serverName,
+                          natRulebases.size()),
+                      "Checkpoint"));
+            }
+            NatRulebase natRulebase = natRulebases.isEmpty() ? null : natRulebases.get(0);
+            mgmtPackage = new ManagementPackage(natRulebase, pakij);
           }
-          ManagementPackage mgmtPackage = new ManagementPackage(natRulebase, pakij);
           packagesBuilder.put(mgmtPackage.getPackage().getUid(), mgmtPackage);
         }
         Map<Uid, ManagementPackage> packages = packagesBuilder.build();
@@ -1695,7 +1705,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         Domain domain = packages.values().iterator().next().getPackage().getDomain();
         ManagementDomain mgmtDomain =
             new ManagementDomain(domain, gatewaysAndServers.getGatewaysAndServers(), packages);
-        domainsMap.put(domainName, mgmtDomain);
+        domainsMap.put(mgmtDomain.getName(), mgmtDomain);
       }
       serversMap.put(serverName, new ManagementServer(domainsMap.build(), serverName));
     }
@@ -2421,8 +2431,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private void serializeConversionContext(
       NetworkSnapshot snapshot, ParseVendorConfigurationAnswerElement pvcae) {
     // Serialize Checkpoint management servers if present
-    _logger.info("\n*** READING CHECKPOINT MANAGEMENT CONFIGS ***\n");
-    CheckpointManagementConfiguration cpMgmtConfig;
+    LOGGER.info("\n*** READING CHECKPOINT MANAGEMENT CONFIGS ***\n");
+    CheckpointManagementConfiguration cpMgmtConfig = null;
     Span span = GlobalTracer.get().buildSpan("Parse Checkpoint management configs").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
@@ -2431,14 +2441,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
       try (Stream<String> keys = _storage.listInputCheckpointManagementKeys(snapshot)) {
         cpServerData = readAllInputObjects(keys, snapshot);
       }
-      cpMgmtConfig = parseCheckpointManagementData(cpServerData, pvcae);
+      if (!cpServerData.isEmpty()) {
+        cpMgmtConfig = parseCheckpointManagementData(cpServerData, pvcae);
+      }
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     } finally {
       span.finish();
     }
 
-    _logger.info("\n*** SERIALIZING CONVERSION CONTEXT ***\n");
+    LOGGER.info("\n*** SERIALIZING CONVERSION CONTEXT ***\n");
     ConversionContext conversionContext = new ConversionContext();
     conversionContext.setCheckpointManagementConfiguration(cpMgmtConfig);
     try {
