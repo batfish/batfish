@@ -88,6 +88,15 @@ public final class Package extends TypedManagementObject {
     return Objects.hash(baseHashcode(), _domain, _installationTargets, _natPolicy);
   }
 
+  @Override
+  public String toString() {
+    return baseToStringHelper()
+        .add(PROP_DOMAIN, _domain)
+        .add(PROP_INSTALLATION_TARGETS, _installationTargets)
+        .add(PROP_NAT_POLICY, _natPolicy)
+        .toString();
+  }
+
   private static final String PROP_DOMAIN = "domain";
   private static final String PROP_INSTALLATION_TARGETS = "installation-targets";
   private static final String PROP_NAT_POLICY = "nat-policy";

@@ -1,6 +1,5 @@
 package org.batfish.vendor.check_point_management;
 
-import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -28,7 +27,7 @@ public final class CpmiAnyObject extends TypedManagementObject {
 
   @Override
   public String toString() {
-    return toStringHelper(this).toString();
+    return baseToStringHelper().toString();
   }
 
   @VisibleForTesting

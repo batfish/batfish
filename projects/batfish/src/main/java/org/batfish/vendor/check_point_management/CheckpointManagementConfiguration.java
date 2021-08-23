@@ -1,5 +1,7 @@
 package org.batfish.vendor.check_point_management;
 
+import static com.google.common.base.MoreObjects.toStringHelper;
+
 import java.io.Serializable;
 import java.util.Map;
 import javax.annotation.Nonnull;
@@ -30,6 +32,11 @@ public final class CheckpointManagementConfiguration implements Serializable {
   @Override
   public int hashCode() {
     return _servers.hashCode();
+  }
+
+  @Override
+  public String toString() {
+    return toStringHelper(this).add("_servers", _servers).toString();
   }
 
   private final @Nonnull Map<String, ManagementServer> _servers;

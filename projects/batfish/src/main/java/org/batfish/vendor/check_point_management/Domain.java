@@ -33,4 +33,9 @@ public final class Domain extends NamedManagementObject {
   public int hashCode() {
     return baseHashcode();
   }
+
+  @Override
+  public String toString() {
+    return baseToStringHelper().toString();
+  }
 }

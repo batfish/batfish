@@ -20,6 +20,11 @@ public final class Group extends TypedManagementObject {
     return baseHashcode();
   }
 
+  @Override
+  public String toString() {
+    return baseToStringHelper().toString();
+  }
+
   @JsonCreator
   private static @Nonnull Group create(
       @JsonProperty(PROP_NAME) @Nullable String name, @JsonProperty(PROP_UID) @Nullable Uid uid) {

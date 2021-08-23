@@ -37,4 +37,9 @@ public final class CpmiVsNetobj extends GatewayOrServer {
   public int hashCode() {
     return baseHashcode();
   }
+
+  @Override
+  public String toString() {
+    return baseToStringHelper().toString();
+  }
 }

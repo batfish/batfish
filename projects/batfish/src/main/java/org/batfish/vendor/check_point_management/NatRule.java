@@ -190,6 +190,23 @@ public final class NatRule extends ManagementObject implements NatRuleOrSection 
         _translatedSource);
   }
 
+  @Override
+  public String toString() {
+    return baseToStringHelper()
+        .add(PROP_COMMENTS, _comments)
+        .add(PROP_ENABLED, _enabled)
+        .add(PROP_INSTALL_ON, _installOn)
+        .add(PROP_METHOD, _method)
+        .add(PROP_ORIGINAL_DESTINATION, _originalDestination)
+        .add(PROP_ORIGINAL_SERVICE, _originalService)
+        .add(PROP_ORIGINAL_SOURCE, _originalSource)
+        .add(PROP_RULE_NUMBER, _ruleNumber)
+        .add(PROP_TRANSLATED_DESTINATION, _translatedDestination)
+        .add(PROP_TRANSLATED_SERVICE, _translatedService)
+        .add(PROP_TRANSLATED_SOURCE, _translatedSource)
+        .toString();
+  }
+
   private final @Nonnull String _comments;
   private final boolean _enabled;
   private final @Nonnull NatInstallTarget _installOn;
