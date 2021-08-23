@@ -1933,6 +1933,15 @@ public class FileBasedStorage implements StorageProvider {
         .filter(key -> keyInDir(key, BfConsts.RELPATH_AWS_CONFIGS_DIR));
   }
 
+  @MustBeClosed
+  @Nonnull
+  @Override
+  public Stream<String> listInputCheckpointManagementKeys(NetworkSnapshot snapshot)
+      throws IOException {
+    return listSnapshotInputObjectKeys(snapshot)
+        .filter(key -> keyInDir(key, BfConsts.RELPATH_CHECKPOINT_MANAGEMENT_DIR));
+  }
+
   private @Nonnull Path getParseVendorConfigurationAnswerElementPath(NetworkSnapshot snapshot) {
     return getSnapshotOutputDir(snapshot.getNetwork(), snapshot.getSnapshot())
         .resolve(RELPATH_PARSE_ANSWER_PATH);

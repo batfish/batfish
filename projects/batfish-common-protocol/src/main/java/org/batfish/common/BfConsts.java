@@ -124,6 +124,11 @@ public class BfConsts {
 
   public static final String RELPATH_AWS_CONFIGS_DIR = "aws_configs";
   public static final String RELPATH_AWS_CONFIGS_FILE = "aws_configs";
+  public static final String RELPATH_CHECKPOINT_MANAGEMENT_DIR = "checkpoint_management";
+  public static final String RELPATH_CHECKPOINT_SHOW_GATEWAYS_AND_SERVERS =
+      "show-gateways-and-servers.json";
+  public static final String RELPATH_CHECKPOINT_SHOW_NAT_RULEBASE = "show-nat-rulebase.json";
+  public static final String RELPATH_CHECKPOINT_SHOW_PACKAGE = "show-package.json";
   public static final String RELPATH_CONFIGURATIONS_DIR = "configs";
   public static final String RELPATH_EDGE_BLACKLIST_FILE = "edge_blacklist";
   public static final String RELPATH_ENVIRONMENT_BGP_TABLES = "bgp";
