@@ -1,6 +1,5 @@
 package org.batfish.vendor.check_point_management;
 
-import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -60,7 +59,7 @@ public final class NatRulebase extends ManagementObject {
 
   @Override
   public String toString() {
-    return toStringHelper(this)
+    return baseToStringHelper()
         .add(PROP_OBJECTS_DICTIONARY, _objectsDictionary)
         .add(PROP_RULEBASE, _rulebase)
         .toString();

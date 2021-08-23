@@ -1,5 +1,7 @@
 package org.batfish.vendor.check_point_management;
 
+import static com.google.common.base.MoreObjects.toStringHelper;
+
 import java.util.List;
 import javax.annotation.Nonnull;
 
@@ -30,5 +32,10 @@ public final class ListInstallationTargets extends InstallationTargets {
   @Override
   public int hashCode() {
     return _installationTargets.hashCode();
+  }
+
+  @Override
+  public String toString() {
+    return toStringHelper(this).add("_installationTargets", _installationTargets).toString();
   }
 }

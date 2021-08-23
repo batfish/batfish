@@ -1,5 +1,7 @@
 package org.batfish.vendor.check_point_management;
 
+import static com.google.common.base.MoreObjects.toStringHelper;
+
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Objects;
@@ -35,6 +37,11 @@ public final class ManagementServer implements Serializable {
   @Override
   public int hashCode() {
     return Objects.hash(_domains, _name);
+  }
+
+  @Override
+  public String toString() {
+    return toStringHelper(this).add("_domains", _domains).add("_name", _name).toString();
   }
 
   private final @Nonnull Map<String, ManagementDomain> _domains;
