@@ -8,6 +8,9 @@ import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static java.util.stream.Collectors.toMap;
 import static org.batfish.bddreachability.BDDMultipathInconsistency.computeMultipathInconsistencies;
 import static org.batfish.bddreachability.BDDReachabilityUtils.constructFlows;
+import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_GATEWAYS_AND_SERVERS;
+import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_NAT_RULEBASE;
+import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_PACKAGE;
 import static org.batfish.common.runtime.SnapshotRuntimeData.EMPTY_SNAPSHOT_RUNTIME_DATA;
 import static org.batfish.common.util.CompletionMetadataUtils.getFilterNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getInterfaces;
@@ -25,7 +28,6 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
 import static org.batfish.main.ReachabilityParametersResolver.resolveReachabilityParameters;
 import static org.batfish.main.StreamDecoder.decodeStreamAndAppendNewline;
 import static org.batfish.specifier.LocationInfoUtils.computeLocationInfo;
-import static org.batfish.vendor.ConversionContext.EMPTY_CONVERSION_CONTEXT;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -238,6 +240,15 @@ import org.batfish.symbolic.IngressLocation;
 import org.batfish.topology.TopologyProviderImpl;
 import org.batfish.vendor.ConversionContext;
 import org.batfish.vendor.VendorConfiguration;
+import org.batfish.vendor.check_point_management.CheckpointManagementConfiguration;
+import org.batfish.vendor.check_point_management.Domain;
+import org.batfish.vendor.check_point_management.GatewaysAndServers;
+import org.batfish.vendor.check_point_management.ManagementDomain;
+import org.batfish.vendor.check_point_management.ManagementPackage;
+import org.batfish.vendor.check_point_management.ManagementServer;
+import org.batfish.vendor.check_point_management.NatRulebase;
+import org.batfish.vendor.check_point_management.Package;
+import org.batfish.vendor.check_point_management.Uid;
 import org.batfish.version.BatfishVersion;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -1568,6 +1579,139 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return config;
   }
 
+  private @Nonnull CheckpointManagementConfiguration parseCheckpointManagementData(
+      @Nonnull Map<String, String> cpManagementData,
+      @Nonnull ParseVendorConfigurationAnswerElement pvcae)
+      throws IOException {
+    /* Organize server data into maps */
+    // server -> domain -> filename -> file contents
+    Map<String, Map<String, Map<String, String>>> domainFileMap = new HashMap<>();
+    // server -> domain -> -> package -> filename -> file contents
+    Map<String, Map<String, Map<String, Map<String, String>>>> packageFileMap = new HashMap<>();
+    cpManagementData.forEach(
+        (filePath, fileContent) -> {
+          String[] parts = filePath.split("/");
+          if (parts.length == 4) {
+            // checkpoint_management/SERVER_NAME/DOMAIN_NAME/foo.json
+            String serverName = parts[1];
+            String domainName = parts[2];
+            String fileName = parts[3];
+            domainFileMap
+                .computeIfAbsent(serverName, n -> new HashMap<>())
+                .computeIfAbsent(domainName, n -> new HashMap<>())
+                .put(fileName, fileContent);
+          } else if (parts.length == 5) {
+            // checkpoint_management/SERVER_NAME/DOMAIN_NAME/PACKAGE_NAME/foo.json
+            String serverName = parts[1];
+            String domainName = parts[2];
+            String packageName = parts[3];
+            String fileName = parts[4];
+            packageFileMap
+                .computeIfAbsent(serverName, n -> new HashMap<>())
+                .computeIfAbsent(domainName, n -> new HashMap<>())
+                .computeIfAbsent(packageName, n -> new HashMap<>())
+                .put(fileName, fileContent);
+          }
+        });
+    /* Extract server data into CheckpointManagementConfiguration */
+    ImmutableMap.Builder<String, ManagementServer> serversMap = ImmutableMap.builder();
+    for (Entry<String, Map<String, Map<String, Map<String, String>>>> serverEntry :
+        packageFileMap.entrySet()) {
+      String serverName = serverEntry.getKey();
+      ImmutableMap.Builder<String, ManagementDomain> domainsMap = ImmutableMap.builder();
+      for (Entry<String, Map<String, Map<String, String>>> domainEntry :
+          serverEntry.getValue().entrySet()) {
+        String domainName = domainEntry.getKey();
+        String showGatewaysAndServers =
+            domainFileMap
+                .getOrDefault(serverName, ImmutableMap.of())
+                .getOrDefault(domainName, ImmutableMap.of())
+                .get(RELPATH_CHECKPOINT_SHOW_GATEWAYS_AND_SERVERS);
+        if (showGatewaysAndServers == null) {
+          pvcae.addRedFlagWarning(
+              BfConsts.RELPATH_CHECKPOINT_MANAGEMENT_DIR,
+              new Warning(
+                  String.format(
+                      "Checkpoint management domain %s on server %s missing %s",
+                      domainName, serverName, RELPATH_CHECKPOINT_SHOW_GATEWAYS_AND_SERVERS),
+                  "Checkpoint"));
+          continue;
+        }
+        GatewaysAndServers gatewaysAndServers =
+            BatfishObjectMapper.ignoreUnknownMapper()
+                .readValue(showGatewaysAndServers, GatewaysAndServers.class);
+
+        ImmutableMap.Builder<Uid, ManagementPackage> packagesBuilder = ImmutableMap.builder();
+        for (Entry<String, Map<String, String>> packageEntry : domainEntry.getValue().entrySet()) {
+          Map<String, String> packageFiles = packageEntry.getValue();
+          if (!packageFiles.containsKey(RELPATH_CHECKPOINT_SHOW_PACKAGE)) {
+            pvcae.addRedFlagWarning(
+                BfConsts.RELPATH_CHECKPOINT_MANAGEMENT_DIR,
+                new Warning(
+                    String.format(
+                        "Checkpoint management package %s in domain %s on server %s missing %s",
+                        packageEntry.getKey(),
+                        domainName,
+                        serverName,
+                        RELPATH_CHECKPOINT_SHOW_PACKAGE),
+                    "Checkpoint"));
+            continue;
+          }
+          Package pakij =
+              BatfishObjectMapper.ignoreUnknownMapper()
+                  .readValue(packageFiles.get(RELPATH_CHECKPOINT_SHOW_PACKAGE), Package.class);
+          ManagementPackage mgmtPackage;
+          if (!pakij.hasNatPolicy()) {
+            mgmtPackage = new ManagementPackage(null, pakij);
+          } else {
+            List<NatRulebase> natRulebases =
+                packageFiles.containsKey(RELPATH_CHECKPOINT_SHOW_NAT_RULEBASE)
+                    ? BatfishObjectMapper.ignoreUnknownMapper()
+                        .readValue(
+                            packageFiles.get(RELPATH_CHECKPOINT_SHOW_NAT_RULEBASE),
+                            new TypeReference<List<NatRulebase>>() {})
+                    : ImmutableList.of();
+            if (natRulebases.size() != 1) {
+              pvcae.addRedFlagWarning(
+                  BfConsts.RELPATH_CHECKPOINT_MANAGEMENT_DIR,
+                  new Warning(
+                      String.format(
+                          "Checkpoint package %s in domain %s on server %s should contain exactly"
+                              + " one NAT rulebase, but contains %s",
+                          pakij.getName(),
+                          pakij.getDomain().getName(),
+                          serverName,
+                          natRulebases.size()),
+                      "Checkpoint"));
+            }
+            NatRulebase natRulebase = natRulebases.isEmpty() ? null : natRulebases.get(0);
+            mgmtPackage = new ManagementPackage(natRulebase, pakij);
+          }
+          packagesBuilder.put(mgmtPackage.getPackage().getUid(), mgmtPackage);
+        }
+        Map<Uid, ManagementPackage> packages = packagesBuilder.build();
+        if (packages.isEmpty()) {
+          pvcae.addRedFlagWarning(
+              BfConsts.RELPATH_CHECKPOINT_MANAGEMENT_DIR,
+              new Warning(
+                  String.format(
+                      "Ignoring Checkpoint management domain %s on server %s: no packages present",
+                      domainName, serverName),
+                  "Checkpoint"));
+          continue;
+        }
+
+        // Use any package to find domain
+        Domain domain = packages.values().iterator().next().getPackage().getDomain();
+        ManagementDomain mgmtDomain =
+            new ManagementDomain(domain, gatewaysAndServers.getGatewaysAndServers(), packages);
+        domainsMap.put(mgmtDomain.getName(), mgmtDomain);
+      }
+      serversMap.put(serverName, new ManagementServer(domainsMap.build(), serverName));
+    }
+    return new CheckpointManagementConfiguration(serversMap.build());
+  }
+
   private SortedMap<String, BgpAdvertisementsByVrf> parseEnvironmentBgpTables(
       NetworkSnapshot snapshot,
       SortedMap<String, String> inputData,
@@ -2284,6 +2428,38 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return found;
   }
 
+  private void serializeConversionContext(
+      NetworkSnapshot snapshot, ParseVendorConfigurationAnswerElement pvcae) {
+    // Serialize Checkpoint management servers if present
+    LOGGER.info("\n*** READING CHECKPOINT MANAGEMENT CONFIGS ***\n");
+    CheckpointManagementConfiguration cpMgmtConfig = null;
+    Span span = GlobalTracer.get().buildSpan("Parse Checkpoint management configs").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
+      Map<String, String> cpServerData;
+      // Try to parse all accounts as one vendor configuration
+      try (Stream<String> keys = _storage.listInputCheckpointManagementKeys(snapshot)) {
+        cpServerData = readAllInputObjects(keys, snapshot);
+      }
+      if (!cpServerData.isEmpty()) {
+        cpMgmtConfig = parseCheckpointManagementData(cpServerData, pvcae);
+      }
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    } finally {
+      span.finish();
+    }
+
+    LOGGER.info("\n*** SERIALIZING CONVERSION CONTEXT ***\n");
+    ConversionContext conversionContext = new ConversionContext();
+    conversionContext.setCheckpointManagementConfiguration(cpMgmtConfig);
+    try {
+      _storage.storeConversionContext(conversionContext, snapshot);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+  }
+
   private Answer computeEnvironmentBgpTables(NetworkSnapshot snapshot) {
     Answer answer = new Answer();
     ParseEnvironmentBgpTablesAnswerElement answerElement =
@@ -2856,12 +3032,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
 
     // serialize any context needed for conversion (this does not include any configs)
-    try {
-      // TODO Populate conversion context
-      _storage.storeConversionContext(EMPTY_CONVERSION_CONTEXT, snapshot);
-    } catch (IOException e) {
-      throw new UncheckedIOException(e);
-    }
+    serializeConversionContext(snapshot, answerElement);
 
     // serialize warnings
     try {

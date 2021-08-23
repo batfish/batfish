@@ -916,6 +916,15 @@ public interface StorageProvider {
   void deleteVendorConfigurations(NetworkSnapshot snapshot) throws IOException;
 
   /**
+   * Returns a list of snapshot input object keys corresponding to Checkpoint management servers.
+   *
+   * @throws IOException if there is an error
+   */
+  @MustBeClosed
+  @Nonnull
+  Stream<String> listInputCheckpointManagementKeys(NetworkSnapshot snapshot) throws IOException;
+
+  /**
    * Returns a list of snapshot input object keys corresponding to host configurations.
    *
    * @throws IOException if there is an error

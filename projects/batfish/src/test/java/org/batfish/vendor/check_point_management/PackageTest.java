@@ -9,7 +9,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.datamodel.Ip;
 import org.junit.Test;
 
 /** Test of {@link Package}. */
@@ -59,8 +58,7 @@ public final class PackageTest {
               + "{" // object: simple-gateway
               + "\"type\":\"simple-gateway\","
               + "\"uid\":\"0\","
-              + "\"name\":\"foo\","
-              + "\"ipv4-address\":\"0.0.0.0\""
+              + "\"name\":\"foo\""
               + "}" // object: simple-gateway
               + "]," // installation-targets
               + "\"nat-policy\":true"
@@ -72,7 +70,7 @@ public final class PackageTest {
               new Package(
                   new Domain("bar", Uid.of("2")),
                   new ListInstallationTargets(
-                      ImmutableList.of(new SimpleGateway(Ip.ZERO, "foo", Uid.of("0")))),
+                      ImmutableList.of(new PackageInstallationTarget("foo", Uid.of("0")))),
                   "foo",
                   true,
                   Uid.of("1"))));
@@ -120,7 +118,7 @@ public final class PackageTest {
             new Package(
                 new Domain("bar", Uid.of("1")),
                 new ListInstallationTargets(
-                    ImmutableList.of(new SimpleGateway(Ip.ZERO, "foo", Uid.of("0")))),
+                    ImmutableList.of(new PackageInstallationTarget("foo", Uid.of("0")))),
                 "foo",
                 true,
                 Uid.of("0")))
