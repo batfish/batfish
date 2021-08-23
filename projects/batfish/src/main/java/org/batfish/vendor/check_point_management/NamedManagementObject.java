@@ -1,5 +1,6 @@
 package org.batfish.vendor.check_point_management;
 
+import com.google.common.base.MoreObjects.ToStringHelper;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 
@@ -29,6 +30,11 @@ public abstract class NamedManagementObject extends ManagementObject {
   @Override
   protected int baseHashcode() {
     return Objects.hash(super.baseHashcode(), _name);
+  }
+
+  @Override
+  protected @Nonnull ToStringHelper baseToStringHelper() {
+    return super.baseToStringHelper().add(PROP_NAME, _name);
   }
 
   private final @Nonnull String _name;
