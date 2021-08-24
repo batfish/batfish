@@ -108,6 +108,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
                     .setNextHop(toNextHop(nh.getNexthopTarget()))
                     // Unset priority is preferred over other priorities
                     .setAdministrativeCost(firstNonNull(nh.getPriority(), 0))
+                    .setRecursive(false)
                     .build());
   }
 
