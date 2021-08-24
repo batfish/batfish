@@ -731,6 +731,9 @@ public final class FileBasedStorageTest {
 
     // confirm behavior for blob
     _storage.mkdirs(_storage.getNetworkBlobsDir(networkId));
+    Files.setLastModifiedTime(
+        _storage.getNetworkBlobsDir(networkId),
+        FileTime.from(expungeTime.plus(1, ChronoUnit.MINUTES)));
     assertFalse(_storage.canExpungeNetwork(networkId, expungeTime));
 
     Files.setLastModifiedTime(_storage.getNetworkBlobsDir(networkId), FileTime.from(oldTime));
