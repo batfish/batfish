@@ -189,55 +189,6 @@ public class WorkMgr extends AbstractCoordinator {
     return entries;
   }
 
-  /** Instruct storage provider to expunge old data */
-  private void runGarbageCollection() throws IOException {
-    _logger.debugf("WorkMgr running garbage collection...\n");
-    Optional<Instant> expungeBeforeDateOpt = computeExpungeBeforeDate();
-    if (expungeBeforeDateOpt.isPresent()) {
-      _storage.runGarbageCollection(expungeBeforeDateOpt.get());
-    }
-    _logger.debugf("WorkMgr completed garbage collection.\n");
-  }
-
-  /**
-   * Returns earliest modification date a file must have to survive garbage collection, or {@link
-   * Optional#empty} if none can be identified.
-   *
-   * @throws IOException if there is an error
-   */
-  @VisibleForTesting
-  @Nonnull
-  Optional<Instant> computeExpungeBeforeDate() throws IOException {
-    Stream.Builder<Instant> builder = Stream.builder();
-    for (String network : _idManager.listNetworks()) {
-      Optional<NetworkId> networkIdOpt = _idManager.getNetworkId(network);
-      if (!networkIdOpt.isPresent()) {
-        continue;
-      }
-      for (String snapshot : _idManager.listSnapshots(networkIdOpt.get())) {
-        SnapshotMetadata metadata;
-        try {
-          metadata = getSnapshotMetadata(network, snapshot);
-        } catch (IOException e) {
-          _logger.debugf(
-              "computeExpungeBeforeDate: Failed to read snapshot metadata for network '%s',"
-                  + " snapshot '%s': %s",
-              network, snapshot, Throwables.getStackTraceAsString(e));
-          continue;
-        }
-        if (metadata == null) {
-          _logger.debugf(
-              "computeExpungeBeforeDate: network or snapshot removed between listing and metadata"
-                  + " fetching: network '%s', snapshot '%s'",
-              network, snapshot);
-          continue;
-        }
-        builder.add(metadata.getCreationTimestamp());
-      }
-    }
-    return builder.build().min(Instant::compareTo);
-  }
-
   static final class AssignWorkTask implements Runnable {
     @Override
     public void run() {
@@ -792,7 +743,7 @@ public class WorkMgr extends AbstractCoordinator {
       _gcExecutor.submit(
           () -> {
             try {
-              runGarbageCollection();
+              _storage.runGarbageCollection();
             } catch (Exception e) {
               _logger.errorf("ERROR WorkMgr GC: %s", Throwables.getStackTraceAsString(e));
             }
