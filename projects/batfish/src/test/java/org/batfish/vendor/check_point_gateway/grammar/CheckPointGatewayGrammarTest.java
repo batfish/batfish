@@ -406,36 +406,43 @@ public class CheckPointGatewayGrammarTest {
                         .setAdministrativeCost(0)
                         .setNetwork(Prefix.ZERO)
                         .setNextHop(NextHopInterface.of("eth0"))
+                        .setRecursive(false)
                         .build(),
                     org.batfish.datamodel.StaticRoute.testBuilder()
                         .setAdministrativeCost(0)
                         .setNetwork(Prefix.parse("10.1.0.0/16"))
                         .setNextHop(NextHopDiscard.instance())
+                        .setRecursive(false)
                         .build(),
                     org.batfish.datamodel.StaticRoute.testBuilder()
                         .setAdministrativeCost(0)
                         .setNetwork(Prefix.parse("10.2.0.0/16"))
                         .setNextHop(NextHopDiscard.instance())
+                        .setRecursive(false)
                         .build(),
                     org.batfish.datamodel.StaticRoute.testBuilder()
                         .setAdministrativeCost(8)
                         .setNetwork(Prefix.parse("10.3.0.0/16"))
                         .setNextHop(NextHopIp.of(Ip.parse("10.0.0.2")))
+                        .setRecursive(false)
                         .build(),
                     org.batfish.datamodel.StaticRoute.testBuilder()
                         .setAdministrativeCost(0)
                         .setNetwork(Prefix.parse("10.4.0.0/16"))
                         .setNextHop(NextHopIp.of(Ip.parse("10.0.0.3")))
+                        .setRecursive(false)
                         .build(),
                     org.batfish.datamodel.StaticRoute.testBuilder()
                         .setAdministrativeCost(1)
                         .setNetwork(Prefix.parse("10.4.0.0/16"))
                         .setNextHop(NextHopIp.of(Ip.parse("10.0.0.4")))
+                        .setRecursive(false)
                         .build(),
                     org.batfish.datamodel.StaticRoute.testBuilder()
                         .setAdministrativeCost(3)
                         .setNetwork(Prefix.parse("10.5.0.0/16"))
                         .setNextHop(NextHopIp.of(Ip.parse("10.0.0.5")))
+                        .setRecursive(false)
                         .build()))));
   }
 
