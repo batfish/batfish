@@ -955,8 +955,9 @@ public interface StorageProvider {
   /**
    * Run implementation-specific garbage collection.
    *
-   * <p>Deletes files and folders corresponding to networks and snapshot that have been deleted by
-   * the users.
+   * <p>Expunge stored data for networks and snapshot that have been deleted by the users. An
+   * individual call to this function may not expunge all such data. Implementations need to only
+   * guarantee that data is eventually deleted.
    *
    * @throws IOException if there is an error
    */

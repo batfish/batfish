@@ -1460,7 +1460,8 @@ public class FileBasedStorage implements StorageProvider {
     }
   }
 
-  private @Nonnull Set<String> listResolvableIds(Class<? extends Id> type, Id... ancestors)
+  /** Returns ids (as strings) that can ever be returned via a name-to-id mapping */
+  private @Nonnull Set<String> listResolvedIds(Class<? extends Id> type, Id... ancestors)
       throws IOException {
     return listResolvableNames(type, ancestors).stream()
         .map(
@@ -1729,7 +1730,9 @@ public class FileBasedStorage implements StorageProvider {
     return getNetworkAnalysisDir(network, analysis).resolve(RELPATH_QUESTIONS_DIR);
   }
 
-  private @Nonnull Path getAnswersDir(NetworkId networkId, SnapshotId snapshotId) {
+  @VisibleForTesting
+  @Nonnull
+  Path getAnswersDir(NetworkId networkId, SnapshotId snapshotId) {
     return getSnapshotOutputDir(networkId, snapshotId).resolve(RELPATH_ANSWERS_DIR);
   }
 
@@ -1810,7 +1813,8 @@ public class FileBasedStorage implements StorageProvider {
     return getSnapshotOutputDir(network, snapshot).resolve(RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR);
   }
 
-  private Path getNetworkBlobsDir(NetworkId networkId) {
+  @VisibleForTesting
+  Path getNetworkBlobsDir(NetworkId networkId) {
     return getNetworkDir(networkId).resolve(RELPATH_BLOBS);
   }
 
@@ -1955,13 +1959,13 @@ public class FileBasedStorage implements StorageProvider {
 
   @Override
   public void runGarbageCollection() throws IOException {
-    // Go back GC_SKEW_ALLOWANCE_MINUTES minutes to account for skew. This should safely
-    // under-approximate data to delete.
-    Instant safeExpungeBeforeDate = Instant.now().minus(GC_SKEW_ALLOWANCE);
+    // Go back GC_SKEW_ALLOWANCE, so we under-approximate data to delete. This helps minimize race
+    // conditions with in-progress or queued work.
+    Instant expungeBeforeDate = Instant.now().minus(GC_SKEW_ALLOWANCE);
 
     // Iterate over network dirs directly so we get both extant and deleted networks.
     if (exists(getNetworksDir())) {
-      Set<String> extantNetworkIds = listResolvableIds(NetworkId.class);
+      Set<String> extantNetworkIds = listResolvedIds(NetworkId.class);
       ImmutableList.Builder<Path> dirsToExpunge = ImmutableList.builder();
       try (Stream<Path> networkDirStream = list(getNetworksDir())) {
         networkDirStream
@@ -1970,10 +1974,9 @@ public class FileBasedStorage implements StorageProvider {
                 networkId -> {
                   try {
                     if (extantNetworkIds.contains(networkId.toString())) {
-                      dirsToExpunge.addAll(
-                          getSnapshotDirsToExpunge(networkId, safeExpungeBeforeDate));
+                      dirsToExpunge.addAll(getSnapshotDirsToExpunge(networkId, expungeBeforeDate));
                     } else {
-                      if (canExpungeNetwork(networkId, safeExpungeBeforeDate)) {
+                      if (canExpungeNetwork(networkId, expungeBeforeDate)) {
                         dirsToExpunge.add(getNetworkDir(networkId));
                       }
                     }
@@ -2003,33 +2006,18 @@ public class FileBasedStorage implements StorageProvider {
     }
   }
 
-  /**
-   * Returns if it is safe to delete this network's folder, based on the last modified of its
-   * subdirs and snapshots.
-   */
-  private boolean canExpungeNetwork(NetworkId networkId, Instant expungeBeforeDate)
-      throws IOException {
-    Path networkDir = getNetworkDir(networkId);
-    try (Stream<Path> subdirs = list(networkDir)) {
-      try (Stream<Path> snapshotsDirs = list(getSnapshotsDir(networkId))) {
-        return canExpunge(expungeBeforeDate, Streams.concat(subdirs, snapshotsDirs));
-      }
-    }
-  }
-
   private List<Path> getSnapshotDirsToExpunge(NetworkId networkId, Instant expungeBeforeDate)
       throws IOException {
     ImmutableList.Builder<Path> snapshotDirsToDelete = ImmutableList.builder();
-    Set<String> extantSnapshotIds = listResolvableIds(SnapshotId.class, networkId);
+    Set<String> extantSnapshotIds = listResolvedIds(SnapshotId.class, networkId);
     try (Stream<Path> snapshotsDirStream = list(getSnapshotsDir(networkId))) {
       snapshotsDirStream
           .map(snapshotDir -> new SnapshotId(snapshotDir.getFileName().toString()))
           .filter(snapshotId -> !extantSnapshotIds.contains(snapshotId.toString()))
           .forEach(
               snapshotId -> {
-                Path snapshotDir = getSnapshotDir(networkId, snapshotId);
-                if (canExpunge(expungeBeforeDate, Stream.of(snapshotDir))) {
-                  snapshotDirsToDelete.add(snapshotDir);
+                if (canExpungeSnapshot(networkId, snapshotId, expungeBeforeDate)) {
+                  snapshotDirsToDelete.add(getSnapshotDir(networkId, snapshotId));
                 }
               });
     }
@@ -2037,24 +2025,59 @@ public class FileBasedStorage implements StorageProvider {
   }
 
   /**
+   * Returns if it is safe to delete this network's folder, based on the last modified of its
+   * subdirs and snapshots.
+   */
+  @VisibleForTesting
+  boolean canExpungeNetwork(NetworkId networkId, Instant expungeBeforeDate) throws IOException {
+    try (Stream<Path> subdirs = list(getNetworkDir(networkId))) {
+      if (!canExpunge(expungeBeforeDate, Streams.concat(subdirs))) {
+        return false;
+      }
+    }
+    // the directory may not exist if no snapshots were ever initialized in the network
+    if (!Files.exists(getSnapshotsDir(networkId))) {
+      return true;
+    }
+    try (Stream<Path> snapshotsDirStream = list(getSnapshotsDir(networkId))) {
+      return snapshotsDirStream
+          .map(snapshotDir -> new SnapshotId(snapshotDir.getFileName().toString()))
+          .allMatch(snapshotId -> canExpungeSnapshot(networkId, snapshotId, expungeBeforeDate));
+    }
+  }
+
+  /**
+   * Returns if it is safe to delete this snapshot's folder, based on the last modified time of its
+   * input, output, and answers.
+   */
+  @VisibleForTesting
+  boolean canExpungeSnapshot(
+      NetworkId networkId, SnapshotId snapshotId, Instant expungeBeforeDate) {
+    return canExpunge(
+        expungeBeforeDate,
+        Stream.of(
+            getSnapshotDir(networkId, snapshotId),
+            getSnapshotInputObjectsDir(networkId, snapshotId),
+            getSnapshotOutputDir(networkId, snapshotId),
+            getAnswersDir(networkId, snapshotId)));
+  }
+
+  /**
    * Returns if all paths in {@code pathStream} have a last modified time less than the {@code
    * expungeBeforeDate}..
    */
   private boolean canExpunge(Instant expungeBeforeDate, Stream<Path> pathStream) {
-    Instant lastModifiedTime =
-        pathStream
-            .map(
-                path -> {
-                  try {
-                    return getLastModifiedTime(path);
-                  } catch (IOException e) {
-                    // If for some reason the last modified time of the entry cannot be fetched
-                    // (e.g. it was just deleted), ignore this path.
-                    return Instant.MIN;
-                  }
-                })
-            .max(Instant::compareTo)
-            .orElse(Instant.MIN);
-    return lastModifiedTime.compareTo(expungeBeforeDate) < 0;
+    return pathStream
+        .map(
+            path -> {
+              try {
+                return getLastModifiedTime(path);
+              } catch (IOException e) {
+                // If for some reason the last modified time of the entry cannot be fetched
+                // (e.g. it was just deleted), ignore this path.
+                return Instant.MIN;
+              }
+            })
+        .allMatch(lmTime -> lmTime.compareTo(expungeBeforeDate) < 0);
   }
 }

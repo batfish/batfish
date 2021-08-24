@@ -30,7 +30,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -683,22 +682,6 @@ public final class FileBasedStorageTest {
         containsInAnyOrder("snapshot1", "snapshot2"));
   }
 
-  private interface IOExceptionThrower {
-    void run() throws IOException;
-  }
-
-  private static void expectFileNotFoundException(IOExceptionThrower r) {
-    boolean thrown = false;
-    try {
-      r.run();
-    } catch (FileNotFoundException e) {
-      thrown = true;
-    } catch (IOException e) {
-      throw new UncheckedIOException(e);
-    }
-    assertTrue("Expected FileNotFoundException", thrown);
-  }
-
   /** Check that extant networks are not expunged even if their content is old */
   @Test
   public void testRunGarbageCollection_extantNetwork() throws IOException {
@@ -719,14 +702,7 @@ public final class FileBasedStorageTest {
   @Test
   public void testRunGarbageCollection_orphanedNetwork() throws IOException {
     NetworkId networkId = new NetworkId("network-id");
-    SnapshotId snapshotId = new SnapshotId("snapshot-id");
-    AnswerId answerId = new AnswerId("answer-id");
     Path networkDir = _storage.getNetworkDir(networkId);
-
-    // write a new answer object for the snapshot
-    Path answerDir = _storage.getAnswerDir(networkId, snapshotId, answerId);
-    _storage.mkdirs(answerDir);
-    _storage.writeStringToFile(answerDir.resolve("answer"), "answer", UTF_8);
 
     // write a new blob
     Path blobPath = _storage.getNetworkBlobPath(networkId, "key");
@@ -736,28 +712,55 @@ public final class FileBasedStorageTest {
     _storage.runGarbageCollection();
     assertTrue(Files.exists(networkDir));
 
+    // make the blob old
     Instant oldTime = Instant.now().minus(GC_SKEW_ALLOWANCE).minus(1, ChronoUnit.MINUTES);
-
-    // don't expunge when the blob dir is old and the snapshot is new
     Files.setLastModifiedTime(blobPath.getParent(), FileTime.from(oldTime));
-    _storage.runGarbageCollection();
-    assertTrue(Files.exists(_storage.getNetworkDir(networkId)));
 
-    // don't expunge when the snapshot dir is old and the blob is new
-    Files.setLastModifiedTime(blobPath.getParent(), FileTime.from(Instant.now()));
-    Files.setLastModifiedTime(_storage.getSnapshotsDir(networkId), FileTime.from(oldTime));
-    Files.setLastModifiedTime(
-        _storage.getSnapshotDir(networkId, snapshotId), FileTime.from(oldTime));
-    _storage.runGarbageCollection();
-    assertTrue(Files.exists(_storage.getNetworkDir(networkId)));
-
-    // expunge when everything is old
-    Files.setLastModifiedTime(blobPath.getParent(), FileTime.from(oldTime));
-    Files.setLastModifiedTime(_storage.getSnapshotsDir(networkId), FileTime.from(oldTime));
-    Files.setLastModifiedTime(
-        _storage.getSnapshotDir(networkId, snapshotId), FileTime.from(oldTime));
     _storage.runGarbageCollection();
     assertFalse(Files.exists(_storage.getNetworkDir(networkId)));
+  }
+
+  @Test
+  public void testCanExpungeNetwork() throws IOException {
+    NetworkId networkId = new NetworkId("network-id");
+    SnapshotId snapshotId = new SnapshotId("snapshot-id");
+
+    Instant expungeTime = Instant.now();
+    Instant oldTime = expungeTime.minus(1, ChronoUnit.MINUTES);
+
+    // confirm behavior for blob
+    _storage.mkdirs(_storage.getNetworkBlobsDir(networkId));
+    assertFalse(_storage.canExpungeNetwork(networkId, expungeTime));
+
+    Files.setLastModifiedTime(_storage.getNetworkBlobsDir(networkId), FileTime.from(oldTime));
+    assertTrue(_storage.canExpungeNetwork(networkId, expungeTime));
+
+    // confirm behavior for snapshots
+    _storage.mkdirs(_storage.getAnswersDir(networkId, snapshotId));
+    assertFalse(_storage.canExpungeNetwork(networkId, expungeTime));
+
+    Files.setLastModifiedTime(_storage.getSnapshotsDir(networkId), FileTime.from(oldTime));
+    setSnapshotLastModifiedTime(networkId, snapshotId, FileTime.from(oldTime));
+    assertTrue(_storage.canExpungeNetwork(networkId, expungeTime));
+  }
+
+  private void setSnapshotLastModifiedTime(
+      NetworkId networkId, SnapshotId snapshotId, FileTime time) throws IOException {
+    Stream.of(
+            _storage.getSnapshotDir(networkId, snapshotId),
+            _storage.getSnapshotInputObjectsDir(networkId, snapshotId),
+            _storage.getSnapshotOutputDir(networkId, snapshotId),
+            _storage.getAnswersDir(networkId, snapshotId))
+        .forEach(
+            dir -> {
+              if (Files.exists(dir)) {
+                try {
+                  Files.setLastModifiedTime(dir, time);
+                } catch (IOException e) {
+                  throw new RuntimeException(e.getMessage());
+                }
+              }
+            });
   }
 
   /** Check that extant snapshots are not expunged even if their content is old */
@@ -770,14 +773,13 @@ public final class FileBasedStorageTest {
     _storage.writeId(networkId, "network"); // make the network extant
     _storage.writeId(snapshotId, "snapshot", networkId); // make the snapshot extant
 
-    // write an answer and make the snapshot data old
+    // write an answer and make the snapshot old
     Path answerDir = _storage.getAnswerDir(networkId, snapshotId, answerId);
     _storage.mkdirs(answerDir);
     _storage.writeStringToFile(answerDir.resolve("answer"), "answer", UTF_8);
 
     Instant oldTime = Instant.now().minus(GC_SKEW_ALLOWANCE).minus(1, ChronoUnit.MINUTES);
-    Files.setLastModifiedTime(
-        _storage.getSnapshotOutputDir(networkId, snapshotId), FileTime.from(oldTime));
+    setSnapshotLastModifiedTime(networkId, snapshotId, FileTime.from(oldTime));
 
     _storage.runGarbageCollection();
     assertTrue(Files.exists(_storage.getSnapshotDir(networkId, snapshotId)));
@@ -793,7 +795,7 @@ public final class FileBasedStorageTest {
 
     _storage.writeId(networkId, "network"); // make the network extant
 
-    // write a new answer object for the snapshot1
+    // create a new answer object for the snapshot
     Path answerDir = _storage.getAnswerDir(networkId, snapshotId, answerId);
     _storage.mkdirs(answerDir);
     _storage.writeStringToFile(answerDir.resolve("answer"), "answer", UTF_8);
@@ -804,10 +806,46 @@ public final class FileBasedStorageTest {
 
     // should be expunged if we make things old
     Instant oldTime = Instant.now().minus(GC_SKEW_ALLOWANCE).minus(1, ChronoUnit.MINUTES);
-    Files.setLastModifiedTime(
-        _storage.getSnapshotDir(networkId, snapshotId), FileTime.from(oldTime));
+    setSnapshotLastModifiedTime(networkId, snapshotId, FileTime.from(oldTime));
     _storage.runGarbageCollection();
     assertFalse(Files.exists(snapshotDir));
+  }
+
+  @Test
+  public void testCanExpungeSnapshot() throws IOException {
+    NetworkId networkId = new NetworkId("network-id");
+    SnapshotId snapshotId = new SnapshotId("snapshot-id");
+
+    Instant expungeTime = Instant.now();
+    Instant oldTime = expungeTime.minus(1, ChronoUnit.MINUTES);
+
+    // confirm behavior for snapshot dir itself
+    _storage.mkdirs(_storage.getSnapshotDir(networkId, snapshotId));
+    assertFalse(_storage.canExpungeSnapshot(networkId, snapshotId, expungeTime));
+
+    setSnapshotLastModifiedTime(networkId, snapshotId, FileTime.from(oldTime));
+    assertTrue(_storage.canExpungeSnapshot(networkId, snapshotId, expungeTime));
+
+    // confirm behavior for input dir
+    _storage.mkdirs(_storage.getSnapshotInputObjectsDir(networkId, snapshotId));
+    assertFalse(_storage.canExpungeSnapshot(networkId, snapshotId, expungeTime));
+
+    setSnapshotLastModifiedTime(networkId, snapshotId, FileTime.from(oldTime));
+    assertTrue(_storage.canExpungeSnapshot(networkId, snapshotId, expungeTime));
+
+    // confirm behavior for output dir
+    _storage.mkdirs(_storage.getSnapshotOutputDir(networkId, snapshotId));
+    assertFalse(_storage.canExpungeSnapshot(networkId, snapshotId, expungeTime));
+
+    setSnapshotLastModifiedTime(networkId, snapshotId, FileTime.from(oldTime));
+    assertTrue(_storage.canExpungeSnapshot(networkId, snapshotId, expungeTime));
+
+    // confirm behavior for answer dir
+    _storage.mkdirs(_storage.getAnswersDir(networkId, snapshotId));
+    assertFalse(_storage.canExpungeSnapshot(networkId, snapshotId, expungeTime));
+
+    setSnapshotLastModifiedTime(networkId, snapshotId, FileTime.from(oldTime));
+    assertTrue(_storage.canExpungeSnapshot(networkId, snapshotId, expungeTime));
   }
 
   @Test
