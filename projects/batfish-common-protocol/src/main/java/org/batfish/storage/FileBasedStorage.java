@@ -2008,6 +2008,10 @@ public class FileBasedStorage implements StorageProvider {
 
   private List<Path> getSnapshotDirsToExpunge(NetworkId networkId, Instant expungeBeforeDate)
       throws IOException {
+    // the directory may not exist if snapshots were never initialized in the network
+    if (!Files.exists(getSnapshotsDir(networkId))) {
+      return ImmutableList.of();
+    }
     ImmutableList.Builder<Path> snapshotDirsToDelete = ImmutableList.builder();
     Set<String> extantSnapshotIds = listResolvedIds(SnapshotId.class, networkId);
     try (Stream<Path> snapshotsDirStream = list(getSnapshotsDir(networkId))) {
@@ -2035,7 +2039,7 @@ public class FileBasedStorage implements StorageProvider {
         return false;
       }
     }
-    // the directory may not exist if no snapshots were ever initialized in the network
+    // the directory may not exist if snapshots were never initialized in the network
     if (!Files.exists(getSnapshotsDir(networkId))) {
       return true;
     }
