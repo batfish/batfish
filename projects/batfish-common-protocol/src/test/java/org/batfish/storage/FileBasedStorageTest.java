@@ -727,24 +727,24 @@ public final class FileBasedStorageTest {
     SnapshotId snapshotId = new SnapshotId("snapshot-id");
 
     Instant expungeTime = Instant.now();
-    Instant oldTime = expungeTime.minus(1, ChronoUnit.MINUTES);
+    FileTime oldFileTime = FileTime.from(expungeTime.minus(1, ChronoUnit.MINUTES));
+    FileTime newFileTime = FileTime.from(expungeTime.plus(1, ChronoUnit.MINUTES));
 
     // confirm behavior for blob
     _storage.mkdirs(_storage.getNetworkBlobsDir(networkId));
-    Files.setLastModifiedTime(
-        _storage.getNetworkBlobsDir(networkId),
-        FileTime.from(expungeTime.plus(1, ChronoUnit.MINUTES)));
+    Files.setLastModifiedTime(_storage.getNetworkBlobsDir(networkId), newFileTime);
     assertFalse(_storage.canExpungeNetwork(networkId, expungeTime));
 
-    Files.setLastModifiedTime(_storage.getNetworkBlobsDir(networkId), FileTime.from(oldTime));
+    Files.setLastModifiedTime(_storage.getNetworkBlobsDir(networkId), oldFileTime);
     assertTrue(_storage.canExpungeNetwork(networkId, expungeTime));
 
     // confirm behavior for snapshots
     _storage.mkdirs(_storage.getAnswersDir(networkId, snapshotId));
+    Files.setLastModifiedTime(_storage.getAnswersDir(networkId, snapshotId), newFileTime);
     assertFalse(_storage.canExpungeNetwork(networkId, expungeTime));
 
-    Files.setLastModifiedTime(_storage.getSnapshotsDir(networkId), FileTime.from(oldTime));
-    setSnapshotLastModifiedTime(networkId, snapshotId, FileTime.from(oldTime));
+    Files.setLastModifiedTime(_storage.getSnapshotsDir(networkId), oldFileTime);
+    setSnapshotLastModifiedTime(networkId, snapshotId, oldFileTime);
     assertTrue(_storage.canExpungeNetwork(networkId, expungeTime));
   }
 
@@ -821,35 +821,39 @@ public final class FileBasedStorageTest {
     SnapshotId snapshotId = new SnapshotId("snapshot-id");
 
     Instant expungeTime = Instant.now();
-    Instant oldTime = expungeTime.minus(1, ChronoUnit.MINUTES);
+    FileTime oldFileTime = FileTime.from(expungeTime.minus(1, ChronoUnit.MINUTES));
+    FileTime newFileTime = FileTime.from(expungeTime.plus(1, ChronoUnit.MINUTES));
+
+    _storage.mkdirs(_storage.getSnapshotDir(networkId, snapshotId));
+    _storage.mkdirs(_storage.getSnapshotInputObjectsDir(networkId, snapshotId));
+    _storage.mkdirs(_storage.getSnapshotOutputDir(networkId, snapshotId));
+    _storage.mkdirs(_storage.getAnswersDir(networkId, snapshotId));
+
+    // when everything is old
+    setSnapshotLastModifiedTime(networkId, snapshotId, oldFileTime);
+    assertTrue(_storage.canExpungeSnapshot(networkId, snapshotId, expungeTime));
 
     // confirm behavior for snapshot dir itself
-    _storage.mkdirs(_storage.getSnapshotDir(networkId, snapshotId));
+    Files.setLastModifiedTime(_storage.getSnapshotDir(networkId, snapshotId), newFileTime);
     assertFalse(_storage.canExpungeSnapshot(networkId, snapshotId, expungeTime));
-
-    setSnapshotLastModifiedTime(networkId, snapshotId, FileTime.from(oldTime));
-    assertTrue(_storage.canExpungeSnapshot(networkId, snapshotId, expungeTime));
+    Files.setLastModifiedTime(_storage.getSnapshotDir(networkId, snapshotId), oldFileTime);
 
     // confirm behavior for input dir
-    _storage.mkdirs(_storage.getSnapshotInputObjectsDir(networkId, snapshotId));
+    Files.setLastModifiedTime(
+        _storage.getSnapshotInputObjectsDir(networkId, snapshotId), newFileTime);
     assertFalse(_storage.canExpungeSnapshot(networkId, snapshotId, expungeTime));
-
-    setSnapshotLastModifiedTime(networkId, snapshotId, FileTime.from(oldTime));
-    assertTrue(_storage.canExpungeSnapshot(networkId, snapshotId, expungeTime));
+    Files.setLastModifiedTime(
+        _storage.getSnapshotInputObjectsDir(networkId, snapshotId), oldFileTime);
 
     // confirm behavior for output dir
-    _storage.mkdirs(_storage.getSnapshotOutputDir(networkId, snapshotId));
+    Files.setLastModifiedTime(_storage.getSnapshotOutputDir(networkId, snapshotId), newFileTime);
     assertFalse(_storage.canExpungeSnapshot(networkId, snapshotId, expungeTime));
-
-    setSnapshotLastModifiedTime(networkId, snapshotId, FileTime.from(oldTime));
-    assertTrue(_storage.canExpungeSnapshot(networkId, snapshotId, expungeTime));
+    Files.setLastModifiedTime(_storage.getSnapshotOutputDir(networkId, snapshotId), oldFileTime);
 
     // confirm behavior for answer dir
-    _storage.mkdirs(_storage.getAnswersDir(networkId, snapshotId));
+    Files.setLastModifiedTime(_storage.getAnswersDir(networkId, snapshotId), newFileTime);
     assertFalse(_storage.canExpungeSnapshot(networkId, snapshotId, expungeTime));
-
-    setSnapshotLastModifiedTime(networkId, snapshotId, FileTime.from(oldTime));
-    assertTrue(_storage.canExpungeSnapshot(networkId, snapshotId, expungeTime));
+    Files.setLastModifiedTime(_storage.getAnswersDir(networkId, snapshotId), oldFileTime);
   }
 
   @Test
