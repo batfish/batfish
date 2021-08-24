@@ -41,6 +41,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
@@ -685,7 +686,7 @@ public final class FileBasedStorageTest {
   /** Check that extant networks are not expunged even if their content is old */
   @Test
   public void testRunGarbageCollection_extantNetwork() throws IOException {
-    NetworkId networkId = new NetworkId("network-id");
+    NetworkId networkId = new NetworkId(UUID.randomUUID().toString());
     _storage.writeId(networkId, "network"); // make the network extant
 
     // write an "old" blob
@@ -701,7 +702,7 @@ public final class FileBasedStorageTest {
   /** Check that orphaned networks are expunged under the right conditions */
   @Test
   public void testRunGarbageCollection_orphanedNetwork() throws IOException {
-    NetworkId networkId = new NetworkId("network-id");
+    NetworkId networkId = new NetworkId(UUID.randomUUID().toString());
     Path networkDir = _storage.getNetworkDir(networkId);
 
     // write a new blob
@@ -722,7 +723,7 @@ public final class FileBasedStorageTest {
 
   @Test
   public void testCanExpungeNetwork() throws IOException {
-    NetworkId networkId = new NetworkId("network-id");
+    NetworkId networkId = new NetworkId(UUID.randomUUID().toString());
     SnapshotId snapshotId = new SnapshotId("snapshot-id");
 
     Instant expungeTime = Instant.now();
@@ -745,7 +746,7 @@ public final class FileBasedStorageTest {
   }
 
   private void setSnapshotLastModifiedTime(
-      NetworkId networkId, SnapshotId snapshotId, FileTime time) throws IOException {
+      NetworkId networkId, SnapshotId snapshotId, FileTime time) {
     Stream.of(
             _storage.getSnapshotDir(networkId, snapshotId),
             _storage.getSnapshotInputObjectsDir(networkId, snapshotId),
@@ -766,7 +767,7 @@ public final class FileBasedStorageTest {
   /** Check that extant snapshots are not expunged even if their content is old */
   @Test
   public void testRunGarbageCollection_extantSnapshot() throws IOException {
-    NetworkId networkId = new NetworkId("network-id");
+    NetworkId networkId = new NetworkId(UUID.randomUUID().toString());
     SnapshotId snapshotId = new SnapshotId("snapshot-id");
     AnswerId answerId = new AnswerId("answer-id");
 
@@ -788,7 +789,7 @@ public final class FileBasedStorageTest {
   /** Check that orphaned snapshots are expunged under the right conditions */
   @Test
   public void testRunGarbageCollection_orphanedSnapshots() throws IOException {
-    NetworkId networkId = new NetworkId("network-id");
+    NetworkId networkId = new NetworkId(UUID.randomUUID().toString());
     SnapshotId snapshotId = new SnapshotId("snapshot-id");
     AnswerId answerId = new AnswerId("answer-id");
     Path snapshotDir = _storage.getSnapshotDir(networkId, snapshotId);
@@ -813,7 +814,7 @@ public final class FileBasedStorageTest {
 
   @Test
   public void testCanExpungeSnapshot() throws IOException {
-    NetworkId networkId = new NetworkId("network-id");
+    NetworkId networkId = new NetworkId(UUID.randomUUID().toString());
     SnapshotId snapshotId = new SnapshotId("snapshot-id");
 
     Instant expungeTime = Instant.now();
