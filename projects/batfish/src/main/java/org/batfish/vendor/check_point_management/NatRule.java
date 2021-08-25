@@ -27,7 +27,7 @@ public final class NatRule extends ManagementObject implements NatRuleOrSection 
     return _enabled;
   }
 
-  public @Nonnull NatInstallTarget getInstallOn() {
+  public @Nonnull RuleInstallTarget getInstallOn() {
     return _installOn;
   }
 
@@ -67,7 +67,7 @@ public final class NatRule extends ManagementObject implements NatRuleOrSection 
   NatRule(
       String comments,
       boolean enabled,
-      NatInstallTarget installOn,
+      RuleInstallTarget installOn,
       NatMethod method,
       Uid originalDestination,
       Uid originalService,
@@ -132,7 +132,7 @@ public final class NatRule extends ManagementObject implements NatRuleOrSection 
         uid);
   }
 
-  private static @Nonnull NatInstallTarget deserializeInstallOn(JsonNode installOn) {
+  private static @Nonnull RuleInstallTarget deserializeInstallOn(JsonNode installOn) {
     if (installOn instanceof TextNode) {
       String text = installOn.textValue();
       checkArgument(
@@ -145,7 +145,7 @@ public final class NatRule extends ManagementObject implements NatRuleOrSection 
           ImmutableList.copyOf(
               BatfishObjectMapper.ignoreUnknownMapper()
                   .convertValue(installOn, new TypeReference<List<Uid>>() {}));
-      return new ListNatInstallTarget(targets);
+      return new ListObjectsUidInstallTarget(targets);
     } else {
       throw new IllegalArgumentException(
           String.format(
@@ -209,7 +209,7 @@ public final class NatRule extends ManagementObject implements NatRuleOrSection 
 
   private final @Nonnull String _comments;
   private final boolean _enabled;
-  private final @Nonnull NatInstallTarget _installOn;
+  private final @Nonnull RuleInstallTarget _installOn;
   private final @Nonnull NatMethod _method;
   private final @Nonnull Uid _originalDestination;
   private final @Nonnull Uid _originalService;

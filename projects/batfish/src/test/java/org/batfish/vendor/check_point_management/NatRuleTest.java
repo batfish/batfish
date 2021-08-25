@@ -75,7 +75,7 @@ public final class NatRuleTest {
               new NatRule(
                   "foo",
                   true,
-                  new ListNatInstallTarget(ImmutableList.of(Uid.of("100"))),
+                  new ListObjectsUidInstallTarget(ImmutableList.of(Uid.of("100"))),
                   NatMethod.HIDE,
                   Uid.of("1"),
                   Uid.of("2"),
@@ -171,7 +171,7 @@ public final class NatRuleTest {
             new NatRule(
                 "foo",
                 true,
-                new ListNatInstallTarget(ImmutableList.of()),
+                new ListObjectsUidInstallTarget(ImmutableList.of()),
                 NatMethod.HIDE,
                 Uid.of("1"),
                 Uid.of("2"),

@@ -7,21 +7,21 @@ import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Test;
 
-/** Test of {@link ListNatInstallTarget}. */
-public final class ListNatInstallTargetTest {
+/** Test of {@link ListObjectsUidInstallTarget}. */
+public final class ListObjectsUidInstallTargetTest {
 
   @Test
   public void testJavaSerialization() {
-    ListNatInstallTarget obj = new ListNatInstallTarget(ImmutableList.of());
+    ListObjectsUidInstallTarget obj = new ListObjectsUidInstallTarget(ImmutableList.of());
     assertEquals(obj, SerializationUtils.clone(obj));
   }
 
   @Test
   public void testEquals() {
-    ListNatInstallTarget obj = new ListNatInstallTarget(ImmutableList.of());
+    ListObjectsUidInstallTarget obj = new ListObjectsUidInstallTarget(ImmutableList.of());
     new EqualsTester()
-        .addEqualityGroup(obj, new ListNatInstallTarget(ImmutableList.of()))
-        .addEqualityGroup(new ListNatInstallTarget(ImmutableList.of(Uid.of("1"))))
+        .addEqualityGroup(obj, new ListObjectsUidInstallTarget(ImmutableList.of()))
+        .addEqualityGroup(new ListObjectsUidInstallTarget(ImmutableList.of(Uid.of("1"))))
         .testEquals();
   }
 }

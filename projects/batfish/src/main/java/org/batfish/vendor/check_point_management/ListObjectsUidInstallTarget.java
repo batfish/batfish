@@ -5,10 +5,13 @@ import static com.google.common.base.MoreObjects.toStringHelper;
 import java.util.List;
 import javax.annotation.Nonnull;
 
-/** Indicates that {@link NatRule} should be applied to listed targets. */
-public class ListNatInstallTarget implements NatInstallTarget {
+/**
+ * Indicates that the associated configuration should be applied to listed targets, defined by their
+ * {@code objects-dictionary} {@code uid}s.
+ */
+public class ListObjectsUidInstallTarget implements RuleInstallTarget {
 
-  ListNatInstallTarget(List<Uid> targets) {
+  ListObjectsUidInstallTarget(List<Uid> targets) {
     _targets = targets;
   }
 
@@ -22,10 +25,10 @@ public class ListNatInstallTarget implements NatInstallTarget {
   public boolean equals(Object o) {
     if (this == o) {
       return true;
-    } else if (!(o instanceof ListNatInstallTarget)) {
+    } else if (!(o instanceof ListObjectsUidInstallTarget)) {
       return false;
     }
-    ListNatInstallTarget that = (ListNatInstallTarget) o;
+    ListObjectsUidInstallTarget that = (ListObjectsUidInstallTarget) o;
     return _targets.equals(that._targets);
   }
 

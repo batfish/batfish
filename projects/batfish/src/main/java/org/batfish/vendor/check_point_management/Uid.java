@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import javax.annotation.Nonnull;
 
-public final class Uid implements NatInstallTarget {
+public final class Uid implements RuleInstallTarget {
 
   @JsonCreator
   public static @Nonnull Uid of(String value) {
