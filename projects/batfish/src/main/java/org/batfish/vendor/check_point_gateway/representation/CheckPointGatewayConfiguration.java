@@ -125,7 +125,6 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
                 _c.getIpSpaces().put(natObj.getName(), toIpSpace((Network) natObj));
               }
             });
-    ;
   }
 
   /**
