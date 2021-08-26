@@ -22,27 +22,41 @@ public final class CpmiVsNetobjTest {
             + "\"type\":\"CpmiVsNetobj\","
             + "\"uid\":\"0\","
             + "\"name\":\"foo\","
-            + "\"ipv4-address\":\"0.0.0.0\""
+            + "\"ipv4-address\":\"0.0.0.0\","
+            + "\"policy\":{"
+            + "\"accessPolicyInstalled\": true,"
+            + "\"accessPolicyName\": \"p1\","
+            + "\"threatPolicyInstalled\": true,"
+            + "\"threatPolicyName\": \"p2\""
+            + "}" // policy
             + "}";
     assertThat(
         BatfishObjectMapper.ignoreUnknownMapper().readValue(input, CpmiVsNetobj.class),
-        equalTo(new CpmiVsNetobj(Ip.ZERO, "foo", Uid.of("0"))));
+        equalTo(
+            new CpmiVsNetobj(Ip.ZERO, "foo", new GatewayOrServerPolicy("p1", "p2"), Uid.of("0"))));
   }
 
   @Test
   public void testJavaSerialization() {
-    CpmiVsNetobj obj = new CpmiVsNetobj(Ip.ZERO, "foo", Uid.of("0"));
+    CpmiVsNetobj obj = new CpmiVsNetobj(Ip.ZERO, "foo", GatewayOrServerPolicy.empty(), Uid.of("0"));
     assertEquals(obj, SerializationUtils.clone(obj));
   }
 
   @Test
   public void testEquals() {
-    CpmiVsNetobj obj = new CpmiVsNetobj(Ip.ZERO, "foo", Uid.of("0"));
+    CpmiVsNetobj obj = new CpmiVsNetobj(Ip.ZERO, "foo", GatewayOrServerPolicy.empty(), Uid.of("0"));
     new EqualsTester()
-        .addEqualityGroup(obj, new CpmiVsNetobj(Ip.ZERO, "foo", Uid.of("0")))
-        .addEqualityGroup(new CpmiVsNetobj(Ip.parse("0.0.0.1"), "foo", Uid.of("0")))
-        .addEqualityGroup(new CpmiVsNetobj(Ip.ZERO, "bar", Uid.of("0")))
-        .addEqualityGroup(new CpmiVsNetobj(Ip.ZERO, "foo", Uid.of("1")))
+        .addEqualityGroup(
+            obj, new CpmiVsNetobj(Ip.ZERO, "foo", GatewayOrServerPolicy.empty(), Uid.of("0")))
+        .addEqualityGroup(
+            new CpmiVsNetobj(
+                Ip.parse("0.0.0.1"), "foo", GatewayOrServerPolicy.empty(), Uid.of("0")))
+        .addEqualityGroup(
+            new CpmiVsNetobj(Ip.ZERO, "bar", GatewayOrServerPolicy.empty(), Uid.of("0")))
+        .addEqualityGroup(
+            new CpmiVsNetobj(Ip.ZERO, "foo", new GatewayOrServerPolicy("t1", null), Uid.of("0")))
+        .addEqualityGroup(
+            new CpmiVsNetobj(Ip.ZERO, "foo", GatewayOrServerPolicy.empty(), Uid.of("1")))
         .testEquals();
   }
 }

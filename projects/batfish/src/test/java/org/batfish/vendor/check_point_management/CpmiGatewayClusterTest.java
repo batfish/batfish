@@ -24,33 +24,66 @@ public final class CpmiGatewayClusterTest {
             + "\"uid\":\"0\","
             + "\"name\":\"foo\","
             + "\"ipv4-address\":\"0.0.0.0\","
-            + "\"cluster-member-names\":[\"m1\"]"
+            + "\"cluster-member-names\":[\"m1\"],"
+            + "\"policy\":{"
+            + "\"accessPolicyInstalled\": true,"
+            + "\"accessPolicyName\": \"p1\","
+            + "\"threatPolicyInstalled\": true,"
+            + "\"threatPolicyName\": \"p2\""
+            + "}" // policy
             + "}";
     assertThat(
         BatfishObjectMapper.ignoreUnknownMapper().readValue(input, CpmiGatewayCluster.class),
-        equalTo(new CpmiGatewayCluster(ImmutableList.of("m1"), Ip.ZERO, "foo", Uid.of("0"))));
+        equalTo(
+            new CpmiGatewayCluster(
+                ImmutableList.of("m1"),
+                Ip.ZERO,
+                "foo",
+                new GatewayOrServerPolicy("p1", "p2"),
+                Uid.of("0"))));
   }
 
   @Test
   public void testJavaSerialization() {
     CpmiGatewayCluster obj =
-        new CpmiGatewayCluster(ImmutableList.of(), Ip.ZERO, "foo", Uid.of("0"));
+        new CpmiGatewayCluster(
+            ImmutableList.of(), Ip.ZERO, "foo", GatewayOrServerPolicy.empty(), Uid.of("0"));
     assertEquals(obj, SerializationUtils.clone(obj));
   }
 
   @Test
   public void testEquals() {
     CpmiGatewayCluster obj =
-        new CpmiGatewayCluster(ImmutableList.of(), Ip.ZERO, "foo", Uid.of("0"));
+        new CpmiGatewayCluster(
+            ImmutableList.of(), Ip.ZERO, "foo", GatewayOrServerPolicy.empty(), Uid.of("0"));
     new EqualsTester()
         .addEqualityGroup(
-            obj, new CpmiGatewayCluster(ImmutableList.of(), Ip.ZERO, "foo", Uid.of("0")))
+            obj,
+            new CpmiGatewayCluster(
+                ImmutableList.of(), Ip.ZERO, "foo", GatewayOrServerPolicy.empty(), Uid.of("0")))
         .addEqualityGroup(
-            new CpmiGatewayCluster(ImmutableList.of("m1"), Ip.ZERO, "foo", Uid.of("0")))
+            new CpmiGatewayCluster(
+                ImmutableList.of("m1"), Ip.ZERO, "foo", GatewayOrServerPolicy.empty(), Uid.of("0")))
         .addEqualityGroup(
-            new CpmiGatewayCluster(ImmutableList.of(), Ip.parse("0.0.0.1"), "foo", Uid.of("0")))
-        .addEqualityGroup(new CpmiGatewayCluster(ImmutableList.of(), Ip.ZERO, "bar", Uid.of("0")))
-        .addEqualityGroup(new CpmiGatewayCluster(ImmutableList.of(), Ip.ZERO, "foo", Uid.of("1")))
+            new CpmiGatewayCluster(
+                ImmutableList.of(),
+                Ip.parse("0.0.0.1"),
+                "foo",
+                GatewayOrServerPolicy.empty(),
+                Uid.of("0")))
+        .addEqualityGroup(
+            new CpmiGatewayCluster(
+                ImmutableList.of(), Ip.ZERO, "bar", GatewayOrServerPolicy.empty(), Uid.of("0")))
+        .addEqualityGroup(
+            new CpmiGatewayCluster(
+                ImmutableList.of(),
+                Ip.ZERO,
+                "foo",
+                new GatewayOrServerPolicy("p1", null),
+                Uid.of("0")))
+        .addEqualityGroup(
+            new CpmiGatewayCluster(
+                ImmutableList.of(), Ip.ZERO, "foo", GatewayOrServerPolicy.empty(), Uid.of("1")))
         .testEquals();
   }
 }
