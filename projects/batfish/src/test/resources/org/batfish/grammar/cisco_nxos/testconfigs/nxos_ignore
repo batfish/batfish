@@ -32,3 +32,4 @@ service dhcp
 username xxxxxxx password 5 xxxxxxx role network-admin
 username xxxxxxx password 5 xxxxxxx role network-operator
 username xxxxxxxx role network-operator                                                                                                                                                                            
+xml server validate all
