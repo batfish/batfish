@@ -2554,6 +2554,8 @@ XCONNECT: 'xconnect';
 
 XDMCP: 'xdmcp';
 
+XML: 'xml';
+
 // Other Tokens
 
 ASTERISK
