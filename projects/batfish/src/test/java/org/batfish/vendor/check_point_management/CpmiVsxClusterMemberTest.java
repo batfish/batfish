@@ -34,42 +34,34 @@ public final class CpmiVsxClusterMemberTest {
         BatfishObjectMapper.ignoreUnknownMapper().readValue(input, CpmiVsxClusterMember.class),
         equalTo(
             new CpmiVsxClusterMember(
-                Ip.ZERO, "foo", new GatewayOrServerPolicy(true, "p1", true, "p2"), Uid.of("0"))));
+                Ip.ZERO, "foo", new GatewayOrServerPolicy("p1", "p2"), Uid.of("0"))));
   }
 
   @Test
   public void testJavaSerialization() {
     CpmiVsxClusterMember obj =
-        new CpmiVsxClusterMember(
-            Ip.ZERO, "foo", new GatewayOrServerPolicy(false, null, false, null), Uid.of("0"));
+        new CpmiVsxClusterMember(Ip.ZERO, "foo", GatewayOrServerPolicy.empty(), Uid.of("0"));
     assertEquals(obj, SerializationUtils.clone(obj));
   }
 
   @Test
   public void testEquals() {
     CpmiVsxClusterMember obj =
-        new CpmiVsxClusterMember(
-            Ip.ZERO, "foo", new GatewayOrServerPolicy(false, null, false, null), Uid.of("0"));
+        new CpmiVsxClusterMember(Ip.ZERO, "foo", GatewayOrServerPolicy.empty(), Uid.of("0"));
     new EqualsTester()
         .addEqualityGroup(
             obj,
-            new CpmiVsxClusterMember(
-                Ip.ZERO, "foo", new GatewayOrServerPolicy(false, null, false, null), Uid.of("0")))
+            new CpmiVsxClusterMember(Ip.ZERO, "foo", GatewayOrServerPolicy.empty(), Uid.of("0")))
         .addEqualityGroup(
             new CpmiVsxClusterMember(
-                Ip.parse("0.0.0.1"),
-                "foo",
-                new GatewayOrServerPolicy(false, null, false, null),
-                Uid.of("0")))
+                Ip.parse("0.0.0.1"), "foo", GatewayOrServerPolicy.empty(), Uid.of("0")))
+        .addEqualityGroup(
+            new CpmiVsxClusterMember(Ip.ZERO, "bar", GatewayOrServerPolicy.empty(), Uid.of("0")))
         .addEqualityGroup(
             new CpmiVsxClusterMember(
-                Ip.ZERO, "bar", new GatewayOrServerPolicy(false, null, false, null), Uid.of("0")))
+                Ip.ZERO, "foo", new GatewayOrServerPolicy("t1", null), Uid.of("0")))
         .addEqualityGroup(
-            new CpmiVsxClusterMember(
-                Ip.ZERO, "foo", new GatewayOrServerPolicy(true, null, false, null), Uid.of("0")))
-        .addEqualityGroup(
-            new CpmiVsxClusterMember(
-                Ip.ZERO, "foo", new GatewayOrServerPolicy(false, null, false, null), Uid.of("1")))
+            new CpmiVsxClusterMember(Ip.ZERO, "foo", GatewayOrServerPolicy.empty(), Uid.of("1")))
         .testEquals();
   }
 }

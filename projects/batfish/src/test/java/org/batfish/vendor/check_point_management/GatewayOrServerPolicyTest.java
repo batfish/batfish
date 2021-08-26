@@ -26,31 +26,29 @@ public final class GatewayOrServerPolicyTest {
               + "}";
       assertThat(
           BatfishObjectMapper.ignoreUnknownMapper().readValue(input, GatewayOrServerPolicy.class),
-          equalTo(new GatewayOrServerPolicy(true, "p1", true, "p2")));
+          equalTo(new GatewayOrServerPolicy("p1", "p2")));
     }
     {
       String input = "{}";
       assertThat(
           BatfishObjectMapper.ignoreUnknownMapper().readValue(input, GatewayOrServerPolicy.class),
-          equalTo(new GatewayOrServerPolicy(false, null, false, null)));
+          equalTo(GatewayOrServerPolicy.empty()));
     }
   }
 
   @Test
   public void testJavaSerialization() {
-    GatewayOrServerPolicy obj = new GatewayOrServerPolicy(false, "p1", false, "p2");
+    GatewayOrServerPolicy obj = new GatewayOrServerPolicy("p1", "p2");
     assertEquals(obj, SerializationUtils.clone(obj));
   }
 
   @Test
   public void testEquals() {
-    GatewayOrServerPolicy obj = new GatewayOrServerPolicy(false, null, false, null);
+    GatewayOrServerPolicy obj = GatewayOrServerPolicy.empty();
     new EqualsTester()
-        .addEqualityGroup(obj, new GatewayOrServerPolicy(false, null, false, null))
-        .addEqualityGroup(new GatewayOrServerPolicy(true, null, false, null))
-        .addEqualityGroup(new GatewayOrServerPolicy(false, "p1", false, null))
-        .addEqualityGroup(new GatewayOrServerPolicy(false, null, true, null))
-        .addEqualityGroup(new GatewayOrServerPolicy(false, null, false, "p2"))
+        .addEqualityGroup(obj, new GatewayOrServerPolicy(null, null))
+        .addEqualityGroup(new GatewayOrServerPolicy("p1", null))
+        .addEqualityGroup(new GatewayOrServerPolicy(null, "p2"))
         .testEquals();
   }
 }

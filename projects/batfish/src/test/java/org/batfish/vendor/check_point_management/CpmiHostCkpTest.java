@@ -32,37 +32,24 @@ public final class CpmiHostCkpTest {
 
   @Test
   public void testJavaSerialization() {
-    CpmiHostCkp obj =
-        new CpmiHostCkp(
-            Ip.ZERO, "foo", new GatewayOrServerPolicy(false, null, false, null), Uid.of("0"));
+    CpmiHostCkp obj = new CpmiHostCkp(Ip.ZERO, "foo", GatewayOrServerPolicy.empty(), Uid.of("0"));
     assertEquals(obj, SerializationUtils.clone(obj));
   }
 
   @Test
   public void testEquals() {
-    CpmiHostCkp obj =
-        new CpmiHostCkp(
-            Ip.ZERO, "foo", new GatewayOrServerPolicy(false, null, false, null), Uid.of("0"));
+    CpmiHostCkp obj = new CpmiHostCkp(Ip.ZERO, "foo", GatewayOrServerPolicy.empty(), Uid.of("0"));
     new EqualsTester()
         .addEqualityGroup(
-            obj,
-            new CpmiHostCkp(
-                Ip.ZERO, "foo", new GatewayOrServerPolicy(false, null, false, null), Uid.of("0")))
+            obj, new CpmiHostCkp(Ip.ZERO, "foo", GatewayOrServerPolicy.empty(), Uid.of("0")))
         .addEqualityGroup(
-            new CpmiHostCkp(
-                Ip.parse("0.0.0.1"),
-                "foo",
-                new GatewayOrServerPolicy(false, null, false, null),
-                Uid.of("0")))
+            new CpmiHostCkp(Ip.parse("0.0.0.1"), "foo", GatewayOrServerPolicy.empty(), Uid.of("0")))
         .addEqualityGroup(
-            new CpmiHostCkp(
-                Ip.ZERO, "bar", new GatewayOrServerPolicy(false, null, false, null), Uid.of("0")))
+            new CpmiHostCkp(Ip.ZERO, "bar", GatewayOrServerPolicy.empty(), Uid.of("0")))
         .addEqualityGroup(
-            new CpmiHostCkp(
-                Ip.ZERO, "foo", new GatewayOrServerPolicy(true, null, false, null), Uid.of("0")))
+            new CpmiHostCkp(Ip.ZERO, "foo", new GatewayOrServerPolicy("t1", null), Uid.of("0")))
         .addEqualityGroup(
-            new CpmiHostCkp(
-                Ip.ZERO, "foo", new GatewayOrServerPolicy(false, null, false, null), Uid.of("1")))
+            new CpmiHostCkp(Ip.ZERO, "foo", GatewayOrServerPolicy.empty(), Uid.of("1")))
         .testEquals();
   }
 }

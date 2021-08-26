@@ -1,6 +1,5 @@
 package org.batfish.vendor.check_point_management;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.MoreObjects.toStringHelper;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -21,18 +20,11 @@ public final class GatewayOrServerPolicy implements Serializable {
     return EMPTY;
   }
 
-  private static final GatewayOrServerPolicy EMPTY =
-      new GatewayOrServerPolicy(false, null, false, null);
+  private static final GatewayOrServerPolicy EMPTY = new GatewayOrServerPolicy(null, null);
 
   @VisibleForTesting
-  GatewayOrServerPolicy(
-      boolean accessPolicyInstalled,
-      @Nullable String accessPolicyName,
-      boolean threatPolicyInstalled,
-      @Nullable String threatPolicyName) {
-    _accessPolicyInstalled = accessPolicyInstalled;
+  GatewayOrServerPolicy(@Nullable String accessPolicyName, @Nullable String threatPolicyName) {
     _accessPolicyName = accessPolicyName;
-    _threatPolicyInstalled = threatPolicyInstalled;
     _threatPolicyName = threatPolicyName;
   }
 
@@ -43,32 +35,20 @@ public final class GatewayOrServerPolicy implements Serializable {
       @JsonProperty(PROP_THREAT_POLICY_INSTALLED) @Nullable Boolean threatPolicyInstalled,
       @JsonProperty(PROP_THREAT_POLICY_NAME) @Nullable String threatPolicyName) {
     return new GatewayOrServerPolicy(
-        firstNonNull(accessPolicyInstalled, Boolean.FALSE),
-        accessPolicyName,
-        firstNonNull(threatPolicyInstalled, Boolean.FALSE),
-        threatPolicyName);
-  }
-
-  /** Whether to install access and NAT rules on this device. */
-  public boolean isAccessPolicyInstalled() {
-    return _accessPolicyInstalled;
+        Boolean.TRUE.equals(accessPolicyInstalled) ? accessPolicyName : null,
+        Boolean.TRUE.equals(threatPolicyInstalled) ? threatPolicyName : null);
   }
 
   /**
-   * The source package for access and NAT rules for this device, if {@link
-   * #isAccessPolicyInstalled()} is {@code true}.
+   * The source package for access and NAT rules for this device, if {@code access-policy-installed}
+   * is {@code true}.
    */
   @Nullable
   public String getAccessPolicyName() {
     return _accessPolicyName;
   }
 
-  /** Whether to install threat policy on this device. {@code null} if inapplicable. */
-  public boolean isThreatPolicyInstalled() {
-    return _threatPolicyInstalled;
-  }
-
-  /** The name of the installed package, if {@link #isThreatPolicyInstalled()} is {@code true}. */
+  /** The name of the installed package, if {@code threat-policy-installed} is {@code true}. */
   @Nullable
   public String getThreatPolicyName() {
     return _threatPolicyName;
@@ -82,25 +62,20 @@ public final class GatewayOrServerPolicy implements Serializable {
       return false;
     }
     GatewayOrServerPolicy that = (GatewayOrServerPolicy) o;
-    return _accessPolicyInstalled == that._accessPolicyInstalled
-        && Objects.equals(_accessPolicyName, that._accessPolicyName)
-        && _threatPolicyInstalled == that._threatPolicyInstalled
+    return Objects.equals(_accessPolicyName, that._accessPolicyName)
         && Objects.equals(_threatPolicyName, that._threatPolicyName);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(
-        _accessPolicyInstalled, _accessPolicyName, _threatPolicyInstalled, _threatPolicyName);
+    return Objects.hash(_accessPolicyName, _threatPolicyName);
   }
 
   @Override
   public @Nonnull String toString() {
     return toStringHelper(this)
         .omitNullValues()
-        .add(PROP_ACCESS_POLICY_INSTALLED, _accessPolicyInstalled)
         .add(PROP_ACCESS_POLICY_NAME, _accessPolicyName)
-        .add(PROP_THREAT_POLICY_INSTALLED, _threatPolicyInstalled)
         .add(PROP_THREAT_POLICY_NAME, _threatPolicyName)
         .toString();
   }
@@ -110,8 +85,6 @@ public final class GatewayOrServerPolicy implements Serializable {
   private static final String PROP_THREAT_POLICY_INSTALLED = "threatPolicyInstalled";
   private static final String PROP_THREAT_POLICY_NAME = "threatPolicyName";
 
-  private final @Nonnull boolean _accessPolicyInstalled;
   private final @Nullable String _accessPolicyName;
-  private final @Nonnull boolean _threatPolicyInstalled;
   private final @Nullable String _threatPolicyName;
 }
