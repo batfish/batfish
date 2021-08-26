@@ -1,6 +1,7 @@
 package org.batfish.vendor.check_point_gateway.representation;
 
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
+import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toIpSpace;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -8,6 +9,7 @@ import com.google.common.collect.ImmutableSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -29,8 +31,13 @@ import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
+import org.batfish.vendor.ConversionContext;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.vendor.check_point_gateway.representation.BondingGroup.Mode;
+import org.batfish.vendor.check_point_management.AddressRange;
+import org.batfish.vendor.check_point_management.CheckpointManagementConfiguration;
+import org.batfish.vendor.check_point_management.ManagementPackage;
+import org.batfish.vendor.check_point_management.Network;
 
 public class CheckPointGatewayConfiguration extends VendorConfiguration {
 
@@ -90,7 +97,38 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
             _staticRoutes.values().stream()
                 .flatMap(staticRoute -> convertStaticRoute(staticRoute, _interfaces))
                 .collect(ImmutableSet.toImmutableSet()));
+
+    Optional<CheckpointManagementConfiguration> mgmtConfig =
+        Optional.ofNullable(getConversionContext())
+            .map(ConversionContext::getCheckpointManagementConfiguration)
+            .map(cmc -> (CheckpointManagementConfiguration) cmc);
+    mgmtConfig.ifPresent(this::convertManagementConfig);
+
     return ImmutableList.of(_c);
+  }
+
+  /** Converts management server settings applicable to this configuration */
+  private void convertManagementConfig(CheckpointManagementConfiguration mgmtConfig) {
+    // TODO: Only convert packages that apply to this gateway
+    // Convert IP spaces
+    mgmtConfig.getServers().values().stream()
+        .flatMap(server -> server.getDomains().values().stream())
+        .flatMap(domain -> domain.getPackages().values().stream())
+        .map(ManagementPackage::getNatRulebase)
+        .filter(Objects::nonNull)
+        .flatMap(natRulebase -> natRulebase.getObjectsDictionary().values().stream())
+        .forEach(
+            natObj -> {
+              // TODO Add IpSpaceMetadata, or store IpSpaces by names instead of UIDs if we confirm
+              //  names are unique
+              if (natObj instanceof AddressRange) {
+                Optional.ofNullable(toIpSpace((AddressRange) natObj))
+                    .ifPresent(
+                        ipSpace -> _c.getIpSpaces().put(natObj.getUid().getValue(), ipSpace));
+              } else if (natObj instanceof Network) {
+                _c.getIpSpaces().put(natObj.getUid().getValue(), toIpSpace((Network) natObj));
+              }
+            });
   }
 
   /**
