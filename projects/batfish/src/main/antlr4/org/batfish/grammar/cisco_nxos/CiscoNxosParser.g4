@@ -86,6 +86,7 @@ statement
   | s_vdc
   | s_vlan
   | s_vrf_context
+  | s_xml
 ;
 
 s_banner
@@ -559,3 +560,5 @@ s_version
 // arbitray string, not actual command
   VERSION version = REMARK_TEXT NEWLINE
 ;
+
+s_xml: XML SERVER VALIDATE ALL NEWLINE;
