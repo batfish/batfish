@@ -27,7 +27,7 @@ public final class Network extends AddressSpace {
   }
 
   @VisibleForTesting
-  Network(String name, Ip subnet4, Ip subnetMask, Uid uid) {
+  public Network(String name, Ip subnet4, Ip subnetMask, Uid uid) {
     super(name, uid);
     _subnet4 = subnet4;
     _subnetMask = subnetMask;

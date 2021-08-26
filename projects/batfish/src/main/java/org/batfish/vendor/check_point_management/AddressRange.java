@@ -44,7 +44,7 @@ public final class AddressRange extends AddressSpace {
   }
 
   @VisibleForTesting
-  AddressRange(
+  public AddressRange(
       @Nullable Ip ipv4AddressFirst,
       @Nullable Ip ipv4AddressLast,
       @Nullable Ip6 ipv6AddressFirst,
