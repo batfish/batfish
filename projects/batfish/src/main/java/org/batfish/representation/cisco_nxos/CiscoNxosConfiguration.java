@@ -38,8 +38,10 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedMap.Builder;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 import com.google.common.collect.Range;
 import com.google.common.collect.Streams;
 import java.util.Collection;
@@ -724,13 +726,20 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
     // Now we add all the per-network export policies.
     if (ipv4af != null) {
-      ipv4af
-          .getNetworks()
+      Multimap<Optional<String>, Prefix> networksByRouteMap =
+          ipv4af.getNetworks().stream()
+              .collect(
+                  Multimaps.toMultimap(
+                      n -> Optional.ofNullable(n.getRouteMap()),
+                      BgpVrfIpv4AddressFamilyConfiguration.Network::getNetwork,
+                      LinkedListMultimap::create));
+      networksByRouteMap
+          .asMap()
           .forEach(
-              network -> {
-                PrefixSpace exportSpace =
-                    new PrefixSpace(PrefixRange.fromPrefix(network.getNetwork()));
-                @Nullable String routeMap = network.getRouteMap();
+              (maybeMap, prefixes) -> {
+                PrefixSpace exportSpace = new PrefixSpace();
+                prefixes.forEach(exportSpace::addPrefix);
+                @Nullable String routeMap = maybeMap.orElse(null);
                 List<BooleanExpr> exportNetworkConditions =
                     ImmutableList.of(
                         new MatchPrefixSet(
