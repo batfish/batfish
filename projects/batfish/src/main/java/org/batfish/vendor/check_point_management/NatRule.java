@@ -4,17 +4,11 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.common.util.BatfishObjectMapper;
 
 /** A single nat-rule in a {@link NatRulebase}. */
 public final class NatRule extends ManagementObject implements NatRuleOrSection {
@@ -27,7 +21,7 @@ public final class NatRule extends ManagementObject implements NatRuleOrSection 
     return _enabled;
   }
 
-  public @Nonnull NatInstallTarget getInstallOn() {
+  public @Nonnull List<Uid> getInstallOn() {
     return _installOn;
   }
 
@@ -67,7 +61,7 @@ public final class NatRule extends ManagementObject implements NatRuleOrSection 
   NatRule(
       String comments,
       boolean enabled,
-      NatInstallTarget installOn,
+      List<Uid> installOn,
       NatMethod method,
       Uid originalDestination,
       Uid originalService,
@@ -95,7 +89,7 @@ public final class NatRule extends ManagementObject implements NatRuleOrSection 
   private static @Nonnull NatRule create(
       @JsonProperty(PROP_COMMENTS) @Nullable String comments,
       @JsonProperty(PROP_ENABLED) @Nullable Boolean enabled,
-      @JsonProperty(PROP_INSTALL_ON) @Nullable JsonNode installOn,
+      @JsonProperty(PROP_INSTALL_ON) @Nullable List<Uid> installOn,
       @JsonProperty(PROP_METHOD) @Nullable NatMethod method,
       @JsonProperty(PROP_ORIGINAL_DESTINATION) @Nullable Uid originalDestination,
       @JsonProperty(PROP_ORIGINAL_SERVICE) @Nullable Uid originalService,
@@ -120,7 +114,7 @@ public final class NatRule extends ManagementObject implements NatRuleOrSection 
     return new NatRule(
         comments,
         enabled,
-        deserializeInstallOn(installOn),
+        installOn,
         method,
         originalDestination,
         originalService,
@@ -130,28 +124,6 @@ public final class NatRule extends ManagementObject implements NatRuleOrSection 
         translatedService,
         translatedSource,
         uid);
-  }
-
-  private static @Nonnull NatInstallTarget deserializeInstallOn(JsonNode installOn) {
-    if (installOn instanceof TextNode) {
-      String text = installOn.textValue();
-      checkArgument(
-          text.equals("All"),
-          "Unsupported text value for installation-targets (expected \"All\"): %s",
-          text);
-      return AllNatInstallTarget.instance();
-    } else if (installOn instanceof ArrayNode) {
-      List<Uid> targets =
-          ImmutableList.copyOf(
-              BatfishObjectMapper.ignoreUnknownMapper()
-                  .convertValue(installOn, new TypeReference<List<Uid>>() {}));
-      return new ListNatInstallTarget(targets);
-    } else {
-      throw new IllegalArgumentException(
-          String.format(
-              "Unsupporeted JSON node type for value of %s field: %s",
-              PROP_INSTALL_ON, installOn.getClass()));
-    }
   }
 
   @Override
@@ -209,7 +181,7 @@ public final class NatRule extends ManagementObject implements NatRuleOrSection 
 
   private final @Nonnull String _comments;
   private final boolean _enabled;
-  private final @Nonnull NatInstallTarget _installOn;
+  private final @Nonnull List<Uid> _installOn;
   private final @Nonnull NatMethod _method;
   private final @Nonnull Uid _originalDestination;
   private final @Nonnull Uid _originalService;
