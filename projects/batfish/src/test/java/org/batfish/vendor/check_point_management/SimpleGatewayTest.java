@@ -22,27 +22,43 @@ public final class SimpleGatewayTest {
             + "\"type\":\"simple-gateway\","
             + "\"uid\":\"0\","
             + "\"name\":\"foo\","
-            + "\"ipv4-address\":\"0.0.0.0\""
+            + "\"ipv4-address\":\"0.0.0.0\","
+            + "\"policy\":{"
+            + "\"accessPolicyInstalled\": true,"
+            + "\"accessPolicyName\": \"p1\","
+            + "\"threatPolicyInstalled\": true,"
+            + "\"threatPolicyName\": \"p2\""
+            + "}" // policy
             + "}";
     assertThat(
         BatfishObjectMapper.ignoreUnknownMapper().readValue(input, SimpleGateway.class),
-        equalTo(new SimpleGateway(Ip.ZERO, "foo", Uid.of("0"))));
+        equalTo(
+            new SimpleGateway(Ip.ZERO, "foo", new GatewayOrServerPolicy("p1", "p2"), Uid.of("0"))));
   }
 
   @Test
   public void testJavaSerialization() {
-    SimpleGateway obj = new SimpleGateway(Ip.ZERO, "foo", Uid.of("0"));
+    SimpleGateway obj =
+        new SimpleGateway(Ip.ZERO, "foo", GatewayOrServerPolicy.empty(), Uid.of("0"));
     assertEquals(obj, SerializationUtils.clone(obj));
   }
 
   @Test
   public void testEquals() {
-    SimpleGateway obj = new SimpleGateway(Ip.ZERO, "foo", Uid.of("0"));
+    SimpleGateway obj =
+        new SimpleGateway(Ip.ZERO, "foo", GatewayOrServerPolicy.empty(), Uid.of("0"));
     new EqualsTester()
-        .addEqualityGroup(obj, new SimpleGateway(Ip.ZERO, "foo", Uid.of("0")))
-        .addEqualityGroup(new SimpleGateway(Ip.parse("0.0.0.1"), "foo", Uid.of("0")))
-        .addEqualityGroup(new SimpleGateway(Ip.ZERO, "bar", Uid.of("0")))
-        .addEqualityGroup(new SimpleGateway(Ip.ZERO, "foo", Uid.of("1")))
+        .addEqualityGroup(
+            obj, new SimpleGateway(Ip.ZERO, "foo", GatewayOrServerPolicy.empty(), Uid.of("0")))
+        .addEqualityGroup(
+            new SimpleGateway(
+                Ip.parse("0.0.0.1"), "foo", GatewayOrServerPolicy.empty(), Uid.of("0")))
+        .addEqualityGroup(
+            new SimpleGateway(Ip.ZERO, "bar", GatewayOrServerPolicy.empty(), Uid.of("0")))
+        .addEqualityGroup(
+            new SimpleGateway(Ip.ZERO, "foo", new GatewayOrServerPolicy("t1", null), Uid.of("0")))
+        .addEqualityGroup(
+            new SimpleGateway(Ip.ZERO, "foo", GatewayOrServerPolicy.empty(), Uid.of("1")))
         .testEquals();
   }
 }

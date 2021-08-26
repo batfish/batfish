@@ -25,58 +25,67 @@ public final class GatewaysAndServersTest {
             + "\"type\":\"CpmiClusterMember\","
             + "\"uid\":\"0\","
             + "\"name\":\"foo\","
-            + "\"ipv4-address\":\"0.0.0.0\""
+            + "\"ipv4-address\":\"0.0.0.0\","
+            + "\"policy\": {}"
             + "}," // object: CpmiClusterMember
             + "{" // object: CpmiGatewayCluster
             + "\"type\":\"CpmiGatewayCluster\","
             + "\"uid\":\"1\","
             + "\"name\":\"foo\","
             + "\"ipv4-address\":\"0.0.0.0\","
-            + "\"cluster-member-names\":[\"m1\"]"
+            + "\"cluster-member-names\":[\"m1\"],"
+            + "\"policy\": {}"
             + "}," // object: CpmiGatewayCluster
             + "{" // object: CpmiHostCkp
             + "\"type\":\"CpmiHostCkp\","
             + "\"uid\":\"2\","
             + "\"name\":\"foo\","
-            + "\"ipv4-address\":\"0.0.0.0\""
+            + "\"ipv4-address\":\"0.0.0.0\","
+            + "\"policy\": {}"
             + "}," // object: CpmiHostCkp
             + "{" // object: CpmiVsClusterNetobj
             + "\"type\":\"CpmiVsClusterNetobj\","
             + "\"uid\":\"3\","
             + "\"name\":\"foo\","
             + "\"ipv4-address\":\"0.0.0.0\","
-            + "\"cluster-member-names\":[\"m1\"]"
+            + "\"cluster-member-names\":[\"m1\"],"
+            + "\"policy\": {}"
             + "}," // object: CpmiVsClusterNetobj
             + "{" // object: CpmiVsNetobj
             + "\"type\":\"CpmiVsNetobj\","
             + "\"uid\":\"4\","
             + "\"name\":\"foo\","
-            + "\"ipv4-address\":\"0.0.0.0\""
+            + "\"ipv4-address\":\"0.0.0.0\","
+            + "\"policy\": {}"
             + "}," // object: CpmiVsNetobj
             + "{" // object: CpmiVsxClusterMember
             + "\"type\":\"CpmiVsxClusterMember\","
             + "\"uid\":\"5\","
             + "\"name\":\"foo\","
-            + "\"ipv4-address\":\"0.0.0.0\""
+            + "\"ipv4-address\":\"0.0.0.0\","
+            + "\"policy\": {}"
             + "}," // object: CpmiVsxClusterMember
             + "{" // object: CpmiVsxClusterNetobj
             + "\"type\":\"CpmiVsxClusterNetobj\","
             + "\"uid\":\"6\","
             + "\"name\":\"foo\","
             + "\"ipv4-address\":\"0.0.0.0\","
-            + "\"cluster-member-names\":[\"m1\"]"
+            + "\"cluster-member-names\":[\"m1\"],"
+            + "\"policy\": {}"
             + "}," // object: CpmiVsxClusterNetobj
             + "{" // object: CpmiVsxNetobj
             + "\"type\":\"CpmiVsxNetobj\","
             + "\"uid\":\"7\","
             + "\"name\":\"foo\","
-            + "\"ipv4-address\":\"0.0.0.0\""
+            + "\"ipv4-address\":\"0.0.0.0\","
+            + "\"policy\": {}"
             + "}," // object: CpmiVsxNetobj
             + "{" // object: simple-gateway
             + "\"type\":\"simple-gateway\","
             + "\"uid\":\"8\","
             + "\"name\":\"foo\","
-            + "\"ipv4-address\":\"0.0.0.0\""
+            + "\"ipv4-address\":\"0.0.0.0\","
+            + "\"policy\": {}"
             + "}" // object: simple-gateway
             + "]" // objects
             + "}"; // GatewaysAndServers
@@ -85,23 +94,53 @@ public final class GatewaysAndServersTest {
         equalTo(
             new GatewaysAndServers(
                 ImmutableMap.<Uid, GatewayOrServer>builder()
-                    .put(Uid.of("0"), new CpmiClusterMember(Ip.ZERO, "foo", Uid.of("0")))
+                    .put(
+                        Uid.of("0"),
+                        new CpmiClusterMember(
+                            Ip.ZERO, "foo", GatewayOrServerPolicy.empty(), Uid.of("0")))
                     .put(
                         Uid.of("1"),
-                        new CpmiGatewayCluster(ImmutableList.of("m1"), Ip.ZERO, "foo", Uid.of("1")))
-                    .put(Uid.of("2"), new CpmiHostCkp(Ip.ZERO, "foo", Uid.of("2")))
+                        new CpmiGatewayCluster(
+                            ImmutableList.of("m1"),
+                            Ip.ZERO,
+                            "foo",
+                            GatewayOrServerPolicy.empty(),
+                            Uid.of("1")))
+                    .put(
+                        Uid.of("2"),
+                        new CpmiHostCkp(Ip.ZERO, "foo", GatewayOrServerPolicy.empty(), Uid.of("2")))
                     .put(
                         Uid.of("3"),
                         new CpmiVsClusterNetobj(
-                            ImmutableList.of("m1"), Ip.ZERO, "foo", Uid.of("3")))
-                    .put(Uid.of("4"), new CpmiVsNetobj(Ip.ZERO, "foo", Uid.of("4")))
-                    .put(Uid.of("5"), new CpmiVsxClusterMember(Ip.ZERO, "foo", Uid.of("5")))
+                            ImmutableList.of("m1"),
+                            Ip.ZERO,
+                            "foo",
+                            GatewayOrServerPolicy.empty(),
+                            Uid.of("3")))
+                    .put(
+                        Uid.of("4"),
+                        new CpmiVsNetobj(
+                            Ip.ZERO, "foo", GatewayOrServerPolicy.empty(), Uid.of("4")))
+                    .put(
+                        Uid.of("5"),
+                        new CpmiVsxClusterMember(
+                            Ip.ZERO, "foo", GatewayOrServerPolicy.empty(), Uid.of("5")))
                     .put(
                         Uid.of("6"),
                         new CpmiVsxClusterNetobj(
-                            ImmutableList.of("m1"), Ip.ZERO, "foo", Uid.of("6")))
-                    .put(Uid.of("7"), new CpmiVsxNetobj(Ip.ZERO, "foo", Uid.of("7")))
-                    .put(Uid.of("8"), new SimpleGateway(Ip.ZERO, "foo", Uid.of("8")))
+                            ImmutableList.of("m1"),
+                            Ip.ZERO,
+                            "foo",
+                            GatewayOrServerPolicy.empty(),
+                            Uid.of("6")))
+                    .put(
+                        Uid.of("7"),
+                        new CpmiVsxNetobj(
+                            Ip.ZERO, "foo", GatewayOrServerPolicy.empty(), Uid.of("7")))
+                    .put(
+                        Uid.of("8"),
+                        new SimpleGateway(
+                            Ip.ZERO, "foo", GatewayOrServerPolicy.empty(), Uid.of("8")))
                     .build())));
   }
 
@@ -109,7 +148,9 @@ public final class GatewaysAndServersTest {
   public void testJavaSerialization() {
     GatewaysAndServers obj =
         new GatewaysAndServers(
-            ImmutableMap.of(Uid.of("0"), new SimpleGateway(Ip.ZERO, "foo", Uid.of("0"))));
+            ImmutableMap.of(
+                Uid.of("0"),
+                new SimpleGateway(Ip.ZERO, "foo", GatewayOrServerPolicy.empty(), Uid.of("0"))));
     assertEquals(obj, SerializationUtils.clone(obj));
   }
 
@@ -120,7 +161,9 @@ public final class GatewaysAndServersTest {
         .addEqualityGroup(obj, new GatewaysAndServers(ImmutableMap.of()))
         .addEqualityGroup(
             new GatewaysAndServers(
-                ImmutableMap.of(Uid.of("0"), new SimpleGateway(Ip.ZERO, "foo", Uid.of("0")))))
+                ImmutableMap.of(
+                    Uid.of("0"),
+                    new SimpleGateway(Ip.ZERO, "foo", GatewayOrServerPolicy.empty(), Uid.of("0")))))
         .testEquals();
   }
 }

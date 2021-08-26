@@ -11,13 +11,15 @@ import org.batfish.datamodel.Ip;
  */
 public abstract class GatewayOrServer extends TypedManagementObject {
 
-  protected GatewayOrServer(Ip ipv4Address, String name, Uid uid) {
+  protected GatewayOrServer(Ip ipv4Address, String name, GatewayOrServerPolicy policy, Uid uid) {
     super(name, uid);
     _ipv4Address = ipv4Address;
+    _policy = policy;
   }
 
-  public @Nonnull Ip getIpv4Address() {
-    return _ipv4Address;
+  @Nonnull
+  public GatewayOrServerPolicy getPolicy() {
+    return _policy;
   }
 
   @Override
@@ -26,20 +28,24 @@ public abstract class GatewayOrServer extends TypedManagementObject {
       return false;
     }
     GatewayOrServer that = (GatewayOrServer) o;
-    return _ipv4Address.equals(that._ipv4Address);
+    return _ipv4Address.equals(that._ipv4Address) && _policy.equals(that._policy);
   }
 
   @Override
   protected int baseHashcode() {
-    return Objects.hash(super.baseHashcode(), _ipv4Address);
+    return Objects.hash(super.baseHashcode(), _ipv4Address, _policy);
   }
 
   @Override
   protected @Nonnull ToStringHelper baseToStringHelper() {
-    return super.baseToStringHelper().add(PROP_IPV4_ADDRESS, _ipv4Address);
+    return super.baseToStringHelper()
+        .add(PROP_IPV4_ADDRESS, _ipv4Address)
+        .add(PROP_POLICY, _policy);
   }
 
   protected static final String PROP_IPV4_ADDRESS = "ipv4-address";
+  protected static final String PROP_POLICY = "policy";
 
   private final @Nonnull Ip _ipv4Address;
+  private final @Nonnull GatewayOrServerPolicy _policy;
 }
