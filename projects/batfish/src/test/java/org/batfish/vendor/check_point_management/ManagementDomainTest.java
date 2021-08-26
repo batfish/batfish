@@ -33,7 +33,9 @@ public final class ManagementDomainTest {
         .addEqualityGroup(
             new ManagementDomain(
                 new Domain("a", Uid.of("1")),
-                ImmutableMap.of(Uid.of("1"), new SimpleGateway(Ip.ZERO, "b", Uid.of("2"))),
+                ImmutableMap.of(
+                    Uid.of("1"),
+                    new SimpleGateway(Ip.ZERO, "b", GatewayOrServerPolicy.empty(), Uid.of("2"))),
                 ImmutableMap.of()))
         .addEqualityGroup(
             new ManagementDomain(

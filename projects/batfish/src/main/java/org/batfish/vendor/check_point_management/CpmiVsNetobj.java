@@ -16,16 +16,18 @@ public final class CpmiVsNetobj extends GatewayOrServer {
   private static @Nonnull CpmiVsNetobj create(
       @JsonProperty(PROP_IPV4_ADDRESS) @Nullable Ip ipv4Address,
       @JsonProperty(PROP_NAME) @Nullable String name,
+      @JsonProperty(PROP_POLICY) @Nullable GatewayOrServerPolicy policy,
       @JsonProperty(PROP_UID) @Nullable Uid uid) {
     checkArgument(ipv4Address != null, "Missing %s", PROP_IPV4_ADDRESS);
     checkArgument(name != null, "Missing %s", PROP_NAME);
+    checkArgument(policy != null, "Missing %s", PROP_POLICY);
     checkArgument(uid != null, "Missing %s", PROP_UID);
-    return new CpmiVsNetobj(ipv4Address, name, uid);
+    return new CpmiVsNetobj(ipv4Address, name, policy, uid);
   }
 
   @VisibleForTesting
-  CpmiVsNetobj(Ip ipv4Address, String name, Uid uid) {
-    super(ipv4Address, name, uid);
+  CpmiVsNetobj(Ip ipv4Address, String name, GatewayOrServerPolicy policy, Uid uid) {
+    super(ipv4Address, name, policy, uid);
   }
 
   @Override

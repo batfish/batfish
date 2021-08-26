@@ -14,8 +14,13 @@ public abstract class Cluster extends GatewayOrServer {
     return _clusterMemberNames;
   }
 
-  protected Cluster(List<String> clusterMemberNames, Ip ipv4Address, String name, Uid uid) {
-    super(ipv4Address, name, uid);
+  protected Cluster(
+      List<String> clusterMemberNames,
+      Ip ipv4Address,
+      String name,
+      GatewayOrServerPolicy policy,
+      Uid uid) {
+    super(ipv4Address, name, policy, uid);
     _clusterMemberNames = clusterMemberNames;
   }
 
