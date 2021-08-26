@@ -28,7 +28,7 @@ public final class NatSectionTest {
             + "\"uid\":\"1\","
             + "\"comments\":\"a\","
             + "\"enabled\":true,"
-            + "\"install-on\":\"All\","
+            + "\"install-on\": [\"100\"],"
             + "\"method\":\"hide\","
             + "\"original-destination\":\"0\","
             + "\"original-service\":\"0\","
@@ -49,7 +49,7 @@ public final class NatSectionTest {
                     new NatRule(
                         "a",
                         true,
-                        AllNatInstallTarget.instance(),
+                        ImmutableList.of(Uid.of("100")),
                         NatMethod.HIDE,
                         Uid.of("0"),
                         Uid.of("0"),
@@ -81,7 +81,7 @@ public final class NatSectionTest {
                     new NatRule(
                         "a",
                         true,
-                        AllNatInstallTarget.instance(),
+                        ImmutableList.of(Uid.of("100")),
                         NatMethod.HIDE,
                         Uid.of("0"),
                         Uid.of("0"),

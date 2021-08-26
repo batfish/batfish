@@ -24,41 +24,6 @@ public final class NatRuleTest {
               + "\"uid\":\"0\","
               + "\"comments\":\"foo\","
               + "\"enabled\":true,"
-              + "\"install-on\":\"All\","
-              + "\"method\":\"hide\","
-              + "\"original-destination\":\"1\","
-              + "\"original-service\":\"2\","
-              + "\"original-source\":\"3\","
-              + "\"rule-number\":1,"
-              + "\"translated-destination\":\"4\","
-              + "\"translated-service\":\"5\","
-              + "\"translated-source\":\"6\""
-              + "}";
-      assertThat(
-          BatfishObjectMapper.ignoreUnknownMapper().readValue(input, NatRule.class),
-          equalTo(
-              new NatRule(
-                  "foo",
-                  true,
-                  AllNatInstallTarget.instance(),
-                  NatMethod.HIDE,
-                  Uid.of("1"),
-                  Uid.of("2"),
-                  Uid.of("3"),
-                  1,
-                  Uid.of("4"),
-                  Uid.of("5"),
-                  Uid.of("6"),
-                  Uid.of("0"))));
-    }
-    {
-      String input =
-          "{"
-              + "\"GARBAGE\":0,"
-              + "\"type\":\"nat-rule\","
-              + "\"uid\":\"0\","
-              + "\"comments\":\"foo\","
-              + "\"enabled\":true,"
               + "\"install-on\":[\"100\"],"
               + "\"method\":\"hide\","
               + "\"original-destination\":\"1\","
@@ -75,7 +40,7 @@ public final class NatRuleTest {
               new NatRule(
                   "foo",
                   true,
-                  new ListNatInstallTarget(ImmutableList.of(Uid.of("100"))),
+                  ImmutableList.of(Uid.of("100")),
                   NatMethod.HIDE,
                   Uid.of("1"),
                   Uid.of("2"),
@@ -94,7 +59,7 @@ public final class NatRuleTest {
         new NatRule(
             "foo",
             true,
-            AllNatInstallTarget.instance(),
+            ImmutableList.of(Uid.of("100")),
             NatMethod.HIDE,
             Uid.of("1"),
             Uid.of("2"),
@@ -113,7 +78,7 @@ public final class NatRuleTest {
         new NatRule(
             "foo",
             true,
-            AllNatInstallTarget.instance(),
+            ImmutableList.of(),
             NatMethod.HIDE,
             Uid.of("1"),
             Uid.of("2"),
@@ -129,7 +94,7 @@ public final class NatRuleTest {
             new NatRule(
                 "foo",
                 true,
-                AllNatInstallTarget.instance(),
+                ImmutableList.of(),
                 NatMethod.HIDE,
                 Uid.of("1"),
                 Uid.of("2"),
@@ -143,7 +108,7 @@ public final class NatRuleTest {
             new NatRule(
                 "bar",
                 true,
-                AllNatInstallTarget.instance(),
+                ImmutableList.of(),
                 NatMethod.HIDE,
                 Uid.of("1"),
                 Uid.of("2"),
@@ -157,7 +122,7 @@ public final class NatRuleTest {
             new NatRule(
                 "foo",
                 false,
-                AllNatInstallTarget.instance(),
+                ImmutableList.of(),
                 NatMethod.HIDE,
                 Uid.of("1"),
                 Uid.of("2"),
@@ -171,21 +136,7 @@ public final class NatRuleTest {
             new NatRule(
                 "foo",
                 true,
-                new ListNatInstallTarget(ImmutableList.of()),
-                NatMethod.HIDE,
-                Uid.of("1"),
-                Uid.of("2"),
-                Uid.of("3"),
-                1,
-                Uid.of("4"),
-                Uid.of("5"),
-                Uid.of("6"),
-                Uid.of("0")))
-        .addEqualityGroup(
-            new NatRule(
-                "foo",
-                true,
-                AllNatInstallTarget.instance(),
+                ImmutableList.of(),
                 NatMethod.STATIC,
                 Uid.of("1"),
                 Uid.of("2"),
@@ -199,7 +150,7 @@ public final class NatRuleTest {
             new NatRule(
                 "foo",
                 true,
-                AllNatInstallTarget.instance(),
+                ImmutableList.of(),
                 NatMethod.HIDE,
                 Uid.of("11"),
                 Uid.of("2"),
@@ -213,7 +164,7 @@ public final class NatRuleTest {
             new NatRule(
                 "foo",
                 true,
-                AllNatInstallTarget.instance(),
+                ImmutableList.of(),
                 NatMethod.HIDE,
                 Uid.of("1"),
                 Uid.of("12"),
@@ -227,7 +178,7 @@ public final class NatRuleTest {
             new NatRule(
                 "foo",
                 true,
-                AllNatInstallTarget.instance(),
+                ImmutableList.of(),
                 NatMethod.HIDE,
                 Uid.of("1"),
                 Uid.of("2"),
@@ -241,7 +192,7 @@ public final class NatRuleTest {
             new NatRule(
                 "foo",
                 true,
-                AllNatInstallTarget.instance(),
+                ImmutableList.of(),
                 NatMethod.HIDE,
                 Uid.of("1"),
                 Uid.of("2"),
@@ -255,7 +206,7 @@ public final class NatRuleTest {
             new NatRule(
                 "foo",
                 true,
-                AllNatInstallTarget.instance(),
+                ImmutableList.of(),
                 NatMethod.HIDE,
                 Uid.of("1"),
                 Uid.of("2"),
@@ -269,7 +220,7 @@ public final class NatRuleTest {
             new NatRule(
                 "foo",
                 true,
-                AllNatInstallTarget.instance(),
+                ImmutableList.of(),
                 NatMethod.HIDE,
                 Uid.of("1"),
                 Uid.of("2"),
@@ -283,7 +234,7 @@ public final class NatRuleTest {
             new NatRule(
                 "foo",
                 true,
-                AllNatInstallTarget.instance(),
+                ImmutableList.of(),
                 NatMethod.HIDE,
                 Uid.of("1"),
                 Uid.of("2"),
@@ -297,7 +248,7 @@ public final class NatRuleTest {
             new NatRule(
                 "foo",
                 true,
-                AllNatInstallTarget.instance(),
+                ImmutableList.of(),
                 NatMethod.HIDE,
                 Uid.of("1"),
                 Uid.of("2"),
@@ -307,6 +258,20 @@ public final class NatRuleTest {
                 Uid.of("5"),
                 Uid.of("6"),
                 Uid.of("10")))
+        .addEqualityGroup(
+            new NatRule(
+                "foo",
+                true,
+                ImmutableList.of(Uid.of("10")),
+                NatMethod.HIDE,
+                Uid.of("1"),
+                Uid.of("2"),
+                Uid.of("3"),
+                1,
+                Uid.of("4"),
+                Uid.of("5"),
+                Uid.of("6"),
+                Uid.of("0")))
         .testEquals();
   }
 }

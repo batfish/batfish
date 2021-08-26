@@ -4,9 +4,10 @@ import static com.google.common.base.MoreObjects.toStringHelper;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import java.io.Serializable;
 import javax.annotation.Nonnull;
 
-public final class Uid implements NatInstallTarget {
+public final class Uid implements Serializable {
 
   @JsonCreator
   public static @Nonnull Uid of(String value) {
