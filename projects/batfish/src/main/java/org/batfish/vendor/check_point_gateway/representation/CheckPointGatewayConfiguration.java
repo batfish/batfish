@@ -107,6 +107,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     return ImmutableList.of(_c);
   }
 
+  /** Converts management server settings applicable to this configuration */
   private void convertManagementConfig(CheckpointManagementConfiguration mgmtConfig) {
     // TODO: Only convert packages that apply to this gateway
     // Convert IP spaces
@@ -118,11 +119,14 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
         .flatMap(natRulebase -> natRulebase.getObjectsDictionary().values().stream())
         .forEach(
             natObj -> {
+              // TODO Add IpSpaceMetadata, or store IpSpaces by names instead of UIDs if we confirm
+              //  names are unique
               if (natObj instanceof AddressRange) {
                 Optional.ofNullable(toIpSpace((AddressRange) natObj))
-                    .ifPresent(ipSpace -> _c.getIpSpaces().put(natObj.getName(), ipSpace));
+                    .ifPresent(
+                        ipSpace -> _c.getIpSpaces().put(natObj.getUid().getValue(), ipSpace));
               } else if (natObj instanceof Network) {
-                _c.getIpSpaces().put(natObj.getName(), toIpSpace((Network) natObj));
+                _c.getIpSpaces().put(natObj.getUid().getValue(), toIpSpace((Network) natObj));
               }
             });
   }
