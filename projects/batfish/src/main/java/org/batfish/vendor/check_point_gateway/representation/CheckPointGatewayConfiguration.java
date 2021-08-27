@@ -39,7 +39,6 @@ import org.batfish.vendor.check_point_gateway.representation.BondingGroup.Mode;
 import org.batfish.vendor.check_point_management.AddressRange;
 import org.batfish.vendor.check_point_management.CheckpointManagementConfiguration;
 import org.batfish.vendor.check_point_management.GatewayOrServer;
-import org.batfish.vendor.check_point_management.GatewayOrServerPolicy;
 import org.batfish.vendor.check_point_management.ManagementDomain;
 import org.batfish.vendor.check_point_management.ManagementPackage;
 import org.batfish.vendor.check_point_management.ManagementServer;
@@ -120,22 +119,19 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     Optional<Map.Entry<ManagementDomain, GatewayOrServer>> maybeGatewayAndDomain =
         findGatewayAndDomain(mgmtConfig);
     if (!maybeGatewayAndDomain.isPresent()) {
-      // TODO: warn
       return;
     }
     ManagementDomain domain = maybeGatewayAndDomain.get().getKey();
     GatewayOrServer gateway = maybeGatewayAndDomain.get().getValue();
     // Find package
-    Optional<ManagementPackage> maybePackage = findAccessPackage(domain, gateway.getPolicy());
+    Optional<ManagementPackage> maybePackage = findAccessPackage(domain, gateway);
     if (!maybePackage.isPresent()) {
-      // TODO: maybe warn
       return;
     }
     ManagementPackage pakij = maybePackage.get();
     // Convert IP spaces
     @Nullable NatRulebase natRulebase = pakij.getNatRulebase();
     if (natRulebase == null) {
-      // TODO: warn
       return;
     }
     natRulebase
@@ -156,15 +152,23 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
   }
 
   private @Nonnull Optional<ManagementPackage> findAccessPackage(
-      ManagementDomain domain, GatewayOrServerPolicy policy) {
-    String accessPackageName = policy.getAccessPolicyName();
+      ManagementDomain domain, GatewayOrServer gateway) {
+    String accessPackageName = gateway.getPolicy().getAccessPolicyName();
     if (accessPackageName == null) {
       return Optional.empty();
     }
     // TODO: can be more efficient if we also store map: packageName -> package in ManagementDomain
-    return domain.getPackages().values().stream()
-        .filter(p -> p.getPackage().getName().equals(accessPackageName))
-        .findFirst();
+    Optional<ManagementPackage> maybePackage =
+        domain.getPackages().values().stream()
+            .filter(p -> p.getPackage().getName().equals(accessPackageName))
+            .findFirst();
+    if (!maybePackage.isPresent()) {
+      _w.redFlag(
+          String.format(
+              "Gateway or server '%s' access-policy-name refers to non-existent package '%s'",
+              gateway.getName(), accessPackageName));
+    }
+    return maybePackage;
   }
 
   private @Nonnull Optional<Map.Entry<ManagementDomain, GatewayOrServer>> findGatewayAndDomain(
