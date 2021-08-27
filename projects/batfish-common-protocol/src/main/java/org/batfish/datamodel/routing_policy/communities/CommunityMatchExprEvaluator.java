@@ -1,9 +1,8 @@
 package org.batfish.datamodel.routing_policy.communities;
 
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import javax.annotation.Nonnull;
 import org.batfish.common.util.PatternProvider;
 import org.batfish.datamodel.LineAction;
@@ -101,7 +100,9 @@ public final class CommunityMatchExprEvaluator
   @Override
   public @Nonnull Boolean visitCommunityMatchRegex(
       CommunityMatchRegex communityMatchRegex, Community arg) {
-    return REGEX_MATCH_CACHE.getUnchecked(new RegexCacheKey(communityMatchRegex, arg));
+    Boolean matches = REGEX_MATCH_CACHE.get(new RegexCacheKey(communityMatchRegex, arg));
+    assert matches != null; // evaluator can't return null
+    return matches;
   }
 
   @Override
@@ -217,17 +218,16 @@ public final class CommunityMatchExprEvaluator
   private final @Nonnull CommunityContext _ctx;
   ////////////////////////////////
   private static final LoadingCache<RegexCacheKey, Boolean> REGEX_MATCH_CACHE =
-      CacheBuilder.newBuilder()
+      Caffeine.newBuilder()
           .maximumSize(1 << 20) // 1M instances that are each using maybe 40 bytes
           .build(
-              CacheLoader.from(
-                  k ->
-                      PatternProvider.fromString(k._regex.getRegex())
-                          .matcher(
-                              k._regex
-                                  .getCommunityRendering()
-                                  .accept(CommunityToRegexInputString.instance(), k._community))
-                          .find()));
+              k ->
+                  PatternProvider.fromString(k._regex.getRegex())
+                      .matcher(
+                          k._regex
+                              .getCommunityRendering()
+                              .accept(CommunityToRegexInputString.instance(), k._community))
+                      .find());
 
   @VisibleForTesting
   static final class RegexCacheKey {
