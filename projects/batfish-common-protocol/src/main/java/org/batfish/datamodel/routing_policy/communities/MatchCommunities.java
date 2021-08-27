@@ -19,7 +19,6 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExprVisitor;
 /** A {@link BooleanExpr} representing a condition on the communities of a route. */
 public final class MatchCommunities extends BooleanExpr {
   private static final class CacheKey {
-    private final String _hostname;
     private final MatchCommunities _expr;
     private final CommunitySet _inputCommunitySet;
 
@@ -30,14 +29,12 @@ public final class MatchCommunities extends BooleanExpr {
     private @Nonnull Map<String, CommunitySet> _communitySets;
 
     private CacheKey(
-        String hostname,
         MatchCommunities expr,
         CommunitySet inputCommunitySet,
         Map<String, CommunityMatchExpr> communityMatchExprs,
         Map<String, CommunitySetExpr> communitySetExprs,
         Map<String, CommunitySetMatchExpr> communitySetMatchExprs,
         Map<String, CommunitySet> communitySets) {
-      _hostname = hostname;
       _expr = expr;
       _inputCommunitySet = inputCommunitySet;
       _communityMatchExprs = communityMatchExprs;
@@ -73,15 +70,12 @@ public final class MatchCommunities extends BooleanExpr {
         return false;
       }
       CacheKey other = (CacheKey) o;
-      return _hostname.equals(other._hostname)
-          && _expr == other._expr
-          && _inputCommunitySet.equals(other._inputCommunitySet);
+      return _expr == other._expr && _inputCommunitySet.equals(other._inputCommunitySet);
     }
 
     @Override
     public int hashCode() {
-      return 31 * (31 * _hostname.hashCode() + System.identityHashCode(_expr))
-          + _inputCommunitySet.hashCode();
+      return 31 * System.identityHashCode(_expr) + _inputCommunitySet.hashCode();
     }
   }
 
@@ -107,7 +101,6 @@ public final class MatchCommunities extends BooleanExpr {
     CommunityContext ctx = CommunityContext.fromEnvironment(environment);
     CacheKey key =
         new CacheKey(
-            environment.getHostname(),
             this,
             ctx.getInputCommunitySet(),
             ctx.getCommunityMatchExprs(),
