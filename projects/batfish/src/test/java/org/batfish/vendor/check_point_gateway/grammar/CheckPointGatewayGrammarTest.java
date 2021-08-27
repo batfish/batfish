@@ -784,10 +784,12 @@ public class CheckPointGatewayGrammarTest {
 
   @Test
   public void testConvertWithCorrectPackage() throws IOException {
-    // Create a checkpoint mangement config with 3 gateways:
+    // Create a checkpoint mangement config with the following gateways:
     // - g1 uses access policy p1, which contains a network n1
     // - g2 uses access policy p2, which contains a network n2
-    // - g3 uses no access policy
+    // - g3 uses an access policy, but the nat rulebase is missing
+    // - g4 uses no access policy
+    // There is a 5th gateway that is not mentioned in the mgmt config
     // The appropriate IP spaces should be generated in the resulting VI configurations.
     CheckpointManagementConfiguration mgmt =
         new CheckpointManagementConfiguration(
@@ -815,8 +817,14 @@ public class CheckPointGatewayGrammarTest {
                                 new SimpleGateway(
                                     Ip.parse("3.0.0.1"),
                                     "g3",
+                                    new GatewayOrServerPolicy("p3", null),
+                                    Uid.of("14")),
+                                Uid.of("15"),
+                                new SimpleGateway(
+                                    Ip.parse("4.0.0.1"),
+                                    "g4",
                                     new GatewayOrServerPolicy(null, null),
-                                    Uid.of("14"))),
+                                    Uid.of("15"))),
                             ImmutableMap.of(
                                 Uid.of("2"),
                                 new ManagementPackage(
@@ -845,16 +853,34 @@ public class CheckPointGatewayGrammarTest {
                                         AllInstallationTargets.instance(),
                                         "p2",
                                         true,
-                                        Uid.of("11")))))),
+                                        Uid.of("11"))),
+                                Uid.of("16"),
+                                new ManagementPackage(
+                                    null,
+                                    new Package(
+                                        new Domain("d", Uid.of("0")),
+                                        AllInstallationTargets.instance(),
+                                        "p3",
+                                        true,
+                                        Uid.of("16")))))),
                     "s")));
     Map<String, Configuration> configs =
         parseTextConfigs(
-            mgmt, "gw_package_selection_1", "gw_package_selection_2", "gw_package_selection_3");
+            mgmt,
+            "gw_package_selection_1",
+            "gw_package_selection_2",
+            "gw_package_selection_3",
+            "gw_package_selection_4",
+            "gw_package_selection_5");
     Configuration c1 = configs.get("gw_package_selection_1");
     Configuration c2 = configs.get("gw_package_selection_2");
     Configuration c3 = configs.get("gw_package_selection_3");
+    Configuration c4 = configs.get("gw_package_selection_4");
+    Configuration c5 = configs.get("gw_package_selection_5");
     assertThat(c1.getIpSpaces(), hasKey("n1uid"));
     assertThat(c2.getIpSpaces(), hasKey("n2uid"));
     assertThat(c3.getIpSpaces(), anEmptyMap());
+    assertThat(c4.getIpSpaces(), anEmptyMap());
+    assertThat(c5.getIpSpaces(), anEmptyMap());
   }
 }
