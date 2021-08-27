@@ -81,6 +81,7 @@ java_library(
         "@maven//:com_fasterxml_jackson_datatype_jackson_datatype_guava",
         "@maven//:com_fasterxml_jackson_datatype_jackson_datatype_jdk8",
         "@maven//:com_fasterxml_jackson_datatype_jackson_datatype_jsr310",
+        "@maven//:com_github_ben_manes_caffeine_caffeine",
         "@maven//:com_google_auto_service_auto_service_annotations",
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_errorprone_error_prone_annotations",
