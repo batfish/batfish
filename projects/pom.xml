@@ -54,6 +54,7 @@
     <autoservice.version>1.0-rc6</autoservice.version>
     <beanutils.version>1.9.4</beanutils.version>
     <build-helper-maven-plugin.version>3.0.0</build-helper-maven-plugin.version>
+    <caffeine.version>2.9.2</caffeine.version>
     <commons-cli.version>1.4</commons-cli.version>
     <commons-collections4.version>4.4</commons-collections4.version>
     <commons-configuration2.version>2.7</commons-configuration2.version>
@@ -670,9 +671,9 @@
       </dependency>
 
       <dependency>
-        <groupId>io.github.java-diff-utils</groupId>
-        <artifactId>java-diff-utils</artifactId>
-        <version>${diffutils.version}</version>
+        <groupId>com.github.ben-manes.caffeine</groupId>
+        <artifactId>caffeine</artifactId>
+        <version>${caffeine.version}</version>
       </dependency>
 
       <dependency>
@@ -751,6 +752,12 @@
         <groupId>dk.brics</groupId>
         <artifactId>automaton</artifactId>
         <version>${automaton.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.github.java-diff-utils</groupId>
+        <artifactId>java-diff-utils</artifactId>
+        <version>${diffutils.version}</version>
       </dependency>
 
       <dependency>
