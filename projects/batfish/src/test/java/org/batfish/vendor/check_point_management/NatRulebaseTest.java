@@ -30,6 +30,11 @@ public final class NatRulebaseTest {
             + "\"ipv4-address-first\":\"0.0.0.0\","
             + "\"ipv4-address-last\":\"0.0.0.1\""
             + "}," // object: address-range
+            + "{" // object: unknown
+            + "\"type\":\"unknown\","
+            + "\"uid\":\"100\","
+            + "\"name\":\"unknown-foo\""
+            + "}," // object: unknown
             + "{" // object: CpmiAnyObject
             + "\"type\":\"CpmiAnyObject\","
             + "\"uid\":\"2\","
@@ -118,6 +123,9 @@ public final class NatRulebaseTest {
                         Uid.of("1"),
                         new AddressRange(
                             Ip.ZERO, Ip.parse("0.0.0.1"), null, null, "foo", Uid.of("1")))
+                    .put(
+                        Uid.of("100"),
+                        new UnknownTypedManagementObject("unknown-foo", Uid.of("100"), "unknown"))
                     .put(Uid.of("2"), new CpmiAnyObject(Uid.of("2")))
                     .put(Uid.of("3"), new Original(Uid.of("3")))
                     .put(Uid.of("4"), new Group("foo", Uid.of("4")))
