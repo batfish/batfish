@@ -125,7 +125,7 @@ public final class NatRulebaseTest {
                             Ip.ZERO, Ip.parse("0.0.0.1"), null, null, "foo", Uid.of("1")))
                     .put(
                         Uid.of("100"),
-                        new UnknownTypedManagementObject("unknown-foo", Uid.of("100")))
+                        new UnknownTypedManagementObject("unknown-foo", Uid.of("100"), "unknown"))
                     .put(Uid.of("2"), new CpmiAnyObject(Uid.of("2")))
                     .put(Uid.of("3"), new Original(Uid.of("3")))
                     .put(Uid.of("4"), new Group("foo", Uid.of("4")))
