@@ -29,6 +29,7 @@ import static org.batfish.vendor.check_point_gateway.representation.Interface.DE
 import static org.batfish.vendor.check_point_gateway.representation.Interface.DEFAULT_INTERFACE_MTU;
 import static org.batfish.vendor.check_point_gateway.representation.Interface.DEFAULT_LOOPBACK_MTU;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -43,11 +44,14 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.lang3.SerializationUtils;
@@ -70,6 +74,7 @@ import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.vendor.ConversionContext;
 import org.batfish.vendor.check_point_gateway.representation.BondingGroup;
 import org.batfish.vendor.check_point_gateway.representation.BondingGroup.LacpRate;
 import org.batfish.vendor.check_point_gateway.representation.BondingGroup.Mode;
@@ -84,6 +89,18 @@ import org.batfish.vendor.check_point_gateway.representation.NexthopLogical;
 import org.batfish.vendor.check_point_gateway.representation.NexthopReject;
 import org.batfish.vendor.check_point_gateway.representation.NexthopTarget;
 import org.batfish.vendor.check_point_gateway.representation.StaticRoute;
+import org.batfish.vendor.check_point_management.AllInstallationTargets;
+import org.batfish.vendor.check_point_management.CheckpointManagementConfiguration;
+import org.batfish.vendor.check_point_management.Domain;
+import org.batfish.vendor.check_point_management.GatewayOrServerPolicy;
+import org.batfish.vendor.check_point_management.ManagementDomain;
+import org.batfish.vendor.check_point_management.ManagementPackage;
+import org.batfish.vendor.check_point_management.ManagementServer;
+import org.batfish.vendor.check_point_management.NatRulebase;
+import org.batfish.vendor.check_point_management.Network;
+import org.batfish.vendor.check_point_management.Package;
+import org.batfish.vendor.check_point_management.SimpleGateway;
+import org.batfish.vendor.check_point_management.Uid;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -115,14 +132,28 @@ public class CheckPointGatewayGrammarTest {
 
   private @Nonnull Batfish getBatfishForConfigurationNames(String... configurationNames)
       throws IOException {
+    return getBatfishForConfigurationNames(null, configurationNames);
+  }
+
+  private @Nonnull Batfish getBatfishForConfigurationNames(
+      @Nullable CheckpointManagementConfiguration mgmt, String... configurationNames)
+      throws IOException {
     String[] names =
         Arrays.stream(configurationNames).map(s -> TESTCONFIGS_PREFIX + s).toArray(String[]::new);
-    return BatfishTestUtils.getBatfishForTextConfigs(_folder, names);
+    ConversionContext conversionContext = new ConversionContext();
+    conversionContext.setCheckpointManagementConfiguration(mgmt);
+    return BatfishTestUtils.getBatfishForTextConfigsAndConversionContext(
+        _folder, conversionContext, names);
   }
 
   private @Nonnull Configuration parseConfig(String hostname) {
+    return parseConfig(hostname, null);
+  }
+
+  private @Nonnull Configuration parseConfig(
+      String hostname, @Nullable CheckpointManagementConfiguration mgmt) {
     try {
-      Map<String, Configuration> configs = parseTextConfigs(hostname);
+      Map<String, Configuration> configs = parseTextConfigs(mgmt, hostname);
       String canonicalHostname = hostname.toLowerCase();
       String canonicalChassisHostname = canonicalHostname + "-ch01-01";
       assertThat(configs, anyOf(hasKey(canonicalHostname), hasKey(canonicalChassisHostname)));
@@ -135,9 +166,10 @@ public class CheckPointGatewayGrammarTest {
     }
   }
 
-  private @Nonnull Map<String, Configuration> parseTextConfigs(String... configurationNames)
+  private @Nonnull Map<String, Configuration> parseTextConfigs(
+      @Nullable CheckpointManagementConfiguration mgmt, String... configurationNames)
       throws IOException {
-    IBatfish iBatfish = getBatfishForConfigurationNames(configurationNames);
+    IBatfish iBatfish = getBatfishForConfigurationNames(mgmt, configurationNames);
     return iBatfish.loadConfigurations(iBatfish.getSnapshot());
   }
 
@@ -748,5 +780,81 @@ public class CheckPointGatewayGrammarTest {
       assertThat(iface.getEncapsulationVlan(), equalTo(4094));
       assertThat(iface.getInterfaceType(), equalTo(InterfaceType.LOGICAL));
     }
+  }
+
+  @Test
+  public void testConvertWithCorrectPackage() throws IOException {
+    // Create a checkpoint mangement config with 3 gateways:
+    // - g1 uses access policy p1, which contains a network n1
+    // - g2 uses access policy p2, which contains a network n2
+    // - g3 uses no access policy
+    // The appropriate IP spaces should be generated in the resulting VI configurations.
+    CheckpointManagementConfiguration mgmt =
+        new CheckpointManagementConfiguration(
+            ImmutableMap.of(
+                "s",
+                new ManagementServer(
+                    ImmutableMap.of(
+                        "d",
+                        new ManagementDomain(
+                            new Domain("d", Uid.of("0")),
+                            ImmutableMap.of(
+                                Uid.of("1"),
+                                new SimpleGateway(
+                                    Ip.parse("1.0.0.1"),
+                                    "g1",
+                                    new GatewayOrServerPolicy("p1", null),
+                                    Uid.of("1")),
+                                Uid.of("13"),
+                                new SimpleGateway(
+                                    Ip.parse("2.0.0.1"),
+                                    "g2",
+                                    new GatewayOrServerPolicy("p2", null),
+                                    Uid.of("13")),
+                                Uid.of("14"),
+                                new SimpleGateway(
+                                    Ip.parse("3.0.0.1"),
+                                    "g3",
+                                    new GatewayOrServerPolicy(null, null),
+                                    Uid.of("14"))),
+                            ImmutableMap.of(
+                                Uid.of("2"),
+                                new ManagementPackage(
+                                    new NatRulebase(
+                                        ImmutableMap.of(
+                                            Uid.of("4"),
+                                            new Network("n1", Ip.ZERO, Ip.ZERO, Uid.of("n1uid"))),
+                                        ImmutableList.of(),
+                                        Uid.of("6")),
+                                    new Package(
+                                        new Domain("d", Uid.of("0")),
+                                        AllInstallationTargets.instance(),
+                                        "p1",
+                                        true,
+                                        Uid.of("2"))),
+                                Uid.of("7"),
+                                new ManagementPackage(
+                                    new NatRulebase(
+                                        ImmutableMap.of(
+                                            Uid.of("8"),
+                                            new Network("n2", Ip.MAX, Ip.MAX, Uid.of("n2uid"))),
+                                        ImmutableList.of(),
+                                        Uid.of("10")),
+                                    new Package(
+                                        new Domain("d", Uid.of("0")),
+                                        AllInstallationTargets.instance(),
+                                        "p2",
+                                        true,
+                                        Uid.of("11")))))),
+                    "s")));
+    Map<String, Configuration> configs =
+        parseTextConfigs(
+            mgmt, "gw_package_selection_1", "gw_package_selection_2", "gw_package_selection_3");
+    Configuration c1 = configs.get("gw_package_selection_1");
+    Configuration c2 = configs.get("gw_package_selection_2");
+    Configuration c3 = configs.get("gw_package_selection_3");
+    assertThat(c1.getIpSpaces(), hasKey("n1uid"));
+    assertThat(c2.getIpSpaces(), hasKey("n2uid"));
+    assertThat(c3.getIpSpaces(), anEmptyMap());
   }
 }

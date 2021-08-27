@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public final class Domain extends NamedManagementObject {
 
   @VisibleForTesting
-  Domain(String name, Uid uid) {
+  public Domain(String name, Uid uid) {
     super(name, uid);
   }
 
