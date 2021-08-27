@@ -41,7 +41,7 @@ public final class NatRulebase extends ManagementObject {
   }
 
   @VisibleForTesting
-  NatRulebase(
+  public NatRulebase(
       Map<Uid, TypedManagementObject> objectsDictionary, List<NatRuleOrSection> rulebase, Uid uid) {
     super(uid);
     _objectsDictionary = objectsDictionary;

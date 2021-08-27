@@ -21,4 +21,8 @@ public final class ConversionContext implements Serializable {
   }
 
   private @Nullable VendorSupplementalInformation _checkpointManagementConfiguration;
+
+  public boolean isEmpty() {
+    return _checkpointManagementConfiguration == null;
+  }
 }

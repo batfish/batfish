@@ -17,6 +17,10 @@ public abstract class GatewayOrServer extends TypedManagementObject {
     _policy = policy;
   }
 
+  public @Nonnull Ip getIpv4Address() {
+    return _ipv4Address;
+  }
+
   @Nonnull
   public GatewayOrServerPolicy getPolicy() {
     return _policy;

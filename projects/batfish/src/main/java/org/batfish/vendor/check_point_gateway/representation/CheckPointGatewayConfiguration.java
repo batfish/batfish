@@ -6,15 +6,17 @@ import static org.batfish.vendor.check_point_gateway.representation.CheckPointGa
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -36,7 +38,11 @@ import org.batfish.vendor.VendorConfiguration;
 import org.batfish.vendor.check_point_gateway.representation.BondingGroup.Mode;
 import org.batfish.vendor.check_point_management.AddressRange;
 import org.batfish.vendor.check_point_management.CheckpointManagementConfiguration;
+import org.batfish.vendor.check_point_management.GatewayOrServer;
+import org.batfish.vendor.check_point_management.ManagementDomain;
 import org.batfish.vendor.check_point_management.ManagementPackage;
+import org.batfish.vendor.check_point_management.ManagementServer;
+import org.batfish.vendor.check_point_management.NatRulebase;
 import org.batfish.vendor.check_point_management.Network;
 
 public class CheckPointGatewayConfiguration extends VendorConfiguration {
@@ -109,14 +115,28 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
 
   /** Converts management server settings applicable to this configuration */
   private void convertManagementConfig(CheckpointManagementConfiguration mgmtConfig) {
-    // TODO: Only convert packages that apply to this gateway
+    // Find gateway
+    Optional<Map.Entry<ManagementDomain, GatewayOrServer>> maybeGatewayAndDomain =
+        findGatewayAndDomain(mgmtConfig);
+    if (!maybeGatewayAndDomain.isPresent()) {
+      return;
+    }
+    ManagementDomain domain = maybeGatewayAndDomain.get().getKey();
+    GatewayOrServer gateway = maybeGatewayAndDomain.get().getValue();
+    // Find package
+    Optional<ManagementPackage> maybePackage = findAccessPackage(domain, gateway);
+    if (!maybePackage.isPresent()) {
+      return;
+    }
+    ManagementPackage pakij = maybePackage.get();
     // Convert IP spaces
-    mgmtConfig.getServers().values().stream()
-        .flatMap(server -> server.getDomains().values().stream())
-        .flatMap(domain -> domain.getPackages().values().stream())
-        .map(ManagementPackage::getNatRulebase)
-        .filter(Objects::nonNull)
-        .flatMap(natRulebase -> natRulebase.getObjectsDictionary().values().stream())
+    @Nullable NatRulebase natRulebase = pakij.getNatRulebase();
+    if (natRulebase == null) {
+      return;
+    }
+    natRulebase
+        .getObjectsDictionary()
+        .values()
         .forEach(
             natObj -> {
               // TODO Add IpSpaceMetadata, or store IpSpaces by names instead of UIDs if we confirm
@@ -129,6 +149,50 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
                 _c.getIpSpaces().put(natObj.getUid().getValue(), toIpSpace((Network) natObj));
               }
             });
+  }
+
+  private @Nonnull Optional<ManagementPackage> findAccessPackage(
+      ManagementDomain domain, GatewayOrServer gateway) {
+    String accessPackageName = gateway.getPolicy().getAccessPolicyName();
+    if (accessPackageName == null) {
+      return Optional.empty();
+    }
+    // TODO: can be more efficient if we also store map: packageName -> package in ManagementDomain
+    Optional<ManagementPackage> maybePackage =
+        domain.getPackages().values().stream()
+            .filter(p -> p.getPackage().getName().equals(accessPackageName))
+            .findFirst();
+    if (!maybePackage.isPresent()) {
+      _w.redFlag(
+          String.format(
+              "Gateway or server '%s' access-policy-name refers to non-existent package '%s'",
+              gateway.getName(), accessPackageName));
+    }
+    return maybePackage;
+  }
+
+  private @Nonnull Optional<Map.Entry<ManagementDomain, GatewayOrServer>> findGatewayAndDomain(
+      CheckpointManagementConfiguration mgmtConfig) {
+    Set<Ip> ips =
+        _c.getAllInterfaces().values().stream()
+            .flatMap(i -> i.getAllAddresses().stream())
+            .filter(ConcreteInterfaceAddress.class::isInstance)
+            .map(ConcreteInterfaceAddress.class::cast)
+            .map(ConcreteInterfaceAddress::getIp)
+            .collect(ImmutableSet.toImmutableSet());
+    // TODO: something special where there is IP reuse?
+    for (ManagementServer server : mgmtConfig.getServers().values()) {
+      for (ManagementDomain domain : server.getDomains().values()) {
+        Optional<GatewayOrServer> maybeGateway =
+            domain.getGatewaysAndServers().values().stream()
+                .filter(gw -> ips.contains(gw.getIpv4Address()))
+                .findFirst();
+        if (maybeGateway.isPresent()) {
+          return Optional.of(Maps.immutableEntry(domain, maybeGateway.get()));
+        }
+      }
+    }
+    return Optional.empty();
   }
 
   /**
