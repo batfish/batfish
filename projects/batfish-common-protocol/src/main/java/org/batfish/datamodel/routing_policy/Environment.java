@@ -1,6 +1,7 @@
 package org.batfish.datamodel.routing_policy;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.sun.tools.javac.util.Assert.checkNonNull;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 
@@ -41,6 +42,7 @@ public class Environment {
    */
   public static Builder builder(@Nonnull Configuration c) {
     return new Builder()
+        .setHostname(c.getHostname())
         .setAsPathAccessLists(c.getAsPathAccessLists())
         .setAsPathExprs(c.getAsPathExprs())
         .setAsPathMatchExprs(c.getAsPathMatchExprs())
@@ -68,11 +70,16 @@ public class Environment {
         || format == ConfigurationFormat.FLAT_JUNIPER;
   }
 
+  public String getHostname() {
+    return _hostname;
+  }
+
   public enum Direction {
     IN,
     OUT
   }
 
+  private final @Nonnull String _hostname;
   private final Map<String, AsPathAccessList> _asPathAccessLists;
   private final @Nonnull Map<String, AsPathExpr> _asPathExprs;
   private final @Nonnull Map<String, AsPathMatchExpr> _asPathMatchExprs;
@@ -112,6 +119,7 @@ public class Environment {
   @Nullable private final Tracer _tracer;
 
   private Environment(
+      @Nonnull String hostname,
       Map<String, AsPathAccessList> asPathAccessLists,
       Map<String, AsPathExpr> asPathExprs,
       Map<String, AsPathMatchExpr> asPathMatchExprs,
@@ -143,6 +151,7 @@ public class Environment {
       boolean useOutputAttributes,
       boolean writeToIntermediateBgpAttributes,
       @Nullable Tracer tracer) {
+    _hostname = checkNonNull(hostname, "hostname is required");
     _asPathAccessLists = asPathAccessLists;
     _asPathExprs = asPathExprs;
     _asPathMatchExprs = asPathMatchExprs;
@@ -403,6 +412,7 @@ public class Environment {
     private boolean _useOutputAttributes;
     private boolean _writeToIntermediateBgpAttributes;
     @Nullable Tracer _tracer;
+    private String _hostname;
 
     private Builder() {}
 
@@ -556,6 +566,7 @@ public class Environment {
         assert _outputRoute.getNextHopIp() == UNSET_ROUTE_NEXT_HOP_IP;
       }
       return new Environment(
+          this._hostname,
           firstNonNull(_asPathAccessLists, ImmutableMap.of()),
           firstNonNull(_asPathExprs, ImmutableMap.of()),
           firstNonNull(_asPathMatchExprs, ImmutableMap.of()),
@@ -601,6 +612,11 @@ public class Environment {
 
     public Builder setUseOutputAttributes(boolean useOutputAttributes) {
       _useOutputAttributes = useOutputAttributes;
+      return this;
+    }
+
+    public Builder setHostname(String hostname) {
+      _hostname = hostname;
       return this;
     }
   }
