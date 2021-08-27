@@ -403,7 +403,6 @@ public class Environment {
     private boolean _useOutputAttributes;
     private boolean _writeToIntermediateBgpAttributes;
     @Nullable Tracer _tracer;
-    private String _hostname;
 
     private Builder() {}
 
@@ -557,7 +556,6 @@ public class Environment {
         assert _outputRoute.getNextHopIp() == UNSET_ROUTE_NEXT_HOP_IP;
       }
       return new Environment(
-          this._hostname,
           firstNonNull(_asPathAccessLists, ImmutableMap.of()),
           firstNonNull(_asPathExprs, ImmutableMap.of()),
           firstNonNull(_asPathMatchExprs, ImmutableMap.of()),
@@ -603,11 +601,6 @@ public class Environment {
 
     public Builder setUseOutputAttributes(boolean useOutputAttributes) {
       _useOutputAttributes = useOutputAttributes;
-      return this;
-    }
-
-    public Builder setHostname(String hostname) {
-      _hostname = hostname;
       return this;
     }
   }
