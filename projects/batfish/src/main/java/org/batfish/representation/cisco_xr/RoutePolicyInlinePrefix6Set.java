@@ -25,9 +25,9 @@ public class RoutePolicyInlinePrefix6Set extends RoutePolicyPrefixSet {
     return new ExplicitPrefix6Set(_prefix6Space);
   }
 
-  @Nullable
   @Override
-  public PrefixSetExpr toPrefixSetExpr(CiscoXrConfiguration cc, Configuration c, Warnings w) {
+  public @Nullable PrefixSetExpr toPrefixSetExpr(
+      CiscoXrConfiguration cc, Configuration c, Warnings w) {
     return null;
   }
 }
