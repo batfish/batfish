@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import java.io.Serializable;
 
-/** A member of a {@link AccessRulebase}. */
+/** A member of an {@link AccessRulebase}. */
 @JsonTypeInfo(use = Id.NAME, property = "type")
 @JsonSubTypes({
   @JsonSubTypes.Type(value = AccessRule.class, name = "access-rule"),

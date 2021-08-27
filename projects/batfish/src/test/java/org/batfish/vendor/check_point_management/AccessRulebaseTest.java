@@ -91,7 +91,7 @@ public final class AccessRulebaseTest {
             + "\"uid\":\"8\","
             + "\"vpn\":[\"9\"]"
             + "}," // access-rule
-            + "{" // access-section TODO
+            + "{" // access-section
             + "\"type\":\"access-section\","
             + "\"uid\":\"0\","
             + "\"name\":\"foo\","
