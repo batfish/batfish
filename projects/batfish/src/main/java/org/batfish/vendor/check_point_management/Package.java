@@ -24,11 +24,13 @@ public final class Package extends TypedManagementObject {
       Domain domain,
       InstallationTargets installationTargets,
       String name,
+      boolean access,
       boolean natPolicy,
       Uid uid) {
     super(name, uid);
     _domain = domain;
     _installationTargets = installationTargets;
+    _access = access;
     _natPolicy = natPolicy;
   }
 
@@ -37,15 +39,17 @@ public final class Package extends TypedManagementObject {
       @JsonProperty(PROP_DOMAIN) @Nullable Domain domain,
       @JsonProperty(PROP_INSTALLATION_TARGETS) @Nullable JsonNode installationTargets,
       @JsonProperty(PROP_NAME) @Nullable String name,
+      @JsonProperty(PROP_ACCESS) @Nullable Boolean access,
       @JsonProperty(PROP_NAT_POLICY) @Nullable Boolean natPolicy,
       @JsonProperty(PROP_UID) @Nullable Uid uid) {
     checkArgument(domain != null, "Missing %s", PROP_DOMAIN);
     checkArgument(installationTargets != null, "Missing %s", PROP_INSTALLATION_TARGETS);
     checkArgument(name != null, "Missing %s", PROP_NAME);
+    checkArgument(access != null, "Missing %s", PROP_ACCESS);
     checkArgument(natPolicy != null, "Missing %s", PROP_NAT_POLICY);
     checkArgument(uid != null, "Missing %s", PROP_UID);
     return new Package(
-        domain, deserializeInstallationTargets(installationTargets), name, natPolicy, uid);
+        domain, deserializeInstallationTargets(installationTargets), name, access, natPolicy, uid);
   }
 
   private static @Nonnull InstallationTargets deserializeInstallationTargets(
@@ -77,6 +81,10 @@ public final class Package extends TypedManagementObject {
     return _domain;
   }
 
+  public boolean hasAccess() {
+    return _access;
+  }
+
   public boolean hasNatPolicy() {
     return _natPolicy;
   }
@@ -89,12 +97,13 @@ public final class Package extends TypedManagementObject {
     Package that = (Package) obj;
     return _domain.equals(that._domain)
         && _installationTargets.equals(that._installationTargets)
-        && _natPolicy == that._natPolicy;
+        && _natPolicy == that._natPolicy
+        && _access == that._access;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(baseHashcode(), _domain, _installationTargets, _natPolicy);
+    return Objects.hash(baseHashcode(), _domain, _installationTargets, _access, _natPolicy);
   }
 
   @Override
@@ -102,14 +111,17 @@ public final class Package extends TypedManagementObject {
     return baseToStringHelper()
         .add(PROP_DOMAIN, _domain)
         .add(PROP_INSTALLATION_TARGETS, _installationTargets)
+        .add(PROP_ACCESS, _access)
         .add(PROP_NAT_POLICY, _natPolicy)
         .toString();
   }
 
   private static final String PROP_DOMAIN = "domain";
   private static final String PROP_INSTALLATION_TARGETS = "installation-targets";
+  private static final String PROP_ACCESS = "access";
   private static final String PROP_NAT_POLICY = "nat-policy";
 
+  private final boolean _access;
   private final @Nonnull Domain _domain;
   private final @Nonnull InstallationTargets _installationTargets;
   private final boolean _natPolicy;

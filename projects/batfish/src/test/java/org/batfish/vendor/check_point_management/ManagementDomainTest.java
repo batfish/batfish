@@ -45,10 +45,12 @@ public final class ManagementDomainTest {
                     Uid.of("1"),
                     new ManagementPackage(
                         null,
+                        null,
                         new Package(
                             new Domain("a", Uid.of("1")),
                             AllInstallationTargets.instance(),
                             "b",
+                            false,
                             false,
                             Uid.of("1"))))))
         .testEquals();

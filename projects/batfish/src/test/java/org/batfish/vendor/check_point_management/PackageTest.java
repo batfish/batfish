@@ -29,6 +29,7 @@ public final class PackageTest {
               + "\"name\":\"bar\""
               + "}," // domain
               + "\"installation-targets\":\"all\","
+              + "\"access\":true,"
               + "\"nat-policy\":true"
               + "}"; // Package
 
@@ -39,6 +40,7 @@ public final class PackageTest {
                   new Domain("bar", Uid.of("1")),
                   AllInstallationTargets.instance(),
                   "foo",
+                  true,
                   true,
                   Uid.of("0"))));
     }
@@ -61,6 +63,7 @@ public final class PackageTest {
               + "\"name\":\"foo\""
               + "}" // object: simple-gateway
               + "]," // installation-targets
+              + "\"access\":true,"
               + "\"nat-policy\":true"
               + "}"; // Package
 
@@ -72,6 +75,7 @@ public final class PackageTest {
                   new ListInstallationTargets(
                       ImmutableList.of(new PackageInstallationTarget("foo", Uid.of("0")))),
                   "foo",
+                  true,
                   true,
                   Uid.of("1"))));
     }
@@ -85,6 +89,7 @@ public final class PackageTest {
             AllInstallationTargets.instance(),
             "foo",
             true,
+            true,
             Uid.of("0"));
     assertEquals(obj, SerializationUtils.clone(obj));
   }
@@ -97,6 +102,7 @@ public final class PackageTest {
             AllInstallationTargets.instance(),
             "foo",
             true,
+            true,
             Uid.of("0"));
     new EqualsTester()
         .addEqualityGroup(
@@ -106,12 +112,14 @@ public final class PackageTest {
                 AllInstallationTargets.instance(),
                 "foo",
                 true,
+                true,
                 Uid.of("0")))
         .addEqualityGroup(
             new Package(
                 new Domain("bar", Uid.of("2")),
                 AllInstallationTargets.instance(),
                 "foo",
+                true,
                 true,
                 Uid.of("0")))
         .addEqualityGroup(
@@ -121,12 +129,14 @@ public final class PackageTest {
                     ImmutableList.of(new PackageInstallationTarget("foo", Uid.of("0")))),
                 "foo",
                 true,
+                true,
                 Uid.of("0")))
         .addEqualityGroup(
             new Package(
                 new Domain("bar", Uid.of("1")),
                 AllInstallationTargets.instance(),
                 "bar",
+                true,
                 true,
                 Uid.of("0")))
         .addEqualityGroup(
@@ -135,12 +145,22 @@ public final class PackageTest {
                 AllInstallationTargets.instance(),
                 "foo",
                 false,
+                true,
                 Uid.of("0")))
         .addEqualityGroup(
             new Package(
                 new Domain("bar", Uid.of("1")),
                 AllInstallationTargets.instance(),
                 "foo",
+                true,
+                false,
+                Uid.of("0")))
+        .addEqualityGroup(
+            new Package(
+                new Domain("bar", Uid.of("1")),
+                AllInstallationTargets.instance(),
+                "foo",
+                true,
                 true,
                 Uid.of("1")))
         .testEquals();

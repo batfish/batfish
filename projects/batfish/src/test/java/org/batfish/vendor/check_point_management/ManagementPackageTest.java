@@ -16,10 +16,12 @@ public final class ManagementPackageTest {
     ManagementPackage obj =
         new ManagementPackage(
             null,
+            null,
             new Package(
                 new Domain("a", Uid.of("1")),
                 AllInstallationTargets.instance(),
                 "b",
+                false,
                 false,
                 Uid.of("1")));
     assertEquals(obj, SerializationUtils.clone(obj));
@@ -30,10 +32,12 @@ public final class ManagementPackageTest {
     ManagementPackage obj =
         new ManagementPackage(
             null,
+            null,
             new Package(
                 new Domain("a", Uid.of("1")),
                 AllInstallationTargets.instance(),
                 "b",
+                false,
                 false,
                 Uid.of("1")));
     new EqualsTester()
@@ -41,28 +45,45 @@ public final class ManagementPackageTest {
             obj,
             new ManagementPackage(
                 null,
+                null,
                 new Package(
                     new Domain("a", Uid.of("1")),
                     AllInstallationTargets.instance(),
                     "b",
                     false,
+                    false,
                     Uid.of("1"))))
         .addEqualityGroup(
             new ManagementPackage(
+                new AccessRulebase(ImmutableMap.of(), ImmutableList.of(), Uid.of("1"), "foo"),
+                null,
+                new Package(
+                    new Domain("a", Uid.of("1")),
+                    AllInstallationTargets.instance(),
+                    "b",
+                    false,
+                    false,
+                    Uid.of("1"))))
+        .addEqualityGroup(
+            new ManagementPackage(
+                null,
                 new NatRulebase(ImmutableMap.of(), ImmutableList.of(), Uid.of("1")),
                 new Package(
                     new Domain("a", Uid.of("1")),
                     AllInstallationTargets.instance(),
                     "b",
                     false,
+                    false,
                     Uid.of("1"))))
         .addEqualityGroup(
             new ManagementPackage(
+                null,
                 null,
                 new Package(
                     new Domain("a", Uid.of("1")),
                     AllInstallationTargets.instance(),
                     "c",
+                    false,
                     false,
                     Uid.of("1"))))
         .testEquals();
