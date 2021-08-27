@@ -1,0 +1,11 @@
+#
+# Configuration of hostname
+# Language version: 13.4v1
+#
+# Exported by admin on Wed Jun 23 16:11:18 2021
+#
+set hostname gw_package_selection_3
+#
+set interface eth0 state on
+set interface eth0 ipv4-address 3.0.0.1 mask-length 24
+#

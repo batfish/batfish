@@ -38,6 +38,7 @@ import org.batfish.identifiers.SnapshotId;
 import org.batfish.identifiers.StorageBasedIdResolver;
 import org.batfish.storage.FileBasedStorage;
 import org.batfish.storage.StorageProvider;
+import org.batfish.vendor.ConversionContext;
 import org.batfish.vendor.VendorConfiguration;
 import org.junit.rules.TemporaryFolder;
 
@@ -175,6 +176,7 @@ public class BatfishTestUtils {
     Map<String, byte[]> iptablesFilesBytes = testrigText.getIptablesFilesBytes();
     byte[] layer1TopologyBytes = testrigText.getLayer1TopologyBytes();
     byte[] runtimeDataBytes = testrigText.getRuntimeDataBytes();
+    ConversionContext conversionContext = testrigText.getConversionContext();
 
     Settings settings = new Settings(new String[] {});
     configureBatfishTestSettings(settings);
@@ -220,6 +222,11 @@ public class BatfishTestUtils {
           "",
           storage,
           TEST_SNAPSHOT);
+    }
+    if (conversionContext != null) {
+      // Note: only works when the snapshot input does not contain anything that would populate
+      // conversion context.
+      writeTemporaryConversionContext(conversionContext, storage, TEST_SNAPSHOT);
     }
     registerDataPlanePlugins(batfish);
     return batfish;
@@ -305,6 +312,22 @@ public class BatfishTestUtils {
         TestrigText.builder().setConfigurationBytes(configurationBytesMap).build(), folder);
   }
 
+  public static Batfish getBatfishForTextConfigsAndConversionContext(
+      TemporaryFolder folder, ConversionContext conversionContext, String... configurationNames)
+      throws IOException {
+    SortedMap<String, byte[]> configurationBytesMap = new TreeMap<>();
+    for (String configName : configurationNames) {
+      byte[] configurationBytes = readResourceBytes(configName);
+      configurationBytesMap.put(new File(configName).getName(), configurationBytes);
+    }
+    return BatfishTestUtils.getBatfishFromTestrigText(
+        TestrigText.builder()
+            .setConfigurationBytes(configurationBytesMap)
+            .setConversionContext(conversionContext)
+            .build(),
+        folder);
+  }
+
   public static SortedMap<String, Configuration> parseTextConfigs(
       TemporaryFolder folder, String... configurationNames) throws IOException {
     IBatfish iBatfish = getBatfishForTextConfigs(folder, configurationNames);
@@ -327,6 +350,15 @@ public class BatfishTestUtils {
               throw new UncheckedIOException(e);
             }
           });
+    }
+  }
+
+  private static void writeTemporaryConversionContext(
+      ConversionContext conversionContext, StorageProvider storage, NetworkSnapshot snapshot) {
+    try {
+      storage.storeConversionContext(conversionContext, snapshot);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
     }
   }
 }
