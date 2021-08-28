@@ -32,6 +32,19 @@ public class RulebaseAction extends TypedManagementObject {
   public RulebaseAction(String name, Uid uid, String comments) {
     super(name, uid);
     _comments = comments;
+
+    // There isn't a real `action` field in the object definition...
+    // So just rely on name for now
+    switch (getName()) {
+      case NAME_ACCEPT:
+        _action = Action.ACCEPT;
+        break;
+      case NAME_DROP:
+        _action = Action.DROP;
+        break;
+      default:
+        _action = Action.UNHANDLED;
+    }
   }
 
   public @Nonnull String getComments() {
@@ -40,16 +53,7 @@ public class RulebaseAction extends TypedManagementObject {
 
   /** Get the {@link Action} for this {@code RulebaseAction} object. */
   public @Nonnull Action getAction() {
-    // There isn't a real `action` field in the object definition...
-    // So just rely on name for now
-    switch (getName()) {
-      case NAME_ACCEPT:
-        return Action.ACCEPT;
-      case NAME_DROP:
-        return Action.DROP;
-      default:
-        return Action.UNHANDLED;
-    }
+    return _action;
   }
 
   @Override
@@ -75,5 +79,6 @@ public class RulebaseAction extends TypedManagementObject {
   protected static final String NAME_DROP = "Drop";
   private static final String PROP_COMMENTS = "comments";
 
+  private final transient @Nonnull Action _action;
   private final @Nonnull String _comments;
 }
