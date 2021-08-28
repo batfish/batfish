@@ -22,7 +22,14 @@ public final class AccessRulebaseTest {
             + "\"GARBAGE\":0,"
             + "\"uid\":\"0\","
             + "\"name\":\"baz\","
-            + "\"objects-dictionary\":[]," // object-dictionary
+            + "\"objects-dictionary\":[" // object-dictionary
+            + "{" // object: RulebaseAction
+            + "\"type\":\"RulebaseAction\","
+            + "\"uid\":\"100\","
+            + "\"name\":\"Accept\","
+            + "\"comments\":\"Accept\""
+            + "}" // object: RulebaseAction
+            + "]," // object-dictionary
             + "\"rulebase\":["
             + "{" // access-rule
             + "\"action\":\"1\","
@@ -77,7 +84,8 @@ public final class AccessRulebaseTest {
         BatfishObjectMapper.ignoreUnknownMapper().readValue(input, AccessRulebase.class),
         equalTo(
             new AccessRulebase(
-                ImmutableMap.of(),
+                ImmutableMap.of(
+                    Uid.of("100"), new RulebaseAction("Accept", Uid.of("100"), "Accept")),
                 ImmutableList.of(
                     new AccessRule(
                         Uid.of("1"),
