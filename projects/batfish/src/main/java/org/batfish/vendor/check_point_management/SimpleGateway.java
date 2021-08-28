@@ -26,7 +26,7 @@ public final class SimpleGateway extends GatewayOrServer {
   }
 
   @VisibleForTesting
-  SimpleGateway(Ip ipv4Address, String name, GatewayOrServerPolicy policy, Uid uid) {
+  public SimpleGateway(Ip ipv4Address, String name, GatewayOrServerPolicy policy, Uid uid) {
     super(ipv4Address, name, policy, uid);
   }
 

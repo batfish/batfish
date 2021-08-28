@@ -2471,10 +2471,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
     LOGGER.info("\n*** SERIALIZING CONVERSION CONTEXT ***\n");
     ConversionContext conversionContext = new ConversionContext();
     conversionContext.setCheckpointManagementConfiguration(cpMgmtConfig);
-    try {
-      _storage.storeConversionContext(conversionContext, snapshot);
-    } catch (IOException e) {
-      throw new UncheckedIOException(e);
+    if (!conversionContext.isEmpty()) {
+      try {
+        _storage.storeConversionContext(conversionContext, snapshot);
+      } catch (IOException e) {
+        throw new UncheckedIOException(e);
+      }
     }
   }
 
@@ -2584,6 +2586,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
       ConversionContext conversionContext;
       try {
         conversionContext = _storage.loadConversionContext(snapshot);
+      } catch (FileNotFoundException e) {
+        // Not written when it is empty.
+        conversionContext = new ConversionContext();
       } catch (IOException e) {
         throw new UncheckedIOException(e);
       }

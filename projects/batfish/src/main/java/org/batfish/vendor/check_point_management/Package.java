@@ -20,7 +20,7 @@ import org.batfish.common.util.BatfishObjectMapper;
 public final class Package extends TypedManagementObject {
 
   @VisibleForTesting
-  Package(
+  public Package(
       Domain domain,
       InstallationTargets installationTargets,
       String name,

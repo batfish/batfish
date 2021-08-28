@@ -20,19 +20,19 @@ public class RoutePolicyPrefixSetName extends RoutePolicyPrefixSet {
     return _name;
   }
 
-  @Nullable
   @Override
-  public Prefix6SetExpr toPrefix6SetExpr(CiscoXrConfiguration cc, Configuration c, Warnings w) {
-    if (cc.getPrefixLists().containsKey(_name)) {
+  public @Nullable Prefix6SetExpr toPrefix6SetExpr(
+      CiscoXrConfiguration cc, Configuration c, Warnings w) {
+    if (!cc.getPrefix6Lists().containsKey(_name)) {
       return null;
     }
     return new NamedPrefix6Set(_name);
   }
 
-  @Nullable
   @Override
-  public PrefixSetExpr toPrefixSetExpr(CiscoXrConfiguration cc, Configuration c, Warnings w) {
-    if (cc.getPrefix6Lists().containsKey(_name)) {
+  public @Nullable PrefixSetExpr toPrefixSetExpr(
+      CiscoXrConfiguration cc, Configuration c, Warnings w) {
+    if (!cc.getPrefixLists().containsKey(_name)) {
       return null;
     }
     return new NamedPrefixSet(_name);

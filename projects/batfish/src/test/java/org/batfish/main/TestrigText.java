@@ -17,6 +17,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
+import org.batfish.vendor.ConversionContext;
 
 public class TestrigText {
 
@@ -47,6 +48,7 @@ public class TestrigText {
     private Map<String, byte[]> _awsBytes;
     private Map<String, byte[]> _bgpTablesBytes;
     private Map<String, byte[]> _configurationBytes;
+    private ConversionContext _conversionContext;
     private byte[] _externalBgpAnnouncementsBytes;
     private Map<String, byte[]> _hostsBytes;
     private Map<String, byte[]> _iptablesFilesBytes;
@@ -59,6 +61,7 @@ public class TestrigText {
       testrigText.setAwsBytes(_awsBytes);
       testrigText.setBgpTablesBytes(_bgpTablesBytes);
       testrigText.setConfigurationBytes(_configurationBytes);
+      testrigText.setConversionContext(_conversionContext);
       testrigText.setExternalBgpAnnouncements(_externalBgpAnnouncementsBytes);
       testrigText.setHostsBytes(_hostsBytes);
       testrigText.setIptablesFilesBytes(_iptablesFilesBytes);
@@ -175,6 +178,15 @@ public class TestrigText {
               .next();
       return this;
     }
+
+    /**
+     * Sets conversion context to be used during conversion. Note that this has no effect when the
+     * snapshot input text contains information that would populate conversion context.
+     */
+    public @Nonnull Builder setConversionContext(ConversionContext conversionContext) {
+      _conversionContext = conversionContext;
+      return this;
+    }
   }
 
   public static Builder builder() {
@@ -184,6 +196,7 @@ public class TestrigText {
   private Map<String, byte[]> _awsBytes;
   private Map<String, byte[]> _bgpTablesBytes;
   private Map<String, byte[]> _configurationBytes;
+  private ConversionContext _conversionContext;
   private byte[] _externalBgpAnnouncementBytes;
   private Map<String, byte[]> _hostsBytes;
   private Map<String, byte[]> _iptablesFilesBytes;
@@ -201,6 +214,10 @@ public class TestrigText {
 
   public Map<String, byte[]> getConfigurationBytes() {
     return _configurationBytes;
+  }
+
+  public ConversionContext getConversionContext() {
+    return _conversionContext;
   }
 
   public @Nullable byte[] getExternalBgpAnnouncementBytes() {
@@ -237,6 +254,10 @@ public class TestrigText {
 
   public void setConfigurationBytes(Map<String, byte[]> configurationText) {
     _configurationBytes = configurationText;
+  }
+
+  public void setConversionContext(ConversionContext conversionContext) {
+    _conversionContext = conversionContext;
   }
 
   public void setExternalBgpAnnouncements(byte[] externalBgpAnnouncementsBytes) {

@@ -23,7 +23,8 @@ public final class GatewayOrServerPolicy implements Serializable {
   private static final GatewayOrServerPolicy EMPTY = new GatewayOrServerPolicy(null, null);
 
   @VisibleForTesting
-  GatewayOrServerPolicy(@Nullable String accessPolicyName, @Nullable String threatPolicyName) {
+  public GatewayOrServerPolicy(
+      @Nullable String accessPolicyName, @Nullable String threatPolicyName) {
     _accessPolicyName = accessPolicyName;
     _threatPolicyName = threatPolicyName;
   }
