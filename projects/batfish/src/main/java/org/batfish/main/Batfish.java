@@ -1581,33 +1581,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return config;
   }
 
-  private @Nullable AccessRulebase getAccessRulebase(
-      Package pakij,
-      Map<String, String> packageFiles,
-      ParseVendorConfigurationAnswerElement pvcae,
-      String serverName)
+  private @Nullable List<AccessRulebase> getAccessRulebases(Map<String, String> packageFiles)
       throws JsonProcessingException {
-    if (!pakij.hasAccess()) {
-      return null;
-    }
-    List<AccessRulebase> accessRulebases =
-        packageFiles.containsKey(RELPATH_CHECKPOINT_SHOW_ACCESS_RULEBASE)
-            ? BatfishObjectMapper.ignoreUnknownMapper()
-                .readValue(
-                    packageFiles.get(RELPATH_CHECKPOINT_SHOW_ACCESS_RULEBASE),
-                    new TypeReference<List<AccessRulebase>>() {})
-            : ImmutableList.of();
-    if (accessRulebases.size() != 1) {
-      pvcae.addRedFlagWarning(
-          BfConsts.RELPATH_CHECKPOINT_MANAGEMENT_DIR,
-          new Warning(
-              String.format(
-                  "Checkpoint package %s in domain %s on server %s should contain exactly"
-                      + " one Access rulebase, but contains %s",
-                  pakij.getName(), pakij.getDomain().getName(), serverName, accessRulebases.size()),
-              "Checkpoint"));
-    }
-    return accessRulebases.isEmpty() ? null : accessRulebases.get(0);
+    return packageFiles.containsKey(RELPATH_CHECKPOINT_SHOW_ACCESS_RULEBASE)
+        ? BatfishObjectMapper.ignoreUnknownMapper()
+            .readValue(
+                packageFiles.get(RELPATH_CHECKPOINT_SHOW_ACCESS_RULEBASE),
+                new TypeReference<List<AccessRulebase>>() {})
+        : ImmutableList.of();
   }
 
   private @Nullable NatRulebase getNatRulebase(
@@ -1721,9 +1702,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
               BatfishObjectMapper.ignoreUnknownMapper()
                   .readValue(packageFiles.get(RELPATH_CHECKPOINT_SHOW_PACKAGE), Package.class);
           ManagementPackage mgmtPackage;
-          AccessRulebase accessRulebase = getAccessRulebase(pakij, packageFiles, pvcae, serverName);
+          List<AccessRulebase> accessRulebases = getAccessRulebases(packageFiles);
           NatRulebase natRulebase = getNatRulebase(pakij, packageFiles, pvcae, serverName);
-          mgmtPackage = new ManagementPackage(accessRulebase, natRulebase, pakij);
+          mgmtPackage = new ManagementPackage(accessRulebases, natRulebase, pakij);
           packagesBuilder.put(mgmtPackage.getPackage().getUid(), mgmtPackage);
         }
         Map<Uid, ManagementPackage> packages = packagesBuilder.build();
