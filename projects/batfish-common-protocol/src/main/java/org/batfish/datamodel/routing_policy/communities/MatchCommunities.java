@@ -22,7 +22,9 @@ public final class MatchCommunities extends BooleanExpr {
     private final MatchCommunities _expr;
     private final CommunitySet _inputCommunitySet;
 
-    // device context. uniquely determined by hostname, don't need to check it
+    // device context. The device is uniquely determined by _expr, since we use object identity for
+    // checking equality,
+    // and MatchCommunities expressions are not interned.
     private @Nonnull Map<String, CommunityMatchExpr> _communityMatchExprs;
     private @Nonnull Map<String, CommunitySetExpr> _communitySetExprs;
     private @Nonnull Map<String, CommunitySetMatchExpr> _communitySetMatchExprs;
@@ -70,7 +72,18 @@ public final class MatchCommunities extends BooleanExpr {
         return false;
       }
       CacheKey other = (CacheKey) o;
-      return _expr == other._expr && _inputCommunitySet.equals(other._inputCommunitySet);
+      boolean result = _expr == other._expr && _inputCommunitySet.equals(other._inputCommunitySet);
+      /* Invariant: two devices (or the same device in different snapshots) never have the same instance of a
+       * MatchCommunities expression. If that is not true, we need to include the identity of the maps in
+       * equals/hashCode.
+       */
+      assert !result
+              || (_communityMatchExprs == other._communityMatchExprs
+                  && _communitySetExprs == other._communitySetExprs
+                  && _communitySetMatchExprs == other._communitySetMatchExprs
+                  && _communitySets == other._communitySets)
+          : "CacheKeys are equal but have different maps.";
+      return result;
     }
 
     @Override
