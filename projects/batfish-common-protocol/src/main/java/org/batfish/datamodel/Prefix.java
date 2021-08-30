@@ -4,9 +4,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.Optional;
@@ -22,7 +21,7 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
   // Maximum size 2^20: Just some upper bound on cache size, well less than GiB.
   //   (12 bytes seems smallest possible entry (long + int), would be 12 MiB total).
   private static final LoadingCache<Prefix, Prefix> CACHE =
-      CacheBuilder.newBuilder().softValues().maximumSize(1 << 20).build(CacheLoader.from(x -> x));
+      Caffeine.newBuilder().softValues().maximumSize(1 << 20).build(x -> x);
 
   /** Maximum prefix length (number of bits) for a IPv4 address, which is 32 */
   public static final int MAX_PREFIX_LENGTH = 32;
@@ -112,7 +111,7 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
 
   public static Prefix create(Ip ip, int prefixLength) {
     Prefix p = new Prefix(ip, prefixLength);
-    return CACHE.getUnchecked(p);
+    return CACHE.get(p);
   }
 
   public static Prefix create(Ip address, Ip mask) {
@@ -253,6 +252,6 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
 
   /** Cache after deserialization. */
   private Object readResolve() throws ObjectStreamException {
-    return CACHE.getUnchecked(this);
+    return CACHE.get(this);
   }
 }
