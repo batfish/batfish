@@ -5,9 +5,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Collection;
@@ -42,10 +41,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   // Maximum size 2^16: Just some upper bound on cache size, well less than GiB.
   //   (8 bytes seems smallest possible entry (set(long)), would be 1 MiB total).
   private static final LoadingCache<Set<Long>, Set<Long>> CLUSTER_CACHE =
-      CacheBuilder.newBuilder()
-          .softValues()
-          .maximumSize(1 << 16)
-          .build(CacheLoader.from(ImmutableSet::copyOf));
+      Caffeine.newBuilder().softValues().maximumSize(1 << 16).build(ImmutableSet::copyOf);
 
   /** Builder for {@link BgpRoute} */
   @ParametersAreNonnullByDefault
@@ -328,8 +324,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
             || protocol == RoutingProtocol.AGGREGATE,
         "Invalid BgpRoute protocol");
     _asPath = firstNonNull(asPath, AsPath.empty());
-    _clusterList =
-        clusterList == null ? ImmutableSet.of() : CLUSTER_CACHE.getUnchecked(clusterList);
+    _clusterList = clusterList == null ? ImmutableSet.of() : CLUSTER_CACHE.get(clusterList);
     _communities = communities;
     _localPreference = localPreference;
     _med = med;
