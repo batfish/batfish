@@ -13,6 +13,11 @@ import org.batfish.datamodel.Ip6;
 
 public final class AddressRange extends AddressSpace {
 
+  @Override
+  public <T> T accept(ConcreteSrcOrDstVisitor<T> visitor) {
+    return visitor.visitAddressRange(this);
+  }
+
   public @Nullable Ip getIpv4AddressFirst() {
     return _ipv4AddressFirst;
   }
