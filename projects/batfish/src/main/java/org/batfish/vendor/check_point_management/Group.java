@@ -8,7 +8,11 @@ import com.google.common.annotations.VisibleForTesting;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public final class Group extends TypedManagementObject {
+public final class Group extends TypedManagementObject implements ConcreteSrcOrDst {
+  @Override
+  public <T> T accept(ConcreteSrcOrDstVisitor<T> visitor) {
+    return visitor.visitGroup(this);
+  }
 
   @Override
   public boolean equals(Object o) {

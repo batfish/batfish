@@ -12,7 +12,11 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 
 /** Data model for an object of type {@code CpmiGatewayCluster}. */
-public final class CpmiGatewayCluster extends Cluster {
+public final class CpmiGatewayCluster extends Cluster implements ConcreteSrcOrDst {
+  @Override
+  public <T> T accept(ConcreteSrcOrDstVisitor<T> visitor) {
+    return visitor.visitCpmiGatewayCluster(this);
+  }
 
   @JsonCreator
   private static @Nonnull CpmiGatewayCluster create(

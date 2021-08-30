@@ -92,6 +92,7 @@ import org.batfish.vendor.check_point_gateway.representation.StaticRoute;
 import org.batfish.vendor.check_point_management.AllInstallationTargets;
 import org.batfish.vendor.check_point_management.CheckpointManagementConfiguration;
 import org.batfish.vendor.check_point_management.Domain;
+import org.batfish.vendor.check_point_management.GatewayOrServer;
 import org.batfish.vendor.check_point_management.GatewayOrServerPolicy;
 import org.batfish.vendor.check_point_management.ManagementDomain;
 import org.batfish.vendor.check_point_management.ManagementPackage;
@@ -791,6 +792,80 @@ public class CheckPointGatewayGrammarTest {
     // - g4 uses no access policy
     // There is a 5th gateway that is not mentioned in the mgmt config
     // The appropriate IP spaces should be generated in the resulting VI configurations.
+    ImmutableMap<Uid, GatewayOrServer> gateways =
+        ImmutableMap.of(
+            Uid.of("1"),
+            new SimpleGateway(
+                Ip.parse("1.0.0.1"),
+                "g1",
+                ImmutableList.of(),
+                new GatewayOrServerPolicy("p1", null),
+                Uid.of("1")),
+            Uid.of("13"),
+            new SimpleGateway(
+                Ip.parse("2.0.0.1"),
+                "g2",
+                ImmutableList.of(),
+                new GatewayOrServerPolicy("p2", null),
+                Uid.of("13")),
+            Uid.of("14"),
+            new SimpleGateway(
+                Ip.parse("3.0.0.1"),
+                "g3",
+                ImmutableList.of(),
+                new GatewayOrServerPolicy("p3", null),
+                Uid.of("14")),
+            Uid.of("15"),
+            new SimpleGateway(
+                Ip.parse("4.0.0.1"),
+                "g4",
+                ImmutableList.of(),
+                new GatewayOrServerPolicy(null, null),
+                Uid.of("15")));
+    ImmutableMap<Uid, ManagementPackage> packages =
+        ImmutableMap.of(
+            Uid.of("2"),
+            new ManagementPackage(
+                ImmutableList.of(),
+                new NatRulebase(
+                    ImmutableMap.of(
+                        Uid.of("4"), new Network("n1", Ip.ZERO, Ip.ZERO, Uid.of("n1uid"))),
+                    ImmutableList.of(),
+                    Uid.of("6")),
+                new Package(
+                    new Domain("d", Uid.of("0")),
+                    AllInstallationTargets.instance(),
+                    "p1",
+                    false,
+                    true,
+                    Uid.of("2"))),
+            Uid.of("7"),
+            new ManagementPackage(
+                ImmutableList.of(),
+                new NatRulebase(
+                    ImmutableMap.of(
+                        Uid.of("8"), new Network("n2", Ip.MAX, Ip.MAX, Uid.of("n2uid"))),
+                    ImmutableList.of(),
+                    Uid.of("10")),
+                new Package(
+                    new Domain("d", Uid.of("0")),
+                    AllInstallationTargets.instance(),
+                    "p2",
+                    false,
+                    true,
+                    Uid.of("11"))),
+            Uid.of("16"),
+            new ManagementPackage(
+                ImmutableList.of(),
+                null,
+                new Package(
+                    new Domain("d", Uid.of("0")),
+                    AllInstallationTargets.instance(),
+                    "p3",
+                    false,
+                    true,
+                    Uid.of("16"))));
+
     CheckpointManagementConfiguration mgmt =
         new CheckpointManagementConfiguration(
             ImmutableMap.of(
@@ -798,75 +873,7 @@ public class CheckPointGatewayGrammarTest {
                 new ManagementServer(
                     ImmutableMap.of(
                         "d",
-                        new ManagementDomain(
-                            new Domain("d", Uid.of("0")),
-                            ImmutableMap.of(
-                                Uid.of("1"),
-                                new SimpleGateway(
-                                    Ip.parse("1.0.0.1"),
-                                    "g1",
-                                    ImmutableList.of(),
-                                    new GatewayOrServerPolicy("p1", null),
-                                    Uid.of("1")),
-                                Uid.of("13"),
-                                new SimpleGateway(
-                                    Ip.parse("2.0.0.1"),
-                                    "g2",
-                                    ImmutableList.of(),
-                                    new GatewayOrServerPolicy("p2", null),
-                                    Uid.of("13")),
-                                Uid.of("14"),
-                                new SimpleGateway(
-                                    Ip.parse("3.0.0.1"),
-                                    "g3",
-                                    ImmutableList.of(),
-                                    new GatewayOrServerPolicy("p3", null),
-                                    Uid.of("14")),
-                                Uid.of("15"),
-                                new SimpleGateway(
-                                    Ip.parse("4.0.0.1"),
-                                    "g4",
-                                    ImmutableList.of(),
-                                    new GatewayOrServerPolicy(null, null),
-                                    Uid.of("15"))),
-                            ImmutableMap.of(
-                                Uid.of("2"),
-                                new ManagementPackage(
-                                    new NatRulebase(
-                                        ImmutableMap.of(
-                                            Uid.of("4"),
-                                            new Network("n1", Ip.ZERO, Ip.ZERO, Uid.of("n1uid"))),
-                                        ImmutableList.of(),
-                                        Uid.of("6")),
-                                    new Package(
-                                        new Domain("d", Uid.of("0")),
-                                        AllInstallationTargets.instance(),
-                                        "p1",
-                                        true,
-                                        Uid.of("2"))),
-                                Uid.of("7"),
-                                new ManagementPackage(
-                                    new NatRulebase(
-                                        ImmutableMap.of(
-                                            Uid.of("8"),
-                                            new Network("n2", Ip.MAX, Ip.MAX, Uid.of("n2uid"))),
-                                        ImmutableList.of(),
-                                        Uid.of("10")),
-                                    new Package(
-                                        new Domain("d", Uid.of("0")),
-                                        AllInstallationTargets.instance(),
-                                        "p2",
-                                        true,
-                                        Uid.of("11"))),
-                                Uid.of("16"),
-                                new ManagementPackage(
-                                    null,
-                                    new Package(
-                                        new Domain("d", Uid.of("0")),
-                                        AllInstallationTargets.instance(),
-                                        "p3",
-                                        true,
-                                        Uid.of("16")))))),
+                        new ManagementDomain(new Domain("d", Uid.of("0")), gateways, packages)),
                     "s")));
     Map<String, Configuration> configs =
         parseTextConfigs(

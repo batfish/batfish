@@ -29,6 +29,7 @@ public final class PackagesTest {
             + "\"name\":\"bar\""
             + "}," // domain
             + "\"installation-targets\":\"all\","
+            + "\"access\":true,"
             + "\"nat-policy\":true"
             + "}" // package
             + "]" // packages
@@ -44,6 +45,7 @@ public final class PackagesTest {
                         AllInstallationTargets.instance(),
                         "foo",
                         true,
+                        true,
                         Uid.of("0"))))));
   }
 
@@ -57,6 +59,7 @@ public final class PackagesTest {
                     new Domain("bar", Uid.of("1")),
                     AllInstallationTargets.instance(),
                     "foo",
+                    true,
                     true,
                     Uid.of("0"))));
     assertEquals(obj, SerializationUtils.clone(obj));
@@ -75,6 +78,7 @@ public final class PackagesTest {
                         new Domain("bar", Uid.of("1")),
                         AllInstallationTargets.instance(),
                         "foo",
+                        true,
                         true,
                         Uid.of("0")))))
         .testEquals();

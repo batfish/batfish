@@ -50,11 +50,13 @@ public final class ManagementDomainTest {
                 ImmutableMap.of(
                     Uid.of("1"),
                     new ManagementPackage(
+                        ImmutableList.of(),
                         null,
                         new Package(
                             new Domain("a", Uid.of("1")),
                             AllInstallationTargets.instance(),
                             "b",
+                            false,
                             false,
                             Uid.of("1"))))))
         .testEquals();
