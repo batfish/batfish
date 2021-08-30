@@ -56,7 +56,7 @@ public final class ManagementPackageTest {
         .addEqualityGroup(
             new ManagementPackage(
                 ImmutableList.of(
-                    new AccessRulebase(ImmutableMap.of(), ImmutableList.of(), Uid.of("1"), "foo")),
+                    new AccessLayer(ImmutableMap.of(), ImmutableList.of(), Uid.of("1"), "foo")),
                 null,
                 new Package(
                     new Domain("a", Uid.of("1")),

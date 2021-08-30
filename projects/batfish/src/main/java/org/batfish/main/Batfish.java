@@ -241,7 +241,7 @@ import org.batfish.symbolic.IngressLocation;
 import org.batfish.topology.TopologyProviderImpl;
 import org.batfish.vendor.ConversionContext;
 import org.batfish.vendor.VendorConfiguration;
-import org.batfish.vendor.check_point_management.AccessRulebase;
+import org.batfish.vendor.check_point_management.AccessLayer;
 import org.batfish.vendor.check_point_management.CheckpointManagementConfiguration;
 import org.batfish.vendor.check_point_management.Domain;
 import org.batfish.vendor.check_point_management.GatewaysAndServers;
@@ -1581,13 +1581,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return config;
   }
 
-  private @Nonnull List<AccessRulebase> getAccessLayers(Map<String, String> packageFiles)
+  private @Nonnull List<AccessLayer> getAccessLayers(Map<String, String> packageFiles)
       throws JsonProcessingException {
     return packageFiles.containsKey(RELPATH_CHECKPOINT_SHOW_ACCESS_RULEBASE)
         ? BatfishObjectMapper.ignoreUnknownMapper()
             .readValue(
                 packageFiles.get(RELPATH_CHECKPOINT_SHOW_ACCESS_RULEBASE),
-                new TypeReference<List<AccessRulebase>>() {})
+                new TypeReference<List<AccessLayer>>() {})
         : ImmutableList.of();
   }
 
@@ -1702,7 +1702,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
               BatfishObjectMapper.ignoreUnknownMapper()
                   .readValue(packageFiles.get(RELPATH_CHECKPOINT_SHOW_PACKAGE), Package.class);
           ManagementPackage mgmtPackage;
-          List<AccessRulebase> accessLayers = getAccessLayers(packageFiles);
+          List<AccessLayer> accessLayers = getAccessLayers(packageFiles);
           NatRulebase natRulebase = getNatRulebase(pakij, packageFiles, pvcae, serverName);
           mgmtPackage = new ManagementPackage(accessLayers, natRulebase, pakij);
           packagesBuilder.put(mgmtPackage.getPackage().getUid(), mgmtPackage);

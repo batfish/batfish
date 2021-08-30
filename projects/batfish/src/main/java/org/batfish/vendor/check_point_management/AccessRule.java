@@ -10,7 +10,7 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-/** A single access-rule in an {@link AccessRulebase}. */
+/** A single access-rule in an {@link AccessLayer}. */
 public final class AccessRule extends NamedManagementObject implements AccessRuleOrSection {
 
   public @Nonnull Uid getAction() {

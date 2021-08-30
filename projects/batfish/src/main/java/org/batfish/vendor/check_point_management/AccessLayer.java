@@ -15,7 +15,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /** Data model for an entry of the list response to the {@code show-access-rulebase} command. */
-public final class AccessRulebase extends NamedManagementObject {
+public final class AccessLayer extends NamedManagementObject {
 
   public @Nonnull Map<Uid, TypedManagementObject> getObjectsDictionary() {
     return _objectsDictionary;
@@ -26,7 +26,7 @@ public final class AccessRulebase extends NamedManagementObject {
   }
 
   @JsonCreator
-  private static @Nonnull AccessRulebase create(
+  private static @Nonnull AccessLayer create(
       @JsonProperty(PROP_OBJECTS_DICTIONARY) @Nullable
           List<TypedManagementObject> objectsDictionary,
       @JsonProperty(PROP_RULEBASE) @Nullable List<AccessRuleOrSection> rulebase,
@@ -36,7 +36,7 @@ public final class AccessRulebase extends NamedManagementObject {
     checkArgument(rulebase != null, "Missing %s", PROP_RULEBASE);
     checkArgument(uid != null, "Missing %s", PROP_UID);
     checkArgument(name != null, "Missing %s", PROP_NAME);
-    return new AccessRulebase(
+    return new AccessLayer(
         objectsDictionary.stream()
             .collect(ImmutableMap.toImmutableMap(ManagementObject::getUid, Function.identity())),
         rulebase,
@@ -45,7 +45,7 @@ public final class AccessRulebase extends NamedManagementObject {
   }
 
   @VisibleForTesting
-  AccessRulebase(
+  AccessLayer(
       Map<Uid, TypedManagementObject> objectsDictionary,
       List<AccessRuleOrSection> rulebase,
       Uid uid,
@@ -60,7 +60,7 @@ public final class AccessRulebase extends NamedManagementObject {
     if (!baseEquals(o)) {
       return false;
     }
-    AccessRulebase that = (AccessRulebase) o;
+    AccessLayer that = (AccessLayer) o;
     return _objectsDictionary.equals(that._objectsDictionary) && _rulebase.equals(that._rulebase);
   }
 
