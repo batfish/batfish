@@ -12,6 +12,10 @@ import org.batfish.datamodel.Ip;
 
 /** An IPv4 network. */
 public final class Network extends AddressSpace {
+  @Override
+  public <T> T accept(ConcreteSrcOrDstVisitor<T> visitor) {
+    return visitor.visitNetwork(this);
+  }
 
   @JsonCreator
   private static @Nonnull Network create(
