@@ -12,8 +12,8 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
 
-/** Test of {@link AccessRulebase}. */
-public final class AccessRulebaseTest {
+/** Test of {@link AccessLayer}. */
+public final class AccessLayerTest {
 
   @Test
   public void testJacksonDeserialization() throws JsonProcessingException {
@@ -79,11 +79,11 @@ public final class AccessRulebaseTest {
             + "]" // rulebase in access-section
             + "}" // access-section
             + "]" // rulebase
-            + "}"; // AccessRulebase
+            + "}"; // AccessLayer
     assertThat(
-        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, AccessRulebase.class),
+        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, AccessLayer.class),
         equalTo(
-            new AccessRulebase(
+            new AccessLayer(
                 ImmutableMap.of(
                     Uid.of("100"), new RulebaseAction("Accept", Uid.of("100"), "Accept")),
                 ImmutableList.of(
@@ -133,8 +133,8 @@ public final class AccessRulebaseTest {
 
   @Test
   public void testSerialization() {
-    AccessRulebase obj =
-        new AccessRulebase(
+    AccessLayer obj =
+        new AccessLayer(
             ImmutableMap.of(
                 Uid.of("0"), new AddressRange(null, null, null, null, "foo", Uid.of("0"))),
             ImmutableList.of(),
@@ -145,28 +145,27 @@ public final class AccessRulebaseTest {
 
   @Test
   public void testEquals() {
-    AccessRulebase obj =
-        new AccessRulebase(ImmutableMap.of(), ImmutableList.of(), Uid.of("0"), "foo");
+    AccessLayer obj = new AccessLayer(ImmutableMap.of(), ImmutableList.of(), Uid.of("0"), "foo");
     new EqualsTester()
         .addEqualityGroup(
-            obj, new AccessRulebase(ImmutableMap.of(), ImmutableList.of(), Uid.of("0"), "foo"))
+            obj, new AccessLayer(ImmutableMap.of(), ImmutableList.of(), Uid.of("0"), "foo"))
         .addEqualityGroup(
-            new AccessRulebase(
+            new AccessLayer(
                 ImmutableMap.of(
                     Uid.of("1"), new AddressRange(null, null, null, null, "foo", Uid.of("1"))),
                 ImmutableList.of(),
                 Uid.of("0"),
                 "foo"))
         .addEqualityGroup(
-            new AccessRulebase(
+            new AccessLayer(
                 ImmutableMap.of(),
                 ImmutableList.of(new AccessSection("n", ImmutableList.of(), Uid.of("1"))),
                 Uid.of("0"),
                 "foo"))
         .addEqualityGroup(
-            new AccessRulebase(ImmutableMap.of(), ImmutableList.of(), Uid.of("2"), "foo"))
+            new AccessLayer(ImmutableMap.of(), ImmutableList.of(), Uid.of("2"), "foo"))
         .addEqualityGroup(
-            new AccessRulebase(ImmutableMap.of(), ImmutableList.of(), Uid.of("2"), "bar"))
+            new AccessLayer(ImmutableMap.of(), ImmutableList.of(), Uid.of("2"), "bar"))
         .testEquals();
   }
 }

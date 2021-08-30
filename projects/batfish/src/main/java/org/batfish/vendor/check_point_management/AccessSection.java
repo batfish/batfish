@@ -10,7 +10,7 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-/** A logical grouping of access-rules in a {@link AccessRulebase}. */
+/** A logical grouping of access-rules in a {@link AccessLayer}. */
 public final class AccessSection extends NamedManagementObject implements AccessRuleOrSection {
 
   public @Nonnull List<AccessRule> getRulebase() {
