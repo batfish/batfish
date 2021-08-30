@@ -8,6 +8,7 @@ import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static java.util.stream.Collectors.toMap;
 import static org.batfish.bddreachability.BDDMultipathInconsistency.computeMultipathInconsistencies;
 import static org.batfish.bddreachability.BDDReachabilityUtils.constructFlows;
+import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_ACCESS_RULEBASE;
 import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_GATEWAYS_AND_SERVERS;
 import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_NAT_RULEBASE;
 import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_PACKAGE;
@@ -240,6 +241,7 @@ import org.batfish.symbolic.IngressLocation;
 import org.batfish.topology.TopologyProviderImpl;
 import org.batfish.vendor.ConversionContext;
 import org.batfish.vendor.VendorConfiguration;
+import org.batfish.vendor.check_point_management.AccessRulebase;
 import org.batfish.vendor.check_point_management.CheckpointManagementConfiguration;
 import org.batfish.vendor.check_point_management.Domain;
 import org.batfish.vendor.check_point_management.GatewaysAndServers;
@@ -1579,6 +1581,45 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return config;
   }
 
+  private @Nonnull List<AccessRulebase> getAccessLayers(Map<String, String> packageFiles)
+      throws JsonProcessingException {
+    return packageFiles.containsKey(RELPATH_CHECKPOINT_SHOW_ACCESS_RULEBASE)
+        ? BatfishObjectMapper.ignoreUnknownMapper()
+            .readValue(
+                packageFiles.get(RELPATH_CHECKPOINT_SHOW_ACCESS_RULEBASE),
+                new TypeReference<List<AccessRulebase>>() {})
+        : ImmutableList.of();
+  }
+
+  private @Nullable NatRulebase getNatRulebase(
+      Package pakij,
+      Map<String, String> packageFiles,
+      ParseVendorConfigurationAnswerElement pvcae,
+      String serverName)
+      throws JsonProcessingException {
+    if (!pakij.hasNatPolicy()) {
+      return null;
+    }
+    List<NatRulebase> natRulebases =
+        packageFiles.containsKey(RELPATH_CHECKPOINT_SHOW_NAT_RULEBASE)
+            ? BatfishObjectMapper.ignoreUnknownMapper()
+                .readValue(
+                    packageFiles.get(RELPATH_CHECKPOINT_SHOW_NAT_RULEBASE),
+                    new TypeReference<List<NatRulebase>>() {})
+            : ImmutableList.of();
+    if (natRulebases.size() != 1) {
+      pvcae.addRedFlagWarning(
+          BfConsts.RELPATH_CHECKPOINT_MANAGEMENT_DIR,
+          new Warning(
+              String.format(
+                  "Checkpoint package %s in domain %s on server %s should contain exactly"
+                      + " one NAT rulebase, but contains %s",
+                  pakij.getName(), pakij.getDomain().getName(), serverName, natRulebases.size()),
+              "Checkpoint"));
+    }
+    return natRulebases.isEmpty() ? null : natRulebases.get(0);
+  }
+
   private @Nonnull CheckpointManagementConfiguration parseCheckpointManagementData(
       @Nonnull Map<String, String> cpManagementData,
       @Nonnull ParseVendorConfigurationAnswerElement pvcae)
@@ -1661,32 +1702,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
               BatfishObjectMapper.ignoreUnknownMapper()
                   .readValue(packageFiles.get(RELPATH_CHECKPOINT_SHOW_PACKAGE), Package.class);
           ManagementPackage mgmtPackage;
-          if (!pakij.hasNatPolicy()) {
-            mgmtPackage = new ManagementPackage(null, pakij);
-          } else {
-            List<NatRulebase> natRulebases =
-                packageFiles.containsKey(RELPATH_CHECKPOINT_SHOW_NAT_RULEBASE)
-                    ? BatfishObjectMapper.ignoreUnknownMapper()
-                        .readValue(
-                            packageFiles.get(RELPATH_CHECKPOINT_SHOW_NAT_RULEBASE),
-                            new TypeReference<List<NatRulebase>>() {})
-                    : ImmutableList.of();
-            if (natRulebases.size() != 1) {
-              pvcae.addRedFlagWarning(
-                  BfConsts.RELPATH_CHECKPOINT_MANAGEMENT_DIR,
-                  new Warning(
-                      String.format(
-                          "Checkpoint package %s in domain %s on server %s should contain exactly"
-                              + " one NAT rulebase, but contains %s",
-                          pakij.getName(),
-                          pakij.getDomain().getName(),
-                          serverName,
-                          natRulebases.size()),
-                      "Checkpoint"));
-            }
-            NatRulebase natRulebase = natRulebases.isEmpty() ? null : natRulebases.get(0);
-            mgmtPackage = new ManagementPackage(natRulebase, pakij);
-          }
+          List<AccessRulebase> accessLayers = getAccessLayers(packageFiles);
+          NatRulebase natRulebase = getNatRulebase(pakij, packageFiles, pvcae, serverName);
+          mgmtPackage = new ManagementPackage(accessLayers, natRulebase, pakij);
           packagesBuilder.put(mgmtPackage.getPackage().getUid(), mgmtPackage);
         }
         Map<Uid, ManagementPackage> packages = packagesBuilder.build();
