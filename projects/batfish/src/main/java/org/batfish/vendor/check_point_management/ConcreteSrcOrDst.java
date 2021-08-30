@@ -6,6 +6,7 @@ package org.batfish.vendor.check_point_management;
 public interface ConcreteSrcOrDst extends SrcOrDst {
   <T> T accept(ConcreteSrcOrDstVisitor<T> visitor);
 
+  @Override
   default <T> T accept(SrcOrDstVisitor<T> visitor) {
     return accept((ConcreteSrcOrDstVisitor<T>) visitor);
   }
