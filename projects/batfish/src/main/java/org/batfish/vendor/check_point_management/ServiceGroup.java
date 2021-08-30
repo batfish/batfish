@@ -8,7 +8,11 @@ import com.google.common.annotations.VisibleForTesting;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public final class ServiceGroup extends TypedManagementObject {
+public final class ServiceGroup extends TypedManagementObject implements ConcreteService {
+  @Override
+  public <T> T accept(ConcreteServiceVisitor<T> visitor) {
+    return visitor.visitServiceGroup(this);
+  }
 
   @Override
   public boolean equals(Object o) {

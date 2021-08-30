@@ -13,6 +13,11 @@ import org.batfish.datamodel.Ip;
 /** A single host address. */
 public final class Host extends AddressSpace {
 
+  @Override
+  public <T> T accept(ConcreteSrcOrDstVisitor<T> visitor) {
+    return visitor.visitHost(this);
+  }
+
   @JsonCreator
   private static @Nonnull Host create(
       @JsonProperty(PROP_IPV4_ADDRESS) @Nullable Ip ipv4Address,
