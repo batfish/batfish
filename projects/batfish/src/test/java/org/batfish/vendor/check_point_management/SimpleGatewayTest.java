@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -22,6 +23,7 @@ public final class SimpleGatewayTest {
             + "\"type\":\"simple-gateway\","
             + "\"uid\":\"0\","
             + "\"name\":\"foo\","
+            + "\"interfaces\": [],"
             + "\"ipv4-address\":\"0.0.0.0\","
             + "\"policy\":{"
             + "\"accessPolicyInstalled\": true,"
@@ -33,32 +35,59 @@ public final class SimpleGatewayTest {
     assertThat(
         BatfishObjectMapper.ignoreUnknownMapper().readValue(input, SimpleGateway.class),
         equalTo(
-            new SimpleGateway(Ip.ZERO, "foo", new GatewayOrServerPolicy("p1", "p2"), Uid.of("0"))));
+            new SimpleGateway(
+                Ip.ZERO,
+                "foo",
+                ImmutableList.of(),
+                new GatewayOrServerPolicy("p1", "p2"),
+                Uid.of("0"))));
   }
 
   @Test
   public void testJavaSerialization() {
     SimpleGateway obj =
-        new SimpleGateway(Ip.ZERO, "foo", GatewayOrServerPolicy.empty(), Uid.of("0"));
+        new SimpleGateway(
+            Ip.ZERO, "foo", ImmutableList.of(), GatewayOrServerPolicy.empty(), Uid.of("0"));
     assertEquals(obj, SerializationUtils.clone(obj));
   }
 
   @Test
   public void testEquals() {
     SimpleGateway obj =
-        new SimpleGateway(Ip.ZERO, "foo", GatewayOrServerPolicy.empty(), Uid.of("0"));
+        new SimpleGateway(
+            Ip.ZERO, "foo", ImmutableList.of(), GatewayOrServerPolicy.empty(), Uid.of("0"));
     new EqualsTester()
         .addEqualityGroup(
-            obj, new SimpleGateway(Ip.ZERO, "foo", GatewayOrServerPolicy.empty(), Uid.of("0")))
+            obj,
+            new SimpleGateway(
+                Ip.ZERO, "foo", ImmutableList.of(), GatewayOrServerPolicy.empty(), Uid.of("0")))
         .addEqualityGroup(
             new SimpleGateway(
-                Ip.parse("0.0.0.1"), "foo", GatewayOrServerPolicy.empty(), Uid.of("0")))
+                Ip.parse("0.0.0.1"),
+                "foo",
+                ImmutableList.of(),
+                GatewayOrServerPolicy.empty(),
+                Uid.of("0")))
         .addEqualityGroup(
-            new SimpleGateway(Ip.ZERO, "bar", GatewayOrServerPolicy.empty(), Uid.of("0")))
+            new SimpleGateway(
+                Ip.ZERO, "bar", ImmutableList.of(), GatewayOrServerPolicy.empty(), Uid.of("0")))
         .addEqualityGroup(
-            new SimpleGateway(Ip.ZERO, "foo", new GatewayOrServerPolicy("t1", null), Uid.of("0")))
+            new SimpleGateway(
+                Ip.ZERO,
+                "foo",
+                ImmutableList.of(new Interface("iface", new InterfaceTopology(true))),
+                GatewayOrServerPolicy.empty(),
+                Uid.of("0")))
         .addEqualityGroup(
-            new SimpleGateway(Ip.ZERO, "foo", GatewayOrServerPolicy.empty(), Uid.of("1")))
+            new SimpleGateway(
+                Ip.ZERO,
+                "foo",
+                ImmutableList.of(),
+                new GatewayOrServerPolicy("t1", null),
+                Uid.of("0")))
+        .addEqualityGroup(
+            new SimpleGateway(
+                Ip.ZERO, "foo", ImmutableList.of(), GatewayOrServerPolicy.empty(), Uid.of("1")))
         .testEquals();
   }
 }
