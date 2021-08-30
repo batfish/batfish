@@ -3,6 +3,7 @@ package org.batfish.datamodel;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.IOException;
@@ -43,5 +44,22 @@ public class PrefixRangeTest {
     Prefix slash32 = Prefix.parse("1.2.3.4/32");
     PrefixRange empty = PrefixRange.moreSpecificThan(slash32);
     assertFalse(empty.includesPrefixRange(PrefixRange.fromPrefix(slash32)));
+  }
+
+  @Test
+  public void testMoreSpecificThan() {
+    Prefix slash16 = Prefix.parse("1.2.3.4/16");
+    Prefix slash17 = Prefix.parse("1.2.3.4/17");
+    Prefix slash15 = Prefix.parse("1.2.3.4/15");
+
+    PrefixRange moreSpecific = PrefixRange.moreSpecificThan(slash16);
+    assertFalse(moreSpecific.includesPrefixRange(PrefixRange.fromPrefix(slash15)));
+    assertFalse(moreSpecific.includesPrefixRange(PrefixRange.fromPrefix(slash16)));
+    assertTrue(moreSpecific.includesPrefixRange(PrefixRange.fromPrefix(slash17)));
+
+    PrefixRange sameAsOrMoreSpecific = PrefixRange.sameAsOrMoreSpecificThan(slash16);
+    assertFalse(sameAsOrMoreSpecific.includesPrefixRange(PrefixRange.fromPrefix(slash15)));
+    assertTrue(sameAsOrMoreSpecific.includesPrefixRange(PrefixRange.fromPrefix(slash16)));
+    assertTrue(sameAsOrMoreSpecific.includesPrefixRange(PrefixRange.fromPrefix(slash17)));
   }
 }
