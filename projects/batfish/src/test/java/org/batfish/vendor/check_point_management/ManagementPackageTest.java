@@ -15,7 +15,7 @@ public final class ManagementPackageTest {
   public void testJavaSerialization() {
     ManagementPackage obj =
         new ManagementPackage(
-            null,
+            ImmutableList.of(),
             null,
             new Package(
                 new Domain("a", Uid.of("1")),
@@ -31,7 +31,7 @@ public final class ManagementPackageTest {
   public void testEquals() {
     ManagementPackage obj =
         new ManagementPackage(
-            null,
+            ImmutableList.of(),
             null,
             new Package(
                 new Domain("a", Uid.of("1")),
@@ -44,7 +44,7 @@ public final class ManagementPackageTest {
         .addEqualityGroup(
             obj,
             new ManagementPackage(
-                null,
+                ImmutableList.of(),
                 null,
                 new Package(
                     new Domain("a", Uid.of("1")),
@@ -67,7 +67,7 @@ public final class ManagementPackageTest {
                     Uid.of("1"))))
         .addEqualityGroup(
             new ManagementPackage(
-                null,
+                ImmutableList.of(),
                 new NatRulebase(ImmutableMap.of(), ImmutableList.of(), Uid.of("1")),
                 new Package(
                     new Domain("a", Uid.of("1")),
@@ -78,7 +78,7 @@ public final class ManagementPackageTest {
                     Uid.of("1"))))
         .addEqualityGroup(
             new ManagementPackage(
-                null,
+                ImmutableList.of(),
                 null,
                 new Package(
                     new Domain("a", Uid.of("1")),

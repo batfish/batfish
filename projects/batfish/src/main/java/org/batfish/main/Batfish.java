@@ -1581,7 +1581,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return config;
   }
 
-  private @Nullable List<AccessRulebase> getAccessRulebases(Map<String, String> packageFiles)
+  private @Nonnull List<AccessRulebase> getAccessLayers(Map<String, String> packageFiles)
       throws JsonProcessingException {
     return packageFiles.containsKey(RELPATH_CHECKPOINT_SHOW_ACCESS_RULEBASE)
         ? BatfishObjectMapper.ignoreUnknownMapper()
@@ -1702,9 +1702,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
               BatfishObjectMapper.ignoreUnknownMapper()
                   .readValue(packageFiles.get(RELPATH_CHECKPOINT_SHOW_PACKAGE), Package.class);
           ManagementPackage mgmtPackage;
-          List<AccessRulebase> accessRulebases = getAccessRulebases(packageFiles);
+          List<AccessRulebase> accessLayers = getAccessLayers(packageFiles);
           NatRulebase natRulebase = getNatRulebase(pakij, packageFiles, pvcae, serverName);
-          mgmtPackage = new ManagementPackage(accessRulebases, natRulebase, pakij);
+          mgmtPackage = new ManagementPackage(accessLayers, natRulebase, pakij);
           packagesBuilder.put(mgmtPackage.getPackage().getUid(), mgmtPackage);
         }
         Map<Uid, ManagementPackage> packages = packagesBuilder.build();

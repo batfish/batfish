@@ -810,7 +810,7 @@ public class CheckPointGatewayGrammarTest {
         ImmutableMap.of(
             Uid.of("2"),
             new ManagementPackage(
-                null,
+                ImmutableList.of(),
                 new NatRulebase(
                     ImmutableMap.of(
                         Uid.of("4"), new Network("n1", Ip.ZERO, Ip.ZERO, Uid.of("n1uid"))),
@@ -825,7 +825,7 @@ public class CheckPointGatewayGrammarTest {
                     Uid.of("2"))),
             Uid.of("7"),
             new ManagementPackage(
-                null,
+                ImmutableList.of(),
                 new NatRulebase(
                     ImmutableMap.of(
                         Uid.of("8"), new Network("n2", Ip.MAX, Ip.MAX, Uid.of("n2uid"))),
@@ -840,7 +840,7 @@ public class CheckPointGatewayGrammarTest {
                     Uid.of("11"))),
             Uid.of("16"),
             new ManagementPackage(
-                null,
+                ImmutableList.of(),
                 null,
                 new Package(
                     new Domain("d", Uid.of("0")),
