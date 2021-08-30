@@ -4,10 +4,9 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
 import com.google.common.primitives.Longs;
@@ -26,7 +25,7 @@ public class AsSet implements Serializable, Comparable<AsSet> {
   // Maximum size 2^16: Just some upper bound on cache size, well less than GiB.
   //   (8 bytes seems smallest possible entry (set(long)), would be 1 MiB total).
   private static final LoadingCache<AsSet, AsSet> CACHE =
-      CacheBuilder.newBuilder().softValues().maximumSize(1 << 16).build(CacheLoader.from(x -> x));
+      Caffeine.newBuilder().softValues().maximumSize(1 << 16).build(x -> x);
   private static final String PROP_ASNS = "asns";
   private static final String PROP_CONFEDERATION = "confederation";
 
@@ -56,7 +55,7 @@ public class AsSet implements Serializable, Comparable<AsSet> {
    */
   public static AsSet of(long... value) {
     AsSet set = new AsSet(value, false);
-    return CACHE.getUnchecked(set);
+    return CACHE.get(set);
   }
 
   /** Create a new empty confederation {@link AsSet}. */
@@ -67,7 +66,7 @@ public class AsSet implements Serializable, Comparable<AsSet> {
   /** Create a new confederation {@link AsSet} that is an immutable copy of {@code value}. */
   public static AsSet confed(long... value) {
     AsSet set = new AsSet(value, true);
-    return CACHE.getUnchecked(set);
+    return CACHE.get(set);
   }
 
   @JsonCreator
