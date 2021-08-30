@@ -5,7 +5,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -27,13 +26,12 @@ public final class CpmiGatewayCluster extends Cluster implements ConcreteSrcOrDs
       @JsonProperty(PROP_POLICY) @Nullable GatewayOrServerPolicy policy,
       @JsonProperty(PROP_UID) @Nullable Uid uid) {
     checkArgument(clusterMemberNames != null, "Missing %s", PROP_CLUSTER_MEMBER_NAMES);
+    checkArgument(interfaces != null, "Missing %s", PROP_INTERFACES);
     checkArgument(ipv4Address != null, "Missing %s", PROP_IPV4_ADDRESS);
     checkArgument(name != null, "Missing %s", PROP_NAME);
     checkArgument(policy != null, "Missing %s", PROP_POLICY);
     checkArgument(uid != null, "Missing %s", PROP_UID);
-    List<Interface> ifaces =
-        interfaces != null ? ImmutableList.copyOf(interfaces) : ImmutableList.of();
-    return new CpmiGatewayCluster(clusterMemberNames, ipv4Address, name, ifaces, policy, uid);
+    return new CpmiGatewayCluster(clusterMemberNames, ipv4Address, name, interfaces, policy, uid);
   }
 
   @VisibleForTesting

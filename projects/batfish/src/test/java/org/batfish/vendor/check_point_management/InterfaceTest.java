@@ -37,7 +37,6 @@ public class InterfaceTest {
         .addEqualityGroup(obj, new Interface("iface", new InterfaceTopology(true)))
         .addEqualityGroup(new Interface("foo", new InterfaceTopology(true)))
         .addEqualityGroup(new Interface("iface", new InterfaceTopology(false)))
-        .addEqualityGroup(new Object())
         .testEquals();
   }
 }

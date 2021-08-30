@@ -39,8 +39,7 @@ public final class Interface implements Serializable {
   public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
-    }
-    if (!(o instanceof Interface)) {
+    } else if (!(o instanceof Interface)) {
       return false;
     }
     Interface that = (Interface) o;

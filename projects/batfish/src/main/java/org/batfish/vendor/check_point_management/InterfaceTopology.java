@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
 import java.io.Serializable;
-import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -32,8 +31,7 @@ public class InterfaceTopology implements Serializable {
   public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
-    }
-    if (!(o instanceof InterfaceTopology)) {
+    } else if (!(o instanceof InterfaceTopology)) {
       return false;
     }
     InterfaceTopology that = (InterfaceTopology) o;
@@ -42,7 +40,7 @@ public class InterfaceTopology implements Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_leadsToInternet);
+    return Boolean.hashCode(_leadsToInternet);
   }
 
   private static final String PROP_LEADS_TO_INTERNET = "leads-to-internet";
