@@ -13,15 +13,13 @@ import javax.annotation.Nullable;
 public final class ManagementPackage implements Serializable {
 
   public ManagementPackage(
-      @Nonnull List<AccessRulebase> accessLayers,
-      @Nullable NatRulebase natRulebase,
-      Package pakij) {
+      List<AccessLayer> accessLayers, @Nullable NatRulebase natRulebase, Package pakij) {
     _accessLayers = ImmutableList.copyOf(accessLayers);
     _natRulebase = natRulebase;
     _package = pakij;
   }
 
-  public @Nonnull List<AccessRulebase> getAccessLayers() {
+  public @Nonnull List<AccessLayer> getAccessLayers() {
     return _accessLayers;
   }
 
@@ -60,7 +58,7 @@ public final class ManagementPackage implements Serializable {
         .toString();
   }
 
-  private final @Nonnull List<AccessRulebase> _accessLayers;
+  private final @Nonnull List<AccessLayer> _accessLayers;
   private final @Nullable NatRulebase _natRulebase;
   private final @Nonnull Package _package;
 }
