@@ -2,6 +2,7 @@ package org.batfish.vendor.check_point_management;
 
 import static org.junit.Assert.assertEquals;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
@@ -44,11 +45,13 @@ public final class ManagementDomainTest {
                 ImmutableMap.of(
                     Uid.of("1"),
                     new ManagementPackage(
+                        ImmutableList.of(),
                         null,
                         new Package(
                             new Domain("a", Uid.of("1")),
                             AllInstallationTargets.instance(),
                             "b",
+                            false,
                             false,
                             Uid.of("1"))))))
         .testEquals();
