@@ -32,7 +32,7 @@ public class RouteMapSetCommunityListDelete extends RouteMapSetLine {
       }
     }
     CommunityMatchExpr shouldDelete =
-        new CommunityMatchAny(
+        CommunityMatchAny.matchAny(
             _communityLists.stream()
                 .map(CommunityMatchExprReference::new)
                 .collect(ImmutableList.toImmutableList()));

@@ -766,7 +766,7 @@ final class AristaConversions {
   @Nonnull
   static CommunitySetMatchExpr toCommunitySetMatchExpr(
       ExpandedCommunityList ipCommunityListExpanded) {
-    return new CommunitySetAcl(
+    return CommunitySetAcl.acl(
         ipCommunityListExpanded.getLines().stream()
             .map(AristaConversions::toCommunitySetAclLine)
             .collect(ImmutableList.toImmutableList()));
@@ -775,7 +775,7 @@ final class AristaConversions {
   @Nonnull
   static CommunitySetMatchExpr toCommunitySetMatchExpr(
       StandardCommunityList ipCommunityListStandard) {
-    return new CommunitySetAcl(
+    return CommunitySetAcl.acl(
         ipCommunityListStandard.getLines().stream()
             .map(AristaConversions::toCommunitySetAclLine)
             .collect(ImmutableList.toImmutableList()));
@@ -785,7 +785,7 @@ final class AristaConversions {
   private static CommunitySetAclLine toCommunitySetAclLine(StandardCommunityListLine line) {
     return new CommunitySetAclLine(
         line.getAction(),
-        new CommunitySetMatchAll(
+        CommunitySetMatchAll.matchAll(
             line.getCommunities().stream()
                 .map(community -> new HasCommunity(new CommunityIs(community)))
                 .collect(ImmutableSet.toImmutableSet())));
@@ -793,7 +793,7 @@ final class AristaConversions {
 
   @Nonnull
   static CommunityMatchExpr toCommunityMatchExpr(ExpandedCommunityList ipCommunityListExpanded) {
-    return new CommunityAcl(
+    return CommunityAcl.acl(
         ipCommunityListExpanded.getLines().stream()
             .map(AristaConversions::toCommunityAclLine)
             .collect(ImmutableList.toImmutableList()));

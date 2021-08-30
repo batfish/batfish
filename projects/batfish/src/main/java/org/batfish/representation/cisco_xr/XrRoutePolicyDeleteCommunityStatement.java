@@ -43,7 +43,7 @@ public final class XrRoutePolicyDeleteCommunityStatement extends RoutePolicySetS
         .accept(CommunitySetExprToCommunityMatchExpr.INSTANCE, c)
         .map(
             communityMatchExpr ->
-                _negated ? new CommunityNot(communityMatchExpr) : communityMatchExpr)
+                _negated ? CommunityNot.not(communityMatchExpr) : communityMatchExpr)
         .<Statement>map(
             communityMatchExpr ->
                 new SetCommunities(

@@ -1291,7 +1291,7 @@ public final class CumulusConversions {
   @VisibleForTesting
   @Nullable
   static Long inferClusterId(
-      final BgpVrf bgpVrf, final Ip routerId, final BgpNeighbor neighbor, @Nullable Long localAs) {
+      BgpVrf bgpVrf, Ip routerId, BgpNeighbor neighbor, @Nullable Long localAs) {
     assert neighbor.getRemoteAs() != null; // precondition
     // Do not set cluster Id if peer is eBGP
     if (neighbor.getRemoteAs().isKnownEbgp(localAs)) {
@@ -1505,7 +1505,7 @@ public final class CumulusConversions {
   @VisibleForTesting
   static @Nonnull CommunityMatchExpr toCommunityMatchExpr(
       IpCommunityListExpanded ipCommunityListExpanded) {
-    return new CommunityAcl(
+    return CommunityAcl.acl(
         ipCommunityListExpanded.getLines().stream()
             .map(CumulusConversions::toCommunityAclLine)
             .collect(ImmutableList.toImmutableList()));
@@ -1513,7 +1513,7 @@ public final class CumulusConversions {
 
   private static @Nonnull CommunitySetMatchExpr toCommunitySetMatchExpr(
       IpCommunityListStandard ipCommunityListStandard) {
-    return new CommunitySetAcl(
+    return CommunitySetAcl.acl(
         ipCommunityListStandard.getLines().stream()
             .map(CumulusConversions::toCommunitySetAclLine)
             .collect(ImmutableList.toImmutableList()));
@@ -1521,7 +1521,7 @@ public final class CumulusConversions {
 
   private static @Nonnull CommunitySetMatchExpr toCommunitySetMatchExpr(
       IpCommunityListExpanded ipCommunityListExpanded) {
-    return new CommunitySetAcl(
+    return CommunitySetAcl.acl(
         ipCommunityListExpanded.getLines().stream()
             .map(CumulusConversions::toCommunitySetAclLine)
             .collect(ImmutableList.toImmutableList()));
@@ -1531,7 +1531,7 @@ public final class CumulusConversions {
       IpCommunityListStandardLine line) {
     return new CommunitySetAclLine(
         line.getAction(),
-        new CommunitySetMatchAll(
+        CommunitySetMatchAll.matchAll(
             line.getCommunities().stream()
                 .map(community -> new HasCommunity(new CommunityIs(community)))
                 .collect(ImmutableSet.toImmutableSet())));

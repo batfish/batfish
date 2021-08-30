@@ -4,16 +4,32 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.LineAction;
 
 /** An access-control list for matching a {@link CommunitySet}. */
 public final class CommunitySetAcl extends CommunitySetMatchExpr {
 
+  public static CommunitySetMatchExpr acl(List<CommunitySetAclLine> lines) {
+    if (lines.size() == 1) {
+      CommunitySetAclLine line = lines.get(0);
+      if (line.getAction() == LineAction.PERMIT) {
+        return line.getCommunitySetMatchExpr();
+      }
+      // A single deny line -> match any of nothing.
+      return CommunitySetMatchAny.matchAny(ImmutableSet.of());
+    }
+    return new CommunitySetAcl(lines);
+  }
+
+  @VisibleForTesting
   public CommunitySetAcl(List<CommunitySetAclLine> lines) {
-    _lines = lines;
+    _lines = ImmutableList.copyOf(lines);
   }
 
   @JsonProperty(PROP_LINES)

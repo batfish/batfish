@@ -43,10 +43,10 @@ public final class XrRoutePolicyDeleteAllStatement extends RoutePolicySetStateme
       new SetCommunities(
           new CommunitySetDifference(
               InputCommunities.instance(),
-              new CommunityMatchAll(
+              CommunityMatchAll.matchAll(
                   ImmutableList.of(
                       AllStandardCommunities.instance(),
-                      new CommunityNot(
+                      CommunityNot.not(
                           new CommunityIn(
                               new LiteralCommunitySet(
                                   org.batfish.datamodel.routing_policy.communities.CommunitySet.of(

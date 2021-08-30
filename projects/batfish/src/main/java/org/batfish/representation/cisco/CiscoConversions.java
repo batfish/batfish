@@ -1937,7 +1937,7 @@ public class CiscoConversions {
         new If(
             new MatchCommunities(
                 InputCommunities.instance(),
-                new CommunitySetMatchAny(
+                CommunitySetMatchAny.matchAny(
                     routeTargetImport.stream()
                         .map(CommunityIs::new)
                         .map(HasCommunity::new)

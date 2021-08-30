@@ -1623,7 +1623,7 @@ public class AsaConversions {
   @Nonnull
   static CommunitySetMatchExpr toCommunitySetMatchExpr(
       ExpandedCommunityList ipCommunityListExpanded) {
-    return new CommunitySetAcl(
+    return CommunitySetAcl.acl(
         ipCommunityListExpanded.getLines().stream()
             .map(AsaConversions::toCommunitySetAclLine)
             .collect(ImmutableList.toImmutableList()));
@@ -1632,7 +1632,7 @@ public class AsaConversions {
   @Nonnull
   static CommunitySetMatchExpr toCommunitySetMatchExpr(
       StandardCommunityList ipCommunityListStandard) {
-    return new CommunitySetAcl(
+    return CommunitySetAcl.acl(
         ipCommunityListStandard.getLines().stream()
             .map(AsaConversions::toCommunitySetAclLine)
             .collect(ImmutableList.toImmutableList()));
@@ -1642,7 +1642,7 @@ public class AsaConversions {
   private static CommunitySetAclLine toCommunitySetAclLine(StandardCommunityListLine line) {
     return new CommunitySetAclLine(
         line.getAction(),
-        new CommunitySetMatchAll(
+        CommunitySetMatchAll.matchAll(
             line.getCommunities().stream()
                 .map(community -> new HasCommunity(new CommunityIs(community)))
                 .collect(ImmutableSet.toImmutableSet())));
@@ -1945,7 +1945,7 @@ public class AsaConversions {
         new If(
             new MatchCommunities(
                 InputCommunities.instance(),
-                new CommunitySetMatchAny(
+                CommunitySetMatchAny.matchAny(
                     routeTargetImport.stream()
                         .map(CommunityIs::new)
                         .map(HasCommunity::new)

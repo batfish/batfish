@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.bgp.community.Community;
@@ -11,6 +12,14 @@ import org.batfish.datamodel.bgp.community.Community;
 /** Matches a {@link Community} iff it is not matched by the provided {@link CommunityMatchExpr}. */
 public final class CommunityNot extends CommunityMatchExpr {
 
+  public static CommunityMatchExpr not(CommunityMatchExpr expr) {
+    if (expr instanceof CommunityNot) {
+      return ((CommunityNot) expr)._expr;
+    }
+    return new CommunityNot(expr);
+  }
+
+  @VisibleForTesting
   public CommunityNot(CommunityMatchExpr expr) {
     _expr = expr;
   }

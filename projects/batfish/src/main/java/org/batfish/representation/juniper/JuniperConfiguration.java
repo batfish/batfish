@@ -880,12 +880,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
    */
   private static @Nonnull CommunityMatchExpr toCommunityMatchExpr(NamedCommunity namedCommunity) {
     CommunityMatchExpr match =
-        new CommunityMatchAny(
+        CommunityMatchAny.matchAny(
             namedCommunity.getMembers().stream()
                 .map(member -> member.accept(CommunityMemberToCommunityMatchExpr.INSTANCE))
                 .collect(ImmutableSet.toImmutableSet()));
     if (namedCommunity.getInvertMatch()) {
-      return new CommunityNot(match);
+      return CommunityNot.not(match);
     }
     return match;
   }
@@ -898,13 +898,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
   private static @Nonnull CommunitySetMatchExpr toCommunitySetMatchExpr(
       NamedCommunity namedCommunity) {
     CommunitySetMatchExpr match =
-        new CommunitySetMatchAll(
+        CommunitySetMatchAll.matchAll(
             namedCommunity.getMembers().stream()
                 .map(member -> member.accept(CommunityMemberToCommunityMatchExpr.INSTANCE))
                 .map(HasCommunity::new)
                 .collect(ImmutableSet.toImmutableSet()));
     if (namedCommunity.getInvertMatch()) {
-      return new CommunitySetNot(match);
+      return CommunitySetNot.not(match);
     }
     return match;
   }

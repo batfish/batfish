@@ -4,8 +4,10 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -17,6 +19,15 @@ import javax.annotation.Nullable;
  */
 public final class CommunityMatchAll extends CommunityMatchExpr {
 
+  public static CommunityMatchExpr matchAll(Iterable<CommunityMatchExpr> exprs) {
+    Set<CommunityMatchExpr> exprsSet = ImmutableSet.copyOf(exprs);
+    if (exprsSet.size() == 1) {
+      return Iterables.getOnlyElement(exprsSet);
+    }
+    return new CommunityMatchAll(exprsSet);
+  }
+
+  @VisibleForTesting
   public CommunityMatchAll(Iterable<CommunityMatchExpr> exprs) {
     _exprs = ImmutableSet.copyOf(exprs);
   }
