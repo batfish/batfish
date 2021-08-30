@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
@@ -27,7 +28,7 @@ public final class CpmiHostCkp extends GatewayOrServer {
 
   @VisibleForTesting
   CpmiHostCkp(Ip ipv4Address, String name, GatewayOrServerPolicy policy, Uid uid) {
-    super(ipv4Address, name, policy, uid);
+    super(ipv4Address, name, ImmutableList.of(), policy, uid);
   }
 
   @Override

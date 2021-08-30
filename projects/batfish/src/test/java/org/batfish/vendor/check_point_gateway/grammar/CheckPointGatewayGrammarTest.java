@@ -796,16 +796,32 @@ public class CheckPointGatewayGrammarTest {
         ImmutableMap.of(
             Uid.of("1"),
             new SimpleGateway(
-                Ip.parse("1.0.0.1"), "g1", new GatewayOrServerPolicy("p1", null), Uid.of("1")),
+                Ip.parse("1.0.0.1"),
+                "g1",
+                ImmutableList.of(),
+                new GatewayOrServerPolicy("p1", null),
+                Uid.of("1")),
             Uid.of("13"),
             new SimpleGateway(
-                Ip.parse("2.0.0.1"), "g2", new GatewayOrServerPolicy("p2", null), Uid.of("13")),
+                Ip.parse("2.0.0.1"),
+                "g2",
+                ImmutableList.of(),
+                new GatewayOrServerPolicy("p2", null),
+                Uid.of("13")),
             Uid.of("14"),
             new SimpleGateway(
-                Ip.parse("3.0.0.1"), "g3", new GatewayOrServerPolicy("p3", null), Uid.of("14")),
+                Ip.parse("3.0.0.1"),
+                "g3",
+                ImmutableList.of(),
+                new GatewayOrServerPolicy("p3", null),
+                Uid.of("14")),
             Uid.of("15"),
             new SimpleGateway(
-                Ip.parse("4.0.0.1"), "g4", new GatewayOrServerPolicy(null, null), Uid.of("15")));
+                Ip.parse("4.0.0.1"),
+                "g4",
+                ImmutableList.of(),
+                new GatewayOrServerPolicy(null, null),
+                Uid.of("15")));
     ImmutableMap<Uid, ManagementPackage> packages =
         ImmutableMap.of(
             Uid.of("2"),
