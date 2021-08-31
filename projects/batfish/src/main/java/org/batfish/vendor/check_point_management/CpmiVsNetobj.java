@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
+import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
@@ -14,20 +15,27 @@ public final class CpmiVsNetobj extends GatewayOrServer {
 
   @JsonCreator
   private static @Nonnull CpmiVsNetobj create(
+      @JsonProperty(PROP_INTERFACES) @Nullable List<Interface> interfaces,
       @JsonProperty(PROP_IPV4_ADDRESS) @Nullable Ip ipv4Address,
       @JsonProperty(PROP_NAME) @Nullable String name,
       @JsonProperty(PROP_POLICY) @Nullable GatewayOrServerPolicy policy,
       @JsonProperty(PROP_UID) @Nullable Uid uid) {
+    checkArgument(interfaces != null, "Missing %s", PROP_INTERFACES);
     checkArgument(ipv4Address != null, "Missing %s", PROP_IPV4_ADDRESS);
     checkArgument(name != null, "Missing %s", PROP_NAME);
     checkArgument(policy != null, "Missing %s", PROP_POLICY);
     checkArgument(uid != null, "Missing %s", PROP_UID);
-    return new CpmiVsNetobj(ipv4Address, name, policy, uid);
+    return new CpmiVsNetobj(ipv4Address, name, interfaces, policy, uid);
   }
 
   @VisibleForTesting
-  CpmiVsNetobj(Ip ipv4Address, String name, GatewayOrServerPolicy policy, Uid uid) {
-    super(ipv4Address, name, policy, uid);
+  CpmiVsNetobj(
+      Ip ipv4Address,
+      String name,
+      List<Interface> interfaces,
+      GatewayOrServerPolicy policy,
+      Uid uid) {
+    super(ipv4Address, name, interfaces, policy, uid);
   }
 
   @Override

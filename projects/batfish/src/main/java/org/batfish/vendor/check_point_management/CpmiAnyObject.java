@@ -9,11 +9,21 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * When assigned to {@code original-destination},{@code original-service}, or {@code
+ * When assigned to {@code original-destination}, {@code original-service}, or {@code
  * original-source} field of a {@link NatRule}, indicates that any value shall be matched for that
  * field when applying the rule.
  */
-public final class CpmiAnyObject extends TypedManagementObject {
+public final class CpmiAnyObject extends TypedManagementObject implements SrcOrDst, Service {
+
+  @Override
+  public <T> T accept(SrcOrDstVisitor<T> visitor) {
+    return visitor.visitCpmiAnyObject(this);
+  }
+
+  @Override
+  public <T> T accept(ServiceVisitor<T> visitor) {
+    return visitor.visitCpmiAnyObject(this);
+  }
 
   @Override
   public boolean equals(Object o) {

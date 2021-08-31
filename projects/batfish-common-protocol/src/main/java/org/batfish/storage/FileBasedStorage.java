@@ -2038,13 +2038,14 @@ public class FileBasedStorage implements StorageProvider {
   }
 
   /**
-   * Returns if it is safe to delete this network's folder, based on the last modified of its
-   * subdirs and snapshots.
+   * Returns if it is safe to delete this network's folder, based on the last modified times of
+   * itself, its subdirs, and its snapshots.
    */
   @VisibleForTesting
   boolean canExpungeNetwork(NetworkId networkId, Instant expungeBeforeDate) throws IOException {
-    try (Stream<Path> subdirs = list(getNetworkDir(networkId))) {
-      if (!canExpunge(expungeBeforeDate, Streams.concat(subdirs))) {
+    Path networkDir = getNetworkDir(networkId);
+    try (Stream<Path> subdirs = list(networkDir)) {
+      if (!canExpunge(expungeBeforeDate, Streams.concat(Stream.of(networkDir), subdirs))) {
         return false;
       }
     }

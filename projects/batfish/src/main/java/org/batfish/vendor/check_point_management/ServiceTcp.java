@@ -8,7 +8,11 @@ import com.google.common.annotations.VisibleForTesting;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public final class ServiceTcp extends TypedManagementObject {
+public final class ServiceTcp extends TypedManagementObject implements ConcreteService {
+  @Override
+  public <T> T accept(ConcreteServiceVisitor<T> visitor) {
+    return visitor.visitServiceTcp(this);
+  }
 
   @Override
   public boolean equals(Object o) {

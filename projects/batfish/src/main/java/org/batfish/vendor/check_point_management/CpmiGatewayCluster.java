@@ -11,21 +11,27 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 
 /** Data model for an object of type {@code CpmiGatewayCluster}. */
-public final class CpmiGatewayCluster extends Cluster {
+public final class CpmiGatewayCluster extends Cluster implements ConcreteSrcOrDst {
+  @Override
+  public <T> T accept(ConcreteSrcOrDstVisitor<T> visitor) {
+    return visitor.visitCpmiGatewayCluster(this);
+  }
 
   @JsonCreator
   private static @Nonnull CpmiGatewayCluster create(
       @JsonProperty(PROP_CLUSTER_MEMBER_NAMES) @Nullable List<String> clusterMemberNames,
+      @JsonProperty(PROP_INTERFACES) @Nullable List<Interface> interfaces,
       @JsonProperty(PROP_IPV4_ADDRESS) @Nullable Ip ipv4Address,
       @JsonProperty(PROP_NAME) @Nullable String name,
       @JsonProperty(PROP_POLICY) @Nullable GatewayOrServerPolicy policy,
       @JsonProperty(PROP_UID) @Nullable Uid uid) {
     checkArgument(clusterMemberNames != null, "Missing %s", PROP_CLUSTER_MEMBER_NAMES);
+    checkArgument(interfaces != null, "Missing %s", PROP_INTERFACES);
     checkArgument(ipv4Address != null, "Missing %s", PROP_IPV4_ADDRESS);
     checkArgument(name != null, "Missing %s", PROP_NAME);
     checkArgument(policy != null, "Missing %s", PROP_POLICY);
     checkArgument(uid != null, "Missing %s", PROP_UID);
-    return new CpmiGatewayCluster(clusterMemberNames, ipv4Address, name, policy, uid);
+    return new CpmiGatewayCluster(clusterMemberNames, ipv4Address, name, interfaces, policy, uid);
   }
 
   @VisibleForTesting
@@ -33,9 +39,10 @@ public final class CpmiGatewayCluster extends Cluster {
       List<String> clusterMemberNames,
       Ip ipv4Address,
       String name,
+      List<Interface> interfaces,
       GatewayOrServerPolicy policy,
       Uid uid) {
-    super(clusterMemberNames, ipv4Address, name, policy, uid);
+    super(clusterMemberNames, ipv4Address, name, interfaces, policy, uid);
   }
 
   @Override
