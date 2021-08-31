@@ -98,7 +98,6 @@ import org.batfish.vendor.check_point_gateway.representation.StaticRoute;
 import org.batfish.vendor.check_point_management.AccessLayer;
 import org.batfish.vendor.check_point_management.AccessRule;
 import org.batfish.vendor.check_point_management.AccessRuleOrSection;
-import org.batfish.vendor.check_point_management.AccessSection;
 import org.batfish.vendor.check_point_management.AllInstallationTargets;
 import org.batfish.vendor.check_point_management.CheckpointManagementConfiguration;
 import org.batfish.vendor.check_point_management.CpmiAnyObject;
@@ -948,15 +947,11 @@ public class CheckPointGatewayGrammarTest {
 
   @Test
   public void testAccessRulesConversion() throws IOException {
-    CpmiAnyObject any = new CpmiAnyObject(Uid.of("99999"));
-    ImmutableList<Uid> listOfCmpiAny = ImmutableList.of(Uid.of("99999"));
+    Uid cpmiAnyUid = Uid.of("99999");
+    CpmiAnyObject any = new CpmiAnyObject(cpmiAnyUid);
     Uid acceptUid = Uid.of("31");
     Uid dropUid = Uid.of("32");
     String accessLayerName = "accessLayerFoo";
-    String ruleAllow = "allow";
-    String ruleAllowNegatedSection = "allow negated section";
-    String ruleAllowNegated = "allow negated";
-    String ruleBlockAll = "block all";
 
     ImmutableList<TypedManagementObject> objs =
         ImmutableList.of(
@@ -974,66 +969,18 @@ public class CheckPointGatewayGrammarTest {
             new RulebaseAction("Drop", dropUid, "Drop"));
     ImmutableList<AccessRuleOrSection> rulebase =
         ImmutableList.of(
-            new AccessRule(
-                acceptUid,
-                "comments",
-                listOfCmpiAny,
-                "any",
-                false,
-                ImmutableList.of(Uid.of("12")), // dest - eth2 network
-                false,
-                true,
-                listOfCmpiAny,
-                ruleAllow,
-                1,
-                listOfCmpiAny,
-                false,
-                ImmutableList.of(Uid.of("11")), // src - eth1 network
-                false,
-                Uid.of("100"),
-                listOfCmpiAny),
-            new AccessSection(
-                ruleAllowNegatedSection,
-                ImmutableList.of(
-                    new AccessRule(
-                        acceptUid,
-                        "comments",
-                        listOfCmpiAny,
-                        "any",
-                        false,
-                        ImmutableList.of(
-                            Uid.of("12"), Uid.of("13")), // dest - eth2, eth3 network (negated)
-                        true,
-                        true,
-                        listOfCmpiAny,
-                        ruleAllowNegated,
-                        2,
-                        listOfCmpiAny,
-                        false,
-                        ImmutableList.of(
-                            Uid.of("10"), Uid.of("11")), // src - eth0, eth1 network (negated)
-                        true,
-                        Uid.of("102"),
-                        listOfCmpiAny)),
-                Uid.of("101")),
-            new AccessRule(
-                dropUid,
-                "comments",
-                listOfCmpiAny,
-                "any",
-                false,
-                listOfCmpiAny,
-                false,
-                true,
-                listOfCmpiAny,
-                ruleBlockAll,
-                4,
-                listOfCmpiAny,
-                false,
-                listOfCmpiAny,
-                false,
-                Uid.of("103"),
-                listOfCmpiAny));
+            AccessRule.testBuilder(cpmiAnyUid)
+                .setAction(acceptUid)
+                .setDestination(ImmutableList.of(Uid.of("12"))) // dst - net2
+                .setSource(ImmutableList.of(Uid.of("11"))) // src - net1
+                .setUid(Uid.of("100"))
+                .setName("acceptNet1ToNet2")
+                .build(),
+            AccessRule.testBuilder(cpmiAnyUid)
+                .setAction(dropUid)
+                .setUid(Uid.of("101"))
+                .setName("dropAll")
+                .build());
 
     ImmutableMap<Uid, ManagementPackage> packages =
         ImmutableMap.of(
@@ -1072,22 +1019,13 @@ public class CheckPointGatewayGrammarTest {
 
     // eth1 to eth2
     Flow permitted = createFlow("10.0.1.10", "10.0.2.10");
-    // not eth0, eth1 to not eth2, eth3
-    Flow permittedNegated = createFlow("10.0.100.10", "10.0.200.10");
-    // eth0 to eth3
-    Flow denied = createFlow("10.0.0.10", "10.0.3.10");
+    // eth1 to eth3
+    Flow denied = createFlow("10.0.1.10", "10.0.3.10");
 
-    // Confirm converted AccessLayer and composite ACL have the same, correct behavior
+    // Confirm access-layer and composite ACL have the same, correct behavior
     assertThat(c, hasIpAccessList(accessLayerName, accepts(permitted, "eth1", c)));
-    assertThat(c, hasIpAccessList(accessLayerName, accepts(permittedNegated, "eth1", c)));
     assertThat(c, hasIpAccessList(accessLayerName, rejects(denied, "eth1", c)));
     assertThat(c, hasIpAccessList(INTERFACE_ACL_NAME, accepts(permitted, "eth1", c)));
-    assertThat(c, hasIpAccessList(INTERFACE_ACL_NAME, accepts(permittedNegated, "eth1", c)));
     assertThat(c, hasIpAccessList(INTERFACE_ACL_NAME, rejects(denied, "eth1", c)));
-
-    // Confirm the AccessSection has its own IpAccessList with the correct behavior
-    assertThat(c, hasIpAccessList(ruleAllowNegatedSection, rejects(permitted, "eth1", c)));
-    assertThat(c, hasIpAccessList(ruleAllowNegatedSection, accepts(permittedNegated, "eth1", c)));
-    assertThat(c, hasIpAccessList(ruleAllowNegatedSection, rejects(denied, "eth1", c)));
   }
 }
