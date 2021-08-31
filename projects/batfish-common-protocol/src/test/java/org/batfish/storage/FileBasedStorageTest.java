@@ -716,6 +716,13 @@ public final class FileBasedStorageTest {
     Instant oldTime = Instant.now().minus(GC_SKEW_ALLOWANCE).minus(1, ChronoUnit.MINUTES);
     Files.setLastModifiedTime(blobPath.getParent(), FileTime.from(oldTime));
 
+    // should not be expunged since network dir is not old enough
+    _storage.runGarbageCollection();
+    assertTrue(Files.exists(networkDir));
+
+    // make the network dir old
+    Files.setLastModifiedTime(networkDir, FileTime.from(oldTime));
+
     _storage.runGarbageCollection();
     assertFalse(Files.exists(_storage.getNetworkDir(networkId)));
   }
@@ -731,6 +738,7 @@ public final class FileBasedStorageTest {
 
     // confirm behavior for blob
     _storage.mkdirs(_storage.getNetworkBlobsDir(networkId));
+    Files.setLastModifiedTime(_storage.getNetworkDir(networkId), oldFileTime);
     Files.setLastModifiedTime(_storage.getNetworkBlobsDir(networkId), newFileTime);
     assertFalse(_storage.canExpungeNetwork(networkId, expungeTime));
 
@@ -739,11 +747,21 @@ public final class FileBasedStorageTest {
 
     // confirm behavior for snapshots
     _storage.mkdirs(_storage.getAnswersDir(networkId, snapshotId));
+    // mkdirs creates snapshots dir, which modifies network dir time
+    Files.setLastModifiedTime(_storage.getNetworkDir(networkId), oldFileTime);
+    Files.setLastModifiedTime(_storage.getSnapshotsDir(networkId), oldFileTime);
     Files.setLastModifiedTime(_storage.getAnswersDir(networkId, snapshotId), newFileTime);
     assertFalse(_storage.canExpungeNetwork(networkId, expungeTime));
 
-    Files.setLastModifiedTime(_storage.getSnapshotsDir(networkId), oldFileTime);
+    Files.setLastModifiedTime(_storage.getAnswersDir(networkId, snapshotId), oldFileTime);
     setSnapshotLastModifiedTime(networkId, snapshotId, oldFileTime);
+    assertTrue(_storage.canExpungeNetwork(networkId, expungeTime));
+
+    // confirm behavior for network dir
+    Files.setLastModifiedTime(_storage.getNetworkDir(networkId), newFileTime);
+    assertFalse(_storage.canExpungeNetwork(networkId, expungeTime));
+    // final sanity check
+    Files.setLastModifiedTime(_storage.getNetworkDir(networkId), oldFileTime);
     assertTrue(_storage.canExpungeNetwork(networkId, expungeTime));
   }
 
