@@ -31,7 +31,7 @@ public final class CpmiAnyObject extends TypedManagementObject {
   }
 
   @VisibleForTesting
-  CpmiAnyObject(Uid uid) {
+  public CpmiAnyObject(Uid uid) {
     super(NAME_ANY, uid);
   }
 

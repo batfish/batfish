@@ -34,7 +34,7 @@ public final class ServiceTcp extends TypedManagementObject {
   }
 
   @VisibleForTesting
-  ServiceTcp(String name, Uid uid) {
+  public ServiceTcp(String name, Uid uid) {
     super(name, uid);
   }
 }

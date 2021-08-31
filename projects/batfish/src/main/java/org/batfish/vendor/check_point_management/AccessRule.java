@@ -74,7 +74,7 @@ public final class AccessRule extends NamedManagementObject implements AccessRul
   }
 
   @VisibleForTesting
-  AccessRule(
+  public AccessRule(
       Uid action,
       String comments,
       List<Uid> content,

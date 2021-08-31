@@ -1,6 +1,7 @@
 package org.batfish.vendor.check_point_gateway.representation;
 
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
+import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toIpAccessList;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toIpSpace;
 
 import com.google.common.collect.ImmutableList;
@@ -18,6 +19,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.VendorConversionException;
+import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -26,6 +28,7 @@ import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
@@ -36,6 +39,7 @@ import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.vendor.ConversionContext;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.vendor.check_point_gateway.representation.BondingGroup.Mode;
+import org.batfish.vendor.check_point_management.AccessLayer;
 import org.batfish.vendor.check_point_management.AddressRange;
 import org.batfish.vendor.check_point_management.CheckpointManagementConfiguration;
 import org.batfish.vendor.check_point_management.GatewayOrServer;
@@ -44,10 +48,13 @@ import org.batfish.vendor.check_point_management.ManagementPackage;
 import org.batfish.vendor.check_point_management.ManagementServer;
 import org.batfish.vendor.check_point_management.NatRulebase;
 import org.batfish.vendor.check_point_management.Network;
+import org.batfish.vendor.check_point_management.TypedManagementObject;
+import org.batfish.vendor.check_point_management.Uid;
 
 public class CheckPointGatewayConfiguration extends VendorConfiguration {
 
   public static final String VRF_NAME = "default";
+  public static final String INTERFACE_ACL_NAME = "~INTERFACE_ACL~";
 
   public CheckPointGatewayConfiguration() {
     _bondingGroups = new HashMap<>();
@@ -104,6 +111,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
                 .flatMap(staticRoute -> convertStaticRoute(staticRoute, _interfaces))
                 .collect(ImmutableSet.toImmutableSet()));
 
+    // Must occur after interfaces are converted
     Optional<CheckpointManagementConfiguration> mgmtConfig =
         Optional.ofNullable(getConversionContext())
             .map(ConversionContext::getCheckpointManagementConfiguration)
@@ -129,14 +137,41 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
       return;
     }
     ManagementPackage pakij = maybePackage.get();
+
+    // Convert Access layers
+    List<AccessLayer> accessLayers = pakij.getAccessLayers();
+    // TODO support matching multiple access layers
+    if (accessLayers.size() > 1) {
+      _w.redFlag(
+          "Batfish currently only supports matching on a single Access Layer, so only the first"
+              + " matching Access Rule will be applied.");
+    }
+    for (AccessLayer al : accessLayers) {
+      IpAccessList acl = toIpAccessList(al);
+      _c.getIpAccessLists().put(acl.getName(), acl);
+    }
+    IpAccessList allAccessLayers =
+        IpAccessList.builder()
+            .setName(INTERFACE_ACL_NAME)
+            .setLines(
+                accessLayers.stream()
+                    .map(l -> new AclAclLine(l.getName(), l.getName()))
+                    .collect(ImmutableList.toImmutableList()))
+            .build();
+    _c.getIpAccessLists().put(allAccessLayers.getName(), allAccessLayers);
+
     // Convert IP spaces
     @Nullable NatRulebase natRulebase = pakij.getNatRulebase();
-    if (natRulebase == null) {
-      return;
+    if (natRulebase != null) {
+      convertObjectsToIpSpaces(natRulebase.getObjectsDictionary());
     }
-    natRulebase
-        .getObjectsDictionary()
-        .values()
+    for (AccessLayer al : pakij.getAccessLayers()) {
+      convertObjectsToIpSpaces(al.getObjectsDictionary());
+    }
+  }
+
+  private void convertObjectsToIpSpaces(Map<Uid, TypedManagementObject> objs) {
+    objs.values()
         .forEach(
             natObj -> {
               // TODO Add IpSpaceMetadata, or store IpSpaces by names instead of UIDs if we confirm
@@ -334,6 +369,9 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
                 newIface.setActive(false);
               }
             });
+
+    // TODO apply ACL and confirm interaction with NAT
+    // newIface.setOutgoingFilter(_c.getIpAccessLists().get(INTERFACE_ACL_NAME));
     return newIface.build();
   }
 

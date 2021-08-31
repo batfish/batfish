@@ -13,6 +13,7 @@ import static org.batfish.datamodel.InterfaceType.AGGREGATED;
 import static org.batfish.datamodel.InterfaceType.PHYSICAL;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRedFlagWarning;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasChannelGroup;
@@ -21,10 +22,13 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDependencies;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInterfaceType;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
+import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
+import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
+import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConfiguration.INTERFACE_ACL_NAME;
 import static org.batfish.vendor.check_point_gateway.representation.Interface.DEFAULT_ETH_SPEED;
 import static org.batfish.vendor.check_point_gateway.representation.Interface.DEFAULT_INTERFACE_MTU;
 import static org.batfish.vendor.check_point_gateway.representation.Interface.DEFAULT_LOOPBACK_MTU;
@@ -62,9 +66,11 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceModel;
+import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -89,8 +95,12 @@ import org.batfish.vendor.check_point_gateway.representation.NexthopLogical;
 import org.batfish.vendor.check_point_gateway.representation.NexthopReject;
 import org.batfish.vendor.check_point_gateway.representation.NexthopTarget;
 import org.batfish.vendor.check_point_gateway.representation.StaticRoute;
+import org.batfish.vendor.check_point_management.AccessLayer;
+import org.batfish.vendor.check_point_management.AccessRule;
+import org.batfish.vendor.check_point_management.AccessRuleOrSection;
 import org.batfish.vendor.check_point_management.AllInstallationTargets;
 import org.batfish.vendor.check_point_management.CheckpointManagementConfiguration;
+import org.batfish.vendor.check_point_management.CpmiAnyObject;
 import org.batfish.vendor.check_point_management.Domain;
 import org.batfish.vendor.check_point_management.GatewayOrServer;
 import org.batfish.vendor.check_point_management.GatewayOrServerPolicy;
@@ -100,7 +110,10 @@ import org.batfish.vendor.check_point_management.ManagementServer;
 import org.batfish.vendor.check_point_management.NatRulebase;
 import org.batfish.vendor.check_point_management.Network;
 import org.batfish.vendor.check_point_management.Package;
+import org.batfish.vendor.check_point_management.RulebaseAction;
+import org.batfish.vendor.check_point_management.ServiceTcp;
 import org.batfish.vendor.check_point_management.SimpleGateway;
+import org.batfish.vendor.check_point_management.TypedManagementObject;
 import org.batfish.vendor.check_point_management.Uid;
 import org.junit.Rule;
 import org.junit.Test;
@@ -172,6 +185,50 @@ public class CheckPointGatewayGrammarTest {
       throws IOException {
     IBatfish iBatfish = getBatfishForConfigurationNames(mgmt, configurationNames);
     return iBatfish.loadConfigurations(iBatfish.getSnapshot());
+  }
+
+  /**
+   * Build a simple {@link CheckpointManagementConfiguration} with a single {@link ManagementDomain}
+   * with the specified {@code gateways} and {@code packages}.
+   */
+  private CheckpointManagementConfiguration toCheckpointMgmtConfig(
+      Map<Uid, GatewayOrServer> gateways, Map<Uid, ManagementPackage> packages) {
+    return new CheckpointManagementConfiguration(
+        ImmutableMap.of(
+            "s",
+            new ManagementServer(
+                ImmutableMap.of(
+                    "d", new ManagementDomain(new Domain("d", Uid.of("0")), gateways, packages)),
+                "s")));
+  }
+
+  private static Flow createFlow(IpProtocol protocol, int sourcePort, int destinationPort) {
+    Flow.Builder fb = Flow.builder();
+    fb.setIngressNode("node");
+    fb.setIpProtocol(protocol);
+    fb.setDstPort(destinationPort);
+    fb.setSrcPort(sourcePort);
+    return fb.build();
+  }
+
+  private static Flow createFlow(String sourceAddress, String destinationAddress) {
+    return createFlow(sourceAddress, destinationAddress, IpProtocol.TCP, 1, 1);
+  }
+
+  private static Flow createFlow(
+      String sourceAddress,
+      String destinationAddress,
+      IpProtocol protocol,
+      int sourcePort,
+      int destinationPort) {
+    Flow.Builder fb = Flow.builder();
+    fb.setIngressNode("node");
+    fb.setSrcIp(Ip.parse(sourceAddress));
+    fb.setDstIp(Ip.parse(destinationAddress));
+    fb.setIpProtocol(protocol);
+    fb.setDstPort(destinationPort);
+    fb.setSrcPort(sourcePort);
+    return fb.build();
   }
 
   @Test
@@ -850,15 +907,7 @@ public class CheckPointGatewayGrammarTest {
                     true,
                     Uid.of("16"))));
 
-    CheckpointManagementConfiguration mgmt =
-        new CheckpointManagementConfiguration(
-            ImmutableMap.of(
-                "s",
-                new ManagementServer(
-                    ImmutableMap.of(
-                        "d",
-                        new ManagementDomain(new Domain("d", Uid.of("0")), gateways, packages)),
-                    "s")));
+    CheckpointManagementConfiguration mgmt = toCheckpointMgmtConfig(gateways, packages);
     Map<String, Configuration> configs =
         parseTextConfigs(
             mgmt,
@@ -877,5 +926,131 @@ public class CheckPointGatewayGrammarTest {
     assertThat(c3.getIpSpaces(), anEmptyMap());
     assertThat(c4.getIpSpaces(), anEmptyMap());
     assertThat(c5.getIpSpaces(), anEmptyMap());
+  }
+
+  @Test
+  public void testAccessRulesConversion() throws IOException {
+    CpmiAnyObject any = new CpmiAnyObject(Uid.of("99999"));
+    ImmutableList<Uid> listOfCmpiAny = ImmutableList.of(Uid.of("99999"));
+    Uid acceptUid = Uid.of("31");
+    Uid dropUid = Uid.of("32");
+    String accessLayerName = "accessLayerFoo";
+    String ruleAllow = "allow";
+    String ruleAllowNegated = "allow negated";
+    String ruleBlockAll = "block all";
+
+    ImmutableList<TypedManagementObject> objs =
+        ImmutableList.of(
+            any,
+            new Network(
+                "networkEth0", Ip.parse("10.0.0.0"), Ip.parse("255.255.255.0"), Uid.of("10")),
+            new Network(
+                "networkEth1", Ip.parse("10.0.1.0"), Ip.parse("255.255.255.0"), Uid.of("11")),
+            new Network(
+                "networkEth2", Ip.parse("10.0.2.0"), Ip.parse("255.255.255.0"), Uid.of("12")),
+            new Network(
+                "networkEth3", Ip.parse("10.0.3.0"), Ip.parse("255.255.255.0"), Uid.of("13")),
+            new ServiceTcp("ssh", Uid.of("21")),
+            new RulebaseAction("Accept", acceptUid, "Accept"),
+            new RulebaseAction("Drop", dropUid, "Drop"));
+    ImmutableList<AccessRuleOrSection> rulebase =
+        ImmutableList.of(
+            new AccessRule(
+                acceptUid,
+                "comments",
+                listOfCmpiAny,
+                "any",
+                false,
+                ImmutableList.of(Uid.of("12")), // dest - eth2 network
+                false,
+                true,
+                listOfCmpiAny,
+                ruleAllow,
+                1,
+                listOfCmpiAny,
+                false,
+                ImmutableList.of(Uid.of("11")), // src - eth1 network
+                false,
+                Uid.of("100"),
+                listOfCmpiAny),
+            new AccessRule(
+                acceptUid,
+                "comments",
+                listOfCmpiAny,
+                "any",
+                false,
+                ImmutableList.of(Uid.of("12"), Uid.of("13")), // dest - eth2, eth3 network (negated)
+                true,
+                true,
+                listOfCmpiAny,
+                ruleAllowNegated,
+                2,
+                listOfCmpiAny,
+                false,
+                ImmutableList.of(Uid.of("10"), Uid.of("11")), // src - eth0, eth1 network (negated)
+                true,
+                Uid.of("101"),
+                listOfCmpiAny),
+            new AccessRule(
+                dropUid,
+                "comments",
+                listOfCmpiAny,
+                "any",
+                false,
+                listOfCmpiAny,
+                false,
+                true,
+                listOfCmpiAny,
+                ruleBlockAll,
+                4,
+                listOfCmpiAny,
+                false,
+                listOfCmpiAny,
+                false,
+                Uid.of("104"),
+                listOfCmpiAny));
+
+    ImmutableMap<Uid, ManagementPackage> packages =
+        ImmutableMap.of(
+            Uid.of("2"),
+            new ManagementPackage(
+                ImmutableList.of(AccessLayer.create(objs, rulebase, Uid.of("3"), accessLayerName)),
+                null,
+                new Package(
+                    new Domain("d", Uid.of("0")),
+                    AllInstallationTargets.instance(),
+                    "p1",
+                    true,
+                    false,
+                    Uid.of("2"))));
+    ImmutableMap<Uid, GatewayOrServer> gateways =
+        ImmutableMap.of(
+            Uid.of("1"),
+            new SimpleGateway(
+                Ip.parse("10.0.0.1"),
+                "access_rules",
+                new GatewayOrServerPolicy("p1", null),
+                Uid.of("1")));
+
+    CheckpointManagementConfiguration mgmt = toCheckpointMgmtConfig(gateways, packages);
+    Map<String, Configuration> configs = parseTextConfigs(mgmt, "access_rules");
+    Configuration c = configs.get("access_rules");
+
+    // eth1 to eth2
+    Flow permitted = createFlow("10.0.1.10", "10.0.2.10");
+    // not eth0, eth1 to not eth2, eth3
+    Flow permittedNegated = createFlow("10.0.100.10", "10.0.200.10");
+    // eth0 to eth3
+    Flow denied = createFlow("10.0.0.10", "10.0.3.10");
+
+    // Confirm converted ACL has correct behavior
+    assertThat(c, hasIpAccessList(accessLayerName, accepts(permitted, "eth1", c)));
+    assertThat(c, hasIpAccessList(accessLayerName, accepts(permittedNegated, "eth1", c)));
+    assertThat(c, hasIpAccessList(accessLayerName, rejects(denied, "eth1", c)));
+
+    // Composite ACL has the same behavior
+    assertThat(c, hasIpAccessList(INTERFACE_ACL_NAME, accepts(permitted, "eth1", c)));
+    assertThat(c, hasIpAccessList(INTERFACE_ACL_NAME, accepts(permittedNegated, "eth1", c)));
+    assertThat(c, hasIpAccessList(INTERFACE_ACL_NAME, rejects(denied, "eth1", c)));
   }
 }

@@ -79,6 +79,6 @@ public class RulebaseAction extends TypedManagementObject {
   protected static final String NAME_DROP = "Drop";
   private static final String PROP_COMMENTS = "comments";
 
-  private final transient @Nonnull Action _action;
+  private final @Nonnull Action _action;
   private final @Nonnull String _comments;
 }
