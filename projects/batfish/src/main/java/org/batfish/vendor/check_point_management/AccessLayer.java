@@ -45,7 +45,7 @@ public final class AccessLayer extends NamedManagementObject {
   }
 
   @VisibleForTesting
-  AccessLayer(
+  public AccessLayer(
       Map<Uid, TypedManagementObject> objectsDictionary,
       List<AccessRuleOrSection> rulebase,
       Uid uid,
