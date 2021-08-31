@@ -71,6 +71,7 @@ public final class NatRulebaseTest {
             + "{" // object: service-tcp
             + "\"type\":\"service-tcp\","
             + "\"uid\":\"8\","
+            + "\"port\":\"8642\","
             + "\"name\":\"foo\""
             + "}" // object: service-tcp
             + "]," // object-dictionary
