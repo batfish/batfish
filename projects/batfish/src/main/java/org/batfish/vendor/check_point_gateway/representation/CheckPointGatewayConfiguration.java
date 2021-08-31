@@ -151,7 +151,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
       Map<String, IpAccessList> acl = toIpAccessLists(al);
       _c.getIpAccessLists().putAll(acl);
     }
-    IpAccessList allAccessLayers =
+    IpAccessList interfaceAcl =
         IpAccessList.builder()
             .setName(INTERFACE_ACL_NAME)
             .setLines(
@@ -159,7 +159,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
                     .map(l -> new AclAclLine(l.getName(), l.getName()))
                     .collect(ImmutableList.toImmutableList()))
             .build();
-    _c.getIpAccessLists().put(allAccessLayers.getName(), allAccessLayers);
+    _c.getIpAccessLists().put(interfaceAcl.getName(), interfaceAcl);
 
     // Convert IP spaces
     @Nullable NatRulebase natRulebase = pakij.getNatRulebase();
@@ -175,16 +175,14 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     // TODO use visitor pattern instead
     objs.values()
         .forEach(
-            natObj -> {
-              // TODO Add IpSpaceMetadata, or store IpSpaces by names instead of UIDs if we confirm
-              //  names are unique
-              if (natObj instanceof AddressRange) {
-                Optional.ofNullable(toIpSpace((AddressRange) natObj))
-                    .ifPresent(ipSpace -> _c.getIpSpaces().put(natObj.getName(), ipSpace));
-              } else if (natObj instanceof Network) {
-                _c.getIpSpaces().put(natObj.getName(), toIpSpace((Network) natObj));
-              } else if (natObj instanceof CpmiAnyObject) {
-                _c.getIpSpaces().put(natObj.getName(), UniverseIpSpace.INSTANCE);
+            obj -> {
+              if (obj instanceof AddressRange) {
+                Optional.ofNullable(toIpSpace((AddressRange) obj))
+                    .ifPresent(ipSpace -> _c.getIpSpaces().put(obj.getName(), ipSpace));
+              } else if (obj instanceof Network) {
+                _c.getIpSpaces().put(obj.getName(), toIpSpace((Network) obj));
+              } else if (obj instanceof CpmiAnyObject) {
+                _c.getIpSpaces().put(obj.getName(), UniverseIpSpace.INSTANCE);
               }
             });
   }
@@ -374,8 +372,8 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
               }
             });
 
-    // TODO apply ACL and confirm interaction with NAT
-    // newIface.setOutgoingFilter(_c.getIpAccessLists().get(INTERFACE_ACL_NAME));
+    // TODO confirm AccessRule interaction with NAT
+    newIface.setOutgoingFilter(_c.getIpAccessLists().get(INTERFACE_ACL_NAME));
     return newIface.build();
   }
 

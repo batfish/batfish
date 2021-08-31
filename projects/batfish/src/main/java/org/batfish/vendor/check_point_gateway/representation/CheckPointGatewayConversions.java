@@ -57,29 +57,28 @@ public final class CheckPointGatewayConversions {
   }
 
   /**
-   * Returns a {@code Map} of all {@link IpAccessList}s corresponding to specified {@link
+   * Returns a {@code Map} of names to {@link IpAccessList}s corresponding to specified {@link
    * AccessLayer}.
    *
-   * <p>{@link AccessSection}s will have their own {@link IpAccessList}s created, but {@link
-   * AccessRule}s will be embedded directly in their parent's {@link IpAccessList}.
+   * <p>{@link AccessSection}s will have their own {@link IpAccessList}s in the returned map, but
+   * {@link AccessRule}s will be embedded directly in their parent's {@link IpAccessList}.
    */
   static Map<String, IpAccessList> toIpAccessLists(@Nonnull AccessLayer access) {
     Map<Uid, TypedManagementObject> objs = access.getObjectsDictionary();
     ImmutableMap.Builder<String, IpAccessList> acls = ImmutableMap.builder();
     ImmutableList.Builder<AclLine> accessLayerLines = ImmutableList.builder();
     for (AccessRuleOrSection acl : access.getRulebase()) {
-      // Directly embed AccessRules into the AccessLayer's lines
       if (acl instanceof AccessRule) {
         accessLayerLines.add(toAclLine((AccessRule) acl, objs));
         continue;
       }
-      // Generate IpAccessList for AccessSections and reference new IpAccessList from AccessLayer
       assert acl instanceof AccessSection;
-      IpAccessList convertedSection = toIpAccessList((AccessSection) acl, objs);
-      acls.put(convertedSection.getName(), convertedSection);
-      accessLayerLines.add(new AclAclLine(convertedSection.getName(), convertedSection.getName()));
+      IpAccessList accessSection = toIpAccessList((AccessSection) acl, objs);
+      acls.put(accessSection.getName(), accessSection);
+      accessLayerLines.add(new AclAclLine(accessSection.getName(), accessSection.getName()));
     }
 
+    // AccessLayer
     acls.put(
         access.getName(),
         IpAccessList.builder()
@@ -89,7 +88,8 @@ public final class CheckPointGatewayConversions {
     return acls.build();
   }
 
-  static IpAccessList toIpAccessList(
+  /** Convert the specified {@link AccessSection} into an {@link IpAccessList}. */
+  private static IpAccessList toIpAccessList(
       @Nonnull AccessSection section, Map<Uid, TypedManagementObject> objs) {
     return IpAccessList.builder()
         .setName(section.getName())
@@ -103,20 +103,10 @@ public final class CheckPointGatewayConversions {
   /** Convert specified {@link AccessRule} to an {@link AclLine}. */
   @Nonnull
   static AclLine toAclLine(AccessRule rule, Map<Uid, TypedManagementObject> objs) {
-    TypedManagementObject actionObj = objs.get(rule.getAction());
-    LineAction action = LineAction.DENY;
-    if (actionObj == null) {
-      // TODO warn
-    } else if (!(actionObj instanceof RulebaseAction)) {
-      // TODO warn
-    } else {
-      action = toAction((RulebaseAction) actionObj);
-    }
-
     return ExprAclLine.builder()
         .setName(rule.getName())
         .setMatchCondition(toMatchExpr(rule, objs))
-        .setAction(action)
+        .setAction(toAction(objs.get(rule.getAction())))
         // TODO trace element and structure ID
         .build();
   }
@@ -153,17 +143,25 @@ public final class CheckPointGatewayConversions {
 
   /** Convert specified {@link TypedManagementObject} to a {@link LineAction}. */
   @Nonnull
-  static LineAction toAction(@Nonnull RulebaseAction obj) {
-    switch (obj.getAction()) {
-      case DROP:
-        return LineAction.DENY;
-      case ACCEPT:
-        return LineAction.PERMIT;
-      case UNHANDLED:
-      default:
-        // TODO warn
-        return LineAction.DENY;
+  static LineAction toAction(@Nullable TypedManagementObject obj) {
+    if (obj == null) {
+      // TODO warn
+    } else if (!(obj instanceof RulebaseAction)) {
+      // TODO warn
+    } else {
+      RulebaseAction ra = (RulebaseAction) obj;
+      switch (ra.getAction()) {
+        case DROP:
+          return LineAction.DENY;
+        case ACCEPT:
+          return LineAction.PERMIT;
+        case UNHANDLED:
+        default:
+          // TODO warn
+          return LineAction.DENY;
+      }
     }
+    return LineAction.DENY;
   }
 
   /**

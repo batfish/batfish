@@ -15,6 +15,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurat
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasOutgoingFilter;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRedFlagWarning;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasChannelGroup;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasChannelGroupMembers;
@@ -957,8 +958,6 @@ public class CheckPointGatewayGrammarTest {
         ImmutableList.of(
             any,
             new Network(
-                "networkEth0", Ip.parse("10.0.0.0"), Ip.parse("255.255.255.0"), Uid.of("10")),
-            new Network(
                 "networkEth1", Ip.parse("10.0.1.0"), Ip.parse("255.255.255.0"), Uid.of("11")),
             new Network(
                 "networkEth2", Ip.parse("10.0.2.0"), Ip.parse("255.255.255.0"), Uid.of("12")),
@@ -1003,8 +1002,6 @@ public class CheckPointGatewayGrammarTest {
                 "access_rules",
                 ImmutableList.of(
                     new org.batfish.vendor.check_point_management.Interface(
-                        "eth0", new InterfaceTopology(false)),
-                    new org.batfish.vendor.check_point_management.Interface(
                         "eth1", new InterfaceTopology(false)),
                     new org.batfish.vendor.check_point_management.Interface(
                         "eth2", new InterfaceTopology(true)),
@@ -1022,10 +1019,19 @@ public class CheckPointGatewayGrammarTest {
     // eth1 to eth3
     Flow denied = createFlow("10.0.1.10", "10.0.3.10");
 
-    // Confirm access-layer and composite ACL have the same, correct behavior
+    // Confirm access-layer, composite ACL, and interface ACLs have the same, correct behavior
+    // Access-layer
     assertThat(c, hasIpAccessList(accessLayerName, accepts(permitted, "eth1", c)));
     assertThat(c, hasIpAccessList(accessLayerName, rejects(denied, "eth1", c)));
+    // Composite ACL (same as access-layer since there is only one access-layer here)
     assertThat(c, hasIpAccessList(INTERFACE_ACL_NAME, accepts(permitted, "eth1", c)));
     assertThat(c, hasIpAccessList(INTERFACE_ACL_NAME, rejects(denied, "eth1", c)));
+    // Iface ACLs
+    assertThat(c, hasInterface("eth1", hasOutgoingFilter(accepts(permitted, "eth1", c))));
+    assertThat(c, hasInterface("eth1", hasOutgoingFilter(rejects(denied, "eth1", c))));
+    assertThat(c, hasInterface("eth2", hasOutgoingFilter(accepts(permitted, "eth1", c))));
+    assertThat(c, hasInterface("eth2", hasOutgoingFilter(rejects(denied, "eth1", c))));
+    assertThat(c, hasInterface("eth3", hasOutgoingFilter(accepts(permitted, "eth1", c))));
+    assertThat(c, hasInterface("eth3", hasOutgoingFilter(rejects(denied, "eth1", c))));
   }
 }

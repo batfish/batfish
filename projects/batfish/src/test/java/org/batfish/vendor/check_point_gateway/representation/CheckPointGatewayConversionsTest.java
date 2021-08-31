@@ -44,6 +44,42 @@ import org.junit.Test;
 
 public class CheckPointGatewayConversionsTest {
 
+  private static final Uid UID_ACCEPT = Uid.of("99997");
+  private static final Uid UID_DROP = Uid.of("99998");
+  private static final Uid UID_CPMI_ANY = Uid.of("99999");
+  private static final Uid UID_NET0 = Uid.of("10");
+  private static final Uid UID_NET1 = Uid.of("11");
+  private static final Uid UID_NET2 = Uid.of("12");
+  private static final CpmiAnyObject CPMI_ANY = new CpmiAnyObject(UID_CPMI_ANY);
+  private static final ImmutableMap<Uid, TypedManagementObject> TEST_OBJS =
+      ImmutableMap.<Uid, TypedManagementObject>builder()
+          .put(
+              UID_NET0,
+              new Network("net0", Ip.parse("10.0.0.0"), Ip.parse("255.255.255.0"), UID_NET0))
+          .put(
+              UID_NET1,
+              new Network("net1", Ip.parse("10.0.1.0"), Ip.parse("255.255.255.0"), UID_NET1))
+          .put(
+              UID_NET2,
+              new Network("net2", Ip.parse("10.0.2.0"), Ip.parse("255.255.255.0"), UID_NET2))
+          .put(UID_CPMI_ANY, CPMI_ANY)
+          .put(UID_ACCEPT, new RulebaseAction("Accept", UID_ACCEPT, "Accept"))
+          .put(UID_DROP, new RulebaseAction("Drop", UID_DROP, "Drop"))
+          .build();
+  private static final ImmutableMap<String, IpSpace> TEST_IP_SPACES =
+      ImmutableMap.of(
+          "net0",
+          Prefix.parse("10.0.0.0/24").toIpSpace(),
+          "net1",
+          Prefix.parse("10.0.1.0/24").toIpSpace(),
+          "net2",
+          Prefix.parse("10.0.2.0/24").toIpSpace(),
+          "Any",
+          UniverseIpSpace.INSTANCE);
+  private static final String NET0_ADDR = "10.0.0.100";
+  private static final String NET1_ADDR = "10.0.1.100";
+  private static final String NET2_ADDR = "10.0.2.100";
+
   private static Flow createFlow(String sourceAddress, String destinationAddress) {
     return createFlow(sourceAddress, destinationAddress, IpProtocol.TCP, 1, 1);
   }
@@ -94,48 +130,13 @@ public class CheckPointGatewayConversionsTest {
   public void testToIpAccessLists() {
     String accessLayerName = "accessLayerName";
     String accessSectionName = "accessSectionName";
-    Uid acceptUid = Uid.of("99997");
-    Uid dropUid = Uid.of("99998");
-    Uid cpmiAnyUid = Uid.of("99999");
-    CpmiAnyObject cpmiAny = new CpmiAnyObject(cpmiAnyUid);
-    ImmutableMap.Builder<Uid, TypedManagementObject> objsBuilder = ImmutableMap.builder();
-    ImmutableMap<Uid, TypedManagementObject> objs =
-        objsBuilder
-            .put(
-                Uid.of("10"),
-                new Network("net0", Ip.parse("10.0.0.0"), Ip.parse("255.255.255.0"), Uid.of("10")))
-            .put(
-                Uid.of("11"),
-                new Network("net1", Ip.parse("10.0.1.0"), Ip.parse("255.255.255.0"), Uid.of("11")))
-            .put(
-                Uid.of("12"),
-                new Network("net2", Ip.parse("10.0.2.0"), Ip.parse("255.255.255.0"), Uid.of("12")))
-            .put(
-                Uid.of("13"),
-                new Network("net3", Ip.parse("10.0.3.0"), Ip.parse("255.255.255.0"), Uid.of("13")))
-            .put(cpmiAnyUid, cpmiAny)
-            .put(acceptUid, new RulebaseAction("Accept", acceptUid, "Accept"))
-            .put(dropUid, new RulebaseAction("Drop", dropUid, "Drop"))
-            .build();
-    ImmutableMap<String, IpSpace> ipSpaces =
-        ImmutableMap.of(
-            "net0",
-            Prefix.parse("10.0.0.0/24").toIpSpace(),
-            "net1",
-            Prefix.parse("10.0.1.0/24").toIpSpace(),
-            "net2",
-            Prefix.parse("10.0.2.0/24").toIpSpace(),
-            "net3",
-            Prefix.parse("10.0.3.0/24").toIpSpace(),
-            "Any",
-            UniverseIpSpace.INSTANCE);
 
     ImmutableList<AccessRuleOrSection> rulebase =
         ImmutableList.of(
             // Drop net1 -> anywhere
-            AccessRule.testBuilder(cpmiAnyUid)
+            AccessRule.testBuilder(UID_CPMI_ANY)
                 .setUid(Uid.of("2"))
-                .setAction(dropUid)
+                .setAction(UID_DROP)
                 .setSource(ImmutableList.of(Uid.of("11")))
                 .setName("rule1")
                 .build(),
@@ -143,71 +144,53 @@ public class CheckPointGatewayConversionsTest {
             new AccessSection(
                 accessSectionName,
                 ImmutableList.of(
-                    AccessRule.testBuilder(cpmiAnyUid)
+                    AccessRule.testBuilder(UID_CPMI_ANY)
                         .setUid(Uid.of("4"))
-                        .setAction(acceptUid)
+                        .setAction(UID_ACCEPT)
                         .setDestination(ImmutableList.of(Uid.of("11")))
                         .setName("childRule1")
                         .build()),
                 Uid.of("3")),
             // Drop all traffic
-            AccessRule.testBuilder(cpmiAnyUid)
+            AccessRule.testBuilder(UID_CPMI_ANY)
                 .setUid(Uid.of("6"))
-                .setAction(dropUid)
+                .setAction(UID_DROP)
                 .setName("rule2")
                 .build());
 
-    Flow net0ToNet1 = createFlow("10.0.0.100", "10.0.1.101");
-    Flow net1ToNet1 = createFlow("10.0.1.100", "10.0.1.101");
-    Flow net0ToNet2 = createFlow("10.0.0.100", "10.0.2.101");
+    Flow net0ToNet1 = createFlow(NET0_ADDR, NET1_ADDR);
+    Flow net1ToNet1 = createFlow(NET1_ADDR, NET1_ADDR);
+    Flow net0ToNet2 = createFlow(NET0_ADDR, NET2_ADDR);
 
     Map<String, IpAccessList> ipAccessLists =
-        toIpAccessLists(new AccessLayer(objs, rulebase, Uid.of("1"), accessLayerName));
+        toIpAccessLists(new AccessLayer(TEST_OBJS, rulebase, Uid.of("1"), accessLayerName));
     assertThat(ipAccessLists.keySet(), containsInAnyOrder(accessLayerName, accessSectionName));
 
     IpAccessList aclLayer = ipAccessLists.get(accessLayerName);
-    assertThat(aclLayer, accepts(net0ToNet1, "eth0", ipAccessLists, ipSpaces));
-    assertThat(aclLayer, rejects(net1ToNet1, "eth0", ipAccessLists, ipSpaces));
-    assertThat(aclLayer, rejects(net0ToNet2, "eth0", ipAccessLists, ipSpaces));
+    assertThat(aclLayer, accepts(net0ToNet1, "eth0", ipAccessLists, TEST_IP_SPACES));
+    assertThat(aclLayer, rejects(net1ToNet1, "eth0", ipAccessLists, TEST_IP_SPACES));
+    assertThat(aclLayer, rejects(net0ToNet2, "eth0", ipAccessLists, TEST_IP_SPACES));
 
     IpAccessList aclSection = ipAccessLists.get(accessSectionName);
-    assertThat(aclSection, accepts(net0ToNet1, "eth0", ipAccessLists, ipSpaces));
-    assertThat(aclSection, accepts(net1ToNet1, "eth0", ipAccessLists, ipSpaces));
-    assertThat(aclSection, rejects(net0ToNet2, "eth0", ipAccessLists, ipSpaces));
+    assertThat(aclSection, accepts(net0ToNet1, "eth0", ipAccessLists, TEST_IP_SPACES));
+    assertThat(aclSection, accepts(net1ToNet1, "eth0", ipAccessLists, TEST_IP_SPACES));
+    assertThat(aclSection, rejects(net0ToNet2, "eth0", ipAccessLists, TEST_IP_SPACES));
   }
 
   @Test
   public void testToAclLineMatchExpr() {
-    Uid acceptUid = Uid.of("99997");
-    Uid dropUid = Uid.of("99998");
-    Uid cpmiAnyUid = Uid.of("99999");
-    CpmiAnyObject cpmiAny = new CpmiAnyObject(cpmiAnyUid);
-    ImmutableMap.Builder<Uid, TypedManagementObject> objsBuilder = ImmutableMap.builder();
-    ImmutableMap<Uid, TypedManagementObject> objs =
-        objsBuilder
-            .put(
-                Uid.of("10"),
-                new Network("net0", Ip.parse("10.0.0.0"), Ip.parse("255.255.255.0"), Uid.of("10")))
-            .put(
-                Uid.of("11"),
-                new Network("net1", Ip.parse("10.0.1.0"), Ip.parse("255.255.255.0"), Uid.of("11")))
-            .put(cpmiAnyUid, cpmiAny)
-            .put(acceptUid, new RulebaseAction("Accept", acceptUid, "Accept"))
-            .put(dropUid, new RulebaseAction("Drop", dropUid, "Drop"))
-            .build();
-
     // Non-negated matches
     assertThat(
         toMatchExpr(
-            AccessRule.testBuilder(cpmiAnyUid)
-                .setAction(acceptUid)
-                .setDestination(ImmutableList.of(Uid.of("10"))) // net0
-                .setSource(ImmutableList.of(Uid.of("11"))) // net1
+            AccessRule.testBuilder(UID_CPMI_ANY)
+                .setAction(UID_ACCEPT)
+                .setDestination(ImmutableList.of(UID_NET0))
+                .setSource(ImmutableList.of(UID_NET1))
                 .setRuleNumber(2)
                 .setName("ruleName")
                 .setUid(Uid.of("2"))
                 .build(),
-            objs),
+            TEST_OBJS),
         isAndMatchExprThat(
             hasConjuncts(
                 containsInAnyOrder(
@@ -219,17 +202,17 @@ public class CheckPointGatewayConversionsTest {
     // Negated matches
     assertThat(
         toMatchExpr(
-            AccessRule.testBuilder(cpmiAnyUid)
-                .setAction(acceptUid)
+            AccessRule.testBuilder(UID_CPMI_ANY)
+                .setAction(UID_ACCEPT)
                 .setDestinationNegate(true)
-                .setDestination(ImmutableList.of(Uid.of("10"))) // net0
+                .setDestination(ImmutableList.of(UID_NET0))
                 .setSourceNegate(true)
-                .setSource(ImmutableList.of(Uid.of("11"))) // net1
+                .setSource(ImmutableList.of(UID_NET1))
                 .setRuleNumber(2)
                 .setName("ruleName")
                 .setUid(Uid.of("2"))
                 .build(),
-            objs),
+            TEST_OBJS),
         isAndMatchExprThat(
             hasConjuncts(
                 containsInAnyOrder(
@@ -248,5 +231,6 @@ public class CheckPointGatewayConversionsTest {
     assertThat(toAction(new RulebaseAction("Drop", Uid.of("1"), "Drop")), equalTo(LineAction.DENY));
     assertThat(
         toAction(new RulebaseAction("Unknown", Uid.of("1"), "Unknown")), equalTo(LineAction.DENY));
+    assertThat(toAction(null), equalTo(LineAction.DENY));
   }
 }
