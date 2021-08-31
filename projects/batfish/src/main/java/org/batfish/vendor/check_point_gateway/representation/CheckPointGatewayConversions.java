@@ -79,6 +79,7 @@ public final class CheckPointGatewayConversions {
       acls.put(convertedSection.getName(), convertedSection);
       accessLayerLines.add(new AclAclLine(convertedSection.getName(), convertedSection.getName()));
     }
+
     acls.put(
         access.getName(),
         IpAccessList.builder()
@@ -99,30 +100,61 @@ public final class CheckPointGatewayConversions {
         .build();
   }
 
+  /** Convert specified {@link AccessRule} to an {@link AclLine}. */
   @Nonnull
   static AclLine toAclLine(AccessRule rule, Map<Uid, TypedManagementObject> objs) {
+    TypedManagementObject actionObj = objs.get(rule.getAction());
+    LineAction action = LineAction.DENY;
+    if (actionObj == null) {
+      // TODO warn
+    } else if (!(actionObj instanceof RulebaseAction)) {
+      // TODO warn
+    } else {
+      action = toAction((RulebaseAction) actionObj);
+    }
+
     return ExprAclLine.builder()
         .setName(rule.getName())
         .setMatchCondition(toMatchExpr(rule, objs))
-        .setAction(toAction(objs.get(rule.getAction())))
+        .setAction(action)
         // TODO trace element and structure ID
         .build();
   }
 
+  /**
+   * Convert specified {@link AccessRule} into an {@link AclLineMatchExpr} representing the match
+   * conditions of the rule.
+   */
+  @Nonnull
+  static AclLineMatchExpr toMatchExpr(AccessRule rule, Map<Uid, TypedManagementObject> objs) {
+    ImmutableList.Builder<AclLineMatchExpr> conjuncts = ImmutableList.builder();
+
+    // Source
+    IpSpace srcRefs = toIpSpace(rule.getSource(), objs);
+    AclLineMatchExpr srcMatch =
+        rule.getSourceNegate()
+            ? new MatchHeaderSpace(HeaderSpace.builder().setNotSrcIps(srcRefs).build())
+            : new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(srcRefs).build());
+    conjuncts.add(srcMatch);
+
+    // Dest
+    IpSpace dstRefs = toIpSpace(rule.getDestination(), objs);
+    AclLineMatchExpr dstMatch =
+        rule.getDestinationNegate()
+            ? new MatchHeaderSpace(HeaderSpace.builder().setNotDstIps(dstRefs).build())
+            : new MatchHeaderSpace(HeaderSpace.builder().setDstIps(dstRefs).build());
+    conjuncts.add(dstMatch);
+
+    // Service
+    // TODO encode service match condition
+
+    return new AndMatchExpr(conjuncts.build());
+  }
+
   /** Convert specified {@link TypedManagementObject} to a {@link LineAction}. */
   @Nonnull
-  static LineAction toAction(@Nullable TypedManagementObject obj) {
-    if (obj == null) {
-      // TODO warn
-      return LineAction.DENY;
-    }
-    if (!(obj instanceof RulebaseAction)) {
-      // TODO warn
-      return LineAction.DENY;
-    }
-
-    RulebaseAction ra = (RulebaseAction) obj;
-    switch (ra.getAction()) {
+  private static LineAction toAction(@Nonnull RulebaseAction obj) {
+    switch (obj.getAction()) {
       case DROP:
         return LineAction.DENY;
       case ACCEPT:
@@ -139,7 +171,7 @@ public final class CheckPointGatewayConversions {
    * IpSpace}s existing for each of the supplied object's {@link Uid}s.
    */
   @Nonnull
-  static IpSpace toIpSpaceReferences(List<Uid> targets, Map<Uid, TypedManagementObject> objs) {
+  private static IpSpace toIpSpace(List<Uid> targets, Map<Uid, TypedManagementObject> objs) {
     return AclIpSpace.builder()
         .thenPermitting(
             targets.stream()
@@ -147,32 +179,6 @@ public final class CheckPointGatewayConversions {
                 .map(IpSpaceReference::new)
                 .collect(ImmutableList.toImmutableList()))
         .build();
-  }
-
-  @Nonnull
-  static AclLineMatchExpr toMatchExpr(AccessRule rule, Map<Uid, TypedManagementObject> objs) {
-    ImmutableList.Builder<AclLineMatchExpr> conjuncts = ImmutableList.builder();
-
-    // Source
-    IpSpace srcRefs = toIpSpaceReferences(rule.getSource(), objs);
-    AclLineMatchExpr srcMatch =
-        rule.getSourceNegate()
-            ? new MatchHeaderSpace(HeaderSpace.builder().setNotSrcIps(srcRefs).build())
-            : new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(srcRefs).build());
-    conjuncts.add(srcMatch);
-
-    // Dest
-    IpSpace dstRefs = toIpSpaceReferences(rule.getDestination(), objs);
-    AclLineMatchExpr dstMatch =
-        rule.getDestinationNegate()
-            ? new MatchHeaderSpace(HeaderSpace.builder().setNotDstIps(dstRefs).build())
-            : new MatchHeaderSpace(HeaderSpace.builder().setDstIps(dstRefs).build());
-    conjuncts.add(dstMatch);
-
-    // Service
-    // TODO encode service match condition
-
-    return new AndMatchExpr(conjuncts.build());
   }
 
   private CheckPointGatewayConversions() {}

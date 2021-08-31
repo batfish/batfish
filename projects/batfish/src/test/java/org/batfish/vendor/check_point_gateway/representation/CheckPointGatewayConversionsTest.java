@@ -5,12 +5,14 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableMap;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.vendor.check_point_management.AddressRange;
 import org.batfish.vendor.check_point_management.Network;
+import org.batfish.vendor.check_point_management.TypedManagementObject;
 import org.batfish.vendor.check_point_management.Uid;
 import org.junit.Test;
 
@@ -40,5 +42,24 @@ public class CheckPointGatewayConversionsTest {
     Ip flippedMask = Ip.parse("0.0.0.255");
     assertThat(
         toIpSpace(network), equalTo(IpWildcard.ipWithWildcardMask(ip, flippedMask).toIpSpace()));
+  }
+
+  @Test
+  public void testToIpAccessLists() {
+    // TODO test a section and rule
+  }
+
+  @Test
+  public void testToAclLine() {
+    ImmutableMap<Uid, TypedManagementObject> objs =
+        ImmutableMap.of(
+            Uid.of("10"),
+            new Network("net0", Ip.parse("10.0.0.0"), Ip.parse("255.255.255.0"), Uid.of("10")),
+            Uid.of("11"),
+            new Network("net1", Ip.parse("10.0.1.0"), Ip.parse("255.255.255.0"), Uid.of("11")),
+            Uid.of("12"),
+            new Network("net2", Ip.parse("10.0.2.0"), Ip.parse("255.255.255.0"), Uid.of("12")),
+            Uid.of("13"),
+            new Network("net3", Ip.parse("10.0.3.0"), Ip.parse("255.255.255.0"), Uid.of("13")));
   }
 }
