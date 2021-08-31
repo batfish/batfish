@@ -1,7 +1,7 @@
 package org.batfish.vendor.check_point_gateway.representation;
 
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
-import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toIpAccessList;
+import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toIpAccessLists;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toIpSpace;
 
 import com.google.common.collect.ImmutableList;
@@ -147,8 +147,8 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
               + " matching Access Rule will be applied.");
     }
     for (AccessLayer al : accessLayers) {
-      IpAccessList acl = toIpAccessList(al);
-      _c.getIpAccessLists().put(acl.getName(), acl);
+      Map<String, IpAccessList> acl = toIpAccessLists(al);
+      _c.getIpAccessLists().putAll(acl);
     }
     IpAccessList allAccessLayers =
         IpAccessList.builder()

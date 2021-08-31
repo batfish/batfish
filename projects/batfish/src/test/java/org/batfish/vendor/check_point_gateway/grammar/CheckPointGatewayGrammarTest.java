@@ -1043,14 +1043,25 @@ public class CheckPointGatewayGrammarTest {
     // eth0 to eth3
     Flow denied = createFlow("10.0.0.10", "10.0.3.10");
 
-    // Confirm converted ACL has correct behavior
+    // Confirm converted AccessLayer and composite ACL have the same, correct behavior
     assertThat(c, hasIpAccessList(accessLayerName, accepts(permitted, "eth1", c)));
     assertThat(c, hasIpAccessList(accessLayerName, accepts(permittedNegated, "eth1", c)));
     assertThat(c, hasIpAccessList(accessLayerName, rejects(denied, "eth1", c)));
-
-    // Composite ACL has the same behavior
     assertThat(c, hasIpAccessList(INTERFACE_ACL_NAME, accepts(permitted, "eth1", c)));
     assertThat(c, hasIpAccessList(INTERFACE_ACL_NAME, accepts(permittedNegated, "eth1", c)));
     assertThat(c, hasIpAccessList(INTERFACE_ACL_NAME, rejects(denied, "eth1", c)));
+
+    // Confirm each AccessRule has the correct behavior
+    assertThat(c, hasIpAccessList(ruleAllow, accepts(permitted, "eth1", c)));
+    assertThat(c, hasIpAccessList(ruleAllow, rejects(permittedNegated, "eth1", c)));
+    assertThat(c, hasIpAccessList(ruleAllow, rejects(denied, "eth1", c)));
+
+    assertThat(c, hasIpAccessList(ruleAllowNegated, rejects(permitted, "eth1", c)));
+    assertThat(c, hasIpAccessList(ruleAllowNegated, accepts(permittedNegated, "eth1", c)));
+    assertThat(c, hasIpAccessList(ruleAllowNegated, rejects(denied, "eth1", c)));
+
+    assertThat(c, hasIpAccessList(ruleBlockAll, rejects(permitted, "eth1", c)));
+    assertThat(c, hasIpAccessList(ruleBlockAll, rejects(permittedNegated, "eth1", c)));
+    assertThat(c, hasIpAccessList(ruleBlockAll, rejects(denied, "eth1", c)));
   }
 }

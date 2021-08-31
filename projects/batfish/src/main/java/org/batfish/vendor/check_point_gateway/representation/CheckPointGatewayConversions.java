@@ -1,10 +1,12 @@
 package org.batfish.vendor.check_point_gateway.representation;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ExprAclLine;
@@ -54,7 +56,47 @@ public final class CheckPointGatewayConversions {
     return IpWildcard.ipWithWildcardMask(network.getSubnet4(), flippedMask).toIpSpace();
   }
 
-  /** Convert specified {@link AccessRuleOrSection} to an {@link IpAccessList}. */
+  /**
+   * Returns a {@code Map} of all {@link IpAccessList}s corresponding to specified {@link
+   * AccessRuleOrSection}.
+   */
+  static Map<String, IpAccessList> toIpAccessLists(@Nonnull AccessLayer access) {
+    ImmutableMap.Builder<String, IpAccessList> acls = ImmutableMap.builder();
+    ImmutableList.Builder<AclLine> accessLayerLines = ImmutableList.builder();
+    for (AccessRuleOrSection acl : access.getRulebase()) {
+      IpAccessList converted = toIpAccessList(acl, access.getObjectsDictionary());
+      acls.put(converted.getName(), converted);
+      accessLayerLines.add(new AclAclLine(converted.getName(), converted.getName()));
+    }
+    acls.put(
+        access.getName(),
+        IpAccessList.builder()
+            .setName(access.getName())
+            .setLines(accessLayerLines.build())
+            .build());
+    return acls.build();
+  }
+
+  static IpAccessList toIpAccessList(
+      @Nonnull AccessRuleOrSection access, Map<Uid, TypedManagementObject> objs) {
+    if (access instanceof AccessRule) {
+      AccessRule rule = (AccessRule) access;
+      return IpAccessList.builder()
+          .setName(rule.getName())
+          .setLines(ImmutableList.of(toAclLine(rule, objs)))
+          .build();
+    }
+    assert access instanceof AccessSection;
+    AccessSection section = (AccessSection) access;
+    return IpAccessList.builder()
+        .setName(section.getName())
+        .setLines(
+            section.getRulebase().stream()
+                .map(r -> toAclLine(r, objs))
+                .collect(ImmutableList.toImmutableList()))
+        .build();
+  }
+
   static IpAccessList toIpAccessList(@Nonnull AccessLayer access) {
     return IpAccessList.builder()
         .setLines(
