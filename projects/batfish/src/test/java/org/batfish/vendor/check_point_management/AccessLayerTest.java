@@ -87,45 +87,39 @@ public final class AccessLayerTest {
                 ImmutableMap.of(
                     Uid.of("100"), new RulebaseAction("Accept", Uid.of("100"), "Accept")),
                 ImmutableList.of(
-                    new AccessRule(
-                        Uid.of("1"),
-                        "foo",
-                        ImmutableList.of(Uid.of("2")),
-                        "any",
-                        false,
-                        ImmutableList.of(Uid.of("3")),
-                        true,
-                        true,
-                        ImmutableList.of(Uid.of("4")),
-                        "bar",
-                        5,
-                        ImmutableList.of(Uid.of("6")),
-                        false,
-                        ImmutableList.of(Uid.of("7")),
-                        false,
-                        Uid.of("8"),
-                        ImmutableList.of(Uid.of("9"))),
+                    AccessRule.testBuilder()
+                        .setAction(Uid.of("1"))
+                        .setComments("foo")
+                        .setContent(ImmutableList.of(Uid.of("2")))
+                        .setContentDirection("any")
+                        .setDestination(ImmutableList.of(Uid.of("3")))
+                        .setDestinationNegate(true)
+                        .setInstallOn(ImmutableList.of(Uid.of("4")))
+                        .setName("bar")
+                        .setRuleNumber(5)
+                        .setService(ImmutableList.of(Uid.of("6")))
+                        .setSource(ImmutableList.of(Uid.of("7")))
+                        .setUid(Uid.of("8"))
+                        .setVpn(ImmutableList.of(Uid.of("9")))
+                        .build(),
                     new AccessSection(
                         "foo",
                         ImmutableList.of(
-                            new AccessRule(
-                                Uid.of("1"),
-                                "foo",
-                                ImmutableList.of(Uid.of("2")),
-                                "any",
-                                false,
-                                ImmutableList.of(Uid.of("3")),
-                                true,
-                                true,
-                                ImmutableList.of(Uid.of("4")),
-                                "bar",
-                                5,
-                                ImmutableList.of(Uid.of("6")),
-                                false,
-                                ImmutableList.of(Uid.of("7")),
-                                false,
-                                Uid.of("8"),
-                                ImmutableList.of(Uid.of("9")))),
+                            AccessRule.testBuilder()
+                                .setAction(Uid.of("1"))
+                                .setComments("foo")
+                                .setContent(ImmutableList.of(Uid.of("2")))
+                                .setContentDirection("any")
+                                .setDestination(ImmutableList.of(Uid.of("3")))
+                                .setDestinationNegate(true)
+                                .setInstallOn(ImmutableList.of(Uid.of("4")))
+                                .setName("bar")
+                                .setRuleNumber(5)
+                                .setService(ImmutableList.of(Uid.of("6")))
+                                .setSource(ImmutableList.of(Uid.of("7")))
+                                .setUid(Uid.of("8"))
+                                .setVpn(ImmutableList.of(Uid.of("9")))
+                                .build()),
                         Uid.of("0"))),
                 Uid.of("0"),
                 "baz")));
