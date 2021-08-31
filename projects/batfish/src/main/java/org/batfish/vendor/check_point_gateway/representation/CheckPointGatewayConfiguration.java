@@ -174,8 +174,8 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
   private @Nonnull Optional<Map.Entry<ManagementDomain, GatewayOrServer>> findGatewayAndDomain(
       CheckpointManagementConfiguration mgmtConfig) {
     Set<Ip> ips =
-        _c.getAllInterfaces().values().stream()
-            .flatMap(i -> i.getAllAddresses().stream())
+        _interfaces.values().stream()
+            .map(Interface::getAddress)
             .filter(ConcreteInterfaceAddress.class::isInstance)
             .map(ConcreteInterfaceAddress.class::cast)
             .map(ConcreteInterfaceAddress::getIp)
