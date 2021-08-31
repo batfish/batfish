@@ -98,6 +98,7 @@ import org.batfish.vendor.check_point_gateway.representation.StaticRoute;
 import org.batfish.vendor.check_point_management.AccessLayer;
 import org.batfish.vendor.check_point_management.AccessRule;
 import org.batfish.vendor.check_point_management.AccessRuleOrSection;
+import org.batfish.vendor.check_point_management.AccessSection;
 import org.batfish.vendor.check_point_management.AllInstallationTargets;
 import org.batfish.vendor.check_point_management.CheckpointManagementConfiguration;
 import org.batfish.vendor.check_point_management.CpmiAnyObject;
@@ -936,6 +937,7 @@ public class CheckPointGatewayGrammarTest {
     Uid dropUid = Uid.of("32");
     String accessLayerName = "accessLayerFoo";
     String ruleAllow = "allow";
+    String ruleAllowNegatedSection = "allow negated section";
     String ruleAllowNegated = "allow negated";
     String ruleBlockAll = "block all";
 
@@ -973,24 +975,30 @@ public class CheckPointGatewayGrammarTest {
                 false,
                 Uid.of("100"),
                 listOfCmpiAny),
-            new AccessRule(
-                acceptUid,
-                "comments",
-                listOfCmpiAny,
-                "any",
-                false,
-                ImmutableList.of(Uid.of("12"), Uid.of("13")), // dest - eth2, eth3 network (negated)
-                true,
-                true,
-                listOfCmpiAny,
-                ruleAllowNegated,
-                2,
-                listOfCmpiAny,
-                false,
-                ImmutableList.of(Uid.of("10"), Uid.of("11")), // src - eth0, eth1 network (negated)
-                true,
-                Uid.of("101"),
-                listOfCmpiAny),
+            new AccessSection(
+                ruleAllowNegatedSection,
+                ImmutableList.of(
+                    new AccessRule(
+                        acceptUid,
+                        "comments",
+                        listOfCmpiAny,
+                        "any",
+                        false,
+                        ImmutableList.of(
+                            Uid.of("12"), Uid.of("13")), // dest - eth2, eth3 network (negated)
+                        true,
+                        true,
+                        listOfCmpiAny,
+                        ruleAllowNegated,
+                        2,
+                        listOfCmpiAny,
+                        false,
+                        ImmutableList.of(
+                            Uid.of("10"), Uid.of("11")), // src - eth0, eth1 network (negated)
+                        true,
+                        Uid.of("102"),
+                        listOfCmpiAny)),
+                Uid.of("101")),
             new AccessRule(
                 dropUid,
                 "comments",
@@ -1007,7 +1015,7 @@ public class CheckPointGatewayGrammarTest {
                 false,
                 listOfCmpiAny,
                 false,
-                Uid.of("104"),
+                Uid.of("103"),
                 listOfCmpiAny));
 
     ImmutableMap<Uid, ManagementPackage> packages =
@@ -1051,17 +1059,9 @@ public class CheckPointGatewayGrammarTest {
     assertThat(c, hasIpAccessList(INTERFACE_ACL_NAME, accepts(permittedNegated, "eth1", c)));
     assertThat(c, hasIpAccessList(INTERFACE_ACL_NAME, rejects(denied, "eth1", c)));
 
-    // Confirm each AccessRule has the correct behavior
-    assertThat(c, hasIpAccessList(ruleAllow, accepts(permitted, "eth1", c)));
-    assertThat(c, hasIpAccessList(ruleAllow, rejects(permittedNegated, "eth1", c)));
-    assertThat(c, hasIpAccessList(ruleAllow, rejects(denied, "eth1", c)));
-
-    assertThat(c, hasIpAccessList(ruleAllowNegated, rejects(permitted, "eth1", c)));
-    assertThat(c, hasIpAccessList(ruleAllowNegated, accepts(permittedNegated, "eth1", c)));
-    assertThat(c, hasIpAccessList(ruleAllowNegated, rejects(denied, "eth1", c)));
-
-    assertThat(c, hasIpAccessList(ruleBlockAll, rejects(permitted, "eth1", c)));
-    assertThat(c, hasIpAccessList(ruleBlockAll, rejects(permittedNegated, "eth1", c)));
-    assertThat(c, hasIpAccessList(ruleBlockAll, rejects(denied, "eth1", c)));
+    // Confirm the AccessSection has its own IpAccessList with the correct behavior
+    assertThat(c, hasIpAccessList(ruleAllowNegatedSection, rejects(permitted, "eth1", c)));
+    assertThat(c, hasIpAccessList(ruleAllowNegatedSection, accepts(permittedNegated, "eth1", c)));
+    assertThat(c, hasIpAccessList(ruleAllowNegatedSection, rejects(denied, "eth1", c)));
   }
 }
