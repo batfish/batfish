@@ -113,7 +113,6 @@ import org.batfish.vendor.check_point_management.NatRulebase;
 import org.batfish.vendor.check_point_management.Network;
 import org.batfish.vendor.check_point_management.Package;
 import org.batfish.vendor.check_point_management.RulebaseAction;
-import org.batfish.vendor.check_point_management.ServiceTcp;
 import org.batfish.vendor.check_point_management.SimpleGateway;
 import org.batfish.vendor.check_point_management.TypedManagementObject;
 import org.batfish.vendor.check_point_management.Uid;
@@ -963,7 +962,6 @@ public class CheckPointGatewayGrammarTest {
                 "networkEth2", Ip.parse("10.0.2.0"), Ip.parse("255.255.255.0"), Uid.of("12")),
             new Network(
                 "networkEth3", Ip.parse("10.0.3.0"), Ip.parse("255.255.255.0"), Uid.of("13")),
-            new ServiceTcp("ssh", Uid.of("21")),
             new RulebaseAction("Accept", acceptUid, "Accept"),
             new RulebaseAction("Drop", dropUid, "Drop"));
     ImmutableList<AccessRuleOrSection> rulebase =
