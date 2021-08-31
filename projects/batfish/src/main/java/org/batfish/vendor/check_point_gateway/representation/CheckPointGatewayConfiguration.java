@@ -31,6 +31,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
@@ -42,6 +43,7 @@ import org.batfish.vendor.check_point_gateway.representation.BondingGroup.Mode;
 import org.batfish.vendor.check_point_management.AccessLayer;
 import org.batfish.vendor.check_point_management.AddressRange;
 import org.batfish.vendor.check_point_management.CheckpointManagementConfiguration;
+import org.batfish.vendor.check_point_management.CpmiAnyObject;
 import org.batfish.vendor.check_point_management.GatewayOrServer;
 import org.batfish.vendor.check_point_management.ManagementDomain;
 import org.batfish.vendor.check_point_management.ManagementPackage;
@@ -171,6 +173,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
   }
 
   private void convertObjectsToIpSpaces(Map<Uid, TypedManagementObject> objs) {
+    // TODO use visitor pattern instead
     objs.values()
         .forEach(
             natObj -> {
@@ -181,6 +184,8 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
                     .ifPresent(ipSpace -> _c.getIpSpaces().put(natObj.getName(), ipSpace));
               } else if (natObj instanceof Network) {
                 _c.getIpSpaces().put(natObj.getName(), toIpSpace((Network) natObj));
+              } else if (natObj instanceof CpmiAnyObject) {
+                _c.getIpSpaces().put(natObj.getName(), UniverseIpSpace.INSTANCE);
               }
             });
   }

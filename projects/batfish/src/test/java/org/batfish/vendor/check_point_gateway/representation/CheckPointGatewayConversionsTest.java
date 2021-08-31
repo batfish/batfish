@@ -2,6 +2,8 @@ package org.batfish.vendor.check_point_gateway.representation;
 
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.hasConjuncts;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExprThat;
+import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
+import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toAction;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toIpAccessLists;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toIpSpace;
@@ -14,17 +16,24 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
+import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpRange;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.vendor.check_point_management.AccessLayer;
 import org.batfish.vendor.check_point_management.AccessRule;
+import org.batfish.vendor.check_point_management.AccessRuleOrSection;
+import org.batfish.vendor.check_point_management.AccessSection;
 import org.batfish.vendor.check_point_management.AddressRange;
 import org.batfish.vendor.check_point_management.CpmiAnyObject;
 import org.batfish.vendor.check_point_management.Network;
@@ -34,6 +43,26 @@ import org.batfish.vendor.check_point_management.Uid;
 import org.junit.Test;
 
 public class CheckPointGatewayConversionsTest {
+
+  private static Flow createFlow(String sourceAddress, String destinationAddress) {
+    return createFlow(sourceAddress, destinationAddress, IpProtocol.TCP, 1, 1);
+  }
+
+  private static Flow createFlow(
+      String sourceAddress,
+      String destinationAddress,
+      IpProtocol protocol,
+      int sourcePort,
+      int destinationPort) {
+    Flow.Builder fb = Flow.builder();
+    fb.setIngressNode("node");
+    fb.setSrcIp(Ip.parse(sourceAddress));
+    fb.setDstIp(Ip.parse(destinationAddress));
+    fb.setIpProtocol(protocol);
+    fb.setDstPort(destinationPort);
+    fb.setSrcPort(sourcePort);
+    return fb.build();
+  }
 
   @Test
   public void testToIpSpace_addressRange() {
@@ -63,6 +92,8 @@ public class CheckPointGatewayConversionsTest {
 
   @Test
   public void testToIpAccessLists() {
+    String accessLayerName = "accessLayerName";
+    String accessSectionName = "accessSectionName";
     Uid acceptUid = Uid.of("99997");
     Uid dropUid = Uid.of("99998");
     Uid cpmiAnyUid = Uid.of("99999");
@@ -86,15 +117,63 @@ public class CheckPointGatewayConversionsTest {
             .put(acceptUid, new RulebaseAction("Accept", acceptUid, "Accept"))
             .put(dropUid, new RulebaseAction("Drop", dropUid, "Drop"))
             .build();
+    ImmutableMap<String, IpSpace> ipSpaces =
+        ImmutableMap.of(
+            "net0",
+            Prefix.parse("10.0.0.0/24").toIpSpace(),
+            "net1",
+            Prefix.parse("10.0.1.0/24").toIpSpace(),
+            "net2",
+            Prefix.parse("10.0.2.0/24").toIpSpace(),
+            "net3",
+            Prefix.parse("10.0.3.0/24").toIpSpace(),
+            "Any",
+            UniverseIpSpace.INSTANCE);
+
+    ImmutableList<AccessRuleOrSection> rulebase =
+        ImmutableList.of(
+            // Drop net1 -> anywhere
+            AccessRule.testBuilder(cpmiAnyUid)
+                .setUid(Uid.of("2"))
+                .setAction(dropUid)
+                .setSource(ImmutableList.of(Uid.of("11")))
+                .setName("rule1")
+                .build(),
+            // Accept anywhere -> net1
+            new AccessSection(
+                accessSectionName,
+                ImmutableList.of(
+                    AccessRule.testBuilder(cpmiAnyUid)
+                        .setUid(Uid.of("4"))
+                        .setAction(acceptUid)
+                        .setDestination(ImmutableList.of(Uid.of("11")))
+                        .setName("childRule1")
+                        .build()),
+                Uid.of("3")),
+            // Drop all traffic
+            AccessRule.testBuilder(cpmiAnyUid)
+                .setUid(Uid.of("6"))
+                .setAction(dropUid)
+                .setName("rule2")
+                .build());
+
+    Flow net0ToNet1 = createFlow("10.0.0.100", "10.0.1.101");
+    Flow net1ToNet1 = createFlow("10.0.1.100", "10.0.1.101");
+    Flow net0ToNet2 = createFlow("10.0.0.100", "10.0.2.101");
 
     Map<String, IpAccessList> ipAccessLists =
-        toIpAccessLists(
-            new AccessLayer(
-                objs,
-                ImmutableList.of(AccessRule.testBuilder(cpmiAnyUid).build()),
-                Uid.of("1"),
-                "accessLayerName"));
-    // TODO test a section and rule
+        toIpAccessLists(new AccessLayer(objs, rulebase, Uid.of("1"), accessLayerName));
+    assertThat(ipAccessLists.keySet(), containsInAnyOrder(accessLayerName, accessSectionName));
+
+    IpAccessList aclLayer = ipAccessLists.get(accessLayerName);
+    assertThat(aclLayer, accepts(net0ToNet1, "eth0", ipAccessLists, ipSpaces));
+    assertThat(aclLayer, rejects(net1ToNet1, "eth0", ipAccessLists, ipSpaces));
+    assertThat(aclLayer, rejects(net0ToNet2, "eth0", ipAccessLists, ipSpaces));
+
+    IpAccessList aclSection = ipAccessLists.get(accessSectionName);
+    assertThat(aclSection, accepts(net0ToNet1, "eth0", ipAccessLists, ipSpaces));
+    assertThat(aclSection, accepts(net1ToNet1, "eth0", ipAccessLists, ipSpaces));
+    assertThat(aclSection, rejects(net0ToNet2, "eth0", ipAccessLists, ipSpaces));
   }
 
   @Test
