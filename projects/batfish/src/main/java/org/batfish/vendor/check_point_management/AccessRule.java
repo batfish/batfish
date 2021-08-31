@@ -13,6 +13,7 @@ import javax.annotation.Nullable;
 /** A single access-rule in an {@link AccessLayer}. */
 public final class AccessRule extends NamedManagementObject implements AccessRuleOrSection {
 
+  @VisibleForTesting
   public static final class Builder {
     public @Nonnull Builder setAction(Uid action) {
       _action = action;
@@ -158,10 +159,12 @@ public final class AccessRule extends NamedManagementObject implements AccessRul
     private @Nullable List<Uid> _vpn;
   }
 
+  @VisibleForTesting
   public static @Nonnull Builder builder() {
     return new Builder();
   }
 
+  @VisibleForTesting
   @Nonnull
   public static Builder testBuilder() {
     return builder()
@@ -171,7 +174,8 @@ public final class AccessRule extends NamedManagementObject implements AccessRul
         .setDestinationNegate(false)
         .setEnabled(true)
         .setRuleNumber(1)
-        .setServiceNegate(false);
+        .setServiceNegate(false)
+        .setSourceNegate(false);
   }
 
   public @Nonnull Uid getAction() {
@@ -234,8 +238,7 @@ public final class AccessRule extends NamedManagementObject implements AccessRul
     return _vpn;
   }
 
-  @VisibleForTesting
-  AccessRule(
+  private AccessRule(
       Uid action,
       String comments,
       List<Uid> content,
@@ -290,41 +293,25 @@ public final class AccessRule extends NamedManagementObject implements AccessRul
       @JsonProperty(PROP_SOURCE_NEGATE) @Nullable Boolean sourceNegate,
       @JsonProperty(PROP_VPN) @Nullable List<Uid> vpn,
       @JsonProperty(PROP_UID) @Nullable Uid uid) {
-    checkArgument(action != null, "Missing %s", PROP_ACTION);
-    checkArgument(comments != null, "Missing %s", PROP_COMMENTS);
-    checkArgument(content != null, "Missing %s", PROP_CONTENT);
-    checkArgument(contentDirection != null, "Missing %s", PROP_CONTENT_DIRECTION);
-    checkArgument(contentNegate != null, "Missing %s", PROP_CONTENT_NEGATE);
-    checkArgument(destination != null, "Missing %s", PROP_DESTINATION);
-    checkArgument(destinationNegate != null, "Missing %s", PROP_DESTINATION_NEGATE);
-    checkArgument(enabled != null, "Missing %s", PROP_ENABLED);
-    checkArgument(installOn != null, "Missing %s", PROP_INSTALL_ON);
-    checkArgument(name != null, "Missing %s", PROP_NAME);
-    checkArgument(ruleNumber != null, "Missing %s", PROP_RULE_NUMBER);
-    checkArgument(service != null, "Missing %s", PROP_SERVICE);
-    checkArgument(serviceNegate != null, "Missing %s", PROP_SERVICE_NEGATE);
-    checkArgument(source != null, "Missing %s", PROP_SOURCE);
-    checkArgument(sourceNegate != null, "Missing %s", PROP_SOURCE_NEGATE);
-    checkArgument(vpn != null, "Missing %s", PROP_VPN);
-    checkArgument(uid != null, "Missing %s", PROP_UID);
-    return new AccessRule(
-        action,
-        comments,
-        content,
-        contentDirection,
-        contentNegate,
-        destination,
-        destinationNegate,
-        enabled,
-        installOn,
-        name,
-        ruleNumber,
-        service,
-        serviceNegate,
-        source,
-        sourceNegate,
-        uid,
-        vpn);
+    return AccessRule.builder()
+        .setAction(action)
+        .setComments(comments)
+        .setContent(content)
+        .setContentDirection(contentDirection)
+        .setContentNegate(contentNegate)
+        .setDestination(destination)
+        .setDestinationNegate(destinationNegate)
+        .setEnabled(enabled)
+        .setInstallOn(installOn)
+        .setName(name)
+        .setRuleNumber(ruleNumber)
+        .setService(service)
+        .setServiceNegate(serviceNegate)
+        .setSource(source)
+        .setSourceNegate(sourceNegate)
+        .setVpn(vpn)
+        .setUid(uid)
+        .build();
   }
 
   @Override
