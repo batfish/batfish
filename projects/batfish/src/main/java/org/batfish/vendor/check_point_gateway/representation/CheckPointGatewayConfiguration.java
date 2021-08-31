@@ -143,10 +143,9 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
               //  names are unique
               if (natObj instanceof AddressRange) {
                 Optional.ofNullable(toIpSpace((AddressRange) natObj))
-                    .ifPresent(
-                        ipSpace -> _c.getIpSpaces().put(natObj.getUid().getValue(), ipSpace));
+                    .ifPresent(ipSpace -> _c.getIpSpaces().put(natObj.getName(), ipSpace));
               } else if (natObj instanceof Network) {
-                _c.getIpSpaces().put(natObj.getUid().getValue(), toIpSpace((Network) natObj));
+                _c.getIpSpaces().put(natObj.getName(), toIpSpace((Network) natObj));
               }
             });
   }

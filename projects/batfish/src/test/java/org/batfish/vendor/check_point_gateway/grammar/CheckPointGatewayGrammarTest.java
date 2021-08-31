@@ -888,8 +888,8 @@ public class CheckPointGatewayGrammarTest {
     Configuration c3 = configs.get("gw_package_selection_3");
     Configuration c4 = configs.get("gw_package_selection_4");
     Configuration c5 = configs.get("gw_package_selection_5");
-    assertThat(c1.getIpSpaces(), hasKey("n1uid"));
-    assertThat(c2.getIpSpaces(), hasKey("n2uid"));
+    assertThat(c1.getIpSpaces(), hasKey("n1"));
+    assertThat(c2.getIpSpaces(), hasKey("n2"));
     assertThat(c3.getIpSpaces(), anEmptyMap());
     assertThat(c4.getIpSpaces(), anEmptyMap());
     assertThat(c5.getIpSpaces(), anEmptyMap());
