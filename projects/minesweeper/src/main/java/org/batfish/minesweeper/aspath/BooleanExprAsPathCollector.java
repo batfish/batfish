@@ -24,6 +24,7 @@ import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
 import org.batfish.datamodel.routing_policy.expr.HasRoute;
 import org.batfish.datamodel.routing_policy.expr.HasRoute6;
 import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
+import org.batfish.datamodel.routing_policy.expr.MatchBgpSessionType;
 import org.batfish.datamodel.routing_policy.expr.MatchColor;
 import org.batfish.datamodel.routing_policy.expr.MatchIp6AccessList;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
@@ -104,6 +105,12 @@ public class BooleanExprAsPathCollector
   public Set<SymbolicAsPathRegex> visitMatchAsPath(MatchAsPath matchAsPath, Configuration arg) {
     AsPathMatchExpr matchExpr = matchAsPath.getAsPathMatchExpr();
     return matchExpr.accept(new AsPathMatchExprAsPathCollector(), arg);
+  }
+
+  @Override
+  public Set<SymbolicAsPathRegex> visitMatchBgpSessionType(
+      MatchBgpSessionType matchBgpSessionType, Configuration arg) {
+    return ImmutableSet.of();
   }
 
   @Override
