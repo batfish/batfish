@@ -173,6 +173,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
 
   private @Nonnull Optional<Map.Entry<ManagementDomain, GatewayOrServer>> findGatewayAndDomain(
       CheckpointManagementConfiguration mgmtConfig) {
+    // TODO handle linking to secondary IP addresses, if that is allowed
     Set<Ip> ips =
         _interfaces.values().stream()
             .map(Interface::getAddress)
