@@ -92,6 +92,12 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     _c.setDefaultCrossZoneAction(LineAction.DENY);
     _c.setDefaultInboundAction(LineAction.PERMIT);
 
+    Optional<CheckpointManagementConfiguration> mgmtConfig =
+        Optional.ofNullable(getConversionContext())
+            .map(ConversionContext::getCheckpointManagementConfiguration)
+            .map(cmc -> (CheckpointManagementConfiguration) cmc);
+    mgmtConfig.ifPresent(this::convertManagementConfig);
+
     // Gateways don't have VRFs, so put everything in a generated default VRF
     Vrf vrf = new Vrf(VRF_NAME);
     _c.setVrfs(ImmutableMap.of(VRF_NAME, vrf));
@@ -103,12 +109,6 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
             _staticRoutes.values().stream()
                 .flatMap(staticRoute -> convertStaticRoute(staticRoute, _interfaces))
                 .collect(ImmutableSet.toImmutableSet()));
-
-    Optional<CheckpointManagementConfiguration> mgmtConfig =
-        Optional.ofNullable(getConversionContext())
-            .map(ConversionContext::getCheckpointManagementConfiguration)
-            .map(cmc -> (CheckpointManagementConfiguration) cmc);
-    mgmtConfig.ifPresent(this::convertManagementConfig);
 
     return ImmutableList.of(_c);
   }
