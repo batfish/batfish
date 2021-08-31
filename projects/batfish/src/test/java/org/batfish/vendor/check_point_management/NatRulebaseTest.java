@@ -132,7 +132,7 @@ public final class NatRulebaseTest {
                     .put(Uid.of("5"), new Host(Ip.ZERO, "foo", Uid.of("5")))
                     .put(Uid.of("6"), new Network("foo", Ip.ZERO, Ip.MAX, Uid.of("6")))
                     .put(Uid.of("7"), new ServiceGroup("foo", Uid.of("7")))
-                    .put(Uid.of("8"), new ServiceTcp("foo", Uid.of("8")))
+                    .put(Uid.of("8"), new ServiceTcp("foo", "8642", Uid.of("8")))
                     .build(),
                 ImmutableList.of(
                     new NatRule(
