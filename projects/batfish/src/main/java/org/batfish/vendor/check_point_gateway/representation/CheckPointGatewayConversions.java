@@ -153,7 +153,7 @@ public final class CheckPointGatewayConversions {
 
   /** Convert specified {@link TypedManagementObject} to a {@link LineAction}. */
   @Nonnull
-  private static LineAction toAction(@Nonnull RulebaseAction obj) {
+  static LineAction toAction(@Nonnull RulebaseAction obj) {
     switch (obj.getAction()) {
       case DROP:
         return LineAction.DENY;
@@ -175,7 +175,7 @@ public final class CheckPointGatewayConversions {
     return AclIpSpace.builder()
         .thenPermitting(
             targets.stream()
-                .map(i -> objs.get(i).getUid().getValue())
+                .map(i -> objs.get(i).getName())
                 .map(IpSpaceReference::new)
                 .collect(ImmutableList.toImmutableList()))
         .build();

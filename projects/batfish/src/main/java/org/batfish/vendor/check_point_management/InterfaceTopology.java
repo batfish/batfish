@@ -19,7 +19,7 @@ public class InterfaceTopology implements Serializable {
   }
 
   @VisibleForTesting
-  InterfaceTopology(boolean leadsToInternet) {
+  public InterfaceTopology(boolean leadsToInternet) {
     _leadsToInternet = leadsToInternet;
   }
 

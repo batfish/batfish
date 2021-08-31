@@ -105,6 +105,7 @@ import org.batfish.vendor.check_point_management.CpmiAnyObject;
 import org.batfish.vendor.check_point_management.Domain;
 import org.batfish.vendor.check_point_management.GatewayOrServer;
 import org.batfish.vendor.check_point_management.GatewayOrServerPolicy;
+import org.batfish.vendor.check_point_management.InterfaceTopology;
 import org.batfish.vendor.check_point_management.ManagementDomain;
 import org.batfish.vendor.check_point_management.ManagementPackage;
 import org.batfish.vendor.check_point_management.ManagementServer;
@@ -1053,6 +1054,15 @@ public class CheckPointGatewayGrammarTest {
             new SimpleGateway(
                 Ip.parse("10.0.0.1"),
                 "access_rules",
+                ImmutableList.of(
+                    new org.batfish.vendor.check_point_management.Interface(
+                        "eth0", new InterfaceTopology(false)),
+                    new org.batfish.vendor.check_point_management.Interface(
+                        "eth1", new InterfaceTopology(false)),
+                    new org.batfish.vendor.check_point_management.Interface(
+                        "eth2", new InterfaceTopology(true)),
+                    new org.batfish.vendor.check_point_management.Interface(
+                        "eth3", new InterfaceTopology(true))),
                 new GatewayOrServerPolicy("p1", null),
                 Uid.of("1")));
 
