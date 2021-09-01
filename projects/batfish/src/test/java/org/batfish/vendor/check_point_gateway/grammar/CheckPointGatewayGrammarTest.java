@@ -222,14 +222,14 @@ public class CheckPointGatewayGrammarTest {
       IpProtocol protocol,
       int sourcePort,
       int destinationPort) {
-    Flow.Builder fb = Flow.builder();
-    fb.setIngressNode("node");
-    fb.setSrcIp(Ip.parse(sourceAddress));
-    fb.setDstIp(Ip.parse(destinationAddress));
-    fb.setIpProtocol(protocol);
-    fb.setDstPort(destinationPort);
-    fb.setSrcPort(sourcePort);
-    return fb.build();
+    return Flow.builder()
+        .setIngressNode("node")
+        .setSrcIp(Ip.parse(sourceAddress))
+        .setDstIp(Ip.parse(destinationAddress))
+        .setIpProtocol(protocol)
+        .setDstPort(destinationPort)
+        .setSrcPort(sourcePort)
+        .build();
   }
 
   @Test
@@ -951,25 +951,30 @@ public class CheckPointGatewayGrammarTest {
     CpmiAnyObject any = new CpmiAnyObject(cpmiAnyUid);
     Uid acceptUid = Uid.of("31");
     Uid dropUid = Uid.of("32");
+    Uid net1Uid = Uid.of("11");
+    Uid net2Uid = Uid.of("12");
     String accessLayerName = "accessLayerFoo";
 
-    ImmutableList<TypedManagementObject> objs =
-        ImmutableList.of(
-            any,
-            new Network(
-                "networkEth1", Ip.parse("10.0.1.0"), Ip.parse("255.255.255.0"), Uid.of("11")),
-            new Network(
-                "networkEth2", Ip.parse("10.0.2.0"), Ip.parse("255.255.255.0"), Uid.of("12")),
-            new Network(
-                "networkEth3", Ip.parse("10.0.3.0"), Ip.parse("255.255.255.0"), Uid.of("13")),
-            new RulebaseAction("Accept", acceptUid, "Accept"),
-            new RulebaseAction("Drop", dropUid, "Drop"));
+    ImmutableMap<Uid, TypedManagementObject> objs =
+        ImmutableMap.<Uid, TypedManagementObject>builder()
+            .put(cpmiAnyUid, any)
+            .put(
+                net1Uid,
+                new Network(
+                    "networkEth1", Ip.parse("10.0.1.0"), Ip.parse("255.255.255.0"), net1Uid))
+            .put(
+                net2Uid,
+                new Network(
+                    "networkEth2", Ip.parse("10.0.2.0"), Ip.parse("255.255.255.0"), net2Uid))
+            .put(acceptUid, new RulebaseAction("Accept", acceptUid, "Accept"))
+            .put(dropUid, new RulebaseAction("Drop", dropUid, "Drop"))
+            .build();
     ImmutableList<AccessRuleOrSection> rulebase =
         ImmutableList.of(
             AccessRule.testBuilder(cpmiAnyUid)
                 .setAction(acceptUid)
-                .setDestination(ImmutableList.of(Uid.of("12"))) // dst - net2
-                .setSource(ImmutableList.of(Uid.of("11"))) // src - net1
+                .setDestination(ImmutableList.of(net2Uid))
+                .setSource(ImmutableList.of(net1Uid))
                 .setUid(Uid.of("100"))
                 .setName("acceptNet1ToNet2")
                 .build(),
@@ -983,7 +988,7 @@ public class CheckPointGatewayGrammarTest {
         ImmutableMap.of(
             Uid.of("2"),
             new ManagementPackage(
-                ImmutableList.of(AccessLayer.create(objs, rulebase, Uid.of("3"), accessLayerName)),
+                ImmutableList.of(new AccessLayer(objs, rulebase, Uid.of("3"), accessLayerName)),
                 null,
                 new Package(
                     new Domain("d", Uid.of("0")),

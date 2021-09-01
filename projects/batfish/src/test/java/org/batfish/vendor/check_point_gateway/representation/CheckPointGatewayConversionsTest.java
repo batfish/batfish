@@ -90,14 +90,14 @@ public class CheckPointGatewayConversionsTest {
       IpProtocol protocol,
       int sourcePort,
       int destinationPort) {
-    Flow.Builder fb = Flow.builder();
-    fb.setIngressNode("node");
-    fb.setSrcIp(Ip.parse(sourceAddress));
-    fb.setDstIp(Ip.parse(destinationAddress));
-    fb.setIpProtocol(protocol);
-    fb.setDstPort(destinationPort);
-    fb.setSrcPort(sourcePort);
-    return fb.build();
+    return Flow.builder()
+        .setIngressNode("node")
+        .setSrcIp(Ip.parse(sourceAddress))
+        .setDstIp(Ip.parse(destinationAddress))
+        .setIpProtocol(protocol)
+        .setDstPort(destinationPort)
+        .setSrcPort(sourcePort)
+        .build();
   }
 
   @Test
