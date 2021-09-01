@@ -11,10 +11,10 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 
-public final class AddressRange extends AddressSpace {
+public final class AddressRange extends TypedManagementObject implements AddressSpace {
 
   @Override
-  public <T> T accept(ConcreteSrcOrDstVisitor<T> visitor) {
+  public <T> T accept(AddressSpaceVisitor<T> visitor) {
     return visitor.visitAddressRange(this);
   }
 

@@ -13,10 +13,10 @@ import javax.annotation.Nullable;
  * original-source} field of a {@link NatRule}, indicates that any value shall be matched for that
  * field when applying the rule.
  */
-public final class CpmiAnyObject extends TypedManagementObject implements SrcOrDst, Service {
+public final class CpmiAnyObject extends TypedManagementObject implements Service, AddressSpace {
 
   @Override
-  public <T> T accept(SrcOrDstVisitor<T> visitor) {
+  public <T> T accept(AddressSpaceVisitor<T> visitor) {
     return visitor.visitCpmiAnyObject(this);
   }
 

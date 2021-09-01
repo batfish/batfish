@@ -139,8 +139,12 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     }
     ManagementPackage pakij = maybePackage.get();
 
-    // Convert Access layers
-    List<AccessLayer> accessLayers = pakij.getAccessLayers();
+    convertIpSpaces(pakij);
+    convertAccessLayers(pakij.getAccessLayers());
+    Optional.ofNullable(pakij.getNatRulebase()).ifPresent(this::convertNatRulebase);
+  }
+
+  private void convertAccessLayers(List<AccessLayer> accessLayers) {
     // TODO support matching multiple access layers
     if (accessLayers.size() > 1) {
       _w.redFlag(
@@ -160,15 +164,6 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
                     .collect(ImmutableList.toImmutableList()))
             .build();
     _c.getIpAccessLists().put(interfaceAcl.getName(), interfaceAcl);
-
-    // Convert IP spaces
-    @Nullable NatRulebase natRulebase = pakij.getNatRulebase();
-    if (natRulebase != null) {
-      convertObjectsToIpSpaces(natRulebase.getObjectsDictionary());
-    }
-    for (AccessLayer al : pakij.getAccessLayers()) {
-      convertObjectsToIpSpaces(al.getObjectsDictionary());
-    }
   }
 
   private void convertObjectsToIpSpaces(Map<Uid, TypedManagementObject> objs) {
@@ -185,6 +180,23 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
                 _c.getIpSpaces().put(obj.getName(), UniverseIpSpace.INSTANCE);
               }
             });
+  }
+
+  /**
+   * Converts all objects representing an address space in the given package to an {@link
+   * org.batfish.datamodel.IpSpace}
+   */
+  private void convertIpSpaces(@Nullable ManagementPackage pakij) {
+    Optional.ofNullable(pakij.getNatRulebase())
+        .ifPresent(natRulebase -> convertObjectsToIpSpaces(natRulebase.getObjectsDictionary()));
+    pakij.getAccessLayers().stream()
+        .map(AccessLayer::getObjectsDictionary)
+        .forEach(objectsDictionary -> convertObjectsToIpSpaces(objectsDictionary));
+  }
+
+  /** Converts the given {@link NatRulebase} and applies it to this config. */
+  private void convertNatRulebase(NatRulebase natRulebase) {
+    // TODO
   }
 
   private @Nonnull Optional<ManagementPackage> findAccessPackage(

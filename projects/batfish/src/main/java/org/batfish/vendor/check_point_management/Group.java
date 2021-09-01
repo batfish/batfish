@@ -10,9 +10,9 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public final class Group extends TypedManagementObject implements ConcreteSrcOrDst {
+public final class Group extends TypedManagementObject implements AddressSpace {
   @Override
-  public <T> T accept(ConcreteSrcOrDstVisitor<T> visitor) {
+  public <T> T accept(AddressSpaceVisitor<T> visitor) {
     return visitor.visitGroup(this);
   }
 

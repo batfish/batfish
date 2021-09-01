@@ -1,9 +1,7 @@
 package org.batfish.vendor.check_point_management;
 
-/** Parent class for objects that may used to represent an address space. */
-public abstract class AddressSpace extends TypedManagementObject implements ConcreteSrcOrDst {
+/** An object that may be used to represent an address space. */
+public interface AddressSpace {
 
-  protected AddressSpace(String name, Uid uid) {
-    super(name, uid);
-  }
+  <T> T accept(AddressSpaceVisitor<T> visitor);
 }
