@@ -146,8 +146,10 @@ public final class CheckPointGatewayConversions {
   static LineAction toAction(@Nullable TypedManagementObject obj) {
     if (obj == null) {
       // TODO warn
+      return LineAction.DENY;
     } else if (!(obj instanceof RulebaseAction)) {
       // TODO warn
+      return LineAction.DENY;
     } else {
       RulebaseAction ra = (RulebaseAction) obj;
       switch (ra.getAction()) {
@@ -161,7 +163,6 @@ public final class CheckPointGatewayConversions {
           return LineAction.DENY;
       }
     }
-    return LineAction.DENY;
   }
 
   /**

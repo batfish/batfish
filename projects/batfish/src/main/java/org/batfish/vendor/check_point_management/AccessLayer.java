@@ -26,7 +26,7 @@ public final class AccessLayer extends NamedManagementObject {
   }
 
   @JsonCreator
-  public static @Nonnull AccessLayer create(
+  private static @Nonnull AccessLayer create(
       @JsonProperty(PROP_OBJECTS_DICTIONARY) @Nullable
           List<TypedManagementObject> objectsDictionary,
       @JsonProperty(PROP_RULEBASE) @Nullable List<AccessRuleOrSection> rulebase,
