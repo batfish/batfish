@@ -41,7 +41,7 @@ public final class CpmiAnyObject extends TypedManagementObject implements SrcOrD
   }
 
   @VisibleForTesting
-  CpmiAnyObject(Uid uid) {
+  public CpmiAnyObject(Uid uid) {
     super(NAME_ANY, uid);
   }
 

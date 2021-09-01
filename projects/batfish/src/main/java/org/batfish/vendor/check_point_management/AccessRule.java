@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -176,6 +177,22 @@ public final class AccessRule extends NamedManagementObject implements AccessRul
         .setRuleNumber(1)
         .setServiceNegate(false)
         .setSourceNegate(false);
+  }
+
+  /**
+   * Returns a {@link Builder} with all applicable fields populated with the specified {@code
+   * CpmiAny} object {@link Uid}.
+   */
+  @Nonnull
+  public static Builder testBuilder(@Nonnull Uid cpmiAny) {
+    List<Uid> listAny = ImmutableList.of(cpmiAny);
+    return testBuilder()
+        .setContent(listAny)
+        .setService(listAny)
+        .setDestination(listAny)
+        .setSource(listAny)
+        .setInstallOn(listAny)
+        .setVpn(listAny);
   }
 
   public @Nonnull Uid getAction() {
