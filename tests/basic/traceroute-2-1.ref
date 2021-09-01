@@ -83,7 +83,8 @@
                           "nextHopIp" : "2.128.1.1",
                           "protocol" : "static"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -192,7 +193,8 @@
                           "nextHopIp" : "2.34.101.3",
                           "protocol" : "bgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -238,7 +240,8 @@
                           "nextHopIp" : "10.12.11.1",
                           "protocol" : "ibgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -316,7 +319,8 @@
                           "nextHopIp" : "10.12.11.1",
                           "protocol" : "ibgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -362,7 +366,8 @@
                           "nextHopIp" : "10.12.11.1",
                           "protocol" : "bgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -467,7 +472,8 @@
                           "nextHopIp" : "2.128.1.1",
                           "protocol" : "static"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -576,7 +582,8 @@
                           "nextHopIp" : "2.34.101.3",
                           "protocol" : "bgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -622,7 +629,8 @@
                           "nextHopIp" : "10.12.11.1",
                           "protocol" : "ibgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -668,7 +676,8 @@
                           "nextHopIp" : "10.12.11.1",
                           "protocol" : "ibgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -714,7 +723,8 @@
                           "nextHopIp" : "10.12.11.1",
                           "protocol" : "bgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -819,7 +829,8 @@
                           "nextHopIp" : "2.128.1.1",
                           "protocol" : "static"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -928,7 +939,8 @@
                           "nextHopIp" : "2.34.201.3",
                           "protocol" : "bgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -974,7 +986,8 @@
                           "nextHopIp" : "10.12.11.1",
                           "protocol" : "ibgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -1020,7 +1033,8 @@
                           "nextHopIp" : "10.12.11.1",
                           "protocol" : "ibgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -1066,7 +1080,8 @@
                           "nextHopIp" : "10.12.11.1",
                           "protocol" : "bgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -1171,7 +1186,8 @@
                           "nextHopIp" : "2.128.1.1",
                           "protocol" : "static"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -1280,7 +1296,8 @@
                           "nextHopIp" : "2.34.201.3",
                           "protocol" : "bgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -1326,7 +1343,8 @@
                           "nextHopIp" : "10.12.11.1",
                           "protocol" : "ibgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -1404,7 +1422,8 @@
                           "nextHopIp" : "10.12.11.1",
                           "protocol" : "ibgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -1450,7 +1469,8 @@
                           "nextHopIp" : "10.12.11.1",
                           "protocol" : "bgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {

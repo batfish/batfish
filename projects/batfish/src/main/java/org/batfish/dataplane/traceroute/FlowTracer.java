@@ -589,7 +589,7 @@ class FlowTracer {
     }
 
     Fib fib = _tracerouteContext.getFib(currentNodeName, _vrfName).get();
-    fibLookup(dstIp, currentNodeName, fib);
+    fibLookup(dstIp, currentNodeName, _vrfName, fib);
   }
 
   /**
@@ -647,7 +647,7 @@ class FlowTracer {
         String currentNodeName = _currentNode.getName();
         String lookupVrfName = fibLookup.getVrfExpr().accept(_vrfExprVisitor);
         Fib fib = _tracerouteContext.getFib(currentNodeName, lookupVrfName).get();
-        fibLookup(dstIp, currentNodeName, fib);
+        fibLookup(dstIp, currentNodeName, lookupVrfName, fib);
         return null;
       }
 
@@ -695,11 +695,12 @@ class FlowTracer {
         // Just a sanity check, can't be Ip.AUTO
         assert lookupIp.valid();
 
-        Fib fib = _tracerouteContext.getFib(currentNodeName, incomingInterface.getVrfName()).get();
+        String lookupVrf = incomingInterface.getVrfName();
+        Fib fib = _tracerouteContext.getFib(currentNodeName, lookupVrf).get();
         // Re-resolve and send out using FIB lookup part of the pipeline.
         // Call the version of fibLookup that keeps track of overridden nextHopIp
         Ip dstIp = result.getFinalFlow().getDstIp();
-        fibLookup(dstIp, lookupIp, currentNodeName, fib);
+        fibLookup(dstIp, lookupIp, currentNodeName, lookupVrf, fib);
         return null;
       }
 
@@ -740,8 +741,8 @@ class FlowTracer {
    * corresponding actions.
    */
   @VisibleForTesting
-  void fibLookup(Ip dstIp, String currentNodeName, Fib fib) {
-    fibLookup(dstIp, null, currentNodeName, fib);
+  void fibLookup(Ip dstIp, String currentNodeName, String lookupVrf, Fib fib) {
+    fibLookup(dstIp, null, currentNodeName, lookupVrf, fib);
   }
 
   /**
@@ -750,11 +751,12 @@ class FlowTracer {
    * overrideNextHopIp} and the FIB entry's ARP IP is missing.
    */
   private void fibLookup(
-      Ip dstIp, @Nullable Ip overrideNextHopIp, String currentNodeName, Fib fib) {
+      Ip dstIp, @Nullable Ip overrideNextHopIp, String currentNodeName, String lookupVrf, Fib fib) {
     fibLookup(
         // Intentionally looking up the overridden NH
         firstNonNull(overrideNextHopIp, dstIp),
         currentNodeName,
+        lookupVrf,
         fib,
         (flowTracer, fibForward) -> {
           flowTracer.forwardOutInterface(
@@ -773,9 +775,10 @@ class FlowTracer {
   void fibLookup(
       Ip dstIp,
       String currentNodeName,
+      String lookupVrf,
       Fib fib,
       BiConsumer<FlowTracer, FibForward> forwardOutInterfaceHandler) {
-    fibLookup(dstIp, currentNodeName, fib, forwardOutInterfaceHandler, new Stack<>());
+    fibLookup(dstIp, currentNodeName, lookupVrf, fib, forwardOutInterfaceHandler, new Stack<>());
   }
 
   /**
@@ -787,6 +790,7 @@ class FlowTracer {
   void fibLookup(
       Ip dstIp,
       String currentNodeName,
+      String lookupVrf,
       Fib fib,
       BiConsumer<FlowTracer, FibForward> forwardOutInterfaceHandler,
       Stack<Breadcrumb> intraHopBreadcrumbs) {
@@ -804,7 +808,7 @@ class FlowTracer {
       Set<FibEntry> fibEntries = fib.get(dstIp);
 
       if (fibEntries.isEmpty()) {
-        buildNoRouteTrace();
+        buildNoRouteTrace(lookupVrf);
         return;
       }
 
@@ -825,6 +829,7 @@ class FlowTracer {
                     fibEntriesForFibAction,
                     dstIp,
                     currentNodeName,
+                    lookupVrf,
                     forwardOutInterfaceHandler,
                     intraHopBreadcrumbs,
                     breadcrumb);
@@ -946,6 +951,7 @@ class FlowTracer {
                 fibLookup(
                     _currentFlow.getDstIp(),
                     currentNodeName,
+                    _vrfName,
                     _tracerouteContext.getFib(currentNodeName, _vrfName).get(),
                     (flowTracer, fibForward) -> {
                       String outgoingIfaceName = fibForward.getInterfaceName();
@@ -984,6 +990,7 @@ class FlowTracer {
                 fibLookup(
                     _currentFlow.getDstIp(),
                     currentNodeName,
+                    _vrfName,
                     _tracerouteContext.getFib(currentNodeName, _vrfName).get(),
                     (flowTracer, fibForward) -> {
                       // Routing happened, so it's finally time to apply transformation
@@ -1118,10 +1125,10 @@ class FlowTracer {
   }
 
   /** add a step for NO_ROUTE from source to output interface */
-  private void buildNoRouteTrace() {
+  private void buildNoRouteTrace(String vrf) {
     Builder routingStepBuilder = RoutingStep.builder();
     routingStepBuilder
-        .setDetail(RoutingStepDetail.builder().build())
+        .setDetail(RoutingStepDetail.builder().setVrf(vrf).build())
         .setAction(StepAction.NO_ROUTE);
     _steps.add(routingStepBuilder.build());
     _hops.add(
@@ -1450,10 +1457,10 @@ class FlowTracer {
   }
 
   @VisibleForTesting
-  static RoutingStep buildRoutingStep(FibAction fibAction, Set<FibEntry> fibEntries) {
+  static RoutingStep buildRoutingStep(String vrf, FibAction fibAction, Set<FibEntry> fibEntries) {
     RoutingStep.Builder routingStepBuilder = RoutingStep.builder();
     RoutingStepDetail.Builder routingStepDetailBuilder =
-        RoutingStepDetail.builder().setRoutes(fibEntriesToRouteInfos(fibEntries));
+        RoutingStepDetail.builder().setVrf(vrf).setRoutes(fibEntriesToRouteInfos(fibEntries));
     fibAction.accept(
         new FibActionVisitor<Void>() {
           @Override
@@ -1487,11 +1494,12 @@ class FlowTracer {
       Set<FibEntry> fibEntries,
       Ip dstIp,
       String currentNodeName,
+      String forwardingVrf,
       BiConsumer<FlowTracer, FibForward> forwardOutInterfaceHandler,
       Stack<Breadcrumb> intraHopBreadcrumbs,
       Breadcrumb breadcrumb) {
     FlowTracer flowTracer = this;
-    _steps.add(buildRoutingStep(fibAction, fibEntries));
+    _steps.add(buildRoutingStep(forwardingVrf, fibAction, fibEntries));
     fibAction.accept(
         new FibActionVisitor<Void>() {
           @Override
@@ -1516,6 +1524,7 @@ class FlowTracer {
               forkedTracer.fibLookup(
                   dstIp,
                   currentNodeName,
+                  nextVrf,
                   _tracerouteContext.getFib(currentNodeName, nextVrf).get(),
                   forwardOutInterfaceHandler,
                   intraHopBreadcrumbs);

@@ -20,7 +20,7 @@ public final class HopTest {
         .addEqualityGroup(new Object())
         .addEqualityGroup(acceptedHop("n"), acceptedHop("n"))
         .addEqualityGroup(acceptedHop("m"))
-        .addEqualityGroup(forwardedHop("n"))
+        .addEqualityGroup(forwardedHop("n", "v"))
         .testEquals();
   }
 
