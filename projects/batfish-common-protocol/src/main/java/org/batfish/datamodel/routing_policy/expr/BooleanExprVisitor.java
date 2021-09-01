@@ -27,6 +27,8 @@ public interface BooleanExprVisitor<T, U> {
 
   T visitMatchAsPath(MatchAsPath matchAsPath, U arg);
 
+  T visitMatchBgpSessionType(MatchBgpSessionType matchBgpSessionType, U arg);
+
   T visitMatchLegacyAsPath(LegacyMatchAsPath legacyMatchAsPath, U arg);
 
   T visitMatchColor(MatchColor matchColor, U arg);
