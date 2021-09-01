@@ -16,6 +16,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
+import net.sf.javabdd.BDDFactory;
 
 /** Given a finite set of values, assigns each an integer id that can be tracked via BDD. */
 @ParametersAreNonnullByDefault
@@ -31,8 +32,18 @@ public final class BDDFiniteDomain<V> {
     this(pkt.allocateBDDInteger(varName, computeBitsRequired(values.size()), false), values);
   }
 
-  /** Use the given variable. */
-  BDDFiniteDomain(BDDInteger var, Set<V> values) {
+  /**
+   * Allocate a variable, using the given {@link BDDFactory}, that is sufficient for the given set
+   * of values.
+   */
+  public BDDFiniteDomain(BDDFactory factory, int index, Set<V> values) {
+    this(
+        BDDInteger.makeFromIndex(factory, computeBitsRequired(values.size()), index, false),
+        values);
+  }
+
+  /** Use the given variable to represent the given set of values. */
+  public BDDFiniteDomain(BDDInteger var, Set<V> values) {
     int size = values.size();
     BDD one = var.getFactory().one();
     _var = var;

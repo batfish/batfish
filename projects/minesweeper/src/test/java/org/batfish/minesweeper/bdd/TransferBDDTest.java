@@ -17,6 +17,7 @@ import java.util.SortedMap;
 import java.util.stream.Collectors;
 import net.sf.javabdd.BDD;
 import org.batfish.common.NetworkSnapshot;
+import org.batfish.common.bdd.BDDFiniteDomain;
 import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.plugin.IBatfish;
@@ -34,6 +35,7 @@ import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.TraceElement;
@@ -78,6 +80,7 @@ import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv6;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.MatchTag;
 import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
@@ -1289,6 +1292,31 @@ public class TransferBDDTest {
 
     _exception.expect(UnsupportedOperationException.class);
     tbdd.compute(ImmutableSet.of());
+  }
+
+  @Test
+  public void testMatchProtocol() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.OSPF),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+    _g = new Graph(_batfish, _batfish.getSnapshot());
+
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    BDDFiniteDomain<RoutingProtocol> protocol = _anyRoute.getProtocolHistory();
+    assertEquals(
+        acceptedAnnouncements,
+        protocol
+            .getConstraintForValue(RoutingProtocol.BGP)
+            .or(protocol.getConstraintForValue(RoutingProtocol.OSPF)));
+    assertEquals(tbdd.iteZero(acceptedAnnouncements, _anyRoute), outAnnouncements);
   }
 
   @Test
