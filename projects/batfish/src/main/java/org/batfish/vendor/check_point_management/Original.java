@@ -6,6 +6,15 @@ package org.batfish.vendor.check_point_management;
  * retained for that field when applying the rule.
  */
 public final class Original extends Global {
+  @Override
+  public <T> T accept(NatTranslatedServiceVisitor<T> visitor) {
+    return visitor.visitOriginal(this);
+  }
+
+  @Override
+  public <T> T accept(NatTranslatedSrcOrDstVisitor<T> visitor) {
+    return visitor.visitOriginal(this);
+  }
 
   Original(Uid uid) {
     super(NAME_ORIGINAL, uid);

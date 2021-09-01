@@ -8,7 +8,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /** A global pre-defined object. */
-public abstract class Global extends TypedManagementObject {
+public abstract class Global extends TypedManagementObject
+    implements NatTranslatedSrcOrDst, NatTranslatedService {
 
   @Override
   public final boolean equals(Object obj) {

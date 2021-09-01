@@ -1,6 +1,9 @@
 package org.batfish.vendor.check_point_gateway.representation;
 
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
+import static org.batfish.datamodel.transformation.Transformation.when;
+import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.constructHeaderSpace;
+import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.getTransformationSteps;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toIpSpace;
 
 import com.google.common.collect.ImmutableList;
@@ -22,6 +25,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
@@ -29,10 +33,12 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
+import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.vendor.ConversionContext;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.vendor.check_point_gateway.representation.BondingGroup.Mode;
@@ -42,8 +48,12 @@ import org.batfish.vendor.check_point_management.GatewayOrServer;
 import org.batfish.vendor.check_point_management.ManagementDomain;
 import org.batfish.vendor.check_point_management.ManagementPackage;
 import org.batfish.vendor.check_point_management.ManagementServer;
+import org.batfish.vendor.check_point_management.NatRule;
+import org.batfish.vendor.check_point_management.NatRuleOrSectionVisitor;
 import org.batfish.vendor.check_point_management.NatRulebase;
+import org.batfish.vendor.check_point_management.NatSection;
 import org.batfish.vendor.check_point_management.Network;
+import org.batfish.vendor.check_point_management.TypedManagementObject;
 
 public class CheckPointGatewayConfiguration extends VendorConfiguration {
 
@@ -96,13 +106,30 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
         Optional.ofNullable(getConversionContext())
             .map(ConversionContext::getCheckpointManagementConfiguration)
             .map(cmc -> (CheckpointManagementConfiguration) cmc);
-    mgmtConfig.ifPresent(this::convertManagementConfig);
+    // Find management gateway, domain, and package if present
+    @Nullable ManagementDomain mgmtDomain;
+    @Nullable GatewayOrServer mgmtGateway;
+    @Nullable ManagementPackage mgmtPackage = null;
+    if (mgmtConfig.isPresent()) {
+      Optional<Map.Entry<ManagementDomain, GatewayOrServer>> maybeGatewayAndDomain =
+          findGatewayAndDomain(mgmtConfig.get());
+      if (maybeGatewayAndDomain.isPresent()) {
+        mgmtDomain = maybeGatewayAndDomain.get().getKey();
+        mgmtGateway = maybeGatewayAndDomain.get().getValue();
+        mgmtPackage = findAccessPackage(mgmtDomain, mgmtGateway).orElse(null);
+      }
+    }
+    convertIpSpaces(mgmtPackage);
 
     // Gateways don't have VRFs, so put everything in a generated default VRF
     Vrf vrf = new Vrf(VRF_NAME);
     _c.setVrfs(ImmutableMap.of(VRF_NAME, vrf));
 
     _interfaces.forEach((ifaceName, iface) -> toInterface(iface, vrf));
+
+    // Convert NAT rulebase. Must happen after interfaces are converted so VI transformations can be
+    // attached to the correct VI interfaces.
+    convertNatRulebase(mgmtPackage);
 
     vrf.getStaticRoutes()
         .addAll(
@@ -113,41 +140,66 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     return ImmutableList.of(_c);
   }
 
-  /** Converts management server settings applicable to this configuration */
-  private void convertManagementConfig(CheckpointManagementConfiguration mgmtConfig) {
-    // Find gateway
-    Optional<Map.Entry<ManagementDomain, GatewayOrServer>> maybeGatewayAndDomain =
-        findGatewayAndDomain(mgmtConfig);
-    if (!maybeGatewayAndDomain.isPresent()) {
+  /** Converts IP spaces based on objects used in NAT rules ins the given package */
+  private void convertIpSpaces(@Nullable ManagementPackage pakij) {
+    Optional<NatRulebase> natRulebase =
+        Optional.ofNullable(pakij).map(ManagementPackage::getNatRulebase);
+    if (!natRulebase.isPresent()) {
       return;
     }
-    ManagementDomain domain = maybeGatewayAndDomain.get().getKey();
-    GatewayOrServer gateway = maybeGatewayAndDomain.get().getValue();
-    // Find package
-    Optional<ManagementPackage> maybePackage = findAccessPackage(domain, gateway);
-    if (!maybePackage.isPresent()) {
+    for (TypedManagementObject natObj : natRulebase.get().getObjectsDictionary().values()) {
+      // TODO Add IpSpaceMetadata, or store IpSpaces by names instead of UIDs if we confirm
+      //  names are unique
+      if (natObj instanceof AddressRange) {
+        Optional.ofNullable(toIpSpace((AddressRange) natObj))
+            .ifPresent(ipSpace -> _c.getIpSpaces().put(natObj.getName(), ipSpace));
+      } else if (natObj instanceof Network) {
+        _c.getIpSpaces().put(natObj.getName(), toIpSpace((Network) natObj));
+      }
+    }
+  }
+
+  /** Converts the given {@link NatRulebase} and applies it to this config. */
+  private void convertNatRulebase(@Nullable ManagementPackage pakij) {
+    Optional<NatRulebase> natRulebaseOptional =
+        Optional.ofNullable(pakij).map(ManagementPackage::getNatRulebase);
+    if (!natRulebaseOptional.isPresent()) {
       return;
     }
-    ManagementPackage pakij = maybePackage.get();
-    // Convert IP spaces
-    @Nullable NatRulebase natRulebase = pakij.getNatRulebase();
-    if (natRulebase == null) {
-      return;
-    }
-    natRulebase
-        .getObjectsDictionary()
-        .values()
-        .forEach(
-            natObj -> {
-              // TODO Add IpSpaceMetadata, or store IpSpaces by names instead of UIDs if we confirm
-              //  names are unique
-              if (natObj instanceof AddressRange) {
-                Optional.ofNullable(toIpSpace((AddressRange) natObj))
-                    .ifPresent(ipSpace -> _c.getIpSpaces().put(natObj.getName(), ipSpace));
-              } else if (natObj instanceof Network) {
-                _c.getIpSpaces().put(natObj.getName(), toIpSpace((Network) natObj));
-              }
-            });
+    NatRulebase natRulebase = natRulebaseOptional.get();
+    natRulebase.getRulebase().stream()
+        // Convert to stream of all rules
+        .flatMap(
+            ruleOrSection ->
+                new NatRuleOrSectionVisitor<Stream<NatRule>>() {
+                  @Override
+                  public Stream<NatRule> visitNatRule(NatRule natRule) {
+                    return Stream.of(natRule);
+                  }
+
+                  @Override
+                  public Stream<NatRule> visitNatSection(NatSection natSection) {
+                    return natSection.getRulebase().stream();
+                  }
+                }.visit(ruleOrSection))
+        .filter(NatRule::isEnabled)
+        .map(
+            natRule -> {
+              HeaderSpace originalHeaderSpace =
+                  constructHeaderSpace(
+                      natRulebase.getObjectsDictionary().get(natRule.getOriginalSource()),
+                      natRulebase.getObjectsDictionary().get(natRule.getOriginalDestination()),
+                      natRulebase.getObjectsDictionary().get(natRule.getOriginalService()),
+                      getWarnings());
+              List<TransformationStep> steps =
+                  getTransformationSteps(
+                      natRulebase.getObjectsDictionary().get(natRule.getTranslatedSource()),
+                      natRulebase.getObjectsDictionary().get(natRule.getTranslatedDestination()),
+                      natRulebase.getObjectsDictionary().get(natRule.getTranslatedService()),
+                      getWarnings());
+              // TODO Handle natRule.getMethod()
+              return when(new MatchHeaderSpace(originalHeaderSpace)).apply(steps).build();
+            }); // TODO Apply transformations to appropriate interfaces
   }
 
   private @Nonnull Optional<ManagementPackage> findAccessPackage(

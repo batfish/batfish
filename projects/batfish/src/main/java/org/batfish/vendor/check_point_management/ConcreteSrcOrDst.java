@@ -3,11 +3,15 @@ package org.batfish.vendor.check_point_management;
 /**
  * A concrete IP space object, e.g. an {@link AddressSpace}. Does not include {@link CpmiAnyObject}.
  */
-public interface ConcreteSrcOrDst extends SrcOrDst {
+public interface ConcreteSrcOrDst extends SrcOrDst, NatTranslatedSrcOrDst {
   <T> T accept(ConcreteSrcOrDstVisitor<T> visitor);
 
   @Override
   default <T> T accept(SrcOrDstVisitor<T> visitor) {
+    return accept((ConcreteSrcOrDstVisitor<T>) visitor);
+  }
+
+  default <T> T accept(NatTranslatedSrcOrDstVisitor<T> visitor) {
     return accept((ConcreteSrcOrDstVisitor<T>) visitor);
   }
 }
