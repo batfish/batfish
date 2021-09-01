@@ -59,5 +59,5 @@ public final class Group extends TypedManagementObject implements ConcreteSrcOrD
 
   private static final String PROP_MEMBERS = "members";
 
-  private final List<Uid> _members;
+  @Nonnull private final List<Uid> _members;
 }
