@@ -22,7 +22,7 @@ public final class Interface implements Serializable {
   }
 
   @VisibleForTesting
-  Interface(String name, InterfaceTopology topology) {
+  public Interface(String name, InterfaceTopology topology) {
     _name = name;
     _topology = topology;
   }

@@ -1,0 +1,20 @@
+#
+# Configuration of hostname
+# Language version: 13.4v1
+#
+# Exported by admin on Wed Jun 23 16:11:18 2021
+#
+set hostname access_rules
+#
+set interface eth0 state on
+set interface eth0 ipv4-address 10.0.0.1 mask-length 24
+#
+set interface eth1 state on
+set interface eth1 ipv4-address 10.0.1.1 mask-length 24
+#
+set interface eth2 state on
+set interface eth2 ipv4-address 10.0.2.1 mask-length 24
+#
+set interface eth3 state on
+set interface eth3 ipv4-address 10.0.3.1 mask-length 24
+#

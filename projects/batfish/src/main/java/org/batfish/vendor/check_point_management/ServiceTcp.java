@@ -51,7 +51,7 @@ public final class ServiceTcp extends TypedManagementObject implements ConcreteS
   }
 
   @VisibleForTesting
-  ServiceTcp(String name, String port, Uid uid) {
+  public ServiceTcp(String name, String port, Uid uid) {
     super(name, uid);
     _port = port;
   }

@@ -18,7 +18,7 @@ public final class AccessSection extends NamedManagementObject implements Access
   }
 
   @VisibleForTesting
-  AccessSection(String name, List<AccessRule> rulebase, Uid uid) {
+  public AccessSection(String name, List<AccessRule> rulebase, Uid uid) {
     super(name, uid);
     _rulebase = rulebase;
   }
