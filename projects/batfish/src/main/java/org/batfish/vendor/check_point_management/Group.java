@@ -37,7 +37,7 @@ public final class Group extends TypedManagementObject implements ConcreteSrcOrD
 
   @Override
   public String toString() {
-    return baseToStringHelper().toString();
+    return baseToStringHelper().add(PROP_MEMBERS, _members).toString();
   }
 
   @JsonCreator
