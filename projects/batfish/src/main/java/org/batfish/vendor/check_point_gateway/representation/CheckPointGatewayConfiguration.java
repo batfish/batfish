@@ -139,7 +139,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     }
     ManagementPackage pakij = maybePackage.get();
 
-    convertIpSpaces(pakij);
+    convertAddressSpaces(pakij);
     convertAccessLayers(pakij.getAccessLayers());
     Optional.ofNullable(pakij.getNatRulebase()).ifPresent(this::convertNatRulebase);
   }
@@ -183,10 +183,11 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
   }
 
   /**
-   * Converts all objects representing an address space in the given package to an {@link
+   * Converts all objects that can be used as an
+   * {org.batfish.vendor.check_point_management.AddressSpace} in the given package to an {@link
    * org.batfish.datamodel.IpSpace}
    */
-  private void convertIpSpaces(@Nullable ManagementPackage pakij) {
+  private void convertAddressSpaces(@Nullable ManagementPackage pakij) {
     Optional.ofNullable(pakij.getNatRulebase())
         .ifPresent(natRulebase -> convertObjectsToIpSpaces(natRulebase.getObjectsDictionary()));
     pakij.getAccessLayers().stream()
