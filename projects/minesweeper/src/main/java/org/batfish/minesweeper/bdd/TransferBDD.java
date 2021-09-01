@@ -4,7 +4,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -88,7 +87,6 @@ import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.Graph;
 import org.batfish.minesweeper.IDeepCopy;
 import org.batfish.minesweeper.OspfType;
-import org.batfish.minesweeper.Protocol;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
 import org.batfish.minesweeper.SymbolicRegex;
 import org.batfish.minesweeper.bdd.CommunitySetMatchExprToBDD.Arg;
@@ -330,15 +328,8 @@ public class TransferBDD {
     } else if (expr instanceof MatchProtocol) {
       MatchProtocol mp = (MatchProtocol) expr;
       Set<RoutingProtocol> rps = mp.getProtocols();
-      if (rps.size() > 1) {
-        // Hack: Minesweeper doesn't support MatchProtocol with multiple arguments.
-        List<BooleanExpr> mps = rps.stream().map(MatchProtocol::new).collect(Collectors.toList());
-        return compute(new Disjunction(mps), state);
-      }
-      RoutingProtocol rp = Iterables.getOnlyElement(rps);
-      Protocol proto = Protocol.fromRoutingProtocol(rp);
-      BDD protBDD = proto == null ? factory.zero() : p.getData().getProtocolHistory().value(proto);
-      return result.setReturnValueBDD(protBDD);
+      BDD matchRPBDD = _originalRoute.anyProtocolIn(rps);
+      return result.setReturnValueBDD(matchRPBDD);
 
     } else if (expr instanceof MatchPrefixSet) {
       p.debug("MatchPrefixSet");
@@ -1158,7 +1149,7 @@ public class TransferBDD {
     for (int i = 0; i < rec.getAsPathRegexAtomicPredicates().length; i++) {
       rec.getAsPathRegexAtomicPredicates()[i] = factory.zero();
     }
-    rec.getProtocolHistory().getInteger().setValue(0);
+    rec.getProtocolHistory().getVar().setValue(0);
     return rec;
   }
 

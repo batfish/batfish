@@ -1,5 +1,8 @@
 package org.batfish.minesweeper.bdd;
 
+import com.google.common.collect.ImmutableSet;
+import com.google.common.math.IntMath;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -8,18 +11,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDPairing;
 import net.sf.javabdd.JFactory;
 import org.batfish.common.BatfishException;
+import org.batfish.common.bdd.BDDFiniteDomain;
 import org.batfish.common.bdd.BDDInteger;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.minesweeper.Graph;
 import org.batfish.minesweeper.IDeepCopy;
 import org.batfish.minesweeper.OspfType;
-import org.batfish.minesweeper.Protocol;
 
 /**
  * A collection of attributes describing a route advertisement, used for symbolic route analysis.
@@ -44,8 +49,6 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
   static BDDFactory factory;
 
-  private static List<Protocol> allProtos;
-
   private static List<OspfType> allMetricTypes;
 
   private static BDDPairing pairing;
@@ -58,12 +61,6 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     allMetricTypes.add(OspfType.OIA);
     allMetricTypes.add(OspfType.E1);
     allMetricTypes.add(OspfType.E2);
-
-    allProtos = new ArrayList<>();
-    allProtos.add(Protocol.CONNECTED);
-    allProtos.add(Protocol.STATIC);
-    allProtos.add(Protocol.OSPF);
-    allProtos.add(Protocol.BGP);
 
     factory = JFactory.init(100000, 10000);
     // factory.disableReorder();
@@ -127,9 +124,16 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
   private final BDDInteger _prefixLength;
 
-  private final BDDDomain<Protocol> _protocolHistory;
+  private final BDDFiniteDomain<RoutingProtocol> _protocolHistory;
 
   private BDDInteger _tag;
+
+  /**
+   * The routing protocols allowed in a BGP route announcement (see {@link
+   * org.batfish.datamodel.BgpRoute}).
+   */
+  public static final Set<RoutingProtocol> ALL_BGP_PROTOCOLS =
+      ImmutableSet.of(RoutingProtocol.AGGREGATE, RoutingProtocol.BGP, RoutingProtocol.IBGP);
 
   /**
    * A constructor that obtains the number of atomic predicates for community and AS-path regexes
@@ -149,15 +153,22 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
    */
   public BDDRoute(int numCommAtomicPredicates, int numAsPathRegexAtomicPredicates) {
     int numVars = factory.varNum();
-    int numNeeded = 32 * 6 + 6 + numCommAtomicPredicates + numAsPathRegexAtomicPredicates + 4;
+    int numNeeded =
+        32 * 6
+            + 6
+            + numCommAtomicPredicates
+            + numAsPathRegexAtomicPredicates
+            + IntMath.log2(RoutingProtocol.values().length, RoundingMode.CEILING)
+            + 2;
     if (numVars < numNeeded) {
       factory.setVarNum(numNeeded);
     }
     _bitNames = new HashMap<>();
 
     int idx = 0;
-    _protocolHistory = new BDDDomain<>(factory, allProtos, idx);
-    int len = _protocolHistory.getInteger().size();
+    _protocolHistory =
+        new BDDFiniteDomain<>(factory, idx, ImmutableSet.copyOf(RoutingProtocol.values()));
+    int len = _protocolHistory.getVar().size();
     addBitNames("proto", len, idx, false);
     idx += len;
     // Initialize integer values
@@ -223,7 +234,9 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _med = new BDDInteger(other._med);
     _tag = new BDDInteger(other._tag);
     _localPref = new BDDInteger(other._localPref);
-    _protocolHistory = new BDDDomain<>(other._protocolHistory);
+    _protocolHistory =
+        new BDDFiniteDomain<>(
+            other._protocolHistory.getVar(), other._protocolHistory.getValueBdds().keySet());
     _ospfMetric = new BDDDomain<>(other._ospfMetric);
     _bitNames = other._bitNames;
   }
@@ -261,9 +274,24 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
   }
 
   /**
-   * Not all assignments to the BDD variables that make up a BDDRoute represent valid routes. This
-   * method produces constraints that well-formed routes must satisfy, represented as a BDD. It is
-   * useful when the goal is to produce concrete example routes from a BDDRoute, for instance.
+   * Create a BDD representing the constraint that the route announcement's protocol is in the given
+   * set.
+   *
+   * @param protocols the set of protocols that are allowed
+   * @return the BDD representing this constraint
+   */
+  public BDD anyProtocolIn(Set<RoutingProtocol> protocols) {
+    return factory.orAll(
+        protocols.stream()
+            .map(_protocolHistory::getConstraintForValue)
+            .collect(Collectors.toList()));
+  }
+
+  /**
+   * Not all assignments to the BDD variables that make up a BDDRoute represent valid BGP routes.
+   * This method produces constraints that well-formed BGP routes must satisfy, represented as a
+   * BDD. It is useful when the goal is to produce concrete example BGP routes from a BDDRoute, for
+   * instance.
    *
    * <p>Note that it does not suffice to enforce these constraints as part of symbolic route
    * analysis (see {@link TransferBDD}). That analysis computes a BDD representing the input routes
@@ -275,8 +303,10 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
    *
    * @return the constraints
    */
-  public BDD wellFormednessConstraints() {
+  public BDD bgpWellFormednessConstraints() {
 
+    // the protocol should be one of the ones allowed in a BgpRoute
+    BDD protocolConstraint = anyProtocolIn(ALL_BGP_PROTOCOLS);
     // the prefix length should be 32 or less
     BDD prefLenConstraint = _prefixLength.leq(32);
     // at most one AS-path regex atomic predicate should be true, since by construction their
@@ -295,7 +325,10 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     BDD nextHopConstraint =
         _nextHop.geq(Ip.ZERO.asLong() + 1).and(_nextHop.leq(Ip.MAX.asLong() - 1));
 
-    return prefLenConstraint.andWith(asPathConstraint).andWith(nextHopConstraint);
+    return protocolConstraint
+        .andWith(prefLenConstraint)
+        .andWith(asPathConstraint)
+        .andWith(nextHopConstraint);
   }
 
   /*
@@ -429,7 +462,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     return _prefixLength;
   }
 
-  public BDDDomain<Protocol> getProtocolHistory() {
+  public BDDFiniteDomain<RoutingProtocol> getProtocolHistory() {
     return _protocolHistory;
   }
 

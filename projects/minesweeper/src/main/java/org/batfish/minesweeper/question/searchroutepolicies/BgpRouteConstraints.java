@@ -6,15 +6,19 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.minesweeper.bdd.BDDRoute;
 
 /** A set of constraints on a BGP route announcement. */
 @ParametersAreNonnullByDefault
@@ -28,6 +32,7 @@ public class BgpRouteConstraints {
   private static final String PROP_COMMUNITIES = "communities";
   private static final String PROP_AS_PATH = "asPath";
   private static final String PROP_NEXT_HOP_IP = "nextHopIp";
+  private static final String PROP_PROTOCOL = "protocol";
 
   // the announcement's prefix must be within this space
   @Nonnull private final PrefixSpace _prefix;
@@ -47,6 +52,8 @@ public class BgpRouteConstraints {
   // an empty value means that any next-hop IP is ok, including
   // an unset one
   @Nonnull private final Optional<Prefix> _nextHopIp;
+  // the announcement's protocol must be a member of this set
+  @Nonnull private final Set<RoutingProtocol> _protocol;
 
   private static final LongSpace THIRTY_TWO_BIT_RANGE =
       LongSpace.builder().including(Range.closed(0L, 4294967295L)).build();
@@ -60,7 +67,8 @@ public class BgpRouteConstraints {
       @Nullable @JsonProperty(PROP_TAG) LongSpace.Builder tag,
       @Nullable @JsonProperty(PROP_COMMUNITIES) RegexConstraints communities,
       @Nullable @JsonProperty(PROP_AS_PATH) RegexConstraints asPath,
-      @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Prefix nextHopIp) {
+      @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Prefix nextHopIp,
+      @Nullable @JsonProperty(PROP_PROTOCOL) Set<RoutingProtocol> protocol) {
     this(
         prefix,
         complementPrefix,
@@ -69,7 +77,8 @@ public class BgpRouteConstraints {
         processBuilder(tag),
         communities,
         asPath,
-        nextHopIp);
+        nextHopIp,
+        protocol);
   }
 
   private BgpRouteConstraints(
@@ -80,7 +89,8 @@ public class BgpRouteConstraints {
       @Nullable LongSpace tag,
       @Nullable RegexConstraints communities,
       @Nullable RegexConstraints asPath,
-      @Nullable Prefix nextHopIp) {
+      @Nullable Prefix nextHopIp,
+      @Nullable Set<RoutingProtocol> protocol) {
     _prefix = firstNonNull(prefix, new PrefixSpace());
     _complementPrefix = complementPrefix;
     _localPreference = firstNonNull(localPreference, LongSpace.EMPTY);
@@ -89,6 +99,7 @@ public class BgpRouteConstraints {
     _communities = firstNonNull(communities, new RegexConstraints());
     _asPath = firstNonNull(asPath, new RegexConstraints());
     _nextHopIp = Optional.ofNullable(nextHopIp);
+    _protocol = firstNonNull(protocol, ImmutableSet.of());
     validate(this);
   }
 
@@ -109,16 +120,24 @@ public class BgpRouteConstraints {
     LongSpace localPref = constraints.getLocalPreference();
     LongSpace med = constraints.getMed();
     LongSpace tag = constraints.getTag();
+    Set<RoutingProtocol> protocol = constraints.getProtocol();
 
     checkArgument(is32BitRange(localPref), "Invalid value for local preference: %s", localPref);
     checkArgument(is32BitRange(med), "Invalid value for MED: %s", med);
-    checkArgument(is32BitRange(tag), "Invalid value for tag: %s", med);
+    checkArgument(is32BitRange(tag), "Invalid value for tag: %s", tag);
+
+    checkArgument(isBgpProtocol(protocol), "Invalid value for protocol: %s", protocol);
   }
 
   /** Check that the given long space only contains 32-bit integers. */
   @VisibleForTesting
   static boolean is32BitRange(@Nonnull LongSpace longSpace) {
     return THIRTY_TWO_BIT_RANGE.contains(longSpace);
+  }
+
+  @VisibleForTesting
+  static boolean isBgpProtocol(Set<RoutingProtocol> protocol) {
+    return BDDRoute.ALL_BGP_PROTOCOLS.containsAll(protocol);
   }
 
   public static Builder builder() {
@@ -134,6 +153,7 @@ public class BgpRouteConstraints {
     private RegexConstraints _communities;
     private RegexConstraints _asPath;
     private Prefix _nextHopIp;
+    private Set<RoutingProtocol> _protocol;
 
     private Builder() {}
 
@@ -177,6 +197,11 @@ public class BgpRouteConstraints {
       return this;
     }
 
+    public Builder setProtocol(Set<RoutingProtocol> protocol) {
+      _protocol = protocol;
+      return this;
+    }
+
     public BgpRouteConstraints build() {
       return new BgpRouteConstraints(
           _prefix,
@@ -186,7 +211,8 @@ public class BgpRouteConstraints {
           _tag,
           _communities,
           _asPath,
-          _nextHopIp);
+          _nextHopIp,
+          _protocol);
     }
   }
 
@@ -209,7 +235,8 @@ public class BgpRouteConstraints {
         && Objects.equals(_tag, other._tag)
         && Objects.equals(_communities, other._communities)
         && Objects.equals(_asPath, other._asPath)
-        && Objects.equals(_nextHopIp, other._nextHopIp);
+        && Objects.equals(_nextHopIp, other._nextHopIp)
+        && Objects.equals(_protocol, other._protocol);
   }
 
   @JsonProperty(PROP_PREFIX)
@@ -259,6 +286,12 @@ public class BgpRouteConstraints {
     return _nextHopIp;
   }
 
+  @JsonProperty(PROP_PROTOCOL)
+  @Nonnull
+  public Set<RoutingProtocol> getProtocol() {
+    return _protocol;
+  }
+
   @Override
   public int hashCode() {
     return Objects.hash(
@@ -269,6 +302,7 @@ public class BgpRouteConstraints {
         _tag,
         _communities,
         _asPath,
-        _nextHopIp);
+        _nextHopIp,
+        _protocol);
   }
 }
