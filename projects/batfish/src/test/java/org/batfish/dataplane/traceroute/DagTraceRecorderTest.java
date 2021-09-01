@@ -41,12 +41,12 @@ public class DagTraceRecorderTest {
   }
 
   private static HopInfo forwardedHop(String node) {
-    return forwardedHop(node, TEST_FLOW);
+    return forwardedHop(node, "vrf", TEST_FLOW);
   }
 
-  private static HopInfo forwardedHop(String node, Flow flow) {
+  private static HopInfo forwardedHop(String node, String vrf, Flow flow) {
     return HopInfo.forwardedHop(
-        HopTestUtils.forwardedHop(node), flow, breadcrumb(node, flow), null);
+        HopTestUtils.forwardedHop(node, vrf), flow, breadcrumb(node, flow), null);
   }
 
   private static HopInfo loopHop(String node) {
@@ -110,7 +110,7 @@ public class DagTraceRecorderTest {
     HopInfo hopB = forwardedHop("B");
     HopInfo hopC = acceptedHop("C");
     HopInfo hopD = forwardedHop("D");
-    HopInfo hopBTransformed = forwardedHop("B", transformedFlow);
+    HopInfo hopBTransformed = forwardedHop("B", "vrf", transformedFlow);
     DagTraceRecorder recorder = new DagTraceRecorder(TEST_FLOW);
     assertTrue(recorder.tryRecordPartialTrace(ImmutableList.of(hopA, hopB, hopC)));
     assertFalse(recorder.tryRecordPartialTrace(ImmutableList.of(hopD, hopBTransformed)));

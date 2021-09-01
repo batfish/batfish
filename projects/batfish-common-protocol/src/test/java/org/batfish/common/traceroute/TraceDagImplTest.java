@@ -30,9 +30,9 @@ public class TraceDagImplTest {
 
   @Test
   public void testTraceDag() {
-    Hop hopA = forwardedHop("A"); // 0
-    Hop hopB1 = forwardedHop("B1"); // 1
-    Hop hopB2 = forwardedHop("B2"); // 2
+    Hop hopA = forwardedHop("A", "vrf"); // 0
+    Hop hopB1 = forwardedHop("B1", "vrf"); // 1
+    Hop hopB2 = forwardedHop("B2", "vrf"); // 2
     Hop hopC1 = acceptedHop("C1"); // 3
     Hop hopC2 = noRouteHop("C2"); // 4
     Hop hopC3 = noRouteHop("C3"); // 5

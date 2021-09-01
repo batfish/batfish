@@ -972,7 +972,7 @@ public final class FlowTracerTest {
             false,
             configs);
     FlowTracer flowTracer = initialFlowTracer(ctxt, hostname, null, flow, traces::add);
-    flowTracer.fibLookup(dstIp, hostname, srcFib);
+    flowTracer.fibLookup(dstIp, hostname, srcVrfName, srcFib);
     List<TraceAndReverseFlow> finalTraces = traces.build();
     assertThat(traces.build(), contains(hasTrace(hasDisposition(NULL_ROUTED))));
     assertThat(finalTraces.get(0).getTrace().getHops(), hasSize(1));
@@ -1052,7 +1052,7 @@ public final class FlowTracerTest {
             false,
             configs);
     FlowTracer flowTracer = initialFlowTracer(ctxt, hostname, null, flow, traces::add);
-    flowTracer.fibLookup(dstIp, hostname, srcFib);
+    flowTracer.fibLookup(dstIp, hostname, srcVrfName, srcFib);
 
     // Should be delegated from srcFib to nextFib and eventually NULL_ROUTED
     assertThat(traces, contains(hasTrace(hasDisposition(NULL_ROUTED))));
@@ -1065,19 +1065,20 @@ public final class FlowTracerTest {
     List<Step<?>> steps = hops.iterator().next().getSteps();
 
     // There should be 2 routing steps and an exit-output-iface step;
-    // - next-vr should occur in the first step
-    // - null-route should occur in the second step
-    // - third step should have null-route action
+    // - next-vr should occur in the first step, in src vrf
+    // - null-route should occur in the second step, in next-hop vrf
+    // - second step should have null-route action
 
     assertThat(steps, contains(instanceOf(RoutingStep.class), instanceOf(RoutingStep.class)));
-    assertThat(
-        ((RoutingStep) steps.get(0)).getDetail().getRoutes().get(0).getNextVrf(),
-        equalTo(nextVrfName));
-    assertThat((steps.get(0)).getAction(), equalTo(StepAction.FORWARDED_TO_NEXT_VRF));
-    assertThat(
-        ((RoutingStep) steps.get(1)).getDetail().getRoutes().get(0).getNextHopIp(),
-        equalTo(Ip.AUTO));
-    assertThat((steps.get(1)).getAction(), equalTo(StepAction.NULL_ROUTED));
+    RoutingStep firstRouting = (RoutingStep) steps.get(0);
+    assertThat(firstRouting.getDetail().getVrf(), equalTo(srcVrfName));
+    assertThat(firstRouting.getDetail().getRoutes().get(0).getNextVrf(), equalTo(nextVrfName));
+    assertThat(firstRouting.getAction(), equalTo(StepAction.FORWARDED_TO_NEXT_VRF));
+
+    RoutingStep secondRouting = (RoutingStep) steps.get(1);
+    assertThat(secondRouting.getDetail().getVrf(), equalTo(nextVrfName));
+    assertThat(secondRouting.getDetail().getRoutes().get(0).getNextHopIp(), equalTo(Ip.AUTO));
+    assertThat(secondRouting.getAction(), equalTo(StepAction.NULL_ROUTED));
   }
 
   @Test
@@ -1150,7 +1151,7 @@ public final class FlowTracerTest {
             false,
             configs);
     FlowTracer flowTracer = initialFlowTracer(ctxt, hostname, null, flow, traces::add);
-    flowTracer.fibLookup(dstIp, hostname, srcFib);
+    flowTracer.fibLookup(dstIp, hostname, srcVrfName, srcFib);
 
     // Should be delegated from srcFib to nextFib and eventually ACCEPTED
     assertThat(traces, contains(hasTrace(hasDisposition(ACCEPTED))));
@@ -1244,7 +1245,7 @@ public final class FlowTracerTest {
             false,
             configs);
     FlowTracer flowTracer = initialFlowTracer(ctxt, hostname, null, flow, traces::add);
-    flowTracer.fibLookup(dstIp, hostname, fib1);
+    flowTracer.fibLookup(dstIp, hostname, vrf1Name, fib1);
 
     // Should be delegated from fib1 to fib2 and then looped back to fib1
     assertThat(traces, contains(hasTrace(hasDisposition(LOOP))));
@@ -1340,7 +1341,7 @@ public final class FlowTracerTest {
             false,
             configs);
     FlowTracer flowTracer = initialFlowTracer(ctxt, hostname, null, flow, traces::add);
-    flowTracer.fibLookup(dstIp, hostname, srcFib);
+    flowTracer.fibLookup(dstIp, hostname, srcVrfName, srcFib);
     List<TraceAndReverseFlow> finalTraces = traces.build();
     assertThat(traces.build(), contains(hasTrace(hasDisposition(DELIVERED_TO_SUBNET))));
     assertThat(finalTraces.get(0).getTrace().getHops(), hasSize(1));
@@ -1354,6 +1355,7 @@ public final class FlowTracerTest {
         routingStep.getDetail(),
         equalTo(
             RoutingStepDetail.builder()
+                .setVrf(srcVrfName)
                 .setOutputInterface(finalNhif)
                 .setArpIp(finalNhip)
                 .setRoutes(
@@ -1583,9 +1585,10 @@ public final class FlowTracerTest {
                         .setAdministrativeCost(1)
                         .build())));
 
-    RoutingStep routingStep = buildRoutingStep(fibForward, fibEntries);
+    RoutingStep routingStep = buildRoutingStep("myvrf", fibForward, fibEntries);
 
     assertThat(routingStep.getAction(), equalTo(StepAction.FORWARDED));
+    assertThat(routingStep.getDetail().getVrf(), equalTo("myvrf"));
     assertThat(
         routingStep.getDetail().getRoutes(),
         equalTo(
@@ -1610,9 +1613,10 @@ public final class FlowTracerTest {
                         .setAdministrativeCost(1)
                         .build())));
 
-    RoutingStep routingStep = buildRoutingStep(fibNextVrf, fibEntries);
+    RoutingStep routingStep = buildRoutingStep("vrf", fibNextVrf, fibEntries);
 
     assertThat(routingStep.getAction(), equalTo(StepAction.FORWARDED_TO_NEXT_VRF));
+    assertThat(routingStep.getDetail().getVrf(), equalTo("vrf"));
     assertThat(
         routingStep.getDetail().getRoutes(),
         equalTo(
@@ -1637,9 +1641,10 @@ public final class FlowTracerTest {
                         .setAdministrativeCost(1)
                         .build())));
 
-    RoutingStep routingStep = buildRoutingStep(fibNullRoute, fibEntries);
+    RoutingStep routingStep = buildRoutingStep("vrf", fibNullRoute, fibEntries);
 
     assertThat(routingStep.getAction(), equalTo(StepAction.NULL_ROUTED));
+    assertThat(routingStep.getDetail().getVrf(), equalTo("vrf"));
     assertThat(
         routingStep.getDetail().getRoutes(),
         equalTo(

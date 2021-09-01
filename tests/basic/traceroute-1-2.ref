@@ -87,7 +87,8 @@
                           "nextHopIp" : "10.12.11.2",
                           "protocol" : "ibgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -133,7 +134,8 @@
                           "nextHopIp" : "10.12.11.2",
                           "protocol" : "bgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -218,7 +220,8 @@
                           "nextHopIp" : "2.34.201.4",
                           "protocol" : "ibgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -264,7 +267,8 @@
                           "nextHopIp" : "2.34.101.4",
                           "protocol" : "ibgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -310,7 +314,8 @@
                           "nextHopIp" : "2.34.101.4",
                           "protocol" : "bgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -356,7 +361,8 @@
                           "nextHopIp" : "AUTO/NONE(-1l)",
                           "protocol" : "connected"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -458,7 +464,8 @@
                           "nextHopIp" : "10.12.11.2",
                           "protocol" : "ibgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -504,7 +511,8 @@
                           "nextHopIp" : "10.12.11.2",
                           "protocol" : "bgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -589,7 +597,8 @@
                           "nextHopIp" : "2.34.201.4",
                           "protocol" : "ibgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -635,7 +644,8 @@
                           "nextHopIp" : "2.34.201.4",
                           "protocol" : "ibgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -681,7 +691,8 @@
                           "nextHopIp" : "2.34.201.4",
                           "protocol" : "bgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -727,7 +738,8 @@
                           "nextHopIp" : "AUTO/NONE(-1l)",
                           "protocol" : "connected"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -829,7 +841,8 @@
                           "nextHopIp" : "10.12.11.2",
                           "protocol" : "ibgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -875,7 +888,8 @@
                           "nextHopIp" : "10.12.11.2",
                           "protocol" : "bgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -960,7 +974,8 @@
                           "nextHopIp" : "2.34.201.4",
                           "protocol" : "ibgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -1006,7 +1021,8 @@
                           "nextHopIp" : "2.34.201.4",
                           "protocol" : "ibgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -1052,7 +1068,8 @@
                           "nextHopIp" : "2.34.201.4",
                           "protocol" : "bgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -1098,7 +1115,8 @@
                           "nextHopIp" : "AUTO/NONE(-1l)",
                           "protocol" : "connected"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -1200,7 +1218,8 @@
                           "nextHopIp" : "10.12.11.2",
                           "protocol" : "ibgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -1246,7 +1265,8 @@
                           "nextHopIp" : "10.12.11.2",
                           "protocol" : "bgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -1331,7 +1351,8 @@
                           "nextHopIp" : "2.34.201.4",
                           "protocol" : "ibgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -1377,7 +1398,8 @@
                           "nextHopIp" : "2.34.101.4",
                           "protocol" : "ibgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -1423,7 +1445,8 @@
                           "nextHopIp" : "2.34.101.4",
                           "protocol" : "bgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -1469,7 +1492,8 @@
                           "nextHopIp" : "AUTO/NONE(-1l)",
                           "protocol" : "connected"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -1599,7 +1623,8 @@
                           "nextHopIp" : "10.12.11.2",
                           "protocol" : "ibgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -1645,7 +1670,8 @@
                           "nextHopIp" : "10.12.11.2",
                           "protocol" : "bgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -1730,7 +1756,8 @@
                           "nextHopIp" : "2.34.201.4",
                           "protocol" : "ibgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -1776,7 +1803,8 @@
                           "nextHopIp" : "2.34.101.4",
                           "protocol" : "ibgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -1822,7 +1850,8 @@
                           "nextHopIp" : "2.34.101.4",
                           "protocol" : "bgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -1868,7 +1897,8 @@
                           "nextHopIp" : "AUTO/NONE(-1l)",
                           "protocol" : "connected"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -1970,7 +2000,8 @@
                           "nextHopIp" : "10.12.11.2",
                           "protocol" : "ibgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -2016,7 +2047,8 @@
                           "nextHopIp" : "10.12.11.2",
                           "protocol" : "bgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -2101,7 +2133,8 @@
                           "nextHopIp" : "2.34.201.4",
                           "protocol" : "ibgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -2147,7 +2180,8 @@
                           "nextHopIp" : "2.34.201.4",
                           "protocol" : "ibgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -2193,7 +2227,8 @@
                           "nextHopIp" : "2.34.201.4",
                           "protocol" : "bgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -2239,7 +2274,8 @@
                           "nextHopIp" : "AUTO/NONE(-1l)",
                           "protocol" : "connected"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -2341,7 +2377,8 @@
                           "nextHopIp" : "10.12.11.2",
                           "protocol" : "ibgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -2387,7 +2424,8 @@
                           "nextHopIp" : "10.12.11.2",
                           "protocol" : "bgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -2472,7 +2510,8 @@
                           "nextHopIp" : "2.34.201.4",
                           "protocol" : "ibgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -2518,7 +2557,8 @@
                           "nextHopIp" : "2.34.201.4",
                           "protocol" : "ibgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -2564,7 +2604,8 @@
                           "nextHopIp" : "2.34.201.4",
                           "protocol" : "bgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -2610,7 +2651,8 @@
                           "nextHopIp" : "AUTO/NONE(-1l)",
                           "protocol" : "connected"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -2712,7 +2754,8 @@
                           "nextHopIp" : "10.12.11.2",
                           "protocol" : "ibgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -2758,7 +2801,8 @@
                           "nextHopIp" : "10.12.11.2",
                           "protocol" : "bgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -2843,7 +2887,8 @@
                           "nextHopIp" : "2.34.201.4",
                           "protocol" : "ibgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -2889,7 +2934,8 @@
                           "nextHopIp" : "2.34.101.4",
                           "protocol" : "ibgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -2935,7 +2981,8 @@
                           "nextHopIp" : "2.34.101.4",
                           "protocol" : "bgp"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {
@@ -2981,7 +3028,8 @@
                           "nextHopIp" : "AUTO/NONE(-1l)",
                           "protocol" : "connected"
                         }
-                      ]
+                      ],
+                      "vrf" : "default"
                     }
                   },
                   {

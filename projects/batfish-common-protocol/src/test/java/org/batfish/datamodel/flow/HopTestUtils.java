@@ -31,14 +31,14 @@ public final class HopTestUtils {
   }
 
   /** Create a Hop with StepAction Forwarded. */
-  public static Hop forwardedHop(String node) {
+  public static Hop forwardedHop(String node, String vrf) {
     return new Hop(
         new Node(node),
         ImmutableList.of(
             enterInputIfaceStep(node),
             RoutingStep.builder()
                 .setAction(StepAction.FORWARDED)
-                .setDetail(RoutingStepDetail.builder().build())
+                .setDetail(RoutingStepDetail.builder().setVrf(vrf).build())
                 .build(),
             ExitOutputIfaceStep.builder()
                 .setAction(StepAction.TRANSMITTED)
@@ -60,7 +60,7 @@ public final class HopTestUtils {
             enterInputIfaceStep(node),
             RoutingStep.builder()
                 .setAction(StepAction.NO_ROUTE)
-                .setDetail(RoutingStepDetail.builder().build())
+                .setDetail(RoutingStepDetail.builder().setVrf("vrf").build())
                 .build()));
   }
 }
