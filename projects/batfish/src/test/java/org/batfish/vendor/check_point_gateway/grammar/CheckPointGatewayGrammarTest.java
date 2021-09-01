@@ -1005,11 +1005,11 @@ public class CheckPointGatewayGrammarTest {
                 "access_rules",
                 ImmutableList.of(
                     new org.batfish.vendor.check_point_management.Interface(
-                        "eth1", new InterfaceTopology(false)),
+                        "eth1", new InterfaceTopology(false), Ip.parse("10.0.1.1"), 24),
                     new org.batfish.vendor.check_point_management.Interface(
-                        "eth2", new InterfaceTopology(true)),
+                        "eth2", new InterfaceTopology(true), Ip.parse("10.0.2.1"), 24),
                     new org.batfish.vendor.check_point_management.Interface(
-                        "eth3", new InterfaceTopology(true))),
+                        "eth3", new InterfaceTopology(true), Ip.parse("10.0.3.1"), 24)),
                 new GatewayOrServerPolicy("p1", null),
                 Uid.of("1")));
 

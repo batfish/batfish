@@ -8,6 +8,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.Ip;
 import org.junit.Test;
 
 public class InterfaceTest {
@@ -17,26 +18,35 @@ public class InterfaceTest {
         "{"
             + "\"GARBAGE\":0,"
             + "\"interface-name\": \"iface\","
+            + "\"ipv4-address\": \"10.10.10.1\","
+            + "\"ipv4-mask-length\": 24,"
             + "\"topology\": {\"leads-to-internet\":true}"
             + "}";
     assertThat(
         BatfishObjectMapper.ignoreUnknownMapper().readValue(input, Interface.class),
-        equalTo(new Interface("iface", new InterfaceTopology(true))));
+        equalTo(new Interface("iface", new InterfaceTopology(true), Ip.parse("10.10.10.1"), 24)));
   }
 
   @Test
   public void testJavaSerialization() {
-    Interface obj = new Interface("iface", new InterfaceTopology(true));
+    Interface obj = Interface.TEST_INSTANCE;
     assertEquals(obj, SerializationUtils.clone(obj));
   }
 
   @Test
   public void testEquals() {
-    Interface obj = new Interface("iface", new InterfaceTopology(true));
+    Interface obj = new Interface("iface", new InterfaceTopology(true), Ip.parse("10.10.10.1"), 24);
     new EqualsTester()
-        .addEqualityGroup(obj, new Interface("iface", new InterfaceTopology(true)))
-        .addEqualityGroup(new Interface("foo", new InterfaceTopology(true)))
-        .addEqualityGroup(new Interface("iface", new InterfaceTopology(false)))
+        .addEqualityGroup(
+            obj, new Interface("iface", new InterfaceTopology(true), Ip.parse("10.10.10.1"), 24))
+        .addEqualityGroup(
+            new Interface("foo", new InterfaceTopology(true), Ip.parse("10.10.10.1"), 24))
+        .addEqualityGroup(
+            new Interface("iface", new InterfaceTopology(false), Ip.parse("10.10.10.1"), 24))
+        .addEqualityGroup(
+            new Interface("iface", new InterfaceTopology(true), Ip.parse("10.10.10.10"), 24))
+        .addEqualityGroup(
+            new Interface("iface", new InterfaceTopology(true), Ip.parse("10.10.10.1"), 25))
         .testEquals();
   }
 }
