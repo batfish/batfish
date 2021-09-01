@@ -30,10 +30,13 @@ public final class RoutingStep extends Step<RoutingStepDetail> {
    * to output {@link Interface}
    */
   public static final class RoutingStepDetail {
+    private static final String PROP_VRF = "vrf";
     private static final String PROP_ROUTES = "routes";
     private static final String PROP_ARP_IP = "arpIp";
     private static final String PROP_OUTPUT_INTERFACE = "outputInterface";
 
+    /** The name of the VRF in which routing was done. */
+    @Nonnull private final String _vrf;
     /**
      * Information about {@link Route}s which led to the selection of the out {@link Interface}, can
      * be multiple in case of ECMP
@@ -46,9 +49,12 @@ public final class RoutingStep extends Step<RoutingStepDetail> {
 
     @JsonCreator
     private RoutingStepDetail(
+        @JsonProperty(PROP_VRF) @Nullable String vrf,
         @JsonProperty(PROP_ROUTES) @Nullable List<RouteInfo> routes,
         @JsonProperty(PROP_ARP_IP) @Nullable Ip arpIp,
         @JsonProperty(PROP_OUTPUT_INTERFACE) @Nullable String outputInterface) {
+      checkArgument(vrf != null, "Missing %s", PROP_VRF);
+      _vrf = vrf;
       _routes = firstNonNull(routes, ImmutableList.of());
       _arpIp = arpIp;
       _outputInterface = outputInterface;
@@ -72,6 +78,11 @@ public final class RoutingStep extends Step<RoutingStepDetail> {
       return _outputInterface;
     }
 
+    @JsonProperty(PROP_VRF)
+    public @Nonnull String getVrf() {
+      return _vrf;
+    }
+
     public static Builder builder() {
       return new Builder();
     }
@@ -85,24 +96,31 @@ public final class RoutingStep extends Step<RoutingStepDetail> {
         return false;
       }
       RoutingStepDetail that = (RoutingStepDetail) o;
-      return _routes.equals(that._routes)
+      return _vrf.equals(that._vrf)
+          && _routes.equals(that._routes)
           && Objects.equals(_arpIp, that._arpIp)
           && Objects.equals(_outputInterface, that._outputInterface);
     }
 
     @Override
     public int hashCode() {
-      return Objects.hash(_routes, _arpIp, _outputInterface);
+      return Objects.hash(_vrf, _routes, _arpIp, _outputInterface);
     }
 
     /** Chained builder to create a {@link RoutingStepDetail} object */
     public static class Builder {
+      private @Nullable String _vrf;
       private @Nullable List<RouteInfo> _routes;
       private @Nullable Ip _arpIp;
       private @Nullable String _outputInterface;
 
       public RoutingStepDetail build() {
-        return new RoutingStepDetail(_routes, _arpIp, _outputInterface);
+        return new RoutingStepDetail(_vrf, _routes, _arpIp, _outputInterface);
+      }
+
+      public Builder setVrf(String vrf) {
+        _vrf = vrf;
+        return this;
       }
 
       public Builder setRoutes(List<RouteInfo> routes) {
