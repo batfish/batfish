@@ -48,6 +48,7 @@ public final class NatRulebaseTest {
             + "{" // object: group
             + "\"type\":\"group\","
             + "\"uid\":\"4\","
+            + "\"members\":[],"
             + "\"name\":\"foo\""
             + "}," // object: group
             + "{" // object: host
@@ -129,7 +130,7 @@ public final class NatRulebaseTest {
                         new UnknownTypedManagementObject("unknown-foo", Uid.of("100"), "unknown"))
                     .put(Uid.of("2"), new CpmiAnyObject(Uid.of("2")))
                     .put(Uid.of("3"), new Original(Uid.of("3")))
-                    .put(Uid.of("4"), new Group("foo", Uid.of("4")))
+                    .put(Uid.of("4"), new Group("foo", ImmutableList.of(), Uid.of("4")))
                     .put(Uid.of("5"), new Host(Ip.ZERO, "foo", Uid.of("5")))
                     .put(Uid.of("6"), new Network("foo", Ip.ZERO, Ip.MAX, Uid.of("6")))
                     .put(Uid.of("7"), new ServiceGroup("foo", Uid.of("7")))
