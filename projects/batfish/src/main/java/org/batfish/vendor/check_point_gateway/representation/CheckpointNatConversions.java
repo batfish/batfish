@@ -30,13 +30,13 @@ public class CheckpointNatConversions {
    */
   public static void applyOriginalServiceConstraint(Service service, HeaderSpace.Builder hsb) {
     ORIGINAL_SERVICE_TO_HEADER_SPACE_CONSTRAINTS.setHeaderSpace(hsb);
-    ORIGINAL_SERVICE_TO_HEADER_SPACE_CONSTRAINTS.visit(service);
+    service.accept(ORIGINAL_SERVICE_TO_HEADER_SPACE_CONSTRAINTS);
     ORIGINAL_SERVICE_TO_HEADER_SPACE_CONSTRAINTS.setHeaderSpace(null);
   }
 
   public static @Nonnull List<TransformationStep> getServiceTransformationSteps(
       NatTranslatedService service) {
-    return TRANSLATED_SERVICE_TO_TRANSFORMATION_STEPS.visit(service);
+    return service.accept(TRANSLATED_SERVICE_TO_TRANSFORMATION_STEPS);
   }
 
   public static @Nonnull List<TransformationStep> getSourceTransformationSteps(
