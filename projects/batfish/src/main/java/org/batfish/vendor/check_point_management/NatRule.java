@@ -13,6 +13,11 @@ import javax.annotation.Nullable;
 /** A single nat-rule in a {@link NatRulebase}. */
 public final class NatRule extends ManagementObject implements NatRuleOrSection {
 
+  @Override
+  public <T> T accept(NatRuleOrSectionVisitor<T> visitor) {
+    return visitor.visitNatRule(this);
+  }
+
   public @Nonnull String getComments() {
     return _comments;
   }
