@@ -14,6 +14,9 @@ import org.junit.Test;
 /** Test of {@link NatSection}. */
 public final class NatSectionTest {
 
+  public static final NatSection TEST_INSTANCE =
+      new NatSection("foo", ImmutableList.of(), Uid.of("0"));
+
   @Test
   public void testJacksonDeserialization() throws JsonProcessingException {
     String input =
@@ -22,49 +25,17 @@ public final class NatSectionTest {
             + "\"type\":\"nat-section\","
             + "\"uid\":\"0\","
             + "\"name\":\"foo\","
-            + "\"rulebase\":["
-            + "{" // nat-rule
-            + "\"type\":\"nat-rule\","
-            + "\"uid\":\"1\","
-            + "\"comments\":\"a\","
-            + "\"enabled\":true,"
-            + "\"install-on\": [\"100\"],"
-            + "\"method\":\"hide\","
-            + "\"original-destination\":\"0\","
-            + "\"original-service\":\"0\","
-            + "\"original-source\":\"0\","
-            + "\"rule-number\":1,"
-            + "\"translated-destination\":\"0\","
-            + "\"translated-service\":\"0\","
-            + "\"translated-source\":\"0\""
-            + "}" // nat-rule
-            + "]" // rulebase
+            + "\"rulebase\":[]" // rulebase
             + "}"; // NatSection
     assertThat(
         BatfishObjectMapper.ignoreUnknownMapper().readValue(input, NatSection.class),
-        equalTo(
-            new NatSection(
-                "foo",
-                ImmutableList.of(
-                    new NatRule(
-                        "a",
-                        true,
-                        ImmutableList.of(Uid.of("100")),
-                        NatMethod.HIDE,
-                        Uid.of("0"),
-                        Uid.of("0"),
-                        Uid.of("0"),
-                        1,
-                        Uid.of("0"),
-                        Uid.of("0"),
-                        Uid.of("0"),
-                        Uid.of("1"))),
-                Uid.of("0"))));
+        equalTo(TEST_INSTANCE));
   }
 
   @Test
   public void testJavaSerialization() {
-    NatSection obj = new NatSection("foo", ImmutableList.of(), Uid.of("0"));
+    NatSection obj =
+        new NatSection("foo", ImmutableList.of(NatRuleTest.TEST_INSTANCE), Uid.of("0"));
     assertEquals(obj, SerializationUtils.clone(obj));
   }
 
@@ -75,23 +46,7 @@ public final class NatSectionTest {
         .addEqualityGroup(obj, new NatSection("foo", ImmutableList.of(), Uid.of("0")))
         .addEqualityGroup(new NatSection("bar", ImmutableList.of(), Uid.of("0")))
         .addEqualityGroup(
-            new NatSection(
-                "foo",
-                ImmutableList.of(
-                    new NatRule(
-                        "a",
-                        true,
-                        ImmutableList.of(Uid.of("100")),
-                        NatMethod.HIDE,
-                        Uid.of("0"),
-                        Uid.of("0"),
-                        Uid.of("0"),
-                        1,
-                        Uid.of("0"),
-                        Uid.of("0"),
-                        Uid.of("0"),
-                        Uid.of("1"))),
-                Uid.of("0")))
+            new NatSection("foo", ImmutableList.of(NatRuleTest.TEST_INSTANCE), Uid.of("0")))
         .addEqualityGroup(new NatSection("foo", ImmutableList.of(), Uid.of("1")))
         .testEquals();
   }

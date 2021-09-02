@@ -76,45 +76,7 @@ public final class NatRulebaseTest {
             + "\"name\":\"foo\""
             + "}" // object: service-tcp
             + "]," // object-dictionary
-            + "\"rulebase\":["
-            + "{" // nat-rule
-            + "\"type\":\"nat-rule\","
-            + "\"uid\":\"9\","
-            + "\"comments\":\"a\","
-            + "\"enabled\":true,"
-            + "\"install-on\": [\"100\"],"
-            + "\"method\":\"hide\","
-            + "\"original-destination\":\"0\","
-            + "\"original-service\":\"0\","
-            + "\"original-source\":\"0\","
-            + "\"rule-number\":1,"
-            + "\"translated-destination\":\"0\","
-            + "\"translated-service\":\"0\","
-            + "\"translated-source\":\"0\""
-            + "}," // nat-rule
-            + "{" // nat-section
-            + "\"type\":\"nat-section\","
-            + "\"uid\":\"10\","
-            + "\"name\":\"n\","
-            + "\"rulebase\":[" // in nat-section
-            + "{" // nat-rule in nat-section
-            + "\"type\":\"nat-rule\","
-            + "\"uid\":\"11\","
-            + "\"comments\":\"a\","
-            + "\"enabled\":true,"
-            + "\"install-on\": [\"100\"],"
-            + "\"method\":\"hide\","
-            + "\"original-destination\":\"0\","
-            + "\"original-service\":\"0\","
-            + "\"original-source\":\"0\","
-            + "\"rule-number\":2,"
-            + "\"translated-destination\":\"0\","
-            + "\"translated-service\":\"0\","
-            + "\"translated-source\":\"0\""
-            + "}" // nat-rule in nat-section
-            + "]" // rulebase in nat-section
-            + "}" // nat-section
-            + "]" // rulebase
+            + "\"rulebase\":[]" // rulebase
             + "}"; // NatRulebase
     assertThat(
         BatfishObjectMapper.ignoreUnknownMapper().readValue(input, NatRulebase.class),
@@ -136,37 +98,7 @@ public final class NatRulebaseTest {
                     .put(Uid.of("7"), new ServiceGroup("foo", Uid.of("7")))
                     .put(Uid.of("8"), new ServiceTcp("foo", "8642", Uid.of("8")))
                     .build(),
-                ImmutableList.of(
-                    new NatRule(
-                        "a",
-                        true,
-                        ImmutableList.of(Uid.of("100")),
-                        NatMethod.HIDE,
-                        Uid.of("0"),
-                        Uid.of("0"),
-                        Uid.of("0"),
-                        1,
-                        Uid.of("0"),
-                        Uid.of("0"),
-                        Uid.of("0"),
-                        Uid.of("9")),
-                    new NatSection(
-                        "n",
-                        ImmutableList.of(
-                            new NatRule(
-                                "a",
-                                true,
-                                ImmutableList.of(Uid.of("100")),
-                                NatMethod.HIDE,
-                                Uid.of("0"),
-                                Uid.of("0"),
-                                Uid.of("0"),
-                                2,
-                                Uid.of("0"),
-                                Uid.of("0"),
-                                Uid.of("0"),
-                                Uid.of("11"))),
-                        Uid.of("10"))),
+                ImmutableList.of(),
                 Uid.of("0"))));
   }
 
@@ -176,7 +108,7 @@ public final class NatRulebaseTest {
         new NatRulebase(
             ImmutableMap.of(
                 Uid.of("0"), new AddressRange(null, null, null, null, "foo", Uid.of("0"))),
-            ImmutableList.of(),
+            ImmutableList.of(NatRuleTest.TEST_INSTANCE, NatSectionTest.TEST_INSTANCE),
             Uid.of("1"));
     assertEquals(obj, SerializationUtils.clone(obj));
   }

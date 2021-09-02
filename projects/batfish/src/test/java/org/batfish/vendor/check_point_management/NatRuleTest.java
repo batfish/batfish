@@ -14,6 +14,22 @@ import org.junit.Test;
 /** Test of {@link NatRule}. */
 public final class NatRuleTest {
 
+  public static final NatRule TEST_INSTANCE =
+      new NatRule(
+          true,
+          "foo",
+          true,
+          ImmutableList.of(Uid.of("100")),
+          NatMethod.HIDE,
+          Uid.of("1"),
+          Uid.of("2"),
+          Uid.of("3"),
+          1,
+          Uid.of("4"),
+          Uid.of("5"),
+          Uid.of("6"),
+          Uid.of("0"));
+
   @Test
   public void testJacksonDeserialization() throws JsonProcessingException {
     {
@@ -21,6 +37,7 @@ public final class NatRuleTest {
           "{"
               + "\"GARBAGE\":0,"
               + "\"type\":\"nat-rule\","
+              + "\"auto-generated\":true,"
               + "\"uid\":\"0\","
               + "\"comments\":\"foo\","
               + "\"enabled\":true,"
@@ -36,46 +53,20 @@ public final class NatRuleTest {
               + "}";
       assertThat(
           BatfishObjectMapper.ignoreUnknownMapper().readValue(input, NatRule.class),
-          equalTo(
-              new NatRule(
-                  "foo",
-                  true,
-                  ImmutableList.of(Uid.of("100")),
-                  NatMethod.HIDE,
-                  Uid.of("1"),
-                  Uid.of("2"),
-                  Uid.of("3"),
-                  1,
-                  Uid.of("4"),
-                  Uid.of("5"),
-                  Uid.of("6"),
-                  Uid.of("0"))));
+          equalTo(TEST_INSTANCE));
     }
   }
 
   @Test
   public void testJavaSerialization() {
-    NatRule obj =
-        new NatRule(
-            "foo",
-            true,
-            ImmutableList.of(Uid.of("100")),
-            NatMethod.HIDE,
-            Uid.of("1"),
-            Uid.of("2"),
-            Uid.of("3"),
-            1,
-            Uid.of("4"),
-            Uid.of("5"),
-            Uid.of("6"),
-            Uid.of("0"));
-    assertEquals(obj, SerializationUtils.clone(obj));
+    assertEquals(TEST_INSTANCE, SerializationUtils.clone(TEST_INSTANCE));
   }
 
   @Test
   public void testEquals() {
     NatRule obj =
         new NatRule(
+            true,
             "foo",
             true,
             ImmutableList.of(),
@@ -92,6 +83,7 @@ public final class NatRuleTest {
         .addEqualityGroup(
             obj,
             new NatRule(
+                true,
                 "foo",
                 true,
                 ImmutableList.of(),
@@ -106,6 +98,7 @@ public final class NatRuleTest {
                 Uid.of("0")))
         .addEqualityGroup(
             new NatRule(
+                true,
                 "bar",
                 true,
                 ImmutableList.of(),
@@ -120,6 +113,7 @@ public final class NatRuleTest {
                 Uid.of("0")))
         .addEqualityGroup(
             new NatRule(
+                true,
                 "foo",
                 false,
                 ImmutableList.of(),
@@ -134,6 +128,7 @@ public final class NatRuleTest {
                 Uid.of("0")))
         .addEqualityGroup(
             new NatRule(
+                true,
                 "foo",
                 true,
                 ImmutableList.of(),
@@ -148,6 +143,7 @@ public final class NatRuleTest {
                 Uid.of("0")))
         .addEqualityGroup(
             new NatRule(
+                true,
                 "foo",
                 true,
                 ImmutableList.of(),
@@ -162,6 +158,7 @@ public final class NatRuleTest {
                 Uid.of("0")))
         .addEqualityGroup(
             new NatRule(
+                true,
                 "foo",
                 true,
                 ImmutableList.of(),
@@ -176,6 +173,7 @@ public final class NatRuleTest {
                 Uid.of("0")))
         .addEqualityGroup(
             new NatRule(
+                true,
                 "foo",
                 true,
                 ImmutableList.of(),
@@ -190,6 +188,7 @@ public final class NatRuleTest {
                 Uid.of("0")))
         .addEqualityGroup(
             new NatRule(
+                true,
                 "foo",
                 true,
                 ImmutableList.of(),
@@ -204,6 +203,7 @@ public final class NatRuleTest {
                 Uid.of("0")))
         .addEqualityGroup(
             new NatRule(
+                true,
                 "foo",
                 true,
                 ImmutableList.of(),
@@ -218,6 +218,7 @@ public final class NatRuleTest {
                 Uid.of("0")))
         .addEqualityGroup(
             new NatRule(
+                true,
                 "foo",
                 true,
                 ImmutableList.of(),
@@ -232,6 +233,7 @@ public final class NatRuleTest {
                 Uid.of("0")))
         .addEqualityGroup(
             new NatRule(
+                true,
                 "foo",
                 true,
                 ImmutableList.of(),
@@ -246,6 +248,7 @@ public final class NatRuleTest {
                 Uid.of("0")))
         .addEqualityGroup(
             new NatRule(
+                true,
                 "foo",
                 true,
                 ImmutableList.of(),
@@ -260,9 +263,25 @@ public final class NatRuleTest {
                 Uid.of("10")))
         .addEqualityGroup(
             new NatRule(
+                true,
                 "foo",
                 true,
                 ImmutableList.of(Uid.of("10")),
+                NatMethod.HIDE,
+                Uid.of("1"),
+                Uid.of("2"),
+                Uid.of("3"),
+                1,
+                Uid.of("4"),
+                Uid.of("5"),
+                Uid.of("6"),
+                Uid.of("0")))
+        .addEqualityGroup(
+            new NatRule(
+                false,
+                "foo",
+                true,
+                ImmutableList.of(),
                 NatMethod.HIDE,
                 Uid.of("1"),
                 Uid.of("2"),
