@@ -9,9 +9,9 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public final class ServiceTcp extends TypedManagementObject implements ConcreteService {
+public final class ServiceTcp extends TypedManagementObject implements Service {
   @Override
-  public <T> T accept(ConcreteServiceVisitor<T> visitor) {
+  public <T> T accept(ServiceVisitor<T> visitor) {
     return visitor.visitServiceTcp(this);
   }
 
