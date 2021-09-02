@@ -10,7 +10,7 @@ import org.batfish.datamodel.Ip;
  * A gateway or server from the {@code objects} field of the response to the {@code
  * show-gateways-and-servers} command.
  */
-public abstract class GatewayOrServer extends TypedManagementObject {
+public abstract class GatewayOrServer extends TypedManagementObject implements AddressSpace {
 
   protected GatewayOrServer(
       Ip ipv4Address,
@@ -22,6 +22,12 @@ public abstract class GatewayOrServer extends TypedManagementObject {
     _interfaces = interfaces;
     _ipv4Address = ipv4Address;
     _policy = policy;
+  }
+
+  @Override
+  public final <T> T accept(AddressSpaceVisitor<T> visitor) {
+    // do we need individual implementations?
+    return visitor.visitGatewayOrServer(this);
   }
 
   public @Nonnull List<Interface> getInterfaces() {

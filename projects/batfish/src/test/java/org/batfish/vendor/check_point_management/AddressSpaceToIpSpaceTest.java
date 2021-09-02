@@ -14,11 +14,11 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.junit.Test;
 
-/** Tests of {@link SrcOrDstToIpSpace}. */
-public class SrcOrDstToIpSpaceTest {
+/** Tests of {@link AddressSpaceToIpSpace}. */
+public class AddressSpaceToIpSpaceTest {
   @Test
   public void testAddressRange() {
-    SrcOrDstToIpSpace visitor = new SrcOrDstToIpSpace(ImmutableMap.of());
+    AddressSpaceToIpSpace visitor = new AddressSpaceToIpSpace(ImmutableMap.of());
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip2 = Ip.parse("2.2.2.2");
     AddressRange range = new AddressRange(ip1, ip2, null, null, "name", Uid.of("uid"));
@@ -27,7 +27,7 @@ public class SrcOrDstToIpSpaceTest {
 
   @Test
   public void testAddressRangeIpv6() {
-    SrcOrDstToIpSpace visitor = new SrcOrDstToIpSpace(ImmutableMap.of());
+    AddressSpaceToIpSpace visitor = new AddressSpaceToIpSpace(ImmutableMap.of());
     Ip6 ip1 = Ip6.parse("1::1");
     Ip6 ip2 = Ip6.parse("1::2");
     AddressRange range = new AddressRange(null, null, ip1, ip2, "name", Uid.of("uid"));
@@ -36,7 +36,7 @@ public class SrcOrDstToIpSpaceTest {
 
   @Test
   public void testCpmiAnyObject() {
-    SrcOrDstToIpSpace visitor = new SrcOrDstToIpSpace(ImmutableMap.of());
+    AddressSpaceToIpSpace visitor = new AddressSpaceToIpSpace(ImmutableMap.of());
     CpmiAnyObject cpmiAnyObject = new CpmiAnyObject(Uid.of("1"));
     assertThat(cpmiAnyObject.accept(visitor), equalTo(UniverseIpSpace.INSTANCE));
   }
@@ -61,8 +61,8 @@ public class SrcOrDstToIpSpaceTest {
     Host host2 = new Host(hostIp2, "host2", host2Uid);
     Host host3 = new Host(hostIp3, "host3", host3Uid);
 
-    SrcOrDstToIpSpace visitor =
-        new SrcOrDstToIpSpace(
+    AddressSpaceToIpSpace visitor =
+        new AddressSpaceToIpSpace(
             ImmutableMap.<Uid, TypedManagementObject>builder()
                 .put(group1Uid, group1)
                 .put(group2Uid, group2)
@@ -82,7 +82,7 @@ public class SrcOrDstToIpSpaceTest {
 
   @Test
   public void testHost() {
-    SrcOrDstToIpSpace visitor = new SrcOrDstToIpSpace(ImmutableMap.of());
+    AddressSpaceToIpSpace visitor = new AddressSpaceToIpSpace(ImmutableMap.of());
     Ip hostIp = Ip.parse("10.10.10.10");
     Host host = new Host(hostIp, "hostName", Uid.of("10"));
     assertThat(host.accept(visitor), equalTo(hostIp.toIpSpace()));
@@ -90,7 +90,7 @@ public class SrcOrDstToIpSpaceTest {
 
   @Test
   public void testNetwork() {
-    SrcOrDstToIpSpace visitor = new SrcOrDstToIpSpace(ImmutableMap.of());
+    AddressSpaceToIpSpace visitor = new AddressSpaceToIpSpace(ImmutableMap.of());
     Ip ip = Ip.parse("1.1.1.0");
     Ip mask = Ip.parse("255.255.255.0");
     Network network = new Network("name", ip, mask, Uid.of("uid"));

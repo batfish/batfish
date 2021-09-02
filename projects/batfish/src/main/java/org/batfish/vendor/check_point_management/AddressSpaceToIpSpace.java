@@ -14,8 +14,8 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.UniverseIpSpace;
 
-/** Create an {@link IpSpace} representing the visited {@link SrcOrDst}. */
-public class SrcOrDstToIpSpace implements SrcOrDstVisitor<IpSpace> {
+/** Create an {@link IpSpace} representing the visited {@link AddressSpace}. */
+public class AddressSpaceToIpSpace implements AddressSpaceVisitor<IpSpace> {
 
   @Override
   public IpSpace visitCpmiAnyObject(CpmiAnyObject cpmiAnyObject) {
@@ -31,8 +31,8 @@ public class SrcOrDstToIpSpace implements SrcOrDstVisitor<IpSpace> {
   }
 
   @Override
-  public IpSpace visitCpmiGatewayCluster(CpmiGatewayCluster cpmiGatewayCluster) {
-    return cpmiGatewayCluster.getIpv4Address().toIpSpace();
+  public IpSpace visitGatewayOrServer(GatewayOrServer gatewayOrServer) {
+    return gatewayOrServer.getIpv4Address().toIpSpace();
   }
 
   @Override
@@ -41,9 +41,9 @@ public class SrcOrDstToIpSpace implements SrcOrDstVisitor<IpSpace> {
     List<IpSpace> memberIpSpaces =
         allMembers.stream()
             .map(_objs::get)
-            .filter(SrcOrDst.class::isInstance)
-            .map(SrcOrDst.class::cast)
-            .map(this::visit)
+            .filter(AddressSpace.class::isInstance)
+            .map(AddressSpace.class::cast)
+            .map(member -> member.accept(this))
             .collect(ImmutableList.toImmutableList());
     IpSpace space = AclIpSpace.union(memberIpSpaces);
     return space == null ? EmptyIpSpace.INSTANCE : space;
@@ -62,7 +62,7 @@ public class SrcOrDstToIpSpace implements SrcOrDstVisitor<IpSpace> {
       TypedManagementObject member = _objs.get(memberUid);
       if (member instanceof Group) {
         descendantObjects.addAll(getDescendantObjects((Group) member, alreadyTraversedMembers));
-      } else if (member instanceof SrcOrDst) {
+      } else if (member instanceof AddressSpace) {
         descendantObjects.add(memberUid);
       }
     }
@@ -85,7 +85,7 @@ public class SrcOrDstToIpSpace implements SrcOrDstVisitor<IpSpace> {
     return IpWildcard.ipWithWildcardMask(network.getSubnet4(), flippedMask).toIpSpace();
   }
 
-  public SrcOrDstToIpSpace(Map<Uid, TypedManagementObject> objs) {
+  public AddressSpaceToIpSpace(Map<Uid, TypedManagementObject> objs) {
     _objs = objs;
   }
 
