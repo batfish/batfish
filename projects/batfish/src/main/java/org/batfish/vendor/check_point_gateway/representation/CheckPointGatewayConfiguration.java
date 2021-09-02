@@ -164,8 +164,8 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
   }
 
   /**
-   * Convert specified objects to their VI model equivalent representation(s) if applicable, and
-   * adds them to the VI configuration. E.g. convert {@link AddressSpace}s to {@link IpSpace}s.
+   * Convert specified objects to their VI model equivalent representation(s) if applicable, and add
+   * them to the VI configuration. E.g. convert {@link AddressSpace}s to {@link IpSpace}s.
    *
    * <p>Warns about unknown object types.
    */
@@ -192,8 +192,8 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
   }
 
   /**
-   * Converts constructs in the specified package to their VI model equivalent and adds them to the
-   * VI configuration.
+   * Convert constructs in the specified package to their VI model equivalent and add them to the VI
+   * configuration.
    */
   private void convertPackage(@Nullable ManagementPackage pakij) {
     Optional.ofNullable(pakij.getNatRulebase())
