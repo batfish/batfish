@@ -196,6 +196,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
   }
 
   /** Converts the given {@link NatRulebase} and applies it to this config. */
+  @SuppressWarnings("unused")
   private void convertNatRulebase(NatRulebase natRulebase) {
     // TODO
   }
