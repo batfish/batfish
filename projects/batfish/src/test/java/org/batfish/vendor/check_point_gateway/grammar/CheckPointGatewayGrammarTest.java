@@ -1041,21 +1041,16 @@ public class CheckPointGatewayGrammarTest {
 
   @Test
   public void testObjectConversionWarnings() throws IOException {
-    Uid cpmiAnyUid = Uid.of("99999");
-    CpmiAnyObject any = new CpmiAnyObject(cpmiAnyUid);
     Uid unknownUid = Uid.of("10");
-    Uid acceptUid = Uid.of("11");
     Uid packageUid = Uid.of("12");
     String accessLayerName = "accessLayerFoo";
     String access_rules = "access_rules"; // Any config will do, just need to convert mgmt objs
 
     ImmutableMap<Uid, TypedManagementObject> objs =
         ImmutableMap.<Uid, TypedManagementObject>builder()
-            .put(cpmiAnyUid, any)
             .put(
                 unknownUid,
                 new UnknownTypedManagementObject("unknownObjectType", unknownUid, "UnknownType"))
-            .put(acceptUid, new RulebaseAction("Accept", acceptUid, "Accept"))
             .build();
 
     ImmutableMap<Uid, ManagementPackage> packages =
@@ -1083,9 +1078,6 @@ public class CheckPointGatewayGrammarTest {
                 Uid.of("1")));
 
     CheckpointManagementConfiguration mgmt = toCheckpointMgmtConfig(gateways, packages);
-    Map<String, Configuration> configs = parseTextConfigs(mgmt, access_rules);
-    Configuration c = configs.get(access_rules);
-
     Batfish batfish = getBatfishForConfigurationNames(mgmt, access_rules);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());

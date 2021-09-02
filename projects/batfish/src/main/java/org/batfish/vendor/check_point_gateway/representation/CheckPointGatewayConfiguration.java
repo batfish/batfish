@@ -139,8 +139,6 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     ManagementPackage pakij = maybePackage.get();
 
     convertPackageObjects(pakij);
-    convertAccessLayers(pakij.getAccessLayers());
-    Optional.ofNullable(pakij.getNatRulebase()).ifPresent(this::convertNatRulebase);
   }
 
   private void convertAccessLayers(List<AccessLayer> accessLayers) {
@@ -166,47 +164,46 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
   }
 
   /**
-   * Convert specified objects to their VI model equivalent representation(s). E.g. convert
-   * {org.batfish.vendor.check_point_management.AddressSpace}s to {@link
-   * org.batfish.datamodel.IpSpace}s.
+   * Convert specified objects to their VI model equivalent representation(s) if applicable, and
+   * adds them to the VI configuration. E.g. convert {@link AddressSpace}s to {@link IpSpace}s.
    *
-   * <p>Warns about object types that are not converted.
+   * <p>Warns about unknown object types.
    */
   private void convertObjects(Map<Uid, TypedManagementObject> objs) {
     AddressSpaceToIpSpace addressSpaceToIpSpace = new AddressSpaceToIpSpace(objs);
     objs.values()
         .forEach(
             obj -> {
-              boolean converted = false;
               if (obj instanceof AddressSpace) {
                 AddressSpace addressSpace = (AddressSpace) obj;
                 IpSpace ipSpace = addressSpace.accept(addressSpaceToIpSpace);
                 _c.getIpSpaces().put(obj.getName(), ipSpace);
-                converted = true;
               }
 
-              if (!converted) {
-                String type = obj.getClass().getSimpleName();
-                if (obj instanceof UnknownTypedManagementObject) {
-                  UnknownTypedManagementObject utmo = (UnknownTypedManagementObject) obj;
-                  type = utmo.getType();
-                }
+              if (obj instanceof UnknownTypedManagementObject) {
+                UnknownTypedManagementObject utmo = (UnknownTypedManagementObject) obj;
                 _w.redFlag(
                     String.format(
                         "Batfish does not handle converting objects of type %s. These objects will"
                             + " be ignored.",
-                        type));
+                        utmo.getType()));
               }
             });
   }
 
-  /** Converts all objects to their VI model equivalent(s). */
+  /**
+   * Converts all objects in the specified package to their VI model equivalent and adds them to the
+   * VI configuration.
+   */
   private void convertPackageObjects(@Nullable ManagementPackage pakij) {
     Optional.ofNullable(pakij.getNatRulebase())
         .ifPresent(natRulebase -> convertObjects(natRulebase.getObjectsDictionary()));
     pakij.getAccessLayers().stream()
         .map(AccessLayer::getObjectsDictionary)
-        .forEach(objectsDictionary -> convertObjects(objectsDictionary));
+        .forEach(this::convertObjects);
+
+    convertAccessLayers(pakij.getAccessLayers());
+    Optional.ofNullable(pakij.getNatRulebase()).ifPresent(this::convertNatRulebase);
   }
 
   /** Converts the given {@link NatRulebase} and applies it to this config. */
