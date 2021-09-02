@@ -6,11 +6,9 @@ import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toAction;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toIpAccessLists;
-import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toIpSpace;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toMatchExpr;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
@@ -19,13 +17,10 @@ import java.util.Map;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
-import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
-import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.UniverseIpSpace;
@@ -34,7 +29,6 @@ import org.batfish.vendor.check_point_management.AccessLayer;
 import org.batfish.vendor.check_point_management.AccessRule;
 import org.batfish.vendor.check_point_management.AccessRuleOrSection;
 import org.batfish.vendor.check_point_management.AccessSection;
-import org.batfish.vendor.check_point_management.AddressRange;
 import org.batfish.vendor.check_point_management.CpmiAnyObject;
 import org.batfish.vendor.check_point_management.Network;
 import org.batfish.vendor.check_point_management.RulebaseAction;
@@ -98,32 +92,6 @@ public class CheckPointGatewayConversionsTest {
         .setDstPort(destinationPort)
         .setSrcPort(sourcePort)
         .build();
-  }
-
-  @Test
-  public void testToIpSpace_addressRange() {
-    Ip ip1 = Ip.parse("1.1.1.1");
-    Ip ip2 = Ip.parse("2.2.2.2");
-    AddressRange range = new AddressRange(ip1, ip2, null, null, "name", Uid.of("uid"));
-    assertThat(toIpSpace(range), equalTo(IpRange.range(ip1, ip2)));
-  }
-
-  @Test
-  public void testToIpSpace_addressRangeIpv6() {
-    Ip6 ip1 = Ip6.parse("1::1");
-    Ip6 ip2 = Ip6.parse("1::2");
-    AddressRange range = new AddressRange(null, null, ip1, ip2, "name", Uid.of("uid"));
-    assertNull(toIpSpace(range));
-  }
-
-  @Test
-  public void testToIpSpace_network() {
-    Ip ip = Ip.parse("1.1.1.0");
-    Ip mask = Ip.parse("255.255.255.0");
-    Network network = new Network("name", ip, mask, Uid.of("uid"));
-    Ip flippedMask = Ip.parse("0.0.0.255");
-    assertThat(
-        toIpSpace(network), equalTo(IpWildcard.ipWithWildcardMask(ip, flippedMask).toIpSpace()));
   }
 
   @Test
