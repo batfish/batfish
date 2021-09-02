@@ -16,7 +16,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -136,9 +135,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     if (!maybePackage.isPresent()) {
       return;
     }
-    ManagementPackage pakij = maybePackage.get();
-
-    convertPackage(pakij);
+    convertPackage(maybePackage.get());
   }
 
   private void convertAccessLayers(List<AccessLayer> accessLayers) {
@@ -167,6 +164,10 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
    * Convert specified objects to their VI model equivalent representation(s) if applicable, and add
    * them to the VI configuration. E.g. convert {@link AddressSpace}s to {@link IpSpace}s.
    *
+   * <p><b>Note: different objects (e.g. revisions) of the same name/type are not supported. Only
+   * the last-encountered object with a particular name (of the same type) will produce a VI model
+   * object.</b>
+   *
    * <p>Warns about unknown object types.
    */
   private void convertObjects(Map<Uid, TypedManagementObject> objs) {
@@ -174,12 +175,6 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     objs.values()
         .forEach(
             obj -> {
-              if (obj instanceof AddressSpace) {
-                AddressSpace addressSpace = (AddressSpace) obj;
-                IpSpace ipSpace = addressSpace.accept(addressSpaceToIpSpace);
-                _c.getIpSpaces().put(obj.getName(), ipSpace);
-              }
-
               if (obj instanceof UnknownTypedManagementObject) {
                 UnknownTypedManagementObject utmo = (UnknownTypedManagementObject) obj;
                 _w.redFlag(
@@ -187,6 +182,13 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
                         "Batfish does not handle converting objects of type %s. These objects will"
                             + " be ignored.",
                         utmo.getType()));
+                return;
+              }
+
+              if (obj instanceof AddressSpace) {
+                AddressSpace addressSpace = (AddressSpace) obj;
+                IpSpace ipSpace = addressSpace.accept(addressSpaceToIpSpace);
+                _c.getIpSpaces().put(obj.getName(), ipSpace);
               }
             });
   }
@@ -195,15 +197,18 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
    * Convert constructs in the specified package to their VI model equivalent and add them to the VI
    * configuration.
    */
-  private void convertPackage(@Nullable ManagementPackage pakij) {
+  private void convertPackage(ManagementPackage pakij) {
+    convertObjects(pakij);
+    convertAccessLayers(pakij.getAccessLayers());
+    Optional.ofNullable(pakij.getNatRulebase()).ifPresent(this::convertNatRulebase);
+  }
+
+  private void convertObjects(ManagementPackage pakij) {
     Optional.ofNullable(pakij.getNatRulebase())
         .ifPresent(natRulebase -> convertObjects(natRulebase.getObjectsDictionary()));
     pakij.getAccessLayers().stream()
         .map(AccessLayer::getObjectsDictionary)
         .forEach(this::convertObjects);
-
-    convertAccessLayers(pakij.getAccessLayers());
-    Optional.ofNullable(pakij.getNatRulebase()).ifPresent(this::convertNatRulebase);
   }
 
   /** Converts the given {@link NatRulebase} and applies it to this config. */
