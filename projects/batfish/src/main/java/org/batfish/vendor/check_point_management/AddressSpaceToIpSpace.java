@@ -32,7 +32,13 @@ public class AddressSpaceToIpSpace implements AddressSpaceVisitor<IpSpace> {
 
   @Override
   public IpSpace visitGatewayOrServer(GatewayOrServer gatewayOrServer) {
-    return gatewayOrServer.getIpv4Address().toIpSpace();
+    // TODO confirm semantics, should we use interface addresses or networks or ???
+    IpSpace ipSpace =
+        AclIpSpace.union(
+            gatewayOrServer.getInterfaces().stream()
+                .map(i -> i.getIpv4Address().toIpSpace())
+                .collect(ImmutableList.toImmutableList()));
+    return ipSpace == null ? EmptyIpSpace.INSTANCE : ipSpace;
   }
 
   @Override
