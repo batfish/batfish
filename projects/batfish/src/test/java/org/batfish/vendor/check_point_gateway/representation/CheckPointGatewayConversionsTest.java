@@ -30,6 +30,7 @@ import org.batfish.vendor.check_point_management.AccessRule;
 import org.batfish.vendor.check_point_management.AccessRuleOrSection;
 import org.batfish.vendor.check_point_management.AccessSection;
 import org.batfish.vendor.check_point_management.CpmiAnyObject;
+import org.batfish.vendor.check_point_management.NatSettingsTest;
 import org.batfish.vendor.check_point_management.Network;
 import org.batfish.vendor.check_point_management.RulebaseAction;
 import org.batfish.vendor.check_point_management.TypedManagementObject;
@@ -49,13 +50,28 @@ public class CheckPointGatewayConversionsTest {
       ImmutableMap.<Uid, TypedManagementObject>builder()
           .put(
               UID_NET0,
-              new Network("net0", Ip.parse("10.0.0.0"), Ip.parse("255.255.255.0"), UID_NET0))
+              new Network(
+                  "net0",
+                  NatSettingsTest.TEST_INSTANCE,
+                  Ip.parse("10.0.0.0"),
+                  Ip.parse("255.255.255.0"),
+                  UID_NET0))
           .put(
               UID_NET1,
-              new Network("net1", Ip.parse("10.0.1.0"), Ip.parse("255.255.255.0"), UID_NET1))
+              new Network(
+                  "net1",
+                  NatSettingsTest.TEST_INSTANCE,
+                  Ip.parse("10.0.1.0"),
+                  Ip.parse("255.255.255.0"),
+                  UID_NET1))
           .put(
               UID_NET2,
-              new Network("net2", Ip.parse("10.0.2.0"), Ip.parse("255.255.255.0"), UID_NET2))
+              new Network(
+                  "net2",
+                  NatSettingsTest.TEST_INSTANCE,
+                  Ip.parse("10.0.2.0"),
+                  Ip.parse("255.255.255.0"),
+                  UID_NET2))
           .put(UID_CPMI_ANY, CPMI_ANY)
           .put(UID_ACCEPT, new RulebaseAction("Accept", UID_ACCEPT, "Accept"))
           .put(UID_DROP, new RulebaseAction("Drop", UID_DROP, "Drop"))

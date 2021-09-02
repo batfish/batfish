@@ -14,6 +14,9 @@ import org.junit.Test;
 /** Test of {@link Network}. */
 public final class NetworkTest {
 
+  private static final Network TEST_INSTANCE =
+      new Network("foo", NatSettingsTest.TEST_INSTANCE, Ip.ZERO, Ip.MAX, Uid.of("0"));
+
   @Test
   public void testJacksonDeserialization() throws JsonProcessingException {
     String input =
@@ -22,29 +25,42 @@ public final class NetworkTest {
             + "\"type\":\"network\","
             + "\"uid\":\"0\","
             + "\"name\":\"foo\","
+            + "\"nat-settings\": {" // nat-settings
+            + "\"auto-rule\":true,"
+            + "\"hide-behind\":\"gateway\","
+            + "\"install-on\":\"All\","
+            + "\"method\":\"hide\""
+            + "}," // nat-settings
             + "\"subnet4\":\"0.0.0.0\","
             + "\"subnet-mask\":\"255.255.255.255\""
             + "}";
     assertThat(
         BatfishObjectMapper.ignoreUnknownMapper().readValue(input, Network.class),
-        equalTo(new Network("foo", Ip.ZERO, Ip.MAX, Uid.of("0"))));
+        equalTo(TEST_INSTANCE));
   }
 
   @Test
   public void testJavaSerialization() {
-    Network obj = new Network("foo", Ip.ZERO, Ip.MAX, Uid.of("0"));
-    assertEquals(obj, SerializationUtils.clone(obj));
+    assertEquals(TEST_INSTANCE, SerializationUtils.clone(TEST_INSTANCE));
   }
 
   @Test
   public void testEquals() {
-    Network obj = new Network("foo", Ip.ZERO, Ip.MAX, Uid.of("0"));
+    Network obj = new Network("foo", NatSettingsTest.TEST_INSTANCE, Ip.ZERO, Ip.MAX, Uid.of("0"));
     new EqualsTester()
-        .addEqualityGroup(obj, new Network("foo", Ip.ZERO, Ip.MAX, Uid.of("0")))
-        .addEqualityGroup(new Network("bar", Ip.ZERO, Ip.MAX, Uid.of("0")))
-        .addEqualityGroup(new Network("foo", Ip.MAX, Ip.MAX, Uid.of("0")))
-        .addEqualityGroup(new Network("foo", Ip.ZERO, Ip.ZERO, Uid.of("0")))
-        .addEqualityGroup(new Network("foo", Ip.ZERO, Ip.MAX, Uid.of("1")))
+        .addEqualityGroup(
+            obj, new Network("foo", NatSettingsTest.TEST_INSTANCE, Ip.ZERO, Ip.MAX, Uid.of("0")))
+        .addEqualityGroup(
+            new Network("bar", NatSettingsTest.TEST_INSTANCE, Ip.ZERO, Ip.MAX, Uid.of("0")))
+        .addEqualityGroup(
+            new Network(
+                "foo", NatSettingsTest.TEST_INSTANCE_DIFFERENT, Ip.ZERO, Ip.MAX, Uid.of("0")))
+        .addEqualityGroup(
+            new Network("foo", NatSettingsTest.TEST_INSTANCE, Ip.MAX, Ip.MAX, Uid.of("0")))
+        .addEqualityGroup(
+            new Network("foo", NatSettingsTest.TEST_INSTANCE, Ip.ZERO, Ip.ZERO, Uid.of("0")))
+        .addEqualityGroup(
+            new Network("foo", NatSettingsTest.TEST_INSTANCE, Ip.ZERO, Ip.MAX, Uid.of("1")))
         .testEquals();
   }
 }

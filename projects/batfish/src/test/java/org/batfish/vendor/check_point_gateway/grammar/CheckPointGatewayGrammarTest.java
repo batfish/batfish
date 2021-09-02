@@ -110,6 +110,7 @@ import org.batfish.vendor.check_point_management.ManagementDomain;
 import org.batfish.vendor.check_point_management.ManagementPackage;
 import org.batfish.vendor.check_point_management.ManagementServer;
 import org.batfish.vendor.check_point_management.NatRulebase;
+import org.batfish.vendor.check_point_management.NatSettingsTest;
 import org.batfish.vendor.check_point_management.Network;
 import org.batfish.vendor.check_point_management.Package;
 import org.batfish.vendor.check_point_management.RulebaseAction;
@@ -887,7 +888,13 @@ public class CheckPointGatewayGrammarTest {
                 ImmutableList.of(),
                 new NatRulebase(
                     ImmutableMap.of(
-                        Uid.of("4"), new Network("n1", Ip.ZERO, Ip.ZERO, Uid.of("n1uid"))),
+                        Uid.of("4"),
+                        new Network(
+                            "n1",
+                            NatSettingsTest.TEST_INSTANCE,
+                            Ip.ZERO,
+                            Ip.ZERO,
+                            Uid.of("n1uid"))),
                     ImmutableList.of(),
                     Uid.of("6")),
                 new Package(
@@ -902,7 +909,9 @@ public class CheckPointGatewayGrammarTest {
                 ImmutableList.of(),
                 new NatRulebase(
                     ImmutableMap.of(
-                        Uid.of("8"), new Network("n2", Ip.MAX, Ip.MAX, Uid.of("n2uid"))),
+                        Uid.of("8"),
+                        new Network(
+                            "n2", NatSettingsTest.TEST_INSTANCE, Ip.MAX, Ip.MAX, Uid.of("n2uid"))),
                     ImmutableList.of(),
                     Uid.of("10")),
                 new Package(
@@ -961,11 +970,19 @@ public class CheckPointGatewayGrammarTest {
             .put(
                 net1Uid,
                 new Network(
-                    "networkEth1", Ip.parse("10.0.1.0"), Ip.parse("255.255.255.0"), net1Uid))
+                    "networkEth1",
+                    NatSettingsTest.TEST_INSTANCE,
+                    Ip.parse("10.0.1.0"),
+                    Ip.parse("255.255.255.0"),
+                    net1Uid))
             .put(
                 net2Uid,
                 new Network(
-                    "networkEth2", Ip.parse("10.0.2.0"), Ip.parse("255.255.255.0"), net2Uid))
+                    "networkEth2",
+                    NatSettingsTest.TEST_INSTANCE,
+                    Ip.parse("10.0.2.0"),
+                    Ip.parse("255.255.255.0"),
+                    net2Uid))
             .put(acceptUid, new RulebaseAction("Accept", acceptUid, "Accept"))
             .put(dropUid, new RulebaseAction("Drop", dropUid, "Drop"))
             .build();
