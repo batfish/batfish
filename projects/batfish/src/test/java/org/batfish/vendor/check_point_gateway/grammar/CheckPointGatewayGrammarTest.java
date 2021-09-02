@@ -116,6 +116,7 @@ import org.batfish.vendor.check_point_management.RulebaseAction;
 import org.batfish.vendor.check_point_management.SimpleGateway;
 import org.batfish.vendor.check_point_management.TypedManagementObject;
 import org.batfish.vendor.check_point_management.Uid;
+import org.batfish.vendor.check_point_management.UnknownTypedManagementObject;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -1036,5 +1037,64 @@ public class CheckPointGatewayGrammarTest {
     assertThat(c, hasInterface("eth2", hasOutgoingFilter(rejects(denied, "eth1", c))));
     assertThat(c, hasInterface("eth3", hasOutgoingFilter(accepts(permitted, "eth1", c))));
     assertThat(c, hasInterface("eth3", hasOutgoingFilter(rejects(denied, "eth1", c))));
+  }
+
+  @Test
+  public void testObjectConversionWarnings() throws IOException {
+    Uid cpmiAnyUid = Uid.of("99999");
+    CpmiAnyObject any = new CpmiAnyObject(cpmiAnyUid);
+    Uid unknownUid = Uid.of("10");
+    Uid acceptUid = Uid.of("11");
+    Uid packageUid = Uid.of("12");
+    String accessLayerName = "accessLayerFoo";
+    String access_rules = "access_rules"; // Any config will do, just need to convert mgmt objs
+
+    ImmutableMap<Uid, TypedManagementObject> objs =
+        ImmutableMap.<Uid, TypedManagementObject>builder()
+            .put(cpmiAnyUid, any)
+            .put(
+                unknownUid,
+                new UnknownTypedManagementObject("unknownObjectType", unknownUid, "UnknownType"))
+            .put(acceptUid, new RulebaseAction("Accept", acceptUid, "Accept"))
+            .build();
+
+    ImmutableMap<Uid, ManagementPackage> packages =
+        ImmutableMap.of(
+            packageUid,
+            new ManagementPackage(
+                ImmutableList.of(
+                    new AccessLayer(objs, ImmutableList.of(), Uid.of("13"), accessLayerName)),
+                null,
+                new Package(
+                    new Domain("d", Uid.of("14")),
+                    AllInstallationTargets.instance(),
+                    "p1",
+                    true,
+                    false,
+                    packageUid)));
+    ImmutableMap<Uid, GatewayOrServer> gateways =
+        ImmutableMap.of(
+            Uid.of("1"),
+            new SimpleGateway(
+                Ip.parse("10.0.0.1"),
+                "access_rules", // Any config will work, just converting management objects
+                ImmutableList.of(),
+                new GatewayOrServerPolicy("p1", null),
+                Uid.of("1")));
+
+    CheckpointManagementConfiguration mgmt = toCheckpointMgmtConfig(gateways, packages);
+    Map<String, Configuration> configs = parseTextConfigs(mgmt, access_rules);
+    Configuration c = configs.get(access_rules);
+
+    Batfish batfish = getBatfishForConfigurationNames(mgmt, access_rules);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(
+        ccae,
+        hasRedFlagWarning(
+            access_rules,
+            containsString(
+                "Batfish does not handle converting objects of type UnknownType. These objects will"
+                    + " be ignored.")));
   }
 }

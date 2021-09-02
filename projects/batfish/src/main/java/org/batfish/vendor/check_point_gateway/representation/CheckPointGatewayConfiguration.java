@@ -50,6 +50,7 @@ import org.batfish.vendor.check_point_management.ManagementServer;
 import org.batfish.vendor.check_point_management.NatRulebase;
 import org.batfish.vendor.check_point_management.TypedManagementObject;
 import org.batfish.vendor.check_point_management.Uid;
+import org.batfish.vendor.check_point_management.UnknownTypedManagementObject;
 
 public class CheckPointGatewayConfiguration extends VendorConfiguration {
 
@@ -137,7 +138,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     }
     ManagementPackage pakij = maybePackage.get();
 
-    convertAddressSpaces(pakij);
+    convertPackageObjects(pakij);
     convertAccessLayers(pakij.getAccessLayers());
     Optional.ofNullable(pakij.getNatRulebase()).ifPresent(this::convertNatRulebase);
   }
@@ -164,30 +165,48 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     _c.getIpAccessLists().put(interfaceAcl.getName(), interfaceAcl);
   }
 
-  private void convertObjectsToIpSpaces(Map<Uid, TypedManagementObject> objs) {
+  /**
+   * Convert specified objects to their VI model equivalent representation(s). E.g. convert
+   * {org.batfish.vendor.check_point_management.AddressSpace}s to {@link
+   * org.batfish.datamodel.IpSpace}s.
+   *
+   * <p>Warns about object types that are not converted.
+   */
+  private void convertObjects(Map<Uid, TypedManagementObject> objs) {
     AddressSpaceToIpSpace addressSpaceToIpSpace = new AddressSpaceToIpSpace(objs);
     objs.values()
         .forEach(
             obj -> {
+              boolean converted = false;
               if (obj instanceof AddressSpace) {
                 AddressSpace addressSpace = (AddressSpace) obj;
                 IpSpace ipSpace = addressSpace.accept(addressSpaceToIpSpace);
                 _c.getIpSpaces().put(obj.getName(), ipSpace);
+                converted = true;
+              }
+
+              if (!converted) {
+                String type = obj.getClass().getSimpleName();
+                if (obj instanceof UnknownTypedManagementObject) {
+                  UnknownTypedManagementObject utmo = (UnknownTypedManagementObject) obj;
+                  type = utmo.getType();
+                }
+                _w.redFlag(
+                    String.format(
+                        "Batfish does not handle converting objects of type %s. These objects will"
+                            + " be ignored.",
+                        type));
               }
             });
   }
 
-  /**
-   * Converts all objects that can be used as an
-   * {org.batfish.vendor.check_point_management.AddressSpace} in the given package to an {@link
-   * org.batfish.datamodel.IpSpace}
-   */
-  private void convertAddressSpaces(@Nullable ManagementPackage pakij) {
+  /** Converts all objects to their VI model equivalent(s). */
+  private void convertPackageObjects(@Nullable ManagementPackage pakij) {
     Optional.ofNullable(pakij.getNatRulebase())
-        .ifPresent(natRulebase -> convertObjectsToIpSpaces(natRulebase.getObjectsDictionary()));
+        .ifPresent(natRulebase -> convertObjects(natRulebase.getObjectsDictionary()));
     pakij.getAccessLayers().stream()
         .map(AccessLayer::getObjectsDictionary)
-        .forEach(objectsDictionary -> convertObjectsToIpSpaces(objectsDictionary));
+        .forEach(objectsDictionary -> convertObjects(objectsDictionary));
   }
 
   /** Converts the given {@link NatRulebase} and applies it to this config. */
