@@ -107,7 +107,7 @@ public final class CpmiGatewayClusterTest {
                 ImmutableList.of(),
                 Ip.ZERO,
                 "foo",
-                ImmutableList.of(new Interface("iface", new InterfaceTopology(true))),
+                ImmutableList.of(InterfaceTest.TEST_INSTANCE),
                 GatewayOrServerPolicy.empty(),
                 Uid.of("0")))
         .addEqualityGroup(

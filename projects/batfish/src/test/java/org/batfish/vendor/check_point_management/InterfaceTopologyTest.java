@@ -11,6 +11,12 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
 
 public class InterfaceTopologyTest {
+  /**
+   * Instance of this class populated with arbitrary values. Useful for generating a valid object
+   * for use in tests.
+   */
+  public static final InterfaceTopology TEST_INSTANCE = new InterfaceTopology(false);
+
   @Test
   public void testJacksonDeserialization() throws JsonProcessingException {
     String input = "{ \"GARBAGE\":0, \"leads-to-internet\":\"true\" }";
@@ -21,7 +27,7 @@ public class InterfaceTopologyTest {
 
   @Test
   public void testJavaSerialization() {
-    InterfaceTopology obj = new InterfaceTopology(true);
+    InterfaceTopology obj = TEST_INSTANCE;
     assertEquals(obj, SerializationUtils.clone(obj));
   }
 
