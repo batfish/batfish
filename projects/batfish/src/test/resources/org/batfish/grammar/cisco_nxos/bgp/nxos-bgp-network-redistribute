@@ -1,0 +1,17 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+feature bgp
+!
+hostname nxos-bgp-network-redistribute
+!
+route-map STATIC-ROUTES permit 10
+  match source-protocol static
+!
+ip route 1.1.1.1/32 null0
+!
+router bgp 1
+   router-id 1.2.3.4
+   address-family ipv4 unicast
+      network 1.1.1.1/32
+      redistribute static route-map STATIC-ROUTES
+!
