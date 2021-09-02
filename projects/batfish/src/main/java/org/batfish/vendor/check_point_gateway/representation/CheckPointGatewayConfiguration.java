@@ -2,7 +2,6 @@ package org.batfish.vendor.check_point_gateway.representation;
 
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toIpAccessLists;
-import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toIpSpace;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -29,9 +28,9 @@ import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
@@ -41,15 +40,14 @@ import org.batfish.vendor.ConversionContext;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.vendor.check_point_gateway.representation.BondingGroup.Mode;
 import org.batfish.vendor.check_point_management.AccessLayer;
-import org.batfish.vendor.check_point_management.AddressRange;
+import org.batfish.vendor.check_point_management.AddressSpace;
+import org.batfish.vendor.check_point_management.AddressSpaceToIpSpace;
 import org.batfish.vendor.check_point_management.CheckpointManagementConfiguration;
-import org.batfish.vendor.check_point_management.CpmiAnyObject;
 import org.batfish.vendor.check_point_management.GatewayOrServer;
 import org.batfish.vendor.check_point_management.ManagementDomain;
 import org.batfish.vendor.check_point_management.ManagementPackage;
 import org.batfish.vendor.check_point_management.ManagementServer;
 import org.batfish.vendor.check_point_management.NatRulebase;
-import org.batfish.vendor.check_point_management.Network;
 import org.batfish.vendor.check_point_management.TypedManagementObject;
 import org.batfish.vendor.check_point_management.Uid;
 
@@ -167,17 +165,14 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
   }
 
   private void convertObjectsToIpSpaces(Map<Uid, TypedManagementObject> objs) {
-    // TODO use visitor pattern instead
+    AddressSpaceToIpSpace addressSpaceToIpSpace = new AddressSpaceToIpSpace(objs);
     objs.values()
         .forEach(
             obj -> {
-              if (obj instanceof AddressRange) {
-                Optional.ofNullable(toIpSpace((AddressRange) obj))
-                    .ifPresent(ipSpace -> _c.getIpSpaces().put(obj.getName(), ipSpace));
-              } else if (obj instanceof Network) {
-                _c.getIpSpaces().put(obj.getName(), toIpSpace((Network) obj));
-              } else if (obj instanceof CpmiAnyObject) {
-                _c.getIpSpaces().put(obj.getName(), UniverseIpSpace.INSTANCE);
+              if (obj instanceof AddressSpace) {
+                AddressSpace addressSpace = (AddressSpace) obj;
+                IpSpace ipSpace = addressSpace.accept(addressSpaceToIpSpace);
+                _c.getIpSpaces().put(obj.getName(), ipSpace);
               }
             });
   }
