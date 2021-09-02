@@ -42,6 +42,26 @@ public class AddressSpaceToIpSpaceTest {
   }
 
   @Test
+  public void testGatewayOrServer() {
+    AddressSpaceToIpSpace visitor = new AddressSpaceToIpSpace(ImmutableMap.of());
+    GatewayOrServer gatewayOrServer =
+        new SimpleGateway(
+            Ip.parse("10.0.0.1"),
+            "simpleGateway",
+            ImmutableList.of(
+                new Interface(
+                    "eth1", InterfaceTopologyTest.TEST_INSTANCE, Ip.parse("10.0.1.1"), 24),
+                new Interface(
+                    "eth2", InterfaceTopologyTest.TEST_INSTANCE, Ip.parse("10.0.2.1"), 24)),
+            new GatewayOrServerPolicy(null, null),
+            Uid.of("1"));
+    assertThat(
+        gatewayOrServer.accept(visitor),
+        equalTo(
+            AclIpSpace.union(Ip.parse("10.0.1.1").toIpSpace(), Ip.parse("10.0.2.1").toIpSpace())));
+  }
+
+  @Test
   public void testGroup() {
     Uid group1Uid = Uid.of("1");
     Uid group2Uid = Uid.of("2");
