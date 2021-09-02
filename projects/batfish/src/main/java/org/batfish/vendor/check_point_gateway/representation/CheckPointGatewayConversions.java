@@ -1,11 +1,17 @@
 package org.batfish.vendor.check_point_gateway.representation;
 
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.applyOriginalServiceConstraint;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getDestinationTransformationSteps;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getServiceTransformationSteps;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getSourceTransformationSteps;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
@@ -18,16 +24,89 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.vendor.check_point_management.AccessLayer;
 import org.batfish.vendor.check_point_management.AccessRule;
 import org.batfish.vendor.check_point_management.AccessRuleOrSection;
 import org.batfish.vendor.check_point_management.AccessSection;
+import org.batfish.vendor.check_point_management.AddressSpace;
+import org.batfish.vendor.check_point_management.NatTranslatedAddress;
+import org.batfish.vendor.check_point_management.NatTranslatedService;
 import org.batfish.vendor.check_point_management.RulebaseAction;
+import org.batfish.vendor.check_point_management.Service;
 import org.batfish.vendor.check_point_management.TypedManagementObject;
 import org.batfish.vendor.check_point_management.Uid;
 
 /** Utility class for Checkpoint conversion methods */
 public final class CheckPointGatewayConversions {
+
+  static @Nonnull HeaderSpace toHeaderSpace(
+      Map<String, IpSpace> ipSpaces,
+      TypedManagementObject src,
+      TypedManagementObject dst,
+      TypedManagementObject service,
+      Warnings warnings) {
+    HeaderSpace.Builder hsb = HeaderSpace.builder();
+    if (src instanceof AddressSpace) {
+      hsb.setSrcIps(ipSpaces.get(src.getName()));
+    } else {
+      warnings.redFlag(
+          String.format(
+              "NAT rule original-source %s has unsupported type %s and will be ignored",
+              src.getName(), src.getClass()));
+    }
+    if (dst instanceof AddressSpace) {
+      hsb.setDstIps(ipSpaces.get(dst.getName()));
+    } else {
+      warnings.redFlag(
+          String.format(
+              "NAT rule original-destination %s has unsupported type %s and will be ignored",
+              dst.getName(), dst.getClass()));
+    }
+    if (service instanceof Service) {
+      applyOriginalServiceConstraint((Service) service, hsb);
+    } else {
+      warnings.redFlag(
+          String.format(
+              "NAT rule original-service %s has unsupported type %s and will be ignored",
+              service.getName(), service.getClass()));
+    }
+    return hsb.build();
+  }
+
+  static @Nonnull List<TransformationStep> toTransformationSteps(
+      TypedManagementObject src,
+      TypedManagementObject dst,
+      TypedManagementObject service,
+      Warnings warnings) {
+    ImmutableList.Builder<TransformationStep> steps = ImmutableList.builder();
+    if (src instanceof NatTranslatedAddress) {
+      steps.addAll(getSourceTransformationSteps((NatTranslatedAddress) src));
+    } else {
+      warnings.redFlag(
+          String.format(
+              "NAT rule translated-source %s has unsupported type %s and will be ignored",
+              src.getName(), src.getClass()));
+    }
+    if (dst instanceof NatTranslatedAddress) {
+      steps.addAll(getDestinationTransformationSteps((NatTranslatedAddress) dst));
+    } else {
+      warnings.redFlag(
+          String.format(
+              "NAT rule translated-destination %s has unsupported type %s and will be ignored",
+              dst.getName(), dst.getClass()));
+    }
+    if (service instanceof NatTranslatedService) {
+      steps.addAll(getServiceTransformationSteps((NatTranslatedService) service));
+    } else {
+      warnings.redFlag(
+          String.format(
+              "NAT rule translated-service %s has unsupported type %s and will be ignored",
+              service.getName(), service.getClass()));
+    }
+    return steps.build();
+  }
+
   /**
    * Returns a {@code Map} of names to {@link IpAccessList}s corresponding to specified {@link
    * AccessLayer}.

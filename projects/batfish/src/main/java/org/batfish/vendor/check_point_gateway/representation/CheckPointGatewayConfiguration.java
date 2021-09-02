@@ -1,7 +1,10 @@
 package org.batfish.vendor.check_point_gateway.representation;
 
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
+import static org.batfish.datamodel.transformation.Transformation.when;
+import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toHeaderSpace;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toIpAccessLists;
+import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toTransformationSteps;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -23,6 +26,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
@@ -32,10 +36,13 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
+import org.batfish.datamodel.transformation.Transformation;
+import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.vendor.ConversionContext;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.vendor.check_point_gateway.representation.BondingGroup.Mode;
@@ -47,7 +54,10 @@ import org.batfish.vendor.check_point_management.GatewayOrServer;
 import org.batfish.vendor.check_point_management.ManagementDomain;
 import org.batfish.vendor.check_point_management.ManagementPackage;
 import org.batfish.vendor.check_point_management.ManagementServer;
+import org.batfish.vendor.check_point_management.NatRule;
+import org.batfish.vendor.check_point_management.NatRuleOrSectionVisitor;
 import org.batfish.vendor.check_point_management.NatRulebase;
+import org.batfish.vendor.check_point_management.NatSection;
 import org.batfish.vendor.check_point_management.TypedManagementObject;
 import org.batfish.vendor.check_point_management.Uid;
 
@@ -193,7 +203,45 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
   /** Converts the given {@link NatRulebase} and applies it to this config. */
   @SuppressWarnings("unused")
   private void convertNatRulebase(NatRulebase natRulebase) {
-    // TODO
+    List<Transformation> ruleTransformations =
+        natRulebase.getRulebase().stream()
+            // Convert to stream of all rules
+            .flatMap(
+                ruleOrSection ->
+                    new NatRuleOrSectionVisitor<Stream<NatRule>>() {
+                      @Override
+                      public Stream<NatRule> visitNatRule(NatRule natRule) {
+                        return Stream.of(natRule);
+                      }
+
+                      @Override
+                      public Stream<NatRule> visitNatSection(NatSection natSection) {
+                        return natSection.getRulebase().stream();
+                      }
+                    }.visit(ruleOrSection))
+            .filter(NatRule::isEnabled)
+            .map(
+                natRule -> {
+                  HeaderSpace originalHeaderSpace =
+                      toHeaderSpace(
+                          _c.getIpSpaces(),
+                          natRulebase.getObjectsDictionary().get(natRule.getOriginalSource()),
+                          natRulebase.getObjectsDictionary().get(natRule.getOriginalDestination()),
+                          natRulebase.getObjectsDictionary().get(natRule.getOriginalService()),
+                          getWarnings());
+                  List<TransformationStep> steps =
+                      toTransformationSteps(
+                          natRulebase.getObjectsDictionary().get(natRule.getTranslatedSource()),
+                          natRulebase
+                              .getObjectsDictionary()
+                              .get(natRule.getTranslatedDestination()),
+                          natRulebase.getObjectsDictionary().get(natRule.getTranslatedService()),
+                          getWarnings());
+                  // TODO Handle natRule.getMethod()
+                  return when(new MatchHeaderSpace(originalHeaderSpace)).apply(steps).build();
+                })
+            .collect(ImmutableList.toImmutableList());
+    // TODO Apply transformations to appropriate interfaces
   }
 
   private @Nonnull Optional<ManagementPackage> findAccessPackage(
