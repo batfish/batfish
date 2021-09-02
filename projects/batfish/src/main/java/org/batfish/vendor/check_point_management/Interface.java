@@ -13,14 +13,6 @@ import org.batfish.datamodel.Ip;
 
 /** An interface as shown in show-gateways-and-servers */
 public final class Interface implements Serializable {
-
-  /**
-   * Instance of this class populated with arbitrary values. Useful for generating a valid object
-   * for use in tests.
-   */
-  public static final Interface TEST_INSTANCE =
-      new Interface("eth0", InterfaceTopology.TEST_INSTANCE, Ip.parse("10.0.1.1"), 24);
-
   @JsonCreator
   private static @Nonnull Interface create(
       @JsonProperty(PROP_NAME) @Nullable String name,

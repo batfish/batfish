@@ -12,6 +12,13 @@ import org.batfish.datamodel.Ip;
 import org.junit.Test;
 
 public class InterfaceTest {
+  /**
+   * Instance of this class populated with arbitrary values. Useful for generating a valid object
+   * for use in tests.
+   */
+  public static final Interface TEST_INSTANCE =
+      new Interface("eth0", InterfaceTopologyTest.TEST_INSTANCE, Ip.parse("10.0.1.1"), 24);
+
   @Test
   public void testJacksonDeserialization() throws JsonProcessingException {
     String input =
@@ -29,7 +36,7 @@ public class InterfaceTest {
 
   @Test
   public void testJavaSerialization() {
-    Interface obj = Interface.TEST_INSTANCE;
+    Interface obj = TEST_INSTANCE;
     assertEquals(obj, SerializationUtils.clone(obj));
   }
 

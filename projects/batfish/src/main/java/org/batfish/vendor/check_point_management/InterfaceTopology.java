@@ -11,13 +11,6 @@ import javax.annotation.Nullable;
 
 /** An interface topology as shown in show-gateways-and-servers */
 public class InterfaceTopology implements Serializable {
-
-  /**
-   * Instance of this class populated with arbitrary values. Useful for generating a valid object
-   * for use in tests.
-   */
-  public static final InterfaceTopology TEST_INSTANCE = new InterfaceTopology(false);
-
   @JsonCreator
   private static @Nonnull InterfaceTopology create(
       @JsonProperty(PROP_LEADS_TO_INTERNET) @Nullable Boolean leadsToInternet) {

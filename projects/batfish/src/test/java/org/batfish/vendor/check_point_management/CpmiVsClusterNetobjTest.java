@@ -107,7 +107,7 @@ public final class CpmiVsClusterNetobjTest {
                 ImmutableList.of(),
                 Ip.ZERO,
                 "foo",
-                ImmutableList.of(Interface.TEST_INSTANCE),
+                ImmutableList.of(InterfaceTest.TEST_INSTANCE),
                 GatewayOrServerPolicy.empty(),
                 Uid.of("0")))
         .addEqualityGroup(
