@@ -11,10 +11,10 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 
 /** A single host address. */
-public final class Host extends AddressSpace {
+public final class Host extends TypedManagementObject implements AddressSpace {
 
   @Override
-  public <T> T accept(ConcreteSrcOrDstVisitor<T> visitor) {
+  public <T> T accept(AddressSpaceVisitor<T> visitor) {
     return visitor.visitHost(this);
   }
 

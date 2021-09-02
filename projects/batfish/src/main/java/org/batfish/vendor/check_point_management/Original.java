@@ -6,7 +6,6 @@ package org.batfish.vendor.check_point_management;
  * retained for that field when applying the rule.
  */
 public final class Original extends Global {
-
   Original(Uid uid) {
     super(NAME_ORIGINAL, uid);
   }
