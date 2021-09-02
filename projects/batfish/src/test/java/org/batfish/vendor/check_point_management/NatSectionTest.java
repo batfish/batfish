@@ -14,6 +14,9 @@ import org.junit.Test;
 /** Test of {@link NatSection}. */
 public final class NatSectionTest {
 
+  public static final NatSection TEST_INSTANCE =
+      new NatSection("foo", ImmutableList.of(), Uid.of("0"));
+
   @Test
   public void testJacksonDeserialization() throws JsonProcessingException {
     String input =
@@ -26,12 +29,13 @@ public final class NatSectionTest {
             + "}"; // NatSection
     assertThat(
         BatfishObjectMapper.ignoreUnknownMapper().readValue(input, NatSection.class),
-        equalTo(new NatSection("foo", ImmutableList.of(), Uid.of("0"))));
+        equalTo(TEST_INSTANCE));
   }
 
   @Test
   public void testJavaSerialization() {
-    NatSection obj = new NatSection("foo", ImmutableList.of(), Uid.of("0"));
+    NatSection obj =
+        new NatSection("foo", ImmutableList.of(NatRuleTest.TEST_INSTANCE), Uid.of("0"));
     assertEquals(obj, SerializationUtils.clone(obj));
   }
 

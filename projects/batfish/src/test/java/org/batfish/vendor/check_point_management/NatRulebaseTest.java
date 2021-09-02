@@ -108,7 +108,7 @@ public final class NatRulebaseTest {
         new NatRulebase(
             ImmutableMap.of(
                 Uid.of("0"), new AddressRange(null, null, null, null, "foo", Uid.of("0"))),
-            ImmutableList.of(),
+            ImmutableList.of(NatRuleTest.TEST_INSTANCE, NatSectionTest.TEST_INSTANCE),
             Uid.of("1"));
     assertEquals(obj, SerializationUtils.clone(obj));
   }
