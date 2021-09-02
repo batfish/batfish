@@ -1072,7 +1072,7 @@ public class CheckPointGatewayGrammarTest {
             Uid.of("1"),
             new SimpleGateway(
                 Ip.parse("10.0.0.1"),
-                "access_rules", // Any config will work, just converting management objects
+                access_rules,
                 ImmutableList.of(),
                 new GatewayOrServerPolicy("p1", null),
                 Uid.of("1")));

@@ -138,7 +138,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     }
     ManagementPackage pakij = maybePackage.get();
 
-    convertPackageObjects(pakij);
+    convertPackage(pakij);
   }
 
   private void convertAccessLayers(List<AccessLayer> accessLayers) {
@@ -192,10 +192,10 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
   }
 
   /**
-   * Converts all objects in the specified package to their VI model equivalent and adds them to the
+   * Converts constructs in the specified package to their VI model equivalent and adds them to the
    * VI configuration.
    */
-  private void convertPackageObjects(@Nullable ManagementPackage pakij) {
+  private void convertPackage(@Nullable ManagementPackage pakij) {
     Optional.ofNullable(pakij.getNatRulebase())
         .ifPresent(natRulebase -> convertObjects(natRulebase.getObjectsDictionary()));
     pakij.getAccessLayers().stream()
