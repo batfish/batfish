@@ -1,92 +1,52 @@
 package org.batfish.vendor.check_point_gateway.representation;
 
+import static org.batfish.datamodel.transformation.Transformation.when;
+import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.appliesToGateway;
+import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toHeaderSpace;
+
 import com.google.common.collect.ImmutableList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.IpProtocol;
-import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.vendor.check_point_management.CpmiAnyObject;
-import org.batfish.vendor.check_point_management.NatTranslatedAddress;
+import org.batfish.vendor.check_point_management.GatewayOrServer;
+import org.batfish.vendor.check_point_management.Host;
+import org.batfish.vendor.check_point_management.Machine;
+import org.batfish.vendor.check_point_management.MachineVisitor;
+import org.batfish.vendor.check_point_management.NatRule;
+import org.batfish.vendor.check_point_management.NatRuleOrSectionVisitor;
+import org.batfish.vendor.check_point_management.NatRulebase;
+import org.batfish.vendor.check_point_management.NatSection;
 import org.batfish.vendor.check_point_management.NatTranslatedService;
 import org.batfish.vendor.check_point_management.NatTranslatedServiceVisitor;
 import org.batfish.vendor.check_point_management.Original;
-import org.batfish.vendor.check_point_management.Service;
 import org.batfish.vendor.check_point_management.ServiceGroup;
 import org.batfish.vendor.check_point_management.ServiceTcp;
-import org.batfish.vendor.check_point_management.ServiceVisitor;
+import org.batfish.vendor.check_point_management.TypedManagementObject;
 
 public class CheckpointNatConversions {
-  private static final OriginalServiceToHeaderSpaceConstraints
-      ORIGINAL_SERVICE_TO_HEADER_SPACE_CONSTRAINTS = new OriginalServiceToHeaderSpaceConstraints();
   private static final TranslatedServiceToTransformationSteps
-      TRANSLATED_SERVICE_TO_TRANSFORMATION_STEPS = new TranslatedServiceToTransformationSteps();
+      MANUAL_HIDE_TRANSLATED_SERVICE_TO_TRANSFORMATION_STEPS =
+          new TranslatedServiceToTransformationSteps();
+  private static final MachineToTransformationSteps MANUAL_HIDE_MACHINE_TO_TRANSFORMATION_STEPS =
+      new MachineToTransformationSteps();
 
-  /**
-   * Restricts the given {@link HeaderSpace.Builder} to protocols/ports matching the given {@link
-   * Service}.
-   */
-  public static void applyOriginalServiceConstraint(Service service, HeaderSpace.Builder hsb) {
-    ORIGINAL_SERVICE_TO_HEADER_SPACE_CONSTRAINTS.setHeaderSpace(hsb);
-    service.accept(ORIGINAL_SERVICE_TO_HEADER_SPACE_CONSTRAINTS);
-    ORIGINAL_SERVICE_TO_HEADER_SPACE_CONSTRAINTS.setHeaderSpace(null);
-  }
-
-  public static @Nonnull List<TransformationStep> getServiceTransformationSteps(
+  public static @Nonnull List<TransformationStep> getManualHideServiceTransformationSteps(
       NatTranslatedService service) {
-    return service.accept(TRANSLATED_SERVICE_TO_TRANSFORMATION_STEPS);
+    return service.accept(MANUAL_HIDE_TRANSLATED_SERVICE_TO_TRANSFORMATION_STEPS);
   }
 
-  public static @Nonnull List<TransformationStep> getSourceTransformationSteps(
-      NatTranslatedAddress source) {
-    // TODO: Implement visitor to convert translated source to transformation steps.
-    //       Will also be dependent on whether transformation is incoming or outgoing.
-    return ImmutableList.of();
-  }
-
-  public static @Nonnull List<TransformationStep> getDestinationTransformationSteps(
-      NatTranslatedAddress destination) {
-    // TODO: Implement visitor to convert translated destination to transformation steps.
-    //       Will also be dependent on whether transformation is incoming or outgoing.
-    return ImmutableList.of();
-  }
-
-  /**
-   * Applies a {@link Service} to its current {@link HeaderSpace.Builder}. Does not modify the
-   * headerspace if the given service object is unconstrained.
-   */
-  private static class OriginalServiceToHeaderSpaceConstraints implements ServiceVisitor<Void> {
-    private @Nullable HeaderSpace.Builder _hsb;
-
-    private OriginalServiceToHeaderSpaceConstraints() {}
-
-    private void setHeaderSpace(@Nullable HeaderSpace.Builder hsb) {
-      _hsb = hsb;
-    }
-
-    @Override
-    public Void visitCpmiAnyObject(CpmiAnyObject cpmiAnyObject) {
-      // Does not constrain headerspace
-      return null;
-    }
-
-    @Override
-    public Void visitServiceGroup(ServiceGroup serviceGroup) {
-      // TODO Implement
-      return null;
-    }
-
-    @Override
-    public Void visitServiceTcp(ServiceTcp serviceTcp) {
-      // TODO Is this correct/sufficient? Does it need to modify src port?
-      //      Also, need to verify that port is an integer and decide what to do if not
-      assert _hsb != null;
-      _hsb.setIpProtocols(IpProtocol.TCP);
-      _hsb.setDstPorts(SubRange.singleton(Integer.parseInt(serviceTcp.getPort())));
-      return null;
-    }
+  public static @Nonnull List<TransformationStep> getManualHideSourceTransformationSteps(
+      Machine translatedSource) {
+    return translatedSource.accept(MANUAL_HIDE_MACHINE_TO_TRANSFORMATION_STEPS);
   }
 
   // TODO Implement
@@ -114,5 +74,118 @@ public class CheckpointNatConversions {
     public List<TransformationStep> visitServiceTcp(ServiceTcp serviceTcp) {
       return ImmutableList.of();
     }
+  }
+
+  private static class MachineToTransformationSteps
+      implements MachineVisitor<List<TransformationStep>> {
+
+    @Override
+    public List<TransformationStep> visitGatewayOrServer(GatewayOrServer gatewayOrServer) {
+      // TODO: implement
+      return ImmutableList.of();
+    }
+
+    @Override
+    public List<TransformationStep> visitHost(Host host) {
+      return ImmutableList.of(TransformationStep.assignSourceIp(host.getIpv4Address()));
+    }
+  }
+
+  static @Nonnull Optional<List<TransformationStep>> manualHideTransformationSteps(
+      TypedManagementObject src,
+      TypedManagementObject dst,
+      TypedManagementObject service,
+      Warnings warnings) {
+    ImmutableList.Builder<TransformationStep> steps = ImmutableList.builder();
+    if (!checkValidManualHide(src, dst, service, warnings)) {
+      return Optional.empty();
+    }
+    steps.addAll(getManualHideSourceTransformationSteps((Machine) src));
+    steps.addAll(getManualHideServiceTransformationSteps((NatTranslatedService) service));
+    return Optional.of(steps.build());
+  }
+
+  private static boolean checkValidManualHide(
+      TypedManagementObject src,
+      TypedManagementObject dst,
+      TypedManagementObject service,
+      Warnings warnings) {
+    boolean valid = true;
+    if (!(src instanceof Machine)) {
+      warnings.redFlag(
+          String.format(
+              "Manual Hide NAT rule translated-source %s has unsupported type %s and will be"
+                  + " ignored",
+              src.getName(), src.getClass()));
+      valid = false;
+    }
+    if (!(dst instanceof Original)) {
+      warnings.redFlag(
+          String.format(
+              "Manual Hide NAT rule translated-destination %s has unsupported type %s and will be"
+                  + " ignored",
+              dst.getName(), dst.getClass()));
+      valid = false;
+    }
+    if (!(service instanceof NatTranslatedService)) {
+      warnings.redFlag(
+          String.format(
+              "Manual Hide NAT rule translated-service %s has unsupported type %s and will be"
+                  + " ignored",
+              service.getName(), service.getClass()));
+      valid = false;
+    }
+    return valid;
+  }
+
+  private static @Nonnull Stream<NatRule> getNatRules(
+      NatRulebase natRulebase, GatewayOrServer gateway) {
+    return natRulebase.getRulebase().stream()
+        // Convert to stream of all rules
+        .flatMap(
+            ruleOrSection ->
+                new NatRuleOrSectionVisitor<Stream<NatRule>>() {
+                  @Override
+                  public Stream<NatRule> visitNatRule(NatRule natRule) {
+                    return Stream.of(natRule);
+                  }
+
+                  @Override
+                  public Stream<NatRule> visitNatSection(NatSection natSection) {
+                    return natSection.getRulebase().stream();
+                  }
+                }.visit(ruleOrSection))
+        .filter(NatRule::isEnabled)
+        .filter(natRule -> appliesToGateway(natRule.getInstallOn(), gateway));
+  }
+
+  static @Nonnull Stream<? extends NatRule> getManualNatRules(
+      NatRulebase natRulebase, GatewayOrServer gateway) {
+    return getNatRules(natRulebase, gateway).filter(rule -> !rule.isAutoGenerated());
+  }
+
+  static @Nonnull Optional<Transformation> manualHideRuleTransformation(
+      NatRulebase natRulebase,
+      org.batfish.vendor.check_point_management.NatRule natRule,
+      Map<String, IpSpace> ipSpaces,
+      Warnings warnings) {
+    Optional<HeaderSpace> maybeOriginalHeaderSpace =
+        toHeaderSpace(
+            ipSpaces,
+            natRulebase.getObjectsDictionary().get(natRule.getOriginalSource()),
+            natRulebase.getObjectsDictionary().get(natRule.getOriginalDestination()),
+            natRulebase.getObjectsDictionary().get(natRule.getOriginalService()),
+            warnings);
+    Optional<List<TransformationStep>> maybeSteps =
+        manualHideTransformationSteps(
+            natRulebase.getObjectsDictionary().get(natRule.getTranslatedSource()),
+            natRulebase.getObjectsDictionary().get(natRule.getTranslatedDestination()),
+            natRulebase.getObjectsDictionary().get(natRule.getTranslatedService()),
+            warnings);
+    if (!maybeOriginalHeaderSpace.isPresent() || !maybeSteps.isPresent()) {
+      return Optional.empty();
+    }
+    return Optional.of(
+        when(new MatchHeaderSpace(maybeOriginalHeaderSpace.get())).apply(maybeSteps.get()).build());
   }
 }

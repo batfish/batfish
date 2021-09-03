@@ -1,10 +1,9 @@
 package org.batfish.vendor.check_point_gateway.representation;
 
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
-import static org.batfish.datamodel.transformation.Transformation.when;
-import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toHeaderSpace;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toIpAccessLists;
-import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toTransformationSteps;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getManualNatRules;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.manualHideRuleTransformation;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -13,6 +12,7 @@ import com.google.common.collect.Maps;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -26,7 +26,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
-import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.Interface.Builder;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
@@ -36,13 +36,11 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.transformation.Transformation;
-import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.vendor.ConversionContext;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.vendor.check_point_gateway.representation.BondingGroup.Mode;
@@ -54,10 +52,8 @@ import org.batfish.vendor.check_point_management.GatewayOrServer;
 import org.batfish.vendor.check_point_management.ManagementDomain;
 import org.batfish.vendor.check_point_management.ManagementPackage;
 import org.batfish.vendor.check_point_management.ManagementServer;
-import org.batfish.vendor.check_point_management.NatRule;
-import org.batfish.vendor.check_point_management.NatRuleOrSectionVisitor;
+import org.batfish.vendor.check_point_management.NatMethod;
 import org.batfish.vendor.check_point_management.NatRulebase;
-import org.batfish.vendor.check_point_management.NatSection;
 import org.batfish.vendor.check_point_management.TypedManagementObject;
 import org.batfish.vendor.check_point_management.Uid;
 
@@ -133,7 +129,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
   /** Converts management server settings applicable to this configuration */
   private void convertManagementConfig(CheckpointManagementConfiguration mgmtConfig) {
     // Find gateway
-    Optional<Map.Entry<ManagementDomain, GatewayOrServer>> maybeGatewayAndDomain =
+    Optional<Entry<ManagementDomain, GatewayOrServer>> maybeGatewayAndDomain =
         findGatewayAndDomain(mgmtConfig);
     if (!maybeGatewayAndDomain.isPresent()) {
       return;
@@ -149,7 +145,8 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
 
     convertAddressSpaces(pakij);
     convertAccessLayers(pakij.getAccessLayers());
-    Optional.ofNullable(pakij.getNatRulebase()).ifPresent(this::convertNatRulebase);
+    Optional.ofNullable(pakij.getNatRulebase())
+        .ifPresent(natRulebase -> convertNatRulebase(natRulebase, gateway));
   }
 
   private void convertAccessLayers(List<AccessLayer> accessLayers) {
@@ -190,7 +187,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
   /**
    * Converts all objects that can be used as an
    * {org.batfish.vendor.check_point_management.AddressSpace} in the given package to an {@link
-   * org.batfish.datamodel.IpSpace}
+   * IpSpace}
    */
   private void convertAddressSpaces(@Nullable ManagementPackage pakij) {
     Optional.ofNullable(pakij.getNatRulebase())
@@ -202,44 +199,16 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
 
   /** Converts the given {@link NatRulebase} and applies it to this config. */
   @SuppressWarnings("unused")
-  private void convertNatRulebase(NatRulebase natRulebase) {
-    List<Transformation> ruleTransformations =
-        natRulebase.getRulebase().stream()
-            // Convert to stream of all rules
-            .flatMap(
-                ruleOrSection ->
-                    new NatRuleOrSectionVisitor<Stream<NatRule>>() {
-                      @Override
-                      public Stream<NatRule> visitNatRule(NatRule natRule) {
-                        return Stream.of(natRule);
-                      }
-
-                      @Override
-                      public Stream<NatRule> visitNatSection(NatSection natSection) {
-                        return natSection.getRulebase().stream();
-                      }
-                    }.visit(ruleOrSection))
-            .filter(NatRule::isEnabled)
+  private void convertNatRulebase(NatRulebase natRulebase, GatewayOrServer gateway) {
+    List<Transformation> manualHideRuleTransformations =
+        getManualNatRules(natRulebase, gateway)
+            .filter(rule -> rule.getMethod() == NatMethod.HIDE)
             .map(
-                natRule -> {
-                  HeaderSpace originalHeaderSpace =
-                      toHeaderSpace(
-                          _c.getIpSpaces(),
-                          natRulebase.getObjectsDictionary().get(natRule.getOriginalSource()),
-                          natRulebase.getObjectsDictionary().get(natRule.getOriginalDestination()),
-                          natRulebase.getObjectsDictionary().get(natRule.getOriginalService()),
-                          getWarnings());
-                  List<TransformationStep> steps =
-                      toTransformationSteps(
-                          natRulebase.getObjectsDictionary().get(natRule.getTranslatedSource()),
-                          natRulebase
-                              .getObjectsDictionary()
-                              .get(natRule.getTranslatedDestination()),
-                          natRulebase.getObjectsDictionary().get(natRule.getTranslatedService()),
-                          getWarnings());
-                  // TODO Handle natRule.getMethod()
-                  return when(new MatchHeaderSpace(originalHeaderSpace)).apply(steps).build();
-                })
+                natRule ->
+                    manualHideRuleTransformation(
+                        natRulebase, natRule, _c.getIpSpaces(), getWarnings()))
+            .filter(Optional::isPresent)
+            .map(Optional::get)
             .collect(ImmutableList.toImmutableList());
     // TODO Apply transformations to appropriate interfaces
   }
@@ -264,7 +233,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     return maybePackage;
   }
 
-  private @Nonnull Optional<Map.Entry<ManagementDomain, GatewayOrServer>> findGatewayAndDomain(
+  private @Nonnull Optional<Entry<ManagementDomain, GatewayOrServer>> findGatewayAndDomain(
       CheckpointManagementConfiguration mgmtConfig) {
     // TODO handle linking to secondary IP addresses, if that is allowed
     Set<Ip> ips =
@@ -363,7 +332,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
 
   org.batfish.datamodel.Interface toInterface(Interface iface, Vrf vrf) {
     String ifaceName = iface.getName();
-    org.batfish.datamodel.Interface.Builder newIface =
+    Builder newIface =
         org.batfish.datamodel.Interface.builder()
             .setName(ifaceName)
             .setOwner(_c)
