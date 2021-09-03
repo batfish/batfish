@@ -2,6 +2,8 @@ package org.batfish.vendor.check_point_gateway.representation;
 
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toIpAccessLists;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getManualNatRules;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.manualHideRuleTransformation;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -10,6 +12,7 @@ import com.google.common.collect.Maps;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -22,6 +25,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
+import org.batfish.datamodel.Interface.Builder;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
@@ -35,6 +39,7 @@ import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
+import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.vendor.ConversionContext;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.vendor.check_point_gateway.representation.BondingGroup.Mode;
@@ -46,6 +51,7 @@ import org.batfish.vendor.check_point_management.GatewayOrServer;
 import org.batfish.vendor.check_point_management.ManagementDomain;
 import org.batfish.vendor.check_point_management.ManagementPackage;
 import org.batfish.vendor.check_point_management.ManagementServer;
+import org.batfish.vendor.check_point_management.NatMethod;
 import org.batfish.vendor.check_point_management.NatRulebase;
 import org.batfish.vendor.check_point_management.TypedManagementObject;
 import org.batfish.vendor.check_point_management.Uid;
@@ -123,7 +129,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
   /** Converts management server settings applicable to this configuration */
   private void convertManagementConfig(CheckpointManagementConfiguration mgmtConfig) {
     // Find gateway
-    Optional<Map.Entry<ManagementDomain, GatewayOrServer>> maybeGatewayAndDomain =
+    Optional<Entry<ManagementDomain, GatewayOrServer>> maybeGatewayAndDomain =
         findGatewayAndDomain(mgmtConfig);
     if (!maybeGatewayAndDomain.isPresent()) {
       return;
@@ -135,7 +141,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     if (!maybePackage.isPresent()) {
       return;
     }
-    convertPackage(maybePackage.get());
+    convertPackage(maybePackage.get(), gateway);
   }
 
   private void convertAccessLayers(List<AccessLayer> accessLayers) {
@@ -197,10 +203,10 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
    * Convert constructs in the specified package to their VI model equivalent and add them to the VI
    * configuration.
    */
-  private void convertPackage(ManagementPackage pakij) {
+  private void convertPackage(ManagementPackage pakij, GatewayOrServer gateway) {
     convertObjects(pakij);
     convertAccessLayers(pakij.getAccessLayers());
-    Optional.ofNullable(pakij.getNatRulebase()).ifPresent(this::convertNatRulebase);
+    Optional.ofNullable(pakij.getNatRulebase()).ifPresent(r -> convertNatRulebase(r, gateway));
   }
 
   private void convertObjects(ManagementPackage pakij) {
@@ -213,8 +219,19 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
 
   /** Converts the given {@link NatRulebase} and applies it to this config. */
   @SuppressWarnings("unused")
-  private void convertNatRulebase(NatRulebase natRulebase) {
-    // TODO
+  private void convertNatRulebase(NatRulebase natRulebase, GatewayOrServer gateway) {
+    List<Transformation> manualHideRuleTransformations =
+        getManualNatRules(natRulebase, gateway)
+            .filter(rule -> rule.getMethod() == NatMethod.HIDE)
+            .map(natRule -> manualHideRuleTransformation(natRulebase, natRule, getWarnings()))
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .collect(ImmutableList.toImmutableList());
+    if (getManualNatRules(natRulebase, gateway)
+        .anyMatch(rule -> rule.getMethod() != NatMethod.HIDE)) {
+      _w.redFlag("Non-HIDE NAT rules are unsupported");
+    }
+    // TODO Apply transformations to appropriate interfaces
   }
 
   private @Nonnull Optional<ManagementPackage> findAccessPackage(
@@ -237,7 +254,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     return maybePackage;
   }
 
-  private @Nonnull Optional<Map.Entry<ManagementDomain, GatewayOrServer>> findGatewayAndDomain(
+  private @Nonnull Optional<Entry<ManagementDomain, GatewayOrServer>> findGatewayAndDomain(
       CheckpointManagementConfiguration mgmtConfig) {
     // TODO handle linking to secondary IP addresses, if that is allowed
     Set<Ip> ips =
@@ -336,7 +353,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
 
   org.batfish.datamodel.Interface toInterface(Interface iface, Vrf vrf) {
     String ifaceName = iface.getName();
-    org.batfish.datamodel.Interface.Builder newIface =
+    Builder newIface =
         org.batfish.datamodel.Interface.builder()
             .setName(ifaceName)
             .setOwner(_c)

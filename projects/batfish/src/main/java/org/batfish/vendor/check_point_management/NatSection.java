@@ -12,6 +12,11 @@ import javax.annotation.Nullable;
 
 public final class NatSection extends NamedManagementObject implements NatRuleOrSection {
 
+  @Override
+  public <T> T accept(NatRuleOrSectionVisitor<T> visitor) {
+    return visitor.visitNatSection(this);
+  }
+
   public @Nonnull List<NatRule> getRulebase() {
     return _rulebase;
   }
