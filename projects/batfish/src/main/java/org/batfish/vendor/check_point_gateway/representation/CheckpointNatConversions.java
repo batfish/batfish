@@ -43,6 +43,10 @@ public class CheckpointNatConversions {
     return translatedSource.accept(MANUAL_HIDE_MACHINE_TO_TRANSFORMATION_STEPS);
   }
 
+  /**
+   * Visitor that gives the transformation steps for the translated-source or translated-destination
+   * of a NAT rule.
+   */
   private static class MachineToTransformationSteps
       implements MachineVisitor<List<TransformationStep>> {
 
