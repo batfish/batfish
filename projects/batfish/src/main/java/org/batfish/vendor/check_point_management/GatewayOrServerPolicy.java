@@ -81,10 +81,10 @@ public final class GatewayOrServerPolicy implements Serializable {
         .toString();
   }
 
-  private static final String PROP_ACCESS_POLICY_INSTALLED = "accessPolicyInstalled";
-  private static final String PROP_ACCESS_POLICY_NAME = "accessPolicyName";
-  private static final String PROP_THREAT_POLICY_INSTALLED = "threatPolicyInstalled";
-  private static final String PROP_THREAT_POLICY_NAME = "threatPolicyName";
+  private static final String PROP_ACCESS_POLICY_INSTALLED = "access-policy-installed";
+  private static final String PROP_ACCESS_POLICY_NAME = "access-policy-name";
+  private static final String PROP_THREAT_POLICY_INSTALLED = "threat-policy-installed";
+  private static final String PROP_THREAT_POLICY_NAME = "threat-policy-name";
 
   private final @Nullable String _accessPolicyName;
   private final @Nullable String _threatPolicyName;
