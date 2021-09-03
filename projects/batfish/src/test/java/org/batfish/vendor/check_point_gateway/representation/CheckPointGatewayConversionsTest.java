@@ -38,6 +38,7 @@ import org.batfish.vendor.check_point_management.AccessRuleOrSection;
 import org.batfish.vendor.check_point_management.AccessSection;
 import org.batfish.vendor.check_point_management.CpmiAnyObject;
 import org.batfish.vendor.check_point_management.Host;
+import org.batfish.vendor.check_point_management.NatSettings;
 import org.batfish.vendor.check_point_management.Network;
 import org.batfish.vendor.check_point_management.PolicyTargets;
 import org.batfish.vendor.check_point_management.RulebaseAction;
@@ -49,6 +50,8 @@ import org.junit.Test;
 /** Test of {@link CheckPointGatewayConversions}. */
 public final class CheckPointGatewayConversionsTest {
 
+  public static final NatSettings NAT_SETTINGS_TEST_INSTANCE =
+      new NatSettings(true, "gateway", "All", "hide");
   private static final Uid UID_ACCEPT = Uid.of("99997");
   private static final Uid UID_DROP = Uid.of("99998");
   private static final Uid UID_CPMI_ANY = Uid.of("99999");
@@ -60,13 +63,28 @@ public final class CheckPointGatewayConversionsTest {
       ImmutableMap.<Uid, TypedManagementObject>builder()
           .put(
               UID_NET0,
-              new Network("net0", Ip.parse("10.0.0.0"), Ip.parse("255.255.255.0"), UID_NET0))
+              new Network(
+                  "net0",
+                  NAT_SETTINGS_TEST_INSTANCE,
+                  Ip.parse("10.0.0.0"),
+                  Ip.parse("255.255.255.0"),
+                  UID_NET0))
           .put(
               UID_NET1,
-              new Network("net1", Ip.parse("10.0.1.0"), Ip.parse("255.255.255.0"), UID_NET1))
+              new Network(
+                  "net1",
+                  NAT_SETTINGS_TEST_INSTANCE,
+                  Ip.parse("10.0.1.0"),
+                  Ip.parse("255.255.255.0"),
+                  UID_NET1))
           .put(
               UID_NET2,
-              new Network("net2", Ip.parse("10.0.2.0"), Ip.parse("255.255.255.0"), UID_NET2))
+              new Network(
+                  "net2",
+                  NAT_SETTINGS_TEST_INSTANCE,
+                  Ip.parse("10.0.2.0"),
+                  Ip.parse("255.255.255.0"),
+                  UID_NET2))
           .put(UID_CPMI_ANY, CPMI_ANY)
           .put(UID_ACCEPT, new RulebaseAction("Accept", UID_ACCEPT, "Accept"))
           .put(UID_DROP, new RulebaseAction("Drop", UID_DROP, "Drop"))
@@ -226,8 +244,8 @@ public final class CheckPointGatewayConversionsTest {
     {
       assertThat(
           toHeaderSpace(
-              new Host(Ip.parse("1.1.1.1"), "source", uid),
-              new Host(Ip.parse("2.2.2.2"), "dest", uid),
+              new Host(Ip.parse("1.1.1.1"), NAT_SETTINGS_TEST_INSTANCE, "source", uid),
+              new Host(Ip.parse("2.2.2.2"), NAT_SETTINGS_TEST_INSTANCE, "dest", uid),
               new ServiceTcp("foo", "1", uid),
               warnings),
           equalTo(
@@ -249,7 +267,7 @@ public final class CheckPointGatewayConversionsTest {
   @Test
   public void testCheckValidHeaderSpaceInputs() {
     Uid uid = Uid.of("1");
-    TypedManagementObject addressSpace = new Host(Ip.ZERO, "foo", uid);
+    TypedManagementObject addressSpace = new Host(Ip.ZERO, NAT_SETTINGS_TEST_INSTANCE, "foo", uid);
     TypedManagementObject service = new ServiceTcp("foo", "1", uid);
     Warnings warnings = new Warnings();
 

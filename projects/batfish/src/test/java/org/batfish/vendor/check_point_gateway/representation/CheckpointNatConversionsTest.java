@@ -29,6 +29,7 @@ import org.batfish.vendor.check_point_management.Host;
 import org.batfish.vendor.check_point_management.NatMethod;
 import org.batfish.vendor.check_point_management.NatRule;
 import org.batfish.vendor.check_point_management.NatRulebase;
+import org.batfish.vendor.check_point_management.NatSettings;
 import org.batfish.vendor.check_point_management.Original;
 import org.batfish.vendor.check_point_management.PolicyTargets;
 import org.batfish.vendor.check_point_management.ServiceTcp;
@@ -39,6 +40,8 @@ import org.junit.Test;
 
 /** Test of {@link CheckpointNatConversions}. */
 public final class CheckpointNatConversionsTest {
+  public static final NatSettings NAT_SETTINGS_TEST_INSTANCE =
+      new NatSettings(true, "gateway", "All", "hide");
 
   @Test
   public void testGetApplicableNatRules() {
@@ -127,7 +130,7 @@ public final class CheckpointNatConversionsTest {
   @Test
   public void testCheckValidManualHide() {
     Uid uid = Uid.of("1");
-    TypedManagementObject addressSpace = new Host(Ip.ZERO, "foo", uid);
+    TypedManagementObject addressSpace = new Host(Ip.ZERO, NAT_SETTINGS_TEST_INSTANCE, "foo", uid);
     TypedManagementObject service = new ServiceTcp("foo", "1", uid);
     Warnings warnings = new Warnings();
 
@@ -149,7 +152,7 @@ public final class CheckpointNatConversionsTest {
       Uid hostUid = Uid.of("1");
       Ip hostIp = Ip.parse("1.1.1.1");
       String hostname = "host";
-      Host host = new Host(hostIp, hostname, hostUid);
+      Host host = new Host(hostIp, NAT_SETTINGS_TEST_INSTANCE, hostname, hostUid);
       assertThat(
           manualHideTransformationSteps(host, ORIG, ORIG, warnings),
           equalTo(
@@ -165,7 +168,7 @@ public final class CheckpointNatConversionsTest {
     Uid hostUid = Uid.of("1");
     Ip hostIp = Ip.parse("1.1.1.1");
     String hostname = "host";
-    Host host = new Host(hostIp, hostname, hostUid);
+    Host host = new Host(hostIp, NAT_SETTINGS_TEST_INSTANCE, hostname, hostUid);
     {
       NatRule rule =
           new NatRule(
