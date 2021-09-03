@@ -46,7 +46,8 @@ import org.batfish.vendor.check_point_management.TypedManagementObject;
 import org.batfish.vendor.check_point_management.Uid;
 import org.junit.Test;
 
-public class CheckPointGatewayConversionsTest {
+/** Test of {@link CheckPointGatewayConversions}. */
+public final class CheckPointGatewayConversionsTest {
 
   private static final Uid UID_ACCEPT = Uid.of("99997");
   private static final Uid UID_DROP = Uid.of("99998");
@@ -243,9 +244,8 @@ public class CheckPointGatewayConversionsTest {
                       .build())));
     }
     {
-      CpmiAnyObject any = new CpmiAnyObject(uid);
       assertThat(
-          toHeaderSpace(ImmutableMap.of(), any, any, any, warnings),
+          toHeaderSpace(ImmutableMap.of(), CPMI_ANY, CPMI_ANY, CPMI_ANY, warnings),
           equalTo(Optional.of(HeaderSpace.builder().build())));
     }
   }
