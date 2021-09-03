@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -23,33 +24,65 @@ public final class CpmiHostCkpTest {
             + "\"uid\":\"0\","
             + "\"name\":\"foo\","
             + "\"ipv4-address\":\"0.0.0.0\","
+            + "\"interfaces\": [],"
             + "\"policy\":{}"
             + "}";
     assertThat(
         BatfishObjectMapper.ignoreUnknownMapper().readValue(input, CpmiHostCkp.class),
-        equalTo(new CpmiHostCkp(Ip.ZERO, "foo", GatewayOrServerPolicy.empty(), Uid.of("0"))));
+        equalTo(
+            new CpmiHostCkp(
+                Ip.ZERO, ImmutableList.of(), "foo", GatewayOrServerPolicy.empty(), Uid.of("0"))));
   }
 
   @Test
   public void testJavaSerialization() {
-    CpmiHostCkp obj = new CpmiHostCkp(Ip.ZERO, "foo", GatewayOrServerPolicy.empty(), Uid.of("0"));
+    CpmiHostCkp obj =
+        new CpmiHostCkp(
+            Ip.ZERO,
+            ImmutableList.of(InterfaceTest.TEST_INSTANCE),
+            "foo",
+            GatewayOrServerPolicy.empty(),
+            Uid.of("0"));
     assertEquals(obj, SerializationUtils.clone(obj));
   }
 
   @Test
   public void testEquals() {
-    CpmiHostCkp obj = new CpmiHostCkp(Ip.ZERO, "foo", GatewayOrServerPolicy.empty(), Uid.of("0"));
+    CpmiHostCkp obj =
+        new CpmiHostCkp(
+            Ip.ZERO, ImmutableList.of(), "foo", GatewayOrServerPolicy.empty(), Uid.of("0"));
     new EqualsTester()
         .addEqualityGroup(
-            obj, new CpmiHostCkp(Ip.ZERO, "foo", GatewayOrServerPolicy.empty(), Uid.of("0")))
+            obj,
+            new CpmiHostCkp(
+                Ip.ZERO, ImmutableList.of(), "foo", GatewayOrServerPolicy.empty(), Uid.of("0")))
         .addEqualityGroup(
-            new CpmiHostCkp(Ip.parse("0.0.0.1"), "foo", GatewayOrServerPolicy.empty(), Uid.of("0")))
+            new CpmiHostCkp(
+                Ip.parse("0.0.0.1"),
+                ImmutableList.of(),
+                "foo",
+                GatewayOrServerPolicy.empty(),
+                Uid.of("0")))
         .addEqualityGroup(
-            new CpmiHostCkp(Ip.ZERO, "bar", GatewayOrServerPolicy.empty(), Uid.of("0")))
+            new CpmiHostCkp(
+                Ip.ZERO, ImmutableList.of(), "bar", GatewayOrServerPolicy.empty(), Uid.of("0")))
         .addEqualityGroup(
-            new CpmiHostCkp(Ip.ZERO, "foo", new GatewayOrServerPolicy("t1", null), Uid.of("0")))
+            new CpmiHostCkp(
+                Ip.ZERO,
+                ImmutableList.of(),
+                "foo",
+                new GatewayOrServerPolicy("t1", null),
+                Uid.of("0")))
         .addEqualityGroup(
-            new CpmiHostCkp(Ip.ZERO, "foo", GatewayOrServerPolicy.empty(), Uid.of("1")))
+            new CpmiHostCkp(
+                Ip.ZERO, ImmutableList.of(), "foo", GatewayOrServerPolicy.empty(), Uid.of("1")))
+        .addEqualityGroup(
+            new CpmiHostCkp(
+                Ip.ZERO,
+                ImmutableList.of(InterfaceTest.TEST_INSTANCE),
+                "foo",
+                GatewayOrServerPolicy.empty(),
+                Uid.of("0")))
         .testEquals();
   }
 }

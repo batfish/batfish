@@ -43,6 +43,7 @@ public final class GatewaysAndServersTest {
             + "\"uid\":\"2\","
             + "\"name\":\"foo\","
             + "\"ipv4-address\":\"0.0.0.0\","
+            + "\"interfaces\":[],"
             + "\"policy\": {}"
             + "}," // object: CpmiHostCkp
             + "{" // object: CpmiVsClusterNetobj
@@ -121,7 +122,12 @@ public final class GatewaysAndServersTest {
                             Uid.of("1")))
                     .put(
                         Uid.of("2"),
-                        new CpmiHostCkp(Ip.ZERO, "foo", GatewayOrServerPolicy.empty(), Uid.of("2")))
+                        new CpmiHostCkp(
+                            Ip.ZERO,
+                            ImmutableList.of(),
+                            "foo",
+                            GatewayOrServerPolicy.empty(),
+                            Uid.of("2")))
                     .put(
                         Uid.of("3"),
                         new CpmiVsClusterNetobj(
