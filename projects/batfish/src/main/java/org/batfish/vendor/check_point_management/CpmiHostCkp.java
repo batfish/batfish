@@ -20,17 +20,18 @@ public final class CpmiHostCkp extends GatewayOrServer {
       @JsonProperty(PROP_NAME) @Nullable String name,
       @JsonProperty(PROP_POLICY) @Nullable GatewayOrServerPolicy policy,
       @JsonProperty(PROP_UID) @Nullable Uid uid) {
+    checkArgument(interfaces != null, "Missing %s", PROP_INTERFACES);
     checkArgument(ipv4Address != null, "Missing %s", PROP_IPV4_ADDRESS);
     checkArgument(name != null, "Missing %s", PROP_NAME);
     checkArgument(policy != null, "Missing %s", PROP_POLICY);
     checkArgument(uid != null, "Missing %s", PROP_UID);
-    return new CpmiHostCkp(interfaces, ipv4Address, name, policy, uid);
+    return new CpmiHostCkp(ipv4Address, interfaces, name, policy, uid);
   }
 
   @VisibleForTesting
   CpmiHostCkp(
-      List<Interface> interfaces,
       Ip ipv4Address,
+      List<Interface> interfaces,
       String name,
       GatewayOrServerPolicy policy,
       Uid uid) {
