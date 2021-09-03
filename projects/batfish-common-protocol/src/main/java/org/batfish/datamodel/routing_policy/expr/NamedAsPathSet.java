@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsPathAccessList;
-import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.HasReadableAsPath;
 import org.batfish.datamodel.routing_policy.Environment;
 
 public final class NamedAsPathSet extends AsPathSetExpr {
@@ -50,16 +50,18 @@ public final class NamedAsPathSet extends AsPathSetExpr {
     if (list != null) {
       boolean match = false;
       AsPath inputAsPath = null;
-      if (environment.getUseOutputAttributes()
-          && environment.getOutputRoute() instanceof BgpRoute.Builder<?, ?>) {
-        BgpRoute.Builder<?, ?> bgpRouteBuilder =
-            (BgpRoute.Builder<?, ?>) environment.getOutputRoute();
-        inputAsPath = bgpRouteBuilder.getAsPath();
+      if (environment.getUseOutputAttributes()) {
+        if (environment.getOutputRoute() instanceof HasReadableAsPath) {
+          inputAsPath = ((HasReadableAsPath) environment.getOutputRoute()).getAsPath();
+        } else {
+          inputAsPath = AsPath.empty();
+        }
       } else if (environment.getReadFromIntermediateBgpAttributes()) {
         inputAsPath = environment.getIntermediateBgpAttributes().getAsPath();
-      } else if (environment.getOriginalRoute() instanceof BgpRoute) {
-        BgpRoute<?, ?> bgpRoute = (BgpRoute<?, ?>) environment.getOriginalRoute();
-        inputAsPath = bgpRoute.getAsPath();
+      } else if (environment.getOriginalRoute() instanceof HasReadableAsPath) {
+        inputAsPath = ((HasReadableAsPath) environment.getOriginalRoute()).getAsPath();
+      } else {
+        inputAsPath = AsPath.empty();
       }
       if (inputAsPath != null) {
         match = list.permits(inputAsPath);
