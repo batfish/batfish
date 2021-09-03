@@ -38,7 +38,11 @@ public final class CpmiHostCkpTest {
   public void testJavaSerialization() {
     CpmiHostCkp obj =
         new CpmiHostCkp(
-            Ip.ZERO, ImmutableList.of(), "foo", GatewayOrServerPolicy.empty(), Uid.of("0"));
+            Ip.ZERO,
+            ImmutableList.of(InterfaceTest.TEST_INSTANCE),
+            "foo",
+            GatewayOrServerPolicy.empty(),
+            Uid.of("0"));
     assertEquals(obj, SerializationUtils.clone(obj));
   }
 
