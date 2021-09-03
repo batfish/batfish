@@ -26,10 +26,10 @@ public final class CpmiVsNetobjTest {
             + "\"interfaces\": [],"
             + "\"ipv4-address\":\"0.0.0.0\","
             + "\"policy\":{"
-            + "\"accessPolicyInstalled\": true,"
-            + "\"accessPolicyName\": \"p1\","
-            + "\"threatPolicyInstalled\": true,"
-            + "\"threatPolicyName\": \"p2\""
+            + "\"access-policy-installed\": true,"
+            + "\"access-policy-name\": \"p1\","
+            + "\"threat-policy-installed\": true,"
+            + "\"threat-policy-name\": \"p2\""
             + "}" // policy
             + "}";
     assertThat(
