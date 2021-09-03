@@ -1116,7 +1116,7 @@ public final class AsaConfiguration extends VendorConfiguration {
     int ibgpAdmin = RoutingProtocol.IBGP.getDefaultAdministrativeCost(c.getConfigurationFormat());
     org.batfish.datamodel.BgpProcess newBgpProcess =
         new org.batfish.datamodel.BgpProcess(bgpRouterId, ebgpAdmin, ibgpAdmin);
-    newBgpProcess.setClusterListAsIgpCost(true);
+    newBgpProcess.setClusterListAsIbgpCost(true);
     BgpTieBreaker tieBreaker = proc.getTieBreaker();
     if (tieBreaker != null) {
       newBgpProcess.setTieBreaker(tieBreaker);
