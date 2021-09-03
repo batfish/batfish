@@ -210,6 +210,10 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
             .filter(Optional::isPresent)
             .map(Optional::get)
             .collect(ImmutableList.toImmutableList());
+    if (getManualNatRules(natRulebase, gateway)
+        .anyMatch(rule -> rule.getMethod() != NatMethod.HIDE)) {
+      _w.redFlag("Non-HIDE NAT rules are unsupported");
+    }
     // TODO Apply transformations to appropriate interfaces
   }
 
