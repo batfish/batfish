@@ -1701,13 +1701,42 @@ public class Batfish extends PluginConsumer implements IBatfish {
                     "Checkpoint"));
             continue;
           }
-          Package pakij =
+          List<Package> showPackageListEntries =
               BatfishObjectMapper.ignoreUnknownMapper()
-                  .readValue(packageFiles.get(RELPATH_CHECKPOINT_SHOW_PACKAGE), Package.class);
-          ManagementPackage mgmtPackage;
+                  .readValue(
+                      packageFiles.get(RELPATH_CHECKPOINT_SHOW_PACKAGE),
+                      new TypeReference<List<Package>>() {});
+          if (showPackageListEntries.isEmpty()) {
+            pvcae.addRedFlagWarning(
+                BfConsts.RELPATH_CHECKPOINT_MANAGEMENT_DIR,
+                new Warning(
+                    String.format(
+                        "Checkpoint management package %s in domain %s on server %s file %s has no"
+                            + " package entry in the JSON",
+                        packageEntry.getKey(),
+                        domainName,
+                        serverName,
+                        RELPATH_CHECKPOINT_SHOW_PACKAGE),
+                    "Checkpoint"));
+            continue;
+          } else if (showPackageListEntries.size() > 1) {
+            pvcae.addRedFlagWarning(
+                BfConsts.RELPATH_CHECKPOINT_MANAGEMENT_DIR,
+                new Warning(
+                    String.format(
+                        "Checkpoint management show-package %s in domain %s on server %s file %s"
+                            + " has extra packages in the JSON. Using the first entry.",
+                        packageEntry.getKey(),
+                        domainName,
+                        serverName,
+                        RELPATH_CHECKPOINT_SHOW_PACKAGE),
+                    "Checkpoint"));
+            continue;
+          }
+          Package pakij = showPackageListEntries.get(0);
           List<AccessLayer> accessLayers = getAccessLayers(packageFiles);
           NatRulebase natRulebase = getNatRulebase(pakij, packageFiles, pvcae, serverName);
-          mgmtPackage = new ManagementPackage(accessLayers, natRulebase, pakij);
+          ManagementPackage mgmtPackage = new ManagementPackage(accessLayers, natRulebase, pakij);
           packagesBuilder.put(mgmtPackage.getPackage().getUid(), mgmtPackage);
         }
         Map<Uid, ManagementPackage> packages = packagesBuilder.build();
