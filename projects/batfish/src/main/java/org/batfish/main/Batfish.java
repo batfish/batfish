@@ -1678,9 +1678,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
                   "Checkpoint"));
           continue;
         }
-        GatewaysAndServers gatewaysAndServers =
+        List<GatewaysAndServers> gatewaysAndServersList =
             BatfishObjectMapper.ignoreUnknownMapper()
-                .readValue(showGatewaysAndServers, GatewaysAndServers.class);
+                .readValue(
+                    showGatewaysAndServers, new TypeReference<List<GatewaysAndServers>>() {});
+        GatewaysAndServers gatewaysAndServers =
+            mergeGatewaysAndServersPages(gatewaysAndServersList);
 
         ImmutableMap.Builder<Uid, ManagementPackage> packagesBuilder = ImmutableMap.builder();
         for (Entry<String, Map<String, String>> packageEntry : domainEntry.getValue().entrySet()) {
@@ -1728,6 +1731,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
       serversMap.put(serverName, new ManagementServer(domainsMap.build(), serverName));
     }
     return new CheckpointManagementConfiguration(serversMap.build());
+  }
+
+  private @Nonnull GatewaysAndServers mergeGatewaysAndServersPages(
+      List<GatewaysAndServers> gatewaysAndServersList) {
+    // TODO: actually merge
+    return gatewaysAndServersList.get(0);
   }
 
   private SortedMap<String, BgpAdvertisementsByVrf> parseEnvironmentBgpTables(
