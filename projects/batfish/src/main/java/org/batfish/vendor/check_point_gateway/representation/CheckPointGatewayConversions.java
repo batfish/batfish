@@ -41,7 +41,7 @@ import org.batfish.vendor.check_point_management.Uid;
 public final class CheckPointGatewayConversions {
 
   /**
-   * Convert src, dst, and service to a {@link }HeaderSpace}* if they are of valid types. Else,
+   * Convert src, dst, and service to a {@link HeaderSpace}* if they are of valid types. Else,
    * return {@link Optional#empty()}.
    */
   static @Nonnull Optional<HeaderSpace> toHeaderSpace(
