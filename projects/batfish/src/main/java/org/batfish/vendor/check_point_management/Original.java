@@ -1,5 +1,7 @@
 package org.batfish.vendor.check_point_management;
 
+import com.google.common.annotations.VisibleForTesting;
+
 /**
  * When assigned to {@code translated-destination},{@code translated-service}, or {@code
  * translated-source} field of a {@link NatRule}, indicates that the original value should be
@@ -16,7 +18,8 @@ public final class Original extends Global implements NatTranslatedAddress, NatT
     return visitor.visitOriginal(this);
   }
 
-  Original(Uid uid) {
+  @VisibleForTesting
+  public Original(Uid uid) {
     super(NAME_ORIGINAL, uid);
   }
 }

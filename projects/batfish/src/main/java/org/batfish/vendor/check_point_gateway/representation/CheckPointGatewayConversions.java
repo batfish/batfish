@@ -1,14 +1,11 @@
 package org.batfish.vendor.check_point_gateway.representation;
 
-import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.applyOriginalServiceConstraint;
-import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getDestinationTransformationSteps;
-import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getServiceTransformationSteps;
-import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getSourceTransformationSteps;
-
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
@@ -18,93 +15,88 @@ import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
-import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.vendor.check_point_management.AccessLayer;
 import org.batfish.vendor.check_point_management.AccessRule;
 import org.batfish.vendor.check_point_management.AccessRuleOrSection;
 import org.batfish.vendor.check_point_management.AccessSection;
 import org.batfish.vendor.check_point_management.AddressSpace;
-import org.batfish.vendor.check_point_management.NatTranslatedAddress;
-import org.batfish.vendor.check_point_management.NatTranslatedService;
+import org.batfish.vendor.check_point_management.CpmiAnyObject;
+import org.batfish.vendor.check_point_management.GatewayOrServer;
 import org.batfish.vendor.check_point_management.RulebaseAction;
 import org.batfish.vendor.check_point_management.Service;
+import org.batfish.vendor.check_point_management.ServiceGroup;
+import org.batfish.vendor.check_point_management.ServiceTcp;
+import org.batfish.vendor.check_point_management.ServiceVisitor;
 import org.batfish.vendor.check_point_management.TypedManagementObject;
 import org.batfish.vendor.check_point_management.Uid;
 
 /** Utility class for Checkpoint conversion methods */
 public final class CheckPointGatewayConversions {
 
-  static @Nonnull HeaderSpace toHeaderSpace(
-      Map<String, IpSpace> ipSpaces,
+  /**
+   * Convert src, dst, and service to a {@link HeaderSpace} if they are of valid types. Else, return
+   * {@link Optional#empty()}.
+   */
+  static @Nonnull Optional<HeaderSpace> toHeaderSpace(
       TypedManagementObject src,
       TypedManagementObject dst,
       TypedManagementObject service,
       Warnings warnings) {
+    if (!checkValidHeaderSpaceInputs(src, dst, service, warnings)) {
+      return Optional.empty();
+    }
     HeaderSpace.Builder hsb = HeaderSpace.builder();
-    if (src instanceof AddressSpace) {
-      hsb.setSrcIps(ipSpaces.get(src.getName()));
-    } else {
-      warnings.redFlag(
-          String.format(
-              "NAT rule original-source %s has unsupported type %s and will be ignored",
-              src.getName(), src.getClass()));
+    if (!(src instanceof CpmiAnyObject)) {
+      hsb.setSrcIps(new IpSpaceReference(src.getName()));
     }
-    if (dst instanceof AddressSpace) {
-      hsb.setDstIps(ipSpaces.get(dst.getName()));
-    } else {
-      warnings.redFlag(
-          String.format(
-              "NAT rule original-destination %s has unsupported type %s and will be ignored",
-              dst.getName(), dst.getClass()));
+    if (!(dst instanceof CpmiAnyObject)) {
+      hsb.setDstIps(new IpSpaceReference(dst.getName()));
     }
-    if (service instanceof Service) {
-      applyOriginalServiceConstraint((Service) service, hsb);
-    } else {
-      warnings.redFlag(
-          String.format(
-              "NAT rule original-service %s has unsupported type %s and will be ignored",
-              service.getName(), service.getClass()));
-    }
-    return hsb.build();
+    applyServiceConstraint((Service) service, hsb);
+    return Optional.of(hsb.build());
   }
 
-  static @Nonnull List<TransformationStep> toTransformationSteps(
+  /**
+   * Returns {@code true} iff the source, destination, and service for a NAT or access rule are
+   * valid. In context of nat, refers to original fields. Warns for each invalid field.
+   */
+  @VisibleForTesting
+  static boolean checkValidHeaderSpaceInputs(
       TypedManagementObject src,
       TypedManagementObject dst,
       TypedManagementObject service,
       Warnings warnings) {
-    ImmutableList.Builder<TransformationStep> steps = ImmutableList.builder();
-    if (src instanceof NatTranslatedAddress) {
-      steps.addAll(getSourceTransformationSteps((NatTranslatedAddress) src));
-    } else {
+    boolean valid = true;
+    if (!(src instanceof AddressSpace)) {
       warnings.redFlag(
           String.format(
-              "NAT rule translated-source %s has unsupported type %s and will be ignored",
+              "source %s has unsupported type %s and will be ignored",
               src.getName(), src.getClass()));
+      valid = false;
     }
-    if (dst instanceof NatTranslatedAddress) {
-      steps.addAll(getDestinationTransformationSteps((NatTranslatedAddress) dst));
-    } else {
+    if (!(dst instanceof AddressSpace)) {
       warnings.redFlag(
           String.format(
-              "NAT rule translated-destination %s has unsupported type %s and will be ignored",
+              "destination %s has unsupported type %s and will be ignored",
               dst.getName(), dst.getClass()));
+      valid = false;
     }
-    if (service instanceof NatTranslatedService) {
-      steps.addAll(getServiceTransformationSteps((NatTranslatedService) service));
-    } else {
+    if (!(service instanceof Service)) {
       warnings.redFlag(
           String.format(
-              "NAT rule translated-service %s has unsupported type %s and will be ignored",
+              "service %s has unsupported type %s and will be ignored",
               service.getName(), service.getClass()));
+      valid = false;
     }
-    return steps.build();
+    return valid;
   }
 
   /**
@@ -229,6 +221,62 @@ public final class CheckPointGatewayConversions {
                 .map(IpSpaceReference::new)
                 .collect(ImmutableList.toImmutableList()))
         .build();
+  }
+
+  private static final ServiceToHeaderSpaceConstraints SERVICE_TO_HEADER_SPACE_CONSTRAINTS =
+      new ServiceToHeaderSpaceConstraints();
+
+  /**
+   * Restricts the given {@link HeaderSpace.Builder} to protocols/ports matching the given {@link
+   * Service}.
+   */
+  public static void applyServiceConstraint(Service service, HeaderSpace.Builder hsb) {
+    SERVICE_TO_HEADER_SPACE_CONSTRAINTS.setHeaderSpace(hsb);
+    service.accept(SERVICE_TO_HEADER_SPACE_CONSTRAINTS);
+    SERVICE_TO_HEADER_SPACE_CONSTRAINTS.setHeaderSpace(null);
+  }
+
+  /**
+   * Applies a {@link Service} to its current {@link HeaderSpace.Builder}. Does not modify the
+   * headerspace if the given service object is unconstrained.
+   */
+  private static class ServiceToHeaderSpaceConstraints implements ServiceVisitor<Void> {
+    private @Nullable HeaderSpace.Builder _hsb;
+
+    private ServiceToHeaderSpaceConstraints() {}
+
+    private void setHeaderSpace(@Nullable HeaderSpace.Builder hsb) {
+      _hsb = hsb;
+    }
+
+    @Override
+    public Void visitCpmiAnyObject(CpmiAnyObject cpmiAnyObject) {
+      // Does not constrain headerspace
+      return null;
+    }
+
+    @Override
+    public Void visitServiceGroup(ServiceGroup serviceGroup) {
+      // TODO Implement
+      return null;
+    }
+
+    @Override
+    public Void visitServiceTcp(ServiceTcp serviceTcp) {
+      // TODO Is this correct/sufficient? Does it need to modify src port?
+      //      Also, need to verify that port is an integer and decide what to do if not
+      assert _hsb != null;
+      _hsb.setIpProtocols(IpProtocol.TCP);
+      _hsb.setDstPorts(SubRange.singleton(Integer.parseInt(serviceTcp.getPort())));
+      return null;
+    }
+  }
+
+  /** Return {@code true} iff any of the install-on UIDs applies to the given gateway. */
+  @SuppressWarnings("unused")
+  static boolean appliesToGateway(List<Uid> installOn, GatewayOrServer gateway) {
+    // TODO: implement
+    return true;
   }
 
   private CheckPointGatewayConversions() {}
