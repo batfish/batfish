@@ -5,8 +5,8 @@ import static org.batfish.datamodel.transformation.TransformationStep.assignSour
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.NAT_PORT_FIRST;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.NAT_PORT_LAST;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.checkValidManualHide;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getApplicableNatRules;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getManualNatRules;
-import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getNatRules;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.manualHideRuleTransformation;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.manualHideTransformationSteps;
 import static org.hamcrest.Matchers.equalTo;
@@ -44,7 +44,7 @@ import org.junit.Test;
 public final class CheckpointNatConversionsTest {
 
   @Test
-  public void testGetNatRules() {
+  public void testGetApplicableNatRules() {
     GatewayOrServer gateway =
         new SimpleGateway(
             Ip.ZERO, "foo", ImmutableList.of(), new GatewayOrServerPolicy(null, null), UID);
@@ -81,7 +81,7 @@ public final class CheckpointNatConversionsTest {
     NatRulebase natRulebase =
         new NatRulebase(ImmutableMap.of(), ImmutableList.of(enabledRule, disabledRule), UID);
     assertThat(
-        getNatRules(natRulebase, gateway).collect(ImmutableList.toImmutableList()),
+        getApplicableNatRules(natRulebase, gateway).collect(ImmutableList.toImmutableList()),
         equalTo(ImmutableList.of(enabledRule)));
   }
 

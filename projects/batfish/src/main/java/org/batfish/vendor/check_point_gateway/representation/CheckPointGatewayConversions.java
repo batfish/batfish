@@ -61,6 +61,10 @@ public final class CheckPointGatewayConversions {
     return Optional.of(hsb.build());
   }
 
+  /**
+   * Returns {@code true} iff the source, destination, and service for a NAT or access rule are
+   * valid. In context of nat, refers to original fields. Warns for each invalid field.
+   */
   @VisibleForTesting
   static boolean checkValidHeaderSpaceInputs(
       TypedManagementObject src,
