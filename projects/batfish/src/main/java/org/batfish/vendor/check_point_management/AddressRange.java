@@ -87,7 +87,7 @@ public final class AddressRange extends TypedManagementObject implements Address
         && Objects.equals(_ipv4AddressLast, that._ipv4AddressLast)
         && Objects.equals(_ipv6AddressFirst, that._ipv6AddressFirst)
         && Objects.equals(_ipv6AddressLast, that._ipv6AddressLast)
-        && Objects.equals(_natSettings, that._natSettings);
+        && _natSettings.equals(that._natSettings);
   }
 
   @Override
