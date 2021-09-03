@@ -19,7 +19,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -56,6 +55,7 @@ import org.batfish.vendor.check_point_management.NatMethod;
 import org.batfish.vendor.check_point_management.NatRulebase;
 import org.batfish.vendor.check_point_management.TypedManagementObject;
 import org.batfish.vendor.check_point_management.Uid;
+import org.batfish.vendor.check_point_management.UnknownTypedManagementObject;
 
 public class CheckPointGatewayConfiguration extends VendorConfiguration {
 
@@ -141,12 +141,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     if (!maybePackage.isPresent()) {
       return;
     }
-    ManagementPackage pakij = maybePackage.get();
-
-    convertAddressSpaces(pakij);
-    convertAccessLayers(pakij.getAccessLayers());
-    Optional.ofNullable(pakij.getNatRulebase())
-        .ifPresent(natRulebase -> convertNatRulebase(natRulebase, gateway));
+    convertPackage(maybePackage.get(), gateway);
   }
 
   private void convertAccessLayers(List<AccessLayer> accessLayers) {
@@ -171,11 +166,31 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     _c.getIpAccessLists().put(interfaceAcl.getName(), interfaceAcl);
   }
 
-  private void convertObjectsToIpSpaces(Map<Uid, TypedManagementObject> objs) {
+  /**
+   * Convert specified objects to their VI model equivalent representation(s) if applicable, and add
+   * them to the VI configuration. E.g. convert {@link AddressSpace}s to {@link IpSpace}s.
+   *
+   * <p><b>Note: different objects (e.g. revisions) of the same name/type are not supported. Only
+   * the last-encountered object with a particular name (of the same type) will produce a VI model
+   * object.</b>
+   *
+   * <p>Warns about unknown object types.
+   */
+  private void convertObjects(Map<Uid, TypedManagementObject> objs) {
     AddressSpaceToIpSpace addressSpaceToIpSpace = new AddressSpaceToIpSpace(objs);
     objs.values()
         .forEach(
             obj -> {
+              if (obj instanceof UnknownTypedManagementObject) {
+                UnknownTypedManagementObject utmo = (UnknownTypedManagementObject) obj;
+                _w.redFlag(
+                    String.format(
+                        "Batfish does not handle converting objects of type %s. These objects will"
+                            + " be ignored.",
+                        utmo.getType()));
+                return;
+              }
+
               if (obj instanceof AddressSpace) {
                 AddressSpace addressSpace = (AddressSpace) obj;
                 IpSpace ipSpace = addressSpace.accept(addressSpaceToIpSpace);
@@ -185,16 +200,21 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
   }
 
   /**
-   * Converts all objects that can be used as an
-   * {org.batfish.vendor.check_point_management.AddressSpace} in the given package to an {@link
-   * IpSpace}
+   * Convert constructs in the specified package to their VI model equivalent and add them to the VI
+   * configuration.
    */
-  private void convertAddressSpaces(@Nullable ManagementPackage pakij) {
+  private void convertPackage(ManagementPackage pakij, GatewayOrServer gateway) {
+    convertObjects(pakij);
+    convertAccessLayers(pakij.getAccessLayers());
+    Optional.ofNullable(pakij.getNatRulebase()).ifPresent(r -> convertNatRulebase(r, gateway));
+  }
+
+  private void convertObjects(ManagementPackage pakij) {
     Optional.ofNullable(pakij.getNatRulebase())
-        .ifPresent(natRulebase -> convertObjectsToIpSpaces(natRulebase.getObjectsDictionary()));
+        .ifPresent(natRulebase -> convertObjects(natRulebase.getObjectsDictionary()));
     pakij.getAccessLayers().stream()
         .map(AccessLayer::getObjectsDictionary)
-        .forEach(objectsDictionary -> convertObjectsToIpSpaces(objectsDictionary));
+        .forEach(this::convertObjects);
   }
 
   /** Converts the given {@link NatRulebase} and applies it to this config. */
