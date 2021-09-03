@@ -110,7 +110,7 @@ import org.batfish.vendor.check_point_management.ManagementDomain;
 import org.batfish.vendor.check_point_management.ManagementPackage;
 import org.batfish.vendor.check_point_management.ManagementServer;
 import org.batfish.vendor.check_point_management.NatRulebase;
-import org.batfish.vendor.check_point_management.NatSettingsTest;
+import org.batfish.vendor.check_point_management.NatSettings;
 import org.batfish.vendor.check_point_management.Network;
 import org.batfish.vendor.check_point_management.Package;
 import org.batfish.vendor.check_point_management.RulebaseAction;
@@ -125,6 +125,8 @@ import org.junit.rules.TemporaryFolder;
 public class CheckPointGatewayGrammarTest {
   private static final String TESTCONFIGS_PREFIX =
       "org/batfish/vendor/check_point_gateway/grammar/testconfigs/";
+  public static final NatSettings NAT_SETTINGS_TEST_INSTANCE =
+      new NatSettings(true, "gateway", "All", "hide");
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
@@ -890,11 +892,7 @@ public class CheckPointGatewayGrammarTest {
                     ImmutableMap.of(
                         Uid.of("4"),
                         new Network(
-                            "n1",
-                            NatSettingsTest.TEST_INSTANCE,
-                            Ip.ZERO,
-                            Ip.ZERO,
-                            Uid.of("n1uid"))),
+                            "n1", NAT_SETTINGS_TEST_INSTANCE, Ip.ZERO, Ip.ZERO, Uid.of("n1uid"))),
                     ImmutableList.of(),
                     Uid.of("6")),
                 new Package(
@@ -911,7 +909,7 @@ public class CheckPointGatewayGrammarTest {
                     ImmutableMap.of(
                         Uid.of("8"),
                         new Network(
-                            "n2", NatSettingsTest.TEST_INSTANCE, Ip.MAX, Ip.MAX, Uid.of("n2uid"))),
+                            "n2", NAT_SETTINGS_TEST_INSTANCE, Ip.MAX, Ip.MAX, Uid.of("n2uid"))),
                     ImmutableList.of(),
                     Uid.of("10")),
                 new Package(
@@ -971,7 +969,7 @@ public class CheckPointGatewayGrammarTest {
                 net1Uid,
                 new Network(
                     "networkEth1",
-                    NatSettingsTest.TEST_INSTANCE,
+                    NAT_SETTINGS_TEST_INSTANCE,
                     Ip.parse("10.0.1.0"),
                     Ip.parse("255.255.255.0"),
                     net1Uid))
@@ -979,7 +977,7 @@ public class CheckPointGatewayGrammarTest {
                 net2Uid,
                 new Network(
                     "networkEth2",
-                    NatSettingsTest.TEST_INSTANCE,
+                    NAT_SETTINGS_TEST_INSTANCE,
                     Ip.parse("10.0.2.0"),
                     Ip.parse("255.255.255.0"),
                     net2Uid))
