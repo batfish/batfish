@@ -9,13 +9,11 @@ import static org.batfish.vendor.check_point_gateway.representation.CheckPointGa
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
@@ -155,11 +153,9 @@ public class CheckpointNatConversions {
   static @Nonnull Optional<Transformation> manualHideRuleTransformation(
       NatRulebase natRulebase,
       org.batfish.vendor.check_point_management.NatRule natRule,
-      Map<String, IpSpace> ipSpaces,
       Warnings warnings) {
     Optional<HeaderSpace> maybeOriginalHeaderSpace =
         toHeaderSpace(
-            ipSpaces,
             natRulebase.getObjectsDictionary().get(natRule.getOriginalSource()),
             natRulebase.getObjectsDictionary().get(natRule.getOriginalDestination()),
             natRulebase.getObjectsDictionary().get(natRule.getOriginalService()),

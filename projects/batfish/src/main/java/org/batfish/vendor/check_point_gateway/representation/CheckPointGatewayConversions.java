@@ -46,7 +46,6 @@ public final class CheckPointGatewayConversions {
    * {@link Optional#empty()}.
    */
   static @Nonnull Optional<HeaderSpace> toHeaderSpace(
-      Map<String, IpSpace> ipSpaces,
       TypedManagementObject src,
       TypedManagementObject dst,
       TypedManagementObject service,
@@ -55,8 +54,12 @@ public final class CheckPointGatewayConversions {
       return Optional.empty();
     }
     HeaderSpace.Builder hsb = HeaderSpace.builder();
-    hsb.setSrcIps(ipSpaces.get(src.getName()));
-    hsb.setDstIps(ipSpaces.get(dst.getName()));
+    if (!(src instanceof CpmiAnyObject)) {
+      hsb.setSrcIps(new IpSpaceReference(src.getName()));
+    }
+    if (!(dst instanceof CpmiAnyObject)) {
+      hsb.setDstIps(new IpSpaceReference(dst.getName()));
+    }
     applyServiceConstraint((Service) service, hsb);
     return Optional.of(hsb.build());
   }

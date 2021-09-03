@@ -16,13 +16,10 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import java.util.Map;
 import java.util.Optional;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.vendor.check_point_management.CpmiAnyObject;
@@ -153,8 +150,6 @@ public final class CheckpointNatConversionsTest {
       Ip hostIp = Ip.parse("1.1.1.1");
       String hostname = "host";
       Host host = new Host(hostIp, hostname, hostUid);
-      Map<String, IpSpace> ipSpaces =
-          ImmutableMap.of(ANY.getName(), UniverseIpSpace.INSTANCE, hostname, hostIp.toIpSpace());
       assertThat(
           manualHideTransformationSteps(host, ORIG, ORIG, warnings),
           equalTo(
@@ -171,8 +166,6 @@ public final class CheckpointNatConversionsTest {
     Ip hostIp = Ip.parse("1.1.1.1");
     String hostname = "host";
     Host host = new Host(hostIp, hostname, hostUid);
-    Map<String, IpSpace> ipSpaces =
-        ImmutableMap.of(ANY.getName(), UniverseIpSpace.INSTANCE, hostname, hostIp.toIpSpace());
     {
       NatRule rule =
           new NatRule(
@@ -197,8 +190,7 @@ public final class CheckpointNatConversionsTest {
 
       // invalid original fields
       assertThat(
-          manualHideRuleTransformation(natRulebase, rule, ipSpaces, warnings),
-          equalTo(Optional.empty()));
+          manualHideRuleTransformation(natRulebase, rule, warnings), equalTo(Optional.empty()));
     }
     {
       NatRule rule =
@@ -222,8 +214,7 @@ public final class CheckpointNatConversionsTest {
 
       // invalid translated fields
       assertThat(
-          manualHideRuleTransformation(natRulebase, rule, ipSpaces, warnings),
-          equalTo(Optional.empty()));
+          manualHideRuleTransformation(natRulebase, rule, warnings), equalTo(Optional.empty()));
     }
     {
       NatRule rule =
@@ -248,15 +239,10 @@ public final class CheckpointNatConversionsTest {
               UID);
 
       assertThat(
-          manualHideRuleTransformation(natRulebase, rule, ipSpaces, warnings),
+          manualHideRuleTransformation(natRulebase, rule, warnings),
           equalTo(
               Optional.of(
-                  Transformation.when(
-                          new MatchHeaderSpace(
-                              HeaderSpace.builder()
-                                  .setDstIps(UniverseIpSpace.INSTANCE)
-                                  .setSrcIps(UniverseIpSpace.INSTANCE)
-                                  .build()))
+                  Transformation.when(new MatchHeaderSpace(HeaderSpace.builder().build()))
                       .apply(
                           assignSourceIp(hostIp), assignSourcePort(NAT_PORT_FIRST, NAT_PORT_LAST))
                       .build())));

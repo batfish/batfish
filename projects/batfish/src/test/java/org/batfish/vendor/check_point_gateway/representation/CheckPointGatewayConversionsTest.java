@@ -220,16 +220,12 @@ public final class CheckPointGatewayConversionsTest {
     {
       TypedManagementObject policyTargets = new PolicyTargets(uid);
       assertThat(
-          toHeaderSpace(ImmutableMap.of(), policyTargets, policyTargets, policyTargets, warnings),
+          toHeaderSpace(policyTargets, policyTargets, policyTargets, warnings),
           equalTo(Optional.empty()));
     }
     {
-      Map<String, IpSpace> ipSpaces =
-          ImmutableMap.of(
-              "source", Ip.parse("1.1.1.1").toIpSpace(), "dest", Ip.parse("2.2.2.2").toIpSpace());
       assertThat(
           toHeaderSpace(
-              ipSpaces,
               new Host(Ip.parse("1.1.1.1"), "source", uid),
               new Host(Ip.parse("2.2.2.2"), "dest", uid),
               new ServiceTcp("foo", "1", uid),
@@ -237,15 +233,15 @@ public final class CheckPointGatewayConversionsTest {
           equalTo(
               Optional.of(
                   HeaderSpace.builder()
-                      .setSrcIps(Ip.parse("1.1.1.1").toIpSpace())
-                      .setDstIps(Ip.parse("2.2.2.2").toIpSpace())
+                      .setSrcIps(new IpSpaceReference("source"))
+                      .setDstIps(new IpSpaceReference("dest"))
                       .setDstPorts(ImmutableList.of(SubRange.singleton(1)))
                       .setIpProtocols(IpProtocol.TCP)
                       .build())));
     }
     {
       assertThat(
-          toHeaderSpace(ImmutableMap.of(), CPMI_ANY, CPMI_ANY, CPMI_ANY, warnings),
+          toHeaderSpace(CPMI_ANY, CPMI_ANY, CPMI_ANY, warnings),
           equalTo(Optional.of(HeaderSpace.builder().build())));
     }
   }

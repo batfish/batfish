@@ -203,10 +203,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     List<Transformation> manualHideRuleTransformations =
         getManualNatRules(natRulebase, gateway)
             .filter(rule -> rule.getMethod() == NatMethod.HIDE)
-            .map(
-                natRule ->
-                    manualHideRuleTransformation(
-                        natRulebase, natRule, _c.getIpSpaces(), getWarnings()))
+            .map(natRule -> manualHideRuleTransformation(natRulebase, natRule, getWarnings()))
             .filter(Optional::isPresent)
             .map(Optional::get)
             .collect(ImmutableList.toImmutableList());
