@@ -1,6 +1,7 @@
 package org.batfish.vendor.check_point_gateway.representation;
 
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
+import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.batfish.datamodel.transformation.Transformation.when;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toHeaderSpace;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toIpAccessLists;
@@ -13,13 +14,13 @@ import com.google.common.collect.Maps;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -72,6 +73,12 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     _staticRoutes = new HashMap<>();
   }
 
+  public void finalizeStructures() {
+    _bondingGroups = toImmutableMap(_bondingGroups);
+    _interfaces = toImmutableMap(_interfaces);
+    _staticRoutes = toImmutableMap(_staticRoutes);
+  }
+
   @Nonnull
   public Map<Integer, BondingGroup> getBondingGroups() {
     return _bondingGroups;
@@ -119,7 +126,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     Vrf vrf = new Vrf(VRF_NAME);
     _c.setVrfs(ImmutableMap.of(VRF_NAME, vrf));
 
-    _interfaces.forEach((ifaceName, iface) -> toInterface(iface, vrf));
+    _interfaces.forEach((ifaceName, iface) -> convertInterface(iface, vrf));
 
     vrf.getStaticRoutes()
         .addAll(
@@ -192,12 +199,12 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
    * {org.batfish.vendor.check_point_management.AddressSpace} in the given package to an {@link
    * org.batfish.datamodel.IpSpace}
    */
-  private void convertAddressSpaces(@Nullable ManagementPackage pakij) {
+  private void convertAddressSpaces(ManagementPackage pakij) {
     Optional.ofNullable(pakij.getNatRulebase())
         .ifPresent(natRulebase -> convertObjectsToIpSpaces(natRulebase.getObjectsDictionary()));
     pakij.getAccessLayers().stream()
         .map(AccessLayer::getObjectsDictionary)
-        .forEach(objectsDictionary -> convertObjectsToIpSpaces(objectsDictionary));
+        .forEach(this::convertObjectsToIpSpaces);
   }
 
   /** Converts the given {@link NatRulebase} and applies it to this config. */
@@ -270,8 +277,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     Set<Ip> ips =
         _interfaces.values().stream()
             .map(Interface::getAddress)
-            .filter(ConcreteInterfaceAddress.class::isInstance)
-            .map(ConcreteInterfaceAddress.class::cast)
+            .filter(Objects::nonNull)
             .map(ConcreteInterfaceAddress::getIp)
             .collect(ImmutableSet.toImmutableSet());
     // TODO: something special where there is IP reuse?
@@ -361,7 +367,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     return InterfaceType.UNKNOWN;
   }
 
-  org.batfish.datamodel.Interface toInterface(Interface iface, Vrf vrf) {
+  void convertInterface(Interface iface, Vrf vrf) {
     String ifaceName = iface.getName();
     org.batfish.datamodel.Interface.Builder newIface =
         org.batfish.datamodel.Interface.builder()
@@ -431,7 +437,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
 
     // TODO confirm AccessRule interaction with NAT
     newIface.setOutgoingFilter(_c.getIpAccessLists().get(INTERFACE_ACL_NAME));
-    return newIface.build();
+    newIface.build();
   }
 
   /**
