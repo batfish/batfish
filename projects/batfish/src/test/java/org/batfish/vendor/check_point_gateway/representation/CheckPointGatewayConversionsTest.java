@@ -30,7 +30,7 @@ import org.batfish.vendor.check_point_management.AccessRule;
 import org.batfish.vendor.check_point_management.AccessRuleOrSection;
 import org.batfish.vendor.check_point_management.AccessSection;
 import org.batfish.vendor.check_point_management.CpmiAnyObject;
-import org.batfish.vendor.check_point_management.NatSettingsTest;
+import org.batfish.vendor.check_point_management.NatSettings;
 import org.batfish.vendor.check_point_management.Network;
 import org.batfish.vendor.check_point_management.RulebaseAction;
 import org.batfish.vendor.check_point_management.TypedManagementObject;
@@ -39,6 +39,8 @@ import org.junit.Test;
 
 public class CheckPointGatewayConversionsTest {
 
+  public static final NatSettings NAT_SETTINGS_TEST_INSTANCE =
+      new NatSettings(true, "gateway", "All", "hide");
   private static final Uid UID_ACCEPT = Uid.of("99997");
   private static final Uid UID_DROP = Uid.of("99998");
   private static final Uid UID_CPMI_ANY = Uid.of("99999");
@@ -52,7 +54,7 @@ public class CheckPointGatewayConversionsTest {
               UID_NET0,
               new Network(
                   "net0",
-                  NatSettingsTest.TEST_INSTANCE,
+                  NAT_SETTINGS_TEST_INSTANCE,
                   Ip.parse("10.0.0.0"),
                   Ip.parse("255.255.255.0"),
                   UID_NET0))
@@ -60,7 +62,7 @@ public class CheckPointGatewayConversionsTest {
               UID_NET1,
               new Network(
                   "net1",
-                  NatSettingsTest.TEST_INSTANCE,
+                  NAT_SETTINGS_TEST_INSTANCE,
                   Ip.parse("10.0.1.0"),
                   Ip.parse("255.255.255.0"),
                   UID_NET1))
@@ -68,7 +70,7 @@ public class CheckPointGatewayConversionsTest {
               UID_NET2,
               new Network(
                   "net2",
-                  NatSettingsTest.TEST_INSTANCE,
+                  NAT_SETTINGS_TEST_INSTANCE,
                   Ip.parse("10.0.2.0"),
                   Ip.parse("255.255.255.0"),
                   UID_NET2))
