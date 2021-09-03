@@ -1,5 +1,6 @@
 package org.batfish.vendor.check_point_gateway.representation;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.List;
@@ -60,7 +61,8 @@ public final class CheckPointGatewayConversions {
     return Optional.of(hsb.build());
   }
 
-  private static boolean checkValidHeaderSpaceInputs(
+  @VisibleForTesting
+  static boolean checkValidHeaderSpaceInputs(
       TypedManagementObject src,
       TypedManagementObject dst,
       TypedManagementObject service,

@@ -35,7 +35,7 @@ public final class Host extends TypedManagementObject implements AddressSpace, M
   }
 
   @VisibleForTesting
-  Host(Ip ipv4Address, String name, Uid uid) {
+  public Host(Ip ipv4Address, String name, Uid uid) {
     super(name, uid);
     _ipv4Address = ipv4Address;
   }
