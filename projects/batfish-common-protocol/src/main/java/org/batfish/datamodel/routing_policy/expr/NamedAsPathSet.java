@@ -48,8 +48,7 @@ public final class NamedAsPathSet extends AsPathSetExpr {
   public boolean matches(Environment environment) {
     AsPathAccessList list = environment.getAsPathAccessLists().get(_name);
     if (list != null) {
-      boolean match = false;
-      AsPath inputAsPath = null;
+      AsPath inputAsPath;
       if (environment.getUseOutputAttributes()) {
         if (environment.getOutputRoute() instanceof HasReadableAsPath) {
           inputAsPath = ((HasReadableAsPath) environment.getOutputRoute()).getAsPath();
@@ -63,10 +62,8 @@ public final class NamedAsPathSet extends AsPathSetExpr {
       } else {
         inputAsPath = AsPath.empty();
       }
-      if (inputAsPath != null) {
-        match = list.permits(inputAsPath);
-      }
-      return match;
+      assert inputAsPath != null;
+      return list.permits(inputAsPath);
     } else {
       environment.setError(true);
       return false;
