@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -13,6 +14,11 @@ import javax.annotation.Nullable;
  * types that aren't supported yet.
  */
 public class UnknownTypedManagementObject extends TypedManagementObject {
+
+  @Nonnull
+  public String getType() {
+    return _type;
+  }
 
   @Override
   public boolean equals(Object o) {
@@ -39,7 +45,8 @@ public class UnknownTypedManagementObject extends TypedManagementObject {
     return new UnknownTypedManagementObject(name, uid, type);
   }
 
-  protected UnknownTypedManagementObject(String name, Uid uid, String type) {
+  @VisibleForTesting
+  public UnknownTypedManagementObject(String name, Uid uid, String type) {
     super(name, uid);
     _type = type;
   }
