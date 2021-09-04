@@ -960,6 +960,49 @@ public class CheckPointGatewayGrammarTest {
   }
 
   @Test
+  public void testConvertDomainObjects() throws IOException {
+    ImmutableMap<Uid, GatewayOrServer> gateways =
+        ImmutableMap.of(
+            Uid.of("1"),
+            new SimpleGateway(
+                Ip.parse("1.0.0.1"),
+                "g1",
+                ImmutableList.of(),
+                new GatewayOrServerPolicy("p1", null),
+                Uid.of("1")));
+    ImmutableMap<Uid, ManagementPackage> packages =
+        ImmutableMap.of(
+            Uid.of("2"),
+            new ManagementPackage(
+                ImmutableList.of(),
+                null,
+                new Package(
+                    new Domain("d", Uid.of("0")),
+                    AllInstallationTargets.instance(),
+                    "p1",
+                    false,
+                    true,
+                    Uid.of("2"))));
+
+    CheckpointManagementConfiguration mgmt =
+        toCheckpointMgmtConfig(
+            gateways,
+            packages,
+            ImmutableList.of(
+                new Network(
+                    "networkObject",
+                    NAT_SETTINGS_TEST_INSTANCE,
+                    Ip.parse("10.11.12.0"),
+                    Ip.parse("255.255.255.0"),
+                    Uid.of("100"))));
+
+    Map<String, Configuration> configs = parseTextConfigs(mgmt, "gw_package_selection_1");
+    Configuration c1 = configs.get("gw_package_selection_1");
+    // Network object from domain should make it to VI model
+    assertThat(c1.getIpSpaces(), hasKey("networkObject"));
+  }
+
+  @Test
   public void testAccessRulesConversion() throws IOException {
     Uid cpmiAnyUid = Uid.of("99999");
     CpmiAnyObject any = new CpmiAnyObject(cpmiAnyUid);
