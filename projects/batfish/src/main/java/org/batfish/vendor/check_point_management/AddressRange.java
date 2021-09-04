@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Strings;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -40,10 +41,10 @@ public final class AddressRange extends AddressSpace {
 
   @JsonCreator
   private static @Nonnull AddressRange create(
-      @JsonProperty(PROP_IPV4_ADDRESS_FIRST) @Nullable Ip ipv4AddressFirst,
-      @JsonProperty(PROP_IPV4_ADDRESS_LAST) @Nullable Ip ipv4AddressLast,
-      @JsonProperty(PROP_IPV6_ADDRESS_FIRST) @Nullable Ip6 ipv6AddressFirst,
-      @JsonProperty(PROP_IPV6_ADDRESS_LAST) @Nullable Ip6 ipv6AddressLast,
+      @JsonProperty(PROP_IPV4_ADDRESS_FIRST) @Nullable String ipv4AddressFirst,
+      @JsonProperty(PROP_IPV4_ADDRESS_LAST) @Nullable String ipv4AddressLast,
+      @JsonProperty(PROP_IPV6_ADDRESS_FIRST) @Nullable String ipv6AddressFirst,
+      @JsonProperty(PROP_IPV6_ADDRESS_LAST) @Nullable String ipv6AddressLast,
       @JsonProperty(PROP_NAT_SETTINGS) @Nullable NatSettings natSettings,
       @JsonProperty(PROP_NAME) @Nullable String name,
       @JsonProperty(PROP_UID) @Nullable Uid uid) {
@@ -51,10 +52,10 @@ public final class AddressRange extends AddressSpace {
     checkArgument(uid != null, "Missing %s", PROP_UID);
     checkArgument(natSettings != null, "Missing %s", PROP_NAT_SETTINGS);
     return new AddressRange(
-        ipv4AddressFirst,
-        ipv4AddressLast,
-        ipv6AddressFirst,
-        ipv6AddressLast,
+        Strings.isNullOrEmpty(ipv4AddressFirst) ? null : Ip.parse(ipv4AddressFirst),
+        Strings.isNullOrEmpty(ipv4AddressLast) ? null : Ip.parse(ipv4AddressLast),
+        Strings.isNullOrEmpty(ipv6AddressFirst) ? null : Ip6.parse(ipv6AddressFirst),
+        Strings.isNullOrEmpty(ipv6AddressLast) ? null : Ip6.parse(ipv6AddressLast),
         natSettings,
         name,
         uid);
