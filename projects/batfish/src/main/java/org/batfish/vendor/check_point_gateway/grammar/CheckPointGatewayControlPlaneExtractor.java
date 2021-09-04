@@ -42,6 +42,7 @@ public class CheckPointGatewayControlPlaneExtractor extends CheckPointGatewayPar
         new CheckPointGatewayConfigurationBuilder(
             _parser, _text, _w, _configuration, _silentSyntax),
         tree);
+    _configuration.finalizeStructures();
   }
 
   @Nonnull private CheckPointGatewayConfiguration _configuration;

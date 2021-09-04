@@ -1,6 +1,7 @@
 package org.batfish.vendor.check_point_gateway.representation;
 
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
+import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.batfish.datamodel.FirewallSessionInterfaceInfo.Action.POST_NAT_FIB_LOOKUP;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toIpAccessLists;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getManualNatRules;
@@ -15,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -28,7 +30,6 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
-import org.batfish.datamodel.Interface.Builder;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
@@ -69,6 +70,12 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     _bondingGroups = new HashMap<>();
     _interfaces = new HashMap<>();
     _staticRoutes = new HashMap<>();
+  }
+
+  public void finalizeStructures() {
+    _bondingGroups = toImmutableMap(_bondingGroups);
+    _interfaces = toImmutableMap(_interfaces);
+    _staticRoutes = toImmutableMap(_staticRoutes);
   }
 
   @Nonnull
@@ -118,7 +125,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     Vrf vrf = new Vrf(VRF_NAME);
     _c.setVrfs(ImmutableMap.of(VRF_NAME, vrf));
 
-    _interfaces.forEach((ifaceName, iface) -> toInterface(iface, vrf));
+    _interfaces.forEach((ifaceName, iface) -> convertInterface(iface, vrf));
 
     vrf.getStaticRoutes()
         .addAll(
@@ -264,8 +271,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     Set<Ip> ips =
         _interfaces.values().stream()
             .map(Interface::getAddress)
-            .filter(ConcreteInterfaceAddress.class::isInstance)
-            .map(ConcreteInterfaceAddress.class::cast)
+            .filter(Objects::nonNull)
             .map(ConcreteInterfaceAddress::getIp)
             .collect(ImmutableSet.toImmutableSet());
     // TODO: something special where there is IP reuse?
@@ -355,9 +361,9 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     return InterfaceType.UNKNOWN;
   }
 
-  org.batfish.datamodel.Interface toInterface(Interface iface, Vrf vrf) {
+  void convertInterface(Interface iface, Vrf vrf) {
     String ifaceName = iface.getName();
-    Builder newIface =
+    org.batfish.datamodel.Interface.Builder newIface =
         org.batfish.datamodel.Interface.builder()
             .setName(ifaceName)
             .setOwner(_c)
@@ -429,7 +435,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     newIface.setFirewallSessionInterfaceInfo(
         new FirewallSessionInterfaceInfo(
             POST_NAT_FIB_LOOKUP, ImmutableList.of(ifaceName), null, null));
-    return newIface.build();
+    newIface.build();
   }
 
   /**

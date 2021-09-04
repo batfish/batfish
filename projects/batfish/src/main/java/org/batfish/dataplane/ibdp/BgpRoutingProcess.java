@@ -289,7 +289,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         firstNonNull(_process.getTieBreaker(), BgpTieBreaker.ARRIVAL_ORDER);
     MultipathEquivalentAsPathMatchMode multiPathMatchMode =
         firstNonNull(_process.getMultipathEquivalentAsPathMatchMode(), EXACT_PATH);
-    boolean clusterListAsIgpCost = _process.getClusterListAsIgpCost();
+    boolean clusterListAsIbgpCost = _process.getClusterListAsIbgpCost();
     _ebgpv4Rib =
         new Bgpv4Rib(
             _mainRib,
@@ -297,7 +297,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             _process.getMultipathEbgp() ? null : 1,
             multiPathMatchMode,
             true,
-            clusterListAsIgpCost);
+            clusterListAsIbgpCost);
     _ibgpv4Rib =
         new Bgpv4Rib(
             _mainRib,
@@ -305,7 +305,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             _process.getMultipathIbgp() ? null : 1,
             multiPathMatchMode,
             true,
-            clusterListAsIgpCost);
+            clusterListAsIbgpCost);
     _bgpv4Rib =
         new Bgpv4Rib(
             _mainRib,
@@ -313,32 +313,39 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             _process.getMultipathEbgp() || _process.getMultipathIbgp() ? null : 1,
             multiPathMatchMode,
             true,
-            clusterListAsIgpCost);
+            clusterListAsIbgpCost);
     _localBgpv4Rib =
         new Bgpv4Rib(
-            _mainRib, bestPathTieBreaker, null, multiPathMatchMode, true, clusterListAsIgpCost);
+            _mainRib, bestPathTieBreaker, null, multiPathMatchMode, true, clusterListAsIbgpCost);
 
     _mainRibDelta = RibDelta.empty();
 
     // EVPN Ribs
     _ebgpType3EvpnRib =
-        new EvpnRib<>(_mainRib, bestPathTieBreaker, null, multiPathMatchMode, clusterListAsIgpCost);
+        new EvpnRib<>(
+            _mainRib, bestPathTieBreaker, null, multiPathMatchMode, clusterListAsIbgpCost);
     _ibgpType3EvpnRib =
-        new EvpnRib<>(_mainRib, bestPathTieBreaker, null, multiPathMatchMode, clusterListAsIgpCost);
+        new EvpnRib<>(
+            _mainRib, bestPathTieBreaker, null, multiPathMatchMode, clusterListAsIbgpCost);
     _evpnType3Rib =
-        new EvpnRib<>(_mainRib, bestPathTieBreaker, null, multiPathMatchMode, clusterListAsIgpCost);
+        new EvpnRib<>(
+            _mainRib, bestPathTieBreaker, null, multiPathMatchMode, clusterListAsIbgpCost);
     /*
      TODO: type5 RIBs are currently unused. Correct implementation blocked on having local bgp
        ribs
     */
     _ebgpType5EvpnRib =
-        new EvpnRib<>(_mainRib, bestPathTieBreaker, null, multiPathMatchMode, clusterListAsIgpCost);
+        new EvpnRib<>(
+            _mainRib, bestPathTieBreaker, null, multiPathMatchMode, clusterListAsIbgpCost);
     _ibgpType5EvpnRib =
-        new EvpnRib<>(_mainRib, bestPathTieBreaker, null, multiPathMatchMode, clusterListAsIgpCost);
+        new EvpnRib<>(
+            _mainRib, bestPathTieBreaker, null, multiPathMatchMode, clusterListAsIbgpCost);
     _evpnType5Rib =
-        new EvpnRib<>(_mainRib, bestPathTieBreaker, null, multiPathMatchMode, clusterListAsIgpCost);
+        new EvpnRib<>(
+            _mainRib, bestPathTieBreaker, null, multiPathMatchMode, clusterListAsIbgpCost);
     _evpnRib =
-        new EvpnRib<>(_mainRib, bestPathTieBreaker, null, multiPathMatchMode, clusterListAsIgpCost);
+        new EvpnRib<>(
+            _mainRib, bestPathTieBreaker, null, multiPathMatchMode, clusterListAsIbgpCost);
     _evpnInitializationDelta = RibDelta.empty();
     _rtVrfMapping = computeRouteTargetToVrfMap(getAllPeerConfigs(_process));
     assert _rtVrfMapping != null; // Avoid unused warning

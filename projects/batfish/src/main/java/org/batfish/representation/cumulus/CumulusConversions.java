@@ -379,7 +379,7 @@ public final class CumulusConversions {
     /*
     Cluster List Length functions like IGP cost in FRR/Quagga
     */
-    newProc.setClusterListAsIgpCost(true);
+    newProc.setClusterListAsIbgpCost(true);
 
     Long confederationId = bgpProcess.getDefaultVrf().getConfederationId();
     Long asn = bgpProcess.getDefaultVrf().getAutonomousSystem();
