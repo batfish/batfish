@@ -1,5 +1,8 @@
 package org.batfish.vendor.check_point_management;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import com.google.common.base.MoreObjects.ToStringHelper;
 import java.util.List;
 import java.util.Objects;
@@ -10,7 +13,19 @@ import org.batfish.datamodel.Ip;
  * A gateway or server from the {@code objects} field of the response to the {@code
  * show-gateways-and-servers} command.
  */
-public abstract class GatewayOrServer extends TypedManagementObject
+@JsonTypeInfo(use = Id.NAME, property = "type")
+@JsonSubTypes({
+  @JsonSubTypes.Type(value = CpmiClusterMember.class, name = "CpmiClusterMember"),
+  @JsonSubTypes.Type(value = CpmiGatewayCluster.class, name = "CpmiGatewayCluster"),
+  @JsonSubTypes.Type(value = CpmiHostCkp.class, name = "CpmiHostCkp"),
+  @JsonSubTypes.Type(value = CpmiVsClusterNetobj.class, name = "CpmiVsClusterNetobj"),
+  @JsonSubTypes.Type(value = CpmiVsNetobj.class, name = "CpmiVsNetobj"),
+  @JsonSubTypes.Type(value = CpmiVsxClusterMember.class, name = "CpmiVsxClusterMember"),
+  @JsonSubTypes.Type(value = CpmiVsxClusterNetobj.class, name = "CpmiVsxClusterNetobj"),
+  @JsonSubTypes.Type(value = CpmiVsxNetobj.class, name = "CpmiVsxNetobj"),
+  @JsonSubTypes.Type(value = SimpleGateway.class, name = "simple-gateway"),
+})
+public abstract class GatewayOrServer extends NamedManagementObject
     implements AddressSpace, Machine {
 
   protected GatewayOrServer(
