@@ -16,7 +16,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurat
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasOutgoingFilter;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasIncomingFilter;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRedFlagWarning;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasChannelGroup;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasChannelGroupMembers;
@@ -1054,12 +1054,12 @@ public class CheckPointGatewayGrammarTest {
     assertThat(c, hasIpAccessList(INTERFACE_ACL_NAME, accepts(permitted, "eth1", c)));
     assertThat(c, hasIpAccessList(INTERFACE_ACL_NAME, rejects(denied, "eth1", c)));
     // Iface ACLs
-    assertThat(c, hasInterface("eth1", hasOutgoingFilter(accepts(permitted, "eth1", c))));
-    assertThat(c, hasInterface("eth1", hasOutgoingFilter(rejects(denied, "eth1", c))));
-    assertThat(c, hasInterface("eth2", hasOutgoingFilter(accepts(permitted, "eth1", c))));
-    assertThat(c, hasInterface("eth2", hasOutgoingFilter(rejects(denied, "eth1", c))));
-    assertThat(c, hasInterface("eth3", hasOutgoingFilter(accepts(permitted, "eth1", c))));
-    assertThat(c, hasInterface("eth3", hasOutgoingFilter(rejects(denied, "eth1", c))));
+    assertThat(c, hasInterface("eth1", hasIncomingFilter(accepts(permitted, "eth1", c))));
+    assertThat(c, hasInterface("eth1", hasIncomingFilter(rejects(denied, "eth1", c))));
+    assertThat(c, hasInterface("eth2", hasIncomingFilter(accepts(permitted, "eth1", c))));
+    assertThat(c, hasInterface("eth2", hasIncomingFilter(rejects(denied, "eth1", c))));
+    assertThat(c, hasInterface("eth3", hasIncomingFilter(accepts(permitted, "eth1", c))));
+    assertThat(c, hasInterface("eth3", hasIncomingFilter(rejects(denied, "eth1", c))));
   }
 
   @Test
