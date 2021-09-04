@@ -19,7 +19,6 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -56,7 +55,6 @@ import org.batfish.vendor.check_point_management.GatewayOrServer;
 import org.batfish.vendor.check_point_management.ManagementDomain;
 import org.batfish.vendor.check_point_management.ManagementPackage;
 import org.batfish.vendor.check_point_management.ManagementServer;
-import org.batfish.vendor.check_point_management.NamedManagementObject;
 import org.batfish.vendor.check_point_management.NatMethod;
 import org.batfish.vendor.check_point_management.NatRulebase;
 import org.batfish.vendor.check_point_management.TypedManagementObject;
@@ -223,15 +221,15 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
   }
 
   private void convertObjects(ManagementPackage pakij, ManagementDomain domain) {
+    Map<Uid, TypedManagementObject> objects = new HashMap<>();
     Optional.ofNullable(pakij.getNatRulebase())
-        .ifPresent(natRulebase -> convertObjects(natRulebase.getObjectsDictionary()));
+        .map(NatRulebase::getObjectsDictionary)
+        .ifPresent(objects::putAll);
     pakij.getAccessLayers().stream()
         .map(AccessLayer::getObjectsDictionary)
-        .forEach(this::convertObjects);
-    convertObjects(
-        domain.getObjects().stream()
-            .collect(
-                ImmutableMap.toImmutableMap(NamedManagementObject::getUid, Function.identity())));
+        .forEach(objects::putAll);
+    domain.getObjects().forEach(object -> objects.put(object.getUid(), object));
+    convertObjects(objects);
   }
 
   /** Converts the given {@link NatRulebase} and applies it to this config. */

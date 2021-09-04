@@ -1,7 +1,7 @@
 package org.batfish.vendor.check_point_management;
 
 /** An object that may be used to represent an address space. */
-public interface AddressSpace extends NatTranslatedAddress {
+public interface AddressSpace extends NatTranslatedAddress, INamedManagementObject {
 
   @Override
   default <T> T accept(NatTranslatedAddressVisitor<T> visitor) {

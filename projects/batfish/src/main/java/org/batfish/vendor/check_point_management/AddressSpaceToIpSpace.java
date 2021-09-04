@@ -11,7 +11,8 @@ import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpSpaceReference;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.UniverseIpSpace;
 
 /** Create an {@link IpSpace} representing the visited {@link AddressSpace}. */
@@ -49,7 +50,8 @@ public class AddressSpaceToIpSpace implements AddressSpaceVisitor<IpSpace> {
             .map(_objs::get)
             .filter(AddressSpace.class::isInstance)
             .map(AddressSpace.class::cast)
-            .map(member -> member.accept(this))
+            .map(AddressSpace::getName)
+            .map(IpSpaceReference::new)
             .collect(ImmutableList.toImmutableList());
     IpSpace space = AclIpSpace.union(memberIpSpaces);
     return space == null ? EmptyIpSpace.INSTANCE : space;
@@ -82,13 +84,14 @@ public class AddressSpaceToIpSpace implements AddressSpaceVisitor<IpSpace> {
 
   @Override
   public IpSpace visitNetwork(Network network) {
-    // TODO Network objects also have a "mask-length4" that we don't currently extract.
-    //  If network objects always represent valid Prefixes, it may be simpler to extract
-    //  that instead of subnet-mask and convert the network to a PrefixIpSpace.
-    // In Network, the mask has bits that matter set, but IpWildcard interprets set mask bits as
-    // "don't care". Flip mask to convert to IpWildcard.
-    long flippedMask = network.getSubnetMask().asLong() ^ Ip.MAX.asLong();
-    return IpWildcard.ipWithWildcardMask(network.getSubnet4(), flippedMask).toIpSpace();
+    Ip networkAddress = network.getSubnet4();
+    Ip subnetMask = network.getSubnetMask();
+    if (networkAddress == null) {
+      // IPv6
+      return EmptyIpSpace.INSTANCE;
+    }
+    assert subnetMask != null;
+    return Prefix.create(networkAddress, subnetMask).toIpSpace();
   }
 
   public AddressSpaceToIpSpace(Map<Uid, TypedManagementObject> objs) {
