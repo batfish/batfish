@@ -1190,7 +1190,8 @@ public class CheckPointGatewayGrammarTest {
                 new GatewayOrServerPolicy("p1", null),
                 gwUid));
 
-    CheckpointManagementConfiguration mgmt = toCheckpointMgmtConfig(gateways, packages);
+    CheckpointManagementConfiguration mgmt =
+        toCheckpointMgmtConfig(gateways, packages, ImmutableList.of());
     Map<String, Configuration> configs = parseTextConfigs(mgmt, hostname);
     Configuration c = configs.get(hostname);
 
