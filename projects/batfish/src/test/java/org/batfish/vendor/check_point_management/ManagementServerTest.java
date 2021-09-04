@@ -3,6 +3,7 @@ package org.batfish.vendor.check_point_management;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
@@ -27,7 +28,10 @@ public final class ManagementServerTest {
                 ImmutableMap.of(
                     "d",
                     new ManagementDomain(
-                        new Domain("a", Uid.of("1")), ImmutableMap.of(), ImmutableMap.of())),
+                        new Domain("a", Uid.of("1")),
+                        ImmutableMap.of(),
+                        ImmutableMap.of(),
+                        ImmutableList.of())),
                 "a"))
         .addEqualityGroup(new ManagementServer(ImmutableMap.of(), "b"))
         .testEquals();

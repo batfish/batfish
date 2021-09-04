@@ -15,22 +15,30 @@ public final class ManagementDomainTest {
   @Test
   public void testJavaSerialization() {
     ManagementDomain obj =
-        new ManagementDomain(new Domain("a", Uid.of("1")), ImmutableMap.of(), ImmutableMap.of());
+        new ManagementDomain(
+            new Domain("a", Uid.of("1")), ImmutableMap.of(), ImmutableMap.of(), ImmutableList.of());
     assertEquals(obj, SerializationUtils.clone(obj));
   }
 
   @Test
   public void testEquals() {
     ManagementDomain obj =
-        new ManagementDomain(new Domain("a", Uid.of("1")), ImmutableMap.of(), ImmutableMap.of());
+        new ManagementDomain(
+            new Domain("a", Uid.of("1")), ImmutableMap.of(), ImmutableMap.of(), ImmutableList.of());
     new EqualsTester()
         .addEqualityGroup(
             obj,
             new ManagementDomain(
-                new Domain("a", Uid.of("1")), ImmutableMap.of(), ImmutableMap.of()))
+                new Domain("a", Uid.of("1")),
+                ImmutableMap.of(),
+                ImmutableMap.of(),
+                ImmutableList.of()))
         .addEqualityGroup(
             new ManagementDomain(
-                new Domain("b", Uid.of("1")), ImmutableMap.of(), ImmutableMap.of()))
+                new Domain("b", Uid.of("1")),
+                ImmutableMap.of(),
+                ImmutableMap.of(),
+                ImmutableList.of()))
         .addEqualityGroup(
             new ManagementDomain(
                 new Domain("a", Uid.of("1")),
@@ -42,7 +50,8 @@ public final class ManagementDomainTest {
                         ImmutableList.of(),
                         GatewayOrServerPolicy.empty(),
                         Uid.of("2"))),
-                ImmutableMap.of()))
+                ImmutableMap.of(),
+                ImmutableList.of()))
         .addEqualityGroup(
             new ManagementDomain(
                 new Domain("a", Uid.of("1")),
@@ -58,7 +67,14 @@ public final class ManagementDomainTest {
                             "b",
                             false,
                             false,
-                            Uid.of("1"))))))
+                            Uid.of("1")))),
+                ImmutableList.of()))
+        .addEqualityGroup(
+            new ManagementDomain(
+                new Domain("a", Uid.of("1")),
+                ImmutableMap.of(),
+                ImmutableMap.of(),
+                ImmutableList.of(NetworkTest.TEST_INSTANCE)))
         .testEquals();
   }
 }
