@@ -5,8 +5,7 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 
 /** Abstract class representing a management object with a name and UID. */
-public abstract class NamedManagementObject extends ManagementObject
-    implements INamedManagementObject {
+public abstract class NamedManagementObject extends ManagementObject {
 
   protected static final String PROP_NAME = "name";
 
