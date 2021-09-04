@@ -17,6 +17,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -52,6 +53,7 @@ import org.batfish.vendor.check_point_management.GatewayOrServer;
 import org.batfish.vendor.check_point_management.ManagementDomain;
 import org.batfish.vendor.check_point_management.ManagementPackage;
 import org.batfish.vendor.check_point_management.ManagementServer;
+import org.batfish.vendor.check_point_management.NamedManagementObject;
 import org.batfish.vendor.check_point_management.NatMethod;
 import org.batfish.vendor.check_point_management.NatRulebase;
 import org.batfish.vendor.check_point_management.TypedManagementObject;
@@ -148,7 +150,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     if (!maybePackage.isPresent()) {
       return;
     }
-    convertPackage(maybePackage.get(), gateway);
+    convertPackage(maybePackage.get(), gateway, domain);
   }
 
   private void convertAccessLayers(List<AccessLayer> accessLayers) {
@@ -210,18 +212,23 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
    * Convert constructs in the specified package to their VI model equivalent and add them to the VI
    * configuration.
    */
-  private void convertPackage(ManagementPackage pakij, GatewayOrServer gateway) {
-    convertObjects(pakij);
+  private void convertPackage(
+      ManagementPackage pakij, GatewayOrServer gateway, ManagementDomain domain) {
+    convertObjects(pakij, domain);
     convertAccessLayers(pakij.getAccessLayers());
     Optional.ofNullable(pakij.getNatRulebase()).ifPresent(r -> convertNatRulebase(r, gateway));
   }
 
-  private void convertObjects(ManagementPackage pakij) {
+  private void convertObjects(ManagementPackage pakij, ManagementDomain domain) {
     Optional.ofNullable(pakij.getNatRulebase())
         .ifPresent(natRulebase -> convertObjects(natRulebase.getObjectsDictionary()));
     pakij.getAccessLayers().stream()
         .map(AccessLayer::getObjectsDictionary)
         .forEach(this::convertObjects);
+    convertObjects(
+        domain.getObjects().stream()
+            .collect(
+                ImmutableMap.toImmutableMap(NamedManagementObject::getUid, Function.identity())));
   }
 
   /** Converts the given {@link NatRulebase} and applies it to this config. */
