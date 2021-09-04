@@ -129,6 +129,7 @@ public class BfConsts {
   public static final String RELPATH_CHECKPOINT_SHOW_GATEWAYS_AND_SERVERS =
       "show-gateways-and-servers.json";
   public static final String RELPATH_CHECKPOINT_SHOW_NAT_RULEBASE = "show-nat-rulebase.json";
+  public static final String RELPATH_CHECKPOINT_SHOW_NETWORKS = "show-networks.json";
   public static final String RELPATH_CHECKPOINT_SHOW_PACKAGE = "show-package.json";
   public static final String RELPATH_CONFIGURATIONS_DIR = "configs";
   public static final String RELPATH_EDGE_BLACKLIST_FILE = "edge_blacklist";
