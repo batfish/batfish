@@ -60,6 +60,20 @@ import org.w3c.dom.NodeList;
 /** A collection for utilities for AWS vendor model */
 @ParametersAreNonnullByDefault
 public final class Utils {
+  // TODO: do any of these matter?
+  private static final int DEFAULT_EBGP_ADMIN = 20;
+  private static final int DEFAULT_IBGP_ADMIN = 200;
+  private static final int DEFAULT_LOCAL_BGP_ADMIN = 200;
+
+  static BgpProcess makeBgpProcess(Ip routerId, Vrf vrf) {
+    return BgpProcess.builder()
+        .setRouterId(routerId)
+        .setVrf(vrf)
+        .setEbgpAdminCost(DEFAULT_EBGP_ADMIN)
+        .setIbgpAdminCost(DEFAULT_IBGP_ADMIN)
+        .setLocalAdminCost(DEFAULT_LOCAL_BGP_ADMIN)
+        .build();
+  }
 
   static final Statement ACCEPT_ALL_BGP =
       new If(
@@ -501,12 +515,7 @@ public final class Utils {
             LinkLocalAddress.of(LINK_LOCAL_IP),
             "To AWS backbone");
     toBackbone.setInterfaceType(InterfaceType.PHYSICAL);
-    BgpProcess bgpProcess =
-        BgpProcess.builder()
-            .setRouterId(LINK_LOCAL_IP)
-            .setVrf(vrf)
-            .setAdminCostsToVendorDefaults(ConfigurationFormat.AWS)
-            .build();
+    BgpProcess bgpProcess = makeBgpProcess(LINK_LOCAL_IP, vrf);
     BgpUnnumberedPeerConfig.builder()
         .setPeerInterface(BACKBONE_FACING_INTERFACE_NAME)
         .setRemoteAs(AWS_BACKBONE_ASN)

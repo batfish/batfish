@@ -11,6 +11,7 @@ import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
 import static org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
 import static org.batfish.datamodel.routing_policy.Common.generateSuppressionPolicy;
+import static org.batfish.representation.cisco.CiscoConfiguration.DEFAULT_EBGP_ADMIN;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpDefaultRouteExportPolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpPeerImportPolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeIcmpObjectGroupAclName;
@@ -1895,7 +1896,7 @@ public class CiscoConversions {
     // TODO: this should take export RTs, not single import RT
     return BgpLeakConfig.builder()
         // TODO: input and honor result of 'bgp distance' command argument 1 (eBGP admin)
-        .setAdmin(RoutingProtocol.BGP.getDefaultAdministrativeCost(ConfigurationFormat.CISCO_IOS))
+        .setAdmin(DEFAULT_EBGP_ADMIN)
         .setAttachRouteTargets(importRt)
         .setWeight(BGP_VRF_LEAK_IGP_WEIGHT)
         .build();

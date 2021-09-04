@@ -169,6 +169,10 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
   /** Matches anything but the IPv4 default route. */
   static final Not NOT_DEFAULT_ROUTE = new Not(matchDefaultRoute());
 
+  public static final int DEFAULT_EBGP_ADMIN = 20;
+  public static final int DEFAULT_IBGP_ADMIN = 200;
+  public static final int DEFAULT_LOCAL_ADMIN = 200;
+
   /*
    * This map is used to convert interface names to their canonical forms.
    * The entries are visited in insertion order until a key is found of which the name to convert is
@@ -747,10 +751,12 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
   private org.batfish.datamodel.BgpProcess toBgpProcess(
       Configuration c, BgpProcess proc, String vrfName) {
     Ip bgpRouterId = getBgpRouterId(c, vrfName, proc);
-    int ebgpAdmin = RoutingProtocol.BGP.getDefaultAdministrativeCost(c.getConfigurationFormat());
-    int ibgpAdmin = RoutingProtocol.IBGP.getDefaultAdministrativeCost(c.getConfigurationFormat());
+    // TODO: surely this is customizable
+    int ebgpAdmin = DEFAULT_EBGP_ADMIN;
+    int ibgpAdmin = DEFAULT_IBGP_ADMIN;
+    int localAdmin = DEFAULT_LOCAL_ADMIN;
     org.batfish.datamodel.BgpProcess newBgpProcess =
-        new org.batfish.datamodel.BgpProcess(bgpRouterId, ebgpAdmin, ibgpAdmin);
+        new org.batfish.datamodel.BgpProcess(bgpRouterId, ebgpAdmin, ibgpAdmin, localAdmin);
     newBgpProcess.setClusterListAsIbgpCost(true);
     BgpTieBreaker tieBreaker = proc.getTieBreaker();
     if (tieBreaker != null) {

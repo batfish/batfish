@@ -3198,6 +3198,7 @@
             "bgpProcess" : {
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
+              "localAdminCost" : 200,
               "routerId" : "169.254.0.1",
               "clusterListAsIbgpCost" : false,
               "interfaceNeighbors" : {
@@ -26707,6 +26708,7 @@
             "bgpProcess" : {
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
+              "localAdminCost" : 200,
               "routerId" : "169.254.0.1",
               "clusterListAsIbgpCost" : false,
               "interfaceNeighbors" : {
@@ -26889,6 +26891,7 @@
             "bgpProcess" : {
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
+              "localAdminCost" : 200,
               "routerId" : "169.254.0.1",
               "clusterListAsIbgpCost" : false,
               "interfaceNeighbors" : {
@@ -27070,6 +27073,7 @@
             "bgpProcess" : {
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
+              "localAdminCost" : 200,
               "routerId" : "169.254.0.1",
               "clusterListAsIbgpCost" : false,
               "interfaceNeighbors" : {
@@ -27222,6 +27226,7 @@
             "bgpProcess" : {
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
+              "localAdminCost" : 200,
               "routerId" : "240.254.254.1",
               "clusterListAsIbgpCost" : false,
               "interfaceNeighbors" : {
@@ -31099,6 +31104,7 @@
             "bgpProcess" : {
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
+              "localAdminCost" : 200,
               "routerId" : "169.254.0.1",
               "clusterListAsIbgpCost" : false,
               "interfaceNeighbors" : {
@@ -61846,6 +61852,7 @@
             "bgpProcess" : {
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
+              "localAdminCost" : 200,
               "redistributionPolicy" : "~BGP_REDISTRIBUTION_POLICY:default~",
               "routerId" : "10.10.255.8",
               "clusterListAsIbgpCost" : true,
@@ -65176,6 +65183,7 @@
             "bgpProcess" : {
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
+              "localAdminCost" : 200,
               "routerId" : "169.254.0.1",
               "clusterListAsIbgpCost" : false,
               "multipathEbgp" : false,
@@ -65254,6 +65262,7 @@
             "bgpProcess" : {
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
+              "localAdminCost" : 200,
               "routerId" : "169.254.0.1",
               "clusterListAsIbgpCost" : false,
               "interfaceNeighbors" : {

@@ -565,8 +565,7 @@ public final class CumulusConversionsTest {
     neighbor.setRemoteAs(RemoteAs.internal());
 
     org.batfish.datamodel.BgpProcess newProc =
-        new org.batfish.datamodel.BgpProcess(
-            Ip.parse("10.0.0.1"), ConfigurationFormat.CUMULUS_NCLU);
+        org.batfish.datamodel.BgpProcess.testBgpProcess(Ip.parse("10.0.0.1"));
 
     Configuration viConfig =
         _nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CUMULUS_NCLU).build();
@@ -628,8 +627,7 @@ public final class CumulusConversionsTest {
     neighbor.setRemoteAs(RemoteAs.internal());
 
     org.batfish.datamodel.BgpProcess newProc =
-        new org.batfish.datamodel.BgpProcess(
-            Ip.parse("10.0.0.1"), ConfigurationFormat.CUMULUS_NCLU);
+        org.batfish.datamodel.BgpProcess.testBgpProcess(Ip.parse("10.0.0.1"));
 
     Configuration viConfig =
         _nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CUMULUS_NCLU).build();
@@ -666,8 +664,7 @@ public final class CumulusConversionsTest {
     neighbor.setIpv4UnicastAddressFamily(ipv4UnicastAddressFamily);
 
     org.batfish.datamodel.BgpProcess newProc =
-        new org.batfish.datamodel.BgpProcess(
-            Ip.parse("10.0.0.1"), ConfigurationFormat.CUMULUS_NCLU);
+        org.batfish.datamodel.BgpProcess.testBgpProcess(Ip.parse("10.0.0.1"));
 
     Configuration viConfig =
         _nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CUMULUS_NCLU).build();
@@ -713,8 +710,7 @@ public final class CumulusConversionsTest {
 
     // set bgp process
     org.batfish.datamodel.BgpProcess newProc =
-        new org.batfish.datamodel.BgpProcess(
-            Ip.parse("10.0.0.1"), ConfigurationFormat.CUMULUS_NCLU);
+        org.batfish.datamodel.BgpProcess.testBgpProcess(Ip.parse("10.0.0.1"));
 
     Configuration viConfig =
         new NetworkFactory()
@@ -800,7 +796,7 @@ public final class CumulusConversionsTest {
         neighbor,
         localAs,
         bgpVrf,
-        new org.batfish.datamodel.BgpProcess(routerId, ConfigurationFormat.CUMULUS_NCLU),
+        org.batfish.datamodel.BgpProcess.testBgpProcess(routerId),
         peerConfigBuilder,
         new Warnings());
 
@@ -849,7 +845,7 @@ public final class CumulusConversionsTest {
         neighbor,
         101L,
         bgpVrf,
-        new org.batfish.datamodel.BgpProcess(Ip.parse("1.1.1.1"), ConfigurationFormat.CUMULUS_NCLU),
+        org.batfish.datamodel.BgpProcess.testBgpProcess(Ip.parse("1.1.1.1")),
         peerConfigBuilder,
         new Warnings());
     assertFalse(peerConfigBuilder.build().getEvpnAddressFamily().getRouteReflectorClient());
@@ -862,7 +858,7 @@ public final class CumulusConversionsTest {
         neighbor,
         101L,
         bgpVrf,
-        new org.batfish.datamodel.BgpProcess(Ip.parse("1.1.1.1"), ConfigurationFormat.CUMULUS_NCLU),
+        org.batfish.datamodel.BgpProcess.testBgpProcess(Ip.parse("1.1.1.1")),
         peerConfigBuilder,
         new Warnings());
     assertTrue(peerConfigBuilder.build().getEvpnAddressFamily().getRouteReflectorClient());
@@ -1224,7 +1220,7 @@ public final class CumulusConversionsTest {
   @Test
   public void testInferClusterId_with_ClusterId() {
     org.batfish.datamodel.BgpProcess newProc =
-        new org.batfish.datamodel.BgpProcess(Ip.parse("1.1.1.1"), ConfigurationFormat.CUMULUS_NCLU);
+        org.batfish.datamodel.BgpProcess.testBgpProcess(Ip.parse("1.1.1.1"));
 
     BgpVrf bgpVrf = new BgpVrf("bgpVrf");
     bgpVrf.setClusterId(Ip.parse("2.2.2.2"));
@@ -1241,7 +1237,7 @@ public final class CumulusConversionsTest {
   @Test
   public void testInferClusterId_without_ClusterId() {
     org.batfish.datamodel.BgpProcess newProc =
-        new org.batfish.datamodel.BgpProcess(Ip.parse("1.1.1.1"), ConfigurationFormat.CUMULUS_NCLU);
+        org.batfish.datamodel.BgpProcess.testBgpProcess(Ip.parse("1.1.1.1"));
 
     BgpVrf bgpVrf = new BgpVrf("bgpVrf");
     bgpVrf.setAutonomousSystem(123L);
@@ -1258,7 +1254,7 @@ public final class CumulusConversionsTest {
   @Test
   public void testInferClusterId_eBGP() {
     org.batfish.datamodel.BgpProcess newProc =
-        new org.batfish.datamodel.BgpProcess(Ip.parse("1.1.1.1"), ConfigurationFormat.CUMULUS_NCLU);
+        org.batfish.datamodel.BgpProcess.testBgpProcess(Ip.parse("1.1.1.1"));
 
     BgpVrf bgpVrf = new BgpVrf("bgpVrf");
     bgpVrf.setClusterId(Ip.parse("2.2.2.2"));
@@ -1744,7 +1740,7 @@ public final class CumulusConversionsTest {
   public void testAddBgpNeighbor_numberedInterface() {
     // set up the VI bgp process
     org.batfish.datamodel.BgpProcess bgpProc =
-        new org.batfish.datamodel.BgpProcess(Ip.parse("0.0.0.0"), ConfigurationFormat.CUMULUS_NCLU);
+        org.batfish.datamodel.BgpProcess.testBgpProcess(Ip.parse("0.0.0.0"));
     Vrf viVrf = Vrf.builder().setName("vrf").build();
     viVrf.setBgpProcess(bgpProc);
 
@@ -1993,8 +1989,7 @@ public final class CumulusConversionsTest {
     vrf.getNeighbors().put("10.0.0.1", bgpNeighbor);
 
     org.batfish.datamodel.BgpProcess newProc =
-        new org.batfish.datamodel.BgpProcess(
-            Ip.parse("10.0.0.1"), ConfigurationFormat.CUMULUS_NCLU);
+        org.batfish.datamodel.BgpProcess.testBgpProcess(Ip.parse("10.0.0.1"));
 
     BgpActivePeerConfig.Builder peerConfigBuilder =
         BgpActivePeerConfig.builder().setPeerAddress(peerIp);

@@ -196,6 +196,10 @@ import org.batfish.vendor.VendorConfiguration;
 import org.batfish.vendor.VendorStructureId;
 
 public final class AsaConfiguration extends VendorConfiguration {
+  public static final int DEFAULT_EBGP_ADMIN = 20;
+  public static final int DEFAULT_IBGP_ADMIN = 200;
+  public static final int DEFAULT_LOCAL_ADMIN = 200;
+
   public static final int DEFAULT_STATIC_ROUTE_DISTANCE = 1;
 
   @VisibleForTesting
@@ -1112,10 +1116,12 @@ public final class AsaConfiguration extends VendorConfiguration {
   private org.batfish.datamodel.BgpProcess toBgpProcess(
       Configuration c, BgpProcess proc, String vrfName) {
     Ip bgpRouterId = getBgpRouterId(c, vrfName, proc);
-    int ebgpAdmin = RoutingProtocol.BGP.getDefaultAdministrativeCost(c.getConfigurationFormat());
-    int ibgpAdmin = RoutingProtocol.IBGP.getDefaultAdministrativeCost(c.getConfigurationFormat());
+    // TODO: surely this is customizable
+    int ebgpAdmin = DEFAULT_EBGP_ADMIN;
+    int ibgpAdmin = DEFAULT_IBGP_ADMIN;
+    int localAdmin = DEFAULT_LOCAL_ADMIN;
     org.batfish.datamodel.BgpProcess newBgpProcess =
-        new org.batfish.datamodel.BgpProcess(bgpRouterId, ebgpAdmin, ibgpAdmin);
+        new org.batfish.datamodel.BgpProcess(bgpRouterId, ebgpAdmin, ibgpAdmin, localAdmin);
     newBgpProcess.setClusterListAsIbgpCost(true);
     BgpTieBreaker tieBreaker = proc.getTieBreaker();
     if (tieBreaker != null) {
@@ -3182,7 +3188,9 @@ public final class AsaConfiguration extends VendorConfiguration {
             newVrf.setBgpProcess(
                 org.batfish.datamodel.BgpProcess.builder()
                     .setRouterId(Ip.ZERO)
-                    .setAdminCostsToVendorDefaults(c.getConfigurationFormat())
+                    .setEbgpAdminCost(DEFAULT_EBGP_ADMIN)
+                    .setIbgpAdminCost(DEFAULT_IBGP_ADMIN)
+                    .setLocalAdminCost(DEFAULT_LOCAL_ADMIN)
                     .build());
           }
         });

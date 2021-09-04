@@ -536,10 +536,10 @@ public class VirtualRouterTest {
     Vrf vrf1 = nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(c1).build();
     Vrf vrf2 = nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(c2).build();
     // Set bgp processes and neighbors
-    BgpProcess.Builder pb =
-        nf.bgpProcessBuilder().setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS);
-    BgpProcess proc1 = pb.setVrf(vrf1).setRouterId(Ip.parse("1.1.1.1")).build();
-    BgpProcess proc2 = pb.setVrf(vrf2).setRouterId(Ip.parse("1.1.1.2")).build();
+    BgpProcess proc1 = BgpProcess.testBgpProcess(Ip.parse("1.1.1.1"));
+    vrf1.setBgpProcess(proc1);
+    BgpProcess proc2 = BgpProcess.testBgpProcess(Ip.parse("1.1.1.2"));
+    vrf2.setBgpProcess(proc2);
     nf.bgpNeighborBuilder()
         .setPeerAddress(Ip.parse("1.1.1.2"))
         .setLocalIp(Ip.parse("1.1.1.1"))

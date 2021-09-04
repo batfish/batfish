@@ -2477,7 +2477,11 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
     BgpProcess proc =
         new BgpProcess(
-            bgp.getRouterId(), vr.getAdminDists().getEbgp(), vr.getAdminDists().getIbgp());
+            bgp.getRouterId(),
+            vr.getAdminDists().getEbgp(),
+            vr.getAdminDists().getIbgp(),
+            /* TODO: PAN does not let you configure local AD. Confirm IBGP AD is used */
+            vr.getAdminDists().getIbgp());
     // common BGP export policy (combination of all redist rules at the BgpVr level)
     RoutingPolicy commonExportPolicy = getBgpCommonExportPolicy(bgp, vr, _w, _c);
     _c.getRoutingPolicies().put(commonExportPolicy.getName(), commonExportPolicy);

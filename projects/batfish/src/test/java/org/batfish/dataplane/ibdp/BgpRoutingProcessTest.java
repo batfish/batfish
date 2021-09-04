@@ -111,16 +111,8 @@ public class BgpRoutingProcessTest {
             .build();
     _vrf = _nf.vrfBuilder().setOwner(_c).setName(DEFAULT_VRF_NAME).build();
     _vrf2 = _nf.vrfBuilder().setOwner(_c).setName("vrf2").build();
-    _bgpProcess =
-        _nf.bgpProcessBuilder()
-            .setRouterId(Ip.ZERO)
-            .setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS)
-            .build();
-    _bgpProcess2 =
-        _nf.bgpProcessBuilder()
-            .setRouterId(Ip.ZERO)
-            .setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS)
-            .build();
+    _bgpProcess = BgpProcess.testBgpProcess(Ip.ZERO);
+    _bgpProcess2 = BgpProcess.testBgpProcess(Ip.ZERO);
     _vrf.setBgpProcess(_bgpProcess);
     _vrf2.setBgpProcess(_bgpProcess2);
     _routingProcess =
@@ -328,11 +320,7 @@ public class BgpRoutingProcessTest {
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
 
-    BgpProcess bgpProc =
-        BgpProcess.builder()
-            .setRouterId(Ip.ZERO)
-            .setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS)
-            .build();
+    BgpProcess bgpProc = BgpProcess.testBgpProcess(Ip.ZERO);
     bgpProc.setNeighbors(ImmutableSortedMap.of(ip1, peer1));
     MutableValueGraph<BgpPeerConfigId, BgpSessionProperties> graph =
         ValueGraphBuilder.directed().build();
@@ -454,11 +442,7 @@ public class BgpRoutingProcessTest {
             .setHostname("c2")
             .build();
     Vrf vrf2 = _nf.vrfBuilder().setOwner(c2).setName(DEFAULT_VRF_NAME).build();
-    BgpProcess bgp2 =
-        _nf.bgpProcessBuilder()
-            .setRouterId(Ip.MAX)
-            .setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS)
-            .build();
+    BgpProcess bgp2 = BgpProcess.testBgpProcess(Ip.MAX);
     vrf2.setBgpProcess(bgp2);
     BgpActivePeerConfig node2Peer =
         BgpActivePeerConfig.builder()

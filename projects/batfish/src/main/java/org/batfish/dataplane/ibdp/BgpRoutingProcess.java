@@ -606,7 +606,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                 route,
                 getRouterId(),
                 route.getAbstractRoute().getNextHopIp(),
-                _process.getAdminCost(RoutingProtocol.BGP),
+                _process.getEbgpAdminCost(),
                 RoutingProtocol.BGP)
             // Prevent from funneling to main RIB
             .setNonRouting(true);
@@ -667,7 +667,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   @VisibleForTesting
   void initLocalEvpnRoutes(Node n) {
     // default admin costs
-    int ebgpAdmin = _process.getAdminCost(RoutingProtocol.BGP);
+    int ebgpAdmin = _process.getEbgpAdminCost();
 
     Builder<EvpnType3Route> initializationBuilder = RibDelta.builder();
     getAllPeerConfigs(_process)

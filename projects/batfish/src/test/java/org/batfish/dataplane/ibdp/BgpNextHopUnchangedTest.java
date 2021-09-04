@@ -83,7 +83,7 @@ public class BgpNextHopUnchangedTest {
 
   /** A default BGP process to start with */
   private BgpProcess.Builder _bgpProcessBuilder =
-      _nf.bgpProcessBuilder().setEbgpAdminCost(1).setIbgpAdminCost(1);
+      _nf.bgpProcessBuilder().setEbgpAdminCost(1).setIbgpAdminCost(1).setLocalAdminCost(1);
 
   /**
    * Returns a three node network where first node (r1) advertises a static route and other nodes

@@ -202,6 +202,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   public static final String ACL_NAME_SECURITY_POLICY = "~SECURITY_POLICIES_TO~";
 
+  /** Juniper uses AD 170 for both EBGP and IBGP routes. */
+  public static final int DEFAULT_BGP_ADMIN_DISTANCE = 170;
+
   public static @Nonnull String computeFirewallFilterTermName(
       @Nonnull String filterName, @Nonnull String termName) {
     return String.format("%s %s", filterName, termName);
@@ -417,15 +420,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
     initDefaultBgpExportPolicy();
     initDefaultBgpImportPolicy();
     String vrfName = routingInstance.getName();
-    int ebgpAdmin =
-        firstNonNull(
-            mg.getPreference(),
-            RoutingProtocol.BGP.getDefaultAdministrativeCost(_c.getConfigurationFormat()));
-    int ibgpAdmin =
-        firstNonNull(
-            mg.getPreference(),
-            RoutingProtocol.IBGP.getDefaultAdministrativeCost(_c.getConfigurationFormat()));
-    BgpProcess proc = new BgpProcess(getRouterId(routingInstance), ebgpAdmin, ibgpAdmin);
+    int ebgpAdmin = firstNonNull(mg.getPreference(), DEFAULT_BGP_ADMIN_DISTANCE);
+    int ibgpAdmin = firstNonNull(mg.getPreference(), DEFAULT_BGP_ADMIN_DISTANCE);
+    int localAdmin = DEFAULT_BGP_ADMIN_DISTANCE /* local admin not relevant for JunOS. */;
+    BgpProcess proc =
+        new BgpProcess(getRouterId(routingInstance), ebgpAdmin, ibgpAdmin, localAdmin);
     boolean multipathEbgp = false;
     boolean multipathIbgp = false;
     boolean multipathMultipleAs = false;
