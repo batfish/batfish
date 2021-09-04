@@ -14,7 +14,7 @@ import org.junit.Test;
 /** Test of {@link Network}. */
 public final class NetworkTest {
 
-  private static final Network TEST_INSTANCE =
+  public static final Network TEST_INSTANCE =
       new Network("foo", NatSettingsTest.TEST_INSTANCE, Ip.ZERO, Ip.MAX, Uid.of("0"));
 
   @Test

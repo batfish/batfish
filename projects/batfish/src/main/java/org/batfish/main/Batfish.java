@@ -11,6 +11,7 @@ import static org.batfish.bddreachability.BDDReachabilityUtils.constructFlows;
 import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_ACCESS_RULEBASE;
 import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_GATEWAYS_AND_SERVERS;
 import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_NAT_RULEBASE;
+import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_NETWORKS;
 import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_PACKAGE;
 import static org.batfish.common.runtime.SnapshotRuntimeData.EMPTY_SNAPSHOT_RUNTIME_DATA;
 import static org.batfish.common.util.CompletionMetadataUtils.getFilterNames;
@@ -249,7 +250,9 @@ import org.batfish.vendor.check_point_management.ManagementDomain;
 import org.batfish.vendor.check_point_management.ManagementPackage;
 import org.batfish.vendor.check_point_management.ManagementServer;
 import org.batfish.vendor.check_point_management.NatRulebase;
+import org.batfish.vendor.check_point_management.ObjectPage;
 import org.batfish.vendor.check_point_management.Package;
+import org.batfish.vendor.check_point_management.TypedManagementObject;
 import org.batfish.vendor.check_point_management.Uid;
 import org.batfish.version.BatfishVersion;
 import org.codehaus.jettison.json.JSONException;
@@ -1620,41 +1623,78 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return natRulebases.isEmpty() ? null : natRulebases.get(0);
   }
 
-  private @Nonnull CheckpointManagementConfiguration parseCheckpointManagementData(
-      @Nonnull Map<String, String> cpManagementData,
-      @Nonnull ParseVendorConfigurationAnswerElement pvcae)
-      throws IOException {
-    /* Organize server data into maps */
-    // server -> domain -> filename -> file contents
-    Map<String, Map<String, Map<String, String>>> domainFileMap = new HashMap<>();
-    // server -> domain -> -> package -> filename -> file contents
-    Map<String, Map<String, Map<String, Map<String, String>>>> packageFileMap = new HashMap<>();
-    cpManagementData.forEach(
-        (filePath, fileContent) -> {
-          String[] parts = filePath.split("/");
-          if (parts.length == 4) {
-            // checkpoint_management/SERVER_NAME/DOMAIN_NAME/foo.json
-            String serverName = parts[1];
-            String domainName = parts[2];
-            String fileName = parts[3];
-            domainFileMap
-                .computeIfAbsent(serverName, n -> new HashMap<>())
-                .computeIfAbsent(domainName, n -> new HashMap<>())
-                .put(fileName, fileContent);
-          } else if (parts.length == 5) {
-            // checkpoint_management/SERVER_NAME/DOMAIN_NAME/PACKAGE_NAME/foo.json
-            String serverName = parts[1];
-            String domainName = parts[2];
-            String packageName = parts[3];
-            String fileName = parts[4];
-            packageFileMap
-                .computeIfAbsent(serverName, n -> new HashMap<>())
-                .computeIfAbsent(domainName, n -> new HashMap<>())
-                .computeIfAbsent(packageName, n -> new HashMap<>())
-                .put(fileName, fileContent);
-          }
-        });
-    /* Extract server data into CheckpointManagementConfiguration */
+  /**
+   * Reads all {@link ObjectPage}s from specified {@code filename} and returns a consolidated list
+   * of {@link TypedManagementObject} from all pages.
+   */
+  private List<TypedManagementObject> readObjects(
+      String filename,
+      Map<String, Map<String, Map<String, String>>> domainFileMap,
+      String domainName,
+      String serverName,
+      ParseVendorConfigurationAnswerElement pvcae) {
+    String objFileContents =
+        domainFileMap
+            .getOrDefault(serverName, ImmutableMap.of())
+            .getOrDefault(domainName, ImmutableMap.of())
+            .get(filename);
+    if (objFileContents == null) {
+      pvcae.addRedFlagWarning(
+          BfConsts.RELPATH_CHECKPOINT_MANAGEMENT_DIR,
+          new Warning(
+              String.format(
+                  "Checkpoint management domain %s on server %s missing %s",
+                  domainName, serverName, filename),
+              "Checkpoint"));
+      return ImmutableList.of();
+    }
+
+    List<ObjectPage> objectPages = null;
+    try {
+      objectPages =
+          BatfishObjectMapper.ignoreUnknownMapper()
+              .readValue(objFileContents, new TypeReference<List<ObjectPage>>() {});
+    } catch (JsonProcessingException e) {
+      pvcae.addRedFlagWarning(
+          BfConsts.RELPATH_CHECKPOINT_MANAGEMENT_DIR,
+          new Warning(
+              String.format(
+                  "JsonProcessingException on Checkpoint management domain %s on server %s in %s",
+                  domainName, serverName, filename),
+              "Checkpoint"));
+      _logger.errorf("Failed to process JSON for domain %s on server %s in %s: %s", e);
+      return ImmutableList.of();
+    }
+    return objectPages.stream()
+        .flatMap(p -> p.getObjects().stream())
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  private List<TypedManagementObject> buildObjectsList(
+      Map<String, Map<String, Map<String, String>>> domainFileMap,
+      String domainName,
+      String serverName,
+      ParseVendorConfigurationAnswerElement pvcae) {
+    return ImmutableList.of(RELPATH_CHECKPOINT_SHOW_NETWORKS).stream()
+        .flatMap(f -> readObjects(f, domainFileMap, domainName, serverName, pvcae).stream())
+        .filter(Objects::nonNull)
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  /**
+   * Returns a map of server name to {@link ManagementServer} based on supplied domain and package
+   * files.
+   *
+   * <p>{@code domainFileMap} is a map of server -> domain -> filename -> file contents
+   *
+   * <p>{@code packageFileMap} is a map of server -> domain -> -> package -> filename -> file
+   * contents
+   */
+  private Map<String, ManagementServer> buildServersMap(
+      Map<String, Map<String, Map<String, String>>> domainFileMap,
+      Map<String, Map<String, Map<String, Map<String, String>>>> packageFileMap,
+      ParseVendorConfigurationAnswerElement pvcae)
+      throws JsonProcessingException {
     ImmutableMap.Builder<String, ManagementServer> serversMap = ImmutableMap.builder();
     for (Entry<String, Map<String, Map<String, Map<String, String>>>> serverEntry :
         packageFileMap.entrySet()) {
@@ -1684,6 +1724,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
                     showGatewaysAndServers, new TypeReference<List<GatewaysAndServers>>() {});
         GatewaysAndServers gatewaysAndServers =
             mergeGatewaysAndServersPages(gatewaysAndServersList);
+
+        List<TypedManagementObject> objects =
+            buildObjectsList(domainFileMap, domainName, serverName, pvcae);
 
         ImmutableMap.Builder<Uid, ManagementPackage> packagesBuilder = ImmutableMap.builder();
         for (Entry<String, Map<String, String>> packageEntry : domainEntry.getValue().entrySet()) {
@@ -1754,12 +1797,51 @@ public class Batfish extends PluginConsumer implements IBatfish {
         // Use any package to find domain
         Domain domain = packages.values().iterator().next().getPackage().getDomain();
         ManagementDomain mgmtDomain =
-            new ManagementDomain(domain, gatewaysAndServers.getGatewaysAndServers(), packages);
+            new ManagementDomain(
+                domain, gatewaysAndServers.getGatewaysAndServers(), packages, objects);
         domainsMap.put(mgmtDomain.getName(), mgmtDomain);
       }
       serversMap.put(serverName, new ManagementServer(domainsMap.build(), serverName));
     }
-    return new CheckpointManagementConfiguration(serversMap.build());
+    return serversMap.build();
+  }
+
+  private @Nonnull CheckpointManagementConfiguration parseCheckpointManagementData(
+      @Nonnull Map<String, String> cpManagementData,
+      @Nonnull ParseVendorConfigurationAnswerElement pvcae)
+      throws IOException {
+    /* Organize server data into maps */
+    // server -> domain -> filename -> file contents
+    Map<String, Map<String, Map<String, String>>> domainFileMap = new HashMap<>();
+    // server -> domain -> -> package -> filename -> file contents
+    Map<String, Map<String, Map<String, Map<String, String>>>> packageFileMap = new HashMap<>();
+    cpManagementData.forEach(
+        (filePath, fileContent) -> {
+          String[] parts = filePath.split("/");
+          if (parts.length == 4) {
+            // checkpoint_management/SERVER_NAME/DOMAIN_NAME/foo.json
+            String serverName = parts[1];
+            String domainName = parts[2];
+            String fileName = parts[3];
+            domainFileMap
+                .computeIfAbsent(serverName, n -> new HashMap<>())
+                .computeIfAbsent(domainName, n -> new HashMap<>())
+                .put(fileName, fileContent);
+          } else if (parts.length == 5) {
+            // checkpoint_management/SERVER_NAME/DOMAIN_NAME/PACKAGE_NAME/foo.json
+            String serverName = parts[1];
+            String domainName = parts[2];
+            String packageName = parts[3];
+            String fileName = parts[4];
+            packageFileMap
+                .computeIfAbsent(serverName, n -> new HashMap<>())
+                .computeIfAbsent(domainName, n -> new HashMap<>())
+                .computeIfAbsent(packageName, n -> new HashMap<>())
+                .put(fileName, fileContent);
+          }
+        });
+    return new CheckpointManagementConfiguration(
+        buildServersMap(domainFileMap, packageFileMap, pvcae));
   }
 
   private @Nonnull GatewaysAndServers mergeGatewaysAndServersPages(
