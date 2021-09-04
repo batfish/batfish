@@ -11,6 +11,7 @@ import static org.batfish.bddreachability.BDDReachabilityUtils.constructFlows;
 import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_ACCESS_RULEBASE;
 import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_GATEWAYS_AND_SERVERS;
 import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_NAT_RULEBASE;
+import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_NETWORKS;
 import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_PACKAGE;
 import static org.batfish.common.runtime.SnapshotRuntimeData.EMPTY_SNAPSHOT_RUNTIME_DATA;
 import static org.batfish.common.util.CompletionMetadataUtils.getFilterNames;
@@ -249,7 +250,9 @@ import org.batfish.vendor.check_point_management.ManagementDomain;
 import org.batfish.vendor.check_point_management.ManagementPackage;
 import org.batfish.vendor.check_point_management.ManagementServer;
 import org.batfish.vendor.check_point_management.NatRulebase;
+import org.batfish.vendor.check_point_management.ObjectPage;
 import org.batfish.vendor.check_point_management.Package;
+import org.batfish.vendor.check_point_management.TypedManagementObject;
 import org.batfish.vendor.check_point_management.Uid;
 import org.batfish.version.BatfishVersion;
 import org.codehaus.jettison.json.JSONException;
@@ -1620,6 +1623,189 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return natRulebases.isEmpty() ? null : natRulebases.get(0);
   }
 
+  /**
+   * Reads all {@link ObjectPage}s from specified {@code filename} and returns a consolidated list
+   * of {@link TypedManagementObject} from all pages.
+   */
+  private List<TypedManagementObject> readObjects(
+      String filename,
+      Map<String, Map<String, Map<String, String>>> domainFileMap,
+      String domainName,
+      String serverName,
+      ParseVendorConfigurationAnswerElement pvcae) {
+    String objFileContents =
+        domainFileMap
+            .getOrDefault(serverName, ImmutableMap.of())
+            .getOrDefault(domainName, ImmutableMap.of())
+            .get(filename);
+    if (objFileContents == null) {
+      pvcae.addRedFlagWarning(
+          BfConsts.RELPATH_CHECKPOINT_MANAGEMENT_DIR,
+          new Warning(
+              String.format(
+                  "Checkpoint management domain %s on server %s missing %s",
+                  domainName, serverName, filename),
+              "Checkpoint"));
+      return ImmutableList.of();
+    }
+
+    List<ObjectPage> objectPages = null;
+    try {
+      objectPages =
+          BatfishObjectMapper.ignoreUnknownMapper()
+              .readValue(objFileContents, new TypeReference<List<ObjectPage>>() {});
+    } catch (JsonProcessingException e) {
+      pvcae.addRedFlagWarning(
+          BfConsts.RELPATH_CHECKPOINT_MANAGEMENT_DIR,
+          new Warning(
+              String.format(
+                  "JsonProcessingException on Checkpoint management domain %s on server %s in %s",
+                  domainName, serverName, filename),
+              "Checkpoint"));
+      _logger.errorf("Failed to process JSON for domain %s on server %s in %s: %s", e);
+      return ImmutableList.of();
+    }
+    return objectPages.stream()
+        .flatMap(p -> p.getObjects().stream())
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  private List<TypedManagementObject> buildObjectsList(
+      Map<String, Map<String, Map<String, String>>> domainFileMap,
+      String domainName,
+      String serverName,
+      ParseVendorConfigurationAnswerElement pvcae) {
+    return ImmutableList.of(RELPATH_CHECKPOINT_SHOW_NETWORKS).stream()
+        .flatMap(f -> readObjects(f, domainFileMap, domainName, serverName, pvcae).stream())
+        .filter(Objects::nonNull)
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  /**
+   * Returns a map of server name to {@link ManagementServer} based on supplied domain and package
+   * files.
+   *
+   * <p>{@code domainFileMap} is a map of server -> domain -> filename -> file contents
+   *
+   * <p>{@code packageFileMap} is a map of server -> domain -> -> package -> filename -> file
+   * contents
+   */
+  private Map<String, ManagementServer> buildServersMap(
+      Map<String, Map<String, Map<String, String>>> domainFileMap,
+      Map<String, Map<String, Map<String, Map<String, String>>>> packageFileMap,
+      ParseVendorConfigurationAnswerElement pvcae)
+      throws JsonProcessingException {
+    ImmutableMap.Builder<String, ManagementServer> serversMap = ImmutableMap.builder();
+    for (Entry<String, Map<String, Map<String, Map<String, String>>>> serverEntry :
+        packageFileMap.entrySet()) {
+      String serverName = serverEntry.getKey();
+      ImmutableMap.Builder<String, ManagementDomain> domainsMap = ImmutableMap.builder();
+      for (Entry<String, Map<String, Map<String, String>>> domainEntry :
+          serverEntry.getValue().entrySet()) {
+        String domainName = domainEntry.getKey();
+        String showGatewaysAndServers =
+            domainFileMap
+                .getOrDefault(serverName, ImmutableMap.of())
+                .getOrDefault(domainName, ImmutableMap.of())
+                .get(RELPATH_CHECKPOINT_SHOW_GATEWAYS_AND_SERVERS);
+        if (showGatewaysAndServers == null) {
+          pvcae.addRedFlagWarning(
+              BfConsts.RELPATH_CHECKPOINT_MANAGEMENT_DIR,
+              new Warning(
+                  String.format(
+                      "Checkpoint management domain %s on server %s missing %s",
+                      domainName, serverName, RELPATH_CHECKPOINT_SHOW_GATEWAYS_AND_SERVERS),
+                  "Checkpoint"));
+          continue;
+        }
+        List<GatewaysAndServers> gatewaysAndServersList =
+            BatfishObjectMapper.ignoreUnknownMapper()
+                .readValue(
+                    showGatewaysAndServers, new TypeReference<List<GatewaysAndServers>>() {});
+        GatewaysAndServers gatewaysAndServers =
+            mergeGatewaysAndServersPages(gatewaysAndServersList);
+
+        List<TypedManagementObject> objects =
+            buildObjectsList(domainFileMap, domainName, serverName, pvcae);
+
+        ImmutableMap.Builder<Uid, ManagementPackage> packagesBuilder = ImmutableMap.builder();
+        for (Entry<String, Map<String, String>> packageEntry : domainEntry.getValue().entrySet()) {
+          Map<String, String> packageFiles = packageEntry.getValue();
+          if (!packageFiles.containsKey(RELPATH_CHECKPOINT_SHOW_PACKAGE)) {
+            pvcae.addRedFlagWarning(
+                BfConsts.RELPATH_CHECKPOINT_MANAGEMENT_DIR,
+                new Warning(
+                    String.format(
+                        "Checkpoint management package %s in domain %s on server %s missing %s",
+                        packageEntry.getKey(),
+                        domainName,
+                        serverName,
+                        RELPATH_CHECKPOINT_SHOW_PACKAGE),
+                    "Checkpoint"));
+            continue;
+          }
+          List<Package> showPackageListEntries =
+              BatfishObjectMapper.ignoreUnknownMapper()
+                  .readValue(
+                      packageFiles.get(RELPATH_CHECKPOINT_SHOW_PACKAGE),
+                      new TypeReference<List<Package>>() {});
+          if (showPackageListEntries.isEmpty()) {
+            pvcae.addRedFlagWarning(
+                BfConsts.RELPATH_CHECKPOINT_MANAGEMENT_DIR,
+                new Warning(
+                    String.format(
+                        "Checkpoint management package %s in domain %s on server %s file %s has no"
+                            + " package entry in the JSON",
+                        packageEntry.getKey(),
+                        domainName,
+                        serverName,
+                        RELPATH_CHECKPOINT_SHOW_PACKAGE),
+                    "Checkpoint"));
+            continue;
+          } else if (showPackageListEntries.size() > 1) {
+            pvcae.addRedFlagWarning(
+                BfConsts.RELPATH_CHECKPOINT_MANAGEMENT_DIR,
+                new Warning(
+                    String.format(
+                        "Checkpoint management show-package %s in domain %s on server %s file %s"
+                            + " has extra packages in the JSON. Using the first entry.",
+                        packageEntry.getKey(),
+                        domainName,
+                        serverName,
+                        RELPATH_CHECKPOINT_SHOW_PACKAGE),
+                    "Checkpoint"));
+            continue;
+          }
+          Package pakij = showPackageListEntries.get(0);
+          List<AccessLayer> accessLayers = getAccessLayers(packageFiles);
+          NatRulebase natRulebase = getNatRulebase(pakij, packageFiles, pvcae, serverName);
+          ManagementPackage mgmtPackage = new ManagementPackage(accessLayers, natRulebase, pakij);
+          packagesBuilder.put(mgmtPackage.getPackage().getUid(), mgmtPackage);
+        }
+        Map<Uid, ManagementPackage> packages = packagesBuilder.build();
+        if (packages.isEmpty()) {
+          pvcae.addRedFlagWarning(
+              BfConsts.RELPATH_CHECKPOINT_MANAGEMENT_DIR,
+              new Warning(
+                  String.format(
+                      "Ignoring Checkpoint management domain %s on server %s: no packages present",
+                      domainName, serverName),
+                  "Checkpoint"));
+          continue;
+        }
+
+        // Use any package to find domain
+        Domain domain = packages.values().iterator().next().getPackage().getDomain();
+        ManagementDomain mgmtDomain =
+            new ManagementDomain(
+                domain, gatewaysAndServers.getGatewaysAndServers(), packages, objects);
+        domainsMap.put(mgmtDomain.getName(), mgmtDomain);
+      }
+      serversMap.put(serverName, new ManagementServer(domainsMap.build(), serverName));
+    }
+    return serversMap.build();
+  }
+
   private @Nonnull CheckpointManagementConfiguration parseCheckpointManagementData(
       @Nonnull Map<String, String> cpManagementData,
       @Nonnull ParseVendorConfigurationAnswerElement pvcae)
@@ -1654,83 +1840,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 .put(fileName, fileContent);
           }
         });
-    /* Extract server data into CheckpointManagementConfiguration */
-    ImmutableMap.Builder<String, ManagementServer> serversMap = ImmutableMap.builder();
-    for (Entry<String, Map<String, Map<String, Map<String, String>>>> serverEntry :
-        packageFileMap.entrySet()) {
-      String serverName = serverEntry.getKey();
-      ImmutableMap.Builder<String, ManagementDomain> domainsMap = ImmutableMap.builder();
-      for (Entry<String, Map<String, Map<String, String>>> domainEntry :
-          serverEntry.getValue().entrySet()) {
-        String domainName = domainEntry.getKey();
-        String showGatewaysAndServers =
-            domainFileMap
-                .getOrDefault(serverName, ImmutableMap.of())
-                .getOrDefault(domainName, ImmutableMap.of())
-                .get(RELPATH_CHECKPOINT_SHOW_GATEWAYS_AND_SERVERS);
-        if (showGatewaysAndServers == null) {
-          pvcae.addRedFlagWarning(
-              BfConsts.RELPATH_CHECKPOINT_MANAGEMENT_DIR,
-              new Warning(
-                  String.format(
-                      "Checkpoint management domain %s on server %s missing %s",
-                      domainName, serverName, RELPATH_CHECKPOINT_SHOW_GATEWAYS_AND_SERVERS),
-                  "Checkpoint"));
-          continue;
-        }
-        List<GatewaysAndServers> gatewaysAndServersList =
-            BatfishObjectMapper.ignoreUnknownMapper()
-                .readValue(
-                    showGatewaysAndServers, new TypeReference<List<GatewaysAndServers>>() {});
-        GatewaysAndServers gatewaysAndServers =
-            mergeGatewaysAndServersPages(gatewaysAndServersList);
-
-        ImmutableMap.Builder<Uid, ManagementPackage> packagesBuilder = ImmutableMap.builder();
-        for (Entry<String, Map<String, String>> packageEntry : domainEntry.getValue().entrySet()) {
-          Map<String, String> packageFiles = packageEntry.getValue();
-          if (!packageFiles.containsKey(RELPATH_CHECKPOINT_SHOW_PACKAGE)) {
-            pvcae.addRedFlagWarning(
-                BfConsts.RELPATH_CHECKPOINT_MANAGEMENT_DIR,
-                new Warning(
-                    String.format(
-                        "Checkpoint management package %s in domain %s on server %s missing %s",
-                        packageEntry.getKey(),
-                        domainName,
-                        serverName,
-                        RELPATH_CHECKPOINT_SHOW_PACKAGE),
-                    "Checkpoint"));
-            continue;
-          }
-          Package pakij =
-              BatfishObjectMapper.ignoreUnknownMapper()
-                  .readValue(packageFiles.get(RELPATH_CHECKPOINT_SHOW_PACKAGE), Package.class);
-          ManagementPackage mgmtPackage;
-          List<AccessLayer> accessLayers = getAccessLayers(packageFiles);
-          NatRulebase natRulebase = getNatRulebase(pakij, packageFiles, pvcae, serverName);
-          mgmtPackage = new ManagementPackage(accessLayers, natRulebase, pakij);
-          packagesBuilder.put(mgmtPackage.getPackage().getUid(), mgmtPackage);
-        }
-        Map<Uid, ManagementPackage> packages = packagesBuilder.build();
-        if (packages.isEmpty()) {
-          pvcae.addRedFlagWarning(
-              BfConsts.RELPATH_CHECKPOINT_MANAGEMENT_DIR,
-              new Warning(
-                  String.format(
-                      "Ignoring Checkpoint management domain %s on server %s: no packages present",
-                      domainName, serverName),
-                  "Checkpoint"));
-          continue;
-        }
-
-        // Use any package to find domain
-        Domain domain = packages.values().iterator().next().getPackage().getDomain();
-        ManagementDomain mgmtDomain =
-            new ManagementDomain(domain, gatewaysAndServers.getGatewaysAndServers(), packages);
-        domainsMap.put(mgmtDomain.getName(), mgmtDomain);
-      }
-      serversMap.put(serverName, new ManagementServer(domainsMap.build(), serverName));
-    }
-    return new CheckpointManagementConfiguration(serversMap.build());
+    return new CheckpointManagementConfiguration(
+        buildServersMap(domainFileMap, packageFileMap, pvcae));
   }
 
   private @Nonnull GatewaysAndServers mergeGatewaysAndServersPages(

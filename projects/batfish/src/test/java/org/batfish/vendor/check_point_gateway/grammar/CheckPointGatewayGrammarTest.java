@@ -54,6 +54,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -197,13 +198,17 @@ public class CheckPointGatewayGrammarTest {
    * with the specified {@code gateways} and {@code packages}.
    */
   private CheckpointManagementConfiguration toCheckpointMgmtConfig(
-      Map<Uid, GatewayOrServer> gateways, Map<Uid, ManagementPackage> packages) {
+      Map<Uid, GatewayOrServer> gateways,
+      Map<Uid, ManagementPackage> packages,
+      List<TypedManagementObject> objects) {
     return new CheckpointManagementConfiguration(
         ImmutableMap.of(
             "s",
             new ManagementServer(
                 ImmutableMap.of(
-                    "d", new ManagementDomain(new Domain("d", Uid.of("0")), gateways, packages)),
+                    "d",
+                    new ManagementDomain(
+                        new Domain("d", Uid.of("0")), gateways, packages, objects)),
                 "s")));
   }
 
@@ -932,7 +937,8 @@ public class CheckPointGatewayGrammarTest {
                     true,
                     Uid.of("16"))));
 
-    CheckpointManagementConfiguration mgmt = toCheckpointMgmtConfig(gateways, packages);
+    CheckpointManagementConfiguration mgmt =
+        toCheckpointMgmtConfig(gateways, packages, ImmutableList.of());
     Map<String, Configuration> configs =
         parseTextConfigs(
             mgmt,
@@ -1029,7 +1035,8 @@ public class CheckPointGatewayGrammarTest {
                 new GatewayOrServerPolicy("p1", null),
                 Uid.of("1")));
 
-    CheckpointManagementConfiguration mgmt = toCheckpointMgmtConfig(gateways, packages);
+    CheckpointManagementConfiguration mgmt =
+        toCheckpointMgmtConfig(gateways, packages, ImmutableList.of());
     Map<String, Configuration> configs = parseTextConfigs(mgmt, "access_rules");
     Configuration c = configs.get("access_rules");
 
@@ -1092,7 +1099,8 @@ public class CheckPointGatewayGrammarTest {
                 new GatewayOrServerPolicy("p1", null),
                 Uid.of("1")));
 
-    CheckpointManagementConfiguration mgmt = toCheckpointMgmtConfig(gateways, packages);
+    CheckpointManagementConfiguration mgmt =
+        toCheckpointMgmtConfig(gateways, packages, ImmutableList.of());
     Batfish batfish = getBatfishForConfigurationNames(mgmt, access_rules);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());

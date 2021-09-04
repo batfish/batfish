@@ -3578,7 +3578,7 @@
             "ibgpAdminCost" : 200,
             "redistributionPolicy" : "~BGP_REDISTRIBUTION_POLICY:default~",
             "routerId" : "1.1.1.1",
-            "clusterListAsIgpCost" : false,
+            "clusterListAsIbgpCost" : true,
             "multipathEbgp" : true,
             "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
             "multipathIbgp" : true,
