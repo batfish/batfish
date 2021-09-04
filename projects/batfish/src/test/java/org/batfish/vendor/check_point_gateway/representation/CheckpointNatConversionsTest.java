@@ -1,5 +1,7 @@
 package org.batfish.vendor.check_point_gateway.representation;
 
+import static org.batfish.datamodel.acl.AclLineMatchExprs.FALSE;
+import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourcePort;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.NAT_PORT_FIRST;
@@ -9,6 +11,7 @@ import static org.batfish.vendor.check_point_gateway.representation.CheckpointNa
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getManualNatRules;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.manualHideRuleTransformation;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.manualHideTransformationSteps;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.mergeTransformations;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -16,12 +19,14 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import java.util.List;
 import java.util.Optional;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.transformation.Transformation;
+import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.vendor.check_point_management.CpmiAnyObject;
 import org.batfish.vendor.check_point_management.GatewayOrServer;
 import org.batfish.vendor.check_point_management.GatewayOrServerPolicy;
@@ -249,6 +254,29 @@ public final class CheckpointNatConversionsTest {
                       .apply(
                           assignSourceIp(hostIp), assignSourcePort(NAT_PORT_FIRST, NAT_PORT_LAST))
                       .build())));
+    }
+  }
+
+  @Test
+  public void testMergeTransformations() {
+    {
+      List<Transformation> manualHideTransformations = ImmutableList.of();
+      assertThat(mergeTransformations(manualHideTransformations), equalTo(Optional.empty()));
+    }
+    {
+      Transformation t =
+          Transformation.always().apply(TransformationStep.assignSourceIp(Ip.ZERO)).build();
+      List<Transformation> manualHideTransformations = ImmutableList.of(t);
+      assertThat(mergeTransformations(manualHideTransformations), equalTo(Optional.of(t)));
+    }
+    {
+      Transformation.Builder tb1 = Transformation.when(FALSE).apply(assignDestinationIp(Ip.ZERO));
+      Transformation t2 =
+          Transformation.always().apply(TransformationStep.assignSourceIp(Ip.ZERO)).build();
+      List<Transformation> manualHideTransformations = ImmutableList.of(tb1.build(), t2);
+      assertThat(
+          mergeTransformations(manualHideTransformations),
+          equalTo(Optional.of(tb1.setOrElse(t2).build())));
     }
   }
 
