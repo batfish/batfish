@@ -8,6 +8,8 @@ import static org.batfish.vendor.check_point_gateway.representation.CheckPointGa
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -171,5 +173,26 @@ public class CheckpointNatConversions {
     }
     return Optional.of(
         when(new MatchHeaderSpace(maybeOriginalHeaderSpace.get())).apply(maybeSteps.get()).build());
+  }
+
+  static @Nonnull Optional<Transformation> mergeTransformations(
+      List<Transformation> manualHideTransformations) {
+    // TODO: add automatic, non-HIDE
+    if (manualHideTransformations.isEmpty()) {
+      return Optional.empty();
+    }
+    List<Transformation> reversedManualHideTransformations =
+        Lists.reverse(manualHideTransformations);
+    Iterator<Transformation> i = reversedManualHideTransformations.iterator();
+    Transformation finalTransformation = i.next();
+    while (i.hasNext()) {
+      Transformation previousTransformation = i.next();
+      finalTransformation =
+          Transformation.when(previousTransformation.getGuard())
+              .apply(previousTransformation.getTransformationSteps())
+              .setOrElse(finalTransformation)
+              .build();
+    }
+    return Optional.of(finalTransformation);
   }
 }

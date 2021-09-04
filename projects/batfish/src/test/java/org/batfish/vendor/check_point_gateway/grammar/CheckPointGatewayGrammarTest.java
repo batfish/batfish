@@ -8,6 +8,7 @@ import static org.batfish.common.matchers.WarningsMatchers.hasParseWarning;
 import static org.batfish.common.matchers.WarningsMatchers.hasParseWarnings;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.ConfigurationFormat.CHECK_POINT_GATEWAY;
+import static org.batfish.datamodel.FirewallSessionInterfaceInfo.Action.POST_NAT_FIB_LOOKUP;
 import static org.batfish.datamodel.Interface.DependencyType.AGGREGATE;
 import static org.batfish.datamodel.InterfaceType.AGGREGATED;
 import static org.batfish.datamodel.InterfaceType.PHYSICAL;
@@ -33,6 +34,7 @@ import static org.batfish.vendor.check_point_gateway.representation.CheckPointGa
 import static org.batfish.vendor.check_point_gateway.representation.Interface.DEFAULT_ETH_SPEED;
 import static org.batfish.vendor.check_point_gateway.representation.Interface.DEFAULT_INTERFACE_MTU;
 import static org.batfish.vendor.check_point_gateway.representation.Interface.DEFAULT_LOOPBACK_MTU;
+import static org.batfish.vendor.check_point_management.NatMethod.HIDE;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.anyOf;
@@ -45,6 +47,7 @@ import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -67,6 +70,7 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceModel;
+import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.InterfaceType;
@@ -105,14 +109,18 @@ import org.batfish.vendor.check_point_management.CpmiAnyObject;
 import org.batfish.vendor.check_point_management.Domain;
 import org.batfish.vendor.check_point_management.GatewayOrServer;
 import org.batfish.vendor.check_point_management.GatewayOrServerPolicy;
+import org.batfish.vendor.check_point_management.Host;
 import org.batfish.vendor.check_point_management.InterfaceTopology;
 import org.batfish.vendor.check_point_management.ManagementDomain;
 import org.batfish.vendor.check_point_management.ManagementPackage;
 import org.batfish.vendor.check_point_management.ManagementServer;
+import org.batfish.vendor.check_point_management.NatRule;
 import org.batfish.vendor.check_point_management.NatRulebase;
 import org.batfish.vendor.check_point_management.NatSettings;
 import org.batfish.vendor.check_point_management.Network;
+import org.batfish.vendor.check_point_management.Original;
 import org.batfish.vendor.check_point_management.Package;
+import org.batfish.vendor.check_point_management.PolicyTargets;
 import org.batfish.vendor.check_point_management.RulebaseAction;
 import org.batfish.vendor.check_point_management.SimpleGateway;
 import org.batfish.vendor.check_point_management.TypedManagementObject;
@@ -1103,5 +1111,95 @@ public class CheckPointGatewayGrammarTest {
             containsString(
                 "Batfish does not handle converting objects of type UnknownType. These objects will"
                     + " be ignored.")));
+  }
+
+  @Test
+  public void testNatConversion() throws IOException {
+    Uid cpmiAnyUid = Uid.of("100");
+    CpmiAnyObject any = new CpmiAnyObject(cpmiAnyUid);
+    Uid policyTargetsUid = Uid.of("101");
+    PolicyTargets policyTargets = new PolicyTargets(policyTargetsUid);
+    Uid originalUid = Uid.of("102");
+    Original original = new Original(cpmiAnyUid);
+    Ip eth1Ip = Ip.parse("10.0.1.1");
+    Uid eth1IpUid = Uid.of("1");
+    Uid natUid = Uid.of("2");
+    Uid ruleUid = Uid.of("3");
+    Uid gwUid = Uid.of("4");
+    String hostname = "nat_rules";
+
+    ImmutableMap<Uid, TypedManagementObject> objs =
+        ImmutableMap.<Uid, TypedManagementObject>builder()
+            .put(cpmiAnyUid, any)
+            .put(policyTargetsUid, policyTargets)
+            .put(originalUid, original)
+            .put(eth1IpUid, new Host(eth1Ip, NAT_SETTINGS_TEST_INSTANCE, "eth1Ip", eth1IpUid))
+            .build();
+    NatRulebase rulebase =
+        new NatRulebase(
+            objs,
+            ImmutableList.of(
+                new NatRule(
+                    false,
+                    "",
+                    true,
+                    ImmutableList.of(cpmiAnyUid),
+                    HIDE,
+                    cpmiAnyUid,
+                    cpmiAnyUid,
+                    cpmiAnyUid,
+                    1,
+                    originalUid,
+                    originalUid,
+                    eth1IpUid,
+                    ruleUid)),
+            natUid);
+
+    ImmutableMap<Uid, ManagementPackage> packages =
+        ImmutableMap.of(
+            Uid.of("2"),
+            new ManagementPackage(
+                ImmutableList.of(),
+                rulebase,
+                new Package(
+                    new Domain("d", Uid.of("0")),
+                    AllInstallationTargets.instance(),
+                    "p1",
+                    false,
+                    true,
+                    Uid.of("2"))));
+    ImmutableMap<Uid, GatewayOrServer> gateways =
+        ImmutableMap.of(
+            gwUid,
+            new SimpleGateway(
+                Ip.parse("10.0.0.1"),
+                hostname,
+                ImmutableList.of(
+                    new org.batfish.vendor.check_point_management.Interface(
+                        "eth0", new InterfaceTopology(false), Ip.parse("10.0.0.1"), 24),
+                    new org.batfish.vendor.check_point_management.Interface(
+                        "eth1", new InterfaceTopology(false), Ip.parse("10.0.1.1"), 24)),
+                new GatewayOrServerPolicy("p1", null),
+                gwUid));
+
+    CheckpointManagementConfiguration mgmt = toCheckpointMgmtConfig(gateways, packages);
+    Map<String, Configuration> configs = parseTextConfigs(mgmt, hostname);
+    Configuration c = configs.get(hostname);
+
+    // Check NAT properties
+    assertThat(c, hasInterface("eth0"));
+    assertNotNull(c.getAllInterfaces().get("eth0").getIncomingTransformation());
+    assertThat(
+        c.getAllInterfaces().get("eth0").getFirewallSessionInterfaceInfo(),
+        equalTo(
+            new FirewallSessionInterfaceInfo(
+                POST_NAT_FIB_LOOKUP, ImmutableList.of("eth0"), null, null)));
+    assertThat(c, hasInterface("eth1"));
+    assertNotNull(c.getAllInterfaces().get("eth1").getIncomingTransformation());
+    assertThat(
+        c.getAllInterfaces().get("eth1").getFirewallSessionInterfaceInfo(),
+        equalTo(
+            new FirewallSessionInterfaceInfo(
+                POST_NAT_FIB_LOOKUP, ImmutableList.of("eth1"), null, null)));
   }
 }

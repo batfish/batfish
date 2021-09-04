@@ -1,9 +1,11 @@
 package org.batfish.vendor.check_point_gateway.representation;
 
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
+import static org.batfish.datamodel.FirewallSessionInterfaceInfo.Action.POST_NAT_FIB_LOOKUP;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toIpAccessLists;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getManualNatRules;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.manualHideRuleTransformation;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.mergeTransformations;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -25,6 +27,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
+import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.Interface.Builder;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
@@ -231,6 +234,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
         .anyMatch(rule -> rule.getMethod() != NatMethod.HIDE)) {
       _w.redFlag("Non-HIDE NAT rules are unsupported");
     }
+    _natTransformation = mergeTransformations(manualHideRuleTransformations).orElse(null);
     // TODO Apply transformations to appropriate interfaces
   }
 
@@ -420,7 +424,11 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
             });
 
     // TODO confirm AccessRule interaction with NAT
-    newIface.setOutgoingFilter(_c.getIpAccessLists().get(INTERFACE_ACL_NAME));
+    newIface.setIncomingFilter(_c.getIpAccessLists().get(INTERFACE_ACL_NAME));
+    newIface.setIncomingTransformation(_natTransformation);
+    newIface.setFirewallSessionInterfaceInfo(
+        new FirewallSessionInterfaceInfo(
+            POST_NAT_FIB_LOOKUP, ImmutableList.of(ifaceName), null, null));
     return newIface.build();
   }
 
@@ -464,6 +472,8 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
   private Map<String, Interface> _interfaces;
   /** destination prefix -> static route definition */
   private Map<Prefix, StaticRoute> _staticRoutes;
+
+  private transient Transformation _natTransformation;
 
   private ConfigurationFormat _vendor;
 }
