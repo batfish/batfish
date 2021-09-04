@@ -17,11 +17,14 @@ import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEqui
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathIbgp;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasPassiveNeighbor;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasRouterId;
+import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasOriginType;
+import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasWeight;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.main.BatfishTestUtils.getBatfishForTextConfigs;
+import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.BGP_LOCAL_WEIGHT;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.contains;
@@ -56,6 +59,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LongSpace;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.matchers.ConfigurationMatchers;
@@ -374,5 +378,25 @@ public class NxosBgpTest {
         parseDpAndGetRib(
             "nxos-bgp-default-route", "ios-bgp-listener-2", "nxos-bgp-network-statement");
     assertThat(outboundBlockRoutes, not(hasItem(hasPrefix(Prefix.ZERO))));
+  }
+
+  // When network statement and redistribution are both present, the network statement ends up
+  // as the best path.
+  @Test
+  public void testNetworkAndRedistribution() throws Exception {
+    String hostname = "nxos-bgp-network-redistribute";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.loadConfigurations(batfish.getSnapshot());
+    batfish.computeDataPlane(batfish.getSnapshot()); // compute and cache the dataPlane
+    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
+
+    Set<Bgpv4Route> routes = dp.getBgpRoutes().get(hostname, "default");
+    assertThat(
+        routes,
+        contains(
+            allOf(
+                hasPrefix(Prefix.parse("1.1.1.1/32")),
+                hasOriginType(OriginType.IGP),
+                hasWeight(BGP_LOCAL_WEIGHT))));
   }
 }

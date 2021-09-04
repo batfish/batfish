@@ -110,12 +110,14 @@ import org.batfish.vendor.check_point_management.ManagementDomain;
 import org.batfish.vendor.check_point_management.ManagementPackage;
 import org.batfish.vendor.check_point_management.ManagementServer;
 import org.batfish.vendor.check_point_management.NatRulebase;
+import org.batfish.vendor.check_point_management.NatSettings;
 import org.batfish.vendor.check_point_management.Network;
 import org.batfish.vendor.check_point_management.Package;
 import org.batfish.vendor.check_point_management.RulebaseAction;
 import org.batfish.vendor.check_point_management.SimpleGateway;
 import org.batfish.vendor.check_point_management.TypedManagementObject;
 import org.batfish.vendor.check_point_management.Uid;
+import org.batfish.vendor.check_point_management.UnknownTypedManagementObject;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -124,6 +126,8 @@ import org.junit.rules.TemporaryFolder;
 public class CheckPointGatewayGrammarTest {
   private static final String TESTCONFIGS_PREFIX =
       "org/batfish/vendor/check_point_gateway/grammar/testconfigs/";
+  public static final NatSettings NAT_SETTINGS_TEST_INSTANCE =
+      new NatSettings(true, "gateway", "All", "hide");
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
@@ -887,7 +891,9 @@ public class CheckPointGatewayGrammarTest {
                 ImmutableList.of(),
                 new NatRulebase(
                     ImmutableMap.of(
-                        Uid.of("4"), new Network("n1", Ip.ZERO, Ip.ZERO, Uid.of("n1uid"))),
+                        Uid.of("4"),
+                        new Network(
+                            "n1", NAT_SETTINGS_TEST_INSTANCE, Ip.ZERO, Ip.ZERO, Uid.of("n1uid"))),
                     ImmutableList.of(),
                     Uid.of("6")),
                 new Package(
@@ -902,7 +908,9 @@ public class CheckPointGatewayGrammarTest {
                 ImmutableList.of(),
                 new NatRulebase(
                     ImmutableMap.of(
-                        Uid.of("8"), new Network("n2", Ip.MAX, Ip.MAX, Uid.of("n2uid"))),
+                        Uid.of("8"),
+                        new Network(
+                            "n2", NAT_SETTINGS_TEST_INSTANCE, Ip.MAX, Ip.MAX, Uid.of("n2uid"))),
                     ImmutableList.of(),
                     Uid.of("10")),
                 new Package(
@@ -961,11 +969,19 @@ public class CheckPointGatewayGrammarTest {
             .put(
                 net1Uid,
                 new Network(
-                    "networkEth1", Ip.parse("10.0.1.0"), Ip.parse("255.255.255.0"), net1Uid))
+                    "networkEth1",
+                    NAT_SETTINGS_TEST_INSTANCE,
+                    Ip.parse("10.0.1.0"),
+                    Ip.parse("255.255.255.0"),
+                    net1Uid))
             .put(
                 net2Uid,
                 new Network(
-                    "networkEth2", Ip.parse("10.0.2.0"), Ip.parse("255.255.255.0"), net2Uid))
+                    "networkEth2",
+                    NAT_SETTINGS_TEST_INSTANCE,
+                    Ip.parse("10.0.2.0"),
+                    Ip.parse("255.255.255.0"),
+                    net2Uid))
             .put(acceptUid, new RulebaseAction("Accept", acceptUid, "Accept"))
             .put(dropUid, new RulebaseAction("Drop", dropUid, "Drop"))
             .build();
@@ -1036,5 +1052,56 @@ public class CheckPointGatewayGrammarTest {
     assertThat(c, hasInterface("eth2", hasOutgoingFilter(rejects(denied, "eth1", c))));
     assertThat(c, hasInterface("eth3", hasOutgoingFilter(accepts(permitted, "eth1", c))));
     assertThat(c, hasInterface("eth3", hasOutgoingFilter(rejects(denied, "eth1", c))));
+  }
+
+  @Test
+  public void testObjectConversionWarnings() throws IOException {
+    Uid unknownUid = Uid.of("10");
+    Uid packageUid = Uid.of("12");
+    String accessLayerName = "accessLayerFoo";
+    String access_rules = "access_rules"; // Any config will do, just need to convert mgmt objs
+
+    ImmutableMap<Uid, TypedManagementObject> objs =
+        ImmutableMap.<Uid, TypedManagementObject>builder()
+            .put(
+                unknownUid,
+                new UnknownTypedManagementObject("unknownObjectType", unknownUid, "UnknownType"))
+            .build();
+
+    ImmutableMap<Uid, ManagementPackage> packages =
+        ImmutableMap.of(
+            packageUid,
+            new ManagementPackage(
+                ImmutableList.of(
+                    new AccessLayer(objs, ImmutableList.of(), Uid.of("13"), accessLayerName)),
+                null,
+                new Package(
+                    new Domain("d", Uid.of("14")),
+                    AllInstallationTargets.instance(),
+                    "p1",
+                    true,
+                    false,
+                    packageUid)));
+    ImmutableMap<Uid, GatewayOrServer> gateways =
+        ImmutableMap.of(
+            Uid.of("1"),
+            new SimpleGateway(
+                Ip.parse("10.0.0.1"),
+                access_rules,
+                ImmutableList.of(),
+                new GatewayOrServerPolicy("p1", null),
+                Uid.of("1")));
+
+    CheckpointManagementConfiguration mgmt = toCheckpointMgmtConfig(gateways, packages);
+    Batfish batfish = getBatfishForConfigurationNames(mgmt, access_rules);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(
+        ccae,
+        hasRedFlagWarning(
+            access_rules,
+            containsString(
+                "Batfish does not handle converting objects of type UnknownType. These objects will"
+                    + " be ignored.")));
   }
 }

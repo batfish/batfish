@@ -21,7 +21,9 @@ public class AddressSpaceToIpSpaceTest {
     AddressSpaceToIpSpace visitor = new AddressSpaceToIpSpace(ImmutableMap.of());
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip2 = Ip.parse("2.2.2.2");
-    AddressRange range = new AddressRange(ip1, ip2, null, null, "name", Uid.of("uid"));
+    AddressRange range =
+        new AddressRange(
+            ip1, ip2, null, null, NatSettingsTest.TEST_INSTANCE, "name", Uid.of("uid"));
     assertThat(range.accept(visitor), equalTo(IpRange.range(ip1, ip2)));
   }
 
@@ -30,7 +32,9 @@ public class AddressSpaceToIpSpaceTest {
     AddressSpaceToIpSpace visitor = new AddressSpaceToIpSpace(ImmutableMap.of());
     Ip6 ip1 = Ip6.parse("1::1");
     Ip6 ip2 = Ip6.parse("1::2");
-    AddressRange range = new AddressRange(null, null, ip1, ip2, "name", Uid.of("uid"));
+    AddressRange range =
+        new AddressRange(
+            null, null, ip1, ip2, NatSettingsTest.TEST_INSTANCE, "name", Uid.of("uid"));
     assertThat(range.accept(visitor), equalTo(EmptyIpSpace.INSTANCE));
   }
 
@@ -77,9 +81,9 @@ public class AddressSpaceToIpSpaceTest {
     Group group1 = new Group("group1", ImmutableList.of(group2Uid, host1Uid), group1Uid);
     Group group2 = new Group("group2", ImmutableList.of(group1Uid, group3Uid, host2Uid), group2Uid);
     Group group3 = new Group("group3", ImmutableList.of(host3Uid), group3Uid);
-    Host host1 = new Host(hostIp1, "host1", host1Uid);
-    Host host2 = new Host(hostIp2, "host2", host2Uid);
-    Host host3 = new Host(hostIp3, "host3", host3Uid);
+    Host host1 = new Host(hostIp1, NatSettingsTest.TEST_INSTANCE, "host1", host1Uid);
+    Host host2 = new Host(hostIp2, NatSettingsTest.TEST_INSTANCE, "host2", host2Uid);
+    Host host3 = new Host(hostIp3, NatSettingsTest.TEST_INSTANCE, "host3", host3Uid);
 
     AddressSpaceToIpSpace visitor =
         new AddressSpaceToIpSpace(
@@ -104,7 +108,7 @@ public class AddressSpaceToIpSpaceTest {
   public void testHost() {
     AddressSpaceToIpSpace visitor = new AddressSpaceToIpSpace(ImmutableMap.of());
     Ip hostIp = Ip.parse("10.10.10.10");
-    Host host = new Host(hostIp, "hostName", Uid.of("10"));
+    Host host = new Host(hostIp, NatSettingsTest.TEST_INSTANCE, "hostName", Uid.of("10"));
     assertThat(host.accept(visitor), equalTo(hostIp.toIpSpace()));
   }
 
@@ -113,7 +117,7 @@ public class AddressSpaceToIpSpaceTest {
     AddressSpaceToIpSpace visitor = new AddressSpaceToIpSpace(ImmutableMap.of());
     Ip ip = Ip.parse("1.1.1.0");
     Ip mask = Ip.parse("255.255.255.0");
-    Network network = new Network("name", ip, mask, Uid.of("uid"));
+    Network network = new Network("name", NatSettingsTest.TEST_INSTANCE, ip, mask, Uid.of("uid"));
     Ip flippedMask = Ip.parse("0.0.0.255");
     assertThat(
         network.accept(visitor),

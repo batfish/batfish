@@ -124,7 +124,8 @@ public class BgpProcess implements Serializable {
   private static final String PROP_ACTIVE_NEIGHBORS = "neighbors";
   private static final String PROP_ROUTER_ID = "routerId";
   private static final String PROP_TIE_BREAKER = "tieBreaker";
-  private static final String PROP_CLUSTER_LIST_AS_IGP_COST = "clusterListAsIgpCost";
+  private static final String PROP_CLUSTER_LIST_AS_IBGP_COST = "clusterListAsIbgpCost";
+  private static final String PROP_CLUSTER_LIST_AS_IGP_COST_DEPRECATED = "clusterListAsIgpCost";
   private static final String PROP_REDISTRIBUTION_POLICY = "redistributionPolicy";
 
   @Nullable private BgpConfederation _confederation;
@@ -379,8 +380,8 @@ public class BgpProcess implements Serializable {
     return _tieBreaker;
   }
 
-  @JsonProperty(PROP_CLUSTER_LIST_AS_IGP_COST)
-  public boolean getClusterListAsIgpCost() {
+  @JsonProperty(PROP_CLUSTER_LIST_AS_IBGP_COST)
+  public boolean getClusterListAsIbgpCost() {
     return _clusterListAsIbgpCost;
   }
 
@@ -447,9 +448,15 @@ public class BgpProcess implements Serializable {
     _tieBreaker = tieBreaker;
   }
 
-  @JsonProperty(PROP_CLUSTER_LIST_AS_IGP_COST)
-  public void setClusterListAsIgpCost(boolean clusterListAsIbgpCost) {
+  @JsonProperty(PROP_CLUSTER_LIST_AS_IBGP_COST)
+  public void setClusterListAsIbgpCost(boolean clusterListAsIbgpCost) {
     _clusterListAsIbgpCost = clusterListAsIbgpCost;
+  }
+
+  @Deprecated // for old VI model with old JSON name.
+  @JsonProperty(PROP_CLUSTER_LIST_AS_IGP_COST_DEPRECATED)
+  private void setClusterListAsIbgpCostDeprecated(boolean clusterListAsIbgpCost) {
+    setClusterListAsIbgpCost(clusterListAsIbgpCost);
   }
 
   /**

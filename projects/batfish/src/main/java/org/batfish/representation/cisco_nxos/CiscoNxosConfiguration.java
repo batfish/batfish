@@ -267,6 +267,9 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   /** On NX-OS, management VRF has id 2. */
   public static final int MANAGEMENT_VRF_ID = 2;
 
+  /** Locally-generated BGP routes have a default weight of 32768. */
+  public static final int BGP_LOCAL_WEIGHT = 32768;
+
   // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus7000/sw/qos/config/cisco_nexus7000_qos_config_guide_8x/configuring_classification.html
   /** On NX-OS, there is an implicit QoS class-map "class-default". */
   public static final String DEFAULT_CLASS_MAP_NAME = "class-default";
@@ -550,6 +553,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     org.batfish.datamodel.BgpProcess newBgpProcess =
         new org.batfish.datamodel.BgpProcess(
             Conversions.getBgpRouterId(nxBgpVrf, _c, v, _w), ebgpAdmin, ibgpAdmin);
+    newBgpProcess.setClusterListAsIbgpCost(true);
     if (nxBgpVrf.getBestpathCompareRouterId()) {
       newBgpProcess.setTieBreaker(BgpTieBreaker.ROUTER_ID);
     }
@@ -610,6 +614,76 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     // For NX-OS, next-hop is cleared on routes redistributed into BGP (though it may be rewritten
     // later in the policy).
     redistributionPolicy.addStatement(new SetNextHop(DiscardNextHop.INSTANCE));
+    // For NX-OS, local routes have a default weight of 32768.
+    redistributionPolicy.addStatement(new SetWeight(new LiteralInt(BGP_LOCAL_WEIGHT)));
+
+    // BGP network statements take effect before redistribution.
+    if (ipv4af != null) {
+      Multimap<Optional<String>, Prefix> networksByRouteMap =
+          ipv4af.getNetworks().stream()
+              .collect(
+                  Multimaps.toMultimap(
+                      n -> Optional.ofNullable(n.getRouteMap()),
+                      BgpVrfIpv4AddressFamilyConfiguration.Network::getNetwork,
+                      LinkedListMultimap::create));
+      networksByRouteMap
+          .asMap()
+          .forEach(
+              (maybeMap, prefixes) -> {
+                PrefixSpace exportSpace = new PrefixSpace();
+                prefixes.forEach(exportSpace::addPrefix);
+                @Nullable String routeMap = maybeMap.orElse(null);
+                List<BooleanExpr> exportNetworkConditions =
+                    ImmutableList.of(
+                        new MatchPrefixSet(
+                            DestinationNetwork.instance(), new ExplicitPrefixSet(exportSpace)),
+                        new Not(
+                            new MatchProtocol(
+                                RoutingProtocol.BGP,
+                                RoutingProtocol.IBGP,
+                                RoutingProtocol.AGGREGATE)),
+                        routeMap != null && _routeMaps.containsKey(routeMap)
+                            ? new CallExpr(routeMap)
+                            : BooleanExprs.TRUE);
+                newBgpProcess.addToOriginationSpace(exportSpace);
+                redistributionPolicy.addStatement(
+                    new If(
+                        new Conjunction(exportNetworkConditions),
+                        ImmutableList.of(
+                            new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
+                            Statements.ExitAccept.toStaticStatement())));
+              });
+    }
+
+    BgpVrfIpv6AddressFamilyConfiguration ipv6af = nxBgpVrf.getIpv6UnicastAddressFamily();
+    if (ipv6af != null) {
+      ipv6af
+          .getNetworks()
+          .forEach(
+              network -> {
+                @Nullable String routeMap = network.getRouteMap();
+                List<BooleanExpr> exportNetworkConditions =
+                    ImmutableList.of(
+                        new MatchPrefix6Set(
+                            new DestinationNetwork6(),
+                            new ExplicitPrefix6Set(
+                                new Prefix6Space(Prefix6Range.fromPrefix6(network.getNetwork())))),
+                        new Not(
+                            new MatchProtocol(
+                                RoutingProtocol.BGP,
+                                RoutingProtocol.IBGP,
+                                RoutingProtocol.AGGREGATE)),
+                        routeMap != null && _routeMaps.containsKey(routeMap)
+                            ? new CallExpr(routeMap)
+                            : BooleanExprs.TRUE);
+                redistributionPolicy.addStatement(
+                    new If(
+                        new Conjunction(exportNetworkConditions),
+                        ImmutableList.of(
+                            new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
+                            Statements.ExitAccept.toStaticStatement())));
+              });
+    }
 
     // Only redistribute default route if `default-information originate` is set.
     @Nullable
@@ -722,74 +796,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       eigrp.setComment("Redistribute EIGRP routes into BGP");
       redistributionPolicy.addStatement(
           new If(eigrp, ImmutableList.of(Statements.ExitAccept.toStaticStatement())));
-    }
-
-    // Now we add all the per-network export policies.
-    if (ipv4af != null) {
-      Multimap<Optional<String>, Prefix> networksByRouteMap =
-          ipv4af.getNetworks().stream()
-              .collect(
-                  Multimaps.toMultimap(
-                      n -> Optional.ofNullable(n.getRouteMap()),
-                      BgpVrfIpv4AddressFamilyConfiguration.Network::getNetwork,
-                      LinkedListMultimap::create));
-      networksByRouteMap
-          .asMap()
-          .forEach(
-              (maybeMap, prefixes) -> {
-                PrefixSpace exportSpace = new PrefixSpace();
-                prefixes.forEach(exportSpace::addPrefix);
-                @Nullable String routeMap = maybeMap.orElse(null);
-                List<BooleanExpr> exportNetworkConditions =
-                    ImmutableList.of(
-                        new MatchPrefixSet(
-                            DestinationNetwork.instance(), new ExplicitPrefixSet(exportSpace)),
-                        new Not(
-                            new MatchProtocol(
-                                RoutingProtocol.BGP,
-                                RoutingProtocol.IBGP,
-                                RoutingProtocol.AGGREGATE)),
-                        routeMap != null && _routeMaps.containsKey(routeMap)
-                            ? new CallExpr(routeMap)
-                            : BooleanExprs.TRUE);
-                newBgpProcess.addToOriginationSpace(exportSpace);
-                redistributionPolicy.addStatement(
-                    new If(
-                        new Conjunction(exportNetworkConditions),
-                        ImmutableList.of(
-                            new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
-                            Statements.ExitAccept.toStaticStatement())));
-              });
-    }
-
-    BgpVrfIpv6AddressFamilyConfiguration ipv6af = nxBgpVrf.getIpv6UnicastAddressFamily();
-    if (ipv6af != null) {
-      ipv6af
-          .getNetworks()
-          .forEach(
-              network -> {
-                @Nullable String routeMap = network.getRouteMap();
-                List<BooleanExpr> exportNetworkConditions =
-                    ImmutableList.of(
-                        new MatchPrefix6Set(
-                            new DestinationNetwork6(),
-                            new ExplicitPrefix6Set(
-                                new Prefix6Space(Prefix6Range.fromPrefix6(network.getNetwork())))),
-                        new Not(
-                            new MatchProtocol(
-                                RoutingProtocol.BGP,
-                                RoutingProtocol.IBGP,
-                                RoutingProtocol.AGGREGATE)),
-                        routeMap != null && _routeMaps.containsKey(routeMap)
-                            ? new CallExpr(routeMap)
-                            : BooleanExprs.TRUE);
-                redistributionPolicy.addStatement(
-                    new If(
-                        new Conjunction(exportNetworkConditions),
-                        ImmutableList.of(
-                            new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
-                            Statements.ExitAccept.toStaticStatement())));
-              });
     }
 
     // Finalize redistribution policy and attach to process

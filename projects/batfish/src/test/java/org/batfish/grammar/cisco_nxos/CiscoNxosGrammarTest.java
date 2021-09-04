@@ -95,6 +95,7 @@ import static org.batfish.grammar.cisco_nxos.CiscoNxosControlPlaneExtractor.TCP_
 import static org.batfish.grammar.cisco_nxos.CiscoNxosControlPlaneExtractor.UDP_PORT_RANGE;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
+import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.BGP_LOCAL_WEIGHT;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.DEFAULT_VRF_ID;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.DEFAULT_VRF_NAME;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.MANAGEMENT_VRF_NAME;
@@ -862,6 +863,7 @@ public final class CiscoNxosGrammarTest {
             .setReceivedFromIp(ZERO) // indicates local origination
             .setSrcProtocol(RoutingProtocol.STATIC)
             .setTag(0L)
+            .setWeight(BGP_LOCAL_WEIGHT)
             .build();
     Bgpv4Route bgpRouteVrf2 =
         bgpRouteVrf1.toBuilder().setOriginatorIp(Ip.parse("10.10.10.2")).build();
@@ -926,6 +928,7 @@ public final class CiscoNxosGrammarTest {
                   .setOriginatorIp(bgpRouterId)
                   .setOriginType(OriginType.INCOMPLETE)
                   .setSrcProtocol(RoutingProtocol.EIGRP)
+                  .setWeight(BGP_LOCAL_WEIGHT)
                   .build()));
     }
     {
@@ -957,6 +960,7 @@ public final class CiscoNxosGrammarTest {
                   .setOriginatorIp(bgpRouterId)
                   .setOriginType(OriginType.INCOMPLETE)
                   .setSrcProtocol(RoutingProtocol.EIGRP)
+                  .setWeight(BGP_LOCAL_WEIGHT)
                   .build()));
     }
     {
@@ -999,6 +1003,7 @@ public final class CiscoNxosGrammarTest {
                   .setOriginatorIp(bgpRouterId)
                   .setOriginType(OriginType.INCOMPLETE)
                   .setSrcProtocol(RoutingProtocol.EIGRP_EX)
+                  .setWeight(BGP_LOCAL_WEIGHT)
                   .build()));
     }
   }

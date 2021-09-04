@@ -129,8 +129,7 @@ public final class AccessLayerTest {
   public void testSerialization() {
     AccessLayer obj =
         new AccessLayer(
-            ImmutableMap.of(
-                Uid.of("0"), new AddressRange(null, null, null, null, "foo", Uid.of("0"))),
+            ImmutableMap.of(Uid.of("0"), AddressRangeTest.TEST_INSTANCE),
             ImmutableList.of(),
             Uid.of("1"),
             "foo");
@@ -145,8 +144,7 @@ public final class AccessLayerTest {
             obj, new AccessLayer(ImmutableMap.of(), ImmutableList.of(), Uid.of("0"), "foo"))
         .addEqualityGroup(
             new AccessLayer(
-                ImmutableMap.of(
-                    Uid.of("1"), new AddressRange(null, null, null, null, "foo", Uid.of("1"))),
+                ImmutableMap.of(Uid.of("1"), AddressRangeTest.TEST_INSTANCE),
                 ImmutableList.of(),
                 Uid.of("0"),
                 "foo"))

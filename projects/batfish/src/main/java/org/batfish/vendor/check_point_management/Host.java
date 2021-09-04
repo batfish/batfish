@@ -11,32 +11,44 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 
 /** A single host address. */
-public final class Host extends TypedManagementObject implements AddressSpace {
+public final class Host extends TypedManagementObject implements AddressSpace, Machine {
 
   @Override
   public <T> T accept(AddressSpaceVisitor<T> visitor) {
     return visitor.visitHost(this);
   }
 
+  @Override
+  public <T> T accept(MachineVisitor<T> visitor) {
+    return visitor.visitHost(this);
+  }
+
   @JsonCreator
   private static @Nonnull Host create(
       @JsonProperty(PROP_IPV4_ADDRESS) @Nullable Ip ipv4Address,
+      @JsonProperty(PROP_NAT_SETTINGS) @Nullable NatSettings natSettings,
       @JsonProperty(PROP_NAME) @Nullable String name,
       @JsonProperty(PROP_UID) @Nullable Uid uid) {
     checkArgument(ipv4Address != null, "Missing %s", PROP_IPV4_ADDRESS);
+    checkArgument(natSettings != null, "Missing %s", PROP_NAT_SETTINGS);
     checkArgument(name != null, "Missing %s", PROP_NAME);
     checkArgument(uid != null, "Missing %s", PROP_UID);
-    return new Host(ipv4Address, name, uid);
+    return new Host(ipv4Address, natSettings, name, uid);
   }
 
   @VisibleForTesting
-  Host(Ip ipv4Address, String name, Uid uid) {
+  public Host(Ip ipv4Address, NatSettings natSettings, String name, Uid uid) {
     super(name, uid);
     _ipv4Address = ipv4Address;
+    _natSettings = natSettings;
   }
 
   public @Nonnull Ip getIpv4Address() {
     return _ipv4Address;
+  }
+
+  public @Nonnull NatSettings getNatSettings() {
+    return _natSettings;
   }
 
   @Override
@@ -45,20 +57,25 @@ public final class Host extends TypedManagementObject implements AddressSpace {
       return false;
     }
     Host host = (Host) o;
-    return _ipv4Address.equals(host._ipv4Address);
+    return _ipv4Address.equals(host._ipv4Address) && _natSettings.equals(host._natSettings);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(baseHashcode(), _ipv4Address);
+    return Objects.hash(baseHashcode(), _ipv4Address, _natSettings);
   }
 
   @Override
   public String toString() {
-    return baseToStringHelper().add(PROP_IPV4_ADDRESS, _ipv4Address).toString();
+    return baseToStringHelper()
+        .add(PROP_IPV4_ADDRESS, _ipv4Address)
+        .add(PROP_NAT_SETTINGS, _natSettings)
+        .toString();
   }
 
   private static final String PROP_IPV4_ADDRESS = "ipv4-address";
+  private static final String PROP_NAT_SETTINGS = "nat-settings";
 
   private final @Nonnull Ip _ipv4Address;
+  private final @Nonnull NatSettings _natSettings;
 }

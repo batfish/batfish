@@ -19,10 +19,10 @@ public final class GatewayOrServerPolicyTest {
       String input =
           "{"
               + "\"GARBAGE\":0,"
-              + "\"accessPolicyInstalled\": true,"
-              + "\"accessPolicyName\": \"p1\","
-              + "\"threatPolicyInstalled\": true,"
-              + "\"threatPolicyName\": \"p2\""
+              + "\"access-policy-installed\": true,"
+              + "\"access-policy-name\": \"p1\","
+              + "\"threat-policy-installed\": true,"
+              + "\"threat-policy-name\": \"p2\""
               + "}";
       assertThat(
           BatfishObjectMapper.ignoreUnknownMapper().readValue(input, GatewayOrServerPolicy.class),

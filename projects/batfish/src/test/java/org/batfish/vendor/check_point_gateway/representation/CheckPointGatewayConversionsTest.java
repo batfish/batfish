@@ -4,16 +4,22 @@ import static org.batfish.datamodel.matchers.AndMatchExprMatchers.hasConjuncts;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExprThat;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
+import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.checkValidHeaderSpaceInputs;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toAction;
+import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toHeaderSpace;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toIpAccessLists;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toMatchExpr;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
+import java.util.Optional;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
@@ -23,6 +29,7 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.vendor.check_point_management.AccessLayer;
@@ -30,14 +37,21 @@ import org.batfish.vendor.check_point_management.AccessRule;
 import org.batfish.vendor.check_point_management.AccessRuleOrSection;
 import org.batfish.vendor.check_point_management.AccessSection;
 import org.batfish.vendor.check_point_management.CpmiAnyObject;
+import org.batfish.vendor.check_point_management.Host;
+import org.batfish.vendor.check_point_management.NatSettings;
 import org.batfish.vendor.check_point_management.Network;
+import org.batfish.vendor.check_point_management.PolicyTargets;
 import org.batfish.vendor.check_point_management.RulebaseAction;
+import org.batfish.vendor.check_point_management.ServiceTcp;
 import org.batfish.vendor.check_point_management.TypedManagementObject;
 import org.batfish.vendor.check_point_management.Uid;
 import org.junit.Test;
 
-public class CheckPointGatewayConversionsTest {
+/** Test of {@link CheckPointGatewayConversions}. */
+public final class CheckPointGatewayConversionsTest {
 
+  public static final NatSettings NAT_SETTINGS_TEST_INSTANCE =
+      new NatSettings(true, "gateway", "All", "hide");
   private static final Uid UID_ACCEPT = Uid.of("99997");
   private static final Uid UID_DROP = Uid.of("99998");
   private static final Uid UID_CPMI_ANY = Uid.of("99999");
@@ -49,13 +63,28 @@ public class CheckPointGatewayConversionsTest {
       ImmutableMap.<Uid, TypedManagementObject>builder()
           .put(
               UID_NET0,
-              new Network("net0", Ip.parse("10.0.0.0"), Ip.parse("255.255.255.0"), UID_NET0))
+              new Network(
+                  "net0",
+                  NAT_SETTINGS_TEST_INSTANCE,
+                  Ip.parse("10.0.0.0"),
+                  Ip.parse("255.255.255.0"),
+                  UID_NET0))
           .put(
               UID_NET1,
-              new Network("net1", Ip.parse("10.0.1.0"), Ip.parse("255.255.255.0"), UID_NET1))
+              new Network(
+                  "net1",
+                  NAT_SETTINGS_TEST_INSTANCE,
+                  Ip.parse("10.0.1.0"),
+                  Ip.parse("255.255.255.0"),
+                  UID_NET1))
           .put(
               UID_NET2,
-              new Network("net2", Ip.parse("10.0.2.0"), Ip.parse("255.255.255.0"), UID_NET2))
+              new Network(
+                  "net2",
+                  NAT_SETTINGS_TEST_INSTANCE,
+                  Ip.parse("10.0.2.0"),
+                  Ip.parse("255.255.255.0"),
+                  UID_NET2))
           .put(UID_CPMI_ANY, CPMI_ANY)
           .put(UID_ACCEPT, new RulebaseAction("Accept", UID_ACCEPT, "Accept"))
           .put(UID_DROP, new RulebaseAction("Drop", UID_DROP, "Drop"))
@@ -200,5 +229,51 @@ public class CheckPointGatewayConversionsTest {
     assertThat(
         toAction(new RulebaseAction("Unknown", Uid.of("1"), "Unknown")), equalTo(LineAction.DENY));
     assertThat(toAction(null), equalTo(LineAction.DENY));
+  }
+
+  @Test
+  public void testToHeaderSpace() {
+    Uid uid = Uid.of("1");
+    Warnings warnings = new Warnings();
+    {
+      TypedManagementObject policyTargets = new PolicyTargets(uid);
+      assertThat(
+          toHeaderSpace(policyTargets, policyTargets, policyTargets, warnings),
+          equalTo(Optional.empty()));
+    }
+    {
+      assertThat(
+          toHeaderSpace(
+              new Host(Ip.parse("1.1.1.1"), NAT_SETTINGS_TEST_INSTANCE, "source", uid),
+              new Host(Ip.parse("2.2.2.2"), NAT_SETTINGS_TEST_INSTANCE, "dest", uid),
+              new ServiceTcp("foo", "1", uid),
+              warnings),
+          equalTo(
+              Optional.of(
+                  HeaderSpace.builder()
+                      .setSrcIps(new IpSpaceReference("source"))
+                      .setDstIps(new IpSpaceReference("dest"))
+                      .setDstPorts(ImmutableList.of(SubRange.singleton(1)))
+                      .setIpProtocols(IpProtocol.TCP)
+                      .build())));
+    }
+    {
+      assertThat(
+          toHeaderSpace(CPMI_ANY, CPMI_ANY, CPMI_ANY, warnings),
+          equalTo(Optional.of(HeaderSpace.builder().build())));
+    }
+  }
+
+  @Test
+  public void testCheckValidHeaderSpaceInputs() {
+    Uid uid = Uid.of("1");
+    TypedManagementObject addressSpace = new Host(Ip.ZERO, NAT_SETTINGS_TEST_INSTANCE, "foo", uid);
+    TypedManagementObject service = new ServiceTcp("foo", "1", uid);
+    Warnings warnings = new Warnings();
+
+    assertFalse(checkValidHeaderSpaceInputs(service, addressSpace, service, warnings));
+    assertFalse(checkValidHeaderSpaceInputs(addressSpace, service, service, warnings));
+    assertFalse(checkValidHeaderSpaceInputs(addressSpace, addressSpace, addressSpace, warnings));
+    assertTrue(checkValidHeaderSpaceInputs(addressSpace, addressSpace, service, warnings));
   }
 }
