@@ -1221,8 +1221,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             potentialContributor ->
                 mapPotentialContributorToMostSpecificAggregate(
                     potentialContributorsByAggregatePrefix, potentialContributor));
-    // TODO: use local BGP cost instead once available
-    int admin = _process.getAdminCost(RoutingProtocol.IBGP);
+    int admin = _process.getLocalAdminCost();
     // Traverse aggregates from most specific to least specific
     _aggregates.traverseEntries(
         (aggNet, aggregatesAtNode) -> {
