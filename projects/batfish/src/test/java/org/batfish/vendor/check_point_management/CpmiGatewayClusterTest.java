@@ -46,6 +46,35 @@ public final class CpmiGatewayClusterTest {
   }
 
   @Test
+  public void testJacksonDeserialization_noMembers() throws JsonProcessingException {
+    String input =
+        "{"
+            + "\"GARBAGE\":0,"
+            + "\"type\":\"CpmiGatewayCluster\","
+            + "\"uid\":\"0\","
+            + "\"name\":\"foo\","
+            + "\"ipv4-address\":\"0.0.0.0\","
+            + "\"interfaces\": [],"
+            + "\"policy\":{"
+            + "\"access-policy-installed\": true,"
+            + "\"access-policy-name\": \"p1\","
+            + "\"threat-policy-installed\": true,"
+            + "\"threat-policy-name\": \"p2\""
+            + "}" // policy
+            + "}";
+    assertThat(
+        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, CpmiGatewayCluster.class),
+        equalTo(
+            new CpmiGatewayCluster(
+                ImmutableList.of(),
+                Ip.ZERO,
+                "foo",
+                ImmutableList.of(),
+                new GatewayOrServerPolicy("p1", "p2"),
+                Uid.of("0"))));
+  }
+
+  @Test
   public void testJavaSerialization() {
     CpmiGatewayCluster obj =
         new CpmiGatewayCluster(
