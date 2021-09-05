@@ -4,6 +4,7 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.FALSE;
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourcePort;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.MANUAL_HIDE_MACHINE_TO_TRANSFORMATION_STEPS;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.NAT_PORT_FIRST;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.NAT_PORT_LAST;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.checkValidManualHide;
@@ -255,6 +256,13 @@ public final class CheckpointNatConversionsTest {
                           assignSourceIp(hostIp), assignSourcePort(NAT_PORT_FIRST, NAT_PORT_LAST))
                       .build())));
     }
+  }
+
+  @Test
+  public void visitHost_noIp() {
+    Host host = new Host(null, NAT_SETTINGS_TEST_INSTANCE, "host", Uid.of("1"));
+    assertThat(
+        MANUAL_HIDE_MACHINE_TO_TRANSFORMATION_STEPS.visitHost(host), equalTo(ImmutableList.of()));
   }
 
   @Test
