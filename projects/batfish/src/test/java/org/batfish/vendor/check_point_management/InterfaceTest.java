@@ -35,6 +35,19 @@ public class InterfaceTest {
   }
 
   @Test
+  public void testJacksonDeserialization_noIpv4Address() throws JsonProcessingException {
+    String input =
+        "{"
+            + "\"GARBAGE\":0,"
+            + "\"interface-name\": \"iface\","
+            + "\"topology\": {\"leads-to-internet\":true}"
+            + "}";
+    assertThat(
+        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, Interface.class),
+        equalTo(new Interface("iface", new InterfaceTopology(true), null, null)));
+  }
+
+  @Test
   public void testJavaSerialization() {
     Interface obj = TEST_INSTANCE;
     assertEquals(obj, SerializationUtils.clone(obj));
