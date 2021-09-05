@@ -1,0 +1,293 @@
+[
+    {
+        "uid": "512b2821-ee6d-41d1-a7cb-5ed957d90017",
+        "name": "Standard",
+        "type": "package",
+        "domain": {
+            "uid": "41e821a0-3720-11e3-aa6e-0800200c9fde",
+            "name": "SMC User",
+            "domain-type": "domain"
+        },
+        "installation-targets-revision": [
+            {
+                "target-name": "cp_gw1",
+                "target-uid": "6d43d8b7-448f-4594-8316-19983ec0ac3a",
+                "revision": {
+                    "uid": "a74f068a-a94f-4ae3-accb-2b6701203964",
+                    "name": "admin@9/3/2021",
+                    "type": "session",
+                    "domain": {
+                        "uid": "41e821a0-3720-11e3-aa6e-0800200c9fde",
+                        "name": "SMC User",
+                        "domain-type": "domain"
+                    },
+                    "state": "published",
+                    "user-name": "admin",
+                    "description": "",
+                    "last-login-time": {
+                        "posix": 1630709337513,
+                        "iso-8601": "2021-09-03T18:48-0400"
+                    },
+                    "publish-time": {
+                        "posix": 1630711019769,
+                        "iso-8601": "2021-09-03T19:16-0400"
+                    },
+                    "expired-session": false,
+                    "application": "SmartConsole",
+                    "changes": 3,
+                    "in-work": false,
+                    "ip-address": "10.0.0.2",
+                    "locks": 2,
+                    "connection-mode": "read write",
+                    "session-timeout": 600,
+                    "comments": "",
+                    "color": "black",
+                    "icon": "Objects/worksession",
+                    "tags": [],
+                    "meta-info": {
+                        "lock": "unlocked",
+                        "validation-state": "ok",
+                        "last-modify-time": {
+                            "posix": 1630711019042,
+                            "iso-8601": "2021-09-03T19:16-0400"
+                        },
+                        "last-modifier": "admin",
+                        "creation-time": {
+                            "posix": 1630709337532,
+                            "iso-8601": "2021-09-03T18:48-0400"
+                        },
+                        "creator": "admin"
+                    },
+                    "read-only": false
+                }
+            }
+        ],
+        "access": true,
+        "access-layers": [
+            {
+                "uid": "63b7fe60-76d2-4287-bca5-21af87337b0a",
+                "name": "Network",
+                "type": "access-layer",
+                "domain": {
+                    "uid": "41e821a0-3720-11e3-aa6e-0800200c9fde",
+                    "name": "SMC User",
+                    "domain-type": "domain"
+                },
+                "shared": false,
+                "applications-and-url-filtering": false,
+                "content-awareness": false,
+                "mobile-access": false,
+                "firewall": true,
+                "implicit-cleanup-action": "drop",
+                "comments": "",
+                "color": "black",
+                "icon": "ApplicationFirewall/rulebase",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579531385872,
+                        "iso-8601": "2020-01-20T09:43-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579531385831,
+                        "iso-8601": "2020-01-20T09:43-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "0bac285d-1ae2-4e31-ad18-b1105fe39452",
+                "name": "StandardCustomLayer1",
+                "type": "access-layer",
+                "domain": {
+                    "uid": "41e821a0-3720-11e3-aa6e-0800200c9fde",
+                    "name": "SMC User",
+                    "domain-type": "domain"
+                },
+                "shared": false,
+                "applications-and-url-filtering": false,
+                "content-awareness": false,
+                "mobile-access": false,
+                "firewall": true,
+                "implicit-cleanup-action": "drop",
+                "comments": "",
+                "color": "black",
+                "icon": "ApplicationFirewall/rulebase",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1629932706695,
+                        "iso-8601": "2021-08-25T19:05-0400"
+                    },
+                    "last-modifier": "admin",
+                    "creation-time": {
+                        "posix": 1629932706695,
+                        "iso-8601": "2021-08-25T19:05-0400"
+                    },
+                    "creator": "admin"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "9126d443-76e8-471f-99d7-2b2135f5f817",
+                "name": "Sharedlayer2",
+                "type": "access-layer",
+                "domain": {
+                    "uid": "41e821a0-3720-11e3-aa6e-0800200c9fde",
+                    "name": "SMC User",
+                    "domain-type": "domain"
+                },
+                "shared": true,
+                "applications-and-url-filtering": false,
+                "content-awareness": false,
+                "mobile-access": false,
+                "firewall": true,
+                "implicit-cleanup-action": "drop",
+                "comments": "",
+                "color": "black",
+                "icon": "ApplicationFirewall/sharedrulebase",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1629932707412,
+                        "iso-8601": "2021-08-25T19:05-0400"
+                    },
+                    "last-modifier": "admin",
+                    "creation-time": {
+                        "posix": 1629932707412,
+                        "iso-8601": "2021-08-25T19:05-0400"
+                    },
+                    "creator": "admin"
+                },
+                "read-only": false
+            }
+        ],
+        "threat-layers": [
+            {
+                "uid": "90678011-1bcb-4296-8154-fa58c23ecf3b",
+                "name": "IPS",
+                "type": "threat-layer",
+                "domain": {
+                    "uid": "41e821a0-3720-11e3-aa6e-0800200c9fde",
+                    "name": "SMC User",
+                    "domain-type": "domain"
+                },
+                "ips-layer": true,
+                "comments": "",
+                "color": "black",
+                "icon": "ApplicationFirewall/sharedrulebase",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579531387377,
+                        "iso-8601": "2020-01-20T09:43-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579531387322,
+                        "iso-8601": "2020-01-20T09:43-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "0dbe7c44-6d3f-4f28-8f2b-0e6790e57f8a",
+                "name": "Standard Threat Prevention",
+                "type": "threat-layer",
+                "domain": {
+                    "uid": "41e821a0-3720-11e3-aa6e-0800200c9fde",
+                    "name": "SMC User",
+                    "domain-type": "domain"
+                },
+                "ips-layer": false,
+                "comments": "",
+                "color": "black",
+                "icon": "ApplicationFirewall/rulebase",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1629932708964,
+                        "iso-8601": "2021-08-25T19:05-0400"
+                    },
+                    "last-modifier": "admin",
+                    "creation-time": {
+                        "posix": 1579531386848,
+                        "iso-8601": "2020-01-20T09:43-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            }
+        ],
+        "vpn-traditional-mode": false,
+        "nat-policy": true,
+        "qos": false,
+        "qos-policy-type": "recommended",
+        "desktop-security": false,
+        "threat-prevention": true,
+        "installation-targets": "all",
+        "https-inspection-policy": true,
+        "https-inspection-layer": {
+            "uid": "d4695a7b-665a-4ddd-94a3-21deffa4aa79",
+            "name": "Default Layer",
+            "type": "https-layer",
+            "domain": {
+                "uid": "41e821a0-3720-11e3-aa6e-0800200c9fde",
+                "name": "SMC User",
+                "domain-type": "domain"
+            },
+            "shared": true,
+            "comments": "",
+            "color": "black",
+            "icon": "ApplicationFirewall/rulebase",
+            "tags": [],
+            "meta-info": {
+                "lock": "unlocked",
+                "validation-state": "ok",
+                "last-modify-time": {
+                    "posix": 1579531387592,
+                    "iso-8601": "2020-01-20T09:43-0500"
+                },
+                "last-modifier": "System",
+                "creation-time": {
+                    "posix": 1579531387465,
+                    "iso-8601": "2020-01-20T09:43-0500"
+                },
+                "creator": "System"
+            },
+            "read-only": false
+        },
+        "comments": "",
+        "color": "black",
+        "icon": "Blades/Access",
+        "tags": [],
+        "meta-info": {
+            "lock": "unlocked",
+            "validation-state": "ok",
+            "last-modify-time": {
+                "posix": 1629932705643,
+                "iso-8601": "2021-08-25T19:05-0400"
+            },
+            "last-modifier": "admin",
+            "creation-time": {
+                "posix": 1579531385796,
+                "iso-8601": "2020-01-20T09:43-0500"
+            },
+            "creator": "System"
+        },
+        "read-only": false
+    }
+]

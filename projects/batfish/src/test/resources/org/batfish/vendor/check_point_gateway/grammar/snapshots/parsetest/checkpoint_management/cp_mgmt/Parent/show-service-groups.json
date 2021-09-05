@@ -1,0 +1,1901 @@
+[
+    {
+        "objects": [
+            {
+                "uid": "c00f7ca4-4cdc-044e-b96b-49d980858c35",
+                "name": "AD_Dcerpc_services",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-cebcebcebceb",
+                    "name": "IPS Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "4ab95326-d677-ef48-b494-5b9b9b72901a",
+                    "50c56b55-8901-374d-bc7a-6d7d5b53c405",
+                    "031a17d1-f98a-0347-aea9-e5171fcdce08",
+                    "04f53da1-0d4c-6d45-91ab-2c44417cad96",
+                    "9de363ec-1d5b-7243-b8ff-031e603629e3",
+                    "35074809-2e80-934c-89fb-ca3946b2aaab"
+                ],
+                "comments": "AD Dcerpc Service Group",
+                "color": "blue",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1621430514672,
+                        "iso-8601": "2021-05-19T09:21-0400"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1621430514672,
+                        "iso-8601": "2021-05-19T09:21-0400"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "2c970c2b-84a3-40b5-ab0e-83244dd47bcd",
+                "name": "AOL_Messenger",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "97aeb44f-9aea-11d5-bd16-0090272ccb30",
+                    "bbec6807-808d-49b7-b8dc-54c5a655d392"
+                ],
+                "comments": "AOL Instant Messenger. Also used by: ICQ & Apple iChat",
+                "color": "black",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991790,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991790,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb468-9aea-11d5-bd16-0090272ccb30",
+                "name": "Authenticated",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "97aeb3cf-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb3d0-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb3d4-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb3be-9aea-11d5-bd16-0090272ccb30"
+                ],
+                "comments": "Authenticated group",
+                "color": "forest green",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991302,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991302,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "2a469820-b502-434c-9340-a377677a6a60",
+                "name": "CIFS",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "cfbcace4-7c6f-11d6-bf0e-3e5a6fe83232",
+                    "97aeb471-9aea-11d5-bd16-0090272ccb30"
+                ],
+                "comments": "Common Internet File System Services",
+                "color": "black",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991361,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991361,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "13d7904e-334b-4549-8fbd-6b4d6b8b80b2",
+                "name": "Citrix_metaFrame",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "986bad5a-94d2-4a8c-81aa-de98d3ecb5c6",
+                    "e8c5ab78-f08d-437c-a9b1-be4a8679d766"
+                ],
+                "comments": "group for citrix communication",
+                "color": "black",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505990551,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505990551,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "77c21ea4-9db4-40fe-86e0-58252c3759d8",
+                "name": "DAIP_Control_services",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "97aeb3ab-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb388-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb3a4-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb389-9aea-11d5-bd16-0090272ccb30"
+                ],
+                "comments": "",
+                "color": "black",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991798,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991798,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb46f-9aea-11d5-bd16-0090272ccb30",
+                "name": "daytime",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "97aeb401-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb402-9aea-11d5-bd16-0090272ccb30"
+                ],
+                "comments": "Daytime Protocol group (TCP/UDP)",
+                "color": "black",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991308,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991308,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "5cfc76c2-b743-4b68-9fbf-e901eaa3698d",
+                "name": "Direct_Connect",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "d02080c1-b225-4da0-987b-28b3a551b8c9",
+                    "64c3ad3f-69d2-4ec1-b843-5df030c70abf"
+                ],
+                "comments": "Direct Connect P2P application. Used also by other clients",
+                "color": "black",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991794,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991794,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb46d-9aea-11d5-bd16-0090272ccb30",
+                "name": "discard",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "97aeb3fd-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb3fe-9aea-11d5-bd16-0090272ccb30"
+                ],
+                "comments": "Discard Protocol group (TCP/UDP)",
+                "color": "black",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991306,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991306,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb46b-9aea-11d5-bd16-0090272ccb30",
+                "name": "dns",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "97aeb3f9-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb3fa-9aea-11d5-bd16-0090272ccb30"
+                ],
+                "comments": "Domain Name System (TCP/UDP)",
+                "color": "black",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991304,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991304,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb46a-9aea-11d5-bd16-0090272ccb30",
+                "name": "echo",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "97aeb3f7-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb3f8-9aea-11d5-bd16-0090272ccb30"
+                ],
+                "comments": "Echo Protocol group (TCP/UDP)",
+                "color": "black",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991303,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991303,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "42929fb0-c8dd-465e-be01-3e484f4299f6",
+                "name": "eDonkey",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "760d9035-1c76-4c5c-b929-ba1dc6685d6f",
+                    "7115e261-185c-4487-aa18-84f8c275d186",
+                    "d3caa92a-1032-41ae-a1a1-2274f3ab9f45"
+                ],
+                "comments": "eDonkey protocol. Used also by other clients.",
+                "color": "black",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991795,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991795,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb476-9aea-11d5-bd16-0090272ccb30",
+                "name": "Entrust-CA",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "97aeb435-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb436-9aea-11d5-bd16-0090272ccb30"
+                ],
+                "comments": "Entrust CA Services",
+                "color": "firebrick",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991336,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991336,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb3f5-9aea-11d5-bd16-0090272ccb30",
+                "name": "FreeTel-outgoing",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "97aeb3f3-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb3f4-9aea-11d5-bd16-0090272ccb30"
+                ],
+                "comments": "FreeTel Outgoing Connections",
+                "color": "black",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505990572,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505990572,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb38d-9aea-11d5-bd16-0090272ccb30",
+                "name": "FW1_clntauth",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "97aeb38b-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb38c-9aea-11d5-bd16-0090272ccb30"
+                ],
+                "comments": "Check Point Security Gateway Client Authentication",
+                "color": "firebrick",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505988162,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505988162,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "f0059b62-e18e-478f-a3bd-18595d53d3e1",
+                "name": "GNUtella",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "b1189907-b9eb-4a21-8b38-1d3e5c6c06d0",
+                    "1b4543a3-579e-4cc7-8f57-4387c37a6815",
+                    "cdef1feb-485e-4929-942e-011de8318e56",
+                    "8eb18480-2690-4520-ae88-412bf5ce94e3"
+                ],
+                "comments": "GNUtella P2P protocol (used by: BearShare, ToadNode, Gnucleus, Xolox, LimeWire)",
+                "color": "black",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991796,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991796,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "4c3e148f-bcc4-4c97-9955-09da850fb9a6",
+                "name": "Hotline",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "b45556d9-5e0b-46f4-9c35-ed7d82bec43d",
+                    "d6b64df2-4803-4d79-9794-793d18b277d8"
+                ],
+                "comments": "Hotline P2P protocol",
+                "color": "black",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991797,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991797,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "7f9275f0-4382-4222-b4cd-06d2c5aa3222",
+                "name": "HTTPS default services",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "97aeb443-9aea-11d5-bd16-0090272ccb30",
+                    "2a2ca572-fbe7-4e7f-92e4-164f5b4fded1"
+                ],
+                "comments": "HTTPS default services",
+                "color": "black",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505992143,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505992143,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb413-9aea-11d5-bd16-0090272ccb30",
+                "name": "icmp-requests",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "97aeb40a-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb40f-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb40d-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb411-9aea-11d5-bd16-0090272ccb30"
+                ],
+                "comments": "ICMP, requests group",
+                "color": "orchid",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505990755,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505990755,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "5b4afe16-9243-4245-9751-d316c242968c",
+                "name": "Integrity_Server",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "2e6d3f79-cb0c-4600-acf2-2cf1a3704d10",
+                    "636782bb-9181-402e-b0cf-c1af653937bb"
+                ],
+                "comments": "Accessing Endpoint Security Server from SecureClient",
+                "color": "black",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505988137,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505988137,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb475-9aea-11d5-bd16-0090272ccb30",
+                "name": "IPSEC",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "97aeb422-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb423-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb421-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb3b0-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb390-9aea-11d5-bd16-0090272ccb30"
+                ],
+                "comments": "IPSEC Services",
+                "color": "cyan",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991314,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991314,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "d491a4c7-f70a-4842-b657-fdd192d820d7",
+                "name": "IPv6_group",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "cecf9574-01e7-4125-b9c4-f26f50c66f73",
+                    "81bfb7ae-8d12-49e4-92d0-af6c83777a68",
+                    "8293301c-4170-417b-8ad5-48c2525f0a79",
+                    "6f23dae7-0b9a-44f6-8515-b24690cd996c",
+                    "f645e71b-27cd-43ac-8512-619867ac0c79",
+                    "076cb53c-8997-47c8-ac89-543f2ebf4124",
+                    "0e83cfca-1216-43db-8044-de0357dd6057",
+                    "a9457c76-7ee7-43ed-9d9e-2ed5efa3330d",
+                    "b2f964f8-26ae-4e92-bc43-4074053e32c5",
+                    "70a1f537-853e-4e3e-8f53-0d92ce876cd3",
+                    "5a3b684d-b1b7-497b-a7cb-aa8a59044b02",
+                    "9882ba81-bd41-44d4-8aae-ef1d49359dfd",
+                    "3d9169da-60c6-4af9-b253-f1820559d687",
+                    "3edfdb71-5b29-41ff-8152-2640defdad79",
+                    "b0f9fc0b-dc12-42f0-bdb0-ec68c14fd301",
+                    "da47e51c-9e69-4bab-b583-db4072004a35",
+                    "521f8c85-e3e4-4b6d-8e1a-79366a703550",
+                    "7dbf84a8-e235-4c4d-9012-19fad6e1af94",
+                    "76a12c60-53fb-44ce-9d92-98ad16a836a6",
+                    "94234c9c-2c0e-478c-a859-86e86c6be774",
+                    "70d03614-af7c-4050-83fe-9f36980d512f",
+                    "e5db70a6-b671-46a9-a4c3-a6ddb5178645"
+                ],
+                "comments": "",
+                "color": "blue",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505988785,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505988785,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb474-9aea-11d5-bd16-0090272ccb30",
+                "name": "irc",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "97aeb417-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb418-9aea-11d5-bd16-0090272ccb30"
+                ],
+                "comments": "Internet Relay Chat Protocol",
+                "color": "black",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991313,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991313,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb46c-9aea-11d5-bd16-0090272ccb30",
+                "name": "kerberos",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "97aeb3fc-9aea-11d5-bd16-0090272ccb30"
+                ],
+                "comments": "Kerberos Protocol group (TCP/UDP)",
+                "color": "black",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991305,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991305,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "cd7c1a5f-6268-40b6-a8c7-2727b8036cb1",
+                "name": "Messenger_Applications",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "2c970c2b-84a3-40b5-ab0e-83244dd47bcd",
+                    "5693aca1-316d-410e-a8f3-ba5d2f97e5b7",
+                    "8e3ed837-81c6-43ef-bada-7c330c57d891"
+                ],
+                "comments": "",
+                "color": "black",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991793,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991793,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "68a602a2-28da-4425-b566-86a537a3bca3",
+                "name": "MS-SQL",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "ef245528-9a3d-11d6-9eaa-3e5a6fdd6a6a",
+                    "5ad1a14c-647c-41de-9f84-d1c34f09d63b",
+                    "dff4f7ba-9a3d-11d6-91c1-3e5a6fdd5151",
+                    "bfd72cd2-8e5f-4ede-bdb2-6dfc016afccd"
+                ],
+                "comments": "MS-SQL Server Protocols",
+                "color": "black",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991776,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991776,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb45c-9aea-11d5-bd16-0090272ccb30",
+                "name": "MSExchange",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "97aeb452-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb455-9aea-11d5-bd16-0090272ccb30",
+                    "01693eed-3f81-44d3-b498-51696722cc32"
+                ],
+                "comments": "Microsoft Exchange Client-Server over MAPI",
+                "color": "blue",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991260,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991260,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb45f-9aea-11d5-bd16-0090272ccb30",
+                "name": "MSExchange-2000",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "97aeb457-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb458-9aea-11d5-bd16-0090272ccb30",
+                    "01693eed-3f81-44d3-b498-51696722cc32"
+                ],
+                "comments": "Microsoft Exchange 2000 Extensions",
+                "color": "blue",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991264,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991264,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb45e-9aea-11d5-bd16-0090272ccb30",
+                "name": "MSExchange-RemoteAdmin",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "97aeb454-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb459-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb45a-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb45b-9aea-11d5-bd16-0090272ccb30"
+                ],
+                "comments": "Microsoft Exchange Remote Administration",
+                "color": "blue",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991263,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991263,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb45d-9aea-11d5-bd16-0090272ccb30",
+                "name": "MSExchange-SiteConnector",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "97aeb452-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb453-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb456-9aea-11d5-bd16-0090272ccb30"
+                ],
+                "comments": "Microsoft Exchange MAPI Site Connector",
+                "color": "blue",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991262,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991262,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "fc285218-f6fa-d54a-8727-57fa3598eeb0",
+                "name": "MSExchange_2007",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-cebcebcebceb",
+                    "name": "IPS Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "5a1d656d-9b2e-694d-8478-2ff0c48d7ea6"
+                ],
+                "comments": "Microsoft Exchange Client-Server over MAPI",
+                "color": "blue",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1621430514702,
+                        "iso-8601": "2021-05-19T09:21-0400"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1621430514702,
+                        "iso-8601": "2021-05-19T09:21-0400"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "5693aca1-316d-410e-a8f3-ba5d2f97e5b7",
+                "name": "MSN_Messenger",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "0094aac2-a29e-4d04-b86c-f31f63dffae2",
+                    "0ac39b6a-701a-4c33-a88d-9eb0fecf9ef6",
+                    "505badad-ae57-4584-9a4c-15987c093a32",
+                    "e3e6d587-3212-4ff4-86a1-d16093689e19",
+                    "d18f244b-0b13-4fb8-aa2f-d966eeffb6b3"
+                ],
+                "comments": "MSN Messenger",
+                "color": "black",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991791,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991791,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "5ee3ca5b-35a2-4988-859c-7157e8cffead",
+                "name": "Napster",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "3bb26988-e0a5-45d6-8018-d4d4de8b96fa",
+                    "741a5b0e-3788-4284-91a1-819e99d9ed96",
+                    "8287d6d8-3b6b-4824-8f2d-18bc570ec9b2",
+                    "1ef8fc95-ff10-414b-af76-c0bcc2cd711e",
+                    "182b1d39-54b6-4e2f-bae8-2d8021d52206",
+                    "be51561e-7876-4c70-9546-0914ae737f6e",
+                    "3fd0d58a-9759-4686-b103-d177adfc7193"
+                ],
+                "comments": "Napster P2P protocol",
+                "color": "black",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991799,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991799,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb471-9aea-11d5-bd16-0090272ccb30",
+                "name": "NBT",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "97aeb414-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb415-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb416-9aea-11d5-bd16-0090272ccb30"
+                ],
+                "comments": "NetBios Services",
+                "color": "magenta",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991310,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991310,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb43d-9aea-11d5-bd16-0090272ccb30",
+                "name": "NetMeeting",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "97aeb427-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb433-9aea-11d5-bd16-0090272ccb30"
+                ],
+                "comments": "Netmeeting group (H323 & Ldap)",
+                "color": "dark green",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991136,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991136,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb473-9aea-11d5-bd16-0090272ccb30",
+                "name": "NFS",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "97aeb3ba-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb3b8-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb3b9-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb3b7-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb3bc-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb3bb-9aea-11d5-bd16-0090272ccb30"
+                ],
+                "comments": "Network File System Services",
+                "color": "red",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991312,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991312,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb472-9aea-11d5-bd16-0090272ccb30",
+                "name": "NIS",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "97aeb3c2-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb3c3-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb3c1-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb3c4-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb3c5-9aea-11d5-bd16-0090272ccb30"
+                ],
+                "comments": "Network Information Services (YP)",
+                "color": "navy blue",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991311,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991311,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb470-9aea-11d5-bd16-0090272ccb30",
+                "name": "ntp",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "97aeb403-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb404-9aea-11d5-bd16-0090272ccb30"
+                ],
+                "comments": "Network Time Protocol group (TCP/UDP)",
+                "color": "black",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991309,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991309,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb42f-9aea-11d5-bd16-0090272ccb30",
+                "name": "OAS",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "97aeb42d-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb42e-9aea-11d5-bd16-0090272ccb30"
+                ],
+                "comments": "Oracle Application Server (IIOP)",
+                "color": "black",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991046,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991046,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb42c-9aea-11d5-bd16-0090272ccb30",
+                "name": "Orbix",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "97aeb42a-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb42b-9aea-11d5-bd16-0090272ccb30"
+                ],
+                "comments": "IONA Orbix Daemon (IIOP)",
+                "color": "black",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991016,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991016,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "d138e7da-3bf1-4d7c-ae35-d551416e8db3",
+                "name": "P2P_File_Sharing_Applications",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "c86f055d-31ad-4430-b12c-1094a86c673c",
+                    "5cfc76c2-b743-4b68-9fbf-e901eaa3698d",
+                    "42929fb0-c8dd-465e-be01-3e484f4299f6",
+                    "f0059b62-e18e-478f-a3bd-18595d53d3e1",
+                    "2d89310c-5761-4213-bef5-c81bb5677e44",
+                    "4c3e148f-bcc4-4c97-9955-09da850fb9a6",
+                    "01e9fc32-73df-43d5-9cd4-4f91b6a5c711",
+                    "be146201-61b2-11d6-b5e0-0002b316d24e",
+                    "b863ec35-604f-4da1-8e63-82a7903d2c1c",
+                    "5ee3ca5b-35a2-4988-859c-7157e8cffead",
+                    "6414f98e-6883-44db-8ee2-debd443c7714"
+                ],
+                "comments": "",
+                "color": "black",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991801,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991801,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb440-9aea-11d5-bd16-0090272ccb30",
+                "name": "pcANYWHERE",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "97aeb43e-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb43f-9aea-11d5-bd16-0090272ccb30"
+                ],
+                "comments": "Symantec pcANYWHERE",
+                "color": "blue",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991145,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991145,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb442-9aea-11d5-bd16-0090272ccb30",
+                "name": "pcTELECOMMUTE",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "97aeb440-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb441-9aea-11d5-bd16-0090272ccb30"
+                ],
+                "comments": "Symantec pcTELECOMMUTE",
+                "color": "blue",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991152,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991152,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb426-9aea-11d5-bd16-0090272ccb30",
+                "name": "PPTP",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "97aeb425-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb424-9aea-11d5-bd16-0090272ccb30"
+                ],
+                "comments": "Point-to-Point Tunneling group, (pptp & gre)",
+                "color": "red",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505990928,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505990928,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "04eca4d1-e4b7-4ec3-a86f-9bb56765519e",
+                "name": "RainWall-Control",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "b9bbeeba-b639-41a3-97d5-1f9d982d7e44",
+                    "21cc3f85-e6df-443d-9846-bd39bd015b85",
+                    "4fbd29c5-06db-4912-b23d-1bd50d693185"
+                ],
+                "comments": "RainWall high availability",
+                "color": "black",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991338,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991338,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb43c-9aea-11d5-bd16-0090272ccb30",
+                "name": "RealPlayer",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "97aeb41b-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb41c-9aea-11d5-bd16-0090272ccb30"
+                ],
+                "comments": "RealNetworks RealPlayer Services",
+                "color": "blue",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991132,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991132,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb467-9aea-11d5-bd16-0090272ccb30",
+                "name": "securid",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "97aeb3ec-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb3ed-9aea-11d5-bd16-0090272ccb30"
+                ],
+                "comments": "Secure ID group",
+                "color": "firebrick",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991300,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991300,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb3f2-9aea-11d5-bd16-0090272ccb30",
+                "name": "sqlnet2",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "97aeb3ef-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb3f0-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb3f1-9aea-11d5-bd16-0090272ccb30"
+                ],
+                "comments": "Oracle SQL*Net Version 2 Services",
+                "color": "black",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505990553,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505990553,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb43a-9aea-11d5-bd16-0090272ccb30",
+                "name": "StoneBeat",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "97aeb438-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb439-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb3b2-9aea-11d5-bd16-0090272ccb30"
+                ],
+                "comments": "Stonesoft StoneBeat",
+                "color": "black",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991126,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991126,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb46e-9aea-11d5-bd16-0090272ccb30",
+                "name": "time",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "97aeb3ff-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb400-9aea-11d5-bd16-0090272ccb30"
+                ],
+                "comments": "Time Server Protocol",
+                "color": "black",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991307,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991307,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "f956089c-6dd8-4ff4-9fb1-e13969cdadff",
+                "name": "Trojan_Services",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "86077a7d-a8da-4b5b-919c-366fe91ad1da",
+                    "96759a8d-aab8-43d9-bbfc-b459ce66ac87",
+                    "a651f18c-1c7c-4bd2-9ffe-790c29e3ccd9",
+                    "e0c17142-433d-40a7-9eaa-e1d5eba40d2e",
+                    "88aaa643-bf12-4d40-a02d-e98a8159358a",
+                    "c13e3031-02d6-4341-a307-3daf10735078",
+                    "8055b0de-dace-4d18-91f4-f39915b7aba8",
+                    "8d971c42-17de-49a0-a646-a8e0057aebbd",
+                    "08da33ff-bc5f-402a-9865-bee8fee69422",
+                    "81b90130-2a31-45cd-8092-dc492b116ca9",
+                    "82ba0dd2-42e6-472d-8877-57f519175c14",
+                    "c693c8c1-78e3-450d-936e-aa3278190633",
+                    "b8d159dc-aa70-4cc5-9c5a-8c2ad3aa977e",
+                    "ff8ea038-34fd-4b7b-8a8a-8d6bf0a599fe",
+                    "2176f91c-5fb4-4111-98bd-7d5d5b358fe0",
+                    "05647a8c-f0e7-4354-adbd-c685ee7742f0",
+                    "26339b33-1c42-4e49-96e9-55770f6af0ce",
+                    "06233377-3454-489a-b9fb-2f2ca14b895b",
+                    "230b24df-1efa-4a28-b7a4-87dfb79afba7",
+                    "c2f963b0-db3c-42d5-b0f2-a2a7bc0d378d",
+                    "10f56849-2e03-40dd-9cf7-56aee2cfa57f",
+                    "ce29b597-76b9-48aa-ac24-ae7e23c438ed",
+                    "73bfbf75-eb13-42c0-ba69-58b8f026b4d6",
+                    "e43b7817-dbb6-4c74-a95a-c424dc47999c",
+                    "e38e4dea-a610-4416-bf44-6f4e45e95e70",
+                    "aa02e546-80d1-453a-91dc-49f606764451",
+                    "aeaa6c77-e87e-4581-ad73-06417391dfad",
+                    "b236d830-9615-4578-b6e2-b0b44c45fda0",
+                    "d4b1f3b0-c606-4b6b-8118-ee61303f8e19",
+                    "637b7f26-c4b2-4510-872e-5a10de046cb4",
+                    "41c4df08-dbf9-4576-9114-b8f1dc4dc8d7",
+                    "69ca7583-1fd4-4c86-ac1a-680697a9af93",
+                    "e926e948-fae7-4140-8fed-11426b1a32b9",
+                    "cc1d78cc-5fce-4496-a78b-c37aa0622f7a",
+                    "02f708dd-0337-485f-a04b-3b931971b93a",
+                    "16aee006-0f79-407e-b6a4-f3cc5a7a31d5",
+                    "3cf4da8b-576e-47ec-903e-91f155bd0cd9",
+                    "6e745536-b8c9-4df5-bfd5-043e62013956",
+                    "25ac306e-1fc9-4e3e-bf66-4a48473caf3f",
+                    "24de2cde-dfcd-4c9b-9124-492ac4bedba7"
+                ],
+                "comments": "Common ports used by trojan applications.",
+                "color": "magenta",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991750,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991750,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "82bccbc2-603c-4d96-a59b-9c2b730efb5c",
+                "name": "Web",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "97aeb3d4-9aea-11d5-bd16-0090272ccb30",
+                    "97aeb443-9aea-11d5-bd16-0090272ccb30"
+                ],
+                "comments": "",
+                "color": "black",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505992141,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505992141,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "2ec3c63b-d3ed-4971-8e8b-5fe449a4ca06",
+                "name": "Web_Proxy",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "8eddeaa0-259d-448f-95b6-490a39f55962",
+                    "704fbf04-1714-49a1-a750-38c0e4139a11"
+                ],
+                "comments": "Common Web Proxy Services",
+                "color": "black",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505992142,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505992142,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "8e3ed837-81c6-43ef-bada-7c330c57d891",
+                "name": "Yahoo_Messenger",
+                "type": "service-group",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "members": [
+                    "24cd3a7c-aa2c-43d4-8eb6-ff1f070143ea",
+                    "c2639e22-fd63-4520-99f7-a70215b95874",
+                    "c98bb09a-b04f-437c-ad1a-6c8261831b87",
+                    "910f509f-8f2a-452d-bc15-e51f8cc1694c"
+                ],
+                "comments": "Yahoo Messenger",
+                "color": "blue",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991792,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991792,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            }
+        ],
+        "from": 1,
+        "to": 54,
+        "total": 54
+    }
+]

@@ -47,6 +47,7 @@ public class TestrigText {
 
     private Map<String, byte[]> _awsBytes;
     private Map<String, byte[]> _bgpTablesBytes;
+    private Map<String, byte[]> _checkpointMgmtBytes;
     private Map<String, byte[]> _configurationBytes;
     private ConversionContext _conversionContext;
     private byte[] _externalBgpAnnouncementsBytes;
@@ -60,6 +61,7 @@ public class TestrigText {
       TestrigText testrigText = new TestrigText();
       testrigText.setAwsBytes(_awsBytes);
       testrigText.setBgpTablesBytes(_bgpTablesBytes);
+      testrigText.setCheckpointMgmtBytes(_checkpointMgmtBytes);
       testrigText.setConfigurationBytes(_configurationBytes);
       testrigText.setConversionContext(_conversionContext);
       testrigText.setExternalBgpAnnouncements(_externalBgpAnnouncementsBytes);
@@ -95,6 +97,18 @@ public class TestrigText {
       _bgpTablesBytes =
           readTestrigResources(
               testrigResourcePrefix, BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES, filenames);
+      return this;
+    }
+
+    public Builder setCheckpointMgmtFiles(String testrigResourcePrefix, String... filenames) {
+      return setConfigurationFiles(testrigResourcePrefix, Arrays.asList(filenames));
+    }
+
+    public Builder setCheckpointMgmtFiles(
+        String testrigResourcePrefix, Iterable<String> filenames) {
+      _checkpointMgmtBytes =
+          readTestrigResources(
+              testrigResourcePrefix, BfConsts.RELPATH_CHECKPOINT_MANAGEMENT_DIR, filenames);
       return this;
     }
 
@@ -195,6 +209,7 @@ public class TestrigText {
 
   private Map<String, byte[]> _awsBytes;
   private Map<String, byte[]> _bgpTablesBytes;
+  private Map<String, byte[]> _checkpointMgmtBytes;
   private Map<String, byte[]> _configurationBytes;
   private ConversionContext _conversionContext;
   private byte[] _externalBgpAnnouncementBytes;
@@ -210,6 +225,10 @@ public class TestrigText {
 
   public Map<String, byte[]> getBgpTablesBytes() {
     return _bgpTablesBytes;
+  }
+
+  public Map<String, byte[]> getCheckpointMgmtBytes() {
+    return _checkpointMgmtBytes;
   }
 
   public Map<String, byte[]> getConfigurationBytes() {
@@ -250,6 +269,10 @@ public class TestrigText {
 
   public void setBgpTablesBytes(Map<String, byte[]> bgpTablesText) {
     _bgpTablesBytes = bgpTablesText;
+  }
+
+  public void setCheckpointMgmtBytes(Map<String, byte[]> checkpointMgmtBytes) {
+    _checkpointMgmtBytes = checkpointMgmtBytes;
   }
 
   public void setConfigurationBytes(Map<String, byte[]> configurationText) {
