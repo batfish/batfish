@@ -6,11 +6,11 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
-import org.parboiled.common.ImmutableList;
 
 /** Data model for an object of type {@code CpmiVsNetobj}. */
 public final class CpmiVsNetobj extends GatewayOrServer {
