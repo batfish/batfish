@@ -1,10 +1,12 @@
 package org.batfish.vendor.check_point_management;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -21,13 +23,18 @@ public final class CpmiVsClusterNetobj extends Cluster {
       @JsonProperty(PROP_NAME) @Nullable String name,
       @JsonProperty(PROP_POLICY) @Nullable GatewayOrServerPolicy policy,
       @JsonProperty(PROP_UID) @Nullable Uid uid) {
-    checkArgument(clusterMemberNames != null, "Missing %s", PROP_CLUSTER_MEMBER_NAMES);
     checkArgument(interfaces != null, "Missing %s", PROP_INTERFACES);
     checkArgument(ipv4Address != null, "Missing %s", PROP_IPV4_ADDRESS);
     checkArgument(name != null, "Missing %s", PROP_NAME);
     checkArgument(policy != null, "Missing %s", PROP_POLICY);
     checkArgument(uid != null, "Missing %s", PROP_UID);
-    return new CpmiVsClusterNetobj(clusterMemberNames, ipv4Address, name, interfaces, policy, uid);
+    return new CpmiVsClusterNetobj(
+        ImmutableList.copyOf(firstNonNull(clusterMemberNames, ImmutableList.of())),
+        ipv4Address,
+        name,
+        interfaces,
+        policy,
+        uid);
   }
 
   @VisibleForTesting

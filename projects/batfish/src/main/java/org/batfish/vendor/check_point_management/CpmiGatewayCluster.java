@@ -29,7 +29,7 @@ public final class CpmiGatewayCluster extends Cluster {
     checkArgument(policy != null, "Missing %s", PROP_POLICY);
     checkArgument(uid != null, "Missing %s", PROP_UID);
     return new CpmiGatewayCluster(
-        firstNonNull(clusterMemberNames, ImmutableList.of()),
+        ImmutableList.copyOf(firstNonNull(clusterMemberNames, ImmutableList.of())),
         ipv4Address,
         name,
         interfaces,
