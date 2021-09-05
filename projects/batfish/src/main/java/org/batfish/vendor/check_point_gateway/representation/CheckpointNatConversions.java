@@ -36,7 +36,8 @@ public class CheckpointNatConversions {
   @VisibleForTesting static final int NAT_PORT_FIRST = 10000;
   @VisibleForTesting static final int NAT_PORT_LAST = 60000;
 
-  private static final MachineToTransformationSteps MANUAL_HIDE_MACHINE_TO_TRANSFORMATION_STEPS =
+  @VisibleForTesting
+  static final MachineToTransformationSteps MANUAL_HIDE_MACHINE_TO_TRANSFORMATION_STEPS =
       new MachineToTransformationSteps();
 
   public static @Nonnull List<TransformationStep> getManualHideSourceTransformationSteps(
@@ -48,8 +49,8 @@ public class CheckpointNatConversions {
    * Visitor that gives the transformation steps for the translated-source or translated-destination
    * of a NAT rule.
    */
-  private static class MachineToTransformationSteps
-      implements MachineVisitor<List<TransformationStep>> {
+  @VisibleForTesting
+  static class MachineToTransformationSteps implements MachineVisitor<List<TransformationStep>> {
 
     @Override
     public List<TransformationStep> visitGatewayOrServer(GatewayOrServer gatewayOrServer) {
