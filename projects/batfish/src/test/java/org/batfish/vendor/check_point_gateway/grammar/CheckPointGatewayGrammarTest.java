@@ -31,6 +31,7 @@ import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConfiguration.INTERFACE_ACL_NAME;
+import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.aclName;
 import static org.batfish.vendor.check_point_gateway.representation.Interface.DEFAULT_ETH_SPEED;
 import static org.batfish.vendor.check_point_gateway.representation.Interface.DEFAULT_INTERFACE_MTU;
 import static org.batfish.vendor.check_point_gateway.representation.Interface.DEFAULT_LOOPBACK_MTU;
@@ -1021,7 +1022,6 @@ public class CheckPointGatewayGrammarTest {
     Uid dropUid = Uid.of("32");
     Uid net1Uid = Uid.of("11");
     Uid net2Uid = Uid.of("12");
-    String accessLayerName = "accessLayerFoo";
 
     ImmutableMap<Uid, TypedManagementObject> objs =
         ImmutableMap.<Uid, TypedManagementObject>builder()
@@ -1060,11 +1060,12 @@ public class CheckPointGatewayGrammarTest {
                 .setName("dropAll")
                 .build());
 
+    AccessLayer accessLayer = new AccessLayer(objs, rulebase, Uid.of("uid-al"), "accessLayerFoo");
     ImmutableMap<Uid, ManagementPackage> packages =
         ImmutableMap.of(
             Uid.of("2"),
             new ManagementPackage(
-                ImmutableList.of(new AccessLayer(objs, rulebase, Uid.of("3"), accessLayerName)),
+                ImmutableList.of(accessLayer),
                 null,
                 new Package(
                     new Domain("d", Uid.of("0")),
@@ -1101,8 +1102,8 @@ public class CheckPointGatewayGrammarTest {
 
     // Confirm access-layer, composite ACL, and interface ACLs have the same, correct behavior
     // Access-layer
-    assertThat(c, hasIpAccessList(accessLayerName, accepts(permitted, "eth1", c)));
-    assertThat(c, hasIpAccessList(accessLayerName, rejects(denied, "eth1", c)));
+    assertThat(c, hasIpAccessList(aclName(accessLayer), accepts(permitted, "eth1", c)));
+    assertThat(c, hasIpAccessList(aclName(accessLayer), rejects(denied, "eth1", c)));
     // Composite ACL (same as access-layer since there is only one access-layer here)
     assertThat(c, hasIpAccessList(INTERFACE_ACL_NAME, accepts(permitted, "eth1", c)));
     assertThat(c, hasIpAccessList(INTERFACE_ACL_NAME, rejects(denied, "eth1", c)));
