@@ -284,6 +284,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
       for (ManagementDomain domain : server.getDomains().values()) {
         Optional<GatewayOrServer> maybeGateway =
             domain.getGatewaysAndServers().values().stream()
+                .filter(gw -> gw.getIpv4Address() != null)
                 .filter(gw -> ips.contains(gw.getIpv4Address()))
                 .findFirst();
         if (maybeGateway.isPresent()) {
