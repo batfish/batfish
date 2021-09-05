@@ -1,0 +1,205 @@
+[
+    {
+        "objects": [
+            {
+                "uid": "edad6483-1cdb-5a48-b174-bcb253d3ae30",
+                "name": "cp-mgmt",
+                "type": "CpmiHostCkp",
+                "domain": {
+                    "uid": "41e821a0-3720-11e3-aa6e-0800200c9fde",
+                    "name": "SMC User",
+                    "domain-type": "domain"
+                },
+                "policy": {},
+                "operating-system": "Gaia",
+                "hardware": "Open server",
+                "version": "R80.40",
+                "ipv4-address": "10.0.0.3",
+                "interfaces": [
+                    {
+                        "interface-name": "eth0",
+                        "ipv4-address": "10.0.0.3",
+                        "ipv4-network-mask": "255.255.255.0",
+                        "ipv4-mask-length": 24,
+                        "dynamic-ip": false,
+                        "topology": {
+                            "leads-to-internet": true
+                        }
+                    }
+                ],
+                "network-security-blades": {},
+                "management-blades": {
+                    "network-policy-management": true,
+                    "logging-and-status": true
+                },
+                "sic-status": "communicating",
+                "tags": [],
+                "icon": "NetworkObjects/CheckPoint/Hosts/xHost_CP",
+                "groups": [],
+                "comments": "",
+                "color": "black",
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1629845288925,
+                        "iso-8601": "2021-08-24T18:48-0400"
+                    },
+                    "last-modifier": "admin",
+                    "creation-time": {
+                        "posix": 1621430472850,
+                        "iso-8601": "2021-05-19T09:21-0400"
+                    },
+                    "creator": "System"
+                },
+                "read-only": true
+            },
+            {
+                "uid": "6d43d8b7-448f-4594-8316-19983ec0ac3a",
+                "name": "cp_gw1",
+                "type": "simple-gateway",
+                "domain": {
+                    "uid": "41e821a0-3720-11e3-aa6e-0800200c9fde",
+                    "name": "SMC User",
+                    "domain-type": "domain"
+                },
+                "policy": {
+                    "access-policy-revision": {
+                        "uid": "a74f068a-a94f-4ae3-accb-2b6701203964",
+                        "name": "admin@9/3/2021",
+                        "type": "session",
+                        "domain": {
+                            "uid": "41e821a0-3720-11e3-aa6e-0800200c9fde",
+                            "name": "SMC User",
+                            "domain-type": "domain"
+                        },
+                        "state": "published",
+                        "user-name": "admin",
+                        "description": "",
+                        "last-login-time": {
+                            "posix": 1630709337513,
+                            "iso-8601": "2021-09-03T18:48-0400"
+                        },
+                        "publish-time": {
+                            "posix": 1630711019769,
+                            "iso-8601": "2021-09-03T19:16-0400"
+                        },
+                        "expired-session": false,
+                        "application": "SmartConsole",
+                        "changes": 3,
+                        "in-work": false,
+                        "ip-address": "10.0.0.2",
+                        "locks": 2,
+                        "connection-mode": "read write",
+                        "session-timeout": 600,
+                        "comments": "",
+                        "color": "black",
+                        "icon": "Objects/worksession",
+                        "tags": [],
+                        "meta-info": {
+                            "lock": "unlocked",
+                            "validation-state": "ok",
+                            "last-modify-time": {
+                                "posix": 1630711019042,
+                                "iso-8601": "2021-09-03T19:16-0400"
+                            },
+                            "last-modifier": "admin",
+                            "creation-time": {
+                                "posix": 1630709337532,
+                                "iso-8601": "2021-09-03T18:48-0400"
+                            },
+                            "creator": "admin"
+                        },
+                        "read-only": true
+                    },
+                    "access-policy-installed": true,
+                    "access-policy-name": "Standard",
+                    "access-policy-installation-date": {
+                        "posix": 1630711049524,
+                        "iso-8601": "2021-09-03T19:17-0400"
+                    },
+                    "threat-policy-installed": false
+                },
+                "operating-system": "Gaia",
+                "hardware": "Open server",
+                "version": "R80.40",
+                "ipv4-address": "10.0.0.1",
+                "interfaces": [
+                    {
+                        "interface-name": "bond2.101",
+                        "ipv4-address": "10.2.2.1",
+                        "ipv4-network-mask": "255.255.255.248",
+                        "ipv4-mask-length": 29,
+                        "dynamic-ip": false,
+                        "topology": {
+                            "leads-to-internet": false,
+                            "ip-address-behind-this-interface": "specific",
+                            "leads-to-specific-network": {
+                                "uid": "f1bd41df-0b0d-4685-9578-dad62f62f671",
+                                "name": "cp_gw1_bond2.101",
+                                "type": "group",
+                                "domain": {
+                                    "uid": "41e821a0-3720-11e3-aa6e-0800200c9fde",
+                                    "name": "SMC User",
+                                    "domain-type": "domain"
+                                }
+                            },
+                            "leads-to-dmz": false
+                        }
+                    },
+                    {
+                        "interface-name": "bond1.100",
+                        "ipv4-address": "10.2.2.2",
+                        "ipv4-network-mask": "255.255.255.248",
+                        "ipv4-mask-length": 29,
+                        "dynamic-ip": false,
+                        "topology": {
+                            "leads-to-internet": true
+                        }
+                    },
+                    {
+                        "interface-name": "eth0",
+                        "ipv4-address": "10.0.0.1",
+                        "ipv4-network-mask": "255.255.0.0",
+                        "ipv4-mask-length": 16,
+                        "dynamic-ip": false,
+                        "topology": {
+                            "leads-to-internet": false,
+                            "ip-address-behind-this-interface": "network defined by the interface ip and net mask",
+                            "leads-to-dmz": false
+                        }
+                    }
+                ],
+                "network-security-blades": {
+                    "firewall": true
+                },
+                "management-blades": {},
+                "vpn-encryption-domain": "addresses_behind_gw",
+                "sic-status": "communicating",
+                "tags": [],
+                "icon": "NetworkObjects/gateway",
+                "groups": [],
+                "comments": "",
+                "color": "black",
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1629846503948,
+                        "iso-8601": "2021-08-24T19:08-0400"
+                    },
+                    "last-modifier": "admin",
+                    "creation-time": {
+                        "posix": 1628896493478,
+                        "iso-8601": "2021-08-13T19:14-0400"
+                    },
+                    "creator": "admin"
+                },
+                "read-only": true
+            }
+        ],
+        "from": 1,
+        "to": 2,
+        "total": 2
+    }
+]

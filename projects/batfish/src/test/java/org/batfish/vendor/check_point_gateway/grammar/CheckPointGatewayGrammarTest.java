@@ -86,6 +86,7 @@ import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.main.TestrigText;
 import org.batfish.vendor.ConversionContext;
 import org.batfish.vendor.check_point_gateway.representation.BondingGroup;
 import org.batfish.vendor.check_point_gateway.representation.BondingGroup.LacpRate;
@@ -135,6 +136,8 @@ import org.junit.rules.TemporaryFolder;
 public class CheckPointGatewayGrammarTest {
   private static final String TESTCONFIGS_PREFIX =
       "org/batfish/vendor/check_point_gateway/grammar/testconfigs/";
+  private static final String SNAPSHOTS_PREFIX =
+      "org/batfish/vendor/check_point_gateway/grammar/snapshots/";
   public static final NatSettings NAT_SETTINGS_TEST_INSTANCE =
       new NatSettings(true, "gateway", "All", "hide");
 
@@ -1253,5 +1256,50 @@ public class CheckPointGatewayGrammarTest {
         equalTo(
             new FirewallSessionInterfaceInfo(
                 POST_NAT_FIB_LOOKUP, ImmutableList.of("eth1"), null, null)));
+  }
+
+  @Test
+  public void testParsingMgmtAndGateway() throws IOException {
+    String snapshotName = "parsetest";
+    List<String> checkpointMgmtFiles =
+        ImmutableList.of(
+            "cp_mgmt/Parent/show-address-ranges.json",
+            "cp_mgmt/Parent/show-dynamic-objects.json",
+            "cp_mgmt/Parent/show-gateways-and-servers.json",
+            "cp_mgmt/Parent/show-groups.json",
+            "cp_mgmt/Parent/show-hosts.json",
+            "cp_mgmt/Parent/show-multicast-address-ranges.json",
+            "cp_mgmt/Parent/show-networks.json",
+            "cp_mgmt/Parent/show-packages.json",
+            "cp_mgmt/Parent/show-security-zones.json",
+            "cp_mgmt/Parent/show-service-groups.json",
+            "cp_mgmt/Parent/show-services-dce-rpc.json",
+            "cp_mgmt/Parent/show-services-icmp6.json",
+            "cp_mgmt/Parent/show-services-icmp.json",
+            "cp_mgmt/Parent/show-services-other.json",
+            "cp_mgmt/Parent/show-services-rpc.json",
+            "cp_mgmt/Parent/show-services-tcp.json",
+            "cp_mgmt/Parent/show-services-udp.json",
+            "cp_mgmt/Parent/show-simple-gateways.json",
+            "cp_mgmt/Parent/show-vpn-communities-meshed.json",
+            "cp_mgmt/Parent/Standard/show-access-rulebase.json",
+            "cp_mgmt/Parent/Standard/show-nat-rulebase.json",
+            "cp_mgmt/Parent/Standard/show-package.json",
+            "cp_mgmt/Parent/test1/show-access-rulebase.json",
+            "cp_mgmt/Parent/test1/show-nat-rulebase.json",
+            "cp_mgmt/Parent/test1/show-package.json");
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationFiles(
+                    SNAPSHOTS_PREFIX + snapshotName,
+                    ImmutableList.of("cp_gw1/show_configuration.txt"))
+                .setCheckpointMgmtFiles(SNAPSHOTS_PREFIX + snapshotName, checkpointMgmtFiles)
+                .build(),
+            _folder);
+    batfish.getSettings().setDisableUnrecognized(false);
+    Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
+    assertThat(configurations, hasKey("cp_gw1"));
+    assertThat(configurations.get("cp_gw1").getIpSpaces(), hasKey("somehost"));
   }
 }

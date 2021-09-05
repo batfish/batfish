@@ -1,0 +1,71 @@
+[
+    {
+        "objects": [
+            {
+                "uid": "fe02c01d-f10c-4d1c-9838-cd09e92e3c70",
+                "name": "All_DHCPv6_Relay_Agents_and_Servers",
+                "type": "multicast-address-range",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "ipv6-address-first": "ff02::1:2",
+                "ipv6-address-last": "ff02::1:2",
+                "comments": "Multicast to all DHCPv6 relay agents and DHCPv6 servers on the local link",
+                "color": "black",
+                "icon": "Objects/ip",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505994977,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505994977,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "1a53c1c6-7d3e-44dd-aa77-52d6e497b1fa",
+                "name": "All_DHCPv6_Servers",
+                "type": "multicast-address-range",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "ipv6-address-first": "ff05::1:3",
+                "ipv6-address-last": "ff05::1:3",
+                "comments": "Multicast to all DHCPv6 servers on the local link",
+                "color": "black",
+                "icon": "Objects/ip",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505995003,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505995003,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            }
+        ],
+        "from": 1,
+        "to": 2,
+        "total": 2
+    }
+]

@@ -1,0 +1,81 @@
+[
+    {
+        "objects": [
+            {
+                "uid": "48a6ad46-d45f-4107-8d02-0b3c6460ca26",
+                "name": "All_Internet",
+                "type": "address-range",
+                "domain": {
+                    "uid": "41e821a0-3720-11e3-aa6e-0800200c9fde",
+                    "name": "SMC User",
+                    "domain-type": "domain"
+                },
+                "ipv4-address-first": "0.0.0.0",
+                "ipv4-address-last": "255.255.255.255",
+                "ipv6-address-first": "",
+                "ipv6-address-last": "",
+                "nat-settings": {
+                    "auto-rule": false
+                },
+                "comments": "All Internet Addresses",
+                "color": "sienna",
+                "icon": "Objects/ip",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579506177271,
+                        "iso-8601": "2020-01-20T02:42-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579506177271,
+                        "iso-8601": "2020-01-20T02:42-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "43566a8e-42e4-4eae-b854-a15145095214",
+                "name": "LocalMachine_Loopback",
+                "type": "address-range",
+                "domain": {
+                    "uid": "41e821a0-3720-11e3-aa6e-0800200c9fde",
+                    "name": "SMC User",
+                    "domain-type": "domain"
+                },
+                "ipv4-address-first": "127.0.0.1",
+                "ipv4-address-last": "127.255.255.255",
+                "ipv6-address-first": "",
+                "ipv6-address-last": "",
+                "nat-settings": {
+                    "auto-rule": false
+                },
+                "comments": "Local machine loopback address range",
+                "color": "dark blue",
+                "icon": "Objects/ip",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579506177269,
+                        "iso-8601": "2020-01-20T02:42-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579506177269,
+                        "iso-8601": "2020-01-20T02:42-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            }
+        ],
+        "from": 1,
+        "to": 2,
+        "total": 2
+    }
+]

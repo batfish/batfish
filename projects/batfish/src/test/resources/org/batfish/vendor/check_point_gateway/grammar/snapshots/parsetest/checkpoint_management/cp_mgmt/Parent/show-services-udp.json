@@ -1,0 +1,4268 @@
+[
+    {
+        "objects": [
+            {
+                "uid": "97aeb3d6-9aea-11d5-bd16-0090272ccb30",
+                "name": "archie",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "1525",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Archie Internet Protocol, search for files over FTP servers",
+                "color": "forest green",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505990185,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505990185,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "1800a9a3-9837-436f-a587-04c662bce009",
+                "name": "BFD-Multihop",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "4784",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Multihop BFD control packets",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505994730,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505994730,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "011480cf-11ea-4e41-a4f8-de31d03c7379",
+                "name": "BFD-Single_hop",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "3784",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Single-hop BFD control packets",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505994726,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505994726,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb3e6-9aea-11d5-bd16-0090272ccb30",
+                "name": "biff",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "512",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "UNIX biff Protocol, give notice of incoming mail messages",
+                "color": "black",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505990308,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505990308,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "c86f055d-31ad-4430-b12c-1094a86c673c",
+                "name": "Blubster",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "41170",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Uses MANOLITO protocol",
+                "color": "black",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991510,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991510,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb3eb-9aea-11d5-bd16-0090272ccb30",
+                "name": "bootp",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "67",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Bootstrap Protocol Server, users automatically configured ",
+                "color": "black",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505990328,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505990328,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "e8c5ab78-f08d-437c-a9b1-be4a8679d766",
+                "name": "Citrix_ICA_Browsing",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "1604",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": false,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "UDP Service for general Citrix browsing",
+                "color": "black",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505988949,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505988949,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "d8cb6abc-1a8b-4fc0-8be1-3255e51decd1",
+                "name": "CP_SecureAgent-udp",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "19194-19195",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": false,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "SecureAgent Authentication service",
+                "color": "black",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991359,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991359,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb44b-9aea-11d5-bd16-0090272ccb30",
+                "name": "CU-SeeMe",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "7648-7652",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "person-to-person or group discussions videoconference",
+                "color": "blue",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991202,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991202,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb402-9aea-11d5-bd16-0090272ccb30",
+                "name": "daytime-udp",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "13",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Daytime Server Protocol (UDP)",
+                "color": "black",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505990672,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505990672,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "5217a0a1-e919-45ad-b8ce-e8cfdf0d35ad",
+                "name": "dhcp",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "67",
+                "protocol": "DHCP",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 0,
+                "use-default-session-timeout": true,
+                "match-for-any": false,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 0,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "",
+                "color": "black",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505990358,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505990358,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "32ce3ea8-b561-4cfc-b215-8e754017bc96",
+                "name": "dhcp-relay",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "67",
+                "source-port": "67",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 10,
+                "use-default-session-timeout": false,
+                "match-for-any": false,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "DHCP relay agent",
+                "color": "black",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505987948,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505987948,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "fca646b5-ef34-4df1-895d-7639e181501a",
+                "name": "dhcp-rep-localmodule",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "68",
+                "source-port": "67",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 10,
+                "use-default-session-timeout": false,
+                "match-for-any": false,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "DHCP reply to enforcement module only",
+                "color": "black",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505990495,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505990495,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "22725520-8e10-4a91-98ac-dcd1f6c4a4dd",
+                "name": "dhcp-req-localmodule",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "67",
+                "source-port": "68",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 10,
+                "use-default-session-timeout": false,
+                "match-for-any": false,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "DHCP request from enforcement module only",
+                "color": "black",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505990336,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505990336,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "64c3ad3f-69d2-4ec1-b843-5df030c70abf",
+                "name": "Direct_Connect_UDP",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "411-412",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Direct Connect P2P application. Used also by other clients",
+                "color": "black",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991439,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991439,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb3fe-9aea-11d5-bd16-0090272ccb30",
+                "name": "discard-udp",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": false,
+                "port": "9",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Discard Server Protocol (UDP)",
+                "color": "black",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505990660,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505990660,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb3fa-9aea-11d5-bd16-0090272ccb30",
+                "name": "domain-udp",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "53",
+                "protocol": "DNS_UDP",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Domain Name System Queries",
+                "color": "black",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505990609,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505990609,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb3a7-9aea-11d5-bd16-0090272ccb30",
+                "name": "E2ECP",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "18241",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Check Point End to End Control Protocol",
+                "color": "firebrick",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505988311,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505988311,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb3f8-9aea-11d5-bd16-0090272ccb30",
+                "name": "echo-udp",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "7",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Echo Protocol (UDP)",
+                "color": "black",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505990585,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505990585,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "d3caa92a-1032-41ae-a1a1-2274f3ab9f45",
+                "name": "eDonkey_4665",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "4665",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "eDonkey protocol. Used also by other clients.",
+                "color": "black",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991788,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991788,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb3f3-9aea-11d5-bd16-0090272ccb30",
+                "name": "FreeTel-outgoing-server",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "21300",
+                "source-port": "21301-21305",
+                "protocol": "FreeTel",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": false,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "real-time full-duplex voice communication via the Internet-server",
+                "color": "black",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505990565,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505990565,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb3a6-9aea-11d5-bd16-0090272ccb30",
+                "name": "FW1_load_agent",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "18212",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Check Point ConnectControl Load Agent",
+                "color": "firebrick",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505988308,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505988308,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb39e-9aea-11d5-bd16-0090272ccb30",
+                "name": "FW1_scv_keep_alive",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "18233",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Check Point SecureClient Verification Keepalive Protocol",
+                "color": "firebrick",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505988247,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505988247,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb3b1-9aea-11d5-bd16-0090272ccb30",
+                "name": "FW1_snmp",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "260",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Check Point Security Gateway SNMP Agent",
+                "color": "firebrick",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505988373,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505988373,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "1b4543a3-579e-4cc7-8f57-4387c37a6815",
+                "name": "GNUtella_rtr_UDP",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "6347",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Also used by: BearShare, ToadNode, Gnucleus, Xolox, LimeWire",
+                "color": "black",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991465,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991465,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "8eb18480-2690-4520-ae88-412bf5ce94e3",
+                "name": "GNUtella_UDP",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "6346",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Also used by: BearShare, ToadNode, Gnucleus, Xolox, LimeWire",
+                "color": "black",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991473,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991473,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb378-9aea-11d5-bd16-0090272ccb32",
+                "name": "H323_ras",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "1719",
+                "protocol": "H.323_RAS",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": false,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "RAS and associated connections (H.323 protocols)",
+                "color": "cyan",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505990969,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505990969,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb432-9aea-11d5-bd16-0090272ccb31",
+                "name": "H323_ras_only",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "1719",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Endpoint to Gatekeeper and Gatekeeper to Gatekeeper communication",
+                "color": "cyan",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505990979,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505990979,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "ff8ea038-34fd-4b7b-8a8a-8d6bf0a599fe",
+                "name": "HackaTack_31789",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "31789",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "HackaTack trojan",
+                "color": "magenta",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991619,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991619,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "05647a8c-f0e7-4354-adbd-c685ee7742f0",
+                "name": "HackaTack_31791",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "31791",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "HackaTack trojan",
+                "color": "pink",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991731,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991731,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "d6b64df2-4803-4d79-9794-793d18b277d8",
+                "name": "Hotline_tracker",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "5499",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Hotline tracker connections",
+                "color": "black",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991480,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991480,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "bbec6807-808d-49b7-b8dc-54c5a655d392",
+                "name": "ICQ_locator",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "4000",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Mirabilis ICQ versions",
+                "color": "black",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991409,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991409,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb3b0-9aea-11d5-bd16-0090272ccb30",
+                "name": "IKE",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "500",
+                "protocol": "IKE-UDP",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "IPSEC Internet Key Exchange Protocol (formerly ISAKMP/Oakley)",
+                "color": "cyan",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505988363,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505988363,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "07ec4cae-7c50-4b2e-81ed-d75643ab5694",
+                "name": "IKE_NAT_TRAVERSAL",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "4500",
+                "protocol": "IKE-NAT-TRAVERSAL-UDP",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Nat Traversal Protocol",
+                "color": "firebrick",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991908,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991908,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb41a-9aea-11d5-bd16-0090272ccb30",
+                "name": "interphone",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "22555",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Vocaltec Internet Phone",
+                "color": "blue",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505990801,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505990801,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb3fc-9aea-11d5-bd16-0090272ccb30",
+                "name": "kerberos-udp",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "750",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "secure method for authenticating a request for service",
+                "color": "black",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505990653,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505990653,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "8c137030-a995-4e96-aaae-5f5bc74e7b4e",
+                "name": "Kerberos_v5_UDP",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "88",
+                "protocol": "KERBEROS-UDP",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Kerberos authentication protocol (version 5)",
+                "color": "black",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505990641,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505990641,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "7d452f42-ce34-442f-a023-fbc755ddf3d4",
+                "name": "L2TP",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "1701",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Layer 2 Tunneling Protocol",
+                "color": "red",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505990332,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505990332,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "ced7ba46-1e36-48ad-b527-521a63e8cb05",
+                "name": "ldap_udp",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "389",
+                "protocol": "LDAP-UDP",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "LDAP udp service",
+                "color": "black",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505992078,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505992078,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb437-9aea-11d5-bd16-0090272ccb30",
+                "name": "MetaIP-UAT",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "5004",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": false,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Check Point Meta IP UAM Client-Server Communication",
+                "color": "firebrick",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991084,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991084,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "757b4705-84fe-4912-ac56-48fb15ba8782",
+                "name": "mgcp_CA",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "2727",
+                "protocol": "MGCP_UDP",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": false,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": true,
+                "comments": "Supported from version R55W, Media Gateway Control Protocol - Call-Agent port",
+                "color": "black",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505988684,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505988684,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "f41b2e8e-d222-417a-8e37-bcaecfca3165",
+                "name": "mgcp_MG",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "2427",
+                "protocol": "MGCP_UDP",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": false,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": true,
+                "comments": "Supported from version R55W, Media Gateway Control Protocol - Media Gateway port",
+                "color": "black",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505988671,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505988671,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb390-9aea-11d5-bd16-0090272ccb31",
+                "name": "microsoft-ds-udp",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "445",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Microsoft CIFS over UDP",
+                "color": "firebrick",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505988180,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505988180,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "5ad1a14c-647c-41de-9f84-d1c34f09d63b",
+                "name": "MS-SQL-Monitor_UDP",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "1434",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Microsoft-SQL-Monitor_UDP",
+                "color": "khaki",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991771,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991771,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "bfd72cd2-8e5f-4ede-bdb2-6dfc016afccd",
+                "name": "MS-SQL-Server_UDP",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "1433",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Microsoft SQL Server",
+                "color": "dark gold",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991768,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991768,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "0094aac2-a29e-4d04-b86c-f31f63dffae2",
+                "name": "MSN_Messenger_1863_UDP",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "1863",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Microsoft Network Messenger UDP",
+                "color": "black",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991413,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991413,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "0ac39b6a-701a-4c33-a88d-9eb0fecf9ef6",
+                "name": "MSN_Messenger_5190",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "5190",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Microsoft Network Messenger",
+                "color": "black",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991417,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991417,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "e3e6d587-3212-4ff4-86a1-d16093689e19",
+                "name": "MSN_Messenger_Voice",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "6901",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Microsoft Network Messenger Voice communication",
+                "color": "black",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991423,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991423,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "7e7ce9b0-8631-4ec3-a7ee-6eb084782a66",
+                "name": "MSSQL_resolver",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "1434",
+                "protocol": "SQL_SLAMMER",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": false,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "MS SQL Sapphire /SQL Slammer Worm",
+                "color": "black",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991848,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991848,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb3e5-9aea-11d5-bd16-0090272ccb30",
+                "name": "name",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "42",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Host Name Server",
+                "color": "black",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505990305,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505990305,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb415-9aea-11d5-bd16-0090272ccb30",
+                "name": "nbdatagram",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "138",
+                "protocol": "NBDATAGRAM",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "NetBios Datagram Service",
+                "color": "magenta",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505990783,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505990783,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb414-9aea-11d5-bd16-0090272ccb30",
+                "name": "nbname",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "137",
+                "protocol": "NBNAME",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "NetBios Name Service",
+                "color": "magenta",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505990770,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505990770,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb41e-9aea-11d5-bd16-0090272ccb30",
+                "name": "NEW-RADIUS",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "1812",
+                "protocol": "Radius",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "NEW - Remote Authentication Dial-In User Service",
+                "color": "firebrick",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505990877,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505990877,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "d5973930-ef57-43d7-9348-9310224eb9f5",
+                "name": "NEW-RADIUS-ACCOUNTING",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "1813",
+                "protocol": "Radius",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "NEW - Remote Authentication Dial-In User Service accounting",
+                "color": "firebrick",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505990889,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505990889,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb3b8-9aea-11d5-bd16-0090272ccb30",
+                "name": "nfsd",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "2049",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Network File System Daemon over UDP (earlier versions of NFS)",
+                "color": "red",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505988607,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505988607,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "aa02e546-80d1-453a-91dc-49f606764451",
+                "name": "NoBackO",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "1201",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "NoBackO trojan",
+                "color": "magenta",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991635,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991635,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb404-9aea-11d5-bd16-0090272ccb30",
+                "name": "ntp-udp",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "123",
+                "protocol": "NTP-UDP",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Network Time Protocol (UDP)",
+                "color": "black",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505990690,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505990690,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb43f-9aea-11d5-bd16-0090272ccb30",
+                "name": "pcANYWHERE-stat",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "5632",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "PCs remote access security software, status",
+                "color": "blue",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991143,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991143,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "706c720f-c90d-4aa4-8ab4-967e3887f2f0",
+                "name": "quic",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "443",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": false,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Quick UDP Internet Connections",
+                "color": "black",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505987783,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505987783,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb41d-9aea-11d5-bd16-0090272ccb30",
+                "name": "RADIUS",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "1645",
+                "protocol": "Radius",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Remote Authentication Dial-In User Service",
+                "color": "firebrick",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505990852,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505990852,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "3af666e6-d36d-491d-9976-26369baaf84b",
+                "name": "RADIUS-ACCOUNTING",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "1646",
+                "protocol": "Radius",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Remote Authentication Dial-In User Service accounting",
+                "color": "firebrick",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505990865,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505990865,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "21cc3f85-e6df-443d-9846-bd39bd015b85",
+                "name": "RainWall_Daemon",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "6372",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": false,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "RainWall daemons communication",
+                "color": "black",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991109,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991109,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "4fbd29c5-06db-4912-b23d-1bd50d693185",
+                "name": "RainWall_Status",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "6374",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": false,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "RainWall remote management status",
+                "color": "black",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991113,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991113,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "5ff8e3f0-f9e7-47c0-a8ce-fabcccdb7755",
+                "name": "RainWall_Stop",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "6373",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": false,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "RainWall monitoring",
+                "color": "black",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991117,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991117,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb39f-9aea-11d5-bd16-0090272ccb30",
+                "name": "RDP",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "259",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Check Point VPN-1 FWZ Key Negotiations - Reliable Datagram Protocol",
+                "color": "firebrick",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505988252,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505988252,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "4f0e1416-452e-47b5-92f9-4f7e9d844baf",
+                "name": "Remote_Desktop_Protocol_UDP",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "3389",
+                "protocol": "RDP-UDP",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "",
+                "color": "black",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505988264,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505988264,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "637b7f26-c4b2-4510-872e-5a10de046cb4",
+                "name": "RexxRave",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "1104",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "RexxRave trojan",
+                "color": "magenta",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991593,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991593,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb3cd-9aea-11d5-bd16-0090272ccb30",
+                "name": "rip",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "520",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Routing Information Protocol",
+                "color": "slate blue",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505988986,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505988986,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "b854ab7b-c8c0-448f-9dd5-491212097c3b",
+                "name": "RIPng",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "521",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Routing Information Protocol for IPv6",
+                "color": "crete blue",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991764,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991764,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "38db0207-99ab-46fe-9c76-ce0fc537236f",
+                "name": "rtp",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "6970-6999",
+                "protocol": "RTP",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 0,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 0,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "",
+                "color": "black",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505990484,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505990484,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb3ec-9aea-11d5-bd16-0090272ccb30",
+                "name": "securid-udp",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "5500",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Token based Authentication service (UDP)",
+                "color": "firebrick",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505990498,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505990498,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "bd8b98d4-d2c0-11d5-a329-00d0b7d4143f",
+                "name": "sip",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "5060",
+                "protocol": "SIP_UDP",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": false,
+                "match-for-any": false,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Session Initiation Protocol",
+                "color": "black",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505988657,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505988657,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "bd8b98d4-d2c0-11d5-a329-00d0b7d41431",
+                "name": "sip_any",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "5060",
+                "protocol": "SIP_UDP_ANY",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": false,
+                "match-for-any": false,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Session Initiation Protocol",
+                "color": "black",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505988645,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505988645,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "d9501263-61ae-4bd6-b33a-87d4d5ccc249",
+                "name": "smb-udp",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "138",
+                "protocol": "SMB-UDP",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": false,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Simple Network Management Protocol",
+                "color": "firebrick",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505988380,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505988380,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb3b2-9aea-11d5-bd16-0090272ccb30",
+                "name": "snmp",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "161",
+                "protocol": "SNMP",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Simple Network Management Protocol",
+                "color": "firebrick",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505988406,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505988406,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb3b4-9aea-11d5-bd16-0090272ccb30",
+                "name": "snmp-read",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "161",
+                "protocol": "Snmp-Read",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": false,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Simple Network Management Protocol - Read Only",
+                "color": "firebrick",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505988539,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505988539,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb3b3-9aea-11d5-bd16-0090272ccb30",
+                "name": "snmp-trap",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": false,
+                "port": "162",
+                "protocol": "SNMP_TRAP",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Simple Network Management Protocol Traps",
+                "color": "firebrick",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505988419,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505988419,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "1649fc50-b2b3-4a95-9839-802da7108629",
+                "name": "SWTP_Gateway",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "9281",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "VPN-1 Embedded/SofaWare commands",
+                "color": "black",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991210,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991210,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "6a40f044-296b-4611-8105-fe83284baf03",
+                "name": "SWTP_SMS",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "9282",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "VPN-1 embedded / SofaWare Management Server (SMS)",
+                "color": "black",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991206,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991206,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb3e0-9aea-11d5-bd16-0090272ccb30",
+                "name": "syslog",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": false,
+                "port": "514",
+                "protocol": "SYSLOG",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "UNIX syslog Protocol, control system log",
+                "color": "blue",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505990266,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505990266,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb41f-9aea-11d5-bd16-0090272ccb30",
+                "name": "TACACS",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "49",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Terminal Access Controller Access Control System over UDP",
+                "color": "firebrick",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505990897,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505990897,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb3bd-9aea-11d5-bd16-0090272ccb30",
+                "name": "tftp",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "69",
+                "protocol": "TFTP",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Trivial File Transfer Protocol",
+                "color": "red",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505988630,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505988630,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb400-9aea-11d5-bd16-0090272ccb30",
+                "name": "time-udp",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "37",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Time Server Protocol (UDP)",
+                "color": "black",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505990666,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505990666,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb3a8-9aea-11d5-bd16-0090272ccb30",
+                "name": "tunnel_test",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "18234",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Check Point tunnel testing application",
+                "color": "firebrick",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505988314,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505988314,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "7f5643c7-6b43-4dc4-b935-0bb9ae1f08a7",
+                "name": "UA_CS",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "32640",
+                "protocol": "UA",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": false,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "",
+                "color": "black",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505987897,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505987897,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "865b8ca1-628f-4603-9976-62e1cdf5836c",
+                "name": "UA_PHONE",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "32512",
+                "protocol": "UA",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": false,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "",
+                "color": "black",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505987914,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505987914,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb3de-9aea-11d5-bd16-0090272ccb30",
+                "name": "udp-high-ports",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": ">1023",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": false,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "UDP Ports 1024-65535",
+                "color": "yellow",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505990246,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505990246,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "84414097-afe5-4627-b6cf-12d4c6d9e8ca",
+                "name": "unknown_protocol_udp",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": ">0",
+                "protocol": "unknown_udp_protocol",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": false,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "",
+                "color": "black",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505987870,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505987870,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb390-9aea-11d5-bd16-0090272ccb30",
+                "name": "VPN1_IPSEC_encapsulation",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "2746",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Check Point VPN-1 SecuRemote IPSEC Transport Encapsulation Protocol",
+                "color": "firebrick",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505988176,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505988176,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "7641c3c5-e4c3-4827-b918-d2579f116433",
+                "name": "wap_wdp",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "9200",
+                "protocol": "MMS",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": false,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Wireless Datagram Protocol: a simplified protocol suitable for low bandwidth mobile stations enables a connectionless mode.",
+                "color": "forest green",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991881,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991881,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "3afa6a8a-5c36-4ada-9942-125a04cc6846",
+                "name": "wap_wdp_enc",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "9202",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": false,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Wireless Datagram Protocol with Wireless Transport Layer Security",
+                "color": "forest green",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991864,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991864,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "61b7c3e3-b730-4a28-9041-c15e7ff15589",
+                "name": "wap_wtp",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "9201",
+                "protocol": "MMS",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": false,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Wireless Transaction Protocol: a simplified protocol suitable for low bandwidth mobile stations enables a connection mode.",
+                "color": "forest green",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991896,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991896,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "62b30b32-b964-4b37-bede-503ba794dcf9",
+                "name": "wap_wtp_enc",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "9203",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": false,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Wireless Transaction Protocol with Wireless Transport Layer Security",
+                "color": "forest green",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991868,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991868,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb3df-9aea-11d5-bd16-0090272ccb30",
+                "name": "who",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "513",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "UNIX who Protocol, who is on the system",
+                "color": "blue",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505990258,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505990258,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "6414f98e-6883-44db-8ee2-debd443c7714",
+                "name": "WinMX",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "6257",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Also uses Napster ports",
+                "color": "black",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991785,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991785,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "c98bb09a-b04f-437c-ad1a-6c8261831b87",
+                "name": "Yahoo_Messenger_Voice_Chat_UDP",
+                "type": "service-udp",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "accept-replies": true,
+                "port": "5000-5010",
+                "match-by-protocol-signature": false,
+                "override-default-settings": false,
+                "session-timeout": 40,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Yahoo Messenger Voice Chat",
+                "color": "black",
+                "icon": "Services/UDPService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991430,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991430,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            }
+        ],
+        "from": 1,
+        "to": 96,
+        "total": 96
+    }
+]
