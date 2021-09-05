@@ -58,6 +58,47 @@ public final class AccessRuleTest {
                   .setVpn(ImmutableList.of(Uid.of("9")))
                   .build()));
     }
+    {
+      String input =
+          "{"
+              + "\"GARBAGE\":\"0\","
+              + "\"type\":\"access-rule\","
+              + "\"action\":\"1\","
+              + "\"comments\":\"foo\","
+              + "\"content\":[\"2\"],"
+              + "\"content-direction\":\"any\","
+              + "\"content-negate\":false,"
+              + "\"destination\":[\"3\"],"
+              + "\"destination-negate\":true,"
+              + "\"enabled\":true,"
+              + "\"install-on\":[\"4\"],"
+              + "\"rule-number\":5,"
+              + "\"service\":[\"6\"],"
+              + "\"service-negate\":false,"
+              + "\"source\":[\"7\"],"
+              + "\"source-negate\":false,"
+              + "\"uid\":\"8\","
+              + "\"vpn\":[\"9\"]"
+              + "}";
+      assertThat(
+          BatfishObjectMapper.ignoreUnknownMapper().readValue(input, AccessRule.class),
+          equalTo(
+              AccessRule.testBuilder()
+                  .setAction(Uid.of("1"))
+                  .setComments("foo")
+                  .setContent(ImmutableList.of(Uid.of("2")))
+                  .setContentDirection("any")
+                  .setDestination(ImmutableList.of(Uid.of("3")))
+                  .setDestinationNegate(true)
+                  .setInstallOn(ImmutableList.of(Uid.of("4")))
+                  .setName("Rule 5")
+                  .setRuleNumber(5)
+                  .setService(ImmutableList.of(Uid.of("6")))
+                  .setSource(ImmutableList.of(Uid.of("7")))
+                  .setUid(Uid.of("8"))
+                  .setVpn(ImmutableList.of(Uid.of("9")))
+                  .build()));
+    }
   }
 
   @Test
