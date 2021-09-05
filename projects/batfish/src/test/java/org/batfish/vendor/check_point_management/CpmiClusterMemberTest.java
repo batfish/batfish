@@ -44,6 +44,33 @@ public final class CpmiClusterMemberTest {
   }
 
   @Test
+  public void testJacksonDeserialization_noIpV4Address() throws JsonProcessingException {
+    String input =
+        "{"
+            + "\"GARBAGE\":0,"
+            + "\"type\":\"CpmiClusterMember\","
+            + "\"uid\":\"0\","
+            + "\"name\":\"foo\","
+            + "\"interfaces\": [],"
+            + "\"policy\":{"
+            + "\"access-policy-installed\": true,"
+            + "\"access-policy-name\": \"p1\","
+            + "\"threat-policy-installed\": true,"
+            + "\"threat-policy-name\": \"p2\""
+            + "}" // policy
+            + "}";
+    assertThat(
+        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, CpmiClusterMember.class),
+        equalTo(
+            new CpmiClusterMember(
+                null,
+                "foo",
+                ImmutableList.of(),
+                new GatewayOrServerPolicy("p1", "p2"),
+                Uid.of("0"))));
+  }
+
+  @Test
   public void testJavaSerialization() {
     CpmiClusterMember obj =
         new CpmiClusterMember(

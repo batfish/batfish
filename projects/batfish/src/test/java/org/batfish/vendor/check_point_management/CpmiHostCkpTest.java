@@ -35,6 +35,24 @@ public final class CpmiHostCkpTest {
   }
 
   @Test
+  public void testJacksonDeserialization_noIpv4Address() throws JsonProcessingException {
+    String input =
+        "{"
+            + "\"GARBAGE\":0,"
+            + "\"type\":\"CpmiHostCkp\","
+            + "\"uid\":\"0\","
+            + "\"name\":\"foo\","
+            + "\"interfaces\": [],"
+            + "\"policy\":{}"
+            + "}";
+    assertThat(
+        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, CpmiHostCkp.class),
+        equalTo(
+            new CpmiHostCkp(
+                null, ImmutableList.of(), "foo", GatewayOrServerPolicy.empty(), Uid.of("0"))));
+  }
+
+  @Test
   public void testJavaSerialization() {
     CpmiHostCkp obj =
         new CpmiHostCkp(

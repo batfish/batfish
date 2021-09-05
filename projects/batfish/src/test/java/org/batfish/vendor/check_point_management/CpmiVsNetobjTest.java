@@ -44,14 +44,14 @@ public final class CpmiVsNetobjTest {
   }
 
   @Test
-  public void testJacksonDeserialization_noInterfaces() throws JsonProcessingException {
+  public void testJacksonDeserialization_noOptionalFields() throws JsonProcessingException {
+    // missing ipv4-address and interfaces
     String input =
         "{"
             + "\"GARBAGE\":0,"
             + "\"type\":\"CpmiVsNetobj\","
             + "\"uid\":\"0\","
             + "\"name\":\"foo\","
-            + "\"ipv4-address\":\"0.0.0.0\","
             + "\"policy\":{"
             + "\"access-policy-installed\": true,"
             + "\"access-policy-name\": \"p1\","
@@ -63,7 +63,7 @@ public final class CpmiVsNetobjTest {
         BatfishObjectMapper.ignoreUnknownMapper().readValue(input, CpmiVsNetobj.class),
         equalTo(
             new CpmiVsNetobj(
-                Ip.ZERO,
+                null,
                 "foo",
                 ImmutableList.of(),
                 new GatewayOrServerPolicy("p1", "p2"),
