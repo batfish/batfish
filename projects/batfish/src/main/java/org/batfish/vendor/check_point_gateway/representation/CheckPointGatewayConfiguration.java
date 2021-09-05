@@ -3,6 +3,7 @@ package org.batfish.vendor.check_point_gateway.representation;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.batfish.datamodel.FirewallSessionInterfaceInfo.Action.POST_NAT_FIB_LOOKUP;
+import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.aclName;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toIpAccessLists;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getManualNatRules;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.manualHideRuleTransformation;
@@ -170,7 +171,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
             .setName(INTERFACE_ACL_NAME)
             .setLines(
                 accessLayers.stream()
-                    .map(l -> new AclAclLine(l.getName(), l.getName()))
+                    .map(l -> new AclAclLine(l.getName(), aclName(l)))
                     .collect(ImmutableList.toImmutableList()))
             .build();
     _c.getIpAccessLists().put(interfaceAcl.getName(), interfaceAcl);
