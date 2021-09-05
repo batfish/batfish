@@ -1,6 +1,7 @@
 package org.batfish.vendor.check_point_management.parsing;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.collect.Maps.immutableEntry;
 import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_MANAGEMENT_DIR;
 import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_ACCESS_RULEBASE;
 import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_GATEWAYS_AND_SERVERS;
@@ -162,107 +163,136 @@ public class CheckpointManagementParser {
       Map<String, Map<String, Map<String, String>>> domainFileMap,
       Map<String, Map<String, Map<String, Map<String, String>>>> packageFileMap,
       ParseVendorConfigurationAnswerElement pvcae) {
-    ImmutableMap.Builder<String, ManagementServer> serversMap = ImmutableMap.builder();
-    for (Entry<String, Map<String, Map<String, Map<String, String>>>> serverEntry :
-        packageFileMap.entrySet()) {
-      String serverName = serverEntry.getKey();
-      ImmutableMap.Builder<String, ManagementDomain> domainsMap = ImmutableMap.builder();
-      for (Entry<String, Map<String, Map<String, String>>> domainEntry :
-          serverEntry.getValue().entrySet()) {
-        String domainName = domainEntry.getKey();
-        List<GatewaysAndServers> gatewaysAndServersList =
-            tryParseCheckpointDomainFile(
-                domainFileMap,
-                new TypeReference<List<GatewaysAndServers>>() {},
-                pvcae,
-                serverName,
-                domainName,
-                RELPATH_CHECKPOINT_SHOW_GATEWAYS_AND_SERVERS);
-        if (gatewaysAndServersList == null) {
-          continue;
-        }
-        GatewaysAndServers gatewaysAndServers =
-            mergeGatewaysAndServersPages(gatewaysAndServersList);
-        List<TypedManagementObject> objects =
-            buildObjectsList(domainFileMap, domainName, serverName, pvcae);
 
-        ImmutableMap.Builder<Uid, ManagementPackage> packagesBuilder = ImmutableMap.builder();
-        for (Entry<String, Map<String, String>> packageEntry : domainEntry.getValue().entrySet()) {
-          String packageName = packageEntry.getKey();
-          Map<String, String> packageFiles = packageEntry.getValue();
-          List<Package> showPackageListEntries =
+    Map<Entry<String, String>, ManagementDomain> domainByServerDomain =
+        domainFileMap.entrySet().stream()
+            .flatMap(
+                domainsByServerEntry -> {
+                  String serverName = domainsByServerEntry.getKey();
+                  return domainsByServerEntry.getValue().keySet().stream()
+                      .map(domainName -> immutableEntry(serverName, domainName));
+                })
+            .parallel() // stream of entries of <serverName, domainName>
+            .map(
+                serverDomain ->
+                    immutableEntry(
+                        serverDomain,
+                        buildManagementDomain(
+                            serverDomain.getKey(),
+                            serverDomain.getValue(),
+                            domainFileMap,
+                            packageFileMap,
+                            pvcae)))
+            .filter(domainByServerDomainEntry -> domainByServerDomainEntry.getValue() != null)
+            .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
+    Map<String, ImmutableMap.Builder<String, ManagementDomain>> domainsByServer = new HashMap<>();
+    domainByServerDomain.forEach(
+        (domainsByServerDomainEntry, managementDomain) -> {
+          String serverName = domainsByServerDomainEntry.getKey();
+          String domainName = domainsByServerDomainEntry.getValue();
+          domainsByServer
+              .computeIfAbsent(serverName, n -> ImmutableMap.builder())
+              .put(domainName, managementDomain);
+        });
+    ImmutableMap.Builder<String, ManagementServer> serversMap = ImmutableMap.builder();
+    domainsByServer.forEach(
+        (serverName, domainByName) ->
+            serversMap.put(serverName, new ManagementServer(domainByName.build(), serverName)));
+    return serversMap.build();
+  }
+
+  private static @Nullable ManagementDomain buildManagementDomain(
+      String serverName,
+      String domainName,
+      Map<String, Map<String, Map<String, String>>> domainFileMap,
+      Map<String, Map<String, Map<String, Map<String, String>>>> packageFileMap,
+      ParseVendorConfigurationAnswerElement pvcae) {
+    List<GatewaysAndServers> gatewaysAndServersList =
+        tryParseCheckpointDomainFile(
+            domainFileMap,
+            new TypeReference<List<GatewaysAndServers>>() {},
+            pvcae,
+            serverName,
+            domainName,
+            RELPATH_CHECKPOINT_SHOW_GATEWAYS_AND_SERVERS);
+    if (gatewaysAndServersList == null) {
+      return null;
+    }
+    GatewaysAndServers gatewaysAndServers = mergeGatewaysAndServersPages(gatewaysAndServersList);
+    List<TypedManagementObject> objects =
+        buildObjectsList(domainFileMap, domainName, serverName, pvcae);
+
+    ImmutableMap.Builder<Uid, ManagementPackage> packagesBuilder = ImmutableMap.builder();
+    for (Entry<String, Map<String, String>> packageEntry :
+        packageFileMap.get(serverName).get(domainName).entrySet()) {
+      String packageName = packageEntry.getKey();
+      Map<String, String> packageFiles = packageEntry.getValue();
+      List<Package> showPackageListEntries =
+          tryParseCheckpointPackageFile(
+              packageFiles,
+              new TypeReference<List<Package>>() {},
+              pvcae,
+              serverName,
+              domainName,
+              packageName,
+              RELPATH_CHECKPOINT_SHOW_PACKAGE);
+      if (showPackageListEntries == null) {
+        continue;
+      } else if (showPackageListEntries.isEmpty()) {
+        warnCheckpointPackageFile(
+            serverName,
+            domainName,
+            packageName,
+            RELPATH_CHECKPOINT_SHOW_PACKAGE,
+            "has no package entry in the JSON",
+            pvcae,
+            null);
+        continue;
+      } else if (showPackageListEntries.size() > 1) {
+        warnCheckpointPackageFile(
+            serverName,
+            domainName,
+            packageName,
+            RELPATH_CHECKPOINT_SHOW_PACKAGE,
+            "has extra packages in the JSON. Using the first entry.",
+            pvcae,
+            null);
+      }
+      Package pakij = showPackageListEntries.get(0);
+      // Note that warnings from hereon will use package name from JSON rather than directory
+      // name. In the future we may want to encode that name in base64 so we can guarantee
+      // the same package name can be retrieved from JSON and directory name.
+      List<AccessLayer> accessLayers =
+          firstNonNull(
               tryParseCheckpointPackageFile(
                   packageFiles,
-                  new TypeReference<List<Package>>() {},
+                  new TypeReference<List<AccessLayer>>() {},
                   pvcae,
                   serverName,
                   domainName,
-                  packageName,
-                  RELPATH_CHECKPOINT_SHOW_PACKAGE);
-          if (showPackageListEntries == null) {
-            continue;
-          } else if (showPackageListEntries.isEmpty()) {
-            warnCheckpointPackageFile(
-                serverName,
-                domainName,
-                packageName,
-                RELPATH_CHECKPOINT_SHOW_PACKAGE,
-                "has no package entry in the JSON",
-                pvcae,
-                null);
-            continue;
-          } else if (showPackageListEntries.size() > 1) {
-            warnCheckpointPackageFile(
-                serverName,
-                domainName,
-                packageName,
-                RELPATH_CHECKPOINT_SHOW_PACKAGE,
-                "has extra packages in the JSON. Using the first entry.",
-                pvcae,
-                null);
-          }
-          Package pakij = showPackageListEntries.get(0);
-          // Note that warnings from hereon will use package name from JSON rather than directory
-          // name. In the future we may want to encode that name in base64 so we can guarantee
-          // the same package name can be retrieved from JSON and directory name.
-          List<AccessLayer> accessLayers =
-              firstNonNull(
-                  tryParseCheckpointPackageFile(
-                      packageFiles,
-                      new TypeReference<List<AccessLayer>>() {},
-                      pvcae,
-                      serverName,
-                      domainName,
-                      pakij.getName(),
-                      RELPATH_CHECKPOINT_SHOW_ACCESS_RULEBASE),
-                  ImmutableList.of());
-          NatRulebase natRulebase =
-              getNatRulebase(pakij, domainName, packageFiles, pvcae, serverName);
-          ManagementPackage mgmtPackage = new ManagementPackage(accessLayers, natRulebase, pakij);
-          packagesBuilder.put(mgmtPackage.getPackage().getUid(), mgmtPackage);
-        }
-        Map<Uid, ManagementPackage> packages = packagesBuilder.build();
-        if (packages.isEmpty()) {
-          String message =
-              String.format(
-                  "Ignoring Checkpoint management domain %s on server %s: no packages present",
-                  domainName, serverName);
-          pvcae.addRedFlagWarning(
-              BfConsts.RELPATH_CHECKPOINT_MANAGEMENT_DIR, new Warning(message, "Checkpoint"));
-          LOGGER.warn(message);
-          continue;
-        }
-
-        // Use any package to find domain
-        Domain domain = packages.values().iterator().next().getPackage().getDomain();
-        ManagementDomain mgmtDomain =
-            new ManagementDomain(
-                domain, gatewaysAndServers.getGatewaysAndServers(), packages, objects);
-        domainsMap.put(mgmtDomain.getName(), mgmtDomain);
-      }
-      serversMap.put(serverName, new ManagementServer(domainsMap.build(), serverName));
+                  pakij.getName(),
+                  RELPATH_CHECKPOINT_SHOW_ACCESS_RULEBASE),
+              ImmutableList.of());
+      NatRulebase natRulebase = getNatRulebase(pakij, domainName, packageFiles, pvcae, serverName);
+      ManagementPackage mgmtPackage = new ManagementPackage(accessLayers, natRulebase, pakij);
+      packagesBuilder.put(mgmtPackage.getPackage().getUid(), mgmtPackage);
     }
-    return serversMap.build();
+    Map<Uid, ManagementPackage> packages = packagesBuilder.build();
+    if (packages.isEmpty()) {
+      String message =
+          String.format(
+              "Ignoring Checkpoint management domain %s on server %s: no packages present",
+              domainName, serverName);
+      pvcae.addRedFlagWarning(
+          BfConsts.RELPATH_CHECKPOINT_MANAGEMENT_DIR, new Warning(message, "Checkpoint"));
+      LOGGER.warn(message);
+      return null;
+    }
+
+    // Use any package to find domain
+    Domain domain = packages.values().iterator().next().getPackage().getDomain();
+    return new ManagementDomain(
+        domain, gatewaysAndServers.getGatewaysAndServers(), packages, objects);
   }
 
   private static @Nullable <T> T tryParseCheckpointDomainFile(
