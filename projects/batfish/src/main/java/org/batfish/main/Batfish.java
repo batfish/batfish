@@ -1602,7 +1602,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
             pvcae,
             serverName,
             domainName,
-            pakij.getName(),
+            packageName,
             RELPATH_CHECKPOINT_SHOW_NAT_RULEBASE);
     if (natRulebases == null) {
       return null;
