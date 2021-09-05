@@ -70,6 +70,20 @@ public final class AccessSectionTest {
   }
 
   @Test
+  public void testJacksonDeserialization_noName() throws JsonProcessingException {
+    String input =
+        "{"
+            + "\"GARBAGE\":0,"
+            + "\"type\":\"access-section\","
+            + "\"uid\":\"0\","
+            + "\"rulebase\":[]"
+            + "}"; // AccessSection
+    assertThat(
+        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, AccessSection.class),
+        equalTo(new AccessSection("Section 0", ImmutableList.of(), Uid.of("0"))));
+  }
+
+  @Test
   public void testJavaSerialization() {
     AccessSection obj = new AccessSection("foo", ImmutableList.of(), Uid.of("0"));
     assertEquals(obj, SerializationUtils.clone(obj));
