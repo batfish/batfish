@@ -1,5 +1,6 @@
 package org.batfish.vendor.check_point_management;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -28,10 +29,9 @@ public final class AccessSection extends NamedManagementObject implements Access
       @JsonProperty(PROP_NAME) @Nullable String name,
       @JsonProperty(PROP_RULEBASE) @Nullable List<AccessRule> rulebase,
       @JsonProperty(PROP_UID) @Nullable Uid uid) {
-    checkArgument(name != null, "Missing %s", PROP_NAME);
     checkArgument(rulebase != null, "Missing %s", PROP_RULEBASE);
     checkArgument(uid != null, "Missing %s", PROP_UID);
-    return new AccessSection(name, rulebase, uid);
+    return new AccessSection(firstNonNull(name, "Section " + uid.getValue()), rulebase, uid);
   }
 
   @Override
