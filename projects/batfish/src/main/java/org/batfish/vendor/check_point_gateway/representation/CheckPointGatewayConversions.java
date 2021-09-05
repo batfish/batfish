@@ -122,12 +122,13 @@ public final class CheckPointGatewayConversions {
     }
 
     // AccessLayer
-    acls.put(
-        access.getName(),
+    IpAccessList accessLayer =
         IpAccessList.builder()
-            .setName(access.getName())
+            .setName(aclName(access))
+            .setSourceName(access.getName())
             .setLines(accessLayerLines.build())
-            .build());
+            .build();
+    acls.put(accessLayer.getName(), accessLayer);
     return acls.build();
   }
 
@@ -135,7 +136,8 @@ public final class CheckPointGatewayConversions {
   private static IpAccessList toIpAccessList(
       @Nonnull AccessSection section, Map<Uid, TypedManagementObject> objs) {
     return IpAccessList.builder()
-        .setName(section.getName())
+        .setName(aclName(section))
+        .setSourceName(section.getName())
         .setLines(
             section.getRulebase().stream()
                 .map(r -> toAclLine(r, objs))
@@ -277,6 +279,16 @@ public final class CheckPointGatewayConversions {
   static boolean appliesToGateway(List<Uid> installOn, GatewayOrServer gateway) {
     // TODO: implement
     return true;
+  }
+
+  /** Returns the name we use for IpAccessList of AccessLayer */
+  public static String aclName(AccessLayer accessLayer) {
+    return accessLayer.getUid().getValue();
+  }
+
+  /** Returns the name we use for IpAccessList of AccessSection */
+  public static String aclName(AccessSection accessSection) {
+    return accessSection.getUid().getValue();
   }
 
   private CheckPointGatewayConversions() {}
