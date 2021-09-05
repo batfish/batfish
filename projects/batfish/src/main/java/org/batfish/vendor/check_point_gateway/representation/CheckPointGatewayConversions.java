@@ -122,12 +122,13 @@ public final class CheckPointGatewayConversions {
     }
 
     // AccessLayer
-    acls.put(
-        access.getName(),
+    IpAccessList accessLayer =
         IpAccessList.builder()
-            .setName(access.getName())
+            .setName(access.getUid().getValue())
+            .setSourceName(access.getName())
             .setLines(accessLayerLines.build())
-            .build());
+            .build();
+    acls.put(accessLayer.getName(), accessLayer);
     return acls.build();
   }
 
@@ -135,7 +136,8 @@ public final class CheckPointGatewayConversions {
   private static IpAccessList toIpAccessList(
       @Nonnull AccessSection section, Map<Uid, TypedManagementObject> objs) {
     return IpAccessList.builder()
-        .setName(section.getName())
+        .setName(section.getUid().getValue())
+        .setSourceName(section.getName())
         .setLines(
             section.getRulebase().stream()
                 .map(r -> toAclLine(r, objs))

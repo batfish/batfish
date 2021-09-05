@@ -127,6 +127,8 @@ public final class CheckPointGatewayConversionsTest {
   public void testToIpAccessLists() {
     String accessLayerName = "accessLayerName";
     String accessSectionName = "accessSectionName";
+    Uid accessLayerUid = Uid.of("uid-al");
+    Uid accessSectionUid = Uid.of("uid-asu");
 
     ImmutableList<AccessRuleOrSection> rulebase =
         ImmutableList.of(
@@ -147,7 +149,7 @@ public final class CheckPointGatewayConversionsTest {
                         .setDestination(ImmutableList.of(Uid.of("11")))
                         .setName("childRule1")
                         .build()),
-                Uid.of("3")),
+                accessSectionUid),
             // Drop all traffic
             AccessRule.testBuilder(UID_CPMI_ANY)
                 .setUid(Uid.of("6"))
@@ -160,18 +162,22 @@ public final class CheckPointGatewayConversionsTest {
     Flow net0ToNet2 = createFlow(NET0_ADDR, NET2_ADDR);
 
     Map<String, IpAccessList> ipAccessLists =
-        toIpAccessLists(new AccessLayer(TEST_OBJS, rulebase, Uid.of("1"), accessLayerName));
-    assertThat(ipAccessLists.keySet(), containsInAnyOrder(accessLayerName, accessSectionName));
+        toIpAccessLists(new AccessLayer(TEST_OBJS, rulebase, accessLayerUid, accessLayerName));
+    assertThat(
+        ipAccessLists.keySet(),
+        containsInAnyOrder(accessLayerUid.getValue(), accessSectionUid.getValue()));
 
-    IpAccessList aclLayer = ipAccessLists.get(accessLayerName);
+    IpAccessList aclLayer = ipAccessLists.get(accessLayerUid.getValue());
     assertThat(aclLayer, accepts(net0ToNet1, "eth0", ipAccessLists, TEST_IP_SPACES));
     assertThat(aclLayer, rejects(net1ToNet1, "eth0", ipAccessLists, TEST_IP_SPACES));
     assertThat(aclLayer, rejects(net0ToNet2, "eth0", ipAccessLists, TEST_IP_SPACES));
+    assertThat(aclLayer.getSourceName(), equalTo(accessLayerName));
 
-    IpAccessList aclSection = ipAccessLists.get(accessSectionName);
+    IpAccessList aclSection = ipAccessLists.get(accessSectionUid.getValue());
     assertThat(aclSection, accepts(net0ToNet1, "eth0", ipAccessLists, TEST_IP_SPACES));
     assertThat(aclSection, accepts(net1ToNet1, "eth0", ipAccessLists, TEST_IP_SPACES));
     assertThat(aclSection, rejects(net0ToNet2, "eth0", ipAccessLists, TEST_IP_SPACES));
+    assertThat(aclSection.getSourceName(), equalTo(accessSectionName));
   }
 
   @Test
