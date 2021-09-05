@@ -44,6 +44,33 @@ public final class CpmiVsNetobjTest {
   }
 
   @Test
+  public void testJacksonDeserialization_noInterfaces() throws JsonProcessingException {
+    String input =
+        "{"
+            + "\"GARBAGE\":0,"
+            + "\"type\":\"CpmiVsNetobj\","
+            + "\"uid\":\"0\","
+            + "\"name\":\"foo\","
+            + "\"ipv4-address\":\"0.0.0.0\","
+            + "\"policy\":{"
+            + "\"access-policy-installed\": true,"
+            + "\"access-policy-name\": \"p1\","
+            + "\"threat-policy-installed\": true,"
+            + "\"threat-policy-name\": \"p2\""
+            + "}" // policy
+            + "}";
+    assertThat(
+        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, CpmiVsNetobj.class),
+        equalTo(
+            new CpmiVsNetobj(
+                Ip.ZERO,
+                "foo",
+                ImmutableList.of(),
+                new GatewayOrServerPolicy("p1", "p2"),
+                Uid.of("0"))));
+  }
+
+  @Test
   public void testJavaSerialization() {
     CpmiVsNetobj obj =
         new CpmiVsNetobj(

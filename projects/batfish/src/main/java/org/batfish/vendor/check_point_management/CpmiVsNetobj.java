@@ -1,5 +1,6 @@
 package org.batfish.vendor.check_point_management;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -9,6 +10,7 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
+import org.parboiled.common.ImmutableList;
 
 /** Data model for an object of type {@code CpmiVsNetobj}. */
 public final class CpmiVsNetobj extends GatewayOrServer {
@@ -20,12 +22,16 @@ public final class CpmiVsNetobj extends GatewayOrServer {
       @JsonProperty(PROP_NAME) @Nullable String name,
       @JsonProperty(PROP_POLICY) @Nullable GatewayOrServerPolicy policy,
       @JsonProperty(PROP_UID) @Nullable Uid uid) {
-    checkArgument(interfaces != null, "Missing %s", PROP_INTERFACES);
     checkArgument(ipv4Address != null, "Missing %s", PROP_IPV4_ADDRESS);
     checkArgument(name != null, "Missing %s", PROP_NAME);
     checkArgument(policy != null, "Missing %s", PROP_POLICY);
     checkArgument(uid != null, "Missing %s", PROP_UID);
-    return new CpmiVsNetobj(ipv4Address, name, interfaces, policy, uid);
+    return new CpmiVsNetobj(
+        ipv4Address,
+        name,
+        ImmutableList.copyOf(firstNonNull(interfaces, ImmutableList.of())),
+        policy,
+        uid);
   }
 
   @VisibleForTesting
