@@ -44,6 +44,33 @@ public final class SimpleGatewayTest {
   }
 
   @Test
+  public void testJacksonDeserialization_noIpv4Address() throws JsonProcessingException {
+    String input =
+        "{"
+            + "\"GARBAGE\":0,"
+            + "\"type\":\"simple-gateway\","
+            + "\"uid\":\"0\","
+            + "\"name\":\"foo\","
+            + "\"interfaces\": [],"
+            + "\"policy\":{"
+            + "\"access-policy-installed\": true,"
+            + "\"access-policy-name\": \"p1\","
+            + "\"threat-policy-installed\": true,"
+            + "\"threat-policy-name\": \"p2\""
+            + "}" // policy
+            + "}";
+    assertThat(
+        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, SimpleGateway.class),
+        equalTo(
+            new SimpleGateway(
+                null,
+                "foo",
+                ImmutableList.of(),
+                new GatewayOrServerPolicy("p1", "p2"),
+                Uid.of("0"))));
+  }
+
+  @Test
   public void testJavaSerialization() {
     SimpleGateway obj =
         new SimpleGateway(

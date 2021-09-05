@@ -46,14 +46,14 @@ public final class CpmiGatewayClusterTest {
   }
 
   @Test
-  public void testJacksonDeserialization_noMembers() throws JsonProcessingException {
+  public void testJacksonDeserialization_noOptionalFields() throws JsonProcessingException {
+    // missing members and ipv4-address
     String input =
         "{"
             + "\"GARBAGE\":0,"
             + "\"type\":\"CpmiGatewayCluster\","
             + "\"uid\":\"0\","
             + "\"name\":\"foo\","
-            + "\"ipv4-address\":\"0.0.0.0\","
             + "\"interfaces\": [],"
             + "\"policy\":{"
             + "\"access-policy-installed\": true,"
@@ -67,7 +67,7 @@ public final class CpmiGatewayClusterTest {
         equalTo(
             new CpmiGatewayCluster(
                 ImmutableList.of(),
-                Ip.ZERO,
+                null,
                 "foo",
                 ImmutableList.of(),
                 new GatewayOrServerPolicy("p1", "p2"),
