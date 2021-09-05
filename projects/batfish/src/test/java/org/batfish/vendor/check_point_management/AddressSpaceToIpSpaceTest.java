@@ -117,6 +117,13 @@ public class AddressSpaceToIpSpaceTest {
   }
 
   @Test
+  public void testHost_noIpv4() {
+    AddressSpaceToIpSpace visitor = new AddressSpaceToIpSpace(ImmutableMap.of());
+    Host host = new Host(null, NatSettingsTest.TEST_INSTANCE, "hostName", Uid.of("10"));
+    assertThat(host.accept(visitor), equalTo(EmptyIpSpace.INSTANCE));
+  }
+
+  @Test
   public void testNetwork() {
     AddressSpaceToIpSpace visitor = new AddressSpaceToIpSpace(ImmutableMap.of());
     Ip ip = Ip.parse("1.1.1.0");
