@@ -1,0 +1,130 @@
+#
+# Configuration of cp_gw1
+# Language version: 13.4v1
+#
+# Exported by admin on Fri Sep  3 23:21:01 2021
+#
+set installer policy check-for-updates-period 3 
+set installer policy periodically-self-update on 
+set installer policy send-cpuse-data off 
+set installer policy auto-compress-snapshot on 
+set installer policy self-test install-policy off 
+set installer policy self-test network-link-up off 
+set installer policy self-test start-processes on 
+set arp table cache-size 4096
+set arp table validity-timeout 60
+set arp announce 2
+set message banner on 
+
+set message motd off 
+
+set message caption off 
+set core-dump enable
+set core-dump total 10000
+set core-dump per_process 2
+set core-dump send_crash_data off
+set clienv debug 0
+set clienv echo-cmd off
+set clienv output pretty
+set clienv prompt "%M"
+set clienv rows 0
+set clienv syntax-check off
+set format date dd-mmm-yyyy
+set format time 24-hour
+set format netmask Dotted
+set hostname cp_gw1
+add allowed-client host any-host 
+set web table-refresh-rate 15
+set web session-timeout 10
+set web ssl-port 443
+set web ssl3-enabled off
+set web daemon-enable on
+set inactivity-timeout 10
+set ipv6-state off
+add command api path /bin/api_wrap description "Start, stop, or check status of API server" 
+add command tecli path /bin/tecli_start description "Threat Emulation Blade shell" 
+
+ 
+set net-access telnet off
+set ntp active off 
+set ntp server primary ntp.checkpoint.com version 4 
+set ntp server secondary ntp2.checkpoint.com version 4 
+set password-controls min-password-length 6
+set password-controls complexity 2
+set password-controls palindrome-check true
+set password-controls history-checking true
+set password-controls history-length 10
+set password-controls password-expiration never
+set password-controls expiration-warning-days 7
+set password-controls expiration-lockout-days never
+set password-controls force-change-when no
+set password-controls deny-on-nonuse enable false
+set password-controls deny-on-nonuse allowed-days 365
+set password-controls deny-on-fail enable false
+set password-controls deny-on-fail failures-allowed 10
+set password-controls deny-on-fail allow-after 1200
+set user admin shell /etc/cli.sh 
+set user monitor shell /etc/cli.sh 
+set user monitor password-hash * 
+set max-path-splits 8
+set tracefile maxnum 10
+set tracefile size 1
+set router-options multithreading on
+set routedsyslog on
+set syslog filename /var/log/messages 
+set syslog cplogs off 
+set syslog mgmtauditlogs on 
+set syslog auditlog permanent 
+set syslog uncompressmessages off 
+set timezone Etc / UTC 
+set interface eth0 link-speed 1000M/full 
+set interface eth0 state on 
+set interface eth0 auto-negotiation on 
+set interface eth0 mtu 1500 
+set interface eth0 ipv4-address 10.0.0.1 mask-length 16 
+set interface eth1 link-speed 1000M/full 
+set interface eth1 state on 
+set interface eth1 auto-negotiation on 
+set interface eth1 mtu 1500 
+set interface eth1 ipv4-address 10.1.1.1 mask-length 24 
+set interface eth2 state on 
+set interface eth3 state on 
+set interface eth4 state on 
+set interface eth5 state off 
+set interface eth6 state off 
+set interface eth7 state off 
+set interface eth8 state off 
+set interface eth9 state off 
+set interface lo state on 
+set interface lo ipv4-address 127.0.0.1 mask-length 8 
+set aaa tacacs-servers state off 
+set aaa radius-servers super-user-uid 96 
+set inbound-route-filter ospf2 instance default accept-all-ipv4
+set inbound-route-filter rip accept-all-ipv4
+set management interface eth0  
+set ospf instance default area backbone on
+set rip update-interval default
+set rip expire-interval default
+set snmp mode default
+set snmp agent off
+set snmp agent-version v3-Only
+set snmp traps trap authorizationError disable 
+set snmp traps trap biosFailure disable 
+set snmp traps trap coldStart disable 
+set snmp traps trap configurationChange disable 
+set snmp traps trap configurationSave disable 
+set snmp traps trap fanFailure disable 
+set snmp traps trap highVoltage disable 
+set snmp traps trap linkUpLinkDown disable 
+set snmp traps trap lowDiskSpace disable 
+set snmp traps trap lowVoltage disable 
+set snmp traps trap overTemperature disable 
+set snmp traps trap powerSupplyFailure disable 
+set snmp traps trap raidVolumeState disable 
+set snmp traps trap vrrpv2AuthFailure disable 
+set snmp traps trap vrrpv2NewMaster disable 
+set snmp traps trap vrrpv3NewMaster disable 
+set snmp traps trap vrrpv3ProtoError disable 
+set snmp traps advanced coldStart reboot-only off
+set static-route default nexthop gateway address 10.1.1.2 on
+

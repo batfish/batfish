@@ -48,6 +48,7 @@ java_library(
         "//projects/batfish/src/main/java/org/batfish/representation/iptables",
         "//projects/batfish/src/main/java/org/batfish/vendor/check_point_gateway/grammar",
         "//projects/batfish/src/main/java/org/batfish/vendor/check_point_management",
+        "//projects/batfish/src/main/java/org/batfish/vendor/check_point_management/parsing",
         "//projects/bdd",
         "//projects/symbolic",
         "@maven//:com_fasterxml_jackson_core_jackson_annotations",

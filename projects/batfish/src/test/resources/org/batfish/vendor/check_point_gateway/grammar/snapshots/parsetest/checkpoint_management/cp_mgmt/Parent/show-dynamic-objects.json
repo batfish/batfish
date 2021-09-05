@@ -1,0 +1,183 @@
+[
+    {
+        "objects": [
+            {
+                "uid": "cac127fb-24f5-4079-9404-be5c00d11393",
+                "name": "AuxiliaryNet",
+                "type": "dynamic-object",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "comments": "",
+                "color": "black",
+                "icon": "NetworkObjects/dynamicObject",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505984798,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505984798,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "fe9b9103-f1c0-499e-985a-d15ccc7ebaab",
+                "name": "CPDShield",
+                "type": "dynamic-object",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "comments": "DSHIELD IP blocklist",
+                "color": "red",
+                "icon": "NetworkObjects/dynamicObject",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505984800,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505984800,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "8a883654-cdd4-45a8-b079-d4e476a70ad6",
+                "name": "DMZNet",
+                "type": "dynamic-object",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "comments": "",
+                "color": "black",
+                "icon": "NetworkObjects/dynamicObject",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505984797,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505984797,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "5e414bec-4a61-4675-a980-4841a1f5a0be",
+                "name": "InternalNet",
+                "type": "dynamic-object",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "comments": "",
+                "color": "black",
+                "icon": "NetworkObjects/dynamicObject",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505984796,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505984796,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb36b-9aea-11d5-bd16-0090272ccb30",
+                "name": "LocalMachine",
+                "type": "dynamic-object",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "comments": "Check Point Local Machine (Dynamic Interfaces)",
+                "color": "black",
+                "icon": "NetworkObjects/dynamicObject",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505984785,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505984785,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "d67128b1-bdba-4724-93e8-336e45853b0a",
+                "name": "LocalMachine_All_Interfaces",
+                "type": "dynamic-object",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "comments": "Check Point Local Machine (All Interfaces)",
+                "color": "black",
+                "icon": "NetworkObjects/dynamicObject",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505984795,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505984795,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            }
+        ],
+        "from": 1,
+        "to": 6,
+        "total": 6
+    }
+]

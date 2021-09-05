@@ -46,6 +46,35 @@ public final class CpmiVsxClusterNetobjTest {
   }
 
   @Test
+  public void testJacksonDeserialization_noOptionalFields() throws JsonProcessingException {
+    // missing members and ipv4-address
+    String input =
+        "{"
+            + "\"GARBAGE\":0,"
+            + "\"type\":\"CpmiVsxClusterNetobj\","
+            + "\"uid\":\"0\","
+            + "\"name\":\"foo\","
+            + "\"interfaces\": [],"
+            + "\"policy\":{"
+            + "\"access-policy-installed\": true,"
+            + "\"access-policy-name\": \"p1\","
+            + "\"threat-policy-installed\": true,"
+            + "\"threat-policy-name\": \"p2\""
+            + "}" // policy
+            + "}";
+    assertThat(
+        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, CpmiVsxClusterNetobj.class),
+        equalTo(
+            new CpmiVsxClusterNetobj(
+                ImmutableList.of(),
+                null,
+                "foo",
+                ImmutableList.of(),
+                new GatewayOrServerPolicy("p1", "p2"),
+                Uid.of("0"))));
+  }
+
+  @Test
   public void testJavaSerialization() {
     CpmiVsxClusterNetobj obj =
         new CpmiVsxClusterNetobj(

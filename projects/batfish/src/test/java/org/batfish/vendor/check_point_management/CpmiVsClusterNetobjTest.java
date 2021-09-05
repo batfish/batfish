@@ -46,6 +46,93 @@ public final class CpmiVsClusterNetobjTest {
   }
 
   @Test
+  public void testJacksonDeserialization_noIpV4Address() throws JsonProcessingException {
+    String input =
+        "{"
+            + "\"GARBAGE\":0,"
+            + "\"type\":\"CpmiVsClusterNetobj\","
+            + "\"uid\":\"0\","
+            + "\"name\":\"foo\","
+            + "\"interfaces\": [],"
+            + "\"cluster-member-names\":[\"m1\"],"
+            + "\"policy\":{"
+            + "\"access-policy-installed\": true,"
+            + "\"access-policy-name\": \"p1\","
+            + "\"threat-policy-installed\": true,"
+            + "\"threat-policy-name\": \"p2\""
+            + "}" // policy
+            + "}";
+    assertThat(
+        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, CpmiVsClusterNetobj.class),
+        equalTo(
+            new CpmiVsClusterNetobj(
+                ImmutableList.of("m1"),
+                null,
+                "foo",
+                ImmutableList.of(),
+                new GatewayOrServerPolicy("p1", "p2"),
+                Uid.of("0"))));
+  }
+
+  @Test
+  public void testJacksonDeserialization_noInterfaces() throws JsonProcessingException {
+    String input =
+        "{"
+            + "\"GARBAGE\":0,"
+            + "\"type\":\"CpmiVsClusterNetobj\","
+            + "\"uid\":\"0\","
+            + "\"name\":\"foo\","
+            + "\"ipv4-address\":\"0.0.0.0\","
+            + "\"cluster-member-names\":[\"m1\"],"
+            + "\"policy\":{"
+            + "\"access-policy-installed\": true,"
+            + "\"access-policy-name\": \"p1\","
+            + "\"threat-policy-installed\": true,"
+            + "\"threat-policy-name\": \"p2\""
+            + "}" // policy
+            + "}";
+    assertThat(
+        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, CpmiVsClusterNetobj.class),
+        equalTo(
+            new CpmiVsClusterNetobj(
+                ImmutableList.of("m1"),
+                Ip.ZERO,
+                "foo",
+                ImmutableList.of(),
+                new GatewayOrServerPolicy("p1", "p2"),
+                Uid.of("0"))));
+  }
+
+  @Test
+  public void testJacksonDeserialization_noMembers() throws JsonProcessingException {
+    String input =
+        "{"
+            + "\"GARBAGE\":0,"
+            + "\"type\":\"CpmiVsClusterNetobj\","
+            + "\"uid\":\"0\","
+            + "\"name\":\"foo\","
+            + "\"ipv4-address\":\"0.0.0.0\","
+            + "\"interfaces\": [],"
+            + "\"policy\":{"
+            + "\"access-policy-installed\": true,"
+            + "\"access-policy-name\": \"p1\","
+            + "\"threat-policy-installed\": true,"
+            + "\"threat-policy-name\": \"p2\""
+            + "}" // policy
+            + "}";
+    assertThat(
+        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, CpmiVsClusterNetobj.class),
+        equalTo(
+            new CpmiVsClusterNetobj(
+                ImmutableList.of(),
+                Ip.ZERO,
+                "foo",
+                ImmutableList.of(),
+                new GatewayOrServerPolicy("p1", "p2"),
+                Uid.of("0"))));
+  }
+
+  @Test
   public void testJavaSerialization() {
     CpmiVsClusterNetobj obj =
         new CpmiVsClusterNetobj(

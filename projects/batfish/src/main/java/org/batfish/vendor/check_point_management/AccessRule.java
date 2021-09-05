@@ -1,5 +1,6 @@
 package org.batfish.vendor.check_point_management;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -111,7 +112,7 @@ public final class AccessRule extends NamedManagementObject implements AccessRul
       checkArgument(_destinationNegate != null, "Missing %s", PROP_DESTINATION_NEGATE);
       checkArgument(_enabled != null, "Missing %s", PROP_ENABLED);
       checkArgument(_installOn != null, "Missing %s", PROP_INSTALL_ON);
-      checkArgument(_name != null, "Missing %s", PROP_NAME);
+      // name may not be set by user, see below.
       checkArgument(_ruleNumber != null, "Missing %s", PROP_RULE_NUMBER);
       checkArgument(_service != null, "Missing %s", PROP_SERVICE);
       checkArgument(_serviceNegate != null, "Missing %s", PROP_SERVICE_NEGATE);
@@ -119,6 +120,7 @@ public final class AccessRule extends NamedManagementObject implements AccessRul
       checkArgument(_sourceNegate != null, "Missing %s", PROP_SOURCE_NEGATE);
       checkArgument(_vpn != null, "Missing %s", PROP_VPN);
       checkArgument(_uid != null, "Missing %s", PROP_UID);
+      String name = firstNonNull(_name, "Rule " + _ruleNumber);
       return new AccessRule(
           _action,
           _comments,
@@ -129,7 +131,7 @@ public final class AccessRule extends NamedManagementObject implements AccessRul
           _destinationNegate,
           _enabled,
           _installOn,
-          _name,
+          name,
           _ruleNumber,
           _service,
           _serviceNegate,

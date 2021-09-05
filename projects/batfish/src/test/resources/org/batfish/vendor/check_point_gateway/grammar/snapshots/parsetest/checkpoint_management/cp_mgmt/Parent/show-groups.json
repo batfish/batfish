@@ -1,0 +1,46 @@
+[
+    {
+        "objects": [
+            {
+                "uid": "f1bd41df-0b0d-4685-9578-dad62f62f671",
+                "name": "cp_gw1_bond2.101",
+                "type": "group",
+                "domain": {
+                    "uid": "41e821a0-3720-11e3-aa6e-0800200c9fde",
+                    "name": "SMC User",
+                    "domain-type": "domain"
+                },
+                "members": [
+                    "f08c02be-d92d-4ef1-a92f-623e6a3c48a2",
+                    "24d2c409-15d5-40d7-b566-3317a619504f",
+                    "bcbfdbd9-c33a-43d7-80bd-4ffc66363792",
+                    "1569de72-429b-4f7a-a8ce-384e26911b05",
+                    "37b97489-09f5-4f5a-a51d-8a4c97c4f3f4",
+                    "1940df44-57c8-4e37-b082-04ceb6808b2f"
+                ],
+                "comments": "",
+                "color": "black",
+                "icon": "General/group",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1628896512841,
+                        "iso-8601": "2021-08-13T19:15-0400"
+                    },
+                    "last-modifier": "admin",
+                    "creation-time": {
+                        "posix": 1628896512841,
+                        "iso-8601": "2021-08-13T19:15-0400"
+                    },
+                    "creator": "admin"
+                },
+                "read-only": false
+            }
+        ],
+        "from": 1,
+        "to": 1,
+        "total": 1
+    }
+]

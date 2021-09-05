@@ -3,6 +3,7 @@ package org.batfish.vendor.check_point_gateway.representation;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.batfish.datamodel.FirewallSessionInterfaceInfo.Action.POST_NAT_FIB_LOOKUP;
+import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.aclName;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toIpAccessLists;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getManualNatRules;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.manualHideRuleTransformation;
@@ -19,7 +20,6 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -56,7 +56,6 @@ import org.batfish.vendor.check_point_management.GatewayOrServer;
 import org.batfish.vendor.check_point_management.ManagementDomain;
 import org.batfish.vendor.check_point_management.ManagementPackage;
 import org.batfish.vendor.check_point_management.ManagementServer;
-import org.batfish.vendor.check_point_management.NamedManagementObject;
 import org.batfish.vendor.check_point_management.NatMethod;
 import org.batfish.vendor.check_point_management.NatRulebase;
 import org.batfish.vendor.check_point_management.TypedManagementObject;
@@ -172,7 +171,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
             .setName(INTERFACE_ACL_NAME)
             .setLines(
                 accessLayers.stream()
-                    .map(l -> new AclAclLine(l.getName(), l.getName()))
+                    .map(l -> new AclAclLine(l.getName(), aclName(l)))
                     .collect(ImmutableList.toImmutableList()))
             .build();
     _c.getIpAccessLists().put(interfaceAcl.getName(), interfaceAcl);
@@ -223,15 +222,15 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
   }
 
   private void convertObjects(ManagementPackage pakij, ManagementDomain domain) {
+    Map<Uid, TypedManagementObject> objects = new HashMap<>();
     Optional.ofNullable(pakij.getNatRulebase())
-        .ifPresent(natRulebase -> convertObjects(natRulebase.getObjectsDictionary()));
+        .map(NatRulebase::getObjectsDictionary)
+        .ifPresent(objects::putAll);
     pakij.getAccessLayers().stream()
         .map(AccessLayer::getObjectsDictionary)
-        .forEach(this::convertObjects);
-    convertObjects(
-        domain.getObjects().stream()
-            .collect(
-                ImmutableMap.toImmutableMap(NamedManagementObject::getUid, Function.identity())));
+        .forEach(objects::putAll);
+    domain.getObjects().forEach(object -> objects.put(object.getUid(), object));
+    convertObjects(objects);
   }
 
   /** Converts the given {@link NatRulebase} and applies it to this config. */
@@ -286,6 +285,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
       for (ManagementDomain domain : server.getDomains().values()) {
         Optional<GatewayOrServer> maybeGateway =
             domain.getGatewaysAndServers().values().stream()
+                .filter(gw -> gw.getIpv4Address() != null)
                 .filter(gw -> ips.contains(gw.getIpv4Address()))
                 .findFirst();
         if (maybeGateway.isPresent()) {

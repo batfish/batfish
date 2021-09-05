@@ -1,0 +1,1280 @@
+[
+    {
+        "objects": [
+            {
+                "uid": "3d0d46b6-4ddb-43e0-9faa-c969dbc3e19f",
+                "name": "ALL_DCE_RPC",
+                "type": "service-dce-rpc",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "interface-uuid": "00000000-0000-0000-0000-000000000000",
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Special Service For Allowing All DCE-RPC Services",
+                "color": "red",
+                "icon": "Services/DCEService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991299,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991299,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "50c56b55-8901-374d-bc7a-6d7d5b53c405",
+                "name": "DCOM-IRemUnknown",
+                "type": "service-dce-rpc",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-cebcebcebceb",
+                    "name": "IPS Data",
+                    "domain-type": "data domain"
+                },
+                "interface-uuid": "00000131-0000-0000-c000-000000000046",
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "DCOM-IRemUnknown",
+                "color": "blue",
+                "icon": "Services/DCEService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1621430514607,
+                        "iso-8601": "2021-05-19T09:21-0400"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1621430514607,
+                        "iso-8601": "2021-05-19T09:21-0400"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "4ab95326-d677-ef48-b494-5b9b9b72901a",
+                "name": "DCOM-IWbemLevel1Login",
+                "type": "service-dce-rpc",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-cebcebcebceb",
+                    "name": "IPS Data",
+                    "domain-type": "data domain"
+                },
+                "interface-uuid": "f309ad18-d86a-11d0-a075-00c04fb68820",
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "DCOM-IWbemLevel1Login",
+                "color": "blue",
+                "icon": "Services/DCEService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1621430514603,
+                        "iso-8601": "2021-05-19T09:21-0400"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1621430514603,
+                        "iso-8601": "2021-05-19T09:21-0400"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "024291a5-bc3e-4c96-8d82-513f3336a9f6",
+                "name": "DCOM-OXID_Resolver",
+                "type": "service-dce-rpc",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "interface-uuid": "99fcfec4-5260-101b-bbcb-00aa0021347a",
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Object eXport IDentifier Resolver Interface",
+                "color": "black",
+                "icon": "Services/DCEService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991855,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991855,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "5c66b970-e289-4b39-89ea-4f0f19a389d7",
+                "name": "DCOM-RemoteActivation",
+                "type": "service-dce-rpc",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "interface-uuid": "4d9f4ab8-7d1c-11cf-861e-0020af6e7c57",
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "DCOM Remote Activation",
+                "color": "black",
+                "icon": "Services/DCEService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991239,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991239,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "4e68ca9c-c624-47a5-b2bc-02f1197c8e35",
+                "name": "DCOM-RemUnknown2",
+                "type": "service-dce-rpc",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "interface-uuid": "00000143-0000-0000-c000-000000000046",
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Remote Unknown2 DCOM Interface",
+                "color": "black",
+                "icon": "Services/DCEService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991856,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991856,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "38910079-ea24-4df6-bd98-d1c67f90df4a",
+                "name": "DCOM-SystemActivation",
+                "type": "service-dce-rpc",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "interface-uuid": "000001a0-0000-0000-c000-000000000046",
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "DCOM SystemActivation Interface",
+                "color": "black",
+                "icon": "Services/DCEService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991854,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991854,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "163f41a7-96cc-a74f-9f94-e0457b22a115",
+                "name": "EndPointMapper",
+                "type": "service-dce-rpc",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-cebcebcebceb",
+                    "name": "IPS Data",
+                    "domain-type": "data domain"
+                },
+                "interface-uuid": "e1af8308-5d1f-11c9-91a4-08002b14a0fa",
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Dcerpc End Point Mapper service",
+                "color": "blue",
+                "icon": "Services/DCEService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1621430514556,
+                        "iso-8601": "2021-05-19T09:21-0400"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1621430514556,
+                        "iso-8601": "2021-05-19T09:21-0400"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb464-9aea-11d5-bd16-0090272ccb30",
+                "name": "HP-OpCctla",
+                "type": "service-dce-rpc",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "interface-uuid": "9e0c0224-3654-0000-9a8d-08000949ab4c",
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "HP-OV OpC Control Agent",
+                "color": "blue",
+                "icon": "Services/DCEService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991296,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991296,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb466-9aea-11d5-bd16-0090272ccb30",
+                "name": "HP-OpCctla-bulk",
+                "type": "service-dce-rpc",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "interface-uuid": "8d5cae88-43c9-0000-94f1-0800096df3a6",
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "HP-OV OpC Control Agent (Bulk)",
+                "color": "blue",
+                "icon": "Services/DCEService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991299,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991299,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb465-9aea-11d5-bd16-0090272ccb30",
+                "name": "HP-OpCctla-cfgpush",
+                "type": "service-dce-rpc",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "interface-uuid": "0d8fe322-d6ee-11d2-b858-0800096df3a6",
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "HP-OV OpC Control Agent (cfgpush)",
+                "color": "blue",
+                "icon": "Services/DCEService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991298,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991298,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb460-9aea-11d5-bd16-0090272ccb30",
+                "name": "HP-OpCdistm",
+                "type": "service-dce-rpc",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "interface-uuid": "5df3dc6f-a568-0000-020f-887805000000",
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "HP-OV OpC Distribution Manager",
+                "color": "blue",
+                "icon": "Services/DCEService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991265,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991265,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb463-9aea-11d5-bd16-0090272ccb30",
+                "name": "HP-OpCmsgrd-coa",
+                "type": "service-dce-rpc",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "interface-uuid": "e0c92330-3ba9-0000-a38b-0800096df3a6",
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "HP-OV OpC Message receiver (COA)",
+                "color": "blue",
+                "icon": "Services/DCEService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991269,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991269,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb462-9aea-11d5-bd16-0090272ccb30",
+                "name": "HP-OpCmsgrd-m2m",
+                "type": "service-dce-rpc",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "interface-uuid": "6e0b494b-d551-0000-020f-88781a000000",
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "HP-OV OpC Message Receiver (M2M)",
+                "color": "blue",
+                "icon": "Services/DCEService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991267,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991267,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb461-9aea-11d5-bd16-0090272ccb30",
+                "name": "HP-OpCmsgrd-std",
+                "type": "service-dce-rpc",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "interface-uuid": "6d63f833-c0a0-0000-020f-887818000000",
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "HP-OV OpC Message Receiver",
+                "color": "blue",
+                "icon": "Services/DCEService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991266,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991266,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "35074809-2e80-934c-89fb-ca3946b2aaab",
+                "name": "IenumWbemClassObject",
+                "type": "service-dce-rpc",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-cebcebcebceb",
+                    "name": "IPS Data",
+                    "domain-type": "data domain"
+                },
+                "interface-uuid": "027947e1-d731-11ce-a357-000000000001",
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "IenumWbemClassObject",
+                "color": "blue",
+                "icon": "Services/DCEService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1621430514631,
+                        "iso-8601": "2021-05-19T09:21-0400"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1621430514631,
+                        "iso-8601": "2021-05-19T09:21-0400"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "04f53da1-0d4c-6d45-91ab-2c44417cad96",
+                "name": "IWbemFetchSmartEnum",
+                "type": "service-dce-rpc",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-cebcebcebceb",
+                    "name": "IPS Data",
+                    "domain-type": "data domain"
+                },
+                "interface-uuid": "1c1c45ee-4395-11d2-b60b-00104b703efd",
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "IWbemFetchSmartEnum",
+                "color": "blue",
+                "icon": "Services/DCEService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1621430514619,
+                        "iso-8601": "2021-05-19T09:21-0400"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1621430514619,
+                        "iso-8601": "2021-05-19T09:21-0400"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "031a17d1-f98a-0347-aea9-e5171fcdce08",
+                "name": "IWbemServices",
+                "type": "service-dce-rpc",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-cebcebcebceb",
+                    "name": "IPS Data",
+                    "domain-type": "data domain"
+                },
+                "interface-uuid": "9556dc99-828c-11cf-a37e-00aa003240c7",
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "IWbemServices",
+                "color": "blue",
+                "icon": "Services/DCEService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1621430514613,
+                        "iso-8601": "2021-05-19T09:21-0400"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1621430514613,
+                        "iso-8601": "2021-05-19T09:21-0400"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "9de363ec-1d5b-7243-b8ff-031e603629e3",
+                "name": "IWbemWCOSmartEnum",
+                "type": "service-dce-rpc",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-cebcebcebceb",
+                    "name": "IPS Data",
+                    "domain-type": "data domain"
+                },
+                "interface-uuid": "423ec01e-2e35-11d2-b604-00104b703efd",
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "IWbemWCOSmartEnum",
+                "color": "blue",
+                "icon": "Services/DCEService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1621430514626,
+                        "iso-8601": "2021-05-19T09:21-0400"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1621430514626,
+                        "iso-8601": "2021-05-19T09:21-0400"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb457-9aea-11d5-bd16-0090272ccb30",
+                "name": "MSExchangeADL",
+                "type": "service-dce-rpc",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "interface-uuid": "12345678-1234-abcd-ef00-01234567cffb",
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Microsoft Exchange 2000 Active Directory Logon",
+                "color": "blue",
+                "icon": "Services/DCEService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991255,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991255,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "d63089ea-a2d5-4f40-9776-e1bdd3662144",
+                "name": "MSExchangeDatabase",
+                "type": "service-dce-rpc",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-cebcebcebceb",
+                    "name": "IPS Data",
+                    "domain-type": "data domain"
+                },
+                "interface-uuid": "1A190310-BB9C-11CD-90F8-00AA00466520",
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Microsoft Exchange Database",
+                "color": "blue",
+                "icon": "Services/DCEService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1621430514781,
+                        "iso-8601": "2021-05-19T09:21-0400"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1621430514781,
+                        "iso-8601": "2021-05-19T09:21-0400"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "01693eed-3f81-44d3-b498-51696722cc32",
+                "name": "MSExchangeDirRef",
+                "type": "service-dce-rpc",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "interface-uuid": "1544f5e0-613c-11d1-93df-00c04fd7bd09",
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Microsoft Exchange 2000 Directory Reference",
+                "color": "blue",
+                "icon": "Services/DCEService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991257,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991257,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb458-9aea-11d5-bd16-0090272ccb30",
+                "name": "MSExchangeDirRep",
+                "type": "service-dce-rpc",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "interface-uuid": "e3514235-4b06-11d1-ab04-00c04fc2dcd2",
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Microsoft Exchange 2000 Directory Replication",
+                "color": "blue",
+                "icon": "Services/DCEService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991256,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991256,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb452-9aea-11d5-bd16-0090272ccb30",
+                "name": "MSExchangeDSNSPI",
+                "type": "service-dce-rpc",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "interface-uuid": "f5cc5a18-4264-101a-8c59-08002b2f8426",
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Microsoft Exchange Directory Services (NSPI)",
+                "color": "blue",
+                "icon": "Services/DCEService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991242,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991242,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb453-9aea-11d5-bd16-0090272ccb30",
+                "name": "MSExchangeDSRep",
+                "type": "service-dce-rpc",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "interface-uuid": "f5cc59b4-4264-101a-8c59-08002b2f8426",
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Microsoft Exchange Directory Replication Services",
+                "color": "blue",
+                "icon": "Services/DCEService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991242,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991242,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb454-9aea-11d5-bd16-0090272ccb30",
+                "name": "MSExchangeDSXDS",
+                "type": "service-dce-rpc",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "interface-uuid": "f5cc5a7c-4264-101a-8c59-08002b2f8426",
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Microsoft Exchange Directory Services XDS",
+                "color": "blue",
+                "icon": "Services/DCEService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991243,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991243,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "faf05a8c-57e6-1b49-86b8-b40302c291ee",
+                "name": "MSExchangeInformationStore1",
+                "type": "service-dce-rpc",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-cebcebcebceb",
+                    "name": "IPS Data",
+                    "domain-type": "data domain"
+                },
+                "interface-uuid": "0E4A0156-DD5D-11D2-8C2F-00C04FB6BCDE",
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Microsoft Exchange Information Store 1",
+                "color": "blue",
+                "icon": "Services/DCEService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1621430514808,
+                        "iso-8601": "2021-05-19T09:21-0400"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1621430514808,
+                        "iso-8601": "2021-05-19T09:21-0400"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "5fec797e-c06b-2c47-8706-a9413bc0d708",
+                "name": "MSExchangeInformationStore2",
+                "type": "service-dce-rpc",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-cebcebcebceb",
+                    "name": "IPS Data",
+                    "domain-type": "data domain"
+                },
+                "interface-uuid": "1453C42C-0FA6-11D2-A910-00C04F990F3B",
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Microsoft Exchange Information Store 2",
+                "color": "blue",
+                "icon": "Services/DCEService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1621430514813,
+                        "iso-8601": "2021-05-19T09:21-0400"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1621430514813,
+                        "iso-8601": "2021-05-19T09:21-0400"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "131aa823-2020-564b-a9cb-2731b4fabbc8",
+                "name": "MSExchangeInformationStore3",
+                "type": "service-dce-rpc",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-cebcebcebceb",
+                    "name": "IPS Data",
+                    "domain-type": "data domain"
+                },
+                "interface-uuid": "10F24E8E-0FA6-11D2-A910-00C04F990F3B",
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Microsoft Exchange Information Store 3",
+                "color": "blue",
+                "icon": "Services/DCEService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1621430514818,
+                        "iso-8601": "2021-05-19T09:21-0400"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1621430514818,
+                        "iso-8601": "2021-05-19T09:21-0400"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb455-9aea-11d5-bd16-0090272ccb30",
+                "name": "MSExchangeIS",
+                "type": "service-dce-rpc",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "interface-uuid": "a4f1db00-ca47-1067-b31f-00dd010662da",
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Microsoft Exchange Information Store",
+                "color": "blue",
+                "icon": "Services/DCEService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991244,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991244,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "5a1d656d-9b2e-694d-8478-2ff0c48d7ea6",
+                "name": "MSExchangeIS_Async",
+                "type": "service-dce-rpc",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-cebcebcebceb",
+                    "name": "IPS Data",
+                    "domain-type": "data domain"
+                },
+                "interface-uuid": "5261574a-4572-206e-b268-6b199213b4e4",
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Exchange Server STORE Async EMSMDB",
+                "color": "blue",
+                "icon": "Services/DCEService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1621430514593,
+                        "iso-8601": "2021-05-19T09:21-0400"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1621430514593,
+                        "iso-8601": "2021-05-19T09:21-0400"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb456-9aea-11d5-bd16-0090272ccb30",
+                "name": "MSExchangeMTA",
+                "type": "service-dce-rpc",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "interface-uuid": "9e8ee830-4459-11ce-979b-00aa005ffebe",
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Microsoft Exchange Message Transfer Agent",
+                "color": "blue",
+                "icon": "Services/DCEService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991254,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991254,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "e962f2d8-e790-ba4b-a2e6-17efdaa7d9a4",
+                "name": "MSExchangeQAdmin",
+                "type": "service-dce-rpc",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-cebcebcebceb",
+                    "name": "IPS Data",
+                    "domain-type": "data domain"
+                },
+                "interface-uuid": "38A94E72-A9BC-11D2-8FAF-00C04fA378FF",
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Microsoft Exchange Que Administration",
+                "color": "blue",
+                "icon": "Services/DCEService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1621430514800,
+                        "iso-8601": "2021-05-19T09:21-0400"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1621430514800,
+                        "iso-8601": "2021-05-19T09:21-0400"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb45b-9aea-11d5-bd16-0090272ccb30",
+                "name": "MSExchangeStoreAdm",
+                "type": "service-dce-rpc",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "interface-uuid": "89742ace-a9ed-11cf-9c0c-08002be7ae86",
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Microsoft Exchange Store Administration",
+                "color": "blue",
+                "icon": "Services/DCEService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991259,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991259,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "b2826b87-5254-094c-b23d-3aec0bb46bef",
+                "name": "MSExchangeStoreAdmin1",
+                "type": "service-dce-rpc",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-cebcebcebceb",
+                    "name": "IPS Data",
+                    "domain-type": "data domain"
+                },
+                "interface-uuid": "99E64010-B032-11D0-97A4-00C04FD6551D",
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Microsoft Exchange Store Administration 1",
+                "color": "blue",
+                "icon": "Services/DCEService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1621430514742,
+                        "iso-8601": "2021-05-19T09:21-0400"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1621430514742,
+                        "iso-8601": "2021-05-19T09:21-0400"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "cd6d7fb3-61b7-5046-9e64-d80678cd0397",
+                "name": "MSExchangeStoreAdmin3",
+                "type": "service-dce-rpc",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-cebcebcebceb",
+                    "name": "IPS Data",
+                    "domain-type": "data domain"
+                },
+                "interface-uuid": "A4F1DB00-CA47-1067-B31E-00DD010662DA",
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Microsoft Exchange Store Administration 3",
+                "color": "blue",
+                "icon": "Services/DCEService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1621430514760,
+                        "iso-8601": "2021-05-19T09:21-0400"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1621430514760,
+                        "iso-8601": "2021-05-19T09:21-0400"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "67f1a9cc-430d-ea43-901b-b168af2960f7",
+                "name": "MSExchangeSTOREAsyncEMSMDB",
+                "type": "service-dce-rpc",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-cebcebcebceb",
+                    "name": "IPS Data",
+                    "domain-type": "data domain"
+                },
+                "interface-uuid": "5a7b91f8-ff00-11d0-a9b2-00c04fb6e6fc",
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Microsoft Messenger service",
+                "color": "blue",
+                "icon": "Services/DCEService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1621430514598,
+                        "iso-8601": "2021-05-19T09:21-0400"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1621430514598,
+                        "iso-8601": "2021-05-19T09:21-0400"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb459-9aea-11d5-bd16-0090272ccb30",
+                "name": "MSExchangeSysAtt",
+                "type": "service-dce-rpc",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "interface-uuid": "469d6ec0-0d87-11ce-b13f-00aa003bac6c",
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Microsoft Exchange System Attendant",
+                "color": "blue",
+                "icon": "Services/DCEService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991257,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991257,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb45a-9aea-11d5-bd16-0090272ccb30",
+                "name": "MSExchangeSysAttPriv",
+                "type": "service-dce-rpc",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "interface-uuid": "83d72bf0-0d89-11ce-b13f-00aa003bac6c",
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Microsoft Exchange System Attendant Private",
+                "color": "blue",
+                "icon": "Services/DCEService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991258,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991258,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "513cec9d-83e2-1743-8d63-0e3919e8dea2",
+                "name": "MSMQ",
+                "type": "service-dce-rpc",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-cebcebcebceb",
+                    "name": "IPS Data",
+                    "domain-type": "data domain"
+                },
+                "interface-uuid": "77df7a80-f298-11d0-8358-00a024c480a8",
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Microsoft Message Queue service",
+                "color": "blue",
+                "icon": "Services/DCEService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1621430514721,
+                        "iso-8601": "2021-05-19T09:21-0400"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1621430514721,
+                        "iso-8601": "2021-05-19T09:21-0400"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "6540cf14-60e0-924b-af2f-6b38dda6d270",
+                "name": "RPCManagement",
+                "type": "service-dce-rpc",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-cebcebcebceb",
+                    "name": "IPS Data",
+                    "domain-type": "data domain"
+                },
+                "interface-uuid": "afa8bd80-7d8a-11c9-bef4-08002b102989",
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "RPC Management",
+                "color": "blue",
+                "icon": "Services/DCEService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1621430514585,
+                        "iso-8601": "2021-05-19T09:21-0400"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1621430514585,
+                        "iso-8601": "2021-05-19T09:21-0400"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            }
+        ],
+        "from": 1,
+        "to": 41,
+        "total": 41
+    }
+]

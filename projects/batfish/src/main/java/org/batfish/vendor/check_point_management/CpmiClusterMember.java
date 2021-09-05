@@ -21,7 +21,6 @@ public final class CpmiClusterMember extends GatewayOrServer {
       @JsonProperty(PROP_POLICY) @Nullable GatewayOrServerPolicy policy,
       @JsonProperty(PROP_UID) @Nullable Uid uid) {
     checkArgument(interfaces != null, "Missing %s", PROP_INTERFACES);
-    checkArgument(ipv4Address != null, "Missing %s", PROP_IPV4_ADDRESS);
     checkArgument(name != null, "Missing %s", PROP_NAME);
     checkArgument(policy != null, "Missing %s", PROP_POLICY);
     checkArgument(uid != null, "Missing %s", PROP_UID);
@@ -30,7 +29,7 @@ public final class CpmiClusterMember extends GatewayOrServer {
 
   @VisibleForTesting
   CpmiClusterMember(
-      Ip ipv4Address,
+      @Nullable Ip ipv4Address,
       String name,
       List<Interface> interfaces,
       GatewayOrServerPolicy policy,

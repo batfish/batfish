@@ -10,7 +10,8 @@ import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.IpRange;
-import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpSpaceReference;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.junit.Test;
 
@@ -45,6 +46,8 @@ public class AddressSpaceToIpSpaceTest {
     assertThat(cpmiAnyObject.accept(visitor), equalTo(UniverseIpSpace.INSTANCE));
   }
 
+  // TODO: uncomment and use forthcoming show-objects schema gateway or server class
+  /*
   @Test
   public void testGatewayOrServer() {
     AddressSpaceToIpSpace visitor = new AddressSpaceToIpSpace(ImmutableMap.of());
@@ -63,7 +66,8 @@ public class AddressSpaceToIpSpaceTest {
         gatewayOrServer.accept(visitor),
         equalTo(
             AclIpSpace.union(Ip.parse("10.0.1.1").toIpSpace(), Ip.parse("10.0.2.1").toIpSpace())));
-  }
+
+  }*/
 
   @Test
   public void testGroup() {
@@ -99,9 +103,9 @@ public class AddressSpaceToIpSpaceTest {
         group1.accept(visitor),
         equalTo(
             AclIpSpace.union(
-                Ip.parse("10.10.10.11").toIpSpace(),
-                Ip.parse("10.10.10.12").toIpSpace(),
-                Ip.parse("10.10.10.13").toIpSpace())));
+                new IpSpaceReference("host1"),
+                new IpSpaceReference("host2"),
+                new IpSpaceReference("host3"))));
   }
 
   @Test
@@ -113,14 +117,32 @@ public class AddressSpaceToIpSpaceTest {
   }
 
   @Test
+  public void testHost_noIpv4() {
+    AddressSpaceToIpSpace visitor = new AddressSpaceToIpSpace(ImmutableMap.of());
+    Host host = new Host(null, NatSettingsTest.TEST_INSTANCE, "hostName", Uid.of("10"));
+    assertThat(host.accept(visitor), equalTo(EmptyIpSpace.INSTANCE));
+  }
+
+  @Test
   public void testNetwork() {
     AddressSpaceToIpSpace visitor = new AddressSpaceToIpSpace(ImmutableMap.of());
     Ip ip = Ip.parse("1.1.1.0");
     Ip mask = Ip.parse("255.255.255.0");
     Network network = new Network("name", NatSettingsTest.TEST_INSTANCE, ip, mask, Uid.of("uid"));
-    Ip flippedMask = Ip.parse("0.0.0.255");
-    assertThat(
-        network.accept(visitor),
-        equalTo(IpWildcard.ipWithWildcardMask(ip, flippedMask).toIpSpace()));
+    assertThat(network.accept(visitor), equalTo(Prefix.create(ip, mask).toIpSpace()));
+  }
+
+  @Test
+  public void testVisitGatewayOrServer_noInterfaceIp() {
+    AddressSpaceToIpSpace visitor = new AddressSpaceToIpSpace(ImmutableMap.of());
+    GatewayOrServer gw =
+        new CpmiVsClusterNetobj(
+            ImmutableList.of(),
+            null,
+            "name",
+            ImmutableList.of(new Interface("iname", null, null, null)),
+            null,
+            Uid.of("1"));
+    assertThat(visitor.visitGatewayOrServer(gw), equalTo(EmptyIpSpace.INSTANCE));
   }
 }
