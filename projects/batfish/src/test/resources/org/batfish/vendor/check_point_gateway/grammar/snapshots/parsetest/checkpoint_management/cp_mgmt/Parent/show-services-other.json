@@ -1,0 +1,1853 @@
+[
+    {
+        "objects": [
+            {
+                "uid": "97aeb422-9aea-11d5-bd16-0090272ccb30",
+                "name": "AH",
+                "type": "service-other",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "ip-protocol": 51,
+                "accept-replies": true,
+                "override-default-settings": false,
+                "session-timeout": 600,
+                "use-default-session-timeout": false,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "IPSEC Authentication Header Protocol",
+                "color": "cyan",
+                "icon": "Services/OtherService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505990905,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505990905,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb449-9aea-11d5-bd16-0090272ccb30",
+                "name": "backweb",
+                "type": "service-other",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "ip-protocol": 17,
+                "accept-replies": false,
+                "match": "backweb_match",
+                "override-default-settings": false,
+                "session-timeout": 60,
+                "use-default-session-timeout": true,
+                "match-for-any": false,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "PUSH Web applications, send information directly to desktops. over the Internet",
+                "color": "blue",
+                "icon": "Services/OtherService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991195,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991195,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "3ef69b0c-3ccc-4ac8-9dd0-d792dc1f34de",
+                "name": "dhcp-reply",
+                "type": "service-other",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "ip-protocol": 17,
+                "accept-replies": false,
+                "match": "dhcp_rep_match",
+                "override-default-settings": false,
+                "session-timeout": 60,
+                "use-default-session-timeout": true,
+                "match-for-any": false,
+                "sync-connections-on-cluster": false,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "",
+                "color": "black",
+                "icon": "Services/OtherService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505987933,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505987933,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "7e8246fb-cdc5-4896-b7cd-cb5c6ba85980",
+                "name": "dhcp-request",
+                "type": "service-other",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "ip-protocol": 17,
+                "accept-replies": false,
+                "match": "dhcp_req_match",
+                "override-default-settings": false,
+                "session-timeout": 60,
+                "use-default-session-timeout": true,
+                "match-for-any": false,
+                "sync-connections-on-cluster": false,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "",
+                "color": "black",
+                "icon": "Services/OtherService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505987925,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505987925,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "fa34693d-32c5-5a4c-9ed8-6fe6054a9566",
+                "name": "dhcpv6-relay",
+                "type": "service-other",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "ip-protocol": 17,
+                "accept-replies": true,
+                "match": "dhcpv6_relay_match",
+                "override-default-settings": false,
+                "session-timeout": 60,
+                "use-default-session-timeout": true,
+                "match-for-any": false,
+                "sync-connections-on-cluster": false,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Traffic between DHCPv6 Relays or between a DHCPv6 Relay and a DHCPv6 Server",
+                "color": "black",
+                "icon": "Services/OtherService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505987685,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505987685,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "4a15aae5-ba18-b049-a93f-902f251c6c85",
+                "name": "dhcpv6-reply",
+                "type": "service-other",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "ip-protocol": 17,
+                "accept-replies": false,
+                "match": "dhcpv6_rep_match",
+                "override-default-settings": false,
+                "session-timeout": 60,
+                "use-default-session-timeout": true,
+                "match-for-any": false,
+                "sync-connections-on-cluster": false,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Replies from DHCPv6 Relays and/or Servers to DHCPv6 clients",
+                "color": "black",
+                "icon": "Services/OtherService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505987723,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505987723,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "1d7b58d8-8817-5c4d-9cd7-f4917858cbeb",
+                "name": "dhcpv6-request",
+                "type": "service-other",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "ip-protocol": 17,
+                "accept-replies": false,
+                "match": "dhcpv6_req_match",
+                "override-default-settings": false,
+                "session-timeout": 60,
+                "use-default-session-timeout": true,
+                "match-for-any": false,
+                "sync-connections-on-cluster": false,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Requests from DHCPv6 clients to DHCPv6 Relays and/or Servers",
+                "color": "black",
+                "icon": "Services/OtherService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505987739,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505987739,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb3ca-9aea-11d5-bd16-0090272ccb30",
+                "name": "egp",
+                "type": "service-other",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "ip-protocol": 8,
+                "accept-replies": false,
+                "override-default-settings": false,
+                "session-timeout": 60,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Exterior Gateway Protocol, convey net-reachability information between gateways",
+                "color": "slate blue",
+                "icon": "Services/OtherService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505988792,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505988792,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb423-9aea-11d5-bd16-0090272ccb30",
+                "name": "ESP",
+                "type": "service-other",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "ip-protocol": 50,
+                "accept-replies": true,
+                "override-default-settings": false,
+                "session-timeout": 600,
+                "use-default-session-timeout": false,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "IPSEC Encapsulating Security Payload Protocol",
+                "color": "cyan",
+                "icon": "Services/OtherService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505990906,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505990906,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb3f6-9aea-11d5-bd16-0090272ccb30",
+                "name": "FreeTel-incoming",
+                "type": "service-other",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "ip-protocol": 17,
+                "accept-replies": false,
+                "match": "freetel_incoming",
+                "override-default-settings": false,
+                "session-timeout": 60,
+                "use-default-session-timeout": true,
+                "match-for-any": false,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "FreeTel Incoming Connections",
+                "color": "black",
+                "icon": "Services/OtherService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505990574,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505990574,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb3f4-9aea-11d5-bd16-0090272ccb30",
+                "name": "FreeTel-outgoing-client",
+                "type": "service-other",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "ip-protocol": 17,
+                "accept-replies": false,
+                "match": "freetel_outgoing",
+                "override-default-settings": false,
+                "session-timeout": 60,
+                "use-default-session-timeout": true,
+                "match-for-any": false,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "real-time full-duplex voice communication via the Internet-client",
+                "color": "black",
+                "icon": "Services/OtherService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505990571,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505990571,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "da123897-b250-11d5-a47a-0006294583c7",
+                "name": "ftp_mapped",
+                "type": "service-other",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "ip-protocol": 6,
+                "accept-replies": false,
+                "action": "(call KFUNC_XLATE_FOLD <21, 2; 0.0.0.0> or drop), set r_mhandler &ftp_code",
+                "match": "tcp,dport = 21, direction = 0",
+                "override-default-settings": false,
+                "session-timeout": 60,
+                "use-default-session-timeout": true,
+                "match-for-any": false,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "FTP Port Mapping Service",
+                "color": "orange",
+                "icon": "Services/OtherService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505988973,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505988973,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb447-9aea-11d5-bd16-0090272ccb30",
+                "name": "FW1_Encapsulation",
+                "type": "service-other",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "ip-protocol": 94,
+                "accept-replies": true,
+                "override-default-settings": false,
+                "session-timeout": 600,
+                "use-default-session-timeout": false,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Check Point VPN-1 SecuRemote FWZ Encapsulation Protocol",
+                "color": "firebrick",
+                "icon": "Services/OtherService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991179,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991179,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb3c8-9aea-11d5-bd16-0090272ccb30",
+                "name": "ggp",
+                "type": "service-other",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "ip-protocol": 3,
+                "accept-replies": false,
+                "override-default-settings": false,
+                "session-timeout": 60,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Gateway-to-Gateway protocol",
+                "color": "slate blue",
+                "icon": "Services/OtherService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505988789,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505988789,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb424-9aea-11d5-bd16-0090272ccb30",
+                "name": "gre",
+                "type": "service-other",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "ip-protocol": 47,
+                "accept-replies": true,
+                "override-default-settings": false,
+                "session-timeout": 600,
+                "use-default-session-timeout": false,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "",
+                "color": "red",
+                "icon": "Services/OtherService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505990908,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505990908,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "35029b62-16b1-4d34-8004-410710dfd492",
+                "name": "gtp_v0_path_mgmt",
+                "type": "service-other",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "ip-protocol": 17,
+                "accept-replies": true,
+                "action": "set sr8 0, gtp_path_match",
+                "match": "gtp_path_match_only_v0",
+                "override-default-settings": false,
+                "session-timeout": 60,
+                "use-default-session-timeout": true,
+                "match-for-any": false,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "GTP version 0 path management",
+                "color": "forest green",
+                "icon": "Services/OtherService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991806,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991806,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "6106ffdd-a8fe-4b2e-8270-cb3435217427",
+                "name": "gtp_v1_path_mgmt",
+                "type": "service-other",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "ip-protocol": 17,
+                "accept-replies": true,
+                "action": "set sr8 1, gtp_path_match",
+                "match": "gtp_path_match_only_v1",
+                "override-default-settings": false,
+                "session-timeout": 60,
+                "use-default-session-timeout": true,
+                "match-for-any": false,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "GTP version 1 path management",
+                "color": "forest green",
+                "icon": "Services/OtherService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991838,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991838,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "7dd1933b-94e8-4770-9d45-f52b77faafb4",
+                "name": "high_udp_for_secure_SCCP",
+                "type": "service-other",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "ip-protocol": 17,
+                "accept-replies": true,
+                "match": "high_udp_for_secure_phones",
+                "override-default-settings": false,
+                "session-timeout": 60,
+                "use-default-session-timeout": true,
+                "match-for-any": false,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "",
+                "color": "black",
+                "icon": "Services/OtherService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505987936,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505987936,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "da123892-b250-11d5-a47a-0006294583c7",
+                "name": "http_mapped",
+                "type": "service-other",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "ip-protocol": 6,
+                "accept-replies": false,
+                "action": "(call KFUNC_XLATE_FOLD <80, 2; 0.0.0.0> or drop)",
+                "match": "tcp,dport = 80, direction = 0",
+                "override-default-settings": false,
+                "session-timeout": 60,
+                "use-default-session-timeout": true,
+                "match-for-any": false,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "HTTP Port Mapping Service",
+                "color": "orange",
+                "icon": "Services/OtherService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505988972,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505988972,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "636782bb-9181-402e-b0cf-c1af653937bb",
+                "name": "HTTP_wo_SCV",
+                "type": "service-other",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "ip-protocol": 6,
+                "accept-replies": false,
+                "action": "set r_scvres SCV_DONT_VERIFY",
+                "match": "dport=80",
+                "override-default-settings": false,
+                "session-timeout": 60,
+                "use-default-session-timeout": true,
+                "match-for-any": false,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "HTTP without SCV enforcement",
+                "color": "black",
+                "icon": "Services/OtherService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505987957,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505987957,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb405-9aea-11d5-bd16-0090272ccb30",
+                "name": "icmp-proto",
+                "type": "service-other",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "ip-protocol": 1,
+                "accept-replies": false,
+                "override-default-settings": false,
+                "session-timeout": 60,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Internet Control Message Protocol",
+                "color": "orchid",
+                "icon": "Services/OtherService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505990694,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505990694,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb3cb-9aea-11d5-bd16-0090272ccb30",
+                "name": "igmp",
+                "type": "service-other",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "ip-protocol": 2,
+                "accept-replies": false,
+                "override-default-settings": false,
+                "session-timeout": 60,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": false,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Internet Group Management Protocol",
+                "color": "slate blue",
+                "icon": "Services/OtherService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505988794,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505988794,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb3c9-9aea-11d5-bd16-0090272ccb30",
+                "name": "igrp",
+                "type": "service-other",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "ip-protocol": 9,
+                "accept-replies": false,
+                "override-default-settings": false,
+                "session-timeout": 60,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Cisco Interior Gateway Routing Protocol",
+                "color": "slate blue",
+                "icon": "Services/OtherService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505988791,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505988791,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "be250879-9288-407a-b8d4-0a5b80cd0b2b",
+                "name": "MGCP_dynamic_ports",
+                "type": "service-other",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "ip-protocol": -1,
+                "accept-replies": true,
+                "action": "set r_mhandler &mgcp_manager",
+                "match": "udp, dport > LOW_UDP_PORT, <src, dst, dport> in mgcp_dynamic_port",
+                "override-default-settings": false,
+                "session-timeout": 60,
+                "use-default-session-timeout": true,
+                "match-for-any": false,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Allows MGCP connection to be opened on a dynamic port and not on the MGCP well-known ports",
+                "color": "slate blue",
+                "icon": "Services/OtherService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505987937,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505987937,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "7527142e-554e-4b1d-9639-6f800764dbcf",
+                "name": "Mobility_Header",
+                "type": "service-other",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "ip-protocol": 135,
+                "accept-replies": true,
+                "override-default-settings": false,
+                "session-timeout": 0,
+                "use-default-session-timeout": true,
+                "match-for-any": false,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 0,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Mobility Extension Header for IPv6",
+                "color": "black",
+                "icon": "Services/OtherService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991948,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991948,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb3c7-9aea-11d5-bd16-0090272ccb30",
+                "name": "ospf",
+                "type": "service-other",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "ip-protocol": 89,
+                "accept-replies": false,
+                "override-default-settings": false,
+                "session-timeout": 60,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Open Shortest Path First Interior GW Protocol",
+                "color": "slate blue",
+                "icon": "Services/OtherService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505988788,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505988788,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "3cc63160-8949-4482-8f4e-20272b539590",
+                "name": "Partial-Destination-v6",
+                "type": "service-other",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "ip-protocol": -1,
+                "accept-replies": true,
+                "match": "PARTIAL_DST_ADDR_MATCH6(0x0,0x0,0x0,0x0,0,0)",
+                "override-default-settings": false,
+                "session-timeout": 60,
+                "use-default-session-timeout": true,
+                "match-for-any": false,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Filter IPv6 destination addresses based on mask and length",
+                "color": "black",
+                "icon": "Services/OtherService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505987955,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505987955,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "c81be1c0-d147-437b-aa8f-11a6b0665d2d",
+                "name": "Partial-Source-v6",
+                "type": "service-other",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "ip-protocol": -1,
+                "accept-replies": true,
+                "match": "PARTIAL_SRC_ADDR_MATCH6(0x0,0x0,0x0,0x0,0,0)",
+                "override-default-settings": false,
+                "session-timeout": 60,
+                "use-default-session-timeout": true,
+                "match-for-any": false,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Filter IPv6 source addresses based on mask and length",
+                "color": "black",
+                "icon": "Services/OtherService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505987954,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505987954,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "2f98c148-5884-44b2-a587-787361658d76",
+                "name": "pim",
+                "type": "service-other",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "ip-protocol": 103,
+                "accept-replies": false,
+                "override-default-settings": false,
+                "session-timeout": 60,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "",
+                "color": "black",
+                "icon": "Services/OtherService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991947,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991947,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb3ce-9aea-11d5-bd16-0090272ccb30",
+                "name": "rip-response",
+                "type": "service-other",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "ip-protocol": 17,
+                "accept-replies": true,
+                "match": "dport=520,rip_cmd=RIPCMD_RESPONSE",
+                "override-default-settings": false,
+                "session-timeout": 60,
+                "use-default-session-timeout": true,
+                "match-for-any": false,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Routing Information Protocol - response",
+                "color": "slate blue",
+                "icon": "Services/OtherService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505988988,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505988988,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "77d73484-9d79-497d-bbf6-4ca0eafd4d88",
+                "name": "sip_dynamic_ports",
+                "type": "service-other",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "ip-protocol": -1,
+                "accept-replies": false,
+                "action": "sip_dynamic_ports_matched_action",
+                "match": "sip_dynamic_ports_match_only",
+                "override-default-settings": false,
+                "session-timeout": 60,
+                "use-default-session-timeout": true,
+                "match-for-any": false,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": true,
+                "comments": "Supported from version R55W, it allows sip connection to be opened on a dynamic port and not on the sip well-known port",
+                "color": "black",
+                "icon": "Services/OtherService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991853,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991853,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "840666af-ce3d-47b4-923a-7e32e642033d",
+                "name": "SIT",
+                "type": "service-other",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "ip-protocol": 41,
+                "accept-replies": true,
+                "override-default-settings": false,
+                "session-timeout": 600,
+                "use-default-session-timeout": false,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "IPv6 encapsulated in IPv4",
+                "color": "cyan",
+                "icon": "Services/OtherService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505990907,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505990907,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "6e289c30-76d8-4823-b9f2-c767c2ad69c3",
+                "name": "SIT_with_Intra_Tunnel_Inspection",
+                "type": "service-other",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "ip-protocol": 41,
+                "accept-replies": true,
+                "action": "set6in4",
+                "override-default-settings": false,
+                "session-timeout": 60,
+                "use-default-session-timeout": true,
+                "match-for-any": false,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "",
+                "color": "black",
+                "icon": "Services/OtherService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505987951,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505987951,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb430-9aea-11d5-bd16-0090272ccb30",
+                "name": "Sitara",
+                "type": "service-other",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "ip-protocol": 109,
+                "accept-replies": true,
+                "override-default-settings": false,
+                "session-timeout": 60,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Sitara Networks Protocol (SpeedSeeker)",
+                "color": "red",
+                "icon": "Services/OtherService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505991048,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505991048,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb421-9aea-11d5-bd16-0090272ccb30",
+                "name": "SKIP",
+                "type": "service-other",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "ip-protocol": 57,
+                "accept-replies": true,
+                "override-default-settings": false,
+                "session-timeout": 600,
+                "use-default-session-timeout": false,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "IPSEC Simple Key Management for Internet Protocols",
+                "color": "cyan",
+                "icon": "Services/OtherService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505990903,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505990903,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "da12389a-b250-11d5-a47a-0006294583c7",
+                "name": "smtp_mapped",
+                "type": "service-other",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "ip-protocol": 6,
+                "accept-replies": false,
+                "action": "(call KFUNC_XLATE_FOLD <25, 2; 0.0.0.0> or drop)",
+                "match": "tcp,dport = 25, direction = 0",
+                "override-default-settings": false,
+                "session-timeout": 60,
+                "use-default-session-timeout": true,
+                "match-for-any": false,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "SMTP Port Mapping Service",
+                "color": "orange",
+                "icon": "Services/OtherService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505988975,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505988975,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "bb2d50dc-61e2-430e-aa92-0d527dd3b0e9",
+                "name": "Snmp-Read-Only",
+                "type": "service-other",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "ip-protocol": 17,
+                "accept-replies": true,
+                "action": "set r_mhandler &snmp_ro_code",
+                "match": "snmp_ro_match",
+                "override-default-settings": false,
+                "session-timeout": 60,
+                "use-default-session-timeout": true,
+                "match-for-any": false,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Simple Network Management Protocol - Read Only",
+                "color": "slate blue",
+                "icon": "Services/OtherService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505987952,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505987952,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb3e7-9aea-11d5-bd16-0090272ccb30",
+                "name": "traceroute",
+                "type": "service-other",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "ip-protocol": 17,
+                "accept-replies": false,
+                "match": "uh_dport > 33000, (IPV4_VER (ip_ttl < 30))",
+                "override-default-settings": false,
+                "session-timeout": 60,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "UNIX Traceroute, print the route packets take to network host",
+                "color": "black",
+                "icon": "Services/OtherService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505990310,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505990310,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "38a8af07-d990-4178-aa8c-82e32066959c",
+                "name": "tunnel_test_mapped",
+                "type": "service-other",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "ip-protocol": 17,
+                "accept-replies": false,
+                "action": "srv_redirect_local_udp_action(CP_TUNNEL_TEST_PORT)",
+                "match": "SRV_REDIRECT_LOCAL_UDP_MATCH(CP_TUNNEL_TEST_PORT)",
+                "override-default-settings": false,
+                "session-timeout": 60,
+                "use-default-session-timeout": true,
+                "match-for-any": false,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "tunnel testing for a module performing the tunnel test",
+                "color": "black",
+                "icon": "Services/OtherService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505988976,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505988976,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb3cc-9aea-11d5-bd16-0090272ccb30",
+                "name": "vrrp",
+                "type": "service-other",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "ip-protocol": 112,
+                "accept-replies": false,
+                "override-default-settings": false,
+                "session-timeout": 60,
+                "use-default-session-timeout": true,
+                "match-for-any": true,
+                "sync-connections-on-cluster": false,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Virtual Router Redundancy Protocol",
+                "color": "slate blue",
+                "icon": "Services/OtherService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505988795,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505988795,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "97aeb3d8-9aea-11d5-bd16-0090272ccb30",
+                "name": "X11-verify",
+                "type": "service-other",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "ip-protocol": 6,
+                "accept-replies": false,
+                "action": "x11verify_matched_action",
+                "match": "tcp, dport >= 6000, dport < 6070",
+                "override-default-settings": false,
+                "session-timeout": 60,
+                "use-default-session-timeout": true,
+                "match-for-any": false,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "X Window System With Authorization",
+                "color": "red",
+                "icon": "Services/OtherService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505990193,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505990193,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "2e6d3f79-cb0c-4600-acf2-2cf1a3704d10",
+                "name": "ZSP",
+                "type": "service-other",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "ip-protocol": 6,
+                "accept-replies": false,
+                "action": "set r_scvres SCV_DONT_VERIFY",
+                "match": "dport=5054",
+                "override-default-settings": false,
+                "session-timeout": 60,
+                "use-default-session-timeout": true,
+                "match-for-any": false,
+                "sync-connections-on-cluster": true,
+                "aggressive-aging": {
+                    "enable": true,
+                    "timeout": 15,
+                    "use-default-timeout": true,
+                    "default-timeout": 0
+                },
+                "keep-connections-open-after-policy-installation": false,
+                "comments": "Zone Security Protocol",
+                "color": "black",
+                "icon": "Services/OtherService",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505987956,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505987956,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            }
+        ],
+        "from": 1,
+        "to": 42,
+        "total": 42
+    }
+]

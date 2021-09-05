@@ -1,0 +1,125 @@
+[
+    {
+        "objects": [
+            {
+                "uid": "8c4041ea-ff14-4e4b-a9d9-4183d18c790a",
+                "name": "DMZZone",
+                "type": "security-zone",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "comments": "",
+                "color": "black",
+                "icon": "NetworkObjects/zone",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505984817,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505984817,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "237a4cbc-7fb6-4d50-872a-4904468271c4",
+                "name": "ExternalZone",
+                "type": "security-zone",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "comments": "",
+                "color": "black",
+                "icon": "NetworkObjects/zone",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505984818,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505984818,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "e8131db2-8388-42a5-924a-82de32db20f7",
+                "name": "InternalZone",
+                "type": "security-zone",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "comments": "",
+                "color": "black",
+                "icon": "NetworkObjects/zone",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505984819,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505984819,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "57de3848-3675-48ed-b045-41378f4babb3",
+                "name": "WirelessZone",
+                "type": "security-zone",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "comments": "",
+                "color": "black",
+                "icon": "NetworkObjects/zone",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505984812,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505984812,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            }
+        ],
+        "from": 1,
+        "to": 4,
+        "total": 4
+    }
+]

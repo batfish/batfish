@@ -1,0 +1,338 @@
+[
+    {
+        "objects": [
+            {
+                "uid": "3e23eb9f-99eb-41c8-ba3a-4244420aa946",
+                "name": "CP_default_Office_Mode_addresses_pool",
+                "type": "network",
+                "domain": {
+                    "uid": "41e821a0-3720-11e3-aa6e-0800200c9fde",
+                    "name": "SMC User",
+                    "domain-type": "domain"
+                },
+                "broadcast": "allow",
+                "subnet4": "172.16.10.0",
+                "mask-length4": 24,
+                "subnet-mask": "255.255.255.0",
+                "nat-settings": {
+                    "auto-rule": true,
+                    "hide-behind": "gateway",
+                    "install-on": "All",
+                    "method": "hide"
+                },
+                "comments": "Used as a default for Office Mode. If deleted, it must be specified for each gateway individually (in the VPN Clients page Advanced section)",
+                "color": "black",
+                "icon": "NetworkObjects/network",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579506177057,
+                        "iso-8601": "2020-01-20T02:42-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579506177057,
+                        "iso-8601": "2020-01-20T02:42-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "caee1116-8087-4310-9208-b422d3628a7e",
+                "name": "IPv6_Link_Local_Hosts",
+                "type": "network",
+                "domain": {
+                    "uid": "a0bbbc99-adef-4ef8-bb6d-defdefdefdef",
+                    "name": "Check Point Data",
+                    "domain-type": "data domain"
+                },
+                "broadcast": "allow",
+                "subnet6": "fe80::",
+                "mask-length6": 64,
+                "nat-settings": {
+                    "auto-rule": false
+                },
+                "comments": "IPv6 link-local addresses",
+                "color": "black",
+                "icon": "NetworkObjects/network",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579505995107,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579505995107,
+                        "iso-8601": "2020-01-20T02:39-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "f08c02be-d92d-4ef1-a92f-623e6a3c48a2",
+                "name": "Net_10.0.0.0",
+                "type": "network",
+                "domain": {
+                    "uid": "41e821a0-3720-11e3-aa6e-0800200c9fde",
+                    "name": "SMC User",
+                    "domain-type": "domain"
+                },
+                "broadcast": "allow",
+                "subnet4": "10.0.0.0",
+                "mask-length4": 8,
+                "subnet-mask": "255.0.0.0",
+                "nat-settings": {
+                    "auto-rule": false
+                },
+                "comments": "",
+                "color": "black",
+                "icon": "NetworkObjects/network",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1629177748399,
+                        "iso-8601": "2021-08-17T01:22-0400"
+                    },
+                    "last-modifier": "admin",
+                    "creation-time": {
+                        "posix": 1628896508327,
+                        "iso-8601": "2021-08-13T19:15-0400"
+                    },
+                    "creator": "admin"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "24d2c409-15d5-40d7-b566-3317a619504f",
+                "name": "Net_165.49.143.41",
+                "type": "network",
+                "domain": {
+                    "uid": "41e821a0-3720-11e3-aa6e-0800200c9fde",
+                    "name": "SMC User",
+                    "domain-type": "domain"
+                },
+                "broadcast": "allow",
+                "subnet4": "165.49.143.41",
+                "mask-length4": 32,
+                "subnet-mask": "255.255.255.255",
+                "nat-settings": {
+                    "auto-rule": false
+                },
+                "comments": "",
+                "color": "black",
+                "icon": "NetworkObjects/network",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1628896509071,
+                        "iso-8601": "2021-08-13T19:15-0400"
+                    },
+                    "last-modifier": "admin",
+                    "creation-time": {
+                        "posix": 1628896509071,
+                        "iso-8601": "2021-08-13T19:15-0400"
+                    },
+                    "creator": "admin"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "bcbfdbd9-c33a-43d7-80bd-4ffc66363792",
+                "name": "Net_172.16.0.0",
+                "type": "network",
+                "domain": {
+                    "uid": "41e821a0-3720-11e3-aa6e-0800200c9fde",
+                    "name": "SMC User",
+                    "domain-type": "domain"
+                },
+                "broadcast": "allow",
+                "subnet4": "172.16.0.0",
+                "mask-length4": 12,
+                "subnet-mask": "255.240.0.0",
+                "nat-settings": {
+                    "auto-rule": false
+                },
+                "comments": "",
+                "color": "black",
+                "icon": "NetworkObjects/network",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1628896509738,
+                        "iso-8601": "2021-08-13T19:15-0400"
+                    },
+                    "last-modifier": "admin",
+                    "creation-time": {
+                        "posix": 1628896509738,
+                        "iso-8601": "2021-08-13T19:15-0400"
+                    },
+                    "creator": "admin"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "1569de72-429b-4f7a-a8ce-384e26911b05",
+                "name": "Net_172.57.112.0",
+                "type": "network",
+                "domain": {
+                    "uid": "41e821a0-3720-11e3-aa6e-0800200c9fde",
+                    "name": "SMC User",
+                    "domain-type": "domain"
+                },
+                "broadcast": "allow",
+                "subnet4": "172.57.112.0",
+                "mask-length4": 21,
+                "subnet-mask": "255.255.248.0",
+                "nat-settings": {
+                    "auto-rule": false
+                },
+                "comments": "",
+                "color": "black",
+                "icon": "NetworkObjects/network",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1628896510443,
+                        "iso-8601": "2021-08-13T19:15-0400"
+                    },
+                    "last-modifier": "admin",
+                    "creation-time": {
+                        "posix": 1628896510443,
+                        "iso-8601": "2021-08-13T19:15-0400"
+                    },
+                    "creator": "admin"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "37b97489-09f5-4f5a-a51d-8a4c97c4f3f4",
+                "name": "Net_192.168.0.0",
+                "type": "network",
+                "domain": {
+                    "uid": "41e821a0-3720-11e3-aa6e-0800200c9fde",
+                    "name": "SMC User",
+                    "domain-type": "domain"
+                },
+                "broadcast": "allow",
+                "subnet4": "192.168.0.0",
+                "mask-length4": 16,
+                "subnet-mask": "255.255.0.0",
+                "nat-settings": {
+                    "auto-rule": false
+                },
+                "comments": "",
+                "color": "black",
+                "icon": "NetworkObjects/network",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1628896511110,
+                        "iso-8601": "2021-08-13T19:15-0400"
+                    },
+                    "last-modifier": "admin",
+                    "creation-time": {
+                        "posix": 1628896511110,
+                        "iso-8601": "2021-08-13T19:15-0400"
+                    },
+                    "creator": "admin"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "1940df44-57c8-4e37-b082-04ceb6808b2f",
+                "name": "Net_8.8.0.128",
+                "type": "network",
+                "domain": {
+                    "uid": "41e821a0-3720-11e3-aa6e-0800200c9fde",
+                    "name": "SMC User",
+                    "domain-type": "domain"
+                },
+                "broadcast": "allow",
+                "subnet4": "8.8.0.128",
+                "mask-length4": 25,
+                "subnet-mask": "255.255.255.128",
+                "nat-settings": {
+                    "auto-rule": false
+                },
+                "comments": "",
+                "color": "black",
+                "icon": "NetworkObjects/network",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1628896511730,
+                        "iso-8601": "2021-08-13T19:15-0400"
+                    },
+                    "last-modifier": "admin",
+                    "creation-time": {
+                        "posix": 1628896511730,
+                        "iso-8601": "2021-08-13T19:15-0400"
+                    },
+                    "creator": "admin"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "e4020941-3318-4777-b82d-4b30383b089b",
+                "name": "RFC1918_10_8",
+                "type": "network",
+                "domain": {
+                    "uid": "41e821a0-3720-11e3-aa6e-0800200c9fde",
+                    "name": "SMC User",
+                    "domain-type": "domain"
+                },
+                "broadcast": "allow",
+                "subnet4": "10.0.0.0",
+                "mask-length4": 8,
+                "subnet-mask": "255.0.0.0",
+                "nat-settings": {
+                    "auto-rule": true,
+                    "hide-behind": "gateway",
+                    "install-on": "All",
+                    "method": "hide"
+                },
+                "comments": "",
+                "color": "black",
+                "icon": "NetworkObjects/network",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1630620045330,
+                        "iso-8601": "2021-09-02T18:00-0400"
+                    },
+                    "last-modifier": "admin",
+                    "creation-time": {
+                        "posix": 1629217337601,
+                        "iso-8601": "2021-08-17T12:22-0400"
+                    },
+                    "creator": "admin"
+                },
+                "read-only": false
+            }
+        ],
+        "from": 1,
+        "to": 9,
+        "total": 9
+    }
+]

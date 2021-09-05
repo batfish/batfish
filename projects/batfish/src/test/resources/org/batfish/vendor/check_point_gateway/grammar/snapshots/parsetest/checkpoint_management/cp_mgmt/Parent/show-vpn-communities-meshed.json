@@ -1,0 +1,51 @@
+[
+    {
+        "objects": [
+            {
+                "uid": "c0ea7f10-98d8-4457-baf3-22ff864e5a96",
+                "name": "MyIntranet",
+                "type": "vpn-community-meshed",
+                "domain": {
+                    "uid": "41e821a0-3720-11e3-aa6e-0800200c9fde",
+                    "name": "SMC User",
+                    "domain-type": "domain"
+                },
+                "gateways": [],
+                "use-shared-secret": false,
+                "encryption-method": "ikev1 for ipv4 and ikev2 for ipv6 only",
+                "encryption-suite": "custom",
+                "ike-phase-1": {
+                    "encryption-algorithm": "aes-256",
+                    "diffie-hellman-group": "group-2",
+                    "data-integrity": "sha1"
+                },
+                "ike-phase-2": {
+                    "encryption-algorithm": "aes-128",
+                    "data-integrity": "sha1"
+                },
+                "comments": "",
+                "color": "black",
+                "icon": "VPNCommunities/Meshed",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1579506165249,
+                        "iso-8601": "2020-01-20T02:42-0500"
+                    },
+                    "last-modifier": "System",
+                    "creation-time": {
+                        "posix": 1579506165249,
+                        "iso-8601": "2020-01-20T02:42-0500"
+                    },
+                    "creator": "System"
+                },
+                "read-only": false
+            }
+        ],
+        "from": 1,
+        "to": 1,
+        "total": 1
+    }
+]

@@ -1,0 +1,145 @@
+[
+    {
+        "objects": [
+            {
+                "uid": "f8ddaf82-39fe-4139-a08b-54d459d41d55",
+                "name": "somehost",
+                "type": "host",
+                "domain": {
+                    "uid": "41e821a0-3720-11e3-aa6e-0800200c9fde",
+                    "name": "SMC User",
+                    "domain-type": "domain"
+                },
+                "ipv4-address": "10.1.1.1",
+                "interfaces": [],
+                "nat-settings": {
+                    "auto-rule": false
+                },
+                "comments": "",
+                "color": "black",
+                "icon": "Objects/host",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1629850798379,
+                        "iso-8601": "2021-08-24T20:19-0400"
+                    },
+                    "last-modifier": "admin",
+                    "creation-time": {
+                        "posix": 1629850798379,
+                        "iso-8601": "2021-08-24T20:19-0400"
+                    },
+                    "creator": "admin"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "95d151dc-a17c-4653-9b98-494d2b15e262",
+                "name": "NAT_8.8.8.8",
+                "type": "host",
+                "domain": {
+                    "uid": "41e821a0-3720-11e3-aa6e-0800200c9fde",
+                    "name": "SMC User",
+                    "domain-type": "domain"
+                },
+                "ipv4-address": "8.8.8.8",
+                "interfaces": [],
+                "nat-settings": {
+                    "auto-rule": false
+                },
+                "comments": "",
+                "color": "black",
+                "icon": "Objects/host",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1629180091296,
+                        "iso-8601": "2021-08-17T02:01-0400"
+                    },
+                    "last-modifier": "admin",
+                    "creation-time": {
+                        "posix": 1629177497654,
+                        "iso-8601": "2021-08-17T01:18-0400"
+                    },
+                    "creator": "admin"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "c09cf674-a1fb-4057-b08f-ecc0d3ac60d5",
+                "name": "test_translated_dest_ip",
+                "type": "host",
+                "domain": {
+                    "uid": "41e821a0-3720-11e3-aa6e-0800200c9fde",
+                    "name": "SMC User",
+                    "domain-type": "domain"
+                },
+                "ipv4-address": "10.1.1.2",
+                "interfaces": [],
+                "nat-settings": {
+                    "auto-rule": false
+                },
+                "comments": "",
+                "color": "black",
+                "icon": "Objects/host",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1629847645009,
+                        "iso-8601": "2021-08-24T19:27-0400"
+                    },
+                    "last-modifier": "admin",
+                    "creation-time": {
+                        "posix": 1629847645009,
+                        "iso-8601": "2021-08-24T19:27-0400"
+                    },
+                    "creator": "admin"
+                },
+                "read-only": false
+            },
+            {
+                "uid": "a67a02b7-68d7-4bc5-b3b5-b787fb7c23de",
+                "name": "test_translated_dest_ip2",
+                "type": "host",
+                "domain": {
+                    "uid": "41e821a0-3720-11e3-aa6e-0800200c9fde",
+                    "name": "SMC User",
+                    "domain-type": "domain"
+                },
+                "ipv4-address": "10.1.1.3",
+                "interfaces": [],
+                "nat-settings": {
+                    "auto-rule": false
+                },
+                "comments": "",
+                "color": "black",
+                "icon": "Objects/host",
+                "tags": [],
+                "meta-info": {
+                    "lock": "unlocked",
+                    "validation-state": "ok",
+                    "last-modify-time": {
+                        "posix": 1629847795884,
+                        "iso-8601": "2021-08-24T19:29-0400"
+                    },
+                    "last-modifier": "admin",
+                    "creation-time": {
+                        "posix": 1629847795884,
+                        "iso-8601": "2021-08-24T19:29-0400"
+                    },
+                    "creator": "admin"
+                },
+                "read-only": false
+            }
+        ],
+        "from": 1,
+        "to": 4,
+        "total": 4
+    }
+]

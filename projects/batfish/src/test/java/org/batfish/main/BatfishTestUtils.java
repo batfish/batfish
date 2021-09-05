@@ -1,6 +1,7 @@
 package org.batfish.main;
 
 import static org.batfish.common.BfConsts.RELPATH_AWS_CONFIGS_DIR;
+import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_MANAGEMENT_DIR;
 import static org.batfish.common.BfConsts.RELPATH_CONFIGURATIONS_DIR;
 import static org.batfish.common.BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES;
 import static org.batfish.common.BfConsts.RELPATH_HOST_CONFIGS_DIR;
@@ -170,6 +171,7 @@ public class BatfishTestUtils {
       TestrigText testrigText, TemporaryFolder tempFolder) throws IOException {
     Map<String, byte[]> awsBytes = testrigText.getAwsBytes();
     Map<String, byte[]> bgpTablesBytes = testrigText.getBgpTablesBytes();
+    Map<String, byte[]> checkpointMgmtBytes = testrigText.getCheckpointMgmtBytes();
     Map<String, byte[]> configurationBytes = testrigText.getConfigurationBytes();
     byte[] externalBgpAnnouncementsBytes = testrigText.getExternalBgpAnnouncementBytes();
     Map<String, byte[]> hostsBytes = testrigText.getHostsBytes();
@@ -194,6 +196,8 @@ public class BatfishTestUtils {
             null,
             new TestStorageBasedIdResolver(settings.getStorageBase()));
     StorageProvider storage = new FileBasedStorage(settings.getStorageBase(), batfish.getLogger());
+    writeTemporarySnapshotInputFiles(
+        checkpointMgmtBytes, RELPATH_CHECKPOINT_MANAGEMENT_DIR, storage, TEST_SNAPSHOT);
     writeTemporarySnapshotInputFiles(
         configurationBytes, RELPATH_CONFIGURATIONS_DIR, storage, TEST_SNAPSHOT);
     writeTemporarySnapshotInputFiles(awsBytes, RELPATH_AWS_CONFIGS_DIR, storage, TEST_SNAPSHOT);
