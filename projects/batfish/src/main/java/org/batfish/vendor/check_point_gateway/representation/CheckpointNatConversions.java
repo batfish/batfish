@@ -16,6 +16,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
@@ -58,7 +59,10 @@ public class CheckpointNatConversions {
 
     @Override
     public List<TransformationStep> visitHost(Host host) {
-      return ImmutableList.of(assignSourceIp(host.getIpv4Address()));
+      Ip hostV4Addtess = host.getIpv4Address();
+      return hostV4Addtess == null
+          ? ImmutableList.of()
+          : ImmutableList.of(assignSourceIp(hostV4Addtess));
     }
   }
 

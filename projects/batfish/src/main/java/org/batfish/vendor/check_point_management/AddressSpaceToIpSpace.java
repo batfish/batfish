@@ -79,7 +79,8 @@ public class AddressSpaceToIpSpace implements AddressSpaceVisitor<IpSpace> {
 
   @Override
   public IpSpace visitHost(Host host) {
-    return host.getIpv4Address().toIpSpace();
+    Ip hostV4Address = host.getIpv4Address();
+    return hostV4Address == null ? EmptyIpSpace.INSTANCE : hostV4Address.toIpSpace();
   }
 
   @Override

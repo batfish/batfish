@@ -39,6 +39,26 @@ public final class HostTest {
   }
 
   @Test
+  public void testJacksonDeserialization_noIpv4Address() throws JsonProcessingException {
+    String input =
+        "{"
+            + "\"GARBAGE\":0,"
+            + "\"type\":\"host\","
+            + "\"uid\":\"0\","
+            + "\"name\":\"foo\","
+            + "\"nat-settings\": {" // nat-settings
+            + "\"auto-rule\":true,"
+            + "\"hide-behind\":\"gateway\","
+            + "\"install-on\":\"All\","
+            + "\"method\":\"hide\""
+            + "}" // nat-settings
+            + "}";
+    assertThat(
+        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, Host.class),
+        equalTo(new Host(null, NatSettingsTest.TEST_INSTANCE, "foo", Uid.of("0"))));
+  }
+
+  @Test
   public void testJavaSerialization() {
     assertEquals(TEST_INSTANCE, SerializationUtils.clone(TEST_INSTANCE));
   }
