@@ -23,7 +23,6 @@ public final class CpmiVsClusterNetobj extends Cluster {
       @JsonProperty(PROP_NAME) @Nullable String name,
       @JsonProperty(PROP_POLICY) @Nullable GatewayOrServerPolicy policy,
       @JsonProperty(PROP_UID) @Nullable Uid uid) {
-    checkArgument(interfaces != null, "Missing %s", PROP_INTERFACES);
     checkArgument(name != null, "Missing %s", PROP_NAME);
     checkArgument(policy != null, "Missing %s", PROP_POLICY);
     checkArgument(uid != null, "Missing %s", PROP_UID);
@@ -31,7 +30,7 @@ public final class CpmiVsClusterNetobj extends Cluster {
         ImmutableList.copyOf(firstNonNull(clusterMemberNames, ImmutableList.of())),
         ipv4Address,
         name,
-        interfaces,
+        ImmutableList.copyOf(firstNonNull(interfaces, ImmutableList.of())),
         policy,
         uid);
   }
