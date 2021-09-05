@@ -131,4 +131,18 @@ public class AddressSpaceToIpSpaceTest {
     Network network = new Network("name", NatSettingsTest.TEST_INSTANCE, ip, mask, Uid.of("uid"));
     assertThat(network.accept(visitor), equalTo(Prefix.create(ip, mask).toIpSpace()));
   }
+
+  @Test
+  public void testVisitGatewayOrServer_noInterfaceIp() {
+    AddressSpaceToIpSpace visitor = new AddressSpaceToIpSpace(ImmutableMap.of());
+    GatewayOrServer gw =
+        new CpmiVsClusterNetobj(
+            ImmutableList.of(),
+            null,
+            "name",
+            ImmutableList.of(new Interface("iname", null, null, null)),
+            null,
+            Uid.of("1"));
+    assertThat(visitor.visitGatewayOrServer(gw), equalTo(EmptyIpSpace.INSTANCE));
+  }
 }

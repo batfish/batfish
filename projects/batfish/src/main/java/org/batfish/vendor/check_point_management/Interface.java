@@ -21,13 +21,15 @@ public final class Interface implements Serializable {
       @JsonProperty(PROP_IPV4_MASK_LENGTH) @Nullable Integer ipv4MaskLength) {
     checkArgument(name != null, "Missing %s", PROP_NAME);
     checkArgument(topology != null, "Missing %s", PROP_TOPOLOGY);
-    checkArgument(ipv4Address != null, "Missing %s", PROP_IPV4_ADDRESS);
-    checkArgument(ipv4MaskLength != null, "Missing %s", PROP_IPV4_MASK_LENGTH);
     return new Interface(name, topology, ipv4Address, ipv4MaskLength);
   }
 
   @VisibleForTesting
-  public Interface(String name, InterfaceTopology topology, Ip ipv4Address, int ipv4MaskLength) {
+  public Interface(
+      String name,
+      InterfaceTopology topology,
+      @Nullable Ip ipv4Address,
+      @Nullable Integer ipv4MaskLength) {
     _name = name;
     _topology = topology;
     _ipv4Address = ipv4Address;
@@ -42,11 +44,11 @@ public final class Interface implements Serializable {
     return _topology;
   }
 
-  public @Nonnull Ip getIpv4Address() {
+  public @Nullable Ip getIpv4Address() {
     return _ipv4Address;
   }
 
-  public int getIpv4MaskLength() {
+  public @Nullable Integer getIpv4MaskLength() {
     return _ipv4MaskLength;
   }
 
@@ -58,10 +60,10 @@ public final class Interface implements Serializable {
       return false;
     }
     Interface that = (Interface) o;
-    return _ipv4MaskLength == that._ipv4MaskLength
+    return Objects.equals(_ipv4MaskLength, that._ipv4MaskLength)
         && _name.equals(that._name)
         && _topology.equals(that._topology)
-        && _ipv4Address.equals(that._ipv4Address);
+        && Objects.equals(_ipv4Address, that._ipv4Address);
   }
 
   @Override
@@ -74,7 +76,7 @@ public final class Interface implements Serializable {
   private static final String PROP_IPV4_ADDRESS = "ipv4-address";
   private static final String PROP_IPV4_MASK_LENGTH = "ipv4-mask-length";
   private final @Nonnull String _name;
-  private final @Nonnull Ip _ipv4Address;
-  private final int _ipv4MaskLength;
+  private final @Nullable Ip _ipv4Address;
+  private final @Nullable Integer _ipv4MaskLength;
   private final @Nonnull InterfaceTopology _topology;
 }
