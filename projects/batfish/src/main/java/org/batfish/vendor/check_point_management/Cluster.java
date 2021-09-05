@@ -4,6 +4,7 @@ import com.google.common.base.MoreObjects.ToStringHelper;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 
 /** A gateway or server cluster with members. */
@@ -16,7 +17,7 @@ public abstract class Cluster extends GatewayOrServer {
 
   protected Cluster(
       List<String> clusterMemberNames,
-      Ip ipv4Address,
+      @Nullable Ip ipv4Address,
       String name,
       List<Interface> interfaces,
       GatewayOrServerPolicy policy,
