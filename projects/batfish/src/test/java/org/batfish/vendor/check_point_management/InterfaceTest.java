@@ -40,12 +40,11 @@ public class InterfaceTest {
         "{"
             + "\"GARBAGE\":0,"
             + "\"interface-name\": \"iface\","
-            + "\"ipv4-mask-length\": 24,"
             + "\"topology\": {\"leads-to-internet\":true}"
             + "}";
     assertThat(
         BatfishObjectMapper.ignoreUnknownMapper().readValue(input, Interface.class),
-        equalTo(new Interface("iface", new InterfaceTopology(true), null, 24)));
+        equalTo(new Interface("iface", new InterfaceTopology(true), null, null)));
   }
 
   @Test
