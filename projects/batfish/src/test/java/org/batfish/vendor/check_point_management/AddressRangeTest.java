@@ -58,6 +58,32 @@ public final class AddressRangeTest {
   }
 
   @Test
+  public void testJacksonDeserialization_emptyIps() throws JsonProcessingException {
+    String input =
+        "{"
+            + "\"GARBAGE\":0,"
+            + "\"type\":\"address-range\","
+            + "\"uid\":\"0\","
+            + "\"name\":\"foo\","
+            + "\"nat-settings\": {" // nat-settings
+            + "\"auto-rule\":true,"
+            + "\"hide-behind\":\"gateway\","
+            + "\"install-on\":\"All\","
+            + "\"method\":\"hide\""
+            + "}," // nat-settings
+            + "\"ipv4-address-first\":\"\","
+            + "\"ipv4-address-last\":\"\","
+            + "\"ipv6-address-first\":\"\","
+            + "\"ipv6-address-last\":\"\""
+            + "}";
+    assertThat(
+        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, AddressRange.class),
+        equalTo(
+            new AddressRange(
+                null, null, null, null, NatSettingsTest.TEST_INSTANCE, "foo", Uid.of("0"))));
+  }
+
+  @Test
   public void testJavaSerialization() {
     AddressRange obj =
         new AddressRange(
