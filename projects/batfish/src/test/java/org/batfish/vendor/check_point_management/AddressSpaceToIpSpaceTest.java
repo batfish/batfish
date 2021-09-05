@@ -117,11 +117,32 @@ public class AddressSpaceToIpSpaceTest {
   }
 
   @Test
+  public void testHost_noIpv4() {
+    AddressSpaceToIpSpace visitor = new AddressSpaceToIpSpace(ImmutableMap.of());
+    Host host = new Host(null, NatSettingsTest.TEST_INSTANCE, "hostName", Uid.of("10"));
+    assertThat(host.accept(visitor), equalTo(EmptyIpSpace.INSTANCE));
+  }
+
+  @Test
   public void testNetwork() {
     AddressSpaceToIpSpace visitor = new AddressSpaceToIpSpace(ImmutableMap.of());
     Ip ip = Ip.parse("1.1.1.0");
     Ip mask = Ip.parse("255.255.255.0");
     Network network = new Network("name", NatSettingsTest.TEST_INSTANCE, ip, mask, Uid.of("uid"));
     assertThat(network.accept(visitor), equalTo(Prefix.create(ip, mask).toIpSpace()));
+  }
+
+  @Test
+  public void testVisitGatewayOrServer_noInterfaceIp() {
+    AddressSpaceToIpSpace visitor = new AddressSpaceToIpSpace(ImmutableMap.of());
+    GatewayOrServer gw =
+        new CpmiVsClusterNetobj(
+            ImmutableList.of(),
+            null,
+            "name",
+            ImmutableList.of(new Interface("iname", null, null, null)),
+            null,
+            Uid.of("1"));
+    assertThat(visitor.visitGatewayOrServer(gw), equalTo(EmptyIpSpace.INSTANCE));
   }
 }

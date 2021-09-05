@@ -7,6 +7,7 @@ import com.google.common.base.MoreObjects.ToStringHelper;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 
 /**
@@ -28,7 +29,7 @@ import org.batfish.datamodel.Ip;
 public abstract class GatewayOrServer extends NamedManagementObject {
 
   protected GatewayOrServer(
-      Ip ipv4Address,
+      @Nullable Ip ipv4Address,
       String name,
       List<Interface> interfaces,
       GatewayOrServerPolicy policy,
@@ -43,7 +44,7 @@ public abstract class GatewayOrServer extends NamedManagementObject {
     return _interfaces;
   }
 
-  public @Nonnull Ip getIpv4Address() {
+  public @Nullable Ip getIpv4Address() {
     return _ipv4Address;
   }
 
@@ -59,7 +60,7 @@ public abstract class GatewayOrServer extends NamedManagementObject {
     }
     GatewayOrServer that = (GatewayOrServer) o;
     return _interfaces.equals(that._interfaces)
-        && _ipv4Address.equals(that._ipv4Address)
+        && Objects.equals(_ipv4Address, that._ipv4Address)
         && _policy.equals(that._policy);
   }
 
@@ -81,6 +82,6 @@ public abstract class GatewayOrServer extends NamedManagementObject {
   protected static final String PROP_POLICY = "policy";
 
   private final @Nonnull List<Interface> _interfaces;
-  private final @Nonnull Ip _ipv4Address;
+  private final @Nullable Ip _ipv4Address;
   private final @Nonnull GatewayOrServerPolicy _policy;
 }

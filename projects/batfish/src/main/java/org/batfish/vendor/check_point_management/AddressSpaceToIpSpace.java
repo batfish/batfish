@@ -37,6 +37,7 @@ public class AddressSpaceToIpSpace implements AddressSpaceVisitor<IpSpace> {
     IpSpace ipSpace =
         AclIpSpace.union(
             gatewayOrServer.getInterfaces().stream()
+                .filter(i -> i.getIpv4Address() != null)
                 .map(i -> i.getIpv4Address().toIpSpace())
                 .collect(ImmutableList.toImmutableList()));
     return ipSpace == null ? EmptyIpSpace.INSTANCE : ipSpace;
@@ -79,7 +80,8 @@ public class AddressSpaceToIpSpace implements AddressSpaceVisitor<IpSpace> {
 
   @Override
   public IpSpace visitHost(Host host) {
-    return host.getIpv4Address().toIpSpace();
+    Ip hostV4Address = host.getIpv4Address();
+    return hostV4Address == null ? EmptyIpSpace.INSTANCE : hostV4Address.toIpSpace();
   }
 
   @Override

@@ -29,7 +29,6 @@ public final class Host extends AddressSpace implements Machine {
       @JsonProperty(PROP_NAT_SETTINGS) @Nullable NatSettings natSettings,
       @JsonProperty(PROP_NAME) @Nullable String name,
       @JsonProperty(PROP_UID) @Nullable Uid uid) {
-    checkArgument(ipv4Address != null, "Missing %s", PROP_IPV4_ADDRESS);
     checkArgument(natSettings != null, "Missing %s", PROP_NAT_SETTINGS);
     checkArgument(name != null, "Missing %s", PROP_NAME);
     checkArgument(uid != null, "Missing %s", PROP_UID);
@@ -37,13 +36,13 @@ public final class Host extends AddressSpace implements Machine {
   }
 
   @VisibleForTesting
-  public Host(Ip ipv4Address, NatSettings natSettings, String name, Uid uid) {
+  public Host(@Nullable Ip ipv4Address, NatSettings natSettings, String name, Uid uid) {
     super(name, uid);
     _ipv4Address = ipv4Address;
     _natSettings = natSettings;
   }
 
-  public @Nonnull Ip getIpv4Address() {
+  public @Nullable Ip getIpv4Address() {
     return _ipv4Address;
   }
 
@@ -57,7 +56,8 @@ public final class Host extends AddressSpace implements Machine {
       return false;
     }
     Host host = (Host) o;
-    return _ipv4Address.equals(host._ipv4Address) && _natSettings.equals(host._natSettings);
+    return Objects.equals(_ipv4Address, host._ipv4Address)
+        && _natSettings.equals(host._natSettings);
   }
 
   @Override
@@ -76,6 +76,6 @@ public final class Host extends AddressSpace implements Machine {
   private static final String PROP_IPV4_ADDRESS = "ipv4-address";
   private static final String PROP_NAT_SETTINGS = "nat-settings";
 
-  private final @Nonnull Ip _ipv4Address;
+  private final @Nullable Ip _ipv4Address;
   private final @Nonnull NatSettings _natSettings;
 }
