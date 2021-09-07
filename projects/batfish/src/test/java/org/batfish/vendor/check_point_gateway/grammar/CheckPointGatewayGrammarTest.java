@@ -479,6 +479,22 @@ public class CheckPointGatewayGrammarTest {
   }
 
   @Test
+  public void testStaticRouteOffExtraction() {
+    String hostname = "static_route_off";
+    CheckPointGatewayConfiguration c = parseVendorConfig(hostname);
+
+    Prefix prefix = Prefix.parse("10.1.0.0/16");
+    NexthopTarget target = new NexthopAddress(Ip.parse("10.1.0.2"));
+
+    // Removed static route shouldn't show up, and removing only nexthop should remove the route
+    assertThat(c.getStaticRoutes(), hasKeys(prefix));
+
+    // Removed nexthop shouldn't show up
+    StaticRoute route = c.getStaticRoutes().get(prefix);
+    assertThat(route.getNexthops(), hasKeys(target));
+  }
+
+  @Test
   public void testStaticRouteWarning() throws IOException {
     String hostname = "static_route_warn";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
