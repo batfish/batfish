@@ -11,9 +11,12 @@ import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_PACKAGE;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +37,7 @@ import org.batfish.vendor.check_point_management.GatewaysAndServers;
 import org.batfish.vendor.check_point_management.ManagementDomain;
 import org.batfish.vendor.check_point_management.ManagementPackage;
 import org.batfish.vendor.check_point_management.ManagementServer;
+import org.batfish.vendor.check_point_management.NatRuleOrSection;
 import org.batfish.vendor.check_point_management.NatRulebase;
 import org.batfish.vendor.check_point_management.ObjectPage;
 import org.batfish.vendor.check_point_management.Package;
@@ -78,7 +82,8 @@ public class CheckpointManagementParser {
         buildServersMap(domainFileMap, packageFileMap, pvcae));
   }
 
-  private static @Nullable NatRulebase getNatRulebase(
+  @VisibleForTesting
+  static @Nullable NatRulebase getNatRulebase(
       Package pakij,
       String domainName,
       Map<String, String> packageFiles,
@@ -99,19 +104,54 @@ public class CheckpointManagementParser {
             RELPATH_CHECKPOINT_SHOW_NAT_RULEBASE);
     if (natRulebases == null) {
       return null;
-    } else if (natRulebases.size() != 1) {
+    } else if (natRulebases.isEmpty()) {
       warnCheckpointPackageFile(
           serverName,
           domainName,
           packageName,
           RELPATH_CHECKPOINT_SHOW_NAT_RULEBASE,
-          String.format(
-              "JSON file should contain exactly one NAT rulebase, but contains %d",
-              natRulebases.size()),
+          "JSON file contains no NAT rulebase information.",
           pvcae,
           null);
+      return null;
     }
-    return natRulebases.isEmpty() ? null : natRulebases.get(0);
+    long numUids = natRulebases.stream().map(NatRulebase::getUid).distinct().count();
+    Uid uid = natRulebases.iterator().next().getUid();
+    warnCheckpointPackageFile(
+        serverName,
+        domainName,
+        packageName,
+        RELPATH_CHECKPOINT_SHOW_NAT_RULEBASE,
+        String.format(
+            "JSON file should contain one or more pages for exactly one NAT rulebase, but contains"
+                + " %s. Only reading pages for the first, with UID '%s'.",
+            numUids, uid.getValue()),
+        pvcae,
+        null);
+    return mergeNatRulebasePages(
+        natRulebases.stream()
+            .filter(rulebase -> rulebase.getUid().equals(uid))
+            .collect(ImmutableList.toImmutableList()));
+  }
+
+  private static @Nonnull NatRulebase mergeNatRulebasePages(
+      Collection<NatRulebase> natRulebasePages) {
+    if (natRulebasePages.size() == 1) {
+      return Iterables.getOnlyElement(natRulebasePages);
+    }
+    Map<Uid, TypedManagementObject> objectsDict = new HashMap<>();
+    natRulebasePages.stream()
+        .map(NatRulebase::getObjectsDictionary)
+        .map(Map::entrySet)
+        .flatMap(Collection::stream)
+        .forEach(e -> objectsDict.put(e.getKey(), e.getValue()));
+    List<NatRuleOrSection> rulebase =
+        natRulebasePages.stream()
+            .map(NatRulebase::getRulebase)
+            .flatMap(Collection::stream)
+            .collect(ImmutableList.toImmutableList());
+    return new NatRulebase(
+        ImmutableMap.copyOf(objectsDict), rulebase, natRulebasePages.iterator().next().getUid());
   }
 
   /**
