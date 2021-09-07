@@ -371,7 +371,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
    */
   private @Nonnull SortedMap<String, String> readAllInputObjects(
       Stream<String> keys, NetworkSnapshot snapshot) {
-    return keys.map(
+    return keys.parallel()
+        .map(
             key -> {
               _logger.debugf("Reading: \"%s\"\n", key);
               try (InputStream inputStream =
