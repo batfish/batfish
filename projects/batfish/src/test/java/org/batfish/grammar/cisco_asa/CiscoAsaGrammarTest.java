@@ -5,6 +5,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.AuthenticationMethod.GROUP_USER_DEFINED;
 import static org.batfish.datamodel.AuthenticationMethod.LOCAL_CASE;
+import static org.batfish.datamodel.BgpRoute.DEFAULT_LOCAL_WEIGHT;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Ip.ZERO;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
@@ -1283,6 +1284,7 @@ public final class CiscoAsaGrammarTest {
             .setProtocol(RoutingProtocol.AGGREGATE)
             .setReceivedFromIp(Ip.ZERO) // indicates local origination
             .setSrcProtocol(RoutingProtocol.AGGREGATE)
+            .setWeight(DEFAULT_LOCAL_WEIGHT)
             .build();
     Bgpv4Route aggRoute2 = aggRoute1.toBuilder().setNetwork(aggPrefix2).build();
     Bgpv4Route aggRoute4General = aggRoute1.toBuilder().setNetwork(aggPrefix4General).build();
@@ -1356,6 +1358,7 @@ public final class CiscoAsaGrammarTest {
               .setProtocol(RoutingProtocol.AGGREGATE)
               .setReceivedFromIp(Ip.ZERO) // indicates local origination
               .setSrcProtocol(RoutingProtocol.AGGREGATE)
+              .setWeight(DEFAULT_LOCAL_WEIGHT)
               .build();
       Bgpv4Route aggRoute2 = aggRoute1.toBuilder().setNetwork(aggPrefix2).build();
       assertThat(

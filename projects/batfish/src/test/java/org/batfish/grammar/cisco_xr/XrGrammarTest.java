@@ -173,6 +173,7 @@ import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BddTestbed;
 import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Bgpv4Route.Builder;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -2819,6 +2820,7 @@ public final class XrGrammarTest {
             .setProtocol(RoutingProtocol.AGGREGATE)
             .setReceivedFromIp(Ip.ZERO) // indicates local origination
             .setSrcProtocol(RoutingProtocol.AGGREGATE)
+            .setWeight(BgpRoute.DEFAULT_LOCAL_WEIGHT)
             .build();
     Bgpv4Route aggRoute2 = aggRoute1.toBuilder().setNetwork(aggPrefix2).build();
     Bgpv4Route aggRoute4General = aggRoute1.toBuilder().setNetwork(aggPrefix4General).build();
@@ -2892,6 +2894,7 @@ public final class XrGrammarTest {
               .setProtocol(RoutingProtocol.AGGREGATE)
               .setReceivedFromIp(Ip.ZERO) // indicates local origination
               .setSrcProtocol(RoutingProtocol.AGGREGATE)
+              .setWeight(BgpRoute.DEFAULT_LOCAL_WEIGHT)
               .build();
       Bgpv4Route aggRoute2 = aggRoute1.toBuilder().setNetwork(aggPrefix2).build();
       assertThat(
