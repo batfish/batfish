@@ -24,10 +24,11 @@ import org.batfish.datamodel.GenericRibReadOnly;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
-import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
+import org.batfish.datamodel.route.nh.NextHopVisitor;
+import org.batfish.datamodel.route.nh.NextHopVrf;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 
 /**
@@ -306,21 +307,37 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
       return Long.MAX_VALUE;
     }
     assert _mainRib != null;
-    NextHop nextHop = route.getNextHop();
-    if (nextHop instanceof NextHopDiscard) {
-      return Long.MAX_VALUE;
-    } else if (nextHop instanceof NextHopIp) {
-      // TODO: implement resolution restriction
-      Set<AnnotatedRoute<AbstractRoute>> s =
-          _mainRib.longestPrefixMatch(((NextHopIp) nextHop).getIp(), alwaysTrue());
-      return s.isEmpty()
-          ? Long.MAX_VALUE
-          : getIgpCostToNextHopIpHelper(s.iterator().next().getAbstractRoute(), depth + 1);
-    } else {
-      assert nextHop instanceof NextHopInterface;
-      // TODO: NextHopVrf?
-      return route.getMetric();
-    }
+    route
+        .getNextHop()
+        .accept(
+            new NextHopVisitor<Long>() {
+              @Override
+              public Long visitNextHopIp(NextHopIp nextHopIp) {
+                // TODO: implement resolution restriction
+                Set<AnnotatedRoute<AbstractRoute>> s =
+                    _mainRib.longestPrefixMatch(nextHopIp.getIp(), alwaysTrue());
+                return s.isEmpty()
+                    ? Long.MAX_VALUE
+                    : getIgpCostToNextHopIpHelper(
+                        s.iterator().next().getAbstractRoute(), depth + 1);
+              }
+
+              @Override
+              public Long visitNextHopInterface(NextHopInterface nextHopInterface) {
+                return route.getMetric();
+              }
+
+              @Override
+              public Long visitNextHopDiscard(NextHopDiscard nextHopDiscard) {
+                return Long.MAX_VALUE;
+              }
+
+              @Override
+              public Long visitNextHopVrf(NextHopVrf nextHopVrf) {
+                // TODO: something better?
+                return Long.MAX_VALUE;
+              }
+            });
   }
 
   /**
