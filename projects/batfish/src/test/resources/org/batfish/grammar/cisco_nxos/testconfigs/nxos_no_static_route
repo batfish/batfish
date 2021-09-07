@@ -7,13 +7,6 @@ interface Ethernet1/1
   no shutdown
   ip address 10.0.1.1/24
 !
-interface Ethernet1/2
-  no switchport
-  no shutdown
-  vrf member vrf2
-  ip address 10.0.2.1/24
-!
-
 ip route 10.0.1.0/24 Ethernet1/1 10.0.1.1
 ip route 10.0.1.0/24 Ethernet1/1 10.0.1.2
 ! Different vrf than original route
