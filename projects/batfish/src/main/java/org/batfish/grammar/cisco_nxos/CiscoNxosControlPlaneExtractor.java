@@ -5983,6 +5983,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
             sr -> {
               Collection<StaticRoute> staticRoutes =
                   _currentVrf.getStaticRoutes().get(sr.getPrefix());
+              // TODO smarter "equality" checking
+              // Some attributes don't need to match the original route, like tag or priority
               if (!staticRoutes.contains(sr)) {
                 warn(ctx, "Cannot delete non-existent route");
                 return;
