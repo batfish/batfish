@@ -278,6 +278,7 @@ import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.Bgpv4Route;
@@ -6400,6 +6401,7 @@ public final class CiscoGrammarTest {
             .setProtocol(RoutingProtocol.AGGREGATE)
             .setReceivedFromIp(Ip.ZERO) // indicates local origination
             .setSrcProtocol(RoutingProtocol.AGGREGATE)
+            .setWeight(BgpRoute.DEFAULT_LOCAL_WEIGHT)
             .build();
     Bgpv4Route aggRoute2 = aggRoute1.toBuilder().setNetwork(aggPrefix2).build();
     Bgpv4Route aggRoute4General = aggRoute1.toBuilder().setNetwork(aggPrefix4General).build();
@@ -6472,6 +6474,7 @@ public final class CiscoGrammarTest {
               .setProtocol(RoutingProtocol.AGGREGATE)
               .setReceivedFromIp(Ip.ZERO) // indicates local origination
               .setSrcProtocol(RoutingProtocol.AGGREGATE)
+              .setWeight(BgpRoute.DEFAULT_LOCAL_WEIGHT)
               .build();
       Bgpv4Route aggRoute2 = aggRoute1.toBuilder().setNetwork(aggPrefix2).build();
       assertThat(

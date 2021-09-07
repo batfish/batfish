@@ -1,6 +1,7 @@
 package org.batfish.dataplane.protocols;
 
 import static org.batfish.datamodel.BgpRoute.DEFAULT_LOCAL_PREFERENCE;
+import static org.batfish.datamodel.BgpRoute.DEFAULT_LOCAL_WEIGHT;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -325,7 +326,8 @@ public final class BgpProtocolHelper {
             .setOriginatorIp(routerId)
             // TODO: confirm default is IGP for all devices initializing aggregates from BGP RIB
             .setOriginType(OriginType.IGP)
-            .setReceivedFromIp(/* Originated locally. */ Ip.ZERO);
+            .setReceivedFromIp(/* Originated locally. */ Ip.ZERO)
+            .setWeight(DEFAULT_LOCAL_WEIGHT);
     if (attributePolicy == null) {
       return builder.build();
     }
