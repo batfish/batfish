@@ -14,6 +14,7 @@ public abstract class NamedManagementObject extends ManagementObject implements 
     _name = name;
   }
 
+  @Override
   public final @Nonnull String getName() {
     return _name;
   }
