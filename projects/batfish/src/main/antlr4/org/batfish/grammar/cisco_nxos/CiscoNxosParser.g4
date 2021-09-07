@@ -353,11 +353,9 @@ no_ip_null
     | AMT
     | ARP
     | AUTO_DISCARD
-    | DHCP
     | DNS
     | DOMAIN_LIST
     | DOMAIN_LOOKUP
-    | DOMAIN_NAME
     | DSCP_LOP
     | EXTCOMMUNITY_LIST
     | HOST
@@ -367,14 +365,9 @@ no_ip_null
     | MFWD
     | MROUTE
     | MULTICAST
-    | NAME_SERVER
-    | PIM
     | RADIUS
-    | ROUTE
     | ROUTING
     | SOURCE_ROUTE
-    | SLA
-    | TACACS
     | TCP
     | TELNET
     | TFTP
