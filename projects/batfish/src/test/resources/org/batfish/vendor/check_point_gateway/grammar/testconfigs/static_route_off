@@ -21,3 +21,13 @@ set static-route 10.2.0.0/16 off
 # Removing only nexthop
 set static-route 10.3.0.0/16 nexthop gateway address 10.3.0.1 on
 set static-route 10.3.0.0/16 nexthop gateway address 10.3.0.1 off
+# Removing non-existent route/nexthop
+set static-route 10.4.0.0/16 off
+set static-route 10.5.0.0/16 nexthop gateway address 10.5.0.1 off
+#
+# Cannot remove anything other than specific nexthop or the full route
+#set static-route 10.1.0.0/16 nexthop gateway address off
+#set static-route 10.1.0.0/16 nexthop gateway off
+#set static-route 10.1.0.0/16 nexthop off
+# Also cannot remove nexthop types other than gateway using this syntax, e.g.
+#set static-route 10.1.2.0/24 nexthop blackhole off

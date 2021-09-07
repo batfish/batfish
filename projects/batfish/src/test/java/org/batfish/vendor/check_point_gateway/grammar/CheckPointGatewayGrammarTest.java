@@ -67,7 +67,9 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
+import org.batfish.common.matchers.ParseWarningMatchers;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.common.runtime.SnapshotRuntimeData;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -149,9 +151,10 @@ public class CheckPointGatewayGrammarTest {
     Settings settings = new Settings();
     configureBatfishTestSettings(settings);
     CheckPointGatewayCombinedParser parser = new CheckPointGatewayCombinedParser(src, settings);
+    Warnings parseWarnings = new Warnings();
     CheckPointGatewayControlPlaneExtractor extractor =
         new CheckPointGatewayControlPlaneExtractor(
-            src, parser, new Warnings(), new SilentSyntaxCollection());
+            src, parser, parseWarnings, new SilentSyntaxCollection());
     ParserRuleContext tree =
         Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     extractor.processParseTree(TEST_SNAPSHOT, tree);
@@ -159,7 +162,11 @@ public class CheckPointGatewayGrammarTest {
         (CheckPointGatewayConfiguration) extractor.getVendorConfiguration();
     vendorConfiguration.setFilename(TESTCONFIGS_PREFIX + hostname);
     // crash if not serializable
-    return SerializationUtils.clone(vendorConfiguration);
+    CheckPointGatewayConfiguration vc = SerializationUtils.clone(vendorConfiguration);
+    vc.setAnswerElement(new ConvertConfigurationAnswerElement());
+    vc.setRuntimeData(SnapshotRuntimeData.EMPTY_SNAPSHOT_RUNTIME_DATA);
+    vc.setWarnings(parseWarnings);
+    return vc;
   }
 
   private @Nonnull Batfish getBatfishForConfigurationNames(String... configurationNames)
@@ -492,6 +499,16 @@ public class CheckPointGatewayGrammarTest {
     // Removed nexthop shouldn't show up
     StaticRoute route = c.getStaticRoutes().get(prefix);
     assertThat(route.getNexthops(), hasKeys(target));
+
+    assertThat(
+        c.getWarnings().getParseWarnings(),
+        containsInAnyOrder(
+            allOf(
+                hasComment("Cannot remove non-existent static route"),
+                ParseWarningMatchers.hasText(containsString("10.4.0.0/16"))),
+            allOf(
+                hasComment("Cannot remove non-existent static route nexthop"),
+                ParseWarningMatchers.hasText(containsString("nexthop gateway address 10.5.0.1")))));
   }
 
   @Test
