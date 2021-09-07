@@ -219,8 +219,9 @@ public final class FortiosBgpConversions {
     // TODO Admin distances can be explicitly configured on the process level
     int ebgpAdmin = RoutingProtocol.BGP.getDefaultAdministrativeCost(c.getConfigurationFormat());
     int ibgpAdmin = RoutingProtocol.IBGP.getDefaultAdministrativeCost(c.getConfigurationFormat());
+    int localAdmin = ibgpAdmin; // TODO: is this correct?
     org.batfish.datamodel.BgpProcess viProc =
-        new org.batfish.datamodel.BgpProcess(routerId, ebgpAdmin, ibgpAdmin);
+        new org.batfish.datamodel.BgpProcess(routerId, ebgpAdmin, ibgpAdmin, localAdmin);
     viProc.setMultipathEbgp(bgpProcess.getEbgpMultipathEffective());
     viProc.setMultipathIbgp(bgpProcess.getIbgpMultipathEffective());
     originatedSpaces.forEach(viProc::addToOriginationSpace);

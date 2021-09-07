@@ -4,6 +4,7 @@ import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PAT
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.EXCEPT_FIRST;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasAdministrativeCost;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasTag;
 import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasAllowRemoteAsOut;
@@ -24,10 +25,12 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.main.BatfishTestUtils.getBatfishForTextConfigs;
+import static org.batfish.representation.cisco_nxos.BgpVrfIpAddressFamilyConfiguration.DEFAULT_DISTANCE_LOCAL_BGP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.BGP_LOCAL_WEIGHT;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
@@ -398,5 +401,28 @@ public class NxosBgpTest {
                 hasPrefix(Prefix.parse("1.1.1.1/32")),
                 hasOriginType(OriginType.IGP),
                 hasWeight(BGP_LOCAL_WEIGHT))));
+  }
+
+  // Aggregate routes are created with local admin distance
+  @Test
+  public void testAggregates() throws Exception {
+    String hostname = "nxos-bgp-aggregate";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.loadConfigurations(batfish.getSnapshot());
+    batfish.computeDataPlane(batfish.getSnapshot()); // compute and cache the dataPlane
+    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
+
+    Set<Bgpv4Route> routes = dp.getBgpRoutes().get(hostname, "default");
+    assertThat(
+        routes,
+        containsInAnyOrder(
+            // redistributed static route is in BGP RIB (but suppressed)
+            hasPrefix(Prefix.parse("1.1.1.1/32")),
+            // aggregate route is generated with correct attributes
+            allOf(
+                hasPrefix(Prefix.parse("1.1.0.0/16")),
+                hasOriginType(OriginType.IGP),
+                // TODO  hasWeight(BGP_LOCAL_WEIGHT),
+                hasAdministrativeCost(DEFAULT_DISTANCE_LOCAL_BGP))));
   }
 }

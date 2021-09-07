@@ -126,6 +126,17 @@ public final class IspModelingUtils {
     return "To-" + remoteHostname + '-' + remoteInterfaceName;
   }
 
+  @VisibleForTesting
+  static BgpProcess makeBgpProcess(Ip routerId, Vrf vrf) {
+    return BgpProcess.builder()
+        .setRouterId(routerId)
+        .setVrf(vrf)
+        .setEbgpAdminCost(20)
+        .setIbgpAdminCost(200)
+        .setLocalAdminCost(200)
+        .build();
+  }
+
   public static class ModeledNodes {
 
     @Nonnull private final Map<String, Configuration> _configurations;
@@ -317,12 +328,7 @@ public final class IspModelingUtils {
                         .collect(ImmutableSet.toImmutableSet()))
                 .build());
 
-    BgpProcess bgpProcess =
-        BgpProcess.builder()
-            .setRouterId(INTERNET_OUT_ADDRESS)
-            .setVrf(defaultVrf)
-            .setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS)
-            .build();
+    BgpProcess bgpProcess = makeBgpProcess(INTERNET_OUT_ADDRESS, defaultVrf);
     bgpProcess.setMultipathEbgp(true);
     bgpProcess.setMultipathEquivalentAsPathMatchMode(
         MultipathEquivalentAsPathMatchMode.PATH_LENGTH);
@@ -565,15 +571,12 @@ public final class IspModelingUtils {
 
     // using the lowest IP among the InterfaceAddresses as the router ID
     BgpProcess bgpProcess =
-        nf.bgpProcessBuilder()
-            .setRouterId(
-                ispInfo.getRemotes().stream()
-                    .map(Remote::getIspIfaceIp)
-                    .min(Ip::compareTo)
-                    .orElse(null))
-            .setVrf(ispConfiguration.getDefaultVrf())
-            .setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS)
-            .build();
+        makeBgpProcess(
+            ispInfo.getRemotes().stream()
+                .map(Remote::getIspIfaceIp)
+                .min(Ip::compareTo)
+                .orElse(null),
+            ispConfiguration.getDefaultVrf());
     bgpProcess.setMultipathEbgp(true);
 
     // Get the traffic filtering policy for this ISP.

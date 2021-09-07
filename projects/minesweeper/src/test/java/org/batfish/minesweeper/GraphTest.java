@@ -53,7 +53,7 @@ public class GraphTest {
     Vrf.Builder vb = _nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
     Interface.Builder ib = _nf.interfaceBuilder();
     BgpProcess.Builder bpb =
-        _nf.bgpProcessBuilder().setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS);
+        _nf.bgpProcessBuilder().setEbgpAdminCost(20).setIbgpAdminCost(200).setLocalAdminCost(200);
     BgpActivePeerConfig.Builder bnb = _nf.bgpNeighborBuilder().setLocalAs(1L).setRemoteAs(1L);
 
     Configuration c1 = cb.setHostname("r1").build();

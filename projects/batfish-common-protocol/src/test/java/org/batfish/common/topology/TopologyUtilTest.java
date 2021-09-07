@@ -1285,14 +1285,12 @@ public final class TopologyUtilTest {
     Vrf vH2 = _vb.setOwner(cH2).build();
     _ib.setOwner(cH2).setVrf(vH2).setName(i1Name).build(); // h2 => b2
 
-    BgpProcess.Builder pb =
-        _nf.bgpProcessBuilder().setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS);
-
     Configuration cB1 = _cb.setHostname(b1Name).build();
     Vrf vB1 = _vb.setOwner(cB1).build();
     _ib.setOwner(cB1).setVrf(vB1).setName(i1Name).build(); // b1 => h1
     _ib.setName(i2Name).setAddress(b1i2Address).build(); // b1 => INTERNET
-    BgpProcess b1Proc = pb.setRouterId(b1i2Address.getIp()).setVrf(vB1).build();
+    BgpProcess b1Proc = BgpProcess.testBgpProcess(b1i2Address.getIp());
+    vB1.setBgpProcess(b1Proc);
     _nf.bgpNeighborBuilder()
         .setBgpProcess(b1Proc)
         .setLocalAs(asB1)
@@ -1305,7 +1303,8 @@ public final class TopologyUtilTest {
     Vrf vB2 = _vb.setOwner(cB2).build();
     _ib.setOwner(cB2).setVrf(vB2).setName(i1Name).setAddress(null).build(); // b2 => h2
     _ib.setName(i2Name).setAddress(b2i2Address).build(); // B2 => INTERNET
-    BgpProcess b2Proc = pb.setRouterId(b2i2Address.getIp()).setVrf(vB2).build();
+    BgpProcess b2Proc = BgpProcess.testBgpProcess(b2i2Address.getIp());
+    vB2.setBgpProcess(b2Proc);
     _nf.bgpNeighborBuilder()
         .setBgpProcess(b2Proc)
         .setLocalAs(asB2)

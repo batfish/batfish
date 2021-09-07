@@ -14,6 +14,9 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.routing_policy.Common.initDenyAllBgpRedistributionPolicy;
 import static org.batfish.datamodel.routing_policy.Common.matchDefaultRoute;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
+import static org.batfish.representation.cisco_nxos.BgpVrfIpAddressFamilyConfiguration.DEFAULT_DISTANCE_EBGP;
+import static org.batfish.representation.cisco_nxos.BgpVrfIpAddressFamilyConfiguration.DEFAULT_DISTANCE_IBGP;
+import static org.batfish.representation.cisco_nxos.BgpVrfIpAddressFamilyConfiguration.DEFAULT_DISTANCE_LOCAL_BGP;
 import static org.batfish.representation.cisco_nxos.Conversions.getVrfForL3Vni;
 import static org.batfish.representation.cisco_nxos.Conversions.inferRouterId;
 import static org.batfish.representation.cisco_nxos.Conversions.toBgpAggregate;
@@ -531,7 +534,9 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                                 _c.getAllInterfaces(viVrf.getName()),
                                 _w,
                                 "BGP process"))
-                        .setAdminCostsToVendorDefaults(_c.getConfigurationFormat())
+                        .setEbgpAdminCost(DEFAULT_DISTANCE_EBGP)
+                        .setIbgpAdminCost(DEFAULT_DISTANCE_IBGP)
+                        .setLocalAdminCost(DEFAULT_DISTANCE_LOCAL_BGP)
                         .setRedistributionPolicy(initDenyAllBgpRedistributionPolicy(_c))
                         .build());
               }
@@ -548,11 +553,23 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       // Do nothing, but rely on the VRF having an undefined reference warning.
       return;
     }
-    int ebgpAdmin = RoutingProtocol.BGP.getDefaultAdministrativeCost(c.getConfigurationFormat());
-    int ibgpAdmin = RoutingProtocol.IBGP.getDefaultAdministrativeCost(c.getConfigurationFormat());
+
+    // Admin distances are per-AF on NX-OS. Use the v4 unicast values for now.
+    int ebgpAdmin =
+        Optional.ofNullable(nxBgpVrf.getIpv4UnicastAddressFamily())
+            .map(BgpVrfIpAddressFamilyConfiguration::getDistanceEbgp)
+            .orElse(DEFAULT_DISTANCE_EBGP);
+    int ibgpAdmin =
+        Optional.ofNullable(nxBgpVrf.getIpv4UnicastAddressFamily())
+            .map(BgpVrfIpAddressFamilyConfiguration::getDistanceIbgp)
+            .orElse(DEFAULT_DISTANCE_IBGP);
+    int localAdmin =
+        Optional.ofNullable(nxBgpVrf.getIpv4UnicastAddressFamily())
+            .map(BgpVrfIpAddressFamilyConfiguration::getDistanceLocal)
+            .orElse(DEFAULT_DISTANCE_LOCAL_BGP);
     org.batfish.datamodel.BgpProcess newBgpProcess =
         new org.batfish.datamodel.BgpProcess(
-            Conversions.getBgpRouterId(nxBgpVrf, _c, v, _w), ebgpAdmin, ibgpAdmin);
+            Conversions.getBgpRouterId(nxBgpVrf, _c, v, _w), ebgpAdmin, ibgpAdmin, localAdmin);
     newBgpProcess.setClusterListAsIbgpCost(true);
     if (nxBgpVrf.getBestpathCompareRouterId()) {
       newBgpProcess.setTieBreaker(BgpTieBreaker.ROUTER_ID);

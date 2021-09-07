@@ -62,7 +62,6 @@ import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
@@ -137,6 +136,10 @@ import org.batfish.datamodel.vxlan.Vni;
 @ParametersAreNonnullByDefault
 public final class CumulusConversions {
   private static final Prefix LOOPBACK_PREFIX = Prefix.parse("127.0.0.0/8");
+
+  public static final int DEFAULT_EBGP_ADMIN = 20;
+  public static final int DEFAULT_IBGP_ADMIN = 200;
+  public static final int DEFAULT_LOCAL_ADMIN = 200;
 
   public static final int DEFAULT_STATIC_ROUTE_ADMINISTRATIVE_DISTANCE = 1;
   public static final int DEFAULT_STATIC_ROUTE_METRIC = 0;
@@ -302,7 +305,9 @@ public final class CumulusConversions {
                 vrf.setBgpProcess(
                     org.batfish.datamodel.BgpProcess.builder()
                         .setRouterId(c.getDefaultVrf().getBgpProcess().getRouterId())
-                        .setAdminCostsToVendorDefaults(ConfigurationFormat.CUMULUS_NCLU)
+                        .setEbgpAdminCost(DEFAULT_EBGP_ADMIN)
+                        .setIbgpAdminCost(DEFAULT_IBGP_ADMIN)
+                        .setLocalAdminCost(DEFAULT_LOCAL_ADMIN)
                         .setRedistributionPolicy(initDenyAllBgpRedistributionPolicy(c))
                         .build());
               }
@@ -335,10 +340,9 @@ public final class CumulusConversions {
     if (routerId == null) {
       routerId = inferRouterId(c);
     }
-    int ebgpAdmin = RoutingProtocol.BGP.getDefaultAdministrativeCost(c.getConfigurationFormat());
-    int ibgpAdmin = RoutingProtocol.IBGP.getDefaultAdministrativeCost(c.getConfigurationFormat());
     org.batfish.datamodel.BgpProcess newProc =
-        new org.batfish.datamodel.BgpProcess(routerId, ebgpAdmin, ibgpAdmin);
+        new org.batfish.datamodel.BgpProcess(
+            routerId, DEFAULT_EBGP_ADMIN, DEFAULT_IBGP_ADMIN, DEFAULT_LOCAL_ADMIN);
     newProc.setMultipathEquivalentAsPathMatchMode(EXACT_PATH);
     /*
       BGP multipath enabled by default

@@ -14,14 +14,20 @@ import javax.annotation.Nullable;
  * code.
  */
 public abstract class BgpVrfIpAddressFamilyConfiguration extends BgpVrfAddressFamilyConfiguration {
+  // documented under "address-family (BGP router)" and NX-OS CLI
+  public static final int DEFAULT_DISTANCE_EBGP = 20;
+  // documented under "address-family (BGP router)" and NX-OS CLI
+  public static final int DEFAULT_DISTANCE_IBGP = 200;
+  // documented under "address-family (BGP router)" and NX-OS CLI
+  public static final int DEFAULT_DISTANCE_LOCAL_BGP = 220;
 
   public BgpVrfIpAddressFamilyConfiguration() {
     _clientToClientReflection = false; // disabled by default
     _defaultMetric = null; // there is no default, and metric must be set to redistribute routes
     _defaultInformationOriginate = false; // disabled by default
-    _distanceEbgp = 20; // documented under "address-family (BGP router)" and NX-OS CLI
-    _distanceIbgp = 200; // documented under "address-family (BGP router)" and NX-OS CLI
-    _distanceLocal = 220; // documented under "address-family (BGP router)" and NX-OS CLI
+    _distanceEbgp = DEFAULT_DISTANCE_EBGP;
+    _distanceIbgp = DEFAULT_DISTANCE_IBGP;
+    _distanceLocal = DEFAULT_DISTANCE_LOCAL_BGP;
     _maximumPathsEbgp = 1; // multipath disabled by default
     _maximumPathsIbgp = 1; // multipath disabled by default
     _redistributionPolicies = new HashMap<>();

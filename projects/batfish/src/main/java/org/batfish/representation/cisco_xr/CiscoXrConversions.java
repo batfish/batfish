@@ -17,6 +17,7 @@ import static org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
 import static org.batfish.datamodel.routing_policy.Common.generateSuppressionPolicy;
 import static org.batfish.datamodel.routing_policy.statement.Statements.ExitAccept;
 import static org.batfish.datamodel.routing_policy.statement.Statements.ExitReject;
+import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.DEFAULT_EBGP_ADMIN;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeAbfIpv4PolicyName;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.toJavaRegex;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.IPV4_ACCESS_LIST;
@@ -54,7 +55,6 @@ import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
@@ -2177,8 +2177,7 @@ public class CiscoXrConversions {
   private static BgpLeakConfig bgpLeakConfig(Iterable<ExtendedCommunity> attachRouteTargets) {
     return BgpLeakConfig.builder()
         // TODO: input and honor result of 'bgp distance' command argument 3 (local BGP admin)
-        .setAdmin(
-            RoutingProtocol.BGP.getDefaultAdministrativeCost(ConfigurationFormat.CISCO_IOS_XR))
+        .setAdmin(DEFAULT_EBGP_ADMIN)
         .setAttachRouteTargets(attachRouteTargets)
         .setWeight(BGP_VRF_LEAK_IGP_WEIGHT)
         .build();

@@ -6,6 +6,7 @@ import static org.batfish.common.util.isp.IspModelingUtils.installRoutingPolicyA
 import static org.batfish.representation.aws.AwsConfiguration.LINK_LOCAL_IP;
 import static org.batfish.representation.aws.Utils.ACCEPT_ALL_BGP;
 import static org.batfish.representation.aws.Utils.connectGatewayToVpc;
+import static org.batfish.representation.aws.Utils.makeBgpProcess;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -25,7 +26,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
@@ -128,12 +128,7 @@ final class VpnGateway implements AwsVpcEntity, Serializable {
       LinkLocalAddress loopbackBgpAddress = LinkLocalAddress.of(LINK_LOCAL_IP);
       Utils.newInterface(loopbackBgp, cfgNode, loopbackBgpAddress, "BGP loopback");
 
-      BgpProcess proc =
-          BgpProcess.builder()
-              .setRouterId(loopbackBgpAddress.getIp())
-              .setVrf(cfgNode.getDefaultVrf())
-              .setAdminCostsToVendorDefaults(ConfigurationFormat.AWS)
-              .build();
+      BgpProcess proc = makeBgpProcess(loopbackBgpAddress.getIp(), cfgNode.getDefaultVrf());
       proc.setMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.EXACT_PATH);
 
       PrefixSpace originationSpace = new PrefixSpace();

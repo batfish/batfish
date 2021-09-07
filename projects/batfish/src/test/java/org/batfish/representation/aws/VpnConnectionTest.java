@@ -8,6 +8,7 @@ import static org.batfish.representation.aws.AwsConfiguration.vpnExternalInterfa
 import static org.batfish.representation.aws.AwsConfiguration.vpnInterfaceName;
 import static org.batfish.representation.aws.AwsConfiguration.vpnTunnelId;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_VPN_CONNECTIONS;
+import static org.batfish.representation.aws.Utils.makeBgpProcess;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
 import static org.batfish.representation.aws.VpnConnection.EXPORT_CONNECTED_STATEMENT;
 import static org.batfish.representation.aws.VpnConnection.VPN_TO_BACKBONE_EXPORT_POLICY_NAME;
@@ -33,7 +34,6 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
@@ -215,12 +215,7 @@ public class VpnConnectionTest {
     Configuration vgwConfig = Utils.newAwsConfiguration(vgw.getId(), "awstest");
     VpnConnection.initVpnConnectionsInfrastructure(vgwConfig);
     Vrf vpnVrf = Vrf.builder().setOwner(vgwConfig).setName("vpn").build();
-    BgpProcess bgpProc =
-        BgpProcess.builder()
-            .setRouterId(Ip.parse("1.1.1.1"))
-            .setVrf(vpnVrf)
-            .setAdminCostsToVendorDefaults(ConfigurationFormat.AWS)
-            .build();
+    BgpProcess bgpProc = makeBgpProcess(Ip.parse("1.1.1.1"), vpnVrf);
 
     IpsecTunnel ipsecTunnel =
         new IpsecTunnel(

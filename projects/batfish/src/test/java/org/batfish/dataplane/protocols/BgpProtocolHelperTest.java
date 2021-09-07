@@ -47,11 +47,7 @@ public class BgpProtocolHelperTest {
   private static final Ip DEST_IP = Ip.parse("3.3.3.3");
   private static final Prefix DEST_NETWORK = Prefix.parse("4.4.4.0/24");
   private static final Ip ORIGINATOR_IP = Ip.parse("1.1.1.1");
-  private final BgpProcess _process =
-      BgpProcess.builder()
-          .setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS)
-          .setRouterId(ORIGINATOR_IP)
-          .build();
+  private final BgpProcess _process = BgpProcess.testBgpProcess(ORIGINATOR_IP);
   private Builder _baseBgpRouteBuilder;
 
   /** Reset route builder */
