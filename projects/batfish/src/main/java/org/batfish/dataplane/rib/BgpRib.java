@@ -21,10 +21,14 @@ import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.GenericRibReadOnly;
-import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.route.nh.NextHopInterface;
+import org.batfish.datamodel.route.nh.NextHopIp;
+import org.batfish.datamodel.route.nh.NextHopVisitor;
+import org.batfish.datamodel.route.nh.NextHopVrf;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 
 /**
@@ -33,6 +37,8 @@ import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
  */
 @ParametersAreNonnullByDefault
 public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
+
+  private static final int MAX_RESOLUTION_DEPTH = 10;
 
   /** Main RIB to use for IGP cost estimation */
   @Nullable protected final GenericRibReadOnly<AnnotatedRoute<AbstractRoute>> _mainRib;
@@ -293,14 +299,45 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
     if (_mainRib == null) {
       return Long.MAX_VALUE;
     }
+    return getIgpCostToNextHopIpHelper(route, 0);
+  }
 
-    Ip nextHopIp = route.getNextHopIp();
-    if (Ip.AUTO.equals(nextHopIp)) {
+  private long getIgpCostToNextHopIpHelper(AbstractRoute route, int depth) {
+    if (depth > MAX_RESOLUTION_DEPTH) {
       return Long.MAX_VALUE;
     }
-    // TODO: implement resolution restriction
-    Set<AnnotatedRoute<AbstractRoute>> s = _mainRib.longestPrefixMatch(nextHopIp, alwaysTrue());
-    return s.isEmpty() ? Long.MAX_VALUE : s.iterator().next().getAbstractRoute().getMetric();
+    assert _mainRib != null;
+    return route
+        .getNextHop()
+        .accept(
+            new NextHopVisitor<Long>() {
+              @Override
+              public Long visitNextHopIp(NextHopIp nextHopIp) {
+                // TODO: implement resolution restriction
+                Set<AnnotatedRoute<AbstractRoute>> s =
+                    _mainRib.longestPrefixMatch(nextHopIp.getIp(), alwaysTrue());
+                return s.isEmpty()
+                    ? Long.MAX_VALUE
+                    : getIgpCostToNextHopIpHelper(
+                        s.iterator().next().getAbstractRoute(), depth + 1);
+              }
+
+              @Override
+              public Long visitNextHopInterface(NextHopInterface nextHopInterface) {
+                return route.getMetric();
+              }
+
+              @Override
+              public Long visitNextHopDiscard(NextHopDiscard nextHopDiscard) {
+                return Long.MAX_VALUE;
+              }
+
+              @Override
+              public Long visitNextHopVrf(NextHopVrf nextHopVrf) {
+                // TODO: something better?
+                return Long.MAX_VALUE;
+              }
+            });
   }
 
   /**
