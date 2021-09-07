@@ -1139,6 +1139,7 @@ public class AristaGrammarTest {
             .setProtocol(RoutingProtocol.AGGREGATE)
             .setReceivedFromIp(Ip.ZERO) // indicates local origination
             .setSrcProtocol(RoutingProtocol.AGGREGATE)
+            .setWeight(DEFAULT_LOCAL_BGP_WEIGHT)
             .build();
     Bgpv4Route aggRoute2 = aggRoute1.toBuilder().setNetwork(aggPrefix2).build();
     Bgpv4Route aggRoute4General = aggRoute1.toBuilder().setNetwork(aggPrefix4General).build();
@@ -1211,6 +1212,7 @@ public class AristaGrammarTest {
               .setProtocol(RoutingProtocol.AGGREGATE)
               .setReceivedFromIp(Ip.ZERO) // indicates local origination
               .setSrcProtocol(RoutingProtocol.AGGREGATE)
+              .setWeight(DEFAULT_LOCAL_BGP_WEIGHT)
               .build();
       Bgpv4Route aggRoute2 = aggRoute1.toBuilder().setNetwork(aggPrefix2).build();
       assertThat(

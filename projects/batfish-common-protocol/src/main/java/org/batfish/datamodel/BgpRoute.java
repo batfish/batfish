@@ -264,6 +264,9 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   /** Default local preference for a BGP route if one is not set explicitly */
   public static final long DEFAULT_LOCAL_PREFERENCE = 100L;
 
+  /** Default weight for a local BGP route. */
+  public static final int DEFAULT_LOCAL_WEIGHT = 32768;
+
   public static final String PROP_AS_PATH = "asPath";
   static final String PROP_CLUSTER_LIST = "clusterList";
   public static final String PROP_COMMUNITIES = "communities";
