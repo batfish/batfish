@@ -8,6 +8,7 @@ import static org.batfish.representation.aws.Utils.ACCEPT_ALL_BGP_AND_STATIC;
 import static org.batfish.representation.aws.Utils.addStaticRoute;
 import static org.batfish.representation.aws.Utils.connect;
 import static org.batfish.representation.aws.Utils.interfaceNameToRemote;
+import static org.batfish.representation.aws.Utils.makeBgpProcess;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -31,7 +32,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.LinkLocalAddress;
@@ -571,12 +571,9 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
         "BGP loopback for " + vrf.getName());
 
     BgpProcess proc =
-        BgpProcess.builder()
-            .setRouterId(loopbackBgpAddress.getIp())
-            .setVrf(vrf)
-            .setAdminCostsToVendorDefaults(ConfigurationFormat.AWS)
-            .build();
-    // TODO: check if vpn ecmp support setting in transit gateway has an impact here
+        makeBgpProcess(
+            loopbackBgpAddress.getIp(),
+            vrf); // TODO: check if vpn ecmp support setting in transit gateway has an impact here
     proc.setMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.EXACT_PATH);
 
     // TODO: confirm if this is the policy we really want

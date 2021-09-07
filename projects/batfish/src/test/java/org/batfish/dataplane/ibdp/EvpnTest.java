@@ -82,16 +82,8 @@ public class EvpnTest {
 
     Vrf vrf1 = nf.vrfBuilder().setOwner(c1).setName(DEFAULT_VRF_NAME).build();
     Vrf vrf2 = nf.vrfBuilder().setOwner(c2).setName(DEFAULT_VRF_NAME).build();
-    BgpProcess bgpProcess1 =
-        nf.bgpProcessBuilder()
-            .setRouterId(ipNode1)
-            .setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS)
-            .build();
-    BgpProcess bgpProcess2 =
-        nf.bgpProcessBuilder()
-            .setRouterId(ipNode2)
-            .setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS)
-            .build();
+    BgpProcess bgpProcess1 = BgpProcess.testBgpProcess(ipNode1);
+    BgpProcess bgpProcess2 = BgpProcess.testBgpProcess(ipNode2);
     vrf1.setBgpProcess(bgpProcess1);
     vrf2.setBgpProcess(bgpProcess2);
 

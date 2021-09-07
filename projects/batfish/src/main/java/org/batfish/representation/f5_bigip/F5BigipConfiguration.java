@@ -1309,10 +1309,13 @@ public class F5BigipConfiguration extends VendorConfiguration {
   }
 
   private @Nonnull org.batfish.datamodel.BgpProcess toBgpProcess(BgpProcess proc) {
-    int ebgpAdmin = RoutingProtocol.BGP.getDefaultAdministrativeCost(_c.getConfigurationFormat());
-    int ibgpAdmin = RoutingProtocol.IBGP.getDefaultAdministrativeCost(_c.getConfigurationFormat());
+    // TODO: verify these admin distances
+    int ebgpAdmin = 20;
+    int ibgpAdmin = 200;
+    int localAdmin = 200;
     org.batfish.datamodel.BgpProcess newProc =
-        new org.batfish.datamodel.BgpProcess(getBgpRouterId(proc), ebgpAdmin, ibgpAdmin);
+        new org.batfish.datamodel.BgpProcess(
+            getBgpRouterId(proc), ebgpAdmin, ibgpAdmin, localAdmin);
 
     // TODO: verify correct method of determining whether two AS-paths are equivalent
     newProc.setMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.EXACT_PATH);

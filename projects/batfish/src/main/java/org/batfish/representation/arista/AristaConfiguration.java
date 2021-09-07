@@ -258,6 +258,10 @@ public final class AristaConfiguration extends VendorConfiguration {
           .put("Wideband-Cable", "Wideband-Cable")
           .build();
 
+  /* https://www.arista.com/en/um-eos/eos-border-gateway-protocol-bgp#xx1116652 */
+  @VisibleForTesting public static final int DEFAULT_EBGP_ADMIN = 200;
+  @VisibleForTesting public static final int DEFAULT_IBGP_ADMIN = 200;
+  @VisibleForTesting public static final int DEFAULT_LOCAL_BGP_ADMIN = 200;
   @VisibleForTesting public static final int DEFAULT_LOCAL_BGP_WEIGHT = 32768;
   static final boolean DEFAULT_VRRP_PREEMPT = true;
 
@@ -780,20 +784,13 @@ public final class AristaConfiguration extends VendorConfiguration {
       Configuration c, AristaBgpProcess bgpGlobal, AristaBgpVrf bgpVrf) {
     String vrfName = bgpVrf.getName();
     org.batfish.datamodel.Vrf v = c.getVrfs().get(vrfName);
-    int ebgpAdmin =
-        firstNonNull(
-            bgpVrf.getEbgpAdminDistance(),
-            RoutingProtocol.BGP.getDefaultAdministrativeCost(c.getConfigurationFormat()));
-    int ibgpAdmin =
-        firstNonNull(
-            bgpVrf.getIbgpAdminDistance(),
-            RoutingProtocol.IBGP.getDefaultAdministrativeCost(c.getConfigurationFormat()));
     org.batfish.datamodel.BgpProcess newBgpProcess =
         new org.batfish.datamodel.BgpProcess(
             AristaConversions.getBgpRouterId(
                 bgpVrf, v.getName(), c.getAllInterfaces(v.getName()), _w),
-            ebgpAdmin,
-            ibgpAdmin);
+            firstNonNull(bgpVrf.getEbgpAdminDistance(), DEFAULT_EBGP_ADMIN),
+            firstNonNull(bgpVrf.getIbgpAdminDistance(), DEFAULT_IBGP_ADMIN),
+            firstNonNull(bgpVrf.getLocalAdminDistance(), DEFAULT_LOCAL_BGP_ADMIN));
 
     boolean multipath = firstNonNull(bgpVrf.getMaxPaths(), 1) > 1;
     newBgpProcess.setMultipathEbgp(multipath);
@@ -2457,7 +2454,9 @@ public final class AristaConfiguration extends VendorConfiguration {
                   viVrf.setBgpProcess(
                       org.batfish.datamodel.BgpProcess.builder()
                           .setRouterId(Ip.ZERO)
-                          .setAdminCostsToVendorDefaults(ConfigurationFormat.ARISTA)
+                          .setEbgpAdminCost(DEFAULT_EBGP_ADMIN)
+                          .setIbgpAdminCost(DEFAULT_IBGP_ADMIN)
+                          .setLocalAdminCost(DEFAULT_LOCAL_BGP_ADMIN)
                           .setRedistributionPolicy(initDenyAllBgpRedistributionPolicy(c))
                           .build());
                 }
@@ -2479,7 +2478,9 @@ public final class AristaConfiguration extends VendorConfiguration {
                   vrf.setBgpProcess(
                       org.batfish.datamodel.BgpProcess.builder()
                           .setRouterId(Ip.ZERO)
-                          .setAdminCostsToVendorDefaults(ConfigurationFormat.ARISTA)
+                          .setEbgpAdminCost(DEFAULT_EBGP_ADMIN)
+                          .setIbgpAdminCost(DEFAULT_IBGP_ADMIN)
+                          .setLocalAdminCost(DEFAULT_LOCAL_BGP_ADMIN)
                           .build());
                 }
               });

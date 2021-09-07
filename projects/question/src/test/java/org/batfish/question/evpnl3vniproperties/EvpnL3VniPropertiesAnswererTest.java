@@ -80,12 +80,8 @@ public class EvpnL3VniPropertiesAnswererTest {
     nf.vrfBuilder().setName("vrf1").setOwner(c1).build();
     Vrf defaultVrf = nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME).setOwner(c1).build();
     Ip localIp = Ip.parse("1.1.1.1");
-    BgpProcess bgpProc =
-        nf.bgpProcessBuilder()
-            .setVrf(defaultVrf)
-            .setRouterId(localIp)
-            .setAdminCostsToVendorDefaults(ConfigurationFormat.ARISTA)
-            .build();
+    BgpProcess bgpProc = BgpProcess.testBgpProcess(localIp);
+    defaultVrf.setBgpProcess(bgpProc);
     int vni = 100001;
     Layer3VniConfig vniConfig =
         Layer3VniConfig.builder()

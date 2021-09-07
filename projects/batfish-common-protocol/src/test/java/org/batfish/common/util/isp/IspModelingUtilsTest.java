@@ -26,7 +26,9 @@ import static org.batfish.common.util.isp.IspModelingUtils.installRoutingPolicyF
 import static org.batfish.common.util.isp.IspModelingUtils.internetToIspInterfaceName;
 import static org.batfish.common.util.isp.IspModelingUtils.ispNameConflicts;
 import static org.batfish.common.util.isp.IspModelingUtils.ispToRemoteInterfaceName;
+import static org.batfish.common.util.isp.IspModelingUtils.makeBgpProcess;
 import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
+import static org.batfish.datamodel.BgpProcess.testBgpProcess;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasInterfaceNeighbors;
@@ -136,7 +138,7 @@ public class IspModelingUtilsTest {
         .setOwner(configuration)
         .setAddress(ConcreteInterfaceAddress.create(Ip.parse("2.2.2.2"), 24))
         .build();
-    BgpProcess bgpProcess = new BgpProcess(Ip.ZERO, ConfigurationFormat.CISCO_IOS);
+    BgpProcess bgpProcess = testBgpProcess(Ip.ZERO);
     configuration.getDefaultVrf().setBgpProcess(bgpProcess);
     BgpPeerConfig.Builder<?, ?> peer =
         bgpUnnumbered
@@ -202,7 +204,7 @@ public class IspModelingUtilsTest {
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
 
-    BgpProcess bgpProcess = new BgpProcess(Ip.ZERO, ConfigurationFormat.CISCO_IOS);
+    BgpProcess bgpProcess = testBgpProcess(Ip.ZERO);
     addBgpPeerToIsp(remotePeerConfig, "iface", bgpProcess);
     BgpActivePeerConfig reversedPeer = getOnlyElement(bgpProcess.getActiveNeighbors().values());
 
@@ -235,7 +237,7 @@ public class IspModelingUtilsTest {
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
 
-    BgpProcess bgpProcess = new BgpProcess(Ip.ZERO, ConfigurationFormat.CISCO_IOS);
+    BgpProcess bgpProcess = testBgpProcess(Ip.ZERO);
     addBgpPeerToIsp(remotePeerConfig, "iface", bgpProcess);
     BgpActivePeerConfig reversedPeer = getOnlyElement(bgpProcess.getActiveNeighbors().values());
 
@@ -265,7 +267,7 @@ public class IspModelingUtilsTest {
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
 
-    BgpProcess bgpProcess = new BgpProcess(Ip.ZERO, ConfigurationFormat.CISCO_IOS);
+    BgpProcess bgpProcess = testBgpProcess(Ip.ZERO);
     addBgpPeerToIsp(remotePeerConfig, "iface", bgpProcess);
     BgpUnnumberedPeerConfig reversedPeer =
         getOnlyElement(bgpProcess.getInterfaceNeighbors().values());
@@ -389,7 +391,7 @@ public class IspModelingUtilsTest {
     assertThat(toInternet.getOutgoingFilter().getName(), equalTo(TO_INTERNET_ACL_NAME));
 
     // compute the reverse config
-    BgpProcess bgpProcess = new BgpProcess(Ip.ZERO, ConfigurationFormat.CISCO_IOS);
+    BgpProcess bgpProcess = testBgpProcess(Ip.ZERO);
     addBgpPeerToIsp(remotePeerConfig, "iface", bgpProcess);
     BgpActivePeerConfig expectedIspPeerConfig =
         getOnlyElement(bgpProcess.getActiveNeighbors().values());
@@ -459,7 +461,7 @@ public class IspModelingUtilsTest {
             hasVrf(DEFAULT_VRF_NAME, hasBgpProcess(hasMultipathEbgp(true)))));
 
     // compute the reverse config
-    BgpProcess bgpProcess = new BgpProcess(Ip.ZERO, ConfigurationFormat.CISCO_IOS);
+    BgpProcess bgpProcess = testBgpProcess(Ip.ZERO);
     addBgpPeerToIsp(
         remotePeerConfig, ispToRemoteInterfaceName(remoteHostname, remoteIface), bgpProcess);
     BgpUnnumberedPeerConfig expectedIspPeerConfig =
@@ -696,7 +698,7 @@ public class IspModelingUtilsTest {
             .setLocalAs(2L)
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
-    BgpProcess bgpProcess = new BgpProcess(Ip.ZERO, ConfigurationFormat.CISCO_IOS);
+    BgpProcess bgpProcess = testBgpProcess(Ip.ZERO);
     bgpProcess.getActiveNeighbors().put(Ip.parse("1.1.1.1"), peer);
     ispConfiguration.getDefaultVrf().setBgpProcess(bgpProcess);
 
@@ -779,7 +781,7 @@ public class IspModelingUtilsTest {
             .setLocalAs(2L)
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
-    BgpProcess bgpProcess = new BgpProcess(Ip.ZERO, ConfigurationFormat.CISCO_IOS);
+    BgpProcess bgpProcess = testBgpProcess(Ip.ZERO);
     bgpProcess.getActiveNeighbors().put(Ip.parse("1.1.1.1"), peer);
     configuration.getDefaultVrf().setBgpProcess(bgpProcess);
 
@@ -821,7 +823,7 @@ public class IspModelingUtilsTest {
             .setLocalAs(2L)
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
-    BgpProcess bgpProcess = new BgpProcess(Ip.ZERO, ConfigurationFormat.CISCO_IOS);
+    BgpProcess bgpProcess = testBgpProcess(Ip.ZERO);
     bgpProcess.getActiveNeighbors().put(Ip.parse("1.1.1.1"), peer);
     configuration.getDefaultVrf().setBgpProcess(bgpProcess);
 
@@ -1018,8 +1020,6 @@ public class IspModelingUtilsTest {
   @Test
   public void testInterfaceNamesIsp() {
     NetworkFactory nf = new NetworkFactory();
-    BgpProcess.Builder pb =
-        nf.bgpProcessBuilder().setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS);
 
     Configuration.Builder cb = nf.configurationBuilder();
     Configuration configuration1 =
@@ -1031,7 +1031,7 @@ public class IspModelingUtilsTest {
         .setAddress(ConcreteInterfaceAddress.create(Ip.parse("1.1.1.1"), 24))
         .build();
     Vrf vrfConf1 = nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(configuration1).build();
-    BgpProcess bgpProcess1 = pb.setRouterId(Ip.parse("1.1.1.1")).setVrf(vrfConf1).build();
+    BgpProcess bgpProcess1 = makeBgpProcess(Ip.parse("1.1.1.1"), vrfConf1);
     BgpActivePeerConfig.builder()
         .setBgpProcess(bgpProcess1)
         .setPeerAddress(Ip.parse("1.1.1.2"))
@@ -1050,7 +1050,7 @@ public class IspModelingUtilsTest {
         .setAddress(ConcreteInterfaceAddress.create(Ip.parse("2.2.2.2"), 24))
         .build();
     Vrf vrfConf2 = nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(configuration2).build();
-    BgpProcess bgpProcess2 = pb.setVrf(vrfConf2).setRouterId(Ip.parse("2.2.2.2")).build();
+    BgpProcess bgpProcess2 = makeBgpProcess(Ip.parse("2.2.2.2"), vrfConf2);
     BgpActivePeerConfig.builder()
         .setBgpProcess(bgpProcess2)
         .setPeerAddress(Ip.parse("2.2.2.3"))
@@ -1106,12 +1106,7 @@ public class IspModelingUtilsTest {
         .setAddress(ConcreteInterfaceAddress.create(Ip.parse("1.1.1.1"), 24))
         .build();
     Vrf vrfConf1 = nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(configuration1).build();
-    BgpProcess bgpProcess1 =
-        nf.bgpProcessBuilder()
-            .setRouterId(Ip.parse("1.1.1.1"))
-            .setVrf(vrfConf1)
-            .setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS)
-            .build();
+    BgpProcess bgpProcess1 = makeBgpProcess(Ip.parse("1.1.1.1"), vrfConf1);
     BgpActivePeerConfig.builder()
         .setBgpProcess(bgpProcess1)
         .setPeerAddress(Ip.parse("1.1.1.2"))
@@ -1152,11 +1147,7 @@ public class IspModelingUtilsTest {
         .setOwner(c)
         .setAddress(ConcreteInterfaceAddress.create(bgpInterfaceIp, 24))
         .build();
-    nf.bgpProcessBuilder()
-        .setRouterId(bgpInterfaceIp)
-        .setVrf(vrf)
-        .setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS)
-        .build();
+    makeBgpProcess(bgpInterfaceIp, vrf);
     return c;
   }
 

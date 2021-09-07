@@ -110,12 +110,8 @@ public class PrefixTracerTest {
                 .setNetwork(_staticRoutePrefix)
                 .setAdministrativeCost(1)
                 .build()));
-    BgpProcess bp =
-        nf.bgpProcessBuilder()
-            .setVrf(vrf1)
-            .setRouterId(neighbor1Ip)
-            .setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS)
-            .build();
+    BgpProcess bp = BgpProcess.testBgpProcess(neighbor1Ip);
+    vrf1.setBgpProcess(bp);
     nf.bgpNeighborBuilder()
         .setBgpProcess(bp)
         .setLocalIp(neighbor1Ip)
@@ -134,12 +130,8 @@ public class PrefixTracerTest {
         .setOwner(c2)
         .setVrf(vrf2)
         .build();
-    bp =
-        nf.bgpProcessBuilder()
-            .setVrf(vrf2)
-            .setRouterId(neighbor2Ip)
-            .setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS)
-            .build();
+    bp = BgpProcess.testBgpProcess(neighbor2Ip);
+    vrf2.setBgpProcess(bp);
     nf.bgpNeighborBuilder()
         .setBgpProcess(bp)
         .setLocalIp(neighbor2Ip)

@@ -1099,8 +1099,7 @@ public class AristaGrammarTest {
             .get(hostname)
             .getDefaultVrf()
             .getBgpProcess()
-            // TODO: change to local bgp cost once supported
-            .getAdminCost(RoutingProtocol.IBGP);
+            .getLocalAdminCost();
     Set<Bgpv4Route> bgpRibRoutes = dp.getBgpRoutes().get(hostname, Configuration.DEFAULT_VRF_NAME);
     Ip routerId = Ip.parse("1.1.1.1");
     Prefix staticPrefix1 = Prefix.parse("1.1.1.0/24");

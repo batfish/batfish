@@ -68,8 +68,6 @@ public class NodeColoredScheduleTest {
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     Vrf.Builder vb = nf.vrfBuilder();
     Interface.Builder ib = nf.interfaceBuilder();
-    BgpProcess.Builder pb =
-        nf.bgpProcessBuilder().setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS);
     BgpActivePeerConfig.Builder nb = nf.bgpNeighborBuilder();
     OspfProcess.Builder ob = nf.ospfProcessBuilder().setProcessId("1").setReferenceBandwidth(1e8);
     OspfArea.Builder ospfArea = nf.ospfAreaBuilder().setNumber(0);
@@ -100,7 +98,8 @@ public class NodeColoredScheduleTest {
         .setRouterId(Ip.parse("0.0.0.1"))
         .build();
     // BGP process and neighbor
-    BgpProcess r1Proc = pb.setRouterId(R1_IP).setVrf(vrf1).build();
+    BgpProcess r1Proc = BgpProcess.testBgpProcess(R1_IP);
+    vrf1.setBgpProcess(r1Proc);
     nb.setRemoteAs(2L)
         .setPeerAddress(R2_IP)
         .setBgpProcess(r1Proc)
@@ -130,7 +129,8 @@ public class NodeColoredScheduleTest {
         .setRouterId(Ip.parse("0.0.0.2"))
         .build();
     // BGP process and neighbor
-    BgpProcess r2Proc = pb.setRouterId(R2_IP).setVrf(vrf2).build();
+    BgpProcess r2Proc = BgpProcess.testBgpProcess(R2_IP);
+    vrf2.setBgpProcess(r2Proc);
     nb.setRemoteAs(1L)
         .setPeerAddress(R1_IP)
         .setBgpProcess(r2Proc)

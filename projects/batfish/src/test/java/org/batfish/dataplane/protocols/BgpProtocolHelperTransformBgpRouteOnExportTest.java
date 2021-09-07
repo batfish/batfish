@@ -111,12 +111,12 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
             .build();
     // Flip so the session props since we're exporting from head -> tail.
     _sessionProperties = BgpSessionProperties.from(_headNeighbor, _tailNeighbor, true);
-    BgpProcess.Builder pb =
-        _nf.bgpProcessBuilder().setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS);
     Vrf fromVrf = _nf.vrfBuilder().setOwner(c1).build();
-    _fromBgpProcess = pb.setVrf(fromVrf).setRouterId(SOURCE_IP).build();
+    fromVrf.setBgpProcess(BgpProcess.testBgpProcess(SOURCE_IP));
+    _fromBgpProcess = fromVrf.getBgpProcess();
     Vrf toVrf = _nf.vrfBuilder().setOwner(c2).build();
-    _toBgpProcess = pb.setVrf(toVrf).setRouterId(DEST_IP).build();
+    toVrf.setBgpProcess(BgpProcess.testBgpProcess(DEST_IP));
+    _toBgpProcess = toVrf.getBgpProcess();
   }
 
   /**

@@ -547,12 +547,8 @@ public class BgpSessionCompatibilityAnswererTest {
               .setHostname(id.getHostname())
               .build();
       Vrf vrf = nf.vrfBuilder().setOwner(c).setName(id.getVrfName()).build();
-      BgpProcess bgpProc =
-          nf.bgpProcessBuilder()
-              .setVrf(vrf)
-              .setRouterId(Ip.ZERO)
-              .setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS)
-              .build();
+      BgpProcess bgpProc = BgpProcess.testBgpProcess(Ip.ZERO);
+      vrf.setBgpProcess(bgpProc);
       configs.put(c.getHostname(), c);
 
       // Add interface to make IpOwners accurate

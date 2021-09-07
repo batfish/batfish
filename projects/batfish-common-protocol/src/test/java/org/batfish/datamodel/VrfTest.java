@@ -29,7 +29,7 @@ public class VrfTest {
                 .setRouterId(Ip.ZERO)
                 .setReferenceBandwidth(1d)
                 .build()));
-    vrf.setBgpProcess(new BgpProcess(Ip.ZERO, ConfigurationFormat.CISCO_IOS));
+    vrf.setBgpProcess(BgpProcess.testBgpProcess(Ip.ZERO));
     IsoAddress isoAddress = new IsoAddress("49.0001.0100.0500.5005.00");
     vrf.setIsisProcess(IsisProcess.builder().setNetAddress(isoAddress).build());
 
