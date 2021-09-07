@@ -307,7 +307,7 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
       return Long.MAX_VALUE;
     }
     assert _mainRib != null;
-    route
+    return route
         .getNextHop()
         .accept(
             new NextHopVisitor<Long>() {
