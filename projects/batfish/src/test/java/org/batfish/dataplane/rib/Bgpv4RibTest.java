@@ -31,6 +31,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.hamcrest.Matcher;
 import org.junit.Before;
@@ -210,7 +211,7 @@ public class Bgpv4RibTest {
   }
 
   @Test
-  public void testIgpCostPreference() {
+  public void testIgpCostPreferenceSingleResolutionStep() {
     Rib mainRib = new Rib();
     StaticRoute.Builder sb =
         StaticRoute.testBuilder().setAdministrativeCost(1).setNextHopInterface("eth0");
@@ -231,6 +232,86 @@ public class Bgpv4RibTest {
     Bgpv4Route worse = _rb.setNextHopIp(Ip.parse("5.5.5.6")).build();
     // Lower IGP cost to next hop is better
     Bgpv4Route best = _rb.setNextHopIp(Ip.parse("5.5.5.5")).build();
+
+    rib.mergeRoute(worse);
+    rib.mergeRoute(best);
+    assertThat(rib.getRoutes(), contains(best));
+    assertThat(rib.getBestPathRoutes(), contains(best));
+  }
+
+  @Test
+  public void testIgpCostPreferenceDiscardWorst() {
+    Rib mainRib = new Rib();
+    StaticRoute.Builder sb = StaticRoute.testBuilder().setAdministrativeCost(1);
+    mainRib.mergeRoute(
+        annotateRoute(
+            sb.setNetwork(Prefix.parse("5.5.5.5/32"))
+                .setMetric(2)
+                .setNextHopInterface("eth0")
+                .build()));
+    mainRib.mergeRoute(
+        annotateRoute(
+            sb.setNetwork(Prefix.parse("5.5.5.6/32"))
+                .setMetric(1)
+                .setNextHop(NextHopDiscard.instance())
+                .build()));
+
+    Bgpv4Rib rib =
+        new Bgpv4Rib(
+            mainRib,
+            BgpTieBreaker.ROUTER_ID,
+            null,
+            MultipathEquivalentAsPathMatchMode.EXACT_PATH,
+            false,
+            false);
+
+    // Discard next hop is worse despite lower IGP cost
+    Bgpv4Route worse = _rb.setNextHopIp(Ip.parse("5.5.5.6")).build();
+    Bgpv4Route best = _rb.setNextHopIp(Ip.parse("5.5.5.5")).build();
+
+    rib.mergeRoute(worse);
+    rib.mergeRoute(best);
+    assertThat(rib.getRoutes(), contains(best));
+    assertThat(rib.getBestPathRoutes(), contains(best));
+  }
+
+  @Test
+  public void testIgpCostPreferenceTwoResolutionSteps() {
+    Rib mainRib = new Rib();
+    StaticRoute.Builder sb =
+        StaticRoute.testBuilder().setAdministrativeCost(1).setNextHopInterface("eth0");
+    mainRib.mergeRoute(
+        annotateRoute(sb.setNetwork(Prefix.strict("5.5.5.5/32")).setMetric(1).build()));
+    mainRib.mergeRoute(
+        annotateRoute(sb.setNetwork(Prefix.strict("5.5.5.6/32")).setMetric(2).build()));
+    mainRib.mergeRoute(
+        annotateRoute(
+            _rb.setNetwork(Prefix.strict("4.4.4.6/32"))
+                .setMetric(0L)
+                .setNextHopIp(Ip.parse("5.5.5.6"))
+                .build()));
+    // Lower IGP cost to next hop is better
+    mainRib.mergeRoute(
+        annotateRoute(
+            _rb.setNetwork(Prefix.strict("4.4.4.5/32"))
+                .setMetric(0L)
+                .setNextHopIp(Ip.parse("5.5.5.5"))
+                .build()));
+
+    Bgpv4Rib rib =
+        new Bgpv4Rib(
+            mainRib,
+            BgpTieBreaker.ROUTER_ID,
+            null,
+            MultipathEquivalentAsPathMatchMode.EXACT_PATH,
+            false,
+            false);
+
+    Bgpv4Route worse =
+        _rb.setNetwork(Prefix.strict("6.0.0.0/24")).setNextHopIp(Ip.parse("4.4.4.6")).build();
+    // Lower IGP cost to next hop is better
+    Bgpv4Route best =
+        _rb.setNetwork(Prefix.strict("6.0.0.0/24")).setNextHopIp(Ip.parse("4.4.4.5")).build();
 
     rib.mergeRoute(worse);
     rib.mergeRoute(best);

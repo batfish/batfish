@@ -2,6 +2,7 @@ package org.batfish.datamodel;
 
 import java.io.Serializable;
 import java.util.Set;
+import javax.annotation.Nonnull;
 
 public interface GenericRibReadOnly<R extends AbstractRouteDecorator> extends Serializable {
 
@@ -28,6 +29,7 @@ public interface GenericRibReadOnly<R extends AbstractRouteDecorator> extends Se
    *     this may shorten the longest prefix.
    * @return a set of routes with the maximum allowable prefix length that match the {@code address}
    */
+  @Nonnull
   Set<R> longestPrefixMatch(Ip address, ResolutionRestriction<R> restriction);
 
   /**
@@ -47,6 +49,7 @@ public interface GenericRibReadOnly<R extends AbstractRouteDecorator> extends Se
    *     this may shorten the longest prefix.
    * @return a set of routes that match the {@code address} given the constraint.
    */
+  @Nonnull
   Set<R> longestPrefixMatch(Ip address, int maxPrefixLength, ResolutionRestriction<R> restriction);
 
   /**
