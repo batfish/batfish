@@ -203,6 +203,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import com.google.common.collect.Table;
 import com.google.common.primitives.Ints;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -442,6 +443,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ipv6_prefixContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ipv6_prefix_listContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ipv6_prefix_list_line_prefix_lengthContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ipv6_routeContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.IrnContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Isis_instanceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ispt_qosContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ispt_queuingContext;
@@ -460,6 +462,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Monitor_session_destinatio
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Monitor_session_source_interfaceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Monitor_session_source_vlanContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Name_serverContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.No_ip_route_networkContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.No_sysds_shutdownContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.No_sysds_switchportContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ntp_serverContext;
@@ -5890,14 +5893,17 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     _currentIpAccessList = null;
   }
 
-  @Override
-  public void exitIp_route_network(Ip_route_networkContext ctx) {
+  /**
+   * Converts {@link IrnContext} to a {@link StaticRoute} if possible. Returns {@link
+   * Optional#empty()} if the static route isn't valid.
+   */
+  private Optional<StaticRoute> toStaticRoute(IrnContext ctx) {
     int line = ctx.getStart().getLine();
     StaticRoute.Builder builder = StaticRoute.builder().setPrefix(toPrefix(ctx.network));
     if (ctx.name != null) {
       String name = toString(ctx, ctx.name);
       if (name == null) {
-        return;
+        return Optional.empty();
       }
       builder.setName(name);
     }
@@ -5914,7 +5920,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     if (ctx.nhvrf != null) {
       Optional<String> vrfOrErr = toString(ctx, ctx.nhvrf);
       if (!vrfOrErr.isPresent()) {
-        return;
+        return Optional.empty();
       }
       String vrf = vrfOrErr.get();
       _c.referenceStructure(VRF, vrf, IP_ROUTE_NEXT_HOP_VRF, line);
@@ -5926,7 +5932,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     if (ctx.pref != null) {
       Optional<Integer> pref = toInteger(ctx, ctx.pref);
       if (!pref.isPresent()) {
-        return;
+        return Optional.empty();
       }
       builder.setPreference(pref.get());
     }
@@ -5937,7 +5943,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     if (track_ctx != null) {
       Optional<Integer> track = toInteger(track_ctx, track_ctx.track);
       if (!track.isPresent()) {
-        return;
+        return Optional.empty();
       }
       Integer trackNumber = track.get();
       if (!_c.getTracks().containsKey(trackNumber)) {
@@ -5950,7 +5956,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
             trackNumber.toString(),
             CiscoNxosStructureUsage.IP_ROUTE_TRACK,
             track_ctx.start.getLine());
-        return;
+        return Optional.empty();
       }
       _c.referenceStructure(
           CiscoNxosStructureType.TRACK,
@@ -5962,8 +5968,27 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       // TODO: support track object number
       todo(track_ctx);
     }
-    StaticRoute route = builder.build();
-    _currentVrf.getStaticRoutes().put(route.getPrefix(), route);
+    return Optional.of(builder.build());
+  }
+
+  @Override
+  public void exitIp_route_network(Ip_route_networkContext ctx) {
+    toStaticRoute(ctx.irn()).ifPresent(sr -> _currentVrf.getStaticRoutes().put(sr.getPrefix(), sr));
+  }
+
+  @Override
+  public void exitNo_ip_route_network(No_ip_route_networkContext ctx) {
+    toStaticRoute(ctx.irn())
+        .ifPresent(
+            sr -> {
+              Collection<StaticRoute> staticRoutes =
+                  _currentVrf.getStaticRoutes().get(sr.getPrefix());
+              if (!staticRoutes.contains(sr)) {
+                warn(ctx, "Cannot delete non-existent route");
+                return;
+              }
+              staticRoutes.remove(sr);
+            });
   }
 
   @Override

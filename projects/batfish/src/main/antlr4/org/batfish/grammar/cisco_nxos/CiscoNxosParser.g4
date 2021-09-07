@@ -336,9 +336,53 @@ s_no
 :
   NO
   (
-    no_null
+    no_ip
     | no_system
+    // no_null should come last
+    | no_null
   )
+;
+
+no_ip: IP (no_ip_route | no_ip_null);
+
+no_ip_null
+:
+  (
+    ACCESS_LIST
+    | ADJACENCY
+    | ADJMGR
+    | AMT
+    | ARP
+    | AS_PATH
+    | AUTO_DISCARD
+    | COMMUNITY_LIST
+    | DHCP
+    | DNS
+    | DOMAIN_LIST
+    | DOMAIN_LOOKUP
+    | DOMAIN_NAME
+    | DSCP_LOP
+    | EXTCOMMUNITY_LIST
+    | HOST
+    | IGMP
+    | INTERNAL
+    | LOAD_SHARING
+    | MFWD
+    | MROUTE
+    | MULTICAST
+    | NAME_SERVER
+    | PIM
+    | PREFIX_LIST
+    | RADIUS
+    | ROUTE
+    | ROUTING
+    | SOURCE_ROUTE
+    | SLA
+    | TACACS
+    | TCP
+    | TELNET
+    | TFTP
+  ) null_rest_of_line
 ;
 
 no_null

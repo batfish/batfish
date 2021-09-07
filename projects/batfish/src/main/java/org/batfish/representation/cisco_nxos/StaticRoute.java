@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.collect.Range;
 import java.io.Serializable;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.IntegerSpace;
@@ -109,6 +110,37 @@ public final class StaticRoute implements Serializable {
 
   public static @Nonnull Builder builder() {
     return new Builder();
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof StaticRoute)) {
+      return false;
+    }
+    StaticRoute sr = (StaticRoute) o;
+    return _discard == sr._discard
+        && _preference == sr._preference
+        && _tag == sr._tag
+        && Objects.equals(_name, sr._name)
+        && Objects.equals(_nextHopInterface, sr._nextHopInterface)
+        && Objects.equals(_nextHopIp, sr._nextHopIp)
+        && Objects.equals(_nextHopVrf, sr._nextHopVrf)
+        && Objects.equals(_prefix, sr._prefix)
+        && Objects.equals(_track, sr._track);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        _discard,
+        _name,
+        _nextHopInterface,
+        _nextHopIp,
+        _nextHopVrf,
+        _preference,
+        _prefix,
+        _tag,
+        _track);
   }
 
   private final boolean _discard;
