@@ -71463,7 +71463,7 @@
         "juniper_isis" : "PASSED",
         "juniper_l2_learning" : "PASSED",
         "juniper_misc" : "PASSED",
-        "juniper_nat" : "PASSED",
+        "juniper_nat" : "WARNINGS",
         "juniper_ntp" : "PASSED",
         "juniper_ospf_stub_areas" : "PASSED",
         "juniper_passwords" : "PASSED",
@@ -86215,6 +86215,14 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Cannot assign more than one access vlan: [bippetyboppety] to interface 'xe-0/0/5:0.0'"
+            }
+          ]
+        },
+        "juniper_nat" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Creating empty IP spaces for missing names: [global~NAME]"
             }
           ]
         },

@@ -66,11 +66,6 @@ public class IpSpaceDereferencer implements GenericIpSpaceVisitor<IpSpace> {
     return hsb.build();
   }
 
-  @Override
-  public IpSpace castToGenericIpSpaceVisitorReturnType(Object o) {
-    return (IpSpace) o;
-  }
-
   /**
    * @param aclIpSpace The {@link AclIpSpace} to dereference
    * @return An {@link AclIpSpace} identical to the original but with all uses of {@link

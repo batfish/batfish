@@ -20,11 +20,6 @@ public class IpSpaceRenamer implements Function<IpSpace, IpSpace> {
   private final class Visitor implements GenericIpSpaceVisitor<IpSpace> {
 
     @Override
-    public IpSpace castToGenericIpSpaceVisitorReturnType(Object o) {
-      return (IpSpace) o;
-    }
-
-    @Override
     public IpSpace visitAclIpSpace(AclIpSpace aclIpSpace) {
       AclIpSpace.Builder renamedSpace = AclIpSpace.builder();
       aclIpSpace

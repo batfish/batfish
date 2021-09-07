@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nullable;
@@ -13,6 +14,10 @@ public class AndMatchExpr extends AclLineMatchExpr {
   private static final String PROP_CONJUNCTS = "conjuncts";
 
   private final List<AclLineMatchExpr> _conjuncts;
+
+  public AndMatchExpr(AclLineMatchExpr... conjuncts) {
+    this(Arrays.asList(conjuncts), (TraceElement) null);
+  }
 
   public AndMatchExpr(Iterable<? extends AclLineMatchExpr> conjuncts) {
     this(conjuncts, (TraceElement) null);

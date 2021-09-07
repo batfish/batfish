@@ -72,11 +72,6 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
             entry -> Suppliers.memoize(new NonRecursiveSupplier<>(() -> visit(entry.getValue()))));
   }
 
-  @Override
-  public BDD castToGenericIpSpaceVisitorReturnType(Object o) {
-    return (BDD) o;
-  }
-
   public BDDInteger getBDDInteger() {
     return _bddInteger;
   }
