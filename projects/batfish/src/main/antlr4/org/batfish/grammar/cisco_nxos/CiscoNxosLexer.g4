@@ -728,7 +728,7 @@ EXPORTER
   'exporter' -> pushMode(M_Word)
 ;
 
-EXTCOMMUNITY_LIST: 'extcommunity_list';
+EXTCOMMUNITY_LIST: 'extcommunity-list';
 
 EXTEND: 'extend';
 

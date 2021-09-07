@@ -8249,7 +8249,10 @@ public final class CiscoNxosGrammarTest {
             allOf(
                 hasComment("Cannot delete non-existent route"),
                 ParseWarningMatchers.hasText(
-                    containsString("10.0.1.0/24 Ethernet1/1 10.0.1.1 vrf management")))));
+                    containsString("10.0.1.0/24 Ethernet1/1 10.0.1.1 vrf management"))),
+            allOf(
+                hasComment("Cannot delete non-existent route"),
+                ParseWarningMatchers.hasText("10.0.1.0/24 Ethernet1/1"))));
   }
 
   @Test

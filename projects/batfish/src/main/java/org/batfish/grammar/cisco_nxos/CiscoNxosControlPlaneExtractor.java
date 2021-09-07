@@ -443,7 +443,6 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ipv6_prefixContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ipv6_prefix_listContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ipv6_prefix_list_line_prefix_lengthContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ipv6_routeContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.IrnContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Isis_instanceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ispt_qosContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ispt_queuingContext;
@@ -688,6 +687,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Snmps_hostContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Snmpssi_informsContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Snmpssi_trapsContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Standard_communityContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Static_route_definitionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Static_route_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Subnet_maskContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Sysds_shutdownContext;
@@ -5894,10 +5894,10 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   /**
-   * Converts {@link IrnContext} to a {@link StaticRoute} if possible. Returns {@link
-   * Optional#empty()} if the static route isn't valid.
+   * Converts {@link Static_route_definitionContext} to a {@link StaticRoute} if possible. Returns
+   * {@link Optional#empty()} if the static route isn't valid.
    */
-  private Optional<StaticRoute> toStaticRoute(IrnContext ctx) {
+  private Optional<StaticRoute> toStaticRoute(Static_route_definitionContext ctx) {
     int line = ctx.getStart().getLine();
     StaticRoute.Builder builder = StaticRoute.builder().setPrefix(toPrefix(ctx.network));
     if (ctx.name != null) {
@@ -5973,12 +5973,13 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitIp_route_network(Ip_route_networkContext ctx) {
-    toStaticRoute(ctx.irn()).ifPresent(sr -> _currentVrf.getStaticRoutes().put(sr.getPrefix(), sr));
+    toStaticRoute(ctx.static_route_definition())
+        .ifPresent(sr -> _currentVrf.getStaticRoutes().put(sr.getPrefix(), sr));
   }
 
   @Override
   public void exitNo_ip_route_network(No_ip_route_networkContext ctx) {
-    toStaticRoute(ctx.irn())
+    toStaticRoute(ctx.static_route_definition())
         .ifPresent(
             sr -> {
               Collection<StaticRoute> staticRoutes =

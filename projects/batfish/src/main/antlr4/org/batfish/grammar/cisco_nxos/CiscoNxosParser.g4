@@ -348,14 +348,11 @@ no_ip: IP (no_ip_route | no_ip_null);
 no_ip_null
 :
   (
-    ACCESS_LIST
-    | ADJACENCY
+    ADJACENCY
     | ADJMGR
     | AMT
     | ARP
-    | AS_PATH
     | AUTO_DISCARD
-    | COMMUNITY_LIST
     | DHCP
     | DNS
     | DOMAIN_LIST
@@ -372,7 +369,6 @@ no_ip_null
     | MULTICAST
     | NAME_SERVER
     | PIM
-    | PREFIX_LIST
     | RADIUS
     | ROUTE
     | ROUTING
