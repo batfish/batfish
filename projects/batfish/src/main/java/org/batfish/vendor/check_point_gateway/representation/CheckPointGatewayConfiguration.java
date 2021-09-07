@@ -186,8 +186,6 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
    * object.</b>
    *
    * <p>Warns about unknown object types.
-   *
-   * @param objs
    */
   private void convertObjects(Map<Uid, NamedManagementObject> objs) {
     AddressSpaceToIpSpace addressSpaceToIpSpace = new AddressSpaceToIpSpace(objs);
