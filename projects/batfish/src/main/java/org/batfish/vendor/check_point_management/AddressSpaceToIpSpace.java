@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.EmptyIpSpace;
@@ -33,14 +34,12 @@ public class AddressSpaceToIpSpace implements AddressSpaceVisitor<IpSpace> {
 
   @Override
   public IpSpace visitGatewayOrServer(GatewayOrServer gatewayOrServer) {
-    // TODO confirm semantics, should we use interface addresses or networks or ???
-    IpSpace ipSpace =
-        AclIpSpace.union(
-            gatewayOrServer.getInterfaces().stream()
-                .filter(i -> i.getIpv4Address() != null)
-                .map(i -> i.getIpv4Address().toIpSpace())
-                .collect(ImmutableList.toImmutableList()));
-    return ipSpace == null ? EmptyIpSpace.INSTANCE : ipSpace;
+    // TODO: Verify semantics.
+    //       For now, we assume only the IPv4 address gets used, since the interface addresses do
+    //       not show up in the show-objects schema version of gateways/servers.
+    return Optional.ofNullable(gatewayOrServer.getIpv4Address())
+        .<IpSpace>map(Ip::toIpSpace)
+        .orElse(EmptyIpSpace.INSTANCE);
   }
 
   @Override
@@ -50,8 +49,7 @@ public class AddressSpaceToIpSpace implements AddressSpaceVisitor<IpSpace> {
         allMembers.stream()
             .map(_objs::get)
             .filter(AddressSpace.class::isInstance)
-            .map(AddressSpace.class::cast)
-            .map(AddressSpace::getName)
+            .map(HasName::getName)
             .map(IpSpaceReference::new)
             .collect(ImmutableList.toImmutableList());
     IpSpace space = AclIpSpace.union(memberIpSpaces);
@@ -68,7 +66,7 @@ public class AddressSpaceToIpSpace implements AddressSpaceVisitor<IpSpace> {
 
     Set<Uid> descendantObjects = new HashSet<>();
     for (Uid memberUid : group.getMembers()) {
-      TypedManagementObject member = _objs.get(memberUid);
+      NamedManagementObject member = _objs.get(memberUid);
       if (member instanceof Group) {
         descendantObjects.addAll(getDescendantObjects((Group) member, alreadyTraversedMembers));
       } else if (member instanceof AddressSpace) {
@@ -96,9 +94,9 @@ public class AddressSpaceToIpSpace implements AddressSpaceVisitor<IpSpace> {
     return Prefix.create(networkAddress, subnetMask).toIpSpace();
   }
 
-  public AddressSpaceToIpSpace(Map<Uid, TypedManagementObject> objs) {
+  public AddressSpaceToIpSpace(Map<Uid, NamedManagementObject> objs) {
     _objs = objs;
   }
 
-  private final Map<Uid, TypedManagementObject> _objs;
+  private final Map<Uid, NamedManagementObject> _objs;
 }
