@@ -34,6 +34,7 @@ import org.batfish.vendor.check_point_management.RulebaseAction;
 import org.batfish.vendor.check_point_management.Service;
 import org.batfish.vendor.check_point_management.ServiceGroup;
 import org.batfish.vendor.check_point_management.ServiceTcp;
+import org.batfish.vendor.check_point_management.ServiceUdp;
 import org.batfish.vendor.check_point_management.ServiceVisitor;
 import org.batfish.vendor.check_point_management.TypedManagementObject;
 import org.batfish.vendor.check_point_management.Uid;
@@ -270,6 +271,14 @@ public final class CheckPointGatewayConversions {
       assert _hsb != null;
       _hsb.setIpProtocols(IpProtocol.TCP);
       _hsb.setDstPorts(IntegerSpace.parse(serviceTcp.getPort()).getSubRanges());
+      return null;
+    }
+
+    @Override
+    public Void visitServiceUdp(ServiceUdp serviceUdp) {
+      assert _hsb != null;
+      _hsb.setIpProtocols(IpProtocol.UDP);
+      _hsb.setDstPorts(IntegerSpace.parse(serviceUdp.getPort()).getSubRanges());
       return null;
     }
   }

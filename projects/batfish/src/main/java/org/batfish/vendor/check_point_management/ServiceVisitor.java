@@ -8,5 +8,7 @@ public interface ServiceVisitor<T> {
 
   T visitServiceTcp(ServiceTcp serviceTcp);
 
-  // TODO Add ServiceOther, ServiceUdp when created
+  T visitServiceUdp(ServiceUdp serviceUdp);
+
+  // TODO Add ServiceOther when created
 }
