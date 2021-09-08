@@ -8,6 +8,10 @@ import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_GATEWAYS_AND_S
 import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_NAT_RULEBASE;
 import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_NETWORKS;
 import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_PACKAGE;
+import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_SERVICES_ICMP;
+import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_SERVICES_TCP;
+import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_SERVICES_UDP;
+import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_SERVICE_GROUPS;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -184,7 +188,13 @@ public class CheckpointManagementParser {
       String domainName,
       String serverName,
       ParseVendorConfigurationAnswerElement pvcae) {
-    return ImmutableList.of(RELPATH_CHECKPOINT_SHOW_NETWORKS).stream()
+    return ImmutableList.of(
+            RELPATH_CHECKPOINT_SHOW_NETWORKS,
+            RELPATH_CHECKPOINT_SHOW_SERVICE_GROUPS,
+            RELPATH_CHECKPOINT_SHOW_SERVICES_ICMP,
+            RELPATH_CHECKPOINT_SHOW_SERVICES_TCP,
+            RELPATH_CHECKPOINT_SHOW_SERVICES_UDP)
+        .stream()
         .flatMap(f -> readObjects(f, domainFileMap, domainName, serverName, pvcae).stream())
         .filter(Objects::nonNull)
         .collect(ImmutableList.toImmutableList());
