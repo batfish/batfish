@@ -14,6 +14,7 @@ import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.HeaderSpace.Builder;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
@@ -23,6 +24,8 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.NotMatchExpr;
+import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.vendor.check_point_management.AccessLayer;
 import org.batfish.vendor.check_point_management.AccessRule;
 import org.batfish.vendor.check_point_management.AccessRuleOrSection;
@@ -182,9 +185,37 @@ public final class CheckPointGatewayConversions {
     conjuncts.add(dstMatch);
 
     // Service
-    // TODO encode service match condition
+    conjuncts.add(servicesToMatchExpr(rule.getService(), rule.getServiceNegate(), objs));
 
     return new AndMatchExpr(conjuncts.build());
+  }
+
+  /**
+   * Returns an {@link AclLineMatchExpr} matching the specified {@link Service} {@link Uid}s.
+   * Ignores {@link Uid}s for undefined or non-{@link Service} objects.
+   */
+  @Nonnull
+  private static AclLineMatchExpr servicesToMatchExpr(
+      List<Uid> services, boolean negate, Map<Uid, TypedManagementObject> objs) {
+    AclLineMatchExpr matchExpr =
+        new OrMatchExpr(
+            services.stream()
+                .map(objs::get)
+                .filter(Service.class::isInstance)
+                .map(Service.class::cast)
+                .map(CheckPointGatewayConversions::serviceToMatchExpr)
+                .collect(ImmutableList.toImmutableList()));
+    return negate ? new NotMatchExpr(matchExpr) : matchExpr;
+  }
+
+  @Nonnull
+  static AclLineMatchExpr serviceToMatchExpr(Service service) {
+    Builder serviceHsb = HeaderSpace.builder();
+    SERVICE_TO_HEADER_SPACE_CONSTRAINTS.setHeaderSpace(serviceHsb);
+    service.accept(SERVICE_TO_HEADER_SPACE_CONSTRAINTS);
+    SERVICE_TO_HEADER_SPACE_CONSTRAINTS.setHeaderSpace(null);
+    // TODO trace element and structure ID
+    return new MatchHeaderSpace(serviceHsb.build());
   }
 
   /** Convert specified {@link TypedManagementObject} to a {@link LineAction}. */
