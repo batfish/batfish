@@ -44,6 +44,7 @@ import org.batfish.vendor.check_point_management.Network;
 import org.batfish.vendor.check_point_management.PolicyTargets;
 import org.batfish.vendor.check_point_management.RulebaseAction;
 import org.batfish.vendor.check_point_management.ServiceTcp;
+import org.batfish.vendor.check_point_management.ServiceUdp;
 import org.batfish.vendor.check_point_management.TypedManagementObject;
 import org.batfish.vendor.check_point_management.Uid;
 import org.junit.Test;
@@ -266,6 +267,16 @@ public final class CheckPointGatewayConversionsTest {
       assertThat(
           toHeaderSpace(CPMI_ANY, CPMI_ANY, CPMI_ANY, warnings),
           equalTo(Optional.of(HeaderSpace.builder().build())));
+    }
+    {
+      assertThat(
+          toHeaderSpace(CPMI_ANY, CPMI_ANY, new ServiceUdp("foo", "1234", uid), warnings),
+          equalTo(
+              Optional.of(
+                  HeaderSpace.builder()
+                      .setDstPorts(ImmutableList.of(new SubRange(1234)))
+                      .setIpProtocols(IpProtocol.UDP)
+                      .build())));
     }
   }
 
