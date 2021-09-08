@@ -493,7 +493,7 @@ public class CheckPointGatewayGrammarTest {
     Prefix prefix = Prefix.parse("10.1.0.0/16");
     NexthopTarget target = new NexthopAddress(Ip.parse("10.1.0.2"));
 
-    // Removed static route shouldn't show up, and removing only nexthop should remove the route
+    // Removed static route shouldn't show up, and removing the only nexthop should remove the route
     assertThat(c.getStaticRoutes(), hasKeys(prefix));
 
     // Removed nexthop shouldn't show up
