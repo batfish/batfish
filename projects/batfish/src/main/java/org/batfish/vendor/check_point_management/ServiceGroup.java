@@ -47,7 +47,7 @@ public final class ServiceGroup extends TypedManagementObject implements Service
   }
 
   @VisibleForTesting
-  ServiceGroup(String name, List<Uid> members, Uid uid) {
+  public ServiceGroup(String name, List<Uid> members, Uid uid) {
     super(name, uid);
     _members = members;
   }
