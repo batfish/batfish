@@ -6,6 +6,8 @@ public interface ServiceVisitor<T> {
 
   T visitServiceGroup(ServiceGroup serviceGroup);
 
+  T visitServiceIcmp(ServiceIcmp serviceIcmp);
+
   T visitServiceTcp(ServiceTcp serviceTcp);
 
   T visitServiceUdp(ServiceUdp serviceUdp);
