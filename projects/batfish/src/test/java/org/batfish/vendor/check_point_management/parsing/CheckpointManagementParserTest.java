@@ -1,13 +1,16 @@
 package org.batfish.vendor.check_point_management.parsing;
 
 import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_NAT_RULEBASE;
+import static org.batfish.vendor.check_point_management.parsing.CheckpointManagementParser.buildObjectsList;
 import static org.batfish.vendor.check_point_management.parsing.CheckpointManagementParser.getNatRulebase;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import java.util.Map;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.vendor.check_point_management.AllInstallationTargets;
@@ -18,6 +21,10 @@ import org.batfish.vendor.check_point_management.NatRule;
 import org.batfish.vendor.check_point_management.NatRulebase;
 import org.batfish.vendor.check_point_management.Original;
 import org.batfish.vendor.check_point_management.Package;
+import org.batfish.vendor.check_point_management.ServiceGroup;
+import org.batfish.vendor.check_point_management.ServiceIcmp;
+import org.batfish.vendor.check_point_management.ServiceTcp;
+import org.batfish.vendor.check_point_management.ServiceUdp;
 import org.batfish.vendor.check_point_management.Uid;
 import org.junit.Test;
 
@@ -376,5 +383,33 @@ public final class CheckpointManagementParserTest {
                         Uid.of("6"),
                         Uid.of("0"))),
                 Uid.of("0"))));
+  }
+
+  private static final String SERVICE_GROUP_JSON =
+      "\"type\": \"service-group\", \"\": \"\", \"\": [\"1\"]";
+  private static final String SERVICE_ICMP_JSON = "{}";
+  private static final String SERVICE_TCP_JSON = "{}";
+  private static final String SERVICE_UDP_JSON = "{}";
+
+  @Test
+  public void testBuildObjectsList() {
+    Map<String, String> fileMap =
+        ImmutableMap.<String, String>builder()
+            .put("group", SERVICE_GROUP_JSON)
+            .put("icmp", SERVICE_ICMP_JSON)
+            .put("tcp", SERVICE_TCP_JSON)
+            .put("udp", SERVICE_UDP_JSON)
+            .build();
+    Map<String, Map<String, Map<String, String>>> domainFileMap =
+        ImmutableMap.of("server", ImmutableMap.of("domain", fileMap));
+
+    assertThat(
+        buildObjectsList(
+            domainFileMap, "domain", "server", new ParseVendorConfigurationAnswerElement()),
+        containsInAnyOrder(
+            new ServiceGroup("group", Uid.of("1")),
+            new ServiceIcmp("icmp", 1, 2, Uid.of("2")),
+            new ServiceTcp("tcp", "22", Uid.of("3")),
+            new ServiceUdp("udp", "222", Uid.of("4"))));
   }
 }

@@ -179,7 +179,8 @@ public class CheckpointManagementParser {
             .collect(ImmutableList.toImmutableList());
   }
 
-  private static List<TypedManagementObject> buildObjectsList(
+  @VisibleForTesting
+  static List<TypedManagementObject> buildObjectsList(
       Map<String, Map<String, Map<String, String>>> domainFileMap,
       String domainName,
       String serverName,
