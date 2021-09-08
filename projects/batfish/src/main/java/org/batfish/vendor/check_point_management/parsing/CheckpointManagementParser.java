@@ -125,8 +125,8 @@ public class CheckpointManagementParser {
           packageName,
           RELPATH_CHECKPOINT_SHOW_NAT_RULEBASE,
           String.format(
-              "JSON file should contain one or more pages for exactly one NAT rulebase, but contains"
-                  + " %s. Only reading pages for the first, with UID '%s'.",
+              "JSON file should contain one or more pages for exactly one NAT rulebase, but"
+                  + " contains %s. Only reading pages for the first, with UID '%s'.",
               numUids, uid.getValue()),
           pvcae,
           null);
