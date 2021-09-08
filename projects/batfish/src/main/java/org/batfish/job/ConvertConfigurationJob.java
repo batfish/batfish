@@ -151,176 +151,174 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
   @VisibleForTesting
   @ParametersAreNonnullByDefault
   static final class CollectIpSpaceReferences
-      implements GenericIpSpaceVisitor<Set<String>>,
-          GenericAclLineVisitor<Set<String>>,
-          GenericAclLineMatchExprVisitor<Set<String>> {
+      implements GenericIpSpaceVisitor<Void>,
+          GenericAclLineVisitor<Void>,
+          GenericAclLineMatchExprVisitor<Void> {
     /** Returns {@link IpSpaceReference#getName()} for all {@link IpSpaceReference} in {@code c}. */
     public static Set<String> collect(Configuration c) {
-      CollectIpSpaceReferences collector = new CollectIpSpaceReferences(c);
-      ImmutableSet.Builder<String> ret = ImmutableSet.builder();
+      ImmutableSet.Builder<String> set = ImmutableSet.builder();
+      CollectIpSpaceReferences collector = new CollectIpSpaceReferences(c, set);
       for (IpSpace space : c.getIpSpaces().values()) {
-        ret.addAll(collector.visit(space));
+        collector.visit(space);
       }
       for (IpAccessList acl : c.getIpAccessLists().values()) {
-        ret.addAll(collector.visit(acl));
+        collector.visit(acl);
       }
       for (Interface i : c.getAllInterfaces().values()) {
-        ret.addAll(collector.visit(i.getIncomingTransformation()));
-        ret.addAll(collector.visit(i.getOutgoingTransformation()));
+        collector.visit(i.getIncomingTransformation());
+        collector.visit(i.getOutgoingTransformation());
       }
-      return ret.build();
+      return set.build();
     }
 
     private final @Nonnull Configuration _c;
+    private final @Nonnull ImmutableSet.Builder<String> _set;
 
-    private CollectIpSpaceReferences(Configuration c) {
+    private CollectIpSpaceReferences(Configuration c, ImmutableSet.Builder<String> set) {
       _c = c;
+      _set = set;
     }
 
     // Impl below here.
 
-    private Set<String> visit(@Nullable Transformation t) {
+    private void visit(@Nullable Transformation t) {
       if (t == null) {
-        return ImmutableSet.of();
+        return;
       }
-      return ImmutableSet.<String>builder()
-          .addAll(visit(t.getGuard()))
-          .addAll(visit(t.getAndThen()))
-          .addAll(visit(t.getOrElse()))
-          .build();
+      visit(t.getGuard());
+      visit(t.getAndThen());
+      visit(t.getOrElse());
     }
 
-    private Set<String> visit(IpAccessList acl) {
-      ImmutableSet.Builder<String> ret = ImmutableSet.builder();
+    private void visit(IpAccessList acl) {
       for (AclLine line : acl.getLines()) {
-        ret.addAll(visit(line));
+        visit(line);
       }
-      return ret.build();
     }
 
-    private Set<String> visitAclNamed(String name) {
+    private void visitAclNamed(String name) {
       IpAccessList acl = _c.getIpAccessLists().get(name);
       if (acl == null) {
-        return ImmutableSet.of();
+        return;
       }
-      return visit(acl);
+      visit(acl);
     }
 
     @Override
-    public Set<String> visitAclIpSpace(AclIpSpace aclIpSpace) {
-      ImmutableSet.Builder<String> ret = ImmutableSet.builder();
-      for (AclIpSpaceLine line : aclIpSpace.getLines()) {
-        ret.addAll(visit(line.getIpSpace()));
-      }
-      return ret.build();
+    public Void visitAclIpSpace(AclIpSpace aclIpSpace) {
+      aclIpSpace.getLines().stream().map(AclIpSpaceLine::getIpSpace).forEach(this::visit);
+      return null;
     }
 
     @Override
-    public Set<String> visitEmptyIpSpace(EmptyIpSpace emptyIpSpace) {
-      return ImmutableSet.of();
+    public Void visitEmptyIpSpace(EmptyIpSpace emptyIpSpace) {
+      return null;
     }
 
     @Override
-    public Set<String> visitIpIpSpace(IpIpSpace ipIpSpace) {
-      return ImmutableSet.of();
+    public Void visitIpIpSpace(IpIpSpace ipIpSpace) {
+      return null;
     }
 
     @Override
-    public Set<String> visitIpSpaceReference(IpSpaceReference ipSpaceReference) {
-      return ImmutableSet.of(ipSpaceReference.getName());
+    public Void visitIpSpaceReference(IpSpaceReference ipSpaceReference) {
+      _set.add(ipSpaceReference.getName());
+      return null;
     }
 
     @Override
-    public Set<String> visitIpWildcardIpSpace(IpWildcardIpSpace ipWildcardIpSpace) {
-      return ImmutableSet.of();
+    public Void visitIpWildcardIpSpace(IpWildcardIpSpace ipWildcardIpSpace) {
+      return null;
     }
 
     @Override
-    public Set<String> visitIpWildcardSetIpSpace(IpWildcardSetIpSpace ipWildcardSetIpSpace) {
-      return ImmutableSet.of();
+    public Void visitIpWildcardSetIpSpace(IpWildcardSetIpSpace ipWildcardSetIpSpace) {
+      return null;
     }
 
     @Override
-    public Set<String> visitPrefixIpSpace(PrefixIpSpace prefixIpSpace) {
-      return ImmutableSet.of();
+    public Void visitPrefixIpSpace(PrefixIpSpace prefixIpSpace) {
+      return null;
     }
 
     @Override
-    public Set<String> visitUniverseIpSpace(UniverseIpSpace universeIpSpace) {
-      return ImmutableSet.of();
+    public Void visitUniverseIpSpace(UniverseIpSpace universeIpSpace) {
+      return null;
     }
 
     @Override
-    public Set<String> visitAndMatchExpr(AndMatchExpr andMatchExpr) {
-      return andMatchExpr.getConjuncts().stream()
-          .flatMap(c -> visit(c).stream())
-          .collect(ImmutableSet.toImmutableSet());
+    public Void visitAndMatchExpr(AndMatchExpr andMatchExpr) {
+      andMatchExpr.getConjuncts().forEach(this::visit);
+      return null;
     }
 
     @Override
-    public Set<String> visitDeniedByAcl(DeniedByAcl deniedByAcl) {
-      return visitAclNamed(deniedByAcl.getAclName());
+    public Void visitDeniedByAcl(DeniedByAcl deniedByAcl) {
+      visitAclNamed(deniedByAcl.getAclName());
+      return null;
     }
 
     @Override
-    public Set<String> visitFalseExpr(FalseExpr falseExpr) {
-      return ImmutableSet.of();
+    public Void visitFalseExpr(FalseExpr falseExpr) {
+      return null;
     }
 
     @Override
-    public Set<String> visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
+    public Void visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
       HeaderSpace hs = matchHeaderSpace.getHeaderspace();
       if (hs == null) {
-        return ImmutableSet.of();
+        return null;
       }
-      return ImmutableSet.<String>builder()
-          .addAll(visit(firstNonNull(hs.getDstIps(), EmptyIpSpace.INSTANCE)))
-          .addAll(visit(firstNonNull(hs.getNotDstIps(), EmptyIpSpace.INSTANCE)))
-          .addAll(visit(firstNonNull(hs.getSrcIps(), EmptyIpSpace.INSTANCE)))
-          .addAll(visit(firstNonNull(hs.getNotSrcIps(), EmptyIpSpace.INSTANCE)))
-          .build();
+      visit(firstNonNull(hs.getDstIps(), EmptyIpSpace.INSTANCE));
+      visit(firstNonNull(hs.getNotDstIps(), EmptyIpSpace.INSTANCE));
+      visit(firstNonNull(hs.getSrcIps(), EmptyIpSpace.INSTANCE));
+      visit(firstNonNull(hs.getNotSrcIps(), EmptyIpSpace.INSTANCE));
+      return null;
     }
 
     @Override
-    public Set<String> visitMatchSrcInterface(MatchSrcInterface matchSrcInterface) {
-      return ImmutableSet.of();
+    public Void visitMatchSrcInterface(MatchSrcInterface matchSrcInterface) {
+      return null;
     }
 
     @Override
-    public Set<String> visitNotMatchExpr(NotMatchExpr notMatchExpr) {
-      return visit(notMatchExpr.getOperand());
+    public Void visitNotMatchExpr(NotMatchExpr notMatchExpr) {
+      visit(notMatchExpr.getOperand());
+      return null;
     }
 
     @Override
-    public Set<String> visitOriginatingFromDevice(OriginatingFromDevice originatingFromDevice) {
-      return ImmutableSet.of();
+    public Void visitOriginatingFromDevice(OriginatingFromDevice originatingFromDevice) {
+      return null;
     }
 
     @Override
-    public Set<String> visitOrMatchExpr(OrMatchExpr orMatchExpr) {
-      return orMatchExpr.getDisjuncts().stream()
-          .flatMap(d -> visit(d).stream())
-          .collect(ImmutableSet.toImmutableSet());
+    public Void visitOrMatchExpr(OrMatchExpr orMatchExpr) {
+      orMatchExpr.getDisjuncts().forEach(this::visit);
+      return null;
     }
 
     @Override
-    public Set<String> visitPermittedByAcl(PermittedByAcl permittedByAcl) {
-      return visitAclNamed(permittedByAcl.getAclName());
+    public Void visitPermittedByAcl(PermittedByAcl permittedByAcl) {
+      visitAclNamed(permittedByAcl.getAclName());
+      return null;
     }
 
     @Override
-    public Set<String> visitTrueExpr(TrueExpr trueExpr) {
-      return ImmutableSet.of();
+    public Void visitTrueExpr(TrueExpr trueExpr) {
+      return null;
     }
 
     @Override
-    public Set<String> visitAclAclLine(AclAclLine aclAclLine) {
-      return visitAclNamed(aclAclLine.getAclName());
+    public Void visitAclAclLine(AclAclLine aclAclLine) {
+      visitAclNamed(aclAclLine.getAclName());
+      return null;
     }
 
     @Override
-    public Set<String> visitExprAclLine(ExprAclLine exprAclLine) {
-      return visit(exprAclLine.getMatchCondition());
+    public Void visitExprAclLine(ExprAclLine exprAclLine) {
+      visit(exprAclLine.getMatchCondition());
+      return null;
     }
   }
 

@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
@@ -45,14 +46,16 @@ public final class ConvertConfigurationJobTest {
                     LineAction.PERMIT,
                     new NotMatchExpr(
                         new AndMatchExpr(
-                            new OrMatchExpr(
-                                new MatchHeaderSpace(
-                                    HeaderSpace.builder()
-                                        .setSrcIps(new IpSpaceReference("SrcIps"))
-                                        .setNotSrcIps(new IpSpaceReference("NotSrcIps"))
-                                        .setDstIps(new IpSpaceReference("DstIps"))
-                                        .setNotDstIps(new IpSpaceReference("NotDstIps"))
-                                        .build())))),
+                            ImmutableList.of(
+                                new OrMatchExpr(
+                                    ImmutableList.of(
+                                        new MatchHeaderSpace(
+                                            HeaderSpace.builder()
+                                                .setSrcIps(new IpSpaceReference("SrcIps"))
+                                                .setNotSrcIps(new IpSpaceReference("NotSrcIps"))
+                                                .setDstIps(new IpSpaceReference("DstIps"))
+                                                .setNotDstIps(new IpSpaceReference("NotDstIps"))
+                                                .build())))))),
                     "line"))
             .build();
     c.getIpAccessLists().put(acl.getName(), acl);

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nullable;
@@ -14,10 +13,6 @@ public class OrMatchExpr extends AclLineMatchExpr {
   private static final String PROP_DISJUNCTS = "disjuncts";
 
   private final List<AclLineMatchExpr> _disjuncts;
-
-  public OrMatchExpr(AclLineMatchExpr... disjuncts) {
-    this(Arrays.asList(disjuncts), (TraceElement) null);
-  }
 
   public OrMatchExpr(Iterable<? extends AclLineMatchExpr> disjuncts) {
     this(disjuncts, (TraceElement) null);
