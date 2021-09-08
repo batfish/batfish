@@ -24,7 +24,7 @@ public final class ServiceUdpTest {
             + "\"port\":\"8642\""
             + "}";
     assertThat(
-        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, ServiceUdp.class),
+        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, TypedManagementObject.class),
         equalTo(new ServiceUdp("foo", "8642", Uid.of("1"))));
   }
 

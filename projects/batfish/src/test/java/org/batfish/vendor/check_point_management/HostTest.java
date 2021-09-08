@@ -34,7 +34,7 @@ public final class HostTest {
             + "\"ipv4-address\":\"0.0.0.0\""
             + "}";
     assertThat(
-        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, Host.class),
+        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, TypedManagementObject.class),
         equalTo(TEST_INSTANCE));
   }
 

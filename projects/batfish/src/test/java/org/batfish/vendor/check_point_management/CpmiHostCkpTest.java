@@ -28,7 +28,7 @@ public final class CpmiHostCkpTest {
             + "\"policy\":{}"
             + "}";
     assertThat(
-        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, CpmiHostCkp.class),
+        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, GatewayOrServer.class),
         equalTo(
             new CpmiHostCkp(
                 Ip.ZERO, ImmutableList.of(), "foo", GatewayOrServerPolicy.empty(), Uid.of("0"))));

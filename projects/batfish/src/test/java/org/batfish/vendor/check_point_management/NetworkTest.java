@@ -35,7 +35,7 @@ public final class NetworkTest {
             + "\"subnet-mask\":\"255.255.255.255\""
             + "}";
     assertThat(
-        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, Network.class),
+        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, TypedManagementObject.class),
         equalTo(TEST_INSTANCE));
   }
 

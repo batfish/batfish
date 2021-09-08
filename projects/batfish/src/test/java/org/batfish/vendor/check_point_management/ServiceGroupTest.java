@@ -11,38 +11,38 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
 
-/** Test of {@link Group}. */
-public final class GroupTest {
+/** Test of {@link ServiceGroup}. */
+public final class ServiceGroupTest {
 
   @Test
   public void testJacksonDeserialization() throws JsonProcessingException {
     String input =
         "{"
             + "\"GARBAGE\":0,"
-            + "\"type\":\"group\","
+            + "\"type\":\"service-group\","
             + "\"uid\":\"1\","
             + "\"name\":\"foo\","
-            + "\"members\":[\"2\", \"42\"]"
+            + "\"members\":[\"2\"]"
             + "}";
     assertThat(
-        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, TypedManagementObject.class),
-        equalTo(new Group("foo", ImmutableList.of(Uid.of("2"), Uid.of("42")), Uid.of("1"))));
+        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, ServiceGroup.class),
+        equalTo(new ServiceGroup("foo", ImmutableList.of(Uid.of("2")), Uid.of("1"))));
   }
 
   @Test
   public void testJavaSerialization() {
-    Group obj = new Group("foo", ImmutableList.of(Uid.of("2"), Uid.of("42")), Uid.of("1"));
+    ServiceGroup obj = new ServiceGroup("foo", ImmutableList.of(Uid.of("2")), Uid.of("1"));
     assertEquals(obj, SerializationUtils.clone(obj));
   }
 
   @Test
   public void testEquals() {
-    Group obj = new Group("foo", ImmutableList.of(), Uid.of("1"));
+    ServiceGroup obj = new ServiceGroup("foo", ImmutableList.of(), Uid.of("1"));
     new EqualsTester()
-        .addEqualityGroup(obj, new Group("foo", ImmutableList.of(), Uid.of("1")))
-        .addEqualityGroup(new Group("foo0", ImmutableList.of(), Uid.of("1")))
-        .addEqualityGroup(new Group("foo", ImmutableList.of(Uid.of("2")), Uid.of("1")))
-        .addEqualityGroup(new Group("foo", ImmutableList.of(), Uid.of("10")))
+        .addEqualityGroup(obj, new ServiceGroup("foo", ImmutableList.of(), Uid.of("1")))
+        .addEqualityGroup(new ServiceGroup("foo0", ImmutableList.of(), Uid.of("1")))
+        .addEqualityGroup(new ServiceGroup("foo", ImmutableList.of(Uid.of("2")), Uid.of("1")))
+        .addEqualityGroup(new ServiceGroup("foo", ImmutableList.of(), Uid.of("10")))
         .testEquals();
   }
 }

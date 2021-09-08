@@ -24,7 +24,7 @@ public final class ServiceTcpTest {
             + "\"port\":\"8642\""
             + "}";
     assertThat(
-        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, ServiceTcp.class),
+        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, TypedManagementObject.class),
         equalTo(new ServiceTcp("foo", "8642", Uid.of("1"))));
   }
 
