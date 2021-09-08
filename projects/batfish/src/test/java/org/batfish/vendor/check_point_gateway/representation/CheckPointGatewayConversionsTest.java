@@ -23,6 +23,7 @@ import java.util.Optional;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
@@ -33,6 +34,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.vendor.check_point_management.AccessLayer;
 import org.batfish.vendor.check_point_management.AccessRule;
 import org.batfish.vendor.check_point_management.AccessRuleOrSection;
@@ -59,6 +61,7 @@ public final class CheckPointGatewayConversionsTest {
   private static final Uid UID_NET0 = Uid.of("10");
   private static final Uid UID_NET1 = Uid.of("11");
   private static final Uid UID_NET2 = Uid.of("12");
+  private static final Uid UID_SERVICE_TCP_22 = Uid.of("13");
   private static final CpmiAnyObject CPMI_ANY = new CpmiAnyObject(UID_CPMI_ANY);
   private static final ImmutableMap<Uid, TypedManagementObject> TEST_OBJS =
       ImmutableMap.<Uid, TypedManagementObject>builder()
@@ -89,6 +92,7 @@ public final class CheckPointGatewayConversionsTest {
           .put(UID_CPMI_ANY, CPMI_ANY)
           .put(UID_ACCEPT, new RulebaseAction("Accept", UID_ACCEPT, "Accept"))
           .put(UID_DROP, new RulebaseAction("Drop", UID_DROP, "Drop"))
+          .put(UID_SERVICE_TCP_22, new ServiceTcp("service_tcp_22", "22", UID_SERVICE_TCP_22))
           .build();
   private static final ImmutableMap<String, IpSpace> TEST_IP_SPACES =
       ImmutableMap.of(
@@ -188,6 +192,7 @@ public final class CheckPointGatewayConversionsTest {
                 .setAction(UID_ACCEPT)
                 .setDestination(ImmutableList.of(UID_NET0))
                 .setSource(ImmutableList.of(UID_NET1))
+                .setService(ImmutableList.of(UID_SERVICE_TCP_22))
                 .setRuleNumber(2)
                 .setName("ruleName")
                 .setUid(Uid.of("2"))
@@ -199,7 +204,12 @@ public final class CheckPointGatewayConversionsTest {
                     new MatchHeaderSpace(
                         HeaderSpace.builder().setDstIps(new IpSpaceReference("net0")).build()),
                     new MatchHeaderSpace(
-                        HeaderSpace.builder().setSrcIps(new IpSpaceReference("net1")).build())))));
+                        HeaderSpace.builder().setSrcIps(new IpSpaceReference("net1")).build()),
+                    new MatchHeaderSpace(
+                        HeaderSpace.builder()
+                            .setIpProtocols(IpProtocol.TCP)
+                            .setDstPorts(IntegerSpace.of(22).getSubRanges())
+                            .build())))));
 
     // Negated matches
     assertThat(
@@ -210,6 +220,8 @@ public final class CheckPointGatewayConversionsTest {
                 .setDestination(ImmutableList.of(UID_NET0))
                 .setSourceNegate(true)
                 .setSource(ImmutableList.of(UID_NET1))
+                .setServiceNegate(true)
+                .setService(ImmutableList.of(UID_SERVICE_TCP_22))
                 .setRuleNumber(2)
                 .setName("ruleName")
                 .setUid(Uid.of("2"))
@@ -221,9 +233,13 @@ public final class CheckPointGatewayConversionsTest {
                     new MatchHeaderSpace(
                         HeaderSpace.builder().setNotDstIps(new IpSpaceReference("net0")).build()),
                     new MatchHeaderSpace(
-                        HeaderSpace.builder()
-                            .setNotSrcIps(new IpSpaceReference("net1"))
-                            .build())))));
+                        HeaderSpace.builder().setNotSrcIps(new IpSpaceReference("net1")).build()),
+                    new NotMatchExpr(
+                        new MatchHeaderSpace(
+                            HeaderSpace.builder()
+                                .setIpProtocols(IpProtocol.TCP)
+                                .setDstPorts(IntegerSpace.of(22).getSubRanges())
+                                .build()))))));
   }
 
   @Test
