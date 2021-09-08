@@ -45,6 +45,7 @@ import org.batfish.vendor.check_point_management.NatSettings;
 import org.batfish.vendor.check_point_management.Network;
 import org.batfish.vendor.check_point_management.PolicyTargets;
 import org.batfish.vendor.check_point_management.RulebaseAction;
+import org.batfish.vendor.check_point_management.ServiceIcmp;
 import org.batfish.vendor.check_point_management.ServiceTcp;
 import org.batfish.vendor.check_point_management.ServiceUdp;
 import org.batfish.vendor.check_point_management.TypedManagementObject;
@@ -321,6 +322,17 @@ public final class CheckPointGatewayConversionsTest {
                   HeaderSpace.builder()
                       .setDstPorts(ImmutableList.of(new SubRange(1234)))
                       .setIpProtocols(IpProtocol.UDP)
+                      .build())));
+    }
+    {
+      assertThat(
+          toHeaderSpace(CPMI_ANY, CPMI_ANY, new ServiceIcmp("foo", 8, 3, uid), warnings),
+          equalTo(
+              Optional.of(
+                  HeaderSpace.builder()
+                      .setIcmpTypes(8)
+                      .setIcmpCodes(3)
+                      .setIpProtocols(IpProtocol.ICMP)
                       .build())));
     }
   }
