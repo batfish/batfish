@@ -8225,6 +8225,37 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testNoStaticRouteExtraction() {
+    String hostname = "nxos_no_static_route";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getVrfs(), hasKeys(DEFAULT_VRF_NAME, MANAGEMENT_VRF_NAME));
+    assertThat(vc.getDefaultVrf().getStaticRoutes().asMap(), hasKeys(Prefix.strict("10.0.1.0/24")));
+
+    Collection<StaticRoute> routes =
+        vc.getDefaultVrf().getStaticRoutes().get(Prefix.strict("10.0.1.0/24"));
+    assertThat(
+        routes,
+        contains(
+            StaticRoute.builder()
+                .setPrefix(Prefix.parse("10.0.1.0/24"))
+                .setNextHopInterface("Ethernet1/1")
+                .setNextHopIp(Ip.parse("10.0.1.1"))
+                .build()));
+
+    assertThat(
+        vc.getWarnings().getParseWarnings(),
+        containsInAnyOrder(
+            allOf(
+                hasComment("Cannot delete non-existent route"),
+                ParseWarningMatchers.hasText(
+                    containsString("10.0.1.0/24 Ethernet1/1 10.0.1.1 vrf management"))),
+            allOf(
+                hasComment("Cannot delete non-existent route"),
+                ParseWarningMatchers.hasText("10.0.1.0/24 Ethernet1/1"))));
+  }
+
+  @Test
   public void testStaticRouteReferences() throws IOException {
     String hostname = "nxos_static_route_references";
     String filename = String.format("configs/%s", hostname);

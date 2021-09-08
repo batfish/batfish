@@ -110,7 +110,7 @@ public class MockRib implements GenericRib<AnnotatedRoute<AbstractRoute>> {
   @Override
   public Set<AnnotatedRoute<AbstractRoute>> longestPrefixMatch(
       Ip address, ResolutionRestriction<AnnotatedRoute<AbstractRoute>> restriction) {
-    return _longestPrefixMatchResults.get(address);
+    return _longestPrefixMatchResults.getOrDefault(address, ImmutableSet.of());
   }
 
   @Override

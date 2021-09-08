@@ -1,0 +1,19 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_no_static_route
+!
+interface Ethernet1/1
+  no switchport
+  no shutdown
+  ip address 10.0.1.1/24
+!
+ip route 10.0.1.0/24 Ethernet1/1 10.0.1.1
+ip route 10.0.1.0/24 Ethernet1/1 10.0.1.2
+! Ignored, different vrf than original route
+no ip route 10.0.1.0/24 Ethernet1/1 10.0.1.1 vrf management
+no ip route 10.0.1.0/24 Ethernet1/1 10.0.1.2
+! Cannot "no" just a prefix or just an ip route
+!no ip route 10.0.1.0/24
+!no ip route
+! Ignored, nhip does not match
+no ip route 10.0.1.0/24 Ethernet1/1

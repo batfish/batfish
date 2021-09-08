@@ -106,6 +106,10 @@ ADDRGROUP
   'addrgroup' -> pushMode ( M_Word )
 ;
 
+ADJACENCY: 'adjacency';
+
+ADJMGR: 'adjmgr';
+
 ADMINISTRATIVELY_PROHIBITED: 'administratively-prohibited';
 
 ADVERTISE: 'advertise';
@@ -171,6 +175,8 @@ ALWAYS_COMPARE_MED: 'always-compare-med';
 
 ANY: 'any';
 
+AMT: 'amt';
+
 AREA: 'area';
 
 ARP: 'arp';
@@ -228,6 +234,8 @@ AUTHPRIV: 'authpriv';
 AUTO: 'auto';
 
 AUTO_COST: 'auto-cost';
+
+AUTO_DISCARD: 'auto-discard';
 
 AUTOCONFIG: 'autoconfig';
 
@@ -599,6 +607,8 @@ DROP_ON_FAIL: 'drop-on-fail';
 
 DSCP: 'dscp';
 
+DSCP_LOP: 'dscp-lop';
+
 DST_MAC: 'dst-mac';
 
 DUAL_AS: 'dual-as';
@@ -717,6 +727,8 @@ EXPORTER
 :
   'exporter' -> pushMode(M_Word)
 ;
+
+EXTCOMMUNITY_LIST: 'extcommunity-list';
 
 EXTEND: 'extend';
 
@@ -1158,6 +1170,8 @@ LOAD_INTERVAL: 'load-interval';
 
 LOAD_SHARE: 'load-share';
 
+LOAD_SHARING: 'load-sharing';
+
 LOCAL: 'local';
 
 LOCAL_LABELED_ROUTE: 'local-labeled-route';
@@ -1346,6 +1360,8 @@ METRIC: 'metric';
 
 METRIC_TYPE: 'metric-type';
 
+MFWD: 'mfwd';
+
 MGMT
 :
   [Mm] [Gg] [Mm] [Tt]
@@ -1388,6 +1404,8 @@ MONITOR
 ;
 
 MPLS: 'mpls';
+
+MROUTE: 'mroute';
 
 MROUTER: 'mrouter';
 
@@ -2091,6 +2109,8 @@ SOURCE_PROTOCOL
 ;
 
 SOURCE_QUENCH: 'source-quench';
+
+SOURCE_ROUTE: 'source-route';
 
 SOURCE_ROUTE_FAILED: 'source-route-failed';
 

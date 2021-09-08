@@ -15,7 +15,10 @@ ip_route
   )
 ;
 
-ip_route_network
+ip_route_network: static_route_definition;
+
+// Might need to split this out for the definition and "no" syntax if they turn out to be different
+static_route_definition
 :
   network = route_network
   (
@@ -71,3 +74,7 @@ ipv6_route
     | pref = protocol_distance (TAG tag = uint32)?
   )? NEWLINE
 ;
+
+no_ip_route: ROUTE no_ip_route_network;
+
+no_ip_route_network: static_route_definition;
