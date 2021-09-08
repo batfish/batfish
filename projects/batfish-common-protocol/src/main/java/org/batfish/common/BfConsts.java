@@ -131,10 +131,6 @@ public class BfConsts {
   public static final String RELPATH_CHECKPOINT_SHOW_NAT_RULEBASE = "show-nat-rulebase.json";
   public static final String RELPATH_CHECKPOINT_SHOW_NETWORKS = "show-networks.json";
   public static final String RELPATH_CHECKPOINT_SHOW_PACKAGE = "show-package.json";
-  public static final String RELPATH_CHECKPOINT_SHOW_SERVICE_GROUPS = "show-service-groups.json";
-  public static final String RELPATH_CHECKPOINT_SHOW_SERVICES_ICMP = "show-services-icmp.json";
-  public static final String RELPATH_CHECKPOINT_SHOW_SERVICES_TCP = "show-services-tcp.json";
-  public static final String RELPATH_CHECKPOINT_SHOW_SERVICES_UDP = "show-services-udp.json";
   public static final String RELPATH_CONFIGURATIONS_DIR = "configs";
   public static final String RELPATH_EDGE_BLACKLIST_FILE = "edge_blacklist";
   public static final String RELPATH_ENVIRONMENT_BGP_TABLES = "bgp";

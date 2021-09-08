@@ -8,10 +8,6 @@ import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_GATEWAYS_AND_S
 import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_NAT_RULEBASE;
 import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_NETWORKS;
 import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_PACKAGE;
-import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_SERVICES_ICMP;
-import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_SERVICES_TCP;
-import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_SERVICES_UDP;
-import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_SERVICE_GROUPS;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -457,4 +453,8 @@ public class CheckpointManagementParser {
   }
 
   private static final Logger LOGGER = LogManager.getLogger(CheckpointManagementParser.class);
+  private static final String RELPATH_CHECKPOINT_SHOW_SERVICE_GROUPS = "show-service-groups.json";
+  private static final String RELPATH_CHECKPOINT_SHOW_SERVICES_ICMP = "show-services-icmp.json";
+  private static final String RELPATH_CHECKPOINT_SHOW_SERVICES_TCP = "show-services-tcp.json";
+  private static final String RELPATH_CHECKPOINT_SHOW_SERVICES_UDP = "show-services-udp.json";
 }
