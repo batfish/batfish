@@ -34,7 +34,7 @@ public final class CpmiGatewayClusterTest {
             + "}" // policy
             + "}";
     assertThat(
-        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, CpmiGatewayCluster.class),
+        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, GatewayOrServer.class),
         equalTo(
             new CpmiGatewayCluster(
                 ImmutableList.of("m1"),

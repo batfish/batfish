@@ -24,8 +24,7 @@ public final class UnknownTypedManagementObjectTest {
             + "\"a field that also isn't handled\":\"0.0.0.0\""
             + "}";
     assertThat(
-        BatfishObjectMapper.ignoreUnknownMapper()
-            .readValue(input, UnknownTypedManagementObject.class),
+        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, TypedManagementObject.class),
         equalTo(
             new UnknownTypedManagementObject(
                 "foo", Uid.of("0"), "some type that isn't handled yet")));

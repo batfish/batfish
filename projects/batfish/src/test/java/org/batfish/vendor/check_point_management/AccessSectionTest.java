@@ -46,7 +46,7 @@ public final class AccessSectionTest {
             + "]" // rulebase
             + "}"; // AccessSection
     assertThat(
-        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, AccessSection.class),
+        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, AccessRuleOrSection.class),
         equalTo(
             new AccessSection(
                 "foo",
@@ -79,7 +79,7 @@ public final class AccessSectionTest {
             + "\"rulebase\":[]"
             + "}"; // AccessSection
     assertThat(
-        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, AccessSection.class),
+        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, AccessRuleOrSection.class),
         equalTo(new AccessSection("Section 0", ImmutableList.of(), Uid.of("0"))));
   }
 

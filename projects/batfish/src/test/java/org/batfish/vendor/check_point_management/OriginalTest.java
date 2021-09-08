@@ -22,7 +22,7 @@ public final class OriginalTest {
             + "\"name\":\"Original\""
             + "}";
     assertThat(
-        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, Global.class),
+        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, TypedManagementObject.class),
         equalTo(new Original(Uid.of("0"))));
   }
 

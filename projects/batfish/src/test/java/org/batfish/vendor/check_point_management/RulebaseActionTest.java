@@ -27,7 +27,7 @@ public final class RulebaseActionTest {
             + "\"comments\":\"bar\""
             + "}";
     assertThat(
-        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, RulebaseAction.class),
+        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, TypedManagementObject.class),
         equalTo(new RulebaseAction("foo", Uid.of("0"), "bar")));
   }
 

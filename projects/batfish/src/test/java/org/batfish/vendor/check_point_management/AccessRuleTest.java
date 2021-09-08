@@ -40,7 +40,7 @@ public final class AccessRuleTest {
               + "\"vpn\":[\"9\"]"
               + "}";
       assertThat(
-          BatfishObjectMapper.ignoreUnknownMapper().readValue(input, AccessRule.class),
+          BatfishObjectMapper.ignoreUnknownMapper().readValue(input, AccessRuleOrSection.class),
           equalTo(
               AccessRule.testBuilder()
                   .setAction(Uid.of("1"))
@@ -81,7 +81,7 @@ public final class AccessRuleTest {
               + "\"vpn\":[\"9\"]"
               + "}";
       assertThat(
-          BatfishObjectMapper.ignoreUnknownMapper().readValue(input, AccessRule.class),
+          BatfishObjectMapper.ignoreUnknownMapper().readValue(input, AccessRuleOrSection.class),
           equalTo(
               AccessRule.testBuilder()
                   .setAction(Uid.of("1"))
