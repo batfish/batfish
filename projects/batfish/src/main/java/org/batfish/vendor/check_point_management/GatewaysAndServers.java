@@ -5,7 +5,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import java.io.Serializable;
 import java.util.List;
@@ -17,8 +16,7 @@ import javax.annotation.Nullable;
 /** Data model for the response to the {@code show-gateways-and-servers} command. */
 public final class GatewaysAndServers implements Serializable {
 
-  @VisibleForTesting
-  GatewaysAndServers(Map<Uid, GatewayOrServer> gatewaysAndServers) {
+  public GatewaysAndServers(Map<Uid, GatewayOrServer> gatewaysAndServers) {
     _gatewaysAndServers = gatewaysAndServers;
   }
 

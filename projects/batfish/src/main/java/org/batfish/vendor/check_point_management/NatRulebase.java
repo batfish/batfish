@@ -4,7 +4,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +39,6 @@ public final class NatRulebase extends ManagementObject {
         uid);
   }
 
-  @VisibleForTesting
   public NatRulebase(
       Map<Uid, TypedManagementObject> objectsDictionary, List<NatRuleOrSection> rulebase, Uid uid) {
     super(uid);

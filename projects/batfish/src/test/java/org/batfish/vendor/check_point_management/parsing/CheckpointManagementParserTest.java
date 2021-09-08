@@ -1,12 +1,14 @@
 package org.batfish.vendor.check_point_management.parsing;
 
+import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_GATEWAYS_AND_SERVERS;
 import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_NAT_RULEBASE;
 import static org.batfish.vendor.check_point_management.parsing.CheckpointManagementParser.RELPATH_CHECKPOINT_SHOW_SERVICES_ICMP;
 import static org.batfish.vendor.check_point_management.parsing.CheckpointManagementParser.RELPATH_CHECKPOINT_SHOW_SERVICES_TCP;
 import static org.batfish.vendor.check_point_management.parsing.CheckpointManagementParser.RELPATH_CHECKPOINT_SHOW_SERVICES_UDP;
 import static org.batfish.vendor.check_point_management.parsing.CheckpointManagementParser.RELPATH_CHECKPOINT_SHOW_SERVICE_GROUPS;
 import static org.batfish.vendor.check_point_management.parsing.CheckpointManagementParser.buildObjectsList;
-import static org.batfish.vendor.check_point_management.parsing.CheckpointManagementParser.getNatRulebase;
+import static org.batfish.vendor.check_point_management.parsing.CheckpointManagementParser.readGatewaysAndServers;
+import static org.batfish.vendor.check_point_management.parsing.CheckpointManagementParser.readNatRulebase;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertNull;
@@ -16,10 +18,13 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.vendor.check_point_management.AllInstallationTargets;
 import org.batfish.vendor.check_point_management.CpmiAnyObject;
 import org.batfish.vendor.check_point_management.Domain;
+import org.batfish.vendor.check_point_management.GatewayOrServerPolicy;
+import org.batfish.vendor.check_point_management.GatewaysAndServers;
 import org.batfish.vendor.check_point_management.NatMethod;
 import org.batfish.vendor.check_point_management.NatRule;
 import org.batfish.vendor.check_point_management.NatRulebase;
@@ -29,6 +34,7 @@ import org.batfish.vendor.check_point_management.ServiceGroup;
 import org.batfish.vendor.check_point_management.ServiceIcmp;
 import org.batfish.vendor.check_point_management.ServiceTcp;
 import org.batfish.vendor.check_point_management.ServiceUdp;
+import org.batfish.vendor.check_point_management.SimpleGateway;
 import org.batfish.vendor.check_point_management.Uid;
 import org.junit.Test;
 
@@ -40,6 +46,8 @@ public final class CheckpointManagementParserTest {
   private static final String SERVER_NAME = "server1";
   private static final Uid UID_ANY = Uid.of("100");
   private static final Uid UID_ORIG = Uid.of("101");
+  private static final Uid UID_GW1 = Uid.of("102");
+  private static final Uid UID_GW2 = Uid.of("103");
 
   private static @Nonnull Package testPackage(boolean nat) {
     return new Package(
@@ -52,7 +60,7 @@ public final class CheckpointManagementParserTest {
   }
 
   @Test
-  public void testGetNatRulebaseNatPolicyFalse() {
+  public void testReadNatRulebaseNatPolicyFalse() {
     ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
     Package pakij = testPackage(false);
     String natRulebaseInput =
@@ -85,7 +93,7 @@ public final class CheckpointManagementParserTest {
 
     // NAT rulebase should be null despite definition because package nat-policy is false.
     assertNull(
-        getNatRulebase(
+        readNatRulebase(
             pakij,
             DOMAIN_NAME,
             ImmutableMap.of(RELPATH_CHECKPOINT_SHOW_NAT_RULEBASE, natRulebaseInput),
@@ -94,14 +102,14 @@ public final class CheckpointManagementParserTest {
   }
 
   @Test
-  public void testGetNatRulebaseEmpty() {
+  public void testReadNatRulebaseEmpty() {
     ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
     Package pakij = testPackage(true);
     String natRulebaseInput = "[]"; // show-nat-rulebase
 
     // NAT rulebase should be null since there are no rulebase pages.
     assertNull(
-        getNatRulebase(
+        readNatRulebase(
             pakij,
             DOMAIN_NAME,
             ImmutableMap.of(RELPATH_CHECKPOINT_SHOW_NAT_RULEBASE, natRulebaseInput),
@@ -110,16 +118,16 @@ public final class CheckpointManagementParserTest {
   }
 
   @Test
-  public void testGetNatRulebaseMissingFile() {
+  public void testReadNatRulebaseMissingFile() {
     ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
     Package pakij = testPackage(true);
 
     // NAT rulebase should be null since the file is missing.
-    assertNull(getNatRulebase(pakij, DOMAIN_NAME, ImmutableMap.of(), pvcae, SERVER_NAME));
+    assertNull(readNatRulebase(pakij, DOMAIN_NAME, ImmutableMap.of(), pvcae, SERVER_NAME));
   }
 
   @Test
-  public void testGetNatRulebaseSinglePage() {
+  public void testReadNatRulebaseSinglePage() {
     ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
     Package pakij = testPackage(true);
     String natRulebaseInput =
@@ -152,7 +160,7 @@ public final class CheckpointManagementParserTest {
 
     // NAT rulebase should be populated.
     assertThat(
-        getNatRulebase(
+        readNatRulebase(
             pakij,
             DOMAIN_NAME,
             ImmutableMap.of(RELPATH_CHECKPOINT_SHOW_NAT_RULEBASE, natRulebaseInput),
@@ -180,7 +188,7 @@ public final class CheckpointManagementParserTest {
   }
 
   @Test
-  public void testGetNatRulebaseTwoPages() {
+  public void testReadNatRulebaseTwoPages() {
     ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
     Package pakij = testPackage(true);
     String natRulebaseInput =
@@ -249,7 +257,7 @@ public final class CheckpointManagementParserTest {
 
     // NAT rulebase should be populated with merged rules and objects-dictionary from the two pages
     assertThat(
-        getNatRulebase(
+        readNatRulebase(
             pakij,
             DOMAIN_NAME,
             ImmutableMap.of(RELPATH_CHECKPOINT_SHOW_NAT_RULEBASE, natRulebaseInput),
@@ -293,7 +301,7 @@ public final class CheckpointManagementParserTest {
   }
 
   @Test
-  public void testGetNatRulebaseTwoUids() {
+  public void testReadNatRulebaseTwoUids() {
     ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
     Package pakij = testPackage(true);
     String natRulebaseInput =
@@ -362,7 +370,7 @@ public final class CheckpointManagementParserTest {
 
     // NAT rulebase should be populated only with first page, since only first UID is kept
     assertThat(
-        getNatRulebase(
+        readNatRulebase(
             pakij,
             DOMAIN_NAME,
             ImmutableMap.of(RELPATH_CHECKPOINT_SHOW_NAT_RULEBASE, natRulebaseInput),
@@ -424,5 +432,160 @@ public final class CheckpointManagementParserTest {
             new ServiceIcmp("icmp", 1, 2, Uid.of("2")),
             new ServiceTcp("tcp", "22", Uid.of("3")),
             new ServiceUdp("udp", "222", Uid.of("4"))));
+  }
+
+  @Test
+  public void testReadGatewaysAndServersEmpty() {
+    ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
+    String sgasInput = "[]"; // show-gateways-and-servers
+
+    // GatewaysAndServers should be null since there are no pages.
+    assertNull(
+        readGatewaysAndServers(
+            SERVER_NAME,
+            DOMAIN_NAME,
+            ImmutableMap.of(
+                SERVER_NAME,
+                ImmutableMap.of(
+                    DOMAIN_NAME,
+                    ImmutableMap.of(RELPATH_CHECKPOINT_SHOW_GATEWAYS_AND_SERVERS, sgasInput))),
+            pvcae));
+  }
+
+  @Test
+  public void testReadGatewaysAndServersMissingFile() {
+    ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
+
+    // GatewaysAndServers should be null since the file is missing.
+    assertNull(
+        readGatewaysAndServers(
+            SERVER_NAME,
+            DOMAIN_NAME,
+            ImmutableMap.of(SERVER_NAME, ImmutableMap.of(DOMAIN_NAME, ImmutableMap.of())),
+            pvcae));
+  }
+
+  @Test
+  public void testReadGatewaysAndServersSinglePage() {
+    ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
+    String sgasInput =
+        "[" // show-gateways-and-servers
+            + "{" // show-gateways-and-servers page
+            + "\"objects\":["
+            + "{" // simple-gateway
+            + "\"type\":\"simple-gateway\","
+            + "\"uid\":\"102\","
+            + "\"name\":\"gw1\","
+            + "\"interfaces\": [],"
+            + "\"ipv4-address\":\"1.1.1.1\","
+            + "\"policy\":{"
+            + "\"access-policy-installed\": false,"
+            + "\"access-policy-name\": null,"
+            + "\"threat-policy-installed\": false,"
+            + "\"threat-policy-name\": null"
+            + "}" // policy
+            + "}" // simple-gateawy
+            + "]," // objects
+            + "\"from\": 1,"
+            + "\"to\": 1"
+            + "}" // show-gateways-and-servers page
+            + "]"; // show-gateways-and-servers
+
+    // GatewaysAndServers should be populated.
+    assertThat(
+        readGatewaysAndServers(
+            SERVER_NAME,
+            DOMAIN_NAME,
+            ImmutableMap.of(
+                SERVER_NAME,
+                ImmutableMap.of(
+                    DOMAIN_NAME,
+                    ImmutableMap.of(RELPATH_CHECKPOINT_SHOW_GATEWAYS_AND_SERVERS, sgasInput))),
+            pvcae),
+        equalTo(
+            new GatewaysAndServers(
+                ImmutableMap.of(
+                    UID_GW1,
+                    new SimpleGateway(
+                        Ip.parse("1.1.1.1"),
+                        "gw1",
+                        ImmutableList.of(),
+                        new GatewayOrServerPolicy(null, null),
+                        UID_GW1)))));
+  }
+
+  @Test
+  public void testReadGatewaysAndServersTwoPages() {
+    ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
+    String sgasInput =
+        "[" // show-gateways-and-servers
+            + "{" // show-gateways-and-servers page1
+            + "\"objects\":["
+            + "{" // simple-gateway
+            + "\"type\":\"simple-gateway\","
+            + "\"uid\":\"102\","
+            + "\"name\":\"gw1\","
+            + "\"interfaces\": [],"
+            + "\"ipv4-address\":\"1.1.1.1\","
+            + "\"policy\":{"
+            + "\"access-policy-installed\": false,"
+            + "\"access-policy-name\": null,"
+            + "\"threat-policy-installed\": false,"
+            + "\"threat-policy-name\": null"
+            + "}" // policy
+            + "}" // simple-gateawy
+            + "]," // objects
+            + "\"from\": 1,"
+            + "\"to\": 1"
+            + "}," // show-gateways-and-servers page1
+            + "{" // show-gateways-and-servers page2
+            + "\"objects\":["
+            + "{" // simple-gateway
+            + "\"type\":\"simple-gateway\","
+            + "\"uid\":\"103\","
+            + "\"name\":\"gw2\","
+            + "\"interfaces\": [],"
+            + "\"ipv4-address\":\"2.2.2.2\","
+            + "\"policy\":{"
+            + "\"access-policy-installed\": false,"
+            + "\"access-policy-name\": null,"
+            + "\"threat-policy-installed\": false,"
+            + "\"threat-policy-name\": null"
+            + "}" // policy
+            + "}" // simple-gateawy
+            + "]," // objects
+            + "\"from\": 1,"
+            + "\"to\": 1"
+            + "}" // show-gateways-and-servers page2
+            + "]"; // show-gateways-and-servers
+
+    // GatewaysAndServers should be populated with merged objects from the two pages
+    assertThat(
+        readGatewaysAndServers(
+            SERVER_NAME,
+            DOMAIN_NAME,
+            ImmutableMap.of(
+                SERVER_NAME,
+                ImmutableMap.of(
+                    DOMAIN_NAME,
+                    ImmutableMap.of(RELPATH_CHECKPOINT_SHOW_GATEWAYS_AND_SERVERS, sgasInput))),
+            pvcae),
+        equalTo(
+            new GatewaysAndServers(
+                ImmutableMap.of(
+                    UID_GW1,
+                    new SimpleGateway(
+                        Ip.parse("1.1.1.1"),
+                        "gw1",
+                        ImmutableList.of(),
+                        new GatewayOrServerPolicy(null, null),
+                        UID_GW1),
+                    UID_GW2,
+                    new SimpleGateway(
+                        Ip.parse("2.2.2.2"),
+                        "gw2",
+                        ImmutableList.of(),
+                        new GatewayOrServerPolicy(null, null),
+                        UID_GW2)))));
   }
 }
