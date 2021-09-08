@@ -21,6 +21,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
   @JsonSubTypes.Type(value = RulebaseAction.class, name = "RulebaseAction"),
   @JsonSubTypes.Type(value = ServiceGroup.class, name = "service-group"),
   @JsonSubTypes.Type(value = ServiceIcmp.class, name = "service-icmp"),
+  @JsonSubTypes.Type(value = ServiceOther.class, name = "service-other"),
   @JsonSubTypes.Type(value = ServiceTcp.class, name = "service-tcp"),
   @JsonSubTypes.Type(value = ServiceUdp.class, name = "service-udp"),
 })

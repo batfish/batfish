@@ -37,6 +37,7 @@ import org.batfish.vendor.check_point_management.RulebaseAction;
 import org.batfish.vendor.check_point_management.Service;
 import org.batfish.vendor.check_point_management.ServiceGroup;
 import org.batfish.vendor.check_point_management.ServiceIcmp;
+import org.batfish.vendor.check_point_management.ServiceOther;
 import org.batfish.vendor.check_point_management.ServiceTcp;
 import org.batfish.vendor.check_point_management.ServiceUdp;
 import org.batfish.vendor.check_point_management.ServiceVisitor;
@@ -302,6 +303,13 @@ public final class CheckPointGatewayConversions {
       _hsb.setIpProtocols(IpProtocol.ICMP);
       _hsb.setIcmpTypes(serviceIcmp.getIcmpType());
       _hsb.setIcmpCodes(serviceIcmp.getIcmpCode());
+      return null;
+    }
+
+    @Override
+    public Void visitServiceOther(ServiceOther serviceOther) {
+      assert _hsb != null;
+      _hsb.setIpProtocols(IpProtocol.fromNumber(serviceOther.getIpProtocol()));
       return null;
     }
 
