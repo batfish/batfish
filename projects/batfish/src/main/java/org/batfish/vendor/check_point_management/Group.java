@@ -10,7 +10,7 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public final class Group extends AddressSpace {
+public final class Group extends TypedManagementObject implements AddressSpace {
   @Override
   public <T> T accept(AddressSpaceVisitor<T> visitor) {
     return visitor.visitGroup(this);

@@ -46,8 +46,6 @@ public class AddressSpaceToIpSpaceTest {
     assertThat(cpmiAnyObject.accept(visitor), equalTo(UniverseIpSpace.INSTANCE));
   }
 
-  // TODO: uncomment and use forthcoming show-objects schema gateway or server class
-  /*
   @Test
   public void testGatewayOrServer() {
     AddressSpaceToIpSpace visitor = new AddressSpaceToIpSpace(ImmutableMap.of());
@@ -62,12 +60,8 @@ public class AddressSpaceToIpSpaceTest {
                     "eth2", InterfaceTopologyTest.TEST_INSTANCE, Ip.parse("10.0.2.1"), 24)),
             new GatewayOrServerPolicy(null, null),
             Uid.of("1"));
-    assertThat(
-        gatewayOrServer.accept(visitor),
-        equalTo(
-            AclIpSpace.union(Ip.parse("10.0.1.1").toIpSpace(), Ip.parse("10.0.2.1").toIpSpace())));
-
-  }*/
+    assertThat(gatewayOrServer.accept(visitor), equalTo(Ip.parse("10.0.0.1").toIpSpace()));
+  }
 
   @Test
   public void testGroup() {
@@ -91,7 +85,7 @@ public class AddressSpaceToIpSpaceTest {
 
     AddressSpaceToIpSpace visitor =
         new AddressSpaceToIpSpace(
-            ImmutableMap.<Uid, TypedManagementObject>builder()
+            ImmutableMap.<Uid, NamedManagementObject>builder()
                 .put(group1Uid, group1)
                 .put(group2Uid, group2)
                 .put(group3Uid, group3)

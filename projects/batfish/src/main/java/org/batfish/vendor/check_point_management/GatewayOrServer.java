@@ -26,7 +26,7 @@ import org.batfish.datamodel.Ip;
   @JsonSubTypes.Type(value = CpmiVsxNetobj.class, name = "CpmiVsxNetobj"),
   @JsonSubTypes.Type(value = SimpleGateway.class, name = "simple-gateway"),
 })
-public abstract class GatewayOrServer extends NamedManagementObject {
+public abstract class GatewayOrServer extends NamedManagementObject implements AddressSpace {
 
   protected GatewayOrServer(
       @Nullable Ip ipv4Address,
@@ -38,6 +38,12 @@ public abstract class GatewayOrServer extends NamedManagementObject {
     _interfaces = interfaces;
     _ipv4Address = ipv4Address;
     _policy = policy;
+  }
+
+  @Override
+  public final <T> T accept(AddressSpaceVisitor<T> visitor) {
+    // TODO: more granularity?
+    return visitor.visitGatewayOrServer(this);
   }
 
   public @Nonnull List<Interface> getInterfaces() {

@@ -56,9 +56,9 @@ import org.batfish.vendor.check_point_management.GatewayOrServer;
 import org.batfish.vendor.check_point_management.ManagementDomain;
 import org.batfish.vendor.check_point_management.ManagementPackage;
 import org.batfish.vendor.check_point_management.ManagementServer;
+import org.batfish.vendor.check_point_management.NamedManagementObject;
 import org.batfish.vendor.check_point_management.NatMethod;
 import org.batfish.vendor.check_point_management.NatRulebase;
-import org.batfish.vendor.check_point_management.TypedManagementObject;
 import org.batfish.vendor.check_point_management.Uid;
 import org.batfish.vendor.check_point_management.UnknownTypedManagementObject;
 
@@ -187,7 +187,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
    *
    * <p>Warns about unknown object types.
    */
-  private void convertObjects(Map<Uid, TypedManagementObject> objs) {
+  private void convertObjects(Map<Uid, NamedManagementObject> objs) {
     AddressSpaceToIpSpace addressSpaceToIpSpace = new AddressSpaceToIpSpace(objs);
     objs.values()
         .forEach(
@@ -222,7 +222,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
   }
 
   private void convertObjects(ManagementPackage pakij, ManagementDomain domain) {
-    Map<Uid, TypedManagementObject> objects = new HashMap<>();
+    Map<Uid, NamedManagementObject> objects = new HashMap<>();
     Optional.ofNullable(pakij.getNatRulebase())
         .map(NatRulebase::getObjectsDictionary)
         .ifPresent(objects::putAll);
@@ -230,6 +230,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
         .map(AccessLayer::getObjectsDictionary)
         .forEach(objects::putAll);
     domain.getObjects().forEach(object -> objects.put(object.getUid(), object));
+    objects.putAll(domain.getGatewaysAndServers());
     convertObjects(objects);
   }
 

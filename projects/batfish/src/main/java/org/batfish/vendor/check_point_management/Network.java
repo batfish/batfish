@@ -11,7 +11,7 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 
 /** An IPv4 network. */
-public final class Network extends AddressSpace {
+public final class Network extends TypedManagementObject implements AddressSpace {
 
   @Override
   public <T> T accept(AddressSpaceVisitor<T> visitor) {
