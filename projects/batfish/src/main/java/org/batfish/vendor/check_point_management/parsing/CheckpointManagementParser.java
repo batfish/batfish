@@ -189,6 +189,7 @@ public class CheckpointManagementParser {
             RELPATH_CHECKPOINT_SHOW_NETWORKS,
             RELPATH_CHECKPOINT_SHOW_SERVICE_GROUPS,
             RELPATH_CHECKPOINT_SHOW_SERVICES_ICMP,
+            RELPATH_CHECKPOINT_SHOW_SERVICES_OTHER,
             RELPATH_CHECKPOINT_SHOW_SERVICES_TCP,
             RELPATH_CHECKPOINT_SHOW_SERVICES_UDP)
         .stream()
@@ -454,8 +455,9 @@ public class CheckpointManagementParser {
   }
 
   private static final Logger LOGGER = LogManager.getLogger(CheckpointManagementParser.class);
-  private static final String RELPATH_CHECKPOINT_SHOW_SERVICE_GROUPS = "show-service-groups.json";
-  private static final String RELPATH_CHECKPOINT_SHOW_SERVICES_ICMP = "show-services-icmp.json";
-  private static final String RELPATH_CHECKPOINT_SHOW_SERVICES_TCP = "show-services-tcp.json";
-  private static final String RELPATH_CHECKPOINT_SHOW_SERVICES_UDP = "show-services-udp.json";
+  static final String RELPATH_CHECKPOINT_SHOW_SERVICE_GROUPS = "show-service-groups.json";
+  static final String RELPATH_CHECKPOINT_SHOW_SERVICES_ICMP = "show-services-icmp.json";
+  static final String RELPATH_CHECKPOINT_SHOW_SERVICES_OTHER = "show-services-other.json";
+  static final String RELPATH_CHECKPOINT_SHOW_SERVICES_TCP = "show-services-tcp.json";
+  static final String RELPATH_CHECKPOINT_SHOW_SERVICES_UDP = "show-services-udp.json";
 }

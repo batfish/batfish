@@ -1,6 +1,10 @@
 package org.batfish.vendor.check_point_management.parsing;
 
 import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_NAT_RULEBASE;
+import static org.batfish.vendor.check_point_management.parsing.CheckpointManagementParser.RELPATH_CHECKPOINT_SHOW_SERVICES_ICMP;
+import static org.batfish.vendor.check_point_management.parsing.CheckpointManagementParser.RELPATH_CHECKPOINT_SHOW_SERVICES_TCP;
+import static org.batfish.vendor.check_point_management.parsing.CheckpointManagementParser.RELPATH_CHECKPOINT_SHOW_SERVICES_UDP;
+import static org.batfish.vendor.check_point_management.parsing.CheckpointManagementParser.RELPATH_CHECKPOINT_SHOW_SERVICE_GROUPS;
 import static org.batfish.vendor.check_point_management.parsing.CheckpointManagementParser.buildObjectsList;
 import static org.batfish.vendor.check_point_management.parsing.CheckpointManagementParser.getNatRulebase;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -385,20 +389,29 @@ public final class CheckpointManagementParserTest {
                 Uid.of("0"))));
   }
 
-  private static final String SERVICE_GROUP_JSON =
-      "\"type\": \"service-group\", \"\": \"\", \"\": [\"1\"]";
-  private static final String SERVICE_ICMP_JSON = "{}";
-  private static final String SERVICE_TCP_JSON = "{}";
-  private static final String SERVICE_UDP_JSON = "{}";
+  /** Convert JSON object text into ObjectPage JSON */
+  private String wrapJsonObj(String obj) {
+    return String.format("[{\"objects\":[%s]}]", obj);
+  }
 
   @Test
   public void testBuildObjectsList() {
+    String groupJson =
+        "{\"type\": \"service-group\", \"name\": \"group\", \"uid\": \"1\", \"members\": [\"2\"]}";
+    String icmpJson =
+        "{\"type\": \"service-icmp\", \"name\": \"icmp\", \"uid\": \"2\", \"icmp-type\": 1,"
+            + " \"icmp-code\": 2}";
+    String tcpJson =
+        "{\"type\": \"service-tcp\", \"name\": \"tcp\", \"uid\": \"3\", \"port\": \"22\"}";
+    String udpJson =
+        "{\"type\": \"service-udp\", \"name\": \"udp\", \"uid\": \"4\", \"port\": \"222\"}";
+
     Map<String, String> fileMap =
         ImmutableMap.<String, String>builder()
-            .put("group", SERVICE_GROUP_JSON)
-            .put("icmp", SERVICE_ICMP_JSON)
-            .put("tcp", SERVICE_TCP_JSON)
-            .put("udp", SERVICE_UDP_JSON)
+            .put(RELPATH_CHECKPOINT_SHOW_SERVICE_GROUPS, wrapJsonObj(groupJson))
+            .put(RELPATH_CHECKPOINT_SHOW_SERVICES_ICMP, wrapJsonObj(icmpJson))
+            .put(RELPATH_CHECKPOINT_SHOW_SERVICES_TCP, wrapJsonObj(tcpJson))
+            .put(RELPATH_CHECKPOINT_SHOW_SERVICES_UDP, wrapJsonObj(udpJson))
             .build();
     Map<String, Map<String, Map<String, String>>> domainFileMap =
         ImmutableMap.of("server", ImmutableMap.of("domain", fileMap));
@@ -407,7 +420,7 @@ public final class CheckpointManagementParserTest {
         buildObjectsList(
             domainFileMap, "domain", "server", new ParseVendorConfigurationAnswerElement()),
         containsInAnyOrder(
-            new ServiceGroup("group", Uid.of("1")),
+            new ServiceGroup("group", ImmutableList.of(Uid.of("2")), Uid.of("1")),
             new ServiceIcmp("icmp", 1, 2, Uid.of("2")),
             new ServiceTcp("tcp", "22", Uid.of("3")),
             new ServiceUdp("udp", "222", Uid.of("4"))));
