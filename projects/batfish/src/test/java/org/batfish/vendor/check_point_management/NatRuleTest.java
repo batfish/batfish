@@ -52,7 +52,7 @@ public final class NatRuleTest {
               + "\"translated-source\":\"6\""
               + "}";
       assertThat(
-          BatfishObjectMapper.ignoreUnknownMapper().readValue(input, NatRule.class),
+          BatfishObjectMapper.ignoreUnknownMapper().readValue(input, NatRuleOrSection.class),
           equalTo(TEST_INSTANCE));
     }
   }

@@ -33,7 +33,7 @@ public final class CpmiVsxNetobjTest {
             + "}" // policy
             + "}";
     assertThat(
-        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, CpmiVsxNetobj.class),
+        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, GatewayOrServer.class),
         equalTo(
             new CpmiVsxNetobj(
                 Ip.ZERO,

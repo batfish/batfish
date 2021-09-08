@@ -34,7 +34,7 @@ public final class PackageTest {
               + "}"; // Package
 
       assertThat(
-          BatfishObjectMapper.ignoreUnknownMapper().readValue(input, Package.class),
+          BatfishObjectMapper.ignoreUnknownMapper().readValue(input, TypedManagementObject.class),
           equalTo(
               new Package(
                   new Domain("bar", Uid.of("1")),

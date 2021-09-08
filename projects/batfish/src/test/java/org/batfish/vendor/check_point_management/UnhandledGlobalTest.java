@@ -22,7 +22,7 @@ public final class UnhandledGlobalTest {
             + "\"name\":\"what\""
             + "}";
     assertThat(
-        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, Global.class),
+        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, TypedManagementObject.class),
         equalTo(new UnhandledGlobal("what", Uid.of("0"))));
   }
 

@@ -22,7 +22,7 @@ public final class PolicyTargetsTest {
             + "\"name\":\"Policy Targets\""
             + "}";
     assertThat(
-        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, Global.class),
+        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, TypedManagementObject.class),
         equalTo(new PolicyTargets(Uid.of("0"))));
   }
 

@@ -33,7 +33,7 @@ public final class CpmiVsxClusterMemberTest {
             + "}" // policy
             + "}";
     assertThat(
-        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, CpmiVsxClusterMember.class),
+        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, GatewayOrServer.class),
         equalTo(
             new CpmiVsxClusterMember(
                 Ip.ZERO,
