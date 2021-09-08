@@ -1,7 +1,5 @@
 package org.batfish.vendor.check_point_gateway.representation;
 
-import static org.batfish.datamodel.matchers.AndMatchExprMatchers.hasConjuncts;
-import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExprThat;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.aclName;
@@ -21,8 +19,10 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import java.util.Optional;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.BddTestbed;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
@@ -32,7 +32,9 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.vendor.check_point_management.AccessLayer;
 import org.batfish.vendor.check_point_management.AccessRule;
 import org.batfish.vendor.check_point_management.AccessRuleOrSection;
@@ -60,6 +62,8 @@ public final class CheckPointGatewayConversionsTest {
   private static final Uid UID_NET0 = Uid.of("10");
   private static final Uid UID_NET1 = Uid.of("11");
   private static final Uid UID_NET2 = Uid.of("12");
+  private static final Uid UID_SERVICE_TCP_22 = Uid.of("13");
+  private static final Uid UID_SERVICE_UDP_222 = Uid.of("14");
   private static final CpmiAnyObject CPMI_ANY = new CpmiAnyObject(UID_CPMI_ANY);
   private static final ImmutableMap<Uid, TypedManagementObject> TEST_OBJS =
       ImmutableMap.<Uid, TypedManagementObject>builder()
@@ -90,6 +94,8 @@ public final class CheckPointGatewayConversionsTest {
           .put(UID_CPMI_ANY, CPMI_ANY)
           .put(UID_ACCEPT, new RulebaseAction("Accept", UID_ACCEPT, "Accept"))
           .put(UID_DROP, new RulebaseAction("Drop", UID_DROP, "Drop"))
+          .put(UID_SERVICE_TCP_22, new ServiceTcp("service_tcp_22", "22", UID_SERVICE_TCP_22))
+          .put(UID_SERVICE_UDP_222, new ServiceUdp("service_udp_222", "222", UID_SERVICE_UDP_222))
           .build();
   private static final ImmutableMap<String, IpSpace> TEST_IP_SPACES =
       ImmutableMap.of(
@@ -182,28 +188,56 @@ public final class CheckPointGatewayConversionsTest {
 
   @Test
   public void testToAclLineMatchExpr() {
+    BddTestbed tb = new BddTestbed(ImmutableMap.of(), TEST_IP_SPACES);
+    AclLineMatchExpr matchNet0 =
+        new MatchHeaderSpace(HeaderSpace.builder().setDstIps(new IpSpaceReference("net0")).build());
+    AclLineMatchExpr matchNotNet0 =
+        new MatchHeaderSpace(
+            HeaderSpace.builder().setNotDstIps(new IpSpaceReference("net0")).build());
+    AclLineMatchExpr matchNet1 =
+        new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(new IpSpaceReference("net1")).build());
+    AclLineMatchExpr matchNotNet1 =
+        new MatchHeaderSpace(
+            HeaderSpace.builder().setNotSrcIps(new IpSpaceReference("net1")).build());
+    AclLineMatchExpr matchSvc =
+        new MatchHeaderSpace(
+            HeaderSpace.builder()
+                .setIpProtocols(IpProtocol.TCP)
+                .setDstPorts(IntegerSpace.of(22).getSubRanges())
+                .build());
+    AclLineMatchExpr matchUdpSvc =
+        new MatchHeaderSpace(
+            HeaderSpace.builder()
+                .setIpProtocols(IpProtocol.UDP)
+                .setDstPorts(IntegerSpace.of(222).getSubRanges())
+                .build());
+    AclLineMatchExpr matchNotSvc =
+        new NotMatchExpr(
+            new MatchHeaderSpace(
+                HeaderSpace.builder()
+                    .setIpProtocols(IpProtocol.TCP)
+                    .setDstPorts(IntegerSpace.of(22).getSubRanges())
+                    .build()));
+
     // Non-negated matches
-    assertThat(
+    AclLineMatchExpr matches =
         toMatchExpr(
             AccessRule.testBuilder(UID_CPMI_ANY)
                 .setAction(UID_ACCEPT)
                 .setDestination(ImmutableList.of(UID_NET0))
                 .setSource(ImmutableList.of(UID_NET1))
+                .setService(ImmutableList.of(UID_SERVICE_TCP_22))
                 .setRuleNumber(2)
                 .setName("ruleName")
                 .setUid(Uid.of("2"))
                 .build(),
-            TEST_OBJS),
-        isAndMatchExprThat(
-            hasConjuncts(
-                containsInAnyOrder(
-                    new MatchHeaderSpace(
-                        HeaderSpace.builder().setDstIps(new IpSpaceReference("net0")).build()),
-                    new MatchHeaderSpace(
-                        HeaderSpace.builder().setSrcIps(new IpSpaceReference("net1")).build())))));
+            TEST_OBJS);
+    assertThat(
+        tb.toBDD(matches),
+        equalTo(tb.toBDD(matchNet0).and(tb.toBDD(matchNet1).and(tb.toBDD(matchSvc)))));
 
     // Negated matches
-    assertThat(
+    AclLineMatchExpr negatedMatches =
         toMatchExpr(
             AccessRule.testBuilder(UID_CPMI_ANY)
                 .setAction(UID_ACCEPT)
@@ -211,20 +245,31 @@ public final class CheckPointGatewayConversionsTest {
                 .setDestination(ImmutableList.of(UID_NET0))
                 .setSourceNegate(true)
                 .setSource(ImmutableList.of(UID_NET1))
+                .setServiceNegate(true)
+                .setService(ImmutableList.of(UID_SERVICE_TCP_22))
                 .setRuleNumber(2)
                 .setName("ruleName")
                 .setUid(Uid.of("2"))
                 .build(),
-            TEST_OBJS),
-        isAndMatchExprThat(
-            hasConjuncts(
-                containsInAnyOrder(
-                    new MatchHeaderSpace(
-                        HeaderSpace.builder().setNotDstIps(new IpSpaceReference("net0")).build()),
-                    new MatchHeaderSpace(
-                        HeaderSpace.builder()
-                            .setNotSrcIps(new IpSpaceReference("net1"))
-                            .build())))));
+            TEST_OBJS);
+    assertThat(
+        tb.toBDD(negatedMatches),
+        equalTo(tb.toBDD(matchNotNet0).and(tb.toBDD(matchNotNet1).and(tb.toBDD(matchNotSvc)))));
+
+    // Multiple services
+    AclLineMatchExpr mutliSvc =
+        toMatchExpr(
+            AccessRule.testBuilder(UID_CPMI_ANY)
+                .setAction(UID_ACCEPT)
+                .setDestination(ImmutableList.of(UID_CPMI_ANY))
+                .setSource(ImmutableList.of(UID_CPMI_ANY))
+                .setService(ImmutableList.of(UID_SERVICE_TCP_22, UID_SERVICE_UDP_222))
+                .setRuleNumber(2)
+                .setName("ruleName")
+                .setUid(Uid.of("2"))
+                .build(),
+            TEST_OBJS);
+    assertThat(tb.toBDD(mutliSvc), equalTo(tb.toBDD(matchSvc).or(tb.toBDD(matchUdpSvc))));
   }
 
   @Test
