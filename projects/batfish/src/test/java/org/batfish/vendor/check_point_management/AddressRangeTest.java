@@ -45,7 +45,7 @@ public final class AddressRangeTest {
             + "\"ipv6-address-last\":\"::1\""
             + "}";
     assertThat(
-        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, AddressRange.class),
+        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, TypedManagementObject.class),
         equalTo(
             new AddressRange(
                 Ip.ZERO,

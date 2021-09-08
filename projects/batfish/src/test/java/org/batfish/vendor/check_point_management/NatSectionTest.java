@@ -28,7 +28,7 @@ public final class NatSectionTest {
             + "\"rulebase\":[]" // rulebase
             + "}"; // NatSection
     assertThat(
-        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, NatSection.class),
+        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, NatRuleOrSection.class),
         equalTo(TEST_INSTANCE));
   }
 

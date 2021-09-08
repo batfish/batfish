@@ -33,7 +33,7 @@ public final class SimpleGatewayTest {
             + "}" // policy
             + "}";
     assertThat(
-        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, SimpleGateway.class),
+        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, GatewayOrServer.class),
         equalTo(
             new SimpleGateway(
                 Ip.ZERO,

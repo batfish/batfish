@@ -25,7 +25,7 @@ public final class GroupTest {
             + "\"members\":[\"2\", \"42\"]"
             + "}";
     assertThat(
-        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, Group.class),
+        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, TypedManagementObject.class),
         equalTo(new Group("foo", ImmutableList.of(Uid.of("2"), Uid.of("42")), Uid.of("1"))));
   }
 

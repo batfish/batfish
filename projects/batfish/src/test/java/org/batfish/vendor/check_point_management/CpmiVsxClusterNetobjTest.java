@@ -34,7 +34,7 @@ public final class CpmiVsxClusterNetobjTest {
             + "}" // policy
             + "}";
     assertThat(
-        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, CpmiVsxClusterNetobj.class),
+        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, GatewayOrServer.class),
         equalTo(
             new CpmiVsxClusterNetobj(
                 ImmutableList.of("m1"),
