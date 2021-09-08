@@ -14,12 +14,12 @@ import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -269,7 +269,7 @@ public final class CheckPointGatewayConversions {
       //      Also, need to verify that port is an integer and decide what to do if not
       assert _hsb != null;
       _hsb.setIpProtocols(IpProtocol.TCP);
-      _hsb.setDstPorts(SubRange.singleton(Integer.parseInt(serviceTcp.getPort())));
+      _hsb.setDstPorts(IntegerSpace.parse(serviceTcp.getPort()).getSubRanges());
       return null;
     }
   }
