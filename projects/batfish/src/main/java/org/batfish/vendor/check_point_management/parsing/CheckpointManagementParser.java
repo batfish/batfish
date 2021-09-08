@@ -455,9 +455,19 @@ public class CheckpointManagementParser {
   }
 
   private static final Logger LOGGER = LogManager.getLogger(CheckpointManagementParser.class);
+
+  @VisibleForTesting
   static final String RELPATH_CHECKPOINT_SHOW_SERVICE_GROUPS = "show-service-groups.json";
+
+  @VisibleForTesting
   static final String RELPATH_CHECKPOINT_SHOW_SERVICES_ICMP = "show-services-icmp.json";
+
+  @VisibleForTesting
   static final String RELPATH_CHECKPOINT_SHOW_SERVICES_OTHER = "show-services-other.json";
+
+  @VisibleForTesting
   static final String RELPATH_CHECKPOINT_SHOW_SERVICES_TCP = "show-services-tcp.json";
+
+  @VisibleForTesting
   static final String RELPATH_CHECKPOINT_SHOW_SERVICES_UDP = "show-services-udp.json";
 }
