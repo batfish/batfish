@@ -21,6 +21,11 @@ public final class CheckPointManagementTraceElementCreators {
   }
 
   @VisibleForTesting
+  public static TraceElement serviceOtherTraceElement(ServiceOther service) {
+    return TraceElement.of(String.format("Matched service-other %s", service.getName()));
+  }
+
+  @VisibleForTesting
   public static TraceElement serviceTcpTraceElement(ServiceTcp service) {
     return TraceElement.of(String.format("Matched service-tcp %s", service.getName()));
   }

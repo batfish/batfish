@@ -5,10 +5,12 @@ import static org.batfish.datamodel.applications.PortsApplication.MAX_PORT_NUMBE
 import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceCpmiAnyTraceElement;
 import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceGroupTraceElement;
 import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceIcmpTraceElement;
+import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceOtherTraceElement;
 import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceTcpTraceElement;
 import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceUdpTraceElement;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Strings;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -20,6 +22,7 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.FalseExpr;
@@ -50,6 +53,22 @@ public class ServiceToMatchExpr implements ServiceVisitor<AclLineMatchExpr> {
     hsb.setIcmpTypes(serviceIcmp.getIcmpType());
     Optional.ofNullable(serviceIcmp.getIcmpCode()).ifPresent(hsb::setIcmpCodes);
     return AclLineMatchExprs.match(hsb.build(), serviceIcmpTraceElement(serviceIcmp));
+  }
+
+  @Override
+  public AclLineMatchExpr visitServiceOther(ServiceOther serviceOther) {
+    if (Strings.isNullOrEmpty(serviceOther.getMatch())) {
+      HeaderSpace.Builder hsb = HeaderSpace.builder();
+      hsb.setIpProtocols(IpProtocol.fromNumber(serviceOther.getIpProtocol()));
+      return AclLineMatchExprs.match(hsb.build(), serviceOtherTraceElement(serviceOther));
+    }
+    if (serviceOther.getMatch().equals("uh_dport > 33000, (IPV4_VER (ip_ttl < 30))")) {
+      HeaderSpace.Builder hsb = HeaderSpace.builder();
+      hsb.setIpProtocols(IpProtocol.fromNumber(serviceOther.getIpProtocol()));
+      hsb.setDstPorts(new SubRange(33001, 65535));
+      return AclLineMatchExprs.match(hsb.build(), serviceOtherTraceElement(serviceOther));
+    }
+    return new FalseExpr(TraceElement.of("Unsupported service-other " + serviceOther.getName()));
   }
 
   @Override
@@ -90,7 +109,7 @@ public class ServiceToMatchExpr implements ServiceVisitor<AclLineMatchExpr> {
               getDescendantMatchExpr((ServiceGroup) member, alreadyTraversedMembers));
         }
       } else if (member instanceof Service) {
-        descendantObjExprs.add(this.visit((Service) member));
+        descendantObjExprs.add(visit((Service) member));
       } else {
         // Don't match non-servicey objects
         descendantObjExprs.add(FalseExpr.INSTANCE);
