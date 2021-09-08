@@ -118,17 +118,19 @@ public class CheckpointManagementParser {
     }
     long numUids = natRulebases.stream().map(NatRulebase::getUid).distinct().count();
     Uid uid = natRulebases.iterator().next().getUid();
-    warnCheckpointPackageFile(
-        serverName,
-        domainName,
-        packageName,
-        RELPATH_CHECKPOINT_SHOW_NAT_RULEBASE,
-        String.format(
-            "JSON file should contain one or more pages for exactly one NAT rulebase, but contains"
-                + " %s. Only reading pages for the first, with UID '%s'.",
-            numUids, uid.getValue()),
-        pvcae,
-        null);
+    if (numUids > 1) {
+      warnCheckpointPackageFile(
+          serverName,
+          domainName,
+          packageName,
+          RELPATH_CHECKPOINT_SHOW_NAT_RULEBASE,
+          String.format(
+              "JSON file should contain one or more pages for exactly one NAT rulebase, but contains"
+                  + " %s. Only reading pages for the first, with UID '%s'.",
+              numUids, uid.getValue()),
+          pvcae,
+          null);
+    }
     return mergeNatRulebasePages(
         natRulebases.stream()
             .filter(rulebase -> rulebase.getUid().equals(uid))
