@@ -389,12 +389,24 @@ public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayPars
       return;
     }
 
+    if (ctx.ssr().ssr_off() != null) {
+      _currentStaticRoute = _configuration.getStaticRoutes().remove(prefix.get());
+      if (_currentStaticRoute == null) {
+        warn(ctx, "Cannot remove non-existent static route");
+        _currentStaticRoute = new StaticRoute(prefix.get());
+      }
+      return;
+    }
+
     _currentStaticRoute =
         _configuration.getStaticRoutes().computeIfAbsent(prefix.get(), StaticRoute::new);
   }
 
   @Override
   public void exitS_static_route(S_static_routeContext ctx) {
+    if (_currentStaticRoute.getNexthops().isEmpty()) {
+      _configuration.getStaticRoutes().remove(_currentStaticRoute.getDestination());
+    }
     _currentStaticRoute = null;
   }
 
@@ -412,6 +424,15 @@ public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayPars
       return;
     }
 
+    if (!isNexthopTargetOn(ctx.ssrn())) {
+      _currentStaticRouteNextHop = _currentStaticRoute.getNexthops().remove(nexthopTarget.get());
+      if (_currentStaticRouteNextHop == null) {
+        warn(ctx, "Cannot remove non-existent static route nexthop");
+        _currentStaticRouteNextHop = new Nexthop(nexthopTarget.get());
+      }
+      return;
+    }
+
     _currentStaticRouteNextHop =
         _currentStaticRoute.getNexthops().computeIfAbsent(nexthopTarget.get(), Nexthop::new);
   }
@@ -425,6 +446,14 @@ public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayPars
   @Override
   public void exitSsr_nexthop(Ssr_nexthopContext ctx) {
     _currentStaticRouteNextHop = null;
+  }
+
+  private boolean isNexthopTargetOn(SsrnContext ctx) {
+    if (ctx.ssrn_gateway() != null) {
+      return toBoolean(ctx.ssrn_gateway().on_or_off());
+    }
+    // Non-gateway nexthops don't support explicit on/off
+    return true;
   }
 
   private @Nonnull Optional<NexthopTarget> toNexthopTarget(SsrnContext ctx) {
