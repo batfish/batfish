@@ -37,7 +37,6 @@ import static org.batfish.vendor.check_point_gateway.representation.Interface.DE
 import static org.batfish.vendor.check_point_gateway.representation.Interface.DEFAULT_LOOPBACK_MTU;
 import static org.batfish.vendor.check_point_management.NatMethod.HIDE;
 import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -45,6 +44,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
@@ -966,9 +966,9 @@ public class CheckPointGatewayGrammarTest {
     Configuration c5 = configs.get("gw_package_selection_5");
     assertThat(c1.getIpSpaces(), hasKey("n1"));
     assertThat(c2.getIpSpaces(), hasKey("n2"));
-    assertThat(c3.getIpSpaces(), anEmptyMap());
-    assertThat(c4.getIpSpaces(), anEmptyMap());
-    assertThat(c5.getIpSpaces(), anEmptyMap());
+    assertThat(c3.getIpSpaces(), allOf(not(hasKey("n1")), not(hasKey("n2"))));
+    assertThat(c4.getIpSpaces(), allOf(not(hasKey("n1")), not(hasKey("n2"))));
+    assertThat(c5.getIpSpaces(), allOf(not(hasKey("n1")), not(hasKey("n2"))));
   }
 
   @Test
@@ -1012,6 +1012,40 @@ public class CheckPointGatewayGrammarTest {
     Configuration c1 = configs.get("gw_package_selection_1");
     // Network object from domain should make it to VI model
     assertThat(c1.getIpSpaces(), hasKey("networkObject"));
+  }
+
+  @Test
+  public void testConvertGatewaysAndServers() throws IOException {
+    ImmutableMap<Uid, GatewayOrServer> gateways =
+        ImmutableMap.of(
+            Uid.of("1"),
+            new SimpleGateway(
+                Ip.parse("1.0.0.1"),
+                "g1",
+                ImmutableList.of(),
+                new GatewayOrServerPolicy("p1", null),
+                Uid.of("1")));
+    ImmutableMap<Uid, ManagementPackage> packages =
+        ImmutableMap.of(
+            Uid.of("2"),
+            new ManagementPackage(
+                ImmutableList.of(),
+                null,
+                new Package(
+                    new Domain("d", Uid.of("0")),
+                    AllInstallationTargets.instance(),
+                    "p1",
+                    false,
+                    true,
+                    Uid.of("2"))));
+
+    CheckpointManagementConfiguration mgmt =
+        toCheckpointMgmtConfig(gateways, packages, ImmutableList.of());
+
+    Map<String, Configuration> configs = parseTextConfigs(mgmt, "gw_package_selection_1");
+    Configuration c1 = configs.get("gw_package_selection_1");
+    // Simple-gateway object from show-gateways-and-servers should make it to VI model
+    assertThat(c1.getIpSpaces(), hasKey("g1"));
   }
 
   @Test
