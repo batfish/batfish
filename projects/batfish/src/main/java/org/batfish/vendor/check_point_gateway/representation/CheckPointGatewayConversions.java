@@ -36,6 +36,7 @@ import org.batfish.vendor.check_point_management.GatewayOrServer;
 import org.batfish.vendor.check_point_management.RulebaseAction;
 import org.batfish.vendor.check_point_management.Service;
 import org.batfish.vendor.check_point_management.ServiceGroup;
+import org.batfish.vendor.check_point_management.ServiceIcmp;
 import org.batfish.vendor.check_point_management.ServiceTcp;
 import org.batfish.vendor.check_point_management.ServiceUdp;
 import org.batfish.vendor.check_point_management.ServiceVisitor;
@@ -296,9 +297,17 @@ public final class CheckPointGatewayConversions {
     }
 
     @Override
+    public Void visitServiceIcmp(ServiceIcmp serviceIcmp) {
+      assert _hsb != null;
+      _hsb.setIpProtocols(IpProtocol.ICMP);
+      _hsb.setIcmpTypes(serviceIcmp.getIcmpType());
+      _hsb.setIcmpCodes(serviceIcmp.getIcmpCode());
+      return null;
+    }
+
+    @Override
     public Void visitServiceTcp(ServiceTcp serviceTcp) {
       // TODO Is this correct/sufficient? Does it need to modify src port?
-      //      Also, need to verify that port is an integer and decide what to do if not
       assert _hsb != null;
       _hsb.setIpProtocols(IpProtocol.TCP);
       _hsb.setDstPorts(IntegerSpace.parse(serviceTcp.getPort()).getSubRanges());
