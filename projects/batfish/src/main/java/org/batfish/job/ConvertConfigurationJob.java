@@ -6,9 +6,13 @@ import static org.batfish.vendor.ConversionContext.EMPTY_CONVERSION_CONTEXT;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -17,25 +21,55 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.runtime.SnapshotRuntimeData;
 import org.batfish.config.Settings;
+import org.batfish.datamodel.AclAclLine;
+import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.AclIpSpaceLine;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.EmptyIpSpace;
+import org.batfish.datamodel.ExprAclLine;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpIpSpace;
+import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpSpaceReference;
+import org.batfish.datamodel.IpWildcardIpSpace;
+import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Mlag;
+import org.batfish.datamodel.PrefixIpSpace;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AndMatchExpr;
+import org.batfish.datamodel.acl.DeniedByAcl;
+import org.batfish.datamodel.acl.FalseExpr;
+import org.batfish.datamodel.acl.GenericAclLineMatchExprVisitor;
+import org.batfish.datamodel.acl.GenericAclLineVisitor;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.MatchSrcInterface;
+import org.batfish.datamodel.acl.NotMatchExpr;
+import org.batfish.datamodel.acl.OrMatchExpr;
+import org.batfish.datamodel.acl.OriginatingFromDevice;
+import org.batfish.datamodel.acl.PermittedByAcl;
+import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.community.CommunityStructuresVerifier;
 import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.as_path.AsPathStructuresVerifier;
+import org.batfish.datamodel.transformation.Transformation;
+import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 import org.batfish.main.Batfish;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.representation.iptables.IptablesVendorConfiguration;
@@ -117,6 +151,223 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     return ImmutableSet.copyOf(set);
   }
 
+  @VisibleForTesting
+  @ParametersAreNonnullByDefault
+  static final class CollectIpSpaceReferences
+      implements GenericIpSpaceVisitor<Void>,
+          GenericAclLineVisitor<Void>,
+          GenericAclLineMatchExprVisitor<Void> {
+    /** Returns {@link IpSpaceReference#getName()} for all {@link IpSpaceReference} in {@code c}. */
+    public static Set<String> collect(Configuration c) {
+      ImmutableSet.Builder<String> set = ImmutableSet.builder();
+      CollectIpSpaceReferences collector = new CollectIpSpaceReferences(c, set);
+      for (IpSpace space : c.getIpSpaces().values()) {
+        collector.visit(space);
+      }
+      for (IpAccessList acl : c.getIpAccessLists().values()) {
+        collector.visit(acl);
+      }
+      for (Interface i : c.getAllInterfaces().values()) {
+        collector.visit(i.getIncomingTransformation());
+        collector.visit(i.getOutgoingTransformation());
+      }
+      return set.build();
+    }
+
+    private final @Nonnull Configuration _c;
+    private final @Nonnull ImmutableSet.Builder<String> _set;
+    private final @Nonnull Set<Object> _visited;
+
+    private CollectIpSpaceReferences(Configuration c, ImmutableSet.Builder<String> set) {
+      _c = c;
+      _set = set;
+      _visited = Collections.newSetFromMap(new IdentityHashMap<>());
+    }
+
+    // Impl below here.
+
+    private void visit(@Nullable Transformation t) {
+      if (t == null) {
+        return;
+      }
+      if (!_visited.add(t)) {
+        return;
+      }
+      visit(t.getGuard());
+      visit(t.getAndThen());
+      visit(t.getOrElse());
+    }
+
+    private void visit(IpAccessList acl) {
+      if (!_visited.add(acl)) {
+        return;
+      }
+      for (AclLine line : acl.getLines()) {
+        visit(line);
+      }
+    }
+
+    private void visitAclNamed(String name) {
+      IpAccessList acl = _c.getIpAccessLists().get(name);
+      if (acl == null) {
+        return;
+      }
+      visit(acl);
+    }
+
+    @Override
+    public Void visit(AclLineMatchExpr expr) {
+      if (!_visited.add(expr)) {
+        return null;
+      }
+      return GenericAclLineMatchExprVisitor.super.visit(expr);
+    }
+
+    @Override
+    public Void visit(AclLine line) {
+      if (!_visited.add(line)) {
+        return null;
+      }
+      return GenericAclLineVisitor.super.visit(line);
+    }
+
+    @Override
+    public Void visit(IpSpace ipSpace) {
+      if (!_visited.add(ipSpace)) {
+        return null;
+      }
+      return GenericIpSpaceVisitor.super.visit(ipSpace);
+    }
+
+    @Override
+    public Void visitAclIpSpace(AclIpSpace aclIpSpace) {
+      aclIpSpace.getLines().stream().map(AclIpSpaceLine::getIpSpace).forEach(this::visit);
+      return null;
+    }
+
+    @Override
+    public Void visitEmptyIpSpace(EmptyIpSpace emptyIpSpace) {
+      return null;
+    }
+
+    @Override
+    public Void visitIpIpSpace(IpIpSpace ipIpSpace) {
+      return null;
+    }
+
+    @Override
+    public Void visitIpSpaceReference(IpSpaceReference ipSpaceReference) {
+      _set.add(ipSpaceReference.getName());
+      return null;
+    }
+
+    @Override
+    public Void visitIpWildcardIpSpace(IpWildcardIpSpace ipWildcardIpSpace) {
+      return null;
+    }
+
+    @Override
+    public Void visitIpWildcardSetIpSpace(IpWildcardSetIpSpace ipWildcardSetIpSpace) {
+      return null;
+    }
+
+    @Override
+    public Void visitPrefixIpSpace(PrefixIpSpace prefixIpSpace) {
+      return null;
+    }
+
+    @Override
+    public Void visitUniverseIpSpace(UniverseIpSpace universeIpSpace) {
+      return null;
+    }
+
+    @Override
+    public Void visitAndMatchExpr(AndMatchExpr andMatchExpr) {
+      andMatchExpr.getConjuncts().forEach(this::visit);
+      return null;
+    }
+
+    @Override
+    public Void visitDeniedByAcl(DeniedByAcl deniedByAcl) {
+      visitAclNamed(deniedByAcl.getAclName());
+      return null;
+    }
+
+    @Override
+    public Void visitFalseExpr(FalseExpr falseExpr) {
+      return null;
+    }
+
+    @Override
+    public Void visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
+      HeaderSpace hs = matchHeaderSpace.getHeaderspace();
+      if (hs == null) {
+        return null;
+      }
+      visit(firstNonNull(hs.getDstIps(), EmptyIpSpace.INSTANCE));
+      visit(firstNonNull(hs.getNotDstIps(), EmptyIpSpace.INSTANCE));
+      visit(firstNonNull(hs.getSrcIps(), EmptyIpSpace.INSTANCE));
+      visit(firstNonNull(hs.getNotSrcIps(), EmptyIpSpace.INSTANCE));
+      return null;
+    }
+
+    @Override
+    public Void visitMatchSrcInterface(MatchSrcInterface matchSrcInterface) {
+      return null;
+    }
+
+    @Override
+    public Void visitNotMatchExpr(NotMatchExpr notMatchExpr) {
+      visit(notMatchExpr.getOperand());
+      return null;
+    }
+
+    @Override
+    public Void visitOriginatingFromDevice(OriginatingFromDevice originatingFromDevice) {
+      return null;
+    }
+
+    @Override
+    public Void visitOrMatchExpr(OrMatchExpr orMatchExpr) {
+      orMatchExpr.getDisjuncts().forEach(this::visit);
+      return null;
+    }
+
+    @Override
+    public Void visitPermittedByAcl(PermittedByAcl permittedByAcl) {
+      visitAclNamed(permittedByAcl.getAclName());
+      return null;
+    }
+
+    @Override
+    public Void visitTrueExpr(TrueExpr trueExpr) {
+      return null;
+    }
+
+    @Override
+    public Void visitAclAclLine(AclAclLine aclAclLine) {
+      visitAclNamed(aclAclLine.getAclName());
+      return null;
+    }
+
+    @Override
+    public Void visitExprAclLine(ExprAclLine exprAclLine) {
+      visit(exprAclLine.getMatchCondition());
+      return null;
+    }
+  }
+
+  private static void finalizeIpSpaces(Configuration c, Warnings w) {
+    Set<String> undefinedIpSpaceReferences =
+        ImmutableSortedSet.copyOf(
+            Sets.difference(CollectIpSpaceReferences.collect(c), c.getIpSpaces().keySet()));
+    if (!undefinedIpSpaceReferences.isEmpty()) {
+      w.redFlag("Creating empty IP spaces for missing names: " + undefinedIpSpaceReferences);
+      undefinedIpSpaceReferences.forEach(n -> c.getIpSpaces().put(n, EmptyIpSpace.INSTANCE));
+    }
+    c.setIpSpaces(toImmutableMap(c.getIpSpaces()));
+  }
+
   /**
    * Applies sanity checks and finishing touches to the given {@link Configuration}.
    *
@@ -160,7 +411,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     c.setIpsecPhase2Policies(toImmutableMap(c.getIpsecPhase2Policies()));
     c.setIpsecPhase2Proposals(toImmutableMap(c.getIpsecPhase2Proposals()));
     c.setIpSpaceMetadata(toImmutableMap(c.getIpSpaceMetadata()));
-    c.setIpSpaces(toImmutableMap(c.getIpSpaces()));
+    finalizeIpSpaces(c, w);
     c.setLoggingServers(toImmutableSet(c.getLoggingServers()));
     c.setMlags(verifyAndToImmutableMap(c.getMlags(), Mlag::getId, w));
     c.setNtpServers(toImmutableSet(c.getNtpServers()));

@@ -11,7 +11,6 @@ import org.batfish.datamodel.PrefixIpSpace;
 import org.batfish.datamodel.UniverseIpSpace;
 
 public interface GenericIpSpaceVisitor<R> {
-  R castToGenericIpSpaceVisitorReturnType(Object o);
 
   default R visit(IpSpace ipSpace) {
     return ipSpace.accept(this);

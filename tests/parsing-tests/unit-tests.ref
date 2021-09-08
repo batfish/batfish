@@ -71295,7 +71295,7 @@
         "arista_vrf" : "PASSED",
         "as_path_prepend" : "PASSED",
         "asa-interface-redundant" : "PASSED",
-        "asa_acl" : "PASSED",
+        "asa_acl" : "WARNINGS",
         "asa_banner" : "PASSED",
         "asa_interface" : "PASSED",
         "asa_nat" : "PASSED",
@@ -71466,7 +71466,7 @@
         "juniper_isis" : "PASSED",
         "juniper_l2_learning" : "PASSED",
         "juniper_misc" : "PASSED",
-        "juniper_nat" : "PASSED",
+        "juniper_nat" : "WARNINGS",
         "juniper_ntp" : "PASSED",
         "juniper_ospf_stub_areas" : "PASSED",
         "juniper_passwords" : "PASSED",
@@ -85900,6 +85900,14 @@
             }
           ]
         },
+        "asa_acl" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Creating empty IP spaces for missing names: [drawbridge_hosts]"
+            }
+          ]
+        },
         "bgp-enforce-first-as" : {
           "Red flags" : [
             {
@@ -86218,6 +86226,14 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Cannot assign more than one access vlan: [bippetyboppety] to interface 'xe-0/0/5:0.0'"
+            }
+          ]
+        },
+        "juniper_nat" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Creating empty IP spaces for missing names: [global~NAME, global~SA-NAME]"
             }
           ]
         },
