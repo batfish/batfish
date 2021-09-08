@@ -71292,7 +71292,7 @@
         "arista_vrf" : "PASSED",
         "as_path_prepend" : "PASSED",
         "asa-interface-redundant" : "PASSED",
-        "asa_acl" : "PASSED",
+        "asa_acl" : "WARNINGS",
         "asa_banner" : "PASSED",
         "asa_interface" : "PASSED",
         "asa_nat" : "PASSED",
@@ -85897,6 +85897,14 @@
             }
           ]
         },
+        "asa_acl" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Creating empty IP spaces for missing names: [drawbridge_hosts]"
+            }
+          ]
+        },
         "bgp-enforce-first-as" : {
           "Red flags" : [
             {
@@ -86222,7 +86230,7 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Creating empty IP spaces for missing names: [global~NAME]"
+              "text" : "Creating empty IP spaces for missing names: [global~NAME, global~SA-NAME]"
             }
           ]
         },
