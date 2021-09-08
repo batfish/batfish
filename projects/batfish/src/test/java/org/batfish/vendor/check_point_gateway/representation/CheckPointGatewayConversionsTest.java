@@ -46,6 +46,7 @@ import org.batfish.vendor.check_point_management.Network;
 import org.batfish.vendor.check_point_management.PolicyTargets;
 import org.batfish.vendor.check_point_management.RulebaseAction;
 import org.batfish.vendor.check_point_management.ServiceIcmp;
+import org.batfish.vendor.check_point_management.ServiceOther;
 import org.batfish.vendor.check_point_management.ServiceTcp;
 import org.batfish.vendor.check_point_management.ServiceUdp;
 import org.batfish.vendor.check_point_management.TypedManagementObject;
@@ -334,6 +335,11 @@ public final class CheckPointGatewayConversionsTest {
                       .setIcmpCodes(3)
                       .setIpProtocols(IpProtocol.ICMP)
                       .build())));
+    }
+    {
+      assertThat(
+          toHeaderSpace(CPMI_ANY, CPMI_ANY, new ServiceOther("foo", 89, uid), warnings),
+          equalTo(Optional.of(HeaderSpace.builder().setIpProtocols(IpProtocol.OSPF).build())));
     }
   }
 
