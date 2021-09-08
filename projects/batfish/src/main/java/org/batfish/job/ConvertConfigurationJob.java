@@ -9,8 +9,10 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -48,6 +50,7 @@ import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.DeniedByAcl;
 import org.batfish.datamodel.acl.FalseExpr;
@@ -173,10 +176,12 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
 
     private final @Nonnull Configuration _c;
     private final @Nonnull ImmutableSet.Builder<String> _set;
+    private final @Nonnull Set<Object> _visited;
 
     private CollectIpSpaceReferences(Configuration c, ImmutableSet.Builder<String> set) {
       _c = c;
       _set = set;
+      _visited = Collections.newSetFromMap(new IdentityHashMap<>());
     }
 
     // Impl below here.
@@ -185,12 +190,18 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
       if (t == null) {
         return;
       }
+      if (!_visited.add(t)) {
+        return;
+      }
       visit(t.getGuard());
       visit(t.getAndThen());
       visit(t.getOrElse());
     }
 
     private void visit(IpAccessList acl) {
+      if (!_visited.add(acl)) {
+        return;
+      }
       for (AclLine line : acl.getLines()) {
         visit(line);
       }
@@ -202,6 +213,30 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
         return;
       }
       visit(acl);
+    }
+
+    @Override
+    public Void visit(AclLineMatchExpr expr) {
+      if (!_visited.add(expr)) {
+        return null;
+      }
+      return GenericAclLineMatchExprVisitor.super.visit(expr);
+    }
+
+    @Override
+    public Void visit(AclLine line) {
+      if (!_visited.add(line)) {
+        return null;
+      }
+      return GenericAclLineVisitor.super.visit(line);
+    }
+
+    @Override
+    public Void visit(IpSpace ipSpace) {
+      if (!_visited.add(ipSpace)) {
+        return null;
+      }
+      return GenericIpSpaceVisitor.super.visit(ipSpace);
     }
 
     @Override

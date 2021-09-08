@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ExprAclLine;
@@ -38,6 +39,7 @@ public final class ConvertConfigurationJobTest {
   public void testCollectIpSpaceReferences() {
     Configuration c = new Configuration("c", ConfigurationFormat.CISCO_IOS);
     c.getIpSpaces().put("ref", new IpSpaceReference("InIpSpaces"));
+    c.getIpSpaces().put("SelfRefInIpSpaces", new IpSpaceReference("SelfRefInIpSpaces"));
     IpAccessList acl =
         IpAccessList.builder()
             .setName("acl")
@@ -59,6 +61,12 @@ public final class ConvertConfigurationJobTest {
                     "line"))
             .build();
     c.getIpAccessLists().put(acl.getName(), acl);
+    IpAccessList selfRefAcl =
+        IpAccessList.builder()
+            .setName("selfRefAcl")
+            .setLines(new AclAclLine("selfRefAcl", "selfRefAcl"))
+            .build();
+    c.getIpAccessLists().put(selfRefAcl.getName(), selfRefAcl);
     Transformation outT =
         Transformation.when(
                 new MatchHeaderSpace(
@@ -101,6 +109,7 @@ public final class ConvertConfigurationJobTest {
         CollectIpSpaceReferences.collect(c),
         containsInAnyOrder(
             "InIpSpaces",
+            "SelfRefInIpSpaces",
             "SrcIps",
             "NotSrcIps",
             "DstIps",
