@@ -82,8 +82,9 @@ public class CheckpointManagementParser {
         buildServersMap(domainFileMap, packageFileMap, pvcae));
   }
 
+  /** Read NAT rulebase data. */
   @VisibleForTesting
-  static @Nullable NatRulebase getNatRulebase(
+  static @Nullable NatRulebase readNatRulebase(
       Package pakij,
       String domainName,
       Map<String, String> packageFiles,
@@ -134,6 +135,11 @@ public class CheckpointManagementParser {
             .collect(ImmutableList.toImmutableList()));
   }
 
+  /**
+   * Merge objects-dictionary and nat-rules from a list of pages of NAT rulebase data into a single
+   * {@link NatRulebase} object. The pages should be provided in order, and all for the same
+   * rulebase UID.
+   */
   private static @Nonnull NatRulebase mergeNatRulebasePages(
       Collection<NatRulebase> natRulebasePages) {
     if (natRulebasePages.size() == 1) {
@@ -247,18 +253,12 @@ public class CheckpointManagementParser {
       Map<String, Map<String, Map<String, String>>> domainFileMap,
       Map<String, Map<String, Map<String, Map<String, String>>>> packageFileMap,
       ParseVendorConfigurationAnswerElement pvcae) {
-    List<GatewaysAndServers> gatewaysAndServersList =
-        tryParseCheckpointDomainFile(
-            domainFileMap,
-            new TypeReference<List<GatewaysAndServers>>() {},
-            pvcae,
-            serverName,
-            domainName,
-            RELPATH_CHECKPOINT_SHOW_GATEWAYS_AND_SERVERS);
-    if (gatewaysAndServersList == null) {
+    GatewaysAndServers gatewaysAndServers =
+        readGatewaysAndServers(serverName, domainName, domainFileMap, pvcae);
+    if (gatewaysAndServers == null) {
       return null;
     }
-    GatewaysAndServers gatewaysAndServers = mergeGatewaysAndServersPages(gatewaysAndServersList);
+
     List<TypedManagementObject> objects =
         buildObjectsList(domainFileMap, domainName, serverName, pvcae);
 
@@ -313,7 +313,7 @@ public class CheckpointManagementParser {
                   pakij.getName(),
                   RELPATH_CHECKPOINT_SHOW_ACCESS_RULEBASE),
               ImmutableList.of());
-      NatRulebase natRulebase = getNatRulebase(pakij, domainName, packageFiles, pvcae, serverName);
+      NatRulebase natRulebase = readNatRulebase(pakij, domainName, packageFiles, pvcae, serverName);
       ManagementPackage mgmtPackage = new ManagementPackage(accessLayers, natRulebase, pakij);
       packagesBuilder.put(mgmtPackage.getPackage().getUid(), mgmtPackage);
     }
@@ -333,6 +333,36 @@ public class CheckpointManagementParser {
     Domain domain = packages.values().iterator().next().getPackage().getDomain();
     return new ManagementDomain(
         domain, gatewaysAndServers.getGatewaysAndServers(), packages, objects);
+  }
+
+  /** Read gateways and servers data. */
+  @VisibleForTesting
+  static GatewaysAndServers readGatewaysAndServers(
+      String serverName,
+      String domainName,
+      Map<String, Map<String, Map<String, String>>> domainFileMap,
+      ParseVendorConfigurationAnswerElement pvcae) {
+    List<GatewaysAndServers> gatewaysAndServersList =
+        tryParseCheckpointDomainFile(
+            domainFileMap,
+            new TypeReference<List<GatewaysAndServers>>() {},
+            pvcae,
+            serverName,
+            domainName,
+            RELPATH_CHECKPOINT_SHOW_GATEWAYS_AND_SERVERS);
+    if (gatewaysAndServersList == null) {
+      return null;
+    } else if (gatewaysAndServersList.isEmpty()) {
+      warnCheckpointDomainFile(
+          serverName,
+          domainName,
+          RELPATH_CHECKPOINT_SHOW_GATEWAYS_AND_SERVERS,
+          "JSON file contains no gateways-and-servers pages.",
+          pvcae,
+          null);
+      return null;
+    }
+    return mergeGatewaysAndServersPages(gatewaysAndServersList);
   }
 
   private static @Nullable <T> T tryParseCheckpointDomainFile(
@@ -440,10 +470,21 @@ public class CheckpointManagementParser {
     }
   }
 
+  /**
+   * Merge objects from each page of gateways and servers data into a single {@link
+   * GatewaysAndServers} object.
+   */
   private static @Nonnull GatewaysAndServers mergeGatewaysAndServersPages(
       List<GatewaysAndServers> gatewaysAndServersList) {
-    // TODO: actually merge
-    return gatewaysAndServersList.get(0);
+    if (gatewaysAndServersList.size() == 1) {
+      return gatewaysAndServersList.get(0);
+    }
+    return new GatewaysAndServers(
+        gatewaysAndServersList.stream()
+            .map(GatewaysAndServers::getGatewaysAndServers)
+            .map(Map::entrySet)
+            .flatMap(Collection::stream)
+            .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue)));
   }
 
   private static final Logger LOGGER = LogManager.getLogger(CheckpointManagementParser.class);
