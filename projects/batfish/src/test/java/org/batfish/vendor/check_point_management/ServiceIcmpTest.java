@@ -15,18 +15,34 @@ public final class ServiceIcmpTest {
 
   @Test
   public void testJacksonDeserialization() throws JsonProcessingException {
-    String input =
-        "{"
-            + "\"GARBAGE\":0,"
-            + "\"type\":\"service-icmp\","
-            + "\"uid\":\"1\","
-            + "\"name\":\"foo\","
-            + "\"icmp-code\":3,"
-            + "\"icmp-type\":8"
-            + "}";
-    assertThat(
-        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, TypedManagementObject.class),
-        equalTo(new ServiceIcmp("foo", 8, 3, Uid.of("1"))));
+    {
+      String input =
+          "{"
+              + "\"GARBAGE\":0,"
+              + "\"type\":\"service-icmp\","
+              + "\"uid\":\"1\","
+              + "\"name\":\"foo\","
+              + "\"icmp-code\":3,"
+              + "\"icmp-type\":8"
+              + "}";
+      assertThat(
+          BatfishObjectMapper.ignoreUnknownMapper().readValue(input, TypedManagementObject.class),
+          equalTo(new ServiceIcmp("foo", 8, 3, Uid.of("1"))));
+    }
+    {
+      // missing icmp-code
+      String input =
+          "{"
+              + "\"GARBAGE\":0,"
+              + "\"type\":\"service-icmp\","
+              + "\"uid\":\"1\","
+              + "\"name\":\"foo\","
+              + "\"icmp-type\":8"
+              + "}";
+      assertThat(
+          BatfishObjectMapper.ignoreUnknownMapper().readValue(input, TypedManagementObject.class),
+          equalTo(new ServiceIcmp("foo", 8, null, Uid.of("1"))));
+    }
   }
 
   @Test

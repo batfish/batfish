@@ -16,7 +16,7 @@ public final class ServiceIcmp extends TypedManagementObject implements Service 
   }
 
   /** Docs: A number with no fractional part (integer). */
-  public int getIcmpCode() {
+  public @Nullable Integer getIcmpCode() {
     return _code;
   }
 
@@ -31,7 +31,7 @@ public final class ServiceIcmp extends TypedManagementObject implements Service 
       return false;
     }
     ServiceIcmp other = (ServiceIcmp) o;
-    return _type == other._type && _code == other._code;
+    return _type == other._type && Objects.equals(_code, other._code);
   }
 
   @Override
@@ -41,7 +41,11 @@ public final class ServiceIcmp extends TypedManagementObject implements Service 
 
   @Override
   public String toString() {
-    return baseToStringHelper().add(PROP_ICMP_TYPE, _type).add(PROP_ICMP_CODE, _code).toString();
+    return baseToStringHelper()
+        .omitNullValues()
+        .add(PROP_ICMP_TYPE, _type)
+        .add(PROP_ICMP_CODE, _code)
+        .toString();
   }
 
   @JsonCreator
@@ -52,13 +56,12 @@ public final class ServiceIcmp extends TypedManagementObject implements Service 
       @JsonProperty(PROP_UID) @Nullable Uid uid) {
     checkArgument(name != null, "Missing %s", PROP_NAME);
     checkArgument(type != null, "Missing %s", PROP_ICMP_TYPE);
-    checkArgument(code != null, "Missing %s", PROP_ICMP_CODE);
     checkArgument(uid != null, "Missing %s", PROP_UID);
     return new ServiceIcmp(name, type, code, uid);
   }
 
   @VisibleForTesting
-  public ServiceIcmp(String name, int type, int code, Uid uid) {
+  public ServiceIcmp(String name, int type, @Nullable Integer code, Uid uid) {
     super(name, uid);
     _type = type;
     _code = code;
@@ -68,5 +71,5 @@ public final class ServiceIcmp extends TypedManagementObject implements Service 
   private static final String PROP_ICMP_TYPE = "icmp-type";
 
   private final int _type;
-  private final int _code;
+  private final @Nullable Integer _code;
 }

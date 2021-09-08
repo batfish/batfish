@@ -335,6 +335,13 @@ public final class CheckPointGatewayConversionsTest {
                       .setIpProtocols(IpProtocol.ICMP)
                       .build())));
     }
+    {
+      assertThat(
+          toHeaderSpace(CPMI_ANY, CPMI_ANY, new ServiceIcmp("foo", 8, null, uid), warnings),
+          equalTo(
+              Optional.of(
+                  HeaderSpace.builder().setIcmpTypes(8).setIpProtocols(IpProtocol.ICMP).build())));
+    }
   }
 
   @Test

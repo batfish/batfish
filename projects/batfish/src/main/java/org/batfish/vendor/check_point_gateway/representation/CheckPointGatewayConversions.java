@@ -301,7 +301,7 @@ public final class CheckPointGatewayConversions {
       assert _hsb != null;
       _hsb.setIpProtocols(IpProtocol.ICMP);
       _hsb.setIcmpTypes(serviceIcmp.getIcmpType());
-      _hsb.setIcmpCodes(serviceIcmp.getIcmpCode());
+      Optional.ofNullable(serviceIcmp.getIcmpCode()).ifPresent(_hsb::setIcmpCodes);
       return null;
     }
 
