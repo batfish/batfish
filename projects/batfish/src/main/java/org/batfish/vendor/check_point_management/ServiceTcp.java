@@ -15,6 +15,7 @@ public final class ServiceTcp extends TypedManagementObject implements Service {
     return visitor.visitServiceTcp(this);
   }
 
+  /** Docs: Destination ports, a comma separated list of ports/ranges. */
   @Nonnull
   public String getPort() {
     return _port;
