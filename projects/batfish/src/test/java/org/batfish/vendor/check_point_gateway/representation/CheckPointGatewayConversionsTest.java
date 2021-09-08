@@ -251,14 +251,14 @@ public final class CheckPointGatewayConversionsTest {
           toHeaderSpace(
               new Host(Ip.parse("1.1.1.1"), NAT_SETTINGS_TEST_INSTANCE, "source", uid),
               new Host(Ip.parse("2.2.2.2"), NAT_SETTINGS_TEST_INSTANCE, "dest", uid),
-              new ServiceTcp("foo", "1", uid),
+              new ServiceTcp("foo", "1-100,105-106", uid),
               warnings),
           equalTo(
               Optional.of(
                   HeaderSpace.builder()
                       .setSrcIps(new IpSpaceReference("source"))
                       .setDstIps(new IpSpaceReference("dest"))
-                      .setDstPorts(ImmutableList.of(SubRange.singleton(1)))
+                      .setDstPorts(ImmutableList.of(new SubRange(1, 100), new SubRange(105, 106)))
                       .setIpProtocols(IpProtocol.TCP)
                       .build())));
     }
