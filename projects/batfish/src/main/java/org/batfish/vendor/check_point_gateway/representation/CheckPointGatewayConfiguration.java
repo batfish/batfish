@@ -155,7 +155,8 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     convertPackage(maybePackage.get(), gateway, domain);
   }
 
-  private void convertAccessLayers(List<AccessLayer> accessLayers) {
+  private void convertAccessLayers(
+      List<AccessLayer> accessLayers, Map<Uid, NamedManagementObject> objects) {
     // TODO support matching multiple access layers
     if (accessLayers.size() > 1) {
       _w.redFlag(
@@ -163,7 +164,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
               + " matching Access Rule will be applied.");
     }
     for (AccessLayer al : accessLayers) {
-      Map<String, IpAccessList> acl = toIpAccessLists(al);
+      Map<String, IpAccessList> acl = toIpAccessLists(al, objects);
       _c.getIpAccessLists().putAll(acl);
     }
     IpAccessList interfaceAcl =
@@ -216,12 +217,19 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
    */
   private void convertPackage(
       ManagementPackage pakij, GatewayOrServer gateway, ManagementDomain domain) {
-    convertObjects(pakij, domain);
-    convertAccessLayers(pakij.getAccessLayers());
-    Optional.ofNullable(pakij.getNatRulebase()).ifPresent(r -> convertNatRulebase(r, gateway));
+    Map<Uid, NamedManagementObject> objects = getAllObjects(pakij, domain);
+    convertObjects(objects);
+    convertAccessLayers(pakij.getAccessLayers(), objects);
+    Optional.ofNullable(pakij.getNatRulebase())
+        .ifPresent(r -> convertNatRulebase(r, gateway, objects));
   }
 
-  private void convertObjects(ManagementPackage pakij, ManagementDomain domain) {
+  /**
+   * Get all {@link NamedManagementObject} for the specified {@link ManagementPackage} in the
+   * specified {@link ManagementDomain}.
+   */
+  private Map<Uid, NamedManagementObject> getAllObjects(
+      ManagementPackage pakij, ManagementDomain domain) {
     Map<Uid, NamedManagementObject> objects = new HashMap<>();
     Optional.ofNullable(pakij.getNatRulebase())
         .map(NatRulebase::getObjectsDictionary)
@@ -231,16 +239,17 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
         .forEach(objects::putAll);
     domain.getObjects().forEach(object -> objects.put(object.getUid(), object));
     objects.putAll(domain.getGatewaysAndServers());
-    convertObjects(objects);
+    return objects;
   }
 
   /** Converts the given {@link NatRulebase} and applies it to this config. */
   @SuppressWarnings("unused")
-  private void convertNatRulebase(NatRulebase natRulebase, GatewayOrServer gateway) {
+  private void convertNatRulebase(
+      NatRulebase natRulebase, GatewayOrServer gateway, Map<Uid, NamedManagementObject> objects) {
     List<Transformation> manualHideRuleTransformations =
         getManualNatRules(natRulebase, gateway)
             .filter(rule -> rule.getMethod() == NatMethod.HIDE)
-            .map(natRule -> manualHideRuleTransformation(natRulebase, natRule, getWarnings()))
+            .map(natRule -> manualHideRuleTransformation(natRule, objects, getWarnings()))
             .filter(Optional::isPresent)
             .map(Optional::get)
             .collect(ImmutableList.toImmutableList());

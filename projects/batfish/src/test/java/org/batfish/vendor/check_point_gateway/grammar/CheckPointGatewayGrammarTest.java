@@ -119,6 +119,7 @@ import org.batfish.vendor.check_point_management.InterfaceTopology;
 import org.batfish.vendor.check_point_management.ManagementDomain;
 import org.batfish.vendor.check_point_management.ManagementPackage;
 import org.batfish.vendor.check_point_management.ManagementServer;
+import org.batfish.vendor.check_point_management.NamedManagementObject;
 import org.batfish.vendor.check_point_management.NatRule;
 import org.batfish.vendor.check_point_management.NatRulebase;
 import org.batfish.vendor.check_point_management.NatSettings;
@@ -1089,9 +1090,20 @@ public class CheckPointGatewayGrammarTest {
     Uid dropUid = Uid.of("32");
     Uid net1Uid = Uid.of("11");
     Uid net2Uid = Uid.of("12");
+    // Attached to domain, NOT in access layer object dict
+    ImmutableList<TypedManagementObject> domainObjs =
+        ImmutableList.<TypedManagementObject>builder()
+            .add(
+                new Network(
+                    "networkEth2",
+                    NAT_SETTINGS_TEST_INSTANCE,
+                    Ip.parse("10.0.2.0"),
+                    Ip.parse("255.255.255.0"),
+                    net2Uid))
+            .build();
 
-    ImmutableMap<Uid, TypedManagementObject> objs =
-        ImmutableMap.<Uid, TypedManagementObject>builder()
+    ImmutableMap<Uid, NamedManagementObject> objs =
+        ImmutableMap.<Uid, NamedManagementObject>builder()
             .put(cpmiAnyUid, any)
             .put(
                 net1Uid,
@@ -1101,14 +1113,6 @@ public class CheckPointGatewayGrammarTest {
                     Ip.parse("10.0.1.0"),
                     Ip.parse("255.255.255.0"),
                     net1Uid))
-            .put(
-                net2Uid,
-                new Network(
-                    "networkEth2",
-                    NAT_SETTINGS_TEST_INSTANCE,
-                    Ip.parse("10.0.2.0"),
-                    Ip.parse("255.255.255.0"),
-                    net2Uid))
             .put(acceptUid, new RulebaseAction("Accept", acceptUid, "Accept"))
             .put(dropUid, new RulebaseAction("Drop", dropUid, "Drop"))
             .build();
@@ -1157,8 +1161,7 @@ public class CheckPointGatewayGrammarTest {
                 new GatewayOrServerPolicy("p1", null),
                 Uid.of("1")));
 
-    CheckpointManagementConfiguration mgmt =
-        toCheckpointMgmtConfig(gateways, packages, ImmutableList.of());
+    CheckpointManagementConfiguration mgmt = toCheckpointMgmtConfig(gateways, packages, domainObjs);
     Map<String, Configuration> configs = parseTextConfigs(mgmt, "access_rules");
     Configuration c = configs.get("access_rules");
 
@@ -1190,8 +1193,8 @@ public class CheckPointGatewayGrammarTest {
     String accessLayerName = "accessLayerFoo";
     String access_rules = "access_rules"; // Any config will do, just need to convert mgmt objs
 
-    ImmutableMap<Uid, TypedManagementObject> objs =
-        ImmutableMap.<Uid, TypedManagementObject>builder()
+    ImmutableMap<Uid, NamedManagementObject> objs =
+        ImmutableMap.<Uid, NamedManagementObject>builder()
             .put(
                 unknownUid,
                 new UnknownTypedManagementObject("unknownObjectType", unknownUid, "UnknownType"))
@@ -1250,12 +1253,17 @@ public class CheckPointGatewayGrammarTest {
     Uid gwUid = Uid.of("4");
     String hostname = "nat_rules";
 
+    // Attached to domain, NOT in NAT rulebase object dict
+    ImmutableList<TypedManagementObject> domainObjs =
+        ImmutableList.<TypedManagementObject>builder()
+            .add(new Host(eth1Ip, NAT_SETTINGS_TEST_INSTANCE, "eth1Ip", eth1IpUid))
+            .build();
+
     ImmutableMap<Uid, TypedManagementObject> objs =
         ImmutableMap.<Uid, TypedManagementObject>builder()
             .put(cpmiAnyUid, any)
             .put(policyTargetsUid, policyTargets)
             .put(originalUid, original)
-            .put(eth1IpUid, new Host(eth1Ip, NAT_SETTINGS_TEST_INSTANCE, "eth1Ip", eth1IpUid))
             .build();
     NatRulebase rulebase =
         new NatRulebase(
@@ -1304,8 +1312,7 @@ public class CheckPointGatewayGrammarTest {
                 new GatewayOrServerPolicy("p1", null),
                 gwUid));
 
-    CheckpointManagementConfiguration mgmt =
-        toCheckpointMgmtConfig(gateways, packages, ImmutableList.of());
+    CheckpointManagementConfiguration mgmt = toCheckpointMgmtConfig(gateways, packages, domainObjs);
     Map<String, Configuration> configs = parseTextConfigs(mgmt, hostname);
     Configuration c = configs.get(hostname);
 
