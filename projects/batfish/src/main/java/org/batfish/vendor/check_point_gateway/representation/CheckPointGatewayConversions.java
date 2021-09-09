@@ -26,6 +26,7 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.NotMatchExpr;
@@ -64,7 +65,7 @@ public final class CheckPointGatewayConversions {
     exprs.add(new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(toIpSpace(src)).build()));
     exprs.add(new MatchHeaderSpace(HeaderSpace.builder().setDstIps(toIpSpace(dst)).build()));
     exprs.add(((Service) service).accept(serviceToMatchExpr));
-    return Optional.of(new AndMatchExpr(exprs.build()));
+    return Optional.of(AclLineMatchExprs.and(exprs.build()));
   }
 
   /**
@@ -214,7 +215,7 @@ public final class CheckPointGatewayConversions {
         new OrMatchExpr(
             services.stream()
                 .map(objs::get)
-                .filter(Service.class::isInstance)
+                .filter(Service.class::isInstance) // TODO warn about bad refs
                 .map(Service.class::cast)
                 .map(s -> s.accept(serviceToMatchExpr))
                 .collect(ImmutableList.toImmutableList()));

@@ -16,6 +16,7 @@ public final class ServiceGroup extends TypedManagementObject implements Service
     return visitor.visitServiceGroup(this);
   }
 
+  @Nonnull
   public List<Uid> getMembers() {
     return _members;
   }

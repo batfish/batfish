@@ -26,7 +26,6 @@ public class ServiceToMatchExpr implements ServiceVisitor<AclLineMatchExpr> {
   @Override
   public AclLineMatchExpr visitServiceGroup(ServiceGroup serviceGroup) {
     // TODO implement
-    assert _objs != null; // avoid unused warning
     return TrueExpr.INSTANCE;
   }
 
@@ -57,5 +56,6 @@ public class ServiceToMatchExpr implements ServiceVisitor<AclLineMatchExpr> {
             .build());
   }
 
+  @SuppressWarnings("unused")
   private final @Nonnull Map<Uid, NamedManagementObject> _objs;
 }
