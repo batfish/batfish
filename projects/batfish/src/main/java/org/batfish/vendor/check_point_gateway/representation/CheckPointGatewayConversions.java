@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -52,9 +51,16 @@ public final class CheckPointGatewayConversions {
     if (!checkValidHeaderSpaceInputs(src, dst, service, warnings)) {
       return Optional.empty();
     }
+    // Guaranteed by checkValidHeaderSpaceInputs
+    assert src instanceof AddressSpace;
+    assert dst instanceof AddressSpace;
     ImmutableList.Builder<AclLineMatchExpr> exprs = ImmutableList.builder();
-    exprs.add(AclLineMatchExprs.match(HeaderSpace.builder().setSrcIps(toIpSpace(src)).build()));
-    exprs.add(AclLineMatchExprs.match(HeaderSpace.builder().setDstIps(toIpSpace(dst)).build()));
+    exprs.add(
+        AclLineMatchExprs.match(
+            HeaderSpace.builder().setSrcIps(toIpSpace((AddressSpace) src)).build()));
+    exprs.add(
+        AclLineMatchExprs.match(
+            HeaderSpace.builder().setDstIps(toIpSpace((AddressSpace) dst)).build()));
     exprs.add(((Service) service).accept(serviceToMatchExpr));
     return Optional.of(AclLineMatchExprs.and(exprs.build()));
   }
@@ -104,16 +110,18 @@ public final class CheckPointGatewayConversions {
   static Map<String, IpAccessList> toIpAccessLists(
       @Nonnull AccessLayer access,
       Map<Uid, NamedManagementObject> objects,
-      ServiceToMatchExpr serviceToMatchExpr) {
+      ServiceToMatchExpr serviceToMatchExpr,
+      Warnings w) {
     ImmutableMap.Builder<String, IpAccessList> acls = ImmutableMap.builder();
     ImmutableList.Builder<AclLine> accessLayerLines = ImmutableList.builder();
     for (AccessRuleOrSection acl : access.getRulebase()) {
       if (acl instanceof AccessRule) {
-        accessLayerLines.add(toAclLine((AccessRule) acl, objects, serviceToMatchExpr));
+        accessLayerLines.add(toAclLine((AccessRule) acl, objects, serviceToMatchExpr, w));
         continue;
       }
       assert acl instanceof AccessSection;
-      IpAccessList accessSection = toIpAccessList((AccessSection) acl, objects, serviceToMatchExpr);
+      IpAccessList accessSection =
+          toIpAccessList((AccessSection) acl, objects, serviceToMatchExpr, w);
       acls.put(accessSection.getName(), accessSection);
       accessLayerLines.add(new AclAclLine(accessSection.getName(), accessSection.getName()));
     }
@@ -133,13 +141,14 @@ public final class CheckPointGatewayConversions {
   private static IpAccessList toIpAccessList(
       @Nonnull AccessSection section,
       Map<Uid, NamedManagementObject> objs,
-      ServiceToMatchExpr serviceToMatchExpr) {
+      ServiceToMatchExpr serviceToMatchExpr,
+      Warnings w) {
     return IpAccessList.builder()
         .setName(aclName(section))
         .setSourceName(section.getName())
         .setLines(
             section.getRulebase().stream()
-                .map(r -> toAclLine(r, objs, serviceToMatchExpr))
+                .map(r -> toAclLine(r, objs, serviceToMatchExpr, w))
                 .collect(ImmutableList.toImmutableList()))
         .build();
   }
@@ -149,11 +158,12 @@ public final class CheckPointGatewayConversions {
   static AclLine toAclLine(
       AccessRule rule,
       Map<Uid, NamedManagementObject> objs,
-      ServiceToMatchExpr serviceToMatchExpr) {
+      ServiceToMatchExpr serviceToMatchExpr,
+      Warnings w) {
     return ExprAclLine.builder()
         .setName(rule.getName())
-        .setMatchCondition(toMatchExpr(rule, objs, serviceToMatchExpr))
-        .setAction(toAction(objs.get(rule.getAction())))
+        .setMatchCondition(toMatchExpr(rule, objs, serviceToMatchExpr, w))
+        .setAction(toAction(objs.get(rule.getAction()), rule.getAction(), w))
         // TODO trace element and structure ID
         .build();
   }
@@ -166,11 +176,12 @@ public final class CheckPointGatewayConversions {
   static AclLineMatchExpr toMatchExpr(
       AccessRule rule,
       Map<Uid, NamedManagementObject> objs,
-      ServiceToMatchExpr serviceToMatchExpr) {
+      ServiceToMatchExpr serviceToMatchExpr,
+      Warnings w) {
     ImmutableList.Builder<AclLineMatchExpr> conjuncts = ImmutableList.builder();
 
     // Source
-    IpSpace srcRefs = toIpSpace(rule.getSource(), objs);
+    IpSpace srcRefs = toIpSpace(rule.getSource(), objs, w);
     AclLineMatchExpr srcMatch =
         rule.getSourceNegate()
             ? AclLineMatchExprs.match(HeaderSpace.builder().setNotSrcIps(srcRefs).build())
@@ -178,7 +189,7 @@ public final class CheckPointGatewayConversions {
     conjuncts.add(srcMatch);
 
     // Dest
-    IpSpace dstRefs = toIpSpace(rule.getDestination(), objs);
+    IpSpace dstRefs = toIpSpace(rule.getDestination(), objs, w);
     AclLineMatchExpr dstMatch =
         rule.getDestinationNegate()
             ? AclLineMatchExprs.match(HeaderSpace.builder().setNotDstIps(dstRefs).build())
@@ -215,12 +226,20 @@ public final class CheckPointGatewayConversions {
 
   /** Convert specified {@link TypedManagementObject} to a {@link LineAction}. */
   @Nonnull
-  static LineAction toAction(@Nullable NamedManagementObject obj) {
+  static LineAction toAction(@Nullable NamedManagementObject obj, Uid uid, Warnings w) {
     if (obj == null) {
-      // TODO warn
+      w.redFlag(
+          String.format(
+              "Cannot convert non-existent object (Uid '%s') into an access-rule action, defaulting"
+                  + " to deny action",
+              uid.getValue()));
       return LineAction.DENY;
     } else if (!(obj instanceof RulebaseAction)) {
-      // TODO warn
+      w.redFlag(
+          String.format(
+              "Cannot convert object '%s' (Uid '%s') of type %s into an access-rule action,"
+                  + " defaulting to deny action",
+              obj.getName(), uid.getValue(), obj.getClass().getSimpleName()));
       return LineAction.DENY;
     } else {
       RulebaseAction ra = (RulebaseAction) obj;
@@ -231,7 +250,11 @@ public final class CheckPointGatewayConversions {
           return LineAction.PERMIT;
         case UNHANDLED:
         default:
-          // TODO warn
+          w.redFlag(
+              String.format(
+                  "Cannot convert action '%s' (Uid '%s') into an access-rule action, defaulting to"
+                      + " deny action",
+                  ra.getName(), uid.getValue()));
           return LineAction.DENY;
       }
     }
@@ -241,14 +264,34 @@ public final class CheckPointGatewayConversions {
    * Returns an {@link IpSpace} containing the specified {@link Uid}s. Relies on named {@link
    * IpSpace}s existing for each of the supplied object's {@link Uid}s.
    */
+  @VisibleForTesting
   @Nonnull
-  private static IpSpace toIpSpace(List<Uid> targets, Map<Uid, NamedManagementObject> objs) {
+  static IpSpace toIpSpace(List<Uid> targets, Map<Uid, NamedManagementObject> objs, Warnings w) {
     return AclIpSpace.builder()
         .thenPermitting(
             targets.stream()
-                .map(objs::get)
-                .filter(Objects::nonNull) // TODO warn about missing refs?
-                .map(CheckPointGatewayConversions::toIpSpace)
+                .map(
+                    u -> {
+                      NamedManagementObject o = objs.get(u);
+                      if (o == null) {
+                        w.redFlag(
+                            String.format(
+                                "Cannot convert non-existent object (Uid '%s') to IpSpace,"
+                                    + " ignoring",
+                                u.getValue()));
+                        return new IpSpaceReference(String.format("non-existent-%s", u.getValue()));
+                      } else if (!(o instanceof AddressSpace)) {
+                        String type = o.getClass().getSimpleName();
+                        w.redFlag(
+                            String.format(
+                                "Cannot convert object '%s' (Uid '%s') of type '%s' to IpSpace,"
+                                    + " ignoring",
+                                o.getName(), u.getValue(), type));
+                        return new IpSpaceReference(
+                            String.format("unsupported-%s-%s", type, u.getValue()));
+                      }
+                      return toIpSpace((AddressSpace) o);
+                    })
                 .collect(ImmutableList.toImmutableList()))
         .build();
   }
@@ -258,7 +301,7 @@ public final class CheckPointGatewayConversions {
    * named {@link IpSpace} existing for the supplied object.
    */
   @Nonnull
-  private static IpSpace toIpSpace(NamedManagementObject obj) {
+  private static IpSpace toIpSpace(AddressSpace obj) {
     if (obj instanceof CpmiAnyObject) {
       return UniverseIpSpace.INSTANCE;
     }
