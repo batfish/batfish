@@ -218,9 +218,7 @@ public final class CheckPointGatewayConversions {
   @Nonnull
   static AclLineMatchExpr serviceToMatchExpr(Service service) {
     Builder serviceHsb = HeaderSpace.builder();
-    SERVICE_TO_HEADER_SPACE_CONSTRAINTS.setHeaderSpace(serviceHsb);
-    service.accept(SERVICE_TO_HEADER_SPACE_CONSTRAINTS);
-    SERVICE_TO_HEADER_SPACE_CONSTRAINTS.setHeaderSpace(null);
+    service.accept(new ServiceToHeaderSpaceConstraints(serviceHsb));
     // TODO trace element and structure ID
     return new MatchHeaderSpace(serviceHsb.build());
   }
@@ -266,17 +264,12 @@ public final class CheckPointGatewayConversions {
         .build();
   }
 
-  private static final ServiceToHeaderSpaceConstraints SERVICE_TO_HEADER_SPACE_CONSTRAINTS =
-      new ServiceToHeaderSpaceConstraints();
-
   /**
    * Restricts the given {@link HeaderSpace.Builder} to protocols/ports matching the given {@link
    * Service}.
    */
   public static void applyServiceConstraint(Service service, HeaderSpace.Builder hsb) {
-    SERVICE_TO_HEADER_SPACE_CONSTRAINTS.setHeaderSpace(hsb);
-    service.accept(SERVICE_TO_HEADER_SPACE_CONSTRAINTS);
-    SERVICE_TO_HEADER_SPACE_CONSTRAINTS.setHeaderSpace(null);
+    service.accept(new ServiceToHeaderSpaceConstraints(hsb));
   }
 
   /**
@@ -284,11 +277,9 @@ public final class CheckPointGatewayConversions {
    * headerspace if the given service object is unconstrained.
    */
   private static class ServiceToHeaderSpaceConstraints implements ServiceVisitor<Void> {
-    private @Nullable HeaderSpace.Builder _hsb;
+    private final @Nonnull HeaderSpace.Builder _hsb;
 
-    private ServiceToHeaderSpaceConstraints() {}
-
-    private void setHeaderSpace(@Nullable HeaderSpace.Builder hsb) {
+    private ServiceToHeaderSpaceConstraints(HeaderSpace.Builder hsb) {
       _hsb = hsb;
     }
 
@@ -306,7 +297,6 @@ public final class CheckPointGatewayConversions {
 
     @Override
     public Void visitServiceIcmp(ServiceIcmp serviceIcmp) {
-      assert _hsb != null;
       _hsb.setIpProtocols(IpProtocol.ICMP);
       _hsb.setIcmpTypes(serviceIcmp.getIcmpType());
       Optional.ofNullable(serviceIcmp.getIcmpCode()).ifPresent(_hsb::setIcmpCodes);
@@ -316,7 +306,6 @@ public final class CheckPointGatewayConversions {
     @Override
     public Void visitServiceTcp(ServiceTcp serviceTcp) {
       // TODO Is this correct/sufficient? Does it need to modify src port?
-      assert _hsb != null;
       _hsb.setIpProtocols(IpProtocol.TCP);
       _hsb.setDstPorts(portStringToIntegerSpace(serviceTcp.getPort()).getSubRanges());
       return null;
@@ -324,7 +313,6 @@ public final class CheckPointGatewayConversions {
 
     @Override
     public Void visitServiceUdp(ServiceUdp serviceUdp) {
-      assert _hsb != null;
       _hsb.setIpProtocols(IpProtocol.UDP);
       _hsb.setDstPorts(portStringToIntegerSpace(serviceUdp.getPort()).getSubRanges());
       return null;
