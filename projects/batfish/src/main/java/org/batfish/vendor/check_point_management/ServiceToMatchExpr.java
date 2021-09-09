@@ -1,11 +1,16 @@
 package org.batfish.vendor.check_point_management;
 
+import static org.batfish.datamodel.IntegerSpace.PORTS;
+import static org.batfish.datamodel.applications.PortsApplication.MAX_PORT_NUMBER;
+
+import com.google.common.annotations.VisibleForTesting;
 import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.TrueExpr;
@@ -43,7 +48,7 @@ public class ServiceToMatchExpr implements ServiceVisitor<AclLineMatchExpr> {
     return new MatchHeaderSpace(
         HeaderSpace.builder()
             .setIpProtocols(IpProtocol.TCP)
-            .setDstPorts(IntegerSpace.parse(serviceTcp.getPort()).getSubRanges())
+            .setDstPorts(portStringToIntegerSpace(serviceTcp.getPort()).getSubRanges())
             .build());
   }
 
@@ -52,8 +57,52 @@ public class ServiceToMatchExpr implements ServiceVisitor<AclLineMatchExpr> {
     return new MatchHeaderSpace(
         HeaderSpace.builder()
             .setIpProtocols(IpProtocol.UDP)
-            .setDstPorts(IntegerSpace.parse(serviceUdp.getPort()).getSubRanges())
+            .setDstPorts(portStringToIntegerSpace(serviceUdp.getPort()).getSubRanges())
             .build());
+  }
+
+  /** Convert an entire CheckPoint port string to an {@link IntegerSpace}. */
+  @VisibleForTesting
+  static @Nonnull IntegerSpace portStringToIntegerSpace(String portStr) {
+    String[] ranges = portStr.split(",", -1);
+    IntegerSpace.Builder builder = IntegerSpace.builder();
+    for (String range : ranges) {
+      builder.including(portRangeStringToIntegerSpace(range.trim()));
+    }
+    return builder.build();
+  }
+
+  /** Convert a single element of a CheckPoint port string to an {@link IntegerSpace}. */
+  @VisibleForTesting
+  static @Nonnull IntegerSpace portRangeStringToIntegerSpace(String range) {
+    if (range.isEmpty()) {
+      // warn? all ports instead?
+      return IntegerSpace.EMPTY;
+    }
+    IntegerSpace raw;
+    char firstChar = range.charAt(0);
+    if ('0' <= firstChar && firstChar <= '9') {
+      // Examples:
+      // 123
+      // 50-90
+      raw = IntegerSpace.parse(range);
+    } else if (range.startsWith("<=")) {
+      // Example: <=10
+      raw = IntegerSpace.of(new SubRange(0, Integer.parseInt(range.substring(2))));
+    } else if (range.startsWith("<")) {
+      // Example: <10
+      raw = IntegerSpace.of(new SubRange(0, Integer.parseInt(range.substring(1)) - 1));
+    } else if (range.startsWith(">=")) {
+      raw = IntegerSpace.of(new SubRange(Integer.parseInt(range.substring(2)), MAX_PORT_NUMBER));
+    } else if (range.startsWith(">")) {
+      raw =
+          IntegerSpace.of(new SubRange(Integer.parseInt(range.substring(1)) + 1, MAX_PORT_NUMBER));
+    } else {
+      // unhandled
+      // TODO: warn
+      raw = IntegerSpace.EMPTY;
+    }
+    return raw.intersection(PORTS);
   }
 
   @SuppressWarnings("unused")
