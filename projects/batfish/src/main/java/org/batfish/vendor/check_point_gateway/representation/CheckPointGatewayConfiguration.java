@@ -166,7 +166,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     }
     ServiceToMatchExpr serviceToMatchExpr = new ServiceToMatchExpr(objects);
     for (AccessLayer al : accessLayers) {
-      Map<String, IpAccessList> acl = toIpAccessLists(al, objects, serviceToMatchExpr);
+      Map<String, IpAccessList> acl = toIpAccessLists(al, objects, serviceToMatchExpr, _w);
       _c.getIpAccessLists().putAll(acl);
     }
     IpAccessList interfaceAcl =
