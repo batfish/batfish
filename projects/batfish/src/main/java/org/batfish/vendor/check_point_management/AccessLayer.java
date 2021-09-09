@@ -17,7 +17,7 @@ import javax.annotation.Nullable;
 /** Data model for an entry of the list response to the {@code show-access-rulebase} command. */
 public final class AccessLayer extends NamedManagementObject {
 
-  public @Nonnull Map<Uid, TypedManagementObject> getObjectsDictionary() {
+  public @Nonnull Map<Uid, NamedManagementObject> getObjectsDictionary() {
     return _objectsDictionary;
   }
 
@@ -46,7 +46,7 @@ public final class AccessLayer extends NamedManagementObject {
 
   @VisibleForTesting
   public AccessLayer(
-      Map<Uid, TypedManagementObject> objectsDictionary,
+      Map<Uid, NamedManagementObject> objectsDictionary,
       List<AccessRuleOrSection> rulebase,
       Uid uid,
       String name) {
@@ -81,6 +81,6 @@ public final class AccessLayer extends NamedManagementObject {
   private static final String PROP_OBJECTS_DICTIONARY = "objects-dictionary";
   private static final String PROP_RULEBASE = "rulebase";
 
-  private final @Nonnull Map<Uid, TypedManagementObject> _objectsDictionary;
+  private final @Nonnull Map<Uid, NamedManagementObject> _objectsDictionary;
   private final @Nonnull List<AccessRuleOrSection> _rulebase;
 }

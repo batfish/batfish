@@ -176,6 +176,8 @@ public final class CheckpointNatConversionsTest {
     String hostname = "host";
     Host host = new Host(hostIp, NAT_SETTINGS_TEST_INSTANCE, hostname, hostUid);
     {
+      ImmutableMap<Uid, TypedManagementObject> objs =
+          ImmutableMap.of(hostUid, host, PT_UID, POLICY_TARGETS, ORIG_UID, ORIG);
       NatRule rule =
           new NatRule(
               false,
@@ -190,18 +192,14 @@ public final class CheckpointNatConversionsTest {
               ORIG_UID,
               ORIG_UID,
               hostUid,
-              UID);
-      NatRulebase natRulebase =
-          new NatRulebase(
-              ImmutableMap.of(hostUid, host, PT_UID, POLICY_TARGETS, ORIG_UID, ORIG),
-              ImmutableList.of(rule),
               UID);
 
       // invalid original fields
-      assertThat(
-          manualHideRuleTransformation(natRulebase, rule, warnings), equalTo(Optional.empty()));
+      assertThat(manualHideRuleTransformation(rule, objs, warnings), equalTo(Optional.empty()));
     }
     {
+      ImmutableMap<Uid, TypedManagementObject> objs =
+          ImmutableMap.of(ANY_UID, ANY, PT_UID, POLICY_TARGETS);
       NatRule rule =
           new NatRule(
               false,
@@ -217,15 +215,13 @@ public final class CheckpointNatConversionsTest {
               PT_UID,
               PT_UID,
               UID);
-      NatRulebase natRulebase =
-          new NatRulebase(
-              ImmutableMap.of(ANY_UID, ANY, PT_UID, POLICY_TARGETS), ImmutableList.of(rule), UID);
 
       // invalid translated fields
-      assertThat(
-          manualHideRuleTransformation(natRulebase, rule, warnings), equalTo(Optional.empty()));
+      assertThat(manualHideRuleTransformation(rule, objs, warnings), equalTo(Optional.empty()));
     }
     {
+      ImmutableMap<Uid, TypedManagementObject> objs =
+          ImmutableMap.of(ANY_UID, ANY, ORIG_UID, ORIG, hostUid, host);
       NatRule rule =
           new NatRule(
               false,
@@ -241,14 +237,9 @@ public final class CheckpointNatConversionsTest {
               ORIG_UID,
               hostUid,
               UID);
-      NatRulebase natRulebase =
-          new NatRulebase(
-              ImmutableMap.of(ANY_UID, ANY, ORIG_UID, ORIG, hostUid, host),
-              ImmutableList.of(rule),
-              UID);
 
       assertThat(
-          manualHideRuleTransformation(natRulebase, rule, warnings),
+          manualHideRuleTransformation(rule, objs, warnings),
           equalTo(
               Optional.of(
                   Transformation.when(new MatchHeaderSpace(HeaderSpace.builder().build()))

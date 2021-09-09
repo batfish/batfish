@@ -41,6 +41,7 @@ import org.batfish.vendor.check_point_management.AccessRuleOrSection;
 import org.batfish.vendor.check_point_management.AccessSection;
 import org.batfish.vendor.check_point_management.CpmiAnyObject;
 import org.batfish.vendor.check_point_management.Host;
+import org.batfish.vendor.check_point_management.NamedManagementObject;
 import org.batfish.vendor.check_point_management.NatSettings;
 import org.batfish.vendor.check_point_management.Network;
 import org.batfish.vendor.check_point_management.PolicyTargets;
@@ -66,8 +67,8 @@ public final class CheckPointGatewayConversionsTest {
   private static final Uid UID_SERVICE_TCP_22 = Uid.of("13");
   private static final Uid UID_SERVICE_UDP_222 = Uid.of("14");
   private static final CpmiAnyObject CPMI_ANY = new CpmiAnyObject(UID_CPMI_ANY);
-  private static final ImmutableMap<Uid, TypedManagementObject> TEST_OBJS =
-      ImmutableMap.<Uid, TypedManagementObject>builder()
+  private static final ImmutableMap<Uid, NamedManagementObject> TEST_OBJS =
+      ImmutableMap.<Uid, NamedManagementObject>builder()
           .put(
               UID_NET0,
               new Network(
@@ -170,7 +171,7 @@ public final class CheckPointGatewayConversionsTest {
     AccessLayer accessLayer =
         new AccessLayer(TEST_OBJS, rulebase, Uid.of("uidLayer"), "accessLayerName");
 
-    Map<String, IpAccessList> ipAccessLists = toIpAccessLists(accessLayer);
+    Map<String, IpAccessList> ipAccessLists = toIpAccessLists(accessLayer, TEST_OBJS);
     assertThat(
         ipAccessLists.keySet(), containsInAnyOrder(aclName(accessLayer), aclName(accessSection)));
 
