@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -33,6 +34,7 @@ import org.batfish.vendor.check_point_management.AccessSection;
 import org.batfish.vendor.check_point_management.AddressSpace;
 import org.batfish.vendor.check_point_management.CpmiAnyObject;
 import org.batfish.vendor.check_point_management.GatewayOrServer;
+import org.batfish.vendor.check_point_management.NamedManagementObject;
 import org.batfish.vendor.check_point_management.RulebaseAction;
 import org.batfish.vendor.check_point_management.Service;
 import org.batfish.vendor.check_point_management.ServiceGroup;
@@ -51,9 +53,9 @@ public final class CheckPointGatewayConversions {
    * {@link Optional#empty()}.
    */
   static @Nonnull Optional<HeaderSpace> toHeaderSpace(
-      TypedManagementObject src,
-      TypedManagementObject dst,
-      TypedManagementObject service,
+      NamedManagementObject src,
+      NamedManagementObject dst,
+      NamedManagementObject service,
       Warnings warnings) {
     if (!checkValidHeaderSpaceInputs(src, dst, service, warnings)) {
       return Optional.empty();
@@ -75,9 +77,9 @@ public final class CheckPointGatewayConversions {
    */
   @VisibleForTesting
   static boolean checkValidHeaderSpaceInputs(
-      TypedManagementObject src,
-      TypedManagementObject dst,
-      TypedManagementObject service,
+      NamedManagementObject src,
+      NamedManagementObject dst,
+      NamedManagementObject service,
       Warnings warnings) {
     boolean valid = true;
     if (!(src instanceof AddressSpace)) {
@@ -111,17 +113,17 @@ public final class CheckPointGatewayConversions {
    * <p>{@link AccessSection}s will have their own {@link IpAccessList}s in the returned map, but
    * {@link AccessRule}s will be embedded directly in their parent's {@link IpAccessList}.
    */
-  static Map<String, IpAccessList> toIpAccessLists(@Nonnull AccessLayer access) {
-    Map<Uid, TypedManagementObject> objs = access.getObjectsDictionary();
+  static Map<String, IpAccessList> toIpAccessLists(
+      @Nonnull AccessLayer access, Map<Uid, NamedManagementObject> objects) {
     ImmutableMap.Builder<String, IpAccessList> acls = ImmutableMap.builder();
     ImmutableList.Builder<AclLine> accessLayerLines = ImmutableList.builder();
     for (AccessRuleOrSection acl : access.getRulebase()) {
       if (acl instanceof AccessRule) {
-        accessLayerLines.add(toAclLine((AccessRule) acl, objs));
+        accessLayerLines.add(toAclLine((AccessRule) acl, objects));
         continue;
       }
       assert acl instanceof AccessSection;
-      IpAccessList accessSection = toIpAccessList((AccessSection) acl, objs);
+      IpAccessList accessSection = toIpAccessList((AccessSection) acl, objects);
       acls.put(accessSection.getName(), accessSection);
       accessLayerLines.add(new AclAclLine(accessSection.getName(), accessSection.getName()));
     }
@@ -139,7 +141,7 @@ public final class CheckPointGatewayConversions {
 
   /** Convert the specified {@link AccessSection} into an {@link IpAccessList}. */
   private static IpAccessList toIpAccessList(
-      @Nonnull AccessSection section, Map<Uid, TypedManagementObject> objs) {
+      @Nonnull AccessSection section, Map<Uid, NamedManagementObject> objs) {
     return IpAccessList.builder()
         .setName(aclName(section))
         .setSourceName(section.getName())
@@ -152,7 +154,7 @@ public final class CheckPointGatewayConversions {
 
   /** Convert specified {@link AccessRule} to an {@link AclLine}. */
   @Nonnull
-  static AclLine toAclLine(AccessRule rule, Map<Uid, TypedManagementObject> objs) {
+  static AclLine toAclLine(AccessRule rule, Map<Uid, NamedManagementObject> objs) {
     return ExprAclLine.builder()
         .setName(rule.getName())
         .setMatchCondition(toMatchExpr(rule, objs))
@@ -166,7 +168,7 @@ public final class CheckPointGatewayConversions {
    * conditions of the rule.
    */
   @Nonnull
-  static AclLineMatchExpr toMatchExpr(AccessRule rule, Map<Uid, TypedManagementObject> objs) {
+  static AclLineMatchExpr toMatchExpr(AccessRule rule, Map<Uid, NamedManagementObject> objs) {
     ImmutableList.Builder<AclLineMatchExpr> conjuncts = ImmutableList.builder();
 
     // Source
@@ -197,7 +199,7 @@ public final class CheckPointGatewayConversions {
    */
   @Nonnull
   private static AclLineMatchExpr servicesToMatchExpr(
-      List<Uid> services, boolean negate, Map<Uid, TypedManagementObject> objs) {
+      List<Uid> services, boolean negate, Map<Uid, NamedManagementObject> objs) {
     AclLineMatchExpr matchExpr =
         new OrMatchExpr(
             services.stream()
@@ -221,7 +223,7 @@ public final class CheckPointGatewayConversions {
 
   /** Convert specified {@link TypedManagementObject} to a {@link LineAction}. */
   @Nonnull
-  static LineAction toAction(@Nullable TypedManagementObject obj) {
+  static LineAction toAction(@Nullable NamedManagementObject obj) {
     if (obj == null) {
       // TODO warn
       return LineAction.DENY;
@@ -248,11 +250,13 @@ public final class CheckPointGatewayConversions {
    * IpSpace}s existing for each of the supplied object's {@link Uid}s.
    */
   @Nonnull
-  private static IpSpace toIpSpace(List<Uid> targets, Map<Uid, TypedManagementObject> objs) {
+  private static IpSpace toIpSpace(List<Uid> targets, Map<Uid, NamedManagementObject> objs) {
     return AclIpSpace.builder()
         .thenPermitting(
             targets.stream()
-                .map(i -> objs.get(i).getName())
+                .map(objs::get)
+                .filter(Objects::nonNull) // TODO warn about missing refs?
+                .map(NamedManagementObject::getName)
                 .map(IpSpaceReference::new)
                 .collect(ImmutableList.toImmutableList()))
         .build();
