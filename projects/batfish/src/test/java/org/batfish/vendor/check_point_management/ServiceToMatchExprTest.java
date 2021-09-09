@@ -102,12 +102,12 @@ public final class ServiceToMatchExprTest {
         ((ServiceGroup) group1).accept(serviceToMatchExpr),
         AclLineMatchExprs.or(
             ImmutableList.of(
-                new MatchHeaderSpace(
+                AclLineMatchExprs.match(
                     HeaderSpace.builder()
                         .setIpProtocols(IpProtocol.TCP)
                         .setDstPorts(new SubRange(100))
                         .build()),
-                new MatchHeaderSpace(
+                AclLineMatchExprs.match(
                     HeaderSpace.builder()
                         .setIpProtocols(IpProtocol.UDP)
                         .setDstPorts(new SubRange(200), new SubRange(300))
