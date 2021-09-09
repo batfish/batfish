@@ -416,5 +416,12 @@ public final class CheckPointGatewayConversionsTest {
                 .including(50)
                 .including(new SubRange(65001, MAX_PORT_NUMBER))
                 .build()));
+    assertThat(
+        portStringToIntegerSpace(" 50 , >65000 "),
+        equalTo(
+            IntegerSpace.builder()
+                .including(50)
+                .including(new SubRange(65001, MAX_PORT_NUMBER))
+                .build()));
   }
 }

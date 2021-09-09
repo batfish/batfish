@@ -350,7 +350,7 @@ public final class CheckPointGatewayConversions {
     String[] ranges = portStr.split(",", -1);
     IntegerSpace.Builder builder = IntegerSpace.builder();
     for (String range : ranges) {
-      builder.including(portRangeStringToIntegerSpace(range));
+      builder.including(portRangeStringToIntegerSpace(range.trim()));
     }
     return builder.build();
   }
