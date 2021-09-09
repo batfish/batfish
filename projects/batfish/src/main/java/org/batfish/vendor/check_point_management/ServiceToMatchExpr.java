@@ -26,6 +26,7 @@ public class ServiceToMatchExpr implements ServiceVisitor<AclLineMatchExpr> {
   @Override
   public AclLineMatchExpr visitServiceGroup(ServiceGroup serviceGroup) {
     // TODO implement
+    assert _objs != null; // avoid unused warning
     return TrueExpr.INSTANCE;
   }
 
