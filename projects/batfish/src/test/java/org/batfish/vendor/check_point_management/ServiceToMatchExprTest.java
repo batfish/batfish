@@ -10,8 +10,8 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
-import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.junit.Test;
 
@@ -100,7 +100,7 @@ public final class ServiceToMatchExprTest {
 
     assertBddsEqual(
         ((ServiceGroup) group1).accept(serviceToMatchExpr),
-        new OrMatchExpr(
+        AclLineMatchExprs.or(
             ImmutableList.of(
                 new MatchHeaderSpace(
                     HeaderSpace.builder()
