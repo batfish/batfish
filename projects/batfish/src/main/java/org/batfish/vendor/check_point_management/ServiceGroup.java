@@ -16,6 +16,10 @@ public final class ServiceGroup extends TypedManagementObject implements Service
     return visitor.visitServiceGroup(this);
   }
 
+  public List<Uid> getMembers() {
+    return _members;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (!baseEquals(o)) {

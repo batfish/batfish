@@ -13,6 +13,7 @@ import static org.batfish.vendor.check_point_gateway.representation.CheckpointNa
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.manualHideRuleTransformation;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.manualHideTransformationSteps;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.mergeTransformations;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -23,9 +24,7 @@ import com.google.common.collect.ImmutableMap;
 import java.util.List;
 import java.util.Optional;
 import org.batfish.common.Warnings;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.vendor.check_point_management.CpmiAnyObject;
@@ -39,6 +38,7 @@ import org.batfish.vendor.check_point_management.NatSettings;
 import org.batfish.vendor.check_point_management.Original;
 import org.batfish.vendor.check_point_management.PolicyTargets;
 import org.batfish.vendor.check_point_management.ServiceTcp;
+import org.batfish.vendor.check_point_management.ServiceToMatchExpr;
 import org.batfish.vendor.check_point_management.SimpleGateway;
 import org.batfish.vendor.check_point_management.TypedManagementObject;
 import org.batfish.vendor.check_point_management.Uid;
@@ -175,6 +175,7 @@ public final class CheckpointNatConversionsTest {
     Ip hostIp = Ip.parse("1.1.1.1");
     String hostname = "host";
     Host host = new Host(hostIp, NAT_SETTINGS_TEST_INSTANCE, hostname, hostUid);
+    ServiceToMatchExpr serviceToMatchExpr = new ServiceToMatchExpr(ImmutableMap.of());
     {
       ImmutableMap<Uid, TypedManagementObject> objs =
           ImmutableMap.of(hostUid, host, PT_UID, POLICY_TARGETS, ORIG_UID, ORIG);
@@ -195,7 +196,9 @@ public final class CheckpointNatConversionsTest {
               UID);
 
       // invalid original fields
-      assertThat(manualHideRuleTransformation(rule, objs, warnings), equalTo(Optional.empty()));
+      assertThat(
+          manualHideRuleTransformation(rule, serviceToMatchExpr, objs, warnings),
+          equalTo(Optional.empty()));
     }
     {
       ImmutableMap<Uid, TypedManagementObject> objs =
@@ -217,7 +220,9 @@ public final class CheckpointNatConversionsTest {
               UID);
 
       // invalid translated fields
-      assertThat(manualHideRuleTransformation(rule, objs, warnings), equalTo(Optional.empty()));
+      assertThat(
+          manualHideRuleTransformation(rule, serviceToMatchExpr, objs, warnings),
+          equalTo(Optional.empty()));
     }
     {
       ImmutableMap<Uid, TypedManagementObject> objs =
@@ -238,14 +243,12 @@ public final class CheckpointNatConversionsTest {
               hostUid,
               UID);
 
+      Transformation xform =
+          manualHideRuleTransformation(rule, serviceToMatchExpr, objs, warnings).get();
       assertThat(
-          manualHideRuleTransformation(rule, objs, warnings),
-          equalTo(
-              Optional.of(
-                  Transformation.when(new MatchHeaderSpace(HeaderSpace.builder().build()))
-                      .apply(
-                          assignSourceIp(hostIp), assignSourcePort(NAT_PORT_FIRST, NAT_PORT_LAST))
-                      .build())));
+          xform.getTransformationSteps(),
+          containsInAnyOrder(
+              assignSourceIp(hostIp), assignSourcePort(NAT_PORT_FIRST, NAT_PORT_LAST)));
     }
   }
 

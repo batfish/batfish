@@ -5,7 +5,6 @@ import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.aclName;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.checkValidHeaderSpaceInputs;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toAction;
-import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toHeaderSpace;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toIpAccessLists;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toMatchExpr;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -48,6 +47,7 @@ import org.batfish.vendor.check_point_management.PolicyTargets;
 import org.batfish.vendor.check_point_management.RulebaseAction;
 import org.batfish.vendor.check_point_management.ServiceIcmp;
 import org.batfish.vendor.check_point_management.ServiceTcp;
+import org.batfish.vendor.check_point_management.ServiceToMatchExpr;
 import org.batfish.vendor.check_point_management.ServiceUdp;
 import org.batfish.vendor.check_point_management.TypedManagementObject;
 import org.batfish.vendor.check_point_management.Uid;
@@ -55,7 +55,6 @@ import org.junit.Test;
 
 /** Test of {@link CheckPointGatewayConversions}. */
 public final class CheckPointGatewayConversionsTest {
-
   public static final NatSettings NAT_SETTINGS_TEST_INSTANCE =
       new NatSettings(true, "gateway", "All", "hide");
   private static final Uid UID_ACCEPT = Uid.of("99997");
@@ -67,37 +66,52 @@ public final class CheckPointGatewayConversionsTest {
   private static final Uid UID_SERVICE_TCP_22 = Uid.of("13");
   private static final Uid UID_SERVICE_UDP_222 = Uid.of("14");
   private static final CpmiAnyObject CPMI_ANY = new CpmiAnyObject(UID_CPMI_ANY);
+  private static final Uid UID_TCP_RANGES = Uid.of("15");
+  private static final Uid UID_UDP = Uid.of("16");
+  private static final Uid UID_ICMP = Uid.of("17");
+  private static final Uid UID_ICMP_NO_CODE = Uid.of("18");
+  private static final ServiceTcp SERVICE_TCP_RANGES =
+      new ServiceTcp("tcp_ranges", "1-100,105-106", UID_TCP_RANGES);
+  private static final ServiceUdp SERVICE_UDP = new ServiceUdp("udp", "1234", UID_UDP);
+  private static final ServiceIcmp SERVICE_ICMP = new ServiceIcmp("icmp", 8, 3, UID_ICMP);
+  private static final ServiceIcmp SERVICE_ICMP_NO_CODE =
+      new ServiceIcmp("icmpNoCode", 8, null, UID_ICMP_NO_CODE);
+  private static final Network NETWORK_0 =
+      new Network(
+          "net0",
+          NAT_SETTINGS_TEST_INSTANCE,
+          Ip.parse("10.0.0.0"),
+          Ip.parse("255.255.255.0"),
+          UID_NET0);
+  private static final Network NETWORK_1 =
+      new Network(
+          "net1",
+          NAT_SETTINGS_TEST_INSTANCE,
+          Ip.parse("10.0.1.0"),
+          Ip.parse("255.255.255.0"),
+          UID_NET1);
+  private static final Network NETWORK_2 =
+      new Network(
+          "net2",
+          NAT_SETTINGS_TEST_INSTANCE,
+          Ip.parse("10.0.2.0"),
+          Ip.parse("255.255.255.0"),
+          UID_NET2);
+
   private static final ImmutableMap<Uid, NamedManagementObject> TEST_OBJS =
       ImmutableMap.<Uid, NamedManagementObject>builder()
-          .put(
-              UID_NET0,
-              new Network(
-                  "net0",
-                  NAT_SETTINGS_TEST_INSTANCE,
-                  Ip.parse("10.0.0.0"),
-                  Ip.parse("255.255.255.0"),
-                  UID_NET0))
-          .put(
-              UID_NET1,
-              new Network(
-                  "net1",
-                  NAT_SETTINGS_TEST_INSTANCE,
-                  Ip.parse("10.0.1.0"),
-                  Ip.parse("255.255.255.0"),
-                  UID_NET1))
-          .put(
-              UID_NET2,
-              new Network(
-                  "net2",
-                  NAT_SETTINGS_TEST_INSTANCE,
-                  Ip.parse("10.0.2.0"),
-                  Ip.parse("255.255.255.0"),
-                  UID_NET2))
+          .put(UID_NET0, NETWORK_0)
+          .put(UID_NET1, NETWORK_1)
+          .put(UID_NET2, NETWORK_2)
           .put(UID_CPMI_ANY, CPMI_ANY)
           .put(UID_ACCEPT, new RulebaseAction("Accept", UID_ACCEPT, "Accept"))
           .put(UID_DROP, new RulebaseAction("Drop", UID_DROP, "Drop"))
           .put(UID_SERVICE_TCP_22, new ServiceTcp("service_tcp_22", "22", UID_SERVICE_TCP_22))
           .put(UID_SERVICE_UDP_222, new ServiceUdp("service_udp_222", "222", UID_SERVICE_UDP_222))
+          .put(UID_TCP_RANGES, SERVICE_TCP_RANGES)
+          .put(UID_UDP, SERVICE_UDP)
+          .put(UID_ICMP, SERVICE_ICMP)
+          .put(UID_ICMP_NO_CODE, SERVICE_ICMP_NO_CODE)
           .build();
   private static final ImmutableMap<String, IpSpace> TEST_IP_SPACES =
       ImmutableMap.of(
@@ -112,6 +126,9 @@ public final class CheckPointGatewayConversionsTest {
   private static final String NET0_ADDR = "10.0.0.100";
   private static final String NET1_ADDR = "10.0.1.100";
   private static final String NET2_ADDR = "10.0.2.100";
+
+  private final BddTestbed _tb = new BddTestbed(ImmutableMap.of(), TEST_IP_SPACES);
+  private final ServiceToMatchExpr _serviceToMatchExpr = new ServiceToMatchExpr(TEST_OBJS);
 
   private static Flow createFlow(String sourceAddress, String destinationAddress) {
     return createFlow(sourceAddress, destinationAddress, IpProtocol.TCP, 1, 1);
@@ -171,7 +188,8 @@ public final class CheckPointGatewayConversionsTest {
     AccessLayer accessLayer =
         new AccessLayer(TEST_OBJS, rulebase, Uid.of("uidLayer"), "accessLayerName");
 
-    Map<String, IpAccessList> ipAccessLists = toIpAccessLists(accessLayer, TEST_OBJS);
+    Map<String, IpAccessList> ipAccessLists =
+        toIpAccessLists(accessLayer, TEST_OBJS, _serviceToMatchExpr);
     assertThat(
         ipAccessLists.keySet(), containsInAnyOrder(aclName(accessLayer), aclName(accessSection)));
 
@@ -189,8 +207,7 @@ public final class CheckPointGatewayConversionsTest {
   }
 
   @Test
-  public void testToAclLineMatchExpr() {
-    BddTestbed tb = new BddTestbed(ImmutableMap.of(), TEST_IP_SPACES);
+  public void testAccessRuleToMatchExpr() {
     AclLineMatchExpr matchNet0 =
         new MatchHeaderSpace(HeaderSpace.builder().setDstIps(new IpSpaceReference("net0")).build());
     AclLineMatchExpr matchNotNet0 =
@@ -233,10 +250,11 @@ public final class CheckPointGatewayConversionsTest {
                 .setName("ruleName")
                 .setUid(Uid.of("2"))
                 .build(),
-            TEST_OBJS);
+            TEST_OBJS,
+            _serviceToMatchExpr);
     assertThat(
-        tb.toBDD(matches),
-        equalTo(tb.toBDD(matchNet0).and(tb.toBDD(matchNet1).and(tb.toBDD(matchSvc)))));
+        _tb.toBDD(matches),
+        equalTo(_tb.toBDD(matchNet0).and(_tb.toBDD(matchNet1).and(_tb.toBDD(matchSvc)))));
 
     // Negated matches
     AclLineMatchExpr negatedMatches =
@@ -253,10 +271,11 @@ public final class CheckPointGatewayConversionsTest {
                 .setName("ruleName")
                 .setUid(Uid.of("2"))
                 .build(),
-            TEST_OBJS);
+            TEST_OBJS,
+            _serviceToMatchExpr);
     assertThat(
-        tb.toBDD(negatedMatches),
-        equalTo(tb.toBDD(matchNotNet0).and(tb.toBDD(matchNotNet1).and(tb.toBDD(matchNotSvc)))));
+        _tb.toBDD(negatedMatches),
+        equalTo(_tb.toBDD(matchNotNet0).and(_tb.toBDD(matchNotNet1).and(_tb.toBDD(matchNotSvc)))));
 
     // Multiple services
     AclLineMatchExpr mutliSvc =
@@ -270,8 +289,9 @@ public final class CheckPointGatewayConversionsTest {
                 .setName("ruleName")
                 .setUid(Uid.of("2"))
                 .build(),
-            TEST_OBJS);
-    assertThat(tb.toBDD(mutliSvc), equalTo(tb.toBDD(matchSvc).or(tb.toBDD(matchUdpSvc))));
+            TEST_OBJS,
+            _serviceToMatchExpr);
+    assertThat(_tb.toBDD(mutliSvc), equalTo(_tb.toBDD(matchSvc).or(_tb.toBDD(matchUdpSvc))));
   }
 
   @Test
@@ -285,63 +305,73 @@ public final class CheckPointGatewayConversionsTest {
   }
 
   @Test
-  public void testToHeaderSpace() {
+  public void testNatOrigToMatchExpr() {
     Uid uid = Uid.of("1");
     Warnings warnings = new Warnings();
     {
       TypedManagementObject policyTargets = new PolicyTargets(uid);
       assertThat(
-          toHeaderSpace(policyTargets, policyTargets, policyTargets, warnings),
+          toMatchExpr(policyTargets, policyTargets, policyTargets, _serviceToMatchExpr, warnings),
           equalTo(Optional.empty()));
     }
     {
       assertThat(
-          toHeaderSpace(
-              new Host(Ip.parse("1.1.1.1"), NAT_SETTINGS_TEST_INSTANCE, "source", uid),
-              new Host(Ip.parse("2.2.2.2"), NAT_SETTINGS_TEST_INSTANCE, "dest", uid),
-              new ServiceTcp("foo", "1-100,105-106", uid),
-              warnings),
+          _tb.toBDD(
+              toMatchExpr(NETWORK_0, NETWORK_1, SERVICE_TCP_RANGES, _serviceToMatchExpr, warnings)
+                  .get()),
           equalTo(
-              Optional.of(
-                  HeaderSpace.builder()
-                      .setSrcIps(new IpSpaceReference("source"))
-                      .setDstIps(new IpSpaceReference("dest"))
-                      .setDstPorts(ImmutableList.of(new SubRange(1, 100), new SubRange(105, 106)))
-                      .setIpProtocols(IpProtocol.TCP)
-                      .build())));
+              _tb.toBDD(
+                  new MatchHeaderSpace(
+                      HeaderSpace.builder()
+                          .setSrcIps(new IpSpaceReference(NETWORK_0.getName()))
+                          .setDstIps(new IpSpaceReference(NETWORK_1.getName()))
+                          .setDstPorts(
+                              ImmutableList.of(new SubRange(1, 100), new SubRange(105, 106)))
+                          .setIpProtocols(IpProtocol.TCP)
+                          .build()))));
     }
     {
       assertThat(
-          toHeaderSpace(CPMI_ANY, CPMI_ANY, CPMI_ANY, warnings),
-          equalTo(Optional.of(HeaderSpace.builder().build())));
+          _tb.toBDD(toMatchExpr(CPMI_ANY, CPMI_ANY, CPMI_ANY, _serviceToMatchExpr, warnings).get()),
+          equalTo(_tb.toBDD(new MatchHeaderSpace(HeaderSpace.builder().build()))));
     }
     {
       assertThat(
-          toHeaderSpace(CPMI_ANY, CPMI_ANY, new ServiceUdp("foo", "1234", uid), warnings),
+          _tb.toBDD(
+              toMatchExpr(CPMI_ANY, CPMI_ANY, SERVICE_UDP, _serviceToMatchExpr, warnings).get()),
           equalTo(
-              Optional.of(
-                  HeaderSpace.builder()
-                      .setDstPorts(ImmutableList.of(new SubRange(1234)))
-                      .setIpProtocols(IpProtocol.UDP)
-                      .build())));
+              _tb.toBDD(
+                  new MatchHeaderSpace(
+                      HeaderSpace.builder()
+                          .setDstPorts(ImmutableList.of(new SubRange(1234)))
+                          .setIpProtocols(IpProtocol.UDP)
+                          .build()))));
     }
     {
       assertThat(
-          toHeaderSpace(CPMI_ANY, CPMI_ANY, new ServiceIcmp("foo", 8, 3, uid), warnings),
+          _tb.toBDD(
+              toMatchExpr(CPMI_ANY, CPMI_ANY, SERVICE_ICMP, _serviceToMatchExpr, warnings).get()),
           equalTo(
-              Optional.of(
-                  HeaderSpace.builder()
-                      .setIcmpTypes(8)
-                      .setIcmpCodes(3)
-                      .setIpProtocols(IpProtocol.ICMP)
-                      .build())));
+              _tb.toBDD(
+                  new MatchHeaderSpace(
+                      HeaderSpace.builder()
+                          .setIcmpTypes(8)
+                          .setIcmpCodes(3)
+                          .setIpProtocols(IpProtocol.ICMP)
+                          .build()))));
     }
     {
       assertThat(
-          toHeaderSpace(CPMI_ANY, CPMI_ANY, new ServiceIcmp("foo", 8, null, uid), warnings),
+          _tb.toBDD(
+              toMatchExpr(CPMI_ANY, CPMI_ANY, SERVICE_ICMP_NO_CODE, _serviceToMatchExpr, warnings)
+                  .get()),
           equalTo(
-              Optional.of(
-                  HeaderSpace.builder().setIcmpTypes(8).setIpProtocols(IpProtocol.ICMP).build())));
+              _tb.toBDD(
+                  new MatchHeaderSpace(
+                      HeaderSpace.builder()
+                          .setIcmpTypes(8)
+                          .setIpProtocols(IpProtocol.ICMP)
+                          .build()))));
     }
   }
 
