@@ -4,7 +4,7 @@ import static org.batfish.datamodel.transformation.Transformation.when;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourcePort;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.appliesToGateway;
-import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toHeaderSpace;
+import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toMatchExpr;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -16,9 +16,8 @@ import java.util.Optional;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.batfish.common.Warnings;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.vendor.check_point_management.GatewayOrServer;
@@ -31,6 +30,7 @@ import org.batfish.vendor.check_point_management.NatRuleOrSectionVisitor;
 import org.batfish.vendor.check_point_management.NatRulebase;
 import org.batfish.vendor.check_point_management.NatSection;
 import org.batfish.vendor.check_point_management.Original;
+import org.batfish.vendor.check_point_management.ServiceToMatchExpr;
 import org.batfish.vendor.check_point_management.Uid;
 
 public class CheckpointNatConversions {
@@ -161,13 +161,15 @@ public class CheckpointNatConversions {
    */
   static @Nonnull Optional<Transformation> manualHideRuleTransformation(
       org.batfish.vendor.check_point_management.NatRule natRule,
+      ServiceToMatchExpr serviceToMatchExpr,
       Map<Uid, ? extends NamedManagementObject> objects,
       Warnings warnings) {
-    Optional<HeaderSpace> maybeOriginalHeaderSpace =
-        toHeaderSpace(
+    Optional<AclLineMatchExpr> maybeOrigMatchExpr =
+        toMatchExpr(
             objects.get(natRule.getOriginalSource()),
             objects.get(natRule.getOriginalDestination()),
             objects.get(natRule.getOriginalService()),
+            serviceToMatchExpr,
             warnings);
     Optional<List<TransformationStep>> maybeSteps =
         manualHideTransformationSteps(
@@ -175,11 +177,10 @@ public class CheckpointNatConversions {
             objects.get(natRule.getTranslatedDestination()),
             objects.get(natRule.getTranslatedService()),
             warnings);
-    if (!maybeOriginalHeaderSpace.isPresent() || !maybeSteps.isPresent()) {
+    if (!maybeOrigMatchExpr.isPresent() || !maybeSteps.isPresent()) {
       return Optional.empty();
     }
-    return Optional.of(
-        when(new MatchHeaderSpace(maybeOriginalHeaderSpace.get())).apply(maybeSteps.get()).build());
+    return Optional.of(when(maybeOrigMatchExpr.get()).apply(maybeSteps.get()).build());
   }
 
   static @Nonnull Optional<Transformation> mergeTransformations(

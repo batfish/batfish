@@ -18,15 +18,15 @@ import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.HeaderSpace.Builder;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.NotMatchExpr;
@@ -41,11 +41,7 @@ import org.batfish.vendor.check_point_management.GatewayOrServer;
 import org.batfish.vendor.check_point_management.NamedManagementObject;
 import org.batfish.vendor.check_point_management.RulebaseAction;
 import org.batfish.vendor.check_point_management.Service;
-import org.batfish.vendor.check_point_management.ServiceGroup;
-import org.batfish.vendor.check_point_management.ServiceIcmp;
-import org.batfish.vendor.check_point_management.ServiceTcp;
-import org.batfish.vendor.check_point_management.ServiceUdp;
-import org.batfish.vendor.check_point_management.ServiceVisitor;
+import org.batfish.vendor.check_point_management.ServiceToMatchExpr;
 import org.batfish.vendor.check_point_management.TypedManagementObject;
 import org.batfish.vendor.check_point_management.Uid;
 
@@ -53,26 +49,23 @@ import org.batfish.vendor.check_point_management.Uid;
 public final class CheckPointGatewayConversions {
 
   /**
-   * Convert src, dst, and service to a {@link HeaderSpace} if they are of valid types. Else, return
-   * {@link Optional#empty()}.
+   * Convert src, dst, and service to an {@link AclLineMatchExpr} if they are of valid types. Else,
+   * return {@link Optional#empty()}.
    */
-  static @Nonnull Optional<HeaderSpace> toHeaderSpace(
+  static @Nonnull Optional<AclLineMatchExpr> toMatchExpr(
       NamedManagementObject src,
       NamedManagementObject dst,
       NamedManagementObject service,
+      ServiceToMatchExpr serviceToMatchExpr,
       Warnings warnings) {
     if (!checkValidHeaderSpaceInputs(src, dst, service, warnings)) {
       return Optional.empty();
     }
-    HeaderSpace.Builder hsb = HeaderSpace.builder();
-    if (!(src instanceof CpmiAnyObject)) {
-      hsb.setSrcIps(new IpSpaceReference(src.getName()));
-    }
-    if (!(dst instanceof CpmiAnyObject)) {
-      hsb.setDstIps(new IpSpaceReference(dst.getName()));
-    }
-    applyServiceConstraint((Service) service, hsb);
-    return Optional.of(hsb.build());
+    ImmutableList.Builder<AclLineMatchExpr> exprs = ImmutableList.builder();
+    exprs.add(new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(toIpSpace(src)).build()));
+    exprs.add(new MatchHeaderSpace(HeaderSpace.builder().setDstIps(toIpSpace(dst)).build()));
+    exprs.add(((Service) service).accept(serviceToMatchExpr));
+    return Optional.of(AclLineMatchExprs.and(exprs.build()));
   }
 
   /**
@@ -118,16 +111,18 @@ public final class CheckPointGatewayConversions {
    * {@link AccessRule}s will be embedded directly in their parent's {@link IpAccessList}.
    */
   static Map<String, IpAccessList> toIpAccessLists(
-      @Nonnull AccessLayer access, Map<Uid, NamedManagementObject> objects) {
+      @Nonnull AccessLayer access,
+      Map<Uid, NamedManagementObject> objects,
+      ServiceToMatchExpr serviceToMatchExpr) {
     ImmutableMap.Builder<String, IpAccessList> acls = ImmutableMap.builder();
     ImmutableList.Builder<AclLine> accessLayerLines = ImmutableList.builder();
     for (AccessRuleOrSection acl : access.getRulebase()) {
       if (acl instanceof AccessRule) {
-        accessLayerLines.add(toAclLine((AccessRule) acl, objects));
+        accessLayerLines.add(toAclLine((AccessRule) acl, objects, serviceToMatchExpr));
         continue;
       }
       assert acl instanceof AccessSection;
-      IpAccessList accessSection = toIpAccessList((AccessSection) acl, objects);
+      IpAccessList accessSection = toIpAccessList((AccessSection) acl, objects, serviceToMatchExpr);
       acls.put(accessSection.getName(), accessSection);
       accessLayerLines.add(new AclAclLine(accessSection.getName(), accessSection.getName()));
     }
@@ -145,23 +140,28 @@ public final class CheckPointGatewayConversions {
 
   /** Convert the specified {@link AccessSection} into an {@link IpAccessList}. */
   private static IpAccessList toIpAccessList(
-      @Nonnull AccessSection section, Map<Uid, NamedManagementObject> objs) {
+      @Nonnull AccessSection section,
+      Map<Uid, NamedManagementObject> objs,
+      ServiceToMatchExpr serviceToMatchExpr) {
     return IpAccessList.builder()
         .setName(aclName(section))
         .setSourceName(section.getName())
         .setLines(
             section.getRulebase().stream()
-                .map(r -> toAclLine(r, objs))
+                .map(r -> toAclLine(r, objs, serviceToMatchExpr))
                 .collect(ImmutableList.toImmutableList()))
         .build();
   }
 
   /** Convert specified {@link AccessRule} to an {@link AclLine}. */
   @Nonnull
-  static AclLine toAclLine(AccessRule rule, Map<Uid, NamedManagementObject> objs) {
+  static AclLine toAclLine(
+      AccessRule rule,
+      Map<Uid, NamedManagementObject> objs,
+      ServiceToMatchExpr serviceToMatchExpr) {
     return ExprAclLine.builder()
         .setName(rule.getName())
-        .setMatchCondition(toMatchExpr(rule, objs))
+        .setMatchCondition(toMatchExpr(rule, objs, serviceToMatchExpr))
         .setAction(toAction(objs.get(rule.getAction())))
         // TODO trace element and structure ID
         .build();
@@ -172,7 +172,10 @@ public final class CheckPointGatewayConversions {
    * conditions of the rule.
    */
   @Nonnull
-  static AclLineMatchExpr toMatchExpr(AccessRule rule, Map<Uid, NamedManagementObject> objs) {
+  static AclLineMatchExpr toMatchExpr(
+      AccessRule rule,
+      Map<Uid, NamedManagementObject> objs,
+      ServiceToMatchExpr serviceToMatchExpr) {
     ImmutableList.Builder<AclLineMatchExpr> conjuncts = ImmutableList.builder();
 
     // Source
@@ -192,7 +195,8 @@ public final class CheckPointGatewayConversions {
     conjuncts.add(dstMatch);
 
     // Service
-    conjuncts.add(servicesToMatchExpr(rule.getService(), rule.getServiceNegate(), objs));
+    conjuncts.add(
+        servicesToMatchExpr(rule.getService(), rule.getServiceNegate(), objs, serviceToMatchExpr));
 
     return new AndMatchExpr(conjuncts.build());
   }
@@ -203,24 +207,19 @@ public final class CheckPointGatewayConversions {
    */
   @Nonnull
   private static AclLineMatchExpr servicesToMatchExpr(
-      List<Uid> services, boolean negate, Map<Uid, NamedManagementObject> objs) {
+      List<Uid> services,
+      boolean negate,
+      Map<Uid, NamedManagementObject> objs,
+      ServiceToMatchExpr serviceToMatchExpr) {
     AclLineMatchExpr matchExpr =
         new OrMatchExpr(
             services.stream()
                 .map(objs::get)
-                .filter(Service.class::isInstance)
+                .filter(Service.class::isInstance) // TODO warn about bad refs
                 .map(Service.class::cast)
-                .map(CheckPointGatewayConversions::serviceToMatchExpr)
+                .map(s -> s.accept(serviceToMatchExpr))
                 .collect(ImmutableList.toImmutableList()));
     return negate ? new NotMatchExpr(matchExpr) : matchExpr;
-  }
-
-  @Nonnull
-  static AclLineMatchExpr serviceToMatchExpr(Service service) {
-    Builder serviceHsb = HeaderSpace.builder();
-    service.accept(new ServiceToHeaderSpaceConstraints(serviceHsb));
-    // TODO trace element and structure ID
-    return new MatchHeaderSpace(serviceHsb.build());
   }
 
   /** Convert specified {@link TypedManagementObject} to a {@link LineAction}. */
@@ -258,65 +257,21 @@ public final class CheckPointGatewayConversions {
             targets.stream()
                 .map(objs::get)
                 .filter(Objects::nonNull) // TODO warn about missing refs?
-                .map(NamedManagementObject::getName)
-                .map(IpSpaceReference::new)
+                .map(CheckPointGatewayConversions::toIpSpace)
                 .collect(ImmutableList.toImmutableList()))
         .build();
   }
 
   /**
-   * Restricts the given {@link HeaderSpace.Builder} to protocols/ports matching the given {@link
-   * Service}.
+   * Returns an {@link IpSpace} containing the specified {@link NamedManagementObject}. Relies on a
+   * named {@link IpSpace} existing for the supplied object.
    */
-  public static void applyServiceConstraint(Service service, HeaderSpace.Builder hsb) {
-    service.accept(new ServiceToHeaderSpaceConstraints(hsb));
-  }
-
-  /**
-   * Applies a {@link Service} to its current {@link HeaderSpace.Builder}. Does not modify the
-   * headerspace if the given service object is unconstrained.
-   */
-  private static class ServiceToHeaderSpaceConstraints implements ServiceVisitor<Void> {
-    private final @Nonnull HeaderSpace.Builder _hsb;
-
-    private ServiceToHeaderSpaceConstraints(HeaderSpace.Builder hsb) {
-      _hsb = hsb;
+  @Nonnull
+  private static IpSpace toIpSpace(NamedManagementObject obj) {
+    if (obj instanceof CpmiAnyObject) {
+      return UniverseIpSpace.INSTANCE;
     }
-
-    @Override
-    public Void visitCpmiAnyObject(CpmiAnyObject cpmiAnyObject) {
-      // Does not constrain headerspace
-      return null;
-    }
-
-    @Override
-    public Void visitServiceGroup(ServiceGroup serviceGroup) {
-      // TODO Implement
-      return null;
-    }
-
-    @Override
-    public Void visitServiceIcmp(ServiceIcmp serviceIcmp) {
-      _hsb.setIpProtocols(IpProtocol.ICMP);
-      _hsb.setIcmpTypes(serviceIcmp.getIcmpType());
-      Optional.ofNullable(serviceIcmp.getIcmpCode()).ifPresent(_hsb::setIcmpCodes);
-      return null;
-    }
-
-    @Override
-    public Void visitServiceTcp(ServiceTcp serviceTcp) {
-      // TODO Is this correct/sufficient? Does it need to modify src port?
-      _hsb.setIpProtocols(IpProtocol.TCP);
-      _hsb.setDstPorts(portStringToIntegerSpace(serviceTcp.getPort()).getSubRanges());
-      return null;
-    }
-
-    @Override
-    public Void visitServiceUdp(ServiceUdp serviceUdp) {
-      _hsb.setIpProtocols(IpProtocol.UDP);
-      _hsb.setDstPorts(portStringToIntegerSpace(serviceUdp.getPort()).getSubRanges());
-      return null;
-    }
+    return new IpSpaceReference(obj.getName());
   }
 
   /** Return {@code true} iff any of the install-on UIDs applies to the given gateway. */
