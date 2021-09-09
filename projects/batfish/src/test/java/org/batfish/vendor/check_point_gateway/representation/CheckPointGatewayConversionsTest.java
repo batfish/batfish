@@ -411,6 +411,7 @@ public final class CheckPointGatewayConversionsTest {
   @Test
   public void testPortStringToIntegerSpace() {
     assertThat(portStringToIntegerSpace(""), equalTo(IntegerSpace.EMPTY));
+    assertThat(portStringToIntegerSpace(","), equalTo(IntegerSpace.EMPTY));
     assertThat(portStringToIntegerSpace("50"), equalTo(IntegerSpace.of(50)));
     assertThat(
         portStringToIntegerSpace("50,>65000"),
