@@ -12,6 +12,7 @@ junit_tests(
         exclude = ["Test*.java"],
     ),
     deps = [
+        "//projects/batfish:batfish_testlib",
         "//projects/batfish-common-protocol:common",
         "//projects/batfish/src/main/java/org/batfish/vendor/check_point_management",
         "@maven//:com_fasterxml_jackson_core_jackson_core",
