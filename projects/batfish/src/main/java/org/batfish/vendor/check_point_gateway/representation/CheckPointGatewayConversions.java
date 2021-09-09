@@ -1,5 +1,8 @@
 package org.batfish.vendor.check_point_gateway.representation;
 
+import static org.batfish.datamodel.IntegerSpace.PORTS;
+import static org.batfish.datamodel.applications.PortsApplication.MAX_PORT_NUMBER;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -22,6 +25,7 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -314,7 +318,7 @@ public final class CheckPointGatewayConversions {
       // TODO Is this correct/sufficient? Does it need to modify src port?
       assert _hsb != null;
       _hsb.setIpProtocols(IpProtocol.TCP);
-      _hsb.setDstPorts(IntegerSpace.parse(serviceTcp.getPort()).getSubRanges());
+      _hsb.setDstPorts(portStringToIntegerSpace(serviceTcp.getPort()).getSubRanges());
       return null;
     }
 
@@ -322,7 +326,7 @@ public final class CheckPointGatewayConversions {
     public Void visitServiceUdp(ServiceUdp serviceUdp) {
       assert _hsb != null;
       _hsb.setIpProtocols(IpProtocol.UDP);
-      _hsb.setDstPorts(IntegerSpace.parse(serviceUdp.getPort()).getSubRanges());
+      _hsb.setDstPorts(portStringToIntegerSpace(serviceUdp.getPort()).getSubRanges());
       return null;
     }
   }
@@ -342,6 +346,50 @@ public final class CheckPointGatewayConversions {
   /** Returns the name we use for IpAccessList of AccessSection */
   public static String aclName(AccessSection accessSection) {
     return accessSection.getUid().getValue();
+  }
+
+  /** Convert an entire CheckPoint port string to an {@link IntegerSpace}. */
+  @VisibleForTesting
+  static @Nonnull IntegerSpace portStringToIntegerSpace(String portStr) {
+    String[] ranges = portStr.split(",", -1);
+    IntegerSpace.Builder builder = IntegerSpace.builder();
+    for (String range : ranges) {
+      builder.including(portRangeStringToIntegerSpace(range.trim()));
+    }
+    return builder.build();
+  }
+
+  /** Convert a single element of a CheckPoint port string to an {@link IntegerSpace}. */
+  @VisibleForTesting
+  static @Nonnull IntegerSpace portRangeStringToIntegerSpace(String range) {
+    if (range.isEmpty()) {
+      // warn? all ports instead?
+      return IntegerSpace.EMPTY;
+    }
+    IntegerSpace raw;
+    char firstChar = range.charAt(0);
+    if ('0' <= firstChar && firstChar <= '9') {
+      // Examples:
+      // 123
+      // 50-90
+      raw = IntegerSpace.parse(range);
+    } else if (range.startsWith("<=")) {
+      // Example: <=10
+      raw = IntegerSpace.of(new SubRange(0, Integer.parseInt(range.substring(2))));
+    } else if (range.startsWith("<")) {
+      // Example: <10
+      raw = IntegerSpace.of(new SubRange(0, Integer.parseInt(range.substring(1)) - 1));
+    } else if (range.startsWith(">=")) {
+      raw = IntegerSpace.of(new SubRange(Integer.parseInt(range.substring(2)), MAX_PORT_NUMBER));
+    } else if (range.startsWith(">")) {
+      raw =
+          IntegerSpace.of(new SubRange(Integer.parseInt(range.substring(1)) + 1, MAX_PORT_NUMBER));
+    } else {
+      // unhandled
+      // TODO: warn
+      raw = IntegerSpace.EMPTY;
+    }
+    return raw.intersection(PORTS);
   }
 
   private CheckPointGatewayConversions() {}
