@@ -10,7 +10,7 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.junit.Test;
 
@@ -32,7 +32,7 @@ public final class ServiceToMatchExprTest {
     Service serviceNoCode = new ServiceIcmp("icmp", 1, null, Uid.of("1"));
     assertBddsEqual(
         service.accept(_serviceToMatchExpr),
-        new MatchHeaderSpace(
+        AclLineMatchExprs.match(
             HeaderSpace.builder()
                 .setIpProtocols(IpProtocol.ICMP)
                 .setIcmpTypes(1)
@@ -40,7 +40,7 @@ public final class ServiceToMatchExprTest {
                 .build()));
     assertBddsEqual(
         serviceNoCode.accept(_serviceToMatchExpr),
-        new MatchHeaderSpace(
+        AclLineMatchExprs.match(
             HeaderSpace.builder().setIpProtocols(IpProtocol.ICMP).setIcmpTypes(1).build()));
   }
 
@@ -49,7 +49,7 @@ public final class ServiceToMatchExprTest {
     Service service = new ServiceTcp("tcp", "100-105,300", Uid.of("1"));
     assertBddsEqual(
         service.accept(_serviceToMatchExpr),
-        new MatchHeaderSpace(
+        AclLineMatchExprs.match(
             HeaderSpace.builder()
                 .setIpProtocols(IpProtocol.TCP)
                 .setDstPorts(ImmutableList.of(new SubRange(100, 105), new SubRange(300)))
@@ -61,7 +61,7 @@ public final class ServiceToMatchExprTest {
     Service service = new ServiceUdp("udp", "222", Uid.of("1"));
     assertBddsEqual(
         service.accept(_serviceToMatchExpr),
-        new MatchHeaderSpace(
+        AclLineMatchExprs.match(
             HeaderSpace.builder()
                 .setIpProtocols(IpProtocol.UDP)
                 .setDstPorts(new SubRange(222))
