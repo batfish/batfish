@@ -55,12 +55,8 @@ public final class CheckPointGatewayConversions {
     assert src instanceof AddressSpace;
     assert dst instanceof AddressSpace;
     ImmutableList.Builder<AclLineMatchExpr> exprs = ImmutableList.builder();
-    exprs.add(
-        AclLineMatchExprs.match(
-            HeaderSpace.builder().setSrcIps(toIpSpace((AddressSpace) src)).build()));
-    exprs.add(
-        AclLineMatchExprs.match(
-            HeaderSpace.builder().setDstIps(toIpSpace((AddressSpace) dst)).build()));
+    exprs.add(AclLineMatchExprs.matchSrc(toIpSpace((AddressSpace) src)));
+    exprs.add(AclLineMatchExprs.matchDst(toIpSpace((AddressSpace) dst)));
     exprs.add(((Service) service).accept(serviceToMatchExpr));
     return Optional.of(AclLineMatchExprs.and(exprs.build()));
   }
