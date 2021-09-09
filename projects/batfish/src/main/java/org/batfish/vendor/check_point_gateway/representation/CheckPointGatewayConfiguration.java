@@ -59,6 +59,7 @@ import org.batfish.vendor.check_point_management.ManagementServer;
 import org.batfish.vendor.check_point_management.NamedManagementObject;
 import org.batfish.vendor.check_point_management.NatMethod;
 import org.batfish.vendor.check_point_management.NatRulebase;
+import org.batfish.vendor.check_point_management.ServiceToMatchExpr;
 import org.batfish.vendor.check_point_management.Uid;
 import org.batfish.vendor.check_point_management.UnknownTypedManagementObject;
 
@@ -163,8 +164,9 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
           "Batfish currently only supports matching on a single Access Layer, so only the first"
               + " matching Access Rule will be applied.");
     }
+    ServiceToMatchExpr serviceToMatchExpr = new ServiceToMatchExpr(objects);
     for (AccessLayer al : accessLayers) {
-      Map<String, IpAccessList> acl = toIpAccessLists(al, objects);
+      Map<String, IpAccessList> acl = toIpAccessLists(al, objects, serviceToMatchExpr);
       _c.getIpAccessLists().putAll(acl);
     }
     IpAccessList interfaceAcl =
@@ -246,10 +248,14 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
   @SuppressWarnings("unused")
   private void convertNatRulebase(
       NatRulebase natRulebase, GatewayOrServer gateway, Map<Uid, NamedManagementObject> objects) {
+    ServiceToMatchExpr serviceToMatchExpr = new ServiceToMatchExpr(objects);
     List<Transformation> manualHideRuleTransformations =
         getManualNatRules(natRulebase, gateway)
             .filter(rule -> rule.getMethod() == NatMethod.HIDE)
-            .map(natRule -> manualHideRuleTransformation(natRule, objects, getWarnings()))
+            .map(
+                natRule ->
+                    manualHideRuleTransformation(
+                        natRule, serviceToMatchExpr, objects, getWarnings()))
             .filter(Optional::isPresent)
             .map(Optional::get)
             .collect(ImmutableList.toImmutableList());
