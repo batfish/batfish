@@ -6,6 +6,7 @@ import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.aclName;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.checkValidHeaderSpaceInputs;
+import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.servicesToMatchExpr;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toAction;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toIpAccessLists;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toIpSpace;
@@ -446,5 +447,34 @@ public final class CheckPointGatewayConversionsTest {
     assertFalse(checkValidHeaderSpaceInputs(addressSpace, service, service, warnings));
     assertFalse(checkValidHeaderSpaceInputs(addressSpace, addressSpace, addressSpace, warnings));
     assertTrue(checkValidHeaderSpaceInputs(addressSpace, addressSpace, service, warnings));
+  }
+
+  @Test
+  public void testServicesToMatchExpr() {
+    Warnings w = new Warnings(false, true, false);
+
+    assertThat(
+        _tb.toBDD(
+            servicesToMatchExpr(
+                ImmutableList.of(UID_SERVICE_TCP_22, UID_NET0),
+                false,
+                TEST_OBJS,
+                _serviceToMatchExpr,
+                w)),
+        equalTo(
+            _tb.toBDD(
+                AclLineMatchExprs.match(
+                    HeaderSpace.builder()
+                        .setIpProtocols(IpProtocol.TCP)
+                        .setDstPorts(new SubRange(22))
+                        .build()))));
+
+    assertThat(
+        w,
+        hasRedFlags(
+            contains(
+                hasText(
+                    "Cannot convert net0 (type Network) to a service match expression,"
+                        + " ignoring."))));
   }
 }
