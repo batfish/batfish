@@ -1,6 +1,11 @@
 package org.batfish.vendor.check_point_management;
 
 import static org.batfish.datamodel.applications.PortsApplication.MAX_PORT_NUMBER;
+import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.serviceCpmiAnyTraceElement;
+import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.serviceGroupTraceElement;
+import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.serviceIcmpTraceElement;
+import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.serviceTcpTraceElement;
+import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.serviceUdpTraceElement;
 import static org.batfish.vendor.check_point_management.ServiceToMatchExpr.portRangeStringToIntegerSpace;
 import static org.batfish.vendor.check_point_management.ServiceToMatchExpr.portStringToIntegerSpace;
 import static org.hamcrest.Matchers.equalTo;
@@ -26,20 +31,25 @@ public final class ServiceToMatchExprTest {
 
   @Test
   public void testCpmiAnyObject() {
-    assertBddsEqual(_serviceToMatchExpr.visit(new CpmiAnyObject(Uid.of("1"))), TrueExpr.INSTANCE);
+    AclLineMatchExpr expr = _serviceToMatchExpr.visit(new CpmiAnyObject(Uid.of("1")));
+    assertBddsEqual(expr, TrueExpr.INSTANCE);
+    assertThat(expr.getTraceElement(), equalTo(serviceCpmiAnyTraceElement()));
   }
 
   @Test
   public void testIcmp() {
-    Service service = new ServiceIcmp("icmp", 1, 2, Uid.of("1"));
+    ServiceIcmp service = new ServiceIcmp("icmp", 1, 2, Uid.of("1"));
+    AclLineMatchExpr expr = service.accept(_serviceToMatchExpr);
     assertBddsEqual(
-        service.accept(_serviceToMatchExpr),
+        expr,
         AclLineMatchExprs.match(
             HeaderSpace.builder()
                 .setIpProtocols(IpProtocol.ICMP)
                 .setIcmpTypes(1)
                 .setIcmpCodes(2)
                 .build()));
+    assertThat(expr.getTraceElement(), equalTo(serviceIcmpTraceElement(service)));
+
     Service serviceNoCode = new ServiceIcmp("icmp", 1, null, Uid.of("1"));
     assertBddsEqual(
         serviceNoCode.accept(_serviceToMatchExpr),
@@ -49,13 +59,17 @@ public final class ServiceToMatchExprTest {
 
   @Test
   public void testTcp() {
+    ServiceTcp service = new ServiceTcp("tcp", "100-105,300", Uid.of("1"));
+    AclLineMatchExpr expr = _serviceToMatchExpr.visit(service);
     assertBddsEqual(
-        _serviceToMatchExpr.visit(new ServiceTcp("tcp", "100-105,300", Uid.of("1"))),
+        expr,
         AclLineMatchExprs.match(
             HeaderSpace.builder()
                 .setIpProtocols(IpProtocol.TCP)
                 .setDstPorts(ImmutableList.of(new SubRange(100, 105), new SubRange(300)))
                 .build()));
+    assertThat(expr.getTraceElement(), equalTo(serviceTcpTraceElement(service)));
+
     assertBddsEqual(
         _serviceToMatchExpr.visit(new ServiceTcp("tcp", ">5", Uid.of("1"))),
         AclLineMatchExprs.match(
@@ -67,13 +81,16 @@ public final class ServiceToMatchExprTest {
 
   @Test
   public void testUdp() {
+    ServiceUdp service = new ServiceUdp("udp", "222", Uid.of("1"));
+    AclLineMatchExpr expr = _serviceToMatchExpr.visit(service);
     assertBddsEqual(
-        _serviceToMatchExpr.visit(new ServiceUdp("udp", "222", Uid.of("1"))),
+        expr,
         AclLineMatchExprs.match(
             HeaderSpace.builder()
                 .setIpProtocols(IpProtocol.UDP)
                 .setDstPorts(new SubRange(222))
                 .build()));
+    assertThat(expr.getTraceElement(), equalTo(serviceUdpTraceElement(service)));
   }
 
   @Test
@@ -85,7 +102,7 @@ public final class ServiceToMatchExprTest {
     Uid group2Uid = Uid.of("12");
     Uid group3Uid = Uid.of("13");
     // Contains a loop; group1 -> group2 -> group3 -> group1
-    NamedManagementObject group1 =
+    ServiceGroup group1 =
         new ServiceGroup("group1", ImmutableList.of(group2Uid, service1Uid), group1Uid);
     NamedManagementObject group2 =
         new ServiceGroup("group2", ImmutableList.of(group3Uid, service2Uid), group2Uid);
@@ -105,8 +122,9 @@ public final class ServiceToMatchExprTest {
                 .put(service3Uid, service3)
                 .build());
 
+    AclLineMatchExpr expr = group1.accept(serviceToMatchExpr);
     assertBddsEqual(
-        ((ServiceGroup) group1).accept(serviceToMatchExpr),
+        expr,
         AclLineMatchExprs.or(
             ImmutableList.of(
                 AclLineMatchExprs.match(
@@ -119,6 +137,7 @@ public final class ServiceToMatchExprTest {
                         .setIpProtocols(IpProtocol.UDP)
                         .setDstPorts(new SubRange(200), new SubRange(300))
                         .build()))));
+    assertThat(expr.getTraceElement(), equalTo(serviceGroupTraceElement(group1)));
   }
 
   private void assertBddsEqual(AclLineMatchExpr left, AclLineMatchExpr right) {

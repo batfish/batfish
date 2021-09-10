@@ -91,6 +91,10 @@ public final class AclLineMatchExprs {
     return new MatchHeaderSpace(headerSpace);
   }
 
+  public static MatchHeaderSpace match(HeaderSpace headerSpace, TraceElement traceElement) {
+    return new MatchHeaderSpace(headerSpace, traceElement);
+  }
+
   public static @Nonnull AclLineMatchExpr matchDscp(DscpType dscp) {
     return matchDscp(dscp.number());
   }
@@ -293,6 +297,10 @@ public final class AclLineMatchExprs {
   }
 
   public static AclLineMatchExpr or(String traceElement, AclLineMatchExpr... exprs) {
+    return new OrMatchExpr(ImmutableList.copyOf(exprs), traceElement);
+  }
+
+  public static AclLineMatchExpr or(TraceElement traceElement, Iterable<AclLineMatchExpr> exprs) {
     return new OrMatchExpr(ImmutableList.copyOf(exprs), traceElement);
   }
 

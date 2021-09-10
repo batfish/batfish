@@ -18,6 +18,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
@@ -31,7 +32,11 @@ import org.batfish.vendor.check_point_management.GatewayOrServer;
 import org.batfish.vendor.check_point_management.NamedManagementObject;
 import org.batfish.vendor.check_point_management.RulebaseAction;
 import org.batfish.vendor.check_point_management.Service;
+import org.batfish.vendor.check_point_management.ServiceGroup;
+import org.batfish.vendor.check_point_management.ServiceIcmp;
+import org.batfish.vendor.check_point_management.ServiceTcp;
 import org.batfish.vendor.check_point_management.ServiceToMatchExpr;
+import org.batfish.vendor.check_point_management.ServiceUdp;
 import org.batfish.vendor.check_point_management.TypedManagementObject;
 import org.batfish.vendor.check_point_management.Uid;
 
@@ -162,6 +167,31 @@ public final class CheckPointGatewayConversions {
         .setAction(toAction(objs.get(rule.getAction()), rule.getAction(), w))
         // TODO trace element and structure ID
         .build();
+  }
+
+  @VisibleForTesting
+  public static TraceElement serviceCpmiAnyTraceElement() {
+    return TraceElement.of("Matched service CpmiAny");
+  }
+
+  @VisibleForTesting
+  public static TraceElement serviceGroupTraceElement(ServiceGroup group) {
+    return TraceElement.of(String.format("Matched service-group %s", group.getName()));
+  }
+
+  @VisibleForTesting
+  public static TraceElement serviceIcmpTraceElement(ServiceIcmp service) {
+    return TraceElement.of(String.format("Matched service-icmp %s", service.getName()));
+  }
+
+  @VisibleForTesting
+  public static TraceElement serviceTcpTraceElement(ServiceTcp service) {
+    return TraceElement.of(String.format("Matched service-tcp %s", service.getName()));
+  }
+
+  @VisibleForTesting
+  public static TraceElement serviceUdpTraceElement(ServiceUdp service) {
+    return TraceElement.of(String.format("Matched service-udp %s", service.getName()));
   }
 
   /**

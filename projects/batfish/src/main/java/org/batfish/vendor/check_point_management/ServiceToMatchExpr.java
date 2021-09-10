@@ -2,6 +2,11 @@ package org.batfish.vendor.check_point_management;
 
 import static org.batfish.datamodel.IntegerSpace.PORTS;
 import static org.batfish.datamodel.applications.PortsApplication.MAX_PORT_NUMBER;
+import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.serviceCpmiAnyTraceElement;
+import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.serviceGroupTraceElement;
+import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.serviceIcmpTraceElement;
+import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.serviceTcpTraceElement;
+import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.serviceUdpTraceElement;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -18,7 +23,6 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.TrueExpr;
 
 /** Generates an {@link AclLineMatchExpr} for the specified {@link Service}. */
@@ -31,7 +35,7 @@ public class ServiceToMatchExpr implements ServiceVisitor<AclLineMatchExpr> {
   @Override
   public AclLineMatchExpr visitCpmiAnyObject(CpmiAnyObject cpmiAnyObject) {
     // Does not constrain headerspace
-    return TrueExpr.INSTANCE;
+    return new TrueExpr(serviceCpmiAnyTraceElement());
   }
 
   @Override
@@ -44,7 +48,7 @@ public class ServiceToMatchExpr implements ServiceVisitor<AclLineMatchExpr> {
             .map(Service.class::cast)
             .map(s -> s.accept(this))
             .collect(ImmutableList.toImmutableList());
-    return AclLineMatchExprs.or(matchExprs);
+    return AclLineMatchExprs.or(serviceGroupTraceElement(serviceGroup), matchExprs);
   }
 
   @Override
@@ -53,25 +57,27 @@ public class ServiceToMatchExpr implements ServiceVisitor<AclLineMatchExpr> {
     hsb.setIpProtocols(IpProtocol.ICMP);
     hsb.setIcmpTypes(serviceIcmp.getIcmpType());
     Optional.ofNullable(serviceIcmp.getIcmpCode()).ifPresent(hsb::setIcmpCodes);
-    return new MatchHeaderSpace(hsb.build());
+    return AclLineMatchExprs.match(hsb.build(), serviceIcmpTraceElement(serviceIcmp));
   }
 
   @Override
   public AclLineMatchExpr visitServiceTcp(ServiceTcp serviceTcp) {
-    return new MatchHeaderSpace(
+    return AclLineMatchExprs.match(
         HeaderSpace.builder()
             .setIpProtocols(IpProtocol.TCP)
             .setDstPorts(portStringToIntegerSpace(serviceTcp.getPort()).getSubRanges())
-            .build());
+            .build(),
+        serviceTcpTraceElement(serviceTcp));
   }
 
   @Override
   public AclLineMatchExpr visitServiceUdp(ServiceUdp serviceUdp) {
-    return new MatchHeaderSpace(
+    return AclLineMatchExprs.match(
         HeaderSpace.builder()
             .setIpProtocols(IpProtocol.UDP)
             .setDstPorts(portStringToIntegerSpace(serviceUdp.getPort()).getSubRanges())
-            .build());
+            .build(),
+        serviceUdpTraceElement(serviceUdp));
   }
 
   /**
