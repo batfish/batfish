@@ -457,11 +457,7 @@ public final class CheckPointGatewayConversionsTest {
     assertThat(
         _tb.toBDD(
             servicesToMatchExpr(
-                ImmutableList.of(UID_SERVICE_TCP_22, UID_NET0),
-                false,
-                TEST_OBJS,
-                _serviceToMatchExpr,
-                w)),
+                ImmutableList.of(UID_SERVICE_TCP_22, UID_NET0), TEST_OBJS, _serviceToMatchExpr, w)),
         equalTo(
             _tb.toBDD(
                 AclLineMatchExprs.match(
