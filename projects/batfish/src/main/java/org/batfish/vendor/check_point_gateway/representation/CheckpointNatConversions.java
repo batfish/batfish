@@ -166,8 +166,9 @@ public class CheckpointNatConversions {
       Warnings warnings) {
     Optional<AclLineMatchExpr> maybeOrigMatchExpr =
         toMatchExpr(
-            objects.get(natRule.getOriginalSource()),
-            objects.get(natRule.getOriginalDestination()),
+            objects,
+            natRule.getOriginalSource(),
+            natRule.getOriginalDestination(),
             objects.get(natRule.getOriginalService()),
             serviceToMatchExpr,
             warnings);

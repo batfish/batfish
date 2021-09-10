@@ -74,6 +74,9 @@ public final class CheckPointGatewayConversionsTest {
   private static final Uid UID_UDP = Uid.of("16");
   private static final Uid UID_ICMP = Uid.of("17");
   private static final Uid UID_ICMP_NO_CODE = Uid.of("18");
+  private static final Uid UID_POLICY_TARGETS = Uid.of("19");
+
+  private static final PolicyTargets POLICY_TARGETS = new PolicyTargets(UID_POLICY_TARGETS);
   private static final ServiceTcp SERVICE_TCP_RANGES =
       new ServiceTcp("tcp_ranges", "1-100,105-106", UID_TCP_RANGES);
   private static final ServiceUdp SERVICE_UDP = new ServiceUdp("udp", "1234", UID_UDP);
@@ -116,6 +119,7 @@ public final class CheckPointGatewayConversionsTest {
           .put(UID_UDP, SERVICE_UDP)
           .put(UID_ICMP, SERVICE_ICMP)
           .put(UID_ICMP_NO_CODE, SERVICE_ICMP_NO_CODE)
+          .put(UID_POLICY_TARGETS, POLICY_TARGETS)
           .build();
   private static final ImmutableMap<String, IpSpace> TEST_IP_SPACES =
       ImmutableMap.of(
@@ -365,19 +369,29 @@ public final class CheckPointGatewayConversionsTest {
   }
 
   @Test
-  public void testNatOrigToMatchExpr() {
-    Uid uid = Uid.of("1");
+  public void testToMatchExpr() {
     Warnings warnings = new Warnings();
     {
-      TypedManagementObject policyTargets = new PolicyTargets(uid);
       assertThat(
-          toMatchExpr(policyTargets, policyTargets, policyTargets, _serviceToMatchExpr, warnings),
+          toMatchExpr(
+              TEST_OBJS,
+              UID_POLICY_TARGETS,
+              UID_POLICY_TARGETS,
+              POLICY_TARGETS,
+              _serviceToMatchExpr,
+              warnings),
           equalTo(Optional.empty()));
     }
     {
       assertThat(
           _tb.toBDD(
-              toMatchExpr(NETWORK_0, NETWORK_1, SERVICE_TCP_RANGES, _serviceToMatchExpr, warnings)
+              toMatchExpr(
+                      TEST_OBJS,
+                      UID_NET0,
+                      UID_NET1,
+                      SERVICE_TCP_RANGES,
+                      _serviceToMatchExpr,
+                      warnings)
                   .get()),
           equalTo(
               _tb.toBDD(
@@ -392,13 +406,28 @@ public final class CheckPointGatewayConversionsTest {
     }
     {
       assertThat(
-          _tb.toBDD(toMatchExpr(CPMI_ANY, CPMI_ANY, CPMI_ANY, _serviceToMatchExpr, warnings).get()),
+          _tb.toBDD(
+              toMatchExpr(
+                      TEST_OBJS,
+                      UID_CPMI_ANY,
+                      UID_CPMI_ANY,
+                      CPMI_ANY,
+                      _serviceToMatchExpr,
+                      warnings)
+                  .get()),
           equalTo(_tb.toBDD(AclLineMatchExprs.match(HeaderSpace.builder().build()))));
     }
     {
       assertThat(
           _tb.toBDD(
-              toMatchExpr(CPMI_ANY, CPMI_ANY, SERVICE_UDP, _serviceToMatchExpr, warnings).get()),
+              toMatchExpr(
+                      TEST_OBJS,
+                      UID_CPMI_ANY,
+                      UID_CPMI_ANY,
+                      SERVICE_UDP,
+                      _serviceToMatchExpr,
+                      warnings)
+                  .get()),
           equalTo(
               _tb.toBDD(
                   AclLineMatchExprs.match(
@@ -410,7 +439,14 @@ public final class CheckPointGatewayConversionsTest {
     {
       assertThat(
           _tb.toBDD(
-              toMatchExpr(CPMI_ANY, CPMI_ANY, SERVICE_ICMP, _serviceToMatchExpr, warnings).get()),
+              toMatchExpr(
+                      TEST_OBJS,
+                      UID_CPMI_ANY,
+                      UID_CPMI_ANY,
+                      SERVICE_ICMP,
+                      _serviceToMatchExpr,
+                      warnings)
+                  .get()),
           equalTo(
               _tb.toBDD(
                   AclLineMatchExprs.match(
@@ -423,7 +459,13 @@ public final class CheckPointGatewayConversionsTest {
     {
       assertThat(
           _tb.toBDD(
-              toMatchExpr(CPMI_ANY, CPMI_ANY, SERVICE_ICMP_NO_CODE, _serviceToMatchExpr, warnings)
+              toMatchExpr(
+                      TEST_OBJS,
+                      UID_CPMI_ANY,
+                      UID_CPMI_ANY,
+                      SERVICE_ICMP_NO_CODE,
+                      _serviceToMatchExpr,
+                      warnings)
                   .get()),
           equalTo(
               _tb.toBDD(

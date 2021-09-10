@@ -43,20 +43,18 @@ public final class CheckPointGatewayConversions {
    * return {@link Optional#empty()}.
    */
   static @Nonnull Optional<AclLineMatchExpr> toMatchExpr(
-      NamedManagementObject src,
-      NamedManagementObject dst,
+      Map<Uid, ? extends NamedManagementObject> objects,
+      Uid src,
+      Uid dst,
       NamedManagementObject service,
       ServiceToMatchExpr serviceToMatchExpr,
       Warnings warnings) {
-    if (!checkValidHeaderSpaceInputs(src, dst, service, warnings)) {
+    if (!checkValidHeaderSpaceInputs(objects.get(src), objects.get(dst), service, warnings)) {
       return Optional.empty();
     }
-    // Guaranteed by checkValidHeaderSpaceInputs
-    assert src instanceof AddressSpace;
-    assert dst instanceof AddressSpace;
     ImmutableList.Builder<AclLineMatchExpr> exprs = ImmutableList.builder();
-    exprs.add(AclLineMatchExprs.matchSrc(toIpSpace((AddressSpace) src)));
-    exprs.add(AclLineMatchExprs.matchDst(toIpSpace((AddressSpace) dst)));
+    exprs.add(AclLineMatchExprs.matchSrc(toIpSpace(ImmutableList.of(src), objects, warnings)));
+    exprs.add(AclLineMatchExprs.matchDst(toIpSpace(ImmutableList.of(dst), objects, warnings)));
     exprs.add(((Service) service).accept(serviceToMatchExpr));
     return Optional.of(AclLineMatchExprs.and(exprs.build()));
   }
@@ -262,7 +260,8 @@ public final class CheckPointGatewayConversions {
    */
   @VisibleForTesting
   @Nonnull
-  static IpSpace toIpSpace(List<Uid> targets, Map<Uid, NamedManagementObject> objs, Warnings w) {
+  static IpSpace toIpSpace(
+      List<Uid> targets, Map<Uid, ? extends NamedManagementObject> objs, Warnings w) {
     return AclIpSpace.builder()
         .thenPermitting(
             targets.stream()
