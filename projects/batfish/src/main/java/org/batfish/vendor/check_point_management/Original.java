@@ -7,14 +7,14 @@ import com.google.common.annotations.VisibleForTesting;
  * translated-source} field of a {@link NatRule}, indicates that the original value should be
  * retained for that field when applying the rule.
  */
-public final class Original extends Global implements NatTranslatedAddress, NatTranslatedService {
+public final class Original extends Global implements NatTranslatedSource, NatTranslatedService {
   @Override
   public <T> T accept(NatTranslatedServiceVisitor<T> visitor) {
     return visitor.visitOriginal(this);
   }
 
   @Override
-  public <T> T accept(NatTranslatedAddressVisitor<T> visitor) {
+  public <T> T accept(NatTranslatedSourceVisitor<T> visitor) {
     return visitor.visitOriginal(this);
   }
 

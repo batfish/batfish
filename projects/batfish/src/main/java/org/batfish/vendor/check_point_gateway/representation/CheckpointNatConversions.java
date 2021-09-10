@@ -20,15 +20,16 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
+import org.batfish.vendor.check_point_management.AddressRange;
 import org.batfish.vendor.check_point_management.GatewayOrServer;
 import org.batfish.vendor.check_point_management.Host;
-import org.batfish.vendor.check_point_management.Machine;
-import org.batfish.vendor.check_point_management.MachineVisitor;
 import org.batfish.vendor.check_point_management.NamedManagementObject;
 import org.batfish.vendor.check_point_management.NatRule;
 import org.batfish.vendor.check_point_management.NatRuleOrSectionVisitor;
 import org.batfish.vendor.check_point_management.NatRulebase;
 import org.batfish.vendor.check_point_management.NatSection;
+import org.batfish.vendor.check_point_management.NatTranslatedSource;
+import org.batfish.vendor.check_point_management.NatTranslatedSourceVisitor;
 import org.batfish.vendor.check_point_management.Original;
 import org.batfish.vendor.check_point_management.ServiceToMatchExpr;
 import org.batfish.vendor.check_point_management.Uid;
@@ -39,12 +40,12 @@ public class CheckpointNatConversions {
   @VisibleForTesting static final int NAT_PORT_LAST = 60000;
 
   @VisibleForTesting
-  static final MachineToTransformationSteps MANUAL_HIDE_MACHINE_TO_TRANSFORMATION_STEPS =
-      new MachineToTransformationSteps();
+  static final TranslatedSourceToTransformationSteps TRANSLATED_SOURCE_TO_TRANSFORMATION_STEPS =
+      new TranslatedSourceToTransformationSteps();
 
-  public static @Nonnull List<TransformationStep> getManualHideSourceTransformationSteps(
-      Machine translatedSource) {
-    return translatedSource.accept(MANUAL_HIDE_MACHINE_TO_TRANSFORMATION_STEPS);
+  public static @Nonnull List<TransformationStep> getSourceTransformationSteps(
+      NatTranslatedSource translatedSource) {
+    return TRANSLATED_SOURCE_TO_TRANSFORMATION_STEPS.visit(translatedSource);
   }
 
   /**
@@ -52,12 +53,18 @@ public class CheckpointNatConversions {
    * of a NAT rule.
    */
   @VisibleForTesting
-  static class MachineToTransformationSteps implements MachineVisitor<List<TransformationStep>> {
+  static class TranslatedSourceToTransformationSteps
+      implements NatTranslatedSourceVisitor<List<TransformationStep>> {
 
     @Override
-    public List<TransformationStep> visitGatewayOrServer(GatewayOrServer gatewayOrServer) {
-      // TODO: implement
-      return ImmutableList.of();
+    public List<TransformationStep> visitAddressRange(AddressRange addressRange) {
+      Ip ipv4AddressFirst = addressRange.getIpv4AddressFirst();
+      if (ipv4AddressFirst == null) {
+        return ImmutableList.of();
+      }
+      Ip ipv4AddressLast = addressRange.getIpv4AddressLast();
+      assert ipv4AddressLast != null;
+      return ImmutableList.of(assignSourceIp(ipv4AddressFirst, ipv4AddressLast));
     }
 
     @Override
@@ -66,6 +73,11 @@ public class CheckpointNatConversions {
       return hostV4Addtess == null
           ? ImmutableList.of()
           : ImmutableList.of(assignSourceIp(hostV4Addtess));
+    }
+
+    @Override
+    public List<TransformationStep> visitOriginal(Original original) {
+      return ImmutableList.of();
     }
   }
 
@@ -82,9 +94,32 @@ public class CheckpointNatConversions {
     if (!checkValidManualHide(src, dst, service, warnings)) {
       return Optional.empty();
     }
-    steps.addAll(getManualHideSourceTransformationSteps((Machine) src));
+    steps.addAll(getSourceTransformationSteps((NatTranslatedSource) src));
     steps.add(assignSourcePort(NAT_PORT_FIRST, NAT_PORT_LAST));
     return Optional.of(steps.build());
+  }
+
+  private static final CheckIpv4TranslatedSource CHECK_IPV4_TRANSLATED_SOURCE =
+      new CheckIpv4TranslatedSource();
+
+  private static final class CheckIpv4TranslatedSource
+      implements NatTranslatedSourceVisitor<Boolean> {
+
+    @Override
+    public Boolean visitAddressRange(AddressRange addressRange) {
+      return addressRange.getIpv4AddressFirst() != null
+          && addressRange.getIpv4AddressLast() != null;
+    }
+
+    @Override
+    public Boolean visitHost(Host host) {
+      return host.getIpv4Address() != null;
+    }
+
+    @Override
+    public Boolean visitOriginal(Original original) {
+      return true;
+    }
   }
 
   /**
@@ -97,32 +132,32 @@ public class CheckpointNatConversions {
       NamedManagementObject dst,
       NamedManagementObject service,
       Warnings warnings) {
-    boolean valid = true;
-    if (!(src instanceof Machine)) {
+    if (src instanceof Original || !(src instanceof NatTranslatedSource)) {
       warnings.redFlag(
           String.format(
-              "Manual Hide NAT rule translated-source %s has unsupported type %s and will be"
+              "Manual Hide NAT rule translated-source %s has invalid type %s and will be"
                   + " ignored",
               src.getName(), src.getClass()));
-      valid = false;
-    }
-    if (!(dst instanceof Original)) {
+      return false;
+    } else if (!CHECK_IPV4_TRANSLATED_SOURCE.visit((NatTranslatedSource) src)) {
+      // unsupported for foreseeable future, so don't bother warning
+      return false;
+    } else if (!(dst instanceof Original)) {
       warnings.redFlag(
           String.format(
-              "Manual Hide NAT rule translated-destination %s has unsupported type %s and will be"
+              "Manual Hide NAT rule translated-destination %s has invalid type %s and will be"
                   + " ignored",
               dst.getName(), dst.getClass()));
-      valid = false;
-    }
-    if (!(service instanceof Original)) {
+      return false;
+    } else if (!(service instanceof Original)) {
       warnings.redFlag(
           String.format(
-              "Manual Hide NAT rule translated-service %s has unsupported type %s and will be"
+              "Manual Hide NAT rule translated-service %s has invalid type %s and will be"
                   + " ignored",
               service.getName(), service.getClass()));
-      valid = false;
+      return false;
     }
-    return valid;
+    return true;
   }
 
   /** Get a stream of the applicable NAT rules for the provided gateway. */
