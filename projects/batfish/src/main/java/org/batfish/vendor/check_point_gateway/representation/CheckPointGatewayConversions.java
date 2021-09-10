@@ -96,11 +96,6 @@ public final class CheckPointGatewayConversions {
     return valid;
   }
 
-  @VisibleForTesting
-  static String getAclName(AccessSection section) {
-    return String.format("%s (%s)", section.getUid().getValue(), section.getName());
-  }
-
   /**
    * Returns a {@code Map} of names to {@link IpAccessList}s corresponding to specified {@link
    * AccessLayer}.
@@ -324,10 +319,10 @@ public final class CheckPointGatewayConversions {
   /** Returns the name we use for IpAccessList of AccessSection */
   public static String aclName(AccessSection accessSection) {
     String uid = accessSection.getUid().getValue();
+    // Using a generated name, so just use Uid as the name
     if (accessSection.getName().equals(AccessSection.generateName(accessSection.getUid()))) {
       return uid;
     }
-    // Not using generated name, so add user-defined name
     return String.format("%s (%s)", uid, accessSection.getName());
   }
 
