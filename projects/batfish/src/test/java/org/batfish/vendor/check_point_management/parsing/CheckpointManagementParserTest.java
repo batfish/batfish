@@ -1,5 +1,7 @@
 package org.batfish.vendor.check_point_management.parsing;
 
+import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_MANAGEMENT_DIR;
+import static org.batfish.common.matchers.WarningMatchers.hasText;
 import static org.batfish.vendor.check_point_management.parsing.CheckpointManagementParser.RELPATH_CHECKPOINT_SHOW_GATEWAYS_AND_SERVERS;
 import static org.batfish.vendor.check_point_management.parsing.CheckpointManagementParser.RELPATH_CHECKPOINT_SHOW_GROUPS;
 import static org.batfish.vendor.check_point_management.parsing.CheckpointManagementParser.RELPATH_CHECKPOINT_SHOW_NAT_RULEBASE;
@@ -8,8 +10,10 @@ import static org.batfish.vendor.check_point_management.parsing.CheckpointManage
 import static org.batfish.vendor.check_point_management.parsing.CheckpointManagementParser.RELPATH_CHECKPOINT_SHOW_SERVICES_UDP;
 import static org.batfish.vendor.check_point_management.parsing.CheckpointManagementParser.RELPATH_CHECKPOINT_SHOW_SERVICE_GROUPS;
 import static org.batfish.vendor.check_point_management.parsing.CheckpointManagementParser.buildObjectsList;
+import static org.batfish.vendor.check_point_management.parsing.CheckpointManagementParser.mergeAccessLayers;
 import static org.batfish.vendor.check_point_management.parsing.CheckpointManagementParser.readGatewaysAndServers;
 import static org.batfish.vendor.check_point_management.parsing.CheckpointManagementParser.readNatRulebase;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertNull;
@@ -21,6 +25,9 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
+import org.batfish.vendor.check_point_management.AccessLayer;
+import org.batfish.vendor.check_point_management.AccessRule;
+import org.batfish.vendor.check_point_management.AccessSection;
 import org.batfish.vendor.check_point_management.AllInstallationTargets;
 import org.batfish.vendor.check_point_management.CpmiAnyObject;
 import org.batfish.vendor.check_point_management.Domain;
@@ -397,6 +404,155 @@ public final class CheckpointManagementParserTest {
                         Uid.of("6"),
                         Uid.of("0"))),
                 Uid.of("0"))));
+  }
+
+  @Test
+  public void testMergeAccessLayers() {
+    ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
+    Uid uidAny = Uid.of("0");
+    Uid uid1 = Uid.of("1");
+    Uid uid2 = Uid.of("2");
+    Uid uidTcp = Uid.of("3");
+    Uid uidUdp = Uid.of("4");
+    Uid uidRule1 = Uid.of("5");
+    Uid uidRule2 = Uid.of("6");
+    Uid uidRule3 = Uid.of("7");
+    Uid uidBogus = Uid.of("999");
+    String name1 = "1";
+    String name2 = "2";
+    CpmiAnyObject any = new CpmiAnyObject(uidAny);
+    ServiceTcp tcp = new ServiceTcp("tcp", "1234", uidTcp);
+    ServiceUdp udp = new ServiceUdp("udp", "1234", uidUdp);
+    AccessRule rule1 =
+        AccessRule.testBuilder(uidAny)
+            .setName("rule1")
+            .setUid(uidRule1)
+            .setAction(uidBogus)
+            .build();
+    AccessRule rule2 =
+        AccessRule.testBuilder(uidAny)
+            .setName("rule2")
+            .setUid(uidRule2)
+            .setAction(uidBogus)
+            .build();
+    AccessRule rule3 =
+        AccessRule.testBuilder(uidAny)
+            .setName("rule3")
+            .setUid(uidRule3)
+            .setAction(uidBogus)
+            .build();
+    AccessLayer al1a =
+        new AccessLayer(ImmutableMap.of(uidAny, any), ImmutableList.of(rule1, rule2), uid1, name1);
+    AccessLayer al1b =
+        new AccessLayer(ImmutableMap.of(uidAny, any), ImmutableList.of(rule3), uid1, name1);
+    AccessLayer al1 =
+        new AccessLayer(
+            ImmutableMap.of(uidAny, any), ImmutableList.of(rule1, rule2, rule3), uid1, name1);
+
+    AccessLayer al2a =
+        new AccessLayer(
+            ImmutableMap.of(uidAny, any, uidTcp, tcp), ImmutableList.of(rule1), uid2, name2);
+    AccessLayer al2b =
+        new AccessLayer(
+            ImmutableMap.of(uidAny, any, uidUdp, udp), ImmutableList.of(rule2), uid2, name2);
+    AccessLayer al2 =
+        new AccessLayer(
+            ImmutableMap.of(uidAny, any, uidTcp, tcp, uidUdp, udp),
+            ImmutableList.of(rule1, rule2),
+            uid2,
+            name2);
+
+    assertThat(
+        mergeAccessLayers(ImmutableList.of(al1a, al1b, al2a, al2b), pvcae),
+        equalTo(ImmutableList.of(al1, al2)));
+  }
+
+  /** Test merging AccessLayers when their children (AccessSections) are split across pages. */
+  @Test
+  public void testMergeAccessLayersAccessSectionSplit() {
+    ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
+    Uid uidAny = Uid.of("0");
+    Uid uid2 = Uid.of("2");
+    Uid uidTcp = Uid.of("3");
+    Uid uidUdp = Uid.of("4");
+    Uid uidRule1 = Uid.of("5");
+    Uid uidRule2 = Uid.of("6");
+    Uid uidRule3 = Uid.of("7");
+    Uid uidSection1 = Uid.of("8");
+    Uid uidBogus = Uid.of("999");
+    String name2 = "2";
+    CpmiAnyObject any = new CpmiAnyObject(uidAny);
+    ServiceTcp tcp = new ServiceTcp("tcp", "1234", uidTcp);
+    ServiceUdp udp = new ServiceUdp("udp", "1234", uidUdp);
+    AccessRule rule1 =
+        AccessRule.testBuilder(uidAny)
+            .setName("rule1")
+            .setUid(uidRule1)
+            .setAction(uidBogus)
+            .build();
+    AccessRule rule2 =
+        AccessRule.testBuilder(uidAny)
+            .setName("rule2")
+            .setUid(uidRule2)
+            .setAction(uidBogus)
+            .build();
+    AccessRule rule3 =
+        AccessRule.testBuilder(uidAny)
+            .setName("rule3")
+            .setUid(uidRule3)
+            .setAction(uidBogus)
+            .build();
+
+    AccessLayer ala =
+        new AccessLayer(
+            ImmutableMap.of(uidAny, any, uidTcp, tcp),
+            ImmutableList.of(new AccessSection("section1", ImmutableList.of(rule1), uidSection1)),
+            uid2,
+            name2);
+    AccessLayer alb =
+        new AccessLayer(
+            ImmutableMap.of(uidAny, any, uidUdp, udp),
+            ImmutableList.of(
+                new AccessSection("section1", ImmutableList.of(rule2), uidSection1), rule3),
+            uid2,
+            name2);
+    AccessLayer al =
+        new AccessLayer(
+            ImmutableMap.of(uidAny, any, uidTcp, tcp, uidUdp, udp),
+            ImmutableList.of(
+                new AccessSection("section1", ImmutableList.of(rule1, rule2), uidSection1), rule3),
+            uid2,
+            name2);
+
+    assertThat(mergeAccessLayers(ImmutableList.of(ala, alb), pvcae), equalTo(ImmutableList.of(al)));
+  }
+
+  @Test
+  public void testMergeAccessLayersWarning() {
+    ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
+    Uid uidAny = Uid.of("0");
+    Uid uid1 = Uid.of("1");
+    Uid uidRule1 = Uid.of("5");
+    Uid uidBogus = Uid.of("999");
+    String name1 = "1";
+    CpmiAnyObject any = new CpmiAnyObject(uidAny);
+    AccessRule rule1 =
+        AccessRule.testBuilder(uidAny)
+            .setName("rule1")
+            .setUid(uidRule1)
+            .setAction(uidBogus)
+            .build();
+    AccessLayer al1a =
+        new AccessLayer(ImmutableMap.of(uidAny, any), ImmutableList.of(rule1), uid1, name1);
+    AccessLayer al1b =
+        new AccessLayer(ImmutableMap.of(uidAny, any), ImmutableList.of(rule1), uid1, name1);
+    assertThat(
+        mergeAccessLayers(ImmutableList.of(al1a, al1b), pvcae), equalTo(ImmutableList.of(al1a)));
+    assertThat(
+        pvcae.getWarnings().get(RELPATH_CHECKPOINT_MANAGEMENT_DIR).getRedFlagWarnings(),
+        contains(
+            hasText(
+                "Cannot merge AccessRule pages (for uid 5), ignoring instances after the first")));
   }
 
   /** Convert JSON object text into ObjectPage JSON */
