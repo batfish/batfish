@@ -313,7 +313,7 @@ public final class CheckPointGatewayConversions {
 
   /** Returns the name we use for IpAccessList of AccessLayer */
   public static String aclName(AccessLayer accessLayer) {
-    return String.format("%s (%s)", accessLayer.getName(), accessLayer.getUid().getValue());
+    return String.format("%s (%s)", accessLayer.getUid().getValue(), accessLayer.getName());
   }
 
   /** Returns the name we use for IpAccessList of AccessSection */
