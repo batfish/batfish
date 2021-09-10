@@ -52,7 +52,7 @@ public final class Group extends TypedManagementObject implements AddressSpace {
   }
 
   @VisibleForTesting
-  Group(String name, List<Uid> members, Uid uid) {
+  public Group(String name, List<Uid> members, Uid uid) {
     super(name, uid);
     _members = members;
   }

@@ -128,6 +128,8 @@ public class BfConsts {
   public static final String RELPATH_CHECKPOINT_SHOW_ACCESS_RULEBASE = "show-access-rulebase.json";
   public static final String RELPATH_CHECKPOINT_SHOW_GATEWAYS_AND_SERVERS =
       "show-gateways-and-servers.json";
+  public static final String RELPATH_CHECKPOINT_SHOW_GROUPS = "show-groups.json";
+  public static final String RELPATH_CHECKPOINT_SHOW_HOSTS = "show-hosts.json";
   public static final String RELPATH_CHECKPOINT_SHOW_NAT_RULEBASE = "show-nat-rulebase.json";
   public static final String RELPATH_CHECKPOINT_SHOW_NETWORKS = "show-networks.json";
   public static final String RELPATH_CHECKPOINT_SHOW_PACKAGE = "show-package.json";
