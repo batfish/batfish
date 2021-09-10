@@ -2,9 +2,12 @@ package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.annotation.Nonnull;
 import org.batfish.common.util.ComparableStructure;
 
 public class VrrpGroup extends ComparableStructure<Integer> {
+
+  public static final int MAX_PRIORITY = 255;
 
   public static class Builder {
     private int _name;
@@ -12,6 +15,8 @@ public class VrrpGroup extends ComparableStructure<Integer> {
     private int _priority;
 
     private ConcreteInterfaceAddress _virtualAddress;
+
+    private boolean _preempt;
 
     public VrrpGroup build() {
       return new VrrpGroup(this);
@@ -29,6 +34,11 @@ public class VrrpGroup extends ComparableStructure<Integer> {
 
     public Builder setVirtualAddress(ConcreteInterfaceAddress virtualAddress) {
       _virtualAddress = virtualAddress;
+      return this;
+    }
+
+    public @Nonnull Builder setPreempt(boolean preempt) {
+      _preempt = preempt;
       return this;
     }
   }
@@ -55,6 +65,7 @@ public class VrrpGroup extends ComparableStructure<Integer> {
 
   private VrrpGroup(Builder builder) {
     super(builder._name);
+    _preempt = builder._preempt;
     _priority = builder._priority;
     _virtualAddress = builder._virtualAddress;
   }

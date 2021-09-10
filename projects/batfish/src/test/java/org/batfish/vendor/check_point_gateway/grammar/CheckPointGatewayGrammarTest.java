@@ -82,6 +82,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
@@ -111,6 +112,8 @@ import org.batfish.vendor.check_point_management.AccessRuleOrSection;
 import org.batfish.vendor.check_point_management.AllInstallationTargets;
 import org.batfish.vendor.check_point_management.CheckpointManagementConfiguration;
 import org.batfish.vendor.check_point_management.CpmiAnyObject;
+import org.batfish.vendor.check_point_management.CpmiClusterMember;
+import org.batfish.vendor.check_point_management.CpmiGatewayCluster;
 import org.batfish.vendor.check_point_management.Domain;
 import org.batfish.vendor.check_point_management.GatewayOrServer;
 import org.batfish.vendor.check_point_management.GatewayOrServerPolicy;
@@ -1376,5 +1379,54 @@ public class CheckPointGatewayGrammarTest {
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
     assertThat(configurations, hasKey("cp_gw1"));
     assertThat(configurations.get("cp_gw1").getIpSpaces(), hasKey("somehost"));
+  }
+
+  @Test
+  public void testClusterVirtualIpAssignment() throws IOException {
+    String hostname = "cluster_member";
+    Uid memberUid = Uid.of("1");
+    Uid clusterUid = Uid.of("2");
+    String memberName = "cluster_member";
+    String ifaceName = "eth0";
+    int prefixLength = 24;
+    Ip memberIp = Ip.parse("10.0.0.2");
+    Ip clusterIp = Ip.parse("10.0.0.1");
+    ImmutableMap<Uid, GatewayOrServer> gateways =
+        ImmutableMap.of(
+            memberUid,
+            new CpmiClusterMember(
+                Ip.parse("1.0.0.1"),
+                memberName,
+                ImmutableList.of(
+                    new org.batfish.vendor.check_point_management.Interface(
+                        ifaceName, new InterfaceTopology(false), memberIp, prefixLength)),
+                new GatewayOrServerPolicy(null, null),
+                memberUid),
+            clusterUid,
+            new CpmiGatewayCluster(
+                // member should have second priority
+                ImmutableList.of("master", memberName),
+                Ip.parse("1.0.0.2"),
+                "cluster",
+                ImmutableList.of(
+                    new org.batfish.vendor.check_point_management.Interface(
+                        ifaceName, new InterfaceTopology(false), clusterIp, prefixLength)),
+                new GatewayOrServerPolicy(null, null),
+                memberUid));
+
+    CheckpointManagementConfiguration mgmt =
+        toCheckpointMgmtConfig(gateways, ImmutableMap.of(), ImmutableList.of());
+
+    Map<String, Configuration> configs = parseTextConfigs(mgmt, hostname);
+    Configuration c1 = configs.get(hostname);
+    assertThat(c1, hasInterface(ifaceName));
+    VrrpGroup vrrpGroup = c1.getAllInterfaces().get(ifaceName).getVrrpGroups().get(0);
+
+    assertNotNull(vrrpGroup);
+    assertThat(
+        vrrpGroup.getVirtualAddress(),
+        equalTo(ConcreteInterfaceAddress.create(clusterIp, prefixLength)));
+    assertTrue(vrrpGroup.getPreempt());
+    assertThat(vrrpGroup.getPriority(), equalTo(VrrpGroup.MAX_PRIORITY - 1));
   }
 }

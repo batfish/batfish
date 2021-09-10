@@ -37,7 +37,7 @@ public final class CpmiGatewayCluster extends Cluster {
   }
 
   @VisibleForTesting
-  CpmiGatewayCluster(
+  public CpmiGatewayCluster(
       List<String> clusterMemberNames,
       @Nullable Ip ipv4Address,
       String name,
