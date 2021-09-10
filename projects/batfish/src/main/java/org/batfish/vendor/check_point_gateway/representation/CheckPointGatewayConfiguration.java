@@ -1,5 +1,6 @@
 package org.batfish.vendor.check_point_gateway.representation;
 
+import static com.google.common.collect.Maps.immutableEntry;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.batfish.datamodel.FirewallSessionInterfaceInfo.Action.POST_NAT_FIB_LOOKUP;
@@ -12,7 +13,7 @@ import static org.batfish.vendor.check_point_gateway.representation.CheckpointNa
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
+import com.google.common.collect.ImmutableSortedMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +21,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -31,6 +33,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
+import org.batfish.datamodel.Interface.Builder;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
@@ -40,6 +43,7 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
@@ -52,6 +56,8 @@ import org.batfish.vendor.check_point_management.AccessLayer;
 import org.batfish.vendor.check_point_management.AddressSpace;
 import org.batfish.vendor.check_point_management.AddressSpaceToIpSpace;
 import org.batfish.vendor.check_point_management.CheckpointManagementConfiguration;
+import org.batfish.vendor.check_point_management.Cluster;
+import org.batfish.vendor.check_point_management.ClusterMember;
 import org.batfish.vendor.check_point_management.GatewayOrServer;
 import org.batfish.vendor.check_point_management.ManagementDomain;
 import org.batfish.vendor.check_point_management.ManagementPackage;
@@ -148,12 +154,50 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     }
     ManagementDomain domain = maybeGatewayAndDomain.get().getKey();
     GatewayOrServer gateway = maybeGatewayAndDomain.get().getValue();
+    convertCluster(gateway, domain);
     // Find package
     Optional<ManagementPackage> maybePackage = findAccessPackage(domain, gateway);
     if (!maybePackage.isPresent()) {
       return;
     }
     convertPackage(maybePackage.get(), gateway, domain);
+  }
+
+  /** Populates cluster virtual IP metadata if this gateway is a member of a cluster. */
+  private void convertCluster(GatewayOrServer gateway, ManagementDomain domain) {
+    if (!(gateway instanceof ClusterMember)) {
+      return;
+    }
+    Class<? extends Cluster> clusterClass = ((ClusterMember) gateway).getClusterClass();
+    String gatewayName = gateway.getName();
+    Cluster cluster = null;
+    for (GatewayOrServer gatewayOrServer : domain.getGatewaysAndServers().values()) {
+      if (!clusterClass.isInstance(gatewayOrServer)) {
+        continue;
+      }
+      Cluster clusterCandidate = (Cluster) gatewayOrServer;
+      int clusterCandidateMemberIndex =
+          clusterCandidate.getClusterMemberNames().indexOf(gatewayName);
+      if (clusterCandidateMemberIndex != -1) {
+        cluster = clusterCandidate;
+        _clusterMemberIndex = clusterCandidateMemberIndex;
+        // TODO: verify that a gateway may only be a member of a single cluster
+        break;
+      }
+    }
+    if (cluster == null) {
+      _w.redFlag(
+          String.format(
+              "Could not find matching cluster of type %s for this gateway of type %s",
+              clusterClass.getSimpleName(), gateway.getClass().getSimpleName()));
+      return;
+    }
+    _clusterInterfaces =
+        cluster.getInterfaces().stream()
+            .collect(
+                ImmutableMap.toImmutableMap(
+                    org.batfish.vendor.check_point_management.Interface::getName,
+                    Function.identity()));
   }
 
   private void convertAccessLayers(
@@ -305,7 +349,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
                 .filter(gw -> ips.contains(gw.getIpv4Address()))
                 .findFirst();
         if (maybeGateway.isPresent()) {
-          return Optional.of(Maps.immutableEntry(domain, maybeGateway.get()));
+          return Optional.of(immutableEntry(domain, maybeGateway.get()));
         }
       }
     }
@@ -458,7 +502,34 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     newIface.setFirewallSessionInterfaceInfo(
         new FirewallSessionInterfaceInfo(
             POST_NAT_FIB_LOOKUP, ImmutableList.of(ifaceName), null, null));
+
+    org.batfish.vendor.check_point_management.Interface clusterInterface =
+        Optional.ofNullable(_clusterInterfaces).orElse(ImmutableMap.of()).get(ifaceName);
+    if (clusterInterface != null) {
+      createClusterVrrpGroup(clusterInterface, newIface);
+    }
+
     newIface.build();
+  }
+
+  /** Create a VRRP group for the virtual IP the cluster associates with this interface. */
+  private void createClusterVrrpGroup(
+      org.batfish.vendor.check_point_management.Interface clusterInterface, Builder newIface) {
+    Ip ip = clusterInterface.getIpv4Address();
+    if (ip == null) {
+      return;
+    }
+    Integer maskLength = clusterInterface.getIpv4MaskLength();
+    assert maskLength != null;
+    newIface.setVrrpGroups(
+        ImmutableSortedMap.of(
+            0,
+            VrrpGroup.builder()
+                .setVirtualAddress(ConcreteInterfaceAddress.create(ip, maskLength))
+                // prefer member with lowest cluster member index
+                .setPriority(VrrpGroup.MAX_PRIORITY - _clusterMemberIndex)
+                .setPreempt(true)
+                .build()));
   }
 
   /**
@@ -503,6 +574,11 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
   private Map<Prefix, StaticRoute> _staticRoutes;
 
   private transient Transformation _natTransformation;
+
+  private transient Map<String, org.batfish.vendor.check_point_management.Interface>
+      _clusterInterfaces;
+
+  private transient int _clusterMemberIndex;
 
   private ConfigurationFormat _vendor;
 }

@@ -1,0 +1,13 @@
+#
+# Configuration of hostname
+# Language version: 13.4v1
+#
+# Exported by admin on Wed Jun 23 16:11:18 2021
+#
+set hostname cluster_member
+#
+set interface eth0 state on
+set interface eth0 ipv4-address 10.0.0.2 mask-length 24
+set interface eth1 state on
+set interface eth1 ipv4-address 1.0.0.1 mask-length 24
+#
