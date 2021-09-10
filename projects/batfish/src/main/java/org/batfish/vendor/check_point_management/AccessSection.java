@@ -18,6 +18,10 @@ public final class AccessSection extends NamedManagementObject implements Access
     return _rulebase;
   }
 
+  public static String generateName(Uid uid) {
+    return "Section " + uid.getValue();
+  }
+
   @VisibleForTesting
   public AccessSection(String name, List<AccessRule> rulebase, Uid uid) {
     super(name, uid);
@@ -31,7 +35,7 @@ public final class AccessSection extends NamedManagementObject implements Access
       @JsonProperty(PROP_UID) @Nullable Uid uid) {
     checkArgument(rulebase != null, "Missing %s", PROP_RULEBASE);
     checkArgument(uid != null, "Missing %s", PROP_UID);
-    return new AccessSection(firstNonNull(name, "Section " + uid.getValue()), rulebase, uid);
+    return new AccessSection(firstNonNull(name, generateName(uid)), rulebase, uid);
   }
 
   @Override

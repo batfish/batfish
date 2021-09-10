@@ -12,6 +12,7 @@ import static org.batfish.vendor.check_point_gateway.representation.CheckPointGa
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toMatchExpr;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -446,5 +447,28 @@ public final class CheckPointGatewayConversionsTest {
     assertFalse(checkValidHeaderSpaceInputs(addressSpace, service, service, warnings));
     assertFalse(checkValidHeaderSpaceInputs(addressSpace, addressSpace, addressSpace, warnings));
     assertTrue(checkValidHeaderSpaceInputs(addressSpace, addressSpace, service, warnings));
+  }
+
+  @Test
+  public void testAclNameAccessLayer() {
+    Uid uid = Uid.of("1234");
+    String name = "Named AccessLayer";
+    AccessLayer named = new AccessLayer(ImmutableMap.of(), ImmutableList.of(), uid, name);
+
+    assertThat(aclName(named), containsString(uid.getValue()));
+    assertThat(aclName(named), containsString(name));
+  }
+
+  @Test
+  public void testAclNameAccessSection() {
+    Uid uid = Uid.of("1234");
+    AccessSection unnamed =
+        new AccessSection(AccessSection.generateName(uid), ImmutableList.of(), uid);
+    String name = "Named AccessSection";
+    AccessSection named = new AccessSection(name, ImmutableList.of(), uid);
+
+    assertThat(aclName(unnamed), containsString(uid.getValue()));
+    assertThat(aclName(named), containsString(uid.getValue()));
+    assertThat(aclName(named), containsString(name));
   }
 }
