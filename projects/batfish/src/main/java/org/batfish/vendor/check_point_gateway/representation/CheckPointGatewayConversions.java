@@ -21,10 +21,6 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
-import org.batfish.datamodel.acl.AndMatchExpr;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
-import org.batfish.datamodel.acl.NotMatchExpr;
-import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.vendor.check_point_management.AccessLayer;
 import org.batfish.vendor.check_point_management.AccessRule;
 import org.batfish.vendor.check_point_management.AccessRuleOrSection;
@@ -59,12 +55,8 @@ public final class CheckPointGatewayConversions {
     assert src instanceof AddressSpace;
     assert dst instanceof AddressSpace;
     ImmutableList.Builder<AclLineMatchExpr> exprs = ImmutableList.builder();
-    exprs.add(
-        new MatchHeaderSpace(
-            HeaderSpace.builder().setSrcIps(toIpSpace((AddressSpace) src)).build()));
-    exprs.add(
-        new MatchHeaderSpace(
-            HeaderSpace.builder().setDstIps(toIpSpace((AddressSpace) dst)).build()));
+    exprs.add(AclLineMatchExprs.matchSrc(toIpSpace((AddressSpace) src)));
+    exprs.add(AclLineMatchExprs.matchDst(toIpSpace((AddressSpace) dst)));
     exprs.add(((Service) service).accept(serviceToMatchExpr));
     return Optional.of(AclLineMatchExprs.and(exprs.build()));
   }
@@ -188,23 +180,23 @@ public final class CheckPointGatewayConversions {
     IpSpace srcRefs = toIpSpace(rule.getSource(), objs, w);
     AclLineMatchExpr srcMatch =
         rule.getSourceNegate()
-            ? new MatchHeaderSpace(HeaderSpace.builder().setNotSrcIps(srcRefs).build())
-            : new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(srcRefs).build());
+            ? AclLineMatchExprs.match(HeaderSpace.builder().setNotSrcIps(srcRefs).build())
+            : AclLineMatchExprs.match(HeaderSpace.builder().setSrcIps(srcRefs).build());
     conjuncts.add(srcMatch);
 
     // Dest
     IpSpace dstRefs = toIpSpace(rule.getDestination(), objs, w);
     AclLineMatchExpr dstMatch =
         rule.getDestinationNegate()
-            ? new MatchHeaderSpace(HeaderSpace.builder().setNotDstIps(dstRefs).build())
-            : new MatchHeaderSpace(HeaderSpace.builder().setDstIps(dstRefs).build());
+            ? AclLineMatchExprs.match(HeaderSpace.builder().setNotDstIps(dstRefs).build())
+            : AclLineMatchExprs.match(HeaderSpace.builder().setDstIps(dstRefs).build());
     conjuncts.add(dstMatch);
 
     // Service
     conjuncts.add(
         servicesToMatchExpr(rule.getService(), rule.getServiceNegate(), objs, serviceToMatchExpr));
 
-    return new AndMatchExpr(conjuncts.build());
+    return AclLineMatchExprs.and(conjuncts.build());
   }
 
   /**
@@ -218,14 +210,14 @@ public final class CheckPointGatewayConversions {
       Map<Uid, NamedManagementObject> objs,
       ServiceToMatchExpr serviceToMatchExpr) {
     AclLineMatchExpr matchExpr =
-        new OrMatchExpr(
+        AclLineMatchExprs.or(
             services.stream()
                 .map(objs::get)
                 .filter(Service.class::isInstance) // TODO warn about bad refs
                 .map(Service.class::cast)
                 .map(s -> s.accept(serviceToMatchExpr))
                 .collect(ImmutableList.toImmutableList()));
-    return negate ? new NotMatchExpr(matchExpr) : matchExpr;
+    return negate ? AclLineMatchExprs.not(matchExpr) : matchExpr;
   }
 
   /** Convert specified {@link TypedManagementObject} to a {@link LineAction}. */
