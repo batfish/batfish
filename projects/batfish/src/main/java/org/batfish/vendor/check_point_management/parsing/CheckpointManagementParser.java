@@ -3,13 +3,6 @@ package org.batfish.vendor.check_point_management.parsing;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.collect.Maps.immutableEntry;
 import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_MANAGEMENT_DIR;
-import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_ACCESS_RULEBASE;
-import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_GATEWAYS_AND_SERVERS;
-import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_GROUPS;
-import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_HOSTS;
-import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_NAT_RULEBASE;
-import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_NETWORKS;
-import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_PACKAGE;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -28,7 +21,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.batfish.common.BfConsts;
 import org.batfish.common.Warning;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
@@ -338,7 +330,7 @@ public class CheckpointManagementParser {
               "Ignoring Checkpoint management domain %s on server %s: no packages present",
               domainName, serverName);
       pvcae.addRedFlagWarning(
-          BfConsts.RELPATH_CHECKPOINT_MANAGEMENT_DIR, new Warning(message, "Checkpoint"));
+          RELPATH_CHECKPOINT_MANAGEMENT_DIR, new Warning(message, "Checkpoint"));
       LOGGER.warn(message);
       return null;
     }
@@ -420,14 +412,14 @@ public class CheckpointManagementParser {
     if (throwable != null) {
       LOGGER.warn(warning, throwable);
       pvcae.addRedFlagWarning(
-          BfConsts.RELPATH_CHECKPOINT_MANAGEMENT_DIR,
+          RELPATH_CHECKPOINT_MANAGEMENT_DIR,
           new Warning(
               String.format("%s: %s", warning, Throwables.getStackTraceAsString(throwable)),
               "Checkpoint"));
     } else {
       LOGGER.warn(warning);
       pvcae.addRedFlagWarning(
-          BfConsts.RELPATH_CHECKPOINT_MANAGEMENT_DIR, new Warning(warning, "Checkpoint"));
+          RELPATH_CHECKPOINT_MANAGEMENT_DIR, new Warning(warning, "Checkpoint"));
     }
   }
 
@@ -473,14 +465,14 @@ public class CheckpointManagementParser {
     if (throwable != null) {
       LOGGER.warn(warning, throwable);
       pvcae.addRedFlagWarning(
-          BfConsts.RELPATH_CHECKPOINT_MANAGEMENT_DIR,
+          RELPATH_CHECKPOINT_MANAGEMENT_DIR,
           new Warning(
               String.format("%s: %s", warning, Throwables.getStackTraceAsString(throwable)),
               "Checkpoint"));
     } else {
       LOGGER.warn(warning);
       pvcae.addRedFlagWarning(
-          BfConsts.RELPATH_CHECKPOINT_MANAGEMENT_DIR, new Warning(warning, "Checkpoint"));
+          RELPATH_CHECKPOINT_MANAGEMENT_DIR, new Warning(warning, "Checkpoint"));
     }
   }
 
@@ -502,6 +494,21 @@ public class CheckpointManagementParser {
   }
 
   private static final Logger LOGGER = LogManager.getLogger(CheckpointManagementParser.class);
+
+  private static final String RELPATH_CHECKPOINT_SHOW_ACCESS_RULEBASE = "show-access-rulebase.json";
+
+  @VisibleForTesting
+  static final String RELPATH_CHECKPOINT_SHOW_GATEWAYS_AND_SERVERS =
+      "show-gateways-and-servers.json";
+
+  @VisibleForTesting static final String RELPATH_CHECKPOINT_SHOW_GROUPS = "show-groups.json";
+  private static final String RELPATH_CHECKPOINT_SHOW_HOSTS = "show-hosts.json";
+
+  @VisibleForTesting
+  static final String RELPATH_CHECKPOINT_SHOW_NAT_RULEBASE = "show-nat-rulebase.json";
+
+  private static final String RELPATH_CHECKPOINT_SHOW_NETWORKS = "show-networks.json";
+  private static final String RELPATH_CHECKPOINT_SHOW_PACKAGE = "show-package.json";
 
   @VisibleForTesting
   static final String RELPATH_CHECKPOINT_SHOW_SERVICE_GROUPS = "show-service-groups.json";
