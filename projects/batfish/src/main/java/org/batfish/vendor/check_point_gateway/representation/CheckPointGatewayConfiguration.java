@@ -169,26 +169,29 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
       return;
     }
     Class<? extends Cluster> clusterClass = ((ClusterMember) gateway).getClusterClass();
-    Optional<Entry<Cluster, Integer>> maybeClusterAndIndex =
-        domain.getGatewaysAndServers().values().stream()
-            .filter(clusterClass::isInstance)
-            .map(Cluster.class::cast)
-            .map(
-                cluster ->
-                    immutableEntry(
-                        cluster, cluster.getClusterMemberNames().indexOf(gateway.getName())))
-            .filter(clusterAndIndex -> clusterAndIndex.getValue() != -1)
-            .findFirst();
-    if (!maybeClusterAndIndex.isPresent()) {
+    String gatewayName = gateway.getName();
+    Cluster cluster = null;
+    for (GatewayOrServer gatewayOrServer : domain.getGatewaysAndServers().values()) {
+      if (!clusterClass.isInstance(gatewayOrServer)) {
+        continue;
+      }
+      Cluster clusterCandidate = (Cluster) gatewayOrServer;
+      int clusterCandidateMemberIndex =
+          clusterCandidate.getClusterMemberNames().indexOf(gatewayName);
+      if (clusterCandidateMemberIndex != -1) {
+        cluster = clusterCandidate;
+        _clusterMemberIndex = clusterCandidateMemberIndex;
+        // TODO: verify that a gateway may only be a member of a single cluster
+        break;
+      }
+    }
+    if (cluster == null) {
       _w.redFlag(
           String.format(
               "Could not find matching cluster of type %s for this gateway of type %s",
               clusterClass.getSimpleName(), gateway.getClass().getSimpleName()));
       return;
     }
-    Entry<Cluster, Integer> clusterAndIndex = maybeClusterAndIndex.get();
-    Cluster cluster = clusterAndIndex.getKey();
-    _clusterMemberIndex = clusterAndIndex.getValue();
     _clusterInterfaces =
         cluster.getInterfaces().stream()
             .collect(
@@ -509,7 +512,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     newIface.build();
   }
 
-  /** Create a VRRP group for the virtual IP the cluster associeates with this interface. */
+  /** Create a VRRP group for the virtual IP the cluster associates with this interface. */
   private void createClusterVrrpGroup(
       org.batfish.vendor.check_point_management.Interface clusterInterface, Builder newIface) {
     Ip ip = clusterInterface.getIpv4Address();
