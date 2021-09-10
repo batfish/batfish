@@ -163,14 +163,16 @@ public class CheckpointManagementParser {
    */
   private static @Nonnull AccessLayer mergeAccessLayer(
       Collection<AccessLayer> pages, ParseVendorConfigurationAnswerElement pvcae) {
-    Uid uid = pages.iterator().next().getUid();
-    String name = pages.iterator().next().getName();
+    assert !pages.isEmpty();
+    AccessLayer first = pages.iterator().next();
+    Uid uid = first.getUid();
+    String name = first.getName();
     Map<Uid, NamedManagementObject> objs = new HashMap<>();
     pages.stream()
         .flatMap(p -> p.getObjectsDictionary().entrySet().stream())
         .forEach(o -> objs.put(o.getKey(), o.getValue()));
     return new AccessLayer(
-        objs,
+        ImmutableMap.copyOf(objs),
         mergeRuleOrSections(
             pages.stream()
                 .flatMap(p -> p.getRulebase().stream())
