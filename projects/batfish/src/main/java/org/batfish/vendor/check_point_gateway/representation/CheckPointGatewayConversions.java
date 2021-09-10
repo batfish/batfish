@@ -14,7 +14,6 @@ import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ExprAclLine;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
@@ -178,25 +177,17 @@ public final class CheckPointGatewayConversions {
     ImmutableList.Builder<AclLineMatchExpr> conjuncts = ImmutableList.builder();
 
     // Source
-    IpSpace srcRefs = toIpSpace(rule.getSource(), objs, w);
-    AclLineMatchExpr srcMatch =
-        rule.getSourceNegate()
-            ? AclLineMatchExprs.match(HeaderSpace.builder().setNotSrcIps(srcRefs).build())
-            : AclLineMatchExprs.match(HeaderSpace.builder().setSrcIps(srcRefs).build());
-    conjuncts.add(srcMatch);
+    AclLineMatchExpr srcMatch = AclLineMatchExprs.matchSrc(toIpSpace(rule.getSource(), objs, w));
+    conjuncts.add(rule.getSourceNegate() ? AclLineMatchExprs.not(srcMatch) : srcMatch);
 
     // Dest
-    IpSpace dstRefs = toIpSpace(rule.getDestination(), objs, w);
     AclLineMatchExpr dstMatch =
-        rule.getDestinationNegate()
-            ? AclLineMatchExprs.match(HeaderSpace.builder().setNotDstIps(dstRefs).build())
-            : AclLineMatchExprs.match(HeaderSpace.builder().setDstIps(dstRefs).build());
-    conjuncts.add(dstMatch);
+        AclLineMatchExprs.matchDst(toIpSpace(rule.getDestination(), objs, w));
+    conjuncts.add(rule.getDestinationNegate() ? AclLineMatchExprs.not(dstMatch) : dstMatch);
 
     // Service
-    conjuncts.add(
-        servicesToMatchExpr(
-            rule.getService(), rule.getServiceNegate(), objs, serviceToMatchExpr, w));
+    AclLineMatchExpr svcMatch = servicesToMatchExpr(rule.getService(), objs, serviceToMatchExpr, w);
+    conjuncts.add(rule.getServiceNegate() ? AclLineMatchExprs.not(svcMatch) : svcMatch);
 
     return AclLineMatchExprs.and(conjuncts.build());
   }
@@ -209,29 +200,26 @@ public final class CheckPointGatewayConversions {
   @Nonnull
   static AclLineMatchExpr servicesToMatchExpr(
       List<Uid> services,
-      boolean negate,
       Map<Uid, NamedManagementObject> objs,
       ServiceToMatchExpr serviceToMatchExpr,
       Warnings w) {
-    AclLineMatchExpr matchExpr =
-        AclLineMatchExprs.or(
-            services.stream()
-                .map(objs::get)
-                .map(
-                    o -> {
-                      if (!(o instanceof Service)) {
-                        w.redFlag(
-                            String.format(
-                                "Cannot convert %s (type %s) to a service match expression,"
-                                    + " ignoring.",
-                                o.getName(), o.getClass().getSimpleName()));
-                        return null;
-                      }
-                      return serviceToMatchExpr.visit((Service) o);
-                    })
-                .filter(Objects::nonNull)
-                .collect(ImmutableList.toImmutableList()));
-    return negate ? AclLineMatchExprs.not(matchExpr) : matchExpr;
+    return AclLineMatchExprs.or(
+        services.stream()
+            .map(objs::get)
+            .map(
+                o -> {
+                  if (!(o instanceof Service)) {
+                    w.redFlag(
+                        String.format(
+                            "Cannot convert %s (type %s) to a service match expression,"
+                                + " ignoring.",
+                            o.getName(), o.getClass().getSimpleName()));
+                    return null;
+                  }
+                  return serviceToMatchExpr.visit((Service) o);
+                })
+            .filter(Objects::nonNull)
+            .collect(ImmutableList.toImmutableList()));
   }
 
   /** Convert specified {@link TypedManagementObject} to a {@link LineAction}. */
