@@ -11,7 +11,7 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 
 /** Data model for an object of type {@code CpmiVsxClusterMember}. */
-public final class CpmiVsxClusterMember extends GatewayOrServer {
+public final class CpmiVsxClusterMember extends GatewayOrServer implements ClusterMember {
 
   @JsonCreator
   private static @Nonnull CpmiVsxClusterMember create(
@@ -50,5 +50,10 @@ public final class CpmiVsxClusterMember extends GatewayOrServer {
   @Override
   public String toString() {
     return baseToStringHelper().toString();
+  }
+
+  @Override
+  public @Nonnull Class<? extends Cluster> getClusterClass() {
+    return CpmiVsxClusterNetobj.class;
   }
 }
