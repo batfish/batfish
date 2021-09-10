@@ -11,6 +11,7 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.LinkedListMultimap;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -25,12 +26,16 @@ import org.batfish.common.Warning;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.vendor.check_point_management.AccessLayer;
+import org.batfish.vendor.check_point_management.AccessRule;
+import org.batfish.vendor.check_point_management.AccessRuleOrSection;
+import org.batfish.vendor.check_point_management.AccessSection;
 import org.batfish.vendor.check_point_management.CheckpointManagementConfiguration;
 import org.batfish.vendor.check_point_management.Domain;
 import org.batfish.vendor.check_point_management.GatewaysAndServers;
 import org.batfish.vendor.check_point_management.ManagementDomain;
 import org.batfish.vendor.check_point_management.ManagementPackage;
 import org.batfish.vendor.check_point_management.ManagementServer;
+import org.batfish.vendor.check_point_management.NamedManagementObject;
 import org.batfish.vendor.check_point_management.NatRuleOrSection;
 import org.batfish.vendor.check_point_management.NatRulebase;
 import org.batfish.vendor.check_point_management.ObjectPage;
@@ -74,6 +79,122 @@ public class CheckpointManagementParser {
         });
     return new CheckpointManagementConfiguration(
         buildServersMap(domainFileMap, packageFileMap, pvcae));
+  }
+
+  /** Read Access Layer data. */
+  private static @Nonnull List<AccessLayer> readAccessLayers(
+      Package pakij,
+      String domainName,
+      Map<String, String> packageFiles,
+      ParseVendorConfigurationAnswerElement pvcae,
+      String serverName) {
+    return mergeAccessLayers(
+        firstNonNull(
+            tryParseCheckpointPackageFile(
+                packageFiles,
+                new TypeReference<List<AccessLayer>>() {},
+                pvcae,
+                serverName,
+                domainName,
+                pakij.getName(),
+                RELPATH_CHECKPOINT_SHOW_ACCESS_RULEBASE),
+            ImmutableList.of()),
+        pvcae);
+  }
+
+  /**
+   * Returns a single AccessRuleOrSection representing the specified collection.
+   *
+   * <p>The specified collection of items should contain one of the following:
+   *
+   * <ul>
+   *   <li>1. a single AccessRule (rules can't be split across pages)
+   *   <li>2. a single AccessSection (contained fully on a single page)
+   *   <li>3. multiple AccessSection (all with the same name and uid, with different rules)
+   * </ul>
+   */
+  private static @Nonnull AccessRuleOrSection mergeRuleOrSection(
+      Collection<AccessRuleOrSection> items, ParseVendorConfigurationAnswerElement pvcae) {
+    AccessRuleOrSection first = items.iterator().next();
+    if (items.stream().anyMatch(AccessRule.class::isInstance)) {
+      // Shouldn't happen w/ well-formed data, but check to prevent bad casting below
+      if (items.size() > 1) {
+        pvcae.addRedFlagWarning(
+            RELPATH_CHECKPOINT_MANAGEMENT_DIR,
+            new Warning(
+                String.format(
+                    "Cannot merge AccessRule pages (for uid %s), ignoring instances after the"
+                        + " first",
+                    ((AccessRule) first).getUid().getValue()),
+                "Checkpoint"));
+      }
+      return first;
+    }
+
+    AccessSection firstSection = (AccessSection) first;
+    return new AccessSection(
+        firstSection.getName(),
+        items.stream()
+            .flatMap(s -> ((AccessSection) s).getRulebase().stream())
+            .collect(ImmutableList.toImmutableList()),
+        firstSection.getUid());
+  }
+
+  /**
+   * Returns a list of unique Access Rules and Access Sections, generated from the specified
+   * collection of non-unique items; i.e. multiple partial Access Sections can be specified and will
+   * be merged into a single Access Section in the resulting list.
+   *
+   * <p>The items should be provided in order.
+   */
+  private static @Nonnull List<AccessRuleOrSection> mergeRuleOrSections(
+      Collection<AccessRuleOrSection> items, ParseVendorConfigurationAnswerElement pvcae) {
+    LinkedListMultimap<Uid, AccessRuleOrSection> uidToChunks = LinkedListMultimap.create();
+    items.forEach(i -> uidToChunks.put(((NamedManagementObject) i).getUid(), i));
+    return uidToChunks.keySet().stream()
+        .map(uid -> mergeRuleOrSection(uidToChunks.get(uid), pvcae))
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  /**
+   * Merges multiple pages of a <i>single</i> Access Layer and returns the resulting Access Layer.
+   *
+   * <p>Assumes all supplied pages are for the same AccessLayer.
+   */
+  private static @Nonnull AccessLayer mergeAccessLayer(
+      Collection<AccessLayer> pages, ParseVendorConfigurationAnswerElement pvcae) {
+    assert !pages.isEmpty();
+    AccessLayer first = pages.iterator().next();
+    Uid uid = first.getUid();
+    String name = first.getName();
+    Map<Uid, NamedManagementObject> objs = new HashMap<>();
+    pages.stream()
+        .flatMap(p -> p.getObjectsDictionary().entrySet().stream())
+        .forEach(o -> objs.put(o.getKey(), o.getValue()));
+    return new AccessLayer(
+        ImmutableMap.copyOf(objs),
+        mergeRuleOrSections(
+            pages.stream()
+                .flatMap(p -> p.getRulebase().stream())
+                .collect(ImmutableList.toImmutableList()),
+            pvcae),
+        uid,
+        name);
+  }
+
+  /**
+   * Merges multiple pages of non-unique Access Layers.
+   *
+   * <p>The pages should be provided in order.
+   */
+  @VisibleForTesting
+  static @Nonnull List<AccessLayer> mergeAccessLayers(
+      Collection<AccessLayer> pages, ParseVendorConfigurationAnswerElement pvcae) {
+    LinkedListMultimap<Uid, AccessLayer> uidToPages = LinkedListMultimap.create();
+    pages.forEach(p -> uidToPages.put(p.getUid(), p));
+    return uidToPages.keySet().stream()
+        .map(uid -> mergeAccessLayer(uidToPages.get(uid), pvcae))
+        .collect(ImmutableList.toImmutableList());
   }
 
   /** Read NAT rulebase data. */
@@ -309,16 +430,7 @@ public class CheckpointManagementParser {
       // name. In the future we may want to encode that name in base64 so we can guarantee
       // the same package name can be retrieved from JSON and directory name.
       List<AccessLayer> accessLayers =
-          firstNonNull(
-              tryParseCheckpointPackageFile(
-                  packageFiles,
-                  new TypeReference<List<AccessLayer>>() {},
-                  pvcae,
-                  serverName,
-                  domainName,
-                  pakij.getName(),
-                  RELPATH_CHECKPOINT_SHOW_ACCESS_RULEBASE),
-              ImmutableList.of());
+          readAccessLayers(pakij, domainName, packageFiles, pvcae, serverName);
       NatRulebase natRulebase = readNatRulebase(pakij, domainName, packageFiles, pvcae, serverName);
       ManagementPackage mgmtPackage = new ManagementPackage(accessLayers, natRulebase, pakij);
       packagesBuilder.put(mgmtPackage.getPackage().getUid(), mgmtPackage);

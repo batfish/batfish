@@ -13,6 +13,7 @@ junit_tests(
     ),
     deps = [
         "//projects/batfish-common-protocol:common",
+        "//projects/batfish-common-protocol/src/test/java/org/batfish/common/matchers",
         "//projects/batfish/src/main/java/org/batfish/vendor/check_point_management",
         "//projects/batfish/src/main/java/org/batfish/vendor/check_point_management/parsing",
         "@maven//:com_fasterxml_jackson_core_jackson_core",
