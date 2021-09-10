@@ -11,7 +11,8 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 
 /** A single host address. */
-public final class Host extends TypedManagementObject implements AddressSpace, Machine {
+public final class Host extends TypedManagementObject
+    implements AddressSpace, Machine, NatTranslatedSource {
 
   @Override
   public <T> T accept(AddressSpaceVisitor<T> visitor) {
@@ -20,6 +21,11 @@ public final class Host extends TypedManagementObject implements AddressSpace, M
 
   @Override
   public <T> T accept(MachineVisitor<T> visitor) {
+    return visitor.visitHost(this);
+  }
+
+  @Override
+  public <T> T accept(NatTranslatedSourceVisitor<T> visitor) {
     return visitor.visitHost(this);
   }
 

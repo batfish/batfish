@@ -4,9 +4,9 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.FALSE;
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourcePort;
-import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.MANUAL_HIDE_MACHINE_TO_TRANSFORMATION_STEPS;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.NAT_PORT_FIRST;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.NAT_PORT_LAST;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.TRANSLATED_SOURCE_TO_TRANSFORMATION_STEPS;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.checkValidManualHide;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getApplicableNatRules;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getManualNatRules;
@@ -25,8 +25,10 @@ import java.util.List;
 import java.util.Optional;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
+import org.batfish.vendor.check_point_management.AddressRange;
 import org.batfish.vendor.check_point_management.CpmiAnyObject;
 import org.batfish.vendor.check_point_management.GatewayOrServer;
 import org.batfish.vendor.check_point_management.GatewayOrServerPolicy;
@@ -155,6 +157,7 @@ public final class CheckpointNatConversionsTest {
           equalTo(Optional.empty()));
     }
     {
+      // src: ipv4 host
       Uid hostUid = Uid.of("1");
       Ip hostIp = Ip.parse("1.1.1.1");
       String hostname = "host";
@@ -165,6 +168,47 @@ public final class CheckpointNatConversionsTest {
               Optional.of(
                   ImmutableList.of(
                       assignSourceIp(hostIp), assignSourcePort(NAT_PORT_FIRST, NAT_PORT_LAST)))));
+    }
+    {
+      // src: ipv6 host
+      Uid hostUid = Uid.of("1");
+      String hostname = "host";
+      Host host = new Host(null, NAT_SETTINGS_TEST_INSTANCE, hostname, hostUid);
+      assertThat(
+          manualHideTransformationSteps(host, ORIG, ORIG, warnings), equalTo(Optional.empty()));
+    }
+    {
+      // src: ipv4 address range
+      Uid addressRangeUid = Uid.of("1");
+      Ip firstIp = Ip.parse("1.1.1.1");
+      Ip lastIp = Ip.parse("1.1.1.10");
+      String name = "range1";
+      AddressRange addressRange =
+          new AddressRange(
+              firstIp, lastIp, null, null, NAT_SETTINGS_TEST_INSTANCE, name, addressRangeUid);
+      assertThat(
+          manualHideTransformationSteps(addressRange, ORIG, ORIG, warnings),
+          equalTo(
+              Optional.of(
+                  ImmutableList.of(
+                      assignSourceIp(firstIp, lastIp),
+                      assignSourcePort(NAT_PORT_FIRST, NAT_PORT_LAST)))));
+    }
+    {
+      // src: ipv6 address range
+      Uid addressRangeUid = Uid.of("1");
+      String name = "range1";
+      AddressRange addressRange =
+          new AddressRange(
+              null, null, Ip6.ZERO, Ip6.ZERO, NAT_SETTINGS_TEST_INSTANCE, name, addressRangeUid);
+      assertThat(
+          manualHideTransformationSteps(addressRange, ORIG, ORIG, warnings),
+          equalTo(Optional.empty()));
+    }
+    {
+      // src: original
+      assertThat(
+          manualHideTransformationSteps(ORIG, ORIG, ORIG, warnings), equalTo(Optional.empty()));
     }
   }
 
@@ -256,7 +300,7 @@ public final class CheckpointNatConversionsTest {
   public void visitHost_noIp() {
     Host host = new Host(null, NAT_SETTINGS_TEST_INSTANCE, "host", Uid.of("1"));
     assertThat(
-        MANUAL_HIDE_MACHINE_TO_TRANSFORMATION_STEPS.visitHost(host), equalTo(ImmutableList.of()));
+        TRANSLATED_SOURCE_TO_TRANSFORMATION_STEPS.visitHost(host), equalTo(ImmutableList.of()));
   }
 
   @Test
