@@ -472,7 +472,6 @@ public final class CheckpointManagementParserTest {
   public void testMergeAccessLayersAccessSectionSplit() {
     ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
     Uid uidAny = Uid.of("0");
-    Uid uid1 = Uid.of("1");
     Uid uid2 = Uid.of("2");
     Uid uidTcp = Uid.of("3");
     Uid uidUdp = Uid.of("4");
@@ -481,7 +480,6 @@ public final class CheckpointManagementParserTest {
     Uid uidRule3 = Uid.of("7");
     Uid uidSection1 = Uid.of("8");
     Uid uidBogus = Uid.of("999");
-    String name1 = "1";
     String name2 = "2";
     CpmiAnyObject any = new CpmiAnyObject(uidAny);
     ServiceTcp tcp = new ServiceTcp("tcp", "1234", uidTcp);
@@ -504,28 +502,21 @@ public final class CheckpointManagementParserTest {
             .setUid(uidRule3)
             .setAction(uidBogus)
             .build();
-    AccessLayer al1a =
-        new AccessLayer(ImmutableMap.of(uidAny, any), ImmutableList.of(rule1, rule2), uid1, name1);
-    AccessLayer al1b =
-        new AccessLayer(ImmutableMap.of(uidAny, any), ImmutableList.of(rule3), uid1, name1);
-    AccessLayer al1 =
-        new AccessLayer(
-            ImmutableMap.of(uidAny, any), ImmutableList.of(rule1, rule2, rule3), uid1, name1);
 
-    AccessLayer al2a =
+    AccessLayer ala =
         new AccessLayer(
             ImmutableMap.of(uidAny, any, uidTcp, tcp),
             ImmutableList.of(new AccessSection("section1", ImmutableList.of(rule1), uidSection1)),
             uid2,
             name2);
-    AccessLayer al2b =
+    AccessLayer alb =
         new AccessLayer(
             ImmutableMap.of(uidAny, any, uidUdp, udp),
             ImmutableList.of(
                 new AccessSection("section1", ImmutableList.of(rule2), uidSection1), rule3),
             uid2,
             name2);
-    AccessLayer al2 =
+    AccessLayer al =
         new AccessLayer(
             ImmutableMap.of(uidAny, any, uidTcp, tcp, uidUdp, udp),
             ImmutableList.of(
@@ -533,9 +524,7 @@ public final class CheckpointManagementParserTest {
             uid2,
             name2);
 
-    assertThat(
-        mergeAccessLayers(ImmutableList.of(al1a, al1b, al2a, al2b), pvcae),
-        equalTo(ImmutableList.of(al1, al2)));
+    assertThat(mergeAccessLayers(ImmutableList.of(ala, alb), pvcae), equalTo(ImmutableList.of(al)));
   }
 
   @Test
