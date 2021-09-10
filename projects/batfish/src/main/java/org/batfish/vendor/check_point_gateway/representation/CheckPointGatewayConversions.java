@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -194,7 +195,8 @@ public final class CheckPointGatewayConversions {
 
     // Service
     conjuncts.add(
-        servicesToMatchExpr(rule.getService(), rule.getServiceNegate(), objs, serviceToMatchExpr));
+        servicesToMatchExpr(
+            rule.getService(), rule.getServiceNegate(), objs, serviceToMatchExpr, w));
 
     return AclLineMatchExprs.and(conjuncts.build());
   }
@@ -203,19 +205,31 @@ public final class CheckPointGatewayConversions {
    * Returns an {@link AclLineMatchExpr} matching the specified {@link Service} {@link Uid}s.
    * Ignores {@link Uid}s for undefined or non-{@link Service} objects.
    */
+  @VisibleForTesting
   @Nonnull
-  private static AclLineMatchExpr servicesToMatchExpr(
+  static AclLineMatchExpr servicesToMatchExpr(
       List<Uid> services,
       boolean negate,
       Map<Uid, NamedManagementObject> objs,
-      ServiceToMatchExpr serviceToMatchExpr) {
+      ServiceToMatchExpr serviceToMatchExpr,
+      Warnings w) {
     AclLineMatchExpr matchExpr =
         AclLineMatchExprs.or(
             services.stream()
                 .map(objs::get)
-                .filter(Service.class::isInstance) // TODO warn about bad refs
-                .map(Service.class::cast)
-                .map(s -> s.accept(serviceToMatchExpr))
+                .map(
+                    o -> {
+                      if (!(o instanceof Service)) {
+                        w.redFlag(
+                            String.format(
+                                "Cannot convert %s (type %s) to a service match expression,"
+                                    + " ignoring.",
+                                o.getName(), o.getClass().getSimpleName()));
+                        return null;
+                      }
+                      return serviceToMatchExpr.visit((Service) o);
+                    })
+                .filter(Objects::nonNull)
                 .collect(ImmutableList.toImmutableList()));
     return negate ? AclLineMatchExprs.not(matchExpr) : matchExpr;
   }
