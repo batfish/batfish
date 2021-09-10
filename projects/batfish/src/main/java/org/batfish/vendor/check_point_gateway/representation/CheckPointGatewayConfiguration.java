@@ -184,17 +184,17 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
           String.format(
               "Could not find matching cluster of type %s for this gateway of type %s",
               clusterClass.getSimpleName(), gateway.getClass().getSimpleName()));
-    } else {
-      Entry<Cluster, Integer> clusterAndIndex = maybeClusterAndIndex.get();
-      Cluster cluster = clusterAndIndex.getKey();
-      _clusterMemberIndex = clusterAndIndex.getValue();
-      _clusterInterfaces =
-          cluster.getInterfaces().stream()
-              .collect(
-                  ImmutableMap.toImmutableMap(
-                      org.batfish.vendor.check_point_management.Interface::getName,
-                      Function.identity()));
+      return;
     }
+    Entry<Cluster, Integer> clusterAndIndex = maybeClusterAndIndex.get();
+    Cluster cluster = clusterAndIndex.getKey();
+    _clusterMemberIndex = clusterAndIndex.getValue();
+    _clusterInterfaces =
+        cluster.getInterfaces().stream()
+            .collect(
+                ImmutableMap.toImmutableMap(
+                    org.batfish.vendor.check_point_management.Interface::getName,
+                    Function.identity()));
   }
 
   private void convertAccessLayers(
