@@ -5,6 +5,8 @@ import static com.google.common.collect.Maps.immutableEntry;
 import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_MANAGEMENT_DIR;
 import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_ACCESS_RULEBASE;
 import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_GATEWAYS_AND_SERVERS;
+import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_GROUPS;
+import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_HOSTS;
 import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_NAT_RULEBASE;
 import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_NETWORKS;
 import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_SHOW_PACKAGE;
@@ -194,6 +196,8 @@ public class CheckpointManagementParser {
       String serverName,
       ParseVendorConfigurationAnswerElement pvcae) {
     return ImmutableList.of(
+            RELPATH_CHECKPOINT_SHOW_GROUPS,
+            RELPATH_CHECKPOINT_SHOW_HOSTS,
             RELPATH_CHECKPOINT_SHOW_NETWORKS,
             RELPATH_CHECKPOINT_SHOW_SERVICE_GROUPS,
             RELPATH_CHECKPOINT_SHOW_SERVICES_ICMP,
