@@ -99,10 +99,10 @@ public class CheckpointNatConversions {
     return Optional.of(steps.build());
   }
 
-  private static final CheckValidManualHideTranslatedSource
-      CHECK_VALID_MANUAL_HIDE_TRANSLATED_SOURCE = new CheckValidManualHideTranslatedSource();
+  private static final CheckIpv4TranslatedSource CHECK_IPV4_TRANSLATED_SOURCE =
+      new CheckIpv4TranslatedSource();
 
-  private static final class CheckValidManualHideTranslatedSource
+  private static final class CheckIpv4TranslatedSource
       implements NatTranslatedSourceVisitor<Boolean> {
 
     @Override
@@ -118,7 +118,7 @@ public class CheckpointNatConversions {
 
     @Override
     public Boolean visitOriginal(Original original) {
-      return false;
+      return true;
     }
   }
 
@@ -132,38 +132,32 @@ public class CheckpointNatConversions {
       NamedManagementObject dst,
       NamedManagementObject service,
       Warnings warnings) {
-    boolean valid = true;
-    if (!(src instanceof NatTranslatedSource)) {
+    if (src instanceof Original || !(src instanceof NatTranslatedSource)) {
       warnings.redFlag(
           String.format(
-              "Manual Hide NAT rule translated-source %s has unsupported type %s and will be"
+              "Manual Hide NAT rule translated-source %s has invalid type %s and will be"
                   + " ignored",
               src.getName(), src.getClass()));
-      valid = false;
-    } else if (!((NatTranslatedSource) src).accept(CHECK_VALID_MANUAL_HIDE_TRANSLATED_SOURCE)) {
+      return false;
+    } else if (!((NatTranslatedSource) src).accept(CHECK_IPV4_TRANSLATED_SOURCE)) {
+      // unsupported for foreseeable future, so don't bother warning
+      return false;
+    } else if (!(dst instanceof Original)) {
       warnings.redFlag(
           String.format(
-              "Manual Hide NAT rule translated-source %s is unsupported and will be ignored: %s",
-              src.getName(), src.toString()));
-      valid = false;
-    }
-    if (!(dst instanceof Original)) {
-      warnings.redFlag(
-          String.format(
-              "Manual Hide NAT rule translated-destination %s has unsupported type %s and will be"
+              "Manual Hide NAT rule translated-destination %s has invalid type %s and will be"
                   + " ignored",
               dst.getName(), dst.getClass()));
-      valid = false;
-    }
-    if (!(service instanceof Original)) {
+      return false;
+    } else if (!(service instanceof Original)) {
       warnings.redFlag(
           String.format(
-              "Manual Hide NAT rule translated-service %s has unsupported type %s and will be"
+              "Manual Hide NAT rule translated-service %s has invalid type %s and will be"
                   + " ignored",
               service.getName(), service.getClass()));
-      valid = false;
+      return false;
     }
-    return valid;
+    return true;
   }
 
   /** Get a stream of the applicable NAT rules for the provided gateway. */
