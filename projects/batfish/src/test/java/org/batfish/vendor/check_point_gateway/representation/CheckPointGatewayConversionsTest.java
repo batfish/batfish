@@ -37,8 +37,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
-import org.batfish.datamodel.acl.NotMatchExpr;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.vendor.check_point_management.AccessLayer;
 import org.batfish.vendor.check_point_management.AccessRule;
 import org.batfish.vendor.check_point_management.AccessRuleOrSection;
@@ -215,30 +214,32 @@ public final class CheckPointGatewayConversionsTest {
   public void testAccessRuleToMatchExpr() {
     Warnings w = new Warnings();
     AclLineMatchExpr matchNet0 =
-        new MatchHeaderSpace(HeaderSpace.builder().setDstIps(new IpSpaceReference("net0")).build());
+        AclLineMatchExprs.match(
+            HeaderSpace.builder().setDstIps(new IpSpaceReference("net0")).build());
     AclLineMatchExpr matchNotNet0 =
-        new MatchHeaderSpace(
+        AclLineMatchExprs.match(
             HeaderSpace.builder().setNotDstIps(new IpSpaceReference("net0")).build());
     AclLineMatchExpr matchNet1 =
-        new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(new IpSpaceReference("net1")).build());
+        AclLineMatchExprs.match(
+            HeaderSpace.builder().setSrcIps(new IpSpaceReference("net1")).build());
     AclLineMatchExpr matchNotNet1 =
-        new MatchHeaderSpace(
+        AclLineMatchExprs.match(
             HeaderSpace.builder().setNotSrcIps(new IpSpaceReference("net1")).build());
     AclLineMatchExpr matchSvc =
-        new MatchHeaderSpace(
+        AclLineMatchExprs.match(
             HeaderSpace.builder()
                 .setIpProtocols(IpProtocol.TCP)
                 .setDstPorts(IntegerSpace.of(22).getSubRanges())
                 .build());
     AclLineMatchExpr matchUdpSvc =
-        new MatchHeaderSpace(
+        AclLineMatchExprs.match(
             HeaderSpace.builder()
                 .setIpProtocols(IpProtocol.UDP)
                 .setDstPorts(IntegerSpace.of(222).getSubRanges())
                 .build());
     AclLineMatchExpr matchNotSvc =
-        new NotMatchExpr(
-            new MatchHeaderSpace(
+        AclLineMatchExprs.not(
+            AclLineMatchExprs.match(
                 HeaderSpace.builder()
                     .setIpProtocols(IpProtocol.TCP)
                     .setDstPorts(IntegerSpace.of(22).getSubRanges())
@@ -380,7 +381,7 @@ public final class CheckPointGatewayConversionsTest {
                   .get()),
           equalTo(
               _tb.toBDD(
-                  new MatchHeaderSpace(
+                  AclLineMatchExprs.match(
                       HeaderSpace.builder()
                           .setSrcIps(new IpSpaceReference(NETWORK_0.getName()))
                           .setDstIps(new IpSpaceReference(NETWORK_1.getName()))
@@ -392,7 +393,7 @@ public final class CheckPointGatewayConversionsTest {
     {
       assertThat(
           _tb.toBDD(toMatchExpr(CPMI_ANY, CPMI_ANY, CPMI_ANY, _serviceToMatchExpr, warnings).get()),
-          equalTo(_tb.toBDD(new MatchHeaderSpace(HeaderSpace.builder().build()))));
+          equalTo(_tb.toBDD(AclLineMatchExprs.match(HeaderSpace.builder().build()))));
     }
     {
       assertThat(
@@ -400,7 +401,7 @@ public final class CheckPointGatewayConversionsTest {
               toMatchExpr(CPMI_ANY, CPMI_ANY, SERVICE_UDP, _serviceToMatchExpr, warnings).get()),
           equalTo(
               _tb.toBDD(
-                  new MatchHeaderSpace(
+                  AclLineMatchExprs.match(
                       HeaderSpace.builder()
                           .setDstPorts(ImmutableList.of(new SubRange(1234)))
                           .setIpProtocols(IpProtocol.UDP)
@@ -412,7 +413,7 @@ public final class CheckPointGatewayConversionsTest {
               toMatchExpr(CPMI_ANY, CPMI_ANY, SERVICE_ICMP, _serviceToMatchExpr, warnings).get()),
           equalTo(
               _tb.toBDD(
-                  new MatchHeaderSpace(
+                  AclLineMatchExprs.match(
                       HeaderSpace.builder()
                           .setIcmpTypes(8)
                           .setIcmpCodes(3)
@@ -426,7 +427,7 @@ public final class CheckPointGatewayConversionsTest {
                   .get()),
           equalTo(
               _tb.toBDD(
-                  new MatchHeaderSpace(
+                  AclLineMatchExprs.match(
                       HeaderSpace.builder()
                           .setIcmpTypes(8)
                           .setIpProtocols(IpProtocol.ICMP)
