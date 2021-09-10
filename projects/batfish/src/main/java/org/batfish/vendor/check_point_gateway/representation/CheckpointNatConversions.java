@@ -45,7 +45,7 @@ public class CheckpointNatConversions {
 
   public static @Nonnull List<TransformationStep> getSourceTransformationSteps(
       NatTranslatedSource translatedSource) {
-    return translatedSource.accept(TRANSLATED_SOURCE_TO_TRANSFORMATION_STEPS);
+    return TRANSLATED_SOURCE_TO_TRANSFORMATION_STEPS.visit(translatedSource);
   }
 
   /**
@@ -139,7 +139,7 @@ public class CheckpointNatConversions {
                   + " ignored",
               src.getName(), src.getClass()));
       return false;
-    } else if (!((NatTranslatedSource) src).accept(CHECK_IPV4_TRANSLATED_SOURCE)) {
+    } else if (!CHECK_IPV4_TRANSLATED_SOURCE.visit((NatTranslatedSource) src)) {
       // unsupported for foreseeable future, so don't bother warning
       return false;
     } else if (!(dst instanceof Original)) {
