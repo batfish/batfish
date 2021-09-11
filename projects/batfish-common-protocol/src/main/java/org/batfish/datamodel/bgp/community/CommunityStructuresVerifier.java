@@ -68,6 +68,7 @@ import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.MainRib;
 import org.batfish.datamodel.routing_policy.expr.MatchBgpSessionType;
 import org.batfish.datamodel.routing_policy.expr.MatchColor;
+import org.batfish.datamodel.routing_policy.expr.MatchInterface;
 import org.batfish.datamodel.routing_policy.expr.MatchIp6AccessList;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv6;
@@ -216,6 +217,12 @@ public final class CommunityStructuresVerifier {
         MatchCommunities matchCommunities, CommunityStructuresVerifierContext arg) {
       matchCommunities.getCommunitySetExpr().accept(COMMUNITY_SET_EXPR_VERIFIER, arg);
       matchCommunities.getCommunitySetMatchExpr().accept(COMMUNITY_SET_MATCH_EXPR_VERIFIER, arg);
+      return null;
+    }
+
+    @Override
+    public Void visitMatchInterface(
+        MatchInterface matchInterface, CommunityStructuresVerifierContext arg) {
       return null;
     }
 

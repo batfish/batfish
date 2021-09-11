@@ -191,6 +191,7 @@ import org.batfish.datamodel.routing_policy.expr.LiteralEigrpMetric;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
+import org.batfish.datamodel.routing_policy.expr.MatchInterface;
 import org.batfish.datamodel.routing_policy.expr.MatchMetric;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
@@ -3446,9 +3447,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
               RouteMapMatchInterface routeMapMatchInterface) {
             // Matches any routes that have their next hop out one of the configured interfaces.
             // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus9000/sw/6-x/unicast/configuration/guide/l3_cli_nxos/l3_rpm.html
-            // TODO: Implement MatchNextHopInterface/Ip
-            // https://github.com/batfish/batfish/issues/6502
-            return BooleanExprs.TRUE;
+            return new MatchInterface(routeMapMatchInterface.getNames());
           }
 
           @Override
