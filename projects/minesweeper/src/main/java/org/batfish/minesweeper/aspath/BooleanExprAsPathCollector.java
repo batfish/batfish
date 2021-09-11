@@ -26,6 +26,7 @@ import org.batfish.datamodel.routing_policy.expr.HasRoute6;
 import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.MatchBgpSessionType;
 import org.batfish.datamodel.routing_policy.expr.MatchColor;
+import org.batfish.datamodel.routing_policy.expr.MatchInterface;
 import org.batfish.datamodel.routing_policy.expr.MatchIp6AccessList;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv6;
@@ -151,6 +152,12 @@ public class BooleanExprAsPathCollector
   @Override
   public Set<SymbolicAsPathRegex> visitMatchIp6AccessList(
       MatchIp6AccessList matchIp6AccessList, Configuration arg) {
+    return ImmutableSet.of();
+  }
+
+  @Override
+  public Set<SymbolicAsPathRegex> visitMatchInterface(
+      MatchInterface matchInterface, Configuration arg) {
     return ImmutableSet.of();
   }
 
