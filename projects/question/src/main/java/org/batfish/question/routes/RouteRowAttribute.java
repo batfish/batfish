@@ -46,6 +46,8 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
 
   @Nullable private final BgpRouteStatus _status;
 
+  @Nullable private final Integer _weight;
+
   private RouteRowAttribute(
       String nextHop,
       String nextHopInterface,
@@ -57,7 +59,8 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
       String originalProtocol,
       OriginType originType,
       Long tag,
-      BgpRouteStatus status) {
+      BgpRouteStatus status,
+      Integer weight) {
     _nextHop = nextHop;
     _nextHopInterface = nextHopInterface;
     _adminDistance = adminDistance;
@@ -69,6 +72,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
     _originType = originType;
     _tag = tag;
     _status = status;
+    _weight = weight;
   }
 
   @Nullable
@@ -126,6 +130,11 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
     return _status;
   }
 
+  @Nullable
+  public Integer getWeight() {
+    return _weight;
+  }
+
   public static Builder builder() {
     return new Builder();
   }
@@ -143,7 +152,8 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
           .thenComparing(RouteRowAttribute::getStatus, nullsLast(BgpRouteStatus::compareTo))
           .thenComparing(
               routeRowAttribute -> routeRowAttribute.getCommunities().toString(),
-              nullsLast(String::compareTo));
+              nullsLast(String::compareTo))
+          .thenComparing(RouteRowAttribute::getWeight, Comparator.nullsLast(Integer::compareTo));
 
   @Override
   public int compareTo(RouteRowAttribute o) {
@@ -169,7 +179,8 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
         && Objects.equals(_originProtocol, that._originProtocol)
         && Objects.equals(_originType, that._originType)
         && Objects.equals(_tag, that._tag)
-        && Objects.equals(_status, that._status);
+        && Objects.equals(_status, that._status)
+        && Objects.equals(_weight, that._weight);
   }
 
   @Override
@@ -185,30 +196,24 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
         _originProtocol,
         _originType,
         _tag,
-        _status == null ? 0 : _status.ordinal());
+        _status == null ? 0 : _status.ordinal(),
+        _weight);
   }
 
   /** Builder for {@link RouteRowAttribute} */
   public static final class Builder {
     @Nullable private String _nextHop;
-
     @Nullable private String _nextHopInterface;
-
     @Nullable private Integer _adminDistance;
-
     @Nullable private Long _metric;
-
     @Nullable private AsPath _asPath;
-
     @Nullable private Long _localPreference;
-
     @Nullable private List<String> _communities;
-
     @Nullable private String _originProtocol;
     @Nullable private OriginType _originType;
-
     @Nullable private Long _tag;
     @Nullable private BgpRouteStatus _status;
+    @Nullable private Integer _weight;
 
     public RouteRowAttribute build() {
       if (_tag != null && _tag == Route.UNSET_ROUTE_TAG) {
@@ -225,7 +230,8 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
           _originProtocol,
           _originType,
           _tag,
-          _status);
+          _status,
+          _weight);
     }
 
     public Builder setAdminDistance(Integer adminDistance) {
@@ -280,6 +286,11 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
 
     public Builder setStatus(BgpRouteStatus status) {
       _status = status;
+      return this;
+    }
+
+    public Builder setWeight(Integer weight) {
+      _weight = weight;
       return this;
     }
   }

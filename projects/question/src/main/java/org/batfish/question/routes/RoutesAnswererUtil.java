@@ -24,6 +24,7 @@ import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_ENTRY_PRESENC
 import static org.batfish.question.routes.RoutesAnswerer.COL_STATUS;
 import static org.batfish.question.routes.RoutesAnswerer.COL_TAG;
 import static org.batfish.question.routes.RoutesAnswerer.COL_VRF_NAME;
+import static org.batfish.question.routes.RoutesAnswerer.COL_WEIGHT;
 import static org.batfish.question.routes.RoutesAnswerer.getDiffTableMetadata;
 import static org.batfish.question.routes.RoutesAnswerer.getTableMetadata;
 
@@ -346,6 +347,7 @@ public class RoutesAnswererUtil {
             bgpv4Route.getClusterList().isEmpty() ? null : bgpv4Route.getClusterList())
         .put(COL_TAG, bgpv4Route.getTag() == Route.UNSET_ROUTE_TAG ? null : bgpv4Route.getTag())
         .put(COL_STATUS, statuses)
+        .put(COL_WEIGHT, bgpv4Route.getWeight())
         .build();
   }
 
@@ -382,6 +384,7 @@ public class RoutesAnswererUtil {
         .put(COL_TAG, evpnRoute.getTag() == Route.UNSET_ROUTE_TAG ? null : evpnRoute.getTag())
         .put(COL_ROUTE_DISTINGUISHER, evpnRoute.getRouteDistinguisher())
         .put(COL_STATUS, statuses)
+        .put(COL_WEIGHT, evpnRoute.getWeight())
         .build();
   }
 
