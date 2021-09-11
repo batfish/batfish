@@ -50,7 +50,7 @@ public final class AclTracer extends AclLineEvaluator {
   }
 
   @VisibleForTesting
-  static List<TraceTree> trace(
+  public static List<TraceTree> trace(
       @Nonnull AclLineMatchExpr expr,
       @Nonnull Flow flow,
       @Nullable String srcInterface,
