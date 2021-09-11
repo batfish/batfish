@@ -30,7 +30,7 @@ public final class VrrpPropertiesAnswerer extends Answerer {
 
   public static final String COL_INTERFACE = "Interface";
   public static final String COL_GROUP_ID = "Group_Id";
-  public static final String COL_VIRTUAL_ADDRESS = "VIRTUAL_ADDRESS";
+  public static final String COL_VIRTUAL_ADDRESS = "Virtual_Address";
   public static final String COL_PRIORITY = "Priority";
   public static final String COL_PREEMPT = "Preempt";
 
