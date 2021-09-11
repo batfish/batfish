@@ -20,6 +20,7 @@ import org.batfish.datamodel.routing_policy.expr.HasRoute6;
 import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.MatchBgpSessionType;
 import org.batfish.datamodel.routing_policy.expr.MatchColor;
+import org.batfish.datamodel.routing_policy.expr.MatchInterface;
 import org.batfish.datamodel.routing_policy.expr.MatchIp6AccessList;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv6;
@@ -127,6 +128,11 @@ public class BooleanExprVarCollector
                 .getCommunitySetMatchExpr()
                 .accept(new CommunitySetMatchExprVarCollector(), arg))
         .build();
+  }
+
+  @Override
+  public Set<CommunityVar> visitMatchInterface(MatchInterface matchInterface, Configuration arg) {
+    return ImmutableSet.of();
   }
 
   @Override
