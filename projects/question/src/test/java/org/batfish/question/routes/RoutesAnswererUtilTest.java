@@ -22,6 +22,7 @@ import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_DISTINGUISHER
 import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_ENTRY_PRESENCE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_TAG;
 import static org.batfish.question.routes.RoutesAnswerer.COL_VRF_NAME;
+import static org.batfish.question.routes.RoutesAnswerer.COL_WEIGHT;
 import static org.batfish.question.routes.RoutesAnswererUtil.alignRouteRowAttributes;
 import static org.batfish.question.routes.RoutesAnswererUtil.computeNextHopNode;
 import static org.batfish.question.routes.RoutesAnswererUtil.getAbstractRouteRowsDiff;
@@ -230,7 +231,8 @@ public class RoutesAnswererUtilTest {
             .setCommunities(ImmutableSortedSet.of(StandardCommunity.of(65537L)))
             .setProtocol(RoutingProtocol.BGP)
             .setOriginatorIp(Ip.parse("1.1.1.2"))
-            .setAsPath(AsPath.ofSingletonAsSets(ImmutableList.of(1L, 2L)));
+            .setAsPath(AsPath.ofSingletonAsSets(ImmutableList.of(1L, 2L)))
+            .setWeight(7);
     Bgpv4Route standardRoute = rb.setNextHopIp(ip).build();
     Bgpv4Route unnumRoute = rb.setNextHopIp(bgpUnnumIp).setNextHopInterface("iface").build();
 
@@ -260,7 +262,8 @@ public class RoutesAnswererUtilTest {
             hasColumn(COL_ORIGIN_PROTOCOL, nullValue(), Schema.STRING),
             hasColumn(COL_TAG, nullValue(), Schema.INTEGER),
             hasColumn(COL_ORIGINATOR_ID, Ip.parse("1.1.1.2"), Schema.IP),
-            hasColumn(COL_CLUSTER_LIST, nullValue(), Schema.list(Schema.LONG)));
+            hasColumn(COL_CLUSTER_LIST, nullValue(), Schema.list(Schema.LONG)),
+            hasColumn(COL_WEIGHT, equalTo(7), Schema.INTEGER));
 
     assertThat(
         rows,
@@ -321,7 +324,8 @@ public class RoutesAnswererUtilTest {
             .setCommunities(ImmutableSortedSet.of(StandardCommunity.of(65537L)))
             .setProtocol(RoutingProtocol.BGP)
             .setOriginatorIp(Ip.parse("1.1.1.2"))
-            .setAsPath(AsPath.ofSingletonAsSets(ImmutableList.of(1L, 2L)));
+            .setAsPath(AsPath.ofSingletonAsSets(ImmutableList.of(1L, 2L)))
+            .setWeight(7);
     EvpnType3Route standardRoute = rb.setNextHopIp(ip).build();
 
     Table<String, String, Set<EvpnRoute<?, ?>>> evpnRouteTable = HashBasedTable.create();
@@ -353,6 +357,7 @@ public class RoutesAnswererUtilTest {
                 hasColumn(COL_LOCAL_PREF, 0L, Schema.LONG),
                 hasColumn(COL_COMMUNITIES, ImmutableList.of("1:1"), Schema.list(Schema.STRING)),
                 hasColumn(COL_ORIGIN_PROTOCOL, nullValue(), Schema.STRING),
+                hasColumn(COL_WEIGHT, 7, Schema.INTEGER),
                 hasColumn(COL_TAG, nullValue(), Schema.INTEGER),
                 hasColumn(COL_NEXT_HOP_IP, ip, Schema.IP),
                 hasColumn(COL_NEXT_HOP_INTERFACE, "dynamic", Schema.STRING))));
@@ -385,7 +390,8 @@ public class RoutesAnswererUtilTest {
             .setMetric(2L)
             .setOriginProtocol("bgp")
             .setAsPath(AsPath.ofSingletonAsSets(ImmutableList.of(1L, 2L)))
-            .setLocalPreference(1L);
+            .setLocalPreference(1L)
+            .setWeight(7);
     List<List<RouteRowAttribute>> diffMatrix = new ArrayList<>();
     diffMatrix.add(Lists.newArrayList(routeRowAttrBuilder.build(), routeRowAttrBuilder.build()));
 
