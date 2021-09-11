@@ -40,6 +40,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
+import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.vendor.check_point_management.AccessLayer;
 import org.batfish.vendor.check_point_management.AccessRule;
 import org.batfish.vendor.check_point_management.AccessRuleOrSection;
@@ -465,14 +466,23 @@ public final class CheckPointGatewayConversionsTest {
                         .setIpProtocols(IpProtocol.TCP)
                         .setDstPorts(new SubRange(22))
                         .build()))));
-
     assertThat(
         w,
         hasRedFlags(
             contains(
                 hasText(
                     "Cannot convert net0 (type Network) to a service match expression,"
-                        + " ignoring."))));
+                        + " making unmatchable."))));
+  }
+
+  @Test
+  public void testServicesToMatchExprOnlyUnknown() {
+    // If the only service(s) are unknown/unhandled, then the rule shouldn't match
+    assertThat(
+        _tb.toBDD(
+            servicesToMatchExpr(
+                ImmutableList.of(UID_NET0), TEST_OBJS, _serviceToMatchExpr, new Warnings())),
+        equalTo(_tb.toBDD(FalseExpr.INSTANCE)));
   }
 
   @Test
