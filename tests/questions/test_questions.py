@@ -35,6 +35,7 @@ VALID_TAGS = {
     "topology",  # produces some type of topology
     "traceroute",  # traceroute
     "vip",  # VIP related (load balancing)
+    "vrrp",  # VLAN related
     "vlan",  # VLAN related
     "vxlan",  # VXLAN related
 }
