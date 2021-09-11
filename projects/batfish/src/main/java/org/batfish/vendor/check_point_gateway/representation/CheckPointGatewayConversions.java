@@ -21,6 +21,7 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
+import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.vendor.check_point_management.AccessLayer;
 import org.batfish.vendor.check_point_management.AccessRule;
 import org.batfish.vendor.check_point_management.AccessRuleOrSection;
@@ -212,9 +213,9 @@ public final class CheckPointGatewayConversions {
                     w.redFlag(
                         String.format(
                             "Cannot convert %s (type %s) to a service match expression,"
-                                + " ignoring.",
+                                + " making unmatchable.",
                             o.getName(), o.getClass().getSimpleName()));
-                    return null;
+                    return FalseExpr.INSTANCE;
                   }
                   return serviceToMatchExpr.visit((Service) o);
                 })
