@@ -14,6 +14,7 @@ junit_tests(
     deps = [
         "//projects/batfish:batfish_testlib",
         "//projects/batfish-common-protocol:common",
+        "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/matchers:matchers",
         "//projects/batfish/src/main/java/org/batfish/vendor/check_point_management",
         "@maven//:com_fasterxml_jackson_core_jackson_core",
         "@maven//:com_fasterxml_jackson_core_jackson_databind",

@@ -2,10 +2,14 @@ package org.batfish.vendor.check_point_management;
 
 import static org.batfish.datamodel.IntegerSpace.PORTS;
 import static org.batfish.datamodel.applications.PortsApplication.MAX_PORT_NUMBER;
+import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceCpmiAnyTraceElement;
+import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceGroupTraceElement;
+import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceIcmpTraceElement;
+import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceTcpTraceElement;
+import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceUdpTraceElement;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +22,7 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.TrueExpr;
 
 /** Generates an {@link AclLineMatchExpr} for the specified {@link Service}. */
@@ -31,20 +35,12 @@ public class ServiceToMatchExpr implements ServiceVisitor<AclLineMatchExpr> {
   @Override
   public AclLineMatchExpr visitCpmiAnyObject(CpmiAnyObject cpmiAnyObject) {
     // Does not constrain headerspace
-    return TrueExpr.INSTANCE;
+    return new TrueExpr(serviceCpmiAnyTraceElement());
   }
 
   @Override
   public AclLineMatchExpr visitServiceGroup(ServiceGroup serviceGroup) {
-    Set<Uid> allMembers = getDescendantObjects(serviceGroup, new HashSet<>());
-    List<AclLineMatchExpr> matchExprs =
-        allMembers.stream()
-            .map(_objs::get)
-            .filter(Service.class::isInstance)
-            .map(Service.class::cast)
-            .map(s -> s.accept(this))
-            .collect(ImmutableList.toImmutableList());
-    return AclLineMatchExprs.or(matchExprs);
+    return getDescendantMatchExpr(serviceGroup, new HashSet<>());
   }
 
   @Override
@@ -53,49 +49,54 @@ public class ServiceToMatchExpr implements ServiceVisitor<AclLineMatchExpr> {
     hsb.setIpProtocols(IpProtocol.ICMP);
     hsb.setIcmpTypes(serviceIcmp.getIcmpType());
     Optional.ofNullable(serviceIcmp.getIcmpCode()).ifPresent(hsb::setIcmpCodes);
-    return new MatchHeaderSpace(hsb.build());
+    return AclLineMatchExprs.match(hsb.build(), serviceIcmpTraceElement(serviceIcmp));
   }
 
   @Override
   public AclLineMatchExpr visitServiceTcp(ServiceTcp serviceTcp) {
-    return new MatchHeaderSpace(
+    return AclLineMatchExprs.match(
         HeaderSpace.builder()
             .setIpProtocols(IpProtocol.TCP)
             .setDstPorts(portStringToIntegerSpace(serviceTcp.getPort()).getSubRanges())
-            .build());
+            .build(),
+        serviceTcpTraceElement(serviceTcp));
   }
 
   @Override
   public AclLineMatchExpr visitServiceUdp(ServiceUdp serviceUdp) {
-    return new MatchHeaderSpace(
+    return AclLineMatchExprs.match(
         HeaderSpace.builder()
             .setIpProtocols(IpProtocol.UDP)
             .setDstPorts(portStringToIntegerSpace(serviceUdp.getPort()).getSubRanges())
-            .build());
+            .build(),
+        serviceUdpTraceElement(serviceUdp));
   }
 
   /**
-   * Returns descendant objects for the specified {@link ServiceGroup}. Keeps track of visited
+   * Returns an {@link AclLineMatchExpr} representing descendant objects. Keeps track of visited
    * descendants to prevent loops, though these should not occur in real configs.
    */
-  private Set<Uid> getDescendantObjects(ServiceGroup group, Set<Uid> alreadyTraversedMembers) {
+  private AclLineMatchExpr getDescendantMatchExpr(
+      ServiceGroup group, Set<Uid> alreadyTraversedMembers) {
     Uid groupUid = group.getUid();
-    if (alreadyTraversedMembers.contains(groupUid)) {
-      return ImmutableSet.of();
-    }
     alreadyTraversedMembers.add(groupUid);
 
-    Set<Uid> descendantObjects = new HashSet<>();
+    List<AclLineMatchExpr> descendantObjExprs = new ArrayList<>();
     for (Uid memberUid : group.getMembers()) {
       NamedManagementObject member = _objs.get(memberUid);
       if (member instanceof ServiceGroup) {
-        descendantObjects.addAll(
-            getDescendantObjects((ServiceGroup) member, alreadyTraversedMembers));
+        if (!alreadyTraversedMembers.contains(memberUid)) {
+          descendantObjExprs.add(
+              getDescendantMatchExpr((ServiceGroup) member, alreadyTraversedMembers));
+        }
       } else if (member instanceof Service) {
-        descendantObjects.add(memberUid);
+        descendantObjExprs.add(this.visit((Service) member));
+      } else {
+        // Don't match non-servicey objects
+        descendantObjExprs.add(FalseExpr.INSTANCE);
       }
     }
-    return descendantObjects;
+    return AclLineMatchExprs.or(serviceGroupTraceElement(group), descendantObjExprs);
   }
 
   /** Convert an entire CheckPoint port string to an {@link IntegerSpace}. */
