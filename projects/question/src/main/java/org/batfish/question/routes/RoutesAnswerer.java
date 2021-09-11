@@ -72,6 +72,7 @@ public class RoutesAnswerer extends Answerer {
   static final String COL_CLUSTER_LIST = "Cluster_List";
   static final String COL_ORIGINATOR_ID = "Originator_Id";
   static final String COL_STATUS = "Status";
+  static final String COL_WEIGHT = "Weight";
 
   // EVPN BGP only
   static final String COL_ROUTE_DISTINGUISHER = "Route_Distinguisher";
@@ -323,7 +324,10 @@ public class RoutesAnswerer extends Answerer {
                     Schema.list(Schema.LONG),
                     "Route's Cluster List",
                     Boolean.FALSE,
-                    Boolean.TRUE));
+                    Boolean.TRUE))
+            .add(
+                new ColumnMetadata(
+                    COL_WEIGHT, Schema.INTEGER, "Route's BGP Weight", Boolean.FALSE, Boolean.TRUE));
         break;
       case BGP:
         columnBuilder
@@ -394,7 +398,10 @@ public class RoutesAnswerer extends Answerer {
                     Schema.list(Schema.LONG),
                     "Route's Cluster List",
                     Boolean.FALSE,
-                    Boolean.TRUE));
+                    Boolean.TRUE))
+            .add(
+                new ColumnMetadata(
+                    COL_WEIGHT, Schema.INTEGER, "Route's BGP Weight", Boolean.FALSE, Boolean.TRUE));
         break;
       case MAIN:
       default:
@@ -592,6 +599,20 @@ public class RoutesAnswerer extends Answerer {
                 COL_DELTA_PREFIX + COL_ORIGIN_TYPE,
                 Schema.STRING,
                 "Route's Origin type",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_BASE_PREFIX + COL_WEIGHT,
+                Schema.INTEGER,
+                "Route's BGP weight",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_DELTA_PREFIX + COL_WEIGHT,
+                Schema.INTEGER,
+                "Route's BGP weight",
                 Boolean.FALSE,
                 Boolean.TRUE));
         break;
