@@ -2128,9 +2128,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   Stream<RouteAdvertisement<Bgpv4Route>> getRoutesToLeak() {
     return Stream.concat(
         _localDeltaPrev.getActions(),
-        _bgpv4DeltaPrevBestPath
-            .getActions()
-            .filter(r -> !_importedFromOtherVrfs.contains(r.getRoute())));
+        _bgpv4DeltaPrev.getActions().filter(r -> !_importedFromOtherVrfs.contains(r.getRoute())));
   }
 
   /**
