@@ -6295,7 +6295,6 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
           names.add(name);
         });
     _currentRouteMapEntry.setMatchInterface(new RouteMapMatchInterface(names.build()));
-    warn(ctx, "Route-map match interface is not supported and will be ignored.");
   }
 
   @Override
