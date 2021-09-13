@@ -29,7 +29,7 @@ public class AddressSpaceToIpSpaceMetadataTest {
     CpmiAnyObject addrSpace = new CpmiAnyObject(Uid.of("1"));
     IpSpaceMetadata metadata = toIpSpaceMetadata(addrSpace);
     assertThat(metadata.getSourceName(), equalTo(addrSpace.getName()));
-    assertThat(metadata.getSourceType(), equalTo("CpmiAnyObject"));
+    assertThat(metadata.getSourceType(), equalTo("network object"));
   }
 
   @Test

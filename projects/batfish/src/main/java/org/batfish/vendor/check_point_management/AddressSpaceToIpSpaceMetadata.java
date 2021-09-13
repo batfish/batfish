@@ -12,7 +12,7 @@ public class AddressSpaceToIpSpaceMetadata implements AddressSpaceVisitor<IpSpac
 
   @Override
   public IpSpaceMetadata visitCpmiAnyObject(CpmiAnyObject cpmiAnyObject) {
-    return new IpSpaceMetadata(cpmiAnyObject.getName(), "CpmiAnyObject", null);
+    return new IpSpaceMetadata(cpmiAnyObject.getName(), "network object", null);
   }
 
   @Override
