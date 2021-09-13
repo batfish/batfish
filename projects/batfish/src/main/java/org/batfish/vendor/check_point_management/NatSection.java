@@ -22,7 +22,7 @@ public final class NatSection extends NamedManagementObject implements NatRuleOr
   }
 
   @VisibleForTesting
-  NatSection(String name, List<NatRule> rulebase, Uid uid) {
+  public NatSection(String name, List<NatRule> rulebase, Uid uid) {
     super(name, uid);
     _rulebase = rulebase;
   }

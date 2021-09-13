@@ -37,6 +37,7 @@ import org.batfish.vendor.check_point_management.Group;
 import org.batfish.vendor.check_point_management.NatMethod;
 import org.batfish.vendor.check_point_management.NatRule;
 import org.batfish.vendor.check_point_management.NatRulebase;
+import org.batfish.vendor.check_point_management.NatSection;
 import org.batfish.vendor.check_point_management.Original;
 import org.batfish.vendor.check_point_management.Package;
 import org.batfish.vendor.check_point_management.ServiceGroup;
@@ -215,7 +216,7 @@ public final class CheckpointManagementParserTest {
             + "{" // nat-rule
             + "\"type\":\"nat-rule\","
             + "\"auto-generated\":true,"
-            + "\"uid\":\"0\","
+            + "\"uid\":\"10\","
             + "\"comments\":\"foo\","
             + "\"enabled\":true,"
             + "\"install-on\":[\"100\"],"
@@ -245,7 +246,7 @@ public final class CheckpointManagementParserTest {
             + "{" // nat-rule
             + "\"type\":\"nat-rule\","
             + "\"auto-generated\":true,"
-            + "\"uid\":\"0\","
+            + "\"uid\":\"11\","
             + "\"comments\":\"foo\","
             + "\"enabled\":true,"
             + "\"install-on\":[\"100\"],"
@@ -291,7 +292,7 @@ public final class CheckpointManagementParserTest {
                         Uid.of("4"),
                         Uid.of("5"),
                         Uid.of("6"),
-                        Uid.of("0")),
+                        Uid.of("10")),
                     new NatRule(
                         true,
                         "foo",
@@ -305,7 +306,168 @@ public final class CheckpointManagementParserTest {
                         Uid.of("4"),
                         Uid.of("5"),
                         Uid.of("6"),
-                        Uid.of("0"))),
+                        Uid.of("11"))),
+                Uid.of("0"))));
+  }
+
+  @Test
+  public void testReadNatRulebaseChildSplitAcrossTwoPages() {
+    ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
+    Package pakij = testPackage(true);
+    String natRulebaseInput =
+        "[" // show-nat-rulebase
+            + "{" // NatRulebase page1
+            + "\"uid\":\"0\","
+            + "\"objects-dictionary\":["
+            + "{" // CpmiAnyObject
+            + "\"uid\": \"100\","
+            + "\"type\": \"CpmiAnyObject\","
+            + "\"name\": \"Any\""
+            + "}" // CpmiAnyObject
+            + "],"
+            + "\"rulebase\":["
+            + "{" // nat-section
+            + "\"type\":\"nat-section\","
+            + "\"name\": \"nat-section-name\","
+            + "\"uid\": \"1\","
+            + "\"rulebase\": [" // nat-section: rulebase
+            + "{" // nat-rule
+            + "\"type\":\"nat-rule\","
+            + "\"auto-generated\":true,"
+            + "\"uid\":\"10\","
+            + "\"comments\":\"foo\","
+            + "\"enabled\":true,"
+            + "\"install-on\":[\"100\"],"
+            + "\"method\":\"hide\","
+            + "\"original-destination\":\"1\","
+            + "\"original-service\":\"2\","
+            + "\"original-source\":\"3\","
+            + "\"rule-number\":1,"
+            + "\"translated-destination\":\"4\","
+            + "\"translated-service\":\"5\","
+            + "\"translated-source\":\"6\""
+            + "}" // nat-rule
+            + "]" // nat-section: rulebase
+            + "}" // nat-section
+            + "]," // rulebase
+            + "\"from\": 1,"
+            + "\"to\": 1"
+            + "}," // NatRulebase page1
+            + "{" // NatRulebase page2
+            + "\"uid\":\"0\","
+            + "\"objects-dictionary\":["
+            + "{" // CpmiAnyObject
+            + "\"uid\": \"101\","
+            + "\"type\": \"Global\","
+            + "\"name\": \"Original\""
+            + "}" // CpmiAnyObject
+            + "],"
+            + "\"rulebase\":["
+            + "{" // nat-section
+            + "\"type\":\"nat-section\","
+            + "\"name\": \"nat-section-name\","
+            + "\"uid\": \"1\","
+            + "\"rulebase\": [" // nat-section: rulebase
+            + "{" // nat-rule
+            + "\"type\":\"nat-rule\","
+            + "\"auto-generated\":true,"
+            + "\"uid\":\"11\","
+            + "\"comments\":\"foo\","
+            + "\"enabled\":true,"
+            + "\"install-on\":[\"100\"],"
+            + "\"method\":\"hide\","
+            + "\"original-destination\":\"1\","
+            + "\"original-service\":\"2\","
+            + "\"original-source\":\"3\","
+            + "\"rule-number\":2,"
+            + "\"translated-destination\":\"4\","
+            + "\"translated-service\":\"5\","
+            + "\"translated-source\":\"6\""
+            + "}" // nat-rule
+            + "]" // nat-section: rulebase
+            + "}," // nat-section
+            + "{" // nat-rule
+            + "\"type\":\"nat-rule\","
+            + "\"auto-generated\":true,"
+            + "\"uid\":\"12\","
+            + "\"comments\":\"foo\","
+            + "\"enabled\":true,"
+            + "\"install-on\":[\"100\"],"
+            + "\"method\":\"hide\","
+            + "\"original-destination\":\"1\","
+            + "\"original-service\":\"2\","
+            + "\"original-source\":\"3\","
+            + "\"rule-number\":3,"
+            + "\"translated-destination\":\"4\","
+            + "\"translated-service\":\"5\","
+            + "\"translated-source\":\"6\""
+            + "}" // nat-rule
+            + "]," // rulebase
+            + "\"from\": 2,"
+            + "\"to\": 2"
+            + "}" // NatRulebase page2
+            + "]"; // show-nat-rulebase
+
+    // NAT rulebase should be populated with merged rules and objects-dictionary from the two pages
+    assertThat(
+        readNatRulebase(
+            pakij,
+            DOMAIN_NAME,
+            ImmutableMap.of(RELPATH_CHECKPOINT_SHOW_NAT_RULEBASE, natRulebaseInput),
+            pvcae,
+            SERVER_NAME),
+        equalTo(
+            new NatRulebase(
+                ImmutableMap.of(
+                    UID_ANY, new CpmiAnyObject(UID_ANY),
+                    UID_ORIG, new Original(UID_ORIG)),
+                ImmutableList.of(
+                    new NatSection(
+                        "nat-section-name",
+                        ImmutableList.of(
+                            new NatRule(
+                                true,
+                                "foo",
+                                true,
+                                ImmutableList.of(Uid.of("100")),
+                                NatMethod.HIDE,
+                                Uid.of("1"),
+                                Uid.of("2"),
+                                Uid.of("3"),
+                                1,
+                                Uid.of("4"),
+                                Uid.of("5"),
+                                Uid.of("6"),
+                                Uid.of("10")),
+                            new NatRule(
+                                true,
+                                "foo",
+                                true,
+                                ImmutableList.of(Uid.of("100")),
+                                NatMethod.HIDE,
+                                Uid.of("1"),
+                                Uid.of("2"),
+                                Uid.of("3"),
+                                2,
+                                Uid.of("4"),
+                                Uid.of("5"),
+                                Uid.of("6"),
+                                Uid.of("11"))),
+                        Uid.of("1")),
+                    new NatRule(
+                        true,
+                        "foo",
+                        true,
+                        ImmutableList.of(Uid.of("100")),
+                        NatMethod.HIDE,
+                        Uid.of("1"),
+                        Uid.of("2"),
+                        Uid.of("3"),
+                        3,
+                        Uid.of("4"),
+                        Uid.of("5"),
+                        Uid.of("6"),
+                        Uid.of("12"))),
                 Uid.of("0"))));
   }
 
