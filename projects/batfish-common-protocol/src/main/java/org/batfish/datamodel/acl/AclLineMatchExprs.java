@@ -105,10 +105,14 @@ public final class AclLineMatchExprs {
   }
 
   public static AclLineMatchExpr matchDst(IpSpace ipSpace) {
+    return matchDst(ipSpace, null);
+  }
+
+  public static AclLineMatchExpr matchDst(IpSpace ipSpace, @Nullable TraceElement traceElement) {
     if (ipSpace.equals(UniverseIpSpace.INSTANCE)) {
-      return TRUE;
+      return traceElement == null ? TRUE : new TrueExpr(traceElement);
     }
-    return new MatchHeaderSpace(HeaderSpace.builder().setDstIps(ipSpace).build());
+    return new MatchHeaderSpace(HeaderSpace.builder().setDstIps(ipSpace).build(), traceElement);
   }
 
   public static AclLineMatchExpr matchDst(Ip ip) {
@@ -146,10 +150,14 @@ public final class AclLineMatchExprs {
   }
 
   public static AclLineMatchExpr matchSrc(IpSpace ipSpace) {
+    return matchSrc(ipSpace, null);
+  }
+
+  public static AclLineMatchExpr matchSrc(IpSpace ipSpace, @Nullable TraceElement traceElement) {
     if (ipSpace.equals(UniverseIpSpace.INSTANCE)) {
-      return TRUE;
+      return traceElement == null ? TRUE : new TrueExpr(traceElement);
     }
-    return new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(ipSpace).build());
+    return new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(ipSpace).build(), traceElement);
   }
 
   public static @Nonnull AclLineMatchExpr matchFragmentOffset(int fragmentOffset) {

@@ -29,6 +29,7 @@ import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.vendor.check_point_management.AddressRange;
+import org.batfish.vendor.check_point_management.AddressSpaceToMatchExpr;
 import org.batfish.vendor.check_point_management.CpmiAnyObject;
 import org.batfish.vendor.check_point_management.GatewayOrServer;
 import org.batfish.vendor.check_point_management.GatewayOrServerPolicy;
@@ -220,6 +221,8 @@ public final class CheckpointNatConversionsTest {
     String hostname = "host";
     Host host = new Host(hostIp, NAT_SETTINGS_TEST_INSTANCE, hostname, hostUid);
     ServiceToMatchExpr serviceToMatchExpr = new ServiceToMatchExpr(ImmutableMap.of());
+    AddressSpaceToMatchExpr addressSpaceToMatchExpr =
+        new AddressSpaceToMatchExpr(ImmutableMap.of());
     {
       ImmutableMap<Uid, TypedManagementObject> objs =
           ImmutableMap.of(hostUid, host, PT_UID, POLICY_TARGETS, ORIG_UID, ORIG);
@@ -241,7 +244,8 @@ public final class CheckpointNatConversionsTest {
 
       // invalid original fields
       assertThat(
-          manualHideRuleTransformation(rule, serviceToMatchExpr, objs, warnings),
+          manualHideRuleTransformation(
+              rule, serviceToMatchExpr, addressSpaceToMatchExpr, objs, warnings),
           equalTo(Optional.empty()));
     }
     {
@@ -265,7 +269,8 @@ public final class CheckpointNatConversionsTest {
 
       // invalid translated fields
       assertThat(
-          manualHideRuleTransformation(rule, serviceToMatchExpr, objs, warnings),
+          manualHideRuleTransformation(
+              rule, serviceToMatchExpr, addressSpaceToMatchExpr, objs, warnings),
           equalTo(Optional.empty()));
     }
     {
@@ -288,7 +293,9 @@ public final class CheckpointNatConversionsTest {
               UID);
 
       Transformation xform =
-          manualHideRuleTransformation(rule, serviceToMatchExpr, objs, warnings).get();
+          manualHideRuleTransformation(
+                  rule, serviceToMatchExpr, addressSpaceToMatchExpr, objs, warnings)
+              .get();
       assertThat(
           xform.getTransformationSteps(),
           containsInAnyOrder(

@@ -21,6 +21,7 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.vendor.check_point_management.AddressRange;
+import org.batfish.vendor.check_point_management.AddressSpaceToMatchExpr;
 import org.batfish.vendor.check_point_management.GatewayOrServer;
 import org.batfish.vendor.check_point_management.Host;
 import org.batfish.vendor.check_point_management.NamedManagementObject;
@@ -197,6 +198,7 @@ public class CheckpointNatConversions {
   static @Nonnull Optional<Transformation> manualHideRuleTransformation(
       org.batfish.vendor.check_point_management.NatRule natRule,
       ServiceToMatchExpr serviceToMatchExpr,
+      AddressSpaceToMatchExpr addressSpaceToMatchExpr,
       Map<Uid, ? extends NamedManagementObject> objects,
       Warnings warnings) {
     Optional<AclLineMatchExpr> maybeOrigMatchExpr =
@@ -205,6 +207,7 @@ public class CheckpointNatConversions {
             objects.get(natRule.getOriginalDestination()),
             objects.get(natRule.getOriginalService()),
             serviceToMatchExpr,
+            addressSpaceToMatchExpr,
             warnings);
     Optional<List<TransformationStep>> maybeSteps =
         manualHideTransformationSteps(
