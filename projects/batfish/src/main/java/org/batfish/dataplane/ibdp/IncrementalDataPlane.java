@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Table;
 import java.io.Serializable;
 import java.util.Map;
@@ -137,7 +138,7 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
     Map<String, Configuration> configs = DataplaneUtil.computeConfigurations(nodes);
     // Order of initialization matters:
     _bgpRoutes = DataplaneUtil.computeBgpRoutes(nodes);
-    _bgpBackupRoutes = DataplaneUtil.computeBgpBackupRoutes(nodes);
+    _bgpBackupRoutes = ImmutableTable.of(); // DataplaneUtil.computeBgpBackupRoutes(nodes);
     _evpnRoutes = DataplaneUtil.computeEvpnRoutes(nodes);
     _evpnBackupRoutes = DataplaneUtil.computeEvpnBackupRoutes(nodes);
     _ribs = DataplaneUtil.computeRibs(nodes);
