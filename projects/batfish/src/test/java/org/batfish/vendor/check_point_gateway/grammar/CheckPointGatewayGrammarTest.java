@@ -146,7 +146,7 @@ public class CheckPointGatewayGrammarTest {
   private static final String SNAPSHOTS_PREFIX =
       "org/batfish/vendor/check_point_gateway/grammar/snapshots/";
   public static final NatSettings NAT_SETTINGS_TEST_INSTANCE =
-      new NatSettings(true, "gateway", "All", "hide");
+      new NatSettings(true, "gateway", "All", null, "hide");
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
