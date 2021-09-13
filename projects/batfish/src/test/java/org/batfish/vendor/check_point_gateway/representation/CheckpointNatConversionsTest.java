@@ -49,7 +49,7 @@ import org.junit.Test;
 /** Test of {@link CheckpointNatConversions}. */
 public final class CheckpointNatConversionsTest {
   public static final NatSettings NAT_SETTINGS_TEST_INSTANCE =
-      new NatSettings(true, "gateway", "All", "hide");
+      new NatSettings(true, "gateway", "All", null, "hide");
 
   @Test
   public void testGetApplicableNatRules() {
