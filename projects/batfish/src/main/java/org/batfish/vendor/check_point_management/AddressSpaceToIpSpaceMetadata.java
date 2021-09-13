@@ -4,10 +4,15 @@ import org.batfish.datamodel.IpSpaceMetadata;
 
 /** Create an {@link IpSpaceMetadata} representing the visited {@link AddressSpace}. */
 public class AddressSpaceToIpSpaceMetadata implements AddressSpaceVisitor<IpSpaceMetadata> {
+  public static final AddressSpaceToIpSpaceMetadata INSTANCE = new AddressSpaceToIpSpaceMetadata();
+
+  public static IpSpaceMetadata toIpSpaceMetadata(AddressSpace addressSpace) {
+    return addressSpace.accept(INSTANCE);
+  }
 
   @Override
   public IpSpaceMetadata visitCpmiAnyObject(CpmiAnyObject cpmiAnyObject) {
-    return new IpSpaceMetadata(cpmiAnyObject.getName(), "CpmiAny", null);
+    return new IpSpaceMetadata(cpmiAnyObject.getName(), "CpmiAnyObject", null);
   }
 
   @Override
@@ -17,8 +22,7 @@ public class AddressSpaceToIpSpaceMetadata implements AddressSpaceVisitor<IpSpac
 
   @Override
   public IpSpaceMetadata visitGatewayOrServer(GatewayOrServer gatewayOrServer) {
-    return new IpSpaceMetadata(
-        gatewayOrServer.getName(), gatewayOrServer.getClass().getSimpleName(), null);
+    return new IpSpaceMetadata(gatewayOrServer.getName(), "gateway or server", null);
   }
 
   @Override
@@ -36,5 +40,5 @@ public class AddressSpaceToIpSpaceMetadata implements AddressSpaceVisitor<IpSpac
     return new IpSpaceMetadata(network.getName(), "network", null);
   }
 
-  public AddressSpaceToIpSpaceMetadata() {}
+  private AddressSpaceToIpSpaceMetadata() {}
 }

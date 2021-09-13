@@ -9,6 +9,7 @@ import static org.batfish.vendor.check_point_gateway.representation.CheckPointGa
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getManualNatRules;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.manualHideRuleTransformation;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.mergeTransformations;
+import static org.batfish.vendor.check_point_management.AddressSpaceToIpSpaceMetadata.toIpSpaceMetadata;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -56,7 +57,6 @@ import org.batfish.vendor.check_point_gateway.representation.BondingGroup.Mode;
 import org.batfish.vendor.check_point_management.AccessLayer;
 import org.batfish.vendor.check_point_management.AddressSpace;
 import org.batfish.vendor.check_point_management.AddressSpaceToIpSpace;
-import org.batfish.vendor.check_point_management.AddressSpaceToIpSpaceMetadata;
 import org.batfish.vendor.check_point_management.CheckpointManagementConfiguration;
 import org.batfish.vendor.check_point_management.Cluster;
 import org.batfish.vendor.check_point_management.ClusterMember;
@@ -238,8 +238,6 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
    */
   private void convertObjects(Map<Uid, NamedManagementObject> objs) {
     AddressSpaceToIpSpace addressSpaceToIpSpace = new AddressSpaceToIpSpace(objs);
-    AddressSpaceToIpSpaceMetadata addressSpaceToIpSpaceMetadata =
-        new AddressSpaceToIpSpaceMetadata();
     objs.values()
         .forEach(
             obj -> {
@@ -258,7 +256,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
                 IpSpace ipSpace = addressSpace.accept(addressSpaceToIpSpace);
                 _c.getIpSpaces().put(obj.getName(), ipSpace);
 
-                IpSpaceMetadata metadata = addressSpace.accept(addressSpaceToIpSpaceMetadata);
+                IpSpaceMetadata metadata = toIpSpaceMetadata(addressSpace);
                 _c.getIpSpaceMetadata().put(obj.getName(), metadata);
               }
             });
