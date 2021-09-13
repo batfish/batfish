@@ -40,6 +40,7 @@ import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpSpaceMetadata;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
@@ -55,6 +56,7 @@ import org.batfish.vendor.check_point_gateway.representation.BondingGroup.Mode;
 import org.batfish.vendor.check_point_management.AccessLayer;
 import org.batfish.vendor.check_point_management.AddressSpace;
 import org.batfish.vendor.check_point_management.AddressSpaceToIpSpace;
+import org.batfish.vendor.check_point_management.AddressSpaceToIpSpaceMetadata;
 import org.batfish.vendor.check_point_management.CheckpointManagementConfiguration;
 import org.batfish.vendor.check_point_management.Cluster;
 import org.batfish.vendor.check_point_management.ClusterMember;
@@ -236,6 +238,8 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
    */
   private void convertObjects(Map<Uid, NamedManagementObject> objs) {
     AddressSpaceToIpSpace addressSpaceToIpSpace = new AddressSpaceToIpSpace(objs);
+    AddressSpaceToIpSpaceMetadata addressSpaceToIpSpaceMetadata =
+        new AddressSpaceToIpSpaceMetadata();
     objs.values()
         .forEach(
             obj -> {
@@ -253,6 +257,9 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
                 AddressSpace addressSpace = (AddressSpace) obj;
                 IpSpace ipSpace = addressSpace.accept(addressSpaceToIpSpace);
                 _c.getIpSpaces().put(obj.getName(), ipSpace);
+
+                IpSpaceMetadata metadata = addressSpace.accept(addressSpaceToIpSpaceMetadata);
+                _c.getIpSpaceMetadata().put(obj.getName(), metadata);
               }
             });
   }
