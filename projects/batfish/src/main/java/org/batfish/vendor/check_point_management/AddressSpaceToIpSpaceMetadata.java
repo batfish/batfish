@@ -4,8 +4,6 @@ import org.batfish.datamodel.IpSpaceMetadata;
 
 /** Create an {@link IpSpaceMetadata} representing the visited {@link AddressSpace}. */
 public class AddressSpaceToIpSpaceMetadata implements AddressSpaceVisitor<IpSpaceMetadata> {
-  public static final AddressSpaceToIpSpaceMetadata INSTANCE = new AddressSpaceToIpSpaceMetadata();
-
   public static IpSpaceMetadata toIpSpaceMetadata(AddressSpace addressSpace) {
     return addressSpace.accept(INSTANCE);
   }
@@ -42,4 +40,6 @@ public class AddressSpaceToIpSpaceMetadata implements AddressSpaceVisitor<IpSpac
   }
 
   private AddressSpaceToIpSpaceMetadata() {}
+
+  private static final AddressSpaceToIpSpaceMetadata INSTANCE = new AddressSpaceToIpSpaceMetadata();
 }
