@@ -17,10 +17,10 @@ public class NatSettingsTest {
    * for use in tests.
    */
   public static final NatSettings TEST_INSTANCE =
-      new NatSettings(true, "gateway", "All", Ip.parse("2.3.4.5"), "hide");
+      new NatSettings(true, "gateway", "All", null, "hide");
   /** Another test instance, that is not-equal to the previous instance. */
   public static final NatSettings TEST_INSTANCE_DIFFERENT =
-      new NatSettings(false, "gateway", "All", Ip.parse("2.3.4.5"), "hide");
+      new NatSettings(true, "gateway", "All", Ip.parse("2.3.4.5"), "hide");
 
   @Test
   public void testJacksonDeserialization() throws JsonProcessingException {
@@ -30,12 +30,12 @@ public class NatSettingsTest {
             + "\"auto-rule\":true,"
             + "\"hide-behind\":\"gateway\","
             + "\"install-on\":\"All\","
-            + "\"ipv4-address\": \"2.3.4.5\","
+            + "\"ipv4-address\":\"2.3.4.5\","
             + "\"method\":\"hide\""
             + "}";
     assertThat(
         BatfishObjectMapper.ignoreUnknownMapper().readValue(input, NatSettings.class),
-        equalTo(TEST_INSTANCE));
+        equalTo(TEST_INSTANCE_DIFFERENT));
   }
 
   @Test
