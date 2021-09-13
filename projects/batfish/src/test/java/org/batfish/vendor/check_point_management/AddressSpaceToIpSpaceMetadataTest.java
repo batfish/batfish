@@ -54,7 +54,7 @@ public class AddressSpaceToIpSpaceMetadataTest {
   public void testGroup() {
     Uid group1Uid = Uid.of("1");
     Group addrSpace = new Group("group1", ImmutableList.of(), group1Uid);
-    IpSpaceMetadata metadata = addrSpace.accept(AddressSpaceToIpSpaceMetadata.INSTANCE);
+    IpSpaceMetadata metadata = toIpSpaceMetadata(addrSpace);
     assertThat(metadata.getSourceName(), equalTo(addrSpace.getName()));
     assertThat(metadata.getSourceType(), equalTo("group"));
   }
