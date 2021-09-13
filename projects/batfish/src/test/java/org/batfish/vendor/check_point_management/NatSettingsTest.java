@@ -30,6 +30,7 @@ public class NatSettingsTest {
             + "\"auto-rule\":true,"
             + "\"hide-behind\":\"gateway\","
             + "\"install-on\":\"All\","
+            + "\"ipv4-address\": \"2.3.4.5\","
             + "\"method\":\"hide\""
             + "}";
     assertThat(
