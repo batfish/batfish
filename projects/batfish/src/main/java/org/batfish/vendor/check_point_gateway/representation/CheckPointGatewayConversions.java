@@ -113,8 +113,8 @@ public final class CheckPointGatewayConversions {
     ImmutableList.Builder<AclLine> accessLayerLines = ImmutableList.builder();
     for (AccessRuleOrSection acl : access.getRulebase()) {
       if (acl instanceof AccessRule) {
-        accessLayerLines.add(
-            toAclLine((AccessRule) acl, objects, serviceToMatchExpr, addressSpaceToMatchExpr, w));
+        toAclLine((AccessRule) acl, objects, serviceToMatchExpr, addressSpaceToMatchExpr, w)
+            .ifPresent(accessLayerLines::add);
         continue;
       }
       assert acl instanceof AccessSection;
@@ -149,24 +149,31 @@ public final class CheckPointGatewayConversions {
         .setLines(
             section.getRulebase().stream()
                 .map(r -> toAclLine(r, objs, serviceToMatchExpr, addressSpaceToMatchExpr, w))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
                 .collect(ImmutableList.toImmutableList()))
         .build();
   }
 
   /** Convert specified {@link AccessRule} to an {@link AclLine}. */
   @Nonnull
-  static AclLine toAclLine(
+  static Optional<AclLine> toAclLine(
       AccessRule rule,
       Map<Uid, NamedManagementObject> objs,
       ServiceToMatchExpr serviceToMatchExpr,
       AddressSpaceToMatchExpr addressSpaceToMatchExpr,
       Warnings w) {
-    return ExprAclLine.builder()
-        .setName(rule.getName())
-        .setMatchCondition(toMatchExpr(rule, objs, serviceToMatchExpr, addressSpaceToMatchExpr, w))
-        .setAction(toAction(objs.get(rule.getAction()), rule.getAction(), w))
-        // TODO trace element and structure ID
-        .build();
+    if (!rule.getEnabled()) {
+      return Optional.empty();
+    }
+    return Optional.of(
+        ExprAclLine.builder()
+            .setName(rule.getName())
+            .setMatchCondition(
+                toMatchExpr(rule, objs, serviceToMatchExpr, addressSpaceToMatchExpr, w))
+            .setAction(toAction(objs.get(rule.getAction()), rule.getAction(), w))
+            // TODO trace element and structure ID
+            .build());
   }
 
   /**
