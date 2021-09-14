@@ -57,6 +57,7 @@ import org.batfish.vendor.check_point_gateway.representation.BondingGroup.Mode;
 import org.batfish.vendor.check_point_management.AccessLayer;
 import org.batfish.vendor.check_point_management.AddressSpace;
 import org.batfish.vendor.check_point_management.AddressSpaceToIpSpace;
+import org.batfish.vendor.check_point_management.AddressSpaceToMatchExpr;
 import org.batfish.vendor.check_point_management.CheckpointManagementConfiguration;
 import org.batfish.vendor.check_point_management.Cluster;
 import org.batfish.vendor.check_point_management.ClusterMember;
@@ -211,8 +212,10 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
               + " matching Access Rule will be applied.");
     }
     ServiceToMatchExpr serviceToMatchExpr = new ServiceToMatchExpr(objects);
+    AddressSpaceToMatchExpr addressSpaceToMatchExpr = new AddressSpaceToMatchExpr(objects);
     for (AccessLayer al : accessLayers) {
-      Map<String, IpAccessList> acl = toIpAccessLists(al, objects, serviceToMatchExpr, _w);
+      Map<String, IpAccessList> acl =
+          toIpAccessLists(al, objects, serviceToMatchExpr, addressSpaceToMatchExpr, _w);
       _c.getIpAccessLists().putAll(acl);
     }
     IpAccessList interfaceAcl =
@@ -298,13 +301,18 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
   private void convertNatRulebase(
       NatRulebase natRulebase, GatewayOrServer gateway, Map<Uid, NamedManagementObject> objects) {
     ServiceToMatchExpr serviceToMatchExpr = new ServiceToMatchExpr(objects);
+    AddressSpaceToMatchExpr addressSpaceToMatchExpr = new AddressSpaceToMatchExpr(objects);
     List<Transformation> manualHideRuleTransformations =
         getManualNatRules(natRulebase, gateway)
             .filter(rule -> rule.getMethod() == NatMethod.HIDE)
             .map(
                 natRule ->
                     manualHideRuleTransformation(
-                        natRule, serviceToMatchExpr, objects, getWarnings()))
+                        natRule,
+                        serviceToMatchExpr,
+                        addressSpaceToMatchExpr,
+                        objects,
+                        getWarnings()))
             .filter(Optional::isPresent)
             .map(Optional::get)
             .collect(ImmutableList.toImmutableList());

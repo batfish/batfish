@@ -8,8 +8,8 @@ import static org.batfish.vendor.check_point_gateway.representation.CheckPointGa
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.checkValidHeaderSpaceInputs;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.servicesToMatchExpr;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toAction;
+import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toAddressMatchExpr;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toIpAccessLists;
-import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toIpSpace;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toMatchExpr;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -24,7 +24,6 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import java.util.Optional;
 import org.batfish.common.Warnings;
-import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.BddTestbed;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
@@ -45,6 +44,7 @@ import org.batfish.vendor.check_point_management.AccessLayer;
 import org.batfish.vendor.check_point_management.AccessRule;
 import org.batfish.vendor.check_point_management.AccessRuleOrSection;
 import org.batfish.vendor.check_point_management.AccessSection;
+import org.batfish.vendor.check_point_management.AddressSpaceToMatchExpr;
 import org.batfish.vendor.check_point_management.CpmiAnyObject;
 import org.batfish.vendor.check_point_management.Host;
 import org.batfish.vendor.check_point_management.NamedManagementObject;
@@ -136,6 +136,8 @@ public final class CheckPointGatewayConversionsTest {
 
   private final BddTestbed _tb = new BddTestbed(ImmutableMap.of(), TEST_IP_SPACES);
   private final ServiceToMatchExpr _serviceToMatchExpr = new ServiceToMatchExpr(TEST_OBJS);
+  private final AddressSpaceToMatchExpr _addressSpaceToMatchExpr =
+      new AddressSpaceToMatchExpr(TEST_OBJS);
 
   private static Flow createFlow(String sourceAddress, String destinationAddress) {
     return createFlow(sourceAddress, destinationAddress, IpProtocol.TCP, 1, 1);
@@ -196,7 +198,8 @@ public final class CheckPointGatewayConversionsTest {
         new AccessLayer(TEST_OBJS, rulebase, Uid.of("uidLayer"), "accessLayerName");
 
     Map<String, IpAccessList> ipAccessLists =
-        toIpAccessLists(accessLayer, TEST_OBJS, _serviceToMatchExpr, new Warnings());
+        toIpAccessLists(
+            accessLayer, TEST_OBJS, _serviceToMatchExpr, _addressSpaceToMatchExpr, new Warnings());
     assertThat(
         ipAccessLists.keySet(), containsInAnyOrder(aclName(accessLayer), aclName(accessSection)));
 
@@ -262,6 +265,7 @@ public final class CheckPointGatewayConversionsTest {
                 .build(),
             TEST_OBJS,
             _serviceToMatchExpr,
+            _addressSpaceToMatchExpr,
             w);
     assertThat(
         _tb.toBDD(matches),
@@ -284,6 +288,7 @@ public final class CheckPointGatewayConversionsTest {
                 .build(),
             TEST_OBJS,
             _serviceToMatchExpr,
+            _addressSpaceToMatchExpr,
             w);
     assertThat(
         _tb.toBDD(negatedMatches),
@@ -303,6 +308,7 @@ public final class CheckPointGatewayConversionsTest {
                 .build(),
             TEST_OBJS,
             _serviceToMatchExpr,
+            _addressSpaceToMatchExpr,
             w);
     assertThat(_tb.toBDD(mutliSvc), equalTo(_tb.toBDD(matchSvc).or(_tb.toBDD(matchUdpSvc))));
   }
@@ -310,20 +316,16 @@ public final class CheckPointGatewayConversionsTest {
   @Test
   public void testToIpSpace() {
     Warnings w = new Warnings(false, true, false);
-    assertThat(
-        toIpSpace(
-            ImmutableList.of(Uid.of("1"), Uid.of("2"), Uid.of("3")),
-            ImmutableMap.of(
-                Uid.of("2"),
-                new ServiceTcp("tcp", "22", Uid.of("2")),
-                Uid.of("3"),
-                new CpmiAnyObject(Uid.of("1"))),
-            w),
-        equalTo(
-            AclIpSpace.union(
-                new IpSpaceReference("non-existent-1"),
-                new IpSpaceReference("unsupported-ServiceTcp-2"),
-                UniverseIpSpace.INSTANCE)));
+    toAddressMatchExpr(
+        ImmutableList.of(Uid.of("1"), Uid.of("2"), Uid.of("3")),
+        ImmutableMap.of(
+            Uid.of("2"),
+            new ServiceTcp("tcp", "22", Uid.of("2")),
+            Uid.of("3"),
+            new CpmiAnyObject(Uid.of("1"))),
+        _addressSpaceToMatchExpr,
+        true,
+        w);
 
     assertThat(
         w,
@@ -374,13 +376,25 @@ public final class CheckPointGatewayConversionsTest {
     {
       TypedManagementObject policyTargets = new PolicyTargets(uid);
       assertThat(
-          toMatchExpr(policyTargets, policyTargets, policyTargets, _serviceToMatchExpr, warnings),
+          toMatchExpr(
+              policyTargets,
+              policyTargets,
+              policyTargets,
+              _serviceToMatchExpr,
+              _addressSpaceToMatchExpr,
+              warnings),
           equalTo(Optional.empty()));
     }
     {
       assertThat(
           _tb.toBDD(
-              toMatchExpr(NETWORK_0, NETWORK_1, SERVICE_TCP_RANGES, _serviceToMatchExpr, warnings)
+              toMatchExpr(
+                      NETWORK_0,
+                      NETWORK_1,
+                      SERVICE_TCP_RANGES,
+                      _serviceToMatchExpr,
+                      _addressSpaceToMatchExpr,
+                      warnings)
                   .get()),
           equalTo(
               _tb.toBDD(
@@ -395,13 +409,28 @@ public final class CheckPointGatewayConversionsTest {
     }
     {
       assertThat(
-          _tb.toBDD(toMatchExpr(CPMI_ANY, CPMI_ANY, CPMI_ANY, _serviceToMatchExpr, warnings).get()),
+          _tb.toBDD(
+              toMatchExpr(
+                      CPMI_ANY,
+                      CPMI_ANY,
+                      CPMI_ANY,
+                      _serviceToMatchExpr,
+                      _addressSpaceToMatchExpr,
+                      warnings)
+                  .get()),
           equalTo(_tb.toBDD(AclLineMatchExprs.match(HeaderSpace.builder().build()))));
     }
     {
       assertThat(
           _tb.toBDD(
-              toMatchExpr(CPMI_ANY, CPMI_ANY, SERVICE_UDP, _serviceToMatchExpr, warnings).get()),
+              toMatchExpr(
+                      CPMI_ANY,
+                      CPMI_ANY,
+                      SERVICE_UDP,
+                      _serviceToMatchExpr,
+                      _addressSpaceToMatchExpr,
+                      warnings)
+                  .get()),
           equalTo(
               _tb.toBDD(
                   AclLineMatchExprs.match(
@@ -413,7 +442,14 @@ public final class CheckPointGatewayConversionsTest {
     {
       assertThat(
           _tb.toBDD(
-              toMatchExpr(CPMI_ANY, CPMI_ANY, SERVICE_ICMP, _serviceToMatchExpr, warnings).get()),
+              toMatchExpr(
+                      CPMI_ANY,
+                      CPMI_ANY,
+                      SERVICE_ICMP,
+                      _serviceToMatchExpr,
+                      _addressSpaceToMatchExpr,
+                      warnings)
+                  .get()),
           equalTo(
               _tb.toBDD(
                   AclLineMatchExprs.match(
@@ -426,7 +462,13 @@ public final class CheckPointGatewayConversionsTest {
     {
       assertThat(
           _tb.toBDD(
-              toMatchExpr(CPMI_ANY, CPMI_ANY, SERVICE_ICMP_NO_CODE, _serviceToMatchExpr, warnings)
+              toMatchExpr(
+                      CPMI_ANY,
+                      CPMI_ANY,
+                      SERVICE_ICMP_NO_CODE,
+                      _serviceToMatchExpr,
+                      _addressSpaceToMatchExpr,
+                      warnings)
                   .get()),
           equalTo(
               _tb.toBDD(
