@@ -7,7 +7,7 @@ import java.io.Serializable;
 import javax.annotation.Nonnull;
 
 /** Abstract class representing a management object with a UID. */
-public abstract class ManagementObject implements Serializable {
+public abstract class ManagementObject implements HasUid, Serializable {
 
   protected static final String PROP_UID = "uid";
 
@@ -15,6 +15,7 @@ public abstract class ManagementObject implements Serializable {
     _uid = uid;
   }
 
+  @Override
   public final @Nonnull Uid getUid() {
     return _uid;
   }

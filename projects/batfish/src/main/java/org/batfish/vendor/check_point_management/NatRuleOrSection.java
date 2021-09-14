@@ -11,6 +11,6 @@ import java.io.Serializable;
   @JsonSubTypes.Type(value = NatRule.class, name = "nat-rule"),
   @JsonSubTypes.Type(value = NatSection.class, name = "nat-section")
 })
-public interface NatRuleOrSection extends Serializable {
+public interface NatRuleOrSection extends HasUid, Serializable {
   <T> T accept(NatRuleOrSectionVisitor<T> visitor);
 }
