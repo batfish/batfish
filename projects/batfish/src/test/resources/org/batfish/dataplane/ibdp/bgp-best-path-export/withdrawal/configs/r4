@@ -1,0 +1,51 @@
+hostname r4
+feature bgp
+
+interface Ethernet1
+  no switchport
+  no shutdown
+  ip address 10.0.24.1/31
+  description to r2
+
+interface Ethernet2
+  no switchport
+  no shutdown
+  ip address 10.0.34.1/31
+  description to r3
+
+interface Ethernet3
+  no switchport
+  no shutdown
+  ip address 10.0.45.0/31
+  description to r5
+
+interface Loopback0
+  ip address 4.4.4.4/32
+
+route-map REJECT_ALL deny 10
+
+ip route 1.1.1.1/32 10.0.24.0
+ip route 1.1.1.1/32 10.0.34.0
+ip route 2.2.2.2/32 10.0.24.0
+ip route 3.3.3.3/32 10.0.34.0
+
+router bgp 1
+  router-id 4.4.4.4
+  address-family ipv4 unicast
+    maximum-paths eibgp 5
+  neighbor 2.2.2.2
+    remote-as 1
+    update-source Loopback0
+    address-family ipv4 unicast
+    route-map REJECT_ALL out
+  neighbor 3.3.3.3
+    remote-as 1
+    update-source Loopback0
+    address-family ipv4 unicast
+    route-map REJECT_ALL out
+  neighbor 10.0.45.1
+    remote-as 5
+    address-family ipv4 unicast
+    route-map REJECT_ALL in
+
+
