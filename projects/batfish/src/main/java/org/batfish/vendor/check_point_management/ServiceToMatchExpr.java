@@ -100,8 +100,7 @@ public class ServiceToMatchExpr implements ServiceVisitor<AclLineMatchExpr> {
 
   @VisibleForTesting
   static TraceElement destPortTraceElement(String portDefinition) {
-    return TraceElement.of(
-        String.format("Matched destination port definition '%s'", portDefinition));
+    return TraceElement.of(String.format("Matched destination port '%s'", portDefinition));
   }
 
   @VisibleForTesting
