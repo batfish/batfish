@@ -17,7 +17,6 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceMetadata;
-import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.AclTracer;
@@ -114,28 +113,25 @@ public final class AddressSpaceToMatchExprTest {
           .build();
 
   @Test
-  public void testMatchExpr() {
-    AddressSpaceToMatchExpr addrSpaceToMatchExpr = new AddressSpaceToMatchExpr(ImmutableMap.of());
-    IpSpace ipSpace = Ip.parse("10.10.10.10").toIpSpace();
-
-    addrSpaceToMatchExpr.setMatchSource(true);
-    AclLineMatchExpr srcExpr = addrSpaceToMatchExpr.matchExpr(ipSpace, TraceElement.of("text"));
-    addrSpaceToMatchExpr.setMatchSource(false);
-    AclLineMatchExpr dstExpr = addrSpaceToMatchExpr.matchExpr(ipSpace, TraceElement.of("text"));
-
-    assertThat(_tb.toBDD(srcExpr), equalTo(_tb.toBDD(AclLineMatchExprs.matchSrc(ipSpace))));
-    assertThat(_tb.toBDD(dstExpr), equalTo(_tb.toBDD(AclLineMatchExprs.matchDst(ipSpace))));
-  }
-
-  @Test
   public void testCpmiAnyObject() {
     AddressSpaceToMatchExpr addrSpaceToMatchExpr = new AddressSpaceToMatchExpr(ImmutableMap.of());
-    AclLineMatchExpr expr = new CpmiAnyObject(Uid.of("1")).accept(addrSpaceToMatchExpr);
-    assertBddsEqual(expr, TrueExpr.INSTANCE);
+    CpmiAnyObject any = new CpmiAnyObject(Uid.of("1"));
+    AclLineMatchExpr dstExpr = addrSpaceToMatchExpr.convertDest(any);
+    AclLineMatchExpr srcExpr = addrSpaceToMatchExpr.convertSource(any);
+
+    // Destination
+    assertBddsEqual(dstExpr, TrueExpr.INSTANCE);
     List<TraceTree> trace =
         AclTracer.trace(
-            expr, TEST_FLOW, "eth1", ImmutableMap.of(), ImmutableMap.of(), ImmutableMap.of());
+            dstExpr, TEST_FLOW, "eth1", ImmutableMap.of(), ImmutableMap.of(), ImmutableMap.of());
     assertThat(trace.get(0), isTraceTree(addressCpmiAnyTraceElement(false)));
+
+    // Source
+    trace =
+        AclTracer.trace(
+            srcExpr, TEST_FLOW, "eth1", ImmutableMap.of(), ImmutableMap.of(), ImmutableMap.of());
+    assertBddsEqual(srcExpr, TrueExpr.INSTANCE);
+    assertThat(trace.get(0), isTraceTree(addressCpmiAnyTraceElement(true)));
   }
 
   @Test
@@ -169,7 +165,7 @@ public final class AddressSpaceToMatchExprTest {
     Group group2 = new Group("group2", ImmutableList.of(group3Uid, HOST2_UID), group2Uid);
     Group group3 = new Group("group3", ImmutableList.of(group1Uid, HOST3_UID), group3Uid);
     // Matches group1 -> group2 -> group3 -> host3
-    Ip destIp = Ip.parse("10.2.3.1");
+    Ip ip = Ip.parse("10.2.3.1");
     AddressSpaceToMatchExpr addrSpaceToMatchExpr =
         new AddressSpaceToMatchExpr(
             ImmutableMap.<Uid, NamedManagementObject>builder()
@@ -180,11 +176,12 @@ public final class AddressSpaceToMatchExprTest {
                 .put(HOST2_UID, HOST2)
                 .put(HOST3_UID, HOST3)
                 .build());
-    AclLineMatchExpr expr = group1.accept(addrSpaceToMatchExpr);
+
+    AclLineMatchExpr expr = addrSpaceToMatchExpr.convertDest(group1);
     List<TraceTree> trace =
         AclTracer.trace(
             expr,
-            TEST_FLOW.toBuilder().setDstIp(destIp).build(),
+            TEST_FLOW.toBuilder().setDstIp(ip).build(),
             "eth1",
             ImmutableMap.of(),
             IP_SPACES,
@@ -205,7 +202,7 @@ public final class AddressSpaceToMatchExprTest {
                     addressGroupTraceElement(group3, false),
                     isTraceTree(
                         permittedByNamedIpSpace(
-                            destIp,
+                            ip,
                             "destination IP",
                             IP_SPACE_METADATA.get(HOST3_NAME),
                             HOST3_NAME))))));
@@ -218,7 +215,7 @@ public final class AddressSpaceToMatchExprTest {
     Group group1 = new Group("group1", ImmutableList.of(unknown1Uid), group1Uid);
     AddressSpaceToMatchExpr addrSpaceToMatchExpr = new AddressSpaceToMatchExpr(ImmutableMap.of());
 
-    AclLineMatchExpr expr = group1.accept(addrSpaceToMatchExpr);
+    AclLineMatchExpr expr = addrSpaceToMatchExpr.convertDest(group1);
     // Group containing only invalid members should not match anything
     assertBddsEqual(expr, FalseExpr.INSTANCE);
   }
@@ -231,20 +228,39 @@ public final class AddressSpaceToMatchExprTest {
   private void checkAddrSpaceExprAndSimpleTrace(AddressSpace space, String name, Ip destIp) {
     AddressSpaceToMatchExpr addrSpaceToMatchExpr = new AddressSpaceToMatchExpr(ImmutableMap.of());
 
-    AclLineMatchExpr expr = space.accept(addrSpaceToMatchExpr);
-    assertBddsEqual(expr, AclLineMatchExprs.matchDst(IP_SPACES.get(name)));
+    // Destination
+    AclLineMatchExpr dstExpr = addrSpaceToMatchExpr.convertDest(space);
+    assertBddsEqual(dstExpr, AclLineMatchExprs.matchDst(IP_SPACES.get(name)));
     List<TraceTree> trace =
         AclTracer.trace(
-            expr,
+            dstExpr,
             TEST_FLOW.toBuilder().setDstIp(destIp).build(),
             "eth1",
             ImmutableMap.of(),
             IP_SPACES,
             IP_SPACE_METADATA);
+
     assertThat(
         trace.get(0),
         isTraceTree(
             permittedByNamedIpSpace(destIp, "destination IP", IP_SPACE_METADATA.get(name), name)));
+
+    // Source
+    AclLineMatchExpr srcExpr = addrSpaceToMatchExpr.convertSource(space);
+    assertBddsEqual(srcExpr, AclLineMatchExprs.matchSrc(IP_SPACES.get(name)));
+    trace =
+        AclTracer.trace(
+            srcExpr,
+            TEST_FLOW.toBuilder().setSrcIp(destIp).build(),
+            "eth1",
+            ImmutableMap.of(),
+            IP_SPACES,
+            IP_SPACE_METADATA);
+
+    assertThat(
+        trace.get(0),
+        isTraceTree(
+            permittedByNamedIpSpace(destIp, "source IP", IP_SPACE_METADATA.get(name), name)));
   }
 
   private void assertBddsEqual(AclLineMatchExpr left, AclLineMatchExpr right) {

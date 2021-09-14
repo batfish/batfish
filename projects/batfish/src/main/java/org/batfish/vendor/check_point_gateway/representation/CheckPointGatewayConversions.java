@@ -55,10 +55,8 @@ public final class CheckPointGatewayConversions {
     assert src instanceof AddressSpace;
     assert dst instanceof AddressSpace;
     ImmutableList.Builder<AclLineMatchExpr> exprs = ImmutableList.builder();
-    addressSpaceToMatchExpr.setMatchSource(true);
-    exprs.add(((AddressSpace) src).accept(addressSpaceToMatchExpr));
-    addressSpaceToMatchExpr.setMatchSource(false);
-    exprs.add(((AddressSpace) dst).accept(addressSpaceToMatchExpr));
+    exprs.add(addressSpaceToMatchExpr.convertSource((AddressSpace) src));
+    exprs.add(addressSpaceToMatchExpr.convertDest((AddressSpace) dst));
     exprs.add(((Service) service).accept(serviceToMatchExpr));
     return Optional.of(AclLineMatchExprs.and(exprs.build()));
   }
@@ -310,8 +308,10 @@ public final class CheckPointGatewayConversions {
                         ? AclLineMatchExprs.matchSrc(ref)
                         : AclLineMatchExprs.matchDst(ref);
                   }
-                  addressSpaceToMatchExpr.setMatchSource(matchSource);
-                  return ((AddressSpace) o).accept(addressSpaceToMatchExpr);
+                  AddressSpace addrSpace = (AddressSpace) o;
+                  return matchSource
+                      ? addressSpaceToMatchExpr.convertSource(addrSpace)
+                      : addressSpaceToMatchExpr.convertDest(addrSpace);
                 })
             .collect(ImmutableList.toImmutableList()));
   }
