@@ -32,7 +32,6 @@ import org.batfish.vendor.check_point_management.CheckpointManagementConfigurati
 import org.batfish.vendor.check_point_management.Domain;
 import org.batfish.vendor.check_point_management.GatewaysAndServers;
 import org.batfish.vendor.check_point_management.ManagementDomain;
-import org.batfish.vendor.check_point_management.ManagementObject;
 import org.batfish.vendor.check_point_management.ManagementPackage;
 import org.batfish.vendor.check_point_management.ManagementServer;
 import org.batfish.vendor.check_point_management.NamedManagementObject;
@@ -273,8 +272,7 @@ public class CheckpointManagementParser {
     if (items.stream().anyMatch(NatRule.class::isInstance)) {
       // Shouldn't happen w/ well-formed data, but check to prevent bad casting below
       if (items.size() > 1) {
-        Uid uid =
-            first instanceof NatRule ? ((NatRule) first).getUid() : ((NatSection) first).getUid();
+        Uid uid = first.getUid();
         pvcae.addRedFlagWarning(
             RELPATH_CHECKPOINT_MANAGEMENT_DIR,
             new Warning(
@@ -306,7 +304,7 @@ public class CheckpointManagementParser {
   private static @Nonnull List<NatRuleOrSection> mergeNatRuleOrSections(
       Collection<NatRuleOrSection> items, ParseVendorConfigurationAnswerElement pvcae) {
     LinkedListMultimap<Uid, NatRuleOrSection> uidToParts = LinkedListMultimap.create();
-    items.forEach(i -> uidToParts.put(((ManagementObject) i).getUid(), i));
+    items.forEach(i -> uidToParts.put((i).getUid(), i));
     return uidToParts.keySet().stream()
         .map(uid -> mergeNatRuleOrSection(uidToParts.get(uid), pvcae))
         .collect(ImmutableList.toImmutableList());
