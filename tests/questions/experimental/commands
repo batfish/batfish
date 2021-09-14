@@ -120,5 +120,8 @@ test -raw tests/questions/experimental/traceroute.ref validate-template tracerou
 # test viModel
 test -raw tests/questions/experimental/viModel.ref validate-template viModel
 
+# validate vrrpProperties
+test -raw tests/questions/experimental/vrrpProperties.ref validate-template vrrpProperties excludeShutInterfaces=true, interfaces="i1", nodes="n1"
+
 # validate vxlanVniProperties
 test -raw tests/questions/experimental/vxlanVniProperties.ref validate-template vxlanVniProperties nodes="nodename", properties="VLAN"
