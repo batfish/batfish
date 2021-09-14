@@ -8,13 +8,14 @@ public final class CheckPointManagementTraceElementCreators {
   @VisibleForTesting
   public static TraceElement addressCpmiAnyTraceElement(boolean source) {
     return TraceElement.of(
-        String.format("Matched %s address CpmiAny", source ? "source" : "destination"));
+        String.format("Matched %s address network object Any", source ? "source" : "destination"));
   }
 
   @VisibleForTesting
   public static TraceElement addressGroupTraceElement(Group group, boolean source) {
     return TraceElement.of(
-        String.format("Matched %s group %s", source ? "source" : "destination", group.getName()));
+        String.format(
+            "Matched %s address group %s", source ? "source" : "destination", group.getName()));
   }
 
   @VisibleForTesting
