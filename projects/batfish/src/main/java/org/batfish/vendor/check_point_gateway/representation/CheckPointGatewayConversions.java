@@ -17,7 +17,6 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.FalseExpr;
@@ -27,7 +26,6 @@ import org.batfish.vendor.check_point_management.AccessRuleOrSection;
 import org.batfish.vendor.check_point_management.AccessSection;
 import org.batfish.vendor.check_point_management.AddressSpace;
 import org.batfish.vendor.check_point_management.AddressSpaceToMatchExpr;
-import org.batfish.vendor.check_point_management.CpmiAnyObject;
 import org.batfish.vendor.check_point_management.GatewayOrServer;
 import org.batfish.vendor.check_point_management.NamedManagementObject;
 import org.batfish.vendor.check_point_management.RulebaseAction;
@@ -316,19 +314,6 @@ public final class CheckPointGatewayConversions {
                   return ((AddressSpace) o).accept(addressSpaceToMatchExpr);
                 })
             .collect(ImmutableList.toImmutableList()));
-  }
-
-  /**
-   * Returns an {@link IpSpace} containing the specified {@link NamedManagementObject}. Relies on a
-   * named {@link IpSpace} existing for the supplied object.
-   */
-  @Nonnull
-  private static IpSpace toIpSpace(AddressSpace obj) {
-    // TODO remove this?
-    if (obj instanceof CpmiAnyObject) {
-      return UniverseIpSpace.INSTANCE;
-    }
-    return new IpSpaceReference(obj.getName());
   }
 
   /** Return {@code true} iff any of the install-on UIDs applies to the given gateway. */

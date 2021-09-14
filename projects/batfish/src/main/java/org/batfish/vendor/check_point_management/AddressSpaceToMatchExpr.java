@@ -1,11 +1,7 @@
 package org.batfish.vendor.check_point_management;
 
 import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.addressCpmiAnyTraceElement;
-import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.addressGatewayOrServerTraceElement;
 import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.addressGroupTraceElement;
-import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.addressHostTraceElement;
-import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.addressNetworkTraceElement;
-import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.addressRangeTraceElement;
 
 import com.google.common.annotations.VisibleForTesting;
 import java.util.ArrayList;
@@ -13,6 +9,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.TraceElement;
@@ -27,6 +24,10 @@ import org.batfish.datamodel.acl.FalseExpr;
  */
 public class AddressSpaceToMatchExpr implements AddressSpaceVisitor<AclLineMatchExpr> {
 
+  /**
+   * Set boolean indicating if the {@link AclLineMatchExpr} should match on source or destination
+   * address.
+   */
   public void setMatchSource(boolean matchSource) {
     _matchSource = matchSource;
   }
@@ -38,16 +39,12 @@ public class AddressSpaceToMatchExpr implements AddressSpaceVisitor<AclLineMatch
 
   @Override
   public AclLineMatchExpr visitAddressRange(AddressRange addressRange) {
-    return matchExpr(
-        new IpSpaceReference(addressRange.getName()),
-        addressRangeTraceElement(addressRange, _matchSource));
+    return matchExpr(new IpSpaceReference(addressRange.getName()));
   }
 
   @Override
   public AclLineMatchExpr visitGatewayOrServer(GatewayOrServer gatewayOrServer) {
-    return matchExpr(
-        new IpSpaceReference(gatewayOrServer.getName()),
-        addressGatewayOrServerTraceElement(gatewayOrServer, _matchSource));
+    return matchExpr(new IpSpaceReference(gatewayOrServer.getName()));
   }
 
   @Override
@@ -82,27 +79,25 @@ public class AddressSpaceToMatchExpr implements AddressSpaceVisitor<AclLineMatch
 
   @Override
   public AclLineMatchExpr visitHost(Host host) {
-    return matchExpr(
-        new IpSpaceReference(host.getName()), addressHostTraceElement(host, _matchSource));
+    return matchExpr(new IpSpaceReference(host.getName()));
   }
 
   @Override
   public AclLineMatchExpr visitNetwork(Network network) {
-    return matchExpr(
-        new IpSpaceReference(network.getName()), addressNetworkTraceElement(network, _matchSource));
+    return matchExpr(new IpSpaceReference(network.getName()));
+  }
+
+  private AclLineMatchExpr matchExpr(IpSpace ipSpace) {
+    return matchExpr(ipSpace, null);
   }
 
   @VisibleForTesting
-  AclLineMatchExpr matchExpr(IpSpace ipSpace, TraceElement traceElement) {
+  AclLineMatchExpr matchExpr(IpSpace ipSpace, @Nullable TraceElement traceElement) {
     return _matchSource
         ? AclLineMatchExprs.matchSrc(ipSpace, traceElement)
         : AclLineMatchExprs.matchDst(ipSpace, traceElement);
   }
 
-  /**
-   * {@code matchSource} indicates if the {@link AclLineMatchExpr} should match on source or
-   * destination address.
-   */
   public AddressSpaceToMatchExpr(Map<Uid, NamedManagementObject> objs) {
     _objs = objs;
   }
