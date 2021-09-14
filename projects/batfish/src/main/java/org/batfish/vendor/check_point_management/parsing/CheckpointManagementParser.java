@@ -248,7 +248,7 @@ public class CheckpointManagementParser {
           pvcae,
           null);
     }
-    return mergeNatRulebase(
+    return mergeNatRulebasePages(
         natRulebases.stream()
             .filter(rulebase -> rulebase.getUid().equals(uid))
             .collect(ImmutableList.toImmutableList()),
@@ -262,11 +262,12 @@ public class CheckpointManagementParser {
    *
    * <ul>
    *   <li>1. a single NatRule (rules can't be split across pages)
-   *   <li>2. a single NatSection (contained fully on a single page)
-   *   <li>3. multiple NatSection (all with the same name and uid, with different rules)
+   *   <li>2. a single NatSection part (contained fully on a single page)
+   *   <li>3. multiple NatSection parts (all with the same name and uid, with different rules)
    * </ul>
    */
-  private static @Nonnull NatRuleOrSection mergeNatRuleOrSection(
+  @VisibleForTesting
+  static @Nonnull NatRuleOrSection mergeNatRuleOrSection(
       Collection<NatRuleOrSection> items, ParseVendorConfigurationAnswerElement pvcae) {
     NatRuleOrSection first = items.iterator().next();
     if (items.stream().anyMatch(NatRule.class::isInstance)) {
@@ -296,18 +297,18 @@ public class CheckpointManagementParser {
   }
 
   /**
-   * Returns a list of unique Nat Rules and Nat Sections, generated from the specified collection of
-   * non-unique items; i.e. multiple partial Nat Sections can be specified and will be merged into a
-   * single Nat Section in the resulting list.
+   * Returns a list of unique NAT Rules and NAT Sections, generated from the specified collection of
+   * non-unique items; i.e. multiple partial NAT Sections can be specified and will be merged into a
+   * single NAT Section in the resulting list.
    *
    * <p>The items should be provided in order.
    */
   private static @Nonnull List<NatRuleOrSection> mergeNatRuleOrSections(
       Collection<NatRuleOrSection> items, ParseVendorConfigurationAnswerElement pvcae) {
-    LinkedListMultimap<Uid, NatRuleOrSection> uidToChunks = LinkedListMultimap.create();
-    items.forEach(i -> uidToChunks.put(((ManagementObject) i).getUid(), i));
-    return uidToChunks.keySet().stream()
-        .map(uid -> mergeNatRuleOrSection(uidToChunks.get(uid), pvcae))
+    LinkedListMultimap<Uid, NatRuleOrSection> uidToParts = LinkedListMultimap.create();
+    items.forEach(i -> uidToParts.put(((ManagementObject) i).getUid(), i));
+    return uidToParts.keySet().stream()
+        .map(uid -> mergeNatRuleOrSection(uidToParts.get(uid), pvcae))
         .collect(ImmutableList.toImmutableList());
   }
 
@@ -316,7 +317,7 @@ public class CheckpointManagementParser {
    *
    * <p>Assumes all supplied pages are for the same rulebase.
    */
-  private static @Nonnull NatRulebase mergeNatRulebase(
+  static @Nonnull NatRulebase mergeNatRulebasePages(
       Collection<NatRulebase> pages, ParseVendorConfigurationAnswerElement pvcae) {
     assert !pages.isEmpty();
     NatRulebase first = pages.iterator().next();
@@ -325,6 +326,7 @@ public class CheckpointManagementParser {
     pages.stream()
         .flatMap(p -> p.getObjectsDictionary().entrySet().stream())
         .forEach(o -> objs.put(o.getKey(), o.getValue()));
+
     return new NatRulebase(
         ImmutableMap.copyOf(objs),
         mergeNatRuleOrSections(

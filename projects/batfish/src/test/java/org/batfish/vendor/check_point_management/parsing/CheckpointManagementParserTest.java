@@ -11,6 +11,8 @@ import static org.batfish.vendor.check_point_management.parsing.CheckpointManage
 import static org.batfish.vendor.check_point_management.parsing.CheckpointManagementParser.RELPATH_CHECKPOINT_SHOW_SERVICE_GROUPS;
 import static org.batfish.vendor.check_point_management.parsing.CheckpointManagementParser.buildObjectsList;
 import static org.batfish.vendor.check_point_management.parsing.CheckpointManagementParser.mergeAccessLayers;
+import static org.batfish.vendor.check_point_management.parsing.CheckpointManagementParser.mergeNatRuleOrSection;
+import static org.batfish.vendor.check_point_management.parsing.CheckpointManagementParser.mergeNatRulebasePages;
 import static org.batfish.vendor.check_point_management.parsing.CheckpointManagementParser.readGatewaysAndServers;
 import static org.batfish.vendor.check_point_management.parsing.CheckpointManagementParser.readNatRulebase;
 import static org.hamcrest.Matchers.contains;
@@ -311,164 +313,78 @@ public final class CheckpointManagementParserTest {
   }
 
   @Test
-  public void testReadNatRulebaseChildSplitAcrossTwoPages() {
+  public void testMergeNatRulebasePagesChildSplitAcrossTwoPages() {
     ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
-    Package pakij = testPackage(true);
-    String natRulebaseInput =
-        "[" // show-nat-rulebase
-            + "{" // NatRulebase page1
-            + "\"uid\":\"0\","
-            + "\"objects-dictionary\":["
-            + "{" // CpmiAnyObject
-            + "\"uid\": \"100\","
-            + "\"type\": \"CpmiAnyObject\","
-            + "\"name\": \"Any\""
-            + "}" // CpmiAnyObject
-            + "],"
-            + "\"rulebase\":["
-            + "{" // nat-section
-            + "\"type\":\"nat-section\","
-            + "\"name\": \"nat-section-name\","
-            + "\"uid\": \"1\","
-            + "\"rulebase\": [" // nat-section: rulebase
-            + "{" // nat-rule
-            + "\"type\":\"nat-rule\","
-            + "\"auto-generated\":true,"
-            + "\"uid\":\"10\","
-            + "\"comments\":\"foo\","
-            + "\"enabled\":true,"
-            + "\"install-on\":[\"100\"],"
-            + "\"method\":\"hide\","
-            + "\"original-destination\":\"1\","
-            + "\"original-service\":\"2\","
-            + "\"original-source\":\"3\","
-            + "\"rule-number\":1,"
-            + "\"translated-destination\":\"4\","
-            + "\"translated-service\":\"5\","
-            + "\"translated-source\":\"6\""
-            + "}" // nat-rule
-            + "]" // nat-section: rulebase
-            + "}" // nat-section
-            + "]," // rulebase
-            + "\"from\": 1,"
-            + "\"to\": 1"
-            + "}," // NatRulebase page1
-            + "{" // NatRulebase page2
-            + "\"uid\":\"0\","
-            + "\"objects-dictionary\":["
-            + "{" // CpmiAnyObject
-            + "\"uid\": \"101\","
-            + "\"type\": \"Global\","
-            + "\"name\": \"Original\""
-            + "}" // CpmiAnyObject
-            + "],"
-            + "\"rulebase\":["
-            + "{" // nat-section
-            + "\"type\":\"nat-section\","
-            + "\"name\": \"nat-section-name\","
-            + "\"uid\": \"1\","
-            + "\"rulebase\": [" // nat-section: rulebase
-            + "{" // nat-rule
-            + "\"type\":\"nat-rule\","
-            + "\"auto-generated\":true,"
-            + "\"uid\":\"11\","
-            + "\"comments\":\"foo\","
-            + "\"enabled\":true,"
-            + "\"install-on\":[\"100\"],"
-            + "\"method\":\"hide\","
-            + "\"original-destination\":\"1\","
-            + "\"original-service\":\"2\","
-            + "\"original-source\":\"3\","
-            + "\"rule-number\":2,"
-            + "\"translated-destination\":\"4\","
-            + "\"translated-service\":\"5\","
-            + "\"translated-source\":\"6\""
-            + "}" // nat-rule
-            + "]" // nat-section: rulebase
-            + "}," // nat-section
-            + "{" // nat-rule
-            + "\"type\":\"nat-rule\","
-            + "\"auto-generated\":true,"
-            + "\"uid\":\"12\","
-            + "\"comments\":\"foo\","
-            + "\"enabled\":true,"
-            + "\"install-on\":[\"100\"],"
-            + "\"method\":\"hide\","
-            + "\"original-destination\":\"1\","
-            + "\"original-service\":\"2\","
-            + "\"original-source\":\"3\","
-            + "\"rule-number\":3,"
-            + "\"translated-destination\":\"4\","
-            + "\"translated-service\":\"5\","
-            + "\"translated-source\":\"6\""
-            + "}" // nat-rule
-            + "]," // rulebase
-            + "\"from\": 2,"
-            + "\"to\": 2"
-            + "}" // NatRulebase page2
-            + "]"; // show-nat-rulebase
+    CpmiAnyObject anyObject = new CpmiAnyObject(UID_ANY);
+    // rulebase contains section1 with two rules (rule1, rule2) & a rule at the top level (rule3)
+    // The full rulebase is split across two pages for this test:
+    //   1. rulebaseA contains part of section1 with only rule1
+    //   2. rulebaseB contains the other part of section1 with rule2, and also the top-level rule3
+    NatRule rule1 =
+        new NatRule(
+            true,
+            "foo",
+            true,
+            ImmutableList.of(UID_ANY),
+            NatMethod.HIDE,
+            UID_ANY,
+            UID_ANY,
+            UID_ANY,
+            1,
+            UID_ANY,
+            UID_ANY,
+            UID_ANY,
+            Uid.of("11"));
+    NatSection section1a = new NatSection("section1", ImmutableList.of(rule1), Uid.of("1"));
+    NatRulebase rulebaseA =
+        new NatRulebase(
+            ImmutableMap.of(UID_ANY, anyObject), ImmutableList.of(section1a), Uid.of("1000"));
 
-    // NAT rulebase should be populated with merged rules and objects-dictionary from the two pages
+    NatRule rule2 =
+        new NatRule(
+            true,
+            "foo",
+            true,
+            ImmutableList.of(UID_ANY),
+            NatMethod.HIDE,
+            UID_ANY,
+            UID_ANY,
+            UID_ANY,
+            2,
+            UID_ANY,
+            UID_ANY,
+            UID_ANY,
+            Uid.of("12"));
+    NatRule rule3 =
+        new NatRule(
+            true,
+            "foo",
+            true,
+            ImmutableList.of(UID_ANY),
+            NatMethod.HIDE,
+            UID_ANY,
+            UID_ANY,
+            UID_ANY,
+            3,
+            UID_ANY,
+            UID_ANY,
+            UID_ANY,
+            Uid.of("13"));
+    NatSection section1b = new NatSection("section1", ImmutableList.of(rule2), Uid.of("1"));
+    NatRulebase rulebaseB =
+        new NatRulebase(
+            ImmutableMap.of(UID_ANY, anyObject),
+            ImmutableList.of(section1b, rule3),
+            Uid.of("1000"));
+
+    NatSection section1 = new NatSection("section1", ImmutableList.of(rule1, rule2), Uid.of("1"));
+    NatRulebase rulebaseCombined =
+        new NatRulebase(
+            ImmutableMap.of(UID_ANY, anyObject), ImmutableList.of(section1, rule3), Uid.of("1000"));
+
     assertThat(
-        readNatRulebase(
-            pakij,
-            DOMAIN_NAME,
-            ImmutableMap.of(RELPATH_CHECKPOINT_SHOW_NAT_RULEBASE, natRulebaseInput),
-            pvcae,
-            SERVER_NAME),
-        equalTo(
-            new NatRulebase(
-                ImmutableMap.of(
-                    UID_ANY, new CpmiAnyObject(UID_ANY),
-                    UID_ORIG, new Original(UID_ORIG)),
-                ImmutableList.of(
-                    new NatSection(
-                        "nat-section-name",
-                        ImmutableList.of(
-                            new NatRule(
-                                true,
-                                "foo",
-                                true,
-                                ImmutableList.of(Uid.of("100")),
-                                NatMethod.HIDE,
-                                Uid.of("1"),
-                                Uid.of("2"),
-                                Uid.of("3"),
-                                1,
-                                Uid.of("4"),
-                                Uid.of("5"),
-                                Uid.of("6"),
-                                Uid.of("10")),
-                            new NatRule(
-                                true,
-                                "foo",
-                                true,
-                                ImmutableList.of(Uid.of("100")),
-                                NatMethod.HIDE,
-                                Uid.of("1"),
-                                Uid.of("2"),
-                                Uid.of("3"),
-                                2,
-                                Uid.of("4"),
-                                Uid.of("5"),
-                                Uid.of("6"),
-                                Uid.of("11"))),
-                        Uid.of("1")),
-                    new NatRule(
-                        true,
-                        "foo",
-                        true,
-                        ImmutableList.of(Uid.of("100")),
-                        NatMethod.HIDE,
-                        Uid.of("1"),
-                        Uid.of("2"),
-                        Uid.of("3"),
-                        3,
-                        Uid.of("4"),
-                        Uid.of("5"),
-                        Uid.of("6"),
-                        Uid.of("12"))),
-                Uid.of("0"))));
+        mergeNatRulebasePages(ImmutableList.of(rulebaseA, rulebaseB), pvcae),
+        equalTo(rulebaseCombined));
   }
 
   @Test
@@ -566,6 +482,33 @@ public final class CheckpointManagementParserTest {
                         Uid.of("6"),
                         Uid.of("0"))),
                 Uid.of("0"))));
+  }
+
+  @Test
+  public void testMergeNatRuleOrSectionWarning() {
+    ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
+    NatRule rule1 =
+        new NatRule(
+            true,
+            "foo",
+            true,
+            ImmutableList.of(Uid.of("100")),
+            NatMethod.HIDE,
+            Uid.of("1"),
+            Uid.of("2"),
+            Uid.of("3"),
+            1,
+            Uid.of("4"),
+            Uid.of("5"),
+            Uid.of("6"),
+            Uid.of("0"));
+    NatSection section1 = new NatSection("bar", ImmutableList.of(), Uid.of("0"));
+
+    assertThat(mergeNatRuleOrSection(ImmutableList.of(rule1, section1), pvcae), equalTo(rule1));
+    assertThat(
+        pvcae.getWarnings().get(RELPATH_CHECKPOINT_MANAGEMENT_DIR).getRedFlagWarnings(),
+        contains(
+            hasText("Cannot merge NatRule pages (for uid 0), ignoring instances after the first")));
   }
 
   @Test
