@@ -175,7 +175,6 @@ public final class CheckPointGatewayConversions {
             .setMatchCondition(
                 toMatchExpr(rule, objs, serviceToMatchExpr, addressSpaceToMatchExpr, w))
             .setAction(toAction(objs.get(rule.getAction()), rule.getAction(), w))
-            // TODO trace element and structure ID
             .build());
   }
 
