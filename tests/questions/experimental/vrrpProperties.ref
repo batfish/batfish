@@ -1,0 +1,45 @@
+{
+  "class" : "org.batfish.question.vrrpproperties.VrrpPropertiesQuestion",
+  "excludeShutInterfaces" : true,
+  "interfaces" : "i1",
+  "nodes" : "n1",
+  "differential" : false,
+  "includeOneTableKeys" : true,
+  "instance" : {
+    "description" : "Returns configuration settings of VRRP groups.",
+    "instanceName" : "qname",
+    "longDescription" : "Lists information VRRP groups on interfaces.",
+    "orderedVariableNames" : [
+      "nodes",
+      "interfaces",
+      "excludeShutInterfaces"
+    ],
+    "tags" : [
+      "configuration",
+      "vrrp"
+    ],
+    "variables" : {
+      "excludeShutInterfaces" : {
+        "description" : "Exclude interfaces that are shutdown",
+        "displayName" : "Exclude Shut Interfaces",
+        "optional" : true,
+        "type" : "boolean",
+        "value" : true
+      },
+      "interfaces" : {
+        "description" : "Include interfaces matching this specifier",
+        "displayName" : "Interfaces",
+        "optional" : true,
+        "type" : "interfacesSpec",
+        "value" : "i1"
+      },
+      "nodes" : {
+        "description" : "Include nodes matching this specifier",
+        "displayName" : "Nodes",
+        "optional" : true,
+        "type" : "nodeSpec",
+        "value" : "n1"
+      }
+    }
+  }
+}
