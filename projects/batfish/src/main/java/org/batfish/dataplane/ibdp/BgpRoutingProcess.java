@@ -841,6 +841,9 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       // consume exported routes
       RouteAdvertisement<Bgpv4Route> remoteRouteAdvert = exportedRoutes.next();
       Bgpv4Route remoteRoute = remoteRouteAdvert.getRoute();
+      if (remoteRoute.getNetwork().equals(Prefix.strict("10.1.0.0/24"))) {
+        assert Boolean.TRUE;
+      }
 
       Bgpv4Route.Builder transformedIncomingRouteBuilder =
           transformBgpRouteOnImport(
