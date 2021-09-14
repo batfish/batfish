@@ -9,7 +9,7 @@ import com.google.common.cache.LoadingCache;
 import java.io.ObjectStreamException;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
-public class IpIpSpace extends IpSpace {
+public final class IpIpSpace extends IpSpace {
   // Soft values: let it be garbage collected in times of pressure.
   // Maximum size 2^20: Just some upper bound on cache size, well less than GiB.
   //   (12 bytes seems smallest possible entry (long + int), would be 12 MiB total).

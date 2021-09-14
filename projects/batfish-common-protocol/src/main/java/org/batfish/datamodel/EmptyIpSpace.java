@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import java.io.ObjectStreamException;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
-public class EmptyIpSpace extends IpSpace {
+public final class EmptyIpSpace extends IpSpace {
 
   public static final EmptyIpSpace INSTANCE = new EmptyIpSpace();
 

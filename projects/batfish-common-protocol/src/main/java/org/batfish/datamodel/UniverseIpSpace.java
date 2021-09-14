@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import java.io.ObjectStreamException;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
-public class UniverseIpSpace extends IpSpace {
+public final class UniverseIpSpace extends IpSpace {
 
   public static final UniverseIpSpace INSTANCE = new UniverseIpSpace();
 

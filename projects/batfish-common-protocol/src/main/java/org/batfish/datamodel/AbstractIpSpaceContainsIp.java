@@ -59,6 +59,11 @@ public abstract class AbstractIpSpaceContainsIp implements GenericIpSpaceVisitor
   }
 
   @Override
+  public final Boolean visitRangesIpSpace(RangesIpSpace rangesIpSpace) {
+    return rangesIpSpace.containsIp(_ip);
+  }
+
+  @Override
   public final Boolean visitUniverseIpSpace(UniverseIpSpace universeIpSpace) {
     return true;
   }

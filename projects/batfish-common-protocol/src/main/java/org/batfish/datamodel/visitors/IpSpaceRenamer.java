@@ -10,6 +10,7 @@ import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcardIpSpace;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.PrefixIpSpace;
+import org.batfish.datamodel.RangesIpSpace;
 import org.batfish.datamodel.UniverseIpSpace;
 
 /**
@@ -61,6 +62,11 @@ public class IpSpaceRenamer implements Function<IpSpace, IpSpace> {
     @Override
     public IpSpace visitPrefixIpSpace(PrefixIpSpace prefixIpSpace) {
       return prefixIpSpace;
+    }
+
+    @Override
+    public IpSpace visitRangesIpSpace(RangesIpSpace rangesIpSpace) {
+      return rangesIpSpace;
     }
 
     @Override

@@ -24,7 +24,7 @@ import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
  * An ACL-based {@link IpSpace}. An IP is permitted if it is in the space the ACL represents, or
  * denied if it is not.
  */
-public class AclIpSpace extends IpSpace {
+public final class AclIpSpace extends IpSpace {
 
   public static class Builder {
 

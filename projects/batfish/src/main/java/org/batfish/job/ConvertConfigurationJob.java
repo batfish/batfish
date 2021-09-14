@@ -47,6 +47,7 @@ import org.batfish.datamodel.IpWildcardIpSpace;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Mlag;
 import org.batfish.datamodel.PrefixIpSpace;
+import org.batfish.datamodel.RangesIpSpace;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.SwitchportMode;
@@ -281,6 +282,11 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
 
     @Override
     public Void visitPrefixIpSpace(PrefixIpSpace prefixIpSpace) {
+      return null;
+    }
+
+    @Override
+    public Void visitRangesIpSpace(RangesIpSpace rangesIpSpace) {
       return null;
     }
 

@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 
 import com.google.common.base.Suppliers;
+import com.google.common.collect.BoundType;
 import com.google.common.collect.ImmutableMap;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +30,7 @@ import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixIpSpace;
+import org.batfish.datamodel.RangesIpSpace;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
@@ -187,6 +189,26 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
   @Override
   public BDD visitPrefixIpSpace(PrefixIpSpace prefixIpSpace) {
     return toBDD(prefixIpSpace.getPrefix());
+  }
+
+  @Override
+  public BDD visitRangesIpSpace(RangesIpSpace rangesIpSpace) {
+    List<BDD> ranges =
+        rangesIpSpace.getSpace().getRanges().stream()
+            .map(
+                r -> {
+                  long lower =
+                      r.lowerBoundType() == BoundType.CLOSED
+                          ? r.lowerEndpoint()
+                          : r.lowerEndpoint() + 1;
+                  long upper =
+                      r.upperBoundType() == BoundType.CLOSED
+                          ? r.upperEndpoint()
+                          : r.upperEndpoint() - 1;
+                  return _bddInteger.range(lower, upper);
+                })
+            .collect(Collectors.toList());
+    return _factory.orAll(ranges);
   }
 
   public BDD toBDD(Prefix prefix) {

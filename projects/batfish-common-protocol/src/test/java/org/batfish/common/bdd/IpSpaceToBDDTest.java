@@ -1,5 +1,7 @@
 package org.batfish.common.bdd;
 
+import static org.batfish.common.bdd.BDDMatchers.isOne;
+import static org.batfish.common.bdd.BDDMatchers.isZero;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -19,6 +21,7 @@ import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RangesIpSpace;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -143,6 +146,20 @@ public class IpSpaceToBDDTest {
     BDD ipBDD = ip.toIpSpace().accept(ipSpaceToBDD);
     BDD referenceBDD = reference.accept(ipSpaceToBDD);
     assertThat(referenceBDD, equalTo(ipBDD));
+  }
+
+  @Test
+  public void testRangesIpSpace() {
+    Ip ip = Ip.parse("1.2.3.4");
+    Prefix prefix = Prefix.parse("2.0.0.0/8");
+    RangesIpSpace space = RangesIpSpace.builder().including(ip).including(prefix).build();
+    IpSpaceToBDD ipSpaceToBDD = new IpSpaceToBDD(_ipAddrBdd);
+    BDD spaceBDD = ipSpaceToBDD.visit(space);
+    BDD equivalentBDD = ipSpaceToBDD.toBDD(ip).or(ipSpaceToBDD.toBDD(prefix));
+    assertThat(spaceBDD, equalTo(equivalentBDD));
+
+    assertThat(ipSpaceToBDD.visit(RangesIpSpace.empty()), isZero());
+    assertThat(ipSpaceToBDD.visit(RangesIpSpace.builder().including(Prefix.ZERO).build()), isOne());
   }
 
   @Test

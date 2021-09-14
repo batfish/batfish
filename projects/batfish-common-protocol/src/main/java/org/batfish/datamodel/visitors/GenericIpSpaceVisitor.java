@@ -8,6 +8,7 @@ import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcardIpSpace;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.PrefixIpSpace;
+import org.batfish.datamodel.RangesIpSpace;
 import org.batfish.datamodel.UniverseIpSpace;
 
 public interface GenericIpSpaceVisitor<R> {
@@ -29,6 +30,8 @@ public interface GenericIpSpaceVisitor<R> {
   R visitIpWildcardSetIpSpace(IpWildcardSetIpSpace ipWildcardSetIpSpace);
 
   R visitPrefixIpSpace(PrefixIpSpace prefixIpSpace);
+
+  R visitRangesIpSpace(RangesIpSpace rangesIpSpace);
 
   R visitUniverseIpSpace(UniverseIpSpace universeIpSpace);
 }

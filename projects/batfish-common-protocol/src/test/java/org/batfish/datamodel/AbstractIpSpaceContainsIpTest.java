@@ -64,6 +64,13 @@ public class AbstractIpSpaceContainsIpTest {
   }
 
   @Test
+  public void testVisitRangesIpSpace() {
+    RangesIpSpace ipSpace = RangesIpSpace.builder().including(IP1).build();
+    assertTrue(containsIp(IP1).visitRangesIpSpace(ipSpace));
+    assertFalse(containsIp(IP2).visitRangesIpSpace(ipSpace));
+  }
+
+  @Test
   public void visitUniverseIpSpace() {
     assertTrue(containsIp(IP1).visitUniverseIpSpace(UniverseIpSpace.INSTANCE));
   }
