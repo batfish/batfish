@@ -5,6 +5,7 @@ import static org.batfish.question.vrrpproperties.VrrpPropertiesAnswerer.COL_INT
 import static org.batfish.question.vrrpproperties.VrrpPropertiesAnswerer.COL_PREEMPT;
 import static org.batfish.question.vrrpproperties.VrrpPropertiesAnswerer.COL_PRIORITY;
 import static org.batfish.question.vrrpproperties.VrrpPropertiesAnswerer.COL_VIRTUAL_ADDRESS;
+import static org.batfish.question.vrrpproperties.VrrpPropertiesAnswerer.COL_VIRTUAL_PREFIX_LENGTH;
 import static org.batfish.question.vrrpproperties.VrrpPropertiesAnswerer.getProperties;
 import static org.batfish.question.vrrpproperties.VrrpPropertiesAnswerer.populateRow;
 import static org.hamcrest.Matchers.equalTo;
@@ -109,7 +110,7 @@ public final class VrrpPropertiesAnswererTest {
     Ip address = Ip.parse("2.2.2.2");
     VrrpGroup group =
         VrrpGroup.builder()
-            .setVirtualAddress(ConcreteInterfaceAddress.create(address, 32))
+            .setVirtualAddress(ConcreteInterfaceAddress.create(address, 30))
             .setPriority(23)
             .setPreempt(true)
             .build();
@@ -120,6 +121,7 @@ public final class VrrpPropertiesAnswererTest {
             Row.builder(_columnMap)
                 .put(COL_GROUP_ID, 42)
                 .put(COL_VIRTUAL_ADDRESS, address)
+                .put(COL_VIRTUAL_PREFIX_LENGTH, 30)
                 .put(COL_PRIORITY, 23)
                 .put(COL_PREEMPT, true)
                 .build()));

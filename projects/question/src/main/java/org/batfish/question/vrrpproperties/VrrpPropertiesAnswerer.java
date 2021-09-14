@@ -31,6 +31,7 @@ public final class VrrpPropertiesAnswerer extends Answerer {
   public static final String COL_INTERFACE = "Interface";
   public static final String COL_GROUP_ID = "Group_Id";
   public static final String COL_VIRTUAL_ADDRESS = "Virtual_Address";
+  public static final String COL_VIRTUAL_PREFIX_LENGTH = "Virtual_Prefix_Length";
   public static final String COL_PRIORITY = "Priority";
   public static final String COL_PREEMPT = "Preempt";
 
@@ -40,6 +41,9 @@ public final class VrrpPropertiesAnswerer extends Answerer {
         .add(new ColumnMetadata(COL_INTERFACE, Schema.INTERFACE, "Interface", true, false))
         .add(new ColumnMetadata(COL_GROUP_ID, Schema.INTEGER, "VRRP Group ID", true, false))
         .add(new ColumnMetadata(COL_VIRTUAL_ADDRESS, Schema.IP, "Virtual Address", false, true))
+        .add(
+            new ColumnMetadata(
+                COL_VIRTUAL_PREFIX_LENGTH, Schema.INTEGER, "Virtual Address", false, true))
         .add(new ColumnMetadata(COL_PRIORITY, Schema.INTEGER, "Priority", false, true))
         .add(new ColumnMetadata(COL_PREEMPT, Schema.BOOLEAN, "Preempt", false, true))
         .build();
@@ -119,6 +123,7 @@ public final class VrrpPropertiesAnswerer extends Answerer {
   static void populateRow(RowBuilder row, Integer id, VrrpGroup group) {
     row.put(COL_GROUP_ID, id)
         .put(COL_VIRTUAL_ADDRESS, group.getVirtualAddress().getIp())
+        .put(COL_VIRTUAL_PREFIX_LENGTH, group.getVirtualAddress().getNetworkBits())
         .put(COL_PRIORITY, group.getPriority())
         .put(COL_PREEMPT, group.getPreempt());
   }
