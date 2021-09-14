@@ -1,13 +1,16 @@
 package org.batfish.vendor.check_point_management;
 
 import static org.batfish.datamodel.applications.PortsApplication.MAX_PORT_NUMBER;
-import static org.batfish.datamodel.matchers.TraceTreeMatchers.hasTraceElement;
 import static org.batfish.datamodel.matchers.TraceTreeMatchers.isTraceTree;
 import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceCpmiAnyTraceElement;
 import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceGroupTraceElement;
 import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceIcmpTraceElement;
 import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceTcpTraceElement;
 import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceUdpTraceElement;
+import static org.batfish.vendor.check_point_management.ServiceToMatchExpr.destPortTraceElement;
+import static org.batfish.vendor.check_point_management.ServiceToMatchExpr.icmpCodeTraceElement;
+import static org.batfish.vendor.check_point_management.ServiceToMatchExpr.icmpTypeTraceElement;
+import static org.batfish.vendor.check_point_management.ServiceToMatchExpr.ipProtocolTraceElement;
 import static org.batfish.vendor.check_point_management.ServiceToMatchExpr.portRangeStringToIntegerSpace;
 import static org.batfish.vendor.check_point_management.ServiceToMatchExpr.portStringToIntegerSpace;
 import static org.hamcrest.Matchers.equalTo;
@@ -82,13 +85,41 @@ public final class ServiceToMatchExprTest {
             ImmutableMap.of(),
             ImmutableMap.of(),
             ImmutableMap.of());
-    assertThat(trace.get(0), isTraceTree(serviceIcmpTraceElement(service)));
+    assertThat(
+        trace.get(0),
+        isTraceTree(
+            serviceIcmpTraceElement(service),
+            isTraceTree(ipProtocolTraceElement(IpProtocol.ICMP)),
+            isTraceTree(icmpTypeTraceElement(1)),
+            isTraceTree(icmpCodeTraceElement(2))));
+  }
 
-    Service serviceNoCode = new ServiceIcmp("icmp", 1, null, Uid.of("1"));
+  @Test
+  public void testIcmpNoCode() {
+    ServiceIcmp serviceNoCode = new ServiceIcmp("icmp", 1, null, Uid.of("1"));
+    AclLineMatchExpr exprNoCode = serviceNoCode.accept(_serviceToMatchExpr);
     assertBddsEqual(
-        serviceNoCode.accept(_serviceToMatchExpr),
+        exprNoCode,
         AclLineMatchExprs.match(
             HeaderSpace.builder().setIpProtocols(IpProtocol.ICMP).setIcmpTypes(1).build()));
+    List<TraceTree> trace =
+        AclTracer.trace(
+            exprNoCode,
+            TEST_FLOW.toBuilder()
+                .setIpProtocol(IpProtocol.ICMP)
+                .setIcmpType(1)
+                .setIcmpCode(2)
+                .build(),
+            "eth1",
+            ImmutableMap.of(),
+            ImmutableMap.of(),
+            ImmutableMap.of());
+    assertThat(
+        trace.get(0),
+        isTraceTree(
+            serviceIcmpTraceElement(serviceNoCode),
+            isTraceTree(ipProtocolTraceElement(IpProtocol.ICMP)),
+            isTraceTree(icmpTypeTraceElement(1))));
   }
 
   @Test
@@ -110,7 +141,12 @@ public final class ServiceToMatchExprTest {
             ImmutableMap.of(),
             ImmutableMap.of(),
             ImmutableMap.of());
-    assertThat(trace.get(0), isTraceTree(serviceTcpTraceElement(service)));
+    assertThat(
+        trace.get(0),
+        isTraceTree(
+            serviceTcpTraceElement(service),
+            isTraceTree(ipProtocolTraceElement(IpProtocol.TCP)),
+            isTraceTree(destPortTraceElement("100-105,300"))));
 
     assertBddsEqual(
         _serviceToMatchExpr.visit(new ServiceTcp("tcp", ">5", Uid.of("1"))),
@@ -141,7 +177,12 @@ public final class ServiceToMatchExprTest {
             ImmutableMap.of(),
             ImmutableMap.of(),
             ImmutableMap.of());
-    assertThat(trace.get(0), isTraceTree(serviceUdpTraceElement(service)));
+    assertThat(
+        trace.get(0),
+        isTraceTree(
+            serviceUdpTraceElement(service),
+            isTraceTree(ipProtocolTraceElement(IpProtocol.UDP)),
+            isTraceTree(destPortTraceElement("222"))));
   }
 
   @Test
@@ -205,7 +246,10 @@ public final class ServiceToMatchExprTest {
                 serviceGroupTraceElement(group2),
                 isTraceTree(
                     serviceGroupTraceElement(group3),
-                    hasTraceElement(serviceUdpTraceElement(service3))))));
+                    isTraceTree(
+                        serviceUdpTraceElement(service3),
+                        isTraceTree(ipProtocolTraceElement(IpProtocol.UDP)),
+                        isTraceTree(destPortTraceElement("300")))))));
   }
 
   @Test
