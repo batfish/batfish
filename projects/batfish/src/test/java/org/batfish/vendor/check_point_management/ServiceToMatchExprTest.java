@@ -4,6 +4,13 @@ import static org.batfish.datamodel.applications.PortsApplication.MAX_PORT_NUMBE
 import static org.batfish.datamodel.matchers.TraceTreeMatchers.isTraceTree;
 import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceCpmiAnyTraceElement;
 import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceGroupTraceElement;
+import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceIcmpTraceElement;
+import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceTcpTraceElement;
+import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceUdpTraceElement;
+import static org.batfish.vendor.check_point_management.ServiceToMatchExpr.destPortTraceElement;
+import static org.batfish.vendor.check_point_management.ServiceToMatchExpr.icmpCodeTraceElement;
+import static org.batfish.vendor.check_point_management.ServiceToMatchExpr.icmpTypeTraceElement;
+import static org.batfish.vendor.check_point_management.ServiceToMatchExpr.ipProtocolTraceElement;
 import static org.batfish.vendor.check_point_management.ServiceToMatchExpr.portRangeStringToIntegerSpace;
 import static org.batfish.vendor.check_point_management.ServiceToMatchExpr.portStringToIntegerSpace;
 import static org.hamcrest.Matchers.equalTo;
@@ -81,10 +88,10 @@ public final class ServiceToMatchExprTest {
     assertThat(
         trace.get(0),
         isTraceTree(
-            "Matched service-icmp 'icmp'",
-            isTraceTree("Matched IP protocol ICMP"),
-            isTraceTree("Matched ICMP type 1"),
-            isTraceTree("Matched ICMP code 2")));
+            serviceIcmpTraceElement(service),
+            isTraceTree(ipProtocolTraceElement(IpProtocol.ICMP)),
+            isTraceTree(icmpTypeTraceElement(1)),
+            isTraceTree(icmpCodeTraceElement(2))));
   }
 
   @Test
@@ -110,9 +117,9 @@ public final class ServiceToMatchExprTest {
     assertThat(
         trace.get(0),
         isTraceTree(
-            "Matched service-icmp 'icmp'",
-            isTraceTree("Matched IP protocol ICMP"),
-            isTraceTree("Matched ICMP type 1")));
+            serviceIcmpTraceElement(serviceNoCode),
+            isTraceTree(ipProtocolTraceElement(IpProtocol.ICMP)),
+            isTraceTree(icmpTypeTraceElement(1))));
   }
 
   @Test
@@ -137,9 +144,9 @@ public final class ServiceToMatchExprTest {
     assertThat(
         trace.get(0),
         isTraceTree(
-            "Matched service-tcp 'tcp'",
-            isTraceTree("Matched IP protocol TCP"),
-            isTraceTree("Matched destination port definition '100-105,300'")));
+            serviceTcpTraceElement(service),
+            isTraceTree(ipProtocolTraceElement(IpProtocol.TCP)),
+            isTraceTree(destPortTraceElement("100-105,300"))));
 
     assertBddsEqual(
         _serviceToMatchExpr.visit(new ServiceTcp("tcp", ">5", Uid.of("1"))),
@@ -173,9 +180,9 @@ public final class ServiceToMatchExprTest {
     assertThat(
         trace.get(0),
         isTraceTree(
-            "Matched service-udp 'udp'",
-            isTraceTree("Matched IP protocol UDP"),
-            isTraceTree("Matched destination port definition '222'")));
+            serviceUdpTraceElement(service),
+            isTraceTree(ipProtocolTraceElement(IpProtocol.UDP)),
+            isTraceTree(destPortTraceElement("222"))));
   }
 
   @Test
@@ -240,9 +247,9 @@ public final class ServiceToMatchExprTest {
                 isTraceTree(
                     serviceGroupTraceElement(group3),
                     isTraceTree(
-                        "Matched service-udp 'service3'",
-                        isTraceTree("Matched IP protocol UDP"),
-                        isTraceTree("Matched destination port definition '300'"))))));
+                        serviceUdpTraceElement(service3),
+                        isTraceTree(ipProtocolTraceElement(IpProtocol.UDP)),
+                        isTraceTree(destPortTraceElement("300")))))));
   }
 
   @Test

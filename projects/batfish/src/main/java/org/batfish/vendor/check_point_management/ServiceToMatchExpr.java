@@ -93,20 +93,24 @@ public class ServiceToMatchExpr implements ServiceVisitor<AclLineMatchExpr> {
             destPortTraceElement(portDefinition)));
   }
 
-  private static TraceElement ipProtocolTraceElement(IpProtocol ipProtocol) {
+  @VisibleForTesting
+  static TraceElement ipProtocolTraceElement(IpProtocol ipProtocol) {
     return TraceElement.of(String.format("Matched IP protocol %s", ipProtocol));
   }
 
-  private static TraceElement destPortTraceElement(String portDefinition) {
+  @VisibleForTesting
+  static TraceElement destPortTraceElement(String portDefinition) {
     return TraceElement.of(
         String.format("Matched destination port definition '%s'", portDefinition));
   }
 
-  private static TraceElement icmpCodeTraceElement(int code) {
+  @VisibleForTesting
+  static TraceElement icmpCodeTraceElement(int code) {
     return TraceElement.of(String.format("Matched ICMP code %s", code));
   }
 
-  private static TraceElement icmpTypeTraceElement(int type) {
+  @VisibleForTesting
+  static TraceElement icmpTypeTraceElement(int type) {
     return TraceElement.of(String.format("Matched ICMP type %s", type));
   }
 
