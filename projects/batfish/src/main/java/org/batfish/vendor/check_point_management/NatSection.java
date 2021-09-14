@@ -4,7 +4,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.annotations.VisibleForTesting;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -21,7 +20,6 @@ public final class NatSection extends NamedManagementObject implements NatRuleOr
     return _rulebase;
   }
 
-  @VisibleForTesting
   public NatSection(String name, List<NatRule> rulebase, Uid uid) {
     super(name, uid);
     _rulebase = rulebase;
