@@ -63,7 +63,7 @@ import org.junit.Test;
 /** Test of {@link CheckPointGatewayConversions}. */
 public final class CheckPointGatewayConversionsTest {
   public static final NatSettings NAT_SETTINGS_TEST_INSTANCE =
-      new NatSettings(true, "gateway", "All", "hide");
+      new NatSettings(true, "gateway", "All", null, "hide");
   private static final Uid UID_ACCEPT = Uid.of("99997");
   private static final Uid UID_DROP = Uid.of("99998");
   private static final Uid UID_CPMI_ANY = Uid.of("99999");

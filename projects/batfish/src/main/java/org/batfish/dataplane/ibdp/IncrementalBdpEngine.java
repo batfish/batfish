@@ -99,6 +99,10 @@ final class IncrementalBdpEngine {
       Map<Ip, Map<String, Set<String>>> ipVrfOwners) {
     // Force re-init of partial dataplane. Re-inits forwarding analysis, etc.
     computeFibs(vrs);
+
+    // Update topologies
+    LOGGER.info("Updating dynamic topologies");
+
     PartialDataplane partialDataplane =
         PartialDataplane.builder()
             .setNodes(nodes)
@@ -109,9 +113,6 @@ final class IncrementalBdpEngine {
     TracerouteEngine trEngCurrentL3Topology =
         new TracerouteEngineImpl(
             partialDataplane, currentTopologyContext.getLayer3Topology(), configurations);
-
-    // Update topologies
-    LOGGER.info("Updating dynamic topologies");
 
     // IPsec
     LOGGER.info("Updating IPsec topology");

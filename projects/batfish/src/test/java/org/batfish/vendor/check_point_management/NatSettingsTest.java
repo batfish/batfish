@@ -8,6 +8,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.Ip;
 import org.junit.Test;
 
 public class NatSettingsTest {
@@ -15,10 +16,11 @@ public class NatSettingsTest {
    * Instance of this class populated with arbitrary values. Useful for generating a valid object
    * for use in tests.
    */
-  public static final NatSettings TEST_INSTANCE = new NatSettings(true, "gateway", "All", "hide");
+  public static final NatSettings TEST_INSTANCE =
+      new NatSettings(true, "gateway", "All", null, "hide");
   /** Another test instance, that is not-equal to the previous instance. */
   public static final NatSettings TEST_INSTANCE_DIFFERENT =
-      new NatSettings(false, "gateway", "All", "hide");
+      new NatSettings(true, "gateway", "All", Ip.parse("2.3.4.5"), "hide");
 
   @Test
   public void testJacksonDeserialization() throws JsonProcessingException {
@@ -28,11 +30,12 @@ public class NatSettingsTest {
             + "\"auto-rule\":true,"
             + "\"hide-behind\":\"gateway\","
             + "\"install-on\":\"All\","
+            + "\"ipv4-address\":\"2.3.4.5\","
             + "\"method\":\"hide\""
             + "}";
     assertThat(
         BatfishObjectMapper.ignoreUnknownMapper().readValue(input, NatSettings.class),
-        equalTo(TEST_INSTANCE));
+        equalTo(TEST_INSTANCE_DIFFERENT));
   }
 
   @Test
@@ -43,13 +46,14 @@ public class NatSettingsTest {
 
   @Test
   public void testEquals() {
-    NatSettings obj = new NatSettings(true, "gateway", "All", "hide");
+    NatSettings obj = new NatSettings(true, "gateway", "All", null, "hide");
     new EqualsTester()
-        .addEqualityGroup(obj, new NatSettings(true, "gateway", "All", "hide"))
-        .addEqualityGroup(new NatSettings(false, "gateway", "All", "hide"))
-        .addEqualityGroup(new NatSettings(true, "server", "All", "hide"))
-        .addEqualityGroup(new NatSettings(true, "gateway", "None", "hide"))
-        .addEqualityGroup(new NatSettings(true, "gateway", "None", "dontHide"))
+        .addEqualityGroup(obj, new NatSettings(true, "gateway", "All", null, "hide"))
+        .addEqualityGroup(new NatSettings(false, "gateway", "All", null, "hide"))
+        .addEqualityGroup(new NatSettings(true, "server", "All", null, "hide"))
+        .addEqualityGroup(new NatSettings(true, "gateway", "None", null, "hide"))
+        .addEqualityGroup(new NatSettings(true, "gateway", "None", null, "dontHide"))
+        .addEqualityGroup(new NatSettings(true, "gateway", "None", Ip.parse("1.2.3.4"), "hide"))
         .testEquals();
   }
 }
