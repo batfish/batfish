@@ -26,6 +26,7 @@ junit_tests(
     ]),
     resources = [
         "//projects/batfish/src/test/resources",
+        "//projects/batfish/src/test/resources/org/batfish/dataplane/ibdp/bgp-best-path-export",
         "//projects/batfish/src/test/resources/org/batfish/dataplane/ibdp/bgp-topology-change",
     ],
     runtime_deps = [

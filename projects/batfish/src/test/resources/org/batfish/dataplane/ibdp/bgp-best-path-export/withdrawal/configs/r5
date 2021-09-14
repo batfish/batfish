@@ -1,0 +1,19 @@
+hostname r5
+feature bgp
+
+interface Ethernet1
+  no switchport
+  no shutdown
+  ip address 10.0.45.1/31
+  description to r4
+
+route-map REJECT_ALL deny 10
+
+router bgp 5
+  router-id 5.5.5.5
+  address-family ipv4 unicast
+    maximum-paths eibgp 5
+  neighbor 10.0.45.0
+    remote-as 1
+    address-family ipv4 unicast
+    route-map REJECT_ALL out

@@ -1,0 +1,28 @@
+hostname r1
+feature bgp
+
+interface Ethernet1
+  no switchport
+  no shutdown
+  ip address 10.0.13.0/31
+  description to r3
+
+interface Ethernet2
+  no switchport
+  no shutdown
+  ip address 10.0.1.0/31
+  description NH for static route
+
+route-map REDISTRIBUTE_STATIC permit 10
+
+router bgp 1
+  router-id 1.1.1.1
+  address-family ipv4 unicast
+    maximum-paths eibgp 5
+    redistribute static route-map REDISTRIBUTE_STATIC
+  neighbor 10.0.13.1
+    remote-as 3
+    address-family ipv4 unicast
+
+ip route 10.1.0.0/24 10.0.1.1
+

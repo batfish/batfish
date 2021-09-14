@@ -15,6 +15,7 @@ import static org.batfish.dataplane.rib.RibDelta.importDeltaToBuilder;
 import static org.batfish.dataplane.rib.RibDelta.importRibDelta;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
@@ -169,14 +170,18 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
   // outgoing RIB deltas for the current round (i.e., deltas generated in the previous round)
   @Nonnull private RibDelta<Bgpv4Route> _ebgpv4DeltaPrev = RibDelta.empty();
+  @Nonnull private RibDelta<Bgpv4Route> _ebgpv4DeltaPrevBestPath = RibDelta.empty();
   @Nonnull private RibDelta<Bgpv4Route> _bgpv4DeltaPrev = RibDelta.empty();
+  @Nonnull private RibDelta<Bgpv4Route> _bgpv4DeltaPrevBestPath = RibDelta.empty();
   // currently used for VRF-leaking only.
   @Nonnull private RibDelta<Bgpv4Route> _localDeltaPrev = RibDelta.empty();
 
   // copy of RIBs from prev round, for new links in the current round.
   // Nullable so they crash on improper use.
   private @Nullable Set<Bgpv4Route> _ebgpv4Prev;
+  private @Nullable Set<Bgpv4Route> _ebgpv4PrevBestPath;
   private @Nullable Set<Bgpv4Route> _bgpv4Prev;
+  private @Nullable Set<Bgpv4Route> _bgpv4PrevBestPath;
 
   /**
    * Routes in the main RIB at the end of the previous round. Unused if {@link #_exportFromBgpRib}
@@ -483,11 +488,15 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         _mainRibPrev = _mainRib.getTypedRoutes();
       }
       _bgpv4Prev = _bgpv4Rib.getTypedRoutes();
+      _bgpv4PrevBestPath = _bgpv4Rib.getBestPathRoutes();
       _ebgpv4Prev = _ebgpv4Rib.getTypedRoutes();
+      _ebgpv4PrevBestPath = _ebgpv4Rib.getBestPathRoutes();
     } else {
       assert _mainRibPrev == null;
       assert _bgpv4Prev == null;
+      assert _bgpv4PrevBestPath == null;
       assert _ebgpv4Prev == null;
+      assert _ebgpv4PrevBestPath == null;
     }
     _topology = topology;
     // TODO: compute edges that went down, remove routes we received from those neighbors
@@ -633,7 +642,9 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         // The reason we look at PREV values is because
         // endOfRound has been called BEFORE the isDirty check and we've already switched over.
         || !_ebgpv4DeltaPrev.isEmpty()
+        || !_ebgpv4DeltaPrevBestPath.isEmpty()
         || !_bgpv4DeltaPrev.isEmpty()
+        || !_bgpv4DeltaPrevBestPath.isEmpty()
         || !_mainRibDelta.isEmpty()
         || !_localDeltaPrev.isEmpty()
         // Delta builders
@@ -978,30 +989,51 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
      * 2. Advertise inactive: advertise best-path BGP routes to neighboring peers even if
      *    they are not active in the main RIB.
      */
+    Set<Bgpv4Route> bgpv4Prev;
+    RibDelta<Bgpv4Route> bgpv4DeltaPrev;
+    Set<Bgpv4Route> ebgpv4Prev;
+    RibDelta<Bgpv4Route> ebgpv4DeltaPrev;
+    if (session.getAdditionalPaths()) {
+      /*
+      TODO: https://github.com/batfish/batfish/issues/704
+         Add path is broken for all intents and purposes.
+         Need support for additional-paths based on https://tools.ietf.org/html/rfc7911
+         AND the combination of vendor-specific knobs, none of which are currently supported.
+      */
+      bgpv4Prev = _bgpv4Prev;
+      bgpv4DeltaPrev = _bgpv4DeltaPrev;
+      ebgpv4Prev = _ebgpv4Prev;
+      ebgpv4DeltaPrev = _ebgpv4DeltaPrev;
+    } else {
+      bgpv4Prev = _bgpv4PrevBestPath;
+      bgpv4DeltaPrev = _bgpv4DeltaPrevBestPath;
+      ebgpv4Prev = _ebgpv4PrevBestPath;
+      ebgpv4DeltaPrev = _ebgpv4DeltaPrevBestPath;
+    }
     if (session.getAdvertiseExternal()) {
       if (isNewSession) {
         bgpRibExports.from(
-            _ebgpv4Prev.stream().map(this::annotateRoute).map(RouteAdvertisement::new));
+            ebgpv4Prev.stream().map(this::annotateRoute).map(RouteAdvertisement::new));
       } else {
-        importDeltaToBuilder(bgpRibExports, _ebgpv4DeltaPrev, _vrfName);
+        importDeltaToBuilder(bgpRibExports, ebgpv4DeltaPrev, _vrfName);
       }
     }
 
     if (session.getAdvertiseInactive()) {
       if (isNewSession) {
         bgpRibExports.from(
-            _bgpv4Prev.stream().map(this::annotateRoute).map(RouteAdvertisement::new));
+            bgpv4Prev.stream().map(this::annotateRoute).map(RouteAdvertisement::new));
       } else {
-        importDeltaToBuilder(bgpRibExports, _bgpv4DeltaPrev, _vrfName);
+        importDeltaToBuilder(bgpRibExports, bgpv4DeltaPrev, _vrfName);
       }
     } else {
       // Default behavior
       Stream<RouteAdvertisement<AnnotatedRoute<Bgpv4Route>>> routes;
       if (isNewSession) {
-        routes = _bgpv4Prev.stream().map(this::annotateRoute).map(RouteAdvertisement::new);
+        routes = bgpv4Prev.stream().map(this::annotateRoute).map(RouteAdvertisement::new);
       } else {
         routes =
-            _bgpv4DeltaPrev
+            bgpv4DeltaPrev
                 .getActions()
                 .filter(r -> !r.isWithdrawn())
                 .map(
@@ -1018,16 +1050,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                   // Received from 0.0.0.0 indicates local origination
                   (_exportFromBgpRib && Ip.ZERO.equals(r.getRoute().getRoute().getReceivedFromIp()))
                       || _mainRib.containsRoute(r.getRoute())));
-    }
-
-    /*
-    * TODO: https://github.com/batfish/batfish/issues/704
-       Add path is broken for all intents and purposes.
-       Need support for additional-paths based on https://tools.ietf.org/html/rfc7911
-       AND the combination of vendor-specific knobs, none of which are currently supported.
-    */
-    if (session.getAdditionalPaths()) {
-      importDeltaToBuilder(bgpRibExports, _bgpv4DeltaPrev, _vrfName);
     }
 
     /*
@@ -1907,7 +1929,9 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             // The reason we look at PREV values is because
             // endOfRound has been called BEFORE the isDirty check and we've already switched over.
             _ebgpv4DeltaPrev,
+            _ebgpv4DeltaPrevBestPath,
             _bgpv4DeltaPrev,
+            _bgpv4DeltaPrevBestPath,
             // Message queues
             _evpnType3IncomingRoutes,
             // Delta builders
@@ -1985,8 +2009,18 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
   public void endOfRound() {
     _bgpv4DeltaPrev = _bgpv4DeltaBuilder.build();
+    _bgpv4DeltaPrevBestPath =
+        getDeltaPrevBestPath(
+            _bgpv4DeltaPrev,
+            _bgpv4Rib,
+            firstNonNull(_bgpv4PrevBestPath, ImmutableSet.of())); // null during first round
     _bgpv4DeltaBuilder = RibDelta.builder();
     _ebgpv4DeltaPrev = _ebgpv4DeltaBuilder.build();
+    _ebgpv4DeltaPrevBestPath =
+        getDeltaPrevBestPath(
+            _ebgpv4DeltaPrev,
+            _ebgpv4Rib,
+            firstNonNull(_ebgpv4PrevBestPath, ImmutableSet.of())); // null during first round
     _ebgpv4DeltaBuilder = RibDelta.builder();
     _localDeltaPrev = _localDeltaBuilder.build();
     _localDeltaBuilder = RibDelta.builder();
@@ -1996,8 +2030,26 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     _mainRibPrev = null;
     _bgpv4Prev = null;
     _ebgpv4Prev = null;
+    _bgpv4PrevBestPath = null;
+    _ebgpv4PrevBestPath = null;
     // Main RIB delta for exporting directly from main RIB
     _mainRibDelta = RibDelta.empty();
+  }
+
+  /** Get BGP RIB previous best path delta from the rib and the previous best path routes. */
+  private @Nonnull RibDelta<Bgpv4Route> getDeltaPrevBestPath(
+      RibDelta<Bgpv4Route> delta, Bgpv4Rib rib, Set<Bgpv4Route> prevBestPathRoutes) {
+    // Under best-path:
+    // - If a route is to be advertised, it must be be the current best-path.
+    // - If a route is to be withdrawn, it must have been the best path in the last round.
+    return RibDelta.of(
+        delta
+            .getActions()
+            .filter(
+                adv ->
+                    (adv.isWithdrawn() && prevBestPathRoutes.contains(adv.getRoute()))
+                        || (!adv.isWithdrawn() && rib.isBestPath(adv.getRoute())))
+            .collect(ImmutableList.toImmutableList()));
   }
 
   /**
