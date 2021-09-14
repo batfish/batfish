@@ -155,7 +155,10 @@ public final class CheckPointGatewayConversions {
         .build();
   }
 
-  /** Convert specified {@link AccessRule} to an {@link AclLine}. */
+  /**
+   * Convert specified {@link AccessRule} to an {@link AclLine}. Returns {@link Optional#empty()} if
+   * the rule does not generate an {@link AclLine} (i.e. is not enabled).
+   */
   @Nonnull
   static Optional<AclLine> toAclLine(
       AccessRule rule,
