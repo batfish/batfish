@@ -270,7 +270,7 @@ public final class CheckPointGatewayConversions {
   /**
    * Returns an {@link AclLineMatchExpr} matching the specified {@link Uid}s. {@code matchSource}
    * indicates if they are matched as sources or destinations. Relies on named {@link IpSpace}s
-   * existing for each of the supplied object's {@link Uid}s.
+   * existing for each of the supplied objects.
    */
   @VisibleForTesting
   @Nonnull
@@ -280,7 +280,6 @@ public final class CheckPointGatewayConversions {
       AddressSpaceToMatchExpr addressSpaceToMatchExpr,
       boolean matchSource,
       Warnings w) {
-    addressSpaceToMatchExpr.setMatchSource(matchSource);
     return AclLineMatchExprs.or(
         targets.stream()
             .map(
@@ -311,6 +310,7 @@ public final class CheckPointGatewayConversions {
                         ? AclLineMatchExprs.matchSrc(ref)
                         : AclLineMatchExprs.matchDst(ref);
                   }
+                  addressSpaceToMatchExpr.setMatchSource(matchSource);
                   return ((AddressSpace) o).accept(addressSpaceToMatchExpr);
                 })
             .collect(ImmutableList.toImmutableList()));

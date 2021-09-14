@@ -20,13 +20,13 @@ import org.batfish.datamodel.acl.FalseExpr;
 
 /**
  * Create an {@link AclLineMatchExpr} representing the visited {@link AddressSpace}. <i>Relies on
- * named {@link IpSpace}s existing for each object.</i>
+ * named {@link IpSpace}s existing for the {@code AddressSpace} and all its children.</i>
  */
 public class AddressSpaceToMatchExpr implements AddressSpaceVisitor<AclLineMatchExpr> {
 
   /**
-   * Set boolean indicating if the {@link AclLineMatchExpr} should match on source or destination
-   * address.
+   * Set boolean indicating if subsequent visits to the {@link AclLineMatchExpr} should match on
+   * source or destination address.
    */
   public void setMatchSource(boolean matchSource) {
     _matchSource = matchSource;

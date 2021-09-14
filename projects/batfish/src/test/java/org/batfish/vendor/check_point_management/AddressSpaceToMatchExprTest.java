@@ -140,22 +140,22 @@ public final class AddressSpaceToMatchExprTest {
 
   @Test
   public void testAddressRange() {
-    checkAddrSpaceExprAndTrace(ADDR_RANGE, ADDR_RANGE_NAME, Ip.parse("10.0.0.1"));
+    checkAddrSpaceExprAndSimpleTrace(ADDR_RANGE, ADDR_RANGE_NAME, Ip.parse("10.0.0.1"));
   }
 
   @Test
   public void testGatewayOrServer() {
-    checkAddrSpaceExprAndTrace(GATEWAY, GATEWAY_NAME, Ip.parse("10.1.1.1"));
+    checkAddrSpaceExprAndSimpleTrace(GATEWAY, GATEWAY_NAME, Ip.parse("10.1.1.1"));
   }
 
   @Test
   public void testHost() {
-    checkAddrSpaceExprAndTrace(HOST1, HOST1_NAME, Ip.parse("10.2.1.1"));
+    checkAddrSpaceExprAndSimpleTrace(HOST1, HOST1_NAME, Ip.parse("10.2.1.1"));
   }
 
   @Test
   public void testNetwork() {
-    checkAddrSpaceExprAndTrace(NETWORK, NETWORK_NAME, Ip.parse("10.3.1.1"));
+    checkAddrSpaceExprAndSimpleTrace(NETWORK, NETWORK_NAME, Ip.parse("10.3.1.1"));
   }
 
   @Test
@@ -164,6 +164,7 @@ public final class AddressSpaceToMatchExprTest {
     Uid group2Uid = Uid.of("1002");
     Uid group3Uid = Uid.of("1003");
     String group1Name = "group1";
+    // Contains a loop: group1 -> group2 -> group3 -> group1
     Group group1 = new Group(group1Name, ImmutableList.of(group2Uid, HOST1_UID), group1Uid);
     Group group2 = new Group("group2", ImmutableList.of(group3Uid, HOST2_UID), group2Uid);
     Group group3 = new Group("group3", ImmutableList.of(group1Uid, HOST3_UID), group3Uid);
@@ -179,13 +180,7 @@ public final class AddressSpaceToMatchExprTest {
                 .put(HOST2_UID, HOST2)
                 .put(HOST3_UID, HOST3)
                 .build());
-
     AclLineMatchExpr expr = group1.accept(addrSpaceToMatchExpr);
-    assertBddsEqual(
-        expr,
-        AclLineMatchExprs.matchDst(
-            AclIpSpace.union(
-                IP_SPACES.get(HOST1_NAME), IP_SPACES.get(HOST2_NAME), IP_SPACES.get(HOST3_NAME))));
     List<TraceTree> trace =
         AclTracer.trace(
             expr,
@@ -194,6 +189,12 @@ public final class AddressSpaceToMatchExprTest {
             ImmutableMap.of(),
             IP_SPACES,
             IP_SPACE_METADATA);
+
+    assertBddsEqual(
+        expr,
+        AclLineMatchExprs.matchDst(
+            AclIpSpace.union(
+                IP_SPACES.get(HOST1_NAME), IP_SPACES.get(HOST2_NAME), IP_SPACES.get(HOST3_NAME))));
     assertThat(
         trace.get(0),
         isTraceTree(
@@ -218,16 +219,16 @@ public final class AddressSpaceToMatchExprTest {
     AddressSpaceToMatchExpr addrSpaceToMatchExpr = new AddressSpaceToMatchExpr(ImmutableMap.of());
 
     AclLineMatchExpr expr = group1.accept(addrSpaceToMatchExpr);
-    // Group containing only invalid members should not match
+    // Group containing only invalid members should not match anything
     assertBddsEqual(expr, FalseExpr.INSTANCE);
   }
 
   /**
-   * Check that the specified address space's expression is equivalent to its {@link IpSpace}
-   * representation, and that the appropriate trace is attached for a flow the specified destination
-   * IP.
+   * Helper to check that the specified {@link AddressSpace}'s expression is equivalent to its
+   * {@link IpSpace} representation, and that the appropriate simple trace (non-nested) is attached
+   * for a flow the specified destination IP.
    */
-  private void checkAddrSpaceExprAndTrace(AddressSpace space, String name, Ip destIp) {
+  private void checkAddrSpaceExprAndSimpleTrace(AddressSpace space, String name, Ip destIp) {
     AddressSpaceToMatchExpr addrSpaceToMatchExpr = new AddressSpaceToMatchExpr(ImmutableMap.of());
 
     AclLineMatchExpr expr = space.accept(addrSpaceToMatchExpr);

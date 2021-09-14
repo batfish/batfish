@@ -12,41 +12,9 @@ public final class CheckPointManagementTraceElementCreators {
   }
 
   @VisibleForTesting
-  public static TraceElement addressRangeTraceElement(AddressRange addressRange, boolean source) {
-    return TraceElement.of(
-        String.format(
-            "Matched %s address-range %s",
-            source ? "source" : "destination", addressRange.getName()));
-  }
-
-  @VisibleForTesting
-  public static TraceElement addressGatewayOrServerTraceElement(
-      GatewayOrServer gatewayOrServer, boolean source) {
-    return TraceElement.of(
-        String.format(
-            "Matched %s %s %s",
-            source ? "source" : "destination",
-            gatewayOrServer.getClass().getSimpleName(),
-            gatewayOrServer.getName()));
-  }
-
-  @VisibleForTesting
   public static TraceElement addressGroupTraceElement(Group group, boolean source) {
     return TraceElement.of(
         String.format("Matched %s group %s", source ? "source" : "destination", group.getName()));
-  }
-
-  @VisibleForTesting
-  public static TraceElement addressHostTraceElement(Host host, boolean source) {
-    return TraceElement.of(
-        String.format("Matched %s host %s", source ? "source" : "destination", host.getName()));
-  }
-
-  @VisibleForTesting
-  public static TraceElement addressNetworkTraceElement(Network network, boolean source) {
-    return TraceElement.of(
-        String.format(
-            "Matched %s network %s", source ? "source" : "destination", network.getName()));
   }
 
   @VisibleForTesting
