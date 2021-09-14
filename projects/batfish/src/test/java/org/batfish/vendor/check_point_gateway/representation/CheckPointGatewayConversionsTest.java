@@ -166,6 +166,13 @@ public final class CheckPointGatewayConversionsTest {
         new AccessSection(
             "accessSectionName",
             ImmutableList.of(
+                // Drop everything - not enabled
+                AccessRule.testBuilder(UID_CPMI_ANY)
+                    .setUid(Uid.of("10"))
+                    .setAction(UID_DROP)
+                    .setEnabled(false)
+                    .setName("childRule0_drop_all")
+                    .build(),
                 AccessRule.testBuilder(UID_CPMI_ANY)
                     .setUid(Uid.of("4"))
                     .setAction(UID_ACCEPT)
@@ -175,6 +182,13 @@ public final class CheckPointGatewayConversionsTest {
             Uid.of("uidSection"));
     ImmutableList<AccessRuleOrSection> rulebase =
         ImmutableList.of(
+            // Drop everything - not enabled
+            AccessRule.testBuilder(UID_CPMI_ANY)
+                .setUid(Uid.of("8"))
+                .setAction(UID_DROP)
+                .setEnabled(false)
+                .setName("rule0_drop_all")
+                .build(),
             // Drop net1 -> anywhere
             AccessRule.testBuilder(UID_CPMI_ANY)
                 .setUid(Uid.of("2"))
