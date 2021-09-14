@@ -133,6 +133,7 @@ public final class BgpBestPathExportTest {
    * - R3 starts iBGP sessions with R2 and R3
    * - R1 redistributes 10.1.0.0/24 to R2 and R3 with high local preference
    * - R2 and R3 redistribute 10.1.0.0/24 to R4 with low local preference
+   * - R4 starts eBGP session with R5
    * In round 2:
    * - R4 exports low local preference 10.1.0.0/24 to R5, erasing local preference and replacing NH
    * - R2 and R3 export high local preference 10.1.0.0/24 received from R1 to R4
