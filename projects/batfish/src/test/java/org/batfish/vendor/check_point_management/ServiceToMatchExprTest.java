@@ -127,7 +127,7 @@ public final class ServiceToMatchExprTest {
   @Test
   public void testOther() {
     String match = "uh_dport > 33000, (IPV4_VER (ip_ttl < 30))";
-    ServiceOther service = new ServiceOther("udp", 17, match, Uid.of("1"));
+    ServiceOther service = new ServiceOther("udp", IpProtocol.UDP.number(), match, Uid.of("1"));
     AclLineMatchExpr expr = _serviceToMatchExpr.visit(service);
     assertBddsEqual(
         expr,

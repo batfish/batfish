@@ -41,7 +41,10 @@ public final class ServiceOther extends TypedManagementObject implements Service
 
   @Override
   public String toString() {
-    return baseToStringHelper().add(PROP_IP_PROTOCOL, _ipProtocol).toString();
+    return baseToStringHelper()
+        .add(PROP_IP_PROTOCOL, _ipProtocol)
+        .add(PROP_MATCH, _match)
+        .toString();
   }
 
   @JsonCreator
