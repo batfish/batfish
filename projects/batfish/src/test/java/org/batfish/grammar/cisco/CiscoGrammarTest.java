@@ -160,6 +160,7 @@ import static org.batfish.datamodel.vendor_family.cisco.CiscoFamilyMatchers.hasL
 import static org.batfish.datamodel.vendor_family.cisco.LoggingMatchers.isOn;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
+import static org.batfish.representation.cisco.CiscoConfiguration.DEFAULT_LOCAL_BGP_WEIGHT;
 import static org.batfish.representation.cisco.CiscoConfiguration.DEFAULT_STATIC_ROUTE_DISTANCE;
 import static org.batfish.representation.cisco.CiscoConfiguration.RESOLUTION_POLICY_NAME;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpPeerImportPolicyName;
@@ -1761,6 +1762,7 @@ public final class CiscoGrammarTest {
             .setProtocol(RoutingProtocol.BGP)
             .setSrcProtocol(RoutingProtocol.STATIC)
             .setReceivedFromIp(Ip.ZERO) // indicates local origination
+            .setWeight(DEFAULT_LOCAL_BGP_WEIGHT)
             .build();
 
     // Redistributed route should be in originator's BGP RIB as a local route
@@ -1776,6 +1778,7 @@ public final class CiscoGrammarTest {
             .setNonRouting(false)
             .setReceivedFromIp(originatorIp)
             .setSrcProtocol(RoutingProtocol.BGP)
+            .setWeight(0)
             .build();
     assertThat(l1Routes, hasItem(exportedRoute));
 
@@ -3595,11 +3598,12 @@ public final class CiscoGrammarTest {
                   .setAdmin(ebgpAdmin)
                   .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
                   .setMetric(matchEigrp.getMetric())
-                  .setNextHopIp(nextHopIp)
+                  .setNextHop(NextHopDiscard.instance())
                   .setReceivedFromIp(Ip.ZERO)
                   .setOriginatorIp(bgpRouterId)
                   .setOriginType(OriginType.INCOMPLETE)
                   .setSrcProtocol(RoutingProtocol.EIGRP)
+                  .setWeight(DEFAULT_LOCAL_BGP_WEIGHT)
                   .build()));
     }
     {
@@ -3626,11 +3630,12 @@ public final class CiscoGrammarTest {
                   .setAdmin(ibgpAdmin)
                   .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
                   .setMetric(matchEigrp.getMetric())
-                  .setNextHopIp(nextHopIp)
+                  .setNextHop(NextHopDiscard.instance())
                   .setReceivedFromIp(Ip.ZERO)
                   .setOriginatorIp(bgpRouterId)
                   .setOriginType(OriginType.INCOMPLETE)
                   .setSrcProtocol(RoutingProtocol.EIGRP)
+                  .setWeight(DEFAULT_LOCAL_BGP_WEIGHT)
                   .build()));
     }
     {
@@ -3668,11 +3673,12 @@ public final class CiscoGrammarTest {
                   .setAdmin(ebgpAdmin)
                   .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
                   .setMetric(matchEigrpEx.getMetric())
-                  .setNextHopIp(nextHopIp)
+                  .setNextHop(NextHopDiscard.instance())
                   .setReceivedFromIp(Ip.ZERO)
                   .setOriginatorIp(bgpRouterId)
                   .setOriginType(OriginType.INCOMPLETE)
                   .setSrcProtocol(RoutingProtocol.EIGRP_EX)
+                  .setWeight(DEFAULT_LOCAL_BGP_WEIGHT)
                   .build()));
     }
   }
@@ -6385,6 +6391,7 @@ public final class CiscoGrammarTest {
             .setProtocol(RoutingProtocol.BGP)
             .setReceivedFromIp(Ip.ZERO) // indicates local origination
             .setSrcProtocol(RoutingProtocol.STATIC)
+            .setWeight(DEFAULT_LOCAL_BGP_WEIGHT)
             .build();
     Bgpv4Route localRoute2 = localRoute1.toBuilder().setNetwork(staticPrefix2).build();
     Bgpv4Route localRoute3 = localRoute1.toBuilder().setNetwork(staticPrefix3).build();
