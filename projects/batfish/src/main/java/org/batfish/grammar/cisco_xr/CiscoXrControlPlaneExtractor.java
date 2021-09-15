@@ -193,6 +193,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_EXPO
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_IMPORT_FROM_DEFAULT_VRF_ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_IMPORT_ROUTE_POLICY;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
@@ -761,9 +762,12 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Ror_routing_instanceContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ror_routing_instance_nullContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rorri_protocolContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Route_distinguisherContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Route_nexthopContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Route_policy_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Route_policy_nameContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Route_policy_stanzaContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Route_prefixContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Route_propertiesContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Route_reflector_client_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Route_tag_from_0Context;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Route_targetContext;
@@ -799,6 +803,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Rpimafi_neighbor_filterContext
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rr_networkContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rr_passive_interfaceContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rr_passive_interface_defaultContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rs_no_routeContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rs_routeContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rs_vrfContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_aaaContext;
@@ -1099,7 +1104,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   private static final IntegerSpace REWRITE_INGRESS_TAG_POP_RANGE =
       IntegerSpace.of(Range.closed(1, 2));
 
-  private static final int DEFAULT_STATIC_ROUTE_DISTANCE = 1;
+  @VisibleForTesting public static final int DEFAULT_STATIC_ROUTE_DISTANCE = 1;
 
   public @Nullable OspfNetworkType toOspfNetworkType(Ospf_network_typeContext ctx) {
     if (ctx.POINT_TO_POINT() != null) {
@@ -1132,6 +1137,40 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     } else {
       return Ip6.ZERO;
     }
+  }
+
+  /**
+   * Extract {@link Prefix} from {@link Route_prefixContext}. Returns {@link Optional#empty()} if
+   * there is an IPv6 prefix.
+   */
+  private Optional<Prefix> toPrefix(Route_prefixContext ctx) {
+    if (ctx.prefix != null) {
+      return Optional.of(Prefix.parse(ctx.prefix.getText()));
+    }
+    // TODO handle ipv6
+    return Optional.empty();
+  }
+
+  /**
+   * Extract nextHop IP from {@link Route_nexthopContext}. Returns {@link Optional#empty()} if there
+   * is no nextHop IP (or it is an IPv6 address).
+   */
+  private Optional<Ip> toNextHopIp(Route_nexthopContext ctx) {
+    if (ctx.nhip != null) {
+      return Optional.of(toIp(ctx.nhip));
+    }
+    return Optional.empty();
+  }
+
+  /**
+   * Extract nextHop interface from {@link Route_nexthopContext}. Returns {@link Optional#empty()}
+   * if there is no nextHop interface.
+   */
+  private Optional<String> toNextHopInt(Route_nexthopContext ctx) {
+    if (ctx.nhint != null) {
+      return Optional.of(getCanonicalInterfaceName(ctx.nhint.getText()));
+    }
+    return Optional.empty();
   }
 
   private static int toInteger(Uint_legacyContext ctx) {
@@ -6185,37 +6224,72 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
+  public void exitRs_no_route(Rs_no_routeContext ctx) {
+    Optional<Prefix> prefix = toPrefix(ctx.route_prefix());
+    if (!prefix.isPresent()) {
+      // TODO handle ipv6
+      return;
+    }
+
+    // Match on nexthop and prefix if they exist, everything else is ignored
+    if (ctx.route_nexthop() != null) {
+      Optional<Ip> nextHopIp = toNextHopIp(ctx.route_nexthop());
+      Optional<String> nextHopIface = toNextHopInt(ctx.route_nexthop());
+      if (!currentVrf()
+          .getStaticRoutes()
+          .removeIf(
+              sr ->
+                  Objects.equals(sr.getNextHopInterface(), nextHopIface.orElse(null))
+                      && Objects.equals(
+                          sr.getNextHopIp(), nextHopIp.orElse(Route.UNSET_ROUTE_NEXT_HOP_IP))
+                      && sr.getPrefix().equals(prefix.get()))) {
+        warn(ctx, "No static routes matched this line, so none will be removed");
+      }
+      return;
+    }
+    // Just match on prefix, if no nexthop specified
+    if (!currentVrf().getStaticRoutes().removeIf(sr -> sr.getPrefix().equals(prefix.get()))) {
+      warn(ctx, "No static routes matched this line, so none will be removed");
+    }
+  }
+
+  @Override
   public void exitRs_route(Rs_routeContext ctx) {
-    if (ctx.prefix != null) {
-      Prefix prefix = Prefix.parse(ctx.prefix.getText());
-      Ip nextHopIp = Route.UNSET_ROUTE_NEXT_HOP_IP;
-      String nextHopInterface = null;
-      if (ctx.nhip != null) {
-        nextHopIp = toIp(ctx.nhip);
-      }
-      if (ctx.nhint != null) {
-        nextHopInterface = getCanonicalInterfaceName(ctx.nhint.getText());
-        _configuration.referenceStructure(
-            INTERFACE, nextHopInterface, ROUTER_STATIC_ROUTE, ctx.nhint.getStart().getLine());
-      }
+    Route_nexthopContext nextHop = ctx.route_nexthop();
+    Route_propertiesContext props = ctx.route_properties();
+    Optional<Prefix> prefix = toPrefix(ctx.route_prefix());
+    if (prefix.isPresent()) {
+      Optional<Ip> nextHopIp = toNextHopIp(nextHop);
+      Optional<String> nextHopInterface = toNextHopInt(nextHop);
+      nextHopInterface.ifPresent(
+          iface ->
+              _configuration.referenceStructure(
+                  INTERFACE, iface, ROUTER_STATIC_ROUTE, nextHop.nhint.getStart().getLine()));
       int distance = DEFAULT_STATIC_ROUTE_DISTANCE;
-      if (ctx.distance != null) {
-        distance = toInteger(ctx.distance);
+      if (props.distance != null) {
+        distance = toInteger(props.distance);
       }
       Long tag = null;
-      if (ctx.tag != null) {
-        tag = toLong(ctx.tag);
+      if (props.tag != null) {
+        tag = toLong(props.tag);
       }
 
-      boolean permanent = ctx.PERMANENT() != null;
+      boolean permanent = props.PERMANENT() != null;
       Integer track = null;
-      if (ctx.track != null) {
+      if (props.track != null) {
         // TODO: handle named instead of numbered track
       }
       StaticRoute route =
-          new StaticRoute(prefix, nextHopIp, nextHopInterface, distance, tag, track, permanent);
+          new StaticRoute(
+              prefix.get(),
+              nextHopIp.orElse(Route.UNSET_ROUTE_NEXT_HOP_IP),
+              nextHopInterface.orElse(null),
+              distance,
+              tag,
+              track,
+              permanent);
       currentVrf().getStaticRoutes().add(route);
-    } else if (ctx.prefix6 != null) {
+    } else {
       // TODO: ipv6 static route
     }
   }
