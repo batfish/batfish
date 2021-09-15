@@ -1,0 +1,30 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname xr-no-route
+!
+interface GigabitEthernet0/0/0/0
+ ipv4 address 10.0.2.1/23
+interface GigabitEthernet0/0/0/1
+ ipv4 address 10.0.2.129/23
+!
+router static
+ address-family ipv4 unicast
+  10.0.0.0/24 10.0.0.1
+  10.0.0.0/24 10.0.0.2 track 2
+  10.0.0.0/24 10.0.0.3
+  10.0.1.0/24 10.0.1.1
+  10.0.1.0/24 10.0.1.2
+  10.0.2.0/24 GigabitEthernet0/0/0/0
+  10.0.2.0/24 GigabitEthernet0/0/0/1 10.0.2.130
+  ! This works even with bogus extra properties
+  no 10.0.0.0/24 10.0.0.3 description something_else track 999
+  no 10.0.0.0/24 10.0.0.2
+  no 10.0.1.0/24
+  no 10.0.2.0/24 GigabitEthernet0/0/0/0
+  ! No matching route (mismatched nextHop IP)
+  no 10.0.2.0/24 GigabitEthernet0/0/0/1 10.0.2.131
+  no 10.0.2.0/24 GigabitEthernet0/0/0/1 10.0.2.130
+  ! No matching route
+  no 192.168.0.0/24
+ !
+!

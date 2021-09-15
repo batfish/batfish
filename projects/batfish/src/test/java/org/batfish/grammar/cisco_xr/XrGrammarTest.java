@@ -35,6 +35,7 @@ import static org.batfish.datamodel.routing_policy.RoutingPolicy.isGenerated;
 import static org.batfish.datamodel.routing_policy.expr.IntComparator.EQ;
 import static org.batfish.datamodel.routing_policy.expr.IntComparator.GE;
 import static org.batfish.datamodel.routing_policy.expr.IntComparator.LE;
+import static org.batfish.grammar.cisco_xr.CiscoXrControlPlaneExtractor.DEFAULT_STATIC_ROUTE_DISTANCE;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.MAX_ADMINISTRATIVE_COST;
@@ -3757,6 +3758,50 @@ public final class XrGrammarTest {
 
     // No other warnings, i.e. other lines are converted successfully
     assertThat(ccae.getWarnings().get(hostname).getRedFlagWarnings(), iterableWithSize(5));
+  }
+
+  @Test
+  public void testNoRoute() {
+    String hostname = "xr-no-route";
+    CiscoXrConfiguration vc = parseVendorConfig(hostname);
+
+    Set<org.batfish.representation.cisco_xr.StaticRoute> staticRoutes =
+        vc.getDefaultVrf().getStaticRoutes();
+    // Only the route not removed with a `no` command should make it to the VS model
+    assertThat(
+        staticRoutes,
+        contains(
+            new org.batfish.representation.cisco_xr.StaticRoute(
+                Prefix.parse("10.0.0.0/24"),
+                Ip.parse("10.0.0.1"),
+                null,
+                DEFAULT_STATIC_ROUTE_DISTANCE,
+                null,
+                null,
+                false)));
+  }
+
+  @Test
+  public void testNoRouteWarning() {
+    String hostname = "xr-no-route";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+
+    Warnings warnings =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+    assertThat(
+        warnings,
+        hasParseWarnings(
+            containsInAnyOrder(
+                allOf(
+                    hasText(containsString("no 192.168.0.0/24")),
+                    hasComment("No static routes matched this line, so none will be removed")),
+                allOf(
+                    hasText(containsString("no 10.0.2.0/24 GigabitEthernet0/0/0/1 10.0.2.131")),
+                    hasComment("No static routes matched this line, so none will be removed")))));
   }
 
   @Test

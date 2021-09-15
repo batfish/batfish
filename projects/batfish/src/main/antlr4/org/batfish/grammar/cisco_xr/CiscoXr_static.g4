@@ -16,24 +16,24 @@ rs_address_family
    (
       UNICAST
       | MULTICAST
-   ) NEWLINE rs_route*
+   ) NEWLINE (rs_route | rs_no_route)*
 ;
 
-rs_route
+route_prefix: (prefix = IP_PREFIX | prefix6 = IPV6_PREFIX);
+
+route_nexthop
 :
-   (
-      prefix = IP_PREFIX
-      | prefix6 = IPV6_PREFIX
-   )
+   nhip = IP_ADDRESS
+   | nhip6 = IPV6_ADDRESS
+   | nhint = interface_name_unstructured
    (
       nhip = IP_ADDRESS
       | nhip6 = IPV6_ADDRESS
-      | nhint = interface_name_unstructured
-      (
-         nhip = IP_ADDRESS
-         | nhip6 = IPV6_ADDRESS
-      )?
-   )
+   )?
+;
+
+route_properties
+:
    (
       (
          BFD FAST_DETECT
@@ -61,8 +61,12 @@ rs_route
       (
          TRACK track = variable
       )
-   )* NEWLINE
+   )*
 ;
+
+rs_no_route: NO route_prefix (route_nexthop route_properties)? NEWLINE;
+
+rs_route: route_prefix route_nexthop route_properties NEWLINE;
 
 rs_vrf
 :
