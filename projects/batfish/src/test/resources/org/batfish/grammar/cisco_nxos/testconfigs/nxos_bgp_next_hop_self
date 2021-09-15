@@ -1,0 +1,46 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_bgp_next_hop_self
+feature bgp
+!
+
+interface Loopback0
+  ip address 1.0.0.1/32
+
+interface Ethernet0
+  no shutdown
+  ip address 2.0.0.0/31
+
+router bgp 1
+  router-id 1.0.0.1
+  address-family ipv4 unicast
+  ! ibgp rr client next-hop-self
+  neighbor 1.0.0.2
+    remote-as 1
+    update-source Loopback0
+    address-family ipv4 unicast
+      next-hop-self
+      route-reflector-client
+  ! ibgp non-rr-client next-hop-self
+  neighbor 1.0.0.3
+    remote-as 1
+    update-source Loopback0
+    address-family ipv4 unicast
+      next-hop-self
+  ! ibgp rr client no next-hop-self
+  neighbor 1.0.0.4
+    remote-as 1
+    update-source Loopback0
+    address-family ipv4 unicast
+      route-reflector-client
+  ! ibgp non-rr-client no next-hop-self
+  neighbor 1.0.0.5
+    remote-as 1
+    update-source Loopback0
+    address-family ipv4 unicast
+  ! ebgp
+  neighbor 2.0.0.1
+    remote-as 2
+    address-family ipv4 unicast
+      next-hop-self
+!
