@@ -941,7 +941,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       NetworkConfigurations networkConfigurations,
       boolean isNewSession) {
     BgpSessionProperties session = BgpRoutingProcess.getBgpSessionProperties(bgpTopology, edge);
-    Ip receiverIp = session.getTailIp();
     BgpPeerConfigId remoteConfigId = edge.tail();
     BgpPeerConfigId ourConfigId = edge.head();
     BgpPeerConfig ourConfig = networkConfigurations.getBgpPeerConfig(edge.head());
