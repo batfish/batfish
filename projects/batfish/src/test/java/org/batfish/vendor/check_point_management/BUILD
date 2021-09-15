@@ -5,6 +5,21 @@ package(
     default_visibility = ["//visibility:private"],
 )
 
+java_library(
+    name = "testlib",
+    srcs = ["NatSettingsTest.java"],
+    deps = [
+        "//projects/batfish-common-protocol:common",
+        "//projects/batfish/src/main/java/org/batfish/vendor/check_point_management",
+        "@maven//:com_fasterxml_jackson_core_jackson_core",
+        "@maven//:com_google_guava_guava_testlib",
+        "@maven//:junit_junit",
+        "@maven//:org_apache_commons_commons_lang3",
+        "@maven//:org_hamcrest_hamcrest",
+    ],
+    visibility = ["//visibility:public"],
+)
+
 junit_tests(
     name = "tests",
     srcs = glob(

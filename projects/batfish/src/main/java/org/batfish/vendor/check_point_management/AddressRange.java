@@ -13,10 +13,15 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 
 public final class AddressRange extends TypedManagementObject
-    implements AddressSpace, NatTranslatedSource {
+    implements AddressSpace, HasNatSettings, NatTranslatedSource {
 
   @Override
   public <T> T accept(AddressSpaceVisitor<T> visitor) {
+    return visitor.visitAddressRange(this);
+  }
+
+  @Override
+  public <T> T accept(HasNatSettingsVisitor<T> visitor) {
     return visitor.visitAddressRange(this);
   }
 
@@ -41,6 +46,7 @@ public final class AddressRange extends TypedManagementObject
     return _ipv6AddressLast;
   }
 
+  @Override
   public @Nonnull NatSettings getNatSettings() {
     return _natSettings;
   }

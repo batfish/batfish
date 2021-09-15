@@ -27,8 +27,6 @@ import org.junit.Test;
 
 /** Test of {@link AddressSpaceToMatchExpr}. */
 public final class AddressSpaceToMatchExprTest {
-  private static final NatSettings TEST_NAT_SETTINGS =
-      new NatSettings(true, "gateway", "All", null, "hide");
   private static final AddressSpaceToIpSpace ADDR_SPACE_TO_IP_SPACE =
       new AddressSpaceToIpSpace(ImmutableMap.of());
 
@@ -40,7 +38,7 @@ public final class AddressSpaceToMatchExprTest {
           Ip.parse("10.0.0.255"),
           null,
           null,
-          TEST_NAT_SETTINGS,
+          NatSettingsTest.TEST_INSTANCE,
           ADDR_RANGE_NAME,
           ADDR_RANGE_UID);
 
@@ -57,24 +55,24 @@ public final class AddressSpaceToMatchExprTest {
   private static final Uid HOST1_UID = Uid.of("12");
   private static final String HOST1_NAME = "name1";
   private static final Host HOST1 =
-      new Host(Ip.parse("10.2.1.1"), TEST_NAT_SETTINGS, HOST1_NAME, HOST1_UID);
+      new Host(Ip.parse("10.2.1.1"), NatSettingsTest.TEST_INSTANCE, HOST1_NAME, HOST1_UID);
 
   private static final Uid HOST2_UID = Uid.of("13");
   private static final String HOST2_NAME = "name2";
   private static final Host HOST2 =
-      new Host(Ip.parse("10.2.2.1"), TEST_NAT_SETTINGS, HOST2_NAME, HOST2_UID);
+      new Host(Ip.parse("10.2.2.1"), NatSettingsTest.TEST_INSTANCE, HOST2_NAME, HOST2_UID);
 
   private static final Uid HOST3_UID = Uid.of("14");
   private static final String HOST3_NAME = "name3";
   private static final Host HOST3 =
-      new Host(Ip.parse("10.2.3.1"), TEST_NAT_SETTINGS, HOST3_NAME, HOST3_UID);
+      new Host(Ip.parse("10.2.3.1"), NatSettingsTest.TEST_INSTANCE, HOST3_NAME, HOST3_UID);
 
   private static final Uid NETWORK_UID = Uid.of("15");
   private static final String NETWORK_NAME = "network";
   private static final Network NETWORK =
       new Network(
           NETWORK_NAME,
-          TEST_NAT_SETTINGS,
+          NatSettingsTest.TEST_INSTANCE,
           Ip.parse("10.3.0.0"),
           Ip.parse("255.255.0.0"),
           NETWORK_UID);

@@ -1,5 +1,6 @@
 package org.batfish.vendor.check_point_gateway.representation;
 
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.transformation.Transformation.when;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourcePort;
@@ -8,6 +9,7 @@ import static org.batfish.vendor.check_point_gateway.representation.CheckPointGa
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import java.util.Iterator;
 import java.util.List;
@@ -17,20 +19,30 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.vendor.check_point_management.AddressRange;
+import org.batfish.vendor.check_point_management.AddressSpaceToIpSpace;
 import org.batfish.vendor.check_point_management.AddressSpaceToMatchExpr;
 import org.batfish.vendor.check_point_management.GatewayOrServer;
+import org.batfish.vendor.check_point_management.HasNatSettings;
+import org.batfish.vendor.check_point_management.HasNatSettingsVisitor;
 import org.batfish.vendor.check_point_management.Host;
 import org.batfish.vendor.check_point_management.NamedManagementObject;
+import org.batfish.vendor.check_point_management.NatHideBehindGateway;
+import org.batfish.vendor.check_point_management.NatHideBehindIp;
+import org.batfish.vendor.check_point_management.NatHideBehindVisitor;
+import org.batfish.vendor.check_point_management.NatMethod;
 import org.batfish.vendor.check_point_management.NatRule;
 import org.batfish.vendor.check_point_management.NatRuleOrSectionVisitor;
 import org.batfish.vendor.check_point_management.NatRulebase;
 import org.batfish.vendor.check_point_management.NatSection;
+import org.batfish.vendor.check_point_management.NatSettings;
 import org.batfish.vendor.check_point_management.NatTranslatedSource;
 import org.batfish.vendor.check_point_management.NatTranslatedSourceVisitor;
+import org.batfish.vendor.check_point_management.Network;
 import org.batfish.vendor.check_point_management.Original;
 import org.batfish.vendor.check_point_management.ServiceToMatchExpr;
 import org.batfish.vendor.check_point_management.Uid;
@@ -221,15 +233,82 @@ public class CheckpointNatConversions {
     return Optional.of(when(maybeOrigMatchExpr.get()).apply(maybeSteps.get()).build());
   }
 
-  static @Nonnull Optional<Transformation> mergeTransformations(
-      List<Transformation> manualHideTransformations) {
-    // TODO: add automatic, non-HIDE
-    if (manualHideTransformations.isEmpty()) {
+  /** Get the {@link Transformation} corresponding to the given {@link NatSettings}. */
+  static @Nonnull Optional<Transformation> automaticHideRuleTransformation(
+      HasNatSettings hasNatSettings,
+      GatewayOrServer gateway,
+      AddressSpaceToIpSpace toIpSpaceVisitor,
+      Warnings warnings) {
+    NatSettings natSettings = hasNatSettings.getNatSettings();
+    assert natSettings.getAutoRule() && natSettings.getMethod() == NatMethod.HIDE;
+    if (natSettings.getHideBehind() == null) {
+      warnings.redFlag(
+          String.format(
+              "NAT settings on %s %s are invalid: type is HIDE, but hide-behind is missing",
+              hasNatSettings.getClass(), hasNatSettings.getName()));
+      return Optional.empty();
+    } else if (!"All".equals(natSettings.getInstallOn())) {
+      // TODO Support installing NAT rules on specific gateways.
+      // TODO What does it mean if install-on is missing?
+      warnings.redFlag(
+          String.format(
+              "Automatic NAT rules on specific gateways are not yet supported: NAT settings on %s"
+                  + " %s will be ignored",
+              hasNatSettings.getClass(), hasNatSettings.getName()));
       return Optional.empty();
     }
+    // Build match expression to match traffic from the source to hide
+    IpSpace originalIpSpace =
+        new HasNatSettingsVisitor<IpSpace>() {
+          @Override
+          public IpSpace visitAddressRange(AddressRange addressRange) {
+            return addressRange.accept(toIpSpaceVisitor);
+          }
+
+          @Override
+          public IpSpace visitHost(Host host) {
+            return host.accept(toIpSpaceVisitor);
+          }
+
+          @Override
+          public IpSpace visitNetwork(Network network) {
+            return network.accept(toIpSpaceVisitor);
+          }
+        }.visit(hasNatSettings);
+    AclLineMatchExpr matchOriginalSrc = matchSrc(originalIpSpace);
+    // Find IP to translate the hidden source to
+    Ip transformedIp =
+        new NatHideBehindVisitor<Ip>() {
+          @Override
+          public Ip visitNatHideBehindGateway(NatHideBehindGateway natHideBehindGateway) {
+            // TODO When hiding behind a gateway, should the translated IP be the gateway IP
+            //      or the ingress interface IP?
+            return gateway.getIpv4Address();
+          }
+
+          @Override
+          public Ip visitNatHideBehindIp(NatHideBehindIp natHideBehindIp) {
+            return natHideBehindIp.getIp();
+          }
+        }.visit(natSettings.getHideBehind());
+    return Optional.of(when(matchOriginalSrc).apply(assignSourceIp(transformedIp)).build());
+  }
+
+  static @Nonnull Optional<Transformation> mergeTransformations(
+      List<Transformation> manualHideTransformations,
+      List<Transformation> automaticHideTransformations) {
+    // TODO: add non-HIDE
+    if (manualHideTransformations.isEmpty() && automaticHideTransformations.isEmpty()) {
+      return Optional.empty();
+    }
+    List<Transformation> reversedAutomaticHideTransformations =
+        Lists.reverse(automaticHideTransformations);
     List<Transformation> reversedManualHideTransformations =
         Lists.reverse(manualHideTransformations);
-    Iterator<Transformation> i = reversedManualHideTransformations.iterator();
+    Iterator<Transformation> i =
+        Iterators.concat(
+            reversedAutomaticHideTransformations.iterator(),
+            reversedManualHideTransformations.iterator());
     Transformation finalTransformation = i.next();
     while (i.hasNext()) {
       Transformation previousTransformation = i.next();

@@ -1,19 +1,25 @@
 package org.batfish.vendor.check_point_gateway.representation;
 
+import static org.batfish.common.matchers.WarningMatchers.hasText;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.FALSE;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourcePort;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.NAT_PORT_FIRST;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.NAT_PORT_LAST;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.TRANSLATED_SOURCE_TO_TRANSFORMATION_STEPS;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.automaticHideRuleTransformation;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.checkValidManualHide;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getApplicableNatRules;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getManualNatRules;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.manualHideRuleTransformation;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.manualHideTransformationSteps;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.mergeTransformations;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -26,18 +32,24 @@ import java.util.Optional;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.vendor.check_point_management.AddressRange;
+import org.batfish.vendor.check_point_management.AddressSpaceToIpSpace;
 import org.batfish.vendor.check_point_management.AddressSpaceToMatchExpr;
 import org.batfish.vendor.check_point_management.CpmiAnyObject;
 import org.batfish.vendor.check_point_management.GatewayOrServer;
 import org.batfish.vendor.check_point_management.GatewayOrServerPolicy;
 import org.batfish.vendor.check_point_management.Host;
+import org.batfish.vendor.check_point_management.NatHideBehindGateway;
+import org.batfish.vendor.check_point_management.NatHideBehindIp;
 import org.batfish.vendor.check_point_management.NatMethod;
 import org.batfish.vendor.check_point_management.NatRule;
 import org.batfish.vendor.check_point_management.NatRulebase;
 import org.batfish.vendor.check_point_management.NatSettings;
+import org.batfish.vendor.check_point_management.NatSettingsTest;
+import org.batfish.vendor.check_point_management.Network;
 import org.batfish.vendor.check_point_management.Original;
 import org.batfish.vendor.check_point_management.PolicyTargets;
 import org.batfish.vendor.check_point_management.ServiceTcp;
@@ -49,14 +61,8 @@ import org.junit.Test;
 
 /** Test of {@link CheckpointNatConversions}. */
 public final class CheckpointNatConversionsTest {
-  public static final NatSettings NAT_SETTINGS_TEST_INSTANCE =
-      new NatSettings(true, "gateway", "All", null, "hide");
-
   @Test
   public void testGetApplicableNatRules() {
-    GatewayOrServer gateway =
-        new SimpleGateway(
-            Ip.ZERO, "foo", ImmutableList.of(), new GatewayOrServerPolicy(null, null), UID);
     NatRule enabledRule =
         new NatRule(
             true,
@@ -90,7 +96,7 @@ public final class CheckpointNatConversionsTest {
     NatRulebase natRulebase =
         new NatRulebase(ImmutableMap.of(), ImmutableList.of(enabledRule, disabledRule), UID);
     assertThat(
-        getApplicableNatRules(natRulebase, gateway).collect(ImmutableList.toImmutableList()),
+        getApplicableNatRules(natRulebase, TEST_GATEWAY).collect(ImmutableList.toImmutableList()),
         equalTo(ImmutableList.of(enabledRule)));
   }
 
@@ -139,7 +145,8 @@ public final class CheckpointNatConversionsTest {
   @Test
   public void testCheckValidManualHide() {
     Uid uid = Uid.of("1");
-    TypedManagementObject addressSpace = new Host(Ip.ZERO, NAT_SETTINGS_TEST_INSTANCE, "foo", uid);
+    TypedManagementObject addressSpace =
+        new Host(Ip.ZERO, NatSettingsTest.TEST_INSTANCE, "foo", uid);
     TypedManagementObject service = new ServiceTcp("foo", "1", uid);
     Warnings warnings = new Warnings();
 
@@ -162,7 +169,7 @@ public final class CheckpointNatConversionsTest {
       Uid hostUid = Uid.of("1");
       Ip hostIp = Ip.parse("1.1.1.1");
       String hostname = "host";
-      Host host = new Host(hostIp, NAT_SETTINGS_TEST_INSTANCE, hostname, hostUid);
+      Host host = new Host(hostIp, NatSettingsTest.TEST_INSTANCE, hostname, hostUid);
       assertThat(
           manualHideTransformationSteps(host, ORIG, ORIG, warnings),
           equalTo(
@@ -174,7 +181,7 @@ public final class CheckpointNatConversionsTest {
       // src: ipv6 host
       Uid hostUid = Uid.of("1");
       String hostname = "host";
-      Host host = new Host(null, NAT_SETTINGS_TEST_INSTANCE, hostname, hostUid);
+      Host host = new Host(null, NatSettingsTest.TEST_INSTANCE, hostname, hostUid);
       assertThat(
           manualHideTransformationSteps(host, ORIG, ORIG, warnings), equalTo(Optional.empty()));
     }
@@ -186,7 +193,7 @@ public final class CheckpointNatConversionsTest {
       String name = "range1";
       AddressRange addressRange =
           new AddressRange(
-              firstIp, lastIp, null, null, NAT_SETTINGS_TEST_INSTANCE, name, addressRangeUid);
+              firstIp, lastIp, null, null, NatSettingsTest.TEST_INSTANCE, name, addressRangeUid);
       assertThat(
           manualHideTransformationSteps(addressRange, ORIG, ORIG, warnings),
           equalTo(
@@ -201,7 +208,7 @@ public final class CheckpointNatConversionsTest {
       String name = "range1";
       AddressRange addressRange =
           new AddressRange(
-              null, null, Ip6.ZERO, Ip6.ZERO, NAT_SETTINGS_TEST_INSTANCE, name, addressRangeUid);
+              null, null, Ip6.ZERO, Ip6.ZERO, NatSettingsTest.TEST_INSTANCE, name, addressRangeUid);
       assertThat(
           manualHideTransformationSteps(addressRange, ORIG, ORIG, warnings),
           equalTo(Optional.empty()));
@@ -219,7 +226,7 @@ public final class CheckpointNatConversionsTest {
     Uid hostUid = Uid.of("1");
     Ip hostIp = Ip.parse("1.1.1.1");
     String hostname = "host";
-    Host host = new Host(hostIp, NAT_SETTINGS_TEST_INSTANCE, hostname, hostUid);
+    Host host = new Host(hostIp, NatSettingsTest.TEST_INSTANCE, hostname, hostUid);
     ServiceToMatchExpr serviceToMatchExpr = new ServiceToMatchExpr(ImmutableMap.of());
     AddressSpaceToMatchExpr addressSpaceToMatchExpr =
         new AddressSpaceToMatchExpr(ImmutableMap.of());
@@ -304,8 +311,133 @@ public final class CheckpointNatConversionsTest {
   }
 
   @Test
+  public void testAutomaticHideRuleTransformation_hideBehindGateway() {
+    NatSettings natSettings =
+        new NatSettings(true, NatHideBehindGateway.INSTANCE, "All", null, NatMethod.HIDE);
+    Ip gatewayIp = Ip.parse("5.5.5.5");
+    GatewayOrServer gateway =
+        new SimpleGateway(
+            gatewayIp, "gw", ImmutableList.of(), new GatewayOrServerPolicy(null, null), UID);
+    AddressSpaceToIpSpace toIpSpaceVisitor = new AddressSpaceToIpSpace(ImmutableMap.of());
+    {
+      // Hide address range
+      Prefix prefixToHide = Prefix.parse("1.1.1.0/24");
+      AddressRange addressRange =
+          new AddressRange(
+              prefixToHide.getStartIp(),
+              prefixToHide.getEndIp(),
+              null,
+              null,
+              natSettings,
+              "a1",
+              UID);
+      Warnings warnings = new Warnings(true, true, true);
+      Optional<Transformation> transformation =
+          automaticHideRuleTransformation(addressRange, gateway, toIpSpaceVisitor, warnings);
+      assertTrue(transformation.isPresent());
+      assertThat(
+          transformation.get(),
+          equalTo(
+              Transformation.when(matchSrc(prefixToHide.toIpSpace()))
+                  .apply(assignSourceIp(gatewayIp))
+                  .build()));
+      assertThat(warnings.getRedFlagWarnings(), empty());
+    }
+    {
+      // Hide host
+      Ip hostIp = Ip.parse("1.1.1.1");
+      Host host = new Host(hostIp, natSettings, "host", UID);
+      Warnings warnings = new Warnings(true, true, true);
+      Optional<Transformation> transformation =
+          automaticHideRuleTransformation(host, gateway, toIpSpaceVisitor, warnings);
+      assertTrue(transformation.isPresent());
+      assertThat(
+          transformation.get(),
+          equalTo(
+              Transformation.when(matchSrc(hostIp.toIpSpace()))
+                  .apply(assignSourceIp(gatewayIp))
+                  .build()));
+      assertThat(warnings.getRedFlagWarnings(), empty());
+    }
+    {
+      // Hide network
+      Prefix prefixToHide = Prefix.parse("1.1.1.0/24");
+      // checkpoint sets "don't care" bits to 0 in masks, whereas we set them to 1
+      Ip netmask = prefixToHide.getPrefixWildcard().inverted();
+      Network network = new Network("nw", natSettings, prefixToHide.getStartIp(), netmask, UID);
+      Warnings warnings = new Warnings(true, true, true);
+      Optional<Transformation> transformation =
+          automaticHideRuleTransformation(network, gateway, toIpSpaceVisitor, warnings);
+      assertTrue(transformation.isPresent());
+      assertThat(
+          transformation.get(),
+          equalTo(
+              Transformation.when(matchSrc(prefixToHide.toIpSpace()))
+                  .apply(assignSourceIp(gatewayIp))
+                  .build()));
+      assertThat(warnings.getRedFlagWarnings(), empty());
+    }
+  }
+
+  @Test
+  public void testAutomaticHideRuleTransformation_hideBehindIp() {
+    Ip hideBehindIp = Ip.parse("5.5.5.5");
+    NatSettings natSettings =
+        new NatSettings(true, new NatHideBehindIp(hideBehindIp), "All", null, NatMethod.HIDE);
+    AddressSpaceToIpSpace toIpSpaceVisitor = new AddressSpaceToIpSpace(ImmutableMap.of());
+
+    // No need to test every type of HasNatSettings because this is done in hideBehindGateway test
+    Ip hostIp = Ip.parse("1.1.1.1");
+    Host host = new Host(hostIp, natSettings, "host", UID);
+    Warnings warnings = new Warnings(true, true, true);
+    Optional<Transformation> transformation =
+        automaticHideRuleTransformation(host, TEST_GATEWAY, toIpSpaceVisitor, warnings);
+    assertTrue(transformation.isPresent());
+    assertThat(
+        transformation.get(),
+        equalTo(
+            Transformation.when(matchSrc(hostIp.toIpSpace()))
+                .apply(assignSourceIp(hideBehindIp))
+                .build()));
+    assertThat(warnings.getRedFlagWarnings(), empty());
+  }
+
+  @Test
+  public void testAutomaticHideRuleTransformation_warnings() {
+    AddressSpaceToIpSpace toIpSpaceVisitor = new AddressSpaceToIpSpace(ImmutableMap.of());
+    {
+      // Missing hide-behind
+      NatSettings natSettings = new NatSettings(true, null, "All", null, NatMethod.HIDE);
+      Host host = new Host(Ip.parse("1.1.1.1"), natSettings, "host", UID);
+      Warnings warnings = new Warnings(true, true, true);
+      Optional<Transformation> transformation =
+          automaticHideRuleTransformation(host, TEST_GATEWAY, toIpSpaceVisitor, warnings);
+      assertFalse(transformation.isPresent());
+      assertThat(
+          warnings.getRedFlagWarnings(),
+          contains(hasText(containsString("type is HIDE, but hide-behind is missing"))));
+    }
+    {
+      // install-on is not "All" (individual gateways aren't yet supported)
+      NatSettings natSettings =
+          new NatSettings(true, NatHideBehindGateway.INSTANCE, "gateway1", null, NatMethod.HIDE);
+      Host host = new Host(Ip.parse("1.1.1.1"), natSettings, "host", UID);
+      Warnings warnings = new Warnings(true, true, true);
+      Optional<Transformation> transformation =
+          automaticHideRuleTransformation(host, TEST_GATEWAY, toIpSpaceVisitor, warnings);
+      assertFalse(transformation.isPresent());
+      assertThat(
+          warnings.getRedFlagWarnings(),
+          contains(
+              hasText(
+                  containsString(
+                      "Automatic NAT rules on specific gateways are not yet supported"))));
+    }
+  }
+
+  @Test
   public void visitHost_noIp() {
-    Host host = new Host(null, NAT_SETTINGS_TEST_INSTANCE, "host", Uid.of("1"));
+    Host host = new Host(null, NatSettingsTest.TEST_INSTANCE, "host", Uid.of("1"));
     assertThat(
         TRANSLATED_SOURCE_TO_TRANSFORMATION_STEPS.visitHost(host), equalTo(ImmutableList.of()));
   }
@@ -313,22 +445,48 @@ public final class CheckpointNatConversionsTest {
   @Test
   public void testMergeTransformations() {
     {
-      List<Transformation> manualHideTransformations = ImmutableList.of();
-      assertThat(mergeTransformations(manualHideTransformations), equalTo(Optional.empty()));
+      // Manual and automatic both empty
+      assertThat(
+          mergeTransformations(ImmutableList.of(), ImmutableList.of()), equalTo(Optional.empty()));
     }
     {
+      // One manual transformation
       Transformation t =
           Transformation.always().apply(TransformationStep.assignSourceIp(Ip.ZERO)).build();
       List<Transformation> manualHideTransformations = ImmutableList.of(t);
-      assertThat(mergeTransformations(manualHideTransformations), equalTo(Optional.of(t)));
+      assertThat(
+          mergeTransformations(manualHideTransformations, ImmutableList.of()),
+          equalTo(Optional.of(t)));
     }
     {
+      // Two manual transformations
       Transformation.Builder tb1 = Transformation.when(FALSE).apply(assignDestinationIp(Ip.ZERO));
       Transformation t2 =
           Transformation.always().apply(TransformationStep.assignSourceIp(Ip.ZERO)).build();
       List<Transformation> manualHideTransformations = ImmutableList.of(tb1.build(), t2);
       assertThat(
-          mergeTransformations(manualHideTransformations),
+          mergeTransformations(manualHideTransformations, ImmutableList.of()),
+          equalTo(Optional.of(tb1.setOrElse(t2).build())));
+    }
+    {
+      // One manual and one automatic transformation
+      Transformation.Builder tb1 = Transformation.when(FALSE).apply(assignDestinationIp(Ip.ZERO));
+      Transformation t2 =
+          Transformation.always().apply(TransformationStep.assignSourceIp(Ip.ZERO)).build();
+      List<Transformation> manualHideTransformations = ImmutableList.of(tb1.build());
+      List<Transformation> autoHideTransformations = ImmutableList.of(t2);
+      assertThat(
+          mergeTransformations(manualHideTransformations, autoHideTransformations),
+          equalTo(Optional.of(tb1.setOrElse(t2).build())));
+    }
+    {
+      // Two automatic transformations
+      Transformation.Builder tb1 = Transformation.when(FALSE).apply(assignDestinationIp(Ip.ZERO));
+      Transformation t2 =
+          Transformation.always().apply(TransformationStep.assignSourceIp(Ip.ZERO)).build();
+      List<Transformation> autoHideTransformations = ImmutableList.of(tb1.build(), t2);
+      assertThat(
+          mergeTransformations(ImmutableList.of(), autoHideTransformations),
           equalTo(Optional.of(tb1.setOrElse(t2).build())));
     }
   }
@@ -336,6 +494,9 @@ public final class CheckpointNatConversionsTest {
   private static final Uid UID = Uid.of("1001");
   private static final Uid PT_UID = Uid.of("1002");
   private static final PolicyTargets POLICY_TARGETS = new PolicyTargets(PT_UID);
+  private static final GatewayOrServer TEST_GATEWAY =
+      new SimpleGateway(
+          Ip.ZERO, "foo", ImmutableList.of(), new GatewayOrServerPolicy(null, null), UID);
   private static final Uid ANY_UID = Uid.of("1003");
   private static final CpmiAnyObject ANY = new CpmiAnyObject(ANY_UID);
   private static final Uid ORIG_UID = Uid.of("1004");

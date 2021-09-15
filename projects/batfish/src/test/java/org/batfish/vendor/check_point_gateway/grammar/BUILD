@@ -29,6 +29,7 @@ junit_tests(
         "//projects/batfish/src/main/java/org/batfish/vendor/check_point_gateway/grammar",
         "//projects/batfish/src/main/java/org/batfish/vendor/check_point_gateway/representation",
         "//projects/batfish/src/main/java/org/batfish/vendor/check_point_management",
+        "//projects/batfish/src/test/java/org/batfish/vendor/check_point_management:testlib",
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_guava_guava",
         "@maven//:junit_junit",
