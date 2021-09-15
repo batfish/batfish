@@ -71,16 +71,22 @@ public class ServiceToMatchExpr implements ServiceVisitor<AclLineMatchExpr> {
 
   @Override
   public AclLineMatchExpr visitServiceOther(ServiceOther serviceOther) {
+    IpProtocol ipProtocol = IpProtocol.fromNumber(serviceOther.getIpProtocol());
     if (Strings.isNullOrEmpty(serviceOther.getMatch())) {
       HeaderSpace.Builder hsb = HeaderSpace.builder();
-      hsb.setIpProtocols(IpProtocol.fromNumber(serviceOther.getIpProtocol()));
+      hsb.setIpProtocols(ipProtocol);
       return AclLineMatchExprs.match(hsb.build(), serviceOtherTraceElement(serviceOther));
     }
+    // TODO really parse and handle match conditions
     if (serviceOther.getMatch().equals("uh_dport > 33000, (IPV4_VER (ip_ttl < 30))")) {
-      HeaderSpace.Builder hsb = HeaderSpace.builder();
-      hsb.setIpProtocols(IpProtocol.fromNumber(serviceOther.getIpProtocol()));
-      hsb.setDstPorts(new SubRange(33001, 65535));
-      return AclLineMatchExprs.match(hsb.build(), serviceOtherTraceElement(serviceOther));
+      return AclLineMatchExprs.and(
+          serviceOtherTraceElement(serviceOther),
+          AclLineMatchExprs.match(
+              HeaderSpace.builder()
+                  .setIpProtocols(ipProtocol)
+                  .setDstPorts(new SubRange(33001, 65535))
+                  .build(),
+              matchConditionTraceElement(serviceOther.getMatch())));
     }
     return new FalseExpr(TraceElement.of("Unsupported service-other " + serviceOther.getName()));
   }
@@ -109,6 +115,11 @@ public class ServiceToMatchExpr implements ServiceVisitor<AclLineMatchExpr> {
                 .setDstPorts(portStringToIntegerSpace(portDefinition).getSubRanges())
                 .build(),
             destPortTraceElement(portDefinition)));
+  }
+
+  @VisibleForTesting
+  static TraceElement matchConditionTraceElement(String match) {
+    return TraceElement.of(String.format("Matched condition '%s'", match));
   }
 
   @VisibleForTesting

@@ -5,12 +5,14 @@ import static org.batfish.datamodel.matchers.TraceTreeMatchers.isTraceTree;
 import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceCpmiAnyTraceElement;
 import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceGroupTraceElement;
 import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceIcmpTraceElement;
+import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceOtherTraceElement;
 import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceTcpTraceElement;
 import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceUdpTraceElement;
 import static org.batfish.vendor.check_point_management.ServiceToMatchExpr.destPortTraceElement;
 import static org.batfish.vendor.check_point_management.ServiceToMatchExpr.icmpCodeTraceElement;
 import static org.batfish.vendor.check_point_management.ServiceToMatchExpr.icmpTypeTraceElement;
 import static org.batfish.vendor.check_point_management.ServiceToMatchExpr.ipProtocolTraceElement;
+import static org.batfish.vendor.check_point_management.ServiceToMatchExpr.matchConditionTraceElement;
 import static org.batfish.vendor.check_point_management.ServiceToMatchExpr.portRangeStringToIntegerSpace;
 import static org.batfish.vendor.check_point_management.ServiceToMatchExpr.portStringToIntegerSpace;
 import static org.hamcrest.Matchers.equalTo;
@@ -120,6 +122,33 @@ public final class ServiceToMatchExprTest {
             serviceIcmpTraceElement(serviceNoCode),
             isTraceTree(ipProtocolTraceElement(IpProtocol.ICMP)),
             isTraceTree(icmpTypeTraceElement(1))));
+  }
+
+  @Test
+  public void testOther() {
+    String match = "uh_dport > 33000, (IPV4_VER (ip_ttl < 30))";
+    ServiceOther service = new ServiceOther("udp", 17, match, Uid.of("1"));
+    AclLineMatchExpr expr = _serviceToMatchExpr.visit(service);
+    assertBddsEqual(
+        expr,
+        AclLineMatchExprs.match(
+            HeaderSpace.builder()
+                .setIpProtocols(IpProtocol.UDP)
+                .setDstPorts(new SubRange(33001, 65535))
+                .build()));
+
+    List<TraceTree> trace =
+        AclTracer.trace(
+            expr,
+            TEST_FLOW.toBuilder().setDstPort(33333).setIpProtocol(IpProtocol.UDP).build(),
+            "eth1",
+            ImmutableMap.of(),
+            ImmutableMap.of(),
+            ImmutableMap.of());
+    assertThat(
+        trace.get(0),
+        isTraceTree(
+            serviceOtherTraceElement(service), isTraceTree(matchConditionTraceElement(match))));
   }
 
   @Test
