@@ -37,6 +37,7 @@ import static org.batfish.datamodel.routing_policy.expr.IntComparator.GE;
 import static org.batfish.datamodel.routing_policy.expr.IntComparator.LE;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
+import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.DEFAULT_LOCAL_BGP_WEIGHT;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.MAX_ADMINISTRATIVE_COST;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.RESOLUTION_POLICY_NAME;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeAbfIpv4PolicyName;
@@ -2612,6 +2613,7 @@ public final class XrGrammarTest {
             .setProtocol(RoutingProtocol.BGP)
             .setReceivedFromIp(Ip.ZERO) // indicates local origination
             .setSrcProtocol(RoutingProtocol.STATIC)
+            .setWeight(DEFAULT_LOCAL_BGP_WEIGHT)
             .build();
     Bgpv4Route expectedRoute2 = expectedRoute1.toBuilder().setNetwork(permittedPrefix2).build();
     assertThat(bgpRibRoutes, containsInAnyOrder(expectedRoute1, expectedRoute2));
@@ -2804,6 +2806,7 @@ public final class XrGrammarTest {
             .setProtocol(RoutingProtocol.BGP)
             .setReceivedFromIp(Ip.ZERO) // indicates local origination
             .setSrcProtocol(RoutingProtocol.STATIC)
+            .setWeight(DEFAULT_LOCAL_BGP_WEIGHT)
             .build();
     Bgpv4Route localRoute2 = localRoute1.toBuilder().setNetwork(staticPrefix2).build();
     Bgpv4Route localRoute3 = localRoute1.toBuilder().setNetwork(staticPrefix3).build();
