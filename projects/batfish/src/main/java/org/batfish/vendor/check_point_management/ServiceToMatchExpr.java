@@ -5,10 +5,12 @@ import static org.batfish.datamodel.applications.PortsApplication.MAX_PORT_NUMBE
 import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceCpmiAnyTraceElement;
 import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceGroupTraceElement;
 import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceIcmpTraceElement;
+import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceOtherTraceElement;
 import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceTcpTraceElement;
 import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceUdpTraceElement;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -68,6 +70,28 @@ public class ServiceToMatchExpr implements ServiceVisitor<AclLineMatchExpr> {
   }
 
   @Override
+  public AclLineMatchExpr visitServiceOther(ServiceOther serviceOther) {
+    IpProtocol ipProtocol = IpProtocol.fromNumber(serviceOther.getIpProtocol());
+    if (Strings.isNullOrEmpty(serviceOther.getMatch())) {
+      HeaderSpace.Builder hsb = HeaderSpace.builder();
+      hsb.setIpProtocols(ipProtocol);
+      return AclLineMatchExprs.match(hsb.build(), serviceOtherTraceElement(serviceOther));
+    }
+    // TODO really parse and handle match conditions
+    if (serviceOther.getMatch().equals("uh_dport > 33000, (IPV4_VER (ip_ttl < 30))")) {
+      return AclLineMatchExprs.and(
+          serviceOtherTraceElement(serviceOther),
+          AclLineMatchExprs.match(
+              HeaderSpace.builder()
+                  .setIpProtocols(ipProtocol)
+                  .setDstPorts(new SubRange(33001, 65535))
+                  .build(),
+              matchConditionTraceElement(serviceOther.getMatch())));
+    }
+    return new FalseExpr(TraceElement.of("Unsupported service-other " + serviceOther.getName()));
+  }
+
+  @Override
   public AclLineMatchExpr visitServiceTcp(ServiceTcp serviceTcp) {
     String portDefinition = serviceTcp.getPort();
     return AclLineMatchExprs.and(
@@ -91,6 +115,11 @@ public class ServiceToMatchExpr implements ServiceVisitor<AclLineMatchExpr> {
                 .setDstPorts(portStringToIntegerSpace(portDefinition).getSubRanges())
                 .build(),
             destPortTraceElement(portDefinition)));
+  }
+
+  @VisibleForTesting
+  static TraceElement matchConditionTraceElement(String match) {
+    return TraceElement.of(String.format("Matched condition '%s'", match));
   }
 
   @VisibleForTesting
@@ -131,7 +160,7 @@ public class ServiceToMatchExpr implements ServiceVisitor<AclLineMatchExpr> {
               getDescendantMatchExpr((ServiceGroup) member, alreadyTraversedMembers));
         }
       } else if (member instanceof Service) {
-        descendantObjExprs.add(this.visit((Service) member));
+        descendantObjExprs.add(visit((Service) member));
       } else {
         // Don't match non-servicey objects
         descendantObjExprs.add(FalseExpr.INSTANCE);
