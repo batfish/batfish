@@ -1017,7 +1017,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         bgpRibExports.from(
             ebgpv4DeltaPrev
                 .getActions()
-                .filter(a -> !receiverIp.equals(a.getRoute().getReceivedFromIp()))
+                .filter(r -> !receivedFrom(session, r))
                 .map(
                     a ->
                         RouteAdvertisement.<AnnotatedRoute<Bgpv4Route>>builder()
@@ -1035,7 +1035,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         bgpRibExports.from(
             bgpv4DeltaPrev
                 .getActions()
-                .filter(a -> !receiverIp.equals(a.getRoute().getReceivedFromIp()))
+                .filter(r -> !receivedFrom(session, r))
                 .map(
                     a ->
                         RouteAdvertisement.<AnnotatedRoute<Bgpv4Route>>builder()
@@ -1052,8 +1052,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         routes =
             bgpv4DeltaPrev
                 .getActions()
-                .filter(
-                    r -> !r.isWithdrawn() && !receiverIp.equals(r.getRoute().getReceivedFromIp()))
+                .filter(r -> !r.isWithdrawn() && !receivedFrom(session, r))
                 .map(
                     r ->
                         RouteAdvertisement.<AnnotatedRoute<Bgpv4Route>>builder()
@@ -1139,6 +1138,21 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             mainRibExports);
 
     return Stream.concat(advertisementStream, neighborGeneratedRoutes);
+  }
+
+  /**
+   * Returns {@code true} iff advertisement can be guaranteed to have been received from {@code
+   * session}.
+   */
+  private static boolean receivedFrom(
+      BgpSessionProperties session, RouteAdvertisement<Bgpv4Route> routeAdvertisement) {
+    switch (session.getSessionType()) {
+      case EBGP_UNNUMBERED:
+      case IBGP_UNNUMBERED:
+        return false;
+      default:
+        return session.getTailIp().equals(routeAdvertisement.getRoute().getReceivedFromIp());
+    }
   }
 
   /**
