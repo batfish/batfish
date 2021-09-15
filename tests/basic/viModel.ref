@@ -1214,12 +1214,6 @@
             "name" : "~BGP_REDISTRIBUTION_POLICY:default~",
             "statements" : [
               {
-                "class" : "org.batfish.datamodel.routing_policy.statement.SetNextHop",
-                "expr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DiscardNextHop"
-                }
-              },
-              {
                 "class" : "org.batfish.datamodel.routing_policy.statement.SetWeight",
                 "weight" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
@@ -2937,12 +2931,6 @@
             "name" : "~BGP_REDISTRIBUTION_POLICY:default~",
             "statements" : [
               {
-                "class" : "org.batfish.datamodel.routing_policy.statement.SetNextHop",
-                "expr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DiscardNextHop"
-                }
-              },
-              {
                 "class" : "org.batfish.datamodel.routing_policy.statement.SetWeight",
                 "weight" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
@@ -3595,12 +3583,6 @@
           "~BGP_REDISTRIBUTION_POLICY:default~" : {
             "name" : "~BGP_REDISTRIBUTION_POLICY:default~",
             "statements" : [
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.SetNextHop",
-                "expr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DiscardNextHop"
-                }
-              },
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.SetWeight",
                 "weight" : {
@@ -5230,12 +5212,6 @@
           "~BGP_REDISTRIBUTION_POLICY:default~" : {
             "name" : "~BGP_REDISTRIBUTION_POLICY:default~",
             "statements" : [
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.SetNextHop",
-                "expr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DiscardNextHop"
-                }
-              },
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.SetWeight",
                 "weight" : {
@@ -6960,12 +6936,6 @@
             "name" : "~BGP_REDISTRIBUTION_POLICY:default~",
             "statements" : [
               {
-                "class" : "org.batfish.datamodel.routing_policy.statement.SetNextHop",
-                "expr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DiscardNextHop"
-                }
-              },
-              {
                 "class" : "org.batfish.datamodel.routing_policy.statement.SetWeight",
                 "weight" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
@@ -7762,12 +7732,6 @@
             "name" : "~BGP_REDISTRIBUTION_POLICY:default~",
             "statements" : [
               {
-                "class" : "org.batfish.datamodel.routing_policy.statement.SetNextHop",
-                "expr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DiscardNextHop"
-                }
-              },
-              {
                 "class" : "org.batfish.datamodel.routing_policy.statement.SetWeight",
                 "weight" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
@@ -8422,12 +8386,6 @@
           "~BGP_REDISTRIBUTION_POLICY:default~" : {
             "name" : "~BGP_REDISTRIBUTION_POLICY:default~",
             "statements" : [
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.SetNextHop",
-                "expr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DiscardNextHop"
-                }
-              },
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.SetWeight",
                 "weight" : {
@@ -9716,12 +9674,6 @@
             "name" : "~BGP_REDISTRIBUTION_POLICY:default~",
             "statements" : [
               {
-                "class" : "org.batfish.datamodel.routing_policy.statement.SetNextHop",
-                "expr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DiscardNextHop"
-                }
-              },
-              {
                 "class" : "org.batfish.datamodel.routing_policy.statement.SetWeight",
                 "weight" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
@@ -10740,12 +10692,6 @@
           "~BGP_REDISTRIBUTION_POLICY:default~" : {
             "name" : "~BGP_REDISTRIBUTION_POLICY:default~",
             "statements" : [
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.SetNextHop",
-                "expr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DiscardNextHop"
-                }
-              },
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.SetWeight",
                 "weight" : {
@@ -11778,12 +11724,6 @@
           "~BGP_REDISTRIBUTION_POLICY:default~" : {
             "name" : "~BGP_REDISTRIBUTION_POLICY:default~",
             "statements" : [
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.SetNextHop",
-                "expr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DiscardNextHop"
-                }
-              },
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.SetWeight",
                 "weight" : {
@@ -13277,12 +13217,6 @@
             "name" : "~BGP_REDISTRIBUTION_POLICY:default~",
             "statements" : [
               {
-                "class" : "org.batfish.datamodel.routing_policy.statement.SetNextHop",
-                "expr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DiscardNextHop"
-                }
-              },
-              {
                 "class" : "org.batfish.datamodel.routing_policy.statement.SetWeight",
                 "weight" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
@@ -14764,12 +14698,6 @@
             "name" : "~BGP_REDISTRIBUTION_POLICY:default~",
             "statements" : [
               {
-                "class" : "org.batfish.datamodel.routing_policy.statement.SetNextHop",
-                "expr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DiscardNextHop"
-                }
-              },
-              {
                 "class" : "org.batfish.datamodel.routing_policy.statement.SetWeight",
                 "weight" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
@@ -15444,12 +15372,6 @@
           "~BGP_REDISTRIBUTION_POLICY:default~" : {
             "name" : "~BGP_REDISTRIBUTION_POLICY:default~",
             "statements" : [
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.SetNextHop",
-                "expr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DiscardNextHop"
-                }
-              },
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.SetWeight",
                 "weight" : {
