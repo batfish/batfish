@@ -497,11 +497,11 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       _ebgpv4Prev = _ebgpv4Rib.getTypedRoutes();
       _ebgpv4PrevBestPath = _ebgpv4Rib.getBestPathRoutes();
     } else {
-      assert _mainRibPrev.equals(ImmutableSet.of());
-      assert _bgpv4Prev.equals(ImmutableSet.of());
-      assert _bgpv4PrevBestPath.equals(ImmutableSet.of());
-      assert _ebgpv4Prev.equals(ImmutableSet.of());
-      assert _ebgpv4PrevBestPath.equals(ImmutableSet.of());
+      assert _mainRibPrev.isEmpty();
+      assert _bgpv4Prev.isEmpty();
+      assert _bgpv4PrevBestPath.isEmpty();
+      assert _ebgpv4Prev.isEmpty();
+      assert _ebgpv4PrevBestPath.isEmpty();
     }
     _topology = topology;
     // TODO: compute edges that went down, remove routes we received from those neighbors
@@ -656,6 +656,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         || !_bgpv4DeltaBuilder.isEmpty()
         || !_localDeltaBuilder.isEmpty()
         || !_evpnDeltaBuilder.isEmpty()
+
         // Initialization state
         || !_evpnInitializationDelta.isEmpty();
   }
@@ -2016,10 +2017,11 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     // Delete all the state from the start of a topology round.
     _evpnEdgesWentUp = ImmutableSet.of();
     _unicastEdgesWentUp = ImmutableSet.of();
+    // Delete the external state, now that it is no longer needed
     _mainRibPrev = ImmutableSet.of();
     _bgpv4Prev = ImmutableSet.of();
-    _ebgpv4Prev = ImmutableSet.of();
     _bgpv4PrevBestPath = ImmutableSet.of();
+    _ebgpv4Prev = ImmutableSet.of();
     _ebgpv4PrevBestPath = ImmutableSet.of();
     // Main RIB delta for exporting directly from main RIB
     _mainRibDelta = RibDelta.empty();
