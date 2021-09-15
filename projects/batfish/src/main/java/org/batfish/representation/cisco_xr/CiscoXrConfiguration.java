@@ -143,7 +143,6 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
-import org.batfish.datamodel.routing_policy.expr.DiscardNextHop;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
@@ -153,7 +152,6 @@ import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
-import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetWeight;
@@ -820,9 +818,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     RoutingPolicy.Builder redistributionPolicy =
         RoutingPolicy.builder().setOwner(c).setName(redistPolicyName);
 
-    // For IOS-XR, next-hop is cleared on routes redistributed into BGP (though it may be rewritten
-    // later in the policy).
-    redistributionPolicy.addStatement(new SetNextHop(DiscardNextHop.INSTANCE));
     // For IOS-XR, local routes have a default weight of 32768.
     redistributionPolicy.addStatement(new SetWeight(new LiteralInt(DEFAULT_LOCAL_BGP_WEIGHT)));
 

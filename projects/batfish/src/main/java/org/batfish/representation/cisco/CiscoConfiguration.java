@@ -177,7 +177,6 @@ import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork6;
-import org.batfish.datamodel.routing_policy.expr.DiscardNextHop;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
@@ -192,7 +191,6 @@ import org.batfish.datamodel.routing_policy.expr.RouteIsClassful;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
-import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetWeight;
@@ -1018,9 +1016,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     RoutingPolicy.Builder redistributionPolicy =
         RoutingPolicy.builder().setOwner(c).setName(redistPolicyName);
 
-    // For IOS, next-hop is cleared on routes redistributed into BGP (though it may be rewritten
-    // later in the policy).
-    redistributionPolicy.addStatement(new SetNextHop(DiscardNextHop.INSTANCE));
     // For IOS, local routes have a default weight of 32768.
     redistributionPolicy.addStatement(new SetWeight(new LiteralInt(DEFAULT_LOCAL_BGP_WEIGHT)));
 
