@@ -44,9 +44,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
   // node -> interface -> ips that the interface would reply arp request
   private final Map<String, Map<String, IpSpace>> _arpReplies;
 
-  // node -> vrf -> destination IPs that can be routed
-  private final Map<String, Map<String, IpSpace>> _routableIps;
-
   // node -> vrf -> forwarding behavior for that VRF.
   private final Map<String, Map<String, VrfForwardingBehavior>> _vrfForwardingBehavior;
 
@@ -84,7 +81,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
       // Set of routes that forward out each interface
       Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithNextHop =
           computeRoutesWithNextHop(fibs);
-      _routableIps = computeRoutableIps(fibs);
+      // Node -> vrf -> destination IPs that can be routed
+      Map<String, Map<String, IpSpace>> routableIps = computeRoutableIps(fibs);
 
       /* Compute _arpReplies: for each interface, the set of arp IPs for which that interface will
        * respond.
@@ -96,7 +94,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
             computeIpsRoutedOutInterfaces(matchingIps, routesWithNextHop);
         _arpReplies =
             computeArpReplies(
-                configurations, ipsRoutedOutInterfaces, interfaceOwnedIps, _routableIps);
+                configurations, ipsRoutedOutInterfaces, interfaceOwnedIps, routableIps);
       }
 
       // hostname -> interfaces that are not full. I.e. could have neighbors not present in snapshot
@@ -134,6 +132,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                                     interfacesWithMissingDevices,
                                     internalIps,
                                     externalIps,
+                                    routableIps,
                                     routesWithNextHop.get(node).get(vrf));
                               })))
               .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
@@ -161,6 +160,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
       Multimap<String, String> interfacesWithMissingDevices,
       IpSpace internalIps,
       IpSpace externalIps,
+      Map<String, Map<String, IpSpace>> routableIps,
       Map<String, Set<AbstractRoute>> routesWithNextHop) {
     Map<String, IpSpace> accepted =
         ipOwners
@@ -326,7 +326,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
         .setInterfaceForwardingBehavior(interfaceForwardingBehavior)
         .setNextVrf(nextVrfIps)
         .setNullRoutedIps(nullRoutedIps)
-        .setRoutableIps(_routableIps.get(node).get(vrf))
+        .setRoutableIps(routableIps.get(node).get(vrf))
         .build();
   }
 
