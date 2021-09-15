@@ -927,7 +927,11 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         System.err.printf(
             "%s: removed %s, delta %s%n",
             _c.getHostname(), transformedIncomingRoute.getAsPath(), removed);
-        ribDeltas.get(targetRib).from(removed);
+        // We need to filter REPLACE out so that we don't remove replaced routes from the overall
+        // BGP rib.
+        ribDeltas
+            .get(targetRib)
+            .from(removed.getActions().filter(a -> a.getReason() != Reason.REPLACE));
         if (useRibGroups) {
           perNeighborDeltaForRibGroups.remove(annotatedTransformedRoute, Reason.WITHDRAW);
         }
@@ -941,7 +945,9 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         System.err.printf(
             "%s: added %s, delta %s%n",
             _c.getHostname(), transformedIncomingRoute.getAsPath(), merged);
-        ribDeltas.get(targetRib).from(merged);
+        ribDeltas
+            .get(targetRib)
+            .from(merged.getActions().filter(a -> a.getReason() != Reason.REPLACE));
         if (useRibGroups) {
           perNeighborDeltaForRibGroups.add(annotatedTransformedRoute);
         }
