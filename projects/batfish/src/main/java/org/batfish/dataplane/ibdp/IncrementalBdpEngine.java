@@ -646,6 +646,7 @@ final class IncrementalBdpEngine {
         _numIterations++;
         Span iterSpan = GlobalTracer.get().buildSpan("Iteration " + _numIterations).start();
         LOGGER.info("Iteration {} begins", _numIterations);
+        System.err.printf("Iteration %s begins%n", _numIterations);
         try (Scope innerScope = GlobalTracer.get().scopeManager().activate(iterSpan)) {
           assert innerScope != null; // avoid unused warning
 

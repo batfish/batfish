@@ -1,0 +1,11 @@
+hostname L
+ 
+interface Ethernet1/1
+ ip address 3.0.0.0/31
+ description to S
+
+router bgp 5
+ router-id 3.0.0.0
+ neighbor 3.0.0.1 remote-as 2
+ neighbor 3.0.0.1 description S
+ neighbor 3.0.0.1 activate

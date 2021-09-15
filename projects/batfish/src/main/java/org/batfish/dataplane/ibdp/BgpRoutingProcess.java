@@ -51,6 +51,7 @@ import org.apache.logging.log4j.Logger;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.AnnotatedRoute;
+import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
@@ -173,15 +174,15 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   @Nonnull private RibDelta<Bgpv4Route> _ebgpv4DeltaPrevBestPath = RibDelta.empty();
   @Nonnull private RibDelta<Bgpv4Route> _bgpv4DeltaPrev = RibDelta.empty();
   @Nonnull private RibDelta<Bgpv4Route> _bgpv4DeltaPrevBestPath = RibDelta.empty();
+  private @Nonnull Set<Bgpv4Route> _ebgpv4PrevBestPath = ImmutableSet.of();
+  private @Nonnull Set<Bgpv4Route> _bgpv4PrevBestPath = ImmutableSet.of();
   // currently used for VRF-leaking only.
   @Nonnull private RibDelta<Bgpv4Route> _localDeltaPrev = RibDelta.empty();
 
   // copy of RIBs from prev round, for new links in the current round.
   // Nullable so they crash on improper use.
   private @Nullable Set<Bgpv4Route> _ebgpv4Prev;
-  private @Nullable Set<Bgpv4Route> _ebgpv4PrevBestPath;
   private @Nullable Set<Bgpv4Route> _bgpv4Prev;
-  private @Nullable Set<Bgpv4Route> _bgpv4PrevBestPath;
 
   /**
    * Routes in the main RIB at the end of the previous round. Unused if {@link #_exportFromBgpRib}
@@ -488,15 +489,11 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         _mainRibPrev = _mainRib.getTypedRoutes();
       }
       _bgpv4Prev = _bgpv4Rib.getTypedRoutes();
-      _bgpv4PrevBestPath = _bgpv4Rib.getBestPathRoutes();
       _ebgpv4Prev = _ebgpv4Rib.getTypedRoutes();
-      _ebgpv4PrevBestPath = _ebgpv4Rib.getBestPathRoutes();
     } else {
       assert _mainRibPrev == null;
       assert _bgpv4Prev == null;
-      assert _bgpv4PrevBestPath == null;
       assert _ebgpv4Prev == null;
-      assert _ebgpv4PrevBestPath == null;
     }
     _topology = topology;
     // TODO: compute edges that went down, remove routes we received from those neighbors
@@ -801,7 +798,11 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     _bgpv4DeltaBuilder.from(importRibDelta(_bgpv4Rib, ibgpDelta));
     // Finally, prepare the delta we will feed into the main RIB
     RibDelta<Bgpv4Route> bgpv4RibDelta = _bgpv4DeltaBuilder.build();
-    LOGGER.trace("Unstaged BGP routes, current bgpv4Delta: {}", bgpv4RibDelta);
+    LOGGER.info("{}: Unstaged BGP routes, current bgpv4Delta: {}", _c.getHostname(), bgpv4RibDelta);
+    if (!bgpv4RibDelta.isEmpty()) {
+      System.err.printf(
+          "%s: Unstaged BGP routes, current bgpv4Delta: %s%n", _c.getHostname(), bgpv4RibDelta);
+    }
     _toMainRib.from(bgpv4RibDelta);
   }
 
@@ -834,6 +835,14 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     Iterator<RouteAdvertisement<Bgpv4Route>> exportedRoutes =
         neighborProcess
             .getOutgoingRoutesForEdge(edgeId.reverse(), nodes, bgpTopology, nc, isNewSession)
+            .peek(
+                ra ->
+                    System.err.printf(
+                        "%s: Pulling last-round from %s route %s[%s]%n",
+                        edgeId.head().getHostname(),
+                        edgeId.tail().getHostname(),
+                        ra.getReason(),
+                        ra.getRoute().getAsPath()))
             .iterator();
 
     // Process all routes from neighbor
@@ -854,6 +863,14 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
               _process,
               sessionProperties.getTailIp(),
               ourConfigId.getPeerInterface());
+      System.err.printf(
+          "%s: Transformed %s%s to %s%n",
+          _c.getHostname(),
+          remoteRouteAdvert.getReason(),
+          remoteRoute.getAsPath(),
+          transformedIncomingRouteBuilder == null
+              ? "nothing"
+              : transformedIncomingRouteBuilder.getAsPath());
       if (transformedIncomingRouteBuilder == null) {
         // Route could not be imported for core protocol reasons
         _prefixTracer.filtered(
@@ -901,13 +918,30 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
       if (remoteRouteAdvert.isWithdrawn()) {
         // Note this route was removed
-        ribDeltas.get(targetRib).remove(transformedIncomingRoute, Reason.WITHDRAW);
+        if (_c.getHostname().equals("l")
+            && transformedIncomingRoute.getAsPath().equals(AsPath.ofSingletonAsSets(2L, 1L))) {
+          System.err.println("Breakpoint");
+        }
+
+        RibDelta<Bgpv4Route> removed = targetRib.removeRouteGetDelta(transformedIncomingRoute);
+        System.err.printf(
+            "%s: removed %s, delta %s%n",
+            _c.getHostname(), transformedIncomingRoute.getAsPath(), removed);
+        ribDeltas.get(targetRib).from(removed);
         if (useRibGroups) {
           perNeighborDeltaForRibGroups.remove(annotatedTransformedRoute, Reason.WITHDRAW);
         }
       } else {
         // Merge into staging rib, note delta
-        ribDeltas.get(targetRib).from(targetRib.mergeRouteGetDelta(transformedIncomingRoute));
+        if (_c.getHostname().equals("l")
+            && transformedIncomingRoute.getAsPath().equals(AsPath.ofSingletonAsSets(2L, 4L, 3L))) {
+          System.err.println("Breakpoint");
+        }
+        RibDelta<Bgpv4Route> merged = targetRib.mergeRouteGetDelta(transformedIncomingRoute);
+        System.err.printf(
+            "%s: added %s, delta %s%n",
+            _c.getHostname(), transformedIncomingRoute.getAsPath(), merged);
+        ribDeltas.get(targetRib).from(merged);
         if (useRibGroups) {
           perNeighborDeltaForRibGroups.add(annotatedTransformedRoute);
         }
@@ -1035,7 +1069,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         routes =
             bgpv4DeltaPrev
                 .getActions()
-                .filter(r -> !r.isWithdrawn())
                 .map(
                     r ->
                         RouteAdvertisement.<AnnotatedRoute<Bgpv4Route>>builder()
@@ -1046,10 +1079,18 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       // Keep only local routes and routes that are active in the main rib.
       bgpRibExports.from(
           routes.filter(
-              r ->
-                  // Received from 0.0.0.0 indicates local origination
-                  (_exportFromBgpRib && Ip.ZERO.equals(r.getRoute().getRoute().getReceivedFromIp()))
-                      || _mainRib.containsRoute(r.getRoute())));
+              r -> {
+                if (r.isWithdrawn()) {
+                  // No withdrawals for new sessions.
+                  // For old sessions, the delta might include withdrawals of inactive routes, but
+                  // sending these should be safe.
+                  return true;
+                }
+                // Received from 0.0.0.0 indicates local origination
+                return (_exportFromBgpRib
+                        && Ip.ZERO.equals(r.getRoute().getRoute().getReceivedFromIp()))
+                    || _mainRib.containsRoute(r.getRoute());
+              }));
     }
 
     /*
@@ -2024,14 +2065,14 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     _ebgpv4DeltaBuilder = RibDelta.builder();
     _localDeltaPrev = _localDeltaBuilder.build();
     _localDeltaBuilder = RibDelta.builder();
+    _bgpv4PrevBestPath = _bgpv4Rib.getBestPathRoutes();
+    _ebgpv4PrevBestPath = _ebgpv4Rib.getBestPathRoutes();
     // Delete all the state from the start of a topology round.
     _evpnEdgesWentUp = ImmutableSet.of();
     _unicastEdgesWentUp = ImmutableSet.of();
     _mainRibPrev = null;
     _bgpv4Prev = null;
     _ebgpv4Prev = null;
-    _bgpv4PrevBestPath = null;
-    _ebgpv4PrevBestPath = null;
     // Main RIB delta for exporting directly from main RIB
     _mainRibDelta = RibDelta.empty();
   }
@@ -2046,9 +2087,12 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         delta
             .getActions()
             .filter(
-                adv ->
-                    (adv.isWithdrawn() && prevBestPathRoutes.contains(adv.getRoute()))
-                        || (!adv.isWithdrawn() && rib.isBestPath(adv.getRoute())))
+                adv -> {
+                  boolean withdrawnBest =
+                      (adv.isWithdrawn() && prevBestPathRoutes.contains(adv.getRoute()));
+                  boolean advertisedBest = (!adv.isWithdrawn() && rib.isBestPath(adv.getRoute()));
+                  return withdrawnBest || advertisedBest;
+                })
             .collect(ImmutableList.toImmutableList()));
   }
 
