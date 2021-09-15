@@ -1019,10 +1019,10 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                 .getActions()
                 .filter(r -> !receivedFrom(session, r))
                 .map(
-                    a ->
+                    r ->
                         RouteAdvertisement.<AnnotatedRoute<Bgpv4Route>>builder()
-                            .setRoute(annotateRoute(a.getRoute()))
-                            .setReason(a.getReason())
+                            .setRoute(annotateRoute(r.getRoute()))
+                            .setReason(r.getReason())
                             .build()));
       }
     }
@@ -1037,10 +1037,10 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                 .getActions()
                 .filter(r -> !receivedFrom(session, r))
                 .map(
-                    a ->
+                    r ->
                         RouteAdvertisement.<AnnotatedRoute<Bgpv4Route>>builder()
-                            .setRoute(annotateRoute(a.getRoute()))
-                            .setReason(a.getReason())
+                            .setRoute(annotateRoute(r.getRoute()))
+                            .setReason(r.getReason())
                             .build()));
       }
     } else {
