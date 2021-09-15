@@ -6231,27 +6231,24 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       return;
     }
 
-    int routeCount = currentVrf().getStaticRoutes().size();
     // Match on nexthop and prefix if they exist, everything else is ignored
     if (ctx.route_nexthop() != null) {
       Optional<Ip> nextHopIp = toNextHopIp(ctx.route_nexthop());
       Optional<String> nextHopIface = toNextHopInt(ctx.route_nexthop());
-      currentVrf()
+      if (!currentVrf()
           .getStaticRoutes()
           .removeIf(
               sr ->
                   Objects.equals(sr.getNextHopInterface(), nextHopIface.orElse(null))
                       && Objects.equals(
                           sr.getNextHopIp(), nextHopIp.orElse(Route.UNSET_ROUTE_NEXT_HOP_IP))
-                      && sr.getPrefix().equals(prefix.get()));
-      if (currentVrf().getStaticRoutes().size() == routeCount) {
+                      && sr.getPrefix().equals(prefix.get()))) {
         warn(ctx, "No static routes matched this line, so none will be removed");
       }
       return;
     }
     // Just match on prefix, if no nexthop specified
-    currentVrf().getStaticRoutes().removeIf(sr -> sr.getPrefix().equals(prefix.get()));
-    if (currentVrf().getStaticRoutes().size() == routeCount) {
+    if (!currentVrf().getStaticRoutes().removeIf(sr -> sr.getPrefix().equals(prefix.get()))) {
       warn(ctx, "No static routes matched this line, so none will be removed");
     }
   }
