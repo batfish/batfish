@@ -11,14 +11,12 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclAclLine;
-import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.FalseExpr;
@@ -27,7 +25,7 @@ import org.batfish.vendor.check_point_management.AccessRule;
 import org.batfish.vendor.check_point_management.AccessRuleOrSection;
 import org.batfish.vendor.check_point_management.AccessSection;
 import org.batfish.vendor.check_point_management.AddressSpace;
-import org.batfish.vendor.check_point_management.CpmiAnyObject;
+import org.batfish.vendor.check_point_management.AddressSpaceToMatchExpr;
 import org.batfish.vendor.check_point_management.GatewayOrServer;
 import org.batfish.vendor.check_point_management.NamedManagementObject;
 import org.batfish.vendor.check_point_management.RulebaseAction;
@@ -48,6 +46,7 @@ public final class CheckPointGatewayConversions {
       NamedManagementObject dst,
       NamedManagementObject service,
       ServiceToMatchExpr serviceToMatchExpr,
+      AddressSpaceToMatchExpr addressSpaceToMatchExpr,
       Warnings warnings) {
     if (!checkValidHeaderSpaceInputs(src, dst, service, warnings)) {
       return Optional.empty();
@@ -56,8 +55,8 @@ public final class CheckPointGatewayConversions {
     assert src instanceof AddressSpace;
     assert dst instanceof AddressSpace;
     ImmutableList.Builder<AclLineMatchExpr> exprs = ImmutableList.builder();
-    exprs.add(AclLineMatchExprs.matchSrc(toIpSpace((AddressSpace) src)));
-    exprs.add(AclLineMatchExprs.matchDst(toIpSpace((AddressSpace) dst)));
+    exprs.add(addressSpaceToMatchExpr.convertSource((AddressSpace) src));
+    exprs.add(addressSpaceToMatchExpr.convertDest((AddressSpace) dst));
     exprs.add(((Service) service).accept(serviceToMatchExpr));
     return Optional.of(AclLineMatchExprs.and(exprs.build()));
   }
@@ -108,17 +107,20 @@ public final class CheckPointGatewayConversions {
       @Nonnull AccessLayer access,
       Map<Uid, NamedManagementObject> objects,
       ServiceToMatchExpr serviceToMatchExpr,
+      AddressSpaceToMatchExpr addressSpaceToMatchExpr,
       Warnings w) {
     ImmutableMap.Builder<String, IpAccessList> acls = ImmutableMap.builder();
     ImmutableList.Builder<AclLine> accessLayerLines = ImmutableList.builder();
     for (AccessRuleOrSection acl : access.getRulebase()) {
       if (acl instanceof AccessRule) {
-        accessLayerLines.add(toAclLine((AccessRule) acl, objects, serviceToMatchExpr, w));
+        toAclLine((AccessRule) acl, objects, serviceToMatchExpr, addressSpaceToMatchExpr, w)
+            .ifPresent(accessLayerLines::add);
         continue;
       }
       assert acl instanceof AccessSection;
       IpAccessList accessSection =
-          toIpAccessList((AccessSection) acl, objects, serviceToMatchExpr, w);
+          toIpAccessList(
+              (AccessSection) acl, objects, serviceToMatchExpr, addressSpaceToMatchExpr, w);
       acls.put(accessSection.getName(), accessSection);
       accessLayerLines.add(new AclAclLine(accessSection.getName(), accessSection.getName()));
     }
@@ -139,30 +141,41 @@ public final class CheckPointGatewayConversions {
       @Nonnull AccessSection section,
       Map<Uid, NamedManagementObject> objs,
       ServiceToMatchExpr serviceToMatchExpr,
+      AddressSpaceToMatchExpr addressSpaceToMatchExpr,
       Warnings w) {
     return IpAccessList.builder()
         .setName(aclName(section))
         .setSourceName(section.getName())
         .setLines(
             section.getRulebase().stream()
-                .map(r -> toAclLine(r, objs, serviceToMatchExpr, w))
+                .map(r -> toAclLine(r, objs, serviceToMatchExpr, addressSpaceToMatchExpr, w))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
                 .collect(ImmutableList.toImmutableList()))
         .build();
   }
 
-  /** Convert specified {@link AccessRule} to an {@link AclLine}. */
+  /**
+   * Convert specified {@link AccessRule} to an {@link AclLine}. Returns {@link Optional#empty()} if
+   * the rule does not generate an {@link AclLine} (i.e. is not enabled).
+   */
   @Nonnull
-  static AclLine toAclLine(
+  static Optional<AclLine> toAclLine(
       AccessRule rule,
       Map<Uid, NamedManagementObject> objs,
       ServiceToMatchExpr serviceToMatchExpr,
+      AddressSpaceToMatchExpr addressSpaceToMatchExpr,
       Warnings w) {
-    return ExprAclLine.builder()
-        .setName(rule.getName())
-        .setMatchCondition(toMatchExpr(rule, objs, serviceToMatchExpr, w))
-        .setAction(toAction(objs.get(rule.getAction()), rule.getAction(), w))
-        // TODO trace element and structure ID
-        .build();
+    if (!rule.getEnabled()) {
+      return Optional.empty();
+    }
+    return Optional.of(
+        ExprAclLine.builder()
+            .setName(rule.getName())
+            .setMatchCondition(
+                toMatchExpr(rule, objs, serviceToMatchExpr, addressSpaceToMatchExpr, w))
+            .setAction(toAction(objs.get(rule.getAction()), rule.getAction(), w))
+            .build());
   }
 
   /**
@@ -174,16 +187,18 @@ public final class CheckPointGatewayConversions {
       AccessRule rule,
       Map<Uid, NamedManagementObject> objs,
       ServiceToMatchExpr serviceToMatchExpr,
+      AddressSpaceToMatchExpr addressSpaceToMatchExpr,
       Warnings w) {
     ImmutableList.Builder<AclLineMatchExpr> conjuncts = ImmutableList.builder();
 
     // Source
-    AclLineMatchExpr srcMatch = AclLineMatchExprs.matchSrc(toIpSpace(rule.getSource(), objs, w));
+    AclLineMatchExpr srcMatch =
+        toAddressMatchExpr(rule.getSource(), objs, addressSpaceToMatchExpr, true, w);
     conjuncts.add(rule.getSourceNegate() ? AclLineMatchExprs.not(srcMatch) : srcMatch);
 
     // Dest
     AclLineMatchExpr dstMatch =
-        AclLineMatchExprs.matchDst(toIpSpace(rule.getDestination(), objs, w));
+        toAddressMatchExpr(rule.getDestination(), objs, addressSpaceToMatchExpr, false, w);
     conjuncts.add(rule.getDestinationNegate() ? AclLineMatchExprs.not(dstMatch) : dstMatch);
 
     // Service
@@ -260,51 +275,54 @@ public final class CheckPointGatewayConversions {
   }
 
   /**
-   * Returns an {@link IpSpace} containing the specified {@link Uid}s. Relies on named {@link
-   * IpSpace}s existing for each of the supplied object's {@link Uid}s.
+   * Returns an {@link AclLineMatchExpr} matching the specified {@link Uid}s. {@code matchSource}
+   * indicates if they are matched as sources or destinations. Relies on named {@link IpSpace}s
+   * existing for each of the supplied objects.
    */
   @VisibleForTesting
   @Nonnull
-  static IpSpace toIpSpace(List<Uid> targets, Map<Uid, NamedManagementObject> objs, Warnings w) {
-    return AclIpSpace.builder()
-        .thenPermitting(
-            targets.stream()
-                .map(
-                    u -> {
-                      NamedManagementObject o = objs.get(u);
-                      if (o == null) {
-                        w.redFlag(
-                            String.format(
-                                "Cannot convert non-existent object (Uid '%s') to IpSpace,"
-                                    + " ignoring",
-                                u.getValue()));
-                        return new IpSpaceReference(String.format("non-existent-%s", u.getValue()));
-                      } else if (!(o instanceof AddressSpace)) {
-                        String type = o.getClass().getSimpleName();
-                        w.redFlag(
-                            String.format(
-                                "Cannot convert object '%s' (Uid '%s') of type '%s' to IpSpace,"
-                                    + " ignoring",
-                                o.getName(), u.getValue(), type));
-                        return new IpSpaceReference(
+  static AclLineMatchExpr toAddressMatchExpr(
+      List<Uid> targets,
+      Map<Uid, NamedManagementObject> objs,
+      AddressSpaceToMatchExpr addressSpaceToMatchExpr,
+      boolean matchSource,
+      Warnings w) {
+    return AclLineMatchExprs.or(
+        targets.stream()
+            .map(
+                u -> {
+                  NamedManagementObject o = objs.get(u);
+                  if (o == null) {
+                    w.redFlag(
+                        String.format(
+                            "Cannot convert non-existent object (Uid '%s') to IpSpace,"
+                                + " ignoring",
+                            u.getValue()));
+                    IpSpace ref =
+                        new IpSpaceReference(String.format("non-existent-%s", u.getValue()));
+                    return matchSource
+                        ? AclLineMatchExprs.matchSrc(ref)
+                        : AclLineMatchExprs.matchDst(ref);
+                  } else if (!(o instanceof AddressSpace)) {
+                    String type = o.getClass().getSimpleName();
+                    w.redFlag(
+                        String.format(
+                            "Cannot convert object '%s' (Uid '%s') of type '%s' to IpSpace,"
+                                + " ignoring",
+                            o.getName(), u.getValue(), type));
+                    IpSpace ref =
+                        new IpSpaceReference(
                             String.format("unsupported-%s-%s", type, u.getValue()));
-                      }
-                      return toIpSpace((AddressSpace) o);
-                    })
-                .collect(ImmutableList.toImmutableList()))
-        .build();
-  }
-
-  /**
-   * Returns an {@link IpSpace} containing the specified {@link NamedManagementObject}. Relies on a
-   * named {@link IpSpace} existing for the supplied object.
-   */
-  @Nonnull
-  private static IpSpace toIpSpace(AddressSpace obj) {
-    if (obj instanceof CpmiAnyObject) {
-      return UniverseIpSpace.INSTANCE;
-    }
-    return new IpSpaceReference(obj.getName());
+                    return matchSource
+                        ? AclLineMatchExprs.matchSrc(ref)
+                        : AclLineMatchExprs.matchDst(ref);
+                  }
+                  AddressSpace addrSpace = (AddressSpace) o;
+                  return matchSource
+                      ? addressSpaceToMatchExpr.convertSource(addrSpace)
+                      : addressSpaceToMatchExpr.convertDest(addrSpace);
+                })
+            .collect(ImmutableList.toImmutableList()));
   }
 
   /** Return {@code true} iff any of the install-on UIDs applies to the given gateway. */

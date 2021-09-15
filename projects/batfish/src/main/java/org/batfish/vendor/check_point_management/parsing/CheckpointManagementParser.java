@@ -10,7 +10,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.LinkedListMultimap;
 import java.util.Collection;
 import java.util.HashMap;
@@ -36,8 +35,10 @@ import org.batfish.vendor.check_point_management.ManagementDomain;
 import org.batfish.vendor.check_point_management.ManagementPackage;
 import org.batfish.vendor.check_point_management.ManagementServer;
 import org.batfish.vendor.check_point_management.NamedManagementObject;
+import org.batfish.vendor.check_point_management.NatRule;
 import org.batfish.vendor.check_point_management.NatRuleOrSection;
 import org.batfish.vendor.check_point_management.NatRulebase;
+import org.batfish.vendor.check_point_management.NatSection;
 import org.batfish.vendor.check_point_management.ObjectPage;
 import org.batfish.vendor.check_point_management.Package;
 import org.batfish.vendor.check_point_management.TypedManagementObject;
@@ -249,32 +250,89 @@ public class CheckpointManagementParser {
     return mergeNatRulebasePages(
         natRulebases.stream()
             .filter(rulebase -> rulebase.getUid().equals(uid))
-            .collect(ImmutableList.toImmutableList()));
+            .collect(ImmutableList.toImmutableList()),
+        pvcae);
   }
 
   /**
-   * Merge objects-dictionary and nat-rules from a list of pages of NAT rulebase data into a single
-   * {@link NatRulebase} object. The pages should be provided in order, and all for the same
-   * rulebase UID.
+   * Returns a single NatRuleOrSection representing the specified collection.
+   *
+   * <p>The specified collection of items should contain one of the following:
+   *
+   * <ul>
+   *   <li>1. a single NatRule (rules can't be split across pages)
+   *   <li>2. a single NatSection part (contained fully on a single page)
+   *   <li>3. multiple NatSection parts (all with the same name and uid, with different rules)
+   * </ul>
    */
-  private static @Nonnull NatRulebase mergeNatRulebasePages(
-      Collection<NatRulebase> natRulebasePages) {
-    if (natRulebasePages.size() == 1) {
-      return Iterables.getOnlyElement(natRulebasePages);
+  @VisibleForTesting
+  static @Nonnull NatRuleOrSection mergeNatRuleOrSection(
+      Collection<NatRuleOrSection> items, ParseVendorConfigurationAnswerElement pvcae) {
+    NatRuleOrSection first = items.iterator().next();
+    if (items.stream().anyMatch(NatRule.class::isInstance)) {
+      // Shouldn't happen w/ well-formed data, but check to prevent bad casting below
+      if (items.size() > 1) {
+        Uid uid = first.getUid();
+        pvcae.addRedFlagWarning(
+            RELPATH_CHECKPOINT_MANAGEMENT_DIR,
+            new Warning(
+                String.format(
+                    "Cannot merge NatRule pages (for uid %s), ignoring instances after the"
+                        + " first",
+                    uid.getValue()),
+                "Checkpoint"));
+      }
+      return first;
     }
-    Map<Uid, TypedManagementObject> objectsDict = new HashMap<>();
-    natRulebasePages.stream()
-        .map(NatRulebase::getObjectsDictionary)
-        .map(Map::entrySet)
-        .flatMap(Collection::stream)
-        .forEach(e -> objectsDict.put(e.getKey(), e.getValue()));
-    List<NatRuleOrSection> rulebase =
-        natRulebasePages.stream()
-            .map(NatRulebase::getRulebase)
-            .flatMap(Collection::stream)
-            .collect(ImmutableList.toImmutableList());
+
+    NatSection firstSection = (NatSection) first;
+    return new NatSection(
+        firstSection.getName(),
+        items.stream()
+            .flatMap(s -> ((NatSection) s).getRulebase().stream())
+            .collect(ImmutableList.toImmutableList()),
+        firstSection.getUid());
+  }
+
+  /**
+   * Returns a list of unique NAT Rules and NAT Sections, generated from the specified collection of
+   * non-unique items; i.e. multiple partial NAT Sections can be specified and will be merged into a
+   * single NAT Section in the resulting list.
+   *
+   * <p>The items should be provided in order.
+   */
+  private static @Nonnull List<NatRuleOrSection> mergeNatRuleOrSections(
+      Collection<NatRuleOrSection> items, ParseVendorConfigurationAnswerElement pvcae) {
+    LinkedListMultimap<Uid, NatRuleOrSection> uidToParts = LinkedListMultimap.create();
+    items.forEach(i -> uidToParts.put((i).getUid(), i));
+    return uidToParts.keySet().stream()
+        .map(uid -> mergeNatRuleOrSection(uidToParts.get(uid), pvcae))
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  /**
+   * Merges multiple pages of a <i>single</i> NAT rulebase and returns the resulting rulebase.
+   *
+   * <p>Assumes all supplied pages are for the same rulebase.
+   */
+  static @Nonnull NatRulebase mergeNatRulebasePages(
+      Collection<NatRulebase> pages, ParseVendorConfigurationAnswerElement pvcae) {
+    assert !pages.isEmpty();
+    NatRulebase first = pages.iterator().next();
+    Uid uid = first.getUid();
+    Map<Uid, TypedManagementObject> objs = new HashMap<>();
+    pages.stream()
+        .flatMap(p -> p.getObjectsDictionary().entrySet().stream())
+        .forEach(o -> objs.put(o.getKey(), o.getValue()));
+
     return new NatRulebase(
-        ImmutableMap.copyOf(objectsDict), rulebase, natRulebasePages.iterator().next().getUid());
+        ImmutableMap.copyOf(objs),
+        mergeNatRuleOrSections(
+            pages.stream()
+                .flatMap(p -> p.getRulebase().stream())
+                .collect(ImmutableList.toImmutableList()),
+            pvcae),
+        uid);
   }
 
   /**

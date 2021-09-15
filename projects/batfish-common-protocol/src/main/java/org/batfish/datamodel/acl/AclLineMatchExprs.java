@@ -105,10 +105,14 @@ public final class AclLineMatchExprs {
   }
 
   public static AclLineMatchExpr matchDst(IpSpace ipSpace) {
+    return matchDst(ipSpace, null);
+  }
+
+  public static AclLineMatchExpr matchDst(IpSpace ipSpace, @Nullable TraceElement traceElement) {
     if (ipSpace.equals(UniverseIpSpace.INSTANCE)) {
-      return TRUE;
+      return traceElement == null ? TRUE : new TrueExpr(traceElement);
     }
-    return new MatchHeaderSpace(HeaderSpace.builder().setDstIps(ipSpace).build());
+    return new MatchHeaderSpace(HeaderSpace.builder().setDstIps(ipSpace).build(), traceElement);
   }
 
   public static AclLineMatchExpr matchDst(Ip ip) {
@@ -146,10 +150,14 @@ public final class AclLineMatchExprs {
   }
 
   public static AclLineMatchExpr matchSrc(IpSpace ipSpace) {
+    return matchSrc(ipSpace, null);
+  }
+
+  public static AclLineMatchExpr matchSrc(IpSpace ipSpace, @Nullable TraceElement traceElement) {
     if (ipSpace.equals(UniverseIpSpace.INSTANCE)) {
-      return TRUE;
+      return traceElement == null ? TRUE : new TrueExpr(traceElement);
     }
-    return new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(ipSpace).build());
+    return new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(ipSpace).build(), traceElement);
   }
 
   public static @Nonnull AclLineMatchExpr matchFragmentOffset(int fragmentOffset) {
@@ -183,9 +191,15 @@ public final class AclLineMatchExprs {
   }
 
   public static @Nonnull AclLineMatchExpr matchIcmpType(int icmpType) {
+    return matchIcmpType(icmpType, null);
+  }
+
+  public static @Nonnull AclLineMatchExpr matchIcmpType(
+      int icmpType, @Nullable TraceElement traceElement) {
     checkArgument(0 <= icmpType && icmpType <= 255, "Invalid ICMP type: %s", icmpType);
     return new MatchHeaderSpace(
-        HeaderSpace.builder().setIcmpTypes(ImmutableList.of(SubRange.singleton(icmpType))).build());
+        HeaderSpace.builder().setIcmpTypes(ImmutableList.of(SubRange.singleton(icmpType))).build(),
+        traceElement);
   }
 
   public static @Nonnull AclLineMatchExpr matchIpProtocol(int ipProtocolNumber) {
@@ -200,8 +214,13 @@ public final class AclLineMatchExprs {
   }
 
   public static @Nonnull AclLineMatchExpr matchIpProtocol(IpProtocol ipProtocol) {
+    return matchIpProtocol(ipProtocol, null);
+  }
+
+  public static @Nonnull AclLineMatchExpr matchIpProtocol(
+      IpProtocol ipProtocol, @Nullable TraceElement traceElement) {
     return new MatchHeaderSpace(
-        HeaderSpace.builder().setIpProtocols(ImmutableList.of(ipProtocol)).build());
+        HeaderSpace.builder().setIpProtocols(ImmutableList.of(ipProtocol)).build(), traceElement);
   }
 
   public static @Nonnull AclLineMatchExpr matchPacketLength(IntegerSpace packetLengthSpace) {

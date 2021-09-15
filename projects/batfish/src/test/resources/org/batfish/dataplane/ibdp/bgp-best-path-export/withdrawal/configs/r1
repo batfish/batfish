@@ -1,0 +1,55 @@
+hostname r1
+feature bgp
+
+interface Ethernet1
+  no switchport
+  no shutdown
+  ip address 10.0.12.0/31
+  description to r2
+
+interface Ethernet2
+  no switchport
+  no shutdown
+  ip address 10.0.13.0/31
+  description to r3
+
+interface Ethernet3
+  no switchport
+  no shutdown
+  ip address 10.0.1.0/31
+  description NH for static route
+
+interface Loopback0
+  ip address 1.1.1.1/32
+
+ip route 2.2.2.2/32 10.0.12.1
+ip route 3.3.3.3/32 10.0.13.1
+ip route 4.4.4.4/32 10.0.12.1
+ip route 4.4.4.4/32 10.0.13.1
+
+ip prefix-list PL_NET permit 10.1.0.0/24
+
+route-map REJECT_ALL deny 10
+
+route-map REDISTRIBUTE_STATIC permit 10
+  match ip address prefix-list PL_NET
+  set local-preference 500
+
+router bgp 1
+  router-id 1.1.1.1
+  address-family ipv4 unicast
+    maximum-paths eibgp 5
+    redistribute static route-map REDISTRIBUTE_STATIC
+  neighbor 2.2.2.2
+    remote-as 1
+    update-source Loopback0
+    address-family ipv4 unicast
+      route-map REJECT_ALL in
+  neighbor 3.3.3.3
+    remote-as 1
+    update-source Loopback0
+    address-family ipv4 unicast
+      route-map REJECT_ALL in
+
+ip route 10.1.0.0/24 10.0.1.1
+

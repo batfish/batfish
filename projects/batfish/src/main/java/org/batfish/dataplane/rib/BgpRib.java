@@ -186,6 +186,11 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
     }
   }
 
+  /** Whether a route is currently the best path for its prefix */
+  public final boolean isBestPath(R route) {
+    return route.equals(_bestPaths.get(route.getNetwork()));
+  }
+
   public Set<R> getBestPathRoutes() {
     return ImmutableSet.copyOf(_bestPaths.values());
   }
