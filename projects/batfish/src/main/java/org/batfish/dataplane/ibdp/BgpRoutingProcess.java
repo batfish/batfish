@@ -11,7 +11,6 @@ import static org.batfish.datamodel.routing_policy.Environment.Direction.IN;
 import static org.batfish.datamodel.routing_policy.Environment.Direction.OUT;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.toBgpv4Route;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.transformBgpRouteOnImport;
-import static org.batfish.dataplane.rib.RibDelta.importDeltaToBuilder;
 import static org.batfish.dataplane.rib.RibDelta.importRibDelta;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -942,7 +941,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       NetworkConfigurations networkConfigurations,
       boolean isNewSession) {
     BgpSessionProperties session = BgpRoutingProcess.getBgpSessionProperties(bgpTopology, edge);
-
+    Ip receiverIp = session.getTailIp();
     BgpPeerConfigId remoteConfigId = edge.tail();
     BgpPeerConfigId ourConfigId = edge.head();
     BgpPeerConfig ourConfig = networkConfigurations.getBgpPeerConfig(edge.head());
@@ -1015,7 +1014,16 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         bgpRibExports.from(
             ebgpv4Prev.stream().map(this::annotateRoute).map(RouteAdvertisement::new));
       } else {
-        importDeltaToBuilder(bgpRibExports, ebgpv4DeltaPrev, _vrfName);
+        bgpRibExports.from(
+            ebgpv4DeltaPrev
+                .getActions()
+                .filter(a -> !receiverIp.equals(a.getRoute().getReceivedFromIp()))
+                .map(
+                    a ->
+                        RouteAdvertisement.<AnnotatedRoute<Bgpv4Route>>builder()
+                            .setRoute(annotateRoute(a.getRoute()))
+                            .setReason(a.getReason())
+                            .build()));
       }
     }
 
@@ -1024,7 +1032,16 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         bgpRibExports.from(
             bgpv4Prev.stream().map(this::annotateRoute).map(RouteAdvertisement::new));
       } else {
-        importDeltaToBuilder(bgpRibExports, bgpv4DeltaPrev, _vrfName);
+        bgpRibExports.from(
+            bgpv4DeltaPrev
+                .getActions()
+                .filter(a -> !receiverIp.equals(a.getRoute().getReceivedFromIp()))
+                .map(
+                    a ->
+                        RouteAdvertisement.<AnnotatedRoute<Bgpv4Route>>builder()
+                            .setRoute(annotateRoute(a.getRoute()))
+                            .setReason(a.getReason())
+                            .build()));
       }
     } else {
       // Default behavior
@@ -1035,7 +1052,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         routes =
             bgpv4DeltaPrev
                 .getActions()
-                .filter(r -> !r.isWithdrawn())
+                .filter(
+                    r -> !r.isWithdrawn() && !receiverIp.equals(r.getRoute().getReceivedFromIp()))
                 .map(
                     r ->
                         RouteAdvertisement.<AnnotatedRoute<Bgpv4Route>>builder()
