@@ -65,6 +65,8 @@ import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
+import org.batfish.datamodel.routing_policy.expr.MatchBgpSessionType;
+import org.batfish.datamodel.routing_policy.expr.MatchBgpSessionType.Type;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
@@ -878,7 +880,20 @@ final class Conversions {
 
     // Next Hop Self
     if (firstNonNull(naf.getNextHopSelf(), Boolean.FALSE)) {
-      statementsBuilder.add(new SetNextHop(SelfNextHop.getInstance()));
+      Statement nextHopSelf = new SetNextHop(SelfNextHop.getInstance());
+      if (firstNonNull(naf.getRouteReflectorClient(), Boolean.FALSE)) {
+        // When route-reflector-client is set, this statement does not apply to reflected IBGP
+        // routes
+        nextHopSelf =
+            new If(
+                new Conjunction(
+                    ImmutableList.of(
+                        new MatchBgpSessionType(Type.IBGP),
+                        new MatchProtocol(RoutingProtocol.IBGP))),
+                ImmutableList.of(),
+                ImmutableList.of(nextHopSelf));
+      }
+      statementsBuilder.add(nextHopSelf);
     }
     if (neighbor.getRemovePrivateAs() != null) {
       // TODO(handle different types of RemovePrivateAs)

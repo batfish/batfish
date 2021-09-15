@@ -213,6 +213,7 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LocalRoute;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.NamedPort;
+import org.batfish.datamodel.Names;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfExternalRoute;
 import org.batfish.datamodel.OspfInterAreaRoute;
@@ -9131,5 +9132,103 @@ public final class CiscoNxosGrammarTest {
                     null,
                     null,
                     null))));
+  }
+
+  @Test
+  public void testRouteReflectorSetNextHopSelf() throws IOException {
+    Configuration c = parseConfig("nxos_bgp_next_hop_self");
+    Ip updateSourceIp = Ip.parse("1.0.0.1");
+    Ip ebgpLocalIp = Ip.parse("2.0.0.0");
+    Ip ibgpClientNextHopSelfPeerIp = Ip.parse("1.0.0.2");
+    Ip ibgpNonClientNextHopSelfPeerIp = Ip.parse("1.0.0.3");
+    Ip ibgpClientNoNextHopSelfPeerIp = Ip.parse("1.0.0.4");
+    Ip ibgpNonClientNoNextHopSelfPeerIp = Ip.parse("1.0.0.5");
+    Ip ebgpPeerIp = Ip.parse("2.0.0.1");
+    Ip origIp = Ip.parse("10.0.0.1");
+    Bgpv4Route ibgpInputRoute =
+        Bgpv4Route.testBuilder()
+            .setNetwork(Prefix.strict("192.168.0.0/24"))
+            .setProtocol(RoutingProtocol.IBGP)
+            .setNextHop(NextHopIp.of(origIp))
+            .build();
+    Bgpv4Route ebgpInputRoute =
+        Bgpv4Route.testBuilder()
+            .setNetwork(Prefix.strict("192.168.0.0/24"))
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHop(NextHopIp.of(origIp))
+            .build();
+
+    ImmutableList.of(
+            ibgpClientNextHopSelfPeerIp,
+            ibgpNonClientNextHopSelfPeerIp,
+            ibgpClientNoNextHopSelfPeerIp,
+            ibgpNonClientNoNextHopSelfPeerIp,
+            ebgpPeerIp)
+        .forEach(
+            peerIp ->
+                assertThat(
+                    c.getRoutingPolicies(),
+                    hasKey(
+                        Names.generatedBgpPeerExportPolicyName(
+                            Configuration.DEFAULT_VRF_NAME, peerIp.toString()))));
+
+    // Note that by default, NX-OS export policy does not set NHIP for iBGP sessions
+
+    // iBGP route-reflector-client peer with next-hop-self
+    assertRouteReflectorSetNextHopSelfTransformedIp(
+        c, ibgpClientNextHopSelfPeerIp, ibgpInputRoute, UNSET_ROUTE_NEXT_HOP_IP);
+    assertRouteReflectorSetNextHopSelfTransformedIp(
+        c, ibgpClientNextHopSelfPeerIp, ebgpInputRoute, updateSourceIp);
+
+    // iBGP non-route-reflector-client peer with next-hop-self
+    assertRouteReflectorSetNextHopSelfTransformedIp(
+        c, ibgpNonClientNextHopSelfPeerIp, ibgpInputRoute, updateSourceIp);
+    assertRouteReflectorSetNextHopSelfTransformedIp(
+        c, ibgpNonClientNextHopSelfPeerIp, ebgpInputRoute, updateSourceIp);
+
+    // iBGP route-reflector-client peer without next-hop-self
+    assertRouteReflectorSetNextHopSelfTransformedIp(
+        c,
+        ibgpClientNoNextHopSelfPeerIp,
+        ibgpInputRoute,
+        UNSET_ROUTE_NEXT_HOP_IP /* original not set by RP for iBGP */);
+    assertRouteReflectorSetNextHopSelfTransformedIp(
+        c, ibgpClientNoNextHopSelfPeerIp, ebgpInputRoute, UNSET_ROUTE_NEXT_HOP_IP);
+
+    // iBGP non-route-reflector-client peer without next-hop-self
+    assertRouteReflectorSetNextHopSelfTransformedIp(
+        c, ibgpNonClientNoNextHopSelfPeerIp, ibgpInputRoute, UNSET_ROUTE_NEXT_HOP_IP);
+    assertRouteReflectorSetNextHopSelfTransformedIp(
+        c, ibgpNonClientNoNextHopSelfPeerIp, ebgpInputRoute, UNSET_ROUTE_NEXT_HOP_IP);
+
+    // eBGP peer with next-hop-self
+    assertRouteReflectorSetNextHopSelfTransformedIp(c, ebgpPeerIp, ibgpInputRoute, ebgpLocalIp);
+    assertRouteReflectorSetNextHopSelfTransformedIp(c, ebgpPeerIp, ebgpInputRoute, ebgpLocalIp);
+  }
+
+  private void assertRouteReflectorSetNextHopSelfTransformedIp(
+      Configuration c,
+      Ip ibgpClientPeerIp,
+      Bgpv4Route inputRoute,
+      Ip expectedTransformedNextHopIp) {
+    RoutingPolicy rp =
+        c.getRoutingPolicies()
+            .get(
+                Names.generatedBgpPeerExportPolicyName(
+                    Configuration.DEFAULT_VRF_NAME, ibgpClientPeerIp.toString()));
+    Bgpv4Route.Builder outputRoute = inputRoute.toBuilder().setNextHopIp(UNSET_ROUTE_NEXT_HOP_IP);
+    BgpActivePeerConfig fromConfig =
+        c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(ibgpClientPeerIp);
+    BgpActivePeerConfig neighborConfig =
+        BgpActivePeerConfig.builder()
+            .setLocalIp(fromConfig.getPeerAddress())
+            .setLocalAs(fromConfig.getRemoteAsns().singletonValue())
+            .setRemoteAs(fromConfig.getLocalAs())
+            .setPeerAddress(fromConfig.getLocalIp())
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+            .build();
+    BgpSessionProperties session = BgpSessionProperties.from(neighborConfig, fromConfig, false);
+    rp.processBgpRoute(inputRoute, outputRoute, session, Direction.OUT, null);
+    assertThat(outputRoute.getNextHopIp(), equalTo(expectedTransformedNextHopIp));
   }
 }
