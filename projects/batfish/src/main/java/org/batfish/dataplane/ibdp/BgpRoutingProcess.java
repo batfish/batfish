@@ -51,7 +51,6 @@ import org.apache.logging.log4j.Logger;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.AnnotatedRoute;
-import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
@@ -798,11 +797,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     _bgpv4DeltaBuilder.from(importRibDelta(_bgpv4Rib, ibgpDelta));
     // Finally, prepare the delta we will feed into the main RIB
     RibDelta<Bgpv4Route> bgpv4RibDelta = _bgpv4DeltaBuilder.build();
-    LOGGER.info("{}: Unstaged BGP routes, current bgpv4Delta: {}", _c.getHostname(), bgpv4RibDelta);
-    if (!bgpv4RibDelta.isEmpty()) {
-      System.err.printf(
-          "%s: Unstaged BGP routes, current bgpv4Delta: %s%n", _c.getHostname(), bgpv4RibDelta);
-    }
+    LOGGER.trace(
+        "{}: Unstaged BGP routes, current bgpv4Delta: {}", _c.getHostname(), bgpv4RibDelta);
     _toMainRib.from(bgpv4RibDelta);
   }
 
@@ -835,14 +831,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     Iterator<RouteAdvertisement<Bgpv4Route>> exportedRoutes =
         neighborProcess
             .getOutgoingRoutesForEdge(edgeId.reverse(), nodes, bgpTopology, nc, isNewSession)
-            .peek(
-                ra ->
-                    System.err.printf(
-                        "%s: Pulling last-round from %s route %s[%s]%n",
-                        edgeId.head().getHostname(),
-                        edgeId.tail().getHostname(),
-                        ra.getReason(),
-                        ra.getRoute().getAsPath()))
             .iterator();
 
     // Process all routes from neighbor
@@ -863,14 +851,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
               _process,
               sessionProperties.getTailIp(),
               ourConfigId.getPeerInterface());
-      System.err.printf(
-          "%s: Transformed %s%s to %s%n",
-          _c.getHostname(),
-          remoteRouteAdvert.getReason(),
-          remoteRoute.getAsPath(),
-          transformedIncomingRouteBuilder == null
-              ? "nothing"
-              : transformedIncomingRouteBuilder.getAsPath());
       if (transformedIncomingRouteBuilder == null) {
         // Route could not be imported for core protocol reasons
         _prefixTracer.filtered(
@@ -918,15 +898,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
       if (remoteRouteAdvert.isWithdrawn()) {
         // Note this route was removed
-        if (_c.getHostname().equals("l")
-            && transformedIncomingRoute.getAsPath().equals(AsPath.ofSingletonAsSets(2L, 1L))) {
-          System.err.println("Breakpoint");
-        }
-
         RibDelta<Bgpv4Route> removed = targetRib.removeRouteGetDelta(transformedIncomingRoute);
-        System.err.printf(
-            "%s: removed %s, delta %s%n",
-            _c.getHostname(), transformedIncomingRoute.getAsPath(), removed);
         // We need to filter REPLACE out so that we don't remove replaced routes from the overall
         // BGP rib.
         ribDeltas
@@ -937,14 +909,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         }
       } else {
         // Merge into staging rib, note delta
-        if (_c.getHostname().equals("l")
-            && transformedIncomingRoute.getAsPath().equals(AsPath.ofSingletonAsSets(2L, 4L, 3L))) {
-          System.err.println("Breakpoint");
-        }
         RibDelta<Bgpv4Route> merged = targetRib.mergeRouteGetDelta(transformedIncomingRoute);
-        System.err.printf(
-            "%s: added %s, delta %s%n",
-            _c.getHostname(), transformedIncomingRoute.getAsPath(), merged);
         ribDeltas
             .get(targetRib)
             .from(merged.getActions().filter(a -> a.getReason() != Reason.REPLACE));
