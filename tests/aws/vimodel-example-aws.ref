@@ -61573,6 +61573,19 @@
             "name" : "~BGP_REDISTRIBUTION_POLICY:default~",
             "statements" : [
               {
+                "class" : "org.batfish.datamodel.routing_policy.statement.SetNextHop",
+                "expr" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.DiscardNextHop"
+                }
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.SetWeight",
+                "weight" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                  "value" : 32768
+                }
+              },
+              {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
                 "comment" : "Add network statement routes to BGP",
                 "guard" : {
