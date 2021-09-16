@@ -2,11 +2,10 @@ package org.batfish.vendor.a10.grammar;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
-import static org.batfish.datamodel.ConfigurationFormat.CHECK_POINT_GATEWAY;
+import static org.batfish.datamodel.ConfigurationFormat.A10_ACOS;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
-import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.notNullValue;
@@ -35,6 +34,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+/**
+ * Tests of VS model extraction and VS model-to-VI model conversion for {@link A10Configuration}s.
+ */
 @ParametersAreNonnullByDefault
 public class A10GrammarTest {
   private static final String TESTCONFIGS_PREFIX = "org/batfish/vendor/a10/grammar/testconfigs/";
@@ -75,11 +77,9 @@ public class A10GrammarTest {
     try {
       Map<String, Configuration> configs = parseTextConfigs(hostname);
       String canonicalHostname = hostname.toLowerCase();
-      String canonicalChassisHostname = canonicalHostname + "-ch01-01";
-      assertThat(configs, anyOf(hasKey(canonicalHostname), hasKey(canonicalChassisHostname)));
-      Configuration c =
-          configs.getOrDefault(canonicalHostname, configs.get(canonicalChassisHostname));
-      assertThat(c, hasConfigurationFormat(CHECK_POINT_GATEWAY));
+      assertThat(configs, hasKey(canonicalHostname));
+      Configuration c = configs.get(canonicalHostname);
+      assertThat(c, hasConfigurationFormat(A10_ACOS));
       return c;
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -93,11 +93,20 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testHostname() {
+  public void testHostnameExtraction() {
     String hostname = "hostname";
     A10Configuration c = parseVendorConfig(hostname);
     assertThat(c, notNullValue());
     // Confirm hostname extracted as-typed; will be lower-cased in conversion.
     assertThat(c.getHostname(), equalTo("HOSTNAME"));
+  }
+
+  @Test
+  public void testHostnameConversion() {
+    String hostname = "hostname";
+    Configuration c = parseConfig(hostname);
+    assertThat(c, notNullValue());
+    // Should be lower-cased
+    assertThat(c.getHostname(), equalTo("hostname"));
   }
 }

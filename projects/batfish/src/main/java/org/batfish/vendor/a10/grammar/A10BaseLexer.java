@@ -1,12 +1,10 @@
 package org.batfish.vendor.a10.grammar;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.Token;
 import org.batfish.grammar.BatfishLexer;
 
 /** A10 lexer base class providing additional functionality on top of {@link BatfishLexer}. */
-@ParametersAreNonnullByDefault
 public abstract class A10BaseLexer extends BatfishLexer {
 
   public A10BaseLexer(CharStream input) {

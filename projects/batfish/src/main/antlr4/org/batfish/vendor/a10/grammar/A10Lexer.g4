@@ -5,19 +5,21 @@ options {
 }
 
 tokens {
-  STR
+  WORD
 }
 
 // A10 keywords
-HOSTNAME: 'hostname' -> pushMode(M_Str);
+HOSTNAME: 'hostname' -> pushMode(M_Word);
 
 // Complex tokens
 COMMENT_LINE
 :
   F_Whitespace* '!'
   {lastTokenType() == NEWLINE || lastTokenType() == -1}?
-  F_NonNewlineChar* (F_Newline | EOF) -> channel(HIDDEN)
+  F_NonNewlineChar* (F_Newline | EOF) -> skip
 ;
+
+SUBNET_MASK: F_SubnetMask;
 
 IP_ADDRESS: F_IpAddress;
 
@@ -31,7 +33,7 @@ UINT16: F_Uint16;
 
 UINT32: F_Uint32;
 
-WS: F_Whitespace+ -> channel(HIDDEN);
+WS: F_Whitespace+ -> skip;
 
 // Fragments
 
@@ -76,6 +78,29 @@ F_NonNewlineChar
 
 fragment
 F_PositiveDigit: [1-9];
+
+fragment
+F_SubnetMask
+:
+  F_SubnetMaskOctet '.0.0.0'
+  | '255.' F_SubnetMaskOctet '.0.0'
+  | '255.255.' F_SubnetMaskOctet '.0'
+  | '255.255.255.' F_SubnetMaskOctet
+;
+
+fragment
+F_SubnetMaskOctet
+:
+  '0'
+  | '128'
+  | '192'
+  | '224'
+  | '240'
+  | '248'
+  | '252'
+  | '254'
+  | '255'
+;
 
 fragment
 F_Uint8
@@ -126,15 +151,21 @@ F_Whitespace
 ;
 
 fragment
+F_Word: F_WordChar+;
+
+fragment
+F_WordChar
+:
+  [0-9A-Za-z!@#$%^&*()_=+.;:{}/]
+  | '-'
+;
+
+fragment
 F_StrChar: ~( [ \t\u000C\u00A0\n\r(),!$'"*#] | '[' | ']' );
 fragment
 F_Str: F_StrChar+;
 // Modes
-mode M_Str;
-M_Str_WS: F_Whitespace+ -> skip, mode(M_StrValue);
-M_Str_NEWLINE: F_Newline -> type(NEWLINE), popMode;
-
-mode M_StrValue;
-M_StrValue_STR: F_Str -> type(STR);
-M_StrValue_WS: F_Whitespace+ -> skip, popMode;
-M_StrValue_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+mode M_Word;
+M_Word_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_Word_WORD: F_Word -> type(WORD) , popMode;
+M_Word_WS: F_Whitespace+ -> skip;

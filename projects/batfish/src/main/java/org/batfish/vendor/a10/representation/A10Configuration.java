@@ -9,6 +9,7 @@ import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.LineAction;
 import org.batfish.vendor.VendorConfiguration;
 
+/** Datamodel class representing an A10 device configuration. */
 public class A10Configuration extends VendorConfiguration {
 
   public A10Configuration() {}

@@ -1,7 +1,6 @@
 package org.batfish.vendor.a10.grammar;
 
 import javax.annotation.Nonnull;
-import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.NetworkSnapshot;
@@ -12,7 +11,7 @@ import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.vendor.a10.representation.A10Configuration;
 
-@ParametersAreNonnullByDefault
+/** Extracts a {@link A10Configuration} from a corresponding parse tree. */
 public class A10ControlPlaneExtractor extends A10ParserBaseListener
     implements ControlPlaneExtractor {
 

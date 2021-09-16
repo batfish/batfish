@@ -7,7 +7,7 @@ options {
    tokenVocab = A10Lexer;
 }
 
-a10_configuration: statement+ EOF;
+a10_configuration: NEWLINE? statement+ EOF;
 
 statement: s_hostname;
 
