@@ -322,7 +322,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   }
 
   @Override
-  public void redistribute(RibDelta<? extends AnnotatedRoute<AbstractRoute>> mainRibDelta) {
+  public void redistribute(RibDelta<AnnotatedRoute<AbstractRoute>> mainRibDelta) {
     _queuedForRedistribution = computeRedistributionDelta(mainRibDelta);
     _activatedGeneratedRoutes = activateGeneratedRoutes(mainRibDelta);
   }

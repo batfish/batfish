@@ -217,7 +217,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
   }
 
   @Override
-  public void redistribute(RibDelta<? extends AnnotatedRoute<AbstractRoute>> mainRibDelta) {
+  public void redistribute(RibDelta<AnnotatedRoute<AbstractRoute>> mainRibDelta) {
     if (_process.getRedistributionPolicy() == null) {
       return;
     }
