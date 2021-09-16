@@ -1779,12 +1779,9 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   private LineAction toLineAction(Access_list_actionContext ctx) {
     if (ctx.PERMIT() != null) {
       return LineAction.PERMIT;
-    } else if (ctx.DENY() != null) {
-      return LineAction.DENY;
     } else {
-      throw new BatfishException(
-          String.format(
-              "Could not convert to %s: %s", LineAction.class.getSimpleName(), getFullText(ctx)));
+      assert ctx.DENY() != null;
+      return LineAction.DENY;
     }
   }
 
