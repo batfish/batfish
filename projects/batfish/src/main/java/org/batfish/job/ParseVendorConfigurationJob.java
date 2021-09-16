@@ -62,6 +62,8 @@ import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.vendor.VendorConfiguration;
+import org.batfish.vendor.a10.grammar.A10CombinedParser;
+import org.batfish.vendor.a10.grammar.A10ControlPlaneExtractor;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayCombinedParser;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayControlPlaneExtractor;
 
@@ -170,6 +172,15 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
       assert scope != null; // avoid unused warning
 
       switch (format) {
+        case A10:
+          {
+            A10CombinedParser a10Parser = new A10CombinedParser(_fileText, _settings);
+            combinedParser = a10Parser;
+            extractor =
+                new A10ControlPlaneExtractor(_fileText, a10Parser, _warnings, _silentSyntax);
+            break;
+          }
+
         case ARISTA:
           {
             AristaCombinedParser aristaParser = new AristaCombinedParser(_fileText, _settings);

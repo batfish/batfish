@@ -2,6 +2,7 @@ package org.batfish.datamodel;
 
 /** Vendor configuration file format. */
 public enum ConfigurationFormat {
+  A10("a10"),
   ALCATEL_AOS("alcatel_aos"),
   ARISTA("arista"),
   ARUBAOS("aruba"),
