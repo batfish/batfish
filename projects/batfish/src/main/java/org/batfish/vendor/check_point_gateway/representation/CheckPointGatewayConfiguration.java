@@ -6,6 +6,8 @@ import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.batfish.datamodel.FirewallSessionInterfaceInfo.Action.POST_NAT_FIB_LOOKUP;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.aclName;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toIpAccessLists;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.automaticHideRuleTransformation;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getApplicableNatRules;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getManualNatRules;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.manualHideRuleTransformation;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.mergeTransformations;
@@ -62,12 +64,14 @@ import org.batfish.vendor.check_point_management.CheckpointManagementConfigurati
 import org.batfish.vendor.check_point_management.Cluster;
 import org.batfish.vendor.check_point_management.ClusterMember;
 import org.batfish.vendor.check_point_management.GatewayOrServer;
+import org.batfish.vendor.check_point_management.HasNatSettings;
 import org.batfish.vendor.check_point_management.ManagementDomain;
 import org.batfish.vendor.check_point_management.ManagementPackage;
 import org.batfish.vendor.check_point_management.ManagementServer;
 import org.batfish.vendor.check_point_management.NamedManagementObject;
 import org.batfish.vendor.check_point_management.NatMethod;
 import org.batfish.vendor.check_point_management.NatRulebase;
+import org.batfish.vendor.check_point_management.NatSettings;
 import org.batfish.vendor.check_point_management.ServiceToMatchExpr;
 import org.batfish.vendor.check_point_management.Uid;
 import org.batfish.vendor.check_point_management.UnknownTypedManagementObject;
@@ -316,11 +320,30 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
             .filter(Optional::isPresent)
             .map(Optional::get)
             .collect(ImmutableList.toImmutableList());
-    if (getManualNatRules(natRulebase, gateway)
+    List<Transformation> automaticHideRuleTransformations =
+        objects.values().stream()
+            .filter(HasNatSettings.class::isInstance)
+            .map(HasNatSettings.class::cast)
+            .filter(
+                hasNatSettings -> {
+                  NatSettings natSettings = hasNatSettings.getNatSettings();
+                  return natSettings.getAutoRule() && natSettings.getMethod() == NatMethod.HIDE;
+                })
+            // TODO: consult generated rules for automatic hide rule ordering
+            .map(
+                hasNatSettings ->
+                    automaticHideRuleTransformation(
+                        hasNatSettings, gateway, addressSpaceToMatchExpr, getWarnings()))
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .collect(ImmutableList.toImmutableList());
+    if (getApplicableNatRules(natRulebase, gateway)
         .anyMatch(rule -> rule.getMethod() != NatMethod.HIDE)) {
       _w.redFlag("Non-HIDE NAT rules are unsupported");
     }
-    _natTransformation = mergeTransformations(manualHideRuleTransformations).orElse(null);
+    _natTransformation =
+        mergeTransformations(manualHideRuleTransformations, automaticHideRuleTransformations)
+            .orElse(null);
     // TODO Apply transformations to appropriate interfaces
   }
 

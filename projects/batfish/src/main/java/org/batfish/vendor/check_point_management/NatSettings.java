@@ -18,10 +18,12 @@ public class NatSettings implements Serializable {
     return _autoRule;
   }
 
-  public @Nullable String getHideBehind() {
+  /** Source to hide behind (may be an IP or a gateway) */
+  public @Nullable NatHideBehind getHideBehind() {
     return _hideBehind;
   }
 
+  /** Either "All" or a name defined in show-gateways-and-servers */
   public @Nullable String getInstallOn() {
     return _installOn;
   }
@@ -30,7 +32,7 @@ public class NatSettings implements Serializable {
     return _ipv4Address;
   }
 
-  public @Nullable String getMethod() {
+  public @Nullable NatMethod getMethod() {
     return _method;
   }
 
@@ -57,10 +59,10 @@ public class NatSettings implements Serializable {
   @JsonCreator
   private static @Nonnull NatSettings create(
       @JsonProperty(PROP_AUTO_RULE) @Nullable Boolean autoRule,
-      @JsonProperty(PROP_HIDE_BEHIND) @Nullable String hideBehind,
+      @JsonProperty(PROP_HIDE_BEHIND) @Nullable NatHideBehind hideBehind,
       @JsonProperty(PROP_INSTALL_ON) @Nullable String installOn,
       @JsonProperty(PROP_IPV4_ADDRESS) @Nullable Ip ipv4Address,
-      @JsonProperty(PROP_METHOD) @Nullable String method) {
+      @JsonProperty(PROP_METHOD) @Nullable NatMethod method) {
     checkArgument(autoRule != null, "Missing %s", PROP_AUTO_RULE);
     return new NatSettings(autoRule, hideBehind, installOn, ipv4Address, method);
   }
@@ -68,10 +70,10 @@ public class NatSettings implements Serializable {
   @VisibleForTesting
   public NatSettings(
       boolean autoRule,
-      @Nullable String hideBehind,
+      @Nullable NatHideBehind hideBehind,
       @Nullable String installOn,
       @Nullable Ip ipv4Address,
-      @Nullable String method) {
+      @Nullable NatMethod method) {
     _autoRule = autoRule;
     _hideBehind = hideBehind;
     _installOn = installOn;
@@ -85,8 +87,8 @@ public class NatSettings implements Serializable {
   private static final String PROP_IPV4_ADDRESS = "ipv4-address";
   private static final String PROP_METHOD = "method";
   private final boolean _autoRule;
-  private final @Nullable String _hideBehind;
+  private final @Nullable NatHideBehind _hideBehind;
   private final @Nullable String _installOn;
   private final @Nullable Ip _ipv4Address;
-  private final @Nullable String _method;
+  private final @Nullable NatMethod _method;
 }

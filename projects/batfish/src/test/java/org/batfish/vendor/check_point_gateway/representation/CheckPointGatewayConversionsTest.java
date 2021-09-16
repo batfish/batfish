@@ -48,7 +48,7 @@ import org.batfish.vendor.check_point_management.AddressSpaceToMatchExpr;
 import org.batfish.vendor.check_point_management.CpmiAnyObject;
 import org.batfish.vendor.check_point_management.Host;
 import org.batfish.vendor.check_point_management.NamedManagementObject;
-import org.batfish.vendor.check_point_management.NatSettings;
+import org.batfish.vendor.check_point_management.NatSettingsTest;
 import org.batfish.vendor.check_point_management.Network;
 import org.batfish.vendor.check_point_management.PolicyTargets;
 import org.batfish.vendor.check_point_management.RulebaseAction;
@@ -62,8 +62,6 @@ import org.junit.Test;
 
 /** Test of {@link CheckPointGatewayConversions}. */
 public final class CheckPointGatewayConversionsTest {
-  public static final NatSettings NAT_SETTINGS_TEST_INSTANCE =
-      new NatSettings(true, "gateway", "All", null, "hide");
   private static final Uid UID_ACCEPT = Uid.of("99997");
   private static final Uid UID_DROP = Uid.of("99998");
   private static final Uid UID_CPMI_ANY = Uid.of("99999");
@@ -86,21 +84,21 @@ public final class CheckPointGatewayConversionsTest {
   private static final Network NETWORK_0 =
       new Network(
           "net0",
-          NAT_SETTINGS_TEST_INSTANCE,
+          NatSettingsTest.TEST_INSTANCE,
           Ip.parse("10.0.0.0"),
           Ip.parse("255.255.255.0"),
           UID_NET0);
   private static final Network NETWORK_1 =
       new Network(
           "net1",
-          NAT_SETTINGS_TEST_INSTANCE,
+          NatSettingsTest.TEST_INSTANCE,
           Ip.parse("10.0.1.0"),
           Ip.parse("255.255.255.0"),
           UID_NET1);
   private static final Network NETWORK_2 =
       new Network(
           "net2",
-          NAT_SETTINGS_TEST_INSTANCE,
+          NatSettingsTest.TEST_INSTANCE,
           Ip.parse("10.0.2.0"),
           Ip.parse("255.255.255.0"),
           UID_NET2);
@@ -497,7 +495,8 @@ public final class CheckPointGatewayConversionsTest {
   @Test
   public void testCheckValidHeaderSpaceInputs() {
     Uid uid = Uid.of("1");
-    TypedManagementObject addressSpace = new Host(Ip.ZERO, NAT_SETTINGS_TEST_INSTANCE, "foo", uid);
+    TypedManagementObject addressSpace =
+        new Host(Ip.ZERO, NatSettingsTest.TEST_INSTANCE, "foo", uid);
     TypedManagementObject service = new ServiceTcp("foo", "1", uid);
     Warnings warnings = new Warnings();
 
