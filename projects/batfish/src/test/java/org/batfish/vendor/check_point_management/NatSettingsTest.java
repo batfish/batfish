@@ -17,10 +17,11 @@ public class NatSettingsTest {
    * for use in tests.
    */
   public static final NatSettings TEST_INSTANCE =
-      new NatSettings(true, "gateway", "All", null, "hide");
+      new NatSettings(true, NatHideBehindGateway.INSTANCE, "All", null, NatMethod.HIDE);
   /** Another test instance, that is not-equal to the previous instance. */
   public static final NatSettings TEST_INSTANCE_DIFFERENT =
-      new NatSettings(true, "gateway", "All", Ip.parse("2.3.4.5"), "hide");
+      new NatSettings(
+          true, NatHideBehindGateway.INSTANCE, "All", Ip.parse("2.3.4.5"), NatMethod.HIDE);
 
   @Test
   public void testJacksonDeserialization() throws JsonProcessingException {
@@ -46,14 +47,23 @@ public class NatSettingsTest {
 
   @Test
   public void testEquals() {
-    NatSettings obj = new NatSettings(true, "gateway", "All", null, "hide");
+    NatSettings obj =
+        new NatSettings(true, NatHideBehindGateway.INSTANCE, "All", null, NatMethod.HIDE);
     new EqualsTester()
-        .addEqualityGroup(obj, new NatSettings(true, "gateway", "All", null, "hide"))
-        .addEqualityGroup(new NatSettings(false, "gateway", "All", null, "hide"))
-        .addEqualityGroup(new NatSettings(true, "server", "All", null, "hide"))
-        .addEqualityGroup(new NatSettings(true, "gateway", "None", null, "hide"))
-        .addEqualityGroup(new NatSettings(true, "gateway", "None", null, "dontHide"))
-        .addEqualityGroup(new NatSettings(true, "gateway", "None", Ip.parse("1.2.3.4"), "hide"))
+        .addEqualityGroup(
+            obj, new NatSettings(true, NatHideBehindGateway.INSTANCE, "All", null, NatMethod.HIDE))
+        .addEqualityGroup(
+            new NatSettings(false, NatHideBehindGateway.INSTANCE, "All", null, NatMethod.HIDE))
+        .addEqualityGroup(
+            new NatSettings(
+                true, new NatHideBehindIp(Ip.parse("1.1.1.1")), "All", null, NatMethod.HIDE))
+        .addEqualityGroup(
+            new NatSettings(true, NatHideBehindGateway.INSTANCE, "None", null, NatMethod.HIDE))
+        .addEqualityGroup(
+            new NatSettings(true, NatHideBehindGateway.INSTANCE, "None", null, NatMethod.STATIC))
+        .addEqualityGroup(
+            new NatSettings(
+                true, NatHideBehindGateway.INSTANCE, "None", Ip.parse("1.2.3.4"), NatMethod.HIDE))
         .testEquals();
   }
 }

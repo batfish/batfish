@@ -12,7 +12,7 @@ import org.batfish.datamodel.Ip;
 
 /** A single host address. */
 public final class Host extends TypedManagementObject
-    implements AddressSpace, Machine, NatTranslatedSource {
+    implements HasNatSettings, Machine, NatTranslatedSource {
 
   @Override
   public <T> T accept(AddressSpaceVisitor<T> visitor) {
@@ -52,6 +52,7 @@ public final class Host extends TypedManagementObject
     return _ipv4Address;
   }
 
+  @Override
   public @Nonnull NatSettings getNatSettings() {
     return _natSettings;
   }
