@@ -320,7 +320,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
             .filter(Optional::isPresent)
             .map(Optional::get)
             .collect(ImmutableList.toImmutableList());
-    AddressSpaceToIpSpace toIpSpaceVisitor = new AddressSpaceToIpSpace(objects);
+    AddressSpaceToMatchExpr toMatchExprVisitor = new AddressSpaceToMatchExpr(objects);
     List<Transformation> automaticHideRuleTransformations =
         objects.values().stream()
             .filter(o -> o instanceof HasNatSettings)
@@ -334,7 +334,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
             .map(
                 hasNatSettings ->
                     automaticHideRuleTransformation(
-                        hasNatSettings, gateway, toIpSpaceVisitor, getWarnings()))
+                        hasNatSettings, gateway, toMatchExprVisitor, getWarnings()))
             .filter(Optional::isPresent)
             .map(Optional::get)
             .collect(ImmutableList.toImmutableList());

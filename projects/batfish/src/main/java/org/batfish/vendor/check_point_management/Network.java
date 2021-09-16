@@ -11,15 +11,10 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 
 /** An IPv4 network. */
-public final class Network extends TypedManagementObject implements AddressSpace, HasNatSettings {
+public final class Network extends TypedManagementObject implements HasNatSettings {
 
   @Override
   public <T> T accept(AddressSpaceVisitor<T> visitor) {
-    return visitor.visitNetwork(this);
-  }
-
-  @Override
-  public <T> T accept(HasNatSettingsVisitor<T> visitor) {
     return visitor.visitNetwork(this);
   }
 

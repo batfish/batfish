@@ -12,15 +12,10 @@ import org.batfish.datamodel.Ip;
 
 /** A single host address. */
 public final class Host extends TypedManagementObject
-    implements AddressSpace, HasNatSettings, Machine, NatTranslatedSource {
+    implements HasNatSettings, Machine, NatTranslatedSource {
 
   @Override
   public <T> T accept(AddressSpaceVisitor<T> visitor) {
-    return visitor.visitHost(this);
-  }
-
-  @Override
-  public <T> T accept(HasNatSettingsVisitor<T> visitor) {
     return visitor.visitHost(this);
   }
 

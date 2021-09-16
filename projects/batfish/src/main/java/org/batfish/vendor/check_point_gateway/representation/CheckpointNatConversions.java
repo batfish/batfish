@@ -1,6 +1,5 @@
 package org.batfish.vendor.check_point_gateway.representation;
 
-import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.transformation.Transformation.when;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourcePort;
@@ -19,16 +18,13 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.vendor.check_point_management.AddressRange;
-import org.batfish.vendor.check_point_management.AddressSpaceToIpSpace;
 import org.batfish.vendor.check_point_management.AddressSpaceToMatchExpr;
 import org.batfish.vendor.check_point_management.GatewayOrServer;
 import org.batfish.vendor.check_point_management.HasNatSettings;
-import org.batfish.vendor.check_point_management.HasNatSettingsVisitor;
 import org.batfish.vendor.check_point_management.Host;
 import org.batfish.vendor.check_point_management.NamedManagementObject;
 import org.batfish.vendor.check_point_management.NatHideBehindGateway;
@@ -42,7 +38,6 @@ import org.batfish.vendor.check_point_management.NatSection;
 import org.batfish.vendor.check_point_management.NatSettings;
 import org.batfish.vendor.check_point_management.NatTranslatedSource;
 import org.batfish.vendor.check_point_management.NatTranslatedSourceVisitor;
-import org.batfish.vendor.check_point_management.Network;
 import org.batfish.vendor.check_point_management.Original;
 import org.batfish.vendor.check_point_management.ServiceToMatchExpr;
 import org.batfish.vendor.check_point_management.Uid;
@@ -237,14 +232,15 @@ public class CheckpointNatConversions {
   static @Nonnull Optional<Transformation> automaticHideRuleTransformation(
       HasNatSettings hasNatSettings,
       GatewayOrServer gateway,
-      AddressSpaceToIpSpace toIpSpaceVisitor,
+      AddressSpaceToMatchExpr toMatchExprVisitor,
       Warnings warnings) {
     NatSettings natSettings = hasNatSettings.getNatSettings();
     assert natSettings.getAutoRule() && natSettings.getMethod() == NatMethod.HIDE;
     if (natSettings.getHideBehind() == null) {
       warnings.redFlag(
           String.format(
-              "NAT settings on %s %s are invalid: type is HIDE, but hide-behind is missing",
+              "NAT settings on %s %s are invalid and will be ignored: type is HIDE, but hide-behind"
+                  + " is missing",
               hasNatSettings.getClass(), hasNatSettings.getName()));
       return Optional.empty();
     } else if (!"All".equals(natSettings.getInstallOn())) {
@@ -258,24 +254,7 @@ public class CheckpointNatConversions {
       return Optional.empty();
     }
     // Build match expression to match traffic from the source to hide
-    IpSpace originalIpSpace =
-        new HasNatSettingsVisitor<IpSpace>() {
-          @Override
-          public IpSpace visitAddressRange(AddressRange addressRange) {
-            return addressRange.accept(toIpSpaceVisitor);
-          }
-
-          @Override
-          public IpSpace visitHost(Host host) {
-            return host.accept(toIpSpaceVisitor);
-          }
-
-          @Override
-          public IpSpace visitNetwork(Network network) {
-            return network.accept(toIpSpaceVisitor);
-          }
-        }.visit(hasNatSettings);
-    AclLineMatchExpr matchOriginalSrc = matchSrc(originalIpSpace);
+    AclLineMatchExpr matchOriginalSrc = toMatchExprVisitor.convertSource(hasNatSettings);
     // Find IP to translate the hidden source to
     Ip transformedIp =
         new NatHideBehindVisitor<Ip>() {
