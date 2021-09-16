@@ -48,6 +48,7 @@ import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpSessionProperties;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -228,6 +229,55 @@ public class IncrementalDataPlanePluginTest {
 
     // Really just test that no exception is thrown
     dataPlanePlugin.computeDataPlane(batfish.getSnapshot());
+  }
+
+  /*
+   Topology:
+          R2
+         /  \
+        R1--R3
+
+   - R2 is a route reflector, with clients R1 and R3
+   - R1 sends 5.5.5.5/32 to R2 and changes its NHIP to its interface address for the R1<=>R3 link
+   - R2 has a static discard route for 5.5.5.5/32, so the BGP route goes into RIB-failure
+   - R2 should still reflect 5.5.5.5/32 to R3
+  */
+  @Test
+  public void testRouteReflectorRibFailure() throws IOException {
+    String testrigName = "rr-rib-failure";
+    List<String> configurationNames = ImmutableList.of("r1", "r2", "r3");
+    Prefix advPrefix = Prefix.strict("5.5.5.5/32");
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+    batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dataplane = batfish.loadDataPlane(batfish.getSnapshot());
+
+    // Check BGP RIB routes
+    Set<Bgpv4Route> r2BgpRibRoutes =
+        dataplane.getBgpRoutes().get("r2", Configuration.DEFAULT_VRF_NAME);
+    Set<Bgpv4Route> r3BgpRibRoutes =
+        dataplane.getBgpRoutes().get("r3", Configuration.DEFAULT_VRF_NAME);
+    assertThat(r2BgpRibRoutes, hasItem(hasPrefix(advPrefix)));
+    assertThat(r3BgpRibRoutes, hasItem(hasPrefix(advPrefix)));
+
+    // Check main RIB routes
+    Set<AbstractRoute> r2MainRibRoutes =
+        dataplane.getRibs().get("r2").get(Configuration.DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> r3MainRibRoutes =
+        dataplane.getRibs().get("r3").get(Configuration.DEFAULT_VRF_NAME).getRoutes();
+    assertThat(
+        r2MainRibRoutes, hasItem(allOf(hasPrefix(advPrefix), hasProtocol(RoutingProtocol.STATIC))));
+    assertThat(
+        r2MainRibRoutes,
+        not(hasItem(allOf(hasPrefix(advPrefix), hasProtocol(RoutingProtocol.IBGP)))));
+    assertThat(
+        r3MainRibRoutes, hasItem(allOf(hasPrefix(advPrefix), hasProtocol(RoutingProtocol.IBGP))));
   }
 
   @Test
