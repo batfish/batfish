@@ -7,7 +7,9 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurat
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
@@ -33,6 +35,7 @@ import org.batfish.main.BatfishTestUtils;
 import org.batfish.vendor.ConversionContext;
 import org.batfish.vendor.a10.representation.A10Configuration;
 import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 @ParametersAreNonnullByDefault
@@ -122,5 +125,12 @@ public class A10GrammarTest {
         .build();
   }
 
-  // TODO
+  @Test
+  public void testHostname() {
+    String hostname = "hostname";
+    A10Configuration c = parseVendorConfig(hostname);
+    assertThat(c, notNullValue());
+    // Confirm hostname extracted as-typed; will be lower-cased in conversion.
+    assertThat(c.getHostname(), equalTo("HOSTNAME"));
+  }
 }

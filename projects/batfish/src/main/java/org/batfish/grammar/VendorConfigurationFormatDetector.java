@@ -31,7 +31,9 @@ public final class VendorConfigurationFormatDetector {
 
   private static final Pattern BANNER_PATTERN = Pattern.compile("(?m)^banner ");
   private static final Pattern A10_PATTERN =
-      Pattern.compile("(?m)^# A10 Configuration of [\\w-]+\n# Language version: ");
+      Pattern.compile(
+          "(?m)version \\d+.\\d+.\\d+[\\w-.]*, build \\d+"
+              + " \\([A-Za-z]+-\\d{1,2}-\\d{4},\\d\\d:\\d\\d\\)");
   private static final Pattern ALCATEL_AOS_PATTERN = Pattern.compile("(?m)^system name");
   private static final Pattern ARUBAOS_PATTERN = Pattern.compile("(?m)^netservice.*$");
   private static final Pattern BLADE_NETWORK_PATTERN = Pattern.compile("(?m)^switch-type");
@@ -111,7 +113,7 @@ public final class VendorConfigurationFormatDetector {
   @Nullable
   private ConfigurationFormat checkA10() {
     if (fileTextMatches(A10_PATTERN)) {
-      return ConfigurationFormat.A10;
+      return ConfigurationFormat.A10_ACOS;
     }
     return null;
   }

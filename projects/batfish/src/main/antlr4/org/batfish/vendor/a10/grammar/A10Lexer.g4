@@ -5,18 +5,16 @@ options {
 }
 
 tokens {
-  STR_SEPARATOR,
-  WORD
+  STR
 }
 
 // A10 keywords
-HOSTNAME: 'hostname' -> pushMode(M_SingleStr);
-SET: 'set';
+HOSTNAME: 'hostname' -> pushMode(M_Str);
 
 // Complex tokens
 COMMENT_LINE
 :
-  F_Whitespace* '#'
+  F_Whitespace* '!'
   {lastTokenType() == NEWLINE || lastTokenType() == -1}?
   F_NonNewlineChar* (F_Newline | EOF) -> channel(HIDDEN)
 ;
@@ -54,7 +52,7 @@ fragment
 F_IpAddress: F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte;
 
 fragment
-F_IpPrefix: F_IpAddress '/' F_IpPrefixLength;
+F_IpPrefix: F_IpAddress ' /' F_IpPrefixLength;
 
 fragment
 F_IpPrefixLength
@@ -128,14 +126,15 @@ F_Whitespace
 ;
 
 fragment
-F_WordChar: ~( [ \t\u000C\u00A0\n\r(),!$'"*#] | '[' | ']' );
+F_StrChar: ~( [ \t\u000C\u00A0\n\r(),!$'"*#] | '[' | ']' );
 fragment
-F_Word: F_WordChar+;
+F_Str: F_StrChar+;
 // Modes
-mode M_SingleStr;
-M_SingleStr_WS: F_Whitespace+ -> type(STR_SEPARATOR), mode(M_SingleStrValue);
-M_SingleStr_NEWLINE: F_Newline -> type(NEWLINE), popMode;
-mode M_SingleStrValue;
-M_SingleStrValue_WORD: F_Word -> type(WORD);
-M_SingleStrValue_WS: F_Whitespace+ -> skip, popMode;
-M_SingleStrValue_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+mode M_Str;
+M_Str_WS: F_Whitespace+ -> skip, mode(M_StrValue);
+M_Str_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_StrValue;
+M_StrValue_STR: F_Str -> type(STR);
+M_StrValue_WS: F_Whitespace+ -> skip, popMode;
+M_StrValue_NEWLINE: F_Newline -> type(NEWLINE), popMode;

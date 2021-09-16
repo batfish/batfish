@@ -32,7 +32,8 @@ public class A10Configuration extends VendorConfiguration {
   public List<Configuration> toVendorIndependentConfigurations() throws VendorConversionException {
     String hostname = getHostname();
     _c = new Configuration(hostname, _vendor);
-    _c.setDeviceModel(DeviceModel.CHECK_POINT_GATEWAY);
+    _c.setHumanName(hostname);
+    _c.setDeviceModel(DeviceModel.A10);
     _c.setDefaultCrossZoneAction(LineAction.DENY);
     _c.setDefaultInboundAction(LineAction.PERMIT);
     return ImmutableList.of(_c);

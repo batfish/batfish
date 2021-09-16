@@ -17,7 +17,7 @@ import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.vendor.a10.grammar.A10Parser.A10_configurationContext;
 import org.batfish.vendor.a10.grammar.A10Parser.HostnameContext;
 import org.batfish.vendor.a10.grammar.A10Parser.S_hostnameContext;
-import org.batfish.vendor.a10.grammar.A10Parser.WordContext;
+import org.batfish.vendor.a10.grammar.A10Parser.StrContext;
 import org.batfish.vendor.a10.representation.A10Configuration;
 
 @ParametersAreNonnullByDefault
@@ -95,16 +95,16 @@ public class A10ConfigurationBuilder extends A10ParserBaseListener implements Si
   }
 
   private @Nonnull Optional<String> toString(ParserRuleContext messageCtx, HostnameContext ctx) {
-    return toString(messageCtx, ctx.word(), "device hostname", DEVICE_HOSTNAME_PATTERN);
+    return toString(messageCtx, ctx.str(), "hostname", HOSTNAME_PATTERN);
   }
 
   private @Nonnull Optional<String> toString(
-      ParserRuleContext messageCtx, WordContext ctx, String type, Pattern pattern) {
+      ParserRuleContext messageCtx, StrContext ctx, String type, Pattern pattern) {
     return toString(messageCtx, ctx, type, s -> pattern.matcher(s).matches());
   }
 
   private @Nonnull Optional<String> toString(
-      ParserRuleContext messageCtx, WordContext ctx, String type, Predicate<String> predicate) {
+      ParserRuleContext messageCtx, StrContext ctx, String type, Predicate<String> predicate) {
     String text = toString(ctx);
     if (!predicate.test(text)) {
       warn(messageCtx, String.format("Illegal value for %s", type));
@@ -113,11 +113,11 @@ public class A10ConfigurationBuilder extends A10ParserBaseListener implements Si
     return Optional.of(text);
   }
 
-  private static @Nonnull String toString(WordContext ctx) {
-    return ctx.WORD().getText();
+  private static @Nonnull String toString(StrContext ctx) {
+    return ctx.STR().getText();
   }
 
-  private static final Pattern DEVICE_HOSTNAME_PATTERN = Pattern.compile("^[A-Za-z0-9_-]+$");
+  private static final Pattern HOSTNAME_PATTERN = Pattern.compile("^[A-Za-z0-9_-]+$");
 
   @Nonnull private A10Configuration _configuration;
 

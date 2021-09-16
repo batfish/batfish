@@ -4,8 +4,8 @@ options {
     tokenVocab = A10Lexer;
 }
 
-hostname: word;
+hostname: str;
 
-word: STR_SEPARATOR WORD;
+str: STR;
 
 null_rest_of_line: ~NEWLINE* NEWLINE;

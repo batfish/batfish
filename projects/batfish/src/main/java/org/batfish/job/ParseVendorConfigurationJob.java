@@ -172,7 +172,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
       assert scope != null; // avoid unused warning
 
       switch (format) {
-        case A10:
+        case A10_ACOS:
           {
             A10CombinedParser a10Parser = new A10CombinedParser(_fileText, _settings);
             combinedParser = a10Parser;

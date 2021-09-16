@@ -303,7 +303,7 @@
             </goals>
             <configuration>
               <includes>**/A10Lexer.g4,**/A10Parser.g4</includes>
-              <libDirectory>${basedir}/src/main/antlr4/org/batfish/grammar/a10
+              <libDirectory>${basedir}/src/main/antlr4/org/batfish/vendor/a10/grammar
               </libDirectory>
               <statusDirectory>${project.build.directory}/maven-status/antlr4-a10
               </statusDirectory>
