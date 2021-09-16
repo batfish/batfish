@@ -451,6 +451,10 @@ final class IncrementalBdpEngine {
       computeIterationOfBgpRoutes(iterationLabel, allNodes, vrs);
 
       leakAcrossVrfs(vrs, iterationLabel);
+
+      // Tell each VR that a BGP route computation inner round (schedule) has ended.
+      vrs.parallelStream().forEach(VirtualRouter::endOfEgpInnerRound);
+
     } finally {
       overallSpan.finish();
     }

@@ -1,5 +1,6 @@
 package org.batfish.dataplane.ibdp;
 
+import static com.google.common.collect.Iterators.getOnlyElement;
 import static org.batfish.datamodel.BgpProcess.testBgpProcess;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.ExprAclLine.REJECT_ALL;
@@ -42,8 +43,10 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
+import org.batfish.common.plugin.TracerouteEngine;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
+import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpProcess;
@@ -54,6 +57,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.ExprAclLine;
+import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.GeneratedRoute.Builder;
@@ -64,6 +68,7 @@ import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IsoAddress;
+import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
@@ -76,6 +81,7 @@ import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.bgp.BgpTopologyUtils;
 import org.batfish.datamodel.bgp.BgpTopologyUtils.BgpSessionInitiationResult;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
+import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.isis.IsisInterfaceLevelSettings;
 import org.batfish.datamodel.isis.IsisInterfaceMode;
 import org.batfish.datamodel.isis.IsisInterfaceSettings;
@@ -213,9 +219,29 @@ public class IncrementalDataPlanePluginTest {
     return ImmutableSortedMap.of(CORE_NAME, core, "n1", n1, "n2", n2);
   }
 
+  /*
+   Topology:
+          R1
+         /  \
+        R2--R3
+
+   - There are eBGP sessions on all links.
+   - Each router has a distinct AS.
+   - R1 sends its loopback network 1.1.1.1/32 to R2 and R3.
+   - R2 and R3 each prefer routes through each other to routes through R1.
+   - There are two stable solutions:
+     1.
+       - R2 installs 1.1.1.1/32 with as-path [1]
+       - R3 installs 1.1.1.1/32 with as-path [2 1]
+     2.
+       - R2 installs 1.1.1.1/32 with as-path [3 1]
+       - R3 installs 1.1.1.1/32 with as-path [1]
+
+   - R2 and R3 should both be able to send packets to 1.1.1.1 that are accepted at R1.
+  */
   @Test
-  public void testBgpOscillation() throws IOException {
-    String testrigName = "bgp-oscillation";
+  public void testBgpNondeterministic() throws IOException {
+    String testrigName = "bgp-nondeterministic";
     List<String> configurationNames = ImmutableList.of("r1", "r2", "r3");
 
     Batfish batfish =
@@ -225,10 +251,46 @@ public class IncrementalDataPlanePluginTest {
                 .build(),
             _folder);
     batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
-    DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
+    batfish.computeDataPlane(batfish.getSnapshot());
 
-    // Really just test that no exception is thrown
-    dataPlanePlugin.computeDataPlane(batfish.getSnapshot());
+    // Check traces
+    TracerouteEngine tracerouteEngine = batfish.getTracerouteEngine(batfish.getSnapshot());
+    Flow.Builder flowBuilder =
+        Flow.builder()
+            .setSrcIp(Ip.parse("8.8.8.8"))
+            .setDstIp(Ip.parse("1.1.1.1"))
+            .setIpProtocol(IpProtocol.TCP)
+            .setDstPort(22)
+            .setSrcPort(NamedPort.EPHEMERAL_LOWEST.number());
+    {
+      Flow flow = flowBuilder.setIngressNode("r2").build();
+      Trace trace =
+          getOnlyElement(
+              tracerouteEngine.computeTraces(ImmutableSet.of(flow), false).get(flow).iterator());
+      assertThat(trace.getDisposition(), equalTo(FlowDisposition.ACCEPTED));
+    }
+    {
+      Flow flow = flowBuilder.setIngressNode("r3").build();
+      Trace trace =
+          getOnlyElement(
+              tracerouteEngine.computeTraces(ImmutableSet.of(flow), false).get(flow).iterator());
+      assertThat(trace.getDisposition(), equalTo(FlowDisposition.ACCEPTED));
+    }
+
+    // Check routes
+    DataPlane dataplane = batfish.loadDataPlane(batfish.getSnapshot());
+    Bgpv4Route r2Route =
+        Iterables.getOnlyElement(
+            dataplane.getBgpRoutes().get("r2", Configuration.DEFAULT_VRF_NAME));
+    Bgpv4Route r3Route =
+        Iterables.getOnlyElement(
+            dataplane.getBgpRoutes().get("r3", Configuration.DEFAULT_VRF_NAME));
+    assertTrue(
+        r2Route.getAsPath().equals(AsPath.ofSingletonAsSets(1L))
+            ^ r3Route.getAsPath().equals(AsPath.ofSingletonAsSets(1L)));
+    assertTrue(
+        r2Route.getAsPath().equals(AsPath.ofSingletonAsSets(3L, 1L))
+            ^ r3Route.getAsPath().equals(AsPath.ofSingletonAsSets(2L, 1L)));
   }
 
   /*

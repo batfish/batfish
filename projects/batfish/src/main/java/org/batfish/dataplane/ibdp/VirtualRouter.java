@@ -1546,6 +1546,13 @@ public final class VirtualRouter {
     }
   }
 
+  /** End of a single "EGP" inner routing round (schedule). */
+  void endOfEgpInnerRound() {
+    if (_bgpRoutingProcess != null) {
+      _bgpRoutingProcess.endOfInnerRound();
+    }
+  }
+
   /** Return all EVPN routes in this VRF */
   @Nonnull
   Set<EvpnRoute<?, ?>> getEvpnRoutes() {

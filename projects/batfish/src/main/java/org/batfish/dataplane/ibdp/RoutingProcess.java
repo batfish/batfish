@@ -58,7 +58,7 @@ public interface RoutingProcess<T, R extends AbstractRouteDecorator> {
    *
    * @param mainRibDelta {@link RibDelta} containing updates to the main RIB.
    */
-  void redistribute(RibDelta<? extends AnnotatedRoute<AbstractRoute>> mainRibDelta);
+  void redistribute(RibDelta<AnnotatedRoute<AbstractRoute>> mainRibDelta);
 
   /**
    * Returns true if any outstanding computation remains based on the internal state (e.g.,
