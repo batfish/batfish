@@ -1,0 +1,32 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+hostname r1
+feature bgp
+
+interface Ethernet1
+  no switchport
+  no shutdown
+  ip address 10.0.12.0/31
+  description to r2
+
+interface Ethernet2
+  no switchport
+  no shutdown
+  ip address 10.0.1.0/31
+  description NH for static route
+
+interface Loopback0
+  ip address 1.1.1.1/32
+
+route-map REDISTRIBUTE_STATIC permit 10
+
+ip route 5.5.5.5/32 10.0.1.1
+
+router bgp 1
+  router-id 1.1.1.1
+  address-family ipv4 unicast
+    redistribute static route-map REDISTRIBUTE_STATIC
+  neighbor 10.0.12.1
+    remote-as 2
+    address-family ipv4 unicast
+
+
