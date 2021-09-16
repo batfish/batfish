@@ -230,7 +230,6 @@ import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
-import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SnmpCommunity;
 import org.batfish.datamodel.SnmpHost;
@@ -248,6 +247,10 @@ import org.batfish.datamodel.isis.IsisLevel;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfAreaSummary.SummaryRouteBehavior;
 import org.batfish.datamodel.ospf.OspfMetricType;
+import org.batfish.datamodel.route.nh.NextHop;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.route.nh.NextHopInterface;
+import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.routing_policy.expr.AsExpr;
 import org.batfish.datamodel.routing_policy.expr.AutoAs;
 import org.batfish.datamodel.routing_policy.expr.DecrementLocalPreference;
@@ -733,7 +736,6 @@ import org.batfish.grammar.arista.AristaParser.Ro_rfc1583_compatibilityContext;
 import org.batfish.grammar.arista.AristaParser.Ro_router_idContext;
 import org.batfish.grammar.arista.AristaParser.Route_distinguisherContext;
 import org.batfish.grammar.arista.AristaParser.Route_map_stanzaContext;
-import org.batfish.grammar.arista.AristaParser.Route_tailContext;
 import org.batfish.grammar.arista.AristaParser.Route_targetContext;
 import org.batfish.grammar.arista.AristaParser.Router_bgp_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Router_isis_stanzaContext;
@@ -5498,40 +5500,34 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       int prefixLength = mask.numSubnetBits();
       prefix = Prefix.create(address, prefixLength);
     }
-    Ip nextHopIp = Route.UNSET_ROUTE_NEXT_HOP_IP;
-    String nextHopInterface = null;
-    int distance = DEFAULT_STATIC_ROUTE_DISTANCE;
-    Long tag = null;
-    Integer track = null;
-    boolean permanent = ctx.perm != null;
-    if (ctx.nexthopip != null) {
-      nextHopIp = toIp(ctx.nexthopip);
-    } else if (ctx.nexthopprefix != null) {
-      Prefix nextHopPrefix = Prefix.parse(ctx.nexthopprefix.getText());
-      nextHopIp = nextHopPrefix.getStartIp();
-    }
-    if (ctx.nexthopint != null) {
+    NextHop nextHop;
+    if (ctx.null0 != null) {
+      nextHop = NextHopDiscard.instance();
+    } else if (ctx.nexthopint == null) {
+      assert ctx.nexthopip != null; // guaranteed by grammar.
+      nextHop = NextHopIp.of(toIp(ctx.nexthopip));
+    } else {
+      String nextHopInterface;
       try {
         nextHopInterface = getCanonicalInterfaceName(ctx.nexthopint.getText());
-        _configuration.referenceStructure(
-            INTERFACE, nextHopInterface, IP_ROUTE_NHINT, ctx.nexthopint.getStart().getLine());
       } catch (BatfishException e) {
         warn(ctx, "Error fetching interface name: " + e.getMessage());
-        _currentInterfaces = ImmutableList.of();
         return;
       }
+      _configuration.referenceStructure(
+          INTERFACE, nextHopInterface, IP_ROUTE_NHINT, ctx.nexthopint.getStart().getLine());
+      if (ctx.nexthopip != null) {
+        // NHINT + IP.
+        nextHop = NextHopInterface.of(nextHopInterface, toIp(ctx.nexthopip));
+      } else {
+        // NHINT only.
+        nextHop = NextHopInterface.of(nextHopInterface);
+      }
     }
-    if (ctx.distance != null) {
-      distance = toInteger(ctx.distance);
-    }
-    if (ctx.tag != null) {
-      tag = toLong(ctx.tag);
-    }
-    if (ctx.track != null) {
-      track = toInteger(ctx.track);
-    }
-    StaticRoute route =
-        new StaticRoute(prefix, nextHopIp, nextHopInterface, distance, tag, track, permanent);
+    int distance = ctx.distance != null ? toInteger(ctx.distance) : DEFAULT_STATIC_ROUTE_DISTANCE;
+    Long tag = ctx.tag != null ? toLong(ctx.tag) : null;
+    Integer track = ctx.track != null ? toInteger(ctx.track) : null;
+    StaticRoute route = new StaticRoute(prefix, nextHop, distance, tag, track);
     currentVrf().getStaticRoutes().add(route);
   }
 
@@ -6311,31 +6307,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   public void exitRoute_map_stanza(Route_map_stanzaContext ctx) {
     _currentRouteMap = null;
     _currentRouteMapClause = null;
-  }
-
-  @Override
-  public void exitRoute_tail(Route_tailContext ctx) {
-    String nextHopInterface = ctx.iface.getText();
-    Prefix prefix = Prefix.create(toIp(ctx.destination), toIp(ctx.mask));
-    Ip nextHopIp = toIp(ctx.gateway);
-
-    int distance = DEFAULT_STATIC_ROUTE_DISTANCE;
-    if (ctx.distance != null) {
-      distance = toInteger(ctx.distance);
-    }
-
-    Integer track = null;
-    if (ctx.track != null) {
-      track = toInteger(ctx.track);
-    }
-
-    if (ctx.TUNNELED() != null) {
-      warn(ctx, "Interface default tunnel gateway option not yet supported.");
-    }
-
-    StaticRoute route =
-        new StaticRoute(prefix, nextHopIp, nextHopInterface, distance, null, track, false);
-    currentVrf().getStaticRoutes().add(route);
   }
 
   @Override

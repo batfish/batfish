@@ -2140,8 +2140,7 @@
             "        ROUTE:'route'",
             "        (ip_route_tail",
             "          prefix = IP_PREFIX:'1.2.3.32/29'",
-            "          nexthopint = (interface_name_unstructured*",
-            "            VARIABLE:'Null0')",
+            "          null0 = NULL0:'Null0'",
             "          NAME:'name'",
             "          (variable*",
             "            VARIABLE:'bippety'  <== mode:M_Name)",
@@ -71670,14 +71669,7 @@
             }
           }
         },
-        "configs/arista_ip_route" : {
-          "interface" : {
-            "Null0" : {
-              "definitionLines" : "5",
-              "numReferrers" : 1
-            }
-          }
-        },
+        "configs/arista_ip_route" : { },
         "configs/arista_misc" : {
           "ip access-list standard" : {
             "sshabc" : {
@@ -76975,15 +76967,6 @@
             "qos-pmap" : {
               "interface service-policy" : [
                 11
-              ]
-            }
-          }
-        },
-        "configs/arista_ip_route" : {
-          "interface" : {
-            "Null0" : {
-              "ip route next-hop interface" : [
-                5
               ]
             }
           }
