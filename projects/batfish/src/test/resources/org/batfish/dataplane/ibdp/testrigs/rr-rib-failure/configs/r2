@@ -1,0 +1,35 @@
+!RANCID-CONTENT-TYPE: cisco
+!
+hostname r2
+!
+interface Loopback0
+ ip address 2.2.2.2 255.255.255.255
+!
+interface GigabitEthernet0/1
+ ip address 10.12.0.2 255.255.255.0
+!
+interface GigabitEthernet0/2
+ ip address 10.23.0.2 255.255.255.0
+!
+router bgp 1
+ bgp router-id 2.2.2.2
+ neighbor 1.1.1.1 remote-as 1
+ neighbor 1.1.1.1 update-source Loopback0
+ neighbor 3.3.3.3 remote-as 1
+ neighbor 3.3.3.3 update-source Loopback0
+ !
+ address-family ipv4
+  neighbor 1.1.1.1 activate
+  neighbor 1.1.1.1 route-reflector-client
+  neighbor 1.1.1.1 soft-reconfiguration inbound
+  neighbor 3.3.3.3 activate
+  neighbor 3.3.3.3 route-reflector-client
+  neighbor 3.3.3.3 soft-reconfiguration inbound
+ exit-address-family
+!
+ip route 1.1.1.1 255.255.255.255 10.12.0.1
+ip route 3.3.3.3 255.255.255.255 10.23.0.3
+ip route 5.5.5.5 255.255.255.255 Null0
+ip route 10.13.0.1 255.255.255.255 10.12.0.1
+!
+end
