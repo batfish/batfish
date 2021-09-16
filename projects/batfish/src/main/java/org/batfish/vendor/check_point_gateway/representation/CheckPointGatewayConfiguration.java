@@ -320,21 +320,20 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
             .filter(Optional::isPresent)
             .map(Optional::get)
             .collect(ImmutableList.toImmutableList());
-    AddressSpaceToMatchExpr toMatchExprVisitor = new AddressSpaceToMatchExpr(objects);
     List<Transformation> automaticHideRuleTransformations =
         objects.values().stream()
-            .filter(o -> o instanceof HasNatSettings)
+            .filter(HasNatSettings.class::isInstance)
             .map(HasNatSettings.class::cast)
             .filter(
                 hasNatSettings -> {
                   NatSettings natSettings = hasNatSettings.getNatSettings();
                   return natSettings.getAutoRule() && natSettings.getMethod() == NatMethod.HIDE;
                 })
-            // TODO: What is the correct order in which to apply automatic hide rules?
+            // TODO: consult generated rules for automatic hide rule ordering
             .map(
                 hasNatSettings ->
                     automaticHideRuleTransformation(
-                        hasNatSettings, gateway, toMatchExprVisitor, getWarnings()))
+                        hasNatSettings, gateway, addressSpaceToMatchExpr, getWarnings()))
             .filter(Optional::isPresent)
             .map(Optional::get)
             .collect(ImmutableList.toImmutableList());

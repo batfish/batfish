@@ -9,4 +9,6 @@ public interface NatHideBehindVisitor<T> {
   T visitNatHideBehindGateway(NatHideBehindGateway natHideBehindGateway);
 
   T visitNatHideBehindIp(NatHideBehindIp natHideBehindIp);
+
+  T visitUnhandledNatHideBehind(UnhandledNatHideBehind unhandledNatHideBehind);
 }

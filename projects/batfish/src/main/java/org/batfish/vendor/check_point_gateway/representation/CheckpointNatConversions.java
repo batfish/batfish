@@ -41,6 +41,7 @@ import org.batfish.vendor.check_point_management.NatTranslatedSourceVisitor;
 import org.batfish.vendor.check_point_management.Original;
 import org.batfish.vendor.check_point_management.ServiceToMatchExpr;
 import org.batfish.vendor.check_point_management.Uid;
+import org.batfish.vendor.check_point_management.UnhandledNatHideBehind;
 
 public class CheckpointNatConversions {
 
@@ -256,21 +257,43 @@ public class CheckpointNatConversions {
     // Build match expression to match traffic from the source to hide
     AclLineMatchExpr matchOriginalSrc = toMatchExprVisitor.convertSource(hasNatSettings);
     // Find IP to translate the hidden source to
-    Ip transformedIp =
-        new NatHideBehindVisitor<Ip>() {
+    Optional<Ip> transformedIp =
+        new NatHideBehindVisitor<Optional<Ip>>() {
           @Override
-          public Ip visitNatHideBehindGateway(NatHideBehindGateway natHideBehindGateway) {
+          public Optional<Ip> visitNatHideBehindGateway(NatHideBehindGateway natHideBehindGateway) {
             // TODO When hiding behind a gateway, should the translated IP be the gateway IP
             //      or the ingress interface IP?
-            return gateway.getIpv4Address();
+            if (gateway.getIpv4Address() == null) {
+              warnings.redFlag(
+                  String.format(
+                      "Cannot hide behind gateway %s because it has no IP: NAT settings on %s %s"
+                          + " will be ignored",
+                      gateway.getName(), hasNatSettings.getClass(), hasNatSettings.getName()));
+              return Optional.empty();
+            }
+            return Optional.of(gateway.getIpv4Address());
           }
 
           @Override
-          public Ip visitNatHideBehindIp(NatHideBehindIp natHideBehindIp) {
-            return natHideBehindIp.getIp();
+          public Optional<Ip> visitNatHideBehindIp(NatHideBehindIp natHideBehindIp) {
+            return Optional.of(natHideBehindIp.getIp());
+          }
+
+          @Override
+          public Optional<Ip> visitUnhandledNatHideBehind(
+              UnhandledNatHideBehind unhandledNatHideBehind) {
+            warnings.redFlag(
+                String.format(
+                    "NAT hide-behind \"%s\" is not recognized: NAT settings on %s %s will be"
+                        + " ignored",
+                    unhandledNatHideBehind.getName(),
+                    hasNatSettings.getClass(),
+                    hasNatSettings.getName()));
+            return Optional.empty();
           }
         }.visit(natSettings.getHideBehind());
-    return Optional.of(when(matchOriginalSrc).apply(assignSourceIp(transformedIp)).build());
+    return transformedIp.map(
+        transformed -> when(matchOriginalSrc).apply(assignSourceIp(transformed)).build());
   }
 
   static @Nonnull Optional<Transformation> mergeTransformations(

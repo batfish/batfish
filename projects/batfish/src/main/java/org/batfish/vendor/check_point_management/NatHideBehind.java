@@ -17,6 +17,11 @@ public abstract class NatHideBehind implements Serializable {
     if (jsonText.equals(NAME_GATEWAY)) {
       return NatHideBehindGateway.INSTANCE;
     }
-    return new NatHideBehindIp(Ip.parse(jsonText));
+    try {
+      return new NatHideBehindIp(Ip.parse(jsonText));
+    } catch (IllegalArgumentException e) {
+      // Could not parse text as an IP
+      return new UnhandledNatHideBehind(jsonText);
+    }
   }
 }

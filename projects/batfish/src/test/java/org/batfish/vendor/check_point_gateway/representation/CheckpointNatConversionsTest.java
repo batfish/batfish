@@ -56,6 +56,7 @@ import org.batfish.vendor.check_point_management.ServiceToMatchExpr;
 import org.batfish.vendor.check_point_management.SimpleGateway;
 import org.batfish.vendor.check_point_management.TypedManagementObject;
 import org.batfish.vendor.check_point_management.Uid;
+import org.batfish.vendor.check_point_management.UnhandledNatHideBehind;
 import org.junit.Test;
 
 /** Test of {@link CheckpointNatConversions}. */
@@ -401,6 +402,36 @@ public final class CheckpointNatConversionsTest {
       assertThat(
           warnings.getRedFlagWarnings(),
           contains(hasText(containsString("type is HIDE, but hide-behind is missing"))));
+    }
+    {
+      // hide-behind setting is not recognized
+      NatSettings natSettings =
+          new NatSettings(true, new UnhandledNatHideBehind("garbage"), "All", null, NatMethod.HIDE);
+      Host host = new Host(Ip.parse("1.1.1.1"), natSettings, "host", UID);
+      Warnings warnings = new Warnings(true, true, true);
+      Optional<Transformation> transformation =
+          automaticHideRuleTransformation(
+              host, TEST_GATEWAY, ADDRESS_SPACE_TO_MATCH_EXPR, warnings);
+      assertFalse(transformation.isPresent());
+      assertThat(
+          warnings.getRedFlagWarnings(),
+          contains(hasText(containsString("NAT hide-behind \"garbage\" is not recognized"))));
+    }
+    {
+      // hide-behind gateway with no IP
+      NatSettings natSettings =
+          new NatSettings(true, NatHideBehindGateway.INSTANCE, "All", null, NatMethod.HIDE);
+      GatewayOrServer gateway =
+          new SimpleGateway(
+              null, "foo", ImmutableList.of(), new GatewayOrServerPolicy(null, null), UID);
+      Host host = new Host(Ip.parse("1.1.1.1"), natSettings, "host", UID);
+      Warnings warnings = new Warnings(true, true, true);
+      Optional<Transformation> transformation =
+          automaticHideRuleTransformation(host, gateway, ADDRESS_SPACE_TO_MATCH_EXPR, warnings);
+      assertFalse(transformation.isPresent());
+      assertThat(
+          warnings.getRedFlagWarnings(),
+          contains(hasText(containsString("Cannot hide behind gateway foo because it has no IP"))));
     }
     {
       // install-on is not "All" (individual gateways aren't yet supported)
