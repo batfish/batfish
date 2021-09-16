@@ -1048,41 +1048,20 @@ s_ip_route
 ip_route_tail
 :
    (
-      (
-         address = IP_ADDRESS mask = IP_ADDRESS
-      )
-      | prefix = IP_PREFIX
+     (address = IP_ADDRESS mask = IP_ADDRESS)
+     | prefix = IP_PREFIX
    )
    (
-      nexthopip = IP_ADDRESS
-      | nexthopprefix = IP_PREFIX
-      | GLOBAL
-      | nexthopint = interface_name_unstructured
-   )*
+      null0 = NULL0
+      | nexthopip = IP_ADDRESS (nexthopint = interface_name_unstructured)?
+      | nexthopint = interface_name_unstructured (nexthopip = IP_ADDRESS)?
+   )
    (
-      (
-         (
-            ADMIN_DIST
-            | ADMIN_DISTANCE
-         )? distance = dec
-      )
-      |
-      (
-         METRIC metric = dec
-      )
-      |
-      (
-         TAG tag = dec
-      )
-      | perm = PERMANENT
-      |
-      (
-         TRACK track = dec
-      )
-      |
-      (
-         NAME variable
-      )
+     distance = dec
+     | METRIC metric = dec
+     | NAME variable
+     | TAG tag = dec
+     | TRACK track = dec
    )* NEWLINE
 ;
 
@@ -1940,25 +1919,6 @@ rmc_null
    (
       MAXIMUM
    ) null_rest_of_line
-;
-
-route_tail
-:
-   iface = variable destination = IP_ADDRESS mask = IP_ADDRESS gateway = IP_ADDRESS
-   (
-      (
-         (
-            distance = dec+
-         )?
-         (
-            TRACK track = dec+
-         )?
-      )
-      |
-      (
-         TUNNELED
-      )
-   ) NEWLINE
 ;
 
 router_multicast_stanza
@@ -2838,11 +2798,6 @@ s_role
    NO? ROLE null_rest_of_line
 ;
 
-s_route
-:
-   ROUTE route_tail
-;
-
 s_router_vrrp
 :
    NO? ROUTER VRRP NEWLINE
@@ -3438,7 +3393,6 @@ stanza
    | s_redundancy
    | s_rf
    | s_role
-   | s_route
    | s_router_ospf
    | s_router_ospfv3
    | s_router_rip
