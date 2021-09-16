@@ -1049,12 +1049,14 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                                   .setReason(r.getReason())
                                   .setRoute(annotateRoute(r.getRoute()))
                                   .build()))
-              // Keep only local routes and routes that are active in the main rib.
               .filter(
                   r ->
                       // Received from 0.0.0.0 indicates local origination
                       (_exportFromBgpRib
                               && Ip.ZERO.equals(r.getRoute().getRoute().getReceivedFromIp()))
+                          // RIB-failure routes included
+                          || isReflectable(r.getRoute(), session, ourConfig)
+                          // RIB-failure routes excluded
                           || _mainRib.containsRoute(r.getRoute())));
     }
 
@@ -1127,6 +1129,19 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             mainRibExports);
 
     return Stream.concat(advertisementStream, neighborGeneratedRoutes);
+  }
+
+  private static boolean isReflectable(
+      AnnotatedRoute<Bgpv4Route> route, BgpSessionProperties session, BgpPeerConfig ourConfig) {
+    switch (session.getSessionType()) {
+      case IBGP:
+      case IBGP_UNNUMBERED:
+        break;
+      default:
+        return false;
+    }
+    return route.getRoute().getProtocol().equals(RoutingProtocol.IBGP)
+        && ourConfig.getAddressFamily(Type.IPV4_UNICAST).getRouteReflectorClient();
   }
 
   /**

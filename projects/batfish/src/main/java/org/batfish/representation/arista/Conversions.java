@@ -70,8 +70,6 @@ import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.isis.IsisLevelSettings;
 import org.batfish.datamodel.ospf.OspfInterfaceSettings;
-import org.batfish.datamodel.route.nh.NextHop;
-import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
@@ -970,16 +968,9 @@ public class Conversions {
   }
 
   static org.batfish.datamodel.StaticRoute toStaticRoute(Configuration c, StaticRoute staticRoute) {
-    String nextHopInterface = staticRoute.getNextHopInterface();
-    NextHop nh;
-    if (nextHopInterface != null && nextHopInterface.toLowerCase().startsWith("null")) {
-      nh = NextHopDiscard.instance();
-    } else {
-      nh = NextHop.legacyConverter(nextHopInterface, staticRoute.getNextHopIp());
-    }
     return org.batfish.datamodel.StaticRoute.builder()
         .setNetwork(staticRoute.getPrefix())
-        .setNextHop(nh)
+        .setNextHop(staticRoute.getNextHop())
         .setAdministrativeCost(staticRoute.getDistance())
         .setTag(firstNonNull(staticRoute.getTag(), -1L))
         .build();
