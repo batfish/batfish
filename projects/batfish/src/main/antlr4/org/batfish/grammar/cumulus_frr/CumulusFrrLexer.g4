@@ -808,7 +808,7 @@ F_Word
 fragment
 F_WordChar
 :
-  [0-9A-Za-z!@#$^*_=+.;:{}]
+  [0-9A-Za-z!@#$^*_=+.;:{}\\[\]|()]
   | '-'
 ;
 
@@ -1108,12 +1108,12 @@ mode M_AccessList;
 
 M_AccessList_DENY
 :
-   'deny' -> type( DENY )
+   'deny' -> type(DENY)
 ;
 
 M_AccessList_PERMIT
 :
-   'permit' -> type( PERMIT )
+   'permit' -> type(PERMIT)
 ;
 
 M_AsPathAccessList_WORD
