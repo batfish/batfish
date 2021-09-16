@@ -319,4 +319,26 @@ public class AsPathRegexTest {
     assertDoesNotMatch(regex, 3L);
     assertDoesNotMatch(regex, 1L, 3L, 5L);
   }
+
+  @Test
+  public void testSpaceIsOptional_afterOperator() {
+    String regex = ".*1";
+    assertMatches(regex, 1L);
+    assertMatches(regex, 3L, 1L);
+    assertMatches(regex, 1L, 1L);
+    assertDoesNotMatch(regex);
+    assertDoesNotMatch(regex, 2L);
+    assertDoesNotMatch(regex, 1L, 2L);
+  }
+
+  @Test
+  public void testSpaceIsOptional_beforeOperator() {
+    String regex = "1.*";
+    assertMatches(regex, 1L);
+    assertMatches(regex, 1L, 3L);
+    assertMatches(regex, 1L, 1L);
+    assertDoesNotMatch(regex);
+    assertDoesNotMatch(regex, 2L);
+    assertDoesNotMatch(regex, 2L, 1L);
+  }
 }

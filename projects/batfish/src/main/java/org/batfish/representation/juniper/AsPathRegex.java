@@ -43,7 +43,7 @@ public class AsPathRegex extends BaseParser<String> {
     return Sequence(
         Term(), // first term, will be pop(1) below.
         ZeroOrMore(
-            AtLeastOneSpace(),
+            IgnoreSpace(),
             Term(), // pop()
             push(String.format("%s%s", pop(1), pop()))),
         push(String.format("^%s$", pop())));
@@ -119,7 +119,7 @@ public class AsPathRegex extends BaseParser<String> {
         Term(), // pop(1)
         ZeroOrMore(
             Sequence(
-                AtLeastOneSpace(),
+                IgnoreSpace(),
                 Term(), // pop()
                 push(String.format("%s%s", pop(1), pop())))),
         IgnoreSpace(),
@@ -168,11 +168,6 @@ public class AsPathRegex extends BaseParser<String> {
   @SuppressNode
   Rule IgnoreSpace() {
     return ZeroOrMore(' ');
-  }
-
-  @SuppressNode
-  Rule AtLeastOneSpace() {
-    return OneOrMore(' ');
   }
 
   // Must be package-private to be accessible to generated parser.
