@@ -20,7 +20,8 @@ import org.batfish.vendor.a10.grammar.A10Parser.S_hostnameContext;
 import org.batfish.vendor.a10.representation.A10Configuration;
 
 /** Given a parse tree, builds a {@link A10Configuration}. */
-public class A10ConfigurationBuilder extends A10ParserBaseListener implements SilentSyntaxListener {
+public final class A10ConfigurationBuilder extends A10ParserBaseListener
+    implements SilentSyntaxListener {
 
   public A10ConfigurationBuilder(
       A10CombinedParser parser,
@@ -116,7 +117,7 @@ public class A10ConfigurationBuilder extends A10ParserBaseListener implements Si
   }
 
   private @Nonnull Optional<String> toString(ParserRuleContext messageCtx, HostnameContext ctx) {
-    return toString(messageCtx, ctx.str_content(), "hostname", HOSTNAME_PATTERN);
+    return toString(messageCtx, ctx, "hostname", HOSTNAME_PATTERN);
   }
 
   private @Nonnull Optional<String> toString(
@@ -129,16 +130,12 @@ public class A10ConfigurationBuilder extends A10ParserBaseListener implements Si
       ParserRuleContext ctx,
       String type,
       Predicate<String> predicate) {
-    String text = toString(ctx);
+    String text = ctx.getText();
     if (!predicate.test(text)) {
       warn(messageCtx, String.format("Illegal value for %s", type));
       return Optional.empty();
     }
     return Optional.of(text);
-  }
-
-  private static @Nonnull String toString(ParserRuleContext ctx) {
-    return ctx.getText();
   }
 
   private static final Pattern HOSTNAME_PATTERN = Pattern.compile("^[A-Za-z0-9_-]+$");
