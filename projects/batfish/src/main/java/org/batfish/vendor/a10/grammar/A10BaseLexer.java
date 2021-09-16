@@ -5,10 +5,7 @@ import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.Token;
 import org.batfish.grammar.BatfishLexer;
 
-/**
- * Check Point gateway lexer base class providing additional functionality on top of {@link
- * BatfishLexer}.
- */
+/** A10 lexer base class providing additional functionality on top of {@link BatfishLexer}. */
 @ParametersAreNonnullByDefault
 public abstract class A10BaseLexer extends BatfishLexer {
 

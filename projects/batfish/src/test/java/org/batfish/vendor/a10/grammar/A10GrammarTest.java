@@ -25,9 +25,6 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.runtime.SnapshotRuntimeData;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
@@ -41,7 +38,6 @@ import org.junit.rules.TemporaryFolder;
 @ParametersAreNonnullByDefault
 public class A10GrammarTest {
   private static final String TESTCONFIGS_PREFIX = "org/batfish/vendor/a10/grammar/testconfigs/";
-  private static final String SNAPSHOTS_PREFIX = "org/batfish/vendor/a10/grammar/snapshots/";
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
@@ -94,35 +90,6 @@ public class A10GrammarTest {
       throws IOException {
     IBatfish iBatfish = getBatfishForConfigurationNames(configurationNames);
     return iBatfish.loadConfigurations(iBatfish.getSnapshot());
-  }
-
-  private static Flow createFlow(IpProtocol protocol, int sourcePort, int destinationPort) {
-    Flow.Builder fb = Flow.builder();
-    fb.setIngressNode("node");
-    fb.setIpProtocol(protocol);
-    fb.setDstPort(destinationPort);
-    fb.setSrcPort(sourcePort);
-    return fb.build();
-  }
-
-  private static Flow createFlow(String sourceAddress, String destinationAddress) {
-    return createFlow(sourceAddress, destinationAddress, IpProtocol.TCP, 1, 1);
-  }
-
-  private static Flow createFlow(
-      String sourceAddress,
-      String destinationAddress,
-      IpProtocol protocol,
-      int sourcePort,
-      int destinationPort) {
-    return Flow.builder()
-        .setIngressNode("node")
-        .setSrcIp(Ip.parse(sourceAddress))
-        .setDstIp(Ip.parse(destinationAddress))
-        .setIpProtocol(protocol)
-        .setDstPort(destinationPort)
-        .setSrcPort(sourcePort)
-        .build();
   }
 
   @Test
