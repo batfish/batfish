@@ -1,7 +1,9 @@
 package org.batfish.vendor.check_point_gateway.representation;
 
 import static org.batfish.datamodel.transformation.Transformation.when;
-import static org.batfish.datamodel.transformation.TransformationStep.*;
+import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
+import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
+import static org.batfish.datamodel.transformation.TransformationStep.assignSourcePort;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.appliesToGateway;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toMatchExpr;
 
