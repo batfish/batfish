@@ -1,5 +1,6 @@
 package org.batfish.grammar;
 
+import static org.batfish.datamodel.ConfigurationFormat.A10_ACOS;
 import static org.batfish.datamodel.ConfigurationFormat.ARISTA;
 import static org.batfish.datamodel.ConfigurationFormat.CADANT;
 import static org.batfish.datamodel.ConfigurationFormat.CHECK_POINT_GATEWAY;
@@ -29,6 +30,19 @@ import org.junit.runners.JUnit4;
 /** Tests of {@link VendorConfigurationFormatDetector}. */
 @RunWith(JUnit4.class)
 public class VendorConfigurationFormatDetectorTest {
+  @Test
+  public void testA10() {
+    String fileText =
+        "!\n" + "!version 3.4.5-A6-B78, build 90 (Aug-5-2021,01:23)\n" + "hostname foo\n";
+    assertThat(identifyConfigurationFormat(fileText), equalTo(A10_ACOS));
+  }
+
+  @Test
+  public void testA10BatfishFormat() {
+    String fileText = "!BATFISH_FORMAT: a10_acos\n";
+    assertThat(identifyConfigurationFormat(fileText), equalTo(A10_ACOS));
+  }
+
   @Test
   public void testArista() {
     String eosFlash = "! boot system flash:/vEOS-lab.swi\n";

@@ -568,13 +568,6 @@
       "properties" : null
     },
     {
-      "id" : "node-as2dept1",
-      "model" : "CISCO_UNSPECIFIED",
-      "name" : "as2dept1",
-      "type" : "ROUTER",
-      "properties" : null
-    },
-    {
       "id" : "node-as3border1",
       "model" : "CISCO_UNSPECIFIED",
       "name" : "as3border1",
@@ -589,9 +582,9 @@
       "properties" : null
     },
     {
-      "id" : "node-as3core1",
+      "id" : "node-as2dept1",
       "model" : "CISCO_UNSPECIFIED",
-      "name" : "as3core1",
+      "name" : "as2dept1",
       "type" : "ROUTER",
       "properties" : null
     },
@@ -610,6 +603,13 @@
       "properties" : null
     },
     {
+      "id" : "node-as3core1",
+      "model" : "CISCO_UNSPECIFIED",
+      "name" : "as3core1",
+      "type" : "ROUTER",
+      "properties" : null
+    },
+    {
       "id" : "node-as2core1",
       "model" : "CISCO_UNSPECIFIED",
       "name" : "as2core1",
@@ -624,6 +624,13 @@
       "properties" : null
     },
     {
+      "id" : "node-as1core1",
+      "model" : "CISCO_UNSPECIFIED",
+      "name" : "as1core1",
+      "type" : "ROUTER",
+      "properties" : null
+    },
+    {
       "id" : "node-as2border1",
       "model" : "CISCO_UNSPECIFIED",
       "name" : "as2border1",
@@ -634,13 +641,6 @@
       "id" : "node-as2border2",
       "model" : "CISCO_UNSPECIFIED",
       "name" : "as2border2",
-      "type" : "ROUTER",
-      "properties" : null
-    },
-    {
-      "id" : "node-as1core1",
-      "model" : "CISCO_UNSPECIFIED",
-      "name" : "as1core1",
       "type" : "ROUTER",
       "properties" : null
     }
