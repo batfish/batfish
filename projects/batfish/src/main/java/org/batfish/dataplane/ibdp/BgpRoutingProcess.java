@@ -656,7 +656,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         || !_bgpv4DeltaBuilder.isEmpty()
         || !_localDeltaBuilder.isEmpty()
         || !_evpnDeltaBuilder.isEmpty()
-
         // Initialization state
         || !_evpnInitializationDelta.isEmpty();
   }
@@ -796,18 +795,16 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     unstage(ribDeltaBuilders);
   }
 
-  /** Merge ribs, in a specific order, into real ribs */
+  /** Finalize deltas and update main RIB. */
   private void unstage(Map<Bgpv4Rib, Builder<Bgpv4Route>> ribDeltaBuilders) {
-    RibDelta<Bgpv4Route> ebgpDeltaCurrent = ribDeltaBuilders.get(_ebgpv4Rib).build();
-    _ebgpv4DeltaBuilder.from(ebgpDeltaCurrent);
-    RibDelta<Bgpv4Route> ibgpDelta = ribDeltaBuilders.get(_ibgpv4Rib).build();
-
-    // Note: keep ebgp before ibgp, as ebgp routes are often preferred, so less thrash
-    _bgpv4DeltaBuilder.from(importRibDelta(_bgpv4Rib, ebgpDeltaCurrent));
-    _bgpv4DeltaBuilder.from(importRibDelta(_bgpv4Rib, ibgpDelta));
+    // TODO: Since we are now merging directly into _bgpv4Rib, we should probably stop generating
+    //       and passing staging deltas altogether. The instance-level delta builders can be used
+    //       directly.
+    _ebgpv4DeltaBuilder.from(ribDeltaBuilders.get(_ebgpv4Rib).build());
     // Finally, prepare the delta we will feed into the main RIB
     RibDelta<Bgpv4Route> bgpv4RibDelta = _bgpv4DeltaBuilder.build();
-    LOGGER.trace("Unstaged BGP routes, current bgpv4Delta: {}", bgpv4RibDelta);
+    LOGGER.trace(
+        "{}: Unstaged BGP routes, current bgpv4Delta: {}", _c.getHostname(), bgpv4RibDelta);
     _toMainRib.from(bgpv4RibDelta);
   }
 
@@ -906,14 +903,16 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
           annotateRoute(transformedIncomingRoute);
 
       if (remoteRouteAdvert.isWithdrawn()) {
-        // Note this route was removed
-        ribDeltas.get(targetRib).remove(transformedIncomingRoute, Reason.WITHDRAW);
+        // Remove from target and overall RIBs and update deltas
+        ribDeltas.get(targetRib).from(targetRib.removeRouteGetDelta(transformedIncomingRoute));
+        _bgpv4DeltaBuilder.from(_bgpv4Rib.removeRouteGetDelta(transformedIncomingRoute));
         if (useRibGroups) {
           perNeighborDeltaForRibGroups.remove(annotatedTransformedRoute, Reason.WITHDRAW);
         }
       } else {
-        // Merge into staging rib, note delta
+        // Merge into target and overall RIBs and update deltas
         ribDeltas.get(targetRib).from(targetRib.mergeRouteGetDelta(transformedIncomingRoute));
+        _bgpv4DeltaBuilder.from(_bgpv4Rib.mergeRouteGetDelta(transformedIncomingRoute));
         if (useRibGroups) {
           perNeighborDeltaForRibGroups.add(annotatedTransformedRoute);
         }
@@ -1761,6 +1760,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
               .setWeight(advert.getWeight())
               .build();
       ribDeltas.get(targetRib).from(targetRib.mergeRouteGetDelta(route));
+      _bgpv4DeltaBuilder.from(_bgpv4Rib.mergeRouteGetDelta(route));
     } else {
       // Since the route was logged after sending, it is from a pre-import-chain view of the route.
       // Override some attributes with local ones, then send it through the import policy.
@@ -1825,6 +1825,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       if (acceptIncoming) {
         Bgpv4Route transformedIncomingRoute = transformedIncomingRouteBuilder.build();
         ribDeltas.get(targetRib).from(targetRib.mergeRouteGetDelta(transformedIncomingRoute));
+        _bgpv4DeltaBuilder.from(_bgpv4Rib.mergeRouteGetDelta(transformedIncomingRoute));
       }
     }
   }
@@ -2009,12 +2010,14 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                     route.getProtocol() == RoutingProtocol.IBGP ? RibType.IBGP : RibType.EBGP);
             Bgpv4Route transformedRoute = builder.build();
             if (ra.isWithdrawn()) {
-              ribDeltaBuilders.get(targetRib).remove(transformedRoute, Reason.WITHDRAW);
+              ribDeltaBuilders.get(targetRib).from(targetRib.removeRouteGetDelta(transformedRoute));
+              _bgpv4DeltaBuilder.from(_bgpv4Rib.removeRouteGetDelta(transformedRoute));
               _importedFromOtherVrfs.remove(transformedRoute);
             } else {
               RibDelta<Bgpv4Route> d = targetRib.mergeRouteGetDelta(transformedRoute);
               LOGGER.debug("Node {}, VRF {}, route {} leaked", _hostname, _vrfName, d);
               ribDeltaBuilders.get(targetRib).from(d);
+              _bgpv4DeltaBuilder.from(_bgpv4Rib.mergeRouteGetDelta(transformedRoute));
               _importedFromOtherVrfs.add(transformedRoute);
             }
           } else {

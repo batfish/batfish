@@ -1,0 +1,28 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+hostname r3
+feature bgp
+
+interface Ethernet1
+  no switchport
+  no shutdown
+  ip address 10.0.23.1/31
+  description to r2
+
+interface Ethernet2
+  no switchport
+  no shutdown
+  ip address 10.0.34.0/31
+  description to r4
+
+interface Loopback0
+  ip address 3.3.3.3/32
+
+router bgp 3
+  router-id 3.3.3.3
+  address-family ipv4 unicast
+  neighbor 10.0.23.0
+    remote-as 2
+    address-family ipv4 unicast
+  neighbor 10.0.34.1
+    remote-as 4
+    address-family ipv4 unicast
