@@ -22,6 +22,7 @@ import static org.batfish.common.util.CompletionMetadataUtils.getVrfs;
 import static org.batfish.common.util.CompletionMetadataUtils.getZones;
 import static org.batfish.common.util.isp.IspModelingUtils.INTERNET_HOST_NAME;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
+import static org.batfish.datamodel.interface_dependency.InterfaceDependencies.getInterfacesToDeactivate;
 import static org.batfish.main.ReachabilityParametersResolver.resolveReachabilityParameters;
 import static org.batfish.main.StreamDecoder.decodeStreamAndAppendNewline;
 import static org.batfish.specifier.LocationInfoUtils.computeLocationInfo;
@@ -116,10 +117,14 @@ import org.batfish.common.plugin.PluginClientType;
 import org.batfish.common.plugin.PluginConsumer;
 import org.batfish.common.plugin.TracerouteEngine;
 import org.batfish.common.runtime.SnapshotRuntimeData;
+import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.common.topology.Layer1Edge;
+import org.batfish.common.topology.Layer1Topologies;
+import org.batfish.common.topology.Layer1TopologiesFactory;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.TopologyContainer;
 import org.batfish.common.topology.TopologyProvider;
+import org.batfish.common.topology.broadcast.BroadcastL3Adjacencies;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.isp.IspModelingUtils;
@@ -177,6 +182,7 @@ import org.batfish.datamodel.ospf.OspfTopologyUtils;
 import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.vxlan.Layer2Vni;
+import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.batfish.dataplane.TracerouteEngineImpl;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BatfishParseException;
@@ -242,10 +248,6 @@ import org.batfish.vendor.check_point_management.CheckpointManagementConfigurati
 import org.batfish.version.BatfishVersion;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
-import org.jgrapht.Graph;
-import org.jgrapht.graph.DefaultEdge;
-import org.jgrapht.graph.SimpleDirectedGraph;
-import org.jgrapht.traverse.TopologicalOrderIterator;
 
 /** This class encapsulates the main control logic for Batfish. */
 public class Batfish extends PluginConsumer implements IBatfish {
@@ -1744,71 +1746,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @VisibleForTesting
-  static void postProcessInterfaceDependencies(Map<String, Configuration> configurations) {
-    configurations
-        .values()
+  static void postProcessInterfaceDependencies(
+      Map<String, Configuration> configurations, L3Adjacencies l3Adjacencies) {
+    getInterfacesToDeactivate(configurations, l3Adjacencies)
         .forEach(
-            config -> {
-              Map<String, Interface> allInterfaces = config.getAllInterfaces();
-              Graph<String, DefaultEdge> graph = new SimpleDirectedGraph<>(DefaultEdge.class);
-              allInterfaces.keySet().forEach(graph::addVertex);
-              allInterfaces
-                  .values()
-                  .forEach(
-                      iface ->
-                          iface
-                              .getDependencies()
-                              .forEach(
-                                  dependency -> {
-                                    // JGraphT crashes if there is an edge to an undeclared vertex.
-                                    // We add every edge target as a vertex, and code later will
-                                    // still disable the child.
-                                    graph.addVertex(dependency.getInterfaceName());
-
-                                    graph.addEdge(
-                                        // Reverse edge direction to aid topological sort
-                                        dependency.getInterfaceName(), iface.getName());
-                                  }));
-
-              // Traverse interfaces in topological order and deactivate if necessary
-              for (TopologicalOrderIterator<String, DefaultEdge> iterator =
-                      new TopologicalOrderIterator<>(graph);
-                  iterator.hasNext(); ) {
-                String ifaceName = iterator.next();
-                @Nullable Interface iface = allInterfaces.get(ifaceName);
-                if (iface == null) {
-                  // A missing dependency.
-                  continue;
-                }
-                deactivateInterfaceIfNeeded(iface);
-              }
-            });
-  }
-
-  /** Deactivate an interface if it is blacklisted or its dependencies are not active */
-  private static void deactivateInterfaceIfNeeded(@Nonnull Interface iface) {
-    Configuration config = iface.getOwner();
-    Set<Dependency> dependencies = iface.getDependencies();
-    if (dependencies.stream()
-        // Look at bind dependencies
-        .filter(d -> d.getType() == DependencyType.BIND)
-        .map(d -> config.getAllInterfaces().get(d.getInterfaceName()))
-        // Find any missing or inactive interfaces
-        .anyMatch(parent -> parent == null || !parent.getActive())) {
-      iface.setActive(false);
-    }
-
-    // Look at aggregate dependencies only now
-    if ((iface.getInterfaceType() == InterfaceType.AGGREGATED
-            || iface.getInterfaceType() == InterfaceType.REDUNDANT)
-        && dependencies.stream()
-            .filter(d1 -> d1.getType() == DependencyType.AGGREGATE)
-            // Extract existing and active interfaces
-            .map(d -> config.getAllInterfaces().get(d.getInterfaceName()))
-            .filter(Objects::nonNull)
-            .noneMatch(Interface::getActive)) {
-      iface.setActive(false);
-    }
+            iface ->
+                configurations
+                    .get(iface.getHostname())
+                    .getAllInterfaces()
+                    .get(iface.getInterface())
+                    .setActive(false));
   }
 
   private void postProcessEigrpCosts(Map<String, Configuration> configurations) {
@@ -2067,7 +2014,28 @@ public class Batfish extends PluginConsumer implements IBatfish {
     if (_settings.ignoreManagementInterfaces()) {
       processManagementInterfaces(configurations);
     }
-    postProcessInterfaceDependencies(configurations);
+
+    // compute a L3Adjacencies directly instead of getting it from _topologyProvider, since doing so
+    // will try to load
+    // configurations (which we're in the middle of loading now). We don't yet have the "real"
+    // configs, so the
+    // adjacencies we build now may not match what we get later.
+    Layer1Topology synthesizedLayer1Topology;
+    try {
+      synthesizedLayer1Topology =
+          _storage.loadSynthesizedLayer1Topology(snapshot).orElse(Layer1Topology.EMPTY);
+    } catch (IOException e) {
+      synthesizedLayer1Topology = Layer1Topology.EMPTY;
+    }
+    Layer1Topologies l1Topologies =
+        Layer1TopologiesFactory.create(
+            _topologyProvider.getRawLayer1PhysicalTopology(snapshot).orElse(Layer1Topology.EMPTY),
+            synthesizedLayer1Topology,
+            configurations);
+    BroadcastL3Adjacencies l3Adjacencies =
+        BroadcastL3Adjacencies.create(l1Topologies, VxlanTopology.EMPTY, configurations);
+
+    postProcessInterfaceDependencies(configurations, l3Adjacencies);
 
     // We do not process the edge blacklist here. Instead, we rely on these edges being explicitly
     // deleted from the Topology (aka list of edges) that is used along with configurations in
