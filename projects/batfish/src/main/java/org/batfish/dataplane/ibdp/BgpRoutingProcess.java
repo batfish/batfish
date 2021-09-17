@@ -492,16 +492,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       if (!_exportFromBgpRib) {
         _mainRibPrev = _mainRib.getTypedRoutes();
       }
-      _bgpv4Prev = _bgpv4Rib.getTypedRoutes();
-      _bgpv4PrevBestPath = _bgpv4Rib.getBestPathRoutes();
-      _ebgpv4Prev = _ebgpv4Rib.getTypedRoutes();
-      _ebgpv4PrevBestPath = _ebgpv4Rib.getBestPathRoutes();
     } else {
       assert _mainRibPrev.isEmpty();
-      assert _bgpv4Prev.isEmpty();
-      assert _bgpv4PrevBestPath.isEmpty();
-      assert _ebgpv4Prev.isEmpty();
-      assert _ebgpv4PrevBestPath.isEmpty();
     }
     _topology = topology;
     // TODO: compute edges that went down, remove routes we received from those neighbors
@@ -1007,6 +999,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
          Need support for additional-paths based on https://tools.ietf.org/html/rfc7911
          AND the combination of vendor-specific knobs, none of which are currently supported.
       */
+      // TODO: sending withdrawals with add-path is likely unsafe.
       bgpv4Prev = _bgpv4Prev;
       bgpv4DeltaPrev = _bgpv4DeltaPrev;
       ebgpv4Prev = _ebgpv4Prev;
@@ -1041,7 +1034,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                       : Stream.of(),
                   bgpv4DeltaPrev
                       .getActions()
-                      .filter(r -> !r.isWithdrawn())
                       .map(
                           r ->
                               RouteAdvertisement.<AnnotatedRoute<Bgpv4Route>>builder()
@@ -1049,18 +1041,19 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                                   .setRoute(annotateRoute(r.getRoute()))
                                   .build()))
               .filter(
-                  r ->
-                      // No withdrawals for new sessions.
-                      // For old sessions, the delta might include withdrawals of inactive routes,
-                      // but sending these should be safe.
-                      r.isWithdrawn()
-                          // Received from 0.0.0.0 indicates local origination
-                          || (_exportFromBgpRib
-                              && Ip.ZERO.equals(r.getRoute().getRoute().getReceivedFromIp()))
-                          // RIB-failure routes included
-                          || isReflectable(r.getRoute(), session, ourConfig)
-                          // RIB-failure routes excluded
-                          || _mainRib.containsRoute(r.getRoute())));
+                  r -> {
+                    if (r.isWithdrawn()) {
+                      return true;
+                    }
+                    return
+                    // Received from 0.0.0.0 indicates local origination
+                    (_exportFromBgpRib
+                            && Ip.ZERO.equals(r.getRoute().getRoute().getReceivedFromIp()))
+                        // RIB-failure routes included
+                        || isReflectable(r.getRoute(), session, ourConfig)
+                        // RIB-failure routes excluded
+                        || _mainRib.containsRoute(r.getRoute());
+                  }));
     }
 
     /*
@@ -2041,23 +2034,39 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     _unicastEdgesWentUp = ImmutableSet.of();
     // Delete the external state, now that it is no longer needed
     _mainRibPrev = ImmutableSet.of();
-    _bgpv4Prev = ImmutableSet.of();
-    _bgpv4PrevBestPath = ImmutableSet.of();
-    _ebgpv4Prev = ImmutableSet.of();
-    _ebgpv4PrevBestPath = ImmutableSet.of();
     // Main RIB delta for exporting directly from main RIB
     _mainRibDelta = RibDelta.empty();
   }
 
+  public void startOfInnerRound() {
+    // Take a snapshot of current RIBs so we know to to send to new add-path sessions.
+    _bgpv4Prev = _bgpv4Rib.getTypedRoutes();
+    _ebgpv4Prev = _ebgpv4Rib.getTypedRoutes();
+    // Take a snapshot of best-paths from current RIBs so we know what to send to new non-add-path
+    // sessions, aand also so we can tell what ADDs can be sent to neighbors: those that correspond
+    // to current valid best paths.
+    _bgpv4PrevBestPath = _bgpv4Rib.getBestPathRoutes();
+    _ebgpv4PrevBestPath = _ebgpv4Rib.getBestPathRoutes();
+  }
+
+  /**
+   * Determine what to advertise to neighbors based on previous and current state, and update
+   * previous to curruent.
+   */
   public void endOfInnerRound() {
-    // Update the state that may be read by other VRs in later inner rounds
-    _bgpv4DeltaPrevBestPath = getDeltaPrevBestPath(_bgpv4DeltaPrev, _bgpv4Rib, _bgpv4PrevBestPath);
+    // Take a snapshot of this rounds deltas so we know what to [additionally] send to all add-path
+    // sessions.
     _bgpv4DeltaPrev = _bgpv4DeltaBuilder.build();
+    _ebgpv4DeltaPrev = _ebgpv4DeltaBuilder.build();
+    // Take a snapshot of local deltas, ?which are sent to all sessions?
+    _localDeltaPrev = _localDeltaBuilder.build();
+    // Take a snapshot of best paths from the end of last round so we can tell what WITHDRAWs
+    // can be sent to neighbors: those that correspond to prior valid best paths.
+    _bgpv4DeltaPrevBestPath = getDeltaPrevBestPath(_bgpv4DeltaPrev, _bgpv4Rib, _bgpv4PrevBestPath);
     _ebgpv4DeltaPrevBestPath =
         getDeltaPrevBestPath(_ebgpv4DeltaPrev, _ebgpv4Rib, _ebgpv4PrevBestPath);
-    _ebgpv4DeltaPrev = _ebgpv4DeltaBuilder.build();
-    _localDeltaPrev = _localDeltaBuilder.build();
-    // Delete all the internal state for this round
+
+    // Delete all the internal state for this round that is no longer needed
     _bgpv4DeltaBuilder = RibDelta.builder();
     _ebgpv4DeltaBuilder = RibDelta.builder();
     _localDeltaBuilder = RibDelta.builder();

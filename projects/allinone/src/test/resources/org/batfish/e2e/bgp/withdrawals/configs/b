@@ -1,12 +1,12 @@
 hostname B
 
 interface Ethernet1/1
- ip address 2.1.1.0/31
- description to M
+ ip address 2.1.1.10/31
+ description to M2
 
 ip route 5.5.5.5/32 null0
 
 router bgp 3
- router-id 2.1.1.0
- neighbor 2.1.1.1 remote-as 4
+ router-id 2.1.1.10
+ neighbor 2.1.1.11 remote-as 5
  network 5.5.5.5/32

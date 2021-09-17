@@ -28,6 +28,6 @@ router bgp 2
  neighbor 2.1.1.2 description M
  neighbor 2.1.1.2 route-map from-M in
  neighbor 2.1.1.2 activate
- neighbor 3.0.0.0 remote-as 5
+ neighbor 3.0.0.0 remote-as 6
  neighbor 3.0.0.0 description L
  neighbor 3.0.0.0 activate

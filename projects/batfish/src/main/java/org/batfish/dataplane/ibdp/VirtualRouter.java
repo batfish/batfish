@@ -1431,6 +1431,7 @@ public final class VirtualRouter {
     if (_bgpRoutingProcess == null) {
       return;
     }
+    _bgpRoutingProcess.startOfInnerRound();
     _bgpRoutingProcess.executeIteration(allNodes);
     // If we must leak routes as BGP, do so here.
     bgpVrfLeak();
