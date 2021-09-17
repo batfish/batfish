@@ -1230,13 +1230,15 @@ public final class VirtualRouter {
     return _mainRib;
   }
 
-  /** Get current BGP routes. To be used during dataplane computation only */
+  /** Get current BGP routes. After dataplane computation, gets convergent BGP routes. */
   @Nonnull
   Set<Bgpv4Route> getBgpRoutes() {
     return _bgpRoutingProcess == null ? ImmutableSet.of() : _bgpRoutingProcess.getV4Routes();
   }
 
-  /** Get current BGP backup routes. To be used during dataplane computation only */
+  /**
+   * Get current BGP backup routes. After dataplane computation, gets convergent BGP backup routes.
+   */
   @Nonnull
   Set<Bgpv4Route> getBgpBackupRoutes() {
     return _bgpRoutingProcess == null ? ImmutableSet.of() : _bgpRoutingProcess.getV4BackupRoutes();
