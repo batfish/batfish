@@ -7,7 +7,6 @@ import static org.batfish.datamodel.FirewallSessionInterfaceInfo.Action.POST_NAT
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.aclName;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toIpAccessLists;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.automaticHideRuleTransformation;
-import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getApplicableNatRules;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getManualNatRules;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.manualRuleTransformation;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.mergeTransformations;
@@ -336,10 +335,6 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
             .filter(Optional::isPresent)
             .map(Optional::get)
             .collect(ImmutableList.toImmutableList());
-    if (getApplicableNatRules(natRulebase, gateway)
-        .anyMatch(rule -> rule.getMethod() != NatMethod.HIDE)) {
-      _w.redFlag("Non-HIDE NAT rules are unsupported");
-    }
     _natTransformation =
         mergeTransformations(manualRuleTransformations, automaticHideRuleTransformations)
             .orElse(null);
