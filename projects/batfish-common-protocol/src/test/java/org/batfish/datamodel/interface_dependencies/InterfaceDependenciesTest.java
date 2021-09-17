@@ -322,4 +322,89 @@ public class InterfaceDependenciesTest {
         containsInAnyOrder(
             NodeInterfacePair.of(pc1_1), NodeInterfacePair.of(pc2), NodeInterfacePair.of(pc2_1)));
   }
+
+  /**
+   * If an LACP interface should have a neighbor (because at least one of its members does) but
+   * doesn't, it should be deactivated.
+   * https://github.com/intentionet/batfish-enterprise/issues/6157
+   */
+  @Test
+  public void testGetInterfacesToDeactivate_LACP_with_missing_neighbor() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+
+    Configuration n1 = cb.setHostname("n1").build();
+    Vrf v1 = nf.vrfBuilder().setOwner(n1).build();
+    // member interface
+    Interface m1 =
+        nf.interfaceBuilder()
+            .setType(InterfaceType.PHYSICAL)
+            .setOwner(n1)
+            .setVrf(v1)
+            .setName("m1")
+            .build();
+    // port-channel interface
+    Interface pc1 =
+        nf.interfaceBuilder()
+            .setType(InterfaceType.AGGREGATED)
+            .setOwner(n1)
+            .setVrf(v1)
+            .setName("pc1")
+            .setDependencies(ImmutableList.of(new Dependency(m1.getName(), AGGREGATE)))
+            .build();
+
+    Configuration n2 = cb.setHostname("n2").build();
+    Vrf v2 = nf.vrfBuilder().setOwner(n2).build();
+    // neighbor of the member interface
+    Interface m2 =
+        nf.interfaceBuilder()
+            .setType(InterfaceType.PHYSICAL)
+            .setOwner(n2)
+            .setVrf(v2)
+            .setName("m2")
+            .build();
+
+    Map<String, Configuration> configs =
+        ImmutableMap.of(n1.getHostname(), n1, n2.getHostname(), n2);
+    Layer1Topologies layer1Topologies =
+        layer1Topologies(new Layer1Topology(l1Edge(m1, m2)), Layer1Topology.EMPTY);
+
+    // pc1 deactivated because it has no neighbor (and it should)
+    assertThat(
+        getInterfacesToDeactivate(configs, layer1Topologies), contains(NodeInterfacePair.of(pc1)));
+  }
+
+  /** An LACP interface without a neighbor can be active if it's on the network boundary. */
+  @Test
+  public void testGetInterfacesToDeactivate_LACP_on_network_boundary() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+
+    Configuration n1 = cb.setHostname("n1").build();
+    Vrf v1 = nf.vrfBuilder().setOwner(n1).build();
+    // member interface
+    Interface m1 =
+        nf.interfaceBuilder()
+            .setType(InterfaceType.PHYSICAL)
+            .setOwner(n1)
+            .setVrf(v1)
+            .setName("m1")
+            .build();
+    // port-channel interface
+    nf.interfaceBuilder()
+        .setType(InterfaceType.AGGREGATED)
+        .setOwner(n1)
+        .setVrf(v1)
+        .setName("pc1")
+        .setDependencies(ImmutableList.of(new Dependency(m1.getName(), AGGREGATE)))
+        .build();
+
+    Map<String, Configuration> configs = ImmutableMap.of(n1.getHostname(), n1);
+    Layer1Topologies layer1Topologies = Layer1Topologies.empty();
+
+    // pc1 is still active because it's on the network boundary
+    assertThat(getInterfacesToDeactivate(configs, layer1Topologies), empty());
+  }
 }
