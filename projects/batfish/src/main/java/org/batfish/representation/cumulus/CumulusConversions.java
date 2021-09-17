@@ -1585,7 +1585,7 @@ public final class CumulusConversions {
         asPathAccessList.getLines().stream()
             // TODO Check FRR AS path match semantics.
             // This regex assumes we should match any path containing the specified ASN anywhere.
-            .map(IpAsPathAccessListLine::toAsPathAccessListLine)
+            .map(line -> new AsPathAccessListLine(line.getAction(), line.getRegex()))
             .collect(ImmutableList.toImmutableList());
     return new AsPathAccessList(name, lines);
   }

@@ -23,9 +23,4 @@ public class IpAsPathAccessListLine implements Serializable {
   public String getRegex() {
     return _regex;
   }
-
-  public AsPathAccessListLine toAsPathAccessListLine() {
-    String regex = CumulusConversions.toJavaRegex(_regex);
-    return new AsPathAccessListLine(_action, regex);
-  }
 }

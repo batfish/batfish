@@ -808,8 +808,20 @@ F_Word
 fragment
 F_WordChar
 :
-  [0-9A-Za-z!@#$^*_=+.;:{}\\[\]|()]
+  [0-9A-Za-z!@#$^*_=+.;:{}]
   | '-'
+;
+
+fragment
+F_Regex
+:
+  F_RegexChar+
+;
+
+fragment
+F_RegexChar
+:
+  [0-9_^|[,{}()\]$*+.?-]
 ;
 
 fragment
@@ -1118,15 +1130,15 @@ M_AccessList_PERMIT
 
 M_AsPathAccessList_WORD
 :
-   F_Word -> type( WORD )
+   F_Regex -> type(WORD)
 ;
 
 M_AccessList_NEWLINE
 :
-   F_Newline+ -> type ( NEWLINE ) , popMode
+   F_Newline+ -> type (NEWLINE) , popMode
 ;
 
 M_AccessList_WS
 :
-   F_Whitespace+ -> channel ( HIDDEN )
+   F_Whitespace+ -> channel (HIDDEN)
 ;
