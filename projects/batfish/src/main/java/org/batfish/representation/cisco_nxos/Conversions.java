@@ -10,9 +10,12 @@ import static org.batfish.datamodel.Names.generatedBgpPeerEvpnImportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerImportPolicyName;
 import static org.batfish.datamodel.routing_policy.Common.generateSuppressionPolicy;
+import static org.batfish.datamodel.routing_policy.statement.Statements.ExitAccept;
 import static org.batfish.datamodel.routing_policy.statement.Statements.RemovePrivateAs;
+import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.BGP_LOCAL_WEIGHT;
 import static org.batfish.representation.cisco_nxos.Vrf.MAC_VRF_OFFSET;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -64,6 +67,8 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
+import org.batfish.datamodel.routing_policy.expr.LiteralInt;
+import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchBgpSessionType;
 import org.batfish.datamodel.routing_policy.expr.MatchBgpSessionType.Type;
@@ -77,6 +82,7 @@ import org.batfish.datamodel.routing_policy.statement.SetDefaultTag;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetTag;
+import org.batfish.datamodel.routing_policy.statement.SetWeight;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.vxlan.Layer2Vni;
@@ -88,7 +94,7 @@ import org.batfish.representation.cisco_nxos.BgpVrfL2VpnEvpnAddressFamilyConfigu
  * vendor-independent {@link org.batfish.datamodel}.
  */
 @ParametersAreNonnullByDefault
-final class Conversions {
+public final class Conversions {
 
   /** Matches anything but the IPv4 default route. */
   static final Not NOT_DEFAULT_ROUTE = new Not(Common.matchDefaultRoute());
@@ -193,8 +199,53 @@ final class Conversions {
     return true;
   }
 
+  @VisibleForTesting
+  public static @Nonnull String generatedAttributeMapName(
+      long localAs, @Nullable String attributeMap) {
+    if (attributeMap == null) {
+      return String.format("~BGP_AGGREGATE_ATTRIBUTE_MAP:%s:%s", localAs, attributeMap);
+    }
+    return String.format("~BGP_AGGREGATE_ATTRIBUTE_MAP:%s", localAs);
+  }
+
+  /**
+   * NX-OS-specific defaults for aggregate routes:
+   *
+   * <ul>
+   *   <li>Origin type {@link OriginType#IGP}.
+   *   <li>Tagged with the process ASN (for the generating VRF).
+   *   <li>Weight {@link CiscoNxosConfiguration#BGP_LOCAL_WEIGHT}.
+   * </ul>
+   */
+  static @Nonnull String generateAttributeMap(
+      BgpGlobalConfiguration bgpGlobal,
+      BgpVrfConfiguration bgpVrf,
+      @Nullable String attributeMap,
+      Configuration c) {
+    long localAs = firstNonNull(bgpVrf.getLocalAs(), bgpGlobal.getLocalAs());
+    String name = generatedAttributeMapName(localAs, attributeMap);
+    if (c.getRoutingPolicies().containsKey(name)) {
+      // Already done.
+      return name;
+    }
+    RoutingPolicy.Builder p = RoutingPolicy.builder().setName(name).setOwner(c);
+    p.addStatement(new SetOrigin(new LiteralOrigin(OriginType.IGP, null)));
+    p.addStatement(new SetTag(new LiteralLong(localAs)));
+    p.addStatement(new SetWeight(new LiteralInt(BGP_LOCAL_WEIGHT)));
+    if (attributeMap != null) {
+      // Trivial If+CallExpr means ignore any permit/deny action taken by attributeMap.
+      p.addStatement(new If(new CallExpr(attributeMap), ImmutableList.of()));
+    }
+    p.addStatement(ExitAccept.toStaticStatement());
+    RoutingPolicy rp = p.build();
+    c.getRoutingPolicies().put(rp.getName(), rp);
+    return name;
+  }
+
   static @Nonnull BgpAggregate toBgpAggregate(
       Prefix prefix,
+      BgpGlobalConfiguration bgpGlobal,
+      BgpVrfConfiguration bgpVrf,
       BgpVrfAddressFamilyAggregateNetworkConfiguration vsAggregate,
       Configuration c,
       Warnings w) {
@@ -207,6 +258,7 @@ final class Conversions {
           String.format("Ignoring undefined aggregate-address attribute-map %s", attributeMap));
       attributeMap = null;
     }
+    attributeMap = generateAttributeMap(bgpGlobal, bgpVrf, attributeMap, c);
     return BgpAggregate.of(
         prefix,
         generateSuppressionPolicy(vsAggregate.getSummaryOnly(), c),
