@@ -1041,19 +1041,16 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                                   .setRoute(annotateRoute(r.getRoute()))
                                   .build()))
               .filter(
-                  r -> {
-                    if (r.isWithdrawn()) {
-                      return true;
-                    }
-                    return
-                    // Received from 0.0.0.0 indicates local origination
-                    (_exportFromBgpRib
-                            && Ip.ZERO.equals(r.getRoute().getRoute().getReceivedFromIp()))
-                        // RIB-failure routes included
-                        || isReflectable(r.getRoute(), session, ourConfig)
-                        // RIB-failure routes excluded
-                        || _mainRib.containsRoute(r.getRoute());
-                  }));
+                  r ->
+                      // Withdrawals
+                      r.isWithdrawn()
+                          // Received from 0.0.0.0 indicates local origination
+                          || (_exportFromBgpRib
+                              && Ip.ZERO.equals(r.getRoute().getRoute().getReceivedFromIp()))
+                          // RIB-failure routes included
+                          || isReflectable(r.getRoute(), session, ourConfig)
+                          // RIB-failure routes excluded
+                          || _mainRib.containsRoute(r.getRoute())));
     }
 
     /*
@@ -2038,6 +2035,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     _mainRibDelta = RibDelta.empty();
   }
 
+  /** Record state at beginning of round prior to pulling from neighbors. */
   public void startOfInnerRound() {
     // Take a snapshot of current RIBs so we know to to send to new add-path sessions.
     _bgpv4Prev = _bgpv4Rib.getTypedRoutes();
@@ -2058,7 +2056,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     // sessions.
     _bgpv4DeltaPrev = _bgpv4DeltaBuilder.build();
     _ebgpv4DeltaPrev = _ebgpv4DeltaBuilder.build();
-    // Take a snapshot of local deltas, ?which are sent to all sessions?
+    // Take a snapshot of local deltas to determine which routes to leak on routers that do not
+    // export from BGP RIB.
     _localDeltaPrev = _localDeltaBuilder.build();
     // Take a snapshot of best paths from the end of last round so we can tell what WITHDRAWs
     // can be sent to neighbors: those that correspond to prior valid best paths.
