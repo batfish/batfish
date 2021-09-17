@@ -107,6 +107,7 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.eigrp
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.getAclLineName;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.toJavaRegex;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.OBJECT_GROUP_IP_ADDRESS;
+import static org.batfish.representation.cisco_nxos.Conversions.generatedAttributeMapName;
 import static org.batfish.representation.cisco_nxos.Interface.defaultDelayTensOfMicroseconds;
 import static org.batfish.representation.cisco_nxos.Interface.getDefaultBandwidth;
 import static org.batfish.representation.cisco_nxos.Interface.getDefaultSpeed;
@@ -9049,12 +9050,19 @@ public final class CiscoNxosGrammarTest {
         aggs,
         hasEntry(
             equalTo(Prefix.parse("1.1.0.0/16")),
-            equalTo(BgpAggregate.of(Prefix.parse("1.1.0.0/16"), null, null, null))));
+            equalTo(
+                BgpAggregate.of(
+                    Prefix.parse("1.1.0.0/16"), null, null, generatedAttributeMapName(1L, null)))));
     assertThat(
         aggs,
         hasEntry(
             equalTo(Prefix.parse("1.2.0.0/16")),
-            equalTo(BgpAggregate.of(Prefix.parse("1.2.0.0/16"), null, null, "atm1"))));
+            equalTo(
+                BgpAggregate.of(
+                    Prefix.parse("1.2.0.0/16"),
+                    null,
+                    null,
+                    generatedAttributeMapName(1L, "atm1")))));
     assertThat(
         aggs,
         hasEntry(
@@ -9065,7 +9073,7 @@ public final class CiscoNxosGrammarTest {
                     null,
                     // TODO: generation policy should incorporate as-set
                     null,
-                    null))));
+                    generatedAttributeMapName(1L, null)))));
     assertThat(
         aggs,
         hasEntry(
@@ -9076,7 +9084,7 @@ public final class CiscoNxosGrammarTest {
                     null,
                     // TODO: generation policy should incorporate as-set and advertise-map
                     null,
-                    null))));
+                    generatedAttributeMapName(1L, null)))));
     assertThat(
         aggs,
         hasEntry(
@@ -9087,7 +9095,7 @@ public final class CiscoNxosGrammarTest {
                     null,
                     // TODO: generation policy should incorporate as-set
                     null,
-                    "atm2"))));
+                    generatedAttributeMapName(1L, "atm2")))));
     assertThat(
         aggs,
         hasEntry(
@@ -9097,7 +9105,7 @@ public final class CiscoNxosGrammarTest {
                     Prefix.parse("3.1.0.0/16"),
                     SUMMARY_ONLY_SUPPRESSION_POLICY_NAME,
                     null,
-                    null))));
+                    generatedAttributeMapName(1L, null)))));
     assertThat(
         aggs,
         hasEntry(
@@ -9108,7 +9116,7 @@ public final class CiscoNxosGrammarTest {
                     // TODO: suppression policy should incorporate suppress-map
                     null,
                     null,
-                    null))));
+                    generatedAttributeMapName(1L, null)))));
     assertThat(
         aggs,
         hasEntry(
@@ -9120,7 +9128,7 @@ public final class CiscoNxosGrammarTest {
                     //       summary-only.
                     SUMMARY_ONLY_SUPPRESSION_POLICY_NAME,
                     null,
-                    null))));
+                    generatedAttributeMapName(1L, null)))));
     assertThat(
         aggs,
         hasEntry(
@@ -9131,7 +9139,7 @@ public final class CiscoNxosGrammarTest {
                     // TODO: verify undefined route-map treated as omitted
                     null,
                     null,
-                    null))));
+                    generatedAttributeMapName(1L, null)))));
   }
 
   @Test

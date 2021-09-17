@@ -423,6 +423,7 @@ public class NxosBgpTest {
                 hasPrefix(Prefix.parse("1.1.0.0/16")),
                 hasOriginType(OriginType.IGP),
                 hasWeight(BGP_LOCAL_WEIGHT),
+                hasTag(1L),
                 hasAdministrativeCost(DEFAULT_DISTANCE_LOCAL_BGP))));
   }
 }

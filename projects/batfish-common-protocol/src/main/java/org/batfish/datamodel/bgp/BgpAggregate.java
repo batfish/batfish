@@ -31,6 +31,11 @@ public final class BgpAggregate implements Serializable {
    * If present, this policy should be used to transform the generated BGP aggregate after it has
    * been activated by at least one valid contributing route. It should be applied after all
    * applications of the policy returned by {@link #getGenerationPolicy}.
+   *
+   * <p>To set vendor-specific default properties of the generated aggregate, apply them here before
+   * calling the user's attribute policy if present.
+   *
+   * <p>(TODO: this should probably be in a pre-generation-policy?)
    */
   @JsonProperty(PROP_ATTRIBUTE_POLICY)
   public @Nullable String getAttributePolicy() {
