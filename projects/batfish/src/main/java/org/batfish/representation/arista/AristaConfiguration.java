@@ -133,7 +133,6 @@ import org.batfish.datamodel.SnmpCommunity;
 import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
-import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TunnelConfiguration;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
@@ -1077,16 +1076,12 @@ public final class AristaConfiguration extends VendorConfiguration {
             .setOwner(c)
             .setType(computeInterfaceType(iface.getName(), c.getConfigurationFormat()))
             .build();
-    if (newIface.getInterfaceType() == InterfaceType.VLAN) {
-      newIface.setVlan(CommonUtil.getInterfaceVlanNumber(ifaceName));
-    }
     String vrfName = iface.getVrf();
     Vrf vrf = _vrfs.computeIfAbsent(vrfName, Vrf::new);
     newIface.setDescription(iface.getDescription());
     newIface.setActive(!iface.getShutdown());
     newIface.setChannelGroup(iface.getChannelGroup());
     newIface.setCryptoMap(iface.getCryptoMap());
-    newIface.setAutoState(iface.getAutoState());
     newIface.setVrf(c.getVrfs().get(vrfName));
     newIface.setSpeed(firstNonNull(iface.getSpeed(), Interface.getDefaultSpeed(iface.getName())));
     newIface.setBandwidth(
@@ -1103,17 +1098,7 @@ public final class AristaConfiguration extends VendorConfiguration {
     newIface.setMtu(getInterfaceMtu(iface));
     newIface.setProxyArp(iface.getProxyArp());
     newIface.setSpanningTreePortfast(iface.getSpanningTreePortfast());
-    newIface.setSwitchport(iface.getSwitchport());
     newIface.setDeclaredNames(ImmutableSortedSet.copyOf(iface.getDeclaredNames()));
-
-    // All prefixes is the combination of the interface prefix + any secondary prefixes.
-    ImmutableSet.Builder<InterfaceAddress> allPrefixes = ImmutableSet.builder();
-    if (iface.getAddress() != null) {
-      newIface.setAddress(iface.getAddress());
-      allPrefixes.add(iface.getAddress());
-    }
-    allPrefixes.addAll(iface.getSecondaryAddresses());
-    newIface.setAllAddresses(allPrefixes.build());
 
     boolean level1 = false;
     boolean level2 = false;
@@ -1148,43 +1133,60 @@ public final class AristaConfiguration extends VendorConfiguration {
       newIface.setIsis(isisInterfaceSettingsBuilder.build());
     }
 
-    // subinterface settings
-    newIface.setEncapsulationVlan(iface.getEncapsulationVlan());
-
-    // switch settings
-    newIface.setAccessVlan(iface.getAccessVlan());
-
-    if (iface.getSwitchportMode() == SwitchportMode.TRUNK) {
-      newIface.setNativeVlan(firstNonNull(iface.getNativeVlan(), 1));
-    }
-
+    newIface.setSwitchport(iface.getSwitchport());
     newIface.setSwitchportMode(iface.getSwitchportMode());
-    SwitchportEncapsulationType encapsulation = iface.getSwitchportTrunkEncapsulation();
-    if (encapsulation == null) { // no encapsulation set, so use default..
-      // TODO: check if this is OK
-      encapsulation = SwitchportEncapsulationType.DOT1Q;
-    }
-    newIface.setSwitchportTrunkEncapsulation(encapsulation);
-    if (iface.getSwitchportMode() == SwitchportMode.TRUNK) {
-      /*
-       * Compute allowed VLANs:
-       * - If allowed VLANs are set, honor them;
-       * - Otherwise prune allowed VLANs based on configured trunk groups (if any).
-       *
-       * https://www.arista.com/en/um-eos/eos-section-19-3-vlan-configuration-procedures#ww1152330
-       */
-      if (iface.getAllowedVlans() != null) {
-        newIface.setAllowedVlans(iface.getAllowedVlans());
-      } else if (!iface.getVlanTrunkGroups().isEmpty()) {
-        newIface.setAllowedVlans(
-            iface.getVlanTrunkGroups().stream()
-                .map(_eosVlanTrunkGroups::get)
-                .map(VlanTrunkGroup::getVlans)
-                .reduce(IntegerSpace::union)
-                .get());
-      } else {
-        newIface.setAllowedVlans(Interface.ALL_VLANS);
-      }
+    switch (iface.getSwitchportMode()) {
+      case NONE:
+        // subinterface settings
+        newIface.setSwitchportTrunkEncapsulation(
+            firstNonNull(
+                iface.getSwitchportTrunkEncapsulation(), SwitchportEncapsulationType.DOT1Q));
+        newIface.setEncapsulationVlan(iface.getEncapsulationVlan());
+        if (newIface.getInterfaceType() == InterfaceType.VLAN) {
+          newIface.setVlan(CommonUtil.getInterfaceVlanNumber(ifaceName));
+          newIface.setAutoState(iface.getAutoState());
+        }
+        // All prefixes is the combination of the interface prefix + any secondary prefixes.
+        ImmutableSet.Builder<InterfaceAddress> allPrefixes = ImmutableSet.builder();
+        if (iface.getAddress() != null) {
+          newIface.setAddress(iface.getAddress());
+          allPrefixes.add(iface.getAddress());
+        }
+        allPrefixes.addAll(iface.getSecondaryAddresses());
+        newIface.setAllAddresses(allPrefixes.build());
+        break;
+
+      case ACCESS:
+        // switch settings
+        newIface.setAccessVlan(firstNonNull(iface.getAccessVlan(), 1));
+        break;
+
+      case TRUNK:
+        newIface.setNativeVlan(firstNonNull(iface.getNativeVlan(), 1));
+        /*
+         * Compute allowed VLANs:
+         * - If allowed VLANs are set, honor them;
+         * - Otherwise prune allowed VLANs based on configured trunk groups (if any).
+         *
+         * https://www.arista.com/en/um-eos/eos-section-19-3-vlan-configuration-procedures#ww1152330
+         */
+        if (iface.getAllowedVlans() != null) {
+          newIface.setAllowedVlans(iface.getAllowedVlans());
+        } else if (!iface.getVlanTrunkGroups().isEmpty()) {
+          newIface.setAllowedVlans(
+              iface.getVlanTrunkGroups().stream()
+                  .map(_eosVlanTrunkGroups::get)
+                  .map(VlanTrunkGroup::getVlans)
+                  .reduce(IntegerSpace::union)
+                  .get());
+        } else {
+          newIface.setAllowedVlans(Interface.ALL_VLANS);
+        }
+        break;
+
+      default:
+        // not handled
+        break;
     }
 
     String incomingFilterName = iface.getIncomingFilter();
