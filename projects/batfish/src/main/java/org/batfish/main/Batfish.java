@@ -2012,11 +2012,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
       processManagementInterfaces(configurations);
     }
 
-    // compute a L3Adjacencies directly instead of getting it from _topologyProvider, since doing so
-    // will try to load
-    // configurations (which we're in the middle of loading now). We don't yet have the "real"
-    // configs, so the
-    // adjacencies we build now may not match what we get later.
+    /* compute a Layer1Topologies directly instead of getting it from _topologyProvider, since doing so would try to
+     * load configurations (which we're in the middle of loading now). We don't yet have the "real" configs, so the
+     * adjacencies we build now may not match what we get later.
+     */
     Layer1Topology synthesizedLayer1Topology;
     try {
       synthesizedLayer1Topology =
