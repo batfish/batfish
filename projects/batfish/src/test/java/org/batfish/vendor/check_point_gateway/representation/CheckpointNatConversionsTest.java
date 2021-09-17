@@ -13,8 +13,8 @@ import static org.batfish.vendor.check_point_gateway.representation.CheckpointNa
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.checkValidManualHide;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getApplicableNatRules;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getManualNatRules;
-import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.manualHideRuleTransformation;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.manualHideTransformationSteps;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.manualRuleTransformation;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.mergeTransformations;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -249,7 +249,7 @@ public final class CheckpointNatConversionsTest {
 
       // invalid original fields
       assertThat(
-          manualHideRuleTransformation(
+          manualRuleTransformation(
               rule, serviceToMatchExpr, ADDRESS_SPACE_TO_MATCH_EXPR, objs, warnings),
           equalTo(Optional.empty()));
     }
@@ -274,7 +274,7 @@ public final class CheckpointNatConversionsTest {
 
       // invalid translated fields
       assertThat(
-          manualHideRuleTransformation(
+          manualRuleTransformation(
               rule, serviceToMatchExpr, ADDRESS_SPACE_TO_MATCH_EXPR, objs, warnings),
           equalTo(Optional.empty()));
     }
@@ -298,7 +298,7 @@ public final class CheckpointNatConversionsTest {
               UID);
 
       Transformation xform =
-          manualHideRuleTransformation(
+          manualRuleTransformation(
                   rule, serviceToMatchExpr, ADDRESS_SPACE_TO_MATCH_EXPR, objs, warnings)
               .get();
       assertThat(

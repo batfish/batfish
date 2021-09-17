@@ -9,7 +9,7 @@ import static org.batfish.vendor.check_point_gateway.representation.CheckPointGa
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.automaticHideRuleTransformation;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getApplicableNatRules;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getManualNatRules;
-import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.manualHideRuleTransformation;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.manualRuleTransformation;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.mergeTransformations;
 import static org.batfish.vendor.check_point_management.AddressSpaceToIpSpaceMetadata.toIpSpaceMetadata;
 
@@ -306,12 +306,11 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
       NatRulebase natRulebase, GatewayOrServer gateway, Map<Uid, NamedManagementObject> objects) {
     ServiceToMatchExpr serviceToMatchExpr = new ServiceToMatchExpr(objects);
     AddressSpaceToMatchExpr addressSpaceToMatchExpr = new AddressSpaceToMatchExpr(objects);
-    List<Transformation> manualHideRuleTransformations =
+    List<Transformation> manualRuleTransformations =
         getManualNatRules(natRulebase, gateway)
-            .filter(rule -> rule.getMethod() == NatMethod.HIDE)
             .map(
                 natRule ->
-                    manualHideRuleTransformation(
+                    manualRuleTransformation(
                         natRule,
                         serviceToMatchExpr,
                         addressSpaceToMatchExpr,
@@ -342,7 +341,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
       _w.redFlag("Non-HIDE NAT rules are unsupported");
     }
     _natTransformation =
-        mergeTransformations(manualHideRuleTransformations, automaticHideRuleTransformations)
+        mergeTransformations(manualRuleTransformations, automaticHideRuleTransformations)
             .orElse(null);
     // TODO Apply transformations to appropriate interfaces
   }
