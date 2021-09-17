@@ -1,0 +1,14 @@
+hostname A
+
+interface Ethernet1/1
+ ip address 1.2.3.4/31
+ description to S
+
+ip route 5.5.5.5/32 null0
+
+router bgp 1
+ router-id 1.2.3.4
+ neighbor 1.2.3.5 remote-as 2
+ neighbor 1.2.3.5 description S
+ neighbor 1.2.3.5 activate
+ network 5.5.5.5/32

@@ -1,0 +1,16 @@
+hostname M2
+
+interface Ethernet1/1
+ ip address 2.1.1.0/31
+ description to M1
+
+interface Ethernet1/2
+ ip address 2.1.1.11/31
+ description to B
+
+router bgp 5
+ router-id 2.1.1.0
+ neighbor 2.1.1.10 remote-as 3
+ neighbor 2.1.1.10 description B
+ neighbor 2.1.1.1 remote-as 4
+ neighbor 2.1.1.1 description M1
