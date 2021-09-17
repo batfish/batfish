@@ -133,6 +133,7 @@ public class InterfaceDependencies {
 
   private void addDependencyEdge(
       NodeInterfacePair src, NodeInterfacePair tgt, Interface.DependencyType depType) {
+    // ensure both vertices exist, otherwise addEdge will throw. it's ok to re-add a vertex.
     _depGraph.addVertex(src);
     _depGraph.addVertex(tgt);
     _depGraph.addEdge(src, tgt, new DependencyEdge(depType));
