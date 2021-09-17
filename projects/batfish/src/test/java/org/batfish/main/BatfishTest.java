@@ -53,6 +53,7 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.topology.IpOwners;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Node;
+import org.batfish.common.topology.Layer1Topologies;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.util.isp.IspModelingUtils.ModeledNodes;
 import org.batfish.datamodel.AsPath;
@@ -624,7 +625,7 @@ public class BatfishTest {
     ImmutableSet<String> inactiveIfaces = ImmutableSet.of("eth0", "eth1", "eth2");
 
     // Test
-    postProcessInterfaceDependencies(ImmutableMap.of("c1", c1));
+    postProcessInterfaceDependencies(ImmutableMap.of("c1", c1), Layer1Topologies.empty());
 
     activeIfaces.forEach(
         name -> assertThat(c1.getAllInterfaces().get(name).getActive(), equalTo(true)));
@@ -647,7 +648,7 @@ public class BatfishTest {
         .setDependencies(ImmutableSet.of(new Dependency("NON_EXISTENT", DependencyType.BIND)))
         .build();
 
-    postProcessInterfaceDependencies(ImmutableMap.of("c1", c1));
+    postProcessInterfaceDependencies(ImmutableMap.of("c1", c1), Layer1Topologies.empty());
 
     assertThat(c1.getAllInterfaces().values(), contains(allOf(hasName("eth1"), isActive(false))));
   }
@@ -689,7 +690,7 @@ public class BatfishTest {
     ImmutableSet<String> inactiveIfaces = ImmutableSet.of("eth0", "eth3", "eth4");
 
     // Test
-    postProcessInterfaceDependencies(ImmutableMap.of("c1", c1));
+    postProcessInterfaceDependencies(ImmutableMap.of("c1", c1), Layer1Topologies.empty());
 
     activeIfaces.forEach(
         name -> assertThat(c1.getAllInterfaces().get(name).getActive(), equalTo(true)));
