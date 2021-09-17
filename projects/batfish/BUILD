@@ -46,6 +46,7 @@ java_library(
         "//projects/batfish/src/main/java/org/batfish/representation/aws",
         "//projects/batfish/src/main/java/org/batfish/representation/host",
         "//projects/batfish/src/main/java/org/batfish/representation/iptables",
+        "//projects/batfish/src/main/java/org/batfish/vendor/a10/grammar",
         "//projects/batfish/src/main/java/org/batfish/vendor/check_point_gateway/grammar",
         "//projects/batfish/src/main/java/org/batfish/vendor/check_point_management",
         "//projects/batfish/src/main/java/org/batfish/vendor/check_point_management/parsing",

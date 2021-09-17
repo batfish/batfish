@@ -1104,93 +1104,16 @@
   ],
   "nodes" : [
     {
-      "id" : "node-isp_16509",
-      "model" : "BATFISH_ISP",
-      "name" : "isp_16509",
-      "type" : "ISP",
-      "properties" : null
-    },
-    {
-      "id" : "node-vpc-815775e7",
-      "model" : "AWS_VPC",
-      "name" : "vpc-815775e7",
-      "type" : "SWITCH",
-      "properties" : null
-    },
-    {
-      "id" : "node-internet",
-      "model" : "BATFISH_INTERNET",
-      "name" : "internet",
-      "type" : "INTERNET",
-      "properties" : null
-    },
-    {
-      "id" : "node-vpc-f8fad69d",
-      "model" : "AWS_VPC",
-      "name" : "vpc-f8fad69d",
-      "type" : "SWITCH",
-      "properties" : null
-    },
-    {
-      "id" : "node-subnet-30398256",
-      "model" : "AWS_SUBNET_PUBLIC",
-      "name" : "subnet-30398256",
-      "type" : "SWITCH",
-      "properties" : null
-    },
-    {
-      "id" : "node-vgw-81fd279f",
-      "model" : "AWS_VPN_GATEWAY",
-      "name" : "vgw-81fd279f",
-      "type" : "ROUTER",
-      "properties" : null
-    },
-    {
-      "id" : "node-subnet-1f315846",
-      "model" : "AWS_SUBNET_PUBLIC",
-      "name" : "subnet-1f315846",
-      "type" : "SWITCH",
-      "properties" : null
-    },
-    {
-      "id" : "node-lhr-border-02",
-      "model" : "CISCO_UNSPECIFIED",
-      "name" : "lhr-border-02",
-      "type" : "ROUTER",
-      "properties" : null
-    },
-    {
-      "id" : "node-1-vpc-es-domain-uiqo2tedr5ttdqrhdzcu5upaee.us-west-2.es.amazonaws.com",
+      "id" : "node-0-vpc-es-domain-uiqo2tedr5ttdqrhdzcu5upaee.us-west-2.es.amazonaws.com",
       "model" : "AWS_ELASTICSEARCH_DOMAIN",
-      "name" : "1-vpc-es-domain-uiqo2tedr5ttdqrhdzcu5upaee.us-west-2.es.amazonaws.com",
+      "name" : "0-vpc-es-domain-uiqo2tedr5ttdqrhdzcu5upaee.us-west-2.es.amazonaws.com",
       "type" : "HOST",
-      "properties" : null
-    },
-    {
-      "id" : "node-igw-068fee63",
-      "model" : "AWS_INTERNET_GATEWAY",
-      "name" : "igw-068fee63",
-      "type" : "ROUTER",
-      "properties" : null
-    },
-    {
-      "id" : "node-igw-9b93ddfc",
-      "model" : "AWS_INTERNET_GATEWAY",
-      "name" : "igw-9b93ddfc",
-      "type" : "ROUTER",
       "properties" : null
     },
     {
       "id" : "node-subnet-f73a8191",
       "model" : "AWS_SUBNET_PUBLIC",
       "name" : "subnet-f73a8191",
-      "type" : "SWITCH",
-      "properties" : null
-    },
-    {
-      "id" : "node-subnet-8d0cbdeb",
-      "model" : "AWS_SUBNET_PRIVATE",
-      "name" : "subnet-8d0cbdeb",
       "type" : "SWITCH",
       "properties" : null
     },
@@ -1202,16 +1125,23 @@
       "properties" : null
     },
     {
-      "id" : "node-__aws-services-gateway__",
-      "model" : "AWS_SERVICES_GATEWAY",
-      "name" : "__aws-services-gateway__",
-      "type" : "ROUTER",
+      "id" : "node-subnet-8d0cbdeb",
+      "model" : "AWS_SUBNET_PRIVATE",
+      "name" : "subnet-8d0cbdeb",
+      "type" : "SWITCH",
       "properties" : null
     },
     {
       "id" : "node-subnet-d9cafabc",
       "model" : "AWS_SUBNET_PUBLIC",
       "name" : "subnet-d9cafabc",
+      "type" : "SWITCH",
+      "properties" : null
+    },
+    {
+      "id" : "node-vpc-b390fad5",
+      "model" : "AWS_VPC",
+      "name" : "vpc-b390fad5",
       "type" : "SWITCH",
       "properties" : null
     },
@@ -1223,24 +1153,17 @@
       "properties" : null
     },
     {
-      "id" : "node-0-vpc-es-domain-uiqo2tedr5ttdqrhdzcu5upaee.us-west-2.es.amazonaws.com",
-      "model" : "AWS_ELASTICSEARCH_DOMAIN",
-      "name" : "0-vpc-es-domain-uiqo2tedr5ttdqrhdzcu5upaee.us-west-2.es.amazonaws.com",
-      "type" : "HOST",
-      "properties" : null
-    },
-    {
-      "id" : "node-vpc-b390fad5",
-      "model" : "AWS_VPC",
-      "name" : "vpc-b390fad5",
-      "type" : "SWITCH",
-      "properties" : null
-    },
-    {
       "id" : "node-vpc-925131f4",
       "model" : "AWS_VPC",
       "name" : "vpc-925131f4",
       "type" : "SWITCH",
+      "properties" : null
+    },
+    {
+      "id" : "node-__aws-services-gateway__",
+      "model" : "AWS_SERVICES_GATEWAY",
+      "name" : "__aws-services-gateway__",
+      "type" : "ROUTER",
       "properties" : null
     },
     {
@@ -1276,6 +1199,83 @@
       "model" : "AWS_SUBNET_PUBLIC",
       "name" : "subnet-073b8061",
       "type" : "SWITCH",
+      "properties" : null
+    },
+    {
+      "id" : "node-vpc-815775e7",
+      "model" : "AWS_VPC",
+      "name" : "vpc-815775e7",
+      "type" : "SWITCH",
+      "properties" : null
+    },
+    {
+      "id" : "node-internet",
+      "model" : "BATFISH_INTERNET",
+      "name" : "internet",
+      "type" : "INTERNET",
+      "properties" : null
+    },
+    {
+      "id" : "node-isp_16509",
+      "model" : "BATFISH_ISP",
+      "name" : "isp_16509",
+      "type" : "ISP",
+      "properties" : null
+    },
+    {
+      "id" : "node-subnet-30398256",
+      "model" : "AWS_SUBNET_PUBLIC",
+      "name" : "subnet-30398256",
+      "type" : "SWITCH",
+      "properties" : null
+    },
+    {
+      "id" : "node-vgw-81fd279f",
+      "model" : "AWS_VPN_GATEWAY",
+      "name" : "vgw-81fd279f",
+      "type" : "ROUTER",
+      "properties" : null
+    },
+    {
+      "id" : "node-vpc-f8fad69d",
+      "model" : "AWS_VPC",
+      "name" : "vpc-f8fad69d",
+      "type" : "SWITCH",
+      "properties" : null
+    },
+    {
+      "id" : "node-lhr-border-02",
+      "model" : "CISCO_UNSPECIFIED",
+      "name" : "lhr-border-02",
+      "type" : "ROUTER",
+      "properties" : null
+    },
+    {
+      "id" : "node-subnet-1f315846",
+      "model" : "AWS_SUBNET_PUBLIC",
+      "name" : "subnet-1f315846",
+      "type" : "SWITCH",
+      "properties" : null
+    },
+    {
+      "id" : "node-1-vpc-es-domain-uiqo2tedr5ttdqrhdzcu5upaee.us-west-2.es.amazonaws.com",
+      "model" : "AWS_ELASTICSEARCH_DOMAIN",
+      "name" : "1-vpc-es-domain-uiqo2tedr5ttdqrhdzcu5upaee.us-west-2.es.amazonaws.com",
+      "type" : "HOST",
+      "properties" : null
+    },
+    {
+      "id" : "node-igw-068fee63",
+      "model" : "AWS_INTERNET_GATEWAY",
+      "name" : "igw-068fee63",
+      "type" : "ROUTER",
+      "properties" : null
+    },
+    {
+      "id" : "node-igw-9b93ddfc",
+      "model" : "AWS_INTERNET_GATEWAY",
+      "name" : "igw-9b93ddfc",
+      "type" : "ROUTER",
       "properties" : null
     }
   ],

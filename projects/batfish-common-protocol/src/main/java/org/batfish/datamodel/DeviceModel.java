@@ -7,6 +7,7 @@ package org.batfish.datamodel;
  * @see DeviceType for the generic classification of a device.
  */
 public enum DeviceModel {
+  A10,
   ARISTA_UNSPECIFIED,
   AWS_EC2_INSTANCE,
   AWS_ELASTICSEARCH_DOMAIN,
