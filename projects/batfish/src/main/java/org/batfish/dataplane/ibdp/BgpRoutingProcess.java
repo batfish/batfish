@@ -1052,8 +1052,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                   r ->
                       // No withdrawals for new sessions.
                       // For old sessions, the delta might include withdrawals of inactive routes,
-                      // but
-                      // sending these should be safe.
+                      // but sending these should be safe.
                       r.isWithdrawn()
                           // Received from 0.0.0.0 indicates local origination
                           || (_exportFromBgpRib
