@@ -8,14 +8,13 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
-import java.util.Optional;
-import javax.annotation.Nonnull;
-import org.batfish.common.topology.L3Adjacencies;
+import org.batfish.common.topology.Layer1Edge;
+import org.batfish.common.topology.Layer1Node;
+import org.batfish.common.topology.Layer1Topologies;
+import org.batfish.common.topology.Layer1Topology;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
@@ -27,27 +26,17 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.junit.Test;
 
 public class InterfaceDependenciesTest {
-  private static final class MockL3Adjacencies implements L3Adjacencies {
-    BiMap<NodeInterfacePair, NodeInterfacePair> _inSameBroadcastDomain;
+  Layer1Topologies layer1Topologies(Layer1Topology canonicalUserL1, Layer1Topology logicalL1) {
+    return new Layer1Topologies(
+        canonicalUserL1, Layer1Topology.EMPTY, logicalL1, Layer1Topology.EMPTY);
+  }
 
-    MockL3Adjacencies(BiMap<NodeInterfacePair, NodeInterfacePair> inSameBroadcastDomain) {
-      _inSameBroadcastDomain = inSameBroadcastDomain;
-    }
+  Layer1Node l1Node(Interface i1) {
+    return new Layer1Node(i1.getOwner().getHostname(), i1.getName());
+  }
 
-    @Override
-    public boolean inSameBroadcastDomain(NodeInterfacePair i1, NodeInterfacePair i2) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Nonnull
-    @Override
-    public Optional<NodeInterfacePair> pairedPointToPointL3Interface(NodeInterfacePair iface) {
-      NodeInterfacePair pairedIface = _inSameBroadcastDomain.get(iface);
-      if (pairedIface == null) {
-        pairedIface = _inSameBroadcastDomain.inverse().get(iface);
-      }
-      return Optional.ofNullable(pairedIface);
-    }
+  Layer1Edge l1Edge(Interface i1, Interface i2) {
+    return new Layer1Edge(l1Node(i1), l1Node(i2));
   }
 
   @Test
@@ -68,17 +57,16 @@ public class InterfaceDependenciesTest {
 
     Map<String, Configuration> configs =
         ImmutableMap.of(n1.getHostname(), n1, n2.getHostname(), n2);
-    L3Adjacencies l3Adjacencies =
-        new MockL3Adjacencies(
-            ImmutableBiMap.of(NodeInterfacePair.of(i1), NodeInterfacePair.of(i2)));
+    Layer1Topologies layer1Topologies =
+        layer1Topologies(new Layer1Topology(l1Edge(i1, i2)), Layer1Topology.EMPTY);
 
     // i2 is inactive and i1 and i2 are in the same p2p broadcast domain, so deactivate i1.
-    assertThat(getInterfacesToDeactivate(configs, l3Adjacencies), empty());
+    assertThat(getInterfacesToDeactivate(configs, layer1Topologies), empty());
 
     i2.setActive(false);
     // i2 is inactive and i1 and i2 are in the same p2p broadcast domain, so deactivate i1.
     assertThat(
-        getInterfacesToDeactivate(configs, l3Adjacencies), contains(NodeInterfacePair.of(i1)));
+        getInterfacesToDeactivate(configs, layer1Topologies), contains(NodeInterfacePair.of(i1)));
   }
 
   @Test
@@ -106,16 +94,16 @@ public class InterfaceDependenciesTest {
             .build();
 
     Map<String, Configuration> configs = ImmutableMap.of(n1.getHostname(), n1);
-    L3Adjacencies l3Adjacencies = new MockL3Adjacencies(ImmutableBiMap.of());
 
     i1.setActive(false);
     // only i1 is inactive, so i3 is up
-    assertThat(getInterfacesToDeactivate(configs, l3Adjacencies), empty());
+    assertThat(getInterfacesToDeactivate(configs, Layer1Topologies.empty()), empty());
 
     i2.setActive(false);
     // i1 and i2 are inactive, so i3 is down
     assertThat(
-        getInterfacesToDeactivate(configs, l3Adjacencies), contains(NodeInterfacePair.of(i3)));
+        getInterfacesToDeactivate(configs, Layer1Topologies.empty()),
+        contains(NodeInterfacePair.of(i3)));
   }
 
   @Test
@@ -139,15 +127,15 @@ public class InterfaceDependenciesTest {
             .build();
 
     Map<String, Configuration> configs = ImmutableMap.of(n1.getHostname(), n1);
-    L3Adjacencies l3Adjacencies = new MockL3Adjacencies(ImmutableBiMap.of());
 
     // only i1 is active, so i2 is up
-    assertThat(getInterfacesToDeactivate(configs, l3Adjacencies), empty());
+    assertThat(getInterfacesToDeactivate(configs, Layer1Topologies.empty()), empty());
 
     i1.setActive(false);
     // i1 and i2 are inactive, so i3 is down
     assertThat(
-        getInterfacesToDeactivate(configs, l3Adjacencies), contains(NodeInterfacePair.of(i2)));
+        getInterfacesToDeactivate(configs, Layer1Topologies.empty()),
+        contains(NodeInterfacePair.of(i2)));
   }
 
   @Test
@@ -171,11 +159,12 @@ public class InterfaceDependenciesTest {
             .build();
 
     Map<String, Configuration> configs = ImmutableMap.of(n1.getHostname(), n1);
-    L3Adjacencies l3Adjacencies = new MockL3Adjacencies(ImmutableBiMap.of());
+    Layer1Topologies layer1Topologies =
+        layer1Topologies(Layer1Topology.EMPTY, Layer1Topology.EMPTY);
 
     // i2 is down due to missing BIND dependency
     assertThat(
-        getInterfacesToDeactivate(configs, l3Adjacencies), contains(NodeInterfacePair.of(i2)));
+        getInterfacesToDeactivate(configs, layer1Topologies), contains(NodeInterfacePair.of(i2)));
   }
 
   @Test
@@ -198,15 +187,15 @@ public class InterfaceDependenciesTest {
             .build();
 
     Map<String, Configuration> configs = ImmutableMap.of(n1.getHostname(), n1);
-    L3Adjacencies l3Adjacencies = new MockL3Adjacencies(ImmutableBiMap.of());
 
     // both AGGREGATE deps are missing, so deactivate
     assertThat(
-        getInterfacesToDeactivate(configs, l3Adjacencies), contains(NodeInterfacePair.of(i1)));
+        getInterfacesToDeactivate(configs, Layer1Topologies.empty()),
+        contains(NodeInterfacePair.of(i1)));
 
     nf.interfaceBuilder().setOwner(n1).setVrf(v1).setName("missing1").build();
     // one of the AGGREGATE deps is present (and active), so don't deactivate
-    assertThat(getInterfacesToDeactivate(configs, l3Adjacencies), empty());
+    assertThat(getInterfacesToDeactivate(configs, Layer1Topologies.empty()), empty());
   }
 
   /**
@@ -300,24 +289,21 @@ public class InterfaceDependenciesTest {
 
     Map<String, Configuration> configs =
         ImmutableMap.of(n1.getHostname(), n1, n2.getHostname(), n2);
-    L3Adjacencies l3Adjacencies =
-        new MockL3Adjacencies(
-            ImmutableBiMap.of(
-                NodeInterfacePair.of(m1), NodeInterfacePair.of(m2), // m1 -- m2
-                NodeInterfacePair.of(m3), NodeInterfacePair.of(m4), // m3 -- m4
-                NodeInterfacePair.of(pc1), NodeInterfacePair.of(pc2) // pc1 -- pc2
-                ));
+    Layer1Topologies layer1Topologies =
+        layer1Topologies(
+            new Layer1Topology(l1Edge(m1, m2), l1Edge(m3, m4)),
+            new Layer1Topology(l1Edge(pc1, pc2)));
 
     // m1 is inactive, so m2 becomes inactive too
     m1.setActive(false);
     assertThat(
-        getInterfacesToDeactivate(configs, l3Adjacencies), contains(NodeInterfacePair.of(m2)));
+        getInterfacesToDeactivate(configs, layer1Topologies), contains(NodeInterfacePair.of(m2)));
 
     // m4 is inactive so m3 becomes inactive too. that brings down the port-channels and their
     // subinterfaces
     m4.setActive(false);
     assertThat(
-        getInterfacesToDeactivate(configs, l3Adjacencies),
+        getInterfacesToDeactivate(configs, layer1Topologies),
         containsInAnyOrder(
             NodeInterfacePair.of(m2),
             NodeInterfacePair.of(m3),
@@ -332,7 +318,7 @@ public class InterfaceDependenciesTest {
     m4.setActive(true);
     pc1.setActive(false);
     assertThat(
-        getInterfacesToDeactivate(configs, l3Adjacencies),
+        getInterfacesToDeactivate(configs, layer1Topologies),
         containsInAnyOrder(
             NodeInterfacePair.of(pc1_1), NodeInterfacePair.of(pc2), NodeInterfacePair.of(pc2_1)));
   }

@@ -39,13 +39,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import javax.annotation.Nonnull;
 import org.apache.commons.io.IOUtils;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
@@ -53,9 +51,9 @@ import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.topology.IpOwners;
-import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Node;
+import org.batfish.common.topology.Layer1Topologies;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.util.isp.IspModelingUtils.ModeledNodes;
 import org.batfish.datamodel.AsPath;
@@ -82,7 +80,6 @@ import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
-import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.TestQuestion;
 import org.batfish.identifiers.AnalysisId;
@@ -601,19 +598,6 @@ public class BatfishTest {
     assertThat(config1.activeInterfaceNames(), equalTo(ImmutableSet.of()));
   }
 
-  final class EmptyL3Adjacencies implements L3Adjacencies {
-    @Override
-    public boolean inSameBroadcastDomain(NodeInterfacePair i1, NodeInterfacePair i2) {
-      return false;
-    }
-
-    @Nonnull
-    @Override
-    public Optional<NodeInterfacePair> pairedPointToPointL3Interface(NodeInterfacePair iface) {
-      return Optional.empty();
-    }
-  }
-
   @Test
   public void testPostProcessInterfaceDependenciesBind() {
     NetworkFactory nf = new NetworkFactory();
@@ -641,7 +625,7 @@ public class BatfishTest {
     ImmutableSet<String> inactiveIfaces = ImmutableSet.of("eth0", "eth1", "eth2");
 
     // Test
-    postProcessInterfaceDependencies(ImmutableMap.of("c1", c1), new EmptyL3Adjacencies());
+    postProcessInterfaceDependencies(ImmutableMap.of("c1", c1), Layer1Topologies.empty());
 
     activeIfaces.forEach(
         name -> assertThat(c1.getAllInterfaces().get(name).getActive(), equalTo(true)));
@@ -664,7 +648,7 @@ public class BatfishTest {
         .setDependencies(ImmutableSet.of(new Dependency("NON_EXISTENT", DependencyType.BIND)))
         .build();
 
-    postProcessInterfaceDependencies(ImmutableMap.of("c1", c1), new EmptyL3Adjacencies());
+    postProcessInterfaceDependencies(ImmutableMap.of("c1", c1), Layer1Topologies.empty());
 
     assertThat(c1.getAllInterfaces().values(), contains(allOf(hasName("eth1"), isActive(false))));
   }
@@ -706,7 +690,7 @@ public class BatfishTest {
     ImmutableSet<String> inactiveIfaces = ImmutableSet.of("eth0", "eth3", "eth4");
 
     // Test
-    postProcessInterfaceDependencies(ImmutableMap.of("c1", c1), new EmptyL3Adjacencies());
+    postProcessInterfaceDependencies(ImmutableMap.of("c1", c1), Layer1Topologies.empty());
 
     activeIfaces.forEach(
         name -> assertThat(c1.getAllInterfaces().get(name).getActive(), equalTo(true)));

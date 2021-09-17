@@ -4,6 +4,7 @@ import static org.batfish.datamodel.Interface.DependencyType.AGGREGATE;
 import static org.batfish.datamodel.Interface.DependencyType.BIND;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -12,7 +13,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import org.batfish.common.topology.L3Adjacencies;
+import javax.annotation.Nullable;
+import org.batfish.common.topology.Layer1Node;
+import org.batfish.common.topology.Layer1Topologies;
+import org.batfish.common.topology.Layer1Topology;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceType;
@@ -25,10 +29,10 @@ public class InterfaceDependencies {
       NodeInterfacePair.of("non existent device", "non existent interface");
 
   public static Set<NodeInterfacePair> getInterfacesToDeactivate(
-      Map<String, Configuration> configs, L3Adjacencies l3Adjacencies) {
+      Map<String, Configuration> configs, Layer1Topologies layer1Topologies) {
     return computeInterfacesToDeactivate(
         computeInitiallyInactiveInterfaces(configs),
-        computeDependencyGraph(configs, l3Adjacencies));
+        computeDependencyGraph(configs, layer1Topologies));
   }
 
   private static Set<NodeInterfacePair> computeInitiallyInactiveInterfaces(
@@ -93,7 +97,7 @@ public class InterfaceDependencies {
   }
 
   private static Graph<NodeInterfacePair, DependencyEdge> computeDependencyGraph(
-      Map<String, Configuration> configs, L3Adjacencies l3Adjacencies) {
+      Map<String, Configuration> configs, Layer1Topologies layer1Topologies) {
     Graph<NodeInterfacePair, DependencyEdge> graph =
         new SimpleDirectedGraph<>(DependencyEdge.class);
     graph.addVertex(NON_EXISTENT_INTERFACE);
@@ -140,32 +144,43 @@ public class InterfaceDependencies {
 
                         // add non-local dependencies for PHYSICAL and AGGREGATED/REDUNDANT
                         // interfaces only.
-                        switch (ifaceType) {
-                          case PHYSICAL:
-                          case AGGREGATED:
-                          case REDUNDANT:
-                            /* Add a BIND dependency to the (single) l3 neighbor (if any). If either interface is down, the
-                             * other will be too.
-                             */
-                            try {
-                              l3Adjacencies
-                                  .pairedPointToPointL3Interface(nip1)
-                                  .ifPresent(
-                                      nip2 -> {
-                                        graph.addVertex(nip2);
-                                        graph.addEdge(nip1, nip2, new DependencyEdge(BIND));
-                                        graph.addEdge(nip2, nip1, new DependencyEdge(BIND));
-                                      });
-                            } catch (IllegalArgumentException e) {
-                              // iface is not an L3 interface.
-                            }
-                            break;
-                          default:
-                            break;
+                        @Nullable
+                        Layer1Topology layer1Topology =
+                            getLayer1Topology(layer1Topologies, ifaceType);
+                        if (layer1Topology == null) {
+                          return;
+                        }
+                        Layer1Node layer1Node =
+                            new Layer1Node(nip1.getHostname(), nip1.getInterface());
+                        if (!layer1Topology.getGraph().nodes().contains(layer1Node)) {
+                          return;
+                        }
+
+                        Set<Layer1Node> neighbors =
+                            layer1Topology.getGraph().adjacentNodes(layer1Node);
+                        if (neighbors.size() == 1) {
+                          NodeInterfacePair nip2 =
+                              Iterables.getOnlyElement(neighbors).asNodeInterfacePair();
+                          graph.addVertex(nip2);
+                          graph.addEdge(nip1, nip2, new DependencyEdge(BIND));
+                          graph.addEdge(nip2, nip1, new DependencyEdge(BIND));
                         }
                       });
             });
     return graph;
+  }
+
+  private static @Nullable Layer1Topology getLayer1Topology(
+      Layer1Topologies layer1Topologies, InterfaceType ifaceType) {
+    switch (ifaceType) {
+      case PHYSICAL:
+        return layer1Topologies.getCombinedL1();
+      case AGGREGATED:
+      case REDUNDANT:
+        return layer1Topologies.getLogicalL1();
+      default:
+        return null;
+    }
   }
 
   private InterfaceDependencies() {}

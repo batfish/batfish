@@ -117,14 +117,12 @@ import org.batfish.common.plugin.PluginClientType;
 import org.batfish.common.plugin.PluginConsumer;
 import org.batfish.common.plugin.TracerouteEngine;
 import org.batfish.common.runtime.SnapshotRuntimeData;
-import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Topologies;
 import org.batfish.common.topology.Layer1TopologiesFactory;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.TopologyContainer;
 import org.batfish.common.topology.TopologyProvider;
-import org.batfish.common.topology.broadcast.BroadcastL3Adjacencies;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.isp.IspModelingUtils;
@@ -182,7 +180,6 @@ import org.batfish.datamodel.ospf.OspfTopologyUtils;
 import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.vxlan.Layer2Vni;
-import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.batfish.dataplane.TracerouteEngineImpl;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BatfishParseException;
@@ -1747,8 +1744,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @VisibleForTesting
   static void postProcessInterfaceDependencies(
-      Map<String, Configuration> configurations, L3Adjacencies l3Adjacencies) {
-    getInterfacesToDeactivate(configurations, l3Adjacencies)
+      Map<String, Configuration> configurations, Layer1Topologies layer1Topologies) {
+    getInterfacesToDeactivate(configurations, layer1Topologies)
         .forEach(
             iface ->
                 configurations
@@ -2032,10 +2029,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
             _topologyProvider.getRawLayer1PhysicalTopology(snapshot).orElse(Layer1Topology.EMPTY),
             synthesizedLayer1Topology,
             configurations);
-    BroadcastL3Adjacencies l3Adjacencies =
-        BroadcastL3Adjacencies.create(l1Topologies, VxlanTopology.EMPTY, configurations);
 
-    postProcessInterfaceDependencies(configurations, l3Adjacencies);
+    postProcessInterfaceDependencies(configurations, l1Topologies);
 
     // We do not process the edge blacklist here. Instead, we rely on these edges being explicitly
     // deleted from the Topology (aka list of edges) that is used along with configurations in
