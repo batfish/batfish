@@ -1050,8 +1050,13 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                                   .build()))
               .filter(
                   r ->
-                      // Received from 0.0.0.0 indicates local origination
-                      (_exportFromBgpRib
+                      // No withdrawals for new sessions.
+                      // For old sessions, the delta might include withdrawals of inactive routes,
+                      // but
+                      // sending these should be safe.
+                      r.isWithdrawn()
+                          // Received from 0.0.0.0 indicates local origination
+                          || (_exportFromBgpRib
                               && Ip.ZERO.equals(r.getRoute().getRoute().getReceivedFromIp()))
                           // RIB-failure routes included
                           || isReflectable(r.getRoute(), session, ourConfig)
