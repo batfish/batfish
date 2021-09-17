@@ -100,7 +100,6 @@ public class CheckpointNatConversions {
     }
   }
 
-  // TODO maybe merge
   /** Visitor that gives the transformation steps for the translated-destination of a NAT rule. */
   @VisibleForTesting
   static class TranslatedDestinationToTransformationSteps
@@ -133,25 +132,27 @@ public class CheckpointNatConversions {
 
   /**
    * Get a list of the transformation steps corresponding to the given valid translated fields of a
-   * manual STATIC NAT rule.
+   * manual STATIC NAT rule. Returns {@link Optional#empty()} if the fields are not valid/supported
+   * for manual static NAT.
    */
   static @Nonnull Optional<List<TransformationStep>> manualStaticTransformationSteps(
-      NamedManagementObject src,
-      NamedManagementObject dst,
-      NamedManagementObject service,
-      Warnings warnings) {
+      NatRule natRule, Map<Uid, ? extends NamedManagementObject> objects, Warnings warnings) {
     ImmutableList.Builder<TransformationStep> steps = ImmutableList.builder();
-    if (!checkValidManualStatic(src, dst, service, warnings)) {
+    if (!checkValidManualStatic(natRule, objects, warnings)) {
       return Optional.empty();
     }
-    steps.addAll(getSourceTransformationSteps((NatTranslatedSource) src));
-    steps.addAll(getDestinationTransformationSteps((NatTranslatedDestination) dst));
+    steps.addAll(
+        getSourceTransformationSteps(
+            (NatTranslatedSource) objects.get(natRule.getTranslatedSource())));
+    steps.addAll(
+        getDestinationTransformationSteps(
+            (NatTranslatedDestination) objects.get(natRule.getTranslatedDestination())));
     return Optional.of(steps.build());
   }
 
   /**
-   * Get a list of the transformation steps corresponding to the given valid translated fields of a
-   * manual HIDE NAT rule.
+   * Get a list of the transformation steps corresponding to the given translated fields of a manual
+   * HIDE NAT rule.
    */
   static @Nonnull Optional<List<TransformationStep>> manualHideTransformationSteps(
       NamedManagementObject src,
@@ -230,39 +231,67 @@ public class CheckpointNatConversions {
 
   /**
    * Returns {@code true} iff the translated fields of a manual STATIC NAT rule are valid, and warns
-   * for each invalid field.
+   * for each invalid field. Assumes a STATIC NAT rule is passed in.
    */
   @VisibleForTesting
   static boolean checkValidManualStatic(
-      NamedManagementObject src,
-      NamedManagementObject dst,
-      NamedManagementObject service,
-      Warnings warnings) {
-    // TODO ALL THIS
-    if (!(src instanceof Host)) {
+      NatRule natRule, Map<Uid, ? extends NamedManagementObject> objects, Warnings warnings) {
+    // TODO loosen these constraints, e.g. allowing transforming addresses from Network->Network
+    NamedManagementObject src = objects.get(natRule.getTranslatedSource());
+    NamedManagementObject dst = objects.get(natRule.getTranslatedDestination());
+    NamedManagementObject service = objects.get(natRule.getTranslatedService());
+    NamedManagementObject origSrc = objects.get(natRule.getOriginalSource());
+    NamedManagementObject origDst = objects.get(natRule.getOriginalDestination());
+
+    if (!(src instanceof Original || src instanceof Host)) {
       warnings.redFlag(
           String.format(
-              "Manual Static NAT rule translated-source %s has invalid type %s and will be"
+              "Manual Static NAT rule translated-source %s has unsupported type %s and will be"
                   + " ignored",
-              src.getName(), src.getClass()));
+              src.getName(), src.getClass().getSimpleName()));
       return false;
-    } /*else if (!CHECK_IPV4_TRANSLATED_SOURCE.visit((NatTranslatedSource) src)) {
-        // unsupported for foreseeable future, so don't bother warning
-        return false;
-      } */ else if (!(dst instanceof Host)) {
+    } else if (!(dst instanceof Original || dst instanceof Host)) {
       warnings.redFlag(
           String.format(
-              "Manual Static NAT rule translated-destination %s has invalid type %s and will be"
+              "Manual Static NAT rule translated-destination %s has unsupported type %s and will be"
                   + " ignored",
-              dst.getName(), dst.getClass()));
+              dst.getName(), dst.getClass().getSimpleName()));
       return false;
     } else if (!(service instanceof Original)) {
       warnings.redFlag(
           String.format(
-              "Manual Static NAT rule translated-service %s has invalid type %s and will be"
+              "Manual Static NAT rule cannot translate services (like %s of type %s) and will be"
                   + " ignored",
-              service.getName(), service.getClass()));
+              service.getName(), service.getClass().getSimpleName()));
       return false;
+    }
+
+    // Make sure if translation is occurring, the original and translated types line up correctly
+    if (!(src instanceof Original)) {
+      if (!src.getClass().equals(origSrc.getClass())) {
+        warnings.redFlag(
+            String.format(
+                "Manual Static NAT rule translated-source %s of type %s is incompatible with"
+                    + " original-source %s of type %s and will be ignored",
+                src.getName(),
+                src.getClass().getSimpleName(),
+                origSrc.getName(),
+                origSrc.getClass().getSimpleName()));
+        return false;
+      }
+    }
+    if (!(dst instanceof Original)) {
+      if (!dst.getClass().equals(origDst.getClass())) {
+        warnings.redFlag(
+            String.format(
+                "Manual Static NAT rule translated-destination %s of type %s is incompatible with"
+                    + " original-destination %s of type %s and will be ignored",
+                dst.getName(),
+                dst.getClass().getSimpleName(),
+                origDst.getName(),
+                origDst.getClass().getSimpleName()));
+        return false;
+      }
     }
     return true;
   }
@@ -321,11 +350,7 @@ public class CheckpointNatConversions {
                 objects.get(natRule.getTranslatedDestination()),
                 objects.get(natRule.getTranslatedService()),
                 warnings)
-            : manualStaticTransformationSteps(
-                objects.get(natRule.getTranslatedSource()),
-                objects.get(natRule.getTranslatedDestination()),
-                objects.get(natRule.getTranslatedService()),
-                warnings);
+            : manualStaticTransformationSteps(natRule, objects, warnings);
     if (!maybeOrigMatchExpr.isPresent() || !maybeSteps.isPresent()) {
       return Optional.empty();
     }
@@ -400,16 +425,16 @@ public class CheckpointNatConversions {
   }
 
   static @Nonnull Optional<Transformation> mergeTransformations(
-      List<Transformation> manualHideTransformations,
+      List<Transformation> manualTransformations,
       List<Transformation> automaticHideTransformations) {
-    // TODO: add non-HIDE
-    if (manualHideTransformations.isEmpty() && automaticHideTransformations.isEmpty()) {
+    // TODO apply correct ordering of NAT rules
+    // TODO: add automatic-static rules
+    if (manualTransformations.isEmpty() && automaticHideTransformations.isEmpty()) {
       return Optional.empty();
     }
     List<Transformation> reversedAutomaticHideTransformations =
         Lists.reverse(automaticHideTransformations);
-    List<Transformation> reversedManualHideTransformations =
-        Lists.reverse(manualHideTransformations);
+    List<Transformation> reversedManualHideTransformations = Lists.reverse(manualTransformations);
     Iterator<Transformation> i =
         Iterators.concat(
             reversedAutomaticHideTransformations.iterator(),
