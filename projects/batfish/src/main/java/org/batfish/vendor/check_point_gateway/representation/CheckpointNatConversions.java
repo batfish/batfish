@@ -1,9 +1,7 @@
 package org.batfish.vendor.check_point_gateway.representation;
 
 import static org.batfish.datamodel.transformation.Transformation.when;
-import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
-import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
-import static org.batfish.datamodel.transformation.TransformationStep.assignSourcePort;
+import static org.batfish.datamodel.transformation.TransformationStep.*;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.appliesToGateway;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toMatchExpr;
 
@@ -22,7 +20,29 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
-import org.batfish.vendor.check_point_management.*;
+import org.batfish.vendor.check_point_management.AddressRange;
+import org.batfish.vendor.check_point_management.AddressSpaceToMatchExpr;
+import org.batfish.vendor.check_point_management.GatewayOrServer;
+import org.batfish.vendor.check_point_management.HasNatSettings;
+import org.batfish.vendor.check_point_management.Host;
+import org.batfish.vendor.check_point_management.NamedManagementObject;
+import org.batfish.vendor.check_point_management.NatHideBehindGateway;
+import org.batfish.vendor.check_point_management.NatHideBehindIp;
+import org.batfish.vendor.check_point_management.NatHideBehindVisitor;
+import org.batfish.vendor.check_point_management.NatMethod;
+import org.batfish.vendor.check_point_management.NatRule;
+import org.batfish.vendor.check_point_management.NatRuleOrSectionVisitor;
+import org.batfish.vendor.check_point_management.NatRulebase;
+import org.batfish.vendor.check_point_management.NatSection;
+import org.batfish.vendor.check_point_management.NatSettings;
+import org.batfish.vendor.check_point_management.NatTranslatedDestination;
+import org.batfish.vendor.check_point_management.NatTranslatedDestinationVisitor;
+import org.batfish.vendor.check_point_management.NatTranslatedSource;
+import org.batfish.vendor.check_point_management.NatTranslatedSourceVisitor;
+import org.batfish.vendor.check_point_management.Original;
+import org.batfish.vendor.check_point_management.ServiceToMatchExpr;
+import org.batfish.vendor.check_point_management.Uid;
+import org.batfish.vendor.check_point_management.UnhandledNatHideBehind;
 
 public class CheckpointNatConversions {
 
