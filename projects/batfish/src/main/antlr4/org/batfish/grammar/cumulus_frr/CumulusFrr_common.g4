@@ -151,6 +151,11 @@ uint32
   | UINT32
 ;
 
+regexp
+:
+  REGEXP
+;
+
 word
 :
   WORD

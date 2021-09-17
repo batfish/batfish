@@ -7,7 +7,8 @@ options {
 tokens {
   QUOTED_TEXT,
   REMARK_TEXT,
-  WORD
+  WORD,
+  REGEXP
 }
 
 ACCESS_LIST
@@ -800,6 +801,18 @@ F_Uint32
 ;
 
 fragment
+F_Regex
+:
+  F_RegexChar+
+;
+
+fragment
+F_RegexChar
+:
+  [0-9_^|[,{}()\]$*+.?-]
+;
+
+fragment
 F_Word
 :
   F_WordChar+
@@ -810,18 +823,6 @@ F_WordChar
 :
   [0-9A-Za-z!@#$^*_=+.;:{}]
   | '-'
-;
-
-fragment
-F_Regex
-:
-  F_RegexChar+
-;
-
-fragment
-F_RegexChar
-:
-  [0-9_^|[,{}()\]$*+.?-]
 ;
 
 fragment
@@ -1128,9 +1129,14 @@ M_AccessList_PERMIT
    'permit' -> type(PERMIT)
 ;
 
+M_AsPathAccessList_REGEX
+:
+   F_Regex -> type(REGEXP)
+;
+
 M_AsPathAccessList_WORD
 :
-   F_Regex -> type(WORD)
+   F_Word -> type(WORD)
 ;
 
 M_AccessList_NEWLINE

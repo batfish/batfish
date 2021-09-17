@@ -2,7 +2,6 @@ package org.batfish.representation.cumulus;
 
 import java.io.Serializable;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.LineAction;
 
 /** Represents one line of a Cumulus AS-path access list. */
