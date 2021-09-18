@@ -343,14 +343,18 @@ public class CheckpointNatConversions {
             serviceToMatchExpr,
             addressSpaceToMatchExpr,
             warnings);
-    Optional<List<TransformationStep>> maybeSteps =
-        natRule.getMethod() == NatMethod.HIDE
-            ? manualHideTransformationSteps(
-                objects.get(natRule.getTranslatedSource()),
-                objects.get(natRule.getTranslatedDestination()),
-                objects.get(natRule.getTranslatedService()),
-                warnings)
-            : manualStaticTransformationSteps(natRule, objects, warnings);
+    Optional<List<TransformationStep>> maybeSteps;
+    if (natRule.getMethod() == NatMethod.HIDE) {
+      maybeSteps =
+          manualHideTransformationSteps(
+              objects.get(natRule.getTranslatedSource()),
+              objects.get(natRule.getTranslatedDestination()),
+              objects.get(natRule.getTranslatedService()),
+              warnings);
+    } else {
+      assert natRule.getMethod() == NatMethod.STATIC;
+      maybeSteps = manualStaticTransformationSteps(natRule, objects, warnings);
+    }
     if (!maybeOrigMatchExpr.isPresent() || !maybeSteps.isPresent()) {
       return Optional.empty();
     }

@@ -618,20 +618,19 @@ public final class CheckpointNatConversionsTest {
 
   @Test
   public void testManualStaticTransformationSteps() {
-    // TODO
     Warnings warnings = new Warnings();
+    Uid hostUid1 = Uid.of("1");
+    Ip hostIp1 = Ip.parse("1.1.1.1");
+    String hostname1 = "host";
+    Host host1 = new Host(hostIp1, NatSettingsTest.TEST_INSTANCE, hostname1, hostUid1);
+
+    Uid hostUid2 = Uid.of("2");
+    Ip hostIp2 = Ip.parse("2.2.2.2");
+    String hostname2 = "host2";
+    Host host2 = new Host(hostIp2, NatSettingsTest.TEST_INSTANCE, hostname2, hostUid2);
+
     {
       // src: host -> host
-      Uid hostUid1 = Uid.of("1");
-      Ip hostIp1 = Ip.parse("1.1.1.1");
-      String hostname1 = "host";
-      Host host1 = new Host(hostIp1, NatSettingsTest.TEST_INSTANCE, hostname1, hostUid1);
-
-      Uid hostUid2 = Uid.of("2");
-      Ip hostIp2 = Ip.parse("2.2.2.2");
-      String hostname2 = "host2";
-      Host host2 = new Host(hostIp2, NatSettingsTest.TEST_INSTANCE, hostname2, hostUid2);
-
       NatRule natRule =
           new NatRule(
               false,
@@ -661,16 +660,6 @@ public final class CheckpointNatConversionsTest {
     }
     {
       // dst: host -> host
-      Uid hostUid1 = Uid.of("1");
-      Ip hostIp1 = Ip.parse("1.1.1.1");
-      String hostname1 = "host";
-      Host host1 = new Host(hostIp1, NatSettingsTest.TEST_INSTANCE, hostname1, hostUid1);
-
-      Uid hostUid2 = Uid.of("2");
-      Ip hostIp2 = Ip.parse("2.2.2.2");
-      String hostname2 = "host2";
-      Host host2 = new Host(hostIp2, NatSettingsTest.TEST_INSTANCE, hostname2, hostUid2);
-
       NatRule natRule =
           new NatRule(
               false,
@@ -697,6 +686,37 @@ public final class CheckpointNatConversionsTest {
       assertThat(
           manualStaticTransformationSteps(natRule, objects, warnings),
           equalTo(Optional.of(ImmutableList.of(assignDestinationIp(hostIp2)))));
+    }
+    {
+      // src and dst translation
+      NatRule natRule =
+          new NatRule(
+              false,
+              "",
+              true,
+              ImmutableList.of(),
+              NatMethod.STATIC,
+              hostUid1,
+              ANY_UID,
+              hostUid2,
+              1,
+              hostUid2,
+              ORIG_UID,
+              hostUid1,
+              UID);
+      ImmutableMap<Uid, NamedManagementObject> objects =
+          ImmutableMap.<Uid, NamedManagementObject>builder()
+              .put(hostUid1, host1)
+              .put(hostUid2, host2)
+              .put(ANY_UID, ANY)
+              .put(ORIG_UID, ORIG)
+              .build();
+
+      assertThat(
+          manualStaticTransformationSteps(natRule, objects, warnings),
+          equalTo(
+              Optional.of(
+                  ImmutableList.of(assignSourceIp(hostIp1), assignDestinationIp(hostIp2)))));
     }
   }
 
