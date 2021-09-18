@@ -5,11 +5,22 @@ options {
 }
 
 tokens {
-  WORD
+  QUOTED_TEXT,
+  WORD,
+  WORD_SEPARATOR
 }
 
 // A10 keywords
+ADDRESS: 'address';
+DISABLE: 'disable';
+ENABLE: 'enable';
+ETHERNET: 'ethernet';
 HOSTNAME: 'hostname' -> pushMode(M_Word);
+IP: 'ip';
+INTERFACE: 'interface';
+LOOPBACK: 'loopback';
+MTU: 'mtu';
+NAME: 'name' -> pushMode(M_Word);
 
 // Complex tokens
 COMMENT_LINE
@@ -19,11 +30,21 @@ COMMENT_LINE
   F_NonNewlineChar* (F_Newline | EOF) -> skip
 ;
 
+DOUBLE_QUOTE
+:
+  '"' -> pushMode ( M_DoubleQuote )
+;
+
+SINGLE_QUOTE
+:
+  ['] -> pushMode ( M_SingleQuote )
+;
+
 SUBNET_MASK: F_SubnetMask;
 
 IP_ADDRESS: F_IpAddress;
 
-IP_PREFIX: F_IpPrefix;
+IP_SLASH_PREFIX: F_IpSlashPrefix;
 
 NEWLINE: F_Newline+;
 
@@ -54,7 +75,7 @@ fragment
 F_IpAddress: F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte;
 
 fragment
-F_IpPrefix: F_IpAddress ' /' F_IpPrefixLength;
+F_IpSlashPrefix: '/' F_IpPrefixLength;
 
 fragment
 F_IpPrefixLength
@@ -164,8 +185,29 @@ fragment
 F_StrChar: ~( [ \t\u000C\u00A0\n\r(),!$'"*#] | '[' | ']' );
 fragment
 F_Str: F_StrChar+;
+
+fragment
+F_EscapedDoubleQuote: '\\"';
+
+fragment
+F_EscapedSingleQuote: '\\' ['];
+
 // Modes
+mode M_DoubleQuote;
+M_DoubleQuote_DOUBLE_QUOTE: '"' -> type(DOUBLE_QUOTE), popMode;
+M_DoubleQuote_QUOTED_TEXT: (F_EscapedDoubleQuote | ~'"')+ -> type(QUOTED_TEXT);
+
+mode M_SingleQuote;
+M_SingleQuote_SINGLE_QUOTE: ['] -> type(SINGLE_QUOTE), popMode;
+M_SingleQuote_QUOTED_TEXT: (F_EscapedSingleQuote | ~['])+ -> type(QUOTED_TEXT);
+
 mode M_Word;
+M_Word_WS: F_Whitespace+ -> type(WORD_SEPARATOR), mode(M_WordValue);
 M_Word_NEWLINE: F_Newline -> type(NEWLINE), popMode;
-M_Word_WORD: F_Word -> type(WORD) , popMode;
-M_Word_WS: F_Whitespace+ -> skip;
+
+mode M_WordValue;
+M_WordValue_DOUBLE_QUOTE: '"' -> type(DOUBLE_QUOTE), pushMode(M_DoubleQuote);
+M_WordValue_SINGLE_QUOTE: ['] -> type(SINGLE_QUOTE), pushMode(M_SingleQuote);
+M_WordValue_WORD: F_Word -> type(WORD);
+M_WordValue_WS: F_Whitespace+ -> skip, popMode;
+M_WordValue_NEWLINE: F_Newline -> type(NEWLINE), popMode;

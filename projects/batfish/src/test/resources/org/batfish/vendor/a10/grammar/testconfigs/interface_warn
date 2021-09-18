@@ -1,0 +1,12 @@
+!BATFISH_FORMAT: a10_acos
+hostname interface_warn
+!
+interface ethernet 1
+  ! name is too long
+  name 1234567890123456789012345678901234567890123456789012345678901234
+!
+! Bad interface numbers
+interface ethernet 0
+!
+interface loopback 11
+!
