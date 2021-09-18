@@ -39,7 +39,7 @@ statement
 
 ip_as_path
 :
-  AS_PATH ACCESS_LIST name = word action = access_list_action as_path_regex = regexp NEWLINE
+  AS_PATH ACCESS_LIST name = word action = access_list_action as_path_regex = REGEX NEWLINE
 ;
 
 s_agentx

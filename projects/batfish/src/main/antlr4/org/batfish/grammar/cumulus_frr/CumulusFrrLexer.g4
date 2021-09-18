@@ -8,7 +8,7 @@ tokens {
   QUOTED_TEXT,
   REMARK_TEXT,
   WORD,
-  REGEXP
+  REGEX
 }
 
 ACCESS_LIST
@@ -1131,7 +1131,7 @@ M_AccessList_PERMIT
 
 M_AsPathAccessList_REGEX
 :
-   F_Regex -> type(REGEXP)
+   F_Regex -> type(REGEX)
 ;
 
 M_AsPathAccessList_WORD
