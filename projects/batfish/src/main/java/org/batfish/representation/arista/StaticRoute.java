@@ -1,46 +1,71 @@
 package org.batfish.representation.arista;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.io.Serializable;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.route.nh.NextHop;
+import org.batfish.datamodel.Ip;
 
 @ParametersAreNonnullByDefault
-public class StaticRoute implements Serializable {
+public final class StaticRoute implements Serializable {
+  public static final class NextHop implements Serializable {
+    public NextHop(@Nullable String nhint, @Nullable Ip nhip, boolean null0) {
+      checkArgument(null0 || nhint != null || nhip != null, "Static route must have some next hop");
+      checkArgument(
+          null0 ^ (nhint != null || nhip != null),
+          "Static route cannot both be null routed and have a next hop interface or ip");
+      _nextHopInterface = nhint;
+      _nextHopIp = nhip;
+      _nullRouted = null0;
+    }
 
-  private final int _distance;
+    public @Nullable String getNextHopInterface() {
+      return _nextHopInterface;
+    }
 
-  private final @Nonnull NextHop _nextHop;
+    public @Nullable Ip getNextHopIp() {
+      return _nextHopIp;
+    }
 
-  private final @Nonnull Prefix _prefix;
+    public boolean getNullRouted() {
+      return _nullRouted;
+    }
 
-  private final @Nullable Long _tag;
+    // internals
 
-  private final @Nullable Integer _track;
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      } else if (!(o instanceof NextHop)) {
+        return false;
+      }
+      NextHop nextHop = (NextHop) o;
+      return _nullRouted == nextHop._nullRouted
+          && Objects.equals(_nextHopInterface, nextHop._nextHopInterface)
+          && Objects.equals(_nextHopIp, nextHop._nextHopIp);
+    }
 
-  public StaticRoute(
-      Prefix prefix, NextHop nextHop, int distance, @Nullable Long tag, @Nullable Integer track) {
-    _prefix = prefix;
-    _nextHop = nextHop;
+    @Override
+    public int hashCode() {
+      return Objects.hash(_nextHopInterface, _nextHopIp, _nullRouted);
+    }
+
+    private final @Nullable String _nextHopInterface;
+    private final @Nullable Ip _nextHopIp;
+    private final boolean _nullRouted;
+  }
+
+  public StaticRoute(NextHop nextHop, @Nullable Integer distance, @Nullable Integer track) {
     _distance = distance;
-    _tag = tag;
+    _nextHop = nextHop;
     _track = track;
   }
 
-  @Override
-  public boolean equals(Object o) {
-    if (o == this) {
-      return true;
-    } else if (!(o instanceof StaticRoute)) {
-      return false;
-    }
-    StaticRoute rhs = (StaticRoute) o;
-    return _prefix.equals(rhs._prefix) && _nextHop.equals(rhs._nextHop);
-  }
-
-  public int getDistance() {
+  public @Nullable Integer getDistance() {
     return _distance;
   }
 
@@ -48,20 +73,31 @@ public class StaticRoute implements Serializable {
     return _nextHop;
   }
 
-  public @Nonnull Prefix getPrefix() {
-    return _prefix;
-  }
-
-  public @Nullable Long getTag() {
-    return _tag;
-  }
-
   public @Nullable Integer getTrack() {
     return _track;
   }
 
+  // internals
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    } else if (!(o instanceof StaticRoute)) {
+      return false;
+    }
+    StaticRoute that = (StaticRoute) o;
+    return Objects.equals(_distance, that._distance)
+        && _nextHop.equals(that._nextHop)
+        && Objects.equals(_track, that._track);
+  }
+
   @Override
   public int hashCode() {
-    return _prefix.hashCode() * 31 + _nextHop.hashCode();
+    return Objects.hash(_distance, _nextHop, _track);
   }
+
+  private final @Nullable Integer _distance;
+  private final @Nonnull NextHop _nextHop;
+  private final @Nullable Integer _track;
 }

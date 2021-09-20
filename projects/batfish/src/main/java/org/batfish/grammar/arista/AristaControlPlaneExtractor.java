@@ -247,10 +247,6 @@ import org.batfish.datamodel.isis.IsisLevel;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfAreaSummary.SummaryRouteBehavior;
 import org.batfish.datamodel.ospf.OspfMetricType;
-import org.batfish.datamodel.route.nh.NextHop;
-import org.batfish.datamodel.route.nh.NextHopDiscard;
-import org.batfish.datamodel.route.nh.NextHopInterface;
-import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.routing_policy.expr.AsExpr;
 import org.batfish.datamodel.routing_policy.expr.AutoAs;
 import org.batfish.datamodel.routing_policy.expr.DecrementLocalPreference;
@@ -655,9 +651,10 @@ import org.batfish.grammar.arista.AristaParser.Ip_domain_nameContext;
 import org.batfish.grammar.arista.AristaParser.Ip_hostnameContext;
 import org.batfish.grammar.arista.AristaParser.Ip_nat_poolContext;
 import org.batfish.grammar.arista.AristaParser.Ip_nat_pool_rangeContext;
+import org.batfish.grammar.arista.AristaParser.Ip_prefixContext;
 import org.batfish.grammar.arista.AristaParser.Ip_prefix_list_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Ip_prefix_list_tailContext;
-import org.batfish.grammar.arista.AristaParser.Ip_route_tailContext;
+import org.batfish.grammar.arista.AristaParser.Ip_route_nexthopContext;
 import org.batfish.grammar.arista.AristaParser.Ip_ssh_versionContext;
 import org.batfish.grammar.arista.AristaParser.Ipap_access_listContext;
 import org.batfish.grammar.arista.AristaParser.Ipap_originContext;
@@ -684,6 +681,7 @@ import org.batfish.grammar.arista.AristaParser.Match_source_protocol_rm_stanzaCo
 import org.batfish.grammar.arista.AristaParser.Match_tag_rm_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Net_is_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.No_ip_prefix_list_stanzaContext;
+import org.batfish.grammar.arista.AristaParser.No_ip_routeContext;
 import org.batfish.grammar.arista.AristaParser.No_route_map_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Ntp_serverContext;
 import org.batfish.grammar.arista.AristaParser.Origin_expr_literalContext;
@@ -707,6 +705,7 @@ import org.batfish.grammar.arista.AristaParser.PortContext;
 import org.batfish.grammar.arista.AristaParser.Port_numberContext;
 import org.batfish.grammar.arista.AristaParser.Port_specifierContext;
 import org.batfish.grammar.arista.AristaParser.ProtocolContext;
+import org.batfish.grammar.arista.AristaParser.Protocol_distanceContext;
 import org.batfish.grammar.arista.AristaParser.RangeContext;
 import org.batfish.grammar.arista.AristaParser.Redistribute_connected_is_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Redistribute_static_is_stanzaContext;
@@ -827,6 +826,7 @@ import org.batfish.grammar.arista.AristaParser.Viaf_vrrpContext;
 import org.batfish.grammar.arista.AristaParser.Viafv_addressContext;
 import org.batfish.grammar.arista.AristaParser.Viafv_preemptContext;
 import org.batfish.grammar.arista.AristaParser.Viafv_priorityContext;
+import org.batfish.grammar.arista.AristaParser.Vrf_nameContext;
 import org.batfish.grammar.arista.AristaParser.Vrfd_descriptionContext;
 import org.batfish.grammar.arista.AristaParser.Vrrp_interfaceContext;
 import org.batfish.grammar.arista.AristaParser.Wccp_idContext;
@@ -912,6 +912,8 @@ import org.batfish.representation.arista.StandardCommunityListLine;
 import org.batfish.representation.arista.StandardIpv6AccessList;
 import org.batfish.representation.arista.StandardIpv6AccessListLine;
 import org.batfish.representation.arista.StaticRoute;
+import org.batfish.representation.arista.StaticRoute.NextHop;
+import org.batfish.representation.arista.StaticRouteManager;
 import org.batfish.representation.arista.StubSettings;
 import org.batfish.representation.arista.Tunnel;
 import org.batfish.representation.arista.Tunnel.TunnelMode;
@@ -950,12 +952,11 @@ import org.batfish.vendor.VendorConfiguration;
 
 public class AristaControlPlaneExtractor extends AristaParserBaseListener
     implements SilentSyntaxListener, ControlPlaneExtractor {
+  private static final IntegerSpace ADMIN_DISTANCE_SPACE = IntegerSpace.of(Range.closed(1, 255));
 
   public static @Nonnull String computeRouteMapEntryName(String routeMapName, int sequence) {
     return String.format("%s %d", routeMapName, sequence);
   }
-
-  private static final int DEFAULT_STATIC_ROUTE_DISTANCE = 1;
 
   @Override
   public String getInputText() {
@@ -989,6 +990,10 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   private static int toInteger(DecContext ctx) {
     return Integer.parseInt(ctx.getText());
+  }
+
+  private Optional<Integer> toInteger(ParserRuleContext messageCtx, Protocol_distanceContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx, ADMIN_DISTANCE_SPACE, "admin distance");
   }
 
   private static int toInteger(Uint16Context ctx) {
@@ -1066,6 +1071,16 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   private static Prefix toPrefix(Token t) {
     return Prefix.parse(t.getText());
+  }
+
+  private static Prefix toPrefix(Ip_prefixContext ctx) {
+    if (ctx.prefix != null) {
+      return Prefix.parse(ctx.prefix.getText());
+    }
+    assert ctx.address != null && ctx.mask != null;
+    Ip addr = toIp(ctx.address);
+    Ip mask = toIp(ctx.mask);
+    return Prefix.create(addr, mask);
   }
 
   private static List<SubRange> toRange(RangeContext ctx) {
@@ -3674,16 +3689,123 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     _no = ctx.NO() != null;
   }
 
-  @Override
-  public void enterS_ip_route(S_ip_routeContext ctx) {
-    if (ctx.vrf != null) {
-      _currentVrf = ctx.vrf.getText();
+  private @Nonnull Optional<NextHop> toNextHop(Ip_route_nexthopContext ctx) {
+    if (ctx.null0 != null) {
+      return Optional.of(new NextHop(null, null, true));
+    } else if (ctx.nexthopint == null) {
+      assert ctx.nexthopip != null; // guaranteed by grammar.
+      return Optional.of(new NextHop(null, toIp(ctx.nexthopip), false));
+    } else {
+      String nextHopInterface;
+      try {
+        nextHopInterface = getCanonicalInterfaceName(ctx.nexthopint.getText());
+      } catch (BatfishException e) {
+        warn(ctx, "Error fetching interface name: " + e.getMessage());
+        return Optional.empty();
+      }
+      _configuration.referenceStructure(
+          INTERFACE, nextHopInterface, IP_ROUTE_NHINT, ctx.nexthopint.getStart().getLine());
+      if (ctx.nexthopip != null) {
+        // NHINT + IP.
+        return Optional.of(new NextHop(nextHopInterface, toIp(ctx.nexthopip), false));
+      } else {
+        // NHINT only.
+        return Optional.of(new NextHop(nextHopInterface, null, false));
+      }
     }
   }
 
   @Override
   public void exitS_ip_route(S_ip_routeContext ctx) {
-    _currentVrf = AristaConfiguration.DEFAULT_VRF_NAME;
+    Vrf vrf = _configuration.getVrfs().get(AristaConfiguration.DEFAULT_VRF_NAME);
+    if (ctx.vrf != null) {
+      String vrfName = toString(ctx.vrf);
+      vrf = _configuration.getVrfs().get(vrfName);
+      if (vrf == null) {
+        warn(ctx.vrf, "VRF " + vrfName + " is not yet defined");
+        return;
+      }
+    }
+    @Nullable Integer distance = null;
+    if (ctx.distance != null) {
+      Optional<Integer> maybeDistance = toInteger(ctx, ctx.distance);
+      if (maybeDistance.isPresent()) {
+        distance = maybeDistance.get();
+      } else {
+        // already warned.
+        return;
+      }
+    }
+    Optional<NextHop> maybeNextHop = toNextHop(ctx.nh);
+    if (!maybeNextHop.isPresent()) {
+      // Already warned.
+      return;
+    }
+    NextHop nextHop = maybeNextHop.get();
+    Prefix prefix = toPrefix(ctx.prefix);
+    long tag = ctx.tag != null ? toLong(ctx.tag) : 0L;
+    Integer track = ctx.track != null ? toInteger(ctx.track) : null;
+    StaticRoute route = new StaticRoute(nextHop, distance, track);
+    StaticRouteManager srm =
+        vrf.getStaticRoutes().computeIfAbsent(prefix, p -> new StaticRouteManager());
+    Optional<String> maybeProblem = srm.addVariant(route);
+    if (maybeProblem.isPresent()) {
+      warn(ctx, maybeProblem.get());
+      return;
+    }
+    srm.setTag(tag);
+  }
+
+  @Override
+  public void exitNo_ip_route(No_ip_routeContext ctx) {
+    Vrf vrf = _configuration.getVrfs().get(AristaConfiguration.DEFAULT_VRF_NAME);
+    if (ctx.vrf != null) {
+      String vrfName = toString(ctx.vrf);
+      vrf = _configuration.getVrfs().get(vrfName);
+      if (vrf == null) {
+        warn(ctx.vrf, "VRF " + vrfName + " is not yet defined");
+        return;
+      }
+    }
+    Prefix p = toPrefix(ctx.prefix);
+    StaticRouteManager removeFrom = vrf.getStaticRoutes().get(p);
+    if (removeFrom == null) {
+      warn(ctx.prefix, "No static routes for network " + p + " in vrf " + vrf.getName());
+      return;
+    }
+
+    if (ctx.nh == null) {
+      // Without a next-hop, none of the config is compared to the route.
+      vrf.getStaticRoutes().remove(p);
+      return;
+    }
+
+    Optional<NextHop> maybeNextHop = toNextHop(ctx.nh);
+    if (!maybeNextHop.isPresent()) {
+      // already warned.
+      return;
+    }
+
+    @Nullable Integer distance = null;
+    if (ctx.distance != null) {
+      Optional<Integer> maybeDistance = toInteger(ctx, ctx.distance);
+      if (maybeDistance.isPresent()) {
+        distance = maybeDistance.get();
+      } else {
+        // already warned.
+        return;
+      }
+    }
+    NextHop nextHop = maybeNextHop.get();
+    boolean removedSomething = removeFrom.removeVariant(nextHop, distance);
+    if (!removedSomething) {
+      warn(ctx.getParent(), "No static routes found to remove");
+    }
+
+    if (removeFrom.getVariants().isEmpty()) {
+      // If there are no more routes, remove the prefix too.
+      vrf.getStaticRoutes().remove(p);
+    }
   }
 
   @Override
@@ -5490,48 +5612,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitIp_route_tail(Ip_route_tailContext ctx) {
-    Prefix prefix;
-    if (ctx.prefix != null) {
-      prefix = Prefix.parse(ctx.prefix.getText());
-    } else {
-      Ip address = toIp(ctx.address);
-      Ip mask = toIp(ctx.mask);
-      int prefixLength = mask.numSubnetBits();
-      prefix = Prefix.create(address, prefixLength);
-    }
-    NextHop nextHop;
-    if (ctx.null0 != null) {
-      nextHop = NextHopDiscard.instance();
-    } else if (ctx.nexthopint == null) {
-      assert ctx.nexthopip != null; // guaranteed by grammar.
-      nextHop = NextHopIp.of(toIp(ctx.nexthopip));
-    } else {
-      String nextHopInterface;
-      try {
-        nextHopInterface = getCanonicalInterfaceName(ctx.nexthopint.getText());
-      } catch (BatfishException e) {
-        warn(ctx, "Error fetching interface name: " + e.getMessage());
-        return;
-      }
-      _configuration.referenceStructure(
-          INTERFACE, nextHopInterface, IP_ROUTE_NHINT, ctx.nexthopint.getStart().getLine());
-      if (ctx.nexthopip != null) {
-        // NHINT + IP.
-        nextHop = NextHopInterface.of(nextHopInterface, toIp(ctx.nexthopip));
-      } else {
-        // NHINT only.
-        nextHop = NextHopInterface.of(nextHopInterface);
-      }
-    }
-    int distance = ctx.distance != null ? toInteger(ctx.distance) : DEFAULT_STATIC_ROUTE_DISTANCE;
-    Long tag = ctx.tag != null ? toLong(ctx.tag) : null;
-    Integer track = ctx.track != null ? toInteger(ctx.track) : null;
-    StaticRoute route = new StaticRoute(prefix, nextHop, distance, tag, track);
-    currentVrf().getStaticRoutes().add(route);
-  }
-
-  @Override
   public void exitIp_ssh_version(Ip_ssh_versionContext ctx) {
     int version = toInteger(ctx.version);
     if (version < 1 || version > 2) {
@@ -6620,6 +6700,11 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     return ctx.getText();
   }
 
+  @Nonnull
+  private static String toString(Vrf_nameContext ctx) {
+    return ctx.getText();
+  }
+
   @Override
   public void exitRmsc_none(Rmsc_noneContext ctx) {
     _currentRouteMapClause.clearSetCommunity();
@@ -7362,6 +7447,21 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       assert ctx.NO_EXPORT() != null;
       return StandardCommunity.NO_EXPORT;
     }
+  }
+
+  /**
+   * Convert a {@link ParserRuleContext} whose text is guaranteed to represent a valid signed 64-bit
+   * decimal integer to a {@link Long} if it is contained in the provided {@code space}, or else
+   * {@link Optional#empty}.
+   */
+  private @Nonnull Optional<Long> toLongInSpace(
+      ParserRuleContext messageCtx, ParserRuleContext ctx, LongSpace space, String name) {
+    long num = Long.parseLong(ctx.getText());
+    if (!space.contains(num)) {
+      warn(messageCtx, String.format("Expected %s in range %s, but got '%d'", name, space, num));
+      return Optional.empty();
+    }
+    return Optional.of(num);
   }
 
   private @Nullable Long toLong(DecContext ctx) {

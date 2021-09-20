@@ -229,6 +229,9 @@ import org.batfish.representation.arista.StandardAccessListActionLine;
 import org.batfish.representation.arista.StandardAccessListRemarkLine;
 import org.batfish.representation.arista.StandardCommunityList;
 import org.batfish.representation.arista.StandardCommunityListLine;
+import org.batfish.representation.arista.StaticRoute;
+import org.batfish.representation.arista.StaticRoute.NextHop;
+import org.batfish.representation.arista.StaticRouteManager;
 import org.batfish.representation.arista.VrrpInterface;
 import org.batfish.representation.arista.eos.AristaBgpAggregateNetwork;
 import org.batfish.representation.arista.eos.AristaBgpBestpathTieBreaker;
@@ -633,6 +636,7 @@ public class AristaGrammarTest {
             .setProtocol(RoutingProtocol.BGP)
             .setReceivedFromIp(ZERO) // indicates local origination
             .setSrcProtocol(RoutingProtocol.STATIC)
+            .setTag(0) // TODO: should redistribute static preserve tag?
             .setWeight(DEFAULT_LOCAL_BGP_WEIGHT)
             .build();
     Bgpv4Route bgpRouteVrf2 =
@@ -934,6 +938,151 @@ public class AristaGrammarTest {
   }
 
   @Test
+  public void testStaticRouteExtraction() throws IOException {
+    AristaConfiguration c = parseVendorConfig("static_route");
+    Map<Prefix, StaticRouteManager> statics = c.getVrfs().get(DEFAULT_VRF_NAME).getStaticRoutes();
+    assertThat(
+        statics,
+        hasKeys(
+            Prefix.parse("1.1.1.1/32"),
+            Prefix.parse("2.2.2.2/32"),
+            Prefix.parse("3.3.3.3/32"),
+            Prefix.parse("4.4.4.4/32"),
+            Prefix.parse("6.6.6.6/32"),
+            Prefix.parse("7.7.7.7/32"),
+            Prefix.parse("8.8.8.8/32"),
+            Prefix.parse("9.9.9.9/32"),
+            Prefix.parse("11.11.11.11/32")));
+    {
+      StaticRouteManager srm = statics.get(Prefix.parse("1.1.1.1/32"));
+      assertThat(
+          srm.getVariants(), contains(new StaticRoute(new NextHop(null, null, true), null, null)));
+    }
+    {
+      StaticRouteManager srm = statics.get(Prefix.parse("2.2.2.2/32"));
+      assertThat(
+          srm.getVariants(),
+          contains(new StaticRoute(new NextHop("Ethernet1", null, false), null, null)));
+    }
+    {
+      StaticRouteManager srm = statics.get(Prefix.parse("3.3.3.3/32"));
+      assertThat(
+          srm.getVariants(),
+          containsInAnyOrder(
+              new StaticRoute(new NextHop("Ethernet1", null, false), null, null),
+              new StaticRoute(new NextHop("Ethernet2", null, false), null, null)));
+    }
+    {
+      StaticRouteManager srm = statics.get(Prefix.parse("4.4.4.4/32"));
+      assertThat(
+          srm.getVariants(),
+          containsInAnyOrder(
+              new StaticRoute(new NextHop("Ethernet1", null, false), null, null),
+              new StaticRoute(new NextHop("Ethernet1", null, false), 7, null)));
+    }
+    {
+      StaticRouteManager srm = statics.get(Prefix.parse("6.6.6.6/32"));
+      assertThat(
+          srm.getVariants(),
+          containsInAnyOrder(
+              new StaticRoute(
+                  new NextHop("Ethernet1", Ip.parse("99.99.99.99"), false), null, null)));
+    }
+    {
+      StaticRouteManager srm = statics.get(Prefix.parse("7.7.7.7/32"));
+      assertThat(
+          srm.getVariants(),
+          contains(
+              new StaticRoute(
+                  new NextHop("Ethernet1", Ip.parse("99.99.99.99"), false), null, null)));
+    }
+    {
+      StaticRouteManager srm = statics.get(Prefix.parse("8.8.8.8/32"));
+      assertThat(
+          srm.getVariants(),
+          containsInAnyOrder(
+              new StaticRoute(new NextHop("Ethernet1", null, false), null, null),
+              new StaticRoute(new NextHop("Ethernet2", null, false), null, null)));
+    }
+    {
+      StaticRouteManager srm = statics.get(Prefix.parse("9.9.9.9/32"));
+      assertThat(
+          srm.getVariants(), contains(new StaticRoute(new NextHop(null, null, true), null, null)));
+    }
+    {
+      StaticRouteManager srm = statics.get(Prefix.parse("11.11.11.11/32"));
+      assertThat(
+          srm.getVariants(),
+          contains(new StaticRoute(new NextHop("Ethernet1", null, false), null, null)));
+    }
+  }
+
+  @Test
+  public void testStaticRouteConversion() throws IOException {
+    Configuration c = parseConfig("static_route");
+    Set<org.batfish.datamodel.StaticRoute> statics =
+        c.getVrfs().get(DEFAULT_VRF_NAME).getStaticRoutes();
+    org.batfish.datamodel.StaticRoute baseRoute =
+        org.batfish.datamodel.StaticRoute.builder()
+            .setAdmin(1)
+            .setNetwork(Prefix.parse("1.1.1.1/32"))
+            .setNextHop(NextHopDiscard.instance())
+            .setTag(0)
+            .build();
+    assertThat(
+        statics,
+        contains(
+            baseRoute,
+            baseRoute.toBuilder()
+                .setNetwork(Prefix.parse("2.2.2.2/32"))
+                .setNextHop(NextHopInterface.of("Ethernet1"))
+                .build(),
+            baseRoute.toBuilder()
+                .setNetwork(Prefix.parse("3.3.3.3/32"))
+                .setNextHop(NextHopInterface.of("Ethernet1"))
+                .setTag(5)
+                .build(),
+            baseRoute.toBuilder()
+                .setNetwork(Prefix.parse("3.3.3.3/32"))
+                .setNextHop(NextHopInterface.of("Ethernet2"))
+                .setTag(5)
+                .build(),
+            baseRoute.toBuilder()
+                .setNetwork(Prefix.parse("4.4.4.4/32"))
+                .setNextHop(NextHopInterface.of("Ethernet1"))
+                .build(),
+            baseRoute.toBuilder()
+                .setNetwork(Prefix.parse("4.4.4.4/32"))
+                .setNextHop(NextHopInterface.of("Ethernet1"))
+                .setAdmin(7)
+                .build(),
+            baseRoute.toBuilder()
+                .setNetwork(Prefix.parse("6.6.6.6/32"))
+                .setNextHop(NextHopInterface.of("Ethernet1", Ip.parse("99.99.99.99")))
+                .build(),
+            baseRoute.toBuilder()
+                .setNetwork(Prefix.parse("7.7.7.7/32"))
+                .setNextHop(NextHopInterface.of("Ethernet1", Ip.parse("99.99.99.99")))
+                .build(),
+            baseRoute.toBuilder()
+                .setNetwork(Prefix.parse("8.8.8.8/32"))
+                .setNextHop(NextHopInterface.of("Ethernet1"))
+                .build(),
+            baseRoute.toBuilder()
+                .setNetwork(Prefix.parse("8.8.8.8/32"))
+                .setNextHop(NextHopInterface.of("Ethernet2"))
+                .build(),
+            baseRoute.toBuilder()
+                .setNetwork(Prefix.parse("9.9.9.9/32"))
+                .setNextHop(NextHopDiscard.instance())
+                .build(),
+            baseRoute.toBuilder()
+                .setNetwork(Prefix.parse("11.11.11.11/32"))
+                .setNextHop(NextHopInterface.of("Ethernet1"))
+                .build()));
+  }
+
+  @Test
   public void testAristaBanner() throws IOException {
     Configuration c = parseConfig("eos_banner");
     Map<String, String> banners = c.getVendorFamily().getCisco().getBanners();
@@ -1126,6 +1275,7 @@ public class AristaGrammarTest {
             .setReceivedFromIp(Ip.ZERO) // indicates local origination
             .setSrcProtocol(RoutingProtocol.STATIC)
             .setWeight(DEFAULT_LOCAL_BGP_WEIGHT)
+            .setTag(0) // TODO: should redistribute static preserve tag?
             .build();
     Bgpv4Route localRoute2 = localRoute1.toBuilder().setNetwork(staticPrefix2).build();
     Bgpv4Route localRoute3 = localRoute1.toBuilder().setNetwork(staticPrefix3).build();

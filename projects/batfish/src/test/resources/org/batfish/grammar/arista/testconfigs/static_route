@@ -1,0 +1,63 @@
+! Command: show running-config
+! device: localhost (vEOS, EOS-4.21.1.1F)
+!
+hostname static_route
+!
+! Cannot ECMP to Null0 interface. (Ethernet1 blocked)
+ip route 1.1.1.1 255.255.255.255 null0
+ip route 1.1.1.1/32 Ethernet1
+
+! Cannot ECMP to Null0 interface. (null blocked)
+ip route 2.2.2.2/32 Ethernet1
+ip route 2.2.2.2/32 null0
+
+! Last tag wins
+ip route 3.3.3.3/32 Ethernet1
+ip route 3.3.3.3/32 Ethernet2 tag 5
+
+! Admin distance can coexist
+ip route 4.4.4.4/32 Ethernet1
+ip route 4.4.4.4/32 Ethernet1 7
+
+! no ip route <prefix> removes all alternatives
+ip route 5.5.5.5/32 null0
+no ip route 5.5.5.5/32
+
+! no ip route <nhint> does not remove <nhint + nhip>
+ip route 6.6.6.6/32 Ethernet1 99.99.99.99
+no ip route 6.6.6.6/32 Ethernet1
+
+! no ip route <nhip> does not remove <nhint + nhip>
+ip route 7.7.7.7/32 Ethernet1 99.99.99.99
+no ip route 7.7.7.7/32 99.99.99.99
+
+! absent tag overwrites present tag
+ip route 8.8.8.8/32 Ethernet1 tag 8
+ip route 8.8.8.8/32 Ethernet2
+
+! absent tag is actually 0
+ip route 9.9.9.9/32 null0 tag 0
+
+! Admin distance does not affect if nh matches
+ip route 10.10.10.10/32 Ethernet1
+ip route 10.10.10.10/32 Ethernet1 7
+no ip route 10.10.10.10/32 Ethernet1
+
+! Admin distance does affect if present
+ip route 11.11.11.11/32 Ethernet1
+ip route 11.11.11.11/32 Ethernet1 7
+no ip route 11.11.11.11/32 Ethernet1 7
+
+! localhost(config)#show run | sec ip route
+! ip route 1.1.1.1/32 Null0
+! ip route 2.2.2.2/32 Ethernet1
+! ip route 3.3.3.3/32 Ethernet1 tag 5
+! ip route 3.3.3.3/32 Ethernet2 tag 5
+! ip route 4.4.4.4/32 Ethernet1
+! ip route 4.4.4.4/32 Ethernet1 7
+! ip route 6.6.6.6/32 Ethernet1 99.99.99.99
+! ip route 7.7.7.7/32 Ethernet1 99.99.99.99
+! ip route 8.8.8.8/32 Ethernet1
+! ip route 8.8.8.8/32 Ethernet2
+! ip route 9.9.9.9/32 Null0
+! ip route 11.11.11.11/32 Ethernet1

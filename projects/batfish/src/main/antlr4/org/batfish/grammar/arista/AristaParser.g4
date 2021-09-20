@@ -1040,29 +1040,36 @@ ip_probe_null
    ) null_rest_of_line
 ;
 
-s_ip_route
+ip_route_nexthop
 :
-  ROUTE (VRF vrf = vrf_name)? ip_route_tail
+   null0 = NULL0
+   | nexthopip = IP_ADDRESS
+   | nexthopint = interface_name_unstructured (nexthopip = IP_ADDRESS)?
 ;
 
-ip_route_tail
+s_ip_route
 :
+  ROUTE (VRF vrf = vrf_name)? prefix = ip_prefix nh = ip_route_nexthop
    (
-     (address = IP_ADDRESS mask = IP_ADDRESS)
-     | prefix = IP_PREFIX
-   )
-   (
-      null0 = NULL0
-      | nexthopip = IP_ADDRESS (nexthopint = interface_name_unstructured)?
-      | nexthopint = interface_name_unstructured (nexthopip = IP_ADDRESS)?
-   )
-   (
-     distance = dec
+     distance = protocol_distance
      | METRIC metric = dec
      | NAME variable
-     | TAG tag = dec
+     | TAG tag = uint32
      | TRACK track = dec
    )* NEWLINE
+;
+
+no_ip_route
+:
+  ROUTE (VRF vrf = vrf_name)? prefix = ip_prefix
+  (nh = ip_route_nexthop)?
+  (
+     distance = protocol_distance
+     | METRIC metric = dec
+     | NAME variable
+     | TAG tag = uint32
+     | TRACK track = dec
+  )* NEWLINE
 ;
 
 ip_sla_null
@@ -2668,7 +2675,11 @@ no_errdisable
 
 no_ip
 :
-  IP no_ip_igmp
+  IP
+  (
+    no_ip_igmp
+    | no_ip_route
+  )
 ;
 
 s_no_bfd
