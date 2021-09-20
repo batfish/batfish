@@ -83,8 +83,7 @@ public final class A10Configuration extends VendorConfiguration {
     }
   }
 
-  @VisibleForTesting
-  public static String getInterfaceName(Interface iface) {
+  private static String getInterfaceName(Interface iface) {
     String typeStr = iface.getType().toString();
     // Only the first letter should be capitalized, like in A10 `show` data
     return String.format(
@@ -110,6 +109,10 @@ public final class A10Configuration extends VendorConfiguration {
     return ImmutableList.of(_c);
   }
 
+  /**
+   * Convert specified VS {@link Interface} in provided {@link Vrf} to a VI model {@link
+   * org.batfish.datamodel.Interface} attached to the VI {@link Configuration}.
+   */
   private void convertInterface(Interface iface, Vrf vrf) {
     String name = getInterfaceName(iface);
     org.batfish.datamodel.Interface.Builder newIface =
