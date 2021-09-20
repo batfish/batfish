@@ -1,0 +1,19 @@
+!BATFISH_FORMAT: a10_acos
+hostname interfaces
+!
+interface ethernet 1
+  ip address 10.0.1.1 /24
+  name "this is a comp\"l"'icat\'ed 'name
+  mtu 1234
+  enable
+!
+interface ethernet 9
+  ip address 10.0.2.1 255.255.255.0
+  name baz
+  disable
+!
+interface loopback 0
+  ip address 192.168.0.1 255.255.255.255
+!
+interface loopback 10
+!
