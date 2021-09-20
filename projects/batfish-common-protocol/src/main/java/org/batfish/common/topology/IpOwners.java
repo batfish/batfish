@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import javax.annotation.Nonnull;
+import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -267,14 +268,16 @@ public final class IpOwners {
               Set<Interface> candidates = cell.getValue();
               assert candidates != null;
               /*
-               * Compare priorities first. If tied, break tie based on highest interface IP.
+               * Compare priorities first, then highest interface IP, then hostname, then interface name.
                */
               Interface vrrpMaster =
                   Collections.max(
                       candidates,
                       Comparator.comparingInt(
                               (Interface o) -> o.getVrrpGroups().get(groupNum).getPriority())
-                          .thenComparing(o -> o.getConcreteAddress().getIp()));
+                          .thenComparing(o -> o.getConcreteAddress().getIp())
+                          .thenComparing(o -> o.getOwner().getHostname())
+                          .thenComparing(ComparableStructure::getName));
               ipOwners
                   .computeIfAbsent(address.getIp(), k -> new HashMap<>())
                   .computeIfAbsent(vrrpMaster.getOwner().getHostname(), k -> new HashSet<>())
