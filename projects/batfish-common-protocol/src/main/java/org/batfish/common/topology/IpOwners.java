@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import javax.annotation.Nonnull;
-import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -32,6 +31,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.hsrp.HsrpGroup;
 import org.batfish.datamodel.tracking.HsrpPriorityEvaluator;
 import org.batfish.datamodel.tracking.PredicateTrackMethodEvaluator;
@@ -276,8 +276,7 @@ public final class IpOwners {
                       Comparator.comparingInt(
                               (Interface o) -> o.getVrrpGroups().get(groupNum).getPriority())
                           .thenComparing(o -> o.getConcreteAddress().getIp())
-                          .thenComparing(o -> o.getOwner().getHostname())
-                          .thenComparing(ComparableStructure::getName));
+                          .thenComparing(o -> NodeInterfacePair.of(o)));
               ipOwners
                   .computeIfAbsent(address.getIp(), k -> new HashMap<>())
                   .computeIfAbsent(vrrpMaster.getOwner().getHostname(), k -> new HashSet<>())
