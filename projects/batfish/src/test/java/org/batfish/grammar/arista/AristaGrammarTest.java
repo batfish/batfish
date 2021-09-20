@@ -191,6 +191,7 @@ import org.batfish.datamodel.matchers.ConfigurationMatchers;
 import org.batfish.datamodel.matchers.MlagMatchers;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
+import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.communities.CommunityContext;
@@ -940,6 +941,7 @@ public class AristaGrammarTest {
   @Test
   public void testStaticRouteExtraction() throws IOException {
     AristaConfiguration c = parseVendorConfig("static_route");
+    assertThat(c.getVrfs(), hasKeys(DEFAULT_VRF_NAME, "VRF"));
     Map<Prefix, StaticRouteManager> statics = c.getVrfs().get(DEFAULT_VRF_NAME).getStaticRoutes();
     assertThat(
         statics,
@@ -1015,11 +1017,27 @@ public class AristaGrammarTest {
           srm.getVariants(),
           contains(new StaticRoute(new NextHop("Ethernet1", null, false), null, null)));
     }
+
+    Map<Prefix, StaticRouteManager> vrfStatics = c.getVrfs().get("VRF").getStaticRoutes();
+    assertThat(vrfStatics, aMapWithSize(2));
+    {
+      StaticRouteManager srm = vrfStatics.get(Prefix.parse("1.1.1.1/32"));
+      assertThat(
+          srm.getVariants(),
+          contains(new StaticRoute(new NextHop("Ethernet1", null, false), null, null)));
+    }
+    {
+      StaticRouteManager srm = vrfStatics.get(Prefix.parse("5.5.5.5/32"));
+      assertThat(
+          srm.getVariants(),
+          contains(new StaticRoute(new NextHop(null, Ip.parse("1.2.3.4"), false), null, null)));
+    }
   }
 
   @Test
   public void testStaticRouteConversion() throws IOException {
     Configuration c = parseConfig("static_route");
+    assertThat(c.getVrfs(), hasKeys(DEFAULT_VRF_NAME, "VRF"));
     Set<org.batfish.datamodel.StaticRoute> statics =
         c.getVrfs().get(DEFAULT_VRF_NAME).getStaticRoutes();
     org.batfish.datamodel.StaticRoute baseRoute =
@@ -1079,6 +1097,16 @@ public class AristaGrammarTest {
             baseRoute.toBuilder()
                 .setNetwork(Prefix.parse("11.11.11.11/32"))
                 .setNextHop(NextHopInterface.of("Ethernet1"))
+                .build()));
+
+    Set<org.batfish.datamodel.StaticRoute> vrfStatics = c.getVrfs().get("VRF").getStaticRoutes();
+    assertThat(
+        vrfStatics,
+        contains(
+            baseRoute.toBuilder().setNextHop(NextHopInterface.of("Ethernet1")).build(),
+            baseRoute.toBuilder()
+                .setNetwork(Prefix.parse("5.5.5.5/32"))
+                .setNextHop(NextHopIp.of(Ip.parse("1.2.3.4")))
                 .build()));
   }
 

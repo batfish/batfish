@@ -3,6 +3,8 @@
 !
 hostname static_route
 !
+vrf definition VRF
+!
 ! Cannot ECMP to Null0 interface. (Ethernet1 blocked)
 ip route 1.1.1.1 255.255.255.255 null0
 ip route 1.1.1.1/32 Ethernet1
@@ -10,6 +12,12 @@ ip route 1.1.1.1/32 Ethernet1
 ! Cannot ECMP to Null0 interface. (null blocked)
 ip route 2.2.2.2/32 Ethernet1
 ip route 2.2.2.2/32 null0
+
+!! Logic is per-VRF.
+! next is not blocked by ECMP to null0 in default VRF.
+ip route vrf VRF 1.1.1.1/32 Ethernet1
+! next does not remove route in default VRF.
+no ip route vrf VRF 2.2.2.2/32
 
 ! Last tag wins
 ip route 3.3.3.3/32 Ethernet1
@@ -19,8 +27,9 @@ ip route 3.3.3.3/32 Ethernet2 tag 5
 ip route 4.4.4.4/32 Ethernet1
 ip route 4.4.4.4/32 Ethernet1 7
 
-! no ip route <prefix> removes all alternatives
+! no ip route <prefix> removes all alternatives, only in same VRF
 ip route 5.5.5.5/32 null0
+ip route vrf VRF 5.5.5.5/32 1.2.3.4
 no ip route 5.5.5.5/32
 
 ! no ip route <nhint> does not remove <nhint + nhip>
@@ -48,6 +57,10 @@ ip route 11.11.11.11/32 Ethernet1
 ip route 11.11.11.11/32 Ethernet1 7
 no ip route 11.11.11.11/32 Ethernet1 7
 
+! VRF must be declared before it can be used
+ip route vrf NONEXISTENT 12.12.12.12/32 null0
+no ip route vrf NONEXISTENT 12.12.12.12/32 null0
+
 ! localhost(config)#show run | sec ip route
 ! ip route 1.1.1.1/32 Null0
 ! ip route 2.2.2.2/32 Ethernet1
@@ -61,3 +74,5 @@ no ip route 11.11.11.11/32 Ethernet1 7
 ! ip route 8.8.8.8/32 Ethernet2
 ! ip route 9.9.9.9/32 Null0
 ! ip route 11.11.11.11/32 Ethernet1
+! ip route vrf VRF 1.1.1.1/32 Ethernet1
+! ip route vrf VRF 5.5.5.5/32 1.2.3.4
