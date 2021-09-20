@@ -69,6 +69,7 @@ import org.batfish.datamodel.routing_policy.expr.LongExpr;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.UnrecognizedLineToken;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Access_list_actionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Agg_feature_as_setContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Agg_feature_matching_med_onlyContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Agg_feature_originContext;
@@ -1775,14 +1776,23 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     }
   }
 
+  private LineAction toLineAction(Access_list_actionContext ctx) {
+    if (ctx.PERMIT() != null) {
+      return LineAction.PERMIT;
+    } else {
+      assert ctx.DENY() != null;
+      return LineAction.DENY;
+    }
+  }
+
   @Override
   public void exitIp_as_path(Ip_as_pathContext ctx) {
     String name = ctx.name.getText();
-    LineAction action = ctx.action.permit != null ? LineAction.PERMIT : LineAction.DENY;
-    long asNum = toLong(ctx.asn);
+    LineAction action = toLineAction(ctx.action);
+    String regex = ctx.as_path_regex.getText();
     _frr.getIpAsPathAccessLists()
         .computeIfAbsent(name, IpAsPathAccessList::new)
-        .addLine(new IpAsPathAccessListLine(action, asNum));
+        .addLine(new IpAsPathAccessListLine(action, regex));
     _c.defineStructure(IP_AS_PATH_ACCESS_LIST, name, ctx);
   }
 

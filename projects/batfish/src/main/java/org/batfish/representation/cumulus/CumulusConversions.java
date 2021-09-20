@@ -1559,7 +1559,7 @@ public final class CumulusConversions {
         new CommunityMatchRegex(ColonSeparatedRendering.instance(), toJavaRegex(line.getRegex())));
   }
 
-  private static @Nonnull String toJavaRegex(String cumulusRegex) {
+  static @Nonnull String toJavaRegex(String cumulusRegex) {
     String withoutQuotes;
     if (cumulusRegex.charAt(0) == '"' && cumulusRegex.charAt(cumulusRegex.length() - 1) == '"') {
       withoutQuotes = cumulusRegex.substring(1, cumulusRegex.length() - 1);
@@ -1585,10 +1585,7 @@ public final class CumulusConversions {
         asPathAccessList.getLines().stream()
             // TODO Check FRR AS path match semantics.
             // This regex assumes we should match any path containing the specified ASN anywhere.
-            .map(
-                line ->
-                    new AsPathAccessListLine(
-                        line.getAction(), String.format("(^| )%s($| )", line.getAsNum())))
+            .map(line -> new AsPathAccessListLine(line.getAction(), line.getRegex()))
             .collect(ImmutableList.toImmutableList());
     return new AsPathAccessList(name, lines);
   }
