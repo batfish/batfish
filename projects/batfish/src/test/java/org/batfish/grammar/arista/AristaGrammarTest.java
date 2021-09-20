@@ -45,6 +45,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEncapsulationVlan;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInterfaceType;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMlagId;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSpeed;
@@ -155,6 +156,7 @@ import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcard;
@@ -2095,6 +2097,7 @@ public class AristaGrammarTest {
         hasInterface(
             "Ethernet1",
             allOf(
+                hasInterfaceType(InterfaceType.PHYSICAL),
                 hasVrf(hasName(equalTo("VRF_1"))),
                 hasSwitchPortMode(SwitchportMode.NONE),
                 hasSwitchPortEncapsulation(SwitchportEncapsulationType.DOT1Q),
@@ -2103,24 +2106,38 @@ public class AristaGrammarTest {
         c,
         hasInterface(
             "Ethernet2",
-            allOf(hasSwitchPortMode(SwitchportMode.NONE), hasVrf(hasName(equalTo("VRF_2"))))));
+            allOf(
+                hasInterfaceType(InterfaceType.PHYSICAL),
+                hasSwitchPortMode(SwitchportMode.NONE),
+                hasVrf(hasName(equalTo("VRF_2"))))));
     assertThat(
         c,
         hasInterface(
             "Ethernet3",
-            allOf(hasSwitchPortMode(SwitchportMode.ACCESS), hasAccessVlan(1), isActive())));
+            allOf(
+                hasInterfaceType(InterfaceType.PHYSICAL),
+                hasSwitchPortMode(SwitchportMode.ACCESS),
+                hasAccessVlan(1),
+                isActive())));
     assertThat(
-        c, hasInterface("Ethernet4", allOf(hasSwitchPortMode(SwitchportMode.NONE), isActive())));
+        c,
+        hasInterface(
+            "Ethernet4",
+            allOf(
+                hasInterfaceType(InterfaceType.PHYSICAL),
+                hasSwitchPortMode(SwitchportMode.NONE),
+                isActive())));
     assertThat(
         c,
         hasInterface(
             "Ethernet4.400",
             allOf(
+                hasInterfaceType(InterfaceType.LOGICAL),
                 hasSwitchPortMode(SwitchportMode.NONE),
                 hasEncapsulationVlan(400),
                 hasAllAddresses(contains(ConcreteInterfaceAddress.parse("4.4.4.4/24"))),
                 isActive())));
-    assertThat(c, hasInterface("UnconnectedEthernet5"));
+    assertThat(c, hasInterface("UnconnectedEthernet5", hasInterfaceType(InterfaceType.UNKNOWN)));
   }
 
   @Test
