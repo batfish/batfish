@@ -3,7 +3,6 @@ package org.batfish.representation.arista;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -24,6 +23,11 @@ public class StaticRouteManager implements Serializable {
     _variants = new LinkedList<>();
   }
 
+  /**
+   * Adds the given {@link StaticRoute} as one of the alternatives for the current prefix. Returns
+   * {@link Optional#empty()} if this addition succeeds, and returns a string explaining why it
+   * failed otherwise.
+   */
   public Optional<String> addVariant(StaticRoute route) {
     if (_variants.isEmpty()) {
       _variants.add(route);
@@ -39,23 +43,19 @@ public class StaticRouteManager implements Serializable {
       return Optional.of("Cannot ECMP to Null0 interface.");
     }
 
-    // TODO;
+    // TODO: do we need to care about name or track?
     _variants.add(route);
     return Optional.empty();
   }
 
-  private static boolean nextHopRemovable(NextHop current, NextHop removing) {
-    if (removing.getNullRouted()) {
-      return current.getNullRouted();
-    }
-    return Objects.equals(removing.getNextHopInterface(), current.getNextHopInterface())
-        && Objects.equals(removing.getNextHopIp(), current.getNextHopIp());
-  }
-
+  /**
+   * Removes all routes matching the given {@link NextHop} and {@code distance} as alternatives for
+   * the current prefix. Returns true iff any routes were removed.
+   */
   public boolean removeVariant(NextHop hop, @Nullable Integer adminDistance) {
     return _variants.removeIf(
         v ->
-            nextHopRemovable(v.getNextHop(), hop)
+            v.getNextHop().equals(hop)
                 && (adminDistance == null || adminDistance.equals(v.getDistance())));
   }
 
