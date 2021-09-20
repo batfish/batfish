@@ -174,7 +174,6 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   }
 
   private @Nonnull ConcreteInterfaceAddress toInterfaceAddress(A10Parser.Ip_prefixContext ctx) {
-    ;
     if (ctx.subnet_mask() != null) {
       return ConcreteInterfaceAddress.create(toIp(ctx.ip_address()), toIp(ctx.subnet_mask()));
     }
