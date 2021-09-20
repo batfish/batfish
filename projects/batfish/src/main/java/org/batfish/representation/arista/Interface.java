@@ -1,5 +1,7 @@
 package org.batfish.representation.arista;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
@@ -182,16 +184,11 @@ public class Interface implements Serializable {
     _name = name;
     _secondaryAddresses = new LinkedHashSet<>();
 
-    // Switchport defaults
-    if (name.startsWith("Ethernet") || name.startsWith("Port-Channel")) {
+    // Physical interfaces and Port-channels only (not subinterfaces) can be in switchport mode
+    if ((name.startsWith("Ethernet") || name.startsWith("Port-Channel")) && !name.contains(".")) {
       SwitchportMode defaultSwitchportMode = c.getCf().getDefaultSwitchportMode();
-      if (defaultSwitchportMode == null) {
-        // Arista Ethernet and Port-channel default switchport mode is ACCESS
-        _switchportMode = SwitchportMode.ACCESS;
-      } else {
-        // Arista use alternate default switchport mode if declared
-        _switchportMode = defaultSwitchportMode;
-      }
+      // Arista Ethernet and Port-channel default switchport mode is ACCESS unless declared
+      _switchportMode = firstNonNull(defaultSwitchportMode, SwitchportMode.ACCESS);
     } else {
       // Default switchport mode for non-Arista and Arista non-Ethernet/Port-Channel is NONE
       _switchportMode = SwitchportMode.NONE;

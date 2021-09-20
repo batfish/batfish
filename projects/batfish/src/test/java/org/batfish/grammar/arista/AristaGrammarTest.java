@@ -40,6 +40,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRedFlagWarning;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasDstIp;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasSrcIp;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAccessVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
@@ -47,6 +48,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEncapsulationV
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMlagId;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSpeed;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortEncapsulation;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
@@ -169,6 +171,7 @@ import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SnmpCommunity;
 import org.batfish.datamodel.SnmpServer;
+import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
@@ -2090,8 +2093,33 @@ public class AristaGrammarTest {
     assertThat(
         c,
         hasInterface(
-            "Ethernet1", allOf(hasVrf(hasName(equalTo("VRF_1"))), hasEncapsulationVlan(7))));
-    assertThat(c, hasInterface("Ethernet2", hasVrf(hasName(equalTo("VRF_2")))));
+            "Ethernet1",
+            allOf(
+                hasVrf(hasName(equalTo("VRF_1"))),
+                hasSwitchPortMode(SwitchportMode.NONE),
+                hasSwitchPortEncapsulation(SwitchportEncapsulationType.DOT1Q),
+                hasEncapsulationVlan(7))));
+    assertThat(
+        c,
+        hasInterface(
+            "Ethernet2",
+            allOf(hasSwitchPortMode(SwitchportMode.NONE), hasVrf(hasName(equalTo("VRF_2"))))));
+    assertThat(
+        c,
+        hasInterface(
+            "Ethernet3",
+            allOf(hasSwitchPortMode(SwitchportMode.ACCESS), hasAccessVlan(1), isActive())));
+    assertThat(
+        c, hasInterface("Ethernet4", allOf(hasSwitchPortMode(SwitchportMode.NONE), isActive())));
+    assertThat(
+        c,
+        hasInterface(
+            "Ethernet4.400",
+            allOf(
+                hasSwitchPortMode(SwitchportMode.NONE),
+                hasEncapsulationVlan(400),
+                hasAllAddresses(contains(ConcreteInterfaceAddress.parse("4.4.4.4/24"))),
+                isActive())));
     assertThat(c, hasInterface("UnconnectedEthernet5"));
   }
 
