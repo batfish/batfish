@@ -1,6 +1,7 @@
 package org.batfish.vendor.check_point_gateway.representation;
 
 import static org.batfish.common.matchers.WarningMatchers.hasText;
+import static org.batfish.common.matchers.WarningsMatchers.hasRedFlags;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.FALSE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
@@ -11,10 +12,12 @@ import static org.batfish.vendor.check_point_gateway.representation.CheckpointNa
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.TRANSLATED_SOURCE_TO_TRANSFORMATION_STEPS;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.automaticHideRuleTransformation;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.checkValidManualHide;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.checkValidManualStatic;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getApplicableNatRules;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getManualNatRules;
-import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.manualHideRuleTransformation;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.manualHideTransformationSteps;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.manualRuleTransformation;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.manualStaticTransformationSteps;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.mergeTransformations;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -30,9 +33,11 @@ import com.google.common.collect.ImmutableMap;
 import java.util.List;
 import java.util.Optional;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.BddTestbed;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.IpSpaceReference;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.vendor.check_point_management.AddressRange;
@@ -41,6 +46,7 @@ import org.batfish.vendor.check_point_management.CpmiAnyObject;
 import org.batfish.vendor.check_point_management.GatewayOrServer;
 import org.batfish.vendor.check_point_management.GatewayOrServerPolicy;
 import org.batfish.vendor.check_point_management.Host;
+import org.batfish.vendor.check_point_management.NamedManagementObject;
 import org.batfish.vendor.check_point_management.NatHideBehindGateway;
 import org.batfish.vendor.check_point_management.NatHideBehindIp;
 import org.batfish.vendor.check_point_management.NatMethod;
@@ -249,7 +255,7 @@ public final class CheckpointNatConversionsTest {
 
       // invalid original fields
       assertThat(
-          manualHideRuleTransformation(
+          manualRuleTransformation(
               rule, serviceToMatchExpr, ADDRESS_SPACE_TO_MATCH_EXPR, objs, warnings),
           equalTo(Optional.empty()));
     }
@@ -274,7 +280,7 @@ public final class CheckpointNatConversionsTest {
 
       // invalid translated fields
       assertThat(
-          manualHideRuleTransformation(
+          manualRuleTransformation(
               rule, serviceToMatchExpr, ADDRESS_SPACE_TO_MATCH_EXPR, objs, warnings),
           equalTo(Optional.empty()));
     }
@@ -298,7 +304,7 @@ public final class CheckpointNatConversionsTest {
               UID);
 
       Transformation xform =
-          manualHideRuleTransformation(
+          manualRuleTransformation(
                   rule, serviceToMatchExpr, ADDRESS_SPACE_TO_MATCH_EXPR, objs, warnings)
               .get();
       assertThat(
@@ -449,6 +455,343 @@ public final class CheckpointNatConversionsTest {
               hasText(
                   containsString(
                       "Automatic NAT rules on specific gateways are not yet supported"))));
+    }
+  }
+
+  @Test
+  public void testCheckValidManualStatic() {
+    Uid hostUid1 = Uid.of("1");
+    Uid hostUid2 = Uid.of("2");
+    Uid addrRangeUid = Uid.of("3");
+    Uid serviceUid = Uid.of("4");
+    String hostName1 = "host1";
+    String hostName2 = "host2";
+    String addrRangeName = "addrRange";
+    String serviceName = "service";
+
+    TypedManagementObject addrRange =
+        new AddressRange(
+            Ip.ZERO,
+            Ip.parse("1.1.1.1"),
+            null,
+            null,
+            NatSettingsTest.TEST_INSTANCE,
+            addrRangeName,
+            addrRangeUid);
+    TypedManagementObject service = new ServiceTcp(serviceName, "1", serviceUid);
+    TypedManagementObject host1 =
+        new Host(Ip.parse("1.1.1.1"), NatSettingsTest.TEST_INSTANCE, hostName1, hostUid1);
+    TypedManagementObject host2 =
+        new Host(Ip.parse("2.2.2.2"), NatSettingsTest.TEST_INSTANCE, hostName2, hostUid2);
+    ImmutableMap<Uid, TypedManagementObject> objects =
+        ImmutableMap.<Uid, TypedManagementObject>builder()
+            .put(hostUid1, host1)
+            .put(hostUid2, host2)
+            .put(addrRangeUid, addrRange)
+            .put(serviceUid, service)
+            .put(ANY_UID, ANY)
+            .put(ORIG_UID, ORIG)
+            .build();
+    Warnings warnings = new Warnings(true, true, true);
+
+    NatRule natRuleService =
+        new NatRule(
+            false,
+            "",
+            true,
+            ImmutableList.of(),
+            NatMethod.STATIC,
+            ANY_UID,
+            ANY_UID,
+            ANY_UID,
+            1,
+            ORIG_UID,
+            serviceUid,
+            ORIG_UID,
+            UID);
+    NatRule natRuleDstSpaceToHost =
+        new NatRule(
+            false,
+            "",
+            true,
+            ImmutableList.of(),
+            NatMethod.STATIC,
+            addrRangeUid,
+            ANY_UID,
+            ANY_UID,
+            1,
+            hostUid1,
+            ORIG_UID,
+            ORIG_UID,
+            UID);
+    NatRule natRuleDstToSpace =
+        new NatRule(
+            false,
+            "",
+            true,
+            ImmutableList.of(),
+            NatMethod.STATIC,
+            ANY_UID,
+            ANY_UID,
+            ANY_UID,
+            1,
+            addrRangeUid,
+            ORIG_UID,
+            ORIG_UID,
+            UID);
+
+    NatRule natRuleSrcSpaceToHost =
+        new NatRule(
+            false,
+            "",
+            true,
+            ImmutableList.of(),
+            NatMethod.STATIC,
+            ANY_UID,
+            ANY_UID,
+            addrRangeUid,
+            1,
+            ORIG_UID,
+            ORIG_UID,
+            hostUid1,
+            UID);
+    NatRule natRuleSrcToSpace =
+        new NatRule(
+            false,
+            "",
+            true,
+            ImmutableList.of(),
+            NatMethod.STATIC,
+            ANY_UID,
+            ANY_UID,
+            ANY_UID,
+            1,
+            ORIG_UID,
+            ORIG_UID,
+            addrRangeUid,
+            UID);
+
+    NatRule natRule =
+        new NatRule(
+            false,
+            "",
+            true,
+            ImmutableList.of(),
+            NatMethod.STATIC,
+            ANY_UID,
+            ANY_UID,
+            hostUid1,
+            1,
+            ORIG_UID,
+            ORIG_UID,
+            hostUid2,
+            UID);
+    assertFalse(checkValidManualStatic(natRuleService, objects, warnings));
+    assertFalse(checkValidManualStatic(natRuleSrcSpaceToHost, objects, warnings));
+    assertFalse(checkValidManualStatic(natRuleSrcToSpace, objects, warnings));
+    assertFalse(checkValidManualStatic(natRuleDstSpaceToHost, objects, warnings));
+    assertFalse(checkValidManualStatic(natRuleDstToSpace, objects, warnings));
+    assertTrue(checkValidManualStatic(natRule, objects, warnings));
+
+    assertThat(
+        warnings,
+        hasRedFlags(
+            containsInAnyOrder(
+                hasText(
+                    "Manual Static NAT rule cannot translate services (like service of type"
+                        + " ServiceTcp) and will be ignored"),
+                hasText(
+                    "Manual Static NAT rule translated-source host1 of type Host is incompatible"
+                        + " with original-source addrRange of type AddressRange and will be"
+                        + " ignored"),
+                hasText(
+                    "Manual Static NAT rule translated-source addrRange has unsupported type"
+                        + " AddressRange and will be ignored"),
+                hasText(
+                    "Manual Static NAT rule translated-destination host1 of type Host is"
+                        + " incompatible with original-destination addrRange of type AddressRange"
+                        + " and will be ignored"),
+                hasText(
+                    "Manual Static NAT rule translated-destination addrRange has unsupported type"
+                        + " AddressRange and will be ignored"))));
+  }
+
+  @Test
+  public void testManualStaticTransformationSteps() {
+    Warnings warnings = new Warnings();
+    Uid hostUid1 = Uid.of("1");
+    Ip hostIp1 = Ip.parse("1.1.1.1");
+    String hostname1 = "host";
+    Host host1 = new Host(hostIp1, NatSettingsTest.TEST_INSTANCE, hostname1, hostUid1);
+
+    Uid hostUid2 = Uid.of("2");
+    Ip hostIp2 = Ip.parse("2.2.2.2");
+    String hostname2 = "host2";
+    Host host2 = new Host(hostIp2, NatSettingsTest.TEST_INSTANCE, hostname2, hostUid2);
+
+    {
+      // src: host -> host
+      NatRule natRule =
+          new NatRule(
+              false,
+              "",
+              true,
+              ImmutableList.of(),
+              NatMethod.STATIC,
+              ANY_UID,
+              ANY_UID,
+              hostUid1,
+              1,
+              ORIG_UID,
+              ORIG_UID,
+              hostUid2,
+              UID);
+      ImmutableMap<Uid, NamedManagementObject> objects =
+          ImmutableMap.<Uid, NamedManagementObject>builder()
+              .put(hostUid1, host1)
+              .put(hostUid2, host2)
+              .put(ANY_UID, ANY)
+              .put(ORIG_UID, ORIG)
+              .build();
+
+      assertThat(
+          manualStaticTransformationSteps(natRule, objects, warnings),
+          equalTo(Optional.of(ImmutableList.of(assignSourceIp(hostIp2)))));
+    }
+    {
+      // dst: host -> host
+      NatRule natRule =
+          new NatRule(
+              false,
+              "",
+              true,
+              ImmutableList.of(),
+              NatMethod.STATIC,
+              hostUid1,
+              ANY_UID,
+              ANY_UID,
+              1,
+              hostUid2,
+              ORIG_UID,
+              ORIG_UID,
+              UID);
+      ImmutableMap<Uid, NamedManagementObject> objects =
+          ImmutableMap.<Uid, NamedManagementObject>builder()
+              .put(hostUid1, host1)
+              .put(hostUid2, host2)
+              .put(ANY_UID, ANY)
+              .put(ORIG_UID, ORIG)
+              .build();
+
+      assertThat(
+          manualStaticTransformationSteps(natRule, objects, warnings),
+          equalTo(Optional.of(ImmutableList.of(assignDestinationIp(hostIp2)))));
+    }
+    {
+      // src and dst translation
+      NatRule natRule =
+          new NatRule(
+              false,
+              "",
+              true,
+              ImmutableList.of(),
+              NatMethod.STATIC,
+              hostUid1,
+              ANY_UID,
+              hostUid2,
+              1,
+              hostUid2,
+              ORIG_UID,
+              hostUid1,
+              UID);
+      ImmutableMap<Uid, NamedManagementObject> objects =
+          ImmutableMap.<Uid, NamedManagementObject>builder()
+              .put(hostUid1, host1)
+              .put(hostUid2, host2)
+              .put(ANY_UID, ANY)
+              .put(ORIG_UID, ORIG)
+              .build();
+
+      assertThat(
+          manualStaticTransformationSteps(natRule, objects, warnings),
+          equalTo(
+              Optional.of(
+                  ImmutableList.of(assignSourceIp(hostIp1), assignDestinationIp(hostIp2)))));
+    }
+  }
+
+  @Test
+  public void testManualStaticRuleTransformation() {
+    Warnings warnings = new Warnings();
+    Uid hostUid1 = Uid.of("1");
+    Ip hostIp1 = Ip.parse("1.1.1.1");
+    Uid hostUid2 = Uid.of("2");
+    Ip hostIp2 = Ip.parse("2.2.2.2");
+    String hostname1 = "host1";
+    String hostname2 = "host2";
+    Host host1 = new Host(hostIp1, NatSettingsTest.TEST_INSTANCE, hostname1, hostUid1);
+    Host host2 = new Host(hostIp2, NatSettingsTest.TEST_INSTANCE, hostname2, hostUid2);
+    ServiceToMatchExpr serviceToMatchExpr = new ServiceToMatchExpr(ImmutableMap.of());
+    BddTestbed tb =
+        new BddTestbed(
+            ImmutableMap.of(),
+            ImmutableMap.of(
+                hostname1,
+                host1.getIpv4Address().toIpSpace(),
+                hostname2,
+                host2.getIpv4Address().toIpSpace()));
+
+    {
+      ImmutableMap<Uid, TypedManagementObject> objs =
+          ImmutableMap.of(ANY_UID, ANY, PT_UID, POLICY_TARGETS);
+      NatRule rule =
+          new NatRule(
+              false,
+              "",
+              true,
+              ImmutableList.of(),
+              NatMethod.STATIC,
+              ANY_UID,
+              ANY_UID,
+              ANY_UID,
+              1,
+              PT_UID,
+              PT_UID,
+              PT_UID,
+              UID);
+
+      // invalid fields
+      assertThat(
+          manualRuleTransformation(
+              rule, serviceToMatchExpr, ADDRESS_SPACE_TO_MATCH_EXPR, objs, warnings),
+          equalTo(Optional.empty()));
+    }
+    {
+      ImmutableMap<Uid, TypedManagementObject> objs =
+          ImmutableMap.of(ANY_UID, ANY, ORIG_UID, ORIG, hostUid1, host1, hostUid2, host2);
+      NatRule rule =
+          new NatRule(
+              false,
+              "",
+              true,
+              ImmutableList.of(),
+              NatMethod.STATIC,
+              hostUid1,
+              ANY_UID,
+              ANY_UID,
+              1,
+              hostUid2,
+              ORIG_UID,
+              ORIG_UID,
+              UID);
+
+      Transformation xform =
+          manualRuleTransformation(
+                  rule, serviceToMatchExpr, ADDRESS_SPACE_TO_MATCH_EXPR, objs, warnings)
+              .get();
+      assertThat(
+          tb.toBDD(xform.getGuard()), equalTo(tb.toBDD(AclLineMatchExprs.matchDst(hostIp1))));
+      assertThat(xform.getTransformationSteps(), contains(assignDestinationIp(hostIp2)));
     }
   }
 
