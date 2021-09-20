@@ -1,6 +1,7 @@
 package org.batfish.vendor.a10.representation;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +43,20 @@ public final class A10Configuration extends VendorConfiguration {
     _vendor = format;
   }
 
+  public static boolean getInterfaceEnabledEffective(Interface iface) {
+    Boolean enabled = iface.getEnabled();
+    if (enabled != null) {
+      return enabled;
+    }
+    switch (iface.getType()) {
+      case LOOPBACK:
+        return true;
+      case ETHERNET:
+      default:
+        return false;
+    }
+  }
+
   @Override
   public List<Configuration> toVendorIndependentConfigurations() throws VendorConversionException {
     String hostname = getHostname();
@@ -53,9 +68,20 @@ public final class A10Configuration extends VendorConfiguration {
     return ImmutableList.of(_c);
   }
 
+  /**
+   * Finalize configuration after it is finished being built. Does things like making structures
+   * immutable.
+   *
+   * <p>This should only be called once, at the end of parsing and extraction.
+   */
+  public void finalizeStructures() {
+    _interfacesEthernet = ImmutableMap.copyOf(_interfacesEthernet);
+    _interfacesLoopback = ImmutableMap.copyOf(_interfacesLoopback);
+  }
+
   private Configuration _c;
   private String _hostname;
-  private final Map<Integer, Interface> _interfacesEthernet;
-  private final Map<Integer, Interface> _interfacesLoopback;
+  private Map<Integer, Interface> _interfacesEthernet;
+  private Map<Integer, Interface> _interfacesLoopback;
   private ConfigurationFormat _vendor;
 }

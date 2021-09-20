@@ -106,6 +106,11 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   public void enterA10_configuration(A10_configurationContext ctx) {}
 
   @Override
+  public void exitA10_configuration(A10_configurationContext ctx) {
+    _configuration.finalizeStructures();
+  }
+
+  @Override
   public void exitS_hostname(S_hostnameContext ctx) {
     toString(ctx, ctx.hostname()).ifPresent(_configuration::setHostname);
   }
@@ -268,11 +273,6 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   private @Nonnull Optional<String> toString(
       ParserRuleContext messageCtx, WordContext ctx, String type, Predicate<String> predicate) {
     String text = toString(ctx);
-    return toString(messageCtx, text, type, predicate);
-  }
-
-  private @Nonnull Optional<String> toString(
-      ParserRuleContext messageCtx, String text, String type, Predicate<String> predicate) {
     if (!predicate.test(text)) {
       warn(messageCtx, String.format("Illegal value for %s", type));
       return Optional.empty();

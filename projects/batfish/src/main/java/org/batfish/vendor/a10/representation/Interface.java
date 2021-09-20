@@ -21,19 +21,6 @@ public final class Interface implements Serializable {
     return _enabled;
   }
 
-  public boolean getEnabledEffective() {
-    if (_enabled != null) {
-      return _enabled;
-    }
-    switch (_type) {
-      case LOOPBACK:
-        return true;
-      case ETHERNET:
-      default:
-        return false;
-    }
-  }
-
   @Nullable
   public ConcreteInterfaceAddress getIpAddress() {
     return _ipAddress;
