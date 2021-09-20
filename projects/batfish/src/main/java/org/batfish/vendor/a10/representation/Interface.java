@@ -1,7 +1,5 @@
 package org.batfish.vendor.a10.representation;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
-
 import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -29,10 +27,6 @@ public final class Interface implements Serializable {
   @Nullable
   public Integer getMtu() {
     return _mtu;
-  }
-
-  public int getMtuEffective() {
-    return firstNonNull(_mtu, DEFAULT_MTU);
   }
 
   @Nullable

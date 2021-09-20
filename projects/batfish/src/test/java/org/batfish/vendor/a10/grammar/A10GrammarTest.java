@@ -134,7 +134,6 @@ public class A10GrammarTest {
     assertTrue(eth1.getEnabled());
     assertThat(eth1.getIpAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.1.1/24")));
     assertThat(eth1.getMtu(), equalTo(1234));
-    assertThat(eth1.getMtuEffective(), equalTo(1234));
     assertThat(eth1.getName(), equalTo("this is a comp\"licat'ed name"));
     assertThat(eth1.getNumber(), equalTo(1));
     assertThat(eth1.getType(), equalTo(Interface.Type.ETHERNET));
@@ -142,7 +141,6 @@ public class A10GrammarTest {
     assertFalse(eth9.getEnabled());
     assertThat(eth9.getIpAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.2.1/24")));
     assertNull(eth9.getMtu());
-    assertThat(eth9.getMtuEffective(), equalTo(Interface.DEFAULT_MTU));
     assertThat(eth9.getName(), equalTo("baz"));
     assertThat(eth9.getNumber(), equalTo(9));
     assertThat(eth9.getType(), equalTo(Interface.Type.ETHERNET));

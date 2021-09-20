@@ -1,6 +1,10 @@
 package org.batfish.vendor.a10.representation;
 
 import static org.batfish.vendor.a10.representation.A10Configuration.getInterfaceEnabledEffective;
+import static org.batfish.vendor.a10.representation.A10Configuration.getInterfaceMtuEffective;
+import static org.batfish.vendor.a10.representation.Interface.DEFAULT_MTU;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -25,5 +29,14 @@ public class A10ConfigurationTest {
     assertTrue(getInterfaceEnabledEffective(eth));
     eth.setEnabled(false);
     assertFalse(getInterfaceEnabledEffective(eth));
+  }
+
+  @Test
+  public void testGetInterfaceMtuEffective() {
+    Interface eth = new Interface(Interface.Type.ETHERNET, 1);
+
+    assertThat(getInterfaceMtuEffective(eth), equalTo(DEFAULT_MTU));
+    eth.setMtu(1234);
+    assertThat(getInterfaceMtuEffective(eth), equalTo(1234));
   }
 }

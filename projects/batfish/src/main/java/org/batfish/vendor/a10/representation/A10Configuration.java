@@ -1,5 +1,9 @@
 package org.batfish.vendor.a10.representation;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.batfish.vendor.a10.representation.Interface.DEFAULT_MTU;
+
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.HashMap;
@@ -43,6 +47,7 @@ public final class A10Configuration extends VendorConfiguration {
     _vendor = format;
   }
 
+  @VisibleForTesting
   public static boolean getInterfaceEnabledEffective(Interface iface) {
     Boolean enabled = iface.getEnabled();
     if (enabled != null) {
@@ -55,6 +60,11 @@ public final class A10Configuration extends VendorConfiguration {
       default:
         return false;
     }
+  }
+
+  @VisibleForTesting
+  public static int getInterfaceMtuEffective(Interface iface) {
+    return firstNonNull(iface.getMtu(), DEFAULT_MTU);
   }
 
   @Override
