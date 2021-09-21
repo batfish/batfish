@@ -44,11 +44,9 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
+import org.batfish.common.topology.GlobalBroadcastNoPointToPoint;
 import org.batfish.common.topology.IpOwners;
-import org.batfish.common.topology.L3Adjacencies;
-import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 import org.junit.Before;
 import org.junit.Test;
@@ -77,19 +75,6 @@ public class ForwardingAnalysisImplTest {
   private Interface.Builder _ib;
 
   private Vrf.Builder _vb;
-
-  private static final L3Adjacencies _l3Adjacencies =
-      new L3Adjacencies() {
-        @Override
-        public boolean inSameBroadcastDomain(NodeInterfacePair i1, NodeInterfacePair i2) {
-          return true;
-        }
-
-        @Override
-        public Optional<NodeInterfacePair> pairedPointToPointL3Interface(NodeInterfacePair iface) {
-          return Optional.empty();
-        }
-      };
 
   @Before
   public void setup() {
@@ -143,7 +128,7 @@ public class ForwardingAnalysisImplTest {
             c2.getHostname(),
             ImmutableMap.of(vrf2.getName(), ImmutableMap.of(i2.getName(), ipsRoutedOutI2)));
     Map<String, Map<String, Set<Ip>>> interfaceOwnedIps =
-        new IpOwners(configs, _l3Adjacencies).getInterfaceOwners(false);
+        new IpOwners(configs, GlobalBroadcastNoPointToPoint.instance()).getInterfaceOwners(false);
     Map<String, Map<String, IpSpace>> result =
         computeArpReplies(configurations, ipsRoutedOutInterfaces, interfaceOwnedIps, routableIps);
 
@@ -245,7 +230,7 @@ public class ForwardingAnalysisImplTest {
 
     Map<String, Configuration> configs = ImmutableMap.of(config.getHostname(), config);
     Map<String, Map<String, Set<Ip>>> interfaceOwnedIps =
-        new IpOwners(configs, _l3Adjacencies).getInterfaceOwners(false);
+        new IpOwners(configs, GlobalBroadcastNoPointToPoint.instance()).getInterfaceOwners(false);
     Map<String, IpSpace> result =
         ForwardingAnalysisImpl.computeArpRepliesByInterface(
             interfaces, routableIpsByVrf, ipsRoutedOutInterfaces, interfaceOwnedIps);
@@ -302,7 +287,7 @@ public class ForwardingAnalysisImplTest {
             .build();
 
     Map<String, Map<String, Set<Ip>>> interfaceOwnedIps =
-        new IpOwners(configs, _l3Adjacencies).getInterfaceOwners(false);
+        new IpOwners(configs, GlobalBroadcastNoPointToPoint.instance()).getInterfaceOwners(false);
 
     IpSpace p1IpSpace = IpWildcard.create(P1).toIpSpace();
     IpSpace i1ArpReplies =
@@ -457,7 +442,9 @@ public class ForwardingAnalysisImplTest {
             .including(IpWildcard.create(P1), IpWildcard.create(P2))
             .build();
     Map<String, Map<String, Set<Ip>>> interfaceOwnedIps =
-        new IpOwners(ImmutableMap.of(config.getHostname(), config), _l3Adjacencies)
+        new IpOwners(
+                ImmutableMap.of(config.getHostname(), config),
+                GlobalBroadcastNoPointToPoint.instance())
             .getInterfaceOwners(false);
     IpSpace noProxyArpResult =
         computeInterfaceArpReplies(
@@ -497,7 +484,7 @@ public class ForwardingAnalysisImplTest {
         ConcreteInterfaceAddress.create(P2.getFirstHostIp(), P2.getPrefixLength());
     Interface i = _ib.setAddresses(primary, secondary).build();
     Map<String, Map<String, Set<Ip>>> interfaceOwnedIps =
-        new IpOwners(configs, _l3Adjacencies).getInterfaceOwners(false);
+        new IpOwners(configs, GlobalBroadcastNoPointToPoint.instance()).getInterfaceOwners(false);
     IpSpace result = computeIpsAssignedToThisInterfaceForArpReplies(i, interfaceOwnedIps);
 
     assertThat(result, containsIp(P1.getFirstHostIp()));
@@ -1309,7 +1296,7 @@ public class ForwardingAnalysisImplTest {
     Map<String, Map<String, Fib>> fibs =
         ImmutableMap.of(n1.getHostname(), ImmutableMap.of(v1.getName(), fib1));
 
-    IpOwners ipOwners = new IpOwners(configs, _l3Adjacencies);
+    IpOwners ipOwners = new IpOwners(configs, GlobalBroadcastNoPointToPoint.instance());
 
     ForwardingAnalysis fa =
         new ForwardingAnalysisImpl(
@@ -1403,7 +1390,7 @@ public class ForwardingAnalysisImplTest {
     Map<String, Configuration> configs =
         ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2);
 
-    IpOwners ipOwners = new IpOwners(configs, _l3Adjacencies);
+    IpOwners ipOwners = new IpOwners(configs, GlobalBroadcastNoPointToPoint.instance());
     ForwardingAnalysis analysis =
         new ForwardingAnalysisImpl(
             configs,
