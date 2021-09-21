@@ -56,7 +56,7 @@ public final class Vlan implements Serializable {
     _untagged = new HashSet<>();
   }
 
-  private String _name;
+  @Nonnull private String _name;
   private final int _number;
   @Nullable private Integer _routerInterface;
   @Nonnull private Set<InterfaceReference> _tagged;

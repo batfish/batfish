@@ -9,6 +9,7 @@ import javax.annotation.Nonnull;
  * interface.
  */
 public class InterfaceReference implements Serializable {
+  @Nonnull
   public Interface.Type getType() {
     return _type;
   }
