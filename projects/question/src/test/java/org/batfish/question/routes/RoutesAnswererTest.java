@@ -44,6 +44,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Multiset;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import org.batfish.common.NetworkSnapshot;
@@ -72,6 +73,7 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.question.routes.RoutesQuestion.RibProtocol;
@@ -505,8 +507,18 @@ public class RoutesAnswererTest {
     }
 
     @Override
-    public L3Adjacencies getL3Adjacencies(NetworkSnapshot snapshot) {
-      return null;
+    public L3Adjacencies getInitialL3Adjacencies(NetworkSnapshot snapshot) {
+      return new L3Adjacencies() {
+        @Override
+        public boolean inSameBroadcastDomain(NodeInterfacePair i1, NodeInterfacePair i2) {
+          return true;
+        }
+
+        @Override
+        public Optional<NodeInterfacePair> pairedPointToPointL3Interface(NodeInterfacePair iface) {
+          return Optional.empty();
+        }
+      };
     }
   }
 
