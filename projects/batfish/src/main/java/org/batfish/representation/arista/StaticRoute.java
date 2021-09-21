@@ -59,7 +59,7 @@ public final class StaticRoute implements Serializable {
     private final boolean _nullRouted;
   }
 
-  public StaticRoute(NextHop nextHop, @Nullable Integer distance, @Nullable Integer track) {
+  public StaticRoute(NextHop nextHop, @Nullable Integer distance, boolean track) {
     _distance = distance;
     _nextHop = nextHop;
     _track = track;
@@ -73,7 +73,7 @@ public final class StaticRoute implements Serializable {
     return _nextHop;
   }
 
-  public @Nullable Integer getTrack() {
+  public boolean getTrack() {
     return _track;
   }
 
@@ -89,7 +89,7 @@ public final class StaticRoute implements Serializable {
     StaticRoute that = (StaticRoute) o;
     return Objects.equals(_distance, that._distance)
         && _nextHop.equals(that._nextHop)
-        && Objects.equals(_track, that._track);
+        && _track == that._track;
   }
 
   @Override
@@ -99,5 +99,5 @@ public final class StaticRoute implements Serializable {
 
   private final @Nullable Integer _distance;
   private final @Nonnull NextHop _nextHop;
-  private final @Nullable Integer _track;
+  private final boolean _track;
 }

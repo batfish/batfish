@@ -3744,8 +3744,11 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     NextHop nextHop = maybeNextHop.get();
     Prefix prefix = toPrefix(ctx.prefix);
     long tag = ctx.tag != null ? toLong(ctx.tag) : 0L;
-    Integer track = ctx.track != null ? toInteger(ctx.track) : null;
+    boolean track = ctx.track != null;
     StaticRoute route = new StaticRoute(nextHop, distance, track);
+    if (track) {
+      todo(ctx.track);
+    }
     StaticRouteManager srm =
         vrf.getStaticRoutes().computeIfAbsent(prefix, p -> new StaticRouteManager());
     Optional<String> maybeProblem = srm.addVariant(route);

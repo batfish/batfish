@@ -954,33 +954,34 @@ public class AristaGrammarTest {
             Prefix.parse("7.7.7.7/32"),
             Prefix.parse("8.8.8.8/32"),
             Prefix.parse("9.9.9.9/32"),
-            Prefix.parse("11.11.11.11/32")));
+            Prefix.parse("11.11.11.11/32"),
+            Prefix.parse("13.13.13.13/32")));
     {
       StaticRouteManager srm = statics.get(Prefix.parse("1.1.1.1/32"));
       assertThat(
-          srm.getVariants(), contains(new StaticRoute(new NextHop(null, null, true), null, null)));
+          srm.getVariants(), contains(new StaticRoute(new NextHop(null, null, true), null, false)));
     }
     {
       StaticRouteManager srm = statics.get(Prefix.parse("2.2.2.2/32"));
       assertThat(
           srm.getVariants(),
-          contains(new StaticRoute(new NextHop("Ethernet1", null, false), null, null)));
+          contains(new StaticRoute(new NextHop("Ethernet1", null, false), null, false)));
     }
     {
       StaticRouteManager srm = statics.get(Prefix.parse("3.3.3.3/32"));
       assertThat(
           srm.getVariants(),
           containsInAnyOrder(
-              new StaticRoute(new NextHop("Ethernet1", null, false), null, null),
-              new StaticRoute(new NextHop("Ethernet2", null, false), null, null)));
+              new StaticRoute(new NextHop("Ethernet1", null, false), null, false),
+              new StaticRoute(new NextHop("Ethernet2", null, false), null, false)));
     }
     {
       StaticRouteManager srm = statics.get(Prefix.parse("4.4.4.4/32"));
       assertThat(
           srm.getVariants(),
           containsInAnyOrder(
-              new StaticRoute(new NextHop("Ethernet1", null, false), null, null),
-              new StaticRoute(new NextHop("Ethernet1", null, false), 7, null)));
+              new StaticRoute(new NextHop("Ethernet1", null, false), null, false),
+              new StaticRoute(new NextHop("Ethernet1", null, false), 7, false)));
     }
     {
       StaticRouteManager srm = statics.get(Prefix.parse("6.6.6.6/32"));
@@ -988,7 +989,7 @@ public class AristaGrammarTest {
           srm.getVariants(),
           containsInAnyOrder(
               new StaticRoute(
-                  new NextHop("Ethernet1", Ip.parse("99.99.99.99"), false), null, null)));
+                  new NextHop("Ethernet1", Ip.parse("99.99.99.99"), false), null, false)));
     }
     {
       StaticRouteManager srm = statics.get(Prefix.parse("7.7.7.7/32"));
@@ -996,26 +997,32 @@ public class AristaGrammarTest {
           srm.getVariants(),
           contains(
               new StaticRoute(
-                  new NextHop("Ethernet1", Ip.parse("99.99.99.99"), false), null, null)));
+                  new NextHop("Ethernet1", Ip.parse("99.99.99.99"), false), null, false)));
     }
     {
       StaticRouteManager srm = statics.get(Prefix.parse("8.8.8.8/32"));
       assertThat(
           srm.getVariants(),
           containsInAnyOrder(
-              new StaticRoute(new NextHop("Ethernet1", null, false), null, null),
-              new StaticRoute(new NextHop("Ethernet2", null, false), null, null)));
+              new StaticRoute(new NextHop("Ethernet1", null, false), null, false),
+              new StaticRoute(new NextHop("Ethernet2", null, false), null, false)));
     }
     {
       StaticRouteManager srm = statics.get(Prefix.parse("9.9.9.9/32"));
       assertThat(
-          srm.getVariants(), contains(new StaticRoute(new NextHop(null, null, true), null, null)));
+          srm.getVariants(), contains(new StaticRoute(new NextHop(null, null, true), null, false)));
     }
     {
       StaticRouteManager srm = statics.get(Prefix.parse("11.11.11.11/32"));
       assertThat(
           srm.getVariants(),
-          contains(new StaticRoute(new NextHop("Ethernet1", null, false), null, null)));
+          contains(new StaticRoute(new NextHop("Ethernet1", null, false), null, false)));
+    }
+    {
+      StaticRouteManager srm = statics.get(Prefix.parse("13.13.13.13/32"));
+      assertThat(
+          srm.getVariants(),
+          contains(new StaticRoute(new NextHop(null, Ip.parse("1.1.1.1"), false), null, true)));
     }
 
     Map<Prefix, StaticRouteManager> vrfStatics = c.getVrfs().get("VRF").getStaticRoutes();
@@ -1024,13 +1031,13 @@ public class AristaGrammarTest {
       StaticRouteManager srm = vrfStatics.get(Prefix.parse("1.1.1.1/32"));
       assertThat(
           srm.getVariants(),
-          contains(new StaticRoute(new NextHop("Ethernet1", null, false), null, null)));
+          contains(new StaticRoute(new NextHop("Ethernet1", null, false), null, false)));
     }
     {
       StaticRouteManager srm = vrfStatics.get(Prefix.parse("5.5.5.5/32"));
       assertThat(
           srm.getVariants(),
-          contains(new StaticRoute(new NextHop(null, Ip.parse("1.2.3.4"), false), null, null)));
+          contains(new StaticRoute(new NextHop(null, Ip.parse("1.2.3.4"), false), null, false)));
     }
   }
 
@@ -1097,6 +1104,10 @@ public class AristaGrammarTest {
             baseRoute.toBuilder()
                 .setNetwork(Prefix.parse("11.11.11.11/32"))
                 .setNextHop(NextHopInterface.of("Ethernet1"))
+                .build(),
+            baseRoute.toBuilder()
+                .setNetwork(Prefix.parse("13.13.13.13/32"))
+                .setNextHop(NextHopIp.of(Ip.parse("1.1.1.1")))
                 .build()));
 
     Set<org.batfish.datamodel.StaticRoute> vrfStatics = c.getVrfs().get("VRF").getStaticRoutes();

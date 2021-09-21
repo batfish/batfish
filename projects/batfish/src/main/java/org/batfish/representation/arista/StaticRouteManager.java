@@ -3,6 +3,7 @@ package org.batfish.representation.arista;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -42,6 +43,12 @@ public class StaticRouteManager implements Serializable {
         && _variants.stream().anyMatch(r -> r.getNextHop().getNullRouted())) {
       return Optional.of("Cannot ECMP to Null0 interface.");
     }
+
+    // Arista does not preserve modifiers unless retyped.
+    _variants.removeIf(
+        r ->
+            r.getNextHop().equals(route.getNextHop())
+                && Objects.equals(r.getDistance(), route.getDistance()));
 
     // TODO: do we need to care about name or track?
     _variants.add(route);

@@ -1047,15 +1047,16 @@ ip_route_nexthop
    | nexthopint = interface_name_unstructured (nexthopip = IP_ADDRESS)?
 ;
 
+ip_route_track_bfd: TRACK BFD;
+
 s_ip_route
 :
   ROUTE (VRF vrf = vrf_name)? prefix = ip_prefix nh = ip_route_nexthop
    (
      distance = protocol_distance
-     | METRIC metric = dec
      | NAME variable
      | TAG tag = uint32
-     | TRACK track = dec
+     | track = ip_route_track_bfd
    )* NEWLINE
 ;
 
@@ -1063,13 +1064,8 @@ no_ip_route
 :
   ROUTE (VRF vrf = vrf_name)? prefix = ip_prefix
   (nh = ip_route_nexthop)?
-  (
-     distance = protocol_distance
-     | METRIC metric = dec
-     | NAME variable
-     | TAG tag = uint32
-     | TRACK track = dec
-  )* NEWLINE
+  (distance = protocol_distance)?
+  NEWLINE
 ;
 
 ip_sla_null
