@@ -1,6 +1,5 @@
 package org.batfish.question.routes;
 
-import static org.batfish.common.topology.IpOwners.computeIpNodeOwners;
 import static org.batfish.datamodel.questions.BgpRouteStatus.BACKUP;
 import static org.batfish.datamodel.questions.BgpRouteStatus.BEST;
 import static org.batfish.datamodel.table.TableDiff.COL_BASE_PREFIX;
@@ -103,10 +102,7 @@ public class RoutesAnswerer extends Answerer {
     RoutingProtocolSpecifier protocolSpec = question.getRoutingProtocolSpecifier();
     String vrfRegex = question.getVrfs();
     Map<Ip, Set<String>> ipOwners =
-        computeIpNodeOwners(
-            _batfish.loadConfigurations(snapshot),
-            true,
-            _batfish.getTopologyProvider().getL3Adjacencies(snapshot));
+        _batfish.getTopologyProvider().getIpOwners(snapshot).getNodeOwners(true);
     boolean bgpMultipathBest = expandedBgpRouteStatuses.contains(BEST);
     boolean bgpBackup = expandedBgpRouteStatuses.contains(BACKUP);
     Multiset<Row> rows;
@@ -228,20 +224,12 @@ public class RoutesAnswerer extends Answerer {
       case MAIN:
       default:
         dp = _batfish.loadDataPlane(snapshot);
-        ipOwners =
-            computeIpNodeOwners(
-                _batfish.loadConfigurations(snapshot),
-                true,
-                _batfish.getTopologyProvider().getL3Adjacencies(snapshot));
+        ipOwners = _batfish.getTopologyProvider().getIpOwners(snapshot).getNodeOwners(true);
         routesGroupedByKeyInBase =
             groupRoutes(dp.getRibs(), matchingNodes, network, vrfRegex, protocolSpec, ipOwners);
 
         dp = _batfish.loadDataPlane(reference);
-        ipOwners =
-            computeIpNodeOwners(
-                _batfish.loadConfigurations(reference),
-                true,
-                _batfish.getTopologyProvider().getL3Adjacencies(snapshot));
+        ipOwners = _batfish.getTopologyProvider().getIpOwners(snapshot).getNodeOwners(true);
         routesGroupedByKeyInDelta =
             groupRoutes(dp.getRibs(), matchingNodes, network, vrfRegex, protocolSpec, ipOwners);
 
