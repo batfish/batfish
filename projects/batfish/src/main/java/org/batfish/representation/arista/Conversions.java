@@ -70,6 +70,9 @@ import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.isis.IsisLevelSettings;
 import org.batfish.datamodel.ospf.OspfInterfaceSettings;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.route.nh.NextHopInterface;
+import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
@@ -80,6 +83,7 @@ import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.visitors.HeaderSpaceConverter;
 import org.batfish.representation.arista.DistributeList.DistributeListFilterType;
+import org.batfish.representation.arista.StaticRoute.NextHop;
 import org.batfish.vendor.VendorStructureId;
 
 /** Utilities that convert Cisco-specific representations to vendor-independent model. */
@@ -100,6 +104,7 @@ public class Conversions {
 
   static int DEFAULT_OSPF_DEAD_INTERVAL =
       OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER * DEFAULT_OSPF_HELLO_INTERVAL;
+  private static final int DEFAULT_STATIC_ROUTE_DISTANCE = 1;
 
   static Ip getHighestIp(Map<String, Interface> allInterfaces) {
     Map<String, Interface> interfacesToCheck;
@@ -967,12 +972,28 @@ public class Conversions {
     }
   }
 
-  static org.batfish.datamodel.StaticRoute toStaticRoute(Configuration c, StaticRoute staticRoute) {
+  static org.batfish.datamodel.StaticRoute toStaticRoute(
+      Configuration c, Prefix prefix, StaticRoute staticRoute, long tag) {
+    NextHop nh = staticRoute.getNextHop();
+    org.batfish.datamodel.route.nh.NextHop viNh;
+    if (nh.getNullRouted()) {
+      viNh = NextHopDiscard.instance();
+    } else if (nh.getNextHopInterface() != null) {
+      if (nh.getNextHopIp() == null) {
+        viNh = NextHopInterface.of(nh.getNextHopInterface());
+      } else {
+        viNh = NextHopInterface.of(nh.getNextHopInterface(), nh.getNextHopIp());
+      }
+    } else {
+      assert nh.getNextHopIp() != null;
+      viNh = NextHopIp.of(nh.getNextHopIp());
+    }
     return org.batfish.datamodel.StaticRoute.builder()
-        .setNetwork(staticRoute.getPrefix())
-        .setNextHop(staticRoute.getNextHop())
-        .setAdministrativeCost(staticRoute.getDistance())
-        .setTag(firstNonNull(staticRoute.getTag(), -1L))
+        .setNetwork(prefix)
+        .setNextHop(viNh)
+        .setAdministrativeCost(
+            firstNonNull(staticRoute.getDistance(), DEFAULT_STATIC_ROUTE_DISTANCE))
+        .setTag(tag)
         .build();
   }
 

@@ -159,4 +159,9 @@ public abstract class AbstractRouteBuilder<
     _tag = firstNonNull(tag, Route.UNSET_ROUTE_TAG);
     return getThis();
   }
+
+  public final @Nonnull S setTag(long tag) {
+    _tag = tag;
+    return getThis();
+  }
 }
