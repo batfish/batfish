@@ -2,12 +2,11 @@ package org.batfish.representation.arista;
 
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 
@@ -23,15 +22,15 @@ public final class Vrf implements Serializable {
   @Nullable private ExtendedCommunity _routeExportTarget;
   @Nullable private ExtendedCommunity _routeImportTarget;
   private boolean _shutdown;
-  @Nonnull private final Set<StaticRoute> _staticRoutes;
+  @Nonnull private final Map<Prefix, StaticRouteManager> _staticRoutes;
   @Nullable private Integer _vni;
 
   public Vrf(@Nonnull String name) {
     _name = name;
-    _loggingHosts = new HashMap<>();
+    _loggingHosts = new HashMap<>(0);
     // Ensure that processes are in insertion order.
     _ospfProcesses = new LinkedHashMap<>(0);
-    _staticRoutes = new HashSet<>();
+    _staticRoutes = new HashMap<>(0);
   }
 
   @Nullable
@@ -110,8 +109,7 @@ public final class Vrf implements Serializable {
     return _vni;
   }
 
-  @Nonnull
-  public Set<StaticRoute> getStaticRoutes() {
+  public @Nonnull Map<Prefix, StaticRouteManager> getStaticRoutes() {
     return _staticRoutes;
   }
 

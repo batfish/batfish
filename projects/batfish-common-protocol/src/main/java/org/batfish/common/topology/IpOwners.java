@@ -31,6 +31,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.hsrp.HsrpGroup;
 import org.batfish.datamodel.tracking.HsrpPriorityEvaluator;
 import org.batfish.datamodel.tracking.PredicateTrackMethodEvaluator;
@@ -267,14 +268,15 @@ public final class IpOwners {
               Set<Interface> candidates = cell.getValue();
               assert candidates != null;
               /*
-               * Compare priorities first. If tied, break tie based on highest interface IP.
+               * Compare priorities first, then highest interface IP, then hostname, then interface name.
                */
               Interface vrrpMaster =
                   Collections.max(
                       candidates,
                       Comparator.comparingInt(
                               (Interface o) -> o.getVrrpGroups().get(groupNum).getPriority())
-                          .thenComparing(o -> o.getConcreteAddress().getIp()));
+                          .thenComparing(o -> o.getConcreteAddress().getIp())
+                          .thenComparing(o -> NodeInterfacePair.of(o)));
               ipOwners
                   .computeIfAbsent(address.getIp(), k -> new HashMap<>())
                   .computeIfAbsent(vrrpMaster.getOwner().getHostname(), k -> new HashSet<>())

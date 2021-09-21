@@ -7,11 +7,11 @@ import org.batfish.datamodel.LineAction;
 /** Represents one line of a Cumulus AS-path access list. */
 public class IpAsPathAccessListLine implements Serializable {
   private final @Nonnull LineAction _action;
-  private final long _asNum;
+  private final String _regex;
 
-  public IpAsPathAccessListLine(@Nonnull LineAction action, long asNum) {
+  public IpAsPathAccessListLine(@Nonnull LineAction action, String regex) {
     _action = action;
-    _asNum = asNum;
+    _regex = regex;
   }
 
   @Nonnull
@@ -19,7 +19,7 @@ public class IpAsPathAccessListLine implements Serializable {
     return _action;
   }
 
-  public long getAsNum() {
-    return _asNum;
+  public String getRegex() {
+    return _regex;
   }
 }

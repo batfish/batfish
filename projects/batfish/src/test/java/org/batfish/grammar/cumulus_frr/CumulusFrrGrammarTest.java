@@ -1447,31 +1447,62 @@ public class CumulusFrrGrammarTest {
   @Test
   public void testCumulusFrrIpAsPathAccessList() {
     String name = "NAME";
-    long as1 = 11111;
-    long as2 = 22222;
+    String as1 = "^11111$";
+    String as2 = "_1_";
+    String as3 = "^1[1-2]";
+    String as4 = "^1(1)";
     parse(
         String.format(
-            "ip as-path access-list %s permit %s\n" + "ip as-path access-list %s deny %s\n",
-            name, as1, name, as2));
+            "ip as-path access-list %s permit %s\n"
+                + "ip as-path access-list %s permit %s\n"
+                + "ip as-path access-list %s permit %s\n"
+                + "ip as-path access-list %s permit %s\n"
+                + "ip as-path access-list %s deny %s\n"
+                + "ip as-path access-list %s deny %s\n"
+                + "ip as-path access-list %s deny %s\n"
+                + "ip as-path access-list %s deny %s\n",
+            name, as1, name, as2, name, as3, name, as4, name, as1, name, as2, name, as3, name,
+            as4));
 
     // Check that config has the expected AS-path access list with the expected name and num lines
     assertThat(_frr.getIpAsPathAccessLists().keySet(), contains(name));
     IpAsPathAccessList asPathAccessList = _frr.getIpAsPathAccessLists().get(name);
     assertThat(asPathAccessList.getName(), equalTo(name));
-    assertThat(asPathAccessList.getLines(), hasSize(2));
+    assertThat(asPathAccessList.getLines(), hasSize(8));
 
     // Check that lines look as expected
     IpAsPathAccessListLine line0 = asPathAccessList.getLines().get(0);
     IpAsPathAccessListLine line1 = asPathAccessList.getLines().get(1);
+    IpAsPathAccessListLine line2 = asPathAccessList.getLines().get(2);
+    IpAsPathAccessListLine line3 = asPathAccessList.getLines().get(3);
+    IpAsPathAccessListLine line4 = asPathAccessList.getLines().get(4);
+    IpAsPathAccessListLine line5 = asPathAccessList.getLines().get(5);
+    IpAsPathAccessListLine line6 = asPathAccessList.getLines().get(6);
+    IpAsPathAccessListLine line7 = asPathAccessList.getLines().get(7);
+
     assertThat(line0.getAction(), equalTo(LineAction.PERMIT));
-    assertThat(line1.getAction(), equalTo(LineAction.DENY));
-    assertThat(line0.getAsNum(), equalTo(as1));
-    assertThat(line1.getAsNum(), equalTo(as2));
+    assertThat(line1.getAction(), equalTo(LineAction.PERMIT));
+    assertThat(line2.getAction(), equalTo(LineAction.PERMIT));
+    assertThat(line3.getAction(), equalTo(LineAction.PERMIT));
+    assertThat(line4.getAction(), equalTo(LineAction.DENY));
+    assertThat(line5.getAction(), equalTo(LineAction.DENY));
+    assertThat(line6.getAction(), equalTo(LineAction.DENY));
+    assertThat(line7.getAction(), equalTo(LineAction.DENY));
+
+    assertThat(line0.getRegex(), equalTo(as1));
+    assertThat(line1.getRegex(), equalTo(as2));
+    assertThat(line2.getRegex(), equalTo(as3));
+    assertThat(line3.getRegex(), equalTo(as4));
+    assertThat(line4.getRegex(), equalTo(as1));
+    assertThat(line5.getRegex(), equalTo(as2));
+    assertThat(line6.getRegex(), equalTo(as3));
+    assertThat(line7.getRegex(), equalTo(as4));
 
     // Check that the AS-path access list definition was registered
     DefinedStructureInfo definedStructureInfo =
         getDefinedStructureInfo(CumulusStructureType.IP_AS_PATH_ACCESS_LIST, name);
-    assertThat(definedStructureInfo.getDefinitionLines().enumerate(), contains(1, 2));
+    assertThat(
+        definedStructureInfo.getDefinitionLines().enumerate(), contains(1, 2, 3, 4, 5, 6, 7, 8));
   }
 
   @Test
