@@ -22,6 +22,7 @@ public final class A10Configuration extends VendorConfiguration {
   public A10Configuration() {
     _interfacesEthernet = new HashMap<>();
     _interfacesLoopback = new HashMap<>();
+    _vlans = new HashMap<>();
   }
 
   @Override
@@ -67,6 +68,10 @@ public final class A10Configuration extends VendorConfiguration {
     return firstNonNull(iface.getMtu(), DEFAULT_MTU);
   }
 
+  public Map<Integer, Vlan> getVlans() {
+    return _vlans;
+  }
+
   @Override
   public List<Configuration> toVendorIndependentConfigurations() throws VendorConversionException {
     String hostname = getHostname();
@@ -93,5 +98,6 @@ public final class A10Configuration extends VendorConfiguration {
   private String _hostname;
   private Map<Integer, Interface> _interfacesEthernet;
   private Map<Integer, Interface> _interfacesLoopback;
+  private Map<Integer, Vlan> _vlans;
   private ConfigurationFormat _vendor;
 }

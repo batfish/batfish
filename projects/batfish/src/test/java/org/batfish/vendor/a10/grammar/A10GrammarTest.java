@@ -3,13 +3,16 @@ package org.batfish.vendor.a10.grammar;
 import static com.google.common.collect.Iterables.getOnlyElement;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
+import static org.batfish.common.matchers.ParseWarningMatchers.hasText;
 import static org.batfish.common.matchers.WarningsMatchers.hasParseWarnings;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.ConfigurationFormat.A10_ACOS;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.notNullValue;
@@ -39,6 +42,8 @@ import org.batfish.main.BatfishTestUtils;
 import org.batfish.vendor.ConversionContext;
 import org.batfish.vendor.a10.representation.A10Configuration;
 import org.batfish.vendor.a10.representation.Interface;
+import org.batfish.vendor.a10.representation.InterfaceReference;
+import org.batfish.vendor.a10.representation.Vlan;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -117,6 +122,100 @@ public class A10GrammarTest {
     assertThat(c, notNullValue());
     // Should be lower-cased
     assertThat(c.getHostname(), equalTo("hostname"));
+  }
+
+  @Test
+  public void testVlanExtraction() {
+    String hostname = "vlan";
+    A10Configuration c = parseVendorConfig(hostname);
+
+    Map<Integer, Vlan> vlans = c.getVlans();
+    assertThat(vlans.keySet(), containsInAnyOrder(2, 3, 4, 5));
+    Vlan vlan2 = vlans.get(2);
+    Vlan vlan3 = vlans.get(3);
+    Vlan vlan4 = vlans.get(4);
+    Vlan vlan5 = vlans.get(5);
+
+    assertThat(vlan2.getName(), equalTo("Vlan 2 Name"));
+    assertThat(vlan2.getNumber(), equalTo(2));
+    assertThat(vlan2.getRouterInterface(), equalTo(2));
+    assertThat(
+        vlan2.getTagged(),
+        containsInAnyOrder(
+            new InterfaceReference(Interface.Type.ETHERNET, 1),
+            new InterfaceReference(Interface.Type.ETHERNET, 2),
+            new InterfaceReference(Interface.Type.ETHERNET, 3)));
+    assertThat(vlan2.getUntagged(), emptyIterable());
+
+    assertNull(vlan3.getName());
+    assertThat(vlan3.getNumber(), equalTo(3));
+    assertNull(vlan3.getRouterInterface());
+    assertThat(
+        vlan3.getTagged(),
+        containsInAnyOrder(
+            new InterfaceReference(Interface.Type.ETHERNET, 4),
+            new InterfaceReference(Interface.Type.ETHERNET, 5)));
+
+    assertNull(vlan4.getName());
+    assertNull(vlan4.getRouterInterface());
+    assertThat(vlan4.getTagged(), emptyIterable());
+    assertThat(
+        vlan4.getUntagged(),
+        containsInAnyOrder(
+            new InterfaceReference(Interface.Type.ETHERNET, 6),
+            new InterfaceReference(Interface.Type.ETHERNET, 7)));
+
+    assertNull(vlan5.getName());
+    assertNull(vlan5.getRouterInterface());
+    assertThat(vlan5.getTagged(), emptyIterable());
+    assertThat(
+        vlan5.getUntagged(),
+        containsInAnyOrder(
+            new InterfaceReference(Interface.Type.ETHERNET, 8),
+            new InterfaceReference(Interface.Type.ETHERNET, 9)));
+  }
+
+  /** Testing ACOS v2 VLAN syntax */
+  @Test
+  public void testVlanAcos2Extraction() {
+    String hostname = "vlan_acos2";
+    A10Configuration c = parseVendorConfig(hostname);
+
+    Map<Integer, Vlan> vlans = c.getVlans();
+    assertThat(vlans.keySet(), containsInAnyOrder(2));
+    Vlan vlan2 = vlans.get(2);
+
+    assertThat(vlan2.getNumber(), equalTo(2));
+    assertThat(
+        vlan2.getTagged(),
+        containsInAnyOrder(
+            new InterfaceReference(Interface.Type.ETHERNET, 1),
+            new InterfaceReference(Interface.Type.ETHERNET, 2)));
+    assertThat(vlan2.getUntagged(), emptyIterable());
+  }
+
+  @Test
+  public void testVlanWarn() throws IOException {
+    String filename = "vlan_warn";
+    Batfish batfish = getBatfishForConfigurationNames(filename);
+    Warnings warnings =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+    assertThat(
+        warnings,
+        hasParseWarnings(
+            containsInAnyOrder(
+                hasComment("Expected vlan number in range 2-4094, but got '1'"),
+                hasComment("Expected vlan number in range 2-4094, but got '4095'"),
+                allOf(
+                    hasComment(
+                        "Invalid range for VLAN interface reference, 'to' must be greater than"
+                            + " 'from'."),
+                    hasText("ethernet 3 to 2")),
+                hasComment("Virtual Ethernet interface number must be the same as VLAN ID."))));
   }
 
   @Test

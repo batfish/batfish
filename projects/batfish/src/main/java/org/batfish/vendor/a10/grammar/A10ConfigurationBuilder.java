@@ -2,8 +2,10 @@ package org.batfish.vendor.a10.grammar;
 
 import static org.batfish.vendor.a10.grammar.A10Lexer.WORD;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Range;
 import com.google.common.primitives.Ints;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -19,6 +21,7 @@ import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.SubRange;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.UnrecognizedLineToken;
@@ -29,6 +32,8 @@ import org.batfish.vendor.a10.grammar.A10Parser.S_hostnameContext;
 import org.batfish.vendor.a10.grammar.A10Parser.WordContext;
 import org.batfish.vendor.a10.representation.A10Configuration;
 import org.batfish.vendor.a10.representation.Interface;
+import org.batfish.vendor.a10.representation.InterfaceReference;
+import org.batfish.vendor.a10.representation.Vlan;
 
 /** Given a parse tree, builds a {@link A10Configuration}. */
 public final class A10ConfigurationBuilder extends A10ParserBaseListener
@@ -178,6 +183,109 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     toString(ctx, ctx.interface_name_str()).ifPresent(n -> _currentInterface.setName(n));
   }
 
+  @Override
+  public void enterS_vlan(A10Parser.S_vlanContext ctx) {
+    Optional<Integer> maybeVlanNum = toInteger(ctx.vlan_number());
+    if (maybeVlanNum.isPresent()) {
+      _currentVlan = _configuration.getVlans().computeIfAbsent(maybeVlanNum.get(), Vlan::new);
+      return;
+    }
+    _currentVlan = new Vlan(0); // dummy
+  }
+
+  @Override
+  public void exitS_vlan(A10Parser.S_vlanContext ctx) {
+    _currentVlan = null;
+  }
+
+  @Override
+  public void exitSvd_name(A10Parser.Svd_nameContext ctx) {
+    toString(ctx, ctx.vlan_name()).ifPresent(n -> _currentVlan.setName(n));
+  }
+
+  @Override
+  public void exitSvd_router_interface(A10Parser.Svd_router_interfaceContext ctx) {
+    Optional<Integer> maybeNum = toInteger(ctx.vlan_number());
+    if (maybeNum.isPresent()) {
+      if (!maybeNum.get().equals(_currentVlan.getNumber())) {
+        warn(ctx, "Virtual Ethernet interface number must be the same as VLAN ID.");
+        return;
+      }
+      _currentVlan.setRouterInterface(maybeNum.get());
+    }
+  }
+
+  @Override
+  public void exitSvd_tagged(A10Parser.Svd_taggedContext ctx) {
+    // TODO enforce interface restrictions (e.g. untagged iface cannot be reused)
+    toInterfaceReferences(ctx.vlan_iface_references())
+        .ifPresent(refs -> _currentVlan.addTagged(refs));
+  }
+
+  @Override
+  public void exitSvd_untagged(A10Parser.Svd_untaggedContext ctx) {
+    // TODO enforce interface restrictions (e.g. untagged iface cannot be reused)
+    toInterfaceReferences(ctx.vlan_iface_references())
+        .ifPresent(refs -> _currentVlan.addUntagged(refs));
+  }
+
+  Optional<List<InterfaceReference>> toInterfaceReferences(
+      A10Parser.Vlan_iface_referencesContext ctx) {
+    if (ctx.vlan_ifaces_list() != null) {
+      return toInterfaces(ctx.vlan_ifaces_list());
+    }
+    assert ctx.vlan_ifaces_range() != null;
+    Interface.Type type = toInterfaceType(ctx.vlan_ifaces_range());
+    return toSubRange(ctx.vlan_ifaces_range())
+        .map(
+            subRange ->
+                subRange
+                    .asStream()
+                    .mapToObj(i -> new InterfaceReference(type, i))
+                    .collect(ImmutableList.toImmutableList()));
+  }
+
+  Interface.Type toInterfaceType(A10Parser.Vlan_ifaces_rangeContext ctx) {
+    assert ctx.vlan_iface_ethernet_range() != null;
+    return Interface.Type.ETHERNET;
+  }
+
+  Optional<SubRange> toSubRange(A10Parser.Vlan_ifaces_rangeContext ctx) {
+    assert ctx.vlan_iface_ethernet_range() != null;
+    Optional<Integer> maybeFrom = toInteger(ctx.vlan_iface_ethernet_range().num);
+    A10Parser.Ethernet_numberContext toCtx = ctx.vlan_iface_ethernet_range().to;
+    // If only `from` is specified, use that as `to` as well
+    Optional<Integer> maybeTo = toCtx == null ? maybeFrom : toInteger(toCtx);
+    if (!maybeFrom.isPresent() || !maybeTo.isPresent()) {
+      // Already warned
+      return Optional.empty();
+    }
+    int from = maybeFrom.get();
+    int to = maybeTo.get();
+    if (from > to) {
+      warn(ctx, "Invalid range for VLAN interface reference, 'to' must be greater than 'from'.");
+      return Optional.empty();
+    }
+    return Optional.of(new SubRange(from, to));
+  }
+
+  Optional<List<InterfaceReference>> toInterfaces(A10Parser.Vlan_ifaces_listContext ctx) {
+    ImmutableList.Builder<InterfaceReference> ifaces = ImmutableList.builder();
+    for (A10Parser.Vlan_iface_ethernetContext iface : ctx.vlan_iface_ethernet()) {
+      Optional<Integer> maybeNum = toInteger(iface.num);
+      if (!maybeNum.isPresent()) {
+        // Already warned
+        return Optional.empty();
+      }
+      ifaces.add(new InterfaceReference(Interface.Type.ETHERNET, maybeNum.get()));
+    }
+    return Optional.of(ifaces.build());
+  }
+
+  Optional<Integer> toInteger(A10Parser.Vlan_numberContext ctx) {
+    return toIntegerInSpace(ctx, ctx.uint16(), VLAN_NUMBER_RANGE, "vlan number");
+  }
+
   private @Nonnull ConcreteInterfaceAddress toInterfaceAddress(A10Parser.Ip_prefixContext ctx) {
     if (ctx.subnet_mask() != null) {
       return ConcreteInterfaceAddress.create(toIp(ctx.ip_address()), toIp(ctx.subnet_mask()));
@@ -260,6 +368,11 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   }
 
   private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, A10Parser.Vlan_nameContext ctx) {
+    return toStringWithLengthInSpace(messageCtx, ctx.word(), VLAN_NAME_LENGTH_RANGE, "vlan name");
+  }
+
+  private @Nonnull Optional<String> toString(
       ParserRuleContext messageCtx, A10Parser.Interface_name_strContext ctx) {
     return toStringWithLengthInSpace(
         messageCtx, ctx.word(), INTERFACE_NAME_LENGTH_RANGE, "interface name");
@@ -313,12 +426,16 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
       IntegerSpace.of(Range.closed(0, 10));
   private static final IntegerSpace INTERFACE_NAME_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 63));
+  private static final IntegerSpace VLAN_NAME_LENGTH_RANGE = IntegerSpace.of(Range.closed(1, 63));
+  private static final IntegerSpace VLAN_NUMBER_RANGE = IntegerSpace.of(Range.closed(2, 4094));
 
   private static final Pattern HOSTNAME_PATTERN = Pattern.compile("^[A-Za-z0-9_-]+$");
 
   @Nonnull private A10Configuration _configuration;
 
   private Interface _currentInterface;
+
+  private Vlan _currentVlan;
 
   @Nonnull private A10CombinedParser _parser;
 

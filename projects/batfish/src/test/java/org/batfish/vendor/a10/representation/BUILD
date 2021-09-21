@@ -27,6 +27,7 @@ junit_tests(
         "//projects/batfish/src/main/java/org/batfish/vendor/a10/representation",
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_guava_guava",
+        "@maven//:com_google_guava_guava_testlib",
         "@maven//:junit_junit",
         "@maven//:org_antlr_antlr4_runtime",
         "@maven//:org_apache_commons_commons_lang3",

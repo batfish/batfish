@@ -1,0 +1,11 @@
+!BATFISH_FORMAT: a10_acos
+hostname vlan_warn
+!
+vlan 1
+!
+vlan 4095
+!
+vlan 2
+ tagged ethernet 3 to 2
+ router-interface ve 3
+!
