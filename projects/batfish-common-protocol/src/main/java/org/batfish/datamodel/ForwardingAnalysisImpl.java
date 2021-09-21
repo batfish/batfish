@@ -51,7 +51,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
       Map<String, Configuration> configurations,
       Map<String, Map<String, Fib>> fibs,
       Topology topology,
-      Map<Location, LocationInfo> locationInfo) {
+      Map<Location, LocationInfo> locationInfo,
+      IpOwners ipOwners) {
     Span span = GlobalTracer.get().buildSpan("Construct ForwardingAnalysis").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
@@ -60,12 +61,9 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
       IpSpaceToBDD ipSpaceToBDD =
           new MemoizedIpSpaceToBDD(new BDDPacket().getDstIp(), ImmutableMap.of());
 
-      IpOwners ipOwners = new IpOwners(configurations);
-
       // IPs belonging to any interface in the network, even inactive interfaces
       // node -> interface -> IPs owned by that interface
-      Map<String, Map<String, Set<Ip>>> interfaceOwnedIps =
-          IpOwners.computeInterfaceOwnedIps(configurations, /*excludeInactive=*/ false);
+      Map<String, Map<String, Set<Ip>>> interfaceOwnedIps = ipOwners.getInterfaceOwners(false);
 
       // Owned (i.e., internal to the network) IPs
       IpSpace ownedIps = computeOwnedIps(interfaceOwnedIps);
