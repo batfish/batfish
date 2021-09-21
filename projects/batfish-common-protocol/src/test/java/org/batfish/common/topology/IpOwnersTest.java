@@ -54,6 +54,19 @@ public class IpOwnersTest {
   private static final Prefix P1 = Prefix.parse("1.0.0.0/8");
   private static final Prefix P2 = Prefix.parse("2.0.0.0/16");
 
+  private static final L3Adjacencies _l3Adjacencies =
+      new L3Adjacencies() {
+        @Override
+        public boolean inSameBroadcastDomain(NodeInterfacePair i1, NodeInterfacePair i2) {
+          return true;
+        }
+
+        @Override
+        public Optional<NodeInterfacePair> pairedPointToPointL3Interface(NodeInterfacePair iface) {
+          return Optional.empty();
+        }
+      };
+
   @Before
   public void setup() {
     NetworkFactory nf = new NetworkFactory();
@@ -479,7 +492,7 @@ public class IpOwnersTest {
     extractVrrp(groups, i2);
 
     // Test: expect c2/i2 to win
-    processVrrpGroups(ipOwners, groups, null);
+    processVrrpGroups(ipOwners, groups, _l3Adjacencies);
     assertThat(
         ipOwners.get(ip.getIp()).get(c2.getHostname()), equalTo(ImmutableSet.of(i2.getName())));
   }
