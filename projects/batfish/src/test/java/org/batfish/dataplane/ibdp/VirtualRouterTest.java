@@ -28,12 +28,14 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Function;
 import org.batfish.common.topology.IpOwners;
+import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpProcess;
@@ -67,6 +69,7 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.VrfLeakingConfig;
 import org.batfish.datamodel.bgp.BgpTopology;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.eigrp.ClassicMetric;
 import org.batfish.datamodel.eigrp.EigrpMetricValues;
 import org.batfish.datamodel.eigrp.EigrpMetricVersion;
@@ -103,6 +106,19 @@ public class VirtualRouterTest {
           .put("Ethernet2", ConcreteInterfaceAddress.parse("10.2.0.1/16"))
           .put("Ethernet3", ConcreteInterfaceAddress.parse("10.3.0.1/16"))
           .build();
+
+  private static final L3Adjacencies _l3Adjacencies =
+      new L3Adjacencies() {
+        @Override
+        public boolean inSameBroadcastDomain(NodeInterfacePair i1, NodeInterfacePair i2) {
+          return true;
+        }
+
+        @Override
+        public Optional<NodeInterfacePair> pairedPointToPointL3Interface(NodeInterfacePair iface) {
+          return Optional.empty();
+        }
+      };
 
   private static void addInterfaces(
       Configuration c, Map<String, ConcreteInterfaceAddress> interfaceAddresses) {
@@ -601,7 +617,8 @@ public class VirtualRouterTest {
 
     // Re-run with non-empty topology
     BgpTopology bgpTopology2 =
-        initBgpTopology(configs, new IpOwners(configs).getIpVrfOwners(), false, null);
+        initBgpTopology(
+            configs, new IpOwners(configs, _l3Adjacencies).getIpVrfOwners(), false, null);
     for (Node n : nodes.values()) {
       n.getVirtualRouterOrThrow(DEFAULT_VRF_NAME)
           .initForEgpComputationWithNewTopology(

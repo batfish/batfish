@@ -895,6 +895,10 @@ public final class FlatJuniperGrammarTest {
                 .build(),
             _folder);
 
+    // Needed to prevent a loop -- if configurations are not loaded, accessing topology info will
+    // load them, which will iin turn load topologies for serialization.
+    batfish.loadConfigurations(batfish.getSnapshot());
+
     // check layer-2 adjacencies for L3 interfaces
     L3Adjacencies adjacencies =
         batfish.getTopologyProvider().getInitialL3Adjacencies(batfish.getSnapshot());
@@ -931,6 +935,10 @@ public final class FlatJuniperGrammarTest {
                 .setConfigurationFiles(resourcePrefix, "r1", "r2")
                 .build(),
             _folder);
+
+    // Needed to prevent a loop -- if configurations are not loaded, accessing topology info will
+    // load them, which will iin turn load topologies for serialization.
+    batfish.loadConfigurations(batfish.getSnapshot());
 
     Layer1Topology layer1LogicalTopology =
         batfish.getTopologyProvider().getLayer1LogicalTopology(batfish.getSnapshot()).get();
