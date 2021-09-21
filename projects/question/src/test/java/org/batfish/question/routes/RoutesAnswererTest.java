@@ -51,6 +51,7 @@ import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.common.plugin.IBatfishTestAdapter.TopologyProviderTestAdapter;
+import org.batfish.common.topology.GlobalBroadcastNoPointToPoint;
 import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.common.topology.TopologyProvider;
 import org.batfish.datamodel.AbstractRoute;
@@ -508,17 +509,7 @@ public class RoutesAnswererTest {
 
     @Override
     public L3Adjacencies getInitialL3Adjacencies(NetworkSnapshot snapshot) {
-      return new L3Adjacencies() {
-        @Override
-        public boolean inSameBroadcastDomain(NodeInterfacePair i1, NodeInterfacePair i2) {
-          return true;
-        }
-
-        @Override
-        public Optional<NodeInterfacePair> pairedPointToPointL3Interface(NodeInterfacePair iface) {
-          return Optional.empty();
-        }
-      };
+      return GlobalBroadcastNoPointToPoint.instance();
     }
   }
 
