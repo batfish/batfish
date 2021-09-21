@@ -7,6 +7,7 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSortedMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -16,6 +17,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.VrrpGroup;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -27,6 +29,19 @@ public class VrrpComputationTest {
   private Interface _i2;
   private ConcreteInterfaceAddress _virtInterfaceAddr =
       ConcreteInterfaceAddress.create(Ip.parse("1.1.1.1"), Prefix.MAX_PREFIX_LENGTH);
+
+  private static final L3Adjacencies _l3Adjacencies =
+      new L3Adjacencies() {
+        @Override
+        public boolean inSameBroadcastDomain(NodeInterfacePair i1, NodeInterfacePair i2) {
+          return true;
+        }
+
+        @Override
+        public Optional<NodeInterfacePair> pairedPointToPointL3Interface(NodeInterfacePair iface) {
+          return Optional.empty();
+        }
+      };
 
   @Before
   public void setup() {
