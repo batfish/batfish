@@ -13,11 +13,13 @@ import com.google.common.collect.Tables;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Stream;
 import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.transition.Transition;
@@ -144,9 +146,25 @@ public final class BDDReachabilityUtils {
     return ImmutableTable.copyOf(Tables.transpose(edgeTable));
   }
 
+  public static Table<StateExpr, StateExpr, Transition> transposeAndMaterialize(
+      Collection<Edge> edges) {
+    return edges.stream()
+        .collect(
+            ImmutableTable.toImmutableTable(
+                Edge::getPostState, Edge::getPreState, Edge::getTransition));
+  }
+
   public static void forwardFixpoint(
       Table<StateExpr, StateExpr, Transition> forwardEdgeTable, Map<StateExpr, BDD> reachable) {
     fixpoint(reachable, forwardEdgeTable, Transition::transitForward);
+  }
+
+  static Map<StateExpr, BDD> getIngressStateExprBdds(
+      Map<StateExpr, BDD> stateReachableBdds, Set<StateExpr> ingressLocationStates, BDD zero) {
+    return toImmutableMap(
+        ingressLocationStates,
+        Function.identity(),
+        stateExpr -> stateReachableBdds.getOrDefault(stateExpr, zero));
   }
 
   static Map<IngressLocation, BDD> getIngressLocationBdds(
