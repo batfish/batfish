@@ -39,7 +39,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -53,7 +52,6 @@ import org.batfish.common.Warnings;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.topology.GlobalBroadcastNoPointToPoint;
 import org.batfish.common.topology.IpOwners;
-import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Node;
 import org.batfish.common.topology.Layer1Topologies;
@@ -83,7 +81,6 @@ import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
-import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.TestQuestion;
 import org.batfish.identifiers.AnalysisId;
@@ -798,17 +795,4 @@ public class BatfishTest {
     assertThat(snapshotEdges, equalTo(ImmutableSet.of(edge, modeledEdge)));
     assertThat(warnings, hasRedFlag(hasText(containsString("Cannot add internet and ISP nodes"))));
   }
-
-  private static final L3Adjacencies _l3Adjacencies =
-      new L3Adjacencies() {
-        @Override
-        public boolean inSameBroadcastDomain(NodeInterfacePair i1, NodeInterfacePair i2) {
-          return true;
-        }
-
-        @Override
-        public Optional<NodeInterfacePair> pairedPointToPointL3Interface(NodeInterfacePair iface) {
-          return Optional.empty();
-        }
-      };
 }
