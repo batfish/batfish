@@ -15,7 +15,9 @@ import com.google.common.collect.ImmutableSortedMap;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import org.batfish.common.topology.IpOwners;
+import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
@@ -29,6 +31,7 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfNetworkType;
@@ -51,6 +54,19 @@ import org.junit.runners.Parameterized.Parameters;
 public class NodeColoredScheduleTest {
 
   private ImmutableSortedMap<String, Configuration> _configurations;
+
+  private static final L3Adjacencies _l3Adjacencies =
+      new L3Adjacencies() {
+        @Override
+        public boolean inSameBroadcastDomain(NodeInterfacePair i1, NodeInterfacePair i2) {
+          return true;
+        }
+
+        @Override
+        public Optional<NodeInterfacePair> pairedPointToPointL3Interface(NodeInterfacePair iface) {
+          return Optional.empty();
+        }
+      };
 
   @Parameters
   public static Collection<Object[]> data() {
@@ -186,7 +202,10 @@ public class NodeColoredScheduleTest {
   public void testTwoNodesConnectedDirectlyViaBGP() {
     BgpTopology bgpTopology =
         initBgpTopology(
-            _configurations, new IpOwners(_configurations).getIpVrfOwners(), false, null);
+            _configurations,
+            new IpOwners(_configurations, _l3Adjacencies).getIpVrfOwners(),
+            false,
+            null);
     ImmutableMap<String, Node> nodes =
         _configurations.entrySet().stream()
             .collect(ImmutableMap.toImmutableMap(Entry::getKey, e -> new Node(e.getValue())));
