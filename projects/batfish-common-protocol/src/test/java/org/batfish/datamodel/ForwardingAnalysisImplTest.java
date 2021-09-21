@@ -79,18 +79,18 @@ public class ForwardingAnalysisImplTest {
 
   private Vrf.Builder _vb;
 
-  class MockL3Adjacencies implements L3Adjacencies {
+  private static final L3Adjacencies _l3Adjacencies =
+      new L3Adjacencies() {
+        @Override
+        public boolean inSameBroadcastDomain(NodeInterfacePair i1, NodeInterfacePair i2) {
+          return true;
+        }
 
-    @Override
-    public boolean inSameBroadcastDomain(NodeInterfacePair i1, NodeInterfacePair i2) {
-      return false;
-    }
-
-    @Override
-    public Optional<NodeInterfacePair> pairedPointToPointL3Interface(NodeInterfacePair iface) {
-      return Optional.empty();
-    }
-  }
+        @Override
+        public Optional<NodeInterfacePair> pairedPointToPointL3Interface(NodeInterfacePair iface) {
+          return Optional.empty();
+        }
+      };
 
   @Before
   public void setup() {
@@ -271,14 +271,6 @@ public class ForwardingAnalysisImplTest {
 
   @Test
   public void testComputeArpReplies_VRRP() {
-
-    class TestL3Adjacencies extends MockL3Adjacencies {
-      @Override
-      public boolean inSameBroadcastDomain(NodeInterfacePair i1, NodeInterfacePair i2) {
-        return true;
-      }
-    }
-
     Configuration c = _cb.build();
     Map<String, Configuration> configs = ImmutableMap.of(c.getHostname(), c);
     _ib.setOwner(c);
