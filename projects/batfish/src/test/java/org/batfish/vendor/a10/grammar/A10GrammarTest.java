@@ -7,9 +7,20 @@ import static org.batfish.common.matchers.WarningsMatchers.hasParseWarnings;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.ConfigurationFormat.A10_ACOS;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDeclaredNames;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInterfaceType;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
+import static org.batfish.vendor.a10.representation.Interface.DEFAULT_MTU;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.notNullValue;
@@ -18,6 +29,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
@@ -32,6 +44,8 @@ import org.batfish.common.runtime.SnapshotRuntimeData;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.InterfaceType;
+import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
@@ -174,5 +188,55 @@ public class A10GrammarTest {
                         + " '1234567890123456789012345678901234567890123456789012345678901234'"),
                 hasComment("Expected interface loopback number in range 0-10, but got '11'"),
                 hasComment("Expected interface ethernet number in range 1-40, but got '0'"))));
+  }
+
+  @Test
+  public void testInterfaceConversion() {
+    String hostname = "interfaces";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(
+        c,
+        hasInterface(
+            "Ethernet 1",
+            allOf(
+                hasInterfaceType(InterfaceType.PHYSICAL),
+                hasSwitchPortMode(SwitchportMode.NONE),
+                hasAllAddresses(contains(ConcreteInterfaceAddress.parse("10.0.1.1/24"))),
+                isActive(),
+                hasDeclaredNames(ImmutableList.of("Ethernet 1", "this is a comp\"licat'ed name")),
+                hasMtu(1234))));
+
+    assertThat(
+        c,
+        hasInterface(
+            "Ethernet 9",
+            allOf(
+                hasInterfaceType(InterfaceType.PHYSICAL),
+                hasSwitchPortMode(SwitchportMode.NONE),
+                hasAllAddresses(contains(ConcreteInterfaceAddress.parse("10.0.2.1/24"))),
+                isActive(false),
+                hasDeclaredNames(ImmutableList.of("Ethernet 9", "baz")),
+                hasMtu(DEFAULT_MTU))));
+
+    assertThat(
+        c,
+        hasInterface(
+            "Loopback 0",
+            allOf(
+                hasInterfaceType(InterfaceType.LOOPBACK),
+                hasSwitchPortMode(SwitchportMode.NONE),
+                hasAllAddresses(contains(ConcreteInterfaceAddress.parse("192.168.0.1/32"))),
+                hasDeclaredNames(ImmutableList.of("Loopback 0")))));
+
+    assertThat(
+        c,
+        hasInterface(
+            "Loopback 10",
+            allOf(
+                hasInterfaceType(InterfaceType.LOOPBACK),
+                hasSwitchPortMode(SwitchportMode.NONE),
+                hasAllAddresses(empty()),
+                hasDeclaredNames(ImmutableList.of("Loopback 10")))));
   }
 }
