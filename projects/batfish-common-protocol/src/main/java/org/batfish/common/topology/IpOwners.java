@@ -140,21 +140,25 @@ public final class IpOwners {
    * Invert a mapping from {@link Ip} to owner interfaces (Ip -&gt; hostname -&gt; interface name)
    * to (hostname -&gt; interface name -&gt; Ip).
    */
-  // TODO: test
   public Map<String, Map<String, Set<Ip>>> getInterfaceOwners(boolean excludeInactive) {
+    return computeInterfaceOwners(excludeInactive ? _activeDeviceOwnedIps : _allDeviceOwnedIps);
+  }
+
+  @VisibleForTesting
+  static Map<String, Map<String, Set<Ip>>> computeInterfaceOwners(
+      Map<Ip, Map<String, Set<String>>> deviceOwnedIps) {
     Map<String, Map<String, Set<Ip>>> ownedIps = new HashMap<>();
 
-    (excludeInactive ? _activeDeviceOwnedIps : _allDeviceOwnedIps)
-        .forEach(
-            (ip, owners) ->
-                owners.forEach(
-                    (host, ifaces) ->
-                        ifaces.forEach(
-                            iface ->
-                                ownedIps
-                                    .computeIfAbsent(host, k -> new HashMap<>())
-                                    .computeIfAbsent(iface, k -> new HashSet<>())
-                                    .add(ip))));
+    deviceOwnedIps.forEach(
+        (ip, owners) ->
+            owners.forEach(
+                (host, ifaces) ->
+                    ifaces.forEach(
+                        iface ->
+                            ownedIps
+                                .computeIfAbsent(host, k -> new HashMap<>())
+                                .computeIfAbsent(iface, k -> new HashSet<>())
+                                .add(ip))));
 
     // freeze
     return toImmutableMap(
@@ -175,15 +179,17 @@ public final class IpOwners {
    * @return A map of {@link Ip}s to a set of hostnames that own this IP
    */
   public Map<Ip, Set<String>> getNodeOwners(boolean excludeInactive) {
-    Span span =
-        GlobalTracer.get()
-            .buildSpan("TopologyUtil.computeIpNodeOwners excludeInactive=" + excludeInactive)
-            .start();
+    return computeNodeOwners(excludeInactive ? _activeDeviceOwnedIps : _allDeviceOwnedIps);
+  }
+
+  @VisibleForTesting
+  static Map<Ip, Set<String>> computeNodeOwners(Map<Ip, Map<String, Set<String>>> deviceOwnedIps) {
+    Span span = GlobalTracer.get().buildSpan("TopologyUtil.computeNodeOwners").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
 
       return toImmutableMap(
-          excludeInactive ? _activeDeviceOwnedIps : _allDeviceOwnedIps,
+          deviceOwnedIps,
           Entry::getKey, /* Ip */
           ipInterfaceOwnersEntry ->
               /* project away interfaces */
