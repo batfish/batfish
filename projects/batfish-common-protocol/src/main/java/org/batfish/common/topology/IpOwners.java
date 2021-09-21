@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -69,16 +68,16 @@ public final class IpOwners {
   /** Mapping from an IP to hostname to set of VRFs that own that IP. */
   private final Map<Ip, Map<String, Set<String>>> _ipVrfOwners;
 
-  public IpOwners(Map<String, Configuration> configurations) {
+  public IpOwners(Map<String, Configuration> configurations, L3Adjacencies l3Adjacencies) {
     /* Mapping from a hostname to a set of all (including inactive) interfaces that node owns */
     Map<String, Set<Interface>> allInterfaces =
         ImmutableMap.copyOf(computeNodeInterfaces(configurations));
 
     {
       _allDeviceOwnedIps =
-          ImmutableMap.copyOf(computeIpInterfaceOwners(allInterfaces, false, null));
+          ImmutableMap.copyOf(computeIpInterfaceOwners(allInterfaces, false, l3Adjacencies));
       _activeDeviceOwnedIps =
-          ImmutableMap.copyOf(computeIpInterfaceOwners(allInterfaces, true, null));
+          ImmutableMap.copyOf(computeIpInterfaceOwners(allInterfaces, true, l3Adjacencies));
     }
 
     {
@@ -138,34 +137,24 @@ public final class IpOwners {
   }
 
   /**
-   * Compute the {@link Ip}s owned by each interface. hostname -&gt; interface name -&gt; {@link
-   * Ip}s.
-   */
-  public static Map<String, Map<String, Set<Ip>>> computeInterfaceOwnedIps(
-      Map<String, Configuration> configurations, boolean excludeInactive) {
-    // TODO: cleanup callers, make this private
-    return computeInterfaceOwnedIps(
-        computeIpInterfaceOwners(computeNodeInterfaces(configurations), excludeInactive, null));
-  }
-
-  /**
    * Invert a mapping from {@link Ip} to owner interfaces (Ip -&gt; hostname -&gt; interface name)
    * to (hostname -&gt; interface name -&gt; Ip).
    */
-  private static Map<String, Map<String, Set<Ip>>> computeInterfaceOwnedIps(
-      Map<Ip, Map<String, Set<String>>> ipInterfaceOwners) {
+  // TODO: test
+  public Map<String, Map<String, Set<Ip>>> getInterfaceOwners(boolean excludeInactive) {
     Map<String, Map<String, Set<Ip>>> ownedIps = new HashMap<>();
 
-    ipInterfaceOwners.forEach(
-        (ip, owners) ->
-            owners.forEach(
-                (host, ifaces) ->
-                    ifaces.forEach(
-                        iface ->
-                            ownedIps
-                                .computeIfAbsent(host, k -> new HashMap<>())
-                                .computeIfAbsent(iface, k -> new HashSet<>())
-                                .add(ip))));
+    (excludeInactive ? _activeDeviceOwnedIps : _allDeviceOwnedIps)
+        .forEach(
+            (ip, owners) ->
+                owners.forEach(
+                    (host, ifaces) ->
+                        ifaces.forEach(
+                            iface ->
+                                ownedIps
+                                    .computeIfAbsent(host, k -> new HashMap<>())
+                                    .computeIfAbsent(iface, k -> new HashSet<>())
+                                    .add(ip))));
 
     // freeze
     return toImmutableMap(
@@ -179,32 +168,13 @@ public final class IpOwners {
   }
 
   /**
-   * Compute a mapping of IP addresses to a set of hostnames that "own" this IP (e.g., as a network
+   * Returns a mapping of IP addresses to a set of hostnames that "own" this IP (e.g., as a network
    * interface address)
    *
-   * @param configurations map of configurations keyed by hostname
    * @param excludeInactive Whether to exclude inactive interfaces
    * @return A map of {@link Ip}s to a set of hostnames that own this IP
    */
-  public static Map<Ip, Set<String>> computeIpNodeOwners(
-      Map<String, Configuration> configurations, boolean excludeInactive) {
-    return computeIpNodeOwners(configurations, excludeInactive, null);
-  }
-
-  /**
-   * Compute a mapping of IP addresses to a set of hostnames that "own" this IP (e.g., as a network
-   * interface address)
-   *
-   * @param configurations map of configurations keyed by hostname
-   * @param excludeInactive Whether to exclude inactive interfaces
-   * @param l3Adjacencies if non-null, VRRP ownership is disambiguated among multiple domains that
-   *     use the same virtual IP
-   * @return A map of {@link Ip}s to a set of hostnames that own this IP
-   */
-  public static Map<Ip, Set<String>> computeIpNodeOwners(
-      Map<String, Configuration> configurations,
-      boolean excludeInactive,
-      @Nullable L3Adjacencies l3Adjacencies) {
+  public Map<Ip, Set<String>> getNodeOwners(boolean excludeInactive) {
     Span span =
         GlobalTracer.get()
             .buildSpan("TopologyUtil.computeIpNodeOwners excludeInactive=" + excludeInactive)
@@ -213,8 +183,7 @@ public final class IpOwners {
       assert scope != null; // avoid unused warning
 
       return toImmutableMap(
-          computeIpInterfaceOwners(
-              computeNodeInterfaces(configurations), excludeInactive, l3Adjacencies),
+          excludeInactive ? _activeDeviceOwnedIps : _allDeviceOwnedIps,
           Entry::getKey, /* Ip */
           ipInterfaceOwnersEntry ->
               /* project away interfaces */
@@ -232,13 +201,15 @@ public final class IpOwners {
    *
    * @param allInterfaces A mapping of interfaces: hostname -&gt; set of {@link Interface}
    * @param excludeInactive whether to ignore inactive interfaces
+   * @param l3Adjacencies L3Adjacencies (used to disambiguate VRRP ownership among multiple domains
+   *     that use the same virtual IP)
    * @return A map from {@link Ip}s to hostname to set of interface names that own that IP.
    */
   @VisibleForTesting
   static Map<Ip, Map<String, Set<String>>> computeIpInterfaceOwners(
       Map<String, Set<Interface>> allInterfaces,
       boolean excludeInactive,
-      @Nullable L3Adjacencies l3Adjacencies) {
+      L3Adjacencies l3Adjacencies) {
     Map<Ip, Map<String, Set<String>>> ipOwners = new HashMap<>();
     Table<ConcreteInterfaceAddress, Integer, Set<Interface>> vrrpGroups = HashBasedTable.create();
     Table<Ip, Integer, Set<Interface>> hsrpGroups = HashBasedTable.create();
@@ -391,7 +362,7 @@ public final class IpOwners {
   static void processVrrpGroups(
       Map<Ip, Map<String, Set<String>>> ipOwners,
       Table<ConcreteInterfaceAddress, Integer, Set<Interface>> vrrpGroups,
-      @Nullable L3Adjacencies l3Adjacencies) {
+      L3Adjacencies l3Adjacencies) {
     vrrpGroups
         .cellSet()
         .forEach(
@@ -404,9 +375,7 @@ public final class IpOwners {
               assert candidates != null;
 
               Set<Set<Interface>> candidatePartitions =
-                  l3Adjacencies == null
-                      ? ImmutableSet.of(candidates)
-                      : partitionVrrpCandidates(candidates, l3Adjacencies);
+                  partitionVrrpCandidates(candidates, l3Adjacencies);
 
               candidatePartitions.forEach(
                   cp -> {
