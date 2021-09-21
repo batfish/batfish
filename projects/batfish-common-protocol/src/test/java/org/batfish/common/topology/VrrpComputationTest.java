@@ -109,7 +109,7 @@ public class VrrpComputationTest {
     Map<String, Configuration> configs = setupVrrpTestCase(true);
 
     Map<Ip, Map<String, Set<String>>> interfaceOwners =
-        computeIpInterfaceOwners(computeNodeInterfaces(configs), false);
+        computeIpInterfaceOwners(computeNodeInterfaces(configs), false, null);
 
     assertThat(
         interfaceOwners,
