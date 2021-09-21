@@ -39,7 +39,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -51,8 +50,8 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.common.topology.GlobalBroadcastNoPointToPoint;
 import org.batfish.common.topology.IpOwners;
-import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Node;
 import org.batfish.common.topology.Layer1Topologies;
@@ -82,7 +81,6 @@ import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
-import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.TestQuestion;
 import org.batfish.identifiers.AnalysisId;
@@ -433,7 +431,7 @@ public class BatfishTest {
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
     Map<Ip, Set<String>> ipOwners =
-        new IpOwners(configurations, _l3Adjacencies).getNodeOwners(true);
+        new IpOwners(configurations, GlobalBroadcastNoPointToPoint.instance()).getNodeOwners(true);
     assertThat(ipOwners.get(vrrpAddress), equalTo(Collections.singleton("r2")));
   }
 
@@ -503,7 +501,7 @@ public class BatfishTest {
         configs.get("host1").getAllInterfaces().get("Vlan65").getVrrpGroups().keySet(), hasSize(1));
 
     // Tests that computing IP owners with such a bad interface does not crash.
-    new IpOwners(configs, _l3Adjacencies);
+    new IpOwners(configs, GlobalBroadcastNoPointToPoint.instance());
   }
 
   @Test
@@ -796,17 +794,4 @@ public class BatfishTest {
     assertThat(snapshotEdges, equalTo(ImmutableSet.of(edge, modeledEdge)));
     assertThat(warnings, hasRedFlag(hasText(containsString("Cannot add internet and ISP nodes"))));
   }
-
-  private static final L3Adjacencies _l3Adjacencies =
-      new L3Adjacencies() {
-        @Override
-        public boolean inSameBroadcastDomain(NodeInterfacePair i1, NodeInterfacePair i2) {
-          return true;
-        }
-
-        @Override
-        public Optional<NodeInterfacePair> pairedPointToPointL3Interface(NodeInterfacePair iface) {
-          return Optional.empty();
-        }
-      };
 }
