@@ -78,18 +78,18 @@ public class ForwardingAnalysisImplTest {
 
   private Vrf.Builder _vb;
 
-  class MockL3Adjacencies implements L3Adjacencies {
+  private static final L3Adjacencies _l3Adjacencies =
+      new L3Adjacencies() {
+        @Override
+        public boolean inSameBroadcastDomain(NodeInterfacePair i1, NodeInterfacePair i2) {
+          return true;
+        }
 
-    @Override
-    public boolean inSameBroadcastDomain(NodeInterfacePair i1, NodeInterfacePair i2) {
-      return false;
-    }
-
-    @Override
-    public Optional<NodeInterfacePair> pairedPointToPointL3Interface(NodeInterfacePair iface) {
-      return Optional.empty();
-    }
-  }
+        @Override
+        public Optional<NodeInterfacePair> pairedPointToPointL3Interface(NodeInterfacePair iface) {
+          return Optional.empty();
+        }
+      };
 
   @Before
   public void setup() {
@@ -143,8 +143,7 @@ public class ForwardingAnalysisImplTest {
             c2.getHostname(),
             ImmutableMap.of(vrf2.getName(), ImmutableMap.of(i2.getName(), ipsRoutedOutI2)));
     Map<String, Map<String, Set<Ip>>> interfaceOwnedIps =
-        IpOwners.getInterfaceOwners(
-            new IpOwners(configs, new MockL3Adjacencies()).getAllDeviceOwnedIps());
+        new IpOwners(configs, _l3Adjacencies).getInterfaceOwners(false);
     Map<String, Map<String, IpSpace>> result =
         computeArpReplies(configurations, ipsRoutedOutInterfaces, interfaceOwnedIps, routableIps);
 
@@ -246,8 +245,7 @@ public class ForwardingAnalysisImplTest {
 
     Map<String, Configuration> configs = ImmutableMap.of(config.getHostname(), config);
     Map<String, Map<String, Set<Ip>>> interfaceOwnedIps =
-        IpOwners.getInterfaceOwners(
-            new IpOwners(configs, new MockL3Adjacencies()).getAllDeviceOwnedIps());
+        new IpOwners(configs, _l3Adjacencies).getInterfaceOwners(false);
     Map<String, IpSpace> result =
         ForwardingAnalysisImpl.computeArpRepliesByInterface(
             interfaces, routableIpsByVrf, ipsRoutedOutInterfaces, interfaceOwnedIps);
@@ -272,14 +270,6 @@ public class ForwardingAnalysisImplTest {
 
   @Test
   public void testComputeArpReplies_VRRP() {
-
-    class TestL3Adjacencies extends MockL3Adjacencies {
-      @Override
-      public boolean inSameBroadcastDomain(NodeInterfacePair i1, NodeInterfacePair i2) {
-        return true;
-      }
-    }
-
     Configuration c = _cb.build();
     Map<String, Configuration> configs = ImmutableMap.of(c.getHostname(), c);
     _ib.setOwner(c);
@@ -312,8 +302,7 @@ public class ForwardingAnalysisImplTest {
             .build();
 
     Map<String, Map<String, Set<Ip>>> interfaceOwnedIps =
-        IpOwners.getInterfaceOwners(
-            new IpOwners(configs, new TestL3Adjacencies()).getAllDeviceOwnedIps());
+        new IpOwners(configs, _l3Adjacencies).getInterfaceOwners(false);
 
     IpSpace p1IpSpace = IpWildcard.create(P1).toIpSpace();
     IpSpace i1ArpReplies =
@@ -468,9 +457,8 @@ public class ForwardingAnalysisImplTest {
             .including(IpWildcard.create(P1), IpWildcard.create(P2))
             .build();
     Map<String, Map<String, Set<Ip>>> interfaceOwnedIps =
-        IpOwners.getInterfaceOwners(
-            new IpOwners(ImmutableMap.of(config.getHostname(), config), new MockL3Adjacencies())
-                .getAllDeviceOwnedIps());
+        new IpOwners(ImmutableMap.of(config.getHostname(), config), _l3Adjacencies)
+            .getInterfaceOwners(false);
     IpSpace noProxyArpResult =
         computeInterfaceArpReplies(
             iNoProxyArp, routableIpsForThisVrf, ipsRoutedThroughInterface, interfaceOwnedIps);
@@ -509,8 +497,7 @@ public class ForwardingAnalysisImplTest {
         ConcreteInterfaceAddress.create(P2.getFirstHostIp(), P2.getPrefixLength());
     Interface i = _ib.setAddresses(primary, secondary).build();
     Map<String, Map<String, Set<Ip>>> interfaceOwnedIps =
-        IpOwners.getInterfaceOwners(
-            new IpOwners(configs, new MockL3Adjacencies()).getAllDeviceOwnedIps());
+        new IpOwners(configs, _l3Adjacencies).getInterfaceOwners(false);
     IpSpace result = computeIpsAssignedToThisInterfaceForArpReplies(i, interfaceOwnedIps);
 
     assertThat(result, containsIp(P1.getFirstHostIp()));
@@ -1322,7 +1309,7 @@ public class ForwardingAnalysisImplTest {
     Map<String, Map<String, Fib>> fibs =
         ImmutableMap.of(n1.getHostname(), ImmutableMap.of(v1.getName(), fib1));
 
-    IpOwners ipOwners = new IpOwners(configs, new MockL3Adjacencies());
+    IpOwners ipOwners = new IpOwners(configs, _l3Adjacencies);
 
     ForwardingAnalysis fa =
         new ForwardingAnalysisImpl(
@@ -1416,7 +1403,7 @@ public class ForwardingAnalysisImplTest {
     Map<String, Configuration> configs =
         ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2);
 
-    IpOwners ipOwners = new IpOwners(configs, new MockL3Adjacencies());
+    IpOwners ipOwners = new IpOwners(configs, _l3Adjacencies);
     ForwardingAnalysis analysis =
         new ForwardingAnalysisImpl(
             configs,
