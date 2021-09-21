@@ -10,7 +10,7 @@ import static org.batfish.datamodel.transformation.TransformationStep.assignSour
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.NAT_PORT_FIRST;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.NAT_PORT_LAST;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.TRANSLATED_SOURCE_TO_TRANSFORMATION_STEPS;
-import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.automaticHideRuleTransformation;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.automaticHideRuleTransformationFunction;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.checkValidManualHide;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.checkValidManualStatic;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getApplicableNatRules;
@@ -32,6 +32,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.BddTestbed;
 import org.batfish.datamodel.Ip;
@@ -318,25 +319,22 @@ public final class CheckpointNatConversionsTest {
   public void testAutomaticHideRuleTransformation_hideBehindGateway() {
     NatSettings natSettings =
         new NatSettings(true, NatHideBehindGateway.INSTANCE, "All", null, NatMethod.HIDE);
-    Ip gatewayIp = Ip.parse("5.5.5.5");
-    GatewayOrServer gateway =
-        new SimpleGateway(
-            gatewayIp, "gw", ImmutableList.of(), new GatewayOrServerPolicy(null, null), UID);
+    Ip egressIfaceIp = Ip.parse("5.5.5.5");
     {
       // Hide address range
       AddressRange addressRange =
           new AddressRange(
               Ip.parse("1.1.1.0"), Ip.parse("1.1.1.255"), null, null, natSettings, "a1", UID);
       Warnings warnings = new Warnings(true, true, true);
-      Optional<Transformation> transformation =
-          automaticHideRuleTransformation(
-              addressRange, gateway, ADDRESS_SPACE_TO_MATCH_EXPR, warnings);
-      assertTrue(transformation.isPresent());
+      Optional<Function<Ip, Transformation>> func =
+          automaticHideRuleTransformationFunction(
+              addressRange, ADDRESS_SPACE_TO_MATCH_EXPR, warnings);
+      assertTrue(func.isPresent());
       assertThat(
-          transformation.get(),
+          func.get().apply(egressIfaceIp),
           equalTo(
               Transformation.when(matchSrc(new IpSpaceReference(addressRange.getName())))
-                  .apply(assignSourceIp(gatewayIp))
+                  .apply(assignSourceIp(egressIfaceIp))
                   .build()));
       assertThat(warnings.getRedFlagWarnings(), empty());
     }
@@ -344,14 +342,14 @@ public final class CheckpointNatConversionsTest {
       // Hide host
       Host host = new Host(Ip.parse("1.1.1.1"), natSettings, "host", UID);
       Warnings warnings = new Warnings(true, true, true);
-      Optional<Transformation> transformation =
-          automaticHideRuleTransformation(host, gateway, ADDRESS_SPACE_TO_MATCH_EXPR, warnings);
-      assertTrue(transformation.isPresent());
+      Optional<Function<Ip, Transformation>> func =
+          automaticHideRuleTransformationFunction(host, ADDRESS_SPACE_TO_MATCH_EXPR, warnings);
+      assertTrue(func.isPresent());
       assertThat(
-          transformation.get(),
+          func.get().apply(egressIfaceIp),
           equalTo(
               Transformation.when(matchSrc(new IpSpaceReference(host.getName())))
-                  .apply(assignSourceIp(gatewayIp))
+                  .apply(assignSourceIp(egressIfaceIp))
                   .build()));
       assertThat(warnings.getRedFlagWarnings(), empty());
     }
@@ -360,14 +358,14 @@ public final class CheckpointNatConversionsTest {
       Network network =
           new Network("nw", natSettings, Ip.parse("1.0.0.0"), Ip.parse("255.255.255.0"), UID);
       Warnings warnings = new Warnings(true, true, true);
-      Optional<Transformation> transformation =
-          automaticHideRuleTransformation(network, gateway, ADDRESS_SPACE_TO_MATCH_EXPR, warnings);
-      assertTrue(transformation.isPresent());
+      Optional<Function<Ip, Transformation>> func =
+          automaticHideRuleTransformationFunction(network, ADDRESS_SPACE_TO_MATCH_EXPR, warnings);
+      assertTrue(func.isPresent());
       assertThat(
-          transformation.get(),
+          func.get().apply(egressIfaceIp),
           equalTo(
               Transformation.when(matchSrc(new IpSpaceReference(network.getName())))
-                  .apply(assignSourceIp(gatewayIp))
+                  .apply(assignSourceIp(egressIfaceIp))
                   .build()));
       assertThat(warnings.getRedFlagWarnings(), empty());
     }
@@ -382,11 +380,11 @@ public final class CheckpointNatConversionsTest {
     // No need to test every type of HasNatSettings because this is done in hideBehindGateway test
     Host host = new Host(Ip.parse("1.1.1.1"), natSettings, "host", UID);
     Warnings warnings = new Warnings(true, true, true);
-    Optional<Transformation> transformation =
-        automaticHideRuleTransformation(host, TEST_GATEWAY, ADDRESS_SPACE_TO_MATCH_EXPR, warnings);
-    assertTrue(transformation.isPresent());
+    Optional<Function<Ip, Transformation>> func =
+        automaticHideRuleTransformationFunction(host, ADDRESS_SPACE_TO_MATCH_EXPR, warnings);
+    assertTrue(func.isPresent());
     assertThat(
-        transformation.get(),
+        func.get().apply(Ip.parse("10.10.10.10")),
         equalTo(
             Transformation.when(matchSrc(new IpSpaceReference(host.getName())))
                 .apply(assignSourceIp(hideBehindIp))
@@ -395,16 +393,15 @@ public final class CheckpointNatConversionsTest {
   }
 
   @Test
-  public void testAutomaticHideRuleTransformation_warnings() {
+  public void testAutomaticHideRuleTransformationFunction_warnings() {
     {
       // Missing hide-behind
       NatSettings natSettings = new NatSettings(true, null, "All", null, NatMethod.HIDE);
       Host host = new Host(Ip.parse("1.1.1.1"), natSettings, "host", UID);
       Warnings warnings = new Warnings(true, true, true);
-      Optional<Transformation> transformation =
-          automaticHideRuleTransformation(
-              host, TEST_GATEWAY, ADDRESS_SPACE_TO_MATCH_EXPR, warnings);
-      assertFalse(transformation.isPresent());
+      Optional<Function<Ip, Transformation>> func =
+          automaticHideRuleTransformationFunction(host, ADDRESS_SPACE_TO_MATCH_EXPR, warnings);
+      assertFalse(func.isPresent());
       assertThat(
           warnings.getRedFlagWarnings(),
           contains(hasText(containsString("type is HIDE, but hide-behind is missing"))));
@@ -415,29 +412,12 @@ public final class CheckpointNatConversionsTest {
           new NatSettings(true, new UnhandledNatHideBehind("garbage"), "All", null, NatMethod.HIDE);
       Host host = new Host(Ip.parse("1.1.1.1"), natSettings, "host", UID);
       Warnings warnings = new Warnings(true, true, true);
-      Optional<Transformation> transformation =
-          automaticHideRuleTransformation(
-              host, TEST_GATEWAY, ADDRESS_SPACE_TO_MATCH_EXPR, warnings);
-      assertFalse(transformation.isPresent());
+      Optional<Function<Ip, Transformation>> func =
+          automaticHideRuleTransformationFunction(host, ADDRESS_SPACE_TO_MATCH_EXPR, warnings);
+      assertFalse(func.isPresent());
       assertThat(
           warnings.getRedFlagWarnings(),
           contains(hasText(containsString("NAT hide-behind \"garbage\" is not recognized"))));
-    }
-    {
-      // hide-behind gateway with no IP
-      NatSettings natSettings =
-          new NatSettings(true, NatHideBehindGateway.INSTANCE, "All", null, NatMethod.HIDE);
-      GatewayOrServer gateway =
-          new SimpleGateway(
-              null, "foo", ImmutableList.of(), new GatewayOrServerPolicy(null, null), UID);
-      Host host = new Host(Ip.parse("1.1.1.1"), natSettings, "host", UID);
-      Warnings warnings = new Warnings(true, true, true);
-      Optional<Transformation> transformation =
-          automaticHideRuleTransformation(host, gateway, ADDRESS_SPACE_TO_MATCH_EXPR, warnings);
-      assertFalse(transformation.isPresent());
-      assertThat(
-          warnings.getRedFlagWarnings(),
-          contains(hasText(containsString("Cannot hide behind gateway foo because it has no IP"))));
     }
     {
       // install-on is not "All" (individual gateways aren't yet supported)
@@ -445,10 +425,9 @@ public final class CheckpointNatConversionsTest {
           new NatSettings(true, NatHideBehindGateway.INSTANCE, "gateway1", null, NatMethod.HIDE);
       Host host = new Host(Ip.parse("1.1.1.1"), natSettings, "host", UID);
       Warnings warnings = new Warnings(true, true, true);
-      Optional<Transformation> transformation =
-          automaticHideRuleTransformation(
-              host, TEST_GATEWAY, ADDRESS_SPACE_TO_MATCH_EXPR, warnings);
-      assertFalse(transformation.isPresent());
+      Optional<Function<Ip, Transformation>> func =
+          automaticHideRuleTransformationFunction(host, ADDRESS_SPACE_TO_MATCH_EXPR, warnings);
+      assertFalse(func.isPresent());
       assertThat(
           warnings.getRedFlagWarnings(),
           contains(
@@ -805,49 +784,22 @@ public final class CheckpointNatConversionsTest {
   @Test
   public void testMergeTransformations() {
     {
-      // Manual and automatic both empty
-      assertThat(
-          mergeTransformations(ImmutableList.of(), ImmutableList.of()), equalTo(Optional.empty()));
+      List<Transformation> transformations = ImmutableList.of();
+      assertThat(mergeTransformations(transformations), equalTo(Optional.empty()));
     }
     {
-      // One manual transformation
       Transformation t =
           Transformation.always().apply(TransformationStep.assignSourceIp(Ip.ZERO)).build();
-      List<Transformation> manualHideTransformations = ImmutableList.of(t);
-      assertThat(
-          mergeTransformations(manualHideTransformations, ImmutableList.of()),
-          equalTo(Optional.of(t)));
+      List<Transformation> transformations = ImmutableList.of(t);
+      assertThat(mergeTransformations(transformations), equalTo(Optional.of(t)));
     }
     {
-      // Two manual transformations
       Transformation.Builder tb1 = Transformation.when(FALSE).apply(assignDestinationIp(Ip.ZERO));
       Transformation t2 =
           Transformation.always().apply(TransformationStep.assignSourceIp(Ip.ZERO)).build();
-      List<Transformation> manualHideTransformations = ImmutableList.of(tb1.build(), t2);
+      List<Transformation> transformations = ImmutableList.of(tb1.build(), t2);
       assertThat(
-          mergeTransformations(manualHideTransformations, ImmutableList.of()),
-          equalTo(Optional.of(tb1.setOrElse(t2).build())));
-    }
-    {
-      // One manual and one automatic transformation
-      Transformation.Builder tb1 = Transformation.when(FALSE).apply(assignDestinationIp(Ip.ZERO));
-      Transformation t2 =
-          Transformation.always().apply(TransformationStep.assignSourceIp(Ip.ZERO)).build();
-      List<Transformation> manualHideTransformations = ImmutableList.of(tb1.build());
-      List<Transformation> autoHideTransformations = ImmutableList.of(t2);
-      assertThat(
-          mergeTransformations(manualHideTransformations, autoHideTransformations),
-          equalTo(Optional.of(tb1.setOrElse(t2).build())));
-    }
-    {
-      // Two automatic transformations
-      Transformation.Builder tb1 = Transformation.when(FALSE).apply(assignDestinationIp(Ip.ZERO));
-      Transformation t2 =
-          Transformation.always().apply(TransformationStep.assignSourceIp(Ip.ZERO)).build();
-      List<Transformation> autoHideTransformations = ImmutableList.of(tb1.build(), t2);
-      assertThat(
-          mergeTransformations(ImmutableList.of(), autoHideTransformations),
-          equalTo(Optional.of(tb1.setOrElse(t2).build())));
+          mergeTransformations(transformations), equalTo(Optional.of(tb1.setOrElse(t2).build())));
     }
   }
 

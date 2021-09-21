@@ -9,12 +9,12 @@ import static org.batfish.vendor.check_point_gateway.representation.CheckPointGa
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.batfish.common.Warnings;
@@ -361,10 +361,14 @@ public class CheckpointNatConversions {
     return Optional.of(when(maybeOrigMatchExpr.get()).apply(maybeSteps.get()).build());
   }
 
-  /** Get the {@link Transformation} corresponding to the given {@link NatSettings}. */
-  static @Nonnull Optional<Transformation> automaticHideRuleTransformation(
+  /**
+   * Returns a function that takes in an external interface's IP and returns the {@link
+   * Transformation} that should be applied to outgoing traffic on that interface to reflect the NAT
+   * settings on the given {@link HasNatSettings}. Returns an empty optional and files warnings if
+   * the NAT settings cannot be converted.
+   */
+  static @Nonnull Optional<Function<Ip, Transformation>> automaticHideRuleTransformationFunction(
       HasNatSettings hasNatSettings,
-      GatewayOrServer gateway,
       AddressSpaceToMatchExpr toMatchExprVisitor,
       Warnings warnings) {
     NatSettings natSettings = hasNatSettings.getNatSettings();
@@ -386,33 +390,24 @@ public class CheckpointNatConversions {
               hasNatSettings.getClass(), hasNatSettings.getName()));
       return Optional.empty();
     }
-    // Build match expression to match traffic from the source to hide
-    AclLineMatchExpr matchOriginalSrc = toMatchExprVisitor.convertSource(hasNatSettings);
-    // Find IP to translate the hidden source to
-    Optional<Ip> transformedIp =
-        new NatHideBehindVisitor<Optional<Ip>>() {
+
+    // Get a function that, given the egress interface IP, yields the transformed IP to hide behind
+    Optional<Function<Ip, Ip>> transformedIpFunc =
+        new NatHideBehindVisitor<Optional<Function<Ip, Ip>>>() {
           @Override
-          public Optional<Ip> visitNatHideBehindGateway(NatHideBehindGateway natHideBehindGateway) {
-            // TODO When hiding behind a gateway, should the translated IP be the gateway IP
-            //      or the ingress interface IP?
-            if (gateway.getIpv4Address() == null) {
-              warnings.redFlag(
-                  String.format(
-                      "Cannot hide behind gateway %s because it has no IP: NAT settings on %s %s"
-                          + " will be ignored",
-                      gateway.getName(), hasNatSettings.getClass(), hasNatSettings.getName()));
-              return Optional.empty();
-            }
-            return Optional.of(gateway.getIpv4Address());
+          public Optional<Function<Ip, Ip>> visitNatHideBehindGateway(
+              NatHideBehindGateway natHideBehindGateway) {
+            // need to use egress interface's IP to hide source
+            return Optional.of(Function.identity());
           }
 
           @Override
-          public Optional<Ip> visitNatHideBehindIp(NatHideBehindIp natHideBehindIp) {
-            return Optional.of(natHideBehindIp.getIp());
+          public Optional<Function<Ip, Ip>> visitNatHideBehindIp(NatHideBehindIp natHideBehindIp) {
+            return Optional.of(ip -> natHideBehindIp.getIp());
           }
 
           @Override
-          public Optional<Ip> visitUnhandledNatHideBehind(
+          public Optional<Function<Ip, Ip>> visitUnhandledNatHideBehind(
               UnhandledNatHideBehind unhandledNatHideBehind) {
             warnings.redFlag(
                 String.format(
@@ -424,25 +419,25 @@ public class CheckpointNatConversions {
             return Optional.empty();
           }
         }.visit(natSettings.getHideBehind());
-    return transformedIp.map(
-        transformed -> when(matchOriginalSrc).apply(assignSourceIp(transformed)).build());
+    return transformedIpFunc.map(
+        ipFunc ->
+            egressIfaceIp ->
+                when(toMatchExprVisitor.convertSource(hasNatSettings))
+                    .apply(assignSourceIp(ipFunc.apply(egressIfaceIp)))
+                    .build());
   }
 
+  /**
+   * Given a list of {@link Transformation}, merges them into a single transformation which will
+   * apply the first matching transformation in the list. Returns empty optional if list is empty.
+   */
   static @Nonnull Optional<Transformation> mergeTransformations(
-      List<Transformation> manualTransformations,
-      List<Transformation> automaticHideTransformations) {
-    // TODO apply correct ordering of NAT rules
-    // TODO: add automatic-static rules
-    if (manualTransformations.isEmpty() && automaticHideTransformations.isEmpty()) {
+      List<Transformation> transformations) {
+    if (transformations.isEmpty()) {
       return Optional.empty();
     }
-    List<Transformation> reversedAutomaticHideTransformations =
-        Lists.reverse(automaticHideTransformations);
-    List<Transformation> reversedManualHideTransformations = Lists.reverse(manualTransformations);
-    Iterator<Transformation> i =
-        Iterators.concat(
-            reversedAutomaticHideTransformations.iterator(),
-            reversedManualHideTransformations.iterator());
+    List<Transformation> reversedTransformations = Lists.reverse(transformations);
+    Iterator<Transformation> i = reversedTransformations.iterator();
     Transformation finalTransformation = i.next();
     while (i.hasNext()) {
       Transformation previousTransformation = i.next();
