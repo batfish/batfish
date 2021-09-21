@@ -1,6 +1,7 @@
 package org.batfish.vendor.a10.representation;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.vendor.a10.representation.Interface.DEFAULT_MTU;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -13,7 +14,10 @@ import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.Vrf;
 import org.batfish.vendor.VendorConfiguration;
 
 /** Datamodel class representing an A10 device configuration. */
@@ -67,6 +71,25 @@ public final class A10Configuration extends VendorConfiguration {
     return firstNonNull(iface.getMtu(), DEFAULT_MTU);
   }
 
+  public static InterfaceType getInterfaceType(Interface iface) {
+    switch (iface.getType()) {
+      case ETHERNET:
+        return InterfaceType.PHYSICAL;
+      case LOOPBACK:
+        return InterfaceType.LOOPBACK;
+      default:
+        assert false;
+        return InterfaceType.UNKNOWN;
+    }
+  }
+
+  private static String getInterfaceName(Interface iface) {
+    String typeStr = iface.getType().toString();
+    // Only the first letter should be capitalized, like in A10 `show` data
+    return String.format(
+        "%s%s %s", typeStr.substring(0, 1), typeStr.substring(1).toLowerCase(), iface.getNumber());
+  }
+
   @Override
   public List<Configuration> toVendorIndependentConfigurations() throws VendorConversionException {
     String hostname = getHostname();
@@ -75,7 +98,42 @@ public final class A10Configuration extends VendorConfiguration {
     _c.setDeviceModel(DeviceModel.A10);
     _c.setDefaultCrossZoneAction(LineAction.DENY);
     _c.setDefaultInboundAction(LineAction.PERMIT);
+
+    // Generated default VRF
+    Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
+    _c.setVrfs(ImmutableMap.of(DEFAULT_VRF_NAME, vrf));
+
+    _interfacesLoopback.forEach((num, iface) -> convertInterface(iface, vrf));
+    _interfacesEthernet.forEach((num, iface) -> convertInterface(iface, vrf));
+
     return ImmutableList.of(_c);
+  }
+
+  /**
+   * Convert specified VS {@link Interface} in provided {@link Vrf} to a VI model {@link
+   * org.batfish.datamodel.Interface} attached to the VI {@link Configuration}.
+   */
+  private void convertInterface(Interface iface, Vrf vrf) {
+    String name = getInterfaceName(iface);
+    org.batfish.datamodel.Interface.Builder newIface =
+        org.batfish.datamodel.Interface.builder()
+            .setActive(getInterfaceEnabledEffective(iface))
+            .setAddress(iface.getIpAddress())
+            .setMtu(getInterfaceMtuEffective(iface))
+            .setType(getInterfaceType(iface))
+            .setName(name)
+            .setVrf(vrf)
+            .setOwner(_c);
+    ImmutableList.Builder<String> names = ImmutableList.<String>builder().add(name);
+    if (iface.getName() != null && !name.equals(iface.getName())) {
+      names.add(iface.getName());
+    }
+    newIface.setDeclaredNames(names.build());
+
+    // TODO handle switchport settings when we handle other types of interfaces
+    newIface.setSwitchportMode(SwitchportMode.NONE);
+
+    newIface.build();
   }
 
   /**
