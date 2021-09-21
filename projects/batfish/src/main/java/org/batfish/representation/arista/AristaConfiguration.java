@@ -2365,9 +2365,15 @@ public final class AristaConfiguration extends VendorConfiguration {
           }
 
           // convert static routes
-          for (StaticRoute staticRoute : vrf.getStaticRoutes()) {
-            newVrf.getStaticRoutes().add(Conversions.toStaticRoute(c, staticRoute));
-          }
+          vrf.getStaticRoutes()
+              .forEach(
+                  (prefix, srm) -> {
+                    for (StaticRoute staticRoute : srm.getVariants()) {
+                      newVrf
+                          .getStaticRoutes()
+                          .add(Conversions.toStaticRoute(c, prefix, staticRoute, srm.getTag()));
+                    }
+                  });
 
           // convert rip process
           RipProcess ripProcess = vrf.getRipProcess();

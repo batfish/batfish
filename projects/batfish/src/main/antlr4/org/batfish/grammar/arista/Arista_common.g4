@@ -33,6 +33,11 @@ port_number
   uint16
 ;
 
+protocol_distance:
+// 1-255
+   uint8
+;
+
 uint8: UINT8;
 uint16: UINT8 | UINT16;
 uint32: UINT8 | UINT16 | UINT32;

@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
 import java.util.Comparator;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -227,5 +228,17 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
       _hashCode = h;
     }
     return h;
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this)
+        .add(PROP_NETWORK, _network)
+        .add("nextHop", _nextHop)
+        .add(PROP_ADMINISTRATIVE_COST, _admin)
+        .add(PROP_METRIC, _metric)
+        .add("recursive", _recursive)
+        .add(PROP_TAG, _tag)
+        .toString();
   }
 }
