@@ -79,19 +79,6 @@ public class ForwardingAnalysisImplTest {
 
   private Vrf.Builder _vb;
 
-  private static final L3Adjacencies _l3Adjacencies =
-      new L3Adjacencies() {
-        @Override
-        public boolean inSameBroadcastDomain(NodeInterfacePair i1, NodeInterfacePair i2) {
-          return true;
-        }
-
-        @Override
-        public Optional<NodeInterfacePair> pairedPointToPointL3Interface(NodeInterfacePair iface) {
-          return Optional.empty();
-        }
-      };
-
   @Before
   public void setup() {
     NetworkFactory nf = new NetworkFactory();
