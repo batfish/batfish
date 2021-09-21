@@ -150,6 +150,7 @@ public final class A10Configuration extends VendorConfiguration {
   public void finalizeStructures() {
     _interfacesEthernet = ImmutableMap.copyOf(_interfacesEthernet);
     _interfacesLoopback = ImmutableMap.copyOf(_interfacesLoopback);
+    _vlans = ImmutableMap.copyOf(_vlans);
   }
 
   private Configuration _c;
