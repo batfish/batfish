@@ -2,8 +2,10 @@ package org.batfish.common.topology;
 
 import static org.batfish.common.topology.IpOwners.computeHsrpPriority;
 import static org.batfish.common.topology.IpOwners.computeInterfaceHostSubnetIps;
+import static org.batfish.common.topology.IpOwners.computeInterfaceOwners;
 import static org.batfish.common.topology.IpOwners.computeIpIfaceOwners;
 import static org.batfish.common.topology.IpOwners.computeIpVrfOwners;
+import static org.batfish.common.topology.IpOwners.computeNodeOwners;
 import static org.batfish.common.topology.IpOwners.extractHsrp;
 import static org.batfish.common.topology.IpOwners.extractVrrp;
 import static org.batfish.common.topology.IpOwners.partitionVrrpCandidates;
@@ -542,5 +544,30 @@ public class IpOwnersTest {
             new MockL3Adjacencies(
                 ImmutableMap.of(NodeInterfacePair.of(i1), NodeInterfacePair.of(i2)))),
         equalTo(ImmutableSet.of(ImmutableSet.of(i1, i2), ImmutableSet.of(i3))));
+  }
+
+  @Test
+  public void testComputeInterfaceOwners() {
+    Map<Ip, Map<String, Set<String>>> deviceOwnedIps =
+        ImmutableMap.of(
+            Ip.ZERO,
+            ImmutableMap.of("c1", ImmutableSet.of("i1")),
+            Ip.MAX,
+            ImmutableMap.of("c1", ImmutableSet.of("i1")));
+
+    assertThat(
+        computeInterfaceOwners(deviceOwnedIps),
+        equalTo(ImmutableMap.of("c1", ImmutableMap.of("i1", ImmutableSet.of(Ip.ZERO, Ip.MAX)))));
+  }
+
+  @Test
+  public void testComputeNodeOwners() {
+    Map<Ip, Map<String, Set<String>>> deviceOwnedIps =
+        ImmutableMap.of(
+            Ip.ZERO, ImmutableMap.of("c1", ImmutableSet.of("i1"), "c2", ImmutableSet.of("i2")));
+
+    assertThat(
+        computeNodeOwners(deviceOwnedIps),
+        equalTo(ImmutableMap.of(Ip.ZERO, ImmutableSet.of("c1", "c2"))));
   }
 }

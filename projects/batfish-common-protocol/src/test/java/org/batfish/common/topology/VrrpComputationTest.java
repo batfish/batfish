@@ -1,8 +1,5 @@
 package org.batfish.common.topology;
 
-import static org.batfish.common.topology.IpOwners.computeIpInterfaceOwners;
-import static org.batfish.common.topology.IpOwners.computeIpNodeOwners;
-import static org.batfish.common.topology.TopologyUtil.computeNodeInterfaces;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
@@ -10,6 +7,7 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSortedMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -19,6 +17,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.VrrpGroup;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -30,6 +29,19 @@ public class VrrpComputationTest {
   private Interface _i2;
   private ConcreteInterfaceAddress _virtInterfaceAddr =
       ConcreteInterfaceAddress.create(Ip.parse("1.1.1.1"), Prefix.MAX_PREFIX_LENGTH);
+
+  private static final L3Adjacencies _l3Adjacencies =
+      new L3Adjacencies() {
+        @Override
+        public boolean inSameBroadcastDomain(NodeInterfacePair i1, NodeInterfacePair i2) {
+          return true;
+        }
+
+        @Override
+        public Optional<NodeInterfacePair> pairedPointToPointL3Interface(NodeInterfacePair iface) {
+          return Optional.empty();
+        }
+      };
 
   @Before
   public void setup() {
@@ -85,7 +97,7 @@ public class VrrpComputationTest {
   public void testVrrpPriority() {
     Map<String, Configuration> configs = setupVrrpTestCase(false);
 
-    Map<Ip, Set<String>> owners = computeIpNodeOwners(configs, false);
+    Map<Ip, Set<String>> owners = new IpOwners(configs, _l3Adjacencies).getNodeOwners(false);
 
     assertThat(owners.get(_virtInterfaceAddr.getIp()), contains("n2"));
   }
@@ -98,7 +110,7 @@ public class VrrpComputationTest {
   public void testVrrpPriorityTieBreaking() {
     Map<String, Configuration> configs = setupVrrpTestCase(true);
 
-    Map<Ip, Set<String>> owners = computeIpNodeOwners(configs, false);
+    Map<Ip, Set<String>> owners = new IpOwners(configs, _l3Adjacencies).getNodeOwners(false);
 
     // Ensure node that has higher interface IP wins
     assertThat(owners.get(_virtInterfaceAddr.getIp()), contains("n2"));
@@ -109,7 +121,7 @@ public class VrrpComputationTest {
     Map<String, Configuration> configs = setupVrrpTestCase(true);
 
     Map<Ip, Map<String, Set<String>>> interfaceOwners =
-        computeIpInterfaceOwners(computeNodeInterfaces(configs), false, null);
+        new IpOwners(configs, _l3Adjacencies).getAllDeviceOwnedIps();
 
     assertThat(
         interfaceOwners,
