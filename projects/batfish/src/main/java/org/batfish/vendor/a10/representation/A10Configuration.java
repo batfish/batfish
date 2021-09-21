@@ -125,11 +125,12 @@ public final class A10Configuration extends VendorConfiguration {
             .setVrf(vrf)
             .setOwner(_c);
     ImmutableList.Builder<String> names = ImmutableList.<String>builder().add(name);
-    if (iface.getName() != null) {
+    if (iface.getName() != null && !name.equals(iface.getName())) {
       names.add(iface.getName());
     }
     newIface.setDeclaredNames(names.build());
 
+    // TODO handle switchport settings when we handle other types of interfaces
     newIface.setSwitchportMode(SwitchportMode.NONE);
 
     newIface.build();
