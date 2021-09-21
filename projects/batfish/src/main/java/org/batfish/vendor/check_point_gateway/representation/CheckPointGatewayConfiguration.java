@@ -133,13 +133,29 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
         Optional.ofNullable(getConversionContext())
             .map(ConversionContext::getCheckpointManagementConfiguration)
             .map(cmc -> (CheckpointManagementConfiguration) cmc);
-    mgmtConfig.ifPresent(this::convertManagementConfig);
+    Optional<Entry<ManagementDomain, GatewayOrServer>> domainAndGateway =
+        mgmtConfig.flatMap(this::findGatewayAndDomain);
+    Optional<ManagementPackage> mgmtPackage =
+        domainAndGateway.flatMap(e -> findAccessPackage(e.getKey(), e.getValue()));
+    Map<Uid, NamedManagementObject> mgmtObjects =
+        mgmtPackage
+            .map(pakij -> getAllObjects(pakij, domainAndGateway.get().getKey()))
+            .orElse(ImmutableMap.of());
+
+    // Initial management data conversion
+    domainAndGateway.ifPresent(e -> convertCluster(e.getValue(), e.getKey()));
+    mgmtPackage.ifPresent(pakij -> convertPackage(pakij, mgmtObjects));
 
     // Gateways don't have VRFs, so put everything in a generated default VRF
     Vrf vrf = new Vrf(VRF_NAME);
     _c.setVrfs(ImmutableMap.of(VRF_NAME, vrf));
 
     _interfaces.forEach((ifaceName, iface) -> convertInterface(iface, vrf));
+
+    // Now that VI interfaces exist, convert NAT rulebase if present
+    mgmtPackage
+        .map(ManagementPackage::getNatRulebase)
+        .ifPresent(r -> convertNatRulebase(r, domainAndGateway.get().getValue(), mgmtObjects));
 
     vrf.getStaticRoutes()
         .addAll(
@@ -148,25 +164,6 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
                 .collect(ImmutableSet.toImmutableSet()));
 
     return ImmutableList.of(_c);
-  }
-
-  /** Converts management server settings applicable to this configuration */
-  private void convertManagementConfig(CheckpointManagementConfiguration mgmtConfig) {
-    // Find gateway
-    Optional<Entry<ManagementDomain, GatewayOrServer>> maybeGatewayAndDomain =
-        findGatewayAndDomain(mgmtConfig);
-    if (!maybeGatewayAndDomain.isPresent()) {
-      return;
-    }
-    ManagementDomain domain = maybeGatewayAndDomain.get().getKey();
-    GatewayOrServer gateway = maybeGatewayAndDomain.get().getValue();
-    convertCluster(gateway, domain);
-    // Find package
-    Optional<ManagementPackage> maybePackage = findAccessPackage(domain, gateway);
-    if (!maybePackage.isPresent()) {
-      return;
-    }
-    convertPackage(maybePackage.get(), gateway, domain);
   }
 
   /** Populates cluster virtual IP metadata if this gateway is a member of a cluster. */
@@ -270,15 +267,11 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
 
   /**
    * Convert constructs in the specified package to their VI model equivalent and add them to the VI
-   * configuration.
+   * configuration. (Does not include NAT rulebase conversion.)
    */
-  private void convertPackage(
-      ManagementPackage pakij, GatewayOrServer gateway, ManagementDomain domain) {
-    Map<Uid, NamedManagementObject> objects = getAllObjects(pakij, domain);
+  private void convertPackage(ManagementPackage pakij, Map<Uid, NamedManagementObject> objects) {
     convertObjects(objects);
     convertAccessLayers(pakij.getAccessLayers(), objects);
-    Optional.ofNullable(pakij.getNatRulebase())
-        .ifPresent(r -> convertNatRulebase(r, gateway, objects));
   }
 
   /**
@@ -299,7 +292,10 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     return objects;
   }
 
-  /** Converts the given {@link NatRulebase} and applies it to this config. */
+  /**
+   * Converts the given {@link NatRulebase} and applies it to this config. Must be called after VI
+   * interfaces are created.
+   */
   @SuppressWarnings("unused")
   private void convertNatRulebase(
       NatRulebase natRulebase, GatewayOrServer gateway, Map<Uid, NamedManagementObject> objects) {
@@ -335,10 +331,14 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
             .filter(Optional::isPresent)
             .map(Optional::get)
             .collect(ImmutableList.toImmutableList());
-    _natTransformation =
-        mergeTransformations(manualRuleTransformations, automaticHideRuleTransformations)
-            .orElse(null);
-    // TODO Apply transformations to appropriate interfaces
+    // Apply transformation to interfaces
+    // TODO: Create and apply interface-specific transformations
+    mergeTransformations(manualRuleTransformations, automaticHideRuleTransformations)
+        .ifPresent(
+            transformation ->
+                _c.getActiveInterfaces()
+                    .values()
+                    .forEach(iface -> iface.setIncomingTransformation(transformation)));
   }
 
   private @Nonnull Optional<ManagementPackage> findAccessPackage(
@@ -528,7 +528,6 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
 
     // TODO confirm AccessRule interaction with NAT
     newIface.setIncomingFilter(_c.getIpAccessLists().get(INTERFACE_ACL_NAME));
-    newIface.setIncomingTransformation(_natTransformation);
     newIface.setFirewallSessionInterfaceInfo(
         new FirewallSessionInterfaceInfo(
             POST_NAT_FIB_LOOKUP, ImmutableList.of(ifaceName), null, null));
@@ -602,8 +601,6 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
   private Map<String, Interface> _interfaces;
   /** destination prefix -> static route definition */
   private Map<Prefix, StaticRoute> _staticRoutes;
-
-  private transient Transformation _natTransformation;
 
   private transient Map<String, org.batfish.vendor.check_point_management.Interface>
       _clusterInterfaces;
