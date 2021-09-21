@@ -103,7 +103,10 @@ public class RoutesAnswerer extends Answerer {
     RoutingProtocolSpecifier protocolSpec = question.getRoutingProtocolSpecifier();
     String vrfRegex = question.getVrfs();
     Map<Ip, Set<String>> ipOwners =
-        computeIpNodeOwners(_batfish.loadConfigurations(snapshot), true);
+        computeIpNodeOwners(
+            _batfish.loadConfigurations(snapshot),
+            true,
+            _batfish.getTopologyProvider().getL3Adjacencies(snapshot));
     boolean bgpMultipathBest = expandedBgpRouteStatuses.contains(BEST);
     boolean bgpBackup = expandedBgpRouteStatuses.contains(BACKUP);
     Multiset<Row> rows;
@@ -225,12 +228,20 @@ public class RoutesAnswerer extends Answerer {
       case MAIN:
       default:
         dp = _batfish.loadDataPlane(snapshot);
-        ipOwners = computeIpNodeOwners(_batfish.loadConfigurations(snapshot), true);
+        ipOwners =
+            computeIpNodeOwners(
+                _batfish.loadConfigurations(snapshot),
+                true,
+                _batfish.getTopologyProvider().getL3Adjacencies(snapshot));
         routesGroupedByKeyInBase =
             groupRoutes(dp.getRibs(), matchingNodes, network, vrfRegex, protocolSpec, ipOwners);
 
         dp = _batfish.loadDataPlane(reference);
-        ipOwners = computeIpNodeOwners(_batfish.loadConfigurations(reference), true);
+        ipOwners =
+            computeIpNodeOwners(
+                _batfish.loadConfigurations(reference),
+                true,
+                _batfish.getTopologyProvider().getL3Adjacencies(snapshot));
         routesGroupedByKeyInDelta =
             groupRoutes(dp.getRibs(), matchingNodes, network, vrfRegex, protocolSpec, ipOwners);
 

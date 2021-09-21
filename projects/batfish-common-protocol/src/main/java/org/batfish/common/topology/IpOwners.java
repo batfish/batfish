@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -74,8 +75,10 @@ public final class IpOwners {
         ImmutableMap.copyOf(computeNodeInterfaces(configurations));
 
     {
-      _allDeviceOwnedIps = ImmutableMap.copyOf(computeIpInterfaceOwners(allInterfaces, false));
-      _activeDeviceOwnedIps = ImmutableMap.copyOf(computeIpInterfaceOwners(allInterfaces, true));
+      _allDeviceOwnedIps =
+          ImmutableMap.copyOf(computeIpInterfaceOwners(allInterfaces, false, null));
+      _activeDeviceOwnedIps =
+          ImmutableMap.copyOf(computeIpInterfaceOwners(allInterfaces, true, null));
     }
 
     {
@@ -142,7 +145,7 @@ public final class IpOwners {
       Map<String, Configuration> configurations, boolean excludeInactive) {
     // TODO: cleanup callers, make this private
     return computeInterfaceOwnedIps(
-        computeIpInterfaceOwners(computeNodeInterfaces(configurations), excludeInactive));
+        computeIpInterfaceOwners(computeNodeInterfaces(configurations), excludeInactive, null));
   }
 
   /**
@@ -185,6 +188,23 @@ public final class IpOwners {
    */
   public static Map<Ip, Set<String>> computeIpNodeOwners(
       Map<String, Configuration> configurations, boolean excludeInactive) {
+    return computeIpNodeOwners(configurations, excludeInactive, null);
+  }
+
+  /**
+   * Compute a mapping of IP addresses to a set of hostnames that "own" this IP (e.g., as a network
+   * interface address)
+   *
+   * @param configurations map of configurations keyed by hostname
+   * @param excludeInactive Whether to exclude inactive interfaces
+   * @param l3Adjacencies if non-null, VRRP ownership is disambiguated among multiple domains that
+   *     use the same virtual IP
+   * @return A map of {@link Ip}s to a set of hostnames that own this IP
+   */
+  public static Map<Ip, Set<String>> computeIpNodeOwners(
+      Map<String, Configuration> configurations,
+      boolean excludeInactive,
+      @Nullable L3Adjacencies l3Adjacencies) {
     Span span =
         GlobalTracer.get()
             .buildSpan("TopologyUtil.computeIpNodeOwners excludeInactive=" + excludeInactive)
@@ -193,7 +213,8 @@ public final class IpOwners {
       assert scope != null; // avoid unused warning
 
       return toImmutableMap(
-          computeIpInterfaceOwners(computeNodeInterfaces(configurations), excludeInactive),
+          computeIpInterfaceOwners(
+              computeNodeInterfaces(configurations), excludeInactive, l3Adjacencies),
           Entry::getKey, /* Ip */
           ipInterfaceOwnersEntry ->
               /* project away interfaces */
@@ -215,7 +236,9 @@ public final class IpOwners {
    */
   @VisibleForTesting
   static Map<Ip, Map<String, Set<String>>> computeIpInterfaceOwners(
-      Map<String, Set<Interface>> allInterfaces, boolean excludeInactive) {
+      Map<String, Set<Interface>> allInterfaces,
+      boolean excludeInactive,
+      @Nullable L3Adjacencies l3Adjacencies) {
     Map<Ip, Map<String, Set<String>>> ipOwners = new HashMap<>();
     Table<ConcreteInterfaceAddress, Integer, Set<Interface>> vrrpGroups = HashBasedTable.create();
     Table<Ip, Integer, Set<Interface>> hsrpGroups = HashBasedTable.create();
@@ -226,26 +249,7 @@ public final class IpOwners {
                   if ((!i.getActive() || i.getBlacklisted()) && excludeInactive) {
                     return;
                   }
-                  // collect vrrp info
-                  i.getVrrpGroups()
-                      .forEach(
-                          (groupNum, vrrpGroup) -> {
-                            ConcreteInterfaceAddress address = vrrpGroup.getVirtualAddress();
-                            if (address == null) {
-                              /*
-                               * Invalid VRRP configuration. The VRRP has no source IP address that
-                               * would be used for VRRP election. This interface could never win the
-                               * election, so is not a candidate.
-                               */
-                              return;
-                            }
-                            Set<Interface> candidates = vrrpGroups.get(address, groupNum);
-                            if (candidates == null) {
-                              candidates = Collections.newSetFromMap(new IdentityHashMap<>());
-                              vrrpGroups.put(address, groupNum, candidates);
-                            }
-                            candidates.add(i);
-                          });
+                  extractVrrp(vrrpGroups, i);
                   extractHsrp(hsrpGroups, i);
                   // collect prefixes
                   i.getAllConcreteAddresses().stream()
@@ -257,31 +261,7 @@ public final class IpOwners {
                                   .computeIfAbsent(hostname, k -> new HashSet<>())
                                   .add(i.getName()));
                 }));
-    vrrpGroups
-        .cellSet()
-        .forEach(
-            cell -> {
-              ConcreteInterfaceAddress address = cell.getRowKey();
-              assert address != null;
-              Integer groupNum = cell.getColumnKey();
-              assert groupNum != null;
-              Set<Interface> candidates = cell.getValue();
-              assert candidates != null;
-              /*
-               * Compare priorities first, then highest interface IP, then hostname, then interface name.
-               */
-              Interface vrrpMaster =
-                  Collections.max(
-                      candidates,
-                      Comparator.comparingInt(
-                              (Interface o) -> o.getVrrpGroups().get(groupNum).getPriority())
-                          .thenComparing(o -> o.getConcreteAddress().getIp())
-                          .thenComparing(o -> NodeInterfacePair.of(o)));
-              ipOwners
-                  .computeIfAbsent(address.getIp(), k -> new HashMap<>())
-                  .computeIfAbsent(vrrpMaster.getOwner().getHostname(), k -> new HashSet<>())
-                  .add(vrrpMaster.getName());
-            });
+    processVrrpGroups(ipOwners, vrrpGroups, l3Adjacencies);
     processHsrpGroups(ipOwners, hsrpGroups);
 
     // freeze
@@ -377,6 +357,101 @@ public final class IpOwners {
               }
             });
     return hsrpEvaluator.getPriority();
+  }
+
+  /** extract VRRP info from a given interface and add it to the {@code vrrpGroups} table */
+  @VisibleForTesting
+  static void extractVrrp(
+      Table<ConcreteInterfaceAddress, Integer, Set<Interface>> vrrpGroups, Interface i) {
+    i.getVrrpGroups()
+        .forEach(
+            (groupNum, vrrpGroup) -> {
+              ConcreteInterfaceAddress address = vrrpGroup.getVirtualAddress();
+              if (address == null) {
+                /*
+                 * Invalid VRRP configuration. The VRRP has no source IP address that
+                 * would be used for VRRP election. This interface could never win the
+                 * election, so is not a candidate.
+                 */
+                return;
+              }
+              Set<Interface> candidates = vrrpGroups.get(address, groupNum);
+              if (candidates == null) {
+                candidates = Collections.newSetFromMap(new IdentityHashMap<>());
+                vrrpGroups.put(address, groupNum, candidates);
+              }
+              candidates.add(i);
+            });
+  }
+
+  /**
+   * Take {@code vrrpGroups} table, run master interface selection process, and add that
+   * IP/interface pair to ip owners
+   */
+  static void processVrrpGroups(
+      Map<Ip, Map<String, Set<String>>> ipOwners,
+      Table<ConcreteInterfaceAddress, Integer, Set<Interface>> vrrpGroups,
+      @Nullable L3Adjacencies l3Adjacencies) {
+    vrrpGroups
+        .cellSet()
+        .forEach(
+            cell -> {
+              ConcreteInterfaceAddress address = cell.getRowKey();
+              assert address != null;
+              Integer groupNum = cell.getColumnKey();
+              assert groupNum != null;
+              Set<Interface> candidates = cell.getValue();
+              assert candidates != null;
+
+              Set<Set<Interface>> candidatePartitions =
+                  l3Adjacencies == null
+                      ? ImmutableSet.of(candidates)
+                      : partitionVrrpCandidates(candidates, l3Adjacencies);
+
+              candidatePartitions.forEach(
+                  cp -> {
+                    /*
+                     * Compare priorities first, then highest interface IP, then hostname, then interface name.
+                     */
+                    Interface vrrpMaster =
+                        Collections.max(
+                            cp,
+                            Comparator.comparingInt(
+                                    (Interface o) -> o.getVrrpGroups().get(groupNum).getPriority())
+                                .thenComparing(o -> o.getConcreteAddress().getIp())
+                                .thenComparing(o -> NodeInterfacePair.of(o)));
+                    ipOwners
+                        .computeIfAbsent(address.getIp(), k -> new HashMap<>())
+                        .computeIfAbsent(vrrpMaster.getOwner().getHostname(), k -> new HashSet<>())
+                        .add(vrrpMaster.getName());
+                  });
+            });
+  }
+
+  /**
+   * Partitions the input set of VRRP candidates into subsets where all candidates are in the same
+   * broadcast domain. This disambiguates VRRP groups that have the same IP and group ID
+   */
+  @VisibleForTesting
+  static Set<Set<Interface>> partitionVrrpCandidates(
+      Set<Interface> candidates, L3Adjacencies l3Adjacencies) {
+    Map<NodeInterfacePair, Set<Interface>> partitions = new HashMap<>();
+    for (Interface c : candidates) {
+      boolean foundRepresentative = false;
+      NodeInterfacePair cni = NodeInterfacePair.of(c);
+      for (NodeInterfacePair representative : partitions.keySet()) {
+        if (l3Adjacencies.inSameBroadcastDomain(representative, cni)) {
+          partitions.get(representative).add(c);
+          foundRepresentative = true;
+          break;
+        }
+      }
+      if (!foundRepresentative) {
+        partitions.put(cni, new HashSet<>());
+        partitions.get(cni).add(c);
+      }
+    }
+    return ImmutableSet.copyOf(partitions.values());
   }
 
   /**
