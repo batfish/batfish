@@ -7760,7 +7760,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       warn(
           messageCtx,
           String.format(
-              "Expected %s with length in range %s, but got '%s'", text, lengthSpace, name));
+              "Expected %s with length in range %s, but got '%s'", name, lengthSpace, text));
       return Optional.empty();
     }
     return Optional.of(text);
