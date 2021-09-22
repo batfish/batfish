@@ -28,11 +28,5 @@ sid_mtu: MTU interface_mtu NEWLINE;
 
 sid_name: NAME interface_name_str NEWLINE;
 
-// 1-40? assuming 40 is max for now
-ethernet_number: uint8;
-
-// 0-10
-loopback_number: uint8;
-
 // 434-1500
 interface_mtu: uint16;

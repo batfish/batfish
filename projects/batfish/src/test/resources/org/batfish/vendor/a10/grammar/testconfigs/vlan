@@ -1,0 +1,37 @@
+!BATFISH_FORMAT: a10_acos
+hostname vlan
+!
+vlan 2
+ tagged ethernet 1 to 3
+ router-interface ve 2
+ name "Vlan 2 Name"
+!
+vlan 3
+ tagged ethernet 4
+ tagged ethernet 5
+!
+vlan 4
+ untagged ethernet 6 to 7
+!
+vlan 5
+ untagged ethernet 8
+ untagged ethernet 9
+!
+interface ethernet 1
+!
+interface ethernet 2
+!
+interface ethernet 3
+!
+interface ethernet 4
+!
+interface ethernet 5
+!
+interface ethernet 6
+!
+interface ethernet 7
+!
+interface ethernet 8
+!
+interface ethernet 9
+!

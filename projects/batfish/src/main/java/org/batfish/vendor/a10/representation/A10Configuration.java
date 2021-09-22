@@ -26,6 +26,7 @@ public final class A10Configuration extends VendorConfiguration {
   public A10Configuration() {
     _interfacesEthernet = new HashMap<>();
     _interfacesLoopback = new HashMap<>();
+    _vlans = new HashMap<>();
   }
 
   @Override
@@ -69,6 +70,10 @@ public final class A10Configuration extends VendorConfiguration {
   @VisibleForTesting
   public static int getInterfaceMtuEffective(Interface iface) {
     return firstNonNull(iface.getMtu(), DEFAULT_MTU);
+  }
+
+  public Map<Integer, Vlan> getVlans() {
+    return _vlans;
   }
 
   public static InterfaceType getInterfaceType(Interface iface) {
@@ -145,11 +150,13 @@ public final class A10Configuration extends VendorConfiguration {
   public void finalizeStructures() {
     _interfacesEthernet = ImmutableMap.copyOf(_interfacesEthernet);
     _interfacesLoopback = ImmutableMap.copyOf(_interfacesLoopback);
+    _vlans = ImmutableMap.copyOf(_vlans);
   }
 
   private Configuration _c;
   private String _hostname;
   private Map<Integer, Interface> _interfacesEthernet;
   private Map<Integer, Interface> _interfacesLoopback;
+  private Map<Integer, Vlan> _vlans;
   private ConfigurationFormat _vendor;
 }

@@ -1,0 +1,11 @@
+!BATFISH_FORMAT: a10_acos
+!version 2.7.2, build 123 (Aug-5-2021,01:23)
+hostname vlan_acos2
+!
+vlan 2
+ tagged ethernet 1 ethernet 2
+!
+interface ethernet 1
+!
+interface ethernet 2
+!
