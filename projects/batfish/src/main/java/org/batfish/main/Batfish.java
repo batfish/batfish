@@ -1225,11 +1225,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
       configurations = _storage.loadConfigurations(snapshot.getNetwork(), snapshot.getSnapshot());
       if (configurations != null) {
         _logger.debugf("Loaded configurations for %s off disk", snapshot);
-      } else {
-        if (parseIfNeeded) {
-          // Otherwise, we have to parse the configurations. Fall back to old, hacky code.
-          configurations = actuallyParseConfigurations(snapshot);
-        }
+      } else if (parseIfNeeded) {
+        // Otherwise, we have to parse the configurations. Fall back to old, hacky code.
+        configurations = actuallyParseConfigurations(snapshot);
       }
       if (configurations != null) {
         // Apply things like blacklist and aggregations before installing in the cache.
