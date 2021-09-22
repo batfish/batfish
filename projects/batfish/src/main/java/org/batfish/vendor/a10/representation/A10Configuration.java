@@ -71,7 +71,9 @@ public final class A10Configuration extends VendorConfiguration {
         return false;
       case LOOPBACK:
       case VE:
+        return true;
       default:
+        assert false;
         return true;
     }
   }
