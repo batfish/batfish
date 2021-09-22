@@ -8,11 +8,13 @@ options {
 
 s_interface: INTERFACE si_definition;
 
-si_definition: sid_ethernet | sid_loopback;
+si_definition: sid_ethernet | sid_loopback | sid_ve;
 
 sid_ethernet: ETHERNET num = ethernet_number NEWLINE sid*;
 
 sid_loopback: LOOPBACK num = loopback_number NEWLINE sid*;
+
+sid_ve: VE num = vlan_number NEWLINE sid*;
 
 sid: (sid_disable | sid_enable | sid_ip | sid_mtu | sid_name);
 
