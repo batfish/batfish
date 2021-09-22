@@ -217,6 +217,7 @@ public class BatfishTest {
             .setHostsFiles(testrigResourcePrefix, ImmutableSet.of("c1.json", "c2.json"));
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(testrigTextBuilder.build(), _folder);
+    batfish.loadConfigurations(batfish.getSnapshot());
 
     assertThat(
         batfish.getTopologyProvider().getRawLayer3Topology(batfish.getSnapshot()).getEdges(),

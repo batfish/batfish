@@ -1197,7 +1197,18 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
+  public Optional<SortedMap<String, Configuration>> getProcessedConfigurations(
+      NetworkSnapshot snapshot) {
+    return loadConfigurations(snapshot, false);
+  }
+
+  @Override
   public SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot) {
+    return loadConfigurations(snapshot, true).get();
+  }
+
+  private Optional<SortedMap<String, Configuration>> loadConfigurations(
+      NetworkSnapshot snapshot, boolean parseIfNeeded) {
     Span span = GlobalTracer.get().buildSpan("Load configurations").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
@@ -1206,23 +1217,28 @@ public class Batfish extends PluginConsumer implements IBatfish {
       SortedMap<String, Configuration> configurations =
           _cachedConfigurations.getIfPresent(snapshot);
       if (configurations != null) {
-        return configurations;
+        return Optional.of(configurations);
       }
       _logger.debugf("Loading configurations for %s, cache miss", snapshot);
 
       // Next, see if we have an up-to-date configurations on disk.
       configurations = _storage.loadConfigurations(snapshot.getNetwork(), snapshot.getSnapshot());
+      if (configurations == null && !parseIfNeeded) {
+        return Optional.empty();
+      }
+
       if (configurations != null) {
         _logger.debugf("Loaded configurations for %s off disk", snapshot);
       } else {
         // Otherwise, we have to parse the configurations. Fall back to old, hacky code.
         configurations = actuallyParseConfigurations(snapshot);
       }
+
       // Apply things like blacklist and aggregations before installing in the cache.
       postProcessSnapshot(snapshot, configurations);
-
       _cachedConfigurations.put(snapshot, configurations);
-      return configurations;
+
+      return Optional.of(configurations);
     } finally {
       span.finish();
     }

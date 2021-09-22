@@ -847,6 +847,7 @@ public final class CumulusNcluGrammarTest {
                 .setLayer1TopologyPrefix(TESTRIGS_PREFIX + testrigName)
                 .build(),
             _folder);
+    batfish.loadConfigurations(batfish.getSnapshot());
 
     // Expect an l3 edge to come up on the peer link interface
     Edge edge =

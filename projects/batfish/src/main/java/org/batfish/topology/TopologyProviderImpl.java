@@ -207,11 +207,20 @@ public final class TopologyProviderImpl implements TopologyProvider {
           .maximumSize(MAX_CACHED_SNAPSHOTS)
           .build(CacheLoader.from(this::computeVxlanTopology));
 
+  private @Nonnull Map<String, Configuration> getConfigurations(NetworkSnapshot snapshot) {
+    return _batfish
+        .getProcessedConfigurations(snapshot)
+        .orElseThrow(
+            () ->
+                new IllegalArgumentException(
+                    "Snapshot '" + snapshot + "' has not been parsed/serialized"));
+  }
+
   private @Nonnull IpOwners computeIpOwners(NetworkSnapshot snapshot) {
     Span span = GlobalTracer.get().buildSpan("TopologyProviderImpl::computeIpOwners").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
-      return new IpOwners(_batfish.loadConfigurations(snapshot));
+      return new IpOwners(getConfigurations(snapshot));
     } finally {
       span.finish();
     }
@@ -233,7 +242,7 @@ public final class TopologyProviderImpl implements TopologyProvider {
       return Layer1TopologiesFactory.create(
           getRawLayer1PhysicalTopology(networkSnapshot).orElse(Layer1Topology.EMPTY),
           loadSynthesizedLayer1Topology(networkSnapshot).orElse(Layer1Topology.EMPTY),
-          _batfish.loadConfigurations(networkSnapshot));
+          getConfigurations(networkSnapshot));
     } finally {
       span.finish();
     }
@@ -245,7 +254,7 @@ public final class TopologyProviderImpl implements TopologyProvider {
         GlobalTracer.get().buildSpan("TopologyProviderImpl::computeInitialIpsecTopology").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
-      return TopologyUtil.computeIpsecTopology(_batfish.loadConfigurations(networkSnapshot));
+      return TopologyUtil.computeIpsecTopology(getConfigurations(networkSnapshot));
     } finally {
       span.finish();
     }
@@ -271,13 +280,13 @@ public final class TopologyProviderImpl implements TopologyProvider {
       Layer1Topologies l1 = getLayer1Topologies(networkSnapshot);
       if (L3Adjacencies.USE_NEW_METHOD) {
         return BroadcastL3Adjacencies.create(
-            l1, VxlanTopology.EMPTY, _batfish.loadConfigurations(networkSnapshot));
+            l1, VxlanTopology.EMPTY, getConfigurations(networkSnapshot));
       }
       if (l1.getCombinedL1().isEmpty()) {
         return GlobalBroadcastNoPointToPoint.instance();
       }
 
-      Map<String, Configuration> configs = _batfish.loadConfigurations(networkSnapshot);
+      Map<String, Configuration> configs = getConfigurations(networkSnapshot);
       return HybridL3Adjacencies.create(
           l1,
           computeLayer2Topology(l1.getActiveLogicalL1(), VxlanTopology.EMPTY, configs),
@@ -307,7 +316,7 @@ public final class TopologyProviderImpl implements TopologyProvider {
         GlobalTracer.get().buildSpan("TopologyProviderImpl::computeRawLayer3Topology").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
-      Map<String, Configuration> configurations = _batfish.loadConfigurations(networkSnapshot);
+      Map<String, Configuration> configurations = getConfigurations(networkSnapshot);
       L3Adjacencies adjacencies = getInitialL3Adjacencies(networkSnapshot);
       return TopologyUtil.computeRawLayer3Topology(adjacencies, configurations);
     } finally {
@@ -321,7 +330,7 @@ public final class TopologyProviderImpl implements TopologyProvider {
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
       return OspfTopologyUtils.computeOspfTopology(
-          NetworkConfigurations.of(_batfish.loadConfigurations(snapshot)),
+          NetworkConfigurations.of(getConfigurations(snapshot)),
           getInitialLayer3Topology(snapshot));
     } finally {
       span.finish();
@@ -333,8 +342,7 @@ public final class TopologyProviderImpl implements TopologyProvider {
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
       return OspfTopologyUtils.computeOspfTopology(
-          NetworkConfigurations.of(_batfish.loadConfigurations(snapshot)),
-          getLayer3Topology(snapshot));
+          NetworkConfigurations.of(getConfigurations(snapshot)), getLayer3Topology(snapshot));
     }
   }
 
@@ -343,7 +351,7 @@ public final class TopologyProviderImpl implements TopologyProvider {
         GlobalTracer.get().buildSpan("TopologyProviderImpl::computeInitialTunnelTopology").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
-      return TopologyUtil.computeInitialTunnelTopology(_batfish.loadConfigurations(snapshot));
+      return TopologyUtil.computeInitialTunnelTopology(getConfigurations(snapshot));
     } finally {
       span.finish();
     }
@@ -353,7 +361,7 @@ public final class TopologyProviderImpl implements TopologyProvider {
     Span span = GlobalTracer.get().buildSpan("TopologyProviderImpl::computeVxlanTopology").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
-      return VxlanTopologyUtils.computeVxlanTopology(_batfish.loadConfigurations(snapshot));
+      return VxlanTopologyUtils.computeVxlanTopology(getConfigurations(snapshot));
     } finally {
       span.finish();
     }

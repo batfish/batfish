@@ -894,6 +894,7 @@ public final class FlatJuniperGrammarTest {
                 .setConfigurationFiles(resourcePrefix, fw, r1, r2, sw)
                 .build(),
             _folder);
+    batfish.loadConfigurations(batfish.getSnapshot());
 
     // check layer-2 adjacencies for L3 interfaces
     L3Adjacencies adjacencies =
@@ -931,6 +932,7 @@ public final class FlatJuniperGrammarTest {
                 .setConfigurationFiles(resourcePrefix, "r1", "r2")
                 .build(),
             _folder);
+    batfish.loadConfigurations(batfish.getSnapshot());
 
     Layer1Topology layer1LogicalTopology =
         batfish.getTopologyProvider().getLayer1LogicalTopology(batfish.getSnapshot()).get();
