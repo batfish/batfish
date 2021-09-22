@@ -45,7 +45,6 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import org.batfish.common.topology.GlobalBroadcastNoPointToPoint;
 import org.batfish.common.topology.IpOwners;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 import org.junit.Before;
@@ -128,7 +127,7 @@ public class ForwardingAnalysisImplTest {
             c2.getHostname(),
             ImmutableMap.of(vrf2.getName(), ImmutableMap.of(i2.getName(), ipsRoutedOutI2)));
     Map<String, Map<String, Set<Ip>>> interfaceOwnedIps =
-        new IpOwners(configs, GlobalBroadcastNoPointToPoint.instance()).getInterfaceOwners(false);
+        IpOwners.computeInterfaceOwnedIps(configs, false);
     Map<String, Map<String, IpSpace>> result =
         computeArpReplies(configurations, ipsRoutedOutInterfaces, interfaceOwnedIps, routableIps);
 
@@ -230,7 +229,7 @@ public class ForwardingAnalysisImplTest {
 
     Map<String, Configuration> configs = ImmutableMap.of(config.getHostname(), config);
     Map<String, Map<String, Set<Ip>>> interfaceOwnedIps =
-        new IpOwners(configs, GlobalBroadcastNoPointToPoint.instance()).getInterfaceOwners(false);
+        IpOwners.computeInterfaceOwnedIps(configs, false);
     Map<String, IpSpace> result =
         ForwardingAnalysisImpl.computeArpRepliesByInterface(
             interfaces, routableIpsByVrf, ipsRoutedOutInterfaces, interfaceOwnedIps);
@@ -287,7 +286,7 @@ public class ForwardingAnalysisImplTest {
             .build();
 
     Map<String, Map<String, Set<Ip>>> interfaceOwnedIps =
-        new IpOwners(configs, GlobalBroadcastNoPointToPoint.instance()).getInterfaceOwners(false);
+        IpOwners.computeInterfaceOwnedIps(configs, false);
 
     IpSpace p1IpSpace = IpWildcard.create(P1).toIpSpace();
     IpSpace i1ArpReplies =
@@ -442,10 +441,7 @@ public class ForwardingAnalysisImplTest {
             .including(IpWildcard.create(P1), IpWildcard.create(P2))
             .build();
     Map<String, Map<String, Set<Ip>>> interfaceOwnedIps =
-        new IpOwners(
-                ImmutableMap.of(config.getHostname(), config),
-                GlobalBroadcastNoPointToPoint.instance())
-            .getInterfaceOwners(false);
+        IpOwners.computeInterfaceOwnedIps(ImmutableMap.of(config.getHostname(), config), false);
     IpSpace noProxyArpResult =
         computeInterfaceArpReplies(
             iNoProxyArp, routableIpsForThisVrf, ipsRoutedThroughInterface, interfaceOwnedIps);
@@ -484,7 +480,7 @@ public class ForwardingAnalysisImplTest {
         ConcreteInterfaceAddress.create(P2.getFirstHostIp(), P2.getPrefixLength());
     Interface i = _ib.setAddresses(primary, secondary).build();
     Map<String, Map<String, Set<Ip>>> interfaceOwnedIps =
-        new IpOwners(configs, GlobalBroadcastNoPointToPoint.instance()).getInterfaceOwners(false);
+        IpOwners.computeInterfaceOwnedIps(configs, false);
     IpSpace result = computeIpsAssignedToThisInterfaceForArpReplies(i, interfaceOwnedIps);
 
     assertThat(result, containsIp(P1.getFirstHostIp()));
@@ -1296,15 +1292,9 @@ public class ForwardingAnalysisImplTest {
     Map<String, Map<String, Fib>> fibs =
         ImmutableMap.of(n1.getHostname(), ImmutableMap.of(v1.getName(), fib1));
 
-    IpOwners ipOwners = new IpOwners(configs, GlobalBroadcastNoPointToPoint.instance());
-
     ForwardingAnalysis fa =
         new ForwardingAnalysisImpl(
-            configs,
-            fibs,
-            new Topology(ImmutableSortedSet.of()),
-            computeLocationInfo(ipOwners, configs),
-            ipOwners);
+            configs, fibs, new Topology(ImmutableSortedSet.of()), computeLocationInfo(configs));
 
     InterfaceForwardingBehavior ifb =
         fa.getVrfForwardingBehavior()
@@ -1389,15 +1379,9 @@ public class ForwardingAnalysisImplTest {
 
     Map<String, Configuration> configs =
         ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2);
-
-    IpOwners ipOwners = new IpOwners(configs, GlobalBroadcastNoPointToPoint.instance());
     ForwardingAnalysis analysis =
         new ForwardingAnalysisImpl(
-            configs,
-            fibs,
-            new Topology(ImmutableSortedSet.of()),
-            computeLocationInfo(ipOwners, configs),
-            ipOwners);
+            configs, fibs, new Topology(ImmutableSortedSet.of()), computeLocationInfo(configs));
 
     InterfaceForwardingBehavior i1ForwardingBehavior =
         analysis

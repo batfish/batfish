@@ -13,7 +13,6 @@ import java.util.SortedMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.Bgpv4Route;
@@ -90,7 +89,6 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
 
     @Nullable private Map<String, Node> _nodes;
     @Nullable private Topology _layer3Topology;
-    @Nullable private L3Adjacencies _l3Adjacencies;
 
     public Builder setNodes(@Nonnull Map<String, Node> nodes) {
       _nodes = ImmutableMap.copyOf(nodes);
@@ -99,11 +97,6 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
 
     public Builder setLayer3Topology(@Nonnull Topology layer3Topology) {
       _layer3Topology = layer3Topology;
-      return this;
-    }
-
-    public Builder setL3Adjacencies(@Nonnull L3Adjacencies l3Adjacencies) {
-      _l3Adjacencies = l3Adjacencies;
       return this;
     }
 
@@ -139,7 +132,6 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
   private IncrementalDataPlane(Builder builder) {
     checkArgument(builder._nodes != null, "Dataplane must have nodes to be constructed");
     checkArgument(builder._layer3Topology != null, "Dataplane must have an L3 topology set");
-    checkArgument(builder._l3Adjacencies != null, "Dataplane must have L3 adjacencies set");
 
     Map<String, Node> nodes = builder._nodes;
     Map<String, Configuration> configs = DataplaneUtil.computeConfigurations(nodes);
@@ -151,8 +143,7 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
     _ribs = DataplaneUtil.computeRibs(nodes);
     _fibs = DataplaneUtil.computeFibs(nodes);
     _forwardingAnalysis =
-        DataplaneUtil.computeForwardingAnalysis(
-            _fibs, configs, builder._layer3Topology, builder._l3Adjacencies);
+        DataplaneUtil.computeForwardingAnalysis(_fibs, configs, builder._layer3Topology);
     _prefixTracerSummary = computePrefixTracingInfo(nodes);
     _vniSettings = DataplaneUtil.computeVniSettings(nodes);
   }

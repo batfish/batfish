@@ -220,7 +220,7 @@ public final class TopologyProviderImpl implements TopologyProvider {
     Span span = GlobalTracer.get().buildSpan("TopologyProviderImpl::computeIpOwners").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
-      return new IpOwners(getConfigurations(snapshot), getInitialL3Adjacencies(snapshot));
+      return new IpOwners(getConfigurations(snapshot));
     } finally {
       span.finish();
     }

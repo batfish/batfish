@@ -74,7 +74,7 @@ public class IBatfishTestAdapter implements IBatfish {
     @Nonnull
     @Override
     public IpOwners getIpOwners(NetworkSnapshot snapshot) {
-      return new IpOwners(_batfish.loadConfigurations(snapshot), getInitialL3Adjacencies(snapshot));
+      return new IpOwners(_batfish.loadConfigurations(snapshot));
     }
 
     @Override

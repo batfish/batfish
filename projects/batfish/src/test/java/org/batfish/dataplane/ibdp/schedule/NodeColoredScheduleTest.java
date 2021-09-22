@@ -15,7 +15,6 @@ import com.google.common.collect.ImmutableSortedMap;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
-import org.batfish.common.topology.GlobalBroadcastNoPointToPoint;
 import org.batfish.common.topology.IpOwners;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.BgpActivePeerConfig;
@@ -187,11 +186,7 @@ public class NodeColoredScheduleTest {
   public void testTwoNodesConnectedDirectlyViaBGP() {
     BgpTopology bgpTopology =
         initBgpTopology(
-            _configurations,
-            new IpOwners(_configurations, GlobalBroadcastNoPointToPoint.instance())
-                .getIpVrfOwners(),
-            false,
-            null);
+            _configurations, new IpOwners(_configurations).getIpVrfOwners(), false, null);
     ImmutableMap<String, Node> nodes =
         _configurations.entrySet().stream()
             .collect(ImmutableMap.toImmutableMap(Entry::getKey, e -> new Node(e.getValue())));
