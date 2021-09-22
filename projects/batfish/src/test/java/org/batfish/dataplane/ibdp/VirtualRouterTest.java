@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Function;
+import org.batfish.common.topology.GlobalBroadcastNoPointToPoint;
 import org.batfish.common.topology.IpOwners;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
@@ -601,7 +602,11 @@ public class VirtualRouterTest {
 
     // Re-run with non-empty topology
     BgpTopology bgpTopology2 =
-        initBgpTopology(configs, new IpOwners(configs).getIpVrfOwners(), false, null);
+        initBgpTopology(
+            configs,
+            new IpOwners(configs, GlobalBroadcastNoPointToPoint.instance()).getIpVrfOwners(),
+            false,
+            null);
     for (Node n : nodes.values()) {
       n.getVirtualRouterOrThrow(DEFAULT_VRF_NAME)
           .initForEgpComputationWithNewTopology(

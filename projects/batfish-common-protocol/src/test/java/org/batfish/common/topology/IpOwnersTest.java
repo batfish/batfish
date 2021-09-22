@@ -2,10 +2,15 @@ package org.batfish.common.topology;
 
 import static org.batfish.common.topology.IpOwners.computeHsrpPriority;
 import static org.batfish.common.topology.IpOwners.computeInterfaceHostSubnetIps;
+import static org.batfish.common.topology.IpOwners.computeInterfaceOwners;
 import static org.batfish.common.topology.IpOwners.computeIpIfaceOwners;
 import static org.batfish.common.topology.IpOwners.computeIpVrfOwners;
+import static org.batfish.common.topology.IpOwners.computeNodeOwners;
 import static org.batfish.common.topology.IpOwners.extractHsrp;
+import static org.batfish.common.topology.IpOwners.extractVrrp;
+import static org.batfish.common.topology.IpOwners.partitionVrrpCandidates;
 import static org.batfish.common.topology.IpOwners.processHsrpGroups;
+import static org.batfish.common.topology.IpOwners.processVrrpGroups;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
@@ -22,6 +27,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Table;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -32,6 +38,8 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.VrrpGroup;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.hsrp.HsrpGroup;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.tracking.TrackInterface;
@@ -412,5 +420,154 @@ public class IpOwnersTest {
     // If VI model doesn't have references to undefined track groups we shouldn't crash
     // Also skip applying track action if that happens
     assertThat(computeHsrpPriority(i1, hsrpGroup), equalTo(basePriority));
+  }
+
+  @Test
+  public void testExtractVrrp() {
+    Table<ConcreteInterfaceAddress, Integer, Set<Interface>> groups = HashBasedTable.create();
+    Interface i =
+        Interface.builder()
+            .setName("name")
+            .setAddress(ConcreteInterfaceAddress.parse("1.2.3.4/24"))
+            .build();
+    extractVrrp(groups, i);
+    assertTrue(groups.isEmpty());
+
+    ConcreteInterfaceAddress ip1 = ConcreteInterfaceAddress.parse("1.1.1.1/28");
+    i.setVrrpGroups(
+        ImmutableSortedMap.of(1, VrrpGroup.builder().setVirtualAddress(ip1).setName(1).build()));
+    extractVrrp(groups, i);
+    assertThat(groups.get(ip1, 1), equalTo(ImmutableSet.of(i)));
+  }
+
+  @Test
+  public void testProcessVrrpGroups() {
+    Map<Ip, Map<String, Set<String>>> ipOwners = new HashMap<>();
+    Configuration c1 =
+        Configuration.builder()
+            .setHostname("c1")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
+    Configuration c2 =
+        Configuration.builder()
+            .setHostname("c2")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
+
+    Table<ConcreteInterfaceAddress, Integer, Set<Interface>> groups = HashBasedTable.create();
+    Interface i1 =
+        Interface.builder()
+            .setOwner(c1)
+            .setName("i1")
+            .setAddress(ConcreteInterfaceAddress.parse("1.2.3.4/24"))
+            .build();
+    Interface i2 =
+        Interface.builder()
+            .setOwner(c2)
+            .setName("i2")
+            .setAddress(ConcreteInterfaceAddress.parse("2.3.4.5/24"))
+            .build();
+
+    ConcreteInterfaceAddress ip = ConcreteInterfaceAddress.parse("1.1.1.1/28");
+    i1.setVrrpGroups(
+        ImmutableSortedMap.of(
+            1, VrrpGroup.builder().setPriority(100).setName(1).setVirtualAddress(ip).build()));
+    i2.setVrrpGroups(
+        ImmutableSortedMap.of(
+            1, VrrpGroup.builder().setPriority(200).setName(1).setVirtualAddress(ip).build()));
+    extractVrrp(groups, i1);
+    extractVrrp(groups, i2);
+
+    // Test: expect c2/i2 to win
+    processVrrpGroups(ipOwners, groups, GlobalBroadcastNoPointToPoint.instance());
+    assertThat(
+        ipOwners.get(ip.getIp()).get(c2.getHostname()), equalTo(ImmutableSet.of(i2.getName())));
+  }
+
+  @Test
+  public void testPartitionVrrpCandidates() {
+    class MockL3Adjacencies implements L3Adjacencies {
+
+      private final Map<NodeInterfacePair, NodeInterfacePair> _pairs;
+
+      public MockL3Adjacencies(ImmutableMap<NodeInterfacePair, NodeInterfacePair> pairs) {
+        _pairs = pairs;
+      }
+
+      @Override
+      public boolean inSameBroadcastDomain(NodeInterfacePair i1, NodeInterfacePair i2) {
+        return (_pairs.containsKey(i1) && _pairs.get(i1).equals(i2))
+            || (_pairs.containsKey(i2) && _pairs.get(i2).equals(i1));
+      }
+
+      @Override
+      public Optional<NodeInterfacePair> pairedPointToPointL3Interface(NodeInterfacePair iface) {
+        throw new UnsupportedOperationException();
+      }
+    }
+
+    Configuration c =
+        Configuration.builder()
+            .setHostname("c")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
+    Interface i1 = Interface.builder().setName("i1").setOwner(c).build();
+    Interface i2 = Interface.builder().setName("i2").setOwner(c).build();
+
+    // common case of two interfaces in the same broadcast domain
+    assertThat(
+        partitionVrrpCandidates(
+            ImmutableSet.of(i1, i2),
+            new MockL3Adjacencies(
+                ImmutableMap.of(NodeInterfacePair.of(i1), NodeInterfacePair.of(i2)))),
+        equalTo(ImmutableSet.of(ImmutableSet.of(i1, i2))));
+
+    Interface i3 = Interface.builder().setName("i3").setOwner(c).build();
+    Interface i4 = Interface.builder().setName("i4").setOwner(c).build();
+
+    // two groups of two
+    assertThat(
+        partitionVrrpCandidates(
+            ImmutableSet.of(i1, i2, i3, i4),
+            new MockL3Adjacencies(
+                ImmutableMap.of(
+                    NodeInterfacePair.of(i1),
+                    NodeInterfacePair.of(i2),
+                    NodeInterfacePair.of(i3),
+                    NodeInterfacePair.of(i4)))),
+        equalTo(ImmutableSet.of(ImmutableSet.of(i1, i2), ImmutableSet.of(i3, i4))));
+
+    // one interface flying solo
+    assertThat(
+        partitionVrrpCandidates(
+            ImmutableSet.of(i1, i2, i3),
+            new MockL3Adjacencies(
+                ImmutableMap.of(NodeInterfacePair.of(i1), NodeInterfacePair.of(i2)))),
+        equalTo(ImmutableSet.of(ImmutableSet.of(i1, i2), ImmutableSet.of(i3))));
+  }
+
+  @Test
+  public void testComputeInterfaceOwners() {
+    Map<Ip, Map<String, Set<String>>> deviceOwnedIps =
+        ImmutableMap.of(
+            Ip.ZERO,
+            ImmutableMap.of("c1", ImmutableSet.of("i1")),
+            Ip.MAX,
+            ImmutableMap.of("c1", ImmutableSet.of("i1")));
+
+    assertThat(
+        computeInterfaceOwners(deviceOwnedIps),
+        equalTo(ImmutableMap.of("c1", ImmutableMap.of("i1", ImmutableSet.of(Ip.ZERO, Ip.MAX)))));
+  }
+
+  @Test
+  public void testComputeNodeOwners() {
+    Map<Ip, Map<String, Set<String>>> deviceOwnedIps =
+        ImmutableMap.of(
+            Ip.ZERO, ImmutableMap.of("c1", ImmutableSet.of("i1"), "c2", ImmutableSet.of("i2")));
+
+    assertThat(
+        computeNodeOwners(deviceOwnedIps),
+        equalTo(ImmutableMap.of(Ip.ZERO, ImmutableSet.of("c1", "c2"))));
   }
 }
