@@ -5565,6 +5565,7 @@ public final class CiscoGrammarTest {
 
     // Overlay edge present in initial tunnel topology
     NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.loadConfigurations(snapshot);
     assertThat(
         batfish.getTopologyProvider().getInitialTunnelTopology(snapshot).asEdgeSet(),
         containsInAnyOrder(overlayEdge, overlayEdge.reverse()));

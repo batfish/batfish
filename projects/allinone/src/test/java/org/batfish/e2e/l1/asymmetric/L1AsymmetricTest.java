@@ -27,6 +27,7 @@ public class L1AsymmetricTest {
                 .setLayer1TopologyPrefix(prefix + "/batfish")
                 .build(),
             _folder);
+    batfish.loadConfigurations(batfish.getSnapshot());
     return batfish.getTopologyProvider().getInitialLayer3Topology(batfish.getSnapshot());
   }
 
