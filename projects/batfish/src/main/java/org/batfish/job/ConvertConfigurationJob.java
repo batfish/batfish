@@ -189,25 +189,20 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     // Impl below here.
 
     private void visit(@Nullable Transformation t) {
-      if (t == null) {
-        return;
-      }
-
       // to avoid stack overflow on large transformations, use a work queue instead of recursion
       Queue<Transformation> queue = new LinkedList<>();
-      queue.add(t);
+      Consumer<Transformation> enqueue =
+          tx -> {
+            if (tx != null && _visited.add(tx)) {
+              queue.add(tx);
+            }
+          };
+      enqueue.accept(t);
       while (!queue.isEmpty()) {
         t = queue.remove();
-        if (!_visited.add(t)) {
-          continue;
-        }
         visit(t.getGuard());
-        if (t.getAndThen() != null) {
-          queue.add(t.getAndThen());
-        }
-        if (t.getOrElse() != null) {
-          queue.add(t.getOrElse());
-        }
+        enqueue.accept(t.getAndThen());
+        enqueue.accept(t.getOrElse());
       }
     }
 
