@@ -12,6 +12,7 @@ import static org.batfish.datamodel.FirewallSessionInterfaceInfo.Action.POST_NAT
 import static org.batfish.datamodel.Interface.DependencyType.AGGREGATE;
 import static org.batfish.datamodel.InterfaceType.AGGREGATED;
 import static org.batfish.datamodel.InterfaceType.PHYSICAL;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
@@ -28,6 +29,7 @@ import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
+import static org.batfish.datamodel.transformation.Transformation.when;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConfiguration.INTERFACE_ACL_NAME;
@@ -60,6 +62,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -80,6 +83,7 @@ import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.VrrpGroup;
@@ -87,6 +91,7 @@ import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
+import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -123,8 +128,10 @@ import org.batfish.vendor.check_point_management.ManagementDomain;
 import org.batfish.vendor.check_point_management.ManagementPackage;
 import org.batfish.vendor.check_point_management.ManagementServer;
 import org.batfish.vendor.check_point_management.NamedManagementObject;
+import org.batfish.vendor.check_point_management.NatHideBehindGateway;
 import org.batfish.vendor.check_point_management.NatRule;
 import org.batfish.vendor.check_point_management.NatRulebase;
+import org.batfish.vendor.check_point_management.NatSettings;
 import org.batfish.vendor.check_point_management.NatSettingsTest;
 import org.batfish.vendor.check_point_management.Network;
 import org.batfish.vendor.check_point_management.Original;
@@ -1336,6 +1343,78 @@ public class CheckPointGatewayGrammarTest {
         equalTo(
             new FirewallSessionInterfaceInfo(
                 POST_NAT_FIB_LOOKUP, ImmutableList.of("eth1"), null, null)));
+  }
+
+  @Test
+  public void testAutomaticHideNatConversion() throws IOException {
+    String hostname = "nat_rules";
+    AtomicInteger uidGenerator = new AtomicInteger();
+
+    String hostIpName = "internalHost";
+    Uid hostUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
+    NatSettings natSettings =
+        new NatSettings(true, NatHideBehindGateway.INSTANCE, "All", null, HIDE);
+    ImmutableList<TypedManagementObject> domainObjs =
+        ImmutableList.of(new Host(Ip.parse("10.10.10.10"), natSettings, hostIpName, hostUid));
+
+    // TODO Once we use the rulebase to correctly order auto hide rules, this rulebase will need a
+    //      rule corresponding to the host's NatSettings above
+    Uid natUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
+    NatRulebase rulebase = new NatRulebase(ImmutableMap.of(), ImmutableList.of(), natUid);
+
+    Uid packageUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
+    Uid domainUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
+    ImmutableMap<Uid, ManagementPackage> packages =
+        ImmutableMap.of(
+            packageUid,
+            new ManagementPackage(
+                ImmutableList.of(),
+                rulebase,
+                new Package(
+                    new Domain("d", domainUid),
+                    AllInstallationTargets.instance(),
+                    "p1",
+                    false,
+                    true,
+                    packageUid)));
+
+    Uid gwUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
+    Ip eth1Ip = Ip.parse("10.0.1.1");
+    ImmutableMap<Uid, GatewayOrServer> gateways =
+        ImmutableMap.of(
+            gwUid,
+            new SimpleGateway(
+                Ip.parse("10.0.0.1"),
+                hostname,
+                ImmutableList.of(
+                    new org.batfish.vendor.check_point_management.Interface(
+                        "eth0", new InterfaceTopology(false), Ip.parse("10.0.0.1"), 24),
+                    new org.batfish.vendor.check_point_management.Interface(
+                        "eth1", new InterfaceTopology(true), eth1Ip, 24)),
+                new GatewayOrServerPolicy("p1", null),
+                gwUid));
+
+    CheckpointManagementConfiguration mgmt = toCheckpointMgmtConfig(gateways, packages, domainObjs);
+    Map<String, Configuration> configs = parseTextConfigs(mgmt, hostname);
+    Configuration c = configs.get(hostname);
+    assertThat(c, hasInterface("eth0"));
+    assertThat(c, hasInterface("eth1"));
+    org.batfish.datamodel.Interface eth0 = c.getAllInterfaces().get("eth0");
+    org.batfish.datamodel.Interface eth1 = c.getAllInterfaces().get("eth1");
+
+    // Automatic hide rule should not result in any incoming transformations
+    assertNull(eth0.getIncomingTransformation());
+    assertNull(eth1.getIncomingTransformation());
+
+    // eth0 is not an external interface, so should have no outgoing transformation
+    assertNull(eth0.getOutgoingTransformation());
+    // eth1 is external, so should have an outgoing transformation to hide host eth1
+    assertThat(
+        eth1.getOutgoingTransformation(),
+        equalTo(
+            when(matchSrc(new IpSpaceReference(hostIpName)))
+                .apply(TransformationStep.assignSourceIp(eth1Ip))
+                .build()));
   }
 
   @Test

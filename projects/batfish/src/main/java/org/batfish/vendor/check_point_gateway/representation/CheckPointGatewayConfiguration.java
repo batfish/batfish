@@ -6,7 +6,8 @@ import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.batfish.datamodel.FirewallSessionInterfaceInfo.Action.POST_NAT_FIB_LOOKUP;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.aclName;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toIpAccessLists;
-import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.automaticHideRuleTransformation;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.applyOutgoingTransformations;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.automaticHideRuleTransformationFunction;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getManualNatRules;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.manualRuleTransformation;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.mergeTransformations;
@@ -29,6 +30,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.batfish.common.VendorConversionException;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -301,20 +303,26 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
       NatRulebase natRulebase, GatewayOrServer gateway, Map<Uid, NamedManagementObject> objects) {
     ServiceToMatchExpr serviceToMatchExpr = new ServiceToMatchExpr(objects);
     AddressSpaceToMatchExpr addressSpaceToMatchExpr = new AddressSpaceToMatchExpr(objects);
+    Warnings warnings = getWarnings();
     List<Transformation> manualRuleTransformations =
         getManualNatRules(natRulebase, gateway)
             .map(
                 natRule ->
                     manualRuleTransformation(
-                        natRule,
-                        serviceToMatchExpr,
-                        addressSpaceToMatchExpr,
-                        objects,
-                        getWarnings()))
+                        natRule, serviceToMatchExpr, addressSpaceToMatchExpr, objects, warnings))
             .filter(Optional::isPresent)
             .map(Optional::get)
             .collect(ImmutableList.toImmutableList());
-    List<Transformation> automaticHideRuleTransformations =
+    // Apply manual transformations to incoming traffic
+    mergeTransformations(manualRuleTransformations)
+        .ifPresent(
+            transformation ->
+                _c.getActiveInterfaces()
+                    .values()
+                    .forEach(iface -> iface.setIncomingTransformation(transformation)));
+
+    // Convert automatic hide rules
+    List<Function<Ip, Transformation>> outgoingTransformationFuncsForExternalIfaces =
         objects.values().stream()
             .filter(HasNatSettings.class::isInstance)
             .map(HasNatSettings.class::cast)
@@ -326,19 +334,26 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
             // TODO: consult generated rules for automatic hide rule ordering
             .map(
                 hasNatSettings ->
-                    automaticHideRuleTransformation(
-                        hasNatSettings, gateway, addressSpaceToMatchExpr, getWarnings()))
+                    automaticHideRuleTransformationFunction(
+                        hasNatSettings, addressSpaceToMatchExpr, warnings))
             .filter(Optional::isPresent)
             .map(Optional::get)
             .collect(ImmutableList.toImmutableList());
-    // Apply transformation to interfaces
-    // TODO: Create and apply interface-specific transformations
-    mergeTransformations(manualRuleTransformations, automaticHideRuleTransformations)
-        .ifPresent(
-            transformation ->
-                _c.getActiveInterfaces()
-                    .values()
-                    .forEach(iface -> iface.setIncomingTransformation(transformation)));
+    // Apply automatic hide rules to traffic going out external interfaces
+    _c.getActiveInterfaces().values().stream()
+        .filter(
+            iface ->
+                // TODO If an interface is declared in the gateway configuration but not in the
+                //      management info, should it be considered external for NAT purposes?
+                gateway.getInterfaces().stream()
+                    .filter(i -> iface.getName().equals(i.getName()))
+                    .findAny()
+                    .map(gatewayIface -> gatewayIface.getTopology().getLeadsToInternet())
+                    .orElse(false))
+        .forEach(
+            iface ->
+                applyOutgoingTransformations(
+                    iface, outgoingTransformationFuncsForExternalIfaces, warnings));
   }
 
   private @Nonnull Optional<ManagementPackage> findAccessPackage(
