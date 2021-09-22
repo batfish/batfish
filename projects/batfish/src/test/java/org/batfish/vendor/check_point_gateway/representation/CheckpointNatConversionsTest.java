@@ -10,6 +10,7 @@ import static org.batfish.datamodel.transformation.TransformationStep.assignSour
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.NAT_PORT_FIRST;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.NAT_PORT_LAST;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.TRANSLATED_SOURCE_TO_TRANSFORMATION_STEPS;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.applyOutgoingTransformations;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.automaticHideRuleTransformationFunction;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.checkValidManualHide;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.checkValidManualStatic;
@@ -25,6 +26,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -35,6 +37,8 @@ import java.util.Optional;
 import java.util.function.Function;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.BddTestbed;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.IpSpaceReference;
@@ -779,6 +783,42 @@ public final class CheckpointNatConversionsTest {
     Host host = new Host(null, NatSettingsTest.TEST_INSTANCE, "host", Uid.of("1"));
     assertThat(
         TRANSLATED_SOURCE_TO_TRANSFORMATION_STEPS.visitHost(host), equalTo(ImmutableList.of()));
+  }
+
+  @Test
+  public void testApplyOutgoingTransformations() {
+    Ip ifaceIp = Ip.parse("10.10.10.1");
+    Interface viIface =
+        Interface.builder()
+            .setName("iface")
+            .setAddress(ConcreteInterfaceAddress.create(ifaceIp, 24))
+            .build();
+    List<Function<Ip, Transformation>> transformationFuncs =
+        ImmutableList.of(ip -> Transformation.always().apply(assignSourceIp(ip)).build());
+    Warnings warnings = new Warnings(true, true, true);
+    applyOutgoingTransformations(viIface, transformationFuncs, warnings);
+    assertThat(warnings.getRedFlagWarnings(), empty());
+    assertThat(
+        viIface.getOutgoingTransformation(),
+        equalTo(Transformation.always().apply(assignSourceIp(ifaceIp)).build()));
+  }
+
+  @Test
+  public void testApplyOutgoingTransformations_warnings() {
+    // Interface does not have an IP
+    Interface viIface = Interface.builder().setName("iface").build();
+    List<Function<Ip, Transformation>> transformationFuncs =
+        ImmutableList.of(ip -> Transformation.always().apply(assignSourceIp(ip)).build());
+    Warnings warnings = new Warnings(true, true, true);
+    applyOutgoingTransformations(viIface, transformationFuncs, warnings);
+    assertThat(
+        warnings.getRedFlagWarnings(),
+        contains(
+            hasText(
+                String.format(
+                    "Batfish will not apply outgoing NAT on interface %s because it has no IP.",
+                    viIface.getName()))));
+    assertNull(viIface.getOutgoingTransformation());
   }
 
   @Test

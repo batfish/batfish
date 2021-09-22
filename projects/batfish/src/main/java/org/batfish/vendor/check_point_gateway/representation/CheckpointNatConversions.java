@@ -18,6 +18,8 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.transformation.Transformation;
@@ -425,6 +427,39 @@ public class CheckpointNatConversions {
                 when(toMatchExprVisitor.convertSource(hasNatSettings))
                     .apply(assignSourceIp(ipFunc.apply(egressIfaceIp)))
                     .build());
+  }
+
+  /**
+   * Given a VI {@link Interface} and a list of functions to generate transformations for it,
+   * applies the correct outgoing transformation to the interface.
+   *
+   * @param transformationFuncs A list of functions that take in the VI interface's IP and return a
+   *     {@link Transformation} that should be applied to traffic exiting that interface. The
+   *     resulting transformations will be merged such that the first matching transformation will
+   *     be applied to outgoing traffic.
+   */
+  static void applyOutgoingTransformations(
+      Interface viIface,
+      List<Function<Ip, Transformation>> transformationFuncs,
+      Warnings warnings) {
+    Ip ifaceIp =
+        Optional.ofNullable(viIface.getConcreteAddress())
+            .map(ConcreteInterfaceAddress::getIp)
+            .orElse(null);
+    if (ifaceIp != null) {
+      mergeTransformations(
+              transformationFuncs.stream()
+                  .map(transformationFunc -> transformationFunc.apply(ifaceIp))
+                  .collect(ImmutableList.toImmutableList()))
+          .ifPresent(viIface::setOutgoingTransformation);
+    } else {
+      // TODO What outgoing transformations apply on an external interface with no IP?
+      // (Not certain that skipping NAT in this scenario is wrong)
+      warnings.redFlag(
+          String.format(
+              "Batfish will not apply outgoing NAT on interface %s because it has no IP.",
+              viIface.getName()));
+    }
   }
 
   /**

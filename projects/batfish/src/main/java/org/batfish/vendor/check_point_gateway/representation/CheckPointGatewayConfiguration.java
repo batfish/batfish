@@ -6,6 +6,7 @@ import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.batfish.datamodel.FirewallSessionInterfaceInfo.Action.POST_NAT_FIB_LOOKUP;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.aclName;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toIpAccessLists;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.applyOutgoingTransformations;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.automaticHideRuleTransformationFunction;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getManualNatRules;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.manualRuleTransformation;
@@ -29,6 +30,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.batfish.common.VendorConversionException;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -301,16 +303,13 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
       NatRulebase natRulebase, GatewayOrServer gateway, Map<Uid, NamedManagementObject> objects) {
     ServiceToMatchExpr serviceToMatchExpr = new ServiceToMatchExpr(objects);
     AddressSpaceToMatchExpr addressSpaceToMatchExpr = new AddressSpaceToMatchExpr(objects);
+    Warnings warnings = getWarnings();
     List<Transformation> manualRuleTransformations =
         getManualNatRules(natRulebase, gateway)
             .map(
                 natRule ->
                     manualRuleTransformation(
-                        natRule,
-                        serviceToMatchExpr,
-                        addressSpaceToMatchExpr,
-                        objects,
-                        getWarnings()))
+                        natRule, serviceToMatchExpr, addressSpaceToMatchExpr, objects, warnings))
             .filter(Optional::isPresent)
             .map(Optional::get)
             .collect(ImmutableList.toImmutableList());
@@ -336,7 +335,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
             .map(
                 hasNatSettings ->
                     automaticHideRuleTransformationFunction(
-                        hasNatSettings, addressSpaceToMatchExpr, getWarnings()))
+                        hasNatSettings, addressSpaceToMatchExpr, warnings))
             .filter(Optional::isPresent)
             .map(Optional::get)
             .collect(ImmutableList.toImmutableList());
@@ -352,20 +351,9 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
                     .map(gatewayIface -> gatewayIface.getTopology().getLeadsToInternet())
                     .orElse(false))
         .forEach(
-            iface -> {
-              Ip ifaceIp =
-                  Optional.ofNullable(iface.getConcreteAddress())
-                      .map(ConcreteInterfaceAddress::getIp)
-                      .orElse(null);
-              // TODO What outgoing transformations apply on an external interface with no IP?
-              if (ifaceIp != null) {
-                mergeTransformations(
-                        outgoingTransformationFuncsForExternalIfaces.stream()
-                            .map(transformationFunc -> transformationFunc.apply(ifaceIp))
-                            .collect(ImmutableList.toImmutableList()))
-                    .ifPresent(iface::setOutgoingTransformation);
-              }
-            });
+            iface ->
+                applyOutgoingTransformations(
+                    iface, outgoingTransformationFuncsForExternalIfaces, warnings));
   }
 
   private @Nonnull Optional<ManagementPackage> findAccessPackage(
