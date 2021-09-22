@@ -1197,7 +1197,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public Optional<SortedMap<String, Configuration>> loadSerializedConfigurations(
+  public Optional<SortedMap<String, Configuration>> getProcessedConfigurations(
       NetworkSnapshot snapshot) {
     return loadConfigurations(snapshot, false);
   }
@@ -1223,20 +1223,22 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
       // Next, see if we have an up-to-date configurations on disk.
       configurations = _storage.loadConfigurations(snapshot.getNetwork(), snapshot.getSnapshot());
+      if (configurations == null && !parseIfNeeded) {
+        return Optional.empty();
+      }
+
       if (configurations != null) {
         _logger.debugf("Loaded configurations for %s off disk", snapshot);
-      } else if (parseIfNeeded) {
+      } else {
         // Otherwise, we have to parse the configurations. Fall back to old, hacky code.
         configurations = actuallyParseConfigurations(snapshot);
       }
-      if (configurations != null) {
-        // Apply things like blacklist and aggregations before installing in the cache.
-        postProcessSnapshot(snapshot, configurations);
-        _cachedConfigurations.put(snapshot, configurations);
-      }
 
-      return Optional.ofNullable(configurations);
+      // Apply things like blacklist and aggregations before installing in the cache.
+      postProcessSnapshot(snapshot, configurations);
+      _cachedConfigurations.put(snapshot, configurations);
 
+      return Optional.of(configurations);
     } finally {
       span.finish();
     }

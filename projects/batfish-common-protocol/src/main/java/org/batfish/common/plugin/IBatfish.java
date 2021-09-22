@@ -138,10 +138,11 @@ public interface IBatfish extends IPluginConsumer {
   SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot);
 
   /**
-   * Returns the configurations for given snapshot, which was parsed and serialized before. The
-   * returned optional is empty if the snapshot was not serialized before.
+   * Returns the configurations for given snapshot that have been processed (parsed, serialized,
+   * etc.) before. The returned optional is empty if the snapshot configurations have not been
+   * processed.
    */
-  Optional<SortedMap<String, Configuration>> loadSerializedConfigurations(NetworkSnapshot snapshot);
+  Optional<SortedMap<String, Configuration>> getProcessedConfigurations(NetworkSnapshot snapshot);
 
   /** Returns the vendor configurations of a given snapshot */
   Map<String, VendorConfiguration> loadVendorConfigurations(NetworkSnapshot snapshot);
