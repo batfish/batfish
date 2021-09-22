@@ -199,10 +199,10 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
           };
       enqueue.accept(t);
       while (!queue.isEmpty()) {
-        t = queue.remove();
-        visit(t.getGuard());
-        enqueue.accept(t.getAndThen());
-        enqueue.accept(t.getOrElse());
+        Transformation tx = queue.remove();
+        visit(tx.getGuard());
+        enqueue.accept(tx.getAndThen());
+        enqueue.accept(tx.getOrElse());
       }
     }
 
