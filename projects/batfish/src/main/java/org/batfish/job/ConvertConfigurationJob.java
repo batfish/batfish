@@ -13,8 +13,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Queue;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -190,12 +192,23 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
       if (t == null) {
         return;
       }
-      if (!_visited.add(t)) {
-        return;
+
+      // to avoid stack overflow on large transformations, use a work queue instead of recursion
+      Queue<Transformation> queue = new LinkedList<>();
+      queue.add(t);
+      while (!queue.isEmpty()) {
+        t = queue.remove();
+        if (!_visited.add(t)) {
+          continue;
+        }
+        visit(t.getGuard());
+        if (t.getAndThen() != null) {
+          queue.add(t.getAndThen());
+        }
+        if (t.getOrElse() != null) {
+          queue.add(t.getOrElse());
+        }
       }
-      visit(t.getGuard());
-      visit(t.getAndThen());
-      visit(t.getOrElse());
     }
 
     private void visit(IpAccessList acl) {
