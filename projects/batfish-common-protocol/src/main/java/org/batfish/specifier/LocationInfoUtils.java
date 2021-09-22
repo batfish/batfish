@@ -58,11 +58,6 @@ public final class LocationInfoUtils {
   }
 
   public static Map<Location, LocationInfo> computeLocationInfo(
-      Map<String, Configuration> configs) {
-    return computeLocationInfo(new IpOwners(configs), configs);
-  }
-
-  public static Map<Location, LocationInfo> computeLocationInfo(
       IpOwners ipOwners, Map<String, Configuration> configs) {
     /* Include inactive interfaces here so their IPs are considered part of the network (even though
      * they are unreachable). This means when ARP fails for those IPs we'll use NEIGHBOR_UNREACHABLE
