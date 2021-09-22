@@ -683,12 +683,6 @@ public class BgpSessionStatusAnswererTest {
 
       @Nonnull
       @Override
-      public L3Adjacencies getInitialL3Adjacencies(NetworkSnapshot snapshot) {
-        return GlobalBroadcastNoPointToPoint.instance();
-      }
-
-      @Nonnull
-      @Override
       public L3Adjacencies getL3Adjacencies(NetworkSnapshot snapshot) {
         return GlobalBroadcastNoPointToPoint.instance();
       }

@@ -50,7 +50,6 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.topology.GlobalBroadcastNoPointToPoint;
 import org.batfish.common.topology.IpOwners;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Node;
@@ -431,8 +430,7 @@ public class BatfishTest {
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
-    Map<Ip, Set<String>> ipOwners =
-        new IpOwners(configurations, GlobalBroadcastNoPointToPoint.instance()).getNodeOwners(true);
+    Map<Ip, Set<String>> ipOwners = IpOwners.computeIpNodeOwners(configurations, true);
     assertThat(ipOwners.get(vrrpAddress), equalTo(Collections.singleton("r2")));
   }
 
@@ -502,7 +500,7 @@ public class BatfishTest {
         configs.get("host1").getAllInterfaces().get("Vlan65").getVrrpGroups().keySet(), hasSize(1));
 
     // Tests that computing IP owners with such a bad interface does not crash.
-    new IpOwners(configs, GlobalBroadcastNoPointToPoint.instance());
+    IpOwners.computeIpNodeOwners(configs, false);
   }
 
   @Test

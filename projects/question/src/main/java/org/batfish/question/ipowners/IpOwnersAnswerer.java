@@ -13,6 +13,7 @@ import java.util.Set;
 import org.batfish.common.Answerer;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.common.topology.IpOwners;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -41,8 +42,7 @@ class IpOwnersAnswerer extends Answerer {
   public AnswerElement answer(NetworkSnapshot snapshot) {
     IpOwnersQuestion question = (IpOwnersQuestion) _question;
     Map<String, Configuration> configurations = _batfish.loadConfigurations(snapshot);
-    Map<Ip, Set<String>> ipNodeOwners =
-        _batfish.getTopologyProvider().getIpOwners(snapshot).getNodeOwners(false);
+    Map<Ip, Set<String>> ipNodeOwners = IpOwners.computeIpNodeOwners(configurations, false);
     Map<String, Set<Interface>> interfaces = computeNodeInterfaces(configurations);
 
     TableAnswerElement answerElement = new TableAnswerElement(getTableMetadata());

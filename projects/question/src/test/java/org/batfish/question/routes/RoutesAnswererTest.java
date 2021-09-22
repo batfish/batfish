@@ -47,12 +47,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import org.batfish.common.NetworkSnapshot;
-import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.IBatfishTestAdapter;
-import org.batfish.common.plugin.IBatfishTestAdapter.TopologyProviderTestAdapter;
-import org.batfish.common.topology.GlobalBroadcastNoPointToPoint;
-import org.batfish.common.topology.L3Adjacencies;
-import org.batfish.common.topology.TopologyProvider;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.AnnotatedRoute;
@@ -499,18 +494,6 @@ public class RoutesAnswererTest {
     assertThat(textDesc, not(emptyString()));
   }
 
-  static class MockTopoloogyProvider extends TopologyProviderTestAdapter {
-
-    public MockTopoloogyProvider(IBatfish batfish) {
-      super(batfish);
-    }
-
-    @Override
-    public L3Adjacencies getInitialL3Adjacencies(NetworkSnapshot snapshot) {
-      return GlobalBroadcastNoPointToPoint.instance();
-    }
-  }
-
   static class MockBatfish extends IBatfishTestAdapter {
 
     private final NetworkConfigurations _configs;
@@ -537,11 +520,6 @@ public class RoutesAnswererTest {
     @Override
     public SpecifierContext specifierContext(NetworkSnapshot snapshot) {
       return MockSpecifierContext.builder().setConfigs(loadConfigurations(snapshot)).build();
-    }
-
-    @Override
-    public TopologyProvider getTopologyProvider() {
-      return new MockTopoloogyProvider(this);
     }
   }
 
