@@ -894,6 +894,7 @@ public final class FlatJuniperGrammarTest {
                 .setConfigurationFiles(resourcePrefix, fw, r1, r2, sw)
                 .build(),
             _folder);
+    batfish.loadConfigurations(batfish.getSnapshot());
 
     // Needed to prevent a loop -- if configurations are not loaded, accessing topology info will
     // load them, which will iin turn load topologies for serialization.
@@ -935,6 +936,7 @@ public final class FlatJuniperGrammarTest {
                 .setConfigurationFiles(resourcePrefix, "r1", "r2")
                 .build(),
             _folder);
+    batfish.loadConfigurations(batfish.getSnapshot());
 
     // Needed to prevent a loop -- if configurations are not loaded, accessing topology info will
     // load them, which will iin turn load topologies for serialization.
