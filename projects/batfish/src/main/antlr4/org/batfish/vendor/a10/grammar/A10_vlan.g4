@@ -28,10 +28,10 @@ vlan_ifaces_range:
 
 // TODO support other types of interfaces, e.g. trunk
 vlan_ifaces_list:
-    // ACOS 2.X
+    // Only ACOS 2.X allows more than one interface here
     vlan_iface_ethernet+
 ;
 
 vlan_iface_ethernet: ETHERNET num = ethernet_number;
 
-vlan_iface_ethernet_range: ETHERNET num = ethernet_number (TO to = ethernet_number)?;
+vlan_iface_ethernet_range: ETHERNET num = ethernet_number TO to = ethernet_number;

@@ -253,9 +253,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   Optional<SubRange> toSubRange(A10Parser.Vlan_ifaces_rangeContext ctx) {
     assert ctx.vlan_iface_ethernet_range() != null;
     Optional<Integer> maybeFrom = toInteger(ctx.vlan_iface_ethernet_range().num);
-    A10Parser.Ethernet_numberContext toCtx = ctx.vlan_iface_ethernet_range().to;
-    // If only `from` is specified, use that as `to` as well
-    Optional<Integer> maybeTo = toCtx == null ? maybeFrom : toInteger(toCtx);
+    Optional<Integer> maybeTo = toInteger(ctx.vlan_iface_ethernet_range().to);
     if (!maybeFrom.isPresent() || !maybeTo.isPresent()) {
       // Already warned
       return Optional.empty();
@@ -263,7 +261,8 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     int from = maybeFrom.get();
     int to = maybeTo.get();
     if (from > to) {
-      warn(ctx, "Invalid range for VLAN interface reference, 'to' must be greater than 'from'.");
+      warn(
+          ctx, "Invalid range for VLAN interface reference, 'from' must not be greater than 'to'.");
       return Optional.empty();
     }
     return Optional.of(new SubRange(from, to));

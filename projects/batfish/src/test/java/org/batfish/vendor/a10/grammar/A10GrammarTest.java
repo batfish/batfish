@@ -225,8 +225,8 @@ public class A10GrammarTest {
                 hasComment("Expected vlan number in range 2-4094, but got '4095'"),
                 allOf(
                     hasComment(
-                        "Invalid range for VLAN interface reference, 'to' must be greater than"
-                            + " 'from'."),
+                        "Invalid range for VLAN interface reference, 'from' must not be greater"
+                            + " than 'to'."),
                     hasText("ethernet 3 to 2")),
                 hasComment("Virtual Ethernet interface number must be the same as VLAN ID."))));
   }
