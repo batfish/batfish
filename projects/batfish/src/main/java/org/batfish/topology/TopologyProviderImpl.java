@@ -209,7 +209,7 @@ public final class TopologyProviderImpl implements TopologyProvider {
 
   private @Nonnull Map<String, Configuration> getConfigurations(NetworkSnapshot snapshot) {
     return _batfish
-        .loadSerializedConfigurations(snapshot)
+        .getProcessedConfigurations(snapshot)
         .orElseThrow(
             () ->
                 new IllegalArgumentException(
