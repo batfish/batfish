@@ -36,6 +36,7 @@ public class Layer2NtcTest {
                 .setLayer1TopologyPrefix(prefix + '/' + nameOfBatfishFolderContainingL1)
                 .build(),
             _folder);
+    batfish.loadConfigurations(batfish.getSnapshot());
     return batfish.getTopologyProvider().getInitialLayer3Topology(batfish.getSnapshot());
   }
 

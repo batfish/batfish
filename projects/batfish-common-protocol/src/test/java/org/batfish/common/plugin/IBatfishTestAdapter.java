@@ -263,6 +263,12 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
+  public Optional<SortedMap<String, Configuration>> getProcessedConfigurations(
+      NetworkSnapshot snapshot) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public Map<String, VendorConfiguration> loadVendorConfigurations(NetworkSnapshot snapshot) {
     throw new UnsupportedOperationException();
   }
