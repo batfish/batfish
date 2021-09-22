@@ -1,0 +1,22 @@
+!BATFISH_FORMAT: a10_acos
+hostname vlan_convert
+!
+vlan 2
+ tagged ethernet 1 to 2
+ router-interface ve 2
+ name "Vlan 2 Name"
+!
+vlan 3
+ tagged ethernet 2
+ untagged ethernet 1
+ untagged ethernet 3
+!
+interface ethernet 1
+!
+interface ethernet 2
+!
+interface ethernet 3
+!
+interface ve 2
+ ip address 10.100.2.1 /24
+!

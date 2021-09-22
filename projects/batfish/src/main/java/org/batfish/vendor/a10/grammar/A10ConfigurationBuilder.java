@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Range;
 import com.google.common.primitives.Ints;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -181,6 +182,31 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   @Override
   public void exitSid_name(A10Parser.Sid_nameContext ctx) {
     toString(ctx, ctx.interface_name_str()).ifPresent(n -> _currentInterface.setName(n));
+  }
+
+  @Override
+  public void enterSid_ve(A10Parser.Sid_veContext ctx) {
+    Optional<Integer> maybeNum = toInteger(ctx.num);
+    if (!maybeNum.isPresent()) {
+      _currentInterface = new Interface(Interface.Type.VE, -1); // dummy
+      return;
+    }
+    int num = maybeNum.get();
+    Vlan vlan = _configuration.getVlans().get(num);
+    if (vlan == null || !Objects.equals(num, vlan.getRouterInterface())) {
+      warn(ctx, "Cannot create a ve interface for a non-existent or unassociated VLAN.");
+      _currentInterface = new Interface(Interface.Type.VE, -1); // dummy
+      return;
+    }
+    _currentInterface =
+        _configuration
+            .getInterfacesVe()
+            .computeIfAbsent(num, n -> new Interface(Interface.Type.VE, n));
+  }
+
+  @Override
+  public void exitSid_ve(A10Parser.Sid_veContext ctx) {
+    _currentInterface = null;
   }
 
   @Override

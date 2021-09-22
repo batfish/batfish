@@ -10,6 +10,7 @@ public final class Interface implements Serializable {
   public enum Type {
     ETHERNET,
     LOOPBACK,
+    VE,
   }
 
   public static final int DEFAULT_MTU = 1500;
