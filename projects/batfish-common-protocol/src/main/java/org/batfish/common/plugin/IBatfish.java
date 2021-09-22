@@ -131,8 +131,17 @@ public interface IBatfish extends IPluginConsumer {
   InitInfoAnswerElement initInfoBgpAdvertisements(
       NetworkSnapshot snapshot, boolean summary, boolean verboseError);
 
-  /** Returns the configurations for given snapshot. */
+  /**
+   * Returns the configurations for given snapshot. Parses and serializes them from snapshot input
+   * if needed.
+   */
   SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot);
+
+  /**
+   * Returns the configurations for given snapshot, which was parsed and serialized before. The
+   * returned optional is empty if the snapshot was not serialized before.
+   */
+  Optional<SortedMap<String, Configuration>> loadSerializedConfigurations(NetworkSnapshot snapshot);
 
   /** Returns the vendor configurations of a given snapshot */
   Map<String, VendorConfiguration> loadVendorConfigurations(NetworkSnapshot snapshot);
