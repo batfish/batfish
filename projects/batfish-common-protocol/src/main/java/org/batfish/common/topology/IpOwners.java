@@ -216,7 +216,7 @@ public final class IpOwners {
       Map<String, Set<Interface>> allInterfaces,
       boolean excludeInactive,
       L3Adjacencies l3Adjacencies) {
-      Map<Ip, Map<String, Set<String>>> ipOwners = new HashMap<>();
+    Map<Ip, Map<String, Set<String>>> ipOwners = new HashMap<>();
     Table<ConcreteInterfaceAddress, Integer, Set<Interface>> vrrpGroups = HashBasedTable.create();
     Table<Ip, Integer, Set<Interface>> hsrpGroups = HashBasedTable.create();
     allInterfaces.forEach(
