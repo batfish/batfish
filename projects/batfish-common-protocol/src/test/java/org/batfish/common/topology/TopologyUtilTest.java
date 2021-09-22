@@ -1461,7 +1461,7 @@ public final class TopologyUtilTest {
 
   /**
    * Tests that inactive and blacklisted interfaces are properly included or excluded from the
-   * output of {@link IpOwners#computeIpInterfaceOwners(Map, boolean, L3Adjacencies)}
+   * output of {@link IpOwners#computeIpInterfaceOwners(Map, boolean)}
    */
   @Test
   public void testIpInterfaceOwnersActiveInclusion() {
@@ -1475,13 +1475,13 @@ public final class TopologyUtilTest {
                 iface("shut-black", "1.1.1.1/32", false, true)));
 
     assertThat(
-        computeIpInterfaceOwners(nodeInterfaces, true, null),
+        computeIpInterfaceOwners(nodeInterfaces, true),
         equalTo(
             ImmutableMap.of(
                 Ip.parse("1.1.1.1"), ImmutableMap.of("node", ImmutableSet.of("active")))));
 
     assertThat(
-        computeIpInterfaceOwners(nodeInterfaces, false, null),
+        computeIpInterfaceOwners(nodeInterfaces, false),
         equalTo(
             ImmutableMap.of(
                 Ip.parse("1.1.1.1"),

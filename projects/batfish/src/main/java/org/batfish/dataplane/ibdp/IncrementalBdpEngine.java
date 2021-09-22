@@ -107,7 +107,6 @@ final class IncrementalBdpEngine {
         PartialDataplane.builder()
             .setNodes(nodes)
             .setLayer3Topology(currentTopologyContext.getLayer3Topology())
-            .setL3Adjacencies(currentTopologyContext.getL3Adjacencies())
             .build();
 
     Map<String, Configuration> configurations = networkConfigurations.getMap();
@@ -218,8 +217,7 @@ final class IncrementalBdpEngine {
       LOGGER.info("Computing Data Plane using iBDP");
 
       // TODO: switch to topologies and owners from TopologyProvider
-      Map<Ip, Map<String, Set<String>>> ipVrfOwners =
-          new IpOwners(configurations, initialTopologyContext.getL3Adjacencies()).getIpVrfOwners();
+      Map<Ip, Map<String, Set<String>>> ipVrfOwners = new IpOwners(configurations).getIpVrfOwners();
 
       // Generate our nodes, keyed by name, sorted for determinism
       SortedMap<String, Node> nodes =
@@ -325,7 +323,6 @@ final class IncrementalBdpEngine {
           IncrementalDataPlane.builder()
               .setNodes(nodes)
               .setLayer3Topology(currentTopologyContext.getLayer3Topology())
-              .setL3Adjacencies(currentTopologyContext.getL3Adjacencies())
               .build();
       return new IbdpResult(answerElement, finalDataplane, currentTopologyContext, nodes);
     } finally {
