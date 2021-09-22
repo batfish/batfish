@@ -21,6 +21,12 @@ INTERFACE: 'interface';
 LOOPBACK: 'loopback';
 MTU: 'mtu';
 NAME: 'name' -> pushMode(M_Word);
+ROUTER_INTERFACE: 'router-interface';
+TAGGED: 'tagged';
+TO: 'to';
+UNTAGGED: 'untagged';
+VE: 've';
+VLAN: 'vlan';
 
 // Complex tokens
 COMMENT_LINE
