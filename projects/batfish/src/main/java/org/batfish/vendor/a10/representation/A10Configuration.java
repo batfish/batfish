@@ -129,67 +129,13 @@ public final class A10Configuration extends VendorConfiguration {
 
     // Generated default VRF
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
-    Vrf vrf2 = new Vrf("foobar");
-    _c.setVrfs(ImmutableMap.of(DEFAULT_VRF_NAME, vrf, "foobar", vrf2));
-
-    _vlans.values().forEach(this::warnVlanIssues);
+    _c.setVrfs(ImmutableMap.of(DEFAULT_VRF_NAME, vrf));
 
     _interfacesLoopback.forEach((num, iface) -> convertInterface(iface, vrf));
     _interfacesEthernet.forEach((num, iface) -> convertInterface(iface, vrf));
     _interfacesVe.forEach((num, iface) -> convertInterface(iface, vrf));
 
     return ImmutableList.of(_c);
-  }
-
-  /** Check specified VLAN for issues and add warnings for any issues. */
-  public void warnVlanIssues(Vlan vlan) {
-    vlan.getTagged()
-        .forEach(
-            ref -> {
-              if (!doesInterfaceExist(ref)) {
-                _w.redFlag(
-                    String.format(
-                        "Tagged interface %s, referenced by VLAN %s does not exist",
-                        getInterfaceName(ref), vlan.getNumber()));
-              }
-            });
-    vlan.getUntagged()
-        .forEach(
-            ref -> {
-              if (!doesInterfaceExist(ref)) {
-                _w.redFlag(
-                    String.format(
-                        "Untagged interface %s, referenced by VLAN %s does not exist",
-                        getInterfaceName(ref), vlan.getNumber()));
-              }
-            });
-    Integer routerInterface = vlan.getRouterInterface();
-    if (routerInterface != null && !_interfacesVe.containsKey(routerInterface)) {
-      _w.redFlag(
-          String.format(
-              "Router-interface %s, referenced by VLAN %s does not exist",
-              getInterfaceName(Interface.Type.VE, routerInterface), vlan.getNumber()));
-    }
-  }
-
-  // TODO visitor pattern?
-  /**
-   * Returns boolean indicating if specified {@link InterfaceReference} points to an existing
-   * interface.
-   */
-  public boolean doesInterfaceExist(InterfaceReference ref) {
-    int num = ref.getNumber();
-    switch (ref.getType()) {
-      case VE:
-        return _interfacesVe.containsKey(num);
-      case ETHERNET:
-        return _interfacesEthernet.containsKey(num);
-      case LOOPBACK:
-        return _interfacesLoopback.containsKey(num);
-      default:
-        assert false;
-        return false;
-    }
   }
 
   /**
@@ -213,6 +159,7 @@ public final class A10Configuration extends VendorConfiguration {
     }
     newIface.setDeclaredNames(names.build());
 
+    newIface.setSwitchportMode(SwitchportMode.NONE);
     List<Vlan> taggedVlans = getTaggedVlans(iface);
     Optional<Vlan> untaggedVlan = getUntaggedVlan(iface);
     if (untaggedVlan.isPresent()) {
@@ -228,9 +175,6 @@ public final class A10Configuration extends VendorConfiguration {
               taggedVlans.stream()
                   .map(v -> new SubRange(v.getNumber()))
                   .collect(ImmutableList.toImmutableList())));
-    }
-    if (taggedVlans.isEmpty() && !untaggedVlan.isPresent()) {
-      newIface.setSwitchportMode(SwitchportMode.NONE);
     }
     newIface.build();
   }

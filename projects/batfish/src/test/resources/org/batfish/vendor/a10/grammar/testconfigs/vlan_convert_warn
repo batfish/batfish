@@ -1,8 +1,0 @@
-!BATFISH_FORMAT: a10_acos
-hostname vlan_convert_warn
-!
-vlan 2
- tagged ethernet 1
- untagged ethernet 2
- router-interface ve 2
-!

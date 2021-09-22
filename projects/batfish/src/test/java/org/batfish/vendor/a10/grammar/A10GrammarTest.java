@@ -5,7 +5,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasText;
 import static org.batfish.common.matchers.WarningsMatchers.hasParseWarnings;
-import static org.batfish.common.matchers.WarningsMatchers.hasRedFlags;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.ConfigurationFormat.A10_ACOS;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
@@ -36,6 +35,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Range;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
@@ -45,7 +45,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
-import org.batfish.common.matchers.WarningMatchers;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.runtime.SnapshotRuntimeData;
 import org.batfish.config.Settings;
@@ -53,7 +52,6 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceType;
-import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
@@ -199,7 +197,7 @@ public class A10GrammarTest {
 
   @Test
   public void testVlanConversion() {
-    String hostname = "vlan_convert_warn";
+    String hostname = "vlan_convert";
     Configuration c = parseConfig(hostname);
 
     assertThat(
@@ -218,7 +216,7 @@ public class A10GrammarTest {
             allOf(
                 hasInterfaceType(InterfaceType.PHYSICAL),
                 hasSwitchPortMode(SwitchportMode.TRUNK),
-                hasAllowedVlans(IntegerSpace.of(new SubRange(2, 3))),
+                hasAllowedVlans(IntegerSpace.of(Range.closed(2, 3))),
                 hasNativeVlan(nullValue()))));
     assertThat(
         c,
@@ -237,28 +235,6 @@ public class A10GrammarTest {
                 hasInterfaceType(InterfaceType.VLAN),
                 hasSwitchPortMode(SwitchportMode.NONE),
                 hasAllAddresses(contains(ConcreteInterfaceAddress.parse("10.100.2.1/24"))))));
-  }
-
-  @Test
-  public void testVlanConversionWarn() throws IOException {
-    String hostname = "vlan_convert_warn";
-    Batfish batfish = getBatfishForConfigurationNames(hostname);
-    Warnings warnings =
-        batfish
-            .loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot())
-            .getWarnings()
-            .get(hostname);
-
-    assertThat(
-        warnings,
-        hasRedFlags(
-            containsInAnyOrder(
-                WarningMatchers.hasText(
-                    "Tagged interface Ethernet 1, referenced by VLAN 2 does not exist"),
-                WarningMatchers.hasText(
-                    "Untagged interface Ethernet 2, referenced by VLAN 2 does not exist"),
-                WarningMatchers.hasText(
-                    "Router-interface VirtualEthernet 2, referenced by VLAN 2 does not exist"))));
   }
 
   /** Testing ACOS v2 VLAN syntax */
