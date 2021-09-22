@@ -14,6 +14,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import javax.annotation.Nonnull;
+import org.batfish.common.topology.IpOwners;
+import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.Bgpv4Route;
@@ -48,8 +50,11 @@ public final class DataplaneUtil {
   static ForwardingAnalysis computeForwardingAnalysis(
       Map<String, Map<String, Fib>> fibs,
       Map<String, Configuration> configs,
-      Topology layer3Topology) {
-    return new ForwardingAnalysisImpl(configs, fibs, layer3Topology, computeLocationInfo(configs));
+      Topology layer3Topology,
+      L3Adjacencies l3Adjacencies) {
+    IpOwners ipOwners = new IpOwners(configs, l3Adjacencies);
+    return new ForwardingAnalysisImpl(
+        configs, fibs, layer3Topology, computeLocationInfo(ipOwners, configs), ipOwners);
   }
 
   static SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>>

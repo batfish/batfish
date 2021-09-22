@@ -136,7 +136,10 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
     Set<String> nodes = question.getNodeSpecifier().resolve(specifierContext);
     Set<String> remoteNodes = question.getRemoteNodeSpecifier().resolve(specifierContext);
     L3Adjacencies l3Adjacencies = _batfish.getTopologyProvider().getInitialL3Adjacencies(snapshot);
-    Map<Ip, Map<String, Set<String>>> ipVrfOwners = new IpOwners(configurations).getIpVrfOwners();
+    Map<Ip, Map<String, Set<String>>> ipVrfOwners =
+        new IpOwners(
+                configurations, _batfish.getTopologyProvider().getInitialL3Adjacencies(snapshot))
+            .getIpVrfOwners();
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> configuredTopology =
         BgpTopologyUtils.initBgpTopology(configurations, ipVrfOwners, true, l3Adjacencies)
             .getGraph();

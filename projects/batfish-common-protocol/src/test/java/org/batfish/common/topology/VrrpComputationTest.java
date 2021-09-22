@@ -1,8 +1,5 @@
 package org.batfish.common.topology;
 
-import static org.batfish.common.topology.IpOwners.computeIpInterfaceOwners;
-import static org.batfish.common.topology.IpOwners.computeIpNodeOwners;
-import static org.batfish.common.topology.TopologyUtil.computeNodeInterfaces;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
@@ -85,7 +82,8 @@ public class VrrpComputationTest {
   public void testVrrpPriority() {
     Map<String, Configuration> configs = setupVrrpTestCase(false);
 
-    Map<Ip, Set<String>> owners = computeIpNodeOwners(configs, false);
+    Map<Ip, Set<String>> owners =
+        new IpOwners(configs, GlobalBroadcastNoPointToPoint.instance()).getNodeOwners(false);
 
     assertThat(owners.get(_virtInterfaceAddr.getIp()), contains("n2"));
   }
@@ -98,7 +96,8 @@ public class VrrpComputationTest {
   public void testVrrpPriorityTieBreaking() {
     Map<String, Configuration> configs = setupVrrpTestCase(true);
 
-    Map<Ip, Set<String>> owners = computeIpNodeOwners(configs, false);
+    Map<Ip, Set<String>> owners =
+        new IpOwners(configs, GlobalBroadcastNoPointToPoint.instance()).getNodeOwners(false);
 
     // Ensure node that has higher interface IP wins
     assertThat(owners.get(_virtInterfaceAddr.getIp()), contains("n2"));
@@ -109,7 +108,7 @@ public class VrrpComputationTest {
     Map<String, Configuration> configs = setupVrrpTestCase(true);
 
     Map<Ip, Map<String, Set<String>>> interfaceOwners =
-        computeIpInterfaceOwners(computeNodeInterfaces(configs), false);
+        new IpOwners(configs, GlobalBroadcastNoPointToPoint.instance()).getAllDeviceOwnedIps();
 
     assertThat(
         interfaceOwners,
