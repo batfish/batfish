@@ -9,3 +9,16 @@ vlan 2
  tagged ethernet 3 to 2
  router-interface ve 3
 !
+vlan 123
+!
+! Not valid because the VLAN doesn't have a router-interface
+interface ve 123
+!
+! Not valid because there is no matching VLAN
+interface ve 124
+!
+! Never valid
+interface ve 1
+!
+interface ve 4095
+!

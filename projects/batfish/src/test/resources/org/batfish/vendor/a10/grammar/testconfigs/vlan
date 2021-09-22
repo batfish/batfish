@@ -35,3 +35,5 @@ interface ethernet 8
 !
 interface ethernet 9
 !
+interface ve 2
+!

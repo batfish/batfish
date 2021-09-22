@@ -10,9 +10,11 @@ import static org.batfish.datamodel.ConfigurationFormat.A10_ACOS;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDeclaredNames;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInterfaceType;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasNativeVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
@@ -26,12 +28,14 @@ import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Range;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
@@ -46,6 +50,7 @@ import org.batfish.common.runtime.SnapshotRuntimeData;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -142,6 +147,8 @@ public class A10GrammarTest {
     String hostname = "vlan";
     A10Configuration c = parseVendorConfig(hostname);
 
+    assertThat(c.getInterfacesVe(), hasKey(2));
+
     Map<Integer, Vlan> vlans = c.getVlans();
     assertThat(vlans.keySet(), containsInAnyOrder(2, 3, 4, 5));
     Vlan vlan2 = vlans.get(2);
@@ -188,6 +195,48 @@ public class A10GrammarTest {
             new InterfaceReference(Interface.Type.ETHERNET, 9)));
   }
 
+  @Test
+  public void testVlanConversion() {
+    String hostname = "vlan_convert";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(
+        c,
+        hasInterface(
+            "Ethernet 1",
+            allOf(
+                hasInterfaceType(InterfaceType.PHYSICAL),
+                hasSwitchPortMode(SwitchportMode.TRUNK),
+                hasAllowedVlans(IntegerSpace.of(2)),
+                hasNativeVlan(equalTo(3)))));
+    assertThat(
+        c,
+        hasInterface(
+            "Ethernet 2",
+            allOf(
+                hasInterfaceType(InterfaceType.PHYSICAL),
+                hasSwitchPortMode(SwitchportMode.TRUNK),
+                hasAllowedVlans(IntegerSpace.of(Range.closed(2, 3))),
+                hasNativeVlan(nullValue()))));
+    assertThat(
+        c,
+        hasInterface(
+            "Ethernet 3",
+            allOf(
+                hasInterfaceType(InterfaceType.PHYSICAL),
+                hasSwitchPortMode(SwitchportMode.TRUNK),
+                hasAllowedVlans(IntegerSpace.EMPTY),
+                hasNativeVlan(equalTo(3)))));
+    assertThat(
+        c,
+        hasInterface(
+            "VirtualEthernet 2",
+            allOf(
+                hasInterfaceType(InterfaceType.VLAN),
+                hasSwitchPortMode(SwitchportMode.NONE),
+                hasAllAddresses(contains(ConcreteInterfaceAddress.parse("10.100.2.1/24"))))));
+  }
+
   /** Testing ACOS v2 VLAN syntax */
   @Test
   public void testVlanAcos2Extraction() {
@@ -228,7 +277,17 @@ public class A10GrammarTest {
                         "Invalid range for VLAN interface reference, 'from' must not be greater"
                             + " than 'to'."),
                     hasText("ethernet 3 to 2")),
-                hasComment("Virtual Ethernet interface number must be the same as VLAN ID."))));
+                hasComment("Virtual Ethernet interface number must be the same as VLAN ID."),
+                allOf(
+                    hasComment(
+                        "Cannot create a ve interface for a non-existent or unassociated VLAN."),
+                    hasText("ve 123")),
+                allOf(
+                    hasComment(
+                        "Cannot create a ve interface for a non-existent or unassociated VLAN."),
+                    hasText("ve 124")),
+                hasComment("Expected vlan number in range 2-4094, but got '1'"),
+                hasComment("Expected vlan number in range 2-4094, but got '4095'"))));
   }
 
   @Test
