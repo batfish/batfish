@@ -1,0 +1,33 @@
+!BATFISH_FORMAT: a10_acos
+hostname trunk_warn
+!
+interface ethernet 1
+ trunk-group 0
+!
+interface ethernet 2
+ trunk-group 4097
+!
+interface ethernet 3
+ trunk-group 3 lacp
+ ! mismatched type
+ trunk-group 3 static
+ ! only one trunk-group per interface
+ trunk-group 4
+!
+interface ethernet 4
+ ! mismatched type with trunk in other iface
+ trunk-group 3
+!
+interface ethernet 5
+ ip address 10.0.5.1 /24
+ ! can't configure both IP and trunk-group
+ trunk-group 5
+!
+interface ethernet 6
+ trunk-group 6
+ ! can't configure both IP and trunk-group
+ ip address 10.0.5.1 /24
+!
+!
+! TODO more validations, like:
+!  matching MTU (for LACP), matching VLANs for trunk-group members, etc.
