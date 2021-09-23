@@ -4,10 +4,17 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.testing.EqualsTester;
+import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Test;
 
 /** Test of {@link DisjunctionAstNode}. */
 public final class DisjunctionAstNodeTest {
+
+  @Test
+  public void testJavaSerialization() {
+    DisjunctionAstNode obj = new DisjunctionAstNode();
+    assertThat(SerializationUtils.clone(obj), equalTo(obj));
+  }
 
   @Test
   public void testEquals() {

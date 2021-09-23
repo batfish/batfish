@@ -3,8 +3,10 @@ package org.batfish.vendor.check_point_management.parsing.parboiled;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 
 /** An {@link AstNode} representing a 16-bit unsigned integer. */
+@ParametersAreNonnullByDefault
 public final class Uint16AstNode implements AstNode {
 
   @Override

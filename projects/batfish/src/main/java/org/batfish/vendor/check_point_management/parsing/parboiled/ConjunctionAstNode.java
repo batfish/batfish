@@ -4,8 +4,10 @@ import com.google.common.collect.ImmutableList;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 
 /** An {@link AstNode} representing a conjunction of boolean expressions. */
+@ParametersAreNonnullByDefault
 public final class ConjunctionAstNode extends BooleanExprAstNode {
 
   ConjunctionAstNode(BooleanExprAstNode... conjuncts) {
