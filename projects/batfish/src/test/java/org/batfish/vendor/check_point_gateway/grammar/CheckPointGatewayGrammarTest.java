@@ -38,6 +38,7 @@ import static org.batfish.vendor.check_point_gateway.representation.Interface.DE
 import static org.batfish.vendor.check_point_gateway.representation.Interface.DEFAULT_INTERFACE_MTU;
 import static org.batfish.vendor.check_point_gateway.representation.Interface.DEFAULT_LOOPBACK_MTU;
 import static org.batfish.vendor.check_point_management.NatMethod.HIDE;
+import static org.batfish.vendor.check_point_management.TestSharedInstances.NAT_SETTINGS_TEST_INSTANCE;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.contains;
@@ -132,7 +133,6 @@ import org.batfish.vendor.check_point_management.NatHideBehindGateway;
 import org.batfish.vendor.check_point_management.NatRule;
 import org.batfish.vendor.check_point_management.NatRulebase;
 import org.batfish.vendor.check_point_management.NatSettings;
-import org.batfish.vendor.check_point_management.NatSettingsTest;
 import org.batfish.vendor.check_point_management.Network;
 import org.batfish.vendor.check_point_management.Original;
 import org.batfish.vendor.check_point_management.Package;
@@ -952,11 +952,7 @@ public class CheckPointGatewayGrammarTest {
                     ImmutableMap.of(
                         Uid.of("4"),
                         new Network(
-                            "n1",
-                            NatSettingsTest.TEST_INSTANCE,
-                            Ip.ZERO,
-                            Ip.ZERO,
-                            Uid.of("n1uid"))),
+                            "n1", NAT_SETTINGS_TEST_INSTANCE, Ip.ZERO, Ip.ZERO, Uid.of("n1uid"))),
                     ImmutableList.of(),
                     Uid.of("6")),
                 new Package(
@@ -973,7 +969,7 @@ public class CheckPointGatewayGrammarTest {
                     ImmutableMap.of(
                         Uid.of("8"),
                         new Network(
-                            "n2", NatSettingsTest.TEST_INSTANCE, Ip.MAX, Ip.MAX, Uid.of("n2uid"))),
+                            "n2", NAT_SETTINGS_TEST_INSTANCE, Ip.MAX, Ip.MAX, Uid.of("n2uid"))),
                     ImmutableList.of(),
                     Uid.of("10")),
                 new Package(
@@ -1049,7 +1045,7 @@ public class CheckPointGatewayGrammarTest {
             ImmutableList.of(
                 new Network(
                     "networkObject",
-                    NatSettingsTest.TEST_INSTANCE,
+                    NAT_SETTINGS_TEST_INSTANCE,
                     Ip.parse("10.11.12.0"),
                     Ip.parse("255.255.255.0"),
                     Uid.of("100"))));
@@ -1108,7 +1104,7 @@ public class CheckPointGatewayGrammarTest {
             .add(
                 new Network(
                     "networkEth2",
-                    NatSettingsTest.TEST_INSTANCE,
+                    NAT_SETTINGS_TEST_INSTANCE,
                     Ip.parse("10.0.2.0"),
                     Ip.parse("255.255.255.0"),
                     net2Uid))
@@ -1121,7 +1117,7 @@ public class CheckPointGatewayGrammarTest {
                 net1Uid,
                 new Network(
                     "networkEth1",
-                    NatSettingsTest.TEST_INSTANCE,
+                    NAT_SETTINGS_TEST_INSTANCE,
                     Ip.parse("10.0.1.0"),
                     Ip.parse("255.255.255.0"),
                     net1Uid))
@@ -1268,7 +1264,7 @@ public class CheckPointGatewayGrammarTest {
     // Attached to domain, NOT in NAT rulebase object dict
     ImmutableList<TypedManagementObject> domainObjs =
         ImmutableList.<TypedManagementObject>builder()
-            .add(new Host(eth1Ip, NatSettingsTest.TEST_INSTANCE, "eth1Ip", eth1IpUid))
+            .add(new Host(eth1Ip, NAT_SETTINGS_TEST_INSTANCE, "eth1Ip", eth1IpUid))
             .build();
 
     ImmutableMap<Uid, TypedManagementObject> objs =
