@@ -6,8 +6,8 @@ import javax.annotation.Nonnull;
 import org.parboiled.BaseParser;
 import org.parboiled.Parboiled;
 import org.parboiled.Rule;
-import org.parboiled.parserunners.AbstractParseRunner;
-import org.parboiled.parserunners.TracingParseRunner;
+import org.parboiled.parserunners.BasicParseRunner;
+import org.parboiled.parserunners.ParseRunner;
 import org.parboiled.support.ParsingResult;
 
 /** Parser for the {@code match} field of a CheckPoint service of type {@code service-other}. */
@@ -175,7 +175,7 @@ public class ServiceOtherMatchExpr extends BaseParser<AstNode> {
   static @Nonnull AstNode parse(
       String input, Function<ServiceOtherMatchExpr, Rule> inputRuleGetter) {
     ServiceOtherMatchExpr parser = instance();
-    AbstractParseRunner<AstNode> runner = new TracingParseRunner<>(inputRuleGetter.apply(parser));
+    ParseRunner<AstNode> runner = new BasicParseRunner<>(inputRuleGetter.apply(parser));
     ParsingResult<AstNode> result = runner.run(input);
     if (!result.matched) {
       return ErrorAstNode.instance();
