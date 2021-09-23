@@ -26,8 +26,7 @@ public final class Uint16AstNode implements AstNode {
   }
 
   public static Uint16AstNode of(String valueStr) {
-    int value = Integer.parseInt(valueStr);
-    return of(value);
+    return of(Integer.parseInt(valueStr));
   }
 
   static Uint16AstNode of(int value) {
