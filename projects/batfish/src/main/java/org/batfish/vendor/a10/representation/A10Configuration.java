@@ -207,6 +207,7 @@ public final class A10Configuration extends VendorConfiguration {
     TrunkGroup trunkGroup = iface.getTrunkGroup();
     if (trunkGroup != null) {
       newIface.setChannelGroup(getInterfaceName(Interface.Type.TRUNK, trunkGroup.getNumber()));
+      // TODO determine if switchport settings need to be propagated to member interfaces
     }
     newIface.build();
   }

@@ -241,6 +241,31 @@ public class A10GrammarTest {
                 hasAllAddresses(contains(ConcreteInterfaceAddress.parse("10.100.2.1/24"))))));
   }
 
+  @Test
+  public void testTrunkVlanConversion() {
+    String hostname = "trunk_vlan_convert";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(
+        c,
+        hasInterface(
+            "Trunk 1",
+            allOf(
+                hasInterfaceType(InterfaceType.AGGREGATED),
+                hasSwitchPortMode(SwitchportMode.TRUNK),
+                hasAllowedVlans(IntegerSpace.of(2)),
+                hasNativeVlan(equalTo(3)))));
+    assertThat(
+        c,
+        hasInterface(
+            "Trunk 2",
+            allOf(
+                hasInterfaceType(InterfaceType.AGGREGATED),
+                hasSwitchPortMode(SwitchportMode.TRUNK),
+                hasAllowedVlans(IntegerSpace.of(2)),
+                hasNativeVlan(nullValue()))));
+  }
+
   /** Testing ACOS v2 VLAN syntax */
   @Test
   public void testVlanAcos2Extraction() {

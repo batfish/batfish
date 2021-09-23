@@ -471,14 +471,25 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   }
 
   Interface.Type toInterfaceType(A10Parser.Vlan_ifaces_rangeContext ctx) {
-    assert ctx.vlan_iface_ethernet_range() != null;
-    return Interface.Type.ETHERNET;
+    if (ctx.vlan_iface_ethernet_range() != null) {
+      return Interface.Type.ETHERNET;
+    }
+    assert ctx.vlan_iface_trunk_range() != null;
+    return Interface.Type.TRUNK;
   }
 
   Optional<SubRange> toSubRange(A10Parser.Vlan_ifaces_rangeContext ctx) {
-    assert ctx.vlan_iface_ethernet_range() != null;
-    Optional<Integer> maybeFrom = toInteger(ctx.vlan_iface_ethernet_range().num);
-    Optional<Integer> maybeTo = toInteger(ctx.vlan_iface_ethernet_range().to);
+    Optional<Integer> maybeFrom;
+    Optional<Integer> maybeTo;
+    if (ctx.vlan_iface_ethernet_range() != null) {
+      maybeFrom = toInteger(ctx.vlan_iface_ethernet_range().num);
+      maybeTo = toInteger(ctx.vlan_iface_ethernet_range().to);
+    } else {
+      assert ctx.vlan_iface_trunk_range() != null;
+      maybeFrom = toInteger(ctx.vlan_iface_trunk_range().num);
+      maybeTo = toInteger(ctx.vlan_iface_trunk_range().to);
+    }
+
     if (!maybeFrom.isPresent() || !maybeTo.isPresent()) {
       // Already warned
       return Optional.empty();
@@ -502,6 +513,14 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
         return Optional.empty();
       }
       ifaces.add(new InterfaceReference(Interface.Type.ETHERNET, maybeNum.get()));
+    }
+    for (A10Parser.Vlan_iface_trunkContext iface : ctx.vlan_iface_trunk()) {
+      Optional<Integer> maybeNum = toInteger(iface.num);
+      if (!maybeNum.isPresent()) {
+        // Already warned
+        return Optional.empty();
+      }
+      ifaces.add(new InterfaceReference(Interface.Type.TRUNK, maybeNum.get()));
     }
     return Optional.of(ifaces.build());
   }
