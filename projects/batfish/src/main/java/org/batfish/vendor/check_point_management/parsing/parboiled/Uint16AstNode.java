@@ -27,11 +27,11 @@ public final class Uint16AstNode implements AstNode {
 
   public static Uint16AstNode of(String valueStr) {
     int value = Integer.parseInt(valueStr);
-    checkArgument(0 <= value && value <= 0xFFFF, "Invalid 16-bit integer: %s", valueStr);
     return of(value);
   }
 
   static Uint16AstNode of(int value) {
+    checkArgument(0 <= value && value <= 0xFFFF, "Invalid 16-bit integer: %s", value);
     return new Uint16AstNode(value);
   }
 
