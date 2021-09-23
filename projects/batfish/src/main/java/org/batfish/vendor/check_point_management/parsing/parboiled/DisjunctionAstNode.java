@@ -5,6 +5,7 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+/** An {@link AstNode} representing a disjunction of boolean expressions. */
 public final class DisjunctionAstNode extends BooleanExprAstNode {
 
   DisjunctionAstNode(BooleanExprAstNode... disjuncts) {

@@ -5,6 +5,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
+/** An {@link AstNode} representing a boolean function of the destination port. */
 @ParametersAreNonnullByDefault
 public class DportAstNode extends BooleanExprAstNode {
 

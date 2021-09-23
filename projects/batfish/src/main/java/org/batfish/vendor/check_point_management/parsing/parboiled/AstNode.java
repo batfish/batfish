@@ -1,3 +1,6 @@
 package org.batfish.vendor.check_point_management.parsing.parboiled;
 
-public interface AstNode {}
+import java.io.Serializable;
+
+/** A node that may be placed on the value stack while parsing a service-other match expression. */
+public interface AstNode extends Serializable {}

@@ -5,6 +5,7 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+/** An {@link AstNode} representing a conjunction of boolean expressions. */
 public final class ConjunctionAstNode extends BooleanExprAstNode {
 
   ConjunctionAstNode(BooleanExprAstNode... conjuncts) {

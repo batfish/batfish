@@ -5,8 +5,12 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
+/**
+ * An {@link AstNode} representing a boolean function of the destination port conjoined with
+ * condition that the protocol is UDP.
+ */
 @ParametersAreNonnullByDefault
-public class UhDportAstNode extends BooleanExprAstNode {
+public final class UhDportAstNode extends BooleanExprAstNode {
 
   public UhDportAstNode(ComparatorAstNode comparator, Uint16AstNode value) {
     _comparator = comparator;

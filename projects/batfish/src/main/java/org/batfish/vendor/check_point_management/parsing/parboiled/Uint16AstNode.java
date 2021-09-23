@@ -4,7 +4,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import javax.annotation.Nullable;
 
-public class Uint16AstNode implements AstNode {
+/** An {@link AstNode} representing a 16-bit unsigned integer. */
+public final class Uint16AstNode implements AstNode {
 
   @Override
   public boolean equals(@Nullable Object o) {
