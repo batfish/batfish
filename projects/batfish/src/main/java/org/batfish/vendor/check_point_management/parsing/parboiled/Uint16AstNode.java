@@ -31,7 +31,7 @@ public final class Uint16AstNode implements AstNode {
   }
 
   static Uint16AstNode of(int value) {
-    checkArgument(0 <= value && value <= 0xFFFF, "Invalid 16-bit integer: %s", value);
+    checkArgument(0 <= value && value <= 0xFFFF, "Invalid unsigned 16-bit integer: %s", value);
     return new Uint16AstNode(value);
   }
 
