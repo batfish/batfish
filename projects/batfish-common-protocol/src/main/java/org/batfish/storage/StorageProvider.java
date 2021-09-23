@@ -83,9 +83,11 @@ public interface StorageProvider {
    *
    * @param network The name of the network
    * @param snapshot The name of the snapshot
+   * @throws IOException if there is an error reading the log file.
+   * @returns The IspConfiguration object or null if the file does not exist.
    */
   @Nullable
-  IspConfiguration loadIspConfiguration(NetworkId network, SnapshotId snapshot);
+  IspConfiguration loadIspConfiguration(NetworkId network, SnapshotId snapshot) throws IOException;
 
   /**
    * Returns the node blacklist for the specified snapshot.

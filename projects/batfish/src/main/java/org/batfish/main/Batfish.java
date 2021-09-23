@@ -2533,11 +2533,19 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     ImmutableList.Builder<IspConfiguration> ispConfigurations = new ImmutableList.Builder<>();
 
-    IspConfiguration ispConfiguration =
-        _storage.loadIspConfiguration(snapshot.getNetwork(), snapshot.getSnapshot());
-    if (ispConfiguration != null) {
-      LOGGER.info("Loading Batfish ISP Configuration");
-      ispConfigurations.add(ispConfiguration);
+    try {
+      IspConfiguration ispConfiguration =
+          _storage.loadIspConfiguration(snapshot.getNetwork(), snapshot.getSnapshot());
+      if (ispConfiguration != null) {
+        LOGGER.info("Loading Batfish ISP Configuration");
+        ispConfigurations.add(ispConfiguration);
+      }
+    } catch (IOException e) {
+      internetWarnings.redFlag(
+          String.format("Could not load ISP configuration file: %s", e.getMessage()));
+      _logger.warnf(
+          "Unexpected exception while loading ISP configuration for snapshot %s",
+          Throwables.getStackTraceAsString(e));
     }
 
     vendorConfigs.values().stream()

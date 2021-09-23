@@ -292,21 +292,12 @@ public class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public @Nullable IspConfiguration loadIspConfiguration(NetworkId network, SnapshotId snapshot) {
+  public @Nullable IspConfiguration loadIspConfiguration(NetworkId network, SnapshotId snapshot)
+      throws IOException {
     try (InputStream inputStream =
         loadSnapshotInputObject(network, snapshot, ISP_CONFIGURATION_KEY)) {
       return BatfishObjectMapper.mapper().readValue(inputStream, IspConfiguration.class);
     } catch (FileNotFoundException e) {
-      return null;
-    } catch (IOException e) {
-      _logger.warnf(
-          "Unexpected exception caught while loading ISP configuration for snapshot %s: %s",
-          snapshot, Throwables.getStackTraceAsString(e));
-      LOGGER.warn(
-          String.format(
-              "Unexpected exception caught while loading ISP configuration for snapshot %s",
-              snapshot),
-          e);
       return null;
     }
   }
