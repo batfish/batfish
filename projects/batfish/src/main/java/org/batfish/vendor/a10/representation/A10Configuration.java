@@ -246,7 +246,6 @@ public final class A10Configuration extends VendorConfiguration {
   private Map<Integer, Interface> _interfacesLoopback;
   private Map<Integer, TrunkInterface> _interfacesTrunk;
   private Map<Integer, Interface> _interfacesVe;
-  private Map<Integer, TrunkGroup> _trunkGroups;
   private Map<Integer, Vlan> _vlans;
   private ConfigurationFormat _vendor;
 }
