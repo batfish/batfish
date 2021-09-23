@@ -1,5 +1,6 @@
 package org.batfish.vendor.check_point_management;
 
+import static org.batfish.vendor.check_point_management.TestSharedInstances.NAT_SETTINGS_TEST_INSTANCE;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -21,7 +22,7 @@ public final class AddressRangeTest {
           Ip.parse("0.0.0.1"),
           Ip6.ZERO,
           Ip6.parse("::1"),
-          NatSettingsTest.TEST_INSTANCE,
+          NAT_SETTINGS_TEST_INSTANCE,
           "foo",
           Uid.of("0"));
 
@@ -52,7 +53,7 @@ public final class AddressRangeTest {
                 Ip.parse("0.0.0.1"),
                 Ip6.ZERO,
                 Ip6.parse("::1"),
-                NatSettingsTest.TEST_INSTANCE,
+                NAT_SETTINGS_TEST_INSTANCE,
                 "foo",
                 Uid.of("0"))));
   }
@@ -80,7 +81,7 @@ public final class AddressRangeTest {
         BatfishObjectMapper.ignoreUnknownMapper().readValue(input, AddressRange.class),
         equalTo(
             new AddressRange(
-                null, null, null, null, NatSettingsTest.TEST_INSTANCE, "foo", Uid.of("0"))));
+                null, null, null, null, NAT_SETTINGS_TEST_INSTANCE, "foo", Uid.of("0"))));
   }
 
   @Test
@@ -91,7 +92,7 @@ public final class AddressRangeTest {
             Ip.parse("0.0.0.1"),
             Ip6.ZERO,
             Ip6.parse("::1"),
-            NatSettingsTest.TEST_INSTANCE,
+            NAT_SETTINGS_TEST_INSTANCE,
             "foo",
             Uid.of("0"));
     assertEquals(obj, SerializationUtils.clone(obj));
@@ -100,24 +101,24 @@ public final class AddressRangeTest {
   @Test
   public void testEquals() {
     AddressRange obj =
-        new AddressRange(null, null, null, null, NatSettingsTest.TEST_INSTANCE, "foo", Uid.of("0"));
+        new AddressRange(null, null, null, null, NAT_SETTINGS_TEST_INSTANCE, "foo", Uid.of("0"));
     new EqualsTester()
         .addEqualityGroup(
             obj,
             new AddressRange(
-                null, null, null, null, NatSettingsTest.TEST_INSTANCE, "foo", Uid.of("0")))
+                null, null, null, null, NAT_SETTINGS_TEST_INSTANCE, "foo", Uid.of("0")))
         .addEqualityGroup(
             new AddressRange(
-                Ip.ZERO, null, null, null, NatSettingsTest.TEST_INSTANCE, "foo", Uid.of("0")))
+                Ip.ZERO, null, null, null, NAT_SETTINGS_TEST_INSTANCE, "foo", Uid.of("0")))
         .addEqualityGroup(
             new AddressRange(
-                null, Ip.ZERO, null, null, NatSettingsTest.TEST_INSTANCE, "foo", Uid.of("0")))
+                null, Ip.ZERO, null, null, NAT_SETTINGS_TEST_INSTANCE, "foo", Uid.of("0")))
         .addEqualityGroup(
             new AddressRange(
-                null, null, Ip6.ZERO, null, NatSettingsTest.TEST_INSTANCE, "foo", Uid.of("0")))
+                null, null, Ip6.ZERO, null, NAT_SETTINGS_TEST_INSTANCE, "foo", Uid.of("0")))
         .addEqualityGroup(
             new AddressRange(
-                null, null, null, Ip6.ZERO, NatSettingsTest.TEST_INSTANCE, "foo", Uid.of("0")))
+                null, null, null, Ip6.ZERO, NAT_SETTINGS_TEST_INSTANCE, "foo", Uid.of("0")))
         .addEqualityGroup(
             new AddressRange(
                 null,
@@ -129,10 +130,10 @@ public final class AddressRangeTest {
                 Uid.of("0")))
         .addEqualityGroup(
             new AddressRange(
-                null, null, null, null, NatSettingsTest.TEST_INSTANCE, "bar", Uid.of("0")))
+                null, null, null, null, NAT_SETTINGS_TEST_INSTANCE, "bar", Uid.of("0")))
         .addEqualityGroup(
             new AddressRange(
-                null, null, null, null, NatSettingsTest.TEST_INSTANCE, "foo", Uid.of("1")))
+                null, null, null, null, NAT_SETTINGS_TEST_INSTANCE, "foo", Uid.of("1")))
         .testEquals();
   }
 }

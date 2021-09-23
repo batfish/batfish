@@ -20,6 +20,7 @@ import static org.batfish.vendor.check_point_gateway.representation.CheckpointNa
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.manualRuleTransformation;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.manualStaticTransformationSteps;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.mergeTransformations;
+import static org.batfish.vendor.check_point_management.TestSharedInstances.NAT_SETTINGS_TEST_INSTANCE;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
@@ -58,7 +59,6 @@ import org.batfish.vendor.check_point_management.NatMethod;
 import org.batfish.vendor.check_point_management.NatRule;
 import org.batfish.vendor.check_point_management.NatRulebase;
 import org.batfish.vendor.check_point_management.NatSettings;
-import org.batfish.vendor.check_point_management.NatSettingsTest;
 import org.batfish.vendor.check_point_management.Network;
 import org.batfish.vendor.check_point_management.Original;
 import org.batfish.vendor.check_point_management.PolicyTargets;
@@ -156,8 +156,7 @@ public final class CheckpointNatConversionsTest {
   @Test
   public void testCheckValidManualHide() {
     Uid uid = Uid.of("1");
-    TypedManagementObject addressSpace =
-        new Host(Ip.ZERO, NatSettingsTest.TEST_INSTANCE, "foo", uid);
+    TypedManagementObject addressSpace = new Host(Ip.ZERO, NAT_SETTINGS_TEST_INSTANCE, "foo", uid);
     TypedManagementObject service = new ServiceTcp("foo", "1", uid);
     Warnings warnings = new Warnings();
 
@@ -180,7 +179,7 @@ public final class CheckpointNatConversionsTest {
       Uid hostUid = Uid.of("1");
       Ip hostIp = Ip.parse("1.1.1.1");
       String hostname = "host";
-      Host host = new Host(hostIp, NatSettingsTest.TEST_INSTANCE, hostname, hostUid);
+      Host host = new Host(hostIp, NAT_SETTINGS_TEST_INSTANCE, hostname, hostUid);
       assertThat(
           manualHideTransformationSteps(host, ORIG, ORIG, warnings),
           equalTo(
@@ -192,7 +191,7 @@ public final class CheckpointNatConversionsTest {
       // src: ipv6 host
       Uid hostUid = Uid.of("1");
       String hostname = "host";
-      Host host = new Host(null, NatSettingsTest.TEST_INSTANCE, hostname, hostUid);
+      Host host = new Host(null, NAT_SETTINGS_TEST_INSTANCE, hostname, hostUid);
       assertThat(
           manualHideTransformationSteps(host, ORIG, ORIG, warnings), equalTo(Optional.empty()));
     }
@@ -204,7 +203,7 @@ public final class CheckpointNatConversionsTest {
       String name = "range1";
       AddressRange addressRange =
           new AddressRange(
-              firstIp, lastIp, null, null, NatSettingsTest.TEST_INSTANCE, name, addressRangeUid);
+              firstIp, lastIp, null, null, NAT_SETTINGS_TEST_INSTANCE, name, addressRangeUid);
       assertThat(
           manualHideTransformationSteps(addressRange, ORIG, ORIG, warnings),
           equalTo(
@@ -219,7 +218,7 @@ public final class CheckpointNatConversionsTest {
       String name = "range1";
       AddressRange addressRange =
           new AddressRange(
-              null, null, Ip6.ZERO, Ip6.ZERO, NatSettingsTest.TEST_INSTANCE, name, addressRangeUid);
+              null, null, Ip6.ZERO, Ip6.ZERO, NAT_SETTINGS_TEST_INSTANCE, name, addressRangeUid);
       assertThat(
           manualHideTransformationSteps(addressRange, ORIG, ORIG, warnings),
           equalTo(Optional.empty()));
@@ -237,7 +236,7 @@ public final class CheckpointNatConversionsTest {
     Uid hostUid = Uid.of("1");
     Ip hostIp = Ip.parse("1.1.1.1");
     String hostname = "host";
-    Host host = new Host(hostIp, NatSettingsTest.TEST_INSTANCE, hostname, hostUid);
+    Host host = new Host(hostIp, NAT_SETTINGS_TEST_INSTANCE, hostname, hostUid);
     ServiceToMatchExpr serviceToMatchExpr = new ServiceToMatchExpr(ImmutableMap.of());
     {
       ImmutableMap<Uid, TypedManagementObject> objs =
@@ -458,14 +457,14 @@ public final class CheckpointNatConversionsTest {
             Ip.parse("1.1.1.1"),
             null,
             null,
-            NatSettingsTest.TEST_INSTANCE,
+            NAT_SETTINGS_TEST_INSTANCE,
             addrRangeName,
             addrRangeUid);
     TypedManagementObject service = new ServiceTcp(serviceName, "1", serviceUid);
     TypedManagementObject host1 =
-        new Host(Ip.parse("1.1.1.1"), NatSettingsTest.TEST_INSTANCE, hostName1, hostUid1);
+        new Host(Ip.parse("1.1.1.1"), NAT_SETTINGS_TEST_INSTANCE, hostName1, hostUid1);
     TypedManagementObject host2 =
-        new Host(Ip.parse("2.2.2.2"), NatSettingsTest.TEST_INSTANCE, hostName2, hostUid2);
+        new Host(Ip.parse("2.2.2.2"), NAT_SETTINGS_TEST_INSTANCE, hostName2, hostUid2);
     ImmutableMap<Uid, TypedManagementObject> objects =
         ImmutableMap.<Uid, TypedManagementObject>builder()
             .put(hostUid1, host1)
@@ -605,12 +604,12 @@ public final class CheckpointNatConversionsTest {
     Uid hostUid1 = Uid.of("1");
     Ip hostIp1 = Ip.parse("1.1.1.1");
     String hostname1 = "host";
-    Host host1 = new Host(hostIp1, NatSettingsTest.TEST_INSTANCE, hostname1, hostUid1);
+    Host host1 = new Host(hostIp1, NAT_SETTINGS_TEST_INSTANCE, hostname1, hostUid1);
 
     Uid hostUid2 = Uid.of("2");
     Ip hostIp2 = Ip.parse("2.2.2.2");
     String hostname2 = "host2";
-    Host host2 = new Host(hostIp2, NatSettingsTest.TEST_INSTANCE, hostname2, hostUid2);
+    Host host2 = new Host(hostIp2, NAT_SETTINGS_TEST_INSTANCE, hostname2, hostUid2);
 
     {
       // src: host -> host
@@ -712,8 +711,8 @@ public final class CheckpointNatConversionsTest {
     Ip hostIp2 = Ip.parse("2.2.2.2");
     String hostname1 = "host1";
     String hostname2 = "host2";
-    Host host1 = new Host(hostIp1, NatSettingsTest.TEST_INSTANCE, hostname1, hostUid1);
-    Host host2 = new Host(hostIp2, NatSettingsTest.TEST_INSTANCE, hostname2, hostUid2);
+    Host host1 = new Host(hostIp1, NAT_SETTINGS_TEST_INSTANCE, hostname1, hostUid1);
+    Host host2 = new Host(hostIp2, NAT_SETTINGS_TEST_INSTANCE, hostname2, hostUid2);
     ServiceToMatchExpr serviceToMatchExpr = new ServiceToMatchExpr(ImmutableMap.of());
     BddTestbed tb =
         new BddTestbed(
@@ -780,7 +779,7 @@ public final class CheckpointNatConversionsTest {
 
   @Test
   public void visitHost_noIp() {
-    Host host = new Host(null, NatSettingsTest.TEST_INSTANCE, "host", Uid.of("1"));
+    Host host = new Host(null, NAT_SETTINGS_TEST_INSTANCE, "host", Uid.of("1"));
     assertThat(
         TRANSLATED_SOURCE_TO_TRANSFORMATION_STEPS.visitHost(host), equalTo(ImmutableList.of()));
   }
