@@ -11,6 +11,10 @@ import org.parboiled.parserunners.TracingParseRunner;
 import org.parboiled.support.ParsingResult;
 
 /** Parser for the {@code match} field of a CheckPoint service of type {@code service-other}. */
+@SuppressWarnings({
+  "checkstyle:methodname", // this class uses idiomatic names
+  "WeakerAccess", // access of Rule methods is needed for parser auto-generation.
+})
 public class ServiceOtherMatchExpr extends BaseParser<AstNode> {
 
   Rule TopLevel() {
