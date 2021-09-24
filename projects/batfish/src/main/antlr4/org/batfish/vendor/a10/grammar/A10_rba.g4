@@ -12,7 +12,8 @@ sr_role: ROLE name = rba_role_name srr_tail? NEWLINE srr_definition+;
 
 srr_tail: DEFAULT_PRIVILEGE srr_privilege;
 
-srr_privilege: NO_ACCESS | OPER | READ | WRITE;
+// Allow WORD_SEPARATOR here since M_Hostname will add it
+srr_privilege: WORD_SEPARATOR? (NO_ACCESS | OPER | READ | WRITE);
 
 srr_definition
 :
