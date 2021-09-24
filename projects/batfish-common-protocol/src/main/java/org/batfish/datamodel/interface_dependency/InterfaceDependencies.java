@@ -3,10 +3,11 @@ package org.batfish.datamodel.interface_dependency;
 import static org.batfish.datamodel.Interface.DependencyType.AGGREGATE;
 import static org.batfish.datamodel.Interface.DependencyType.BIND;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import com.google.common.graph.Network;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
@@ -20,7 +21,6 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Node;
 import org.batfish.common.topology.Layer1Topologies;
 import org.batfish.common.topology.Layer1Topology;
@@ -98,7 +98,7 @@ public class InterfaceDependencies {
               }
 
               // non-local dependencies
-              Set<Layer1Node> neighbors = getL1Neighbors(iface);
+              Collection<Layer1Node> neighbors = getL1Neighbors(iface);
               if (neighbors.size() == 1) {
                 /* if the neighbor is inactive, iface must be too. e.g. if all member interfaces are up, but the
                  * neighbor is admin-down, iface will be down
@@ -212,33 +212,38 @@ public class InterfaceDependencies {
     _depGraph.addEdge(src, tgt, new DependencyEdge(depType));
   }
 
-  private @Nullable Layer1Topology getLayer1Topology(Interface iface) {
+  private Collection<Layer1Node> getL1Neighbors(Interface iface) {
+    Layer1Node layer1Node = new Layer1Node(iface.getOwner().getHostname(), iface.getName());
     switch (iface.getInterfaceType()) {
       case PHYSICAL:
-        return _layer1Topologies.getCombinedL1();
+        return adjacentNodes(_layer1Topologies.getCombinedL1(), layer1Node);
       case AGGREGATED:
       case REDUNDANT:
-        return _layer1Topologies.getLogicalL1();
+        // the logical L1 contains physical nodes and AGGREGATED/REDUNDANT nodes. filter them out.
+        return adjacentNodes(_layer1Topologies.getLogicalL1(), layer1Node).stream()
+            .filter(
+                node ->
+                    _configs
+                            .get(node.getHostname())
+                            .getAllInterfaces()
+                            .get(node.getInterfaceName())
+                            .getInterfaceType()
+                        == iface.getInterfaceType())
+            .collect(ImmutableList.toImmutableList());
       default:
-        return null;
+        return ImmutableList.of();
     }
   }
 
-  private Set<Layer1Node> getL1Neighbors(Interface iface) {
-    @Nullable Layer1Topology l1Topology = getLayer1Topology(iface);
-    if (l1Topology == null) {
+  private static Set<Layer1Node> adjacentNodes(Layer1Topology topology, Layer1Node node) {
+    if (!topology.getGraph().nodes().contains(node)) {
       return ImmutableSet.of();
     }
-    Network<Layer1Node, Layer1Edge> l1Graph = l1Topology.getGraph();
-    Layer1Node layer1Node = new Layer1Node(iface.getOwner().getHostname(), iface.getName());
-    if (!l1Graph.nodes().contains(layer1Node)) {
-      return ImmutableSet.of();
-    }
-    return l1Graph.adjacentNodes(layer1Node);
+    return topology.getGraph().adjacentNodes(node);
   }
 
   private @Nullable NodeInterfacePair getL1Neighbor(Interface iface) {
-    Set<Layer1Node> neighbors = getL1Neighbors(iface);
+    Collection<Layer1Node> neighbors = getL1Neighbors(iface);
     if (neighbors.isEmpty()) {
       return null;
     }
