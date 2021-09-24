@@ -389,10 +389,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   }
 
   private @Nonnull Optional<String> toString(ParserRuleContext messageCtx, HostnameContext ctx) {
-    if (ctx.word() != null) {
-      return toString(messageCtx, ctx.word(), "hostname", HOSTNAME_PATTERN);
-    }
-    return Optional.empty();
+    return toString(messageCtx, ctx.word(), "hostname", HOSTNAME_PATTERN);
   }
 
   private @Nonnull Optional<String> toString(

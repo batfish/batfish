@@ -10,7 +10,7 @@ single_quoted_string: SINGLE_QUOTE text = quoted_text? SINGLE_QUOTE;
 word_content: (double_quoted_string | single_quoted_string | WORD)+;
 word: WORD_SEPARATOR word_content;
 
-hostname: word | WORD_SEPARATOR administration_privilege;
+hostname: word;
 
 interface_name_str: word;
 
