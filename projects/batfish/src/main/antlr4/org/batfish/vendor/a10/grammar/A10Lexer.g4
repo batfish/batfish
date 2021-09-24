@@ -6,6 +6,8 @@ options {
 
 tokens {
   QUOTED_TEXT,
+  RBA_LINE,
+  RBA_TAIL,
   WORD,
   WORD_SEPARATOR
 }
@@ -21,6 +23,8 @@ INTERFACE: 'interface';
 LOOPBACK: 'loopback';
 MTU: 'mtu';
 NAME: 'name' -> pushMode(M_Word);
+RBA: 'rba' -> pushMode(M_Rba);
+ROLE: 'role';
 ROUTER_INTERFACE: 'router-interface';
 TAGGED: 'tagged';
 TO: 'to';
@@ -178,6 +182,12 @@ F_Whitespace
 ;
 
 fragment
+F_NonWhitespace
+:
+  ~[ \t\u000C\u00A0\n\r]
+;
+
+fragment
 F_Word: F_WordChar+;
 
 fragment
@@ -217,3 +227,28 @@ M_WordValue_SINGLE_QUOTE: ['] -> type(SINGLE_QUOTE), pushMode(M_SingleQuote);
 M_WordValue_WORD: F_Word -> type(WORD);
 M_WordValue_WS: F_Whitespace+ -> skip, popMode;
 M_WordValue_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_Rba;
+M_Rba_WS: F_Whitespace+ -> skip;
+M_Rba_ROLE: ROLE -> type(ROLE), mode(M_RbaRoleName);
+M_Rba_NEWLINE: F_Newline -> type(NEWLINE), mode(M_RbaLine);
+
+mode M_RbaRoleName;
+M_RbaRoleName_WS: F_Whitespace+ -> type(WORD_SEPARATOR), mode(M_RbaRoleNameValue);
+M_RbaRoleName_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_RbaRoleNameValue;
+M_RbaRoleNameValue_DOUBLE_QUOTE: '"' -> type(DOUBLE_QUOTE), pushMode(M_DoubleQuote);
+M_RbaRoleNameValue_SINGLE_QUOTE: ['] -> type(SINGLE_QUOTE), pushMode(M_SingleQuote);
+M_RbaRoleNameValue_WORD: F_Word -> type(WORD);
+M_RbaRoleNameValue_WS: F_Whitespace+ -> skip, mode(M_RbaTail);
+M_RbaRoleNameValue_NEWLINE: F_Newline -> type(NEWLINE), mode(M_RbaLine);
+
+mode M_RbaTail;
+M_RbaTail_RBA_TAIL: F_NonNewlineChar+ -> type(RBA_TAIL);
+M_RbaTail_NEWLINE: F_Newline -> type(NEWLINE), mode(M_RbaLine);
+
+mode M_RbaLine;
+M_RbaLine_RBA_LINE: F_Whitespace* F_Word F_Whitespace+ ('no-access'|'read'|'partition-only'|'oper'|'write') F_Newline-> type(RBA_LINE);
+M_RbaLine_COMMENT_LINE: F_Whitespace* '!' F_NonNewlineChar* (F_Newline | EOF) -> skip;
+M_RbaLine_END: F_NonWhitespace+ {less();} -> popMode;
