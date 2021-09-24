@@ -87,6 +87,7 @@ import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.eigrp.EigrpTopology;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
+import org.batfish.datamodel.isp_configuration.IspConfigurationException;
 import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.vxlan.VxlanTopology;
@@ -292,22 +293,20 @@ public class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public @Nullable IspConfiguration loadIspConfiguration(NetworkId network, SnapshotId snapshot) {
+  public @Nullable IspConfiguration loadIspConfiguration(NetworkId network, SnapshotId snapshot)
+      throws IspConfigurationException {
     try (InputStream inputStream =
         loadSnapshotInputObject(network, snapshot, ISP_CONFIGURATION_KEY)) {
       return BatfishObjectMapper.mapper().readValue(inputStream, IspConfiguration.class);
     } catch (FileNotFoundException e) {
       return null;
     } catch (IOException e) {
-      _logger.warnf(
-          "Unexpected exception caught while loading ISP configuration for snapshot %s: %s",
-          snapshot, Throwables.getStackTraceAsString(e));
-      LOGGER.warn(
+      throw new IspConfigurationException(
           String.format(
-              "Unexpected exception caught while loading ISP configuration for snapshot %s",
-              snapshot),
+              "Could not parse the content of %s. (Is it valid JSON? Does it have the right"
+                  + " information?): %s",
+              ISP_CONFIGURATION_KEY, e.getMessage()),
           e);
-      return null;
     }
   }
 
