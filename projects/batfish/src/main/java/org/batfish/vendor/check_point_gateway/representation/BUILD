@@ -12,6 +12,7 @@ java_library(
     deps = [
         "//projects/batfish-common-protocol:common",
         "//projects/batfish/src/main/java/org/batfish/vendor/check_point_management",
+        "//projects/batfish/src/main/java/org/batfish/vendor/check_point_management/parsing/parboiled",
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_guava_guava",
         "@maven//:org_apache_commons_commons_lang3",

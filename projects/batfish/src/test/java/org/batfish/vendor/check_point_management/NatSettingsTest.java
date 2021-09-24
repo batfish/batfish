@@ -1,5 +1,6 @@
 package org.batfish.vendor.check_point_management;
 
+import static org.batfish.vendor.check_point_management.TestSharedInstances.NAT_SETTINGS_TEST_INSTANCE;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -11,13 +12,8 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Ip;
 import org.junit.Test;
 
-public class NatSettingsTest {
-  /**
-   * Instance of this class populated with arbitrary values. Useful for generating a valid object
-   * for use in tests.
-   */
-  public static final NatSettings TEST_INSTANCE =
-      new NatSettings(true, NatHideBehindGateway.INSTANCE, "All", null, NatMethod.HIDE);
+/** Test of {@link NatSettings}. */
+public final class NatSettingsTest {
   /** Another test instance, that is not-equal to the previous instance. */
   public static final NatSettings TEST_INSTANCE_DIFFERENT =
       new NatSettings(
@@ -41,7 +37,7 @@ public class NatSettingsTest {
 
   @Test
   public void testJavaSerialization() {
-    NatSettings obj = TEST_INSTANCE;
+    NatSettings obj = NAT_SETTINGS_TEST_INSTANCE;
     assertEquals(obj, SerializationUtils.clone(obj));
   }
 

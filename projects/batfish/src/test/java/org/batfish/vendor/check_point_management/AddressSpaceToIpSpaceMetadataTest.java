@@ -1,6 +1,7 @@
 package org.batfish.vendor.check_point_management;
 
 import static org.batfish.vendor.check_point_management.AddressSpaceToIpSpaceMetadata.toIpSpaceMetadata;
+import static org.batfish.vendor.check_point_management.TestSharedInstances.NAT_SETTINGS_TEST_INSTANCE;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -17,8 +18,7 @@ public class AddressSpaceToIpSpaceMetadataTest {
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip2 = Ip.parse("2.2.2.2");
     AddressRange addrSpace =
-        new AddressRange(
-            ip1, ip2, null, null, NatSettingsTest.TEST_INSTANCE, "name", Uid.of("uid"));
+        new AddressRange(ip1, ip2, null, null, NAT_SETTINGS_TEST_INSTANCE, "name", Uid.of("uid"));
     IpSpaceMetadata metadata = toIpSpaceMetadata(addrSpace);
     assertThat(metadata.getSourceName(), equalTo(addrSpace.getName()));
     assertThat(metadata.getSourceType(), equalTo("address-range"));
@@ -62,7 +62,7 @@ public class AddressSpaceToIpSpaceMetadataTest {
   @Test
   public void testHost() {
     Ip hostIp = Ip.parse("10.10.10.10");
-    Host addrSpace = new Host(hostIp, NatSettingsTest.TEST_INSTANCE, "hostName", Uid.of("10"));
+    Host addrSpace = new Host(hostIp, NAT_SETTINGS_TEST_INSTANCE, "hostName", Uid.of("10"));
     IpSpaceMetadata metadata = toIpSpaceMetadata(addrSpace);
     assertThat(metadata.getSourceName(), equalTo(addrSpace.getName()));
     assertThat(metadata.getSourceType(), equalTo("host"));
@@ -72,7 +72,7 @@ public class AddressSpaceToIpSpaceMetadataTest {
   public void testNetwork() {
     Ip ip = Ip.parse("1.1.1.0");
     Ip mask = Ip.parse("255.255.255.0");
-    Network addrSpace = new Network("name", NatSettingsTest.TEST_INSTANCE, ip, mask, Uid.of("uid"));
+    Network addrSpace = new Network("name", NAT_SETTINGS_TEST_INSTANCE, ip, mask, Uid.of("uid"));
     IpSpaceMetadata metadata = toIpSpaceMetadata(addrSpace);
     assertThat(metadata.getSourceName(), equalTo(addrSpace.getName()));
     assertThat(metadata.getSourceType(), equalTo("network"));

@@ -11,6 +11,7 @@ import static org.batfish.vendor.check_point_gateway.representation.CheckPointGa
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toAddressMatchExpr;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toIpAccessLists;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toMatchExpr;
+import static org.batfish.vendor.check_point_management.TestSharedInstances.NAT_SETTINGS_TEST_INSTANCE;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
@@ -48,7 +49,6 @@ import org.batfish.vendor.check_point_management.AddressSpaceToMatchExpr;
 import org.batfish.vendor.check_point_management.CpmiAnyObject;
 import org.batfish.vendor.check_point_management.Host;
 import org.batfish.vendor.check_point_management.NamedManagementObject;
-import org.batfish.vendor.check_point_management.NatSettingsTest;
 import org.batfish.vendor.check_point_management.Network;
 import org.batfish.vendor.check_point_management.PolicyTargets;
 import org.batfish.vendor.check_point_management.RulebaseAction;
@@ -84,21 +84,21 @@ public final class CheckPointGatewayConversionsTest {
   private static final Network NETWORK_0 =
       new Network(
           "net0",
-          NatSettingsTest.TEST_INSTANCE,
+          NAT_SETTINGS_TEST_INSTANCE,
           Ip.parse("10.0.0.0"),
           Ip.parse("255.255.255.0"),
           UID_NET0);
   private static final Network NETWORK_1 =
       new Network(
           "net1",
-          NatSettingsTest.TEST_INSTANCE,
+          NAT_SETTINGS_TEST_INSTANCE,
           Ip.parse("10.0.1.0"),
           Ip.parse("255.255.255.0"),
           UID_NET1);
   private static final Network NETWORK_2 =
       new Network(
           "net2",
-          NatSettingsTest.TEST_INSTANCE,
+          NAT_SETTINGS_TEST_INSTANCE,
           Ip.parse("10.0.2.0"),
           Ip.parse("255.255.255.0"),
           UID_NET2);
@@ -495,8 +495,7 @@ public final class CheckPointGatewayConversionsTest {
   @Test
   public void testCheckValidHeaderSpaceInputs() {
     Uid uid = Uid.of("1");
-    TypedManagementObject addressSpace =
-        new Host(Ip.ZERO, NatSettingsTest.TEST_INSTANCE, "foo", uid);
+    TypedManagementObject addressSpace = new Host(Ip.ZERO, NAT_SETTINGS_TEST_INSTANCE, "foo", uid);
     TypedManagementObject service = new ServiceTcp("foo", "1", uid);
     Warnings warnings = new Warnings();
 

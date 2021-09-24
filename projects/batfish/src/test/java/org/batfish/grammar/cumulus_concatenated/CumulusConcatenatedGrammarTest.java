@@ -7,7 +7,9 @@ import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasP
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasProtocol;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddress;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInterfaceType;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSpeed;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.routing_policy.Common.SUMMARY_ONLY_SUPPRESSION_POLICY_NAME;
 import static org.batfish.datamodel.routing_policy.Environment.Direction.OUT;
@@ -28,7 +30,6 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -340,14 +341,28 @@ public class CumulusConcatenatedGrammarTest {
     assertThat(c.getAllInterfaces().keySet(), contains("lo", "swp1", "swp2"));
 
     Interface lo = c.getAllInterfaces().get("lo");
-    assertThat(lo, allOf(hasAddress("1.1.1.1/32"), hasMtu(DEFAULT_LOOPBACK_MTU)));
+    assertThat(
+        lo,
+        allOf(
+            hasAddress("1.1.1.1/32"),
+            hasMtu(DEFAULT_LOOPBACK_MTU),
+            hasInterfaceType(InterfaceType.LOOPBACK)));
 
     Interface swp1 = c.getAllInterfaces().get("swp1");
-    assertThat(swp1, allOf(hasAddress("2.2.2.2/24"), hasMtu(DEFAULT_PORT_MTU)));
+    assertThat(
+        swp1,
+        allOf(
+            hasAddress("2.2.2.2/24"),
+            hasMtu(DEFAULT_PORT_MTU),
+            hasInterfaceType(InterfaceType.PHYSICAL)));
 
     Interface swp2 = c.getAllInterfaces().get("swp2");
-    assertEquals(swp2.getAddress(), ConcreteInterfaceAddress.parse("3.3.3.3/24"));
-    assertEquals(swp2.getSpeed(), Double.valueOf(10000 * 10e6));
+    assertThat(
+        swp2,
+        allOf(
+            hasAddress("3.3.3.3/24"),
+            hasSpeed(10000 * 10e6),
+            hasInterfaceType(InterfaceType.PHYSICAL)));
   }
 
   @Test

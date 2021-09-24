@@ -4,6 +4,8 @@ import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Interface.DEFAULT_MTU;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasBandwidth;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInterfaceType;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.representation.cumulus.CumulusConcatenatedConfiguration.LINK_LOCAL_ADDRESS;
 import static org.batfish.representation.cumulus.CumulusConcatenatedConfiguration.LOOPBACK_INTERFACE_NAME;
 import static org.batfish.representation.cumulus.CumulusConcatenatedConfiguration.isValidVIInterface;
@@ -12,7 +14,9 @@ import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_LOOP
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_PORT_BANDWIDTH;
 import static org.batfish.representation.cumulus.InterfaceConverter.BRIDGE_NAME;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -30,6 +34,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
@@ -47,8 +52,8 @@ public class CumulusConcatenatedConfigurationTest {
     CumulusConcatenatedConfiguration.builder().setHostname("c").build().initializeAllInterfaces(c);
     assertTrue(c.getAllInterfaces().containsKey(LOOPBACK_INTERFACE_NAME));
     assertThat(
-        c.getAllInterfaces().get(LOOPBACK_INTERFACE_NAME).getBandwidth(),
-        equalTo(DEFAULT_LOOPBACK_BANDWIDTH));
+        c.getAllInterfaces().get(LOOPBACK_INTERFACE_NAME),
+        hasBandwidth(DEFAULT_LOOPBACK_BANDWIDTH));
   }
 
   private static SnapshotRuntimeData makeRuntimeData(String hostname, double loopbackBandwidth) {
@@ -226,12 +231,8 @@ public class CumulusConcatenatedConfigurationTest {
             .setHostname("c")
             .addInterfaces(ImmutableMap.of(vsIface.getName(), vsIface))
             .build();
-    assertTrue(
-        vsConfig
-            .toVendorIndependentConfiguration()
-            .getAllInterfaces()
-            .get(vsIface.getName())
-            .getActive());
+    assertThat(
+        vsConfig.toVendorIndependentConfiguration(), hasInterface(vsIface.getName(), isActive()));
   }
 
   @Test
@@ -273,14 +274,20 @@ public class CumulusConcatenatedConfigurationTest {
     // Convert - method under test
     Configuration c = vsConfig.toVendorIndependentConfiguration();
 
-    assertFalse(c.getAllInterfaces().get(vsIface.getName()).getActive());
+    assertThat(
+        c,
+        hasInterface(
+            vsIface.getName(), allOf(isActive(false), hasInterfaceType(InterfaceType.PHYSICAL))));
 
     // Flip the shutdown status around and test again.
     frrInterface.setShutdown(false);
     frrConfiguration.getInterfaces().put("swp1", frrInterface);
     c = vsConfig.toVendorIndependentConfiguration();
 
-    assertTrue(c.getAllInterfaces().get(vsIface.getName()).getActive());
+    assertThat(
+        c,
+        hasInterface(
+            vsIface.getName(), allOf(isActive(), hasInterfaceType(InterfaceType.PHYSICAL))));
   }
 
   @Test
@@ -369,7 +376,11 @@ public class CumulusConcatenatedConfigurationTest {
     CumulusConcatenatedConfiguration vc = new CumulusConcatenatedConfiguration();
     InterfacesInterface vsIface = new InterfacesInterface("iface");
     Interface viIface =
-        org.batfish.datamodel.Interface.builder().setName("iface").setOwner(c).build();
+        org.batfish.datamodel.Interface.builder()
+            .setName("iface")
+            .setOwner(c)
+            .setType(InterfaceType.UNKNOWN)
+            .build();
 
     // unset means default
     vc.populateCommonInterfaceProperties(vsIface, viIface);
@@ -388,6 +399,7 @@ public class CumulusConcatenatedConfigurationTest {
         org.batfish.datamodel.Interface.builder()
             .setName(LOOPBACK_INTERFACE_NAME)
             .setOwner(c)
+            .setType(InterfaceType.UNKNOWN)
             .build();
 
     Ip clagIp = Ip.parse("1.1.1.1");
@@ -401,6 +413,7 @@ public class CumulusConcatenatedConfigurationTest {
         viLoopback.getAllAddresses(),
         equalTo(
             ImmutableSet.of(ConcreteInterfaceAddress.create(clagIp, Prefix.MAX_PREFIX_LENGTH))));
+    assertThat(viLoopback.getInterfaceType(), is(InterfaceType.LOOPBACK));
   }
 
   @Test
@@ -443,6 +456,7 @@ public class CumulusConcatenatedConfigurationTest {
                         org.batfish.datamodel.Interface.builder()
                             .setName(iface.getName())
                             .setOwner(c)
+                            .setType(InterfaceType.PHYSICAL)
                             .build()));
     c.getAllInterfaces().get(iface3.getName()).setActive(false);
 

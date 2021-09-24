@@ -1,5 +1,6 @@
 package org.batfish.vendor.check_point_management;
 
+import static org.batfish.vendor.check_point_management.TestSharedInstances.NAT_SETTINGS_TEST_INSTANCE;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -15,7 +16,7 @@ import org.junit.Test;
 public final class NetworkTest {
 
   public static final Network TEST_INSTANCE =
-      new Network("foo", NatSettingsTest.TEST_INSTANCE, Ip.ZERO, Ip.MAX, Uid.of("0"));
+      new Network("foo", NAT_SETTINGS_TEST_INSTANCE, Ip.ZERO, Ip.MAX, Uid.of("0"));
 
   @Test
   public void testJacksonDeserialization() throws JsonProcessingException {
@@ -46,21 +47,21 @@ public final class NetworkTest {
 
   @Test
   public void testEquals() {
-    Network obj = new Network("foo", NatSettingsTest.TEST_INSTANCE, Ip.ZERO, Ip.MAX, Uid.of("0"));
+    Network obj = new Network("foo", NAT_SETTINGS_TEST_INSTANCE, Ip.ZERO, Ip.MAX, Uid.of("0"));
     new EqualsTester()
         .addEqualityGroup(
-            obj, new Network("foo", NatSettingsTest.TEST_INSTANCE, Ip.ZERO, Ip.MAX, Uid.of("0")))
+            obj, new Network("foo", NAT_SETTINGS_TEST_INSTANCE, Ip.ZERO, Ip.MAX, Uid.of("0")))
         .addEqualityGroup(
-            new Network("bar", NatSettingsTest.TEST_INSTANCE, Ip.ZERO, Ip.MAX, Uid.of("0")))
+            new Network("bar", NAT_SETTINGS_TEST_INSTANCE, Ip.ZERO, Ip.MAX, Uid.of("0")))
         .addEqualityGroup(
             new Network(
                 "foo", NatSettingsTest.TEST_INSTANCE_DIFFERENT, Ip.ZERO, Ip.MAX, Uid.of("0")))
         .addEqualityGroup(
-            new Network("foo", NatSettingsTest.TEST_INSTANCE, Ip.MAX, Ip.MAX, Uid.of("0")))
+            new Network("foo", NAT_SETTINGS_TEST_INSTANCE, Ip.MAX, Ip.MAX, Uid.of("0")))
         .addEqualityGroup(
-            new Network("foo", NatSettingsTest.TEST_INSTANCE, Ip.ZERO, Ip.ZERO, Uid.of("0")))
+            new Network("foo", NAT_SETTINGS_TEST_INSTANCE, Ip.ZERO, Ip.ZERO, Uid.of("0")))
         .addEqualityGroup(
-            new Network("foo", NatSettingsTest.TEST_INSTANCE, Ip.ZERO, Ip.MAX, Uid.of("1")))
+            new Network("foo", NAT_SETTINGS_TEST_INSTANCE, Ip.ZERO, Ip.MAX, Uid.of("1")))
         .testEquals();
   }
 }

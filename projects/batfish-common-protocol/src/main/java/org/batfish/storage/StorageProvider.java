@@ -33,6 +33,7 @@ import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.eigrp.EigrpTopology;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
+import org.batfish.datamodel.isp_configuration.IspConfigurationException;
 import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.batfish.identifiers.AnalysisId;
@@ -83,9 +84,12 @@ public interface StorageProvider {
    *
    * @param network The name of the network
    * @param snapshot The name of the snapshot
+   * @throws IspConfigurationException if there is an error reading the log file.
+   * @returns The IspConfiguration object or null if the file does not exist.
    */
   @Nullable
-  IspConfiguration loadIspConfiguration(NetworkId network, SnapshotId snapshot);
+  IspConfiguration loadIspConfiguration(NetworkId network, SnapshotId snapshot)
+      throws IspConfigurationException;
 
   /**
    * Returns the node blacklist for the specified snapshot.

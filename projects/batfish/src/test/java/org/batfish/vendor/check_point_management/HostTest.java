@@ -1,5 +1,6 @@
 package org.batfish.vendor.check_point_management;
 
+import static org.batfish.vendor.check_point_management.TestSharedInstances.NAT_SETTINGS_TEST_INSTANCE;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -15,7 +16,7 @@ import org.junit.Test;
 public final class HostTest {
 
   private static final Host TEST_INSTANCE =
-      new Host(Ip.ZERO, NatSettingsTest.TEST_INSTANCE, "foo", Uid.of("0"));
+      new Host(Ip.ZERO, NAT_SETTINGS_TEST_INSTANCE, "foo", Uid.of("0"));
 
   @Test
   public void testJacksonDeserialization() throws JsonProcessingException {
@@ -55,7 +56,7 @@ public final class HostTest {
             + "}";
     assertThat(
         BatfishObjectMapper.ignoreUnknownMapper().readValue(input, Host.class),
-        equalTo(new Host(null, NatSettingsTest.TEST_INSTANCE, "foo", Uid.of("0"))));
+        equalTo(new Host(null, NAT_SETTINGS_TEST_INSTANCE, "foo", Uid.of("0"))));
   }
 
   @Test
@@ -65,14 +66,14 @@ public final class HostTest {
 
   @Test
   public void testEquals() {
-    Host obj = new Host(Ip.ZERO, NatSettingsTest.TEST_INSTANCE, "foo", Uid.of("0"));
+    Host obj = new Host(Ip.ZERO, NAT_SETTINGS_TEST_INSTANCE, "foo", Uid.of("0"));
     new EqualsTester()
-        .addEqualityGroup(obj, new Host(Ip.ZERO, NatSettingsTest.TEST_INSTANCE, "foo", Uid.of("0")))
-        .addEqualityGroup(new Host(Ip.MAX, NatSettingsTest.TEST_INSTANCE, "foo", Uid.of("0")))
+        .addEqualityGroup(obj, new Host(Ip.ZERO, NAT_SETTINGS_TEST_INSTANCE, "foo", Uid.of("0")))
+        .addEqualityGroup(new Host(Ip.MAX, NAT_SETTINGS_TEST_INSTANCE, "foo", Uid.of("0")))
         .addEqualityGroup(
             new Host(Ip.ZERO, NatSettingsTest.TEST_INSTANCE_DIFFERENT, "foo", Uid.of("0")))
-        .addEqualityGroup(new Host(Ip.ZERO, NatSettingsTest.TEST_INSTANCE, "bar", Uid.of("0")))
-        .addEqualityGroup(new Host(Ip.ZERO, NatSettingsTest.TEST_INSTANCE, "foo", Uid.of("1")))
+        .addEqualityGroup(new Host(Ip.ZERO, NAT_SETTINGS_TEST_INSTANCE, "bar", Uid.of("0")))
+        .addEqualityGroup(new Host(Ip.ZERO, NAT_SETTINGS_TEST_INSTANCE, "foo", Uid.of("1")))
         .testEquals();
   }
 }

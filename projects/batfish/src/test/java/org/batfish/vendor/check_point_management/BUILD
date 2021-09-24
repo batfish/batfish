@@ -7,17 +7,11 @@ package(
 
 java_library(
     name = "testlib",
-    srcs = ["NatSettingsTest.java"],
-    deps = [
-        "//projects/batfish-common-protocol:common",
-        "//projects/batfish/src/main/java/org/batfish/vendor/check_point_management",
-        "@maven//:com_fasterxml_jackson_core_jackson_core",
-        "@maven//:com_google_guava_guava_testlib",
-        "@maven//:junit_junit",
-        "@maven//:org_apache_commons_commons_lang3",
-        "@maven//:org_hamcrest_hamcrest",
-    ],
+    srcs = glob(["Test*.java"]),
     visibility = ["//visibility:public"],
+    deps = [
+        "//projects/batfish/src/main/java/org/batfish/vendor/check_point_management",
+    ],
 )
 
 junit_tests(
@@ -27,10 +21,12 @@ junit_tests(
         exclude = ["Test*.java"],
     ),
     deps = [
+        ":testlib",
         "//projects/batfish:batfish_testlib",
         "//projects/batfish-common-protocol:common",
-        "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/matchers:matchers",
+        "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/matchers",
         "//projects/batfish/src/main/java/org/batfish/vendor/check_point_management",
+        "//projects/batfish/src/main/java/org/batfish/vendor/check_point_management/parsing/parboiled",
         "@maven//:com_fasterxml_jackson_core_jackson_core",
         "@maven//:com_fasterxml_jackson_core_jackson_databind",
         "@maven//:com_google_code_findbugs_jsr305",

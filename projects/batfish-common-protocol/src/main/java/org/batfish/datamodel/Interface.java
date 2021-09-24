@@ -723,8 +723,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   private static InterfaceType computeCumulusInterfaceType(String name) {
-    // TODO: fill this out
-    return InterfaceType.UNKNOWN;
+    throw new UnsupportedOperationException("Should not be reachable: " + name);
   }
 
   private static InterfaceType computeHostInterfaceType(String name) {
