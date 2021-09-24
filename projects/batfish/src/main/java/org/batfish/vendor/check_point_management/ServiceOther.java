@@ -6,9 +6,18 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
 import java.util.Objects;
+import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.vendor.check_point_management.parsing.parboiled.BooleanExprAstNode;
+import org.batfish.vendor.check_point_management.parsing.parboiled.EmptyAstNode;
+import org.batfish.vendor.check_point_management.parsing.parboiled.ServiceOtherMatchExpr;
 
+/**
+ * A custom {@link Service} matching packets by protocol number, and an optional program in INSPECT
+ * syntax. The program can match on arbitrary features of the packet - including its classified
+ * direction - and the firewall's state.
+ */
 public final class ServiceOther extends TypedManagementObject implements Service {
   @Override
   public <T> T accept(ServiceVisitor<T> visitor) {
@@ -23,6 +32,11 @@ public final class ServiceOther extends TypedManagementObject implements Service
   /** Docs: A string in INSPECT syntax on packet matching. */
   public @Nullable String getMatch() {
     return _match;
+  }
+
+  /** An abstract syntax tree resulting from parsing the {@code match} INSPECT string. */
+  public @Nonnull BooleanExprAstNode getMatchAst() {
+    return _matchAst;
   }
 
   @Override
@@ -56,14 +70,25 @@ public final class ServiceOther extends TypedManagementObject implements Service
     checkArgument(name != null, "Missing %s", PROP_NAME);
     checkArgument(ipProtocol != null, "Missing %s", PROP_IP_PROTOCOL);
     checkArgument(uid != null, "Missing %s", PROP_UID);
-    return new ServiceOther(name, ipProtocol, match, uid);
+    return of(name, ipProtocol, match, uid);
   }
 
   @VisibleForTesting
-  public ServiceOther(String name, int ipProtocol, @Nullable String match, Uid uid) {
+  public static @Nonnull ServiceOther of(
+      String name, int ipProtocol, @Nullable String match, Uid uid) {
+    BooleanExprAstNode matchAst =
+        Optional.ofNullable(match)
+            .map(ServiceOtherMatchExpr::parse)
+            .orElse(EmptyAstNode.instance());
+    return new ServiceOther(name, ipProtocol, match, matchAst, uid);
+  }
+
+  private ServiceOther(
+      String name, int ipProtocol, @Nullable String match, BooleanExprAstNode matchAst, Uid uid) {
     super(name, uid);
     _ipProtocol = ipProtocol;
     _match = match;
+    _matchAst = matchAst;
   }
 
   private static final String PROP_IP_PROTOCOL = "ip-protocol";
@@ -71,4 +96,5 @@ public final class ServiceOther extends TypedManagementObject implements Service
 
   private final int _ipProtocol;
   private final @Nullable String _match;
+  private final @Nonnull BooleanExprAstNode _matchAst;
 }
