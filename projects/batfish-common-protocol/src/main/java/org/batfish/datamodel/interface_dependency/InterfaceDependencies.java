@@ -3,17 +3,23 @@ package org.batfish.datamodel.interface_dependency;
 import static org.batfish.datamodel.Interface.DependencyType.AGGREGATE;
 import static org.batfish.datamodel.Interface.DependencyType.BIND;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.graph.Network;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Node;
 import org.batfish.common.topology.Layer1Topologies;
@@ -40,6 +46,7 @@ public class InterfaceDependencies {
     return deps._interfacesToDeactivate;
   }
 
+  private final Logger _logger = LogManager.getLogger(InterfaceDependencies.class);
   private final Map<String, Configuration> _configs;
   private final Layer1Topologies _layer1Topologies;
   private final Graph<NodeInterfacePair, DependencyEdge> _depGraph;
@@ -59,8 +66,9 @@ public class InterfaceDependencies {
     for (Configuration config : _configs.values()) {
       Map<String, Interface> allIfaces = config.getAllInterfaces();
       for (Interface iface : allIfaces.values()) {
+        NodeInterfacePair ifaceId = NodeInterfacePair.of(iface);
         if (!iface.getActive()) {
-          _inactiveInterfaces.add(NodeInterfacePair.of(iface));
+          _inactiveInterfaces.add(ifaceId);
           continue;
         }
 
@@ -74,7 +82,7 @@ public class InterfaceDependencies {
               // non-local dependencies
               @Nullable NodeInterfacePair neighbor = getL1Neighbor(iface);
               if (neighbor != null) {
-                addDependencyEdge(neighbor, NodeInterfacePair.of(iface), BIND);
+                addDependencyEdge(neighbor, ifaceId, BIND);
               }
               break;
             }
@@ -83,12 +91,53 @@ public class InterfaceDependencies {
             {
               // if the aggregate has no AGGREGATE dependencies, deactivate it.
               if (iface.getDependencies().stream().noneMatch(dep -> dep.getType() == AGGREGATE)) {
-                _interfacesToDeactivate.add(NodeInterfacePair.of(iface));
+                _logger.warn(
+                    "deactivating AGGREGATE/REDUNDANT interface {} with no dependencies", ifaceId);
+                _interfacesToDeactivate.add(ifaceId);
+                break;
               }
 
               // non-local dependencies
-              @Nullable NodeInterfacePair neighbor = getL1Neighbor(iface);
-              if (neighbor == null) {
+              Set<Layer1Node> neighbors = getL1Neighbors(iface);
+              if (neighbors.size() == 1) {
+                /* if the neighbor is inactive, iface must be too. e.g. if all member interfaces are up, but the
+                 * neighbor is admin-down, iface will be down
+                 * TODO sanity check: neighbor is a portchannel and its members are neighbors of iface's members
+                 */
+                addDependencyEdge(
+                    Iterables.getOnlyElement(neighbors).asNodeInterfacePair(), ifaceId, BIND);
+                break;
+              } else if (neighbors.size() == 2) {
+                // check if this is likely a virtual portchannel: assume if the neighbors are on two
+                // devices, and our members have neighbors on those same two devices, it's probably
+                // a virtual portchannel
+
+                // TODO this check could be more strict, i.e. check that:
+                // iface --> members --> neighbors == iface --> neighbors --> members
+                Set<String> memberInterfaceNeighborNodes =
+                    iface.getDependencies().stream()
+                        .filter(dep -> dep.getType() == AGGREGATE)
+                        .map(dep -> getL1Neighbor(allIfaces.get(dep.getInterfaceName())))
+                        .filter(Objects::nonNull)
+                        .map(NodeInterfacePair::getHostname)
+                        .collect(ImmutableSet.toImmutableSet());
+                Set<String> neighborHostnames =
+                    neighbors.stream().map(Layer1Node::getHostname).collect(Collectors.toSet());
+
+                if (neighborHostnames.size() == 2
+                    && neighborHostnames.equals(memberInterfaceNeighborNodes)) {
+                  // aggregate may be a virtual portchannel, which we don't support well yet. we
+                  // need both VI modeling and improved dependency tracking. In particular,
+                  // iface should come down if both of its neighbors are down, so we need
+                  // something like a second group of AGGREGATE dependencies.
+                  _logger.warn(
+                      "interface {} looks like a virtual portchannel. "
+                          + "Disabling dependency tracking.",
+                      ifaceId);
+                  break;
+                }
+                // fall through to catch-all below
+              } else if (neighbors.isEmpty()) {
                 /* aggregate has no neighbor. if any member interface has a neighbor, deactivate iface
                  * assumption: if none of the member interfaces has a neighbor, this is the network
                  * boundary. leave iface active so traffic can exit the network here. if any of the member
@@ -100,15 +149,39 @@ public class InterfaceDependencies {
                         dep ->
                             dep.getType() == AGGREGATE
                                 && getL1Neighbor(allIfaces.get(dep.getInterfaceName())) != null)) {
-                  _interfacesToDeactivate.add(NodeInterfacePair.of(iface));
+                  _logger.warn(
+                      () -> {
+                        ImmutableMap<String, NodeInterfacePair> depToNeighbor =
+                            iface.getDependencies().stream()
+                                .filter(
+                                    dep ->
+                                        dep.getType() == AGGREGATE
+                                            && getL1Neighbor(allIfaces.get(dep.getInterfaceName()))
+                                                != null)
+                                .collect(
+                                    ImmutableMap.toImmutableMap(
+                                        Interface.Dependency::getInterfaceName,
+                                        dep ->
+                                            getL1Neighbor(allIfaces.get(dep.getInterfaceName()))));
+                        return String.format(
+                            "Deactivating %s interface %s with no neighbor. "
+                                + "Some of its members do have neighbors: %s",
+                            iface.getInterfaceType(), ifaceId, depToNeighbor);
+                      });
+                  _interfacesToDeactivate.add(ifaceId);
+                  break;
                 }
-              } else {
-                /* if the neighbor is inactive, iface must be too.
-                 * e.g. if all member interfaces are up, but the neighbor is admin-down, iface will
-                 * be down
-                 */
-                addDependencyEdge(neighbor, NodeInterfacePair.of(iface), BIND);
+
+                // looks like a boundary interface; leave it up
+                break;
               }
+
+              _logger.warn(
+                  "deactivating {} interface {} with neighbors {}",
+                  iface.getInterfaceType(),
+                  ifaceId,
+                  neighbors);
+              _interfacesToDeactivate.add(ifaceId);
               break;
             }
           default:
@@ -151,21 +224,29 @@ public class InterfaceDependencies {
     }
   }
 
-  private @Nullable NodeInterfacePair getL1Neighbor(Interface iface) {
+  private Set<Layer1Node> getL1Neighbors(Interface iface) {
     @Nullable Layer1Topology l1Topology = getLayer1Topology(iface);
     if (l1Topology == null) {
-      return null;
+      return ImmutableSet.of();
     }
     Network<Layer1Node, Layer1Edge> l1Graph = l1Topology.getGraph();
     Layer1Node layer1Node = new Layer1Node(iface.getOwner().getHostname(), iface.getName());
     if (!l1Graph.nodes().contains(layer1Node)) {
+      return ImmutableSet.of();
+    }
+    return l1Graph.adjacentNodes(layer1Node);
+  }
+
+  private @Nullable NodeInterfacePair getL1Neighbor(Interface iface) {
+    Set<Layer1Node> neighbors = getL1Neighbors(iface);
+    if (neighbors.isEmpty()) {
       return null;
     }
-    Set<Layer1Node> neighbors = l1Graph.adjacentNodes(layer1Node);
-    if (neighbors.size() == 1) {
-      return Iterables.getOnlyElement(neighbors).asNodeInterfacePair();
+    if (neighbors.size() > 1) {
+      _logger.warn("ambiguous l1 neighbor for {}: {}", NodeInterfacePair.of(iface), neighbors);
+      return null;
     }
-    return null;
+    return Iterables.getOnlyElement(neighbors).asNodeInterfacePair();
   }
 
   private boolean isInactive(NodeInterfacePair nip) {
