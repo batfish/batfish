@@ -5,6 +5,7 @@ import static junit.framework.TestCase.assertNotNull;
 import static org.batfish.common.matchers.WarningMatchers.hasText;
 import static org.batfish.common.matchers.WarningsMatchers.hasRedFlags;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.InterfaceType.LOOPBACK;
 import static org.batfish.datamodel.InterfaceType.PHYSICAL;
 import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
@@ -1032,6 +1033,7 @@ public final class CumulusConversionsTest {
         org.batfish.datamodel.Interface.builder()
             .setName(LOOPBACK_INTERFACE_NAME)
             .setOwner(c)
+            .setType(LOOPBACK)
             .build();
     if (address != null) {
       loopback.setAddress(address);
@@ -1207,11 +1209,13 @@ public final class CumulusConversionsTest {
         .setName("eth1")
         .setOwner(c)
         .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/30"))
+        .setType(PHYSICAL)
         .build();
     org.batfish.datamodel.Interface.builder()
         .setName("eth2")
         .setOwner(c)
         .setAddress(ConcreteInterfaceAddress.parse("2.2.2.2/30"))
+        .setType(PHYSICAL)
         .build();
 
     assertThat(inferRouterId(c), equalTo(Ip.parse("2.2.2.2")));
@@ -1752,6 +1756,7 @@ public final class CumulusConversionsTest {
             .setName("iface")
             .setOwner(c)
             .setAddress(ifaceAddress)
+            .setType(PHYSICAL)
             .build();
     c.getAllInterfaces().put(viIface.getName(), viIface);
     c.getVrfs().put(viVrf.getName(), viVrf);
