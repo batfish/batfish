@@ -34,7 +34,7 @@ public final class ServiceOther extends TypedManagementObject implements Service
     return _match;
   }
 
-  /** An abstract syntax tree resulting from parsing the {@code} match INSPECT string. */
+  /** An abstract syntax tree resulting from parsing the {@code match} INSPECT string. */
   public @Nonnull BooleanExprAstNode getMatchAst() {
     return _matchAst;
   }
