@@ -304,8 +304,9 @@ public class FileBasedStorage implements StorageProvider {
       throw new IspConfigurationException(
           String.format(
               "Could not parse the content of %s. (Is it valid JSON? Does it have the right"
-                  + " information?)",
-              ISP_CONFIGURATION_KEY));
+                  + " information?): %s",
+              ISP_CONFIGURATION_KEY, e.getMessage()),
+          e);
     }
   }
 
