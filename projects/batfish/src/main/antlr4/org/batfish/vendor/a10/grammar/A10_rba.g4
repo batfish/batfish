@@ -10,15 +10,16 @@ s_rba: RBA sr_role;
 
 sr_role: ROLE name = rba_role_name srr_tail? NEWLINE srr_definition+;
 
-srr_tail: DEFAULT_PRIVILEGE srr_privilege;
+srr_tail: DEFAULT_PRIVILEGE srr_privilege PARTITION_ONLY?;
 
 // Allow WORD_SEPARATOR here since M_Hostname will add it
-srr_privilege: WORD_SEPARATOR? (NO_ACCESS | OPER | READ | WRITE);
+srr_privilege: WORD_SEPARATOR? (NO_ACCESS | OPER | PARTITION_ONLY | READ | WRITE);
 
 srr_definition
 :
    (
-      ACCESS_LIST
+      ACCESS
+      | ACCESS_LIST
       | ACTIVE_PARTITION
       | ADMIN
       | ADMIN_DETAIL
@@ -31,31 +32,81 @@ srr_definition
       | BANNER
       | BOOTIMAGE
       | CGNV6_RESOURCE_USAGE
+      | CLASS_LIST
+      | CLOCK
+      | CLOCK_SHOW
       | CONFIGURE_SYNC
+      | DELETE_BW_LIST
       | DELETE_GLM_LICENSE
       | DELETE_PARTITION
       | DELETE_STARTUP_CONFIG
+      | DEVICE_CONTEXT
       | DISABLE_MANAGEMENT
       | ENABLE_MANAGEMENT
       | EXPORT
+      | FILE_AFLEX
+      | FILE_BW_LIST
+      | FILE_CA_CERT
+      | FILE_CLASS_LIST
+      | FILE_CSR
       | FILE_GLM_LICENSE
+      | FILE_HEALTH_EXTERNAL
+      | FILE_HEALTH_POSTFILE
+      | FILE_INSPECTION_TEMPLATE
+      | FILE_SSL_CERT
+      | FILE_SSL_CERT_KEY
+      | FILE_SSL_CRL
+      | FILE_SSL_KEY
       | FILE_STARTUP_CONFIG
       | FILE_TECHSUPPORT
       | FILE_TEMPLATE
       | FILE_WEB_SERVICE_CERT_KEY
+      | GLID
       | GLM
+      | HEALTH
       | HOSTNAME
       | IMPORT
+      | IMPORT_PERIODIC
+      | IMPORT_PERIODIC_AFLEX
+      | IMPORT_PERIODIC_BW_LIST
+      | INTERFACE
       | INTERFACE_ETHERNET
       | INTERFACE_MANAGEMENT
+      | INTERFACE_TRUNK
       | INTERFACE_VE
       | IPV6_ACCESS_LIST
+      | IPV6_ADDRESS
+      | IPV6_DEFAULT_GATEWAY
+      | IPV6_NAT_INSIDE_SOURCE_LIST
+      | IPV6_NAT_POOL
+      | IPV6_NAT_POOL_GROUP
+      | IPV6_NEIGHBOR_DYNAMIC
+      | IPV6_NEIGHBOR_STATIC
+      | IPV6_ROUTE
+      | IP_ACCESS_LIST
+      | IP_ADDRESS
+      | IP_DEFAULT_GATEWAY
       | IP_DNS
+      | IP_NAT_INSIDE_SOURCE_LIST_ACL_ID_LIST
+      | IP_NAT_INSIDE_SOURCE_LIST_ACL_NAME_LIST
+      | IP_NAT_INSIDE_SOURCE_STATIC
+      | IP_NAT_POOL
+      | IP_NAT_POOL_GROUP
+      | IP_NAT_RANGE_LIST
+      | IP_NAT_TEMPLATE_LOGGING
+      | IP_ROUTE
+      | IP_TCP
       | LDAP_SERVER_HOST
       | LINK_STARTUP_CONFIG
       | LOGGING
       | MONITOR
       | MULTI_CONFIG
+      | NETFLOW_COMMON
+      | NETFLOW_MONITOR
+      | NETWORK
+      | NETWORK_AVAILABLE_TRUNK_LIST
+      | NETWORK_ICMPV6_RATE_LIMIT
+      | NETWORK_ICMP_RATE_LIMIT
       | NETWORK_VLAN
       | NTP_AUTH_KEY
       | NTP_SERVER
@@ -64,26 +115,52 @@ srr_definition
       | PARTITION
       | PARTITION_ALL
       | PARTITION_GROUP
+      | PKI_CREATE_OPER
+      | PKI_DELETE
       | RADIUS_SERVER
       | RBA
       | REBOOT
       | RELOAD
+      | RENAME
+      | RESTORE
+      | RRD
+      | SCALEOUT
       | SCM_LICENSE_SRC_INFO
+      | SESSIONS
+      | SESSION_FILTER
+      | SFLOW
+      | SFLOW_GLOBAL
       | SHUTDOWN
+      | SLB
       | SLB_RESOURCE_USAGE
+      | SLB_SERVER
+      | SLB_TEMPLATE
+      | SLB_VIRTUAL_SERVER
       | SMTP
       | SNMP_SERVER
       | SSH_LOGIN_GRACE_TIME
+      | SYSLOG
+      | SYSTEM
+      | SYSTEM_CPU_CTRL_CPU
+      | SYSTEM_CPU_DATA_CPU
+      | SYSTEM_ENVIRONMENT
       | SYSTEM_GUI_IMAGE_LIST
+      | SYSTEM_HARDWARE
+      | SYSTEM_JUMBO_GLOBAL
+      | SYSTEM_MEMORY
       | SYSTEM_RESOURCE_ACCOUNTING
       | SYSTEM_RESOURCE_USAGE
       | SYSTEM_UPGRADE_STATUS
+      | SYS_AUDIT_LOG
       | TACACS_SERVER
       | TERMINAL
       | TFTP
       | TIMEZONE
       | UPGRADE_CF
       | UPGRADE_HD
+      | VCS
+      | VCS_VBLADES
+      | VERSION
       | WEB_SERVICE
       | WRITE_MEMORY
    ) srr_privilege NEWLINE
