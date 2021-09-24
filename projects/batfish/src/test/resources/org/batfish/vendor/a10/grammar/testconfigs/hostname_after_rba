@@ -1,0 +1,11 @@
+!BATFISH_FORMAT: a10_acos
+hostname not_final_hostname
+!
+rba role ROLENAME
+  access-list write
+  admin oper
+  hostname read
+  banner no-access
+!
+! This should be detected as a line outside rba
+hostname hostname_after_rba

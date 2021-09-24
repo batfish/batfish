@@ -14,6 +14,8 @@ hostname: word;
 
 interface_name_str: word;
 
+rba_role_name: word;
+
 vlan_name: word;
 
 ip_prefix: ip_address (subnet_mask | ip_slash_prefix);

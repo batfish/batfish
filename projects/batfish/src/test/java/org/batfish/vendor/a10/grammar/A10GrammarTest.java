@@ -143,6 +143,15 @@ public class A10GrammarTest {
   }
 
   @Test
+  public void testRba() {
+    String hostname = "rba";
+    A10Configuration c = parseVendorConfig(hostname);
+    assertThat(c, notNullValue());
+    // rba definition shouldn't interfere with hostname
+    assertThat(c.getHostname(), equalTo("rba"));
+  }
+
+  @Test
   public void testVlanExtraction() {
     String hostname = "vlan";
     A10Configuration c = parseVendorConfig(hostname);
