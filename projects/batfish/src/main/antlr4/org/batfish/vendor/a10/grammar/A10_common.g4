@@ -4,6 +4,8 @@ options {
     tokenVocab = A10Lexer;
 }
 
+newline: NEWLINE+;
+
 quoted_text: QUOTED_TEXT;
 double_quoted_string: DOUBLE_QUOTE text = quoted_text? DOUBLE_QUOTE;
 single_quoted_string: SINGLE_QUOTE text = quoted_text? SINGLE_QUOTE;

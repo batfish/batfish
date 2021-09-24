@@ -2,6 +2,10 @@
 
 
 hostname newlines
+!
+
+
+!
 
 
 interface ethernet 1

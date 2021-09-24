@@ -6,17 +6,17 @@ options {
     tokenVocab = A10Lexer;
 }
 
-s_vlan: VLAN vlan_number NEWLINE sv_definition*;
+s_vlan: VLAN vlan_number newline sv_definition*;
 
 sv_definition: svd_name | svd_router_interface | svd_tagged | svd_untagged;
 
-svd_name: NAME vlan_name NEWLINE;
+svd_name: NAME vlan_name newline;
 
-svd_router_interface: ROUTER_INTERFACE VE vlan_number NEWLINE;
+svd_router_interface: ROUTER_INTERFACE VE vlan_number newline;
 
-svd_tagged: TAGGED vlan_iface_references NEWLINE;
+svd_tagged: TAGGED vlan_iface_references newline;
 
-svd_untagged: UNTAGGED vlan_iface_references NEWLINE;
+svd_untagged: UNTAGGED vlan_iface_references newline;
 
 vlan_iface_references: vlan_ifaces_range | vlan_ifaces_list;
 
