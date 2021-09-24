@@ -11,6 +11,7 @@ java_library(
     ),
     deps = [
         "//projects/batfish-common-protocol:common",
+        "//projects/batfish/src/main/java/org/batfish/vendor/check_point_management/parsing/parboiled",
         "@maven//:com_fasterxml_jackson_core_jackson_annotations",
         "@maven//:com_fasterxml_jackson_core_jackson_core",
         "@maven//:com_fasterxml_jackson_core_jackson_databind",
