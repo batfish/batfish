@@ -407,4 +407,99 @@ public class InterfaceDependenciesTest {
     // pc1 is still active because it's on the network boundary
     assertThat(getInterfacesToDeactivate(configs, layer1Topologies), empty());
   }
+
+  /**
+   * Our VI modeling and dependency tracking do not handle virtual portchannels. Skip portchannels
+   * that look like VPCs.
+   */
+  @Test
+  public void testGetInterfacesToDeactivate_VirtualPortChannel() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+
+    // n1
+    Configuration n1 = cb.setHostname("n1").build();
+    Vrf v1 = nf.vrfBuilder().setOwner(n1).build();
+    // member interface to n2
+    Interface n1i1 =
+        nf.interfaceBuilder()
+            .setType(InterfaceType.PHYSICAL)
+            .setOwner(n1)
+            .setVrf(v1)
+            .setName("i1")
+            .build();
+    // member interface to n3
+    Interface n1i2 =
+        nf.interfaceBuilder()
+            .setType(InterfaceType.PHYSICAL)
+            .setOwner(n1)
+            .setVrf(v1)
+            .setName("i2")
+            .build();
+    // port-channel interface
+    Interface n1pc =
+        nf.interfaceBuilder()
+            .setType(InterfaceType.AGGREGATED)
+            .setOwner(n1)
+            .setVrf(v1)
+            .setName("pc")
+            .setDependencies(
+                ImmutableList.of(
+                    new Dependency(n1i1.getName(), AGGREGATE),
+                    new Dependency(n1i2.getName(), AGGREGATE)))
+            .build();
+
+    // n2
+    Configuration n2 = cb.setHostname("n2").build();
+    Vrf v2 = nf.vrfBuilder().setOwner(n1).build();
+    // member interface to n1.i1
+    Interface n2i1 =
+        nf.interfaceBuilder()
+            .setType(InterfaceType.PHYSICAL)
+            .setOwner(n2)
+            .setVrf(v2)
+            .setName("i1")
+            .build();
+    // port-channel interface
+    Interface n2pc =
+        nf.interfaceBuilder()
+            .setType(InterfaceType.AGGREGATED)
+            .setOwner(n2)
+            .setVrf(v2)
+            .setName("pc")
+            .setDependencies(ImmutableList.of(new Dependency(n2i1.getName(), AGGREGATE)))
+            .build();
+
+    // n3
+    Configuration n3 = cb.setHostname("n3").build();
+    Vrf v3 = nf.vrfBuilder().setOwner(n1).build();
+    // member interface to n1.i2
+    Interface n3i1 =
+        nf.interfaceBuilder()
+            .setType(InterfaceType.PHYSICAL)
+            .setOwner(n3)
+            .setVrf(v3)
+            .setName("i1")
+            .build();
+    // port-channel interface
+    Interface n3pc =
+        nf.interfaceBuilder()
+            .setType(InterfaceType.AGGREGATED)
+            .setOwner(n3)
+            .setVrf(v3)
+            .setName("pc")
+            .setDependencies(ImmutableList.of(new Dependency(n3i1.getName(), AGGREGATE)))
+            .build();
+
+    Map<String, Configuration> configs =
+        ImmutableMap.of(n1.getHostname(), n1, n2.getHostname(), n2, n3.getHostname(), n3);
+    Layer1Topologies layer1Topologies =
+        layer1Topologies(
+            new Layer1Topology(l1Edge(n1i1, n2i1), l1Edge(n1i2, n3i1)),
+            new Layer1Topology(l1Edge(n1pc, n2pc), l1Edge(n1pc, n3pc)));
+
+    // nothing is deactivated, even though n1pc has an ambiguous neighbor, since it looks like a VPC
+    assertThat(getInterfacesToDeactivate(configs, layer1Topologies), empty());
+  }
 }
