@@ -23,7 +23,6 @@ INTERFACE: 'interface';
 LOOPBACK: 'loopback';
 MTU: 'mtu';
 NAME: 'name' -> pushMode(M_Word);
-PARTITION_ONLY: 'partition-only';
 RBA: 'rba' -> pushMode(M_Rba);
 ROLE: 'role';
 ROUTER_INTERFACE: 'router-interface';
