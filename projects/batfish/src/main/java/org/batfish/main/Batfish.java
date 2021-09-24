@@ -176,6 +176,7 @@ import org.batfish.datamodel.eigrp.EigrpTopologyUtils;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceWrapperAsAnswerElement;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
+import org.batfish.datamodel.isp_configuration.IspConfigurationException;
 import org.batfish.datamodel.ospf.OspfTopologyUtils;
 import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
 import org.batfish.datamodel.questions.Question;
@@ -2540,12 +2541,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
         LOGGER.info("Loading Batfish ISP Configuration");
         ispConfigurations.add(ispConfiguration);
       }
-    } catch (IOException e) {
-      internetWarnings.redFlag(
-          String.format("Could not load ISP configuration file: %s", e.getMessage()));
+    } catch (IspConfigurationException e) {
+      internetWarnings.redFlag(e.getMessage());
       _logger.warnf(
-          "Unexpected exception while loading ISP configuration for snapshot %s",
-          Throwables.getStackTraceAsString(e));
+          "Error loading ISP configuration for snapshot %s", Throwables.getStackTraceAsString(e));
     }
 
     vendorConfigs.values().stream()
