@@ -2,6 +2,7 @@ package org.batfish.representation.cumulus;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkState;
+import static org.batfish.representation.cumulus.CumulusConcatenatedConfiguration.VLAN_INTERFACE_PATTERN;
 import static org.batfish.representation.cumulus.CumulusStructureType.BOND;
 import static org.batfish.representation.cumulus.CumulusStructureType.INTERFACE;
 import static org.batfish.representation.cumulus.CumulusStructureType.VLAN;
@@ -17,7 +18,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -26,17 +26,13 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MacAddress;
 
-/** Model of an iface block in a cumulus /etc/network/interfaces file. */
+/**
+ * Model of an iface block in a cumulus /etc/network/interfaces file.
+ *
+ * @see FrrInterface for interfaces defined in frr.conf
+ */
 @ParametersAreNonnullByDefault
 public final class InterfacesInterface implements Serializable {
-  public static final Pattern PHYSICAL_INTERFACE_PATTERN =
-      Pattern.compile("^(swp[0-9]+(s[0-9])?)|(eth[0-9]+)$");
-
-  public static final Pattern VLAN_INTERFACE_PATTERN = Pattern.compile("^vlan([0-9]+)$");
-
-  public static final Pattern VXLAN_INTERFACE_PATTERN = Pattern.compile("^vxlan([0-9]+)$");
-
-  public static final Pattern SUBINTERFACE_PATTERN = Pattern.compile("^(.*)\\.([0-9]+)$");
 
   private @Nullable List<ConcreteInterfaceAddress> _addresses;
   private @Nullable Map<MacAddress, Set<InterfaceAddress>> _addressVirtuals;
@@ -251,7 +247,7 @@ public final class InterfacesInterface implements Serializable {
   }
 
   public static boolean isPhysicalInterfaceType(String ifaceName) {
-    return PHYSICAL_INTERFACE_PATTERN.matcher(ifaceName).matches();
+    return CumulusConcatenatedConfiguration.PHYSICAL_INTERFACE_PATTERN.matcher(ifaceName).matches();
   }
 
   public static boolean isVlanInterfaceType(String ifaceName) {

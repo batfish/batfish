@@ -8,7 +8,11 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 
-/** Represents an interface defined/extended in FRR file */
+/**
+ * Represents an interface defined/extended in FRR file.
+ *
+ * @see InterfacesInterface for interfaces defined in /etc/network/interfaces
+ */
 @ParametersAreNonnullByDefault
 public class FrrInterface implements Serializable {
 
