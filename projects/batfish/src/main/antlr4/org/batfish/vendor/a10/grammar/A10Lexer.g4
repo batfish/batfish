@@ -249,6 +249,6 @@ M_RbaTail_RBA_TAIL: F_NonNewlineChar+ -> type(RBA_TAIL);
 M_RbaTail_NEWLINE: F_Newline+ -> type(NEWLINE), mode(M_RbaLine);
 
 mode M_RbaLine;
-M_RbaLine_RBA_LINE: F_Whitespace* F_Word F_Whitespace+ ('no-access'|'read'|'partition-only'|'oper'|'write') F_Newline-> type(RBA_LINE);
+M_RbaLine_RBA_LINE: F_Whitespace* F_Word F_Whitespace+ ('no-access'|'read'|'partition-only'|'oper'|'write') F_Newline+ -> type(RBA_LINE);
 M_RbaLine_COMMENT_LINE: F_Whitespace* '!' F_NonNewlineChar* (F_Newline | EOF) -> skip;
 M_RbaLine_END: F_NonWhitespace+ {less();} -> popMode;
