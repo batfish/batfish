@@ -13,6 +13,12 @@ options {
 
 a10_configuration: NEWLINE? statement+ NEWLINE* EOF;
 
-statement: s_hostname | s_interface | s_rba | s_vlan;
+statement
+:
+   s_hostname
+   | s_interface
+   | s_rba
+   | s_vlan
+;
 
 s_hostname: HOSTNAME hostname NEWLINE;

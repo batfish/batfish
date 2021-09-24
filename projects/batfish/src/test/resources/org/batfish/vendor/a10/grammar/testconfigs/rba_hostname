@@ -5,5 +5,8 @@ rba role ROLENAME
   access-list write
   admin oper
   hostname read
+  hostname oper
+  hostname partition-only
+  hostname write
   banner no-access
 !

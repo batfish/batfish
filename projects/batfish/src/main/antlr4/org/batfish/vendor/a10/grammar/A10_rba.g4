@@ -10,10 +10,7 @@ s_rba: RBA sr_role;
 
 sr_role: ROLE name = rba_role_name srr_tail? NEWLINE srr_definition+;
 
-srr_tail: DEFAULT_PRIVILEGE srr_privilege PARTITION_ONLY?;
-
-// Allow WORD_SEPARATOR here since M_Hostname will add it
-srr_privilege: WORD_SEPARATOR? (NO_ACCESS | OPER | PARTITION_ONLY | READ | WRITE);
+srr_tail: DEFAULT_PRIVILEGE administration_privilege PARTITION_ONLY?;
 
 srr_definition
 :
@@ -64,7 +61,7 @@ srr_definition
       | GLID
       | GLM
       | HEALTH
-      | HOSTNAME
+      | HOSTNAME WORD_SEPARATOR
       | IMPORT
       | IMPORT_PERIODIC
       | IMPORT_PERIODIC_AFLEX
@@ -163,5 +160,5 @@ srr_definition
       | VERSION
       | WEB_SERVICE
       | WRITE_MEMORY
-   ) srr_privilege NEWLINE
+   ) administration_privilege NEWLINE
 ;

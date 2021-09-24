@@ -373,13 +373,13 @@ M_Hostname_WS: F_Whitespace+ -> type(WORD_SEPARATOR), mode(M_HostnameValue);
 M_Hostname_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 
 mode M_HostnameValue;
-M_HostnameValue_DOUBLE_QUOTE: '"' -> type(DOUBLE_QUOTE), pushMode(M_DoubleQuote);
 M_HostnameValue_READ: READ -> type(READ), popMode;
 M_HostnameValue_NO_ACCESS: NO_ACCESS -> type(NO_ACCESS), popMode;
 M_HostnameValue_OPER: OPER -> type(OPER), popMode;
 M_HostnameValue_PARTITION_ONLY: PARTITION_ONLY -> type(PARTITION_ONLY), popMode;
+M_HostnameValue_WRITE: WRITE -> type(WRITE), popMode;
+M_HostnameValue_DOUBLE_QUOTE: '"' -> type(DOUBLE_QUOTE), pushMode(M_DoubleQuote);
 M_HostnameValue_SINGLE_QUOTE: ['] -> type(SINGLE_QUOTE), pushMode(M_SingleQuote);
 M_HostnameValue_WORD: F_Word -> type(WORD);
-M_HostnameValue_WRITE: WRITE -> type(WRITE), popMode;
 M_HostnameValue_WS: F_Whitespace+ -> skip, popMode;
 M_HostnameValue_NEWLINE: F_Newline -> type(NEWLINE), popMode;

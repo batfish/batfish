@@ -10,7 +10,7 @@ single_quoted_string: SINGLE_QUOTE text = quoted_text? SINGLE_QUOTE;
 word_content: (double_quoted_string | single_quoted_string | WORD)+;
 word: WORD_SEPARATOR word_content;
 
-hostname: word | WORD_SEPARATOR (NO_ACCESS | OPER | PARTITION_ONLY | READ | WRITE);
+hostname: word | WORD_SEPARATOR administration_privilege;
 
 interface_name_str: word;
 
@@ -42,3 +42,5 @@ uint8: UINT8;
 uint16: UINT8 | UINT16;
 
 uint32: UINT8 | UINT16 | UINT32;
+
+administration_privilege: NO_ACCESS | OPER | PARTITION_ONLY | READ | WRITE;
