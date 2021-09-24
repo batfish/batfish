@@ -8,6 +8,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.vendor.check_point_management.parsing.parboiled.UnhandledAstNode;
 import org.junit.Test;
 
 /** Test of {@link ServiceOther}. */
@@ -26,24 +27,30 @@ public final class ServiceOtherTest {
             + "}";
     assertThat(
         BatfishObjectMapper.ignoreUnknownMapper().readValue(input, TypedManagementObject.class),
-        equalTo(new ServiceOther("foo", 17, "uh_dport > 33000", Uid.of("1"))));
+        equalTo(ServiceOther.of("foo", 17, "uh_dport > 33000", Uid.of("1"))));
   }
 
   @Test
   public void testJavaSerialization() {
-    ServiceOther obj = new ServiceOther("foo", 86, "bar", Uid.of("1"));
+    ServiceOther obj = ServiceOther.of("foo", 86, "bar", Uid.of("1"));
     assertEquals(obj, SerializationUtils.clone(obj));
   }
 
   @Test
+  public void testMatchParsing() {
+    ServiceOther obj = ServiceOther.of("foo", 86, "bar", Uid.of("1"));
+    assertEquals(obj.getMatchAst(), UnhandledAstNode.instance());
+  }
+
+  @Test
   public void testEquals() {
-    ServiceOther obj = new ServiceOther("foo", 86, null, Uid.of("1"));
+    ServiceOther obj = ServiceOther.of("foo", 86, null, Uid.of("1"));
     new EqualsTester()
-        .addEqualityGroup(obj, new ServiceOther("foo", 86, null, Uid.of("1")))
-        .addEqualityGroup(new ServiceOther("bar", 86, null, Uid.of("1")))
-        .addEqualityGroup(new ServiceOther("bar", 87, null, Uid.of("1")))
-        .addEqualityGroup(new ServiceOther("bar", 87, "foo", Uid.of("1")))
-        .addEqualityGroup(new ServiceOther("bar", 87, "foo", Uid.of("2")))
+        .addEqualityGroup(obj, ServiceOther.of("foo", 86, null, Uid.of("1")))
+        .addEqualityGroup(ServiceOther.of("bar", 86, null, Uid.of("1")))
+        .addEqualityGroup(ServiceOther.of("bar", 87, null, Uid.of("1")))
+        .addEqualityGroup(ServiceOther.of("bar", 87, "foo", Uid.of("1")))
+        .addEqualityGroup(ServiceOther.of("bar", 87, "foo", Uid.of("2")))
         .testEquals();
   }
 }
