@@ -143,6 +143,24 @@ public class A10GrammarTest {
   }
 
   @Test
+  public void testHostnameAfterRba() {
+    String hostname = "hostname_after_rba";
+    A10Configuration c = parseVendorConfig(hostname);
+    assertThat(c, notNullValue());
+    // hostname update after rba should still apply
+    assertThat(c.getHostname(), equalTo("hostname_after_rba"));
+  }
+
+  @Test
+  public void testRbaHostname() {
+    String hostname = "rba_hostname";
+    A10Configuration c = parseVendorConfig(hostname);
+    assertThat(c, notNullValue());
+    // rba definition shouldn't interfere with hostname
+    assertThat(c.getHostname(), equalTo("rba_hostname"));
+  }
+
+  @Test
   public void testVlanExtraction() {
     String hostname = "vlan";
     A10Configuration c = parseVendorConfig(hostname);
