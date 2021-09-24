@@ -15,7 +15,6 @@ tokens {
 // A10 keywords
 ADDRESS: 'address';
 DISABLE: 'disable';
-DEFAULT_PRIVILEGE: 'default-privilege';
 ENABLE: 'enable';
 ETHERNET: 'ethernet';
 HOSTNAME: 'hostname' -> pushMode(M_Word);
@@ -24,11 +23,8 @@ INTERFACE: 'interface';
 LOOPBACK: 'loopback';
 MTU: 'mtu';
 NAME: 'name' -> pushMode(M_Word);
-NO_ACCESS: 'no-access';
-OPER: 'oper';
 PARTITION_ONLY: 'partition-only';
 RBA: 'rba' -> pushMode(M_Rba);
-READ: 'read';
 ROLE: 'role';
 ROUTER_INTERFACE: 'router-interface';
 TAGGED: 'tagged';
@@ -36,7 +32,6 @@ TO: 'to';
 UNTAGGED: 'untagged';
 VE: 've';
 VLAN: 'vlan';
-WRITE: 'write';
 
 // Complex tokens
 COMMENT_LINE

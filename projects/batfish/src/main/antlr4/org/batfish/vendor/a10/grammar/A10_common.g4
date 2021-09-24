@@ -14,8 +14,6 @@ hostname: word;
 
 interface_name_str: word;
 
-rba_role_name: word;
-
 vlan_name: word;
 
 ip_prefix: ip_address (subnet_mask | ip_slash_prefix);
@@ -42,5 +40,3 @@ uint8: UINT8;
 uint16: UINT8 | UINT16;
 
 uint32: UINT8 | UINT16 | UINT32;
-
-administration_privilege: NO_ACCESS | OPER | PARTITION_ONLY | READ | WRITE;
