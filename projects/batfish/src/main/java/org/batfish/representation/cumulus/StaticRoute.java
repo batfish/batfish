@@ -2,7 +2,7 @@ package org.batfish.representation.cumulus;
 
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_STATIC_ROUTE_ADMINISTRATIVE_DISTANCE;
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_STATIC_ROUTE_METRIC;
-import static org.batfish.representation.cumulus.Interface.NULL_INTERFACE_PATTERN;
+import static org.batfish.representation.cumulus.CumulusInterfaceType.NULL_INTERFACE_PATTERN;
 
 import com.google.common.base.MoreObjects;
 import java.io.Serializable;
