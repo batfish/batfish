@@ -6,9 +6,10 @@ import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.batfish.datamodel.FirewallSessionInterfaceInfo.Action.POST_NAT_FIB_LOOKUP;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.aclName;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toIpAccessLists;
-import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.applyOutgoingTransformations;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.automaticHideRuleTransformationFunction;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.automaticStaticRuleTransformation;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getManualNatRules;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getOutgoingTransformations;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.manualRuleTransformation;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.mergeTransformations;
 import static org.batfish.vendor.check_point_management.AddressSpaceToIpSpaceMetadata.toIpSpaceMetadata;
@@ -17,6 +18,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -70,7 +72,6 @@ import org.batfish.vendor.check_point_management.ManagementDomain;
 import org.batfish.vendor.check_point_management.ManagementPackage;
 import org.batfish.vendor.check_point_management.ManagementServer;
 import org.batfish.vendor.check_point_management.NamedManagementObject;
-import org.batfish.vendor.check_point_management.NatMethod;
 import org.batfish.vendor.check_point_management.NatRulebase;
 import org.batfish.vendor.check_point_management.NatSettings;
 import org.batfish.vendor.check_point_management.ServiceToMatchExpr;
@@ -313,24 +314,70 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
             .filter(Optional::isPresent)
             .map(Optional::get)
             .collect(ImmutableList.toImmutableList());
-    // Apply manual transformations to incoming traffic
-    mergeTransformations(manualRuleTransformations)
-        .ifPresent(
-            transformation ->
-                _c.getActiveInterfaces()
-                    .values()
-                    .forEach(iface -> iface.setIncomingTransformation(transformation)));
 
-    // Convert automatic hide rules
+    // Find automatic NAT rules
+    List<HasNatSettings> autoHideNatObjects = new ArrayList<>();
+    List<HasNatSettings> autoStaticNatObjects = new ArrayList<>();
+    objects.values().stream()
+        .filter(HasNatSettings.class::isInstance)
+        .map(HasNatSettings.class::cast)
+        .forEach(
+            hasNatSettings -> {
+              NatSettings natSettings = hasNatSettings.getNatSettings();
+              if (!natSettings.getAutoRule()) {
+                return;
+              }
+              if (natSettings.getMethod() == null) {
+                // TODO What does null method mean?
+                warnings.redFlag(
+                    String.format(
+                        "NAT settings on %s %s will be ignored: No NAT method set",
+                        hasNatSettings.getClass(), hasNatSettings.getName()));
+                return;
+              }
+              switch (natSettings.getMethod()) {
+                case HIDE:
+                  autoHideNatObjects.add(hasNatSettings);
+                  return;
+                case STATIC:
+                  autoStaticNatObjects.add(hasNatSettings);
+                  return;
+                default:
+                  warnings.redFlag(
+                      String.format(
+                          "NAT method %s not recognized: NAT settings on %s %s will be ignored",
+                          natSettings.getMethod(),
+                          hasNatSettings.getClass(),
+                          hasNatSettings.getName()));
+              }
+            });
+
+    // If there are no automatic rules, we don't have to check if interfaces are external
+    boolean autoRulesPresent = !autoHideNatObjects.isEmpty() || !autoStaticNatObjects.isEmpty();
+    if (!autoRulesPresent && manualRuleTransformations.isEmpty()) {
+      // short circuit if there are no NAT rules
+      return;
+    }
+
+    // Convert automatic static rules (need inbound and outbound versions)
+    List<Transformation> internalToExternalAutoStaticTransformations =
+        autoStaticNatObjects.stream()
+            .map(
+                hasNatSettings -> automaticStaticRuleTransformation(hasNatSettings, true, warnings))
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .collect(ImmutableList.toImmutableList());
+    List<Transformation> externalToInternalAutoStaticTransformations =
+        autoStaticNatObjects.stream()
+            .map(
+                hasNatSettings ->
+                    automaticStaticRuleTransformation(hasNatSettings, false, warnings))
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .collect(ImmutableList.toImmutableList());
+    // Convert automatic hide rules (these transformations are functions of the egress iface IP)
     List<Function<Ip, Transformation>> outgoingTransformationFuncsForExternalIfaces =
-        objects.values().stream()
-            .filter(HasNatSettings.class::isInstance)
-            .map(HasNatSettings.class::cast)
-            .filter(
-                hasNatSettings -> {
-                  NatSettings natSettings = hasNatSettings.getNatSettings();
-                  return natSettings.getAutoRule() && natSettings.getMethod() == NatMethod.HIDE;
-                })
+        autoHideNatObjects.stream()
             // TODO: consult generated rules for automatic hide rule ordering
             .map(
                 hasNatSettings ->
@@ -339,21 +386,40 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
             .filter(Optional::isPresent)
             .map(Optional::get)
             .collect(ImmutableList.toImmutableList());
-    // Apply automatic hide rules to traffic going out external interfaces
-    _c.getActiveInterfaces().values().stream()
-        .filter(
-            iface ->
-                // TODO If an interface is declared in the gateway configuration but not in the
-                //      management info, should it be considered external for NAT purposes?
-                gateway.getInterfaces().stream()
-                    .filter(i -> iface.getName().equals(i.getName()))
-                    .findAny()
-                    .map(gatewayIface -> gatewayIface.getTopology().getLeadsToInternet())
-                    .orElse(false))
-        .forEach(
-            iface ->
-                applyOutgoingTransformations(
-                    iface, outgoingTransformationFuncsForExternalIfaces, warnings));
+
+    // Apply transformations to interfaces
+    Optional<Transformation> manualTransformation = mergeTransformations(manualRuleTransformations);
+    for (org.batfish.datamodel.Interface iface : _c.getActiveInterfaces().values()) {
+      if (!autoRulesPresent || !isExternal(iface, gateway)) {
+        manualTransformation.ifPresent(iface::setIncomingTransformation);
+        continue;
+      }
+      // This is an external interface, and automatic rules are present.
+      // External interfaces need the usual incoming transformation resulting from manual
+      // rules, plus the external-to-internal auto static rules
+      ImmutableList.Builder<Transformation> incomingTransformations = ImmutableList.builder();
+      manualTransformation.ifPresent(incomingTransformations::add);
+      incomingTransformations.addAll(externalToInternalAutoStaticTransformations);
+      mergeTransformations(incomingTransformations.build())
+          .ifPresent(iface::setIncomingTransformation);
+      // Outgoing transformation applies static rules first, then hide rules
+      ImmutableList.Builder<Transformation> outgoingTransformations = ImmutableList.builder();
+      outgoingTransformations.addAll(internalToExternalAutoStaticTransformations);
+      outgoingTransformations.addAll(
+          getOutgoingTransformations(
+              iface, outgoingTransformationFuncsForExternalIfaces, warnings));
+    }
+  }
+
+  private static boolean isExternal(
+      org.batfish.datamodel.Interface iface, GatewayOrServer gateway) {
+    // TODO If an interface is declared in the gateway configuration but not in the
+    //      management info, should it be considered external for NAT purposes?
+    return gateway.getInterfaces().stream()
+        .filter(i -> iface.getName().equals(i.getName()))
+        .findAny()
+        .map(gatewayIface -> gatewayIface.getTopology().getLeadsToInternet())
+        .orElse(false);
   }
 
   private @Nonnull Optional<ManagementPackage> findAccessPackage(

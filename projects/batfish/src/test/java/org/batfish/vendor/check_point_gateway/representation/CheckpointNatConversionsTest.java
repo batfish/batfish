@@ -3,6 +3,7 @@ package org.batfish.vendor.check_point_gateway.representation;
 import static org.batfish.common.matchers.WarningMatchers.hasText;
 import static org.batfish.common.matchers.WarningsMatchers.hasRedFlags;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.FALSE;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
@@ -10,12 +11,13 @@ import static org.batfish.datamodel.transformation.TransformationStep.assignSour
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.NAT_PORT_FIRST;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.NAT_PORT_LAST;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.TRANSLATED_SOURCE_TO_TRANSFORMATION_STEPS;
-import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.applyOutgoingTransformations;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.automaticHideRuleTransformationFunction;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.automaticStaticRuleTransformation;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.checkValidManualHide;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.checkValidManualStatic;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getApplicableNatRules;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getManualNatRules;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getOutgoingTransformations;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.manualHideTransformationSteps;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.manualRuleTransformation;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.manualStaticTransformationSteps;
@@ -27,7 +29,6 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -441,6 +442,81 @@ public final class CheckpointNatConversionsTest {
   }
 
   @Test
+  public void testAutomaticStaticRuleTransformation() {
+    Ip natIp = Ip.parse("5.5.5.5");
+    Ip hostIp = Ip.parse("1.1.1.1");
+    NatSettings natSettings = new NatSettings(true, null, "All", natIp, NatMethod.STATIC);
+    Host host = new Host(hostIp, natSettings, "host", UID);
+    Warnings warnings = new Warnings(true, true, true);
+    Optional<Transformation> toExternal = automaticStaticRuleTransformation(host, true, warnings);
+    Optional<Transformation> toInternal = automaticStaticRuleTransformation(host, false, warnings);
+    assertTrue(toExternal.isPresent() && toInternal.isPresent());
+    assertThat(
+        toExternal.get(),
+        equalTo(Transformation.when(matchSrc(hostIp)).apply(assignSourceIp(natIp)).build()));
+    assertThat(
+        toInternal.get(),
+        equalTo(Transformation.when(matchDst(natIp)).apply(assignDestinationIp(hostIp)).build()));
+    assertThat(warnings.getRedFlagWarnings(), empty()); // Neither call generated warnings
+  }
+
+  @Test
+  public void testAutomaticStaticRuleTransformation_warnings() {
+    { // Non-host object
+      NatSettings natSettings =
+          new NatSettings(true, null, "All", Ip.parse("5.5.5.5"), NatMethod.STATIC);
+      Network network =
+          new Network("nw", natSettings, Ip.parse("1.0.0.0"), Ip.parse("255.255.255.0"), UID);
+      Warnings warnings = new Warnings(true, true, true);
+      Optional<Transformation> t = automaticStaticRuleTransformation(network, true, warnings);
+      assertFalse(t.isPresent());
+      assertThat(
+          warnings.getRedFlagWarnings(),
+          contains(
+              hasText(
+                  containsString(
+                      "Automatic static NAT rules on non-host objects are not yet supported"))));
+    }
+    { // Host with no IP
+      NatSettings natSettings =
+          new NatSettings(true, null, "All", Ip.parse("5.5.5.5"), NatMethod.STATIC);
+      Host host = new Host(null, natSettings, "host", UID);
+      Warnings warnings = new Warnings(true, true, true);
+      Optional<Transformation> t = automaticStaticRuleTransformation(host, true, warnings);
+      assertFalse(t.isPresent());
+      assertThat(
+          warnings.getRedFlagWarnings(),
+          contains(
+              hasText(
+                  containsString("Automatic NAT rules on hosts without IPs are not supported"))));
+    }
+    { // IPv6 rule (assuming to be, since IPv4 address is null)
+      NatSettings ipv6Settings = new NatSettings(true, null, "All", null, NatMethod.STATIC);
+      Host host = new Host(Ip.parse("1.1.1.1"), ipv6Settings, "host", UID);
+      Warnings warnings = new Warnings(true, true, true);
+      Optional<Transformation> t = automaticStaticRuleTransformation(host, true, warnings);
+      assertFalse(t.isPresent());
+      assertThat(
+          warnings.getRedFlagWarnings(),
+          contains(hasText(containsString("IPv6 NAT rules are not yet supported"))));
+    }
+    { // install-on is not "All" (individual gateways aren't yet supported)
+      NatSettings gatewaySettings =
+          new NatSettings(true, null, "gateway1", Ip.parse("5.5.5.5"), NatMethod.STATIC);
+      Host host = new Host(Ip.parse("1.1.1.1"), gatewaySettings, "host", UID);
+      Warnings warnings = new Warnings(true, true, true);
+      Optional<Transformation> t = automaticStaticRuleTransformation(host, true, warnings);
+      assertFalse(t.isPresent());
+      assertThat(
+          warnings.getRedFlagWarnings(),
+          contains(
+              hasText(
+                  containsString(
+                      "Automatic NAT rules on specific gateways are not yet supported"))));
+    }
+  }
+
+  @Test
   public void testCheckValidManualStatic() {
     Uid hostUid1 = Uid.of("1");
     Uid hostUid2 = Uid.of("2");
@@ -785,7 +861,7 @@ public final class CheckpointNatConversionsTest {
   }
 
   @Test
-  public void testApplyOutgoingTransformations() {
+  public void testGetOutgoingTransformations() {
     Ip ifaceIp = Ip.parse("10.10.10.1");
     Interface viIface =
         Interface.builder()
@@ -795,21 +871,23 @@ public final class CheckpointNatConversionsTest {
     List<Function<Ip, Transformation>> transformationFuncs =
         ImmutableList.of(ip -> Transformation.always().apply(assignSourceIp(ip)).build());
     Warnings warnings = new Warnings(true, true, true);
-    applyOutgoingTransformations(viIface, transformationFuncs, warnings);
+    List<Transformation> outgoingTransformations =
+        getOutgoingTransformations(viIface, transformationFuncs, warnings);
     assertThat(warnings.getRedFlagWarnings(), empty());
     assertThat(
-        viIface.getOutgoingTransformation(),
-        equalTo(Transformation.always().apply(assignSourceIp(ifaceIp)).build()));
+        outgoingTransformations,
+        contains(Transformation.always().apply(assignSourceIp(ifaceIp)).build()));
   }
 
   @Test
-  public void testApplyOutgoingTransformations_warnings() {
+  public void testGetOutgoingTransformations_warnings() {
     // Interface does not have an IP
     Interface viIface = Interface.builder().setName("iface").build();
     List<Function<Ip, Transformation>> transformationFuncs =
         ImmutableList.of(ip -> Transformation.always().apply(assignSourceIp(ip)).build());
     Warnings warnings = new Warnings(true, true, true);
-    applyOutgoingTransformations(viIface, transformationFuncs, warnings);
+    List<Transformation> outgoingTransformations =
+        getOutgoingTransformations(viIface, transformationFuncs, warnings);
     assertThat(
         warnings.getRedFlagWarnings(),
         contains(
@@ -817,7 +895,7 @@ public final class CheckpointNatConversionsTest {
                 String.format(
                     "Batfish will not apply outgoing NAT on interface %s because it has no IP.",
                     viIface.getName()))));
-    assertNull(viIface.getOutgoingTransformation());
+    assertThat(outgoingTransformations, empty());
   }
 
   @Test

@@ -1,5 +1,7 @@
 package org.batfish.vendor.check_point_gateway.representation;
 
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.transformation.Transformation.when;
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
@@ -430,15 +432,70 @@ public class CheckpointNatConversions {
   }
 
   /**
+   * Returns a {@link Transformation} that should be applied to traffic on to reflect the NAT
+   * settings on the given {@link HasNatSettings}. Returns an empty optional and files warnings if
+   * the NAT settings cannot be converted.
+   *
+   * @param toExternal Whether the generated transformation needs to apply to traffic destined out
+   *     (internal to external traffic) or in (external to internal traffic).
+   */
+  static @Nonnull Optional<Transformation> automaticStaticRuleTransformation(
+      HasNatSettings hasNatSettings, boolean toExternal, Warnings warnings) {
+    if (!(hasNatSettings instanceof Host)) {
+      // TODO Support automatic static NAT on constructs other than hosts
+      warnings.redFlag(
+          String.format(
+              "Automatic static NAT rules on non-host objects are not yet supported: NAT settings"
+                  + " on %s %s will be ignored",
+              hasNatSettings.getClass(), hasNatSettings.getName()));
+      return Optional.empty();
+    }
+    Ip hostIp = ((Host) hasNatSettings).getIpv4Address();
+    if (hostIp == null) {
+      // TODO Will static NAT have any effect when configured on a host with no IP?
+      warnings.redFlag(
+          String.format(
+              "Automatic NAT rules on hosts without IPs are not supported: NAT settings on host %s"
+                  + " will be ignored",
+              hasNatSettings.getName()));
+      return Optional.empty();
+    }
+
+    NatSettings natSettings = hasNatSettings.getNatSettings();
+    assert natSettings.getAutoRule() && natSettings.getMethod() == NatMethod.STATIC;
+    Ip translatedIp = natSettings.getIpv4Address();
+    if (translatedIp == null) {
+      // TODO support IPv6 NAT
+      warnings.redFlag(
+          String.format(
+              "IPv6 NAT rules are not yet supported: NAT settings on %s %s will be ignored",
+              hasNatSettings.getClass(), hasNatSettings.getName()));
+      return Optional.empty();
+    } else if (!"All".equals(natSettings.getInstallOn())) {
+      // TODO Support installing NAT rules on specific gateways.
+      // TODO What does it mean if install-on is missing?
+      warnings.redFlag(
+          String.format(
+              "Automatic NAT rules on specific gateways are not yet supported: NAT settings on %s"
+                  + " %s will be ignored",
+              hasNatSettings.getClass(), hasNatSettings.getName()));
+      return Optional.empty();
+    }
+    return toExternal
+        ? Optional.of(when(matchSrc(hostIp)).apply(assignSourceIp(translatedIp)).build())
+        : Optional.of(when(matchDst(translatedIp)).apply(assignDestinationIp(hostIp)).build());
+  }
+
+  /**
    * Given a VI {@link Interface} and a list of functions to generate transformations for it,
-   * applies the correct outgoing transformation to the interface.
+   * generates and returns those transformations.
    *
    * @param transformationFuncs A list of functions that take in the VI interface's IP and return a
    *     {@link Transformation} that should be applied to traffic exiting that interface. The
    *     resulting transformations will be merged such that the first matching transformation will
    *     be applied to outgoing traffic.
    */
-  static void applyOutgoingTransformations(
+  static List<Transformation> getOutgoingTransformations(
       Interface viIface,
       List<Function<Ip, Transformation>> transformationFuncs,
       Warnings warnings) {
@@ -447,11 +504,9 @@ public class CheckpointNatConversions {
             .map(ConcreteInterfaceAddress::getIp)
             .orElse(null);
     if (ifaceIp != null) {
-      mergeTransformations(
-              transformationFuncs.stream()
-                  .map(transformationFunc -> transformationFunc.apply(ifaceIp))
-                  .collect(ImmutableList.toImmutableList()))
-          .ifPresent(viIface::setOutgoingTransformation);
+      return transformationFuncs.stream()
+          .map(transformationFunc -> transformationFunc.apply(ifaceIp))
+          .collect(ImmutableList.toImmutableList());
     } else {
       // TODO What outgoing transformations apply on an external interface with no IP?
       // (Not certain that skipping NAT in this scenario is wrong)
@@ -459,6 +514,7 @@ public class CheckpointNatConversions {
           String.format(
               "Batfish will not apply outgoing NAT on interface %s because it has no IP.",
               viIface.getName()));
+      return ImmutableList.of();
     }
   }
 
