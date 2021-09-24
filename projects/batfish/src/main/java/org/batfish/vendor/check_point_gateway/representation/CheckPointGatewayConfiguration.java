@@ -408,6 +408,8 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
       outgoingTransformations.addAll(
           getOutgoingTransformations(
               iface, outgoingTransformationFuncsForExternalIfaces, warnings));
+      mergeTransformations(outgoingTransformations.build())
+          .ifPresent(iface::setOutgoingTransformation);
     }
   }
 
