@@ -109,11 +109,10 @@ public class InterfaceDependencies {
                 break;
               } else if (neighbors.size() == 2) {
                 // check if this is likely a virtual portchannel: assume if the neighbors are on two
-                // devices, and our
-                // members have neighbors on those same two devices, it's probably a virtual
-                // portchannel
+                // devices, and our members have neighbors on those same two devices, it's probably
+                // a virtual portchannel
 
-                // TODO this check could be more strict, i.e. cummutative diagram:
+                // TODO this check could be more strict, i.e. check that:
                 // iface --> members --> neighbors == iface --> neighbors --> members
                 Set<String> memberInterfaceNeighborNodes =
                     iface.getDependencies().stream()
@@ -128,14 +127,12 @@ public class InterfaceDependencies {
                 if (neighborHostnames.size() == 2
                     && neighborHostnames.equals(memberInterfaceNeighborNodes)) {
                   // aggregate may be a virtual portchannel, which we don't support well yet. we
-                  // need both VI
-                  // modeling and improved dependency tracking. In particular, iface should come
-                  // down if both
-                  // of its neighbors are down, so we need something like a second group of
-                  // AGGREGATE dependencies.
+                  // need both VI modeling and improved dependency tracking. In particular,
+                  // iface should come down if both of its neighbors are down, so we need
+                  // something like a second group of AGGREGATE dependencies.
                   _logger.warn(
-                      "interface {} looks like a virtual portchannel. Disabling dependency"
-                          + " tracking.",
+                      "interface {} looks like a virtual portchannel. "
+                          + "Disabling dependency tracking.",
                       ifaceId);
                   break;
                 }
@@ -167,9 +164,9 @@ public class InterfaceDependencies {
                                         dep ->
                                             getL1Neighbor(allIfaces.get(dep.getInterfaceName()))));
                         return String.format(
-                            "deactivating aggregate interface %s with no neighbor. some of its"
-                                + " members do have neighbors: %s",
-                            ifaceId, depToNeighbor);
+                            "Deactivating %s interface %s with no neighbor. "
+                                + "Some of its members do have neighbors: %s",
+                            iface.getInterfaceType(), ifaceId, depToNeighbor);
                       });
                   _interfacesToDeactivate.add(ifaceId);
                   break;
@@ -180,7 +177,8 @@ public class InterfaceDependencies {
               }
 
               _logger.warn(
-                  "deactivating AGGREGATE/REDUNDANT interface {} with neighbors {}",
+                  "deactivating {} interface {} with neighbors {}",
+                  iface.getInterfaceType(),
                   ifaceId,
                   neighbors);
               _interfacesToDeactivate.add(ifaceId);
