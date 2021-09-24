@@ -1,0 +1,8 @@
+!BATFISH_FORMAT: a10_acos
+
+
+hostname newlines
+
+
+interface ethernet 1
+

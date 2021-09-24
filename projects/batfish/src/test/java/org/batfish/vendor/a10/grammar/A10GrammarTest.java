@@ -124,6 +124,19 @@ public class A10GrammarTest {
     return iBatfish.loadConfigurations(iBatfish.getSnapshot());
   }
 
+  /**
+   * Config with newlines before, in the middle, and at the end should be correctly recognized and
+   * parsed.
+   */
+  @Test
+  public void testNewlines() {
+    String hostname = "newlines";
+    A10Configuration c = parseVendorConfig(hostname);
+    assertThat(c, notNullValue());
+    assertThat(c.getHostname(), equalTo("newlines"));
+    assertThat(c.getInterfacesEthernet().keySet(), contains(1));
+  }
+
   @Test
   public void testHostnameExtraction() {
     String hostname = "hostname";

@@ -11,7 +11,7 @@ options {
    tokenVocab = A10Lexer;
 }
 
-a10_configuration: NEWLINE? statement+ NEWLINE* EOF;
+a10_configuration: NEWLINE? statement+ EOF;
 
 statement
 :
