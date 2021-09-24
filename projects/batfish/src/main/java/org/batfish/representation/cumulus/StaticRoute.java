@@ -2,12 +2,12 @@ package org.batfish.representation.cumulus;
 
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_STATIC_ROUTE_ADMINISTRATIVE_DISTANCE;
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_STATIC_ROUTE_METRIC;
-import static org.batfish.representation.cumulus.CumulusInterfaceType.NULL_INTERFACE_PATTERN;
 
 import com.google.common.base.MoreObjects;
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
@@ -17,6 +17,9 @@ import org.batfish.datamodel.route.nh.NextHopDiscard;
 
 /** A statically-configured route */
 public class StaticRoute implements Serializable {
+
+  private static final Pattern NULL_INTERFACE_PATTERN =
+      Pattern.compile("Null0|blackhole|reject", Pattern.CASE_INSENSITIVE);
 
   private final @Nonnull Prefix _network;
   private final @Nullable Ip _nextHopIp;
