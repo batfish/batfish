@@ -21,7 +21,7 @@ public final class Uint16AstNodeTest {
   @Test
   public void testOfInvalidNotNumber() {
     _thrown.expect(IllegalArgumentException.class);
-    Uint16AstNode.of("-1");
+    Uint16AstNode.of("foo");
   }
 
   @Test
