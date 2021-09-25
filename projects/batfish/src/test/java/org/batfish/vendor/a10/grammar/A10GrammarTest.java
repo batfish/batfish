@@ -11,6 +11,8 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurat
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasChannelGroup;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasChannelGroupMembers;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDeclaredNames;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInterfaceType;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
@@ -61,6 +63,8 @@ import org.batfish.vendor.ConversionContext;
 import org.batfish.vendor.a10.representation.A10Configuration;
 import org.batfish.vendor.a10.representation.Interface;
 import org.batfish.vendor.a10.representation.InterfaceReference;
+import org.batfish.vendor.a10.representation.TrunkGroup;
+import org.batfish.vendor.a10.representation.TrunkInterface;
 import org.batfish.vendor.a10.representation.Vlan;
 import org.junit.Rule;
 import org.junit.Test;
@@ -268,6 +272,31 @@ public class A10GrammarTest {
                 hasAllAddresses(contains(ConcreteInterfaceAddress.parse("10.100.2.1/24"))))));
   }
 
+  @Test
+  public void testTrunkVlanConversion() {
+    String hostname = "trunk_vlan_convert";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(
+        c,
+        hasInterface(
+            "Trunk 1",
+            allOf(
+                hasInterfaceType(InterfaceType.AGGREGATED),
+                hasSwitchPortMode(SwitchportMode.TRUNK),
+                hasAllowedVlans(IntegerSpace.of(2)),
+                hasNativeVlan(equalTo(3)))));
+    assertThat(
+        c,
+        hasInterface(
+            "Trunk 2",
+            allOf(
+                hasInterfaceType(InterfaceType.AGGREGATED),
+                hasSwitchPortMode(SwitchportMode.TRUNK),
+                hasAllowedVlans(IntegerSpace.of(2)),
+                hasNativeVlan(nullValue()))));
+  }
+
   /** Testing ACOS v2 VLAN syntax */
   @Test
   public void testVlanAcos2Extraction() {
@@ -426,5 +455,158 @@ public class A10GrammarTest {
                 hasSwitchPortMode(SwitchportMode.NONE),
                 hasAllAddresses(empty()),
                 hasDeclaredNames(ImmutableList.of("Loopback 10")))));
+  }
+
+  @Test
+  public void testTrunkExtraction() {
+    String hostname = "trunk";
+    A10Configuration c = parseVendorConfig(hostname);
+
+    Map<Integer, Interface> eths = c.getInterfacesEthernet();
+    Map<Integer, TrunkInterface> trunks = c.getInterfacesTrunk();
+    assertThat(eths.keySet(), containsInAnyOrder(1, 2, 3, 4, 5));
+    assertThat(trunks.keySet(), containsInAnyOrder(1, 2, 3, 4));
+
+    Interface eth1 = eths.get(1);
+    TrunkGroup tg1 = eths.get(1).getTrunkGroup();
+    TrunkInterface ti1 = trunks.get(1);
+    TrunkGroup tg2 = eths.get(2).getTrunkGroup();
+    TrunkGroup tg3 = eths.get(3).getTrunkGroup();
+    TrunkGroup tg4 = eths.get(4).getTrunkGroup();
+    TrunkGroup eth5tg1 = eths.get(5).getTrunkGroup();
+
+    assertThat(tg1.getTypeEffective(), equalTo(TrunkGroup.Type.STATIC));
+    assertNull(tg1.getMode());
+    assertNull(tg1.getTimeout());
+    assertThat(tg1.getUserTag(), equalTo("user tag str"));
+    assertThat(
+        ti1.getMembers(),
+        containsInAnyOrder(
+            new InterfaceReference(Interface.Type.ETHERNET, 1),
+            new InterfaceReference(Interface.Type.ETHERNET, 5)));
+    assertThat(ti1.getTrunkTypeEffective(), equalTo(TrunkGroup.Type.STATIC));
+
+    // Interface property after trunk-group definition is still applied
+    assertThat(eth1.getName(), equalTo("eth name"));
+
+    assertThat(tg2.getTypeEffective(), equalTo(TrunkGroup.Type.STATIC));
+
+    assertThat(tg3.getTypeEffective(), equalTo(TrunkGroup.Type.LACP));
+    assertThat(tg3.getMode(), equalTo(TrunkGroup.Mode.ACTIVE));
+    assertThat(tg3.getTimeout(), equalTo(TrunkGroup.Timeout.LONG));
+
+    assertThat(tg4.getTypeEffective(), equalTo(TrunkGroup.Type.LACP_UDLD));
+    assertThat(tg4.getMode(), equalTo(TrunkGroup.Mode.PASSIVE));
+    assertThat(tg4.getTimeout(), equalTo(TrunkGroup.Timeout.SHORT));
+
+    assertThat(eth5tg1.getTypeEffective(), equalTo(TrunkGroup.Type.STATIC));
+    assertThat(eth5tg1.getUserTag(), equalTo("other tag"));
+  }
+
+  /** Testing ACOS v2 syntax */
+  @Test
+  public void testTrunkAcos2Extraction() {
+    String hostname = "trunk_acos2";
+    A10Configuration c = parseVendorConfig(hostname);
+
+    Map<Integer, Interface> eths = c.getInterfacesEthernet();
+    Map<Integer, TrunkInterface> trunks = c.getInterfacesTrunk();
+    assertThat(eths.keySet(), containsInAnyOrder(1));
+    assertThat(trunks.keySet(), containsInAnyOrder(1));
+
+    TrunkGroup tg1 = eths.get(1).getTrunkGroup();
+
+    assertThat(tg1.getTypeEffective(), equalTo(TrunkGroup.Type.LACP));
+    assertThat(tg1.getTimeout(), equalTo(TrunkGroup.Timeout.SHORT));
+  }
+
+  @Test
+  public void testTrunkWarn() throws IOException {
+    String filename = "trunk_warn";
+    Batfish batfish = getBatfishForConfigurationNames(filename);
+
+    Warnings warnings =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+    assertThat(
+        warnings,
+        hasParseWarnings(
+            containsInAnyOrder(
+                hasComment("Expected trunk number in range 1-4096, but got '0'"),
+                hasComment("Expected trunk number in range 1-4096, but got '4097'"),
+                allOf(
+                    hasComment("Trunk-group already exists as a different type (lacp)"),
+                    hasText("trunk-group 3 static")),
+                allOf(
+                    hasComment("Trunk-group already exists as a different type (lacp)"),
+                    hasText("trunk-group 3")),
+                hasComment("This interface is already a member of trunk-group 3"),
+                hasComment("Cannot add an interface with a configured IP address to a trunk-group"),
+                hasComment("Cannot configure an IP address on a trunk-group member"))));
+  }
+
+  /** Testing ACOS v2 syntax */
+  @Test
+  public void testTrunkAcos2Warn() throws IOException {
+    String filename = "trunk_acos2_warn";
+    Batfish batfish = getBatfishForConfigurationNames(filename);
+
+    Warnings warnings =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+    assertThat(
+        warnings,
+        hasParseWarnings(
+            containsInAnyOrder(
+                hasComment("Cannot configure timeout for non-existent trunk-group"))));
+  }
+
+  @Test
+  public void testTrunkConversion() {
+    String hostname = "trunk_convert";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(
+        c,
+        hasInterface(
+            "Ethernet 1",
+            allOf(
+                hasInterfaceType(InterfaceType.PHYSICAL),
+                hasChannelGroup("Trunk 1"),
+                hasChannelGroupMembers(empty()),
+                hasAllAddresses(empty()))));
+
+    assertThat(
+        c,
+        hasInterface(
+            "Ethernet 2",
+            allOf(
+                hasInterfaceType(InterfaceType.PHYSICAL),
+                hasChannelGroup("Trunk 1"),
+                hasChannelGroupMembers(empty()),
+                hasAllAddresses(empty()))));
+
+    assertThat(
+        c,
+        hasInterface(
+            "Trunk 1",
+            allOf(
+                hasInterfaceType(InterfaceType.AGGREGATED),
+                hasChannelGroup(nullValue()),
+                hasChannelGroupMembers(containsInAnyOrder("Ethernet 1", "Ethernet 2")),
+                hasAllAddresses(contains(ConcreteInterfaceAddress.parse("10.0.1.1/24"))))));
+    assertThat(
+        c.getAllInterfaces().get("Trunk 1").getDependencies(),
+        containsInAnyOrder(
+            new org.batfish.datamodel.Interface.Dependency(
+                "Ethernet 1", org.batfish.datamodel.Interface.DependencyType.AGGREGATE),
+            new org.batfish.datamodel.Interface.Dependency(
+                "Ethernet 2", org.batfish.datamodel.Interface.DependencyType.AGGREGATE)));
   }
 }

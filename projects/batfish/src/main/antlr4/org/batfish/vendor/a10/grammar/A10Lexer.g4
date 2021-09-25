@@ -13,6 +13,7 @@ tokens {
 }
 
 // A10 keywords
+ACTIVE: 'active';
 ADDRESS: 'address';
 DISABLE: 'disable';
 ENABLE: 'enable';
@@ -20,15 +21,26 @@ ETHERNET: 'ethernet';
 HOSTNAME: 'hostname' -> pushMode(M_Word);
 IP: 'ip';
 INTERFACE: 'interface';
+LACP: 'lacp';
+LACP_UDLD: 'lacp-udld';
+LONG: 'long';
 LOOPBACK: 'loopback';
+MODE: 'mode';
 MTU: 'mtu';
 NAME: 'name' -> pushMode(M_Word);
+PASSIVE: 'passive';
 RBA: 'rba' -> pushMode(M_Rba);
 ROLE: 'role';
 ROUTER_INTERFACE: 'router-interface';
+STATIC: 'static';
+SHORT: 'short';
 TAGGED: 'tagged';
+TIMEOUT: 'timeout';
 TO: 'to';
+TRUNK: 'trunk';
+TRUNK_GROUP: 'trunk-group';
 UNTAGGED: 'untagged';
+USER_TAG: 'user-tag' -> pushMode(M_Word);
 VE: 've';
 VLAN: 'vlan';
 
