@@ -6,10 +6,11 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 
 /** Datamodel class representing a configured A10 interface. */
-public final class Interface implements Serializable {
+public class Interface implements Serializable {
   public enum Type {
     ETHERNET,
     LOOPBACK,
+    TRUNK,
     VE,
   }
 
@@ -39,6 +40,10 @@ public final class Interface implements Serializable {
     return _number;
   }
 
+  public TrunkGroup getTrunkGroup() {
+    return _trunkGroup;
+  }
+
   @Nonnull
   public Type getType() {
     return _type;
@@ -60,6 +65,10 @@ public final class Interface implements Serializable {
     _name = name;
   }
 
+  public void setTrunkGroup(TrunkGroup trunkGroup) {
+    _trunkGroup = trunkGroup;
+  }
+
   public Interface(Type type, int number) {
     _number = number;
     _type = type;
@@ -71,4 +80,5 @@ public final class Interface implements Serializable {
   @Nullable private Integer _mtu;
   @Nullable private String _name;
   private final int _number;
+  @Nullable private TrunkGroup _trunkGroup;
 }

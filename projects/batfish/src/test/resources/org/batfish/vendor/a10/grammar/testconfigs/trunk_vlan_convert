@@ -1,0 +1,22 @@
+!BATFISH_FORMAT: a10_acos
+hostname trunk_vlan_convert
+!
+vlan 2
+ tagged trunk 1 to 2
+!
+vlan 3
+ untagged trunk 1
+!
+interface ethernet 1
+ trunk-group 1
+!
+interface ethernet 2
+ trunk-group 2
+!
+interface ethernet 3
+ trunk-group 2
+!
+interface trunk 1
+!
+interface trunk 2
+!

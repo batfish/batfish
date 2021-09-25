@@ -1,0 +1,38 @@
+!BATFISH_FORMAT: a10_acos
+hostname trunk
+!
+interface ethernet 1
+ ! default type is static
+ trunk-group 1
+  user-tag "user tag str"
+ ! some interface-level config after trunk-group
+ name "eth name"
+!
+interface ethernet 2
+ trunk-group 2 static
+!
+interface ethernet 3
+ trunk-group 3 lacp
+ name "eth2"
+ ! re-entering trunk-group doesn't require type
+ trunk-group 3
+  mode active
+  timeout long
+!
+interface ethernet 4
+ trunk-group 4 lacp-udld
+  mode passive
+  timeout short
+!
+interface ethernet 5
+ trunk-group 1
+  user-tag "other tag"
+!
+interface trunk 1
+!
+interface trunk 2
+!
+interface trunk 3
+!
+interface trunk 4
+!
