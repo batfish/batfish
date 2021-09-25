@@ -4,6 +4,7 @@ import org.batfish.vendor.StructureUsage;
 
 public enum A10StructureUsage implements StructureUsage {
   INTERFACE_SELF_REF("interface"),
+  INTERFACE_TRUNK_GROUP("interface trunk-group"),
   VLAN_ROUTER_INTERFACE("vlan router-interface"),
   VLAN_TAGGED_INTERFACE("vlan tagged interface"),
   VLAN_UNTAGGED_INTERFACE("vlan untagged interface");

@@ -96,6 +96,7 @@ public class A10GrammarTest {
     ParserRuleContext tree =
         Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     extractor.processParseTree(TEST_SNAPSHOT, tree);
+    extractor.processParseTree(TEST_SNAPSHOT, tree);
     A10Configuration vendorConfiguration = (A10Configuration) extractor.getVendorConfiguration();
     vendorConfiguration.setFilename(TESTCONFIGS_PREFIX + hostname);
     // crash if not serializable
@@ -363,9 +364,17 @@ public class A10GrammarTest {
         hasNumReferrers(filename, INTERFACE, getInterfaceName(Interface.Type.ETHERNET, 3), 2));
     assertThat(
         ccae,
+        hasNumReferrers(filename, INTERFACE, getInterfaceName(Interface.Type.ETHERNET, 10), 1));
+    assertThat(
+        ccae,
+        hasNumReferrers(filename, INTERFACE, getInterfaceName(Interface.Type.ETHERNET, 11), 1));
+    assertThat(
+        ccae,
         hasNumReferrers(filename, INTERFACE, getInterfaceName(Interface.Type.LOOPBACK, 0), 1));
     assertThat(
         ccae, hasNumReferrers(filename, INTERFACE, getInterfaceName(Interface.Type.VE, 2), 1));
+    assertThat(
+        ccae, hasNumReferrers(filename, INTERFACE, getInterfaceName(Interface.Type.TRUNK, 10), 2));
 
     // Confirm undefined references are detected
     assertThat(

@@ -18,3 +18,12 @@ interface loopback 0
 !
 interface ve 2
 !
+!
+interface ethernet 10
+ trunk-group 10
+!
+interface ethernet 11
+ trunk-group 10
+!
+interface trunk 10
+!

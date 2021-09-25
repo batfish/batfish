@@ -183,6 +183,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
         n ->
             _currentInterface =
                 _c.getInterfacesTrunk().computeIfAbsent(n, number -> new TrunkInterface(n, null)));
+    _c.defineStructure(A10StructureType.INTERFACE, getInterfaceName(_currentInterface), ctx);
     if (!num.isPresent()) {
       _currentInterface = new TrunkInterface(-1, null); // dummy
     }
@@ -256,7 +257,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
               if (maybeInvalidReason.isPresent()) {
                 warn(ctx, maybeInvalidReason.get());
               } else {
-                setCurrentTrunkGroupAndReferences(n, type);
+                setCurrentTrunkGroupAndReferences(n, type, ctx);
               }
             });
 
@@ -396,7 +397,8 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
    * it if necessary. Also, perform related datamodel updates, like creating a corresponding trunk
    * interface if needed and updating its members.
    */
-  private void setCurrentTrunkGroupAndReferences(int num, @Nullable TrunkGroup.Type type) {
+  private void setCurrentTrunkGroupAndReferences(
+      int num, @Nullable TrunkGroup.Type type, ParserRuleContext ctx) {
     _currentTrunkGroup =
         Optional.ofNullable(_currentInterface.getTrunkGroup())
             .orElseGet(() -> new TrunkGroup(num, type));
@@ -406,6 +408,12 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     trunkInterface
         .getMembers()
         .add(new InterfaceReference(_currentInterface.getType(), _currentInterface.getNumber()));
+    _c.defineStructure(A10StructureType.INTERFACE, getInterfaceName(trunkInterface), ctx);
+    _c.referenceStructure(
+        A10StructureType.INTERFACE,
+        getInterfaceName(trunkInterface),
+        A10StructureUsage.INTERFACE_TRUNK_GROUP,
+        ctx.start.getLine());
   }
 
   @Override
@@ -424,7 +432,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
       _currentTrunkGroup = new TrunkGroup(-1, type); // dummy
       return;
     }
-    setCurrentTrunkGroupAndReferences(num, type);
+    setCurrentTrunkGroupAndReferences(num, type, ctx);
   }
 
   @Override
