@@ -16,6 +16,8 @@ interface_name_str: word;
 
 vlan_name: word;
 
+user_tag: word;
+
 ip_prefix: ip_address (subnet_mask | ip_slash_prefix);
 
 ip_address: IP_ADDRESS;
@@ -34,6 +36,9 @@ ethernet_number: uint8;
 
 // 0-10
 loopback_number: uint8;
+
+// 1-4096
+trunk_number: uint16;
 
 uint8: UINT8;
 

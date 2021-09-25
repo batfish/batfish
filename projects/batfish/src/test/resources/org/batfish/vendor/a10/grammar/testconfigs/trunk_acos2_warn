@@ -1,0 +1,7 @@
+!BATFISH_FORMAT: a10_acos
+!version 2.7.2, build 123 (Aug-5-2021,01:23)
+hostname trunk_acos2_warn
+!
+interface ethernet 1
+ lacp timeout short
+!

@@ -1,0 +1,12 @@
+!BATFISH_FORMAT: a10_acos
+hostname trunk_convert
+!
+interface ethernet 1
+ trunk-group 1 lacp
+!
+interface ethernet 2
+ trunk-group 1 lacp
+!
+interface trunk 1
+ ip address 10.0.1.1 /24
+!
