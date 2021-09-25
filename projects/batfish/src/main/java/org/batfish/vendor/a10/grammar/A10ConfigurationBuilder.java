@@ -135,7 +135,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
           _c.defineStructure(A10StructureType.INTERFACE, getInterfaceName(_currentInterface), ctx);
           _c.referenceStructure(
               A10StructureType.INTERFACE,
-              getInterfaceName(Interface.Type.ETHERNET, n),
+              getInterfaceName(_currentInterface),
               A10StructureUsage.INTERFACE_SELF_REF,
               ctx.start.getLine());
         });
@@ -160,7 +160,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
           _c.defineStructure(A10StructureType.INTERFACE, getInterfaceName(_currentInterface), ctx);
           _c.referenceStructure(
               A10StructureType.INTERFACE,
-              getInterfaceName(Interface.Type.LOOPBACK, n),
+              getInterfaceName(_currentInterface),
               A10StructureUsage.INTERFACE_SELF_REF,
               ctx.start.getLine());
         });
