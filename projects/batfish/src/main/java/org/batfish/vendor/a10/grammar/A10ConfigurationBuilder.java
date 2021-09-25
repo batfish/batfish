@@ -1,6 +1,7 @@
 package org.batfish.vendor.a10.grammar;
 
 import static org.batfish.vendor.a10.grammar.A10Lexer.WORD;
+import static org.batfish.vendor.a10.representation.A10Configuration.getInterfaceName;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Range;
@@ -32,6 +33,8 @@ import org.batfish.vendor.a10.grammar.A10Parser.HostnameContext;
 import org.batfish.vendor.a10.grammar.A10Parser.S_hostnameContext;
 import org.batfish.vendor.a10.grammar.A10Parser.WordContext;
 import org.batfish.vendor.a10.representation.A10Configuration;
+import org.batfish.vendor.a10.representation.A10StructureType;
+import org.batfish.vendor.a10.representation.A10StructureUsage;
 import org.batfish.vendor.a10.representation.Interface;
 import org.batfish.vendor.a10.representation.InterfaceReference;
 import org.batfish.vendor.a10.representation.Vlan;
@@ -49,7 +52,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     _parser = parser;
     _text = text;
     _w = warnings;
-    _configuration = configuration;
+    _c = configuration;
     _silentSyntax = silentSyntax;
   }
 
@@ -63,7 +66,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     Token token = errorNode.getSymbol();
     int line = token.getLine();
     String lineText = errorNode.getText().replace("\n", "").replace("\r", "").trim();
-    _configuration.setUnrecognized(true);
+    _c.setUnrecognized(true);
 
     if (token instanceof UnrecognizedLineToken) {
       UnrecognizedLineToken unrecToken = (UnrecognizedLineToken) token;
@@ -81,7 +84,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   @Nonnull
   public A10Configuration getConfiguration() {
-    return _configuration;
+    return _c;
   }
 
   @Nonnull
@@ -113,23 +116,29 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   @Override
   public void exitA10_configuration(A10_configurationContext ctx) {
-    _configuration.finalizeStructures();
+    _c.finalizeStructures();
   }
 
   @Override
   public void exitS_hostname(S_hostnameContext ctx) {
-    toString(ctx, ctx.hostname()).ifPresent(_configuration::setHostname);
+    toString(ctx, ctx.hostname()).ifPresent(_c::setHostname);
   }
 
   @Override
   public void enterSid_ethernet(A10Parser.Sid_ethernetContext ctx) {
     Optional<Integer> num = toInteger(ctx.num);
     num.ifPresent(
-        n ->
-            _currentInterface =
-                _configuration
-                    .getInterfacesEthernet()
-                    .computeIfAbsent(n, number -> new Interface(Interface.Type.ETHERNET, n)));
+        n -> {
+          _currentInterface =
+              _c.getInterfacesEthernet()
+                  .computeIfAbsent(n, number -> new Interface(Interface.Type.ETHERNET, n));
+          _c.defineStructure(A10StructureType.INTERFACE, getInterfaceName(_currentInterface), ctx);
+          _c.referenceStructure(
+              A10StructureType.INTERFACE,
+              getInterfaceName(Interface.Type.ETHERNET, n),
+              A10StructureUsage.INTERFACE_SELF_REF,
+              ctx.start.getLine());
+        });
     if (!num.isPresent()) {
       _currentInterface = new Interface(Interface.Type.ETHERNET, -1); // dummy
     }
@@ -144,11 +153,17 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   public void enterSid_loopback(A10Parser.Sid_loopbackContext ctx) {
     Optional<Integer> num = toInteger(ctx.num);
     num.ifPresent(
-        n ->
-            _currentInterface =
-                _configuration
-                    .getInterfacesLoopback()
-                    .computeIfAbsent(n, number -> new Interface(Interface.Type.LOOPBACK, n)));
+        n -> {
+          _currentInterface =
+              _c.getInterfacesLoopback()
+                  .computeIfAbsent(n, number -> new Interface(Interface.Type.LOOPBACK, n));
+          _c.defineStructure(A10StructureType.INTERFACE, getInterfaceName(_currentInterface), ctx);
+          _c.referenceStructure(
+              A10StructureType.INTERFACE,
+              getInterfaceName(Interface.Type.LOOPBACK, n),
+              A10StructureUsage.INTERFACE_SELF_REF,
+              ctx.start.getLine());
+        });
     if (!num.isPresent()) {
       _currentInterface = new Interface(Interface.Type.LOOPBACK, -1); // dummy
     }
@@ -192,16 +207,15 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
       return;
     }
     int num = maybeNum.get();
-    Vlan vlan = _configuration.getVlans().get(num);
+    Vlan vlan = _c.getVlans().get(num);
     if (vlan == null || !Objects.equals(num, vlan.getRouterInterface())) {
       warn(ctx, "Cannot create a ve interface for a non-existent or unassociated VLAN.");
       _currentInterface = new Interface(Interface.Type.VE, -1); // dummy
       return;
     }
     _currentInterface =
-        _configuration
-            .getInterfacesVe()
-            .computeIfAbsent(num, n -> new Interface(Interface.Type.VE, n));
+        _c.getInterfacesVe().computeIfAbsent(num, n -> new Interface(Interface.Type.VE, n));
+    _c.defineStructure(A10StructureType.INTERFACE, getInterfaceName(_currentInterface), ctx);
   }
 
   @Override
@@ -213,7 +227,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   public void enterS_vlan(A10Parser.S_vlanContext ctx) {
     Optional<Integer> maybeVlanNum = toInteger(ctx.vlan_number());
     if (maybeVlanNum.isPresent()) {
-      _currentVlan = _configuration.getVlans().computeIfAbsent(maybeVlanNum.get(), Vlan::new);
+      _currentVlan = _c.getVlans().computeIfAbsent(maybeVlanNum.get(), Vlan::new);
       return;
     }
     _currentVlan = new Vlan(0); // dummy
@@ -237,6 +251,13 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
         warn(ctx, "Virtual Ethernet interface number must be the same as VLAN ID.");
         return;
       }
+      String routerInterfaceName = getInterfaceName(Interface.Type.VE, maybeNum.get());
+      _c.defineStructure(A10StructureType.INTERFACE, routerInterfaceName, ctx);
+      _c.referenceStructure(
+          A10StructureType.INTERFACE,
+          routerInterfaceName,
+          A10StructureUsage.VLAN_ROUTER_INTERFACE,
+          ctx.start.getLine());
       _currentVlan.setRouterInterface(maybeNum.get());
     }
   }
@@ -244,31 +265,52 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   @Override
   public void exitSvd_tagged(A10Parser.Svd_taggedContext ctx) {
     // TODO enforce interface restrictions (e.g. untagged iface cannot be reused)
-    toInterfaceReferences(ctx.vlan_iface_references())
+    toInterfaceReferences(ctx.vlan_iface_references(), A10StructureUsage.VLAN_TAGGED_INTERFACE)
         .ifPresent(refs -> _currentVlan.addTagged(refs));
   }
 
   @Override
   public void exitSvd_untagged(A10Parser.Svd_untaggedContext ctx) {
     // TODO enforce interface restrictions (e.g. untagged iface cannot be reused)
-    toInterfaceReferences(ctx.vlan_iface_references())
+    toInterfaceReferences(ctx.vlan_iface_references(), A10StructureUsage.VLAN_UNTAGGED_INTERFACE)
         .ifPresent(refs -> _currentVlan.addUntagged(refs));
   }
 
+  /**
+   * Convert specified context into a list of {@link InterfaceReference} and add structure
+   * references for each interface. Returns {@link Optional#empty()} and adds warnings if the
+   * context cannot be converted to a list of {@link InterfaceReference}s.
+   */
   Optional<List<InterfaceReference>> toInterfaceReferences(
-      A10Parser.Vlan_iface_referencesContext ctx) {
+      A10Parser.Vlan_iface_referencesContext ctx, A10StructureUsage usage) {
+    int line = ctx.start.getLine();
     if (ctx.vlan_ifaces_list() != null) {
-      return toInterfaces(ctx.vlan_ifaces_list());
+      Optional<List<InterfaceReference>> maybeInterfaces = toInterfaces(ctx.vlan_ifaces_list());
+      maybeInterfaces.ifPresent(
+          ifaces ->
+              ifaces.forEach(
+                  iface ->
+                      _c.referenceStructure(
+                          A10StructureType.INTERFACE, getInterfaceName(iface), usage, line)));
+      return maybeInterfaces;
     }
     assert ctx.vlan_ifaces_range() != null;
     Interface.Type type = toInterfaceType(ctx.vlan_ifaces_range());
-    return toSubRange(ctx.vlan_ifaces_range())
-        .map(
-            subRange ->
-                subRange
-                    .asStream()
-                    .mapToObj(i -> new InterfaceReference(type, i))
-                    .collect(ImmutableList.toImmutableList()));
+    Optional<List<InterfaceReference>> maybeIfaces =
+        toSubRange(ctx.vlan_ifaces_range())
+            .map(
+                subRange ->
+                    subRange
+                        .asStream()
+                        .mapToObj(i -> new InterfaceReference(type, i))
+                        .collect(ImmutableList.toImmutableList()));
+    maybeIfaces.ifPresent(
+        ifaces ->
+            ifaces.forEach(
+                iface ->
+                    _c.referenceStructure(
+                        A10StructureType.INTERFACE, getInterfaceName(iface), usage, line)));
+    return maybeIfaces;
   }
 
   Interface.Type toInterfaceType(A10Parser.Vlan_ifaces_rangeContext ctx) {
@@ -456,7 +498,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   private static final Pattern HOSTNAME_PATTERN = Pattern.compile("^[A-Za-z0-9_-]+$");
 
-  @Nonnull private A10Configuration _configuration;
+  @Nonnull private A10Configuration _c;
 
   private Interface _currentInterface;
 

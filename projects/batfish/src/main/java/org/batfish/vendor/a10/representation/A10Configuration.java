@@ -101,15 +101,15 @@ public final class A10Configuration extends VendorConfiguration {
     }
   }
 
-  private static String getInterfaceName(InterfaceReference ref) {
+  public static String getInterfaceName(InterfaceReference ref) {
     return getInterfaceName(ref.getType(), ref.getNumber());
   }
 
-  private static String getInterfaceName(Interface iface) {
+  public static String getInterfaceName(Interface iface) {
     return getInterfaceName(iface.getType(), iface.getNumber());
   }
 
-  private static String getInterfaceName(Interface.Type type, int num) {
+  public static String getInterfaceName(Interface.Type type, int num) {
     if (type == Interface.Type.VE) {
       return String.format("VirtualEthernet %s", num);
     }
@@ -137,6 +137,7 @@ public final class A10Configuration extends VendorConfiguration {
     _interfacesEthernet.forEach((num, iface) -> convertInterface(iface, vrf));
     _interfacesVe.forEach((num, iface) -> convertInterface(iface, vrf));
 
+    markConcreteStructure(A10StructureType.INTERFACE);
     return ImmutableList.of(_c);
   }
 
