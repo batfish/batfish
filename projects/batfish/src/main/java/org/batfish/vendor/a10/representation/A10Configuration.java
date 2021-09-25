@@ -7,6 +7,7 @@ import static org.batfish.vendor.a10.representation.Interface.DEFAULT_MTU;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +30,7 @@ public final class A10Configuration extends VendorConfiguration {
   public A10Configuration() {
     _interfacesEthernet = new HashMap<>();
     _interfacesLoopback = new HashMap<>();
+    _interfacesTrunk = new HashMap<>();
     _interfacesVe = new HashMap<>();
     _vlans = new HashMap<>();
   }
@@ -44,6 +46,10 @@ public final class A10Configuration extends VendorConfiguration {
 
   public Map<Integer, Interface> getInterfacesLoopback() {
     return _interfacesLoopback;
+  }
+
+  public Map<Integer, TrunkInterface> getInterfacesTrunk() {
+    return _interfacesTrunk;
   }
 
   public Map<Integer, Interface> getInterfacesVe() {
@@ -70,6 +76,7 @@ public final class A10Configuration extends VendorConfiguration {
       case ETHERNET:
         return false;
       case LOOPBACK:
+      case TRUNK:
       case VE:
         return true;
       default:
@@ -95,6 +102,8 @@ public final class A10Configuration extends VendorConfiguration {
         return InterfaceType.LOOPBACK;
       case VE:
         return InterfaceType.VLAN;
+      case TRUNK:
+        return InterfaceType.AGGREGATED;
       default:
         assert false;
         return InterfaceType.UNKNOWN;
@@ -136,6 +145,7 @@ public final class A10Configuration extends VendorConfiguration {
     _interfacesLoopback.forEach((num, iface) -> convertInterface(iface, vrf));
     _interfacesEthernet.forEach((num, iface) -> convertInterface(iface, vrf));
     _interfacesVe.forEach((num, iface) -> convertInterface(iface, vrf));
+    _interfacesTrunk.forEach((num, iface) -> convertInterface(iface, vrf));
 
     markConcreteStructure(A10StructureType.INTERFACE);
     return ImmutableList.of(_c);
@@ -179,6 +189,27 @@ public final class A10Configuration extends VendorConfiguration {
                   .map(v -> new SubRange(v.getNumber()))
                   .collect(ImmutableList.toImmutableList())));
     }
+
+    if (iface instanceof TrunkInterface) {
+      TrunkInterface trunkIface = (TrunkInterface) iface;
+      ImmutableSet<String> memberNames =
+          trunkIface.getMembers().stream()
+              .map(A10Configuration::getInterfaceName)
+              .collect(ImmutableSet.toImmutableSet());
+      newIface.setChannelGroupMembers(memberNames);
+      newIface.setDependencies(
+          memberNames.stream()
+              .map(
+                  member ->
+                      new org.batfish.datamodel.Interface.Dependency(
+                          member, org.batfish.datamodel.Interface.DependencyType.AGGREGATE))
+              .collect(ImmutableSet.toImmutableSet()));
+    }
+    TrunkGroup trunkGroup = iface.getTrunkGroup();
+    if (trunkGroup != null) {
+      newIface.setChannelGroup(getInterfaceName(Interface.Type.TRUNK, trunkGroup.getNumber()));
+      // TODO determine if switchport settings need to be propagated to member interfaces
+    }
     newIface.build();
   }
 
@@ -206,6 +237,7 @@ public final class A10Configuration extends VendorConfiguration {
     _interfacesEthernet = ImmutableMap.copyOf(_interfacesEthernet);
     _interfacesLoopback = ImmutableMap.copyOf(_interfacesLoopback);
     _interfacesVe = ImmutableMap.copyOf(_interfacesVe);
+    _interfacesTrunk = ImmutableMap.copyOf(_interfacesTrunk);
     _vlans = ImmutableMap.copyOf(_vlans);
   }
 
@@ -213,6 +245,7 @@ public final class A10Configuration extends VendorConfiguration {
   private String _hostname;
   private Map<Integer, Interface> _interfacesEthernet;
   private Map<Integer, Interface> _interfacesLoopback;
+  private Map<Integer, TrunkInterface> _interfacesTrunk;
   private Map<Integer, Interface> _interfacesVe;
   private Map<Integer, Vlan> _vlans;
   private ConfigurationFormat _vendor;

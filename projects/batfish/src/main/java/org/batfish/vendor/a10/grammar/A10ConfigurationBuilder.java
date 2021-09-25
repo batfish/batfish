@@ -37,6 +37,8 @@ import org.batfish.vendor.a10.representation.A10StructureType;
 import org.batfish.vendor.a10.representation.A10StructureUsage;
 import org.batfish.vendor.a10.representation.Interface;
 import org.batfish.vendor.a10.representation.InterfaceReference;
+import org.batfish.vendor.a10.representation.TrunkGroup;
+import org.batfish.vendor.a10.representation.TrunkInterface;
 import org.batfish.vendor.a10.representation.Vlan;
 
 /** Given a parse tree, builds a {@link A10Configuration}. */
@@ -170,6 +172,23 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   }
 
   @Override
+  public void exitSid_trunk(A10Parser.Sid_trunkContext ctx) {
+    _currentInterface = null;
+  }
+
+  @Override
+  public void enterSid_trunk(A10Parser.Sid_trunkContext ctx) {
+    Optional<Integer> num = toInteger(ctx.num);
+    num.ifPresent(
+        n ->
+            _currentInterface =
+                _c.getInterfacesTrunk().computeIfAbsent(n, number -> new TrunkInterface(n, null)));
+    if (!num.isPresent()) {
+      _currentInterface = new TrunkInterface(-1, null); // dummy
+    }
+  }
+
+  @Override
   public void exitSid_loopback(A10Parser.Sid_loopbackContext ctx) {
     _currentInterface = null;
   }
@@ -191,6 +210,10 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   @Override
   public void exitSidi_address(A10Parser.Sidi_addressContext ctx) {
+    if (_currentInterface.getTrunkGroup() != null) {
+      warn(ctx, "Cannot configure an IP address on a trunk-group member");
+      return;
+    }
     _currentInterface.setIpAddress(toInterfaceAddress(ctx.ip_prefix()));
   }
 
@@ -221,6 +244,45 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   @Override
   public void exitSid_ve(A10Parser.Sid_veContext ctx) {
     _currentInterface = null;
+  }
+
+  @Override
+  public void enterSidl_trunk(A10Parser.Sidl_trunkContext ctx) {
+    TrunkGroup.Type type = TrunkGroup.Type.LACP;
+    toInteger(ctx.num)
+        .ifPresent(
+            n -> {
+              Optional<String> maybeInvalidReason = isTrunkValidForCurrentIface(n, type);
+              if (maybeInvalidReason.isPresent()) {
+                warn(ctx, maybeInvalidReason.get());
+              } else {
+                setCurrentTrunkGroupAndReferences(n, type);
+              }
+            });
+
+    if (_currentTrunkGroup == null) {
+      _currentTrunkGroup = new TrunkGroup(-1, type); // dummy
+    }
+  }
+
+  @Override
+  public void exitSidl_trunk(A10Parser.Sidl_trunkContext ctx) {
+    _currentTrunkGroup = null;
+  }
+
+  @Override
+  public void exitSidl_timeout(A10Parser.Sidl_timeoutContext ctx) {
+    TrunkGroup tg = _currentInterface.getTrunkGroup();
+    if (tg == null) {
+      warn(ctx, "Cannot configure timeout for non-existent trunk-group");
+      return;
+    }
+    tg.setTimeout(toTimeout(ctx.trunk_timeout()));
+  }
+
+  @Override
+  public void exitSidlt_mode(A10Parser.Sidlt_modeContext ctx) {
+    _currentTrunkGroup.setMode(toMode(ctx.trunk_mode()));
   }
 
   @Override
@@ -264,16 +326,151 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   @Override
   public void exitSvd_tagged(A10Parser.Svd_taggedContext ctx) {
-    // TODO enforce interface restrictions (e.g. untagged iface cannot be reused)
+    // TODO enforce interface restrictions
+    //  e.g. untagged iface cannot be reused, cannot attach trunk members directly, etc.
     toInterfaceReferences(ctx.vlan_iface_references(), A10StructureUsage.VLAN_TAGGED_INTERFACE)
         .ifPresent(refs -> _currentVlan.addTagged(refs));
   }
 
   @Override
   public void exitSvd_untagged(A10Parser.Svd_untaggedContext ctx) {
-    // TODO enforce interface restrictions (e.g. untagged iface cannot be reused)
+    // TODO enforce interface restrictions
+    //  e.g. untagged iface cannot be reused, cannot attach trunk members directly, etc.
     toInterfaceReferences(ctx.vlan_iface_references(), A10StructureUsage.VLAN_UNTAGGED_INTERFACE)
         .ifPresent(refs -> _currentVlan.addUntagged(refs));
+  }
+
+  /**
+   * Check if specified trunk number and type are valid for the current interface.
+   *
+   * <p>If so, return {@link Optional#empty()}, otherwise returns a string indicating why it is not
+   * valid.
+   *
+   * <ul>
+   *   If {@link Optional#empty()} is returned, this function indicates that:
+   *   <li>If a trunk group already exists on the interface, it is compatible with the supplied
+   *       number and type.
+   *   <li>If a trunk interface exists with the supplied number, it is compatible with the supplied
+   *       number and type.
+   *   <li>The {@code _currentInterface} can be added to the trunk group.
+   * </ul>
+   */
+  private Optional<String> isTrunkValidForCurrentIface(int num, @Nullable TrunkGroup.Type type) {
+    if (_currentInterface.getIpAddress() != null) {
+      return Optional.of("Cannot add an interface with a configured IP address to a trunk-group");
+    }
+
+    TrunkGroup currentTrunk = _currentInterface.getTrunkGroup();
+    if (currentTrunk != null) {
+      // Existing TrunkGroup for this interface
+      if (currentTrunk.getNumber() != num) {
+        return Optional.of(
+            String.format(
+                "This interface is already a member of trunk-group %s", currentTrunk.getNumber()));
+      } else if (type != null && currentTrunk.getTypeEffective() != type) {
+        return Optional.of(
+            String.format(
+                "Trunk-group already exists as a different type (%s)",
+                currentTrunk.getTypeEffective().toString().toLowerCase()));
+      }
+    } else {
+      // New TrunkGroup for this interface
+      currentTrunk = new TrunkGroup(num, type);
+      TrunkInterface existingTrunk = _c.getInterfacesTrunk().get(num);
+      if (existingTrunk != null
+          && existingTrunk.getTrunkTypeEffective() != currentTrunk.getTypeEffective()) {
+        return Optional.of(
+            String.format(
+                "Trunk-group already exists as a different type (%s)",
+                existingTrunk.getTrunkTypeEffective().toString().toLowerCase()));
+      }
+      // TODO enforce invariants regarding trunk members
+      //  e.g. must not be associated with different VLANs, must have same MTUs at least for LACP,
+      // etc.
+    }
+    return Optional.empty();
+  }
+
+  /**
+   * Set the current trunk-group and add it as the trunk-group for the current interface, creating
+   * it if necessary. Also, perform related datamodel updates, like creating a corresponding trunk
+   * interface if needed and updating its members.
+   */
+  private void setCurrentTrunkGroupAndReferences(int num, @Nullable TrunkGroup.Type type) {
+    _currentTrunkGroup =
+        Optional.ofNullable(_currentInterface.getTrunkGroup())
+            .orElseGet(() -> new TrunkGroup(num, type));
+    _currentInterface.setTrunkGroup(_currentTrunkGroup);
+    TrunkInterface trunkInterface =
+        _c.getInterfacesTrunk().computeIfAbsent(num, n -> new TrunkInterface(n, type));
+    trunkInterface
+        .getMembers()
+        .add(new InterfaceReference(_currentInterface.getType(), _currentInterface.getNumber()));
+  }
+
+  @Override
+  public void enterSid_trunk_group(A10Parser.Sid_trunk_groupContext ctx) {
+    TrunkGroup.Type type = ctx.trunk_type() != null ? toType(ctx.trunk_type()) : null;
+    Optional<Integer> maybeNum = toInteger(ctx.trunk_number());
+    if (!maybeNum.isPresent()) {
+      _currentTrunkGroup = new TrunkGroup(-1, type); // dummy
+      return;
+    }
+
+    int num = maybeNum.get();
+    Optional<String> maybeInvalidReason = isTrunkValidForCurrentIface(num, type);
+    if (maybeInvalidReason.isPresent()) {
+      warn(ctx, maybeInvalidReason.get());
+      _currentTrunkGroup = new TrunkGroup(-1, type); // dummy
+      return;
+    }
+    setCurrentTrunkGroupAndReferences(num, type);
+  }
+
+  @Override
+  public void exitSid_trunk_group(A10Parser.Sid_trunk_groupContext ctx) {
+    _currentTrunkGroup = null;
+  }
+
+  @Override
+  public void exitSidtg_mode(A10Parser.Sidtg_modeContext ctx) {
+    _currentTrunkGroup.setMode(toMode(ctx.trunk_mode()));
+  }
+
+  @Override
+  public void exitSidtg_timeout(A10Parser.Sidtg_timeoutContext ctx) {
+    _currentTrunkGroup.setTimeout(toTimeout(ctx.trunk_timeout()));
+  }
+
+  @Override
+  public void exitSidtg_user_tag(A10Parser.Sidtg_user_tagContext ctx) {
+    toString(ctx, ctx.user_tag()).ifPresent(ut -> _currentTrunkGroup.setUserTag(ut));
+  }
+
+  TrunkGroup.Mode toMode(A10Parser.Trunk_modeContext ctx) {
+    if (ctx.ACTIVE() != null) {
+      return TrunkGroup.Mode.ACTIVE;
+    }
+    assert ctx.PASSIVE() != null;
+    return TrunkGroup.Mode.PASSIVE;
+  }
+
+  TrunkGroup.Timeout toTimeout(A10Parser.Trunk_timeoutContext ctx) {
+    if (ctx.SHORT() != null) {
+      return TrunkGroup.Timeout.SHORT;
+    }
+    assert ctx.LONG() != null;
+    return TrunkGroup.Timeout.LONG;
+  }
+
+  TrunkGroup.Type toType(A10Parser.Trunk_typeContext ctx) {
+    if (ctx.LACP() != null) {
+      return TrunkGroup.Type.LACP;
+    } else if (ctx.LACP_UDLD() != null) {
+      return TrunkGroup.Type.LACP_UDLD;
+    }
+    assert ctx.STATIC() != null;
+    return TrunkGroup.Type.STATIC;
   }
 
   /**
@@ -314,14 +511,25 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   }
 
   Interface.Type toInterfaceType(A10Parser.Vlan_ifaces_rangeContext ctx) {
-    assert ctx.vlan_iface_ethernet_range() != null;
-    return Interface.Type.ETHERNET;
+    if (ctx.vlan_iface_ethernet_range() != null) {
+      return Interface.Type.ETHERNET;
+    }
+    assert ctx.vlan_iface_trunk_range() != null;
+    return Interface.Type.TRUNK;
   }
 
   Optional<SubRange> toSubRange(A10Parser.Vlan_ifaces_rangeContext ctx) {
-    assert ctx.vlan_iface_ethernet_range() != null;
-    Optional<Integer> maybeFrom = toInteger(ctx.vlan_iface_ethernet_range().num);
-    Optional<Integer> maybeTo = toInteger(ctx.vlan_iface_ethernet_range().to);
+    Optional<Integer> maybeFrom;
+    Optional<Integer> maybeTo;
+    if (ctx.vlan_iface_ethernet_range() != null) {
+      maybeFrom = toInteger(ctx.vlan_iface_ethernet_range().num);
+      maybeTo = toInteger(ctx.vlan_iface_ethernet_range().to);
+    } else {
+      assert ctx.vlan_iface_trunk_range() != null;
+      maybeFrom = toInteger(ctx.vlan_iface_trunk_range().num);
+      maybeTo = toInteger(ctx.vlan_iface_trunk_range().to);
+    }
+
     if (!maybeFrom.isPresent() || !maybeTo.isPresent()) {
       // Already warned
       return Optional.empty();
@@ -346,7 +554,19 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
       }
       ifaces.add(new InterfaceReference(Interface.Type.ETHERNET, maybeNum.get()));
     }
+    for (A10Parser.Vlan_iface_trunkContext iface : ctx.vlan_iface_trunk()) {
+      Optional<Integer> maybeNum = toInteger(iface.num);
+      if (!maybeNum.isPresent()) {
+        // Already warned
+        return Optional.empty();
+      }
+      ifaces.add(new InterfaceReference(Interface.Type.TRUNK, maybeNum.get()));
+    }
     return Optional.of(ifaces.build());
+  }
+
+  Optional<Integer> toInteger(A10Parser.Trunk_numberContext ctx) {
+    return toIntegerInSpace(ctx, ctx.uint16(), TRUNK_NUMBER_RANGE, "trunk number");
   }
 
   Optional<Integer> toInteger(A10Parser.Vlan_numberContext ctx) {
@@ -435,6 +655,11 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   }
 
   private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, A10Parser.User_tagContext ctx) {
+    return toStringWithLengthInSpace(messageCtx, ctx.word(), USER_TAG_LENGTH_RANGE, "user-tag");
+  }
+
+  private @Nonnull Optional<String> toString(
       ParserRuleContext messageCtx, A10Parser.Vlan_nameContext ctx) {
     return toStringWithLengthInSpace(messageCtx, ctx.word(), VLAN_NAME_LENGTH_RANGE, "vlan name");
   }
@@ -493,6 +718,8 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
       IntegerSpace.of(Range.closed(0, 10));
   private static final IntegerSpace INTERFACE_NAME_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 63));
+  private static final IntegerSpace TRUNK_NUMBER_RANGE = IntegerSpace.of(Range.closed(1, 4096));
+  private static final IntegerSpace USER_TAG_LENGTH_RANGE = IntegerSpace.of(Range.closed(1, 127));
   private static final IntegerSpace VLAN_NAME_LENGTH_RANGE = IntegerSpace.of(Range.closed(1, 63));
   private static final IntegerSpace VLAN_NUMBER_RANGE = IntegerSpace.of(Range.closed(2, 4094));
 
@@ -501,6 +728,8 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   @Nonnull private A10Configuration _c;
 
   private Interface _currentInterface;
+
+  private TrunkGroup _currentTrunkGroup;
 
   private Vlan _currentVlan;
 
