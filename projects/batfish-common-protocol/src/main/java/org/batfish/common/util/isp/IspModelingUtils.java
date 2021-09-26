@@ -272,28 +272,27 @@ public final class IspModelingUtils {
 
     asnToIspModel.values().forEach(ispModel -> createIspNode(modeledNodes, ispModel, nf, logger));
 
-    // not proceeding if no ISPs were created
-    if (modeledNodes.getConfigurations().isEmpty()) {
-      return modeledNodes;
-    }
-
     boolean needInternet =
         asnToIspModel.values().stream().anyMatch(IspModel::getInternetConnection);
 
-    if (needInternet) {
-      createInternetNode(modeledNodes);
-      Configuration internetConfiguration =
-          modeledNodes.getConfigurations().get(INTERNET_HOST_NAME);
-      for (Configuration configuration : modeledNodes.getConfigurations().values()) {
-        if (configuration == internetConfiguration) {
-          continue;
-        }
-        long ispAsn = getAsnOfIspNode(configuration);
-        if (asnToIspModel.get(ispAsn).getInternetConnection()) {
-          connectIspToInternet(ispAsn, configuration, internetConfiguration, modeledNodes, nf);
-        }
-      }
+    // not proceeding if no ISPs were created or internet is not needed
+    if (modeledNodes.getConfigurations().isEmpty() || !needInternet) {
+      return modeledNodes;
     }
+
+    createInternetNode(modeledNodes);
+    Configuration internet = modeledNodes.getConfigurations().get(INTERNET_HOST_NAME);
+
+    modeledNodes.getConfigurations().values().stream()
+        .filter(c -> c != internet)
+        .forEach(
+            c -> {
+              long ispAsn = getAsnOfIspNode(c);
+              if (asnToIspModel.get(ispAsn).getInternetConnection()) {
+                connectIspToInternet(
+                    ispAsn, asnToIspModel.get(ispAsn), c, internet, modeledNodes, nf);
+              }
+            });
 
     return modeledNodes;
   }
@@ -364,15 +363,63 @@ public final class IspModelingUtils {
   }
 
   /**
-   * Adds connection between internet and the ISP by creating interfaces (in /31 subnet) and eBGP
-   * peers on both.
+   * Adds infrastructure needed to connect the ISP to the Internet: interfaces, traffic filters, bgp
+   * peers.
    */
-  private static void connectIspToInternet(
+  @VisibleForTesting
+  static void connectIspToInternet(
       long ispAsn,
+      IspModel ispModel,
       Configuration ispConfiguration,
       Configuration internetConfiguration,
       ModeledNodes modeledNodes,
       NetworkFactory nf) {
+
+    // add a static route for each additional prefix announced to the internet
+    ispConfiguration
+        .getDefaultVrf()
+        .setStaticRoutes(
+            ImmutableSortedSet.copyOf(
+                ispModel.getAdditionalPrefixesToInternet().stream()
+                    .map(
+                        prefix ->
+                            StaticRoute.builder()
+                                .setNetwork(prefix)
+                                .setNextHopInterface(NULL_INTERFACE_NAME)
+                                .setAdministrativeCost(HIGH_ADMINISTRATIVE_COST)
+                                .build())
+                    .collect(ImmutableSet.toImmutableSet())));
+
+    PrefixSpace prefixSpace = new PrefixSpace();
+    ispModel.getAdditionalPrefixesToInternet().forEach(prefixSpace::addPrefix);
+
+    ispConfiguration
+        .getRoutingPolicies()
+        .put(
+            EXPORT_POLICY_ON_ISP_TO_INTERNET,
+            installRoutingPolicyForIspToInternet(ispConfiguration, prefixSpace));
+
+    IspTrafficFilteringPolicy fp =
+        IspTrafficFilteringPolicy.createFor(ispModel.getTrafficFiltering());
+    IpAccessList toInternet = fp.filterTrafficToInternet();
+    if (toInternet != null) {
+      ispConfiguration.getIpAccessLists().put(toInternet.getName(), toInternet);
+    }
+    IpAccessList fromInternet = fp.filterTrafficFromInternet();
+    if (fromInternet != null) {
+      ispConfiguration.getIpAccessLists().put(fromInternet.getName(), fromInternet);
+    }
+    // Create Internet-facing interface and apply filters.
+    nf.interfaceBuilder()
+        .setOwner(ispConfiguration)
+        .setVrf(ispConfiguration.getDefaultVrf())
+        .setName(ISP_TO_INTERNET_INTERFACE_NAME)
+        .setAddress(LINK_LOCAL_ADDRESS)
+        .setIncomingFilter(fromInternet)
+        .setOutgoingFilter(toInternet)
+        .setType(InterfaceType.PHYSICAL)
+        .build();
+
     Interface internetIface =
         nf.interfaceBuilder()
             .setOwner(internetConfiguration)
@@ -537,21 +584,22 @@ public final class IspModelingUtils {
   }
 
   /**
-   * Creates the {@link Configuration} for the ISP node given an ASN and {@link IspModel}. Inserts
-   * that node and its layer1 edges to the Internet into {@code modeledNodes}.
+   * Creates the {@link Configuration} for the ISP node given an ASN and {@link IspModel} and adds
+   * the infrastructure (interfaces, traffic filters, L1 edges) needed to connect the ISP to the
+   * snapshot. Also, inserts that node and new edges into {@code modeledNodes}.
    */
   @VisibleForTesting
   static void createIspNode(
-      ModeledNodes modeledNodes, IspModel ispInfo, NetworkFactory nf, BatfishLogger logger) {
-    if (ispInfo.getRemotes().isEmpty()) {
-      logger.warnf("ISP information for ASN '%s' is not correct", ispInfo.getAsn());
+      ModeledNodes modeledNodes, IspModel ispModel, NetworkFactory nf, BatfishLogger logger) {
+    if (ispModel.getRemotes().isEmpty()) {
+      logger.warnf("ISP information for ASN '%s' is not correct", ispModel.getAsn());
       return;
     }
 
     Configuration ispConfiguration =
         Configuration.builder()
-            .setHostname(ispInfo.getHostname())
-            .setHumanName(ispInfo.getName())
+            .setHostname(ispModel.getHostname())
+            .setHumanName(ispModel.getName())
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
             .setDeviceModel(DeviceModel.BATFISH_ISP)
             .build();
@@ -567,16 +615,16 @@ public final class IspModelingUtils {
     // using the lowest IP among the remote InterfaceAddresses as the router ID
     BgpProcess bgpProcess =
         makeBgpProcess(
-            ispInfo.getRemotes().stream()
+            ispModel.getRemotes().stream()
                 .map(Remote::getIspIfaceIp)
                 .min(Ip::compareTo)
                 .orElse(null),
             ispConfiguration.getDefaultVrf());
     bgpProcess.setMultipathEbgp(true);
 
-    // Get the Network-facing traffic filters out and add them all to the node.
+    // Get the network-facing traffic filters out and add them all to the node.
     IspTrafficFilteringPolicy fp =
-        IspTrafficFilteringPolicy.createFor(ispInfo.getTrafficFiltering());
+        IspTrafficFilteringPolicy.createFor(ispModel.getTrafficFiltering());
     IpAccessList toNetwork = fp.filterTrafficToNetwork();
     if (toNetwork != null) {
       ispConfiguration.getIpAccessLists().put(toNetwork.getName(), toNetwork);
@@ -586,7 +634,7 @@ public final class IspModelingUtils {
       ispConfiguration.getIpAccessLists().put(fromNetwork.getName(), fromNetwork);
     }
 
-    ispInfo
+    ispModel
         .getRemotes()
         .forEach(
             remote -> {
@@ -609,51 +657,6 @@ public final class IspModelingUtils {
                   remote.getRemoteIfaceName());
               addBgpPeerToIsp(remote.getRemoteBgpPeerConfig(), ispInterface.getName(), bgpProcess);
             });
-
-    if (ispInfo.getInternetConnection()) {
-      // add a static route for each additional prefix announced to the internet
-      ispConfiguration
-          .getDefaultVrf()
-          .setStaticRoutes(
-              ImmutableSortedSet.copyOf(
-                  ispInfo.getAdditionalPrefixesToInternet().stream()
-                      .map(
-                          prefix ->
-                              StaticRoute.builder()
-                                  .setNetwork(prefix)
-                                  .setNextHopInterface(NULL_INTERFACE_NAME)
-                                  .setAdministrativeCost(HIGH_ADMINISTRATIVE_COST)
-                                  .build())
-                      .collect(ImmutableSet.toImmutableSet())));
-
-      PrefixSpace prefixSpace = new PrefixSpace();
-      ispInfo.getAdditionalPrefixesToInternet().forEach(prefixSpace::addPrefix);
-
-      ispConfiguration
-          .getRoutingPolicies()
-          .put(
-              EXPORT_POLICY_ON_ISP_TO_INTERNET,
-              installRoutingPolicyForIspToInternet(ispConfiguration, prefixSpace));
-
-      IpAccessList toInternet = fp.filterTrafficToInternet();
-      if (toInternet != null) {
-        ispConfiguration.getIpAccessLists().put(toInternet.getName(), toInternet);
-      }
-      IpAccessList fromInternet = fp.filterTrafficFromInternet();
-      if (fromInternet != null) {
-        ispConfiguration.getIpAccessLists().put(fromInternet.getName(), fromInternet);
-      }
-      // Create Internet-facing interface and apply filters.
-      nf.interfaceBuilder()
-          .setOwner(ispConfiguration)
-          .setVrf(ispConfiguration.getDefaultVrf())
-          .setName(ISP_TO_INTERNET_INTERFACE_NAME)
-          .setAddress(LINK_LOCAL_ADDRESS)
-          .setIncomingFilter(fromInternet)
-          .setOutgoingFilter(toInternet)
-          .setType(InterfaceType.PHYSICAL)
-          .build();
-    }
 
     modeledNodes.addConfiguration(ispConfiguration);
   }

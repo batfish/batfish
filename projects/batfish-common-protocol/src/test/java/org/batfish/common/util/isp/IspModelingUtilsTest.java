@@ -16,6 +16,7 @@ import static org.batfish.common.util.isp.IspModelingUtils.ISP_TO_INTERNET_INTER
 import static org.batfish.common.util.isp.IspModelingUtils.LINK_LOCAL_ADDRESS;
 import static org.batfish.common.util.isp.IspModelingUtils.LINK_LOCAL_IP;
 import static org.batfish.common.util.isp.IspModelingUtils.addBgpPeerToIsp;
+import static org.batfish.common.util.isp.IspModelingUtils.connectIspToInternet;
 import static org.batfish.common.util.isp.IspModelingUtils.createInternetNode;
 import static org.batfish.common.util.isp.IspModelingUtils.createIspNode;
 import static org.batfish.common.util.isp.IspModelingUtils.getAdvertiseBgpStatement;
@@ -52,6 +53,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
@@ -129,6 +131,7 @@ public class IspModelingUtilsTest {
   private static final NetworkFactory _nf = new NetworkFactory();
   private Configuration _snapshotHost;
   private BgpActivePeerConfig _snapshotActivePeer;
+  private IspModel _ispModel;
 
   @Before
   public void setup() {
@@ -141,6 +144,19 @@ public class IspModelingUtilsTest {
             .setLocalAs(_snapshotAsn)
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .setBgpProcess(_snapshotHost.getDefaultVrf().getBgpProcess())
+            .build();
+    _ispModel =
+        IspModel.builder()
+            .setAsn(_ispAsn)
+            .setName(_ispName)
+            .setInternetConnection(false)
+            .setRemotes(
+                new Remote(
+                    _snapshotHostname,
+                    _snapshotInterfaceName,
+                    ConcreteInterfaceAddress.create(_ispIp, 24),
+                    _snapshotActivePeer))
+            .setTrafficFiltering(IspTrafficFiltering.blockReservedAddressesAtInternet())
             .build();
   }
 
@@ -337,22 +353,9 @@ public class IspModelingUtilsTest {
 
   @Test
   public void testCreateIspNode() {
-    InterfaceAddress ispIfaceAddress = ConcreteInterfaceAddress.create(_snapshotIp, 24);
-    IspModel ispModel =
-        IspModel.builder()
-            .setAsn(_ispAsn)
-            .setName(_ispName)
-            .setRemotes(
-                new Remote(
-                    _snapshotHostname,
-                    _snapshotInterfaceName,
-                    ispIfaceAddress,
-                    _snapshotActivePeer))
-            .setTrafficFiltering(IspTrafficFiltering.blockReservedAddressesAtInternet())
-            .build();
-
     ModeledNodes modeledNodes = new ModeledNodes();
-    createIspNode(modeledNodes, ispModel, new NetworkFactory(), new BatfishLogger("output", false));
+    createIspNode(
+        modeledNodes, _ispModel, new NetworkFactory(), new BatfishLogger("output", false));
     Configuration ispConfiguration = modeledNodes.getConfigurations().get(_ispName);
 
     assertThat(
@@ -362,16 +365,9 @@ public class IspModelingUtilsTest {
             hasDeviceType(equalTo(DeviceType.ISP)),
             hasInterface(
                 ispToRemoteInterfaceName(_snapshotHostname, _snapshotInterfaceName),
-                hasAllAddresses(equalTo(ImmutableSet.of(ispIfaceAddress)))),
-            hasIpAccessList(FROM_INTERNET_ACL_NAME, any(IpAccessList.class)),
-            hasIpAccessList(TO_INTERNET_ACL_NAME, any(IpAccessList.class)),
-            hasInterface(ISP_TO_INTERNET_INTERFACE_NAME, any(Interface.class)),
+                hasAllAddresses(
+                    equalTo(ImmutableSet.of(ConcreteInterfaceAddress.create(_ispIp, 24))))),
             hasVrf(DEFAULT_VRF_NAME, hasBgpProcess(allOf(hasMultipathEbgp(true))))));
-    Interface toInternet = ispConfiguration.getAllInterfaces().get(ISP_TO_INTERNET_INTERFACE_NAME);
-    assertThat(toInternet.getIncomingFilter(), notNullValue());
-    assertThat(toInternet.getIncomingFilter().getName(), equalTo(FROM_INTERNET_ACL_NAME));
-    assertThat(toInternet.getOutgoingFilter(), notNullValue());
-    assertThat(toInternet.getOutgoingFilter().getName(), equalTo(TO_INTERNET_ACL_NAME));
 
     // compute the reverse config
     BgpProcess bgpProcess = testBgpProcess(Ip.ZERO);
@@ -494,45 +490,123 @@ public class IspModelingUtilsTest {
         logger.getHistory().toString(300), equalTo("ISP information for ASN '1' is not correct"));
   }
 
+  /** Basic ISP to Internet connectivity, without additional prefixes */
   @Test
-  public void testCreateIspNode_noInternet() {
-    ConcreteInterfaceAddress ispIfaceAddress = ConcreteInterfaceAddress.create(_ispIp, 30);
-    IspModel ispModel =
-        IspModel.builder()
-            .setAsn(_ispAsn)
-            .setName(_ispName)
-            .setInternetConnection(false)
-            .setRemotes(new Remote("testNode", "testIface", ispIfaceAddress, _snapshotActivePeer))
-            .setTrafficFiltering(IspTrafficFiltering.blockReservedAddressesAtInternet())
-            .build();
-
+  public void testConnectIspToInternet() {
     ModeledNodes modeledNodes = new ModeledNodes();
-    createIspNode(modeledNodes, ispModel, new NetworkFactory(), new BatfishLogger("output", false));
+    createIspNode(modeledNodes, _ispModel, _nf, new BatfishLogger("output", false));
+    createInternetNode(modeledNodes);
+
+    Configuration internet = modeledNodes.getConfigurations().get(INTERNET_HOST_NAME);
     Configuration ispConfiguration = modeledNodes.getConfigurations().get(_ispName);
 
-    // internet-related bits should be missing
-    assertFalse(ispConfiguration.getIpAccessLists().containsKey(FROM_INTERNET_ACL_NAME));
-    assertFalse(ispConfiguration.getAllInterfaces().containsKey(ISP_TO_INTERNET_INTERFACE_NAME));
-    assertFalse(ispConfiguration.getIpAccessLists().containsKey(TO_INTERNET_ACL_NAME));
-
-    // network (snapshot) related bits should still be present
+    connectIspToInternet(_ispAsn, _ispModel, ispConfiguration, internet, modeledNodes, _nf);
     assertThat(
         ispConfiguration,
         allOf(
-            hasHostname(_ispName),
-            hasDeviceType(equalTo(DeviceType.ISP)),
+            hasIpAccessList(FROM_INTERNET_ACL_NAME, any(IpAccessList.class)),
+            hasIpAccessList(TO_INTERNET_ACL_NAME, any(IpAccessList.class)),
+            hasInterface(ISP_TO_INTERNET_INTERFACE_NAME, any(Interface.class))));
+    Interface toInternet = ispConfiguration.getAllInterfaces().get(ISP_TO_INTERNET_INTERFACE_NAME);
+    assertThat(toInternet.getIncomingFilter(), notNullValue());
+    assertThat(toInternet.getIncomingFilter().getName(), equalTo(FROM_INTERNET_ACL_NAME));
+    assertThat(toInternet.getOutgoingFilter(), notNullValue());
+    assertThat(toInternet.getOutgoingFilter().getName(), equalTo(TO_INTERNET_ACL_NAME));
+
+    assertThat(
+        internet,
+        allOf(
+            hasHostname(IspModelingUtils.INTERNET_HOST_NAME),
             hasInterface(
-                ispToRemoteInterfaceName("testNode", "testIface"),
-                hasAllAddresses(equalTo(ImmutableSet.of(ispIfaceAddress)))),
-            hasVrf(DEFAULT_VRF_NAME, hasBgpProcess(allOf(hasMultipathEbgp(true))))));
+                internetToIspInterfaceName(_ispName),
+                hasAllAddresses(equalTo(ImmutableSet.of(LINK_LOCAL_ADDRESS)))),
+            hasVrf(
+                DEFAULT_VRF_NAME,
+                hasBgpProcess(
+                    hasInterfaceNeighbors(
+                        equalTo(
+                            ImmutableMap.of(
+                                internetToIspInterfaceName(_ispName),
+                                BgpUnnumberedPeerConfig.builder()
+                                    .setPeerInterface(internetToIspInterfaceName(_ispName))
+                                    .setRemoteAs(_ispAsn)
+                                    .setLocalIp(LINK_LOCAL_IP)
+                                    .setLocalAs(IspModelingUtils.INTERNET_AS)
+                                    .setIpv4UnicastAddressFamily(
+                                        Ipv4UnicastAddressFamily.builder()
+                                            .setExportPolicy(
+                                                IspModelingUtils.EXPORT_POLICY_ON_INTERNET)
+                                            .build())
+                                    .build())))))));
+
+    ImmutableSet<InterfaceAddress> interfaceAddresses =
+        ispConfiguration.getAllInterfaces().values().stream()
+            .flatMap(iface -> iface.getAllAddresses().stream())
+            .collect(ImmutableSet.toImmutableSet());
+    assertThat(
+        interfaceAddresses,
+        equalTo(ImmutableSet.of(LINK_LOCAL_ADDRESS, ConcreteInterfaceAddress.create(_ispIp, 24))));
+
+    assertThat(
+        ispConfiguration,
+        hasVrf(
+            DEFAULT_VRF_NAME,
+            hasBgpProcess(
+                allOf(
+                    hasNeighbors(
+                        equalTo(
+                            ImmutableMap.of(
+                                _snapshotIp,
+                                BgpActivePeerConfig.builder()
+                                    .setPeerAddress(_snapshotIp)
+                                    .setRemoteAs(_snapshotAsn)
+                                    .setLocalIp(_ispIp)
+                                    .setLocalAs(_ispAsn)
+                                    .setIpv4UnicastAddressFamily(
+                                        Ipv4UnicastAddressFamily.builder()
+                                            .setExportPolicy(EXPORT_POLICY_ON_ISP_TO_CUSTOMERS)
+                                            .build())
+                                    .build()))),
+                    hasInterfaceNeighbors(
+                        equalTo(
+                            ImmutableMap.of(
+                                ISP_TO_INTERNET_INTERFACE_NAME,
+                                BgpUnnumberedPeerConfig.builder()
+                                    .setPeerInterface(ISP_TO_INTERNET_INTERFACE_NAME)
+                                    .setRemoteAs(IspModelingUtils.INTERNET_AS)
+                                    .setLocalIp(LINK_LOCAL_IP)
+                                    .setLocalAs(_ispAsn)
+                                    .setIpv4UnicastAddressFamily(
+                                        Ipv4UnicastAddressFamily.builder()
+                                            .setExportPolicy(EXPORT_POLICY_ON_ISP_TO_INTERNET)
+                                            .build())
+                                    .build())))))));
+
+    assertThat(
+        ispConfiguration.getRoutingPolicies(),
+        hasEntry(
+            EXPORT_POLICY_ON_ISP_TO_INTERNET,
+            installRoutingPolicyForIspToInternet(ispConfiguration, new PrefixSpace())));
+
+    Layer1Node internetLayer1 =
+        new Layer1Node(INTERNET_HOST_NAME, internetToIspInterfaceName(_ispName));
+    Layer1Node ispLayer1 = new Layer1Node(_ispName, ISP_TO_INTERNET_INTERFACE_NAME);
+
+    assertThat(
+        modeledNodes.getLayer1Edges(),
+        hasItems(
+            new Layer1Edge(internetLayer1, ispLayer1), new Layer1Edge(ispLayer1, internetLayer1)));
   }
 
-  /** Test that null static routes are created for additional announcements to the Internet */
+  /**
+   * Test that infrastructure for additional announcements is created when connecting ISPs to the
+   * Internet.
+   */
   @Test
-  public void testCreateIspNode_additionalAnnouncements() {
+  public void testConnectIspToInternet_additionalAnnouncements() {
     Set<Prefix> additionalPrefixes =
         ImmutableSet.of(Prefix.parse("10.1.1.1/32"), Prefix.parse("20.2.2.2/32"));
-    IspModel ispInfo =
+    IspModel ispModel =
         IspModel.builder()
             .setAsn(_ispAsn)
             .setRemotes(
@@ -543,15 +617,21 @@ public class IspModelingUtilsTest {
                     _snapshotActivePeer))
             .setAdditionalPrefixesToInternet(additionalPrefixes)
             .build();
+
     ModeledNodes modeledNodes = new ModeledNodes();
-    createIspNode(modeledNodes, ispInfo, new NetworkFactory(), new BatfishLogger("debug", false));
+    createIspNode(modeledNodes, ispModel, _nf, new BatfishLogger("debug", false));
+    createInternetNode(modeledNodes);
+
+    Configuration internet = modeledNodes.getConfigurations().get(INTERNET_HOST_NAME);
     Configuration ispConfiguration = modeledNodes.getConfigurations().get(_ispName);
+
+    connectIspToInternet(_ispAsn, ispModel, ispConfiguration, internet, modeledNodes, _nf);
 
     assertThat(
         ispConfiguration.getDefaultVrf().getStaticRoutes(),
         equalTo(
             ImmutableSortedSet.copyOf(
-                ispInfo.getAdditionalPrefixesToInternet().stream()
+                ispModel.getAdditionalPrefixesToInternet().stream()
                     .map(
                         prefix ->
                             StaticRoute.testBuilder()
@@ -560,6 +640,14 @@ public class IspModelingUtilsTest {
                                 .setAdministrativeCost(HIGH_ADMINISTRATIVE_COST)
                                 .build())
                     .collect(ImmutableSet.toImmutableSet()))));
+
+    PrefixSpace prefixSpace = new PrefixSpace();
+    ispModel.getAdditionalPrefixesToInternet().forEach(prefixSpace::addPrefix);
+    assertThat(
+        ispConfiguration.getRoutingPolicies(),
+        hasEntry(
+            EXPORT_POLICY_ON_ISP_TO_INTERNET,
+            installRoutingPolicyForIspToInternet(ispConfiguration, prefixSpace)));
   }
 
   @Test
@@ -809,99 +897,10 @@ public class IspModelingUtilsTest {
                     IspFilter.ALLOW_ALL)),
             new BatfishLogger("output", false),
             new Warnings());
-    Map<String, Configuration> configurations = modeledNodes.getConfigurations();
 
-    assertThat(configurations, hasKey(IspModelingUtils.INTERNET_HOST_NAME));
-    Configuration internetNode = configurations.get(IspModelingUtils.INTERNET_HOST_NAME);
-
-    assertThat(
-        internetNode,
-        allOf(
-            hasHostname(IspModelingUtils.INTERNET_HOST_NAME),
-            hasInterface(
-                internetToIspInterfaceName(_ispName),
-                hasAllAddresses(equalTo(ImmutableSet.of(LINK_LOCAL_ADDRESS)))),
-            hasVrf(
-                DEFAULT_VRF_NAME,
-                hasBgpProcess(
-                    hasInterfaceNeighbors(
-                        equalTo(
-                            ImmutableMap.of(
-                                internetToIspInterfaceName(_ispName),
-                                BgpUnnumberedPeerConfig.builder()
-                                    .setPeerInterface(internetToIspInterfaceName(_ispName))
-                                    .setRemoteAs(_ispAsn)
-                                    .setLocalIp(LINK_LOCAL_IP)
-                                    .setLocalAs(IspModelingUtils.INTERNET_AS)
-                                    .setIpv4UnicastAddressFamily(
-                                        Ipv4UnicastAddressFamily.builder()
-                                            .setExportPolicy(
-                                                IspModelingUtils.EXPORT_POLICY_ON_INTERNET)
-                                            .build())
-                                    .build())))))));
-
-    assertThat(configurations, hasKey(_ispName));
-    Configuration ispNode = configurations.get(_ispName);
-
-    ImmutableSet<InterfaceAddress> interfaceAddresses =
-        ispNode.getAllInterfaces().values().stream()
-            .flatMap(iface -> iface.getAllAddresses().stream())
-            .collect(ImmutableSet.toImmutableSet());
-    assertThat(
-        interfaceAddresses,
-        equalTo(ImmutableSet.of(LINK_LOCAL_ADDRESS, ConcreteInterfaceAddress.create(_ispIp, 24))));
-
-    assertThat(
-        ispNode,
-        hasVrf(
-            DEFAULT_VRF_NAME,
-            hasBgpProcess(
-                allOf(
-                    hasNeighbors(
-                        equalTo(
-                            ImmutableMap.of(
-                                _snapshotIp,
-                                BgpActivePeerConfig.builder()
-                                    .setPeerAddress(_snapshotIp)
-                                    .setRemoteAs(_snapshotAsn)
-                                    .setLocalIp(_ispIp)
-                                    .setLocalAs(_ispAsn)
-                                    .setIpv4UnicastAddressFamily(
-                                        Ipv4UnicastAddressFamily.builder()
-                                            .setExportPolicy(EXPORT_POLICY_ON_ISP_TO_CUSTOMERS)
-                                            .build())
-                                    .build()))),
-                    hasInterfaceNeighbors(
-                        equalTo(
-                            ImmutableMap.of(
-                                ISP_TO_INTERNET_INTERFACE_NAME,
-                                BgpUnnumberedPeerConfig.builder()
-                                    .setPeerInterface(ISP_TO_INTERNET_INTERFACE_NAME)
-                                    .setRemoteAs(IspModelingUtils.INTERNET_AS)
-                                    .setLocalIp(LINK_LOCAL_IP)
-                                    .setLocalAs(_ispAsn)
-                                    .setIpv4UnicastAddressFamily(
-                                        Ipv4UnicastAddressFamily.builder()
-                                            .setExportPolicy(EXPORT_POLICY_ON_ISP_TO_INTERNET)
-                                            .build())
-                                    .build())))))));
-
-    Layer1Node internetLayer1 =
-        new Layer1Node(INTERNET_HOST_NAME, internetToIspInterfaceName(_ispName));
-    Layer1Node ispLayer1Iface0 =
-        new Layer1Node(
-            _ispName, ispToRemoteInterfaceName(_snapshotHostname, _snapshotInterfaceName));
-    Layer1Node ispLayer1Iface2 = new Layer1Node(_ispName, ISP_TO_INTERNET_INTERFACE_NAME);
-    Layer1Node borderLayer1 = new Layer1Node(_snapshotHostname, _snapshotInterfaceName);
-
-    assertThat(
-        modeledNodes.getLayer1Edges(),
-        equalTo(
-            ImmutableSet.of(
-                new Layer1Edge(borderLayer1, ispLayer1Iface0),
-                new Layer1Edge(ispLayer1Iface0, borderLayer1),
-                new Layer1Edge(internetLayer1, ispLayer1Iface2),
-                new Layer1Edge(ispLayer1Iface2, internetLayer1))));
+    // assert that nodes are created. their content is tested with the helper functions.
+    assertTrue(modeledNodes.getConfigurations().containsKey(INTERNET_HOST_NAME));
+    assertTrue(modeledNodes.getConfigurations().containsKey(_ispName));
   }
 
   /** Check that the Internet node is not created when no ISP connects to it */
@@ -926,6 +925,7 @@ public class IspModelingUtilsTest {
             new Warnings());
 
     assertFalse(modeledNodes.getConfigurations().containsKey(INTERNET_HOST_NAME));
+    assertTrue(modeledNodes.getConfigurations().containsKey(_ispName));
   }
 
   /**
