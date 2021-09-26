@@ -672,7 +672,7 @@ public class IspModelingUtilsTest {
   public void testPopulateIspModels_internetConnection() {
     Map<Long, IspModel> inputMap = Maps.newHashMap();
     IspModelingUtils.populateIspModels(
-        _configuration,
+        _snapshotHost,
         ImmutableSet.of("interface"),
         ImmutableList.of(),
         ImmutableList.of(),
@@ -909,7 +909,7 @@ public class IspModelingUtilsTest {
   public void testGetInternetAndIspNodes_noInternet() {
     ModeledNodes modeledNodes =
         IspModelingUtils.getInternetAndIspNodes(
-            ImmutableMap.of(_configuration.getHostname(), _configuration),
+            ImmutableMap.of(_snapshotHostname, _snapshotHost),
             ImmutableList.of(
                 new IspConfiguration(
                     ImmutableList.of(
@@ -942,7 +942,7 @@ public class IspModelingUtilsTest {
     String ispName2 = getDefaultIspNodeName(ispAsn2);
     _nf.interfaceBuilder()
         .setName(snapshotInterface2)
-        .setOwner(_configuration)
+        .setOwner(_snapshotHost)
         .setAddress(ConcreteInterfaceAddress.create(snapshotIp2, 24))
         .build();
     BgpActivePeerConfig.builder()
@@ -951,21 +951,19 @@ public class IspModelingUtilsTest {
         .setLocalIp(snapshotIp2)
         .setLocalAs(_snapshotAsn)
         .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
-        .setBgpProcess(_configuration.getDefaultVrf().getBgpProcess())
+        .setBgpProcess(_snapshotHost.getDefaultVrf().getBgpProcess())
         .build();
 
     ModeledNodes modeledNodes =
         IspModelingUtils.getInternetAndIspNodes(
-            ImmutableMap.of(_configuration.getHostname(), _configuration),
+            ImmutableMap.of(_snapshotHostname, _snapshotHost),
             ImmutableList.of(
                 new IspConfiguration(
                     ImmutableList.of(
                         new BorderInterfaceInfo(
-                            NodeInterfacePair.of(
-                                _configuration.getHostname(), _snapshotInterfaceName)),
+                            NodeInterfacePair.of(_snapshotHostname, _snapshotInterfaceName)),
                         new BorderInterfaceInfo(
-                            NodeInterfacePair.of(
-                                _configuration.getHostname(), snapshotInterface2))),
+                            NodeInterfacePair.of(_snapshotHostname, snapshotInterface2))),
                     IspFilter.ALLOW_ALL,
                     ImmutableList.of(
                         new IspNodeInfo(
@@ -998,16 +996,14 @@ public class IspModelingUtilsTest {
         equalTo(
             ImmutableSet.of(
                 ISP_TO_INTERNET_INTERFACE_NAME,
-                ispToRemoteInterfaceName(_configuration.getHostname(), _snapshotInterfaceName))));
+                ispToRemoteInterfaceName(_snapshotHostname, _snapshotInterfaceName))));
 
     // ISP2 connects only to the snapshot
     assertTrue(modeledNodes.getConfigurations().containsKey(ispName2));
     Configuration ispNode2 = modeledNodes.getConfigurations().get(ispName2);
     assertThat(
         ispNode2.getAllInterfaces().keySet(),
-        equalTo(
-            ImmutableSet.of(
-                ispToRemoteInterfaceName(_configuration.getHostname(), snapshotInterface2))));
+        equalTo(ImmutableSet.of(ispToRemoteInterfaceName(_snapshotHostname, snapshotInterface2))));
   }
 
   @Test
