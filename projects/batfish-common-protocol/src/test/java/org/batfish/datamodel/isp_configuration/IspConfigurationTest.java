@@ -80,10 +80,11 @@ public class IspConfigurationTest {
     assertThat(
         c.getIspNodeInfos(),
         contains(
-            new IspNodeInfo(65401, "ISP-A", ImmutableList.of(), IspTrafficFiltering.none()),
+            new IspNodeInfo(65401, "ISP-A", true, ImmutableList.of(), IspTrafficFiltering.none()),
             new IspNodeInfo(
                 65402,
                 "ISP-B",
+                true,
                 ImmutableList.of(),
                 IspTrafficFiltering.blockReservedAddressesAtInternet())));
   }

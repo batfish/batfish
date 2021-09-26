@@ -28,11 +28,18 @@ final class IspModel {
   static final class Builder {
     IspModel build() {
       checkArgument(_asn != null, "Missing ASN");
+      boolean internetConnection = firstNonNull(_internetConnection, true);
+      Set<Prefix> internetAnnouncements =
+          firstNonNull(_additionalPrefixesToInternet, ImmutableSet.of());
+      checkArgument(
+          internetConnection || internetAnnouncements.isEmpty(),
+          "Internet announcements should not be provided when internet connection is false");
       return new IspModel(
           _asn,
           firstNonNull(_remotes, ImmutableList.of()),
           _name,
-          firstNonNull(_additionalPrefixesToInternet, ImmutableSet.of()),
+          internetConnection,
+          internetAnnouncements,
           firstNonNull(_trafficFiltering, IspTrafficFiltering.none()));
     }
 
@@ -43,6 +50,11 @@ final class IspModel {
 
     public Builder setName(@Nullable String name) {
       _name = name;
+      return this;
+    }
+
+    public Builder setInternetConnection(boolean internetConnection) {
+      _internetConnection = internetConnection;
       return this;
     }
 
@@ -77,6 +89,7 @@ final class IspModel {
     private @Nullable Long _asn;
     private @Nullable String _name;
     private @Nullable List<Remote> _remotes;
+    private Boolean _internetConnection;
     private @Nullable Set<Prefix> _additionalPrefixesToInternet;
     private @Nullable IspTrafficFiltering _trafficFiltering;
   }
@@ -168,6 +181,7 @@ final class IspModel {
   private final long _asn;
   private final @Nullable String _name;
   private @Nonnull List<Remote> _remotes;
+  private final boolean _internetConnection;
   private final @Nonnull Set<Prefix> _additionalPrefixesToInternet;
   private final @Nonnull IspTrafficFiltering _trafficFiltering;
 
@@ -175,11 +189,13 @@ final class IspModel {
       long asn,
       List<Remote> remotes,
       @Nullable String name,
+      boolean internetConnection,
       Set<Prefix> additionalPrefixesToInternet,
       IspTrafficFiltering trafficFiltering) {
     _asn = asn;
     _remotes = remotes;
     _name = name;
+    _internetConnection = internetConnection;
     _additionalPrefixesToInternet = ImmutableSet.copyOf(additionalPrefixesToInternet);
     _trafficFiltering = trafficFiltering;
   }
@@ -242,6 +258,10 @@ final class IspModel {
   @Nullable
   public String getName() {
     return _name;
+  }
+
+  public boolean getInternetConnection() {
+    return _internetConnection;
   }
 
   /**

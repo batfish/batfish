@@ -19,30 +19,39 @@ import org.batfish.datamodel.isp_configuration.traffic_filtering.IspTrafficFilte
 public class IspNodeInfo {
   private static final String PROP_ASN = "asn";
   private static final String PROP_NAME = "name";
+  private static final String PROP_CONNECT_TO_INTERNET = "connectToInternet";
   private static final String PROP_ADDITIONAL_ANNOUNCEMENTS_TO_INTERNET =
       "additionalAnnouncementsToInternet";
   private static final String PROP_TRAFFIC_FILTERING = "trafficFiltering";
 
   private final long _asn;
   @Nonnull private final String _name;
+  private final boolean _internetConnection;
   @Nonnull private final List<IspAnnouncement> _additionalAnnouncement;
   @Nullable private final IspTrafficFiltering _trafficFiltering;
 
   public IspNodeInfo(long asn, String name) {
-    this(asn, name, ImmutableList.of(), null);
+    this(asn, name, true, ImmutableList.of(), null);
   }
 
   public IspNodeInfo(long asn, String name, List<IspAnnouncement> additionalAnnouncements) {
-    this(asn, name, additionalAnnouncements, null);
+    this(asn, name, true, additionalAnnouncements, null);
   }
 
   public IspNodeInfo(
       long asn,
       String name,
+      boolean internetConnection,
       List<IspAnnouncement> additionalAnnouncements,
       @Nullable IspTrafficFiltering trafficFiltering) {
+    checkArgument(
+        internetConnection || additionalAnnouncements.isEmpty(),
+        "%s should not be provided when %s is false",
+        PROP_ADDITIONAL_ANNOUNCEMENTS_TO_INTERNET,
+        PROP_CONNECT_TO_INTERNET);
     _asn = asn;
     _name = name;
+    _internetConnection = internetConnection;
     _additionalAnnouncement = additionalAnnouncements;
     _trafficFiltering = trafficFiltering;
   }
@@ -58,19 +67,22 @@ public class IspNodeInfo {
     IspNodeInfo that = (IspNodeInfo) o;
     return _asn == that._asn
         && _name.equals(that._name)
+        && _internetConnection == that._internetConnection
         && _additionalAnnouncement.equals(that._additionalAnnouncement)
         && Objects.equals(_trafficFiltering, that._trafficFiltering);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_asn, _name, _additionalAnnouncement);
+    return Objects.hash(
+        _asn, _name, _internetConnection, _additionalAnnouncement, _trafficFiltering);
   }
 
   @JsonCreator
   private static IspNodeInfo jsonCreator(
       @JsonProperty(PROP_ASN) @Nullable Long asn,
       @JsonProperty(PROP_NAME) @Nullable String name,
+      @JsonProperty(PROP_CONNECT_TO_INTERNET) @Nullable Boolean connectToInternet,
       @JsonProperty(PROP_ADDITIONAL_ANNOUNCEMENTS_TO_INTERNET) @Nullable
           List<IspAnnouncement> additionalAnnouncements,
       @JsonProperty(PROP_TRAFFIC_FILTERING) @Nullable IspTrafficFiltering trafficFiltering) {
@@ -78,6 +90,7 @@ public class IspNodeInfo {
     return new IspNodeInfo(
         asn,
         firstNonNull(name, getDefaultIspNodeName(asn)),
+        firstNonNull(connectToInternet, true),
         firstNonNull(additionalAnnouncements, ImmutableList.of()),
         trafficFiltering);
   }
@@ -91,6 +104,11 @@ public class IspNodeInfo {
   @Nonnull
   public String getName() {
     return _name;
+  }
+
+  @JsonProperty(PROP_CONNECT_TO_INTERNET)
+  public boolean getInternetConnection() {
+    return _internetConnection;
   }
 
   @JsonProperty(PROP_ADDITIONAL_ANNOUNCEMENTS_TO_INTERNET)

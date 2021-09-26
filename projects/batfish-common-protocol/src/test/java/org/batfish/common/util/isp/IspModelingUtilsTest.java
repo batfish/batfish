@@ -495,6 +495,39 @@ public class IspModelingUtilsTest {
         logger.getHistory().toString(300), equalTo("ISP information for ASN '1' is not correct"));
   }
 
+  @Test
+  public void testCreateIspNode_noInternet() {
+    ConcreteInterfaceAddress ispIfaceAddress = ConcreteInterfaceAddress.create(_ispIp, 30);
+    IspModel ispModel =
+        IspModel.builder()
+            .setAsn(_ispAsn)
+            .setName(_ispName)
+            .setInternetConnection(false)
+            .setRemotes(new Remote("testNode", "testIface", ispIfaceAddress, _snapshotActivePeer))
+            .setTrafficFiltering(IspTrafficFiltering.blockReservedAddressesAtInternet())
+            .build();
+
+    ModeledNodes modeledNodes = new ModeledNodes();
+    createIspNode(modeledNodes, ispModel, new NetworkFactory(), new BatfishLogger("output", false));
+    Configuration ispConfiguration = modeledNodes.getConfigurations().get(_ispName);
+
+    // internet-related bits should be missing
+    assertFalse(ispConfiguration.getIpAccessLists().containsKey(FROM_INTERNET_ACL_NAME));
+    assertFalse(ispConfiguration.getAllInterfaces().containsKey(ISP_TO_INTERNET_INTERFACE_NAME));
+    assertFalse(ispConfiguration.getIpAccessLists().containsKey(TO_INTERNET_ACL_NAME));
+
+    // network (snapshot) related bits should still be present
+    assertThat(
+        ispConfiguration,
+        allOf(
+            hasHostname(_ispName),
+            hasDeviceType(equalTo(DeviceType.ISP)),
+            hasInterface(
+                ispToRemoteInterfaceName("testNode", "testIface"),
+                hasAllAddresses(equalTo(ImmutableSet.of(ispIfaceAddress)))),
+            hasVrf(DEFAULT_VRF_NAME, hasBgpProcess(allOf(hasMultipathEbgp(true))))));
+  }
+
   /** Test that null static routes are created for additional announcements to the Internet */
   @Test
   public void testCreateIspNode_additionalAnnouncements() {
@@ -634,6 +667,22 @@ public class IspModelingUtilsTest {
     IspModel ispInfo = inputMap.get(_ispAsn);
 
     assertThat(ispInfo.getName(), equalTo("myisp"));
+  }
+
+  @Test
+  public void testPopulateIspModels_internetConnection() {
+    Map<Long, IspModel> inputMap = Maps.newHashMap();
+    IspModelingUtils.populateIspModels(
+        _configuration,
+        ImmutableSet.of("interface"),
+        ImmutableList.of(),
+        ImmutableList.of(),
+        ImmutableList.of(new IspNodeInfo(_ispAsn, "myisp", false, ImmutableList.of(), null)),
+        inputMap,
+        new Warnings());
+
+    assertThat(inputMap, hasKey(_ispAsn));
+    assertFalse(inputMap.get(_ispAsn).getInternetConnection());
   }
 
   @Test
@@ -856,6 +905,112 @@ public class IspModelingUtilsTest {
                 new Layer1Edge(ispLayer1Iface0, borderLayer1),
                 new Layer1Edge(internetLayer1, ispLayer1Iface2),
                 new Layer1Edge(ispLayer1Iface2, internetLayer1))));
+  }
+
+  /** Check that the Internet node is not created when no ISP connects to it */
+  @Test
+  public void testGetInternetAndIspNodes_noInternet() {
+    ModeledNodes modeledNodes =
+        IspModelingUtils.getInternetAndIspNodes(
+            ImmutableMap.of(_configuration.getHostname(), _configuration),
+            ImmutableList.of(
+                new IspConfiguration(
+                    ImmutableList.of(
+                        new BorderInterfaceInfo(NodeInterfacePair.of("conf", "interface"))),
+                    IspFilter.ALLOW_ALL,
+                    ImmutableList.of(
+                        new IspNodeInfo(
+                            _ispAsn,
+                            _ispName,
+                            false,
+                            ImmutableList.of(),
+                            IspTrafficFiltering.none())))),
+            new BatfishLogger("output", false),
+            new Warnings());
+
+    assertFalse(modeledNodes.getConfigurations().containsKey(INTERNET_HOST_NAME));
+  }
+
+  /**
+   * Check the case with a an Internet-connected ISP and a non-Internet-connected ISP. The Internet
+   * node should be created and only the former ISP should be connected to it.
+   */
+  @Test
+  public void testGetInternetAndIspNodes_mixedInternet() {
+    // add another interface and peer to the configuration we already have
+    String snapshotInterface2 = "interface2";
+    Ip snapshotIp2 = Ip.parse("3.3.3.3");
+    Ip ispIp2 = Ip.parse("4.4.4.4");
+    long ispAsn2 = 4L;
+    String ispName2 = getDefaultIspNodeName(ispAsn2);
+    _nf.interfaceBuilder()
+        .setName(snapshotInterface2)
+        .setOwner(_configuration)
+        .setAddress(ConcreteInterfaceAddress.create(snapshotIp2, 24))
+        .build();
+    BgpActivePeerConfig.builder()
+        .setPeerAddress(ispIp2)
+        .setRemoteAs(ispAsn2)
+        .setLocalIp(snapshotIp2)
+        .setLocalAs(_snapshotAsn)
+        .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+        .setBgpProcess(_configuration.getDefaultVrf().getBgpProcess())
+        .build();
+
+    ModeledNodes modeledNodes =
+        IspModelingUtils.getInternetAndIspNodes(
+            ImmutableMap.of(_configuration.getHostname(), _configuration),
+            ImmutableList.of(
+                new IspConfiguration(
+                    ImmutableList.of(
+                        new BorderInterfaceInfo(
+                            NodeInterfacePair.of(
+                                _configuration.getHostname(), _snapshotInterfaceName)),
+                        new BorderInterfaceInfo(
+                            NodeInterfacePair.of(
+                                _configuration.getHostname(), snapshotInterface2))),
+                    IspFilter.ALLOW_ALL,
+                    ImmutableList.of(
+                        new IspNodeInfo(
+                            _ispAsn,
+                            _ispName,
+                            true,
+                            ImmutableList.of(),
+                            IspTrafficFiltering.none()),
+                        new IspNodeInfo(
+                            ispAsn2,
+                            ispName2,
+                            false,
+                            ImmutableList.of(),
+                            IspTrafficFiltering.none())))),
+            new BatfishLogger("output", false),
+            new Warnings());
+
+    // internet node exists and connects to only one ISP
+    assertTrue(modeledNodes.getConfigurations().containsKey(INTERNET_HOST_NAME));
+    Configuration internetNode = modeledNodes.getConfigurations().get(INTERNET_HOST_NAME);
+    assertThat(
+        internetNode.getAllInterfaces().keySet(),
+        equalTo(ImmutableSet.of(internetToIspInterfaceName(_ispName), INTERNET_OUT_INTERFACE)));
+
+    // ISP1 connects to the snapshot and to the Internet
+    assertTrue(modeledNodes.getConfigurations().containsKey(_ispName));
+    Configuration ispNode1 = modeledNodes.getConfigurations().get(_ispName);
+    assertThat(
+        ispNode1.getAllInterfaces().keySet(),
+        equalTo(
+            ImmutableSet.of(
+                ISP_TO_INTERNET_INTERFACE_NAME,
+                ispToRemoteInterfaceName(_configuration.getHostname(), _snapshotInterfaceName))));
+
+    // ISP2 connects only to the snapshot
+    assertTrue(modeledNodes.getConfigurations().containsKey(ispName2));
+    Configuration ispNode2 = modeledNodes.getConfigurations().get(ispName2);
+    assertThat(
+        ispNode2.getAllInterfaces().keySet(),
+        equalTo(
+            ImmutableSet.of(
+                ispToRemoteInterfaceName(_configuration.getHostname(), snapshotInterface2))));
   }
 
   @Test
