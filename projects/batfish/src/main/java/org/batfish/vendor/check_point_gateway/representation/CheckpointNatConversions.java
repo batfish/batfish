@@ -436,11 +436,13 @@ public class CheckpointNatConversions {
    * settings on the given {@link HasNatSettings}. Returns an empty optional and files warnings if
    * the NAT settings cannot be converted.
    *
-   * @param toExternal Whether the generated transformation needs to apply to traffic destined out
-   *     (internal to external traffic) or in (external to internal traffic).
+   * @param srcNat Whether the generated transformation should do source NAT. If {@code true}, the
+   *     transformation will match traffic from the original IP and translate its source to the
+   *     translated IP. Otherwise, it will match traffic destined for the translated IP and
+   *     translate it back to the original IP.
    */
   static @Nonnull Optional<Transformation> automaticStaticRuleTransformation(
-      HasNatSettings hasNatSettings, boolean toExternal, Warnings warnings) {
+      HasNatSettings hasNatSettings, boolean srcNat, Warnings warnings) {
     if (!(hasNatSettings instanceof Host)) {
       // TODO Support automatic static NAT on constructs other than hosts
       warnings.redFlag(
@@ -481,7 +483,7 @@ public class CheckpointNatConversions {
               hasNatSettings.getClass(), hasNatSettings.getName()));
       return Optional.empty();
     }
-    return toExternal
+    return srcNat
         ? Optional.of(when(matchSrc(hostIp)).apply(assignSourceIp(translatedIp)).build())
         : Optional.of(when(matchDst(translatedIp)).apply(assignDestinationIp(hostIp)).build());
   }

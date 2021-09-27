@@ -448,14 +448,15 @@ public final class CheckpointNatConversionsTest {
     NatSettings natSettings = new NatSettings(true, null, "All", natIp, NatMethod.STATIC);
     Host host = new Host(hostIp, natSettings, "host", UID);
     Warnings warnings = new Warnings(true, true, true);
-    Optional<Transformation> toExternal = automaticStaticRuleTransformation(host, true, warnings);
-    Optional<Transformation> toInternal = automaticStaticRuleTransformation(host, false, warnings);
-    assertTrue(toExternal.isPresent() && toInternal.isPresent());
+    Optional<Transformation> srcTransform = automaticStaticRuleTransformation(host, true, warnings);
+    Optional<Transformation> dstTransform =
+        automaticStaticRuleTransformation(host, false, warnings);
+    assertTrue(srcTransform.isPresent() && dstTransform.isPresent());
     assertThat(
-        toExternal.get(),
+        srcTransform.get(),
         equalTo(Transformation.when(matchSrc(hostIp)).apply(assignSourceIp(natIp)).build()));
     assertThat(
-        toInternal.get(),
+        dstTransform.get(),
         equalTo(Transformation.when(matchDst(natIp)).apply(assignDestinationIp(hostIp)).build()));
     assertThat(warnings.getRedFlagWarnings(), empty()); // Neither call generated warnings
   }

@@ -352,22 +352,15 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
               }
             });
 
-    // If there are no automatic rules, we don't have to check if interfaces are external
-    boolean autoRulesPresent = !autoHideNatObjects.isEmpty() || !autoStaticNatObjects.isEmpty();
-    if (!autoRulesPresent && manualRuleTransformations.isEmpty()) {
-      // short circuit if there are no NAT rules
-      return;
-    }
-
     // Convert automatic static rules (need inbound and outbound versions)
-    List<Transformation> internalToExternalAutoStaticTransformations =
+    List<Transformation> autoStaticSrcTransformations =
         autoStaticNatObjects.stream()
             .map(
                 hasNatSettings -> automaticStaticRuleTransformation(hasNatSettings, true, warnings))
             .filter(Optional::isPresent)
             .map(Optional::get)
             .collect(ImmutableList.toImmutableList());
-    List<Transformation> externalToInternalAutoStaticTransformations =
+    List<Transformation> autoStaticDstTransformations =
         autoStaticNatObjects.stream()
             .map(
                 hasNatSettings ->
@@ -387,27 +380,32 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
             .map(Optional::get)
             .collect(ImmutableList.toImmutableList());
 
-    // Apply transformations to interfaces
-    Optional<Transformation> manualTransformation = mergeTransformations(manualRuleTransformations);
+    // Incoming transformation: manual rules, dst translation for automatic static rules
+    Optional<Transformation> incomingTransformation =
+        mergeTransformations(
+            ImmutableList.<Transformation>builder()
+                .addAll(manualRuleTransformations)
+                .addAll(autoStaticDstTransformations)
+                .build());
+    incomingTransformation.ifPresent(
+        t ->
+            _c.getActiveInterfaces().values().forEach(iface -> iface.setIncomingTransformation(t)));
+
+    // If there are no automatic rules, no outgoing transformations are needed; short-circuit.
+    if (autoHideNatObjects.isEmpty() && autoStaticNatObjects.isEmpty()) {
+      return;
+    }
+
+    // Outgoing transformation: automatic hide rules, src translation for automatic static rules
     for (org.batfish.datamodel.Interface iface : _c.getActiveInterfaces().values()) {
-      if (!autoRulesPresent || !isExternal(iface, gateway)) {
-        manualTransformation.ifPresent(iface::setIncomingTransformation);
-        continue;
-      }
-      // This is an external interface, and automatic rules are present.
-      // External interfaces need the usual incoming transformation resulting from manual
-      // rules, plus the external-to-internal auto static rules
-      ImmutableList.Builder<Transformation> incomingTransformations = ImmutableList.builder();
-      manualTransformation.ifPresent(incomingTransformations::add);
-      incomingTransformations.addAll(externalToInternalAutoStaticTransformations);
-      mergeTransformations(incomingTransformations.build())
-          .ifPresent(iface::setIncomingTransformation);
-      // Outgoing transformation applies static rules first, then hide rules
+      // Automatic static rules take precedence over automatic hide rules
       ImmutableList.Builder<Transformation> outgoingTransformations = ImmutableList.builder();
-      outgoingTransformations.addAll(internalToExternalAutoStaticTransformations);
-      outgoingTransformations.addAll(
-          getOutgoingTransformations(
-              iface, outgoingTransformationFuncsForExternalIfaces, warnings));
+      outgoingTransformations.addAll(autoStaticSrcTransformations);
+      if (isExternal(iface, gateway)) {
+        outgoingTransformations.addAll(
+            getOutgoingTransformations(
+                iface, outgoingTransformationFuncsForExternalIfaces, warnings));
+      }
       mergeTransformations(outgoingTransformations.build())
           .ifPresent(iface::setOutgoingTransformation);
     }
