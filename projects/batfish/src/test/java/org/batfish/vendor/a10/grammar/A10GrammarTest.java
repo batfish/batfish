@@ -129,8 +129,8 @@ public class A10GrammarTest {
   }
 
   /**
-   * Config with newlines before, in the middle, and at the end should be correctly recognized and
-   * parsed.
+   * Config with blank lines before, in the middle, and at the end should be correctly recognized
+   * and parsed.
    */
   @Test
   public void testNewlines() {
