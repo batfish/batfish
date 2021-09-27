@@ -9,6 +9,8 @@ import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.ConfigurationFormat.A10_ACOS;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasChannelGroup;
@@ -21,6 +23,10 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
+import static org.batfish.vendor.a10.representation.A10Configuration.getInterfaceName;
+import static org.batfish.vendor.a10.representation.A10StructureType.INTERFACE;
+import static org.batfish.vendor.a10.representation.A10StructureUsage.VLAN_TAGGED_INTERFACE;
+import static org.batfish.vendor.a10.representation.A10StructureUsage.VLAN_UNTAGGED_INTERFACE;
 import static org.batfish.vendor.a10.representation.Interface.DEFAULT_MTU;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
@@ -348,6 +354,66 @@ public class A10GrammarTest {
                     hasText("ve 124")),
                 hasComment("Expected vlan number in range 2-4094, but got '1'"),
                 hasComment("Expected vlan number in range 2-4094, but got '4095'"))));
+  }
+
+  @Test
+  public void testInterfaceRefs() throws IOException {
+    String hostname = "interface_refs";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Confirm reference counts
+    // Referenced from vlan
+    assertThat(
+        ccae,
+        hasNumReferrers(filename, INTERFACE, getInterfaceName(Interface.Type.ETHERNET, 1), 3));
+    assertThat(
+        ccae,
+        hasNumReferrers(filename, INTERFACE, getInterfaceName(Interface.Type.ETHERNET, 2), 3));
+    assertThat(
+        ccae,
+        hasNumReferrers(filename, INTERFACE, getInterfaceName(Interface.Type.ETHERNET, 3), 2));
+
+    // Referenced from vlan
+    assertThat(
+        ccae, hasNumReferrers(filename, INTERFACE, getInterfaceName(Interface.Type.VE, 2), 1));
+
+    // Referenced from both of its members
+    assertThat(
+        ccae, hasNumReferrers(filename, INTERFACE, getInterfaceName(Interface.Type.TRUNK, 10), 2));
+
+    // Just self-refs, to avoid unused warnings
+    assertThat(
+        ccae,
+        hasNumReferrers(filename, INTERFACE, getInterfaceName(Interface.Type.ETHERNET, 10), 1));
+    assertThat(
+        ccae,
+        hasNumReferrers(filename, INTERFACE, getInterfaceName(Interface.Type.ETHERNET, 11), 1));
+    assertThat(
+        ccae,
+        hasNumReferrers(filename, INTERFACE, getInterfaceName(Interface.Type.LOOPBACK, 0), 1));
+
+    // Unused trunk should have no references
+    assertThat(
+        ccae, hasNumReferrers(filename, INTERFACE, getInterfaceName(Interface.Type.TRUNK, 200), 0));
+
+    // Confirm undefined references are detected
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename,
+            INTERFACE,
+            getInterfaceName(Interface.Type.ETHERNET, 4),
+            VLAN_TAGGED_INTERFACE));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename,
+            INTERFACE,
+            getInterfaceName(Interface.Type.ETHERNET, 5),
+            VLAN_UNTAGGED_INTERFACE));
   }
 
   @Test

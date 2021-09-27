@@ -1,0 +1,31 @@
+!BATFISH_FORMAT: a10_acos
+hostname interface_refs
+!
+vlan 2
+ tagged ethernet 1 to 2
+ tagged ethernet 4
+ untagged ethernet 1 to 3
+ untagged ethernet 5
+ router-interface ve 2
+!
+interface ethernet 1
+!
+interface ethernet 2
+!
+interface ethernet 3
+!
+interface loopback 0
+!
+interface ve 2
+!
+interface trunk 200
+!
+!
+interface ethernet 10
+ trunk-group 10
+!
+interface ethernet 11
+ trunk-group 10
+!
+interface trunk 10
+!

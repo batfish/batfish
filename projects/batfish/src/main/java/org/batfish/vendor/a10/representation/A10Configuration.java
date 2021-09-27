@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import javax.annotation.Nonnull;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -110,15 +111,18 @@ public final class A10Configuration extends VendorConfiguration {
     }
   }
 
-  private static String getInterfaceName(InterfaceReference ref) {
+  @Nonnull
+  public static String getInterfaceName(InterfaceReference ref) {
     return getInterfaceName(ref.getType(), ref.getNumber());
   }
 
-  private static String getInterfaceName(Interface iface) {
+  @Nonnull
+  public static String getInterfaceName(Interface iface) {
     return getInterfaceName(iface.getType(), iface.getNumber());
   }
 
-  private static String getInterfaceName(Interface.Type type, int num) {
+  @Nonnull
+  public static String getInterfaceName(Interface.Type type, int num) {
     if (type == Interface.Type.VE) {
       return String.format("VirtualEthernet %s", num);
     }
@@ -147,7 +151,13 @@ public final class A10Configuration extends VendorConfiguration {
     _interfacesVe.forEach((num, iface) -> convertInterface(iface, vrf));
     _interfacesTrunk.forEach((num, iface) -> convertInterface(iface, vrf));
 
+    markStructures();
     return ImmutableList.of(_c);
+  }
+
+  private void markStructures() {
+    A10StructureType.CONCRETE_STRUCTURES.forEach(this::markConcreteStructure);
+    A10StructureType.ABSTRACT_STRUCTURES.asMap().forEach(this::markAbstractStructureAllUsages);
   }
 
   /**
