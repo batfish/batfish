@@ -1,5 +1,6 @@
 package org.batfish.datamodel.interface_dependency;
 
+import static org.batfish.common.topology.Layer1Topologies.INVALID_INTERFACE;
 import static org.batfish.datamodel.Interface.DependencyType.AGGREGATE;
 import static org.batfish.datamodel.Interface.DependencyType.BIND;
 
@@ -24,6 +25,7 @@ import org.batfish.common.topology.Layer1Topologies;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.SimpleDirectedGraph;
@@ -221,16 +223,28 @@ public class InterfaceDependencies {
         return adjacentNodes(_layer1Topologies.getLogicalL1(), layer1Node).stream()
             .filter(
                 node ->
-                    _configs
-                            .get(node.getHostname())
-                            .getAllInterfaces()
-                            .get(node.getInterfaceName())
-                            .getInterfaceType()
-                        == iface.getInterfaceType())
+                    getInterfaceType(node)
+                        .map(type -> type == iface.getInterfaceType())
+                        .orElse(false))
             .collect(ImmutableSet.toImmutableSet());
       default:
         return ImmutableSet.of();
     }
+  }
+
+  private Optional<InterfaceType> getInterfaceType(Layer1Node node) {
+    if (node == INVALID_INTERFACE) {
+      return Optional.empty();
+    }
+    Configuration cfg = _configs.get(node.getHostname());
+    if (cfg == null) {
+      return Optional.empty();
+    }
+    Interface iface = cfg.getAllInterfaces().get(node.getInterfaceName());
+    if (iface == null) {
+      return Optional.empty();
+    }
+    return Optional.of(iface.getInterfaceType());
   }
 
   private static Set<Layer1Node> adjacentNodes(Layer1Topology topology, Layer1Node node) {
