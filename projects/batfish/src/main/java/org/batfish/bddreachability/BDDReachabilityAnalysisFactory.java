@@ -1617,8 +1617,7 @@ public final class BDDReachabilityAnalysisFactory {
    * Compute the space of possible final headers, under the assumption that any NAT rule may be
    * applied.
    */
-  @VisibleForTesting
-  BDD computeFinalHeaderSpaceBdd(BDD initialHeaderSpaceBdd) {
+  public BDD computeFinalHeaderSpaceBdd(BDD initialHeaderSpaceBdd) {
     Span span =
         GlobalTracer.get()
             .buildSpan("BDDReachabilityAnalysisFactory.computeFinalHeaderSpaceBdd")
