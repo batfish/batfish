@@ -49,7 +49,7 @@ COMMENT_LINE
 :
   F_Whitespace* '!'
   {lastTokenType() == NEWLINE || lastTokenType() == -1}?
-  F_NonNewlineChar* (F_Newline+ | EOF) -> skip
+  F_NonNewlineChar* (F_Newline | EOF) -> skip
 ;
 
 DOUBLE_QUOTE
@@ -68,7 +68,7 @@ IP_ADDRESS: F_IpAddress;
 
 IP_SLASH_PREFIX: F_IpSlashPrefix;
 
-NEWLINE: F_Newline+;
+NEWLINE: F_Newline;
 
 UINT8: F_Uint8;
 
@@ -107,10 +107,19 @@ F_IpPrefixLength
     | [3] [012]
 ;
 
+// Any number of newlines, allowing whitespace in between
 fragment
 F_Newline
 :
-    [\r\n] // carriage return or line feed
+  F_NewlineChar (F_Whitespace* F_NewlineChar+)*
+;
+
+// A single newline character [sequence - allowing \r, \r\n, or \n]
+fragment
+F_NewlineChar
+:
+  '\r' '\n'?
+  | '\n'
 ;
 
 fragment
@@ -231,36 +240,36 @@ M_SingleQuote_QUOTED_TEXT: (F_EscapedSingleQuote | ~['])+ -> type(QUOTED_TEXT);
 
 mode M_Word;
 M_Word_WS: F_Whitespace+ -> type(WORD_SEPARATOR), mode(M_WordValue);
-M_Word_NEWLINE: F_Newline+ -> type(NEWLINE), popMode;
+M_Word_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 
 mode M_WordValue;
 M_WordValue_DOUBLE_QUOTE: '"' -> type(DOUBLE_QUOTE), pushMode(M_DoubleQuote);
 M_WordValue_SINGLE_QUOTE: ['] -> type(SINGLE_QUOTE), pushMode(M_SingleQuote);
 M_WordValue_WORD: F_Word -> type(WORD);
 M_WordValue_WS: F_Whitespace+ -> skip, popMode;
-M_WordValue_NEWLINE: F_Newline+ -> type(NEWLINE), popMode;
+M_WordValue_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 
 mode M_Rba;
 M_Rba_WS: F_Whitespace+ -> skip;
 M_Rba_ROLE: ROLE -> type(ROLE), mode(M_RbaRoleName);
-M_Rba_NEWLINE: F_Newline+ -> type(NEWLINE), mode(M_RbaLine);
+M_Rba_NEWLINE: F_Newline -> type(NEWLINE), mode(M_RbaLine);
 
 mode M_RbaRoleName;
 M_RbaRoleName_WS: F_Whitespace+ -> type(WORD_SEPARATOR), mode(M_RbaRoleNameValue);
-M_RbaRoleName_NEWLINE: F_Newline+ -> type(NEWLINE), popMode;
+M_RbaRoleName_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 
 mode M_RbaRoleNameValue;
 M_RbaRoleNameValue_DOUBLE_QUOTE: '"' -> type(DOUBLE_QUOTE), pushMode(M_DoubleQuote);
 M_RbaRoleNameValue_SINGLE_QUOTE: ['] -> type(SINGLE_QUOTE), pushMode(M_SingleQuote);
 M_RbaRoleNameValue_WORD: F_Word -> type(WORD);
 M_RbaRoleNameValue_WS: F_Whitespace+ -> skip, mode(M_RbaTail);
-M_RbaRoleNameValue_NEWLINE: F_Newline+ -> type(NEWLINE), mode(M_RbaLine);
+M_RbaRoleNameValue_NEWLINE: F_Newline -> type(NEWLINE), mode(M_RbaLine);
 
 mode M_RbaTail;
 M_RbaTail_RBA_TAIL: F_NonNewlineChar+ -> type(RBA_TAIL);
-M_RbaTail_NEWLINE: F_Newline+ -> type(NEWLINE), mode(M_RbaLine);
+M_RbaTail_NEWLINE: F_Newline -> type(NEWLINE), mode(M_RbaLine);
 
 mode M_RbaLine;
-M_RbaLine_RBA_LINE: F_Whitespace* F_Word F_Whitespace+ ('no-access'|'read'|'partition-only'|'oper'|'write') F_Newline+ -> type(RBA_LINE);
-M_RbaLine_COMMENT_LINE: F_Whitespace* '!' F_NonNewlineChar* (F_Newline+ | EOF) -> skip;
+M_RbaLine_RBA_LINE: F_Whitespace* F_Word F_Whitespace+ ('no-access'|'read'|'partition-only'|'oper'|'write') F_Newline -> type(RBA_LINE);
+M_RbaLine_COMMENT_LINE: F_Whitespace* '!' F_NonNewlineChar* (F_Newline | EOF) -> skip;
 M_RbaLine_END: F_NonWhitespace+ {less();} -> popMode;
