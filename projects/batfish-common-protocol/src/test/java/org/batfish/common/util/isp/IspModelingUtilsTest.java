@@ -133,7 +133,7 @@ public class IspModelingUtilsTest {
   @Before
   public void setup() {
     _nf = new NetworkFactory();
-    _snapshotHost = createBgpNode(_nf, _snapshotHostname, _snapshotInterfaceName, _snapshotIp);
+    _snapshotHost = createBgpNode(_snapshotHostname, _snapshotInterfaceName, _snapshotIp);
     _snapshotActivePeer =
         BgpActivePeerConfig.builder()
             .setPeerAddress(_ispIp)
@@ -145,15 +145,14 @@ public class IspModelingUtilsTest {
             .build();
   }
 
-  private Configuration createBgpNode(
-      NetworkFactory nf, String hostname, String bgpIfaceName, Ip bgpInterfaceIp) {
+  private Configuration createBgpNode(String hostname, String bgpIfaceName, Ip bgpInterfaceIp) {
     Configuration c =
-        nf.configurationBuilder()
+        _nf.configurationBuilder()
             .setHostname(hostname)
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
             .build();
-    nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(c).build();
-    nf.interfaceBuilder()
+    _nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(c).build();
+    _nf.interfaceBuilder()
         .setName(bgpIfaceName)
         .setOwner(c)
         .setAddress(ConcreteInterfaceAddress.create(bgpInterfaceIp, 24))
@@ -570,7 +569,7 @@ public class IspModelingUtilsTest {
 
   @Test
   public void testPopulateIspModels_bgpUnnumbered() {
-    Configuration configuration = createBgpNode(_nf, "conf", _snapshotInterfaceName, _snapshotIp);
+    Configuration configuration = createBgpNode("conf", _snapshotInterfaceName, _snapshotIp);
     BgpUnnumberedPeerConfig.builder()
         .setPeerInterface(_snapshotInterfaceName)
         .setRemoteAs(_ispAsn)
@@ -937,7 +936,7 @@ public class IspModelingUtilsTest {
   @Test
   public void testGetInternetAndIspNodes_multipleSessions() {
     Ip snapshotIp2 = Ip.parse("3.3.3.3");
-    Configuration configuration2 = createBgpNode(_nf, "conf2", "interface2", snapshotIp2);
+    Configuration configuration2 = createBgpNode("conf2", "interface2", snapshotIp2);
     BgpActivePeerConfig.builder()
         .setBgpProcess(makeBgpProcess(Ip.ZERO, configuration2.getDefaultVrf()))
         .setPeerAddress(Ip.parse("4.4.4.4"))
@@ -1001,7 +1000,7 @@ public class IspModelingUtilsTest {
   public void testCombineIspConfigurations_commonAsn() {
     Ip ispIp2 = Ip.parse("2.1.1.1");
     Ip snapshotIp2 = Ip.parse("2.1.1.2");
-    Configuration c2 = createBgpNode(_nf, "c2", _snapshotInterfaceName, snapshotIp2);
+    Configuration c2 = createBgpNode("c2", _snapshotInterfaceName, snapshotIp2);
     BgpActivePeerConfig.builder()
         .setPeerAddress(ispIp2)
         .setRemoteAs(_ispAsn)
