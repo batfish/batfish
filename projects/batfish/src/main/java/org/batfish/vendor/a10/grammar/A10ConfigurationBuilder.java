@@ -134,10 +134,11 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
           _currentInterface =
               _c.getInterfacesEthernet()
                   .computeIfAbsent(n, number -> new Interface(Interface.Type.ETHERNET, n));
-          _c.defineStructure(A10StructureType.INTERFACE, getInterfaceName(_currentInterface), ctx);
+          String ifaceName = getInterfaceName(_currentInterface);
+          _c.defineStructure(A10StructureType.INTERFACE, ifaceName, ctx);
           _c.referenceStructure(
               A10StructureType.INTERFACE,
-              getInterfaceName(_currentInterface),
+              ifaceName,
               A10StructureUsage.INTERFACE_SELF_REF,
               ctx.start.getLine());
         });
@@ -159,10 +160,11 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
           _currentInterface =
               _c.getInterfacesLoopback()
                   .computeIfAbsent(n, number -> new Interface(Interface.Type.LOOPBACK, n));
-          _c.defineStructure(A10StructureType.INTERFACE, getInterfaceName(_currentInterface), ctx);
+          String ifaceName = getInterfaceName(_currentInterface);
+          _c.defineStructure(A10StructureType.INTERFACE, ifaceName, ctx);
           _c.referenceStructure(
               A10StructureType.INTERFACE,
-              getInterfaceName(_currentInterface),
+              ifaceName,
               A10StructureUsage.INTERFACE_SELF_REF,
               ctx.start.getLine());
         });
@@ -408,10 +410,11 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     trunkInterface
         .getMembers()
         .add(new InterfaceReference(_currentInterface.getType(), _currentInterface.getNumber()));
-    _c.defineStructure(A10StructureType.INTERFACE, getInterfaceName(trunkInterface), ctx);
+    String trunkName = getInterfaceName(trunkInterface);
+    _c.defineStructure(A10StructureType.INTERFACE, trunkName, ctx);
     _c.referenceStructure(
         A10StructureType.INTERFACE,
-        getInterfaceName(trunkInterface),
+        trunkName,
         A10StructureUsage.INTERFACE_TRUNK_GROUP,
         ctx.start.getLine());
   }

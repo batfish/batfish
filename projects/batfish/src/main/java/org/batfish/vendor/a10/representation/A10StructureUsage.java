@@ -2,6 +2,7 @@ package org.batfish.vendor.a10.representation;
 
 import org.batfish.vendor.StructureUsage;
 
+/** Named structure-usage types for A10 devices */
 public enum A10StructureUsage implements StructureUsage {
   INTERFACE_SELF_REF("interface"),
   INTERFACE_TRUNK_GROUP("interface trunk-group"),

@@ -382,6 +382,10 @@ public class A10GrammarTest {
         ccae,
         hasNumReferrers(filename, INTERFACE, getInterfaceName(Interface.Type.LOOPBACK, 0), 1));
 
+    // Unused trunk should have no references
+    assertThat(
+        ccae, hasNumReferrers(filename, INTERFACE, getInterfaceName(Interface.Type.TRUNK, 200), 0));
+
     // Confirm undefined references are detected
     assertThat(
         ccae,
