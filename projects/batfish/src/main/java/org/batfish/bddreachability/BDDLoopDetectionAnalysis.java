@@ -1,7 +1,8 @@
 package org.batfish.bddreachability;
 
 import static org.batfish.bddreachability.BDDReachabilityUtils.backwardFixpoint;
-import static org.batfish.bddreachability.BDDReachabilityUtils.getIngressLocationBdds;
+import static org.batfish.bddreachability.BDDReachabilityUtils.getIngressStateExprBdds;
+import static org.batfish.bddreachability.BDDReachabilityUtils.toIngressLocation;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 
 import com.google.common.collect.ImmutableMap;
@@ -54,10 +55,17 @@ public class BDDLoopDetectionAnalysis {
         ingressLocationStates);
   }
 
+  public Map<IngressLocation, BDD> detectLoops() {
+    return detectLoopsStateExpr().entrySet().stream()
+        .collect(
+            ImmutableMap.toImmutableMap(
+                entry -> toIngressLocation(entry.getKey()), Entry::getValue));
+  }
+
   /*
    * Detect infinite routing loops in the network.
    */
-  public Map<IngressLocation, BDD> detectLoops() {
+  public Map<StateExpr, BDD> detectLoopsStateExpr() {
     Span span = GlobalTracer.get().buildSpan("BDDLoopDetectionAnalysis.detectLoops").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
@@ -90,7 +98,7 @@ public class BDDLoopDetectionAnalysis {
       /*
        * Extract the ingress location BDDs.
        */
-      return getIngressLocationBdds(
+      return getIngressStateExprBdds(
           loopBDDs, _ingressLocationStates, _bddPacket.getFactory().zero());
     } finally {
       span.finish();
