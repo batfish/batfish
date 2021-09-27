@@ -432,9 +432,9 @@ public class CheckpointNatConversions {
   }
 
   /**
-   * Returns a {@link Transformation} that should be applied to traffic on to reflect the NAT
-   * settings on the given {@link HasNatSettings}. Returns an empty optional and files warnings if
-   * the NAT settings cannot be converted.
+   * Returns a {@link Transformation} representing the NAT settings on the given {@link
+   * HasNatSettings}. Returns an empty optional and files warnings if the NAT settings cannot be
+   * converted.
    *
    * @param srcNat Whether the generated transformation should do source NAT. If {@code true}, the
    *     transformation will match traffic from the original IP and translate its source to the
@@ -454,12 +454,7 @@ public class CheckpointNatConversions {
     }
     Ip hostIp = ((Host) hasNatSettings).getIpv4Address();
     if (hostIp == null) {
-      // TODO Will static NAT have any effect when configured on a host with no IP?
-      warnings.redFlag(
-          String.format(
-              "Automatic NAT rules on hosts without IPs are not supported: NAT settings on host %s"
-                  + " will be ignored",
-              hasNatSettings.getName()));
+      // TODO support IPv6
       return Optional.empty();
     }
 
@@ -468,10 +463,6 @@ public class CheckpointNatConversions {
     Ip translatedIp = natSettings.getIpv4Address();
     if (translatedIp == null) {
       // TODO support IPv6 NAT
-      warnings.redFlag(
-          String.format(
-              "IPv6 NAT rules are not yet supported: NAT settings on %s %s will be ignored",
-              hasNatSettings.getClass(), hasNatSettings.getName()));
       return Optional.empty();
     } else if (!"All".equals(natSettings.getInstallOn())) {
       // TODO Support installing NAT rules on specific gateways.
@@ -498,9 +489,7 @@ public class CheckpointNatConversions {
    *     be applied to outgoing traffic.
    */
   static List<Transformation> getOutgoingTransformations(
-      Interface viIface,
-      List<Function<Ip, Transformation>> transformationFuncs,
-      Warnings warnings) {
+      Interface viIface, List<Function<Ip, Transformation>> transformationFuncs) {
     Ip ifaceIp =
         Optional.ofNullable(viIface.getConcreteAddress())
             .map(ConcreteInterfaceAddress::getIp)
@@ -509,15 +498,9 @@ public class CheckpointNatConversions {
       return transformationFuncs.stream()
           .map(transformationFunc -> transformationFunc.apply(ifaceIp))
           .collect(ImmutableList.toImmutableList());
-    } else {
-      // TODO What outgoing transformations apply on an external interface with no IP?
-      // (Not certain that skipping NAT in this scenario is wrong)
-      warnings.redFlag(
-          String.format(
-              "Batfish will not apply outgoing NAT on interface %s because it has no IP.",
-              viIface.getName()));
-      return ImmutableList.of();
     }
+    // Interface does not have an IP. These transformations do not apply.
+    return ImmutableList.of();
   }
 
   /**

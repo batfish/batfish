@@ -478,18 +478,14 @@ public final class CheckpointNatConversionsTest {
                   containsString(
                       "Automatic static NAT rules on non-host objects are not yet supported"))));
     }
-    { // Host with no IP
+    { // IPv6 host (assuming to be, since the host's IP is null)
       NatSettings natSettings =
           new NatSettings(true, null, "All", Ip.parse("5.5.5.5"), NatMethod.STATIC);
       Host host = new Host(null, natSettings, "host", UID);
       Warnings warnings = new Warnings(true, true, true);
       Optional<Transformation> t = automaticStaticRuleTransformation(host, true, warnings);
       assertFalse(t.isPresent());
-      assertThat(
-          warnings.getRedFlagWarnings(),
-          contains(
-              hasText(
-                  containsString("Automatic NAT rules on hosts without IPs are not supported"))));
+      assertThat(warnings.getRedFlagWarnings(), empty()); // no warning for missing IPv6 support
     }
     { // IPv6 rule (assuming to be, since IPv4 address is null)
       NatSettings ipv6Settings = new NatSettings(true, null, "All", null, NatMethod.STATIC);
@@ -497,9 +493,7 @@ public final class CheckpointNatConversionsTest {
       Warnings warnings = new Warnings(true, true, true);
       Optional<Transformation> t = automaticStaticRuleTransformation(host, true, warnings);
       assertFalse(t.isPresent());
-      assertThat(
-          warnings.getRedFlagWarnings(),
-          contains(hasText(containsString("IPv6 NAT rules are not yet supported"))));
+      assertThat(warnings.getRedFlagWarnings(), empty()); // no warning for missing IPv6 support
     }
     { // install-on is not "All" (individual gateways aren't yet supported)
       NatSettings gatewaySettings =
@@ -871,32 +865,11 @@ public final class CheckpointNatConversionsTest {
             .build();
     List<Function<Ip, Transformation>> transformationFuncs =
         ImmutableList.of(ip -> Transformation.always().apply(assignSourceIp(ip)).build());
-    Warnings warnings = new Warnings(true, true, true);
     List<Transformation> outgoingTransformations =
-        getOutgoingTransformations(viIface, transformationFuncs, warnings);
-    assertThat(warnings.getRedFlagWarnings(), empty());
+        getOutgoingTransformations(viIface, transformationFuncs);
     assertThat(
         outgoingTransformations,
         contains(Transformation.always().apply(assignSourceIp(ifaceIp)).build()));
-  }
-
-  @Test
-  public void testGetOutgoingTransformations_warnings() {
-    // Interface does not have an IP
-    Interface viIface = Interface.builder().setName("iface").build();
-    List<Function<Ip, Transformation>> transformationFuncs =
-        ImmutableList.of(ip -> Transformation.always().apply(assignSourceIp(ip)).build());
-    Warnings warnings = new Warnings(true, true, true);
-    List<Transformation> outgoingTransformations =
-        getOutgoingTransformations(viIface, transformationFuncs, warnings);
-    assertThat(
-        warnings.getRedFlagWarnings(),
-        contains(
-            hasText(
-                String.format(
-                    "Batfish will not apply outgoing NAT on interface %s because it has no IP.",
-                    viIface.getName()))));
-    assertThat(outgoingTransformations, empty());
   }
 
   @Test

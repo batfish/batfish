@@ -391,23 +391,29 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
         t ->
             _c.getActiveInterfaces().values().forEach(iface -> iface.setIncomingTransformation(t)));
 
-    // If there are no automatic rules, no outgoing transformations are needed; short-circuit.
-    if (autoHideNatObjects.isEmpty() && autoStaticNatObjects.isEmpty()) {
-      return;
-    }
-
-    // Outgoing transformation: automatic hide rules, src translation for automatic static rules
-    for (org.batfish.datamodel.Interface iface : _c.getActiveInterfaces().values()) {
-      // Automatic static rules take precedence over automatic hide rules
-      ImmutableList.Builder<Transformation> outgoingTransformations = ImmutableList.builder();
-      outgoingTransformations.addAll(autoStaticSrcTransformations);
-      if (isExternal(iface, gateway)) {
-        outgoingTransformations.addAll(
-            getOutgoingTransformations(
-                iface, outgoingTransformationFuncsForExternalIfaces, warnings));
+    // TODO: Prevent any outgoing transformation if the packet matched a manual NAT rule on ingress.
+    // If there are no egress-iface-specific transformations, all outgoing transformations are the
+    // same: source translation for automatic static rules
+    if (outgoingTransformationFuncsForExternalIfaces.isEmpty()) {
+      mergeTransformations(autoStaticSrcTransformations)
+          .ifPresent(
+              t ->
+                  _c.getActiveInterfaces()
+                      .values()
+                      .forEach(iface -> iface.setOutgoingTransformation(t)));
+    } else {
+      // Outgoing transformation: automatic hide rules, src translation for automatic static rules
+      for (org.batfish.datamodel.Interface iface : _c.getActiveInterfaces().values()) {
+        // Automatic static rules take precedence over automatic hide rules
+        ImmutableList.Builder<Transformation> outgoingTransformations = ImmutableList.builder();
+        outgoingTransformations.addAll(autoStaticSrcTransformations);
+        if (isExternal(iface, gateway)) {
+          outgoingTransformations.addAll(
+              getOutgoingTransformations(iface, outgoingTransformationFuncsForExternalIfaces));
+        }
+        mergeTransformations(outgoingTransformations.build())
+            .ifPresent(iface::setOutgoingTransformation);
       }
-      mergeTransformations(outgoingTransformations.build())
-          .ifPresent(iface::setOutgoingTransformation);
     }
   }
 
