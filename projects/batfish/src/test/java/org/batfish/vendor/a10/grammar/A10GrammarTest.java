@@ -5,6 +5,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasText;
 import static org.batfish.common.matchers.WarningsMatchers.hasParseWarnings;
+import static org.batfish.common.matchers.WarningsMatchers.hasRedFlags;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.ConfigurationFormat.A10_ACOS;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
@@ -53,6 +54,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
+import org.batfish.common.matchers.WarningMatchers;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.runtime.SnapshotRuntimeData;
 import org.batfish.config.Settings;
@@ -577,13 +579,115 @@ public class A10GrammarTest {
 
     Map<Integer, Interface> eths = c.getInterfacesEthernet();
     Map<Integer, TrunkInterface> trunks = c.getInterfacesTrunk();
-    assertThat(eths.keySet(), containsInAnyOrder(1));
-    assertThat(trunks.keySet(), containsInAnyOrder(1));
+    assertThat(eths.keySet(), containsInAnyOrder(1, 2, 3));
+    assertThat(trunks.keySet(), containsInAnyOrder(1, 2));
 
+    // LACP trunk-group
     TrunkGroup tg1 = eths.get(1).getTrunkGroup();
+    TrunkInterface trunkIface1 = trunks.get(1);
+    // Static trunk-group
+    TrunkInterface trunkIface2 = trunks.get(2);
 
+    // Settings for the member interface
     assertThat(tg1.getTypeEffective(), equalTo(TrunkGroup.Type.LACP));
     assertThat(tg1.getTimeout(), equalTo(TrunkGroup.Timeout.SHORT));
+
+    // Settings for the LACP trunk
+    assertThat(trunkIface1.getTrunkTypeEffective(), equalTo(TrunkGroup.Type.LACP));
+    assertThat(
+        trunkIface1.getMembers(), contains(new InterfaceReference(Interface.Type.ETHERNET, 1)));
+
+    // Settings for the Static trunk
+    assertThat(trunkIface2.getTrunkTypeEffective(), equalTo(TrunkGroup.Type.STATIC));
+    assertThat(
+        trunkIface2.getMembers(),
+        containsInAnyOrder(
+            new InterfaceReference(Interface.Type.ETHERNET, 2),
+            new InterfaceReference(Interface.Type.ETHERNET, 3)));
+  }
+
+  /** Testing ACOS v2 trunk datamodel conversion */
+  @Test
+  public void testTrunkAcos2Conversion() {
+    String hostname = "trunk_acos2";
+    Configuration c = parseConfig(hostname);
+
+    // LACP trunk
+    assertThat(
+        c,
+        hasInterface(
+            "Ethernet 1",
+            allOf(
+                hasInterfaceType(InterfaceType.PHYSICAL),
+                hasChannelGroup("Trunk 1"),
+                hasChannelGroupMembers(empty()),
+                hasAllAddresses(empty()))));
+    assertThat(
+        c,
+        hasInterface(
+            "Trunk 1",
+            allOf(
+                hasInterfaceType(InterfaceType.AGGREGATED),
+                hasChannelGroup(nullValue()),
+                hasChannelGroupMembers(containsInAnyOrder("Ethernet 1")))));
+    assertThat(
+        c.getAllInterfaces().get("Trunk 1").getDependencies(),
+        containsInAnyOrder(
+            new org.batfish.datamodel.Interface.Dependency(
+                "Ethernet 1", org.batfish.datamodel.Interface.DependencyType.AGGREGATE)));
+
+    // Default trunk
+    assertThat(
+        c,
+        hasInterface(
+            "Ethernet 2",
+            allOf(
+                hasInterfaceType(InterfaceType.PHYSICAL),
+                hasChannelGroup("Trunk 2"),
+                hasChannelGroupMembers(empty()),
+                hasAllAddresses(empty()))));
+    assertThat(
+        c,
+        hasInterface(
+            "Ethernet 3",
+            allOf(
+                hasInterfaceType(InterfaceType.PHYSICAL),
+                hasChannelGroup("Trunk 2"),
+                hasChannelGroupMembers(empty()),
+                hasAllAddresses(empty()))));
+    assertThat(
+        c,
+        hasInterface(
+            "Trunk 2",
+            allOf(
+                hasInterfaceType(InterfaceType.AGGREGATED),
+                hasChannelGroup(nullValue()),
+                hasChannelGroupMembers(containsInAnyOrder("Ethernet 2", "Ethernet 3")))));
+    assertThat(
+        c.getAllInterfaces().get("Trunk 2").getDependencies(),
+        containsInAnyOrder(
+            new org.batfish.datamodel.Interface.Dependency(
+                "Ethernet 2", org.batfish.datamodel.Interface.DependencyType.AGGREGATE),
+            new org.batfish.datamodel.Interface.Dependency(
+                "Ethernet 3", org.batfish.datamodel.Interface.DependencyType.AGGREGATE)));
+  }
+
+  /** Testing ACOS v2 trunk conversion warnings */
+  @Test
+  public void testTrunkAcos2ConversionWarn() throws IOException {
+    String hostname = "trunk_acos2_convert_warn";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Warnings warnings =
+        batfish
+            .loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot())
+            .getWarnings()
+            .get(hostname);
+
+    assertThat(
+        warnings,
+        hasRedFlags(
+            containsInAnyOrder(
+                WarningMatchers.hasText("Trunk 2 does not contain any member interfaces"))));
   }
 
   @Test

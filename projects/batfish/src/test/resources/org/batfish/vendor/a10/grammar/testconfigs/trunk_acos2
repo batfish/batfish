@@ -2,7 +2,20 @@
 !version 2.7.2, build 123 (Aug-5-2021,01:23)
 hostname trunk_acos2
 !
+! Default (static?) trunk definition
+trunk 2
+ ethernet 2 ethernet 3
+ name trunk2Name
+!
 interface ethernet 1
+ ! LACP trunk definition
  lacp trunk 1 mode active
  lacp timeout short
+ enable
+!
+interface ethernet 2
+ enable
+!
+interface ethernet 3
+ enable
 !

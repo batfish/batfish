@@ -213,11 +213,23 @@ public final class A10Configuration extends VendorConfiguration {
                       new org.batfish.datamodel.Interface.Dependency(
                           member, org.batfish.datamodel.Interface.DependencyType.AGGREGATE))
               .collect(ImmutableSet.toImmutableSet()));
+      if (memberNames.isEmpty()) {
+        _w.redFlag(
+            String.format(
+                "Trunk %s does not contain any member interfaces", trunkIface.getNumber()));
+      }
     }
-    TrunkGroup trunkGroup = iface.getTrunkGroup();
-    if (trunkGroup != null) {
-      newIface.setChannelGroup(getInterfaceName(Interface.Type.TRUNK, trunkGroup.getNumber()));
-      // TODO determine if switchport settings need to be propagated to member interfaces
+
+    if (iface.getType() == Interface.Type.ETHERNET) {
+      InterfaceReference ifaceRef = new InterfaceReference(iface.getType(), iface.getNumber());
+      _interfacesTrunk.values().stream()
+          .filter(t -> t.getMembers().contains(ifaceRef))
+          .findFirst()
+          .ifPresent(
+              t -> {
+                newIface.setChannelGroup(getInterfaceName(Interface.Type.TRUNK, t.getNumber()));
+                // TODO determine if switchport settings need to be propagated to member interfaces
+              });
     }
     newIface.build();
   }
