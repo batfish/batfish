@@ -1,7 +1,7 @@
 !BATFISH_FORMAT: a10_acos
 
 
-! separate newline tokens are lexed on either side of comments like this
+!
 
 
 hostname newlines
