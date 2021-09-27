@@ -3,11 +3,9 @@ package org.batfish.datamodel.interface_dependency;
 import static org.batfish.datamodel.Interface.DependencyType.AGGREGATE;
 import static org.batfish.datamodel.Interface.DependencyType.BIND;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
@@ -98,7 +96,7 @@ public class InterfaceDependencies {
               }
 
               // non-local dependencies
-              Collection<Layer1Node> neighbors = getL1Neighbors(iface);
+              Set<Layer1Node> neighbors = getL1Neighbors(iface);
               if (neighbors.size() == 1) {
                 /* if the neighbor is inactive, iface must be too. e.g. if all member interfaces are up, but the
                  * neighbor is admin-down, iface will be down
@@ -212,7 +210,7 @@ public class InterfaceDependencies {
     _depGraph.addEdge(src, tgt, new DependencyEdge(depType));
   }
 
-  private Collection<Layer1Node> getL1Neighbors(Interface iface) {
+  private Set<Layer1Node> getL1Neighbors(Interface iface) {
     Layer1Node layer1Node = new Layer1Node(iface.getOwner().getHostname(), iface.getName());
     switch (iface.getInterfaceType()) {
       case PHYSICAL:
@@ -229,9 +227,9 @@ public class InterfaceDependencies {
                             .get(node.getInterfaceName())
                             .getInterfaceType()
                         == iface.getInterfaceType())
-            .collect(ImmutableList.toImmutableList());
+            .collect(ImmutableSet.toImmutableSet());
       default:
-        return ImmutableList.of();
+        return ImmutableSet.of();
     }
   }
 
@@ -243,7 +241,7 @@ public class InterfaceDependencies {
   }
 
   private @Nullable NodeInterfacePair getL1Neighbor(Interface iface) {
-    Collection<Layer1Node> neighbors = getL1Neighbors(iface);
+    Set<Layer1Node> neighbors = getL1Neighbors(iface);
     if (neighbors.isEmpty()) {
       return null;
     }
