@@ -96,7 +96,6 @@ public class A10GrammarTest {
     ParserRuleContext tree =
         Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     extractor.processParseTree(TEST_SNAPSHOT, tree);
-    extractor.processParseTree(TEST_SNAPSHOT, tree);
     A10Configuration vendorConfiguration = (A10Configuration) extractor.getVendorConfiguration();
     vendorConfiguration.setFilename(TESTCONFIGS_PREFIX + hostname);
     // crash if not serializable
