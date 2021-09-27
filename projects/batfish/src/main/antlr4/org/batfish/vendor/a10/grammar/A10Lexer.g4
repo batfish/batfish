@@ -68,7 +68,7 @@ IP_ADDRESS: F_IpAddress;
 
 IP_SLASH_PREFIX: F_IpSlashPrefix;
 
-NEWLINE: F_Newline+;
+NEWLINE: F_Newline;
 
 UINT8: F_Uint8;
 
@@ -107,10 +107,19 @@ F_IpPrefixLength
     | [3] [012]
 ;
 
+// Any number of newlines, allowing whitespace in between
 fragment
 F_Newline
 :
-    [\r\n] // carriage return or line feed
+  F_NewlineChar (F_Whitespace* F_NewlineChar+)*
+;
+
+// A single newline character [sequence - allowing \r, \r\n, or \n]
+fragment
+F_NewlineChar
+:
+  '\r' '\n'?
+  | '\n'
 ;
 
 fragment
@@ -261,6 +270,8 @@ M_RbaTail_RBA_TAIL: F_NonNewlineChar+ -> type(RBA_TAIL);
 M_RbaTail_NEWLINE: F_Newline -> type(NEWLINE), mode(M_RbaLine);
 
 mode M_RbaLine;
-M_RbaLine_RBA_LINE: F_Whitespace* F_Word F_Whitespace+ ('no-access'|'read'|'partition-only'|'oper'|'write') F_Newline-> type(RBA_LINE);
-M_RbaLine_COMMENT_LINE: F_Whitespace* '!' F_NonNewlineChar* (F_Newline | EOF) -> skip;
+M_RbaLine_WS: F_Whitespace+ -> skip;
+M_RbaLine_RBA_LINE: F_Word F_Whitespace+ ('no-access'|'read'|'partition-only'|'oper'|'write') -> type(RBA_LINE);
+M_RbaLine_NEWLINE: F_Newline -> type(NEWLINE);
+M_RbaLine_COMMENT_LINE: F_Whitespace* '!' {lastTokenType() == NEWLINE}? F_NonNewlineChar* (F_Newline | EOF) -> skip;
 M_RbaLine_END: F_NonWhitespace+ {less();} -> popMode;
