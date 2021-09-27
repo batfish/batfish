@@ -10,37 +10,37 @@ s_interface: INTERFACE si_definition;
 
 si_definition: sid_ethernet | sid_loopback | sid_trunk | sid_ve;
 
-sid_ethernet: ETHERNET num = ethernet_number newline sid*;
+sid_ethernet: ETHERNET num = ethernet_number NEWLINE sid*;
 
-sid_loopback: LOOPBACK num = loopback_number newline sid*;
+sid_loopback: LOOPBACK num = loopback_number NEWLINE sid*;
 
-sid_trunk: TRUNK num = trunk_number newline sid*;
+sid_trunk: TRUNK num = trunk_number NEWLINE sid*;
 
-sid_ve: VE num = vlan_number newline sid*;
+sid_ve: VE num = vlan_number NEWLINE sid*;
 
 sid: sid_disable | sid_enable | sid_ip | sid_lacp | sid_mtu | sid_name | sid_trunk_group;
 
-sid_enable: ENABLE newline;
+sid_enable: ENABLE NEWLINE;
 
-sid_disable: DISABLE newline;
+sid_disable: DISABLE NEWLINE;
 
 sid_ip: IP sidi_address;
 
-sidi_address: ADDRESS ip_prefix newline;
+sidi_address: ADDRESS ip_prefix NEWLINE;
 
-sid_mtu: MTU interface_mtu newline;
+sid_mtu: MTU interface_mtu NEWLINE;
 
-sid_name: NAME interface_name_str newline;
+sid_name: NAME interface_name_str NEWLINE;
 
-sid_trunk_group: TRUNK_GROUP trunk_number (trunk_type)? newline sidtg*;
+sid_trunk_group: TRUNK_GROUP trunk_number (trunk_type)? NEWLINE sidtg*;
 
 sidtg: sidtg_mode | sidtg_timeout | sidtg_user_tag;
 
-sidtg_mode: MODE trunk_mode newline;
+sidtg_mode: MODE trunk_mode NEWLINE;
 
-sidtg_timeout: TIMEOUT trunk_timeout newline;
+sidtg_timeout: TIMEOUT trunk_timeout NEWLINE;
 
-sidtg_user_tag: USER_TAG tag = user_tag newline;
+sidtg_user_tag: USER_TAG tag = user_tag NEWLINE;
 
 // 434-1500
 interface_mtu: uint16;
@@ -58,6 +58,6 @@ sidl: sidl_trunk | sidl_timeout;
 
 sidl_trunk: TRUNK num = trunk_number sidlt_mode;
 
-sidlt_mode: MODE trunk_mode newline;
+sidlt_mode: MODE trunk_mode NEWLINE;
 
-sidl_timeout: TIMEOUT trunk_timeout newline;
+sidl_timeout: TIMEOUT trunk_timeout NEWLINE;

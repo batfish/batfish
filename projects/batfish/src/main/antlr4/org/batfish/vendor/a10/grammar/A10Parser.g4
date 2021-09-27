@@ -11,7 +11,7 @@ options {
    tokenVocab = A10Lexer;
 }
 
-a10_configuration: newline? statement+ EOF;
+a10_configuration: NEWLINE? statement+ EOF;
 
 statement
 :
@@ -21,4 +21,4 @@ statement
    | s_vlan
 ;
 
-s_hostname: HOSTNAME hostname newline;
+s_hostname: HOSTNAME hostname NEWLINE;
