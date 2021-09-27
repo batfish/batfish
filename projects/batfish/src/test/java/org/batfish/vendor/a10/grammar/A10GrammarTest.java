@@ -351,16 +351,27 @@ public class A10GrammarTest {
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
-    // Confirm reference counts; note: interfaces has self refs to prevent them from being unused
+    // Confirm reference counts
+    // Referenced from vlan
     assertThat(
         ccae,
-        hasNumReferrers(filename, INTERFACE, getInterfaceName(Interface.Type.ETHERNET, 1), 2));
+        hasNumReferrers(filename, INTERFACE, getInterfaceName(Interface.Type.ETHERNET, 1), 3));
     assertThat(
         ccae,
         hasNumReferrers(filename, INTERFACE, getInterfaceName(Interface.Type.ETHERNET, 2), 3));
     assertThat(
         ccae,
         hasNumReferrers(filename, INTERFACE, getInterfaceName(Interface.Type.ETHERNET, 3), 2));
+
+    // Referenced from vlan
+    assertThat(
+        ccae, hasNumReferrers(filename, INTERFACE, getInterfaceName(Interface.Type.VE, 2), 1));
+
+    // Referenced from both of its members
+    assertThat(
+        ccae, hasNumReferrers(filename, INTERFACE, getInterfaceName(Interface.Type.TRUNK, 10), 2));
+
+    // Just self-refs, to avoid unused warnings
     assertThat(
         ccae,
         hasNumReferrers(filename, INTERFACE, getInterfaceName(Interface.Type.ETHERNET, 10), 1));
@@ -370,10 +381,6 @@ public class A10GrammarTest {
     assertThat(
         ccae,
         hasNumReferrers(filename, INTERFACE, getInterfaceName(Interface.Type.LOOPBACK, 0), 1));
-    assertThat(
-        ccae, hasNumReferrers(filename, INTERFACE, getInterfaceName(Interface.Type.VE, 2), 1));
-    assertThat(
-        ccae, hasNumReferrers(filename, INTERFACE, getInterfaceName(Interface.Type.TRUNK, 10), 2));
 
     // Confirm undefined references are detected
     assertThat(

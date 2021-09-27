@@ -4,7 +4,7 @@ hostname interface_refs
 vlan 2
  tagged ethernet 1 to 2
  tagged ethernet 4
- untagged ethernet 2 to 3
+ untagged ethernet 1 to 3
  untagged ethernet 5
  router-interface ve 2
 !
