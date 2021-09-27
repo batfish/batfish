@@ -128,13 +128,14 @@ public class IspModelingUtilsTest {
   private static final String _snapshotHostname = "conf";
   private static final String _snapshotInterfaceName = "interface";
 
-  private static final NetworkFactory _nf = new NetworkFactory();
+  private NetworkFactory _nf;
   private Configuration _snapshotHost;
   private BgpActivePeerConfig _snapshotActivePeer;
   private IspModel _ispModel;
 
   @Before
   public void setup() {
+    _nf = new NetworkFactory();
     _snapshotHost = createBgpNode(_snapshotHostname, _snapshotInterfaceName, _snapshotIp);
     _snapshotActivePeer =
         BgpActivePeerConfig.builder()
@@ -160,8 +161,7 @@ public class IspModelingUtilsTest {
             .build();
   }
 
-  private static Configuration createBgpNode(
-      String hostname, String bgpIfaceName, Ip bgpInterfaceIp) {
+  private Configuration createBgpNode(String hostname, String bgpIfaceName, Ip bgpInterfaceIp) {
     Configuration c =
         _nf.configurationBuilder()
             .setHostname(hostname)

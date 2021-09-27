@@ -1,5 +1,6 @@
 package org.batfish.datamodel.interface_dependencies;
 
+import static org.batfish.common.topology.Layer1Topologies.INVALID_INTERFACE;
 import static org.batfish.datamodel.Interface.DependencyType.AGGREGATE;
 import static org.batfish.datamodel.Interface.DependencyType.BIND;
 import static org.batfish.datamodel.interface_dependency.InterfaceDependencies.getInterfacesToDeactivate;
@@ -375,6 +376,66 @@ public class InterfaceDependenciesTest {
         getInterfacesToDeactivate(configs, layer1Topologies), contains(NodeInterfacePair.of(pc1)));
   }
 
+  /**
+   * The logical L1 topology will assign physical nodes as neighbors of an LACP interface. We should
+   * exclude those when looking for an unambiguous neighbor.
+   */
+  @Test
+  public void testGetInterfacesToDeactivate_LACP_PhysicalNeighborsInLogicalL1() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+
+    Configuration n1 = cb.setHostname("n1").build();
+    Vrf v1 = nf.vrfBuilder().setOwner(n1).build();
+    // member interface
+    Interface m1 =
+        nf.interfaceBuilder()
+            .setType(InterfaceType.PHYSICAL)
+            .setOwner(n1)
+            .setVrf(v1)
+            .setName("m1")
+            .build();
+    // port-channel interface
+    Interface pc1 =
+        nf.interfaceBuilder()
+            .setType(InterfaceType.AGGREGATED)
+            .setOwner(n1)
+            .setVrf(v1)
+            .setName("pc1")
+            .setDependencies(ImmutableList.of(new Dependency(m1.getName(), AGGREGATE)))
+            .build();
+
+    Configuration n2 = cb.setHostname("n2").build();
+    Vrf v2 = nf.vrfBuilder().setOwner(n2).build();
+    // neighbor of the member interface
+    Interface m2 =
+        nf.interfaceBuilder()
+            .setType(InterfaceType.PHYSICAL)
+            .setOwner(n2)
+            .setVrf(v2)
+            .setName("m2")
+            .build();
+    // port-channel interface
+    Interface pc2 =
+        nf.interfaceBuilder()
+            .setType(InterfaceType.AGGREGATED)
+            .setOwner(n2)
+            .setVrf(v2)
+            .setName("pc2")
+            .setDependencies(ImmutableList.of(new Dependency(m2.getName(), AGGREGATE)))
+            .build();
+
+    Map<String, Configuration> configs =
+        ImmutableMap.of(n1.getHostname(), n1, n2.getHostname(), n2);
+    Layer1Topologies layer1Topologies =
+        layer1Topologies(
+            new Layer1Topology(l1Edge(m1, m2)),
+            new Layer1Topology(l1Edge(m1, m2), l1Edge(m1, pc2), l1Edge(pc1, m2), l1Edge(pc1, pc2)));
+
+    assertThat(getInterfacesToDeactivate(configs, layer1Topologies), empty());
+  }
+
   /** An LACP interface without a neighbor can be active if it's on the network boundary. */
   @Test
   public void testGetInterfacesToDeactivate_LACP_on_network_boundary() {
@@ -500,6 +561,33 @@ public class InterfaceDependenciesTest {
             new Layer1Topology(l1Edge(n1pc, n2pc), l1Edge(n1pc, n3pc)));
 
     // nothing is deactivated, even though n1pc has an ambiguous neighbor, since it looks like a VPC
+    assertThat(getInterfacesToDeactivate(configs, layer1Topologies), empty());
+  }
+
+  /** Test robustness to {@link Layer1Topologies#INVALID_INTERFACE} in the l1 topology. */
+  @Test
+  public void testGetInterfacesToDeactivate_InvalidInterface() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+
+    Configuration n1 = cb.setHostname("n1").build();
+    Vrf v1 = nf.vrfBuilder().setOwner(n1).build();
+    Interface i1 =
+        nf.interfaceBuilder()
+            .setType(InterfaceType.PHYSICAL)
+            .setOwner(n1)
+            .setVrf(v1)
+            .setName("i1")
+            .build();
+
+    Map<String, Configuration> configs = ImmutableMap.of(n1.getHostname(), n1);
+    Layer1Topologies layer1Topologies =
+        layer1Topologies(
+            new Layer1Topology(new Layer1Edge(l1Node(i1), INVALID_INTERFACE)),
+            Layer1Topology.EMPTY);
+
+    // pc1 is still active because it's on the network boundary
     assertThat(getInterfacesToDeactivate(configs, layer1Topologies), empty());
   }
 }
