@@ -111,7 +111,7 @@ F_IpPrefixLength
 fragment
 F_Newline
 :
-  F_NewlineChar (F_Whitespace* F_NewlineChar+)*
+  (F_Whitespace* F_NewlineChar+)+
 ;
 
 // A single newline character [sequence - allowing \r, \r\n, or \n]

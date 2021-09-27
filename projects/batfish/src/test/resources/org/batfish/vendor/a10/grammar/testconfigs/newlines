@@ -1,18 +1,18 @@
 !BATFISH_FORMAT: a10_acos
 
 
+! intentionally using trailing whitespace on these lines 
+ 
+
+hostname newlines 
+!
+ 
+
 !
 
 
-hostname newlines
-!
-
-
-!
-
-
-interface ethernet 1
-
+interface ethernet 1 
+ 
 
 !
 
