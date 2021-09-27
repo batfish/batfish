@@ -1,5 +1,6 @@
 package org.batfish.datamodel.interface_dependencies;
 
+import static org.batfish.common.topology.Layer1Topologies.INVALID_INTERFACE;
 import static org.batfish.datamodel.Interface.DependencyType.AGGREGATE;
 import static org.batfish.datamodel.Interface.DependencyType.BIND;
 import static org.batfish.datamodel.interface_dependency.InterfaceDependencies.getInterfacesToDeactivate;
@@ -560,6 +561,33 @@ public class InterfaceDependenciesTest {
             new Layer1Topology(l1Edge(n1pc, n2pc), l1Edge(n1pc, n3pc)));
 
     // nothing is deactivated, even though n1pc has an ambiguous neighbor, since it looks like a VPC
+    assertThat(getInterfacesToDeactivate(configs, layer1Topologies), empty());
+  }
+
+  /** Test robustness to {@link Layer1Topologies#INVALID_INTERFACE} in the l1 topology. */
+  @Test
+  public void testGetInterfacesToDeactivate_InvalidInterface() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+
+    Configuration n1 = cb.setHostname("n1").build();
+    Vrf v1 = nf.vrfBuilder().setOwner(n1).build();
+    Interface i1 =
+        nf.interfaceBuilder()
+            .setType(InterfaceType.PHYSICAL)
+            .setOwner(n1)
+            .setVrf(v1)
+            .setName("i1")
+            .build();
+
+    Map<String, Configuration> configs = ImmutableMap.of(n1.getHostname(), n1);
+    Layer1Topologies layer1Topologies =
+        layer1Topologies(
+            new Layer1Topology(new Layer1Edge(l1Node(i1), INVALID_INTERFACE)),
+            Layer1Topology.EMPTY);
+
+    // pc1 is still active because it's on the network boundary
     assertThat(getInterfacesToDeactivate(configs, layer1Topologies), empty());
   }
 }
