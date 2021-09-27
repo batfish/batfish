@@ -64,7 +64,7 @@ public class IspNodeInfo {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_asn, _name, _additionalAnnouncement);
+    return Objects.hash(_asn, _name, _additionalAnnouncement, _trafficFiltering);
   }
 
   @JsonCreator
