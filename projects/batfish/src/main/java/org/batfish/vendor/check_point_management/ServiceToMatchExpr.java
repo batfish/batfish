@@ -1,6 +1,7 @@
 package org.batfish.vendor.check_point_management;
 
 import static org.batfish.datamodel.IntegerSpace.PORTS;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocol;
 import static org.batfish.datamodel.applications.PortsApplication.MAX_PORT_NUMBER;
 import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceCpmiAnyTraceElement;
 import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceGroupTraceElement;
@@ -10,7 +11,6 @@ import static org.batfish.vendor.check_point_management.CheckPointManagementTrac
 import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceUdpTraceElement;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -30,33 +30,38 @@ import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.TrueExpr;
+import org.batfish.vendor.check_point_management.parsing.parboiled.EmptyAstNode;
 
 /** Generates an {@link AclLineMatchExpr} for the specified {@link Service}. */
-public class ServiceToMatchExpr implements ServiceVisitor<AclLineMatchExpr> {
+public class ServiceToMatchExpr implements ServiceVisitor<AclLineMatchExpr, Boolean> {
 
+  /**
+   * Construct a {@link ServiceToMatchExpr} converter. Matches on unsupported features (e.g. L7,
+   * firewall state) are converted directly to the value of {@code permitUnsupported}. Matches on
+   * incoming or outgoing direction are currently treated the same as unsupported.
+   */
   public ServiceToMatchExpr(Map<Uid, NamedManagementObject> objs) {
     _objs = objs;
   }
 
   @Override
-  public AclLineMatchExpr visitCpmiAnyObject(CpmiAnyObject cpmiAnyObject) {
+  public AclLineMatchExpr visitCpmiAnyObject(
+      CpmiAnyObject cpmiAnyObject, Boolean permitUnsupported) {
     // Does not constrain headerspace
     return new TrueExpr(serviceCpmiAnyTraceElement());
   }
 
   @Override
-  public AclLineMatchExpr visitServiceGroup(ServiceGroup serviceGroup) {
-    return getDescendantMatchExpr(serviceGroup, new HashSet<>());
+  public AclLineMatchExpr visitServiceGroup(ServiceGroup serviceGroup, Boolean permitUnsupported) {
+    return getDescendantMatchExpr(serviceGroup, new HashSet<>(), permitUnsupported);
   }
 
   @Override
-  public AclLineMatchExpr visitServiceIcmp(ServiceIcmp serviceIcmp) {
+  public AclLineMatchExpr visitServiceIcmp(ServiceIcmp serviceIcmp, Boolean permitUnsupported) {
     ImmutableList.Builder<AclLineMatchExpr> exprs = ImmutableList.builder();
     int type = serviceIcmp.getIcmpType();
 
-    exprs.add(
-        AclLineMatchExprs.matchIpProtocol(
-            IpProtocol.ICMP, ipProtocolTraceElement(IpProtocol.ICMP)));
+    exprs.add(matchIpProtocol(IpProtocol.ICMP, ipProtocolTraceElement(IpProtocol.ICMP)));
     exprs.add(AclLineMatchExprs.matchIcmpType(type, icmpTypeTraceElement(type)));
     Optional.ofNullable(serviceIcmp.getIcmpCode())
         .ifPresent(
@@ -70,33 +75,25 @@ public class ServiceToMatchExpr implements ServiceVisitor<AclLineMatchExpr> {
   }
 
   @Override
-  public AclLineMatchExpr visitServiceOther(ServiceOther serviceOther) {
+  public AclLineMatchExpr visitServiceOther(ServiceOther serviceOther, Boolean permitUnsupported) {
+    // TODO: more detailed tracing
     IpProtocol ipProtocol = IpProtocol.fromNumber(serviceOther.getIpProtocol());
-    if (Strings.isNullOrEmpty(serviceOther.getMatch())) {
-      HeaderSpace.Builder hsb = HeaderSpace.builder();
-      hsb.setIpProtocols(ipProtocol);
-      return AclLineMatchExprs.match(hsb.build(), serviceOtherTraceElement(serviceOther));
+    AclLineMatchExpr matchProtocol = matchIpProtocol(ipProtocol);
+    TraceElement serviceTraceElement = serviceOtherTraceElement(serviceOther);
+    if (serviceOther.getMatchAst().equals(EmptyAstNode.instance())) {
+      return matchIpProtocol(ipProtocol, serviceTraceElement);
     }
-    // TODO really parse and handle match conditions
-    if (serviceOther.getMatch().equals("uh_dport > 33000, (IPV4_VER (ip_ttl < 30))")) {
-      return AclLineMatchExprs.and(
-          serviceOtherTraceElement(serviceOther),
-          AclLineMatchExprs.match(
-              HeaderSpace.builder()
-                  .setIpProtocols(ipProtocol)
-                  .setDstPorts(new SubRange(33001, 65535))
-                  .build(),
-              matchConditionTraceElement(serviceOther.getMatch())));
-    }
-    return new FalseExpr(TraceElement.of("Unsupported service-other " + serviceOther.getName()));
+    AclLineMatchExpr matchMatch =
+        BooleanExprAstNodeToAclLineMatchExpr.convert(serviceOther.getMatchAst(), permitUnsupported);
+    return AclLineMatchExprs.and(serviceTraceElement, matchProtocol, matchMatch);
   }
 
   @Override
-  public AclLineMatchExpr visitServiceTcp(ServiceTcp serviceTcp) {
+  public AclLineMatchExpr visitServiceTcp(ServiceTcp serviceTcp, Boolean permitUnsupported) {
     String portDefinition = serviceTcp.getPort();
     return AclLineMatchExprs.and(
         serviceTcpTraceElement(serviceTcp),
-        AclLineMatchExprs.matchIpProtocol(IpProtocol.TCP, ipProtocolTraceElement(IpProtocol.TCP)),
+        matchIpProtocol(IpProtocol.TCP, ipProtocolTraceElement(IpProtocol.TCP)),
         new MatchHeaderSpace(
             HeaderSpace.builder()
                 .setDstPorts(portStringToIntegerSpace(portDefinition).getSubRanges())
@@ -105,11 +102,11 @@ public class ServiceToMatchExpr implements ServiceVisitor<AclLineMatchExpr> {
   }
 
   @Override
-  public AclLineMatchExpr visitServiceUdp(ServiceUdp serviceUdp) {
+  public AclLineMatchExpr visitServiceUdp(ServiceUdp serviceUdp, Boolean permitUnsupported) {
     String portDefinition = serviceUdp.getPort();
     return AclLineMatchExprs.and(
         serviceUdpTraceElement(serviceUdp),
-        AclLineMatchExprs.matchIpProtocol(IpProtocol.UDP, ipProtocolTraceElement(IpProtocol.UDP)),
+        matchIpProtocol(IpProtocol.UDP, ipProtocolTraceElement(IpProtocol.UDP)),
         new MatchHeaderSpace(
             HeaderSpace.builder()
                 .setDstPorts(portStringToIntegerSpace(portDefinition).getSubRanges())
@@ -147,7 +144,7 @@ public class ServiceToMatchExpr implements ServiceVisitor<AclLineMatchExpr> {
    * descendants to prevent loops, though these should not occur in real configs.
    */
   private AclLineMatchExpr getDescendantMatchExpr(
-      ServiceGroup group, Set<Uid> alreadyTraversedMembers) {
+      ServiceGroup group, Set<Uid> alreadyTraversedMembers, boolean permitUnsupported) {
     Uid groupUid = group.getUid();
     alreadyTraversedMembers.add(groupUid);
 
@@ -157,10 +154,11 @@ public class ServiceToMatchExpr implements ServiceVisitor<AclLineMatchExpr> {
       if (member instanceof ServiceGroup) {
         if (!alreadyTraversedMembers.contains(memberUid)) {
           descendantObjExprs.add(
-              getDescendantMatchExpr((ServiceGroup) member, alreadyTraversedMembers));
+              getDescendantMatchExpr(
+                  (ServiceGroup) member, alreadyTraversedMembers, permitUnsupported));
         }
       } else if (member instanceof Service) {
-        descendantObjExprs.add(visit((Service) member));
+        descendantObjExprs.add(visit((Service) member, permitUnsupported));
       } else {
         // Don't match non-servicey objects
         descendantObjExprs.add(FalseExpr.INSTANCE);

@@ -57,7 +57,7 @@ public final class CheckPointGatewayConversions {
     ImmutableList.Builder<AclLineMatchExpr> exprs = ImmutableList.builder();
     exprs.add(addressSpaceToMatchExpr.convertSource((AddressSpace) src));
     exprs.add(addressSpaceToMatchExpr.convertDest((AddressSpace) dst));
-    exprs.add(((Service) service).accept(serviceToMatchExpr));
+    exprs.add(serviceToMatchExpr.visit((Service) service, true));
     return Optional.of(AclLineMatchExprs.and(exprs.build()));
   }
 
@@ -169,12 +169,19 @@ public final class CheckPointGatewayConversions {
     if (!rule.getEnabled()) {
       return Optional.empty();
     }
+    LineAction action = toAction(objs.get(rule.getAction()), rule.getAction(), w);
     return Optional.of(
         ExprAclLine.builder()
             .setName(rule.getName())
             .setMatchCondition(
-                toMatchExpr(rule, objs, serviceToMatchExpr, addressSpaceToMatchExpr, w))
-            .setAction(toAction(objs.get(rule.getAction()), rule.getAction(), w))
+                toMatchExpr(
+                    rule,
+                    objs,
+                    serviceToMatchExpr,
+                    addressSpaceToMatchExpr,
+                    action == LineAction.PERMIT,
+                    w))
+            .setAction(action)
             .build());
   }
 
@@ -188,6 +195,7 @@ public final class CheckPointGatewayConversions {
       Map<Uid, NamedManagementObject> objs,
       ServiceToMatchExpr serviceToMatchExpr,
       AddressSpaceToMatchExpr addressSpaceToMatchExpr,
+      boolean permitting,
       Warnings w) {
     ImmutableList.Builder<AclLineMatchExpr> conjuncts = ImmutableList.builder();
 
@@ -202,7 +210,9 @@ public final class CheckPointGatewayConversions {
     conjuncts.add(rule.getDestinationNegate() ? AclLineMatchExprs.not(dstMatch) : dstMatch);
 
     // Service
-    AclLineMatchExpr svcMatch = servicesToMatchExpr(rule.getService(), objs, serviceToMatchExpr, w);
+    AclLineMatchExpr svcMatch =
+        servicesToMatchExpr(
+            rule.getService(), objs, serviceToMatchExpr, permitting ^ rule.getServiceNegate(), w);
     conjuncts.add(rule.getServiceNegate() ? AclLineMatchExprs.not(svcMatch) : svcMatch);
 
     return AclLineMatchExprs.and(conjuncts.build());
@@ -218,6 +228,7 @@ public final class CheckPointGatewayConversions {
       List<Uid> services,
       Map<Uid, NamedManagementObject> objs,
       ServiceToMatchExpr serviceToMatchExpr,
+      boolean permitting,
       Warnings w) {
     return AclLineMatchExprs.or(
         services.stream()
@@ -232,7 +243,7 @@ public final class CheckPointGatewayConversions {
                             o.getName(), o.getClass().getSimpleName()));
                     return FalseExpr.INSTANCE;
                   }
-                  return serviceToMatchExpr.visit((Service) o);
+                  return serviceToMatchExpr.visit((Service) o, permitting);
                 })
             .filter(Objects::nonNull)
             .collect(ImmutableList.toImmutableList()));

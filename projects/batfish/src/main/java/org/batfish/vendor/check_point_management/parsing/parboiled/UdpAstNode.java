@@ -6,10 +6,15 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 /** An {@link AstNode} representing the condition that the packet protocol is UDP. */
 @ParametersAreNonnullByDefault
-public final class UdpAstNode extends BooleanExprAstNode {
+public final class UdpAstNode implements BooleanExprAstNode {
 
   public static @Nonnull UdpAstNode instance() {
     return INSTANCE;
+  }
+
+  @Override
+  public <T, U> T accept(BooleanExprAstNodeVisitor<T, U> visitor, U arg) {
+    return visitor.visitUdpAstNode(this, arg);
   }
 
   private static final UdpAstNode INSTANCE = new UdpAstNode();

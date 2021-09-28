@@ -1,5 +1,6 @@
 package org.batfish.vendor.check_point_management.parsing.parboiled;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import javax.annotation.Nonnull;
@@ -8,9 +9,10 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 /** An {@link AstNode} representing a disjunction of boolean expressions. */
 @ParametersAreNonnullByDefault
-public final class DisjunctionAstNode extends BooleanExprAstNode {
+public final class DisjunctionAstNode implements BooleanExprAstNode {
 
-  DisjunctionAstNode(BooleanExprAstNode... disjuncts) {
+  @VisibleForTesting
+  public DisjunctionAstNode(BooleanExprAstNode... disjuncts) {
     _disjuncts = ImmutableList.copyOf(disjuncts);
   }
 
@@ -18,11 +20,20 @@ public final class DisjunctionAstNode extends BooleanExprAstNode {
     _disjuncts = ImmutableList.copyOf(disjuncts);
   }
 
+  @Override
+  public <T, U> T accept(BooleanExprAstNodeVisitor<T, U> visitor, U arg) {
+    return visitor.visitDisjunctionAstNode(this, arg);
+  }
+
   @Nonnull
   @Override
   public BooleanExprAstNode or(BooleanExprAstNode disjunct) {
     return new DisjunctionAstNode(
         ImmutableList.<BooleanExprAstNode>builder().addAll(_disjuncts).add(disjunct).build());
+  }
+
+  public @Nonnull List<BooleanExprAstNode> getDisjuncts() {
+    return _disjuncts;
   }
 
   @Override
