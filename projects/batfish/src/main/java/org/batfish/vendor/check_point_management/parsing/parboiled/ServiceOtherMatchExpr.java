@@ -125,7 +125,7 @@ public class ServiceOtherMatchExpr extends BaseParser<AstNode> {
   Rule UnhandledExpr() {
     return Sequence(
         FirstOf(CallExpr(), InExpr(), UnhandledComparisonExpr(), UnhandledWord()),
-        push(UnhandledAstNode.instance()));
+        push(UnhandledAstNode.of(match().trim())));
   }
 
   Rule InExpr() {

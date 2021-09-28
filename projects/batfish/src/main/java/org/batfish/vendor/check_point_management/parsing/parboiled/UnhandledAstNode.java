@@ -1,5 +1,7 @@
 package org.batfish.vendor.check_point_management.parsing.parboiled;
 
+import static com.google.common.base.MoreObjects.toStringHelper;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -11,21 +13,38 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class UnhandledAstNode extends BooleanExprAstNode {
 
-  public static @Nonnull UnhandledAstNode instance() {
-    return INSTANCE;
+  public @Nonnull String getUnhandledText() {
+    return _unhandledText;
   }
-
-  private static final UnhandledAstNode INSTANCE = new UnhandledAstNode();
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    return this == obj || obj instanceof UnhandledAstNode;
+    if (this == obj) {
+      return true;
+    } else if (!(obj instanceof UnhandledAstNode)) {
+      return false;
+    }
+    UnhandledAstNode that = (UnhandledAstNode) obj;
+    return _unhandledText.equals(that._unhandledText);
   }
 
   @Override
   public int hashCode() {
-    return 0xD26A9570; // randomly generated
+    return _unhandledText.hashCode();
   }
 
-  private UnhandledAstNode() {}
+  @Override
+  public String toString() {
+    return toStringHelper(this).add("_unhandledText", _unhandledText).toString();
+  }
+
+  public static @Nonnull UnhandledAstNode of(String unhandledText) {
+    return new UnhandledAstNode(unhandledText);
+  }
+
+  private UnhandledAstNode(String unhandledText) {
+    _unhandledText = unhandledText;
+  }
+
+  private final @Nonnull String _unhandledText;
 }
