@@ -234,8 +234,7 @@ public final class A10Configuration extends VendorConfiguration {
                             member, org.batfish.datamodel.Interface.DependencyType.AGGREGATE))
                 .collect(ImmutableSet.toImmutableSet()));
 
-        // If this trunk doesn't have VLAN settings configured directly (e.g. ACOS v2), inherit
-        // settings
+        // If this trunk doesn't have VLAN configured directly (e.g. ACOS v2), inherit it
         if (!hasVlanSettings) {
           if (vlanSettingsDifferent(memberNames)) {
             _w.redFlag(
