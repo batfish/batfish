@@ -693,7 +693,7 @@ public class A10GrammarTest {
                 WarningMatchers.hasText("Trunk 2 does not contain any member interfaces"),
                 WarningMatchers.hasText(
                     containsString(
-                        "VLAN settings for members of Trunk 1 are different, ignoring VLAN"
+                        "VLAN settings for members of Trunk 1 are different, ignoring their VLAN"
                             + " settings")),
                 WarningMatchers.hasText(
                     "Trunk member Ethernet 10 does not exist, cannot add to Trunk 1"))));
@@ -725,6 +725,25 @@ public class A10GrammarTest {
                 hasComment("This interface is already a member of trunk-group 3"),
                 hasComment("Cannot add an interface with a configured IP address to a trunk-group"),
                 hasComment("Cannot configure an IP address on a trunk-group member"))));
+  }
+
+  @Test
+  public void testTrunkConversionWarn() throws IOException {
+    String hostname = "trunk_convert_warn";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Warnings warnings =
+        batfish
+            .loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot())
+            .getWarnings()
+            .get(hostname);
+
+    assertThat(
+        warnings,
+        hasRedFlags(
+            containsInAnyOrder(
+                WarningMatchers.hasText(
+                    "Cannot configure VLAN settings on Trunk 1 as well as its members. Member VLAN"
+                        + " settings will be ignored."))));
   }
 
   /** Testing ACOS v2 syntax */

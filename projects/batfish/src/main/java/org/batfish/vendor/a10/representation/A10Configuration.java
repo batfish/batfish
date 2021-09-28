@@ -240,12 +240,22 @@ public final class A10Configuration extends VendorConfiguration {
           if (vlanSettingsDifferent(memberNames)) {
             _w.redFlag(
                 String.format(
-                    "VLAN settings for members of %s are different, ignoring VLAN settings",
+                    "VLAN settings for members of %s are different, ignoring their VLAN settings",
                     trunkName));
           } else {
             // All members have the same VLAN settings, so just use the first
             String firstMemberName = memberNames.iterator().next();
             setVlanSettings(_ifaceNametoIface.get(firstMemberName), newIface);
+          }
+        } else {
+          org.batfish.datamodel.Interface.Builder dummy = org.batfish.datamodel.Interface.builder();
+          if (memberNames.stream()
+              .anyMatch(memberName -> setVlanSettings(_ifaceNametoIface.get(memberName), dummy))) {
+            _w.redFlag(
+                String.format(
+                    "Cannot configure VLAN settings on %s as well as its members. Member VLAN"
+                        + " settings will be ignored.",
+                    trunkName));
           }
         }
       }
