@@ -20,6 +20,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInterfaceType;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasNativeVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
@@ -274,6 +275,7 @@ public class A10GrammarTest {
             "VirtualEthernet 2",
             allOf(
                 hasInterfaceType(InterfaceType.VLAN),
+                hasVlan(2),
                 hasSwitchPortMode(SwitchportMode.NONE),
                 hasAllAddresses(contains(ConcreteInterfaceAddress.parse("10.100.2.1/24"))))));
   }
