@@ -1,5 +1,7 @@
 package org.batfish.vendor.check_point_management.parsing.parboiled;
 
+import static com.google.common.base.MoreObjects.toStringHelper;
+
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import javax.annotation.Nonnull;
@@ -39,6 +41,11 @@ public final class ConjunctionAstNode extends BooleanExprAstNode {
   @Override
   public int hashCode() {
     return _conjuncts.hashCode();
+  }
+
+  @Override
+  public String toString() {
+    return toStringHelper(this).add("_conjuncts", _conjuncts).toString();
   }
 
   private final @Nonnull List<BooleanExprAstNode> _conjuncts;
