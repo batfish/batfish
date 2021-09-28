@@ -366,10 +366,10 @@ public class CheckpointNatConversions {
   }
 
   /**
-   * Returns a function that takes in an external interface's IP and returns the {@link
-   * Transformation} that should be applied to outgoing traffic on that interface to reflect the NAT
-   * settings on the given {@link HasNatSettings}. Returns an empty optional and files warnings if
-   * the NAT settings cannot be converted.
+   * Returns a function that takes in an interface's IP and returns the {@link Transformation} that
+   * should be applied to outgoing traffic on that interface to reflect the NAT settings on the
+   * given {@link HasNatSettings}. Returns an empty optional and files warnings if the NAT settings
+   * cannot be converted.
    */
   static @Nonnull Optional<Function<Ip, Transformation>> automaticHideRuleTransformationFunction(
       HasNatSettings hasNatSettings,
