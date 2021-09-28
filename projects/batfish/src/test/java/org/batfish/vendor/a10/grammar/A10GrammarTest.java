@@ -30,6 +30,7 @@ import static org.batfish.vendor.a10.representation.A10StructureType.INTERFACE;
 import static org.batfish.vendor.a10.representation.A10StructureUsage.VLAN_TAGGED_INTERFACE;
 import static org.batfish.vendor.a10.representation.A10StructureUsage.VLAN_UNTAGGED_INTERFACE;
 import static org.batfish.vendor.a10.representation.Interface.DEFAULT_MTU;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -689,7 +690,13 @@ public class A10GrammarTest {
         warnings,
         hasRedFlags(
             containsInAnyOrder(
-                WarningMatchers.hasText("Trunk 2 does not contain any member interfaces"))));
+                WarningMatchers.hasText("Trunk 2 does not contain any member interfaces"),
+                WarningMatchers.hasText(
+                    containsString(
+                        "VLAN settings for members of Trunk 1 are different, ignoring VLAN"
+                            + " settings")),
+                WarningMatchers.hasText(
+                    "Trunk member Ethernet 10 does not exist, cannot add to Trunk 1"))));
   }
 
   @Test
