@@ -270,7 +270,17 @@ public final class IspModelingUtils {
       Map<Long, IspModel> asnToIspModel, NetworkFactory nf, BatfishLogger logger) {
     ModeledNodes modeledNodes = new ModeledNodes();
 
-    asnToIspModel.values().forEach(ispModel -> createIspNode(modeledNodes, ispModel, nf, logger));
+    asnToIspModel
+        .values()
+        .forEach(
+            ispModel -> {
+              createIspNode(modeledNodes, ispModel, nf, logger);
+              Configuration ispConfiguration =
+                  modeledNodes.getConfigurations().get(ispModel.getHostname());
+              if (ispConfiguration != null) {
+                connectIspToSnapshot(modeledNodes, ispModel, ispConfiguration, nf, logger);
+              }
+            });
 
     boolean needInternet =
         asnToIspModel.values().stream().anyMatch(IspModel::getInternetConnection);
@@ -584,9 +594,8 @@ public final class IspModelingUtils {
   }
 
   /**
-   * Creates the {@link Configuration} for the ISP node given an ASN and {@link IspModel} and adds
-   * the infrastructure (interfaces, traffic filters, L1 edges) needed to connect the ISP to the
-   * snapshot. Also, inserts that node and new edges into {@code modeledNodes}.
+   * Creates the {@link Configuration} for the ISP node given an ASN and {@link IspModel} and
+   * inserts the node into {@code modeledNodes}.
    */
   @VisibleForTesting
   static void createIspNode(
@@ -604,7 +613,7 @@ public final class IspModelingUtils {
             .setDeviceModel(DeviceModel.BATFISH_ISP)
             .build();
     ispConfiguration.setDeviceType(DeviceType.ISP);
-    Vrf defaultVrf = Vrf.builder().setName(DEFAULT_VRF_NAME).setOwner(ispConfiguration).build();
+    Vrf.builder().setName(DEFAULT_VRF_NAME).setOwner(ispConfiguration).build();
 
     ispConfiguration
         .getRoutingPolicies()
@@ -622,7 +631,22 @@ public final class IspModelingUtils {
             ispConfiguration.getDefaultVrf());
     bgpProcess.setMultipathEbgp(true);
 
-    // Get the network-facing traffic filters out and add them all to the node.
+    modeledNodes.addConfiguration(ispConfiguration);
+  }
+
+  /**
+   * Adds the infrastructure (interfaces, traffic filters, L1 edges, BGP peer) needed to connect the
+   * ISP to the snapshot. Add the L1 edges to modeled nodes.
+   */
+  @VisibleForTesting
+  static void connectIspToSnapshot(
+      ModeledNodes modeledNodes,
+      IspModel ispModel,
+      Configuration ispConfiguration,
+      NetworkFactory nf,
+      BatfishLogger logger) {
+
+    // Get the traffic filtering policy for this ISP.
     IspTrafficFilteringPolicy fp =
         IspTrafficFilteringPolicy.createFor(ispModel.getTrafficFiltering());
     IpAccessList toNetwork = fp.filterTrafficToNetwork();
@@ -644,7 +668,7 @@ public final class IspModelingUtils {
                       .setName(
                           ispToRemoteInterfaceName(
                               remote.getRemoteHostname(), remote.getRemoteIfaceName()))
-                      .setVrf(defaultVrf)
+                      .setVrf(ispConfiguration.getDefaultVrf())
                       .setAddress(remote.getIspIfaceAddress())
                       .setIncomingFilter(fromNetwork)
                       .setOutgoingFilter(toNetwork)
@@ -655,10 +679,11 @@ public final class IspModelingUtils {
                   ispInterface.getName(),
                   remote.getRemoteHostname(),
                   remote.getRemoteIfaceName());
-              addBgpPeerToIsp(remote.getRemoteBgpPeerConfig(), ispInterface.getName(), bgpProcess);
+              addBgpPeerToIsp(
+                  remote.getRemoteBgpPeerConfig(),
+                  ispInterface.getName(),
+                  ispConfiguration.getDefaultVrf().getBgpProcess());
             });
-
-    modeledNodes.addConfiguration(ispConfiguration);
   }
 
   /**

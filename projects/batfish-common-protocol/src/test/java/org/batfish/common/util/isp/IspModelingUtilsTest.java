@@ -17,6 +17,7 @@ import static org.batfish.common.util.isp.IspModelingUtils.LINK_LOCAL_ADDRESS;
 import static org.batfish.common.util.isp.IspModelingUtils.LINK_LOCAL_IP;
 import static org.batfish.common.util.isp.IspModelingUtils.addBgpPeerToIsp;
 import static org.batfish.common.util.isp.IspModelingUtils.connectIspToInternet;
+import static org.batfish.common.util.isp.IspModelingUtils.connectIspToSnapshot;
 import static org.batfish.common.util.isp.IspModelingUtils.createInternetNode;
 import static org.batfish.common.util.isp.IspModelingUtils.createIspNode;
 import static org.batfish.common.util.isp.IspModelingUtils.getAdvertiseBgpStatement;
@@ -128,6 +129,7 @@ public class IspModelingUtilsTest {
   private static final String _snapshotHostname = "conf";
   private static final String _snapshotInterfaceName = "interface";
 
+  private BatfishLogger _logger;
   private NetworkFactory _nf;
   private Configuration _snapshotHost;
   private BgpActivePeerConfig _snapshotActivePeer;
@@ -135,6 +137,7 @@ public class IspModelingUtilsTest {
 
   @Before
   public void setup() {
+    _logger = new BatfishLogger("output", false);
     _nf = new NetworkFactory();
     _snapshotHost = createBgpNode(_snapshotHostname, _snapshotInterfaceName, _snapshotIp);
     _snapshotActivePeer =
@@ -354,8 +357,7 @@ public class IspModelingUtilsTest {
   @Test
   public void testCreateIspNode() {
     ModeledNodes modeledNodes = new ModeledNodes();
-    createIspNode(
-        modeledNodes, _ispModel, new NetworkFactory(), new BatfishLogger("output", false));
+    createIspNode(modeledNodes, _ispModel, new NetworkFactory(), _logger);
     Configuration ispConfiguration = modeledNodes.getConfigurations().get(_ispName);
 
     assertThat(
@@ -363,11 +365,24 @@ public class IspModelingUtilsTest {
         allOf(
             hasHostname(_ispName),
             hasDeviceType(equalTo(DeviceType.ISP)),
+            hasVrf(DEFAULT_VRF_NAME, hasBgpProcess(allOf(hasMultipathEbgp(true))))));
+  }
+
+  @Test
+  public void testConnectIspToSnapshot() {
+    ModeledNodes modeledNodes = new ModeledNodes();
+    createIspNode(modeledNodes, _ispModel, new NetworkFactory(), _logger);
+    Configuration ispConfiguration = modeledNodes.getConfigurations().get(_ispName);
+
+    connectIspToSnapshot(modeledNodes, _ispModel, ispConfiguration, _nf, _logger);
+
+    assertThat(
+        ispConfiguration,
+        allOf(
             hasInterface(
                 ispToRemoteInterfaceName(_snapshotHostname, _snapshotInterfaceName),
                 hasAllAddresses(
-                    equalTo(ImmutableSet.of(ConcreteInterfaceAddress.create(_ispIp, 24))))),
-            hasVrf(DEFAULT_VRF_NAME, hasBgpProcess(allOf(hasMultipathEbgp(true))))));
+                    equalTo(ImmutableSet.of(ConcreteInterfaceAddress.create(_ispIp, 24)))))));
 
     // compute the reverse config
     BgpProcess bgpProcess = testBgpProcess(Ip.ZERO);
@@ -404,7 +419,7 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testCreateIspNode_unnumbered() {
+  public void testConnectIspToSnapshot_unnumbered() {
     BgpUnnumberedPeerConfig remotePeerConfig =
         BgpUnnumberedPeerConfig.builder()
             .setPeerInterface(_snapshotInterfaceName)
@@ -425,18 +440,17 @@ public class IspModelingUtilsTest {
             .build();
 
     ModeledNodes modeledNodes = new ModeledNodes();
-    createIspNode(modeledNodes, ispModel, new NetworkFactory(), new BatfishLogger("output", false));
+    createIspNode(modeledNodes, ispModel, new NetworkFactory(), _logger);
     Configuration ispConfiguration = modeledNodes.getConfigurations().get(_ispName);
+
+    connectIspToSnapshot(modeledNodes, ispModel, ispConfiguration, _nf, _logger);
 
     assertThat(
         ispConfiguration,
         allOf(
-            hasHostname(_ispName),
-            hasDeviceType(equalTo(DeviceType.ISP)),
             hasInterface(
                 ispToRemoteInterfaceName(_snapshotHostname, _snapshotInterfaceName),
-                hasAllAddresses(equalTo(ImmutableSet.of(LINK_LOCAL_ADDRESS)))),
-            hasVrf(DEFAULT_VRF_NAME, hasBgpProcess(hasMultipathEbgp(true)))));
+                hasAllAddresses(equalTo(ImmutableSet.of(LINK_LOCAL_ADDRESS))))));
 
     // compute the reverse config
     BgpProcess bgpProcess = testBgpProcess(Ip.ZERO);
@@ -494,7 +508,14 @@ public class IspModelingUtilsTest {
   @Test
   public void testConnectIspToInternet() {
     ModeledNodes modeledNodes = new ModeledNodes();
-    createIspNode(modeledNodes, _ispModel, _nf, new BatfishLogger("output", false));
+    BatfishLogger logger = new BatfishLogger("output", false);
+    createIspNode(modeledNodes, _ispModel, _nf, logger);
+    connectIspToSnapshot(
+        modeledNodes,
+        _ispModel,
+        modeledNodes.getConfigurations().get(_ispModel.getHostname()),
+        _nf,
+        logger);
     createInternetNode(modeledNodes);
 
     Configuration internet = modeledNodes.getConfigurations().get(INTERNET_HOST_NAME);
