@@ -16,7 +16,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasChannelGroup;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasChannelGroupMembers;
-import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDeclaredNames;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInterfaceType;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasNativeVlan;
@@ -44,7 +44,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Range;
 import java.io.IOException;
 import java.util.Arrays;
@@ -247,7 +246,7 @@ public class A10GrammarTest {
     assertThat(
         c,
         hasInterface(
-            "Ethernet 1",
+            "Ethernet1",
             allOf(
                 hasInterfaceType(InterfaceType.PHYSICAL),
                 hasSwitchPortMode(SwitchportMode.TRUNK),
@@ -256,7 +255,7 @@ public class A10GrammarTest {
     assertThat(
         c,
         hasInterface(
-            "Ethernet 2",
+            "Ethernet2",
             allOf(
                 hasInterfaceType(InterfaceType.PHYSICAL),
                 hasSwitchPortMode(SwitchportMode.TRUNK),
@@ -265,7 +264,7 @@ public class A10GrammarTest {
     assertThat(
         c,
         hasInterface(
-            "Ethernet 3",
+            "Ethernet3",
             allOf(
                 hasInterfaceType(InterfaceType.PHYSICAL),
                 hasSwitchPortMode(SwitchportMode.TRUNK),
@@ -274,7 +273,7 @@ public class A10GrammarTest {
     assertThat(
         c,
         hasInterface(
-            "VirtualEthernet 2",
+            "VirtualEthernet2",
             allOf(
                 hasInterfaceType(InterfaceType.VLAN),
                 hasVlan(2),
@@ -290,7 +289,7 @@ public class A10GrammarTest {
     assertThat(
         c,
         hasInterface(
-            "Trunk 1",
+            "Trunk1",
             allOf(
                 hasInterfaceType(InterfaceType.AGGREGATED),
                 hasSwitchPortMode(SwitchportMode.TRUNK),
@@ -299,7 +298,7 @@ public class A10GrammarTest {
     assertThat(
         c,
         hasInterface(
-            "Trunk 2",
+            "Trunk2",
             allOf(
                 hasInterfaceType(InterfaceType.AGGREGATED),
                 hasSwitchPortMode(SwitchportMode.TRUNK),
@@ -485,46 +484,46 @@ public class A10GrammarTest {
     assertThat(
         c,
         hasInterface(
-            "Ethernet 1",
+            "Ethernet1",
             allOf(
                 hasInterfaceType(InterfaceType.PHYSICAL),
                 hasSwitchPortMode(SwitchportMode.NONE),
                 hasAllAddresses(contains(ConcreteInterfaceAddress.parse("10.0.1.1/24"))),
                 isActive(),
-                hasDeclaredNames(ImmutableList.of("Ethernet 1", "this is a comp\"licat'ed name")),
+                hasDescription("this is a comp\"licat'ed name"),
                 hasMtu(1234))));
 
     assertThat(
         c,
         hasInterface(
-            "Ethernet 9",
+            "Ethernet9",
             allOf(
                 hasInterfaceType(InterfaceType.PHYSICAL),
                 hasSwitchPortMode(SwitchportMode.NONE),
                 hasAllAddresses(contains(ConcreteInterfaceAddress.parse("10.0.2.1/24"))),
                 isActive(false),
-                hasDeclaredNames(ImmutableList.of("Ethernet 9", "baz")),
+                hasDescription("baz"),
                 hasMtu(DEFAULT_MTU))));
 
     assertThat(
         c,
         hasInterface(
-            "Loopback 0",
+            "Loopback0",
             allOf(
                 hasInterfaceType(InterfaceType.LOOPBACK),
                 hasSwitchPortMode(SwitchportMode.NONE),
                 hasAllAddresses(contains(ConcreteInterfaceAddress.parse("192.168.0.1/32"))),
-                hasDeclaredNames(ImmutableList.of("Loopback 0")))));
+                hasDescription(nullValue()))));
 
     assertThat(
         c,
         hasInterface(
-            "Loopback 10",
+            "Loopback10",
             allOf(
                 hasInterfaceType(InterfaceType.LOOPBACK),
                 hasSwitchPortMode(SwitchportMode.NONE),
                 hasAllAddresses(empty()),
-                hasDeclaredNames(ImmutableList.of("Loopback 10")))));
+                hasDescription(nullValue()))));
   }
 
   @Test
@@ -618,60 +617,60 @@ public class A10GrammarTest {
     assertThat(
         c,
         hasInterface(
-            "Ethernet 1",
+            "Ethernet1",
             allOf(
                 hasInterfaceType(InterfaceType.PHYSICAL),
-                hasChannelGroup("Trunk 1"),
+                hasChannelGroup("Trunk1"),
                 hasChannelGroupMembers(empty()),
                 hasAllAddresses(empty()))));
     assertThat(
         c,
         hasInterface(
-            "Trunk 1",
+            "Trunk1",
             allOf(
                 hasInterfaceType(InterfaceType.AGGREGATED),
                 hasChannelGroup(nullValue()),
-                hasChannelGroupMembers(containsInAnyOrder("Ethernet 1")))));
+                hasChannelGroupMembers(containsInAnyOrder("Ethernet1")))));
     assertThat(
-        c.getAllInterfaces().get("Trunk 1").getDependencies(),
+        c.getAllInterfaces().get("Trunk1").getDependencies(),
         containsInAnyOrder(
             new org.batfish.datamodel.Interface.Dependency(
-                "Ethernet 1", org.batfish.datamodel.Interface.DependencyType.AGGREGATE)));
+                "Ethernet1", org.batfish.datamodel.Interface.DependencyType.AGGREGATE)));
 
     // Default trunk
     assertThat(
         c,
         hasInterface(
-            "Ethernet 2",
+            "Ethernet2",
             allOf(
                 hasInterfaceType(InterfaceType.PHYSICAL),
-                hasChannelGroup("Trunk 2"),
+                hasChannelGroup("Trunk2"),
                 hasChannelGroupMembers(empty()),
                 hasAllAddresses(empty()))));
     assertThat(
         c,
         hasInterface(
-            "Ethernet 3",
+            "Ethernet3",
             allOf(
                 hasInterfaceType(InterfaceType.PHYSICAL),
-                hasChannelGroup("Trunk 2"),
+                hasChannelGroup("Trunk2"),
                 hasChannelGroupMembers(empty()),
                 hasAllAddresses(empty()))));
     assertThat(
         c,
         hasInterface(
-            "Trunk 2",
+            "Trunk2",
             allOf(
                 hasInterfaceType(InterfaceType.AGGREGATED),
                 hasChannelGroup(nullValue()),
-                hasChannelGroupMembers(containsInAnyOrder("Ethernet 2", "Ethernet 3")))));
+                hasChannelGroupMembers(containsInAnyOrder("Ethernet2", "Ethernet3")))));
     assertThat(
-        c.getAllInterfaces().get("Trunk 2").getDependencies(),
+        c.getAllInterfaces().get("Trunk2").getDependencies(),
         containsInAnyOrder(
             new org.batfish.datamodel.Interface.Dependency(
-                "Ethernet 2", org.batfish.datamodel.Interface.DependencyType.AGGREGATE),
+                "Ethernet2", org.batfish.datamodel.Interface.DependencyType.AGGREGATE),
             new org.batfish.datamodel.Interface.Dependency(
-                "Ethernet 3", org.batfish.datamodel.Interface.DependencyType.AGGREGATE)));
+                "Ethernet3", org.batfish.datamodel.Interface.DependencyType.AGGREGATE)));
   }
 
   /** Testing ACOS v2 trunk conversion warnings */
@@ -689,7 +688,7 @@ public class A10GrammarTest {
         warnings,
         hasRedFlags(
             containsInAnyOrder(
-                WarningMatchers.hasText("Trunk 2 does not contain any member interfaces"))));
+                WarningMatchers.hasText("Trunk2 does not contain any member interfaces"))));
   }
 
   @Test
@@ -747,38 +746,38 @@ public class A10GrammarTest {
     assertThat(
         c,
         hasInterface(
-            "Ethernet 1",
+            "Ethernet1",
             allOf(
                 hasInterfaceType(InterfaceType.PHYSICAL),
-                hasChannelGroup("Trunk 1"),
+                hasChannelGroup("Trunk1"),
                 hasChannelGroupMembers(empty()),
                 hasAllAddresses(empty()))));
 
     assertThat(
         c,
         hasInterface(
-            "Ethernet 2",
+            "Ethernet2",
             allOf(
                 hasInterfaceType(InterfaceType.PHYSICAL),
-                hasChannelGroup("Trunk 1"),
+                hasChannelGroup("Trunk1"),
                 hasChannelGroupMembers(empty()),
                 hasAllAddresses(empty()))));
 
     assertThat(
         c,
         hasInterface(
-            "Trunk 1",
+            "Trunk1",
             allOf(
                 hasInterfaceType(InterfaceType.AGGREGATED),
                 hasChannelGroup(nullValue()),
-                hasChannelGroupMembers(containsInAnyOrder("Ethernet 1", "Ethernet 2")),
+                hasChannelGroupMembers(containsInAnyOrder("Ethernet1", "Ethernet2")),
                 hasAllAddresses(contains(ConcreteInterfaceAddress.parse("10.0.1.1/24"))))));
     assertThat(
-        c.getAllInterfaces().get("Trunk 1").getDependencies(),
+        c.getAllInterfaces().get("Trunk1").getDependencies(),
         containsInAnyOrder(
             new org.batfish.datamodel.Interface.Dependency(
-                "Ethernet 1", org.batfish.datamodel.Interface.DependencyType.AGGREGATE),
+                "Ethernet1", org.batfish.datamodel.Interface.DependencyType.AGGREGATE),
             new org.batfish.datamodel.Interface.Dependency(
-                "Ethernet 2", org.batfish.datamodel.Interface.DependencyType.AGGREGATE)));
+                "Ethernet2", org.batfish.datamodel.Interface.DependencyType.AGGREGATE)));
   }
 }

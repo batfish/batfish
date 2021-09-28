@@ -124,13 +124,13 @@ public final class A10Configuration extends VendorConfiguration {
   @Nonnull
   public static String getInterfaceName(Interface.Type type, int num) {
     if (type == Interface.Type.VE) {
-      return String.format("VirtualEthernet %s", num);
+      return String.format("VirtualEthernet%s", num);
     }
 
     String typeStr = type.toString();
-    // Only the first letter should be capitalized, like in A10 `show` data
+    // Only the first letter should be capitalized, similar to A10 `show` data
     return String.format(
-        "%s%s %s", typeStr.substring(0, 1), typeStr.substring(1).toLowerCase(), num);
+        "%s%s%s", typeStr.substring(0, 1), typeStr.substring(1).toLowerCase(), num);
   }
 
   @Override
@@ -175,11 +175,9 @@ public final class A10Configuration extends VendorConfiguration {
             .setName(name)
             .setVrf(vrf)
             .setOwner(_c);
-    ImmutableList.Builder<String> names = ImmutableList.<String>builder().add(name);
-    if (iface.getName() != null && !name.equals(iface.getName())) {
-      names.add(iface.getName());
-    }
-    newIface.setDeclaredNames(names.build());
+    // A10 interface `name` is more like a description than an actual name
+    newIface.setDescription(iface.getName());
+    newIface.setDeclaredNames(ImmutableList.of(name));
 
     // VLANs
     newIface.setSwitchportMode(SwitchportMode.NONE);
@@ -221,7 +219,8 @@ public final class A10Configuration extends VendorConfiguration {
       if (memberNames.isEmpty()) {
         _w.redFlag(
             String.format(
-                "Trunk %s does not contain any member interfaces", trunkIface.getNumber()));
+                "%s does not contain any member interfaces",
+                getInterfaceName(Interface.Type.TRUNK, trunkIface.getNumber())));
       }
     }
 
