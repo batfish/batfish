@@ -1577,9 +1577,10 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     List<Long> asns =
         ctx.as_path.asns.stream().map(this::toLong).collect(ImmutableList.toImmutableList());
 
-    if (ctx.action.prepend != null) {
+    if (ctx.PREPEND() != null) {
       _currentRouteMapEntry.setSetAsPath(new RouteMapSetPrependAsPath(asns));
-    } else if (ctx.action.exclude != null) {
+    } else {
+      assert ctx.EXCLUDE() != null;
       _currentRouteMapEntry.setSetExcludeAsPath(new RouteMapSetExcludeAsPath(asns));
     }
   }

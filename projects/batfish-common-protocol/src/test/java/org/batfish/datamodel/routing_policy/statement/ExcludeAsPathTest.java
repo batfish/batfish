@@ -1,11 +1,13 @@
 package org.batfish.datamodel.routing_policy.statement;
 
+import static org.batfish.datamodel.AsPath.ofAsSets;
 import static org.batfish.datamodel.AsPath.ofSingletonAsSets;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.Lists;
 import java.util.List;
+import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -18,7 +20,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
-public class ExcludeAsPathTest {
+public final class ExcludeAsPathTest {
 
   private static Environment newTestEnvironment(Bgpv4Route.Builder outputRoute) {
     Configuration c = new Configuration("host", ConfigurationFormat.CISCO_IOS);
@@ -26,8 +28,32 @@ public class ExcludeAsPathTest {
   }
 
   @Test
-  public void testExclude() {
-    List<AsExpr> exclude = Lists.newArrayList(new ExplicitAs(3));
+  public void testExcludeMissingAsFromAsSet() {
+    List<AsExpr> exclude = Lists.newArrayList(new ExplicitAs(3L));
+    ExcludeAsPath operation = new ExcludeAsPath(new LiteralAsList(exclude));
+    Bgpv4Route.Builder builder = Bgpv4Route.testBuilder();
+    builder.setAsPath(ofSingletonAsSets(4L, 5L));
+    Environment env = newTestEnvironment(builder);
+
+    operation.execute(env);
+    assertThat(builder.getAsPath(), equalTo(ofSingletonAsSets(4L, 5L)));
+  }
+
+  @Test
+  public void testExcludeAsSet() {
+    List<AsExpr> exclude = Lists.newArrayList(new ExplicitAs(3L));
+    ExcludeAsPath operation = new ExcludeAsPath(new LiteralAsList(exclude));
+    Bgpv4Route.Builder builder = Bgpv4Route.testBuilder();
+    builder.setAsPath(ofAsSets(AsSet.of(3L), AsSet.of(3L, 4L)));
+    Environment env = newTestEnvironment(builder);
+
+    operation.execute(env);
+    assertThat(builder.getAsPath(), equalTo(ofSingletonAsSets(4L)));
+  }
+
+  @Test
+  public void testExcludeSingletonAsSet() {
+    List<AsExpr> exclude = Lists.newArrayList(new ExplicitAs(3L));
     ExcludeAsPath operation = new ExcludeAsPath(new LiteralAsList(exclude));
     Bgpv4Route.Builder builder = Bgpv4Route.testBuilder();
     builder.setAsPath(ofSingletonAsSets(3L, 4L));

@@ -39,6 +39,10 @@ public final class AsPath implements Serializable, Comparable<AsPath> {
     return of(asNums.stream().map(AsSet::of).collect(ImmutableList.toImmutableList()));
   }
 
+  public static AsPath ofAsSets(AsSet... asSets) {
+    return of(Arrays.asList(asSets));
+  }
+
   private final List<AsSet> _asSets;
 
   // Soft values: let it be garbage collected in times of pressure.

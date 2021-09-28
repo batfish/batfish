@@ -12,7 +12,9 @@ import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
 import org.batfish.datamodel.routing_policy.statement.ExcludeAsPath;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 
-public class RouteMapSetExcludeAsPath implements RouteMapSet {
+/** Clause of set as-path exclude in route map. */
+public final class RouteMapSetExcludeAsPath implements RouteMapSet {
+  /** List of as numbers to be excluded from an as-path */
   @Nonnull private final List<Long> _asns;
 
   public RouteMapSetExcludeAsPath(List<Long> asns) {
