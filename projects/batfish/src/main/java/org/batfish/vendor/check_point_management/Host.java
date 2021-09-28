@@ -20,6 +20,11 @@ public final class Host extends TypedManagementObject
   }
 
   @Override
+  public <T> T accept(HasNatSettingsVisitor<T> visitor) {
+    return visitor.visitHost(this);
+  }
+
+  @Override
   public <T> T accept(MachineVisitor<T> visitor) {
     return visitor.visitHost(this);
   }
