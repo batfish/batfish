@@ -21,6 +21,11 @@ public final class AddressRange extends TypedManagementObject
   }
 
   @Override
+  public <T> T accept(HasNatSettingsVisitor<T> visitor) {
+    return visitor.visitAddressRange(this);
+  }
+
+  @Override
   public <T> T accept(NatTranslatedSourceVisitor<T> visitor) {
     return visitor.visitAddressRange(this);
   }
