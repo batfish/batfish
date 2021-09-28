@@ -133,6 +133,23 @@ public final class A10Configuration extends VendorConfiguration {
         "%s%s%s", typeStr.substring(0, 1), typeStr.substring(1).toLowerCase(), num);
   }
 
+  @Nonnull
+  public static String getInterfaceHumanName(Interface iface) {
+    return getInterfaceHumanName(iface.getType(), iface.getNumber());
+  }
+
+  @Nonnull
+  public static String getInterfaceHumanName(Interface.Type type, int num) {
+    if (type == Interface.Type.VE) {
+      return String.format("VirtualEthernet %s", num);
+    }
+
+    String typeStr = type.toString();
+    // Only the first letter should be capitalized, similar to A10 `show` data
+    return String.format(
+        "%s%s %s", typeStr.substring(0, 1), typeStr.substring(1).toLowerCase(), num);
+  }
+
   @Override
   public List<Configuration> toVendorIndependentConfigurations() throws VendorConversionException {
     String hostname = getHostname();
@@ -177,6 +194,7 @@ public final class A10Configuration extends VendorConfiguration {
             .setOwner(_c);
     // A10 interface `name` is more like a description than an actual name
     newIface.setDescription(iface.getName());
+    newIface.setHumanName(getInterfaceHumanName(iface));
     newIface.setDeclaredNames(ImmutableList.of(name));
 
     // VLANs

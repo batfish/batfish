@@ -17,6 +17,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasChannelGroup;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasChannelGroupMembers;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasHumanName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInterfaceType;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasNativeVlan;
@@ -491,6 +492,7 @@ public class A10GrammarTest {
                 hasAllAddresses(contains(ConcreteInterfaceAddress.parse("10.0.1.1/24"))),
                 isActive(),
                 hasDescription("this is a comp\"licat'ed name"),
+                hasHumanName("Ethernet 1"),
                 hasMtu(1234))));
 
     assertThat(
@@ -503,6 +505,7 @@ public class A10GrammarTest {
                 hasAllAddresses(contains(ConcreteInterfaceAddress.parse("10.0.2.1/24"))),
                 isActive(false),
                 hasDescription("baz"),
+                hasHumanName("Ethernet 9"),
                 hasMtu(DEFAULT_MTU))));
 
     assertThat(
@@ -513,7 +516,8 @@ public class A10GrammarTest {
                 hasInterfaceType(InterfaceType.LOOPBACK),
                 hasSwitchPortMode(SwitchportMode.NONE),
                 hasAllAddresses(contains(ConcreteInterfaceAddress.parse("192.168.0.1/32"))),
-                hasDescription(nullValue()))));
+                hasDescription(nullValue()),
+                hasHumanName("Loopback 0"))));
 
     assertThat(
         c,
@@ -523,7 +527,8 @@ public class A10GrammarTest {
                 hasInterfaceType(InterfaceType.LOOPBACK),
                 hasSwitchPortMode(SwitchportMode.NONE),
                 hasAllAddresses(empty()),
-                hasDescription(nullValue()))));
+                hasDescription(nullValue()),
+                hasHumanName("Loopback 10"))));
   }
 
   @Test
