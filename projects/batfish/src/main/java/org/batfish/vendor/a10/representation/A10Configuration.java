@@ -181,6 +181,7 @@ public final class A10Configuration extends VendorConfiguration {
     }
     newIface.setDeclaredNames(names.build());
 
+    // VLANs
     newIface.setSwitchportMode(SwitchportMode.NONE);
     List<Vlan> taggedVlans = getTaggedVlans(iface);
     Optional<Vlan> untaggedVlan = getUntaggedVlan(iface);
@@ -198,7 +199,11 @@ public final class A10Configuration extends VendorConfiguration {
                   .map(v -> new SubRange(v.getNumber()))
                   .collect(ImmutableList.toImmutableList())));
     }
+    if (iface.getType() == Interface.Type.VE) {
+      newIface.setVlan(iface.getNumber());
+    }
 
+    // Aggregates and members
     if (iface instanceof TrunkInterface) {
       TrunkInterface trunkIface = (TrunkInterface) iface;
       ImmutableSet<String> memberNames =
