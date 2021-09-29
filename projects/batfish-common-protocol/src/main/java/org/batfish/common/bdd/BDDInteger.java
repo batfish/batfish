@@ -25,6 +25,7 @@ public class BDDInteger {
    * Create an integer, but don't initialize its bit values
    */
   private BDDInteger(BDDFactory factory, int length) {
+    checkArgument(length < 64, "Only lengths up to 63 are supported");
     _factory = factory;
     _bitvec = new BDD[length];
     _hasVariablesOnly = false;
@@ -266,9 +267,10 @@ public class BDDInteger {
   /*
    * Integers in the given range, inclusive, where {@code a} is less than or equal to {@code b}.
    */
-  // This is basically this.geq(a).and(this.leq(b)). Two differences:
+  // This is basically this.geq(a).and(this.leq(b)). Differences:
   //   1. Short-circuit a == b
-  //   2. Save work in the case where a and b have a common prefix.
+  //   2. Save work in the case where a and b have a common prefix, including when a and/or b is the
+  //      start/end of the prefix.
   public BDD range(long a, long b) {
     checkArgument(a <= b, "range is not ordered correctly");
     checkArgument(a >= 0, "value is negative");
@@ -280,10 +282,12 @@ public class BDDInteger {
 
     long bitOfFirstDifference = Long.highestOneBit(a ^ b);
     int sizeOfDifferentSuffix = Long.numberOfTrailingZeros(bitOfFirstDifference) + 1;
-    BDD geqA = geqN(a, sizeOfDifferentSuffix);
-    BDD leqB = leqN(b, sizeOfDifferentSuffix);
+    assert sizeOfDifferentSuffix < 64;
 
-    BDD between = geqA.and(leqB);
+    long suffixMask = (1L << sizeOfDifferentSuffix) - 1;
+    BDD lower = ((a & suffixMask) == 0) ? _factory.one() : geqN(a, sizeOfDifferentSuffix);
+    BDD upper = ((b & suffixMask) == suffixMask) ? _factory.one() : leqN(b, sizeOfDifferentSuffix);
+    BDD between = lower.and(upper);
     long currentVal = a >> sizeOfDifferentSuffix;
     for (int i = sizeOfDifferentSuffix; i < _bitvec.length; ++i) {
       BDD bit = _bitvec[_bitvec.length - i - 1];

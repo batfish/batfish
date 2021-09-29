@@ -13,6 +13,7 @@ import java.util.BitSet;
 import java.util.Optional;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
+import org.batfish.datamodel.Prefix;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -141,6 +142,15 @@ public class BDDIntegerTest {
         assertThat(range, equalTo(rangeEquiv));
       }
     }
+  }
+
+  @Test
+  public void testRangeBounds() {
+    BDDFactory factory = BDDUtils.bddFactory(32);
+    BDDInteger x = BDDInteger.makeFromIndex(factory, 32, 0, false);
+    assertThat(
+        x.range(Prefix.ZERO.getStartIp().asLong(), Prefix.ZERO.getEndIp().asLong()),
+        BDDMatchers.isOne());
   }
 
   @Test
