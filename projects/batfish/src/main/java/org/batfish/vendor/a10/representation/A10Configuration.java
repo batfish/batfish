@@ -125,14 +125,7 @@ public final class A10Configuration extends VendorConfiguration {
 
   @Nonnull
   public static String getInterfaceName(Interface.Type type, int num) {
-    if (type == Interface.Type.VE) {
-      return String.format("VirtualEthernet%s", num);
-    }
-
-    String typeStr = type.toString();
-    // Only the first letter should be capitalized, similar to A10 `show` data
-    return String.format(
-        "%s%s%s", typeStr.substring(0, 1), typeStr.substring(1).toLowerCase(), num);
+    return getInterfaceHumanName(type, num).replace(" ", "");
   }
 
   @Nonnull
