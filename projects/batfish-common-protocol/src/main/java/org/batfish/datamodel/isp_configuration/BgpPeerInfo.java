@@ -11,10 +11,9 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Ip;
 
 /**
- * BGP peer information used to create ISPs. This specification identifies a BGP peer in the
- * snapshot via 1) the hostname, and 2) either an interface or peer address, and 3) vrf (optional,
- * needed to resolve ambiguity with peer addresses). Using an interface means that all BGP peers
- * with (static) update source as the interface are being specified.
+ * BGP peer information used to create sessions to modeled ISPs. This specification identifies a BGP
+ * peer in the snapshot via 1) the hostname, and 2) either a peer address or interface (for
+ * unnumbered peers), and 3) vrf (optional, needed to resolve ambiguity with peer addresses).
  *
  * <p>The specification also allows for describing new connectivity needed to establish the session,
  * via {@link BgpPeerConnectivity}. The BGP peering is not modeled if this new connectivity (e.g.,
@@ -40,6 +39,16 @@ public class BgpPeerInfo {
       @Nullable Ip peerAddress,
       @Nullable String vrf,
       BgpPeerConnectivity bgpPeerConnectivity) {
+    checkArgument(
+        iface != null || peerAddress != null,
+        "Either one of %s or %s should be specified",
+        PROP_INTERFACE,
+        PROP_PEER_ADDRESS);
+    checkArgument(
+        iface == null || peerAddress == null,
+        "Both %s or %s should not be specified",
+        PROP_INTERFACE,
+        PROP_PEER_ADDRESS);
     _hostname = hostname;
     _iface = iface;
     _peerAddress = peerAddress;
@@ -55,17 +64,6 @@ public class BgpPeerInfo {
       @JsonProperty(PROP_VRF) @Nullable String vrf,
       @JsonProperty(PROP_CONNECTIVITY) @Nullable BgpPeerConnectivity bgpPeerConnectivity) {
     checkArgument(hostname != null, "Missing %s", PROP_HOSTNAME);
-    checkArgument(
-        iface != null || peerAddress != null,
-        "Either one of %s or %s should be specified",
-        PROP_INTERFACE,
-        PROP_PEER_ADDRESS);
-    checkArgument(
-        iface == null || peerAddress == null,
-        "Both %s or %s should not be specified",
-        PROP_INTERFACE,
-        PROP_PEER_ADDRESS);
-
     return new BgpPeerInfo(
         hostname,
         iface,

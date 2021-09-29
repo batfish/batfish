@@ -24,14 +24,7 @@ public class IspConfiguration {
 
   public IspConfiguration(
       @Nonnull List<BorderInterfaceInfo> borderInterfaces, @Nonnull IspFilter filter) {
-    this(borderInterfaces, filter, ImmutableList.of());
-  }
-
-  public IspConfiguration(
-      @Nonnull List<BorderInterfaceInfo> borderInterfaces,
-      @Nonnull IspFilter filter,
-      @Nonnull List<IspNodeInfo> ispNodeInfos) {
-    this(borderInterfaces, ImmutableList.of(), filter, ispNodeInfos);
+    this(borderInterfaces, ImmutableList.of(), filter, ImmutableList.of());
   }
 
   public IspConfiguration(
