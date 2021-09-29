@@ -22,6 +22,12 @@ public final class TrunkInterface extends Interface {
     return _members;
   }
 
+  /** Number of members of this trunk that must be up for the trunk to be considered up. */
+  @Nullable
+  public Integer getPortsThreshold() {
+    return _portsThreshold;
+  }
+
   /**
    * The type for this trunk. This isn't explicitly configured on the trunk interface, but is a
    * property inherited from its link to its children interfaces.
@@ -34,6 +40,10 @@ public final class TrunkInterface extends Interface {
     return firstNonNull(_trunkType, DEFAULT_TRUNK_TYPE);
   }
 
+  public void setPortsThreshold(Integer portsThreshold) {
+    _portsThreshold = portsThreshold;
+  }
+
   public TrunkInterface(int number, @Nullable TrunkGroup.Type trunkType) {
     super(Type.TRUNK, number);
     _trunkType = trunkType;
@@ -41,5 +51,6 @@ public final class TrunkInterface extends Interface {
   }
 
   @Nonnull private final Set<InterfaceReference> _members;
+  @Nullable private Integer _portsThreshold;
   @Nullable private final TrunkGroup.Type _trunkType;
 }

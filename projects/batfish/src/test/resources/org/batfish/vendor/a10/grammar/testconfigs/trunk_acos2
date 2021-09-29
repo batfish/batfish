@@ -19,3 +19,11 @@ interface ethernet 2
 interface ethernet 3
  enable
 !
+interface ethernet 4
+ lacp trunk 1 mode active
+ lacp timeout short
+ enable
+!
+lacp-trunk 1
+ ports-threshold 2
+!

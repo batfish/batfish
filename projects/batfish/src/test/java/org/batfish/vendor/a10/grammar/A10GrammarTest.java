@@ -553,6 +553,7 @@ public class A10GrammarTest {
     assertNull(tg1.getMode());
     assertNull(tg1.getTimeout());
     assertThat(tg1.getUserTag(), equalTo("user tag str"));
+    assertThat(ti1.getPortsThreshold(), equalTo(2));
     assertThat(
         ti1.getMembers(),
         containsInAnyOrder(
@@ -585,7 +586,7 @@ public class A10GrammarTest {
 
     Map<Integer, Interface> eths = c.getInterfacesEthernet();
     Map<Integer, TrunkInterface> trunks = c.getInterfacesTrunk();
-    assertThat(eths.keySet(), containsInAnyOrder(1, 2, 3));
+    assertThat(eths.keySet(), containsInAnyOrder(1, 2, 3, 4));
     assertThat(trunks.keySet(), containsInAnyOrder(1, 2));
 
     // LACP trunk-group
@@ -600,11 +601,16 @@ public class A10GrammarTest {
 
     // Settings for the LACP trunk
     assertThat(trunkIface1.getTrunkTypeEffective(), equalTo(TrunkGroup.Type.LACP));
+    assertThat(trunkIface1.getPortsThreshold(), equalTo(2));
     assertThat(
-        trunkIface1.getMembers(), contains(new InterfaceReference(Interface.Type.ETHERNET, 1)));
+        trunkIface1.getMembers(),
+        containsInAnyOrder(
+            new InterfaceReference(Interface.Type.ETHERNET, 1),
+            new InterfaceReference(Interface.Type.ETHERNET, 4)));
 
     // Settings for the Static trunk
     assertThat(trunkIface2.getTrunkTypeEffective(), equalTo(TrunkGroup.Type.STATIC));
+    assertNull(trunkIface2.getPortsThreshold());
     assertThat(
         trunkIface2.getMembers(),
         containsInAnyOrder(
@@ -631,16 +637,27 @@ public class A10GrammarTest {
     assertThat(
         c,
         hasInterface(
+            "Ethernet4",
+            allOf(
+                hasInterfaceType(InterfaceType.PHYSICAL),
+                hasChannelGroup("Trunk1"),
+                hasChannelGroupMembers(empty()),
+                hasAllAddresses(empty()))));
+    assertThat(
+        c,
+        hasInterface(
             "Trunk1",
             allOf(
                 hasInterfaceType(InterfaceType.AGGREGATED),
                 hasChannelGroup(nullValue()),
-                hasChannelGroupMembers(containsInAnyOrder("Ethernet1")))));
+                hasChannelGroupMembers(containsInAnyOrder("Ethernet1", "Ethernet4")))));
     assertThat(
         c.getAllInterfaces().get("Trunk1").getDependencies(),
         containsInAnyOrder(
             new org.batfish.datamodel.Interface.Dependency(
-                "Ethernet1", org.batfish.datamodel.Interface.DependencyType.AGGREGATE)));
+                "Ethernet1", org.batfish.datamodel.Interface.DependencyType.AGGREGATE),
+            new org.batfish.datamodel.Interface.Dependency(
+                "Ethernet4", org.batfish.datamodel.Interface.DependencyType.AGGREGATE)));
 
     // Default trunk
     assertThat(
@@ -740,7 +757,9 @@ public class A10GrammarTest {
         warnings,
         hasParseWarnings(
             containsInAnyOrder(
-                hasComment("Cannot configure timeout for non-existent trunk-group"))));
+                hasComment("Cannot configure timeout for non-existent trunk-group"),
+                hasComment("Expected trunk ports-threshold in range 2-8, but got '1'"),
+                hasComment("Expected trunk ports-threshold in range 2-8, but got '9'"))));
   }
 
   @Test
