@@ -1,4 +1,4 @@
-parser grammar A10_interface;
+parser grammar A10_rba;
 
 import A10_common;
 
