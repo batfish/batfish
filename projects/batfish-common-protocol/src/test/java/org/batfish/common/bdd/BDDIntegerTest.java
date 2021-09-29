@@ -1,5 +1,6 @@
 package org.batfish.common.bdd;
 
+import static org.batfish.common.bdd.BDDMatchers.isOne;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
@@ -13,6 +14,7 @@ import java.util.BitSet;
 import java.util.Optional;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
+import org.batfish.datamodel.Prefix;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -62,7 +64,7 @@ public class BDDIntegerTest {
     BDDFactory factory = BDDUtils.bddFactory(5);
     BDDInteger var = BDDInteger.makeFromIndex(factory, 5, 0, false);
     _exception.expect(IllegalArgumentException.class);
-    _exception.expectMessage("value 32 is out of range");
+    _exception.expectMessage("value 32 is out of range [0, 31]");
     var.geq(32);
   }
 
@@ -71,7 +73,7 @@ public class BDDIntegerTest {
     BDDFactory factory = BDDUtils.bddFactory(5);
     BDDInteger var = BDDInteger.makeFromIndex(factory, 5, 0, false);
     _exception.expect(IllegalArgumentException.class);
-    _exception.expectMessage("value 32 is out of range");
+    _exception.expectMessage("value 32 is out of range [0, 31]");
     var.leq(32);
   }
 
@@ -80,8 +82,19 @@ public class BDDIntegerTest {
     BDDFactory factory = BDDUtils.bddFactory(5);
     BDDInteger var = BDDInteger.makeFromIndex(factory, 5, 0, false);
     _exception.expect(IllegalArgumentException.class);
-    _exception.expectMessage("value 32 is out of range");
+    _exception.expectMessage("value 32 is out of range [0, 31]");
     var.value(32);
+  }
+
+  @Test
+  public void testBoundary() {
+    BDDFactory factory = BDDUtils.bddFactory(63);
+    BDDInteger var = BDDInteger.makeFromIndex(factory, 63, 0, false);
+    assertThat(
+        var.getValueSatisfying(var.value(Long.MAX_VALUE)), equalTo(Optional.of(Long.MAX_VALUE)));
+    assertThat(
+        var.getValueSatisfying(var.geq(Long.MAX_VALUE)), equalTo(Optional.of(Long.MAX_VALUE)));
+    assertThat(var.leq(Long.MAX_VALUE), isOne());
   }
 
   @Test
@@ -140,6 +153,22 @@ public class BDDIntegerTest {
         BDD rangeEquiv = x.geq(a).and(x.leq(b));
         assertThat(range, equalTo(rangeEquiv));
       }
+    }
+  }
+
+  @Test
+  public void testRangeBounds() {
+    {
+      BDDFactory factory = BDDUtils.bddFactory(32);
+      BDDInteger x = BDDInteger.makeFromIndex(factory, 32, 0, false);
+      assertThat(
+          x.range(Prefix.ZERO.getStartIp().asLong(), Prefix.ZERO.getEndIp().asLong()), isOne());
+    }
+
+    {
+      BDDFactory factory = BDDUtils.bddFactory(63);
+      BDDInteger x = BDDInteger.makeFromIndex(factory, 63, 0, false);
+      assertThat(x.range(0L, 0x7FFF_FFFF_FFFF_FFFFL), isOne());
     }
   }
 
