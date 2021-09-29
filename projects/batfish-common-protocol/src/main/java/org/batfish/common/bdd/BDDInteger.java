@@ -25,7 +25,7 @@ public class BDDInteger {
    * Create an integer, but don't initialize its bit values
    */
   private BDDInteger(BDDFactory factory, int length) {
-    checkArgument(length < 64, "Only lengths up to 63 are supported");
+    checkArgument(length < 63, "Only lengths up to 62 are supported");
     _factory = factory;
     _bitvec = new BDD[length];
     _hasVariablesOnly = false;
@@ -282,7 +282,7 @@ public class BDDInteger {
 
     long bitOfFirstDifference = Long.highestOneBit(a ^ b);
     int sizeOfDifferentSuffix = Long.numberOfTrailingZeros(bitOfFirstDifference) + 1;
-    assert sizeOfDifferentSuffix < 64;
+    assert sizeOfDifferentSuffix < 63;
 
     long suffixMask = (1L << sizeOfDifferentSuffix) - 1;
     BDD lower = ((a & suffixMask) == 0) ? _factory.one() : geqN(a, sizeOfDifferentSuffix);

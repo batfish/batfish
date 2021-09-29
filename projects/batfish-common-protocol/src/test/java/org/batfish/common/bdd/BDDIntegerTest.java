@@ -146,11 +146,19 @@ public class BDDIntegerTest {
 
   @Test
   public void testRangeBounds() {
-    BDDFactory factory = BDDUtils.bddFactory(32);
-    BDDInteger x = BDDInteger.makeFromIndex(factory, 32, 0, false);
-    assertThat(
-        x.range(Prefix.ZERO.getStartIp().asLong(), Prefix.ZERO.getEndIp().asLong()),
-        BDDMatchers.isOne());
+    {
+      BDDFactory factory = BDDUtils.bddFactory(32);
+      BDDInteger x = BDDInteger.makeFromIndex(factory, 32, 0, false);
+      assertThat(
+          x.range(Prefix.ZERO.getStartIp().asLong(), Prefix.ZERO.getEndIp().asLong()),
+          BDDMatchers.isOne());
+    }
+
+    {
+      BDDFactory factory = BDDUtils.bddFactory(62);
+      BDDInteger x = BDDInteger.makeFromIndex(factory, 62, 0, false);
+      assertThat(x.range(0L, 0x3FFF_FFFF_FFFF_FFFFL), BDDMatchers.isOne());
+    }
   }
 
   @Test
