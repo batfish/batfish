@@ -292,7 +292,7 @@ public final class InterfaceMatchers {
    * Provides a matcher that matches if the {@link Interface}'s human name is {@code
    * expectedHumanName}.
    */
-  public static Matcher<Interface> hasHumanName(String expectedHumanName) {
+  public static @Nonnull Matcher<Interface> hasHumanName(String expectedHumanName) {
     return hasHumanName(equalTo(expectedHumanName));
   }
 
@@ -300,7 +300,7 @@ public final class InterfaceMatchers {
    * Provides a matcher that matches if the {@link Interface}'s human name matches the given
    * subMatcher.
    */
-  public static Matcher<Interface> hasHumanName(Matcher<? super String> subMatcher) {
+  public static @Nonnull Matcher<Interface> hasHumanName(Matcher<? super String> subMatcher) {
     return new HasHumanName(subMatcher);
   }
 
