@@ -1,0 +1,27 @@
+!BATFISH_FORMAT: a10_acos
+!version 2.7.2, build 123 (Aug-5-2021,01:23)
+hostname trunk_acos2_convert
+!
+trunk 1
+ ethernet 1 ethernet 2
+!
+! Eth3 & 4 have different VLAN settings, which is invalid for the same trunk
+trunk 2
+ ethernet 3 ethernet 4
+!
+vlan 2
+ tagged ethernet 1 ethernet 2
+vlan 3
+ untagged ethernet 1 ethernet 2
+vlan 4
+ tagged ethernet 3
+ untagged ethernet 4
+!
+interface ethernet 1
+!
+interface ethernet 2
+!
+interface ethernet 3
+!
+interface ethernet 4
+!

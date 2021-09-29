@@ -31,6 +31,7 @@ import static org.batfish.vendor.a10.representation.A10StructureType.INTERFACE;
 import static org.batfish.vendor.a10.representation.A10StructureUsage.VLAN_TAGGED_INTERFACE;
 import static org.batfish.vendor.a10.representation.A10StructureUsage.VLAN_UNTAGGED_INTERFACE;
 import static org.batfish.vendor.a10.representation.Interface.DEFAULT_MTU;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -304,6 +305,45 @@ public class A10GrammarTest {
                 hasInterfaceType(InterfaceType.AGGREGATED),
                 hasSwitchPortMode(SwitchportMode.TRUNK),
                 hasAllowedVlans(IntegerSpace.of(2)),
+                hasNativeVlan(nullValue()))));
+    // Trunk3 only gets VLAN settings directly configured on it (ignore member settings)
+    assertThat(
+        c,
+        hasInterface(
+            "Trunk3",
+            allOf(
+                hasInterfaceType(InterfaceType.AGGREGATED),
+                hasSwitchPortMode(SwitchportMode.TRUNK),
+                hasAllowedVlans(IntegerSpace.EMPTY),
+                hasNativeVlan(equalTo(5)))));
+  }
+
+  /** Testing ACOS v2 trunk VLAN conversion */
+  @Test
+  public void testTrunkVlanAcos2Conversion() {
+    String hostname = "trunk_acos2_convert";
+    Configuration c = parseConfig(hostname);
+
+    // Trunk1 inherits member VLAN settings
+    assertThat(
+        c,
+        hasInterface(
+            "Trunk1",
+            allOf(
+                hasInterfaceType(InterfaceType.AGGREGATED),
+                hasSwitchPortMode(SwitchportMode.TRUNK),
+                hasAllowedVlans(IntegerSpace.of(2)),
+                hasNativeVlan(equalTo(3)))));
+
+    // Trunk2's members have different VLAN settings, which are ignored
+    assertThat(
+        c,
+        hasInterface(
+            "Trunk2",
+            allOf(
+                hasInterfaceType(InterfaceType.AGGREGATED),
+                hasSwitchPortMode(SwitchportMode.NONE),
+                hasAllowedVlans(IntegerSpace.EMPTY),
                 hasNativeVlan(nullValue()))));
   }
 
@@ -693,7 +733,13 @@ public class A10GrammarTest {
         warnings,
         hasRedFlags(
             containsInAnyOrder(
-                WarningMatchers.hasText("Trunk2 does not contain any member interfaces"))));
+                WarningMatchers.hasText("Trunk2 does not contain any member interfaces"),
+                WarningMatchers.hasText(
+                    containsString(
+                        "VLAN settings for members of Trunk1 are different, ignoring their VLAN"
+                            + " settings")),
+                WarningMatchers.hasText(
+                    "Trunk member Ethernet10 does not exist, cannot add to Trunk1"))));
   }
 
   @Test
@@ -722,6 +768,25 @@ public class A10GrammarTest {
                 hasComment("This interface is already a member of trunk-group 3"),
                 hasComment("Cannot add an interface with a configured IP address to a trunk-group"),
                 hasComment("Cannot configure an IP address on a trunk-group member"))));
+  }
+
+  @Test
+  public void testTrunkConversionWarn() throws IOException {
+    String hostname = "trunk_convert_warn";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Warnings warnings =
+        batfish
+            .loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot())
+            .getWarnings()
+            .get(hostname);
+
+    assertThat(
+        warnings,
+        hasRedFlags(
+            containsInAnyOrder(
+                WarningMatchers.hasText(
+                    "Cannot configure VLAN settings on Trunk1 as well as its members. Member VLAN"
+                        + " settings will be ignored."))));
   }
 
   /** Testing ACOS v2 syntax */
