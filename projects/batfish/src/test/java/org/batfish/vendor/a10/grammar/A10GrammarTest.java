@@ -308,6 +308,35 @@ public class A10GrammarTest {
                 hasNativeVlan(nullValue()))));
   }
 
+  /** Testing ACOS v2 trunk VLANs */
+  @Test
+  public void testTrunkVlanAcos2Conversion() {
+    String hostname = "trunk_vlan_acos2_convert";
+    Configuration c = parseConfig(hostname);
+
+    // Trunk1 inherits member VLAN settings
+    assertThat(
+        c,
+        hasInterface(
+            "Trunk1",
+            allOf(
+                hasInterfaceType(InterfaceType.AGGREGATED),
+                hasSwitchPortMode(SwitchportMode.TRUNK),
+                hasAllowedVlans(IntegerSpace.of(2)),
+                hasNativeVlan(equalTo(3)))));
+
+    // Trunk2's members have different VLAN settings, which are ignored
+    assertThat(
+        c,
+        hasInterface(
+            "Trunk2",
+            allOf(
+                hasInterfaceType(InterfaceType.AGGREGATED),
+                hasSwitchPortMode(SwitchportMode.NONE),
+                hasAllowedVlans(IntegerSpace.EMPTY),
+                hasNativeVlan(nullValue()))));
+  }
+
   /** Testing ACOS v2 VLAN syntax */
   @Test
   public void testVlanAcos2Extraction() {

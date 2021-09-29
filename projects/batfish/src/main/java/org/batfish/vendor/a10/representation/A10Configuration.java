@@ -213,8 +213,8 @@ public final class A10Configuration extends VendorConfiguration {
     newIface.setDeclaredNames(ImmutableList.of(name));
 
     // VLANs
-    boolean vlanConfigured = hasVlanSettings(iface);
-    if (vlanConfigured) {
+    boolean vlanIsConfigured = hasVlanSettings(iface);
+    if (vlanIsConfigured) {
       setVlanSettings(iface, newIface);
     }
 
@@ -255,7 +255,7 @@ public final class A10Configuration extends VendorConfiguration {
                 .collect(ImmutableSet.toImmutableSet()));
 
         // If this trunk doesn't have VLAN configured directly (e.g. ACOS v2), inherit it
-        if (!vlanConfigured) {
+        if (!vlanIsConfigured) {
           if (vlanSettingsDifferent(memberNames)) {
             _w.redFlag(
                 String.format(
