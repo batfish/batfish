@@ -200,12 +200,12 @@ public class A10GrammarTest {
     Prefix prefix2 = Prefix.parse("10.100.1.0/24");
     Ip forwardingRouterAddr2 = Ip.parse("10.100.4.4");
 
-    // Check for correct prefixes
+    // Prefixes
     assertThat(c.getStaticRoutes().keySet(), containsInAnyOrder(prefix1, prefix2));
     StaticRouteManager srmPrefix1 = c.getStaticRoutes().get(prefix1);
     StaticRouteManager srmPrefix2 = c.getStaticRoutes().get(prefix2);
 
-    // Check for correct forwarding router addresses, a.k.a. nexthops
+    // Forwarding router addresses, a.k.a. nexthops
     assertThat(
         srmPrefix1.getVariants().keySet(),
         containsInAnyOrder(forwardingRouterAddr1a, forwardingRouterAddr1b));
@@ -214,7 +214,7 @@ public class A10GrammarTest {
     StaticRoute route1b = srmPrefix1.getVariants().get(forwardingRouterAddr1b);
     StaticRoute route2 = srmPrefix2.getVariants().get(forwardingRouterAddr2);
 
-    // Check for correct route properties
+    // Route properties
     assertThat(route1a.getForwardingRouterAddress(), equalTo(forwardingRouterAddr1a));
     assertThat(route1a.getDescription(), equalTo("baz"));
     assertThat(route1a.getDistance(), equalTo(255));
