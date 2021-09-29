@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.Configuration;
@@ -197,7 +197,10 @@ public final class A10Configuration extends VendorConfiguration {
     newIface.setDeclaredNames(names.build());
 
     // VLANs
-    boolean hasVlanSettings = setVlanSettings(iface, newIface);
+    boolean vlanConfigured = hasVlanSettings(iface);
+    if (vlanConfigured) {
+      setVlanSettings(iface, newIface);
+    }
 
     // Aggregates and members - must happen after initial VLAN settings are set
     if (iface instanceof TrunkInterface) {
@@ -235,7 +238,7 @@ public final class A10Configuration extends VendorConfiguration {
                 .collect(ImmutableSet.toImmutableSet()));
 
         // If this trunk doesn't have VLAN configured directly (e.g. ACOS v2), inherit it
-        if (!hasVlanSettings) {
+        if (!vlanConfigured) {
           if (vlanSettingsDifferent(memberNames)) {
             _w.redFlag(
                 String.format(
@@ -247,9 +250,8 @@ public final class A10Configuration extends VendorConfiguration {
             setVlanSettings(_ifaceNametoIface.get(firstMemberName), newIface);
           }
         } else {
-          org.batfish.datamodel.Interface.Builder dummy = org.batfish.datamodel.Interface.builder();
           if (memberNames.stream()
-              .anyMatch(memberName -> setVlanSettings(_ifaceNametoIface.get(memberName), dummy))) {
+              .anyMatch(memberName -> hasVlanSettings(_ifaceNametoIface.get(memberName)))) {
             _w.redFlag(
                 String.format(
                     "Cannot configure VLAN settings on %s as well as its members. Member VLAN"
@@ -283,25 +285,22 @@ public final class A10Configuration extends VendorConfiguration {
   private boolean vlanSettingsDifferent(Collection<String> names) {
     org.batfish.datamodel.Interface.Builder baseIface =
         org.batfish.datamodel.Interface.builder().setName("");
-    Set<org.batfish.datamodel.Interface> distinctVlanSettings =
+    Stream<org.batfish.datamodel.Interface> distinctVlanSettings =
         names.stream()
             .map(
                 name -> {
                   setVlanSettings(_ifaceNametoIface.get(name), baseIface);
                   return baseIface.build();
                 })
-            .collect(ImmutableSet.toImmutableSet());
-    return distinctVlanSettings.size() > 1;
+            .distinct();
+    return distinctVlanSettings.count() > 1;
   }
 
   /**
    * Set VLAN settings of the specified VI {@link org.batfish.datamodel.Interface.Builder} based on
-   * the specified {@link Interface}. Returns a boolean indicating if VLAN settings exist for this
-   * interface.
+   * the specified {@link Interface}.
    */
-  private boolean setVlanSettings(
-      Interface iface, org.batfish.datamodel.Interface.Builder viIface) {
-    boolean hasVlanSettings = false;
+  private void setVlanSettings(Interface iface, org.batfish.datamodel.Interface.Builder viIface) {
     viIface.setSwitchportMode(SwitchportMode.NONE);
     List<Vlan> taggedVlans = getTaggedVlans(iface);
     Optional<Vlan> untaggedVlan = getUntaggedVlan(iface);
@@ -309,7 +308,6 @@ public final class A10Configuration extends VendorConfiguration {
       viIface.setSwitchportMode(SwitchportMode.TRUNK);
       viIface.setSwitchport(true);
       viIface.setNativeVlan(untaggedVlan.get().getNumber());
-      hasVlanSettings = true;
     }
     if (!taggedVlans.isEmpty()) {
       viIface.setSwitchportMode(SwitchportMode.TRUNK);
@@ -319,13 +317,19 @@ public final class A10Configuration extends VendorConfiguration {
               taggedVlans.stream()
                   .map(v -> new SubRange(v.getNumber()))
                   .collect(ImmutableList.toImmutableList())));
-      hasVlanSettings = true;
     }
     if (iface.getType() == Interface.Type.VE) {
       viIface.setVlan(iface.getNumber());
-      hasVlanSettings = true;
     }
-    return hasVlanSettings;
+  }
+
+  /** Returns a boolean indicating if VLAN settings exist for the supplied {@link Interface}. */
+  private boolean hasVlanSettings(Interface iface) {
+    List<Vlan> taggedVlans = getTaggedVlans(iface);
+    Optional<Vlan> untaggedVlan = getUntaggedVlan(iface);
+    return untaggedVlan.isPresent()
+        || !taggedVlans.isEmpty()
+        || iface.getType() == Interface.Type.VE;
   }
 
   /** Get the untagged VLAN for the specified interface, if one exists. */
