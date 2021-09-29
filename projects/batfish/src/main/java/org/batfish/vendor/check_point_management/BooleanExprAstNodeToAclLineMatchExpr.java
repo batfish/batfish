@@ -46,12 +46,14 @@ public final class BooleanExprAstNodeToAclLineMatchExpr
    * Converts the {@code booleanExprAstNode} to an {@link AclLineMatchExpr}.
    *
    * <p>Matches on unsupported features (e.g. L7, firewall state) are converted directly to the
-   * value of {@code permitUnsupported}. Matches on incoming direction are converted to {@code true}
-   * iff {@code incoming}. Matches on outgoing direction are converted to {@code false} iff not
-   * {@code incoming}.
+   * value of {@code permitUnsupported}. Matches on incoming/outgoing direction are currently
+   * treated as unsupported features.
    */
   public static @Nonnull AclLineMatchExpr convert(
       BooleanExprAstNode booleanExprAstNode, boolean permitUnsupported) {
+    // TODO: Support direction as follows:
+    //       Matches on incoming direction are converted to {@code true} iff {@code incoming}.
+    //       Matches on outgoing direction are converted to {@code false} iff not {@code incoming}.
     return INSTANCE.visit(booleanExprAstNode, permitUnsupported);
   }
 

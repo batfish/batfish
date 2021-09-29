@@ -547,7 +547,6 @@ public final class CheckPointGatewayConversionsTest {
 
   @Test
   public void testServicesToMatchExprOnlyUnknown() {
-    // TODO: rewrite
     // If the only service(s) are unknown/unhandled, then the rule shouldn't match
     assertThat(
         _tb.toBDD(
@@ -607,7 +606,7 @@ public final class CheckPointGatewayConversionsTest {
       assertBddsEqual(
           toAclLine(rule, TEST_OBJS, _serviceToMatchExpr, _addressSpaceToMatchExpr, new Warnings())
               .get(),
-          matchIpProtocol(1));
+          matchIpProtocol(SERVICE_OTHER_UNHANDLED.getIpProtocol()));
     }
     {
       AccessRule rule =
