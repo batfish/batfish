@@ -3,6 +3,7 @@ package org.batfish.vendor.check_point_gateway.representation;
 import static org.batfish.common.matchers.WarningMatchers.hasText;
 import static org.batfish.common.matchers.WarningsMatchers.hasRedFlags;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.FALSE;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
@@ -11,7 +12,7 @@ import static org.batfish.datamodel.transformation.TransformationStep.assignSour
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.NAT_PORT_FIRST;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.NAT_PORT_LAST;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.TRANSLATED_SOURCE_TO_TRANSFORMATION_STEPS;
-import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.automaticHideRuleTransformationFunction;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.automaticHideRuleTransformationFunctions;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.automaticStaticRuleTransformation;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.checkValidManualHide;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.checkValidManualStatic;
@@ -28,6 +29,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -45,6 +47,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
+import org.batfish.datamodel.transformation.Noop;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.vendor.check_point_management.AddressRange;
@@ -330,14 +333,21 @@ public final class CheckpointNatConversionsTest {
           new AddressRange(
               Ip.parse("1.1.1.0"), Ip.parse("1.1.1.255"), null, null, natSettings, "a1", UID);
       Warnings warnings = new Warnings(true, true, true);
-      Optional<Function<Ip, Transformation>> func =
-          automaticHideRuleTransformationFunction(
+      List<Function<Ip, Transformation>> funcs =
+          automaticHideRuleTransformationFunctions(
               addressRange, ADDRESS_SPACE_TO_MATCH_EXPR, warnings);
-      assertTrue(func.isPresent());
+      assertThat(funcs, hasSize(2));
+      IpSpaceReference addrRangeRef = new IpSpaceReference(addressRange.getName());
       assertThat(
-          func.get().apply(egressIfaceIp),
+          funcs.get(0).apply(egressIfaceIp),
           equalTo(
-              Transformation.when(matchSrc(new IpSpaceReference(addressRange.getName())))
+              Transformation.when(and(matchSrc(addrRangeRef), matchDst(addrRangeRef)))
+                  .apply(Noop.NOOP_SOURCE_NAT)
+                  .build()));
+      assertThat(
+          funcs.get(1).apply(egressIfaceIp),
+          equalTo(
+              Transformation.when(matchSrc(addrRangeRef))
                   .apply(assignSourceIp(egressIfaceIp))
                   .build()));
       assertThat(warnings.getRedFlagWarnings(), empty());
@@ -346,11 +356,11 @@ public final class CheckpointNatConversionsTest {
       // Hide host
       Host host = new Host(Ip.parse("1.1.1.1"), natSettings, "host", UID);
       Warnings warnings = new Warnings(true, true, true);
-      Optional<Function<Ip, Transformation>> func =
-          automaticHideRuleTransformationFunction(host, ADDRESS_SPACE_TO_MATCH_EXPR, warnings);
-      assertTrue(func.isPresent());
+      List<Function<Ip, Transformation>> funcs =
+          automaticHideRuleTransformationFunctions(host, ADDRESS_SPACE_TO_MATCH_EXPR, warnings);
+      assertThat(funcs, hasSize(1));
       assertThat(
-          func.get().apply(egressIfaceIp),
+          funcs.get(0).apply(egressIfaceIp),
           equalTo(
               Transformation.when(matchSrc(new IpSpaceReference(host.getName())))
                   .apply(assignSourceIp(egressIfaceIp))
@@ -362,13 +372,20 @@ public final class CheckpointNatConversionsTest {
       Network network =
           new Network("nw", natSettings, Ip.parse("1.0.0.0"), Ip.parse("255.255.255.0"), UID);
       Warnings warnings = new Warnings(true, true, true);
-      Optional<Function<Ip, Transformation>> func =
-          automaticHideRuleTransformationFunction(network, ADDRESS_SPACE_TO_MATCH_EXPR, warnings);
-      assertTrue(func.isPresent());
+      List<Function<Ip, Transformation>> funcs =
+          automaticHideRuleTransformationFunctions(network, ADDRESS_SPACE_TO_MATCH_EXPR, warnings);
+      assertThat(funcs, hasSize(2));
+      IpSpaceReference networkRef = new IpSpaceReference(network.getName());
       assertThat(
-          func.get().apply(egressIfaceIp),
+          funcs.get(0).apply(egressIfaceIp),
           equalTo(
-              Transformation.when(matchSrc(new IpSpaceReference(network.getName())))
+              Transformation.when(and(matchSrc(networkRef), matchDst(networkRef)))
+                  .apply(Noop.NOOP_SOURCE_NAT)
+                  .build()));
+      assertThat(
+          funcs.get(1).apply(egressIfaceIp),
+          equalTo(
+              Transformation.when(matchSrc(networkRef))
                   .apply(assignSourceIp(egressIfaceIp))
                   .build()));
       assertThat(warnings.getRedFlagWarnings(), empty());
@@ -384,11 +401,11 @@ public final class CheckpointNatConversionsTest {
     // No need to test every type of HasNatSettings because this is done in hideBehindGateway test
     Host host = new Host(Ip.parse("1.1.1.1"), natSettings, "host", UID);
     Warnings warnings = new Warnings(true, true, true);
-    Optional<Function<Ip, Transformation>> func =
-        automaticHideRuleTransformationFunction(host, ADDRESS_SPACE_TO_MATCH_EXPR, warnings);
-    assertTrue(func.isPresent());
+    List<Function<Ip, Transformation>> funcs =
+        automaticHideRuleTransformationFunctions(host, ADDRESS_SPACE_TO_MATCH_EXPR, warnings);
+    assertThat(funcs, hasSize(1));
     assertThat(
-        func.get().apply(Ip.parse("10.10.10.10")),
+        funcs.get(0).apply(Ip.parse("10.10.10.10")),
         equalTo(
             Transformation.when(matchSrc(new IpSpaceReference(host.getName())))
                 .apply(assignSourceIp(hideBehindIp))
@@ -403,9 +420,9 @@ public final class CheckpointNatConversionsTest {
       NatSettings natSettings = new NatSettings(true, null, "All", null, NatMethod.HIDE);
       Host host = new Host(Ip.parse("1.1.1.1"), natSettings, "host", UID);
       Warnings warnings = new Warnings(true, true, true);
-      Optional<Function<Ip, Transformation>> func =
-          automaticHideRuleTransformationFunction(host, ADDRESS_SPACE_TO_MATCH_EXPR, warnings);
-      assertFalse(func.isPresent());
+      List<Function<Ip, Transformation>> funcs =
+          automaticHideRuleTransformationFunctions(host, ADDRESS_SPACE_TO_MATCH_EXPR, warnings);
+      assertTrue(funcs.isEmpty());
       assertThat(
           warnings.getRedFlagWarnings(),
           contains(hasText(containsString("type is HIDE, but hide-behind is missing"))));
@@ -416,9 +433,9 @@ public final class CheckpointNatConversionsTest {
           new NatSettings(true, new UnhandledNatHideBehind("garbage"), "All", null, NatMethod.HIDE);
       Host host = new Host(Ip.parse("1.1.1.1"), natSettings, "host", UID);
       Warnings warnings = new Warnings(true, true, true);
-      Optional<Function<Ip, Transformation>> func =
-          automaticHideRuleTransformationFunction(host, ADDRESS_SPACE_TO_MATCH_EXPR, warnings);
-      assertFalse(func.isPresent());
+      List<Function<Ip, Transformation>> funcs =
+          automaticHideRuleTransformationFunctions(host, ADDRESS_SPACE_TO_MATCH_EXPR, warnings);
+      assertTrue(funcs.isEmpty());
       assertThat(
           warnings.getRedFlagWarnings(),
           contains(hasText(containsString("NAT hide-behind \"garbage\" is not recognized"))));
@@ -429,9 +446,9 @@ public final class CheckpointNatConversionsTest {
           new NatSettings(true, NatHideBehindGateway.INSTANCE, "gateway1", null, NatMethod.HIDE);
       Host host = new Host(Ip.parse("1.1.1.1"), natSettings, "host", UID);
       Warnings warnings = new Warnings(true, true, true);
-      Optional<Function<Ip, Transformation>> func =
-          automaticHideRuleTransformationFunction(host, ADDRESS_SPACE_TO_MATCH_EXPR, warnings);
-      assertFalse(func.isPresent());
+      List<Function<Ip, Transformation>> funcs =
+          automaticHideRuleTransformationFunctions(host, ADDRESS_SPACE_TO_MATCH_EXPR, warnings);
+      assertTrue(funcs.isEmpty());
       assertThat(
           warnings.getRedFlagWarnings(),
           contains(
