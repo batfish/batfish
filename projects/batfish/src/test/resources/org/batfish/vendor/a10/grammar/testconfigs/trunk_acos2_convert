@@ -1,6 +1,6 @@
 !BATFISH_FORMAT: a10_acos
 !version 2.7.2, build 123 (Aug-5-2021,01:23)
-hostname trunk_vlan_acos2_convert
+hostname trunk_acos2_convert
 !
 trunk 1
  ethernet 1 ethernet 2

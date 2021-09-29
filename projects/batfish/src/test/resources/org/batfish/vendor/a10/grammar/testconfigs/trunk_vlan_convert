@@ -7,6 +7,15 @@ vlan 2
 vlan 3
  untagged trunk 1
 !
+!
+! Can't configured VLAN settings on a trunk and its members
+vlan 4
+ untagged ethernet 4
+!
+vlan 5
+ untagged trunk 3
+!
+!
 interface ethernet 1
  trunk-group 1
 !
@@ -16,7 +25,12 @@ interface ethernet 2
 interface ethernet 3
  trunk-group 2
 !
+interface ethernet 4
+ trunk-group 3
+!
 interface trunk 1
 !
 interface trunk 2
+!
+interface trunk 3
 !
