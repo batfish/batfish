@@ -728,6 +728,7 @@ public class A10GrammarTest {
         warnings,
         hasParseWarnings(
             containsInAnyOrder(
+                hasComment("Ports-threshold can only be configured on trunk interfaces."),
                 hasComment("Expected trunk number in range 1-4096, but got '0'"),
                 hasComment("Expected trunk number in range 1-4096, but got '4097'"),
                 allOf(
