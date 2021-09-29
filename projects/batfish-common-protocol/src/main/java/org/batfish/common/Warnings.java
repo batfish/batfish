@@ -134,11 +134,11 @@ public class Warnings implements Serializable {
     _pedanticWarnings.add(new Warning(msg, tag));
   }
 
-  public void redFlag(String format, Object... args) {
+  public void redFlag(String msg) {
     if (!_redFlagRecord) {
       return;
     }
-    _redFlagWarnings.add(new Warning(String.format(format, args), TAG_RED_FLAG));
+    _redFlagWarnings.add(new Warning(msg, TAG_RED_FLAG));
   }
 
   /**
