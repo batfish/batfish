@@ -1,4 +1,4 @@
-parser grammar A10_ip;
+parser grammar A10_ip_route;
 
 import A10_common;
 
@@ -6,9 +6,7 @@ options {
    tokenVocab = A10Lexer;
 }
 
-s_ip: IP si;
-
-si: si_route;
+s_ip_route: IP ROUTE sir_definition;
 
 si_route: ROUTE sir_definition;
 

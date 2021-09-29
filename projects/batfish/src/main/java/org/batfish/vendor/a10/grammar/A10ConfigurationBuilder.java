@@ -699,7 +699,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
       ParserRuleContext ctx, A10Parser.Ip_prefixContext prefixCtx) {
     Ip address = toIp(prefixCtx.ip_address());
     Prefix prefix = toPrefix(prefixCtx);
-    if (prefix.getStartIp() != address) {
+    if (!prefix.getStartIp().equals(address)) {
       warn(ctx, "Incorrect IP/mask specified");
       return Optional.empty();
     }
@@ -795,7 +795,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     return toStringWithLengthInSpace(
         messageCtx,
         ctx.route_description().word(),
-        IP_ROUTE_DESCRIPTION_RANGE,
+        IP_ROUTE_DESCRIPTION_LENGTH_RANGE,
         "ip route description");
   }
 
@@ -863,7 +863,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
       IntegerSpace.of(Range.closed(0, 10));
   private static final IntegerSpace INTERFACE_NAME_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 63));
-  private static final IntegerSpace IP_ROUTE_DESCRIPTION_RANGE =
+  private static final IntegerSpace IP_ROUTE_DESCRIPTION_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 63));
   private static final IntegerSpace IP_ROUTE_DISTANCE_RANGE = IntegerSpace.of(Range.closed(1, 255));
   private static final IntegerSpace TRUNK_NUMBER_RANGE = IntegerSpace.of(Range.closed(1, 4096));
