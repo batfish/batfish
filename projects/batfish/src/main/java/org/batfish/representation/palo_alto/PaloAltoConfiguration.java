@@ -2361,7 +2361,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     }
 
     if (peer.getPeerAddress() == null) {
-      _w.redFlag("Missing peer-address for peer %s; disabling it", peer.getName());
+      _w.redFlag(String.format("Missing peer-address for peer %s; disabling it", peer.getName()));
       return;
     }
 

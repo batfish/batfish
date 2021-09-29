@@ -518,7 +518,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
       return Optional.empty();
     }
     if (snat.getIpv4Origins().isEmpty()) {
-      _w.redFlag("Cannot SNAT for snat '%s' without origins", snat.getName());
+      _w.redFlag(String.format("Cannot SNAT for snat '%s' without origins", snat.getName()));
       return Optional.empty();
     }
 
