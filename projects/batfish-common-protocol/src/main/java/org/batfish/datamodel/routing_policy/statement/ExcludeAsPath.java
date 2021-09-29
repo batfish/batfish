@@ -4,16 +4,11 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableList;
-import com.google.common.primitives.Longs;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.AsPath;
-import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.HasWritableAsPath;
 import org.batfish.datamodel.routing_policy.Environment;
@@ -54,52 +49,17 @@ public final class ExcludeAsPath extends Statement {
     return _expr.equals(other._expr);
   }
 
-  /**
-   * Function that executes the statement based on an {@link Environment}
-   *
-   * @param environment Network {@link Environment}
-   * @return {@link Result}
-   */
   @Override
   public Result execute(Environment environment) {
     if ((environment.getOutputRoute() instanceof HasWritableAsPath<?, ?>)) {
-      List<Long> asToExclude = new ArrayList<>(_expr.evaluate(environment));
+      List<Long> asnsToExclude = new ArrayList<>(_expr.evaluate(environment));
 
       HasWritableAsPath<?, ?> outputRoute = (HasWritableAsPath<?, ?>) environment.getOutputRoute();
-      outputRoute.setAsPath(
-          AsPath.of(
-              ImmutableList.<AsSet>builder()
-                  .addAll(
-                      outputRoute.getAsPath().getAsSets().stream()
-                          .map(
-                              currentAsSet ->
-                                  AsSet.of(
-                                      Longs.toArray(
-                                          currentAsSet.getAsns().stream()
-                                              .filter(currentAs -> !asToExclude.contains(currentAs))
-                                              .collect(Collectors.toList()))))
-                          .filter(currentAsSet -> !currentAsSet.isEmpty())
-                          .collect(Collectors.toList()))
-                  .build()));
+      outputRoute.setAsPath(outputRoute.getAsPath().removeASNs(asnsToExclude));
 
       if (environment.getWriteToIntermediateBgpAttributes()) {
         BgpRoute.Builder<?, ?> ir = environment.getIntermediateBgpAttributes();
-        ir.setAsPath(
-            AsPath.of(
-                ImmutableList.<AsSet>builder()
-                    .addAll(
-                        ir.getAsPath().getAsSets().stream()
-                            .map(
-                                currentAsSet ->
-                                    AsSet.of(
-                                        Longs.toArray(
-                                            currentAsSet.getAsns().stream()
-                                                .filter(
-                                                    currentAs -> !asToExclude.contains(currentAs))
-                                                .collect(Collectors.toList()))))
-                            .filter(currentAsSet -> !currentAsSet.isEmpty())
-                            .collect(Collectors.toList()))
-                    .build()));
+        ir.setAsPath(ir.getAsPath().removeASNs(asnsToExclude));
       }
     }
 

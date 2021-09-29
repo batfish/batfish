@@ -102,6 +102,18 @@ public final class AsPath implements Serializable, Comparable<AsPath> {
             .collect(ImmutableList.toImmutableList()));
   }
 
+  /**
+   * Returns a new {@link AsPath} with all specified ASNs removed form any {@link AsSet} in the
+   * path.
+   */
+  public AsPath removeASNs(List<Long> asns) {
+    return AsPath.of(
+        _asSets.stream()
+            .map(asSet -> asSet.removeASNsIfExists(asns))
+            .filter(asSet -> !asSet.isEmpty())
+            .collect(ImmutableList.toImmutableList()));
+  }
+
   @Override
   public int compareTo(AsPath rhs) {
     return Comparators.lexicographical(Ordering.<AsSet>natural()).compare(_asSets, rhs._asSets);

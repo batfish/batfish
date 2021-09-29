@@ -105,7 +105,8 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmmipa_prefix_lenContext
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmmipa_prefix_listContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmom_gotoContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmom_nextContext;
-import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_as_pathContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_as_path_excludeContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_as_path_prependContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_comm_listContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_communityContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_local_preferenceContext;
@@ -1573,16 +1574,17 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
-  public void exitRms_as_path(Rms_as_pathContext ctx) {
+  public void exitRms_as_path_exclude(Rms_as_path_excludeContext ctx) {
     List<Long> asns =
         ctx.as_path.asns.stream().map(this::toLong).collect(ImmutableList.toImmutableList());
+    _currentRouteMapEntry.setSetExcludeAsPath(new RouteMapSetExcludeAsPath(asns));
+  }
 
-    if (ctx.PREPEND() != null) {
-      _currentRouteMapEntry.setSetAsPath(new RouteMapSetPrependAsPath(asns));
-    } else {
-      assert ctx.EXCLUDE() != null;
-      _currentRouteMapEntry.setSetExcludeAsPath(new RouteMapSetExcludeAsPath(asns));
-    }
+  @Override
+  public void exitRms_as_path_prepend(Rms_as_path_prependContext ctx) {
+    List<Long> asns =
+        ctx.as_path.asns.stream().map(this::toLong).collect(ImmutableList.toImmutableList());
+    _currentRouteMapEntry.setSetAsPath(new RouteMapSetPrependAsPath(asns));
   }
 
   @Override
