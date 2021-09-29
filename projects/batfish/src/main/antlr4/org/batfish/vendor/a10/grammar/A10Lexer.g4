@@ -16,6 +16,7 @@ tokens {
 ACTIVE: 'active';
 ADDRESS: 'address';
 DISABLE: 'disable';
+DESCRIPTION: 'description' -> pushMode(M_Word);
 ENABLE: 'enable';
 ETHERNET: 'ethernet';
 HOSTNAME: 'hostname' -> pushMode(M_Word);
@@ -31,6 +32,7 @@ NAME: 'name' -> pushMode(M_Word);
 PASSIVE: 'passive';
 RBA: 'rba' -> pushMode(M_Rba);
 ROLE: 'role';
+ROUTE: 'route';
 ROUTER_INTERFACE: 'router-interface';
 STATIC: 'static';
 SHORT: 'short';

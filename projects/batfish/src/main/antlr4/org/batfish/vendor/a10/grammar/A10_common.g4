@@ -14,6 +14,8 @@ hostname: word;
 
 interface_name_str: word;
 
+route_description: word;
+
 vlan_name: word;
 
 user_tag: word;

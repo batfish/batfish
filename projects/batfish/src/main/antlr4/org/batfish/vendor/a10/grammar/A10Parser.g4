@@ -3,6 +3,7 @@ parser grammar A10Parser;
 import
   A10_common,
   A10_interface,
+  A10_ip,
   A10_rba,
   A10_trunk,
   A10_vlan;
@@ -18,6 +19,7 @@ statement
 :
    s_hostname
    | s_interface
+   | s_ip
    | s_rba
    | s_trunk
    | s_vlan
