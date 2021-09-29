@@ -1,0 +1,31 @@
+!BATFISH_FORMAT: a10_acos
+hostname static_route
+!
+ip route 10.100.0.0 /16 10.100.4.2 description "baz" 255
+ip route 10.100.0.0 /16 10.100.4.3
+! Overwrites previous line
+ip route 10.100.0.0 /16 10.100.4.3 1 description "foobar"
+ip route 10.100.1.0 /24 10.100.4.4
+!
+!
+! Any of these lines would remove the first route
+! no ip route 10.100.0.0 /16 10.100.4.2
+! no ip route 10.100.0.0 /16 10.100.4.2 description "baz"
+! no ip route 10.100.0.0 /16 10.100.4.2 255
+! no ip route 10.100.0.0 /16 10.100.4.2 description "baz" 255
+!
+!
+! None of these would remove the first route
+!
+!! Field value does not match (field: foo)
+! no ip route 10.100.0.0 /16 10.100.4.2 description "foo"
+!
+!! Field value does not match (field: 1)
+! no ip route 10.100.0.0 /16 10.100.4.2 1
+!
+!! Field value does not match
+! no ip route 10.100.0.0 /16 10.100.4.100
+!
+!! % Incomplete command
+! no ip route 10.100.0.0 /16
+!
