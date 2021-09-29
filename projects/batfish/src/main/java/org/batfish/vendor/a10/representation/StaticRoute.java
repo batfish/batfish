@@ -1,7 +1,6 @@
 package org.batfish.vendor.a10.representation;
 
 import java.io.Serializable;
-import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
@@ -18,24 +17,9 @@ public final class StaticRoute implements Serializable {
     return _distance;
   }
 
+  @Nonnull
   public Ip getForwardingRouterAddress() {
     return _forwardingRouterAddress;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (!(o instanceof StaticRoute)) {
-      return false;
-    }
-    StaticRoute that = (StaticRoute) o;
-    return Objects.equals(_description, that._description)
-        && Objects.equals(_distance, that._distance)
-        && _forwardingRouterAddress.equals(that._forwardingRouterAddress);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(_description, _description, _forwardingRouterAddress);
   }
 
   public StaticRoute(

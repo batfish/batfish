@@ -4,12 +4,10 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nonnull;
-import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Ip;
 
 /** Handles the static routes for a prefix. */
-@ParametersAreNonnullByDefault
-public class StaticRouteManager implements Serializable {
+public final class StaticRouteManager implements Serializable {
 
   /** Map of forwarding router {@link Ip} to its {@link StaticRoute} */
   public @Nonnull Map<Ip, StaticRoute> getVariants() {
