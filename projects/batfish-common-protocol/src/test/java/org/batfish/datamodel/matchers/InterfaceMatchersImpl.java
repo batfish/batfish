@@ -218,6 +218,17 @@ final class InterfaceMatchersImpl {
     }
   }
 
+  static final class HasHumanName extends FeatureMatcher<Interface, String> {
+    HasHumanName(@Nonnull Matcher<? super String> subMatcher) {
+      super(subMatcher, "An Interface with human name:", "human name");
+    }
+
+    @Override
+    protected String featureValueOf(Interface actual) {
+      return actual.getHumanName();
+    }
+  }
+
   static final class HasIsis extends FeatureMatcher<Interface, IsisInterfaceSettings> {
     HasIsis(@Nonnull Matcher<? super IsisInterfaceSettings> subMatcher) {
       super(subMatcher, "An Interface with isis:", "isis");
