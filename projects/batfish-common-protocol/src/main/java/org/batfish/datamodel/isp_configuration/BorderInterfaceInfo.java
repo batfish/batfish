@@ -9,7 +9,17 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
-/** Border interface information used to create ISPs */
+/**
+ * Border interface information used to create ISPs. This specification is used for L3 interfaces
+ * that connect directly to one ISP. In addition to being a simple L3 interface (e.g., Ethernet1),
+ * the interface may be a port-channel or a sub-interface. The specification allows for multiple BGP
+ * sessions to the same ISP (on the interface) but not to different ISPs.
+ *
+ * <p>New L1 links implied by the interface type will be created as part of this modeling, and ISP
+ * node creation will fail if these L1 links conflict with existing L1 links.
+ */
+// TODO: add support for port channels and sub-interfaces in IspModelingUtils
+// TODO: add support for multiple sessions to the same ISP in IspModelingUtils
 public class BorderInterfaceInfo {
   private static final String PROP_BORDER_INTERFACE = "borderInterface";
 
