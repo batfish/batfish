@@ -20,6 +20,7 @@ import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Vrf;
@@ -33,6 +34,7 @@ public final class A10Configuration extends VendorConfiguration {
     _interfacesLoopback = new HashMap<>();
     _interfacesTrunk = new HashMap<>();
     _interfacesVe = new HashMap<>();
+    _staticRoutes = new HashMap<>();
     _vlans = new HashMap<>();
   }
 
@@ -55,6 +57,11 @@ public final class A10Configuration extends VendorConfiguration {
 
   public Map<Integer, Interface> getInterfacesVe() {
     return _interfacesVe;
+  }
+
+  /** Map of route {@link Prefix} to {@link StaticRouteManager} for that prefix. */
+  public Map<Prefix, StaticRouteManager> getStaticRoutes() {
+    return _staticRoutes;
   }
 
   @Override
@@ -281,6 +288,7 @@ public final class A10Configuration extends VendorConfiguration {
     _interfacesLoopback = ImmutableMap.copyOf(_interfacesLoopback);
     _interfacesVe = ImmutableMap.copyOf(_interfacesVe);
     _interfacesTrunk = ImmutableMap.copyOf(_interfacesTrunk);
+    _staticRoutes = ImmutableMap.copyOf(_staticRoutes);
     _vlans = ImmutableMap.copyOf(_vlans);
   }
 
@@ -290,6 +298,7 @@ public final class A10Configuration extends VendorConfiguration {
   private Map<Integer, Interface> _interfacesLoopback;
   private Map<Integer, TrunkInterface> _interfacesTrunk;
   private Map<Integer, Interface> _interfacesVe;
+  private Map<Prefix, StaticRouteManager> _staticRoutes;
   private Map<Integer, Vlan> _vlans;
   private ConfigurationFormat _vendor;
 }
