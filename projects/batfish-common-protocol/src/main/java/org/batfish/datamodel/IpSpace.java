@@ -16,13 +16,7 @@ public abstract class IpSpace implements Comparable<IpSpace>, Serializable {
   }
 
   /** Return the {@link IpSpace} of all IPs not in {@code this}. */
-  public final IpSpace complement() {
-    if (this == UniverseIpSpace.INSTANCE) {
-      return EmptyIpSpace.INSTANCE;
-    }
-    if (this == EmptyIpSpace.INSTANCE) {
-      return UniverseIpSpace.INSTANCE;
-    }
+  public IpSpace complement() {
     return AclIpSpace.difference(UniverseIpSpace.INSTANCE, this);
   }
 
