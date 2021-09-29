@@ -17,6 +17,7 @@ public class BDDInteger {
 
   private final BDDFactory _factory;
   private final BDD[] _bitvec;
+  private final long _maxVal;
 
   /** Certain API calls are only valid when this BDD has only variables in it. */
   private boolean _hasVariablesOnly;
@@ -25,15 +26,15 @@ public class BDDInteger {
    * Create an integer, but don't initialize its bit values
    */
   private BDDInteger(BDDFactory factory, int length) {
-    checkArgument(length < 63, "Only lengths up to 62 are supported");
+    checkArgument(length < 64, "Only lengths up to 63 are supported");
     _factory = factory;
     _bitvec = new BDD[length];
+    _maxVal = 0xFFFF_FFFF_FFFF_FFFFL >>> (64 - length);
     _hasVariablesOnly = false;
   }
 
   public BDDInteger(BDDInteger other) {
-    _factory = other._factory;
-    _bitvec = new BDD[other._bitvec.length];
+    this(other._factory, other._bitvec.length);
     setValue(other);
   }
 
@@ -193,7 +194,7 @@ public class BDDInteger {
    */
   public BDD value(long val) {
     checkArgument(val >= 0, "value is negative");
-    checkArgument(val < (1L << _bitvec.length), "value %s is out of range", val);
+    checkArgument(val <= _maxVal, "value %s is out of range [0, %s]", val, _maxVal);
     long currentVal = val;
     BDD bdd = _factory.one();
     for (int i = _bitvec.length - 1; i >= 0; i--) {
@@ -232,7 +233,7 @@ public class BDDInteger {
    */
   public BDD leq(long val) {
     checkArgument(val >= 0, "value is negative");
-    checkArgument(val < (1L << _bitvec.length), "value %s is out of range", val);
+    checkArgument(val <= _maxVal, "value %s is out of range [0, %s]", val, _maxVal);
     return leqN(val, _bitvec.length);
   }
 
@@ -260,7 +261,7 @@ public class BDDInteger {
    */
   public BDD geq(long val) {
     checkArgument(val >= 0, "value is negative");
-    checkArgument(val < (1L << _bitvec.length), "value %s is out of range", val);
+    checkArgument(val <= _maxVal, "value %s is out of range [0, %s]", val, _maxVal);
     return geqN(val, _bitvec.length);
   }
 
@@ -274,7 +275,7 @@ public class BDDInteger {
   public BDD range(long a, long b) {
     checkArgument(a <= b, "range is not ordered correctly");
     checkArgument(a >= 0, "value is negative");
-    checkArgument(b < (1L << _bitvec.length), "value %s is out of range", b);
+    checkArgument(b <= _maxVal, "value %s is out of range [0, %s]", b, _maxVal);
 
     if (a == b) {
       return value(a);
@@ -282,9 +283,9 @@ public class BDDInteger {
 
     long bitOfFirstDifference = Long.highestOneBit(a ^ b);
     int sizeOfDifferentSuffix = Long.numberOfTrailingZeros(bitOfFirstDifference) + 1;
-    assert sizeOfDifferentSuffix < 63;
+    assert sizeOfDifferentSuffix < 64;
 
-    long suffixMask = (1L << sizeOfDifferentSuffix) - 1;
+    long suffixMask = 0xFFFF_FFFF_FFFF_FFFFL >>> (64 - sizeOfDifferentSuffix);
     BDD lower = ((a & suffixMask) == 0) ? _factory.one() : geqN(a, sizeOfDifferentSuffix);
     BDD upper = ((b & suffixMask) == suffixMask) ? _factory.one() : leqN(b, sizeOfDifferentSuffix);
     BDD between = lower.and(upper);
@@ -306,9 +307,7 @@ public class BDDInteger {
    */
   public void setValue(long val) {
     checkArgument(val >= 0, "Cannot set a negative value");
-    checkArgument(
-        val >> _bitvec.length == 0,
-        "Cannot represent value " + val + " in BDDInteger of length " + _bitvec.length);
+    checkArgument(val <= _maxVal, "value %s is out of range [0, %s]", val, _maxVal);
     long currentVal = val;
     for (int i = _bitvec.length - 1; i >= 0; i--) {
       if ((currentVal & 1) != 0) {
