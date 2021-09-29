@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 /**
  * A specification for connectivity needed to establish a BGP peering session specified for ISP
  * modeling. Currently, it allows users to specify layer1 connectivity to the ISP via a hostname and
- * a list of interfaces. The interfaces must be physical or exactly one port-channel
+ * a list of interfaces. The interfaces must be physical or exactly one port-channel.
  */
 public class BgpPeerConnectivity {
   private static final String PROP_LAYER1 = "layer1";

@@ -10,13 +10,15 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-/** Configuration required to create ISPs for a given network snapshot */
+/** Configuration required to create ISPs for a given network snapshot. */
 public class IspConfiguration {
   private static final String PROP_BORDER_INTERFACES = "borderInterfaces";
+  private static final String PROP_BGP_PEERS = "bgpPeers";
   private static final String PROP_FILTER = "filter";
   private static final String PROP_ISP_NODE_INFO = "ispNodeInfo";
 
   @Nonnull private final List<BorderInterfaceInfo> _borderInterfaces;
+  @Nonnull private final List<BgpPeerInfo> _bgpPeers;
   @Nonnull private final IspFilter _filter;
   @Nonnull private final List<IspNodeInfo> _ispNodeInfos;
 
@@ -29,7 +31,16 @@ public class IspConfiguration {
       @Nonnull List<BorderInterfaceInfo> borderInterfaces,
       @Nonnull IspFilter filter,
       @Nonnull List<IspNodeInfo> ispNodeInfos) {
+    this(borderInterfaces, ImmutableList.of(), filter, ispNodeInfos);
+  }
+
+  public IspConfiguration(
+      @Nonnull List<BorderInterfaceInfo> borderInterfaces,
+      @Nonnull List<BgpPeerInfo> bgpPeerInfos,
+      @Nonnull IspFilter filter,
+      @Nonnull List<IspNodeInfo> ispNodeInfos) {
     _borderInterfaces = ImmutableList.copyOf(borderInterfaces);
+    _bgpPeers = ImmutableList.copyOf(bgpPeerInfos);
     _filter = filter;
     _ispNodeInfos = ispNodeInfos;
   }
@@ -38,10 +49,12 @@ public class IspConfiguration {
   private static IspConfiguration jsonCreator(
       @JsonProperty(PROP_BORDER_INTERFACES) @Nullable
           List<BorderInterfaceInfo> borderInterfaceInfos,
+      @JsonProperty(PROP_BGP_PEERS) @Nullable List<BgpPeerInfo> bgpPeerInfos,
       @JsonProperty(PROP_FILTER) @Nullable IspFilter filter,
       @JsonProperty(PROP_ISP_NODE_INFO) @Nullable List<IspNodeInfo> ispNodeInfos) {
     return new IspConfiguration(
         firstNonNull(borderInterfaceInfos, ImmutableList.of()),
+        firstNonNull(bgpPeerInfos, ImmutableList.of()),
         firstNonNull(filter, IspFilter.ALLOW_ALL),
         firstNonNull(ispNodeInfos, ImmutableList.of()));
   }
@@ -56,6 +69,7 @@ public class IspConfiguration {
     }
     IspConfiguration that = (IspConfiguration) o;
     return Objects.equals(_borderInterfaces, that._borderInterfaces)
+        && Objects.equals(_bgpPeers, that._bgpPeers)
         && Objects.equals(_filter, that._filter)
         && Objects.equals(_ispNodeInfos, that._ispNodeInfos);
   }
@@ -63,13 +77,19 @@ public class IspConfiguration {
   @Override
   public int hashCode() {
 
-    return Objects.hash(_borderInterfaces, _filter, _ispNodeInfos);
+    return Objects.hash(_borderInterfaces, _bgpPeers, _filter, _ispNodeInfos);
   }
 
   @JsonProperty(PROP_BORDER_INTERFACES)
   @Nonnull
   public List<BorderInterfaceInfo> getBorderInterfaces() {
     return _borderInterfaces;
+  }
+
+  @JsonProperty(PROP_BGP_PEERS)
+  @Nonnull
+  public List<BgpPeerInfo> getBgpPeers() {
+    return _bgpPeers;
   }
 
   @JsonProperty(PROP_FILTER)
