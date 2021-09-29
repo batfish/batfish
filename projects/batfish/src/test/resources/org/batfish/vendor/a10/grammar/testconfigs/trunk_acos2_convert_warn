@@ -2,7 +2,20 @@
 !version 2.7.2, build 123 (Aug-5-2021,01:23)
 hostname trunk_acos2_convert_warn
 !
+! Different VLAN settings for eth 1 and 2; eth 10 does not exist
+trunk 1
+ ethernet 1 ethernet 2 ethernet 10
+!
 ! Empty trunk
 trunk 2
  name trunk2Name
+!
+vlan 2
+ tagged ethernet 2
+vlan 3
+ tagged ethernet 1
+!
+interface ethernet 1
+!
+interface ethernet 2
 !
