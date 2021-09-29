@@ -99,6 +99,21 @@ public final class IpWildcardSetIpSpace extends IpSpace {
   }
 
   @Override
+  public IpSpace complement() {
+    if (_whitelist.isEmpty()) {
+      // Pure blacklist is actually equivalent to EmptyIpSpace.
+      return UniverseIpSpace.INSTANCE;
+    } else if (_blacklist.isEmpty()) {
+      // Pure whitelist, so block that and allow everything else.
+      return IpWildcardSetIpSpace.builder().excluding(_whitelist).including(IpWildcard.ANY).build();
+    } else if (_whitelist.equals(ImmutableSortedSet.of(IpWildcard.ANY))) {
+      // A complement of a pure whitelist.
+      return IpWildcardSetIpSpace.builder().including(_blacklist).build();
+    }
+    return super.complement();
+  }
+
+  @Override
   protected boolean exprEquals(Object o) {
     IpWildcardSetIpSpace rhs = (IpWildcardSetIpSpace) o;
     return (_hashCode == rhs._hashCode || _hashCode == 0 || rhs._hashCode == 0)

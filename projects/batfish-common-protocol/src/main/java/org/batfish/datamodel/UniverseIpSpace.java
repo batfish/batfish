@@ -21,6 +21,11 @@ public class UniverseIpSpace extends IpSpace {
   }
 
   @Override
+  public IpSpace complement() {
+    return EmptyIpSpace.INSTANCE;
+  }
+
+  @Override
   protected boolean exprEquals(Object o) {
     return true;
   }
