@@ -120,6 +120,18 @@ public class AclIpSpace extends IpSpace {
     return of(Arrays.asList(lines));
   }
 
+  @Override
+  public IpSpace complement() {
+    if (_lines.size() == 2
+        && _lines.get(1).getAction() == LineAction.PERMIT
+        && _lines.get(1).getIpSpace() == UniverseIpSpace.INSTANCE) {
+      // This AclIpSpace is a complement already.
+      assert _lines.get(0).getAction() == LineAction.DENY;
+      return _lines.get(0).getIpSpace();
+    }
+    return super.complement();
+  }
+
   /**
    * Set-theoretic difference between two IpSpaces.<br>
    * If both arguments are {@code null}, returns {@code null}.<br>
