@@ -428,8 +428,9 @@ public class A10GrammarTest {
     A10Configuration c = parseVendorConfig(hostname);
 
     Map<Integer, Vlan> vlans = c.getVlans();
-    assertThat(vlans.keySet(), containsInAnyOrder(2));
+    assertThat(vlans.keySet(), containsInAnyOrder(2, 3));
     Vlan vlan2 = vlans.get(2);
+    Vlan vlan3 = vlans.get(3);
 
     assertThat(vlan2.getNumber(), equalTo(2));
     assertThat(
@@ -438,6 +439,13 @@ public class A10GrammarTest {
             new InterfaceReference(Interface.Type.ETHERNET, 1),
             new InterfaceReference(Interface.Type.ETHERNET, 2)));
     assertThat(vlan2.getUntagged(), emptyIterable());
+    assertThat(vlan3.getTagged(), emptyIterable());
+    assertThat(
+        vlan3.getUntagged(),
+        containsInAnyOrder(
+            new InterfaceReference(Interface.Type.ETHERNET, 1),
+            new InterfaceReference(Interface.Type.ETHERNET, 3),
+            new InterfaceReference(Interface.Type.ETHERNET, 4)));
   }
 
   @Test

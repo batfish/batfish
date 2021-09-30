@@ -18,7 +18,8 @@ svd_tagged: TAGGED vlan_iface_references NEWLINE;
 
 svd_untagged: UNTAGGED vlan_iface_references NEWLINE;
 
-vlan_iface_references: vlan_ifaces_range | vlan_ifaces_list;
+// Only ACOS 2.X allows more than one interface specifier here
+vlan_iface_references: (vlan_ifaces_range | vlan_ifaces_list)+;
 
 vlan_ifaces_range:
     // All(?) versions of ACOS
