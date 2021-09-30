@@ -12,6 +12,7 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -627,41 +628,50 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     return TrunkGroup.Type.STATIC;
   }
 
+  private Optional<List<InterfaceReference>> toInterfaceReferences(
+      A10Parser.Vlan_ifaces_rangeContext ctx) {
+    Interface.Type type = toInterfaceType(ctx);
+    return toSubRange(ctx)
+        .map(
+            subRange ->
+                subRange
+                    .asStream()
+                    .mapToObj(i -> new InterfaceReference(type, i))
+                    .collect(ImmutableList.toImmutableList()));
+  }
+
   /**
    * Convert specified context into a list of {@link InterfaceReference} and add structure
    * references for each interface. Returns {@link Optional#empty()} and adds warnings if the
    * context cannot be converted to a list of {@link InterfaceReference}s.
    */
-  Optional<List<InterfaceReference>> toInterfaceReferences(
+  private Optional<List<InterfaceReference>> toInterfaceReferences(
       A10Parser.Vlan_iface_referencesContext ctx, A10StructureUsage usage) {
     int line = ctx.start.getLine();
-    if (ctx.vlan_ifaces_list() != null) {
-      Optional<List<InterfaceReference>> maybeInterfaces = toInterfaces(ctx.vlan_ifaces_list());
-      maybeInterfaces.ifPresent(
-          ifaces ->
-              ifaces.forEach(
-                  iface ->
-                      _c.referenceStructure(
-                          A10StructureType.INTERFACE, getInterfaceName(iface), usage, line)));
-      return maybeInterfaces;
+
+    ImmutableList<Optional<List<InterfaceReference>>> references =
+        Stream.concat(
+                ctx.vlan_ifaces_list().stream().map(this::toInterfaces),
+                ctx.vlan_ifaces_range().stream().map(this::toInterfaceReferences))
+            .collect(ImmutableList.toImmutableList());
+    if (references.stream().anyMatch(maybeRefs -> !maybeRefs.isPresent())) {
+      // Already warned
+      return Optional.empty();
     }
-    assert ctx.vlan_ifaces_range() != null;
-    Interface.Type type = toInterfaceType(ctx.vlan_ifaces_range());
-    Optional<List<InterfaceReference>> maybeIfaces =
-        toSubRange(ctx.vlan_ifaces_range())
-            .map(
-                subRange ->
-                    subRange
-                        .asStream()
-                        .mapToObj(i -> new InterfaceReference(type, i))
-                        .collect(ImmutableList.toImmutableList()));
-    maybeIfaces.ifPresent(
-        ifaces ->
-            ifaces.forEach(
-                iface ->
-                    _c.referenceStructure(
-                        A10StructureType.INTERFACE, getInterfaceName(iface), usage, line)));
-    return maybeIfaces;
+    return Optional.of(
+        references.stream()
+            .flatMap(
+                maybeRef -> {
+                  // Guaranteed above
+                  assert maybeRef.isPresent();
+                  List<InterfaceReference> refs = maybeRef.get();
+                  refs.forEach(
+                      iface ->
+                          _c.referenceStructure(
+                              A10StructureType.INTERFACE, getInterfaceName(iface), usage, line));
+                  return refs.stream();
+                })
+            .collect(ImmutableList.toImmutableList()));
   }
 
   Interface.Type toInterfaceType(A10Parser.Vlan_ifaces_rangeContext ctx) {
