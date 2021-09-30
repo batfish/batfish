@@ -7,6 +7,8 @@ import org.batfish.datamodel.Ip;
 
 /** Datamodel class representing configuration of a static route on A10 devices. */
 public final class StaticRoute implements Serializable {
+  public static final int DEFAULT_STATIC_ROUTE_DISTANCE = 1;
+
   @Nullable
   public String getDescription() {
     return _description;

@@ -230,6 +230,38 @@ public class A10GrammarTest {
   }
 
   @Test
+  public void testStaticRouteConversion() {
+    String hostname = "static_route_convert";
+    Configuration c = parseConfig(hostname);
+    Prefix prefix1 = Prefix.parse("10.100.0.0/16");
+    Ip forwardingRouterAddr1a = Ip.parse("10.100.4.1");
+    Ip forwardingRouterAddr1b = Ip.parse("10.100.4.2");
+    Prefix prefix2 = Prefix.parse("10.101.0.0/16");
+    Ip forwardingRouterAddr2 = Ip.parse("10.100.4.3");
+    org.batfish.datamodel.StaticRoute.Builder baseSr =
+        org.batfish.datamodel.StaticRoute.builder().setRecursive(false);
+
+    assertThat(
+        c.getDefaultVrf().getStaticRoutes(),
+        containsInAnyOrder(
+            baseSr
+                .setNetwork(prefix1)
+                .setAdministrativeCost(StaticRoute.DEFAULT_STATIC_ROUTE_DISTANCE)
+                .setNextHopIp(forwardingRouterAddr1a)
+                .build(),
+            baseSr
+                .setNetwork(prefix1)
+                .setAdministrativeCost(1)
+                .setNextHopIp(forwardingRouterAddr1b)
+                .build(),
+            baseSr
+                .setNetwork(prefix2)
+                .setAdministrativeCost(2)
+                .setNextHopIp(forwardingRouterAddr2)
+                .build()));
+  }
+
+  @Test
   public void testVlanExtraction() {
     String hostname = "vlan";
     A10Configuration c = parseVendorConfig(hostname);
