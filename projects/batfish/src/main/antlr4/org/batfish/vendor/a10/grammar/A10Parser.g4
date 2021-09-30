@@ -4,6 +4,7 @@ import
   A10_common,
   A10_interface,
   A10_ip_route,
+  A10_lacp_trunk,
   A10_rba,
   A10_trunk,
   A10_vlan;
@@ -20,6 +21,7 @@ statement
    s_hostname
    | s_interface
    | s_ip_route
+   | s_lacp_trunk
    | s_rba
    | s_trunk
    | s_vlan

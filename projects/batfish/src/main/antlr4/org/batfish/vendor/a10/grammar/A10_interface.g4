@@ -18,7 +18,17 @@ sid_trunk: TRUNK num = trunk_number NEWLINE sid*;
 
 sid_ve: VE num = vlan_number NEWLINE sid*;
 
-sid: sid_disable | sid_enable | sid_ip | sid_lacp | sid_mtu | sid_name | sid_trunk_group;
+sid
+:
+   sid_disable
+   | sid_enable
+   | sid_ip
+   | sid_lacp
+   | sid_mtu
+   | sid_name
+   | sid_ports_threshold
+   | sid_trunk_group
+;
 
 sid_enable: ENABLE NEWLINE;
 
@@ -31,6 +41,10 @@ sidi_address: ADDRESS ip_prefix NEWLINE;
 sid_mtu: MTU interface_mtu NEWLINE;
 
 sid_name: NAME interface_name_str NEWLINE;
+
+sid_ports_threshold: PORTS_THRESHOLD ports_threshold sidpt_options;
+
+sidpt_options: (TIMER ports_threshold_timer)? DO_AUTO_RECOVERY? NEWLINE;
 
 sid_trunk_group: TRUNK_GROUP trunk_number (trunk_type)? NEWLINE sidtg*;
 

@@ -8,10 +8,12 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.Configuration;
@@ -130,14 +132,7 @@ public final class A10Configuration extends VendorConfiguration {
 
   @Nonnull
   public static String getInterfaceName(Interface.Type type, int num) {
-    if (type == Interface.Type.VE) {
-      return String.format("VirtualEthernet%s", num);
-    }
-
-    String typeStr = type.toString();
-    // Only the first letter should be capitalized, similar to A10 `show` data
-    return String.format(
-        "%s%s%s", typeStr.substring(0, 1), typeStr.substring(1).toLowerCase(), num);
+    return getInterfaceHumanName(type, num).replace(" ", "");
   }
 
   @Nonnull
@@ -170,9 +165,22 @@ public final class A10Configuration extends VendorConfiguration {
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
     _c.setVrfs(ImmutableMap.of(DEFAULT_VRF_NAME, vrf));
 
-    _interfacesLoopback.forEach((num, iface) -> convertInterface(iface, vrf));
-    _interfacesEthernet.forEach((num, iface) -> convertInterface(iface, vrf));
-    _interfacesVe.forEach((num, iface) -> convertInterface(iface, vrf));
+    _ifaceNametoIface = new HashMap<>();
+    _interfacesLoopback.forEach(
+        (num, iface) -> {
+          convertInterface(iface, vrf);
+          _ifaceNametoIface.put(getInterfaceName(iface), iface);
+        });
+    _interfacesEthernet.forEach(
+        (num, iface) -> {
+          convertInterface(iface, vrf);
+          _ifaceNametoIface.put(getInterfaceName(iface), iface);
+        });
+    _interfacesVe.forEach(
+        (num, iface) -> {
+          convertInterface(iface, vrf);
+          _ifaceNametoIface.put(getInterfaceName(iface), iface);
+        });
     _interfacesTrunk.forEach((num, iface) -> convertInterface(iface, vrf));
 
     markStructures();
@@ -205,50 +213,71 @@ public final class A10Configuration extends VendorConfiguration {
     newIface.setDeclaredNames(ImmutableList.of(name));
 
     // VLANs
-    newIface.setSwitchportMode(SwitchportMode.NONE);
-    List<Vlan> taggedVlans = getTaggedVlans(iface);
-    Optional<Vlan> untaggedVlan = getUntaggedVlan(iface);
-    if (untaggedVlan.isPresent()) {
-      newIface.setSwitchportMode(SwitchportMode.TRUNK);
-      newIface.setSwitchport(true);
-      newIface.setNativeVlan(untaggedVlan.get().getNumber());
-    }
-    if (!taggedVlans.isEmpty()) {
-      newIface.setSwitchportMode(SwitchportMode.TRUNK);
-      newIface.setSwitchport(true);
-      newIface.setAllowedVlans(
-          IntegerSpace.unionOfSubRanges(
-              taggedVlans.stream()
-                  .map(v -> new SubRange(v.getNumber()))
-                  .collect(ImmutableList.toImmutableList())));
-    }
-    if (iface.getType() == Interface.Type.VE) {
-      newIface.setVlan(iface.getNumber());
+    boolean vlanIsConfigured = hasVlanSettings(iface);
+    if (vlanIsConfigured) {
+      setVlanSettings(iface, newIface);
     }
 
-    // Aggregates and members
+    // Aggregates and members - must happen after initial VLAN settings are set
     if (iface instanceof TrunkInterface) {
       TrunkInterface trunkIface = (TrunkInterface) iface;
+      String trunkName = getInterfaceName(iface);
       ImmutableSet<String> memberNames =
           trunkIface.getMembers().stream()
               .map(A10Configuration::getInterfaceName)
+              .filter(
+                  memberName -> {
+                    boolean ifaceExists = _ifaceNametoIface.containsKey(memberName);
+                    if (!ifaceExists) {
+                      // Cannot tell if this missing member would invalidate other members or not
+                      // So, optimistically leave other members
+                      _w.redFlag(
+                          String.format(
+                              "Trunk member %s does not exist, cannot add to %s",
+                              memberName, trunkName));
+                    }
+                    return ifaceExists;
+                  })
               .collect(ImmutableSet.toImmutableSet());
-      newIface.setChannelGroupMembers(memberNames);
-      newIface.setDependencies(
-          memberNames.stream()
-              .map(
-                  member ->
-                      new org.batfish.datamodel.Interface.Dependency(
-                          member, org.batfish.datamodel.Interface.DependencyType.AGGREGATE))
-              .collect(ImmutableSet.toImmutableSet()));
       if (memberNames.isEmpty()) {
         _w.redFlag(
             String.format(
                 "%s does not contain any member interfaces",
                 getInterfaceName(Interface.Type.TRUNK, trunkIface.getNumber())));
+      } else {
+        newIface.setChannelGroupMembers(memberNames);
+        newIface.setDependencies(
+            memberNames.stream()
+                .map(
+                    member ->
+                        new org.batfish.datamodel.Interface.Dependency(
+                            member, org.batfish.datamodel.Interface.DependencyType.AGGREGATE))
+                .collect(ImmutableSet.toImmutableSet()));
+
+        // If this trunk doesn't have VLAN configured directly (e.g. ACOS v2), inherit it
+        if (!vlanIsConfigured) {
+          if (vlanSettingsDifferent(memberNames)) {
+            _w.redFlag(
+                String.format(
+                    "VLAN settings for members of %s are different, ignoring their VLAN settings",
+                    trunkName));
+          } else {
+            // All members have the same VLAN settings, so just use the first
+            String firstMemberName = memberNames.iterator().next();
+            setVlanSettings(_ifaceNametoIface.get(firstMemberName), newIface);
+          }
+        } else {
+          if (memberNames.stream()
+              .anyMatch(memberName -> hasVlanSettings(_ifaceNametoIface.get(memberName)))) {
+            _w.redFlag(
+                String.format(
+                    "Cannot configure VLAN settings on %s as well as its members. Member VLAN"
+                        + " settings will be ignored.",
+                    trunkName));
+          }
+        }
       }
     }
-
     if (iface.getType() == Interface.Type.ETHERNET) {
       InterfaceReference ifaceRef = new InterfaceReference(iface.getType(), iface.getNumber());
       _interfacesTrunk.values().stream()
@@ -260,7 +289,64 @@ public final class A10Configuration extends VendorConfiguration {
                 // TODO determine if switchport settings need to be propagated to member interfaces
               });
     }
+
     newIface.build();
+  }
+
+  /**
+   * Check if any VLAN settings for {@link Interface}s (specified by name) are different.
+   *
+   * <p>All specified interface names must correspond to existent interfaces, in the {@code
+   * _ifaceNameToIface} map.
+   */
+  private boolean vlanSettingsDifferent(Collection<String> names) {
+    org.batfish.datamodel.Interface.Builder baseIface =
+        org.batfish.datamodel.Interface.builder().setName("");
+    Stream<org.batfish.datamodel.Interface> distinctVlanSettings =
+        names.stream()
+            .map(
+                name -> {
+                  setVlanSettings(_ifaceNametoIface.get(name), baseIface);
+                  return baseIface.build();
+                })
+            .distinct();
+    return distinctVlanSettings.count() > 1;
+  }
+
+  /**
+   * Set VLAN settings of the specified VI {@link org.batfish.datamodel.Interface.Builder} based on
+   * the specified {@link Interface}.
+   */
+  private void setVlanSettings(Interface iface, org.batfish.datamodel.Interface.Builder viIface) {
+    viIface.setSwitchportMode(SwitchportMode.NONE);
+    List<Vlan> taggedVlans = getTaggedVlans(iface);
+    Optional<Vlan> untaggedVlan = getUntaggedVlan(iface);
+    if (untaggedVlan.isPresent()) {
+      viIface.setSwitchportMode(SwitchportMode.TRUNK);
+      viIface.setSwitchport(true);
+      viIface.setNativeVlan(untaggedVlan.get().getNumber());
+    }
+    if (!taggedVlans.isEmpty()) {
+      viIface.setSwitchportMode(SwitchportMode.TRUNK);
+      viIface.setSwitchport(true);
+      viIface.setAllowedVlans(
+          IntegerSpace.unionOfSubRanges(
+              taggedVlans.stream()
+                  .map(v -> new SubRange(v.getNumber()))
+                  .collect(ImmutableList.toImmutableList())));
+    }
+    if (iface.getType() == Interface.Type.VE) {
+      viIface.setVlan(iface.getNumber());
+    }
+  }
+
+  /** Returns a boolean indicating if VLAN settings exist for the supplied {@link Interface}. */
+  private boolean hasVlanSettings(Interface iface) {
+    List<Vlan> taggedVlans = getTaggedVlans(iface);
+    Optional<Vlan> untaggedVlan = getUntaggedVlan(iface);
+    return untaggedVlan.isPresent()
+        || !taggedVlans.isEmpty()
+        || iface.getType() == Interface.Type.VE;
   }
 
   /** Get the untagged VLAN for the specified interface, if one exists. */
@@ -291,6 +377,9 @@ public final class A10Configuration extends VendorConfiguration {
     _staticRoutes = ImmutableMap.copyOf(_staticRoutes);
     _vlans = ImmutableMap.copyOf(_vlans);
   }
+
+  /** Map of interface names to interface. Used for converting aggregate interfaces. */
+  private transient Map<String, Interface> _ifaceNametoIface;
 
   private Configuration _c;
   private String _hostname;
