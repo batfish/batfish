@@ -17,6 +17,7 @@ import io.opentracing.util.GlobalTracer;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -620,6 +621,28 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
   }
 
   @VisibleForTesting
+  static IpSpace routableSpace(Fib fib) {
+    Set<FibEntry> entries = fib.allEntries();
+    if (entries.isEmpty()) {
+      return EmptyIpSpace.INSTANCE;
+    }
+    Set<Prefix> seen = new HashSet<>();
+    ImmutableSet.Builder<IpWildcard> ret = ImmutableSet.builder();
+    for (FibEntry entry : entries) {
+      Prefix network = entry.getTopLevelRoute().getNetwork();
+      if (network.equals(Prefix.ZERO)) {
+        // Default route -> all IPs are routable. Skip processing the rest.
+        return UniverseIpSpace.INSTANCE;
+      }
+      if (seen.add(network)) {
+        // Only convert networks once.
+        ret.add(IpWildcard.create(network));
+      }
+    }
+    return IpWildcardSetIpSpace.create(ImmutableSet.of(), ret.build());
+  }
+
+  @VisibleForTesting
   static Map<String, Map<String, IpSpace>> computeRoutableIps(Map<String, Map<String, Fib>> fibs) {
     Span span = GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeRoutableIps").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
@@ -631,14 +654,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
               toImmutableMap(
                   nodeEntry.getValue(),
                   Entry::getKey, // vrf
-                  vrfEntry ->
-                      IpWildcardSetIpSpace.create(
-                          ImmutableSet.of(),
-                          vrfEntry.getValue().allEntries().stream()
-                              .map(fibEntry -> fibEntry.getTopLevelRoute().getNetwork())
-                              .distinct()
-                              .map(IpWildcard::create)
-                              .collect(ImmutableSet.toImmutableSet()))));
+                  vrfEntry -> routableSpace(vrfEntry.getValue())));
     } finally {
       span.finish();
     }
