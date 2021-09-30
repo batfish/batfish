@@ -1,11 +1,32 @@
 package org.batfish.common.util.isp;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
+import static java.util.Comparator.naturalOrder;
+import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
+import static org.batfish.specifier.Location.interfaceLinkLocation;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.topology.Layer1Edge;
@@ -55,28 +76,6 @@ import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.specifier.LocationInfo;
-
-import javax.annotation.Nonnull;
-import javax.annotation.ParametersAreNonnullByDefault;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-
-import static com.google.common.base.MoreObjects.firstNonNull;
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
-import static java.util.Comparator.naturalOrder;
-import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
-import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
-import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
-import static org.batfish.specifier.Location.interfaceLinkLocation;
 
 /** Util classes and functions to model ISPs and Internet for a given network */
 @ParametersAreNonnullByDefault
