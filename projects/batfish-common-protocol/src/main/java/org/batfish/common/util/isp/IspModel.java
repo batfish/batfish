@@ -200,14 +200,6 @@ final class IspModel {
     _trafficFiltering = trafficFiltering;
   }
 
-  void addNeighbor(Remote neighbor) {
-    _remotes =
-        ImmutableList.<Remote>builderWithExpectedSize(1 + _remotes.size())
-            .addAll(_remotes)
-            .add(neighbor)
-            .build();
-  }
-
   @Nonnull
   List<Remote> getRemotes() {
     return ImmutableList.copyOf(_remotes);
