@@ -98,12 +98,12 @@ public final class TracerouteUtils {
                     AbstractRoute.NEXT_VRF_EXTRACTOR.visit(route.getNextHop()),
                     route.getAdministrativeCost(),
                     route.getMetric()))
+        .distinct()
         .sorted(
             comparing(RouteInfo::getNetwork)
                 .thenComparing(RouteInfo::getNextHopIp)
                 .thenComparing(RouteInfo::getNextVrf, nullsFirst(String::compareTo))
                 .thenComparing(RouteInfo::getProtocol))
-        .distinct()
         .collect(ImmutableList.toImmutableList());
   }
 
