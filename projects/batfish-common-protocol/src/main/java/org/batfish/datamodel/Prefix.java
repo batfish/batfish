@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
+import com.google.common.collect.Ordering;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.Optional;
@@ -130,7 +131,7 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
     long l2 = p2.getStartIp().asLong();
     long oneAtFirstDifferentBit = Long.highestOneBit(l1 ^ l2);
     int lengthInCommon = MAX_PREFIX_LENGTH - 1 - Long.numberOfTrailingZeros(oneAtFirstDifferentBit);
-    return Prefix.create(Ip.create(l1), lengthInCommon);
+    return Prefix.create(Ordering.natural().min(p1.getStartIp(), p2.getStartIp()), lengthInCommon);
   }
 
   @Override
