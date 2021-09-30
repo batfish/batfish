@@ -7,14 +7,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
-import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.Stack;
 import java.util.function.Supplier;
 import javax.annotation.Nonnull;
@@ -328,31 +326,28 @@ public final class FibImpl implements Fib {
      * to the builder) and return an IpSpace of IPs matched by any prefix in that subtrie. To create
      * the matching Ips of the prefix, whitelist the prefix and blacklist the IPs matched by
      * subtrie prefixes (i.e. longer prefixes).
-     *
-     * We build ImmutableSortedSets because IpWildcardSetIpSpace uses them internally, and this
-     * avoids making an extra copy.
      */
     _root.fold(
-        new FoldOperator<FibEntry, SortedSet<IpWildcard>>() {
+        new FoldOperator<FibEntry, Set<IpWildcard>>() {
           @Nonnull
           @Override
-          public SortedSet<IpWildcard> fold(
+          public Set<IpWildcard> fold(
               Prefix prefix,
               Set<FibEntry> elems,
-              @Nullable SortedSet<IpWildcard> leftPrefixes,
-              @Nullable SortedSet<IpWildcard> rightPrefixes) {
-            SortedSet<IpWildcard> subTriePrefixes;
+              @Nullable Set<IpWildcard> leftPrefixes,
+              @Nullable Set<IpWildcard> rightPrefixes) {
+            Set<IpWildcard> subTriePrefixes;
             boolean leftEmpty = leftPrefixes == null || leftPrefixes.isEmpty();
             boolean rightEmpty = rightPrefixes == null || rightPrefixes.isEmpty();
             if (leftEmpty && rightEmpty) {
-              subTriePrefixes = ImmutableSortedSet.of();
+              subTriePrefixes = ImmutableSet.of();
             } else if (leftEmpty) {
               subTriePrefixes = rightPrefixes;
             } else if (rightEmpty) {
               subTriePrefixes = leftPrefixes;
             } else {
               subTriePrefixes =
-                  ImmutableSortedSet.<IpWildcard>naturalOrder()
+                  ImmutableSet.<IpWildcard>builder()
                       .addAll(leftPrefixes)
                       .addAll(rightPrefixes)
                       .build();
@@ -369,10 +364,10 @@ public final class FibImpl implements Fib {
             } else {
               // Ips matching prefix are those in prefix and not in any subtrie prefixes.
               builder.put(
-                  prefix, new IpWildcardSetIpSpace(subTriePrefixes, ImmutableSortedSet.of(wc)));
+                  prefix, IpWildcardSetIpSpace.create(subTriePrefixes, ImmutableSet.of(wc)));
             }
 
-            return ImmutableSortedSet.of(wc);
+            return ImmutableSet.of(wc);
           }
         });
 

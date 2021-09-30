@@ -2,8 +2,11 @@ package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.Comparators;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
 import java.util.Arrays;
@@ -20,21 +23,28 @@ import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
  * <p>Any empty whitelist is equivalent to an {@link EmptyIpSpace}.
  */
 public final class IpWildcardSetIpSpace extends IpSpace {
+  private static final LoadingCache<IpWildcardSetIpSpace, IpWildcardSetIpSpace> CACHE =
+      Caffeine.newBuilder().maximumSize(1_000_000).build(w -> w);
+
+  public static IpWildcardSetIpSpace create(
+      @Nonnull Set<IpWildcard> blacklist, @Nonnull Set<IpWildcard> whitelist) {
+    return CACHE.get(new IpWildcardSetIpSpace(blacklist, whitelist));
+  }
 
   /** A Builder for {@link IpWildcardSetIpSpace}. */
   public static class Builder {
 
-    private final ImmutableSortedSet.Builder<IpWildcard> _blacklistBuilder;
+    private final ImmutableSet.Builder<IpWildcard> _blacklistBuilder;
 
-    private final ImmutableSortedSet.Builder<IpWildcard> _whitelistBuilder;
+    private final ImmutableSet.Builder<IpWildcard> _whitelistBuilder;
 
     private Builder() {
-      _blacklistBuilder = ImmutableSortedSet.naturalOrder();
-      _whitelistBuilder = ImmutableSortedSet.naturalOrder();
+      _blacklistBuilder = ImmutableSet.builder();
+      _whitelistBuilder = ImmutableSet.builder();
     }
 
     public IpWildcardSetIpSpace build() {
-      return new IpWildcardSetIpSpace(_blacklistBuilder.build(), _whitelistBuilder.build());
+      return create(_blacklistBuilder.build(), _whitelistBuilder.build());
     }
 
     public Builder excluding(IpWildcard... wildcards) {
@@ -65,23 +75,23 @@ public final class IpWildcardSetIpSpace extends IpSpace {
     return new Builder();
   }
 
-  @Nonnull private final SortedSet<IpWildcard> _blacklist;
+  @Nonnull private final Set<IpWildcard> _blacklist;
 
-  @Nonnull private final SortedSet<IpWildcard> _whitelist;
+  @Nonnull private final Set<IpWildcard> _whitelist;
 
-  public IpWildcardSetIpSpace(
+  private IpWildcardSetIpSpace(
       @Nonnull Set<IpWildcard> blacklist, @Nonnull Set<IpWildcard> whitelist) {
-    _blacklist = ImmutableSortedSet.copyOf(blacklist);
-    _whitelist = ImmutableSortedSet.copyOf(whitelist);
+    _blacklist = ImmutableSet.copyOf(blacklist);
+    _whitelist = ImmutableSet.copyOf(whitelist);
   }
 
   @JsonCreator
   private static IpWildcardSetIpSpace jsonCreator(
       @JsonProperty(PROP_BLACKLIST) Set<IpWildcard> blacklist,
       @JsonProperty(PROP_WHITELIST) Set<IpWildcard> whitelist) {
-    return new IpWildcardSetIpSpace(
-        blacklist == null ? ImmutableSortedSet.of() : ImmutableSortedSet.copyOf(blacklist),
-        whitelist == null ? ImmutableSortedSet.of() : ImmutableSortedSet.copyOf(whitelist));
+    return create(
+        blacklist == null ? ImmutableSet.of() : ImmutableSet.copyOf(blacklist),
+        whitelist == null ? ImmutableSet.of() : ImmutableSet.copyOf(whitelist));
   }
 
   @Override
@@ -105,10 +115,10 @@ public final class IpWildcardSetIpSpace extends IpSpace {
       return UniverseIpSpace.INSTANCE;
     } else if (_blacklist.isEmpty()) {
       // Pure whitelist, so block that and allow everything else.
-      return IpWildcardSetIpSpace.builder().excluding(_whitelist).including(IpWildcard.ANY).build();
-    } else if (_whitelist.equals(ImmutableSortedSet.of(IpWildcard.ANY))) {
+      return IpWildcardSetIpSpace.create(_whitelist, ImmutableSet.of(IpWildcard.ANY));
+    } else if (_whitelist.equals(ImmutableSet.of(IpWildcard.ANY))) {
       // A complement of a pure whitelist.
-      return IpWildcardSetIpSpace.builder().including(_blacklist).build();
+      return IpWildcardSetIpSpace.create(ImmutableSet.of(), _blacklist);
     }
     return super.complement();
   }
@@ -121,16 +131,22 @@ public final class IpWildcardSetIpSpace extends IpSpace {
         && _whitelist.equals(rhs._whitelist);
   }
 
-  @Nonnull
-  @JsonProperty(PROP_BLACKLIST)
-  public SortedSet<IpWildcard> getBlacklist() {
+  public @Nonnull Set<IpWildcard> getBlacklist() {
     return _blacklist;
   }
 
-  @Nonnull
-  @JsonProperty(PROP_WHITELIST)
-  public SortedSet<IpWildcard> getWhitelist() {
+  @JsonProperty(PROP_BLACKLIST)
+  private @Nonnull SortedSet<IpWildcard> getJsonBlacklist() {
+    return ImmutableSortedSet.copyOf(_blacklist);
+  }
+
+  public @Nonnull Set<IpWildcard> getWhitelist() {
     return _whitelist;
+  }
+
+  @JsonProperty(PROP_WHITELIST)
+  private @Nonnull SortedSet<IpWildcard> getJsonWhitelist() {
+    return ImmutableSortedSet.copyOf(_whitelist);
   }
 
   @Override
