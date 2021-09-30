@@ -64,6 +64,8 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceType;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
@@ -73,6 +75,8 @@ import org.batfish.vendor.ConversionContext;
 import org.batfish.vendor.a10.representation.A10Configuration;
 import org.batfish.vendor.a10.representation.Interface;
 import org.batfish.vendor.a10.representation.InterfaceReference;
+import org.batfish.vendor.a10.representation.StaticRoute;
+import org.batfish.vendor.a10.representation.StaticRouteManager;
 import org.batfish.vendor.a10.representation.TrunkGroup;
 import org.batfish.vendor.a10.representation.TrunkInterface;
 import org.batfish.vendor.a10.representation.Vlan;
@@ -185,6 +189,44 @@ public class A10GrammarTest {
     assertThat(c, notNullValue());
     // rba definition shouldn't interfere with hostname
     assertThat(c.getHostname(), equalTo("rba_hostname"));
+  }
+
+  @Test
+  public void testStaticRouteExtraction() {
+    String hostname = "static_route";
+    A10Configuration c = parseVendorConfig(hostname);
+    Prefix prefix1 = Prefix.parse("10.100.0.0/16");
+    Ip forwardingRouterAddr1a = Ip.parse("10.100.4.2");
+    Ip forwardingRouterAddr1b = Ip.parse("10.100.4.3");
+    Prefix prefix2 = Prefix.parse("10.100.1.0/24");
+    Ip forwardingRouterAddr2 = Ip.parse("10.100.4.4");
+
+    // Prefixes
+    assertThat(c.getStaticRoutes().keySet(), containsInAnyOrder(prefix1, prefix2));
+    StaticRouteManager srmPrefix1 = c.getStaticRoutes().get(prefix1);
+    StaticRouteManager srmPrefix2 = c.getStaticRoutes().get(prefix2);
+
+    // Forwarding router addresses, a.k.a. nexthops
+    assertThat(
+        srmPrefix1.getVariants().keySet(),
+        containsInAnyOrder(forwardingRouterAddr1a, forwardingRouterAddr1b));
+    assertThat(srmPrefix2.getVariants().keySet(), contains(forwardingRouterAddr2));
+    StaticRoute route1a = srmPrefix1.getVariants().get(forwardingRouterAddr1a);
+    StaticRoute route1b = srmPrefix1.getVariants().get(forwardingRouterAddr1b);
+    StaticRoute route2 = srmPrefix2.getVariants().get(forwardingRouterAddr2);
+
+    // Route properties
+    assertThat(route1a.getForwardingRouterAddress(), equalTo(forwardingRouterAddr1a));
+    assertThat(route1a.getDescription(), equalTo("baz"));
+    assertThat(route1a.getDistance(), equalTo(255));
+
+    assertThat(route1b.getForwardingRouterAddress(), equalTo(forwardingRouterAddr1b));
+    assertThat(route1b.getDescription(), equalTo("foobar"));
+    assertThat(route1b.getDistance(), equalTo(1));
+
+    assertThat(route2.getForwardingRouterAddress(), equalTo(forwardingRouterAddr2));
+    assertNull(route2.getDescription());
+    assertNull(route2.getDistance());
   }
 
   @Test
