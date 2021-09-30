@@ -12,8 +12,8 @@ import javax.annotation.Nullable;
 
 public final class ServiceGroup extends TypedManagementObject implements Service {
   @Override
-  public <T> T accept(ServiceVisitor<T> visitor) {
-    return visitor.visitServiceGroup(this);
+  public <T, U> T accept(ServiceVisitor<T, U> visitor, U arg) {
+    return visitor.visitServiceGroup(this, arg);
   }
 
   @Nonnull

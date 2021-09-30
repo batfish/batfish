@@ -20,8 +20,8 @@ import org.batfish.vendor.check_point_management.parsing.parboiled.ServiceOtherM
  */
 public final class ServiceOther extends TypedManagementObject implements Service {
   @Override
-  public <T> T accept(ServiceVisitor<T> visitor) {
-    return visitor.visitServiceOther(this);
+  public <T, U> T accept(ServiceVisitor<T, U> visitor, U arg) {
+    return visitor.visitServiceOther(this, arg);
   }
 
   /** Docs: IP protocol number. */

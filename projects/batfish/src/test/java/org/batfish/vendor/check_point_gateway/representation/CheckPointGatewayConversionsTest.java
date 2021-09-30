@@ -2,11 +2,14 @@ package org.batfish.vendor.check_point_gateway.representation;
 
 import static org.batfish.common.matchers.WarningMatchers.hasText;
 import static org.batfish.common.matchers.WarningsMatchers.hasRedFlags;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.FALSE;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocol;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.aclName;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.checkValidHeaderSpaceInputs;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.servicesToMatchExpr;
+import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toAclLine;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toAction;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toAddressMatchExpr;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toIpAccessLists;
@@ -25,6 +28,7 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import java.util.Optional;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.BddTestbed;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
@@ -53,6 +57,7 @@ import org.batfish.vendor.check_point_management.Network;
 import org.batfish.vendor.check_point_management.PolicyTargets;
 import org.batfish.vendor.check_point_management.RulebaseAction;
 import org.batfish.vendor.check_point_management.ServiceIcmp;
+import org.batfish.vendor.check_point_management.ServiceOther;
 import org.batfish.vendor.check_point_management.ServiceTcp;
 import org.batfish.vendor.check_point_management.ServiceToMatchExpr;
 import org.batfish.vendor.check_point_management.ServiceUdp;
@@ -75,12 +80,15 @@ public final class CheckPointGatewayConversionsTest {
   private static final Uid UID_UDP = Uid.of("16");
   private static final Uid UID_ICMP = Uid.of("17");
   private static final Uid UID_ICMP_NO_CODE = Uid.of("18");
+  private static final Uid UID_SERVICE_OTHER_UNHANDLED = Uid.of("19");
   private static final ServiceTcp SERVICE_TCP_RANGES =
       new ServiceTcp("tcp_ranges", "1-100,105-106", UID_TCP_RANGES);
   private static final ServiceUdp SERVICE_UDP = new ServiceUdp("udp", "1234", UID_UDP);
   private static final ServiceIcmp SERVICE_ICMP = new ServiceIcmp("icmp", 8, 3, UID_ICMP);
   private static final ServiceIcmp SERVICE_ICMP_NO_CODE =
       new ServiceIcmp("icmpNoCode", 8, null, UID_ICMP_NO_CODE);
+  private static final ServiceOther SERVICE_OTHER_UNHANDLED =
+      ServiceOther.of("serviceOtherUnhandled", 1, "unhandled", UID_SERVICE_OTHER_UNHANDLED);
   private static final Network NETWORK_0 =
       new Network(
           "net0",
@@ -113,6 +121,7 @@ public final class CheckPointGatewayConversionsTest {
           .put(UID_DROP, new RulebaseAction("Drop", UID_DROP, "Drop"))
           .put(UID_SERVICE_TCP_22, new ServiceTcp("service_tcp_22", "22", UID_SERVICE_TCP_22))
           .put(UID_SERVICE_UDP_222, new ServiceUdp("service_udp_222", "222", UID_SERVICE_UDP_222))
+          .put(UID_SERVICE_OTHER_UNHANDLED, SERVICE_OTHER_UNHANDLED)
           .put(UID_TCP_RANGES, SERVICE_TCP_RANGES)
           .put(UID_UDP, SERVICE_UDP)
           .put(UID_ICMP, SERVICE_ICMP)
@@ -278,6 +287,7 @@ public final class CheckPointGatewayConversionsTest {
             TEST_OBJS,
             _serviceToMatchExpr,
             _addressSpaceToMatchExpr,
+            true,
             w);
     assertThat(
         _tb.toBDD(matches),
@@ -301,6 +311,7 @@ public final class CheckPointGatewayConversionsTest {
             TEST_OBJS,
             _serviceToMatchExpr,
             _addressSpaceToMatchExpr,
+            true,
             w);
     assertThat(
         _tb.toBDD(negatedMatches),
@@ -321,6 +332,7 @@ public final class CheckPointGatewayConversionsTest {
             TEST_OBJS,
             _serviceToMatchExpr,
             _addressSpaceToMatchExpr,
+            true,
             w);
     assertThat(_tb.toBDD(mutliSvc), equalTo(_tb.toBDD(matchSvc).or(_tb.toBDD(matchUdpSvc))));
   }
@@ -512,7 +524,11 @@ public final class CheckPointGatewayConversionsTest {
     assertThat(
         _tb.toBDD(
             servicesToMatchExpr(
-                ImmutableList.of(UID_SERVICE_TCP_22, UID_NET0), TEST_OBJS, _serviceToMatchExpr, w)),
+                ImmutableList.of(UID_SERVICE_TCP_22, UID_NET0),
+                TEST_OBJS,
+                _serviceToMatchExpr,
+                true,
+                w)),
         equalTo(
             _tb.toBDD(
                 AclLineMatchExprs.match(
@@ -535,7 +551,7 @@ public final class CheckPointGatewayConversionsTest {
     assertThat(
         _tb.toBDD(
             servicesToMatchExpr(
-                ImmutableList.of(UID_NET0), TEST_OBJS, _serviceToMatchExpr, new Warnings())),
+                ImmutableList.of(UID_NET0), TEST_OBJS, _serviceToMatchExpr, true, new Warnings())),
         equalTo(_tb.toBDD(FalseExpr.INSTANCE)));
   }
 
@@ -560,5 +576,56 @@ public final class CheckPointGatewayConversionsTest {
     assertThat(aclName(unnamed), containsString(uid.getValue()));
     assertThat(aclName(named), containsString(uid.getValue()));
     assertThat(aclName(named), containsString(name));
+  }
+
+  @Test
+  public void testToAclLine() {
+    {
+      AccessRule rule =
+          AccessRule.testBuilder(UID_CPMI_ANY)
+              .setUid(Uid.of("10"))
+              .setAction(UID_ACCEPT)
+              .setEnabled(false)
+              .setName("foo")
+              .build();
+      // disabled rule should yield empty result
+      assertThat(
+          toAclLine(rule, TEST_OBJS, _serviceToMatchExpr, _addressSpaceToMatchExpr, new Warnings()),
+          equalTo(Optional.empty()));
+    }
+    {
+      AccessRule rule =
+          AccessRule.testBuilder(UID_CPMI_ANY)
+              .setUid(Uid.of("10"))
+              .setAction(UID_ACCEPT)
+              .setEnabled(true)
+              .setName("foo")
+              .setService(ImmutableList.of(UID_SERVICE_OTHER_UNHANDLED))
+              .build();
+      // unhandled in ACCEPT context is translated to TRUE
+      assertBddsEqual(
+          toAclLine(rule, TEST_OBJS, _serviceToMatchExpr, _addressSpaceToMatchExpr, new Warnings())
+              .get(),
+          matchIpProtocol(SERVICE_OTHER_UNHANDLED.getIpProtocol()));
+    }
+    {
+      AccessRule rule =
+          AccessRule.testBuilder(UID_CPMI_ANY)
+              .setUid(Uid.of("10"))
+              .setAction(UID_DROP)
+              .setEnabled(true)
+              .setName("foo")
+              .setService(ImmutableList.of(UID_SERVICE_OTHER_UNHANDLED))
+              .build();
+      // unhandled in DROP context is translated to FALSE
+      assertBddsEqual(
+          toAclLine(rule, TEST_OBJS, _serviceToMatchExpr, _addressSpaceToMatchExpr, new Warnings())
+              .get(),
+          FALSE);
+    }
+  }
+
+  private void assertBddsEqual(AclLine left, AclLineMatchExpr right) {
+    assertThat(_tb.toBDD(left), equalTo(_tb.toBDD(right)));
   }
 }

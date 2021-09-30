@@ -2,12 +2,17 @@ package org.batfish.vendor.check_point_management.parsing.parboiled;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.google.common.annotations.VisibleForTesting;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 /** An {@link AstNode} representing a 16-bit unsigned integer. */
 @ParametersAreNonnullByDefault
 public final class Uint16AstNode implements AstNode {
+
+  public int getValue() {
+    return _value;
+  }
 
   @Override
   public boolean equals(@Nullable Object o) {
@@ -29,7 +34,8 @@ public final class Uint16AstNode implements AstNode {
     return of(Integer.parseInt(valueStr));
   }
 
-  static Uint16AstNode of(int value) {
+  @VisibleForTesting
+  public static Uint16AstNode of(int value) {
     checkArgument(0 <= value && value <= 0xFFFF, "Invalid unsigned 16-bit integer: %s", value);
     return new Uint16AstNode(value);
   }

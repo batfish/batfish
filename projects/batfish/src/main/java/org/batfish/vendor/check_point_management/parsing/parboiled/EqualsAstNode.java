@@ -12,6 +12,11 @@ public final class EqualsAstNode implements ComparatorAstNode {
     return INSTANCE;
   }
 
+  @Override
+  public <T, U> T accept(ComparatorAstNodeVisitor<T, U> visitor, U value) {
+    return visitor.visitEqualsAstNode(this, value);
+  }
+
   private static final EqualsAstNode INSTANCE = new EqualsAstNode();
 
   @Override

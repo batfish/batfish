@@ -11,10 +11,15 @@ import javax.annotation.ParametersAreNonnullByDefault;
  * be evaluated as {@code true} or {@code false} depending on context.
  */
 @ParametersAreNonnullByDefault
-public final class UnhandledAstNode extends BooleanExprAstNode {
+public final class UnhandledAstNode implements BooleanExprAstNode {
 
   public @Nonnull String getUnhandledText() {
     return _unhandledText;
+  }
+
+  @Override
+  public <T, U> T accept(BooleanExprAstNodeVisitor<T, U> visitor, U arg) {
+    return visitor.visitUnhandledAstNode(this, arg);
   }
 
   @Override

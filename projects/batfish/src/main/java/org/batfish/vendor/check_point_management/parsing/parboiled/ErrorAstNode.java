@@ -6,10 +6,15 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 /** An {@link AstNode} resulting from a failure to parse the match expression. */
 @ParametersAreNonnullByDefault
-public final class ErrorAstNode extends BooleanExprAstNode {
+public final class ErrorAstNode implements BooleanExprAstNode {
 
   public static @Nonnull ErrorAstNode instance() {
     return INSTANCE;
+  }
+
+  @Override
+  public <T, U> T accept(BooleanExprAstNodeVisitor<T, U> visitor, U arg) {
+    return visitor.visitErrorAstNode(this, arg);
   }
 
   private static final ErrorAstNode INSTANCE = new ErrorAstNode();

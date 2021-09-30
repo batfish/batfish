@@ -21,8 +21,8 @@ public final class CpmiAnyObject extends TypedManagementObject implements Addres
   }
 
   @Override
-  public <T> T accept(ServiceVisitor<T> visitor) {
-    return visitor.visitCpmiAnyObject(this);
+  public <T, U> T accept(ServiceVisitor<T, U> visitor, U arg) {
+    return visitor.visitCpmiAnyObject(this, arg);
   }
 
   @Override

@@ -11,8 +11,8 @@ import javax.annotation.Nullable;
 
 public final class ServiceTcp extends TypedManagementObject implements Service {
   @Override
-  public <T> T accept(ServiceVisitor<T> visitor) {
-    return visitor.visitServiceTcp(this);
+  public <T, U> T accept(ServiceVisitor<T, U> visitor, U arg) {
+    return visitor.visitServiceTcp(this, arg);
   }
 
   /** Docs: Destination ports, a comma separated list of ports/ranges. */

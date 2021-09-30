@@ -12,6 +12,11 @@ public final class GreaterThanAstNode implements ComparatorAstNode {
     return INSTANCE;
   }
 
+  @Override
+  public <T, U> T accept(ComparatorAstNodeVisitor<T, U> visitor, U value) {
+    return visitor.visitGreaterThanAstNode(this, value);
+  }
+
   private static final GreaterThanAstNode INSTANCE = new GreaterThanAstNode();
 
   @Override

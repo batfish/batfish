@@ -5,13 +5,15 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 /** An {@link AstNode} representing a boolean expression. */
 @ParametersAreNonnullByDefault
-public abstract class BooleanExprAstNode implements AstNode {
+public interface BooleanExprAstNode extends AstNode {
 
-  public @Nonnull BooleanExprAstNode or(BooleanExprAstNode disjunct) {
+  <T, U> T accept(BooleanExprAstNodeVisitor<T, U> visitor, U arg);
+
+  default @Nonnull BooleanExprAstNode or(BooleanExprAstNode disjunct) {
     return new DisjunctionAstNode(this, disjunct);
   }
 
-  public @Nonnull BooleanExprAstNode and(BooleanExprAstNode conjunct) {
+  default @Nonnull BooleanExprAstNode and(BooleanExprAstNode conjunct) {
     return new ConjunctionAstNode(this, conjunct);
   }
 }

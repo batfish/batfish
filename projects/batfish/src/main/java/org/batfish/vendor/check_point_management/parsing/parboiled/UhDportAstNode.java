@@ -10,11 +10,24 @@ import javax.annotation.ParametersAreNonnullByDefault;
  * condition that the protocol is UDP.
  */
 @ParametersAreNonnullByDefault
-public final class UhDportAstNode extends BooleanExprAstNode {
+public final class UhDportAstNode implements BooleanExprAstNode {
 
   public UhDportAstNode(ComparatorAstNode comparator, Uint16AstNode value) {
     _comparator = comparator;
     _value = value;
+  }
+
+  @Override
+  public <T, U> T accept(BooleanExprAstNodeVisitor<T, U> visitor, U arg) {
+    return visitor.visitUhDportAstNode(this, arg);
+  }
+
+  public @Nonnull ComparatorAstNode getComparator() {
+    return _comparator;
+  }
+
+  public @Nonnull Uint16AstNode getValue() {
+    return _value;
   }
 
   @Override
