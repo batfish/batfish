@@ -1,5 +1,61 @@
 package org.batfish.common.util.isp;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
+import org.batfish.common.BatfishLogger;
+import org.batfish.common.Warnings;
+import org.batfish.common.topology.Layer1Edge;
+import org.batfish.common.topology.Layer1Node;
+import org.batfish.common.util.isp.IspModel.Remote;
+import org.batfish.common.util.isp.IspModelingUtils.ModeledNodes;
+import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.BgpUnnumberedPeerConfig;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DeviceType;
+import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.OriginType;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.PrefixRange;
+import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
+import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
+import org.batfish.datamodel.isp_configuration.IspAnnouncement;
+import org.batfish.datamodel.isp_configuration.IspConfiguration;
+import org.batfish.datamodel.isp_configuration.IspFilter;
+import org.batfish.datamodel.isp_configuration.IspNodeInfo;
+import org.batfish.datamodel.isp_configuration.traffic_filtering.IspTrafficFiltering;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.Conjunction;
+import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
+import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
+import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
+import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetOrigin;
+import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.specifier.InterfaceLinkLocation;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import static com.google.common.collect.Iterables.getOnlyElement;
 import static org.batfish.common.matchers.WarningMatchers.hasText;
 import static org.batfish.common.matchers.WarningsMatchers.hasRedFlag;
@@ -65,61 +121,6 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedSet;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import org.batfish.common.BatfishLogger;
-import org.batfish.common.Warnings;
-import org.batfish.common.topology.Layer1Edge;
-import org.batfish.common.topology.Layer1Node;
-import org.batfish.common.util.isp.IspModel.Remote;
-import org.batfish.common.util.isp.IspModelingUtils.ModeledNodes;
-import org.batfish.datamodel.BgpActivePeerConfig;
-import org.batfish.datamodel.BgpProcess;
-import org.batfish.datamodel.BgpUnnumberedPeerConfig;
-import org.batfish.datamodel.ConcreteInterfaceAddress;
-import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.DeviceType;
-import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.NetworkFactory;
-import org.batfish.datamodel.OriginType;
-import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.PrefixRange;
-import org.batfish.datamodel.PrefixSpace;
-import org.batfish.datamodel.RoutingProtocol;
-import org.batfish.datamodel.StaticRoute;
-import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
-import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
-import org.batfish.datamodel.isp_configuration.IspAnnouncement;
-import org.batfish.datamodel.isp_configuration.IspConfiguration;
-import org.batfish.datamodel.isp_configuration.IspFilter;
-import org.batfish.datamodel.isp_configuration.IspNodeInfo;
-import org.batfish.datamodel.isp_configuration.traffic_filtering.IspTrafficFiltering;
-import org.batfish.datamodel.routing_policy.RoutingPolicy;
-import org.batfish.datamodel.routing_policy.expr.Conjunction;
-import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
-import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
-import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
-import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
-import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
-import org.batfish.datamodel.routing_policy.statement.If;
-import org.batfish.datamodel.routing_policy.statement.SetOrigin;
-import org.batfish.datamodel.routing_policy.statement.Statements;
-import org.batfish.specifier.InterfaceLinkLocation;
-import org.junit.Before;
-import org.junit.Test;
 
 /** Tests for {@link IspModelingUtils} */
 public class IspModelingUtilsTest {
@@ -298,7 +299,7 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testIsValidBgpPeer() {
+  public void testIsValidBgpPeerConfig() {
     Set<Ip> validLocalIps = ImmutableSet.of(Ip.parse("3.3.3.3"));
     BgpActivePeerConfig invalidPeer =
         BgpActivePeerConfig.builder()
@@ -327,12 +328,11 @@ public class IspModelingUtilsTest {
 
   @Test
   public void testIsValidBgpPeerInterfaceNeighbor() {
-    Set<Ip> validLocalIps = ImmutableSet.of(LINK_LOCAL_IP);
+    // missing remote ASN
     BgpUnnumberedPeerConfig invalidPeer =
         BgpUnnumberedPeerConfig.builder()
             .setPeerInterface("iface")
-            .setRemoteAs(1L)
-            .setLocalIp(Ip.parse("2.2.2.2"))
+            .setLocalIp(LINK_LOCAL_IP)
             .setLocalAs(2L)
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
@@ -347,10 +347,10 @@ public class IspModelingUtilsTest {
 
     assertFalse(
         IspModelingUtils.isValidBgpPeerConfig(
-            invalidPeer, validLocalIps, ImmutableSet.of(), ALL_AS_NUMBERS));
+            invalidPeer, ImmutableSet.of(), ImmutableSet.of(), ALL_AS_NUMBERS));
     assertTrue(
         IspModelingUtils.isValidBgpPeerConfig(
-            validPeer, validLocalIps, ImmutableSet.of(), ALL_AS_NUMBERS));
+            validPeer, ImmutableSet.of(), ImmutableSet.of(), ALL_AS_NUMBERS));
   }
 
   @Test
