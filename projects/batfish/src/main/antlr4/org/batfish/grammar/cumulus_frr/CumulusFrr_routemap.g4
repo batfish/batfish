@@ -186,9 +186,20 @@ rmm_interface
   INTERFACE name = WORD NEWLINE
 ;
 
+rms_as_path_exclude
+:
+  EXCLUDE as_path = literal_as_path NEWLINE
+;
+
+rms_as_path_prepend
+:
+  PREPEND as_path = literal_as_path NEWLINE
+;
+
+
 rms_as_path
 :
-  AS_PATH PREPEND as_path = literal_as_path NEWLINE
+  AS_PATH (rms_as_path_exclude | rms_as_path_prepend)
 ;
 
 rm_on_match

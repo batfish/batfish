@@ -13,7 +13,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.apache.commons.lang3.StringUtils;
@@ -37,6 +39,10 @@ public final class AsPath implements Serializable, Comparable<AsPath> {
 
   public static AsPath ofSingletonAsSets(List<Long> asNums) {
     return of(asNums.stream().map(AsSet::of).collect(ImmutableList.toImmutableList()));
+  }
+
+  public static AsPath ofAsSets(AsSet... asSets) {
+    return of(Arrays.asList(asSets));
   }
 
   private final List<AsSet> _asSets;
@@ -95,6 +101,18 @@ public final class AsPath implements Serializable, Comparable<AsPath> {
     return AsPath.of(
         _asSets.stream()
             .filter(asSet -> !asSet.isConfederationAsSet())
+            .collect(ImmutableList.toImmutableList()));
+  }
+
+  /**
+   * Returns a new {@link AsPath} with all specified ASNs removed form any {@link AsSet} in the
+   * path.
+   */
+  public @Nonnull AsPath removeASNs(Collection<Long> asns) {
+    return AsPath.of(
+        _asSets.stream()
+            .map(asSet -> asSet.removeASNs(asns))
+            .filter(asSet -> !asSet.isEmpty())
             .collect(ImmutableList.toImmutableList()));
   }
 

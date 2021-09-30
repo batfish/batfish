@@ -372,6 +372,8 @@ PREFIX_LIST
 
 PREPEND: 'prepend';
 
+EXCLUDE: 'exclude';
+
 RA_INTERVAL: 'ra-interval';
 
 RANGE: 'range';

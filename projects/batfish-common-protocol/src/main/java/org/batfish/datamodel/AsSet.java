@@ -12,8 +12,10 @@ import com.google.common.collect.Ordering;
 import com.google.common.primitives.Longs;
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.SortedSet;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.apache.commons.lang3.StringUtils;
@@ -157,6 +159,11 @@ public class AsSet implements Serializable, Comparable<AsSet> {
   /** Returns a new {@link AsSet} that consists of this set with any private ASNs removed. */
   public AsSet removePrivateAs() {
     return AsSet.of(Arrays.stream(_value).filter(asn -> !AsPath.isPrivateAs(asn)).toArray());
+  }
+
+  /** Returns a new {@link AsSet} that consists of this set with the provided ASNs removed. */
+  public @Nonnull AsSet removeASNs(Collection<Long> asns) {
+    return AsSet.of(Arrays.stream(_value).filter(asn -> !asns.contains(asn)).toArray());
   }
 
   public int size() {

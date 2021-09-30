@@ -15,11 +15,11 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 
 /** Clause of set as-path prepend in route map. */
 @ParametersAreNonnullByDefault
-public class RouteMapSetAsPath implements RouteMapSet {
+public final class RouteMapSetPrependAsPath implements RouteMapSet {
 
   @Nonnull private final List<Long> _asns;
 
-  public RouteMapSetAsPath(List<Long> asns) {
+  public RouteMapSetPrependAsPath(List<Long> asns) {
     _asns = asns;
   }
 
