@@ -1,9 +1,10 @@
 package org.batfish.common.util.isp;
 
+import static org.batfish.common.util.isp.IspModelingUtils.LINK_LOCAL_ADDRESS;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
 import org.batfish.common.topology.Layer1Node;
-import static org.batfish.common.util.isp.IspModelingUtils.LINK_LOCAL_ADDRESS;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.Ip;
 import org.junit.Test;

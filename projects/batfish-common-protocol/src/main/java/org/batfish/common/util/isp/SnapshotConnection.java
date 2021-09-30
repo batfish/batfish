@@ -1,10 +1,9 @@
 package org.batfish.common.util.isp;
 
 import com.google.common.base.MoreObjects;
-
-import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Objects;
+import javax.annotation.Nonnull;
 
 /** Represents one connection (interface(s), BGP peer) this ISP has to the snapshot */
 final class SnapshotConnection {

@@ -1,11 +1,10 @@
 package org.batfish.common.util.isp;
 
 import com.google.common.base.MoreObjects;
+import java.util.Objects;
+import javax.annotation.Nonnull;
 import org.batfish.common.topology.Layer1Node;
 import org.batfish.datamodel.InterfaceAddress;
-
-import javax.annotation.Nonnull;
-import java.util.Objects;
 
 /** Captures settings needed to create an interface on the ISP node */
 final class IspInterface {
