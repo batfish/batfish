@@ -2,14 +2,12 @@ package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.collect.Ordering.natural;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
@@ -634,13 +632,13 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                   nodeEntry.getValue(),
                   Entry::getKey, // vrf
                   vrfEntry ->
-                      new IpWildcardSetIpSpace(
-                          ImmutableSortedSet.of(),
+                      IpWildcardSetIpSpace.create(
+                          ImmutableSet.of(),
                           vrfEntry.getValue().allEntries().stream()
-                              .map(
-                                  fibEntry ->
-                                      IpWildcard.create(fibEntry.getTopLevelRoute().getNetwork()))
-                              .collect(ImmutableSortedSet.toImmutableSortedSet(natural())))));
+                              .map(fibEntry -> fibEntry.getTopLevelRoute().getNetwork())
+                              .distinct()
+                              .map(IpWildcard::create)
+                              .collect(ImmutableSet.toImmutableSet()))));
     } finally {
       span.finish();
     }

@@ -50,7 +50,7 @@ public class AbstractIpSpaceContainsIpTest {
   @Test
   public void testVisitIpWildcardSetIpSpace() {
     IpWildcardSetIpSpace ipSpace =
-        new IpWildcardSetIpSpace(
+        IpWildcardSetIpSpace.create(
             ImmutableSet.of(IpWildcard.create(IP2)), ImmutableSet.of(IpWildcard.create(IP1)));
     assertTrue(containsIp(IP1).visitIpWildcardSetIpSpace(ipSpace));
     assertFalse(containsIp(IP2).visitIpWildcardSetIpSpace(ipSpace));
