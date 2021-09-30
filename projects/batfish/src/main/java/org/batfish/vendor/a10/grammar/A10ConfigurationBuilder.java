@@ -226,6 +226,16 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   }
 
   @Override
+  public void exitSid_ports_threshold(A10Parser.Sid_ports_thresholdContext ctx) {
+    if (!(_currentInterface instanceof TrunkInterface)) {
+      warn(ctx, "Ports-threshold can only be configured on trunk interfaces.");
+      return;
+    }
+    toInteger(ctx.ports_threshold())
+        .ifPresent(n -> ((TrunkInterface) _currentInterface).setPortsThreshold(n));
+  }
+
+  @Override
   public void enterSid_ve(A10Parser.Sid_veContext ctx) {
     Optional<Integer> maybeNum = toInteger(ctx.num);
     if (!maybeNum.isPresent()) {
@@ -458,6 +468,102 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     toString(ctx, ctx.user_tag()).ifPresent(ut -> _currentTrunkGroup.setUserTag(ut));
   }
 
+  @Override
+  public void enterS_lacp_trunk(A10Parser.S_lacp_trunkContext ctx) {
+    Optional<Integer> maybeNum = toInteger(ctx.trunk_number());
+    _currentTrunk =
+        maybeNum
+            .map(
+                n -> {
+                  TrunkInterface trunkInterface =
+                      _c.getInterfacesTrunk()
+                          .computeIfAbsent(n, num -> new TrunkInterface(num, TrunkGroup.Type.LACP));
+                  String trunkName = getInterfaceName(trunkInterface);
+                  _c.defineStructure(A10StructureType.INTERFACE, trunkName, ctx);
+                  _c.referenceStructure(
+                      A10StructureType.INTERFACE,
+                      trunkName,
+                      A10StructureUsage.INTERFACE_SELF_REF,
+                      ctx.start.getLine());
+                  return trunkInterface;
+                })
+            .orElseGet(() -> new TrunkInterface(-1, TrunkGroup.Type.LACP)); // dummy
+  }
+
+  @Override
+  public void exitS_lacp_trunk(A10Parser.S_lacp_trunkContext ctx) {
+    _currentTrunk = null;
+  }
+
+  @Override
+  public void exitSltd_ports_threshold(A10Parser.Sltd_ports_thresholdContext ctx) {
+    toInteger(ctx.ports_threshold()).ifPresent(n -> _currentTrunk.setPortsThreshold(n));
+  }
+
+  @Override
+  public void enterS_trunk(A10Parser.S_trunkContext ctx) {
+    Optional<Integer> maybeNum = toInteger(ctx.trunk_number());
+    _currentTrunk =
+        maybeNum
+            .map(
+                n -> {
+                  TrunkInterface trunkInterface =
+                      _c.getInterfacesTrunk()
+                          .computeIfAbsent(
+                              n, num -> new TrunkInterface(num, TrunkGroup.Type.STATIC));
+                  String trunkName = getInterfaceName(trunkInterface);
+                  _c.defineStructure(A10StructureType.INTERFACE, trunkName, ctx);
+                  _c.referenceStructure(
+                      A10StructureType.INTERFACE,
+                      trunkName,
+                      A10StructureUsage.INTERFACE_SELF_REF,
+                      ctx.start.getLine());
+                  return trunkInterface;
+                })
+            .orElseGet(() -> new TrunkInterface(-1, TrunkGroup.Type.STATIC)); // dummy
+  }
+
+  @Override
+  public void exitS_trunk(A10Parser.S_trunkContext ctx) {
+    _currentTrunk = null;
+  }
+
+  @Override
+  public void exitStd_name(A10Parser.Std_nameContext ctx) {
+    toString(ctx, ctx.name).ifPresent(n -> _currentTrunk.setName(n));
+  }
+
+  @Override
+  public void exitStd_ethernet(A10Parser.Std_ethernetContext ctx) {
+    int line = ctx.start.getLine();
+    Optional<List<InterfaceReference>> maybeIfaces = toInterfaces(ctx);
+    maybeIfaces.ifPresent(
+        ifaces -> {
+          ifaces.forEach(
+              iface -> {
+                _c.referenceStructure(
+                    A10StructureType.INTERFACE,
+                    getInterfaceName(iface),
+                    A10StructureUsage.TRUNK_INTERFACE,
+                    line);
+                _currentTrunk.getMembers().add(iface);
+              });
+        });
+  }
+
+  Optional<List<InterfaceReference>> toInterfaces(A10Parser.Std_ethernetContext ctx) {
+    ImmutableList.Builder<InterfaceReference> ifaces = ImmutableList.builder();
+    for (A10Parser.Trunk_ethernet_interfaceContext iface : ctx.trunk_ethernet_interface()) {
+      Optional<Integer> maybeNum = toInteger(iface.num);
+      if (!maybeNum.isPresent()) {
+        // Already warned
+        return Optional.empty();
+      }
+      ifaces.add(new InterfaceReference(Interface.Type.ETHERNET, maybeNum.get()));
+    }
+    return Optional.of(ifaces.build());
+  }
+
   TrunkGroup.Mode toMode(A10Parser.Trunk_modeContext ctx) {
     if (ctx.ACTIVE() != null) {
       return TrunkGroup.Mode.ACTIVE;
@@ -578,6 +684,10 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   Optional<Integer> toInteger(A10Parser.Trunk_numberContext ctx) {
     return toIntegerInSpace(ctx, ctx.uint16(), TRUNK_NUMBER_RANGE, "trunk number");
+  }
+
+  Optional<Integer> toInteger(A10Parser.Ports_thresholdContext ctx) {
+    return toIntegerInSpace(ctx, ctx.uint8(), TRUNK_PORTS_THRESHOLD_RANGE, "trunk ports-threshold");
   }
 
   Optional<Integer> toInteger(A10Parser.Vlan_numberContext ctx) {
@@ -730,6 +840,8 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   private static final IntegerSpace INTERFACE_NAME_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 63));
   private static final IntegerSpace TRUNK_NUMBER_RANGE = IntegerSpace.of(Range.closed(1, 4096));
+  private static final IntegerSpace TRUNK_PORTS_THRESHOLD_RANGE =
+      IntegerSpace.of(Range.closed(2, 8));
   private static final IntegerSpace USER_TAG_LENGTH_RANGE = IntegerSpace.of(Range.closed(1, 127));
   private static final IntegerSpace VLAN_NAME_LENGTH_RANGE = IntegerSpace.of(Range.closed(1, 63));
   private static final IntegerSpace VLAN_NUMBER_RANGE = IntegerSpace.of(Range.closed(2, 4094));
@@ -739,6 +851,9 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   @Nonnull private A10Configuration _c;
 
   private Interface _currentInterface;
+
+  // Current trunk for ACOS v2 trunk stanza
+  private TrunkInterface _currentTrunk;
 
   private TrunkGroup _currentTrunkGroup;
 

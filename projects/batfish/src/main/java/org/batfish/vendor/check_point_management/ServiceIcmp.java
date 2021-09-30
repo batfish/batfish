@@ -11,8 +11,8 @@ import javax.annotation.Nullable;
 
 public final class ServiceIcmp extends TypedManagementObject implements Service {
   @Override
-  public <T> T accept(ServiceVisitor<T> visitor) {
-    return visitor.visitServiceIcmp(this);
+  public <T, U> T accept(ServiceVisitor<T, U> visitor, U arg) {
+    return visitor.visitServiceIcmp(this, arg);
   }
 
   /** Docs: A number with no fractional part (integer). */

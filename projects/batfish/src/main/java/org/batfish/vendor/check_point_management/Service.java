@@ -8,5 +8,5 @@ public interface Service extends NatTranslatedService {
     return visitor.visitService(this);
   }
 
-  <T> T accept(ServiceVisitor<T> visitor);
+  <T, U> T accept(ServiceVisitor<T, U> visitor, U arg);
 }

@@ -135,14 +135,10 @@ public class Warnings implements Serializable {
   }
 
   public void redFlag(String msg) {
-    redFlag(msg, TAG_RED_FLAG);
-  }
-
-  public void redFlag(String msg, String tag) {
     if (!_redFlagRecord) {
       return;
     }
-    _redFlagWarnings.add(new Warning(msg, tag));
+    _redFlagWarnings.add(new Warning(msg, TAG_RED_FLAG));
   }
 
   /**

@@ -6,7 +6,7 @@ import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.batfish.datamodel.FirewallSessionInterfaceInfo.Action.POST_NAT_FIB_LOOKUP;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.aclName;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toIpAccessLists;
-import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.automaticHideRuleTransformationFunction;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.automaticHideRuleTransformationFunctions;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.automaticStaticRuleTransformation;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getManualNatRules;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getOutgoingTransformations;
@@ -369,15 +369,14 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
             .map(Optional::get)
             .collect(ImmutableList.toImmutableList());
     // Convert automatic hide rules (these transformations are functions of the egress iface IP)
-    List<Function<Ip, Transformation>> outgoingTransformationFuncsForExternalIfaces =
+    List<Function<Ip, Transformation>> autoHideTransformationFuncs =
         autoHideNatObjects.stream()
             // TODO: consult generated rules for automatic hide rule ordering
-            .map(
+            .flatMap(
                 hasNatSettings ->
-                    automaticHideRuleTransformationFunction(
-                        hasNatSettings, addressSpaceToMatchExpr, warnings))
-            .filter(Optional::isPresent)
-            .map(Optional::get)
+                    automaticHideRuleTransformationFunctions(
+                        hasNatSettings, addressSpaceToMatchExpr, warnings)
+                        .stream())
             .collect(ImmutableList.toImmutableList());
 
     // Incoming transformation: manual rules, dst translation for automatic static rules
@@ -394,7 +393,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     // TODO: Prevent any outgoing transformation if the packet matched a manual NAT rule on ingress.
     // If there are no egress-iface-specific transformations, all outgoing transformations are the
     // same: source translation for automatic static rules
-    if (outgoingTransformationFuncsForExternalIfaces.isEmpty()) {
+    if (autoHideTransformationFuncs.isEmpty()) {
       mergeTransformations(autoStaticSrcTransformations)
           .ifPresent(
               t ->
@@ -407,25 +406,12 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
         // Automatic static rules take precedence over automatic hide rules
         ImmutableList.Builder<Transformation> outgoingTransformations = ImmutableList.builder();
         outgoingTransformations.addAll(autoStaticSrcTransformations);
-        if (isExternal(iface, gateway)) {
-          outgoingTransformations.addAll(
-              getOutgoingTransformations(iface, outgoingTransformationFuncsForExternalIfaces));
-        }
+        outgoingTransformations.addAll(
+            getOutgoingTransformations(iface, autoHideTransformationFuncs));
         mergeTransformations(outgoingTransformations.build())
             .ifPresent(iface::setOutgoingTransformation);
       }
     }
-  }
-
-  private static boolean isExternal(
-      org.batfish.datamodel.Interface iface, GatewayOrServer gateway) {
-    // TODO If an interface is declared in the gateway configuration but not in the
-    //      management info, should it be considered external for NAT purposes?
-    return gateway.getInterfaces().stream()
-        .filter(i -> iface.getName().equals(i.getName()))
-        .findAny()
-        .map(gatewayIface -> gatewayIface.getTopology().getLeadsToInternet())
-        .orElse(false);
   }
 
   private @Nonnull Optional<ManagementPackage> findAccessPackage(

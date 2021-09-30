@@ -41,6 +41,7 @@ import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasEncapsulationVlan
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasFirewallSessionInterfaceInfo;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasHsrpGroup;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasHsrpVersion;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasHumanName;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasInterfaceType;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasIsis;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasMlagId;
@@ -285,6 +286,22 @@ public final class InterfaceMatchers {
    */
   public static @Nonnull Matcher<Interface> hasHsrpVersion(@Nullable String expectedHsrpVersion) {
     return new HasHsrpVersion(equalTo(expectedHsrpVersion));
+  }
+
+  /**
+   * Provides a matcher that matches if the {@link Interface}'s human name is {@code
+   * expectedHumanName}.
+   */
+  public static @Nonnull Matcher<Interface> hasHumanName(String expectedHumanName) {
+    return hasHumanName(equalTo(expectedHumanName));
+  }
+
+  /**
+   * Provides a matcher that matches if the {@link Interface}'s human name matches the given
+   * subMatcher.
+   */
+  public static @Nonnull Matcher<Interface> hasHumanName(Matcher<? super String> subMatcher) {
+    return new HasHumanName(subMatcher);
   }
 
   /**

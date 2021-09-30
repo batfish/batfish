@@ -12,15 +12,16 @@ public final class UnhandledAstNodeTest {
 
   @Test
   public void testJavaSerialization() {
-    assertThat(
-        SerializationUtils.clone(UnhandledAstNode.instance()),
-        equalTo(UnhandledAstNode.instance()));
+    UnhandledAstNode obj = UnhandledAstNode.of("foo");
+    assertThat(SerializationUtils.clone(obj), equalTo(obj));
   }
 
   @Test
   public void testEquals() {
+    UnhandledAstNode obj = UnhandledAstNode.of("foo");
     new EqualsTester()
-        .addEqualityGroup(UnhandledAstNode.instance(), UnhandledAstNode.instance())
+        .addEqualityGroup(obj, UnhandledAstNode.of("foo"))
+        .addEqualityGroup(UnhandledAstNode.of("bar"))
         .testEquals();
   }
 }

@@ -1,5 +1,6 @@
 package org.batfish.vendor.check_point_gateway.representation;
 
+import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.transformation.Transformation.when;
@@ -24,12 +25,14 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.transformation.Noop;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.vendor.check_point_management.AddressRange;
 import org.batfish.vendor.check_point_management.AddressSpaceToMatchExpr;
 import org.batfish.vendor.check_point_management.GatewayOrServer;
 import org.batfish.vendor.check_point_management.HasNatSettings;
+import org.batfish.vendor.check_point_management.HasNatSettingsVisitor;
 import org.batfish.vendor.check_point_management.Host;
 import org.batfish.vendor.check_point_management.NamedManagementObject;
 import org.batfish.vendor.check_point_management.NatHideBehindGateway;
@@ -45,6 +48,7 @@ import org.batfish.vendor.check_point_management.NatTranslatedDestination;
 import org.batfish.vendor.check_point_management.NatTranslatedDestinationVisitor;
 import org.batfish.vendor.check_point_management.NatTranslatedSource;
 import org.batfish.vendor.check_point_management.NatTranslatedSourceVisitor;
+import org.batfish.vendor.check_point_management.Network;
 import org.batfish.vendor.check_point_management.Original;
 import org.batfish.vendor.check_point_management.ServiceToMatchExpr;
 import org.batfish.vendor.check_point_management.Uid;
@@ -366,12 +370,12 @@ public class CheckpointNatConversions {
   }
 
   /**
-   * Returns a function that takes in an external interface's IP and returns the {@link
-   * Transformation} that should be applied to outgoing traffic on that interface to reflect the NAT
-   * settings on the given {@link HasNatSettings}. Returns an empty optional and files warnings if
+   * Returns a list of functions that take in an interface's IP and return the {@link Transformation
+   * transformations} that should be applied to outgoing traffic on that interface to reflect the
+   * NAT settings on the given {@link HasNatSettings}. Returns an empty list and files warnings if
    * the NAT settings cannot be converted.
    */
-  static @Nonnull Optional<Function<Ip, Transformation>> automaticHideRuleTransformationFunction(
+  static @Nonnull List<Function<Ip, Transformation>> automaticHideRuleTransformationFunctions(
       HasNatSettings hasNatSettings,
       AddressSpaceToMatchExpr toMatchExprVisitor,
       Warnings warnings) {
@@ -383,7 +387,7 @@ public class CheckpointNatConversions {
               "NAT settings on %s %s are invalid and will be ignored: type is HIDE, but hide-behind"
                   + " is missing",
               hasNatSettings.getClass(), hasNatSettings.getName()));
-      return Optional.empty();
+      return ImmutableList.of();
     } else if (!"All".equals(natSettings.getInstallOn())) {
       // TODO Support installing NAT rules on specific gateways.
       // TODO What does it mean if install-on is missing?
@@ -392,11 +396,11 @@ public class CheckpointNatConversions {
               "Automatic NAT rules on specific gateways are not yet supported: NAT settings on %s"
                   + " %s will be ignored",
               hasNatSettings.getClass(), hasNatSettings.getName()));
-      return Optional.empty();
+      return ImmutableList.of();
     }
 
     // Get a function that, given the egress interface IP, yields the transformed IP to hide behind
-    Optional<Function<Ip, Ip>> transformedIpFunc =
+    Optional<Function<Ip, Ip>> transformedIpFuncOptional =
         new NatHideBehindVisitor<Optional<Function<Ip, Ip>>>() {
           @Override
           public Optional<Function<Ip, Ip>> visitNatHideBehindGateway(
@@ -423,12 +427,58 @@ public class CheckpointNatConversions {
             return Optional.empty();
           }
         }.visit(natSettings.getHideBehind());
-    return transformedIpFunc.map(
-        ipFunc ->
-            egressIfaceIp ->
-                when(toMatchExprVisitor.convertSource(hasNatSettings))
-                    .apply(assignSourceIp(ipFunc.apply(egressIfaceIp)))
-                    .build());
+    if (!transformedIpFuncOptional.isPresent()) {
+      return ImmutableList.of();
+    }
+
+    ImmutableList.Builder<Function<Ip, Transformation>> funcs = ImmutableList.builder();
+    // If the hasNattingSettings is a Network or AddressRange, it should match but not transform
+    // traffic whose source and dest IPs are both within that IP space.
+    Optional<AclLineMatchExpr> matchInternalTraffic =
+        matchInternalTraffic(hasNatSettings, toMatchExprVisitor);
+    matchInternalTraffic.ifPresent(
+        matchInternal ->
+            funcs.add(egressIfaceIp -> when(matchInternal).apply(Noop.NOOP_SOURCE_NAT).build()));
+    // Add the function to produce the standard hide transformation.
+    funcs.add(
+        egressIfaceIp ->
+            when(toMatchExprVisitor.convertSource(hasNatSettings))
+                .apply(assignSourceIp(transformedIpFuncOptional.get().apply(egressIfaceIp)))
+                .build());
+    return funcs.build();
+  }
+
+  /**
+   * Automatic hide rules configured on certain objects that represent IP spaces (namely, {@link
+   * Network} and {@link AddressRange}) do not apply to traffic whose source and destination are
+   * both within that object's IP space. This function returns an {@link AclLineMatchExpr} that
+   * matches such traffic if applicable for the given {@link HasNatSettings}, and otherwise an empty
+   * optional.
+   */
+  private static Optional<AclLineMatchExpr> matchInternalTraffic(
+      HasNatSettings hasNatSettings, AddressSpaceToMatchExpr toMatchExprVisitor) {
+    return new HasNatSettingsVisitor<Optional<AclLineMatchExpr>>() {
+      @Override
+      public Optional<AclLineMatchExpr> visitAddressRange(AddressRange addressRange) {
+        return Optional.of(
+            and(
+                toMatchExprVisitor.convertSource(addressRange),
+                toMatchExprVisitor.convertDest(addressRange)));
+      }
+
+      @Override
+      public Optional<AclLineMatchExpr> visitHost(Host host) {
+        return Optional.empty();
+      }
+
+      @Override
+      public Optional<AclLineMatchExpr> visitNetwork(Network network) {
+        return Optional.of(
+            and(
+                toMatchExprVisitor.convertSource(network),
+                toMatchExprVisitor.convertDest(network)));
+      }
+    }.visit(hasNatSettings);
   }
 
   /**

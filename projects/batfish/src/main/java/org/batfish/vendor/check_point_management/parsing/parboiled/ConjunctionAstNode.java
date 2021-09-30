@@ -1,5 +1,8 @@
 package org.batfish.vendor.check_point_management.parsing.parboiled;
 
+import static com.google.common.base.MoreObjects.toStringHelper;
+
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import javax.annotation.Nonnull;
@@ -8,9 +11,10 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 /** An {@link AstNode} representing a conjunction of boolean expressions. */
 @ParametersAreNonnullByDefault
-public final class ConjunctionAstNode extends BooleanExprAstNode {
+public final class ConjunctionAstNode implements BooleanExprAstNode {
 
-  ConjunctionAstNode(BooleanExprAstNode... conjuncts) {
+  @VisibleForTesting
+  public ConjunctionAstNode(BooleanExprAstNode... conjuncts) {
     _conjuncts = ImmutableList.copyOf(conjuncts);
   }
 
@@ -18,11 +22,20 @@ public final class ConjunctionAstNode extends BooleanExprAstNode {
     _conjuncts = ImmutableList.copyOf(conjuncts);
   }
 
+  @Override
+  public <T, U> T accept(BooleanExprAstNodeVisitor<T, U> visitor, U arg) {
+    return visitor.visitConjunctionAstNode(this, arg);
+  }
+
   @Nonnull
   @Override
   public BooleanExprAstNode and(BooleanExprAstNode conjunct) {
     return new ConjunctionAstNode(
         ImmutableList.<BooleanExprAstNode>builder().addAll(_conjuncts).add(conjunct).build());
+  }
+
+  public @Nonnull List<BooleanExprAstNode> getConjuncts() {
+    return _conjuncts;
   }
 
   @Override
@@ -39,6 +52,11 @@ public final class ConjunctionAstNode extends BooleanExprAstNode {
   @Override
   public int hashCode() {
     return _conjuncts.hashCode();
+  }
+
+  @Override
+  public String toString() {
+    return toStringHelper(this).add("_conjuncts", _conjuncts).toString();
   }
 
   private final @Nonnull List<BooleanExprAstNode> _conjuncts;

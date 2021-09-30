@@ -18,6 +18,11 @@ public final class Network extends TypedManagementObject implements HasNatSettin
     return visitor.visitNetwork(this);
   }
 
+  @Override
+  public <T> T accept(HasNatSettingsVisitor<T> visitor) {
+    return visitor.visitNetwork(this);
+  }
+
   @JsonCreator
   private static @Nonnull Network create(
       @JsonProperty(PROP_NAME) @Nullable String name,

@@ -29,6 +29,9 @@ interface ethernet 5
   user-tag "other tag"
 !
 interface trunk 1
+  ports-threshold 3
+  ! Overwrites previous command
+  ports-threshold 2 timer 300 do-auto-recovery
 !
 interface trunk 2
 !

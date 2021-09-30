@@ -39,7 +39,7 @@ public final class ServiceOtherTest {
   @Test
   public void testMatchParsing() {
     ServiceOther obj = ServiceOther.of("foo", 86, "bar", Uid.of("1"));
-    assertEquals(obj.getMatchAst(), UnhandledAstNode.instance());
+    assertEquals(obj.getMatchAst(), UnhandledAstNode.of("bar"));
   }
 
   @Test

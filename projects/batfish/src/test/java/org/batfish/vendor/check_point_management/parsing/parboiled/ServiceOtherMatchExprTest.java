@@ -18,22 +18,26 @@ public final class ServiceOtherMatchExprTest {
 
   @Test
   public void testUnhandledWord() {
-    assertThat(parse("blah"), equalTo(UnhandledAstNode.instance()));
-    assertThat(parse("1"), equalTo(UnhandledAstNode.instance()));
+    assertThat(parse("blah"), equalTo(UnhandledAstNode.of("blah")));
+    assertThat(parse("1"), equalTo(UnhandledAstNode.of("1")));
   }
 
   @Test
   public void testUnhandledComparisonExpr() {
-    assertThat(parse("foo=bar"), equalTo(UnhandledAstNode.instance()));
-    assertThat(parse("foo = bar"), equalTo(UnhandledAstNode.instance()));
+    assertThat(parse("foo=bar"), equalTo(UnhandledAstNode.of("foo=bar")));
+    assertThat(parse("foo = bar"), equalTo(UnhandledAstNode.of("foo = bar")));
   }
 
   @Test
   public void testCallExpr() {
-    assertThat(
-        parse("SERVICE_HANDLER(ADP_SQL_CMDS_ID, adp_mssql_monitor_code)"),
-        equalTo(UnhandledAstNode.instance()));
-    assertThat(parse("IPV4_VER (ip_ttl < 30)"), equalTo(UnhandledAstNode.instance()));
+    {
+      String text = "SERVICE_HANDLER(ADP_SQL_CMDS_ID, adp_mssql_monitor_code)";
+      assertThat(parse(text), equalTo(UnhandledAstNode.of(text)));
+    }
+    {
+      String text = "IPV4_VER (ip_ttl < 30)";
+      assertThat(parse(text), equalTo(UnhandledAstNode.of(text)));
+    }
   }
 
   @Test
@@ -87,7 +91,7 @@ public final class ServiceOtherMatchExprTest {
         parse("dport < 5, foo= bar,dport>2"),
         equalTo(
             new DportAstNode(LessThanAstNode.instance(), Uint16AstNode.of(5))
-                .and(UnhandledAstNode.instance())
+                .and(UnhandledAstNode.of("foo= bar"))
                 .and(new DportAstNode(GreaterThanAstNode.instance(), Uint16AstNode.of(2)))));
   }
 
@@ -141,18 +145,26 @@ public final class ServiceOtherMatchExprTest {
         equalTo(
             TcpAstNode.instance()
                 .or(TcpAstNode.instance().and(UdpAstNode.instance().or(TcpAstNode.instance())))));
-    assertThat(parse("(IPV4_VER (ip_ttl < 30))"), equalTo(UnhandledAstNode.instance()));
+    assertThat(
+        parse("(IPV4_VER (ip_ttl < 30))"), equalTo(UnhandledAstNode.of("IPV4_VER (ip_ttl < 30)")));
     assertThat(
         parse("tcp, (IPV4_VER (ip_ttl < 30))"),
-        equalTo(TcpAstNode.instance().and(UnhandledAstNode.instance())));
+        equalTo(TcpAstNode.instance().and(UnhandledAstNode.of("IPV4_VER (ip_ttl < 30)"))));
   }
 
   @Test
   public void testInExpr() {
-    assertThat(
-        parse("<src, dst, dport> in mgcp_dynamic_port"), equalTo(UnhandledAstNode.instance()));
-    assertThat(
-        parse("tcp,<src, dst, dport>in mgcp_dynamic_port , udp"),
-        equalTo(TcpAstNode.instance().and(UnhandledAstNode.instance()).and(UdpAstNode.instance())));
+    {
+      String text = "<src, dst, dport> in mgcp_dynamic_port";
+      assertThat(parse(text), equalTo(UnhandledAstNode.of(text)));
+    }
+    {
+      assertThat(
+          parse("tcp,<src, dst, dport>in mgcp_dynamic_port , udp"),
+          equalTo(
+              TcpAstNode.instance()
+                  .and(UnhandledAstNode.of("<src, dst, dport>in mgcp_dynamic_port"))
+                  .and(UdpAstNode.instance())));
+    }
   }
 }

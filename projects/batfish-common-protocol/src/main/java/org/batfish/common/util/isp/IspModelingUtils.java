@@ -646,7 +646,7 @@ public final class IspModelingUtils {
       NetworkFactory nf,
       BatfishLogger logger) {
 
-    // Get the traffic filtering policy for this ISP.
+    // Get the network-facing traffic filtering policy for this ISP.
     IspTrafficFilteringPolicy fp =
         IspTrafficFilteringPolicy.createFor(ispModel.getTrafficFiltering());
     IpAccessList toNetwork = fp.filterTrafficToNetwork();

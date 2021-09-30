@@ -1375,6 +1375,7 @@ public class CheckPointGatewayGrammarTest {
                     packageUid)));
 
     Uid gwUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
+    Ip eth0Ip = Ip.parse("10.0.0.1");
     Ip eth1Ip = Ip.parse("10.0.1.1");
     ImmutableMap<Uid, GatewayOrServer> gateways =
         ImmutableMap.of(
@@ -1384,7 +1385,7 @@ public class CheckPointGatewayGrammarTest {
                 hostname,
                 ImmutableList.of(
                     new org.batfish.vendor.check_point_management.Interface(
-                        "eth0", new InterfaceTopology(false), Ip.parse("10.0.0.1"), 24),
+                        "eth0", new InterfaceTopology(false), eth0Ip, 24),
                     new org.batfish.vendor.check_point_management.Interface(
                         "eth1", new InterfaceTopology(true), eth1Ip, 24)),
                 new GatewayOrServerPolicy("p1", null),
@@ -1393,6 +1394,11 @@ public class CheckPointGatewayGrammarTest {
     CheckpointManagementConfiguration mgmt = toCheckpointMgmtConfig(gateways, packages, domainObjs);
     Map<String, Configuration> configs = parseTextConfigs(mgmt, hostname);
     Configuration c = configs.get(hostname);
+
+    // Test interfaces. This test uses two interfaces for two reasons:
+    // 1. Some interface must own the gateway IP for the management data to match up, and we want to
+    //    test that the transformation is a function of the egress interface IP, not the gateway IP.
+    // 2. We want to test that the transformation is the same on internal and external interfaces.
     assertThat(c, hasInterface("eth0"));
     assertThat(c, hasInterface("eth1"));
     org.batfish.datamodel.Interface eth0 = c.getAllInterfaces().get("eth0");
@@ -1402,9 +1408,13 @@ public class CheckPointGatewayGrammarTest {
     assertNull(eth0.getIncomingTransformation());
     assertNull(eth1.getIncomingTransformation());
 
-    // eth0 is not an external interface, so should have no outgoing transformation
-    assertNull(eth0.getOutgoingTransformation());
-    // eth1 is external, so should have an outgoing transformation to hide host eth1
+    // Both interfaces should have an outgoing transformation to hide internal host
+    assertThat(
+        eth0.getOutgoingTransformation(),
+        equalTo(
+            when(matchSrc(new IpSpaceReference(hostIpName)))
+                .apply(TransformationStep.assignSourceIp(eth0Ip))
+                .build()));
     assertThat(
         eth1.getOutgoingTransformation(),
         equalTo(

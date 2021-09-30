@@ -1,0 +1,17 @@
+!BATFISH_FORMAT: a10_acos
+hostname trunk_convert_warn
+!
+vlan 2
+ tagged trunk 1
+!
+! Can't configure VLAN settings on a trunk member directly
+vlan 3
+ tagged ethernet 1
+!
+interface ethernet 1
+ trunk-group 1
+interface ethernet 2
+ trunk-group 1
+!
+interface trunk 1
+!
