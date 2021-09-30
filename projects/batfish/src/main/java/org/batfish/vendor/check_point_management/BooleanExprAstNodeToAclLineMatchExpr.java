@@ -16,7 +16,9 @@ import com.google.common.collect.ImmutableList;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.vendor.check_point_management.parsing.parboiled.BooleanExprAstNode;
 import org.batfish.vendor.check_point_management.parsing.parboiled.BooleanExprAstNodeVisitor;
 import org.batfish.vendor.check_point_management.parsing.parboiled.ComparatorAstNode;
@@ -29,6 +31,7 @@ import org.batfish.vendor.check_point_management.parsing.parboiled.EqualsAstNode
 import org.batfish.vendor.check_point_management.parsing.parboiled.ErrorAstNode;
 import org.batfish.vendor.check_point_management.parsing.parboiled.GreaterThanAstNode;
 import org.batfish.vendor.check_point_management.parsing.parboiled.GreaterThanOrEqualsAstNode;
+import org.batfish.vendor.check_point_management.parsing.parboiled.HasInspectText;
 import org.batfish.vendor.check_point_management.parsing.parboiled.IncomingAstNode;
 import org.batfish.vendor.check_point_management.parsing.parboiled.LessThanAstNode;
 import org.batfish.vendor.check_point_management.parsing.parboiled.LessThanOrEqualsAstNode;
@@ -78,8 +81,11 @@ public final class BooleanExprAstNodeToAclLineMatchExpr
   @Override
   public @Nonnull AclLineMatchExpr visitDportAstNode(
       DportAstNode dportAstNode, Boolean permitUnsupported) {
-    return matchDstPort(
-        portRangeToIntegerSpace(dportAstNode.getComparator(), dportAstNode.getValue().getValue()));
+    return and(
+        inspectTraceElement(dportAstNode),
+        matchDstPort(
+            portRangeToIntegerSpace(
+                dportAstNode.getComparator(), dportAstNode.getValue().getValue())));
   }
 
   @Override
@@ -98,32 +104,33 @@ public final class BooleanExprAstNodeToAclLineMatchExpr
   public @Nonnull AclLineMatchExpr visitIncomingAstNode(
       IncomingAstNode incomingAstNode, Boolean permitUnsupported) {
     // TODO: implement direction
-    return permitUnsupported ? TRUE : FALSE;
+    return permitUnsupported ? new TrueExpr(unhandledInspectTraceElement(incomingAstNode)) : FALSE;
   }
 
   @Override
   public @Nonnull AclLineMatchExpr visitOutgoingAstNode(
       OutgoingAstNode outgoingAstNode, Boolean permitUnsupported) {
     // TODO: implement direction
-    return permitUnsupported ? TRUE : FALSE;
+    return permitUnsupported ? new TrueExpr(unhandledInspectTraceElement(outgoingAstNode)) : FALSE;
   }
 
   @Override
   public @Nonnull AclLineMatchExpr visitTcpAstNode(
       TcpAstNode tcpAstNode, Boolean permitUnsupported) {
-    return matchIpProtocol(TCP);
+    return and(inspectTraceElement(tcpAstNode.getInspectText()), matchIpProtocol(TCP));
   }
 
   @Override
   public @Nonnull AclLineMatchExpr visitUdpAstNode(
       UdpAstNode udpAstNode, Boolean permitUnsupported) {
-    return matchIpProtocol(UDP);
+    return and(inspectTraceElement(udpAstNode.getInspectText()), matchIpProtocol(UDP));
   }
 
   @Override
   public @Nonnull AclLineMatchExpr visitUhDportAstNode(
       UhDportAstNode uhDportAstNode, Boolean permitUnsupported) {
     return and(
+        inspectTraceElement(uhDportAstNode),
         matchIpProtocol(UDP),
         matchDstPort(
             portRangeToIntegerSpace(
@@ -133,7 +140,7 @@ public final class BooleanExprAstNodeToAclLineMatchExpr
   @Override
   public @Nonnull AclLineMatchExpr visitUnhandledAstNode(
       UnhandledAstNode unhandledAstNode, Boolean permitUnsupported) {
-    return permitUnsupported ? TRUE : FALSE;
+    return permitUnsupported ? new TrueExpr(unhandledInspectTraceElement(unhandledAstNode)) : FALSE;
   }
 
   /** Convert a port range represented by a comparator and a value to an {@link IntegerSpace}. */
@@ -179,6 +186,25 @@ public final class BooleanExprAstNodeToAclLineMatchExpr
         LessThanOrEqualsAstNode lessThanOrEqualsAstNode, Integer arg) {
       return IntegerSpace.of(new SubRange(0, arg));
     }
+  }
+
+  private static @Nonnull TraceElement inspectTraceElement(HasInspectText hasInspectText) {
+    return inspectTraceElement(hasInspectText.getInspectText());
+  }
+
+  @VisibleForTesting
+  public static @Nonnull TraceElement inspectTraceElement(String inspectText) {
+    return TraceElement.of(String.format("Matched INSPECT expression '%s'", inspectText));
+  }
+
+  private static @Nonnull TraceElement unhandledInspectTraceElement(HasInspectText hasInspectText) {
+    return unhandledInspectTraceElement(hasInspectText.getInspectText());
+  }
+
+  @VisibleForTesting
+  public static @Nonnull TraceElement unhandledInspectTraceElement(String inspectText) {
+    return TraceElement.of(
+        String.format("Assumed matched unsupported INSPECT expression '%s'", inspectText));
   }
 
   private static final BooleanExprAstNodeToAclLineMatchExpr INSTANCE =

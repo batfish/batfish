@@ -12,17 +12,20 @@ public final class DportAstNodeTest {
 
   @Test
   public void testJavaSerialization() {
-    DportAstNode obj = new DportAstNode(EqualsAstNode.instance(), Uint16AstNode.of(1));
+    DportAstNode obj = new DportAstNode("foo", EqualsAstNode.instance(), Uint16AstNode.of(1));
     assertThat(SerializationUtils.clone(obj), equalTo(obj));
   }
 
   @Test
   public void testEquals() {
-    DportAstNode obj = new DportAstNode(EqualsAstNode.instance(), Uint16AstNode.of(1));
+    DportAstNode obj = new DportAstNode("foo", EqualsAstNode.instance(), Uint16AstNode.of(1));
     new EqualsTester()
-        .addEqualityGroup(obj, new DportAstNode(EqualsAstNode.instance(), Uint16AstNode.of(1)))
-        .addEqualityGroup(new DportAstNode(LessThanOrEqualsAstNode.instance(), Uint16AstNode.of(1)))
-        .addEqualityGroup(new DportAstNode(EqualsAstNode.instance(), Uint16AstNode.of(2)))
+        .addEqualityGroup(
+            obj, new DportAstNode("foo", EqualsAstNode.instance(), Uint16AstNode.of(1)))
+        .addEqualityGroup(new DportAstNode("bar", EqualsAstNode.instance(), Uint16AstNode.of(1)))
+        .addEqualityGroup(
+            new DportAstNode("foo", LessThanOrEqualsAstNode.instance(), Uint16AstNode.of(1)))
+        .addEqualityGroup(new DportAstNode("foo", EqualsAstNode.instance(), Uint16AstNode.of(2)))
         .testEquals();
   }
 }

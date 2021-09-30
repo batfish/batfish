@@ -10,9 +10,10 @@ import javax.annotation.ParametersAreNonnullByDefault;
  * condition that the protocol is UDP.
  */
 @ParametersAreNonnullByDefault
-public final class UhDportAstNode implements BooleanExprAstNode {
+public final class UhDportAstNode extends VariableInspectTextBooleanExprAstNode {
 
-  public UhDportAstNode(ComparatorAstNode comparator, Uint16AstNode value) {
+  public UhDportAstNode(String inspectText, ComparatorAstNode comparator, Uint16AstNode value) {
+    super(inspectText);
     _comparator = comparator;
     _value = value;
   }
@@ -32,9 +33,7 @@ public final class UhDportAstNode implements BooleanExprAstNode {
 
   @Override
   public boolean equals(@Nullable Object o) {
-    if (this == o) {
-      return true;
-    } else if (!(o instanceof UhDportAstNode)) {
+    if (!baseEquals(o)) {
       return false;
     }
     UhDportAstNode that = (UhDportAstNode) o;
@@ -43,7 +42,7 @@ public final class UhDportAstNode implements BooleanExprAstNode {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_comparator, _value);
+    return Objects.hash(baseHashCode(), _comparator, _value);
   }
 
   private final @Nonnull ComparatorAstNode _comparator;

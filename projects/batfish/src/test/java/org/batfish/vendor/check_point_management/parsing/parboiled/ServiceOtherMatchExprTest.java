@@ -49,14 +49,15 @@ public final class ServiceOtherMatchExprTest {
   public void testDport() {
     assertThat(
         parse("dport < 5"),
-        equalTo(new DportAstNode(LessThanAstNode.instance(), Uint16AstNode.of(5))));
+        equalTo(new DportAstNode("dport < 5", LessThanAstNode.instance(), Uint16AstNode.of(5))));
   }
 
   @Test
   public void testUhDport() {
     assertThat(
         parse("uh_dport < 5"),
-        equalTo(new UhDportAstNode(LessThanAstNode.instance(), Uint16AstNode.of(5))));
+        equalTo(
+            new UhDportAstNode("uh_dport < 5", LessThanAstNode.instance(), Uint16AstNode.of(5))));
   }
 
   @Test
@@ -65,16 +66,20 @@ public final class ServiceOtherMatchExprTest {
     assertThat(
         parse("dport < 5 or dport>1"),
         equalTo(
-            new DportAstNode(LessThanAstNode.instance(), Uint16AstNode.of(5))
-                .or(new DportAstNode(GreaterThanAstNode.instance(), Uint16AstNode.of(1)))));
+            new DportAstNode("dpot < 5", LessThanAstNode.instance(), Uint16AstNode.of(5))
+                .or(
+                    new DportAstNode(
+                        "dport>1", GreaterThanAstNode.instance(), Uint16AstNode.of(1)))));
 
     // 3 items
     assertThat(
         parse("dport < 5 or dport>1 or dport>2"),
         equalTo(
-            new DportAstNode(LessThanAstNode.instance(), Uint16AstNode.of(5))
-                .or(new DportAstNode(GreaterThanAstNode.instance(), Uint16AstNode.of(1)))
-                .or(new DportAstNode(GreaterThanAstNode.instance(), Uint16AstNode.of(2)))));
+            new DportAstNode("dport < 5", LessThanAstNode.instance(), Uint16AstNode.of(5))
+                .or(new DportAstNode("dport>1", GreaterThanAstNode.instance(), Uint16AstNode.of(1)))
+                .or(
+                    new DportAstNode(
+                        "dport>2", GreaterThanAstNode.instance(), Uint16AstNode.of(2)))));
   }
 
   @Test
@@ -83,16 +88,20 @@ public final class ServiceOtherMatchExprTest {
     assertThat(
         parse("dport < 5 , dport>1"),
         equalTo(
-            new DportAstNode(LessThanAstNode.instance(), Uint16AstNode.of(5))
-                .and(new DportAstNode(GreaterThanAstNode.instance(), Uint16AstNode.of(1)))));
+            new DportAstNode("dport < 5", LessThanAstNode.instance(), Uint16AstNode.of(5))
+                .and(
+                    new DportAstNode(
+                        "dport>1", GreaterThanAstNode.instance(), Uint16AstNode.of(1)))));
 
     // 3 items
     assertThat(
         parse("dport < 5, foo= bar,dport>2"),
         equalTo(
-            new DportAstNode(LessThanAstNode.instance(), Uint16AstNode.of(5))
+            new DportAstNode("dport < 5", LessThanAstNode.instance(), Uint16AstNode.of(5))
                 .and(UnhandledAstNode.of("foo= bar"))
-                .and(new DportAstNode(GreaterThanAstNode.instance(), Uint16AstNode.of(2)))));
+                .and(
+                    new DportAstNode(
+                        "dport>2", GreaterThanAstNode.instance(), Uint16AstNode.of(2)))));
   }
 
   @Test
@@ -119,8 +128,8 @@ public final class ServiceOtherMatchExprTest {
 
   @Test
   public void testDirectionExpr() {
-    assertThat(parse("direction=0"), equalTo(IncomingAstNode.instance()));
-    assertThat(parse("direction = 1"), equalTo(OutgoingAstNode.instance()));
+    assertThat(parse("direction=0"), equalTo(new IncomingAstNode("direction=0")));
+    assertThat(parse("direction = 1"), equalTo(new OutgoingAstNode("direction = 1")));
   }
 
   @Test
