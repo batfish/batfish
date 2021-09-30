@@ -630,26 +630,6 @@ public class IspModelingUtilsTest {
             new Warnings());
 
     assertThat(snapshotConnections, equalTo(ImmutableList.of(_snapshotConnection)));
-
-    //    assertThat(
-    //        snapshotConnections,
-    //        equalTo(
-    //            ImmutableList.of(
-    //                new SnapshotConnection(
-    //                    _snapshotHostname,
-    //                    ImmutableList.of(
-    //                        new IspInterface(
-    //                            ispToRemoteInterfaceName(
-    //                                ispToRemoteInterfaceName(
-    //                                    _snapshotHostname, _snapshotInterfaceName)))),
-    //                    getOnlyElement(_snapshotHost.getAllInterfaces().keySet()),
-    //                    ConcreteInterfaceAddress.create(_ispIp, 24),
-    //                    getOnlyElement(
-    //                        _snapshotHost
-    //                            .getDefaultVrf()
-    //                            .getBgpProcess()
-    //                            .getActiveNeighbors()
-    //                            .values())))));
   }
 
   @Test
