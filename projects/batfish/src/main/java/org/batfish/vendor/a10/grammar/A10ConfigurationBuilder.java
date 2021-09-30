@@ -591,7 +591,8 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     return TrunkGroup.Type.STATIC;
   }
 
-  Optional<List<InterfaceReference>> toInterfaceReferences(A10Parser.Vlan_ifaces_rangeContext ctx) {
+  private Optional<List<InterfaceReference>> toInterfaceReferences(
+      A10Parser.Vlan_ifaces_rangeContext ctx) {
     Interface.Type type = toInterfaceType(ctx);
     return toSubRange(ctx)
         .map(
@@ -607,7 +608,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
    * references for each interface. Returns {@link Optional#empty()} and adds warnings if the
    * context cannot be converted to a list of {@link InterfaceReference}s.
    */
-  Optional<List<InterfaceReference>> toInterfaceReferences(
+  private Optional<List<InterfaceReference>> toInterfaceReferences(
       A10Parser.Vlan_iface_referencesContext ctx, A10StructureUsage usage) {
     int line = ctx.start.getLine();
 
