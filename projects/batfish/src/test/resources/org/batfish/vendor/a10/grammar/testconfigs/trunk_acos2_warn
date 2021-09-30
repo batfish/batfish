@@ -5,3 +5,7 @@ hostname trunk_acos2_warn
 interface ethernet 1
  lacp timeout short
 !
+lacp-trunk 1
+ ports-threshold 1
+ ports-threshold 9
+!

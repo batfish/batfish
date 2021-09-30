@@ -3,6 +3,7 @@ hostname trunk_warn
 !
 interface ethernet 1
  trunk-group 0
+ ports-threshold 2
 !
 interface ethernet 2
  trunk-group 4097

@@ -226,6 +226,16 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   }
 
   @Override
+  public void exitSid_ports_threshold(A10Parser.Sid_ports_thresholdContext ctx) {
+    if (!(_currentInterface instanceof TrunkInterface)) {
+      warn(ctx, "Ports-threshold can only be configured on trunk interfaces.");
+      return;
+    }
+    toInteger(ctx.ports_threshold())
+        .ifPresent(n -> ((TrunkInterface) _currentInterface).setPortsThreshold(n));
+  }
+
+  @Override
   public void enterSid_ve(A10Parser.Sid_veContext ctx) {
     Optional<Integer> maybeNum = toInteger(ctx.num);
     if (!maybeNum.isPresent()) {
@@ -459,6 +469,38 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   }
 
   @Override
+  public void enterS_lacp_trunk(A10Parser.S_lacp_trunkContext ctx) {
+    Optional<Integer> maybeNum = toInteger(ctx.trunk_number());
+    _currentTrunk =
+        maybeNum
+            .map(
+                n -> {
+                  TrunkInterface trunkInterface =
+                      _c.getInterfacesTrunk()
+                          .computeIfAbsent(n, num -> new TrunkInterface(num, TrunkGroup.Type.LACP));
+                  String trunkName = getInterfaceName(trunkInterface);
+                  _c.defineStructure(A10StructureType.INTERFACE, trunkName, ctx);
+                  _c.referenceStructure(
+                      A10StructureType.INTERFACE,
+                      trunkName,
+                      A10StructureUsage.INTERFACE_SELF_REF,
+                      ctx.start.getLine());
+                  return trunkInterface;
+                })
+            .orElseGet(() -> new TrunkInterface(-1, TrunkGroup.Type.LACP)); // dummy
+  }
+
+  @Override
+  public void exitS_lacp_trunk(A10Parser.S_lacp_trunkContext ctx) {
+    _currentTrunk = null;
+  }
+
+  @Override
+  public void exitSltd_ports_threshold(A10Parser.Sltd_ports_thresholdContext ctx) {
+    toInteger(ctx.ports_threshold()).ifPresent(n -> _currentTrunk.setPortsThreshold(n));
+  }
+
+  @Override
   public void enterS_trunk(A10Parser.S_trunkContext ctx) {
     Optional<Integer> maybeNum = toInteger(ctx.trunk_number());
     _currentTrunk =
@@ -644,6 +686,10 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     return toIntegerInSpace(ctx, ctx.uint16(), TRUNK_NUMBER_RANGE, "trunk number");
   }
 
+  Optional<Integer> toInteger(A10Parser.Ports_thresholdContext ctx) {
+    return toIntegerInSpace(ctx, ctx.uint8(), TRUNK_PORTS_THRESHOLD_RANGE, "trunk ports-threshold");
+  }
+
   Optional<Integer> toInteger(A10Parser.Vlan_numberContext ctx) {
     return toIntegerInSpace(ctx, ctx.uint16(), VLAN_NUMBER_RANGE, "vlan number");
   }
@@ -794,6 +840,8 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   private static final IntegerSpace INTERFACE_NAME_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 63));
   private static final IntegerSpace TRUNK_NUMBER_RANGE = IntegerSpace.of(Range.closed(1, 4096));
+  private static final IntegerSpace TRUNK_PORTS_THRESHOLD_RANGE =
+      IntegerSpace.of(Range.closed(2, 8));
   private static final IntegerSpace USER_TAG_LENGTH_RANGE = IntegerSpace.of(Range.closed(1, 127));
   private static final IntegerSpace VLAN_NAME_LENGTH_RANGE = IntegerSpace.of(Range.closed(1, 63));
   private static final IntegerSpace VLAN_NUMBER_RANGE = IntegerSpace.of(Range.closed(2, 4094));
