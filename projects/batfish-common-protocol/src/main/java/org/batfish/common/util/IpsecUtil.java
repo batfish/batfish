@@ -506,8 +506,7 @@ public class IpsecUtil {
           nonNattedInterfaceAddresses.stream()
               .map(address -> IpWildcard.create(address.getPrefix()))
               .collect(ImmutableSet.toImmutableSet());
-      IpWildcardSetIpSpace ipSpace =
-          IpWildcardSetIpSpace.builder().including(whitelist).excluding(blacklist).build();
+      IpWildcardSetIpSpace ipSpace = IpWildcardSetIpSpace.create(blacklist, whitelist);
       interfaces.stream()
           .flatMap(i -> sourceNatPoolIps(i.getOutgoingTransformation()))
           .forEach(currentPoolIp -> builder.put(currentPoolIp, ipSpace));
