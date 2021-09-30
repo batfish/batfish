@@ -37,6 +37,12 @@ ethernet_number: uint8;
 // 0-10
 loopback_number: uint8;
 
+// 2-8
+ports_threshold: uint8;
+
+// 1-300
+ports_threshold_timer: uint16;
+
 // 1-4096
 trunk_number: uint16;
 
