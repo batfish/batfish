@@ -1,0 +1,11 @@
+!BATFISH_FORMAT: a10_acos
+hostname static_route_convert
+!
+interface ethernet 1
+ ip address 10.100.4.100 /24
+!
+ip route 10.100.0.0 /16 10.100.4.1
+ip route 10.100.0.0 /16 10.100.4.2 1
+!
+ip route 10.101.0.0 /16 10.100.4.3 2
+!
