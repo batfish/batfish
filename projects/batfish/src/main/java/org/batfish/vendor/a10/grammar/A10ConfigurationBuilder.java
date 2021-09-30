@@ -23,6 +23,7 @@ import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.SilentSyntaxListener;
@@ -37,6 +38,8 @@ import org.batfish.vendor.a10.representation.A10StructureType;
 import org.batfish.vendor.a10.representation.A10StructureUsage;
 import org.batfish.vendor.a10.representation.Interface;
 import org.batfish.vendor.a10.representation.InterfaceReference;
+import org.batfish.vendor.a10.representation.StaticRoute;
+import org.batfish.vendor.a10.representation.StaticRouteManager;
 import org.batfish.vendor.a10.representation.TrunkGroup;
 import org.batfish.vendor.a10.representation.TrunkInterface;
 import org.batfish.vendor.a10.representation.Vlan;
@@ -296,6 +299,40 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   @Override
   public void exitSidlt_mode(A10Parser.Sidlt_modeContext ctx) {
     _currentTrunkGroup.setMode(toMode(ctx.trunk_mode()));
+  }
+
+  @Override
+  public void exitSir_definition(A10Parser.Sir_definitionContext ctx) {
+    A10Parser.Sird_distanceContext distCtx = ctx.sird_distance();
+    A10Parser.Sird_descriptionContext descrCtx = ctx.sird_description();
+    Optional<Integer> maybeDistance = Optional.empty();
+    Optional<String> maybeDescription = Optional.empty();
+    Optional<Prefix> maybePrefix = toRoutePrefix(ctx, ctx.ip_prefix());
+    if (distCtx != null) {
+      maybeDistance = toInteger(distCtx);
+      if (!maybeDistance.isPresent()) {
+        // Already warned
+        return;
+      }
+    }
+    if (descrCtx != null) {
+      maybeDescription = toString(ctx, descrCtx);
+      if (!maybeDescription.isPresent()) {
+        // Already warned
+        return;
+      }
+    }
+    if (!maybePrefix.isPresent()) {
+      // Already warned
+      return;
+    }
+    Ip forwardingRouterAddr = toIp(ctx.ip_address());
+    StaticRoute staticRoute =
+        new StaticRoute(
+            forwardingRouterAddr, maybeDescription.orElse(null), maybeDistance.orElse(null));
+    _c.getStaticRoutes()
+        .computeIfAbsent(maybePrefix.get(), p -> new StaticRouteManager())
+        .add(staticRoute);
   }
 
   @Override
@@ -703,6 +740,26 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
         ctx.ip_address().getText() + ctx.ip_slash_prefix().getText());
   }
 
+  /** Convert specified context into a prefix for a route, enforcing IP/mask requirements. */
+  private @Nonnull Optional<Prefix> toRoutePrefix(
+      ParserRuleContext ctx, A10Parser.Ip_prefixContext prefixCtx) {
+    Ip address = toIp(prefixCtx.ip_address());
+    Prefix prefix = toPrefix(prefixCtx);
+    if (!prefix.getStartIp().equals(address)) {
+      warn(ctx, "Incorrect IP/mask specified");
+      return Optional.empty();
+    }
+    return Optional.of(prefix);
+  }
+
+  private @Nonnull Prefix toPrefix(A10Parser.Ip_prefixContext ctx) {
+    if (ctx.subnet_mask() != null) {
+      return Prefix.create(toIp(ctx.ip_address()), toIp(ctx.subnet_mask()));
+    }
+    assert ctx.ip_slash_prefix() != null;
+    return Prefix.parse(ctx.ip_address().getText() + ctx.ip_slash_prefix().getText());
+  }
+
   private @Nonnull Ip toIp(A10Parser.Ip_addressContext ctx) {
     return Ip.parse(ctx.getText());
   }
@@ -713,6 +770,10 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   private @Nonnull Optional<Integer> toInteger(A10Parser.Interface_mtuContext ctx) {
     return toIntegerInSpace(ctx, ctx.uint16(), INTERFACE_MTU_RANGE, "interface mtu");
+  }
+
+  private @Nonnull Optional<Integer> toInteger(A10Parser.Sird_distanceContext ctx) {
+    return toIntegerInSpace(ctx, ctx.uint8(), IP_ROUTE_DISTANCE_RANGE, "ip route distance");
   }
 
   private @Nonnull Optional<Integer> toInteger(A10Parser.Ethernet_numberContext ctx) {
@@ -773,6 +834,15 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   private @Nonnull Optional<String> toString(ParserRuleContext messageCtx, HostnameContext ctx) {
     return toString(messageCtx, ctx.word(), "hostname", HOSTNAME_PATTERN);
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, A10Parser.Sird_descriptionContext ctx) {
+    return toStringWithLengthInSpace(
+        messageCtx,
+        ctx.route_description().word(),
+        IP_ROUTE_DESCRIPTION_LENGTH_RANGE,
+        "ip route description");
   }
 
   private @Nonnull Optional<String> toString(
@@ -839,6 +909,9 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
       IntegerSpace.of(Range.closed(0, 10));
   private static final IntegerSpace INTERFACE_NAME_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 63));
+  private static final IntegerSpace IP_ROUTE_DESCRIPTION_LENGTH_RANGE =
+      IntegerSpace.of(Range.closed(1, 63));
+  private static final IntegerSpace IP_ROUTE_DISTANCE_RANGE = IntegerSpace.of(Range.closed(1, 255));
   private static final IntegerSpace TRUNK_NUMBER_RANGE = IntegerSpace.of(Range.closed(1, 4096));
   private static final IntegerSpace TRUNK_PORTS_THRESHOLD_RANGE =
       IntegerSpace.of(Range.closed(2, 8));

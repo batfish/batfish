@@ -16,6 +16,7 @@ tokens {
 ACTIVE: 'active';
 ADDRESS: 'address';
 DISABLE: 'disable';
+DESCRIPTION: 'description' -> pushMode(M_Word);
 DO_AUTO_RECOVERY: 'do-auto-recovery';
 ENABLE: 'enable';
 ETHERNET: 'ethernet';
@@ -34,6 +35,7 @@ PASSIVE: 'passive';
 PORTS_THRESHOLD: 'ports-threshold';
 RBA: 'rba' -> pushMode(M_Rba);
 ROLE: 'role';
+ROUTE: 'route';
 ROUTER_INTERFACE: 'router-interface';
 STATIC: 'static';
 SHORT: 'short';

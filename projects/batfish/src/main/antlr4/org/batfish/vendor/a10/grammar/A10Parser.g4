@@ -3,6 +3,7 @@ parser grammar A10Parser;
 import
   A10_common,
   A10_interface,
+  A10_ip_route,
   A10_lacp_trunk,
   A10_rba,
   A10_trunk,
@@ -19,10 +20,15 @@ statement
 :
    s_hostname
    | s_interface
+   | s_ip
    | s_lacp_trunk
    | s_rba
    | s_trunk
    | s_vlan
 ;
+
+s_ip: IP si;
+
+si: si_route;
 
 s_hostname: HOSTNAME hostname NEWLINE;
