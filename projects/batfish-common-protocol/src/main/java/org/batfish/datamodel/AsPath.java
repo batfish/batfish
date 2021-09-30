@@ -13,7 +13,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.apache.commons.lang3.StringUtils;
@@ -106,10 +108,10 @@ public final class AsPath implements Serializable, Comparable<AsPath> {
    * Returns a new {@link AsPath} with all specified ASNs removed form any {@link AsSet} in the
    * path.
    */
-  public AsPath removeASNs(List<Long> asns) {
+  public @Nonnull AsPath removeASNs(Collection<Long> asns) {
     return AsPath.of(
         _asSets.stream()
-            .map(asSet -> asSet.removeASNsIfExists(asns))
+            .map(asSet -> asSet.removeASNs(asns))
             .filter(asSet -> !asSet.isEmpty())
             .collect(ImmutableList.toImmutableList()));
   }

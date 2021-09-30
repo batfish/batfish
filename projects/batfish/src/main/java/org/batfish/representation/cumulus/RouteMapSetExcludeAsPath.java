@@ -14,7 +14,7 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 
 /**
  * Clause of set as-path exclude in route map {@see <a
- * href="https://docs.frrouting.org/en/latest/routemap.html#clicmd-set-as-path-exclude-AS-NUMBER">docs.frrouting.org/a>}.
+ * href="https://docs.frrouting.org/en/latest/routemap.html#clicmd-set-as-path-exclude-AS-NUMBER...">docs.frrouting.org/a>}.
  */
 public final class RouteMapSetExcludeAsPath implements RouteMapSet {
   /** List of as numbers to be excluded from an as-path */
