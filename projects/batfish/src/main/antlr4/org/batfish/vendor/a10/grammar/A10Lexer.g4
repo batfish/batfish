@@ -31,6 +31,7 @@ LOOPBACK: 'loopback';
 MODE: 'mode';
 MTU: 'mtu';
 NAME: 'name' -> pushMode(M_Word);
+NO: 'no';
 PASSIVE: 'passive';
 PORTS_THRESHOLD: 'ports-threshold';
 RBA: 'rba' -> pushMode(M_Rba);

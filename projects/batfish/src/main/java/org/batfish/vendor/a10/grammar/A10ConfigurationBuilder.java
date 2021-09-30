@@ -303,37 +303,65 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   }
 
   @Override
-  public void exitSir_definition(A10Parser.Sir_definitionContext ctx) {
-    A10Parser.Sird_distanceContext distCtx = ctx.sird_distance();
-    A10Parser.Sird_descriptionContext descrCtx = ctx.sird_description();
+  public void exitSi_route(A10Parser.Si_routeContext ctx) {
+    Optional<Prefix> maybePrefix = toRoutePrefix(ctx, ctx.ip_prefix());
+    if (!maybePrefix.isPresent()) {
+      // Already warned
+      return;
+    }
+
+    Optional<StaticRoute> maybeStaticRoute = toStaticRoute(ctx.static_route_definition());
+    maybeStaticRoute.ifPresent(
+        sr ->
+            _c.getStaticRoutes()
+                .computeIfAbsent(maybePrefix.get(), p -> new StaticRouteManager())
+                .add(sr));
+  }
+
+  @Override
+  public void exitSni_route(A10Parser.Sni_routeContext ctx) {
+    Optional<Prefix> maybePrefix = toRoutePrefix(ctx, ctx.ip_prefix());
+    if (!maybePrefix.isPresent()) {
+      // Already warned
+      return;
+    }
+
+    Optional<StaticRoute> maybeStaticRoute = toStaticRoute(ctx.static_route_definition());
+    maybeStaticRoute.ifPresent(
+        sr -> {
+          StaticRouteManager srm = _c.getStaticRoutes().get(maybePrefix.get());
+          if (srm == null) {
+            warn(ctx, String.format("No routes exist for prefix %s", maybePrefix.get()));
+            return;
+          }
+          Optional<String> maybeInvalidReason = srm.delete(sr);
+          maybeInvalidReason.ifPresent(reason -> warn(ctx, reason));
+        });
+  }
+
+  private Optional<StaticRoute> toStaticRoute(A10Parser.Static_route_definitionContext ctx) {
+    A10Parser.Static_route_distanceContext distCtx = ctx.static_route_distance();
+    A10Parser.Static_route_descriptionContext descrCtx = ctx.static_route_description();
     Optional<Integer> maybeDistance = Optional.empty();
     Optional<String> maybeDescription = Optional.empty();
-    Optional<Prefix> maybePrefix = toRoutePrefix(ctx, ctx.ip_prefix());
     if (distCtx != null) {
       maybeDistance = toInteger(distCtx);
       if (!maybeDistance.isPresent()) {
         // Already warned
-        return;
+        return Optional.empty();
       }
     }
     if (descrCtx != null) {
       maybeDescription = toString(ctx, descrCtx);
       if (!maybeDescription.isPresent()) {
         // Already warned
-        return;
+        return Optional.empty();
       }
     }
-    if (!maybePrefix.isPresent()) {
-      // Already warned
-      return;
-    }
     Ip forwardingRouterAddr = toIp(ctx.ip_address());
-    StaticRoute staticRoute =
+    return Optional.of(
         new StaticRoute(
-            forwardingRouterAddr, maybeDescription.orElse(null), maybeDistance.orElse(null));
-    _c.getStaticRoutes()
-        .computeIfAbsent(maybePrefix.get(), p -> new StaticRouteManager())
-        .add(staticRoute);
+            forwardingRouterAddr, maybeDescription.orElse(null), maybeDistance.orElse(null)));
   }
 
   @Override
@@ -782,7 +810,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     return toIntegerInSpace(ctx, ctx.uint16(), INTERFACE_MTU_RANGE, "interface mtu");
   }
 
-  private @Nonnull Optional<Integer> toInteger(A10Parser.Sird_distanceContext ctx) {
+  private @Nonnull Optional<Integer> toInteger(A10Parser.Static_route_distanceContext ctx) {
     return toIntegerInSpace(ctx, ctx.uint8(), IP_ROUTE_DISTANCE_RANGE, "ip route distance");
   }
 
@@ -847,7 +875,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   }
 
   private @Nonnull Optional<String> toString(
-      ParserRuleContext messageCtx, A10Parser.Sird_descriptionContext ctx) {
+      ParserRuleContext messageCtx, A10Parser.Static_route_descriptionContext ctx) {
     return toStringWithLengthInSpace(
         messageCtx,
         ctx.route_description().word(),

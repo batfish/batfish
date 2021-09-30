@@ -6,13 +6,21 @@ options {
    tokenVocab = A10Lexer;
 }
 
-si_route: ROUTE sir_definition;
+si_route: ROUTE ip_prefix static_route_definition;
 
-sir_definition: ip_prefix ip_address (sird_description sird_distance? | sird_distance sird_description?)? NEWLINE;
+// Same syntax is used for `no ip route` as for `ip route`
+sni_route: ROUTE ip_prefix static_route_definition;
 
-sird_description: DESCRIPTION route_description;
+static_route_definition
+:
+   ip_address
+   (
+      static_route_description static_route_distance?
+      | static_route_distance static_route_description?
+   )? NEWLINE
+;
+
+static_route_description: DESCRIPTION route_description;
 
 // 1-255
-sird_distance: uint8;
-
-// TODO handle deleting static routes
+static_route_distance: uint8;
