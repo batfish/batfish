@@ -3,6 +3,7 @@ package org.batfish.vendor.a10.representation;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.vendor.a10.representation.Interface.DEFAULT_MTU;
+import static org.batfish.vendor.a10.representation.StaticRoute.DEFAULT_STATIC_ROUTE_DISTANCE;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -26,6 +27,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.vendor.VendorConfiguration;
 
 /** Datamodel class representing an A10 device configuration. */
@@ -183,8 +185,24 @@ public final class A10Configuration extends VendorConfiguration {
         });
     _interfacesTrunk.forEach((num, iface) -> convertInterface(iface, vrf));
 
+    _staticRoutes.forEach(
+        (prefix, manager) ->
+            manager.getVariants().forEach((ip, sr) -> convertStaticRoute(vrf, prefix, sr)));
+
     markStructures();
     return ImmutableList.of(_c);
+  }
+
+  private void convertStaticRoute(Vrf vrf, Prefix prefix, StaticRoute staticRoute) {
+    vrf.getStaticRoutes()
+        .add(
+            org.batfish.datamodel.StaticRoute.builder()
+                .setNetwork(prefix)
+                .setNextHop(NextHopIp.of(staticRoute.getForwardingRouterAddress()))
+                .setAdministrativeCost(
+                    firstNonNull(staticRoute.getDistance(), DEFAULT_STATIC_ROUTE_DISTANCE))
+                .setRecursive(false)
+                .build());
   }
 
   private void markStructures() {
