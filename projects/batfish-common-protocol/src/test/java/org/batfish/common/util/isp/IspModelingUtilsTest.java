@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Maps;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.topology.Layer1Edge;
@@ -53,6 +52,7 @@ import org.junit.Test;
 
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -72,6 +72,7 @@ import static org.batfish.common.util.isp.IspModelingUtils.ISP_TO_INTERNET_INTER
 import static org.batfish.common.util.isp.IspModelingUtils.LINK_LOCAL_ADDRESS;
 import static org.batfish.common.util.isp.IspModelingUtils.LINK_LOCAL_IP;
 import static org.batfish.common.util.isp.IspModelingUtils.addBgpPeerToIsp;
+import static org.batfish.common.util.isp.IspModelingUtils.combineBorderInterfaces;
 import static org.batfish.common.util.isp.IspModelingUtils.connectIspToInternet;
 import static org.batfish.common.util.isp.IspModelingUtils.connectIspToSnapshot;
 import static org.batfish.common.util.isp.IspModelingUtils.createInternetNode;
@@ -81,12 +82,14 @@ import static org.batfish.common.util.isp.IspModelingUtils.getAdvertiseStaticSta
 import static org.batfish.common.util.isp.IspModelingUtils.getAsnOfIspNode;
 import static org.batfish.common.util.isp.IspModelingUtils.getDefaultIspNodeName;
 import static org.batfish.common.util.isp.IspModelingUtils.getInternetAndIspNodes;
+import static org.batfish.common.util.isp.IspModelingUtils.getRemotesForBorderInterface;
 import static org.batfish.common.util.isp.IspModelingUtils.installRoutingPolicyForIspToCustomers;
 import static org.batfish.common.util.isp.IspModelingUtils.installRoutingPolicyForIspToInternet;
 import static org.batfish.common.util.isp.IspModelingUtils.internetToIspInterfaceName;
 import static org.batfish.common.util.isp.IspModelingUtils.ispNameConflicts;
 import static org.batfish.common.util.isp.IspModelingUtils.ispToRemoteInterfaceName;
 import static org.batfish.common.util.isp.IspModelingUtils.makeBgpProcess;
+import static org.batfish.common.util.isp.IspModelingUtils.toIspModel;
 import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
 import static org.batfish.datamodel.BgpProcess.testBgpProcess;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
@@ -182,9 +185,9 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testNonExistentNode() {
+  public void testCombineBorderInterfaces_nonExistentNode() {
     Warnings warnings = new Warnings(true, true, true);
-    IspModelingUtils.combineIspConfigurations(
+    combineBorderInterfaces(
         ImmutableMap.of(_snapshotHostname, _snapshotHost),
         ImmutableList.of(
             new IspConfiguration(
@@ -192,28 +195,24 @@ public class IspModelingUtilsTest {
                 IspFilter.ALLOW_ALL)),
         warnings);
 
-    assertThat(
-        warnings,
-        hasRedFlag(
-            hasText(
-                "ISP Modeling: Non-existent border node conf1 specified in ISP configuration")));
+    assertThat(warnings, hasRedFlag(hasText("ISP Modeling: Non-existent border node conf1")));
   }
 
   @Test
-  public void testNonExistentInterface() {
+  public void testCombineBorderInterfaces_nonExistentInterface() {
     Warnings warnings = new Warnings(true, true, true);
 
-    IspModelingUtils.populateIspModels(
-        _snapshotHost,
-        ImmutableSet.of("init"),
-        ImmutableList.of(),
-        ImmutableList.of(),
-        ImmutableList.of(),
-        Maps.newHashMap(),
+    combineBorderInterfaces(
+        ImmutableMap.of(_snapshotHostname, _snapshotHost),
+        ImmutableList.of(
+            new IspConfiguration(
+                ImmutableList.of(
+                    new BorderInterfaceInfo(NodeInterfacePair.of(_snapshotHostname, "init1"))),
+                IspFilter.ALLOW_ALL)),
         warnings);
 
     assertThat(
-        warnings, hasRedFlag(hasText("ISP Modeling: Cannot find interface init on node conf")));
+        warnings, hasRedFlag(hasText("ISP Modeling: Non-existent border interface conf[init1]")));
   }
 
   @Test
@@ -673,45 +672,34 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testPopulateIspModels() {
-    Map<Long, IspModel> inputMap = Maps.newHashMap();
-    IspModelingUtils.populateIspModels(
-        _snapshotHost,
-        ImmutableSet.of(_snapshotInterfaceName),
-        ImmutableList.of(),
-        ImmutableList.of(),
-        ImmutableList.of(),
-        inputMap,
-        new Warnings());
-
-    assertThat(inputMap, hasKey(_ispAsn));
-
-    IspModel ispInfo = inputMap.get(_ispAsn);
+  public void testGetRemotesForBorderInterface_bgpActive() {
+    List<Remote> remotes =
+        getRemotesForBorderInterface(
+            new BorderInterfaceInfo(
+                NodeInterfacePair.of(_snapshotHostname, _snapshotInterfaceName)),
+            ImmutableSet.of(),
+            ALL_AS_NUMBERS,
+            ImmutableMap.of(_snapshotHostname, _snapshotHost),
+            new Warnings());
 
     assertThat(
-        ispInfo,
+        remotes,
         equalTo(
-            IspModel.builder()
-                .setAsn(_ispAsn)
-                .setName(null)
-                .setRemotes(
-                    new Remote(
-                        _snapshotHostname,
-                        getOnlyElement(_snapshotHost.getAllInterfaces().keySet()),
-                        ConcreteInterfaceAddress.create(_ispIp, 24),
-                        getOnlyElement(
-                            _snapshotHost
-                                .getDefaultVrf()
-                                .getBgpProcess()
-                                .getActiveNeighbors()
-                                .values())))
-                .setTrafficFiltering(IspTrafficFiltering.blockReservedAddressesAtInternet())
-                .build()));
-    assertThat(ispInfo.getHostname(), equalTo(_ispName));
+            ImmutableList.of(
+                new Remote(
+                    _snapshotHostname,
+                    getOnlyElement(_snapshotHost.getAllInterfaces().keySet()),
+                    ConcreteInterfaceAddress.create(_ispIp, 24),
+                    getOnlyElement(
+                        _snapshotHost
+                            .getDefaultVrf()
+                            .getBgpProcess()
+                            .getActiveNeighbors()
+                            .values())))));
   }
 
   @Test
-  public void testPopulateIspModels_bgpUnnumbered() {
+  public void testGetRemotesForBorderInterface_bgpUnnumbered() {
     Configuration configuration = createBgpNode("conf", _snapshotInterfaceName, _snapshotIp);
     BgpUnnumberedPeerConfig.builder()
         .setPeerInterface(_snapshotInterfaceName)
@@ -722,104 +710,109 @@ public class IspModelingUtilsTest {
         .setBgpProcess(configuration.getDefaultVrf().getBgpProcess())
         .build();
 
-    Map<Long, IspModel> inputMap = Maps.newHashMap();
-
-    IspModelingUtils.populateIspModels(
-        configuration,
-        ImmutableSet.of(_snapshotInterfaceName),
-        ImmutableList.of(),
-        ImmutableList.of(),
-        ImmutableList.of(),
-        inputMap,
-        new Warnings());
-
-    assertThat(inputMap, hasKey(_ispAsn));
-
-    IspModel ispInfo = inputMap.get(_ispAsn);
+    List<Remote> remote =
+        getRemotesForBorderInterface(
+            new BorderInterfaceInfo(
+                NodeInterfacePair.of(_snapshotHostname, _snapshotInterfaceName)),
+            ImmutableSet.of(),
+            ALL_AS_NUMBERS,
+            ImmutableMap.of(configuration.getHostname(), configuration),
+            new Warnings());
 
     assertThat(
-        ispInfo,
+        remote,
         equalTo(
-            IspModel.builder()
-                .setAsn(_ispAsn)
-                .setName(null)
-                .setRemotes(
-                    new Remote(
-                        configuration.getHostname(),
-                        getOnlyElement(configuration.getAllInterfaces().keySet()),
-                        LINK_LOCAL_ADDRESS,
-                        getOnlyElement(
-                            configuration
-                                .getDefaultVrf()
-                                .getBgpProcess()
-                                .getInterfaceNeighbors()
-                                .values())))
-                .setTrafficFiltering(IspTrafficFiltering.blockReservedAddressesAtInternet())
-                .build()));
-    assertThat(ispInfo.getHostname(), equalTo(_ispName));
+            ImmutableList.of(
+                new Remote(
+                    configuration.getHostname(),
+                    getOnlyElement(configuration.getAllInterfaces().keySet()),
+                    LINK_LOCAL_ADDRESS,
+                    getOnlyElement(
+                        configuration
+                            .getDefaultVrf()
+                            .getBgpProcess()
+                            .getInterfaceNeighbors()
+                            .values())))));
   }
 
   @Test
-  public void testPopulateIspModels_customIspName() {
-    Map<Long, IspModel> inputMap = Maps.newHashMap();
-    IspModelingUtils.populateIspModels(
-        _snapshotHost,
-        ImmutableSet.of(_snapshotInterfaceName),
-        ImmutableList.of(),
-        ImmutableList.of(),
-        ImmutableList.of(new IspNodeInfo(_ispAsn, "myisp")),
-        inputMap,
-        new Warnings());
+  public void testGetRemotesForBorderInterface_multiplePeers() {
+    Ip ispIp2 = Ip.parse("3.3.3.3");
+    BgpActivePeerConfig snapshotPeer2 =
+        BgpActivePeerConfig.builder()
+            .setPeerAddress(ispIp2)
+            .setRemoteAs(_ispAsn)
+            .setLocalIp(_snapshotIp)
+            .setLocalAs(_snapshotAsn)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+            .setBgpProcess(_snapshotHost.getDefaultVrf().getBgpProcess())
+            .build();
 
-    assertThat(inputMap, hasKey(_ispAsn));
-
-    IspModel ispInfo = inputMap.get(_ispAsn);
-
-    assertThat(ispInfo.getName(), equalTo("myisp"));
-  }
-
-  @Test
-  public void testPopulateIspModels_internetConnection() {
-    Map<Long, IspModel> inputMap = Maps.newHashMap();
-    IspModelingUtils.populateIspModels(
-        _snapshotHost,
-        ImmutableSet.of("interface"),
-        ImmutableList.of(),
-        ImmutableList.of(),
-        ImmutableList.of(new IspNodeInfo(_ispAsn, "myisp", false, ImmutableList.of(), null)),
-        inputMap,
-        new Warnings());
-
-    assertThat(inputMap, hasKey(_ispAsn));
-    assertFalse(inputMap.get(_ispAsn).getInternetConnection());
-  }
-
-  @Test
-  public void testPopulateIspModels_mergeAdditionalPrefixes() {
-    Map<Long, IspModel> inputMap = Maps.newHashMap();
-    IspModelingUtils.populateIspModels(
-        _snapshotHost,
-        ImmutableSet.of(_snapshotInterfaceName),
-        ImmutableList.of(),
-        ImmutableList.of(),
-        ImmutableList.of(
-            new IspNodeInfo(
-                _ispAsn,
-                "myisp",
-                ImmutableList.of(
-                    new IspAnnouncement(Prefix.parse("1.1.1.1/32")),
-                    new IspAnnouncement(Prefix.parse("2.2.2.2/32")))),
-            new IspNodeInfo(
-                _ispAsn,
-                "myisp",
-                ImmutableList.of(
-                    new IspAnnouncement(Prefix.parse("3.3.3.3/32")),
-                    new IspAnnouncement(Prefix.parse("2.2.2.2/32"))))),
-        inputMap,
-        new Warnings());
+    List<Remote> remotes =
+        getRemotesForBorderInterface(
+            new BorderInterfaceInfo(
+                NodeInterfacePair.of(_snapshotHostname, _snapshotInterfaceName)),
+            ImmutableSet.of(),
+            ALL_AS_NUMBERS,
+            ImmutableMap.of(_snapshotHostname, _snapshotHost),
+            new Warnings());
 
     assertThat(
-        inputMap.get(_ispAsn).getAdditionalPrefixesToInternet(),
+        remotes,
+        equalTo(
+            ImmutableList.of(
+                new Remote(
+                    _snapshotHostname,
+                    _snapshotInterfaceName,
+                    ConcreteInterfaceAddress.create(_ispIp, 24),
+                    _snapshotActivePeer),
+                new Remote(
+                    _snapshotHostname,
+                    _snapshotInterfaceName,
+                    ConcreteInterfaceAddress.create(ispIp2, 24),
+                    snapshotPeer2))));
+  }
+
+  @Test
+  public void testToIspModel_customIspName() {
+    IspModel ispModel =
+        toIspModel(
+            _ispAsn, ImmutableList.of(), ImmutableList.of(new IspNodeInfo(_ispAsn, "myisp")));
+    assertThat(ispModel.getName(), equalTo("myisp"));
+  }
+
+  @Test
+  public void testToIspModel_internetConnection() {
+    IspModel ispModel =
+        toIspModel(
+            _ispAsn,
+            ImmutableList.of(),
+            ImmutableList.of(new IspNodeInfo(_ispAsn, "myisp", false, ImmutableList.of(), null)));
+    assertFalse(ispModel.getInternetConnection());
+  }
+
+  @Test
+  public void testToIspModel_mergeAdditionalPrefixes() {
+    IspModel ispModel =
+        toIspModel(
+            _ispAsn,
+            ImmutableList.of(),
+            ImmutableList.of(
+                new IspNodeInfo(
+                    _ispAsn,
+                    "myisp",
+                    ImmutableList.of(
+                        new IspAnnouncement(Prefix.parse("1.1.1.1/32")),
+                        new IspAnnouncement(Prefix.parse("2.2.2.2/32")))),
+                new IspNodeInfo(
+                    _ispAsn,
+                    "myisp",
+                    ImmutableList.of(
+                        new IspAnnouncement(Prefix.parse("3.3.3.3/32")),
+                        new IspAnnouncement(Prefix.parse("2.2.2.2/32"))))));
+
+    assertThat(
+        ispModel.getAdditionalPrefixesToInternet(),
         equalTo(
             ImmutableSet.of(
                 Prefix.parse("1.1.1.1/32"),
@@ -858,8 +851,7 @@ public class IspModelingUtilsTest {
                                 .add(
                                     StaticRoute.testBuilder()
                                         .setNetwork(Prefix.ZERO)
-                                        .setNextHopInterface(
-                                            INTERNET_OUT_INTERFACE)
+                                        .setNextHopInterface(INTERNET_OUT_INTERFACE)
                                         .setAdministrativeCost(1)
                                         .build())
                                 .addAll(
