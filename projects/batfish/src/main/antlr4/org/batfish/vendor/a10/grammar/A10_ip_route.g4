@@ -6,8 +6,6 @@ options {
    tokenVocab = A10Lexer;
 }
 
-s_ip_route: IP ROUTE sir_definition;
-
 si_route: ROUTE sir_definition;
 
 sir_definition: ip_prefix ip_address (sird_description sird_distance? | sird_distance sird_description?)? NEWLINE;

@@ -20,11 +20,15 @@ statement
 :
    s_hostname
    | s_interface
-   | s_ip_route
+   | s_ip
    | s_lacp_trunk
    | s_rba
    | s_trunk
    | s_vlan
 ;
+
+s_ip: IP si;
+
+si: si_route;
 
 s_hostname: HOSTNAME hostname NEWLINE;
