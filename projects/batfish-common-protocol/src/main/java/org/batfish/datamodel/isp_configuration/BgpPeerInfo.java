@@ -1,6 +1,5 @@
 package org.batfish.datamodel.isp_configuration;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -16,8 +15,8 @@ import org.batfish.datamodel.Ip;
  * unnumbered peers), and 3) vrf (optional, needed to resolve ambiguity with peer addresses).
  *
  * <p>The specification also allows for describing new connectivity needed to establish the session,
- * via {@link BgpPeerConnectivity}. The BGP peering is not modeled if this new connectivity (e.g.,
- * L1 links conflict with existing L1).
+ * via {@link IspAttachment}. The BGP peering is not modeled if this new connectivity conflicts with
+ * other information (e.g., L1 links conflict with existing L1).
  */
 @ParametersAreNonnullByDefault
 public class BgpPeerInfo {
@@ -31,14 +30,14 @@ public class BgpPeerInfo {
   @Nullable private final String _iface;
   @Nullable private final Ip _peerAddress;
   @Nullable private final String _vrf;
-  @Nonnull private final BgpPeerConnectivity _bgpPeerConnectivity;
+  @Nullable private final IspAttachment _ispAttachment;
 
   public BgpPeerInfo(
       String hostname,
       @Nullable String iface,
       @Nullable Ip peerAddress,
       @Nullable String vrf,
-      BgpPeerConnectivity bgpPeerConnectivity) {
+      @Nullable IspAttachment bgpPeerConnectivity) {
     checkArgument(
         iface != null || peerAddress != null,
         "Either one of %s or %s should be specified",
@@ -53,7 +52,7 @@ public class BgpPeerInfo {
     _iface = iface;
     _peerAddress = peerAddress;
     _vrf = vrf;
-    _bgpPeerConnectivity = bgpPeerConnectivity;
+    _ispAttachment = bgpPeerConnectivity;
   }
 
   @JsonCreator
@@ -62,13 +61,8 @@ public class BgpPeerInfo {
       @JsonProperty(PROP_INTERFACE) @Nullable String iface,
       @JsonProperty(PROP_PEER_ADDRESS) @Nullable Ip peerAddress,
       @JsonProperty(PROP_VRF) @Nullable String vrf,
-      @JsonProperty(PROP_CONNECTIVITY) @Nullable BgpPeerConnectivity bgpPeerConnectivity) {
+      @JsonProperty(PROP_CONNECTIVITY) @Nullable IspAttachment bgpPeerConnectivity) {
     checkArgument(hostname != null, "Missing %s", PROP_HOSTNAME);
-    return new BgpPeerInfo(
-        hostname,
-        iface,
-        peerAddress,
-        vrf,
-        firstNonNull(bgpPeerConnectivity, new BgpPeerConnectivity()));
+    return new BgpPeerInfo(hostname, iface, peerAddress, vrf, bgpPeerConnectivity);
   }
 }
