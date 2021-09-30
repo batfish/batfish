@@ -9,6 +9,7 @@ import org.batfish.datamodel.routing_policy.communities.SetCommunities;
 import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.Comment;
+import org.batfish.datamodel.routing_policy.statement.ExcludeAsPath;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
@@ -69,6 +70,13 @@ public class RoutePolicyStatementAsPathCollector
       PrependAsPath prependAsPath, Configuration arg) {
     // if/when we update TransferBDD to support AS-path prepending, we will need to update this as
     // well
+    return ImmutableSet.of();
+  }
+
+  @Override
+  public Set<SymbolicAsPathRegex> visitExcludeAsPath(
+      ExcludeAsPath excludeAsPath, Configuration arg) {
+    // if/when TransferBDD gets updated to support AS-path excluding, this will have to be updated
     return ImmutableSet.of();
   }
 

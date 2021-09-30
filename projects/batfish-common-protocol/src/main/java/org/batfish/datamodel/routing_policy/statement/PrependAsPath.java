@@ -76,8 +76,7 @@ public final class PrependAsPath extends Statement {
                   .build()));
     }
 
-    Result result = new Result();
-    return result;
+    return new Result();
   }
 
   @JsonProperty(PROP_EXPR)

@@ -35,6 +35,7 @@ import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
+import org.batfish.datamodel.routing_policy.statement.ExcludeAsPath;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
@@ -159,7 +160,9 @@ public class GeneratedRouteHelperTest {
                         new LiteralCommunitySet(CommunitySet.of(StandardCommunity.of(2L)))),
                     new PrependAsPath(
                         new LiteralAsList(
-                            ImmutableList.of(new ExplicitAs(1L), new ExplicitAs(65100L)))),
+                            ImmutableList.of(
+                                new ExplicitAs(1L), new ExplicitAs(2L), new ExplicitAs(65100L)))),
+                    new ExcludeAsPath(new LiteralAsList(ImmutableList.of(new ExplicitAs(2L)))),
                     new SetOrigin(new LiteralOrigin(IGP, null)),
                     Statements.RemovePrivateAs.toStaticStatement(),
                     new SetLocalPreference(new LiteralLong(123L)),
