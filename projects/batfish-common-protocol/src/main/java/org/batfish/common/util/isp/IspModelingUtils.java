@@ -1,14 +1,37 @@
 package org.batfish.common.util.isp;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
+import static java.util.Comparator.naturalOrder;
+import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
+import static org.batfish.specifier.Location.interfaceLinkLocation;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.topology.Layer1Edge;
+import org.batfish.common.topology.Layer1Node;
 import org.batfish.common.util.isp.IspModel.Remote;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
@@ -55,28 +78,6 @@ import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.specifier.LocationInfo;
-
-import javax.annotation.Nonnull;
-import javax.annotation.ParametersAreNonnullByDefault;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-
-import static com.google.common.base.MoreObjects.firstNonNull;
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
-import static java.util.Comparator.naturalOrder;
-import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
-import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
-import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
-import static org.batfish.specifier.Location.interfaceLinkLocation;
 
 /** Util classes and functions to model ISPs and Internet for a given network */
 @ParametersAreNonnullByDefault
@@ -152,12 +153,6 @@ public final class IspModelingUtils {
 
     public void addConfiguration(Configuration configuration) {
       _configurations.put(configuration.getHostname(), configuration);
-    }
-
-    /** Add both directions of the node/interface pairs as layer 1 edges */
-    public void addLayer1Edge(String node1, String node1Iface, String node2, String node2Iface) {
-      addLayer1Edge(new Layer1Edge(node1, node1Iface, node2, node2Iface));
-      addLayer1Edge(new Layer1Edge(node2, node2Iface, node1, node1Iface));
     }
 
     public void addLayer1Edge(Layer1Edge edge) {
@@ -436,14 +431,16 @@ public final class IspModelingUtils {
     asnToIspModel
         .values()
         .forEach(
-            ispModel -> {
-              createIspNode(modeledNodes, ispModel, nf, logger);
-              Configuration ispConfiguration =
-                  modeledNodes.getConfigurations().get(ispModel.getHostname());
-              if (ispConfiguration != null) {
-                connectIspToSnapshot(modeledNodes, ispModel, ispConfiguration, nf, logger);
-              }
-            });
+            ispModel ->
+                createIspNode(ispModel, nf, logger)
+                    .ifPresent(
+                        ispConfiguration -> {
+                          Set<Layer1Edge> layer1Edges =
+                              connectIspToSnapshot(ispModel, ispConfiguration, nf, logger);
+
+                          modeledNodes.addConfiguration(ispConfiguration);
+                          layer1Edges.forEach(modeledNodes::addLayer1Edge);
+                        }));
 
     boolean needInternet =
         asnToIspModel.values().stream().anyMatch(IspModel::getInternetConnection);
@@ -453,8 +450,8 @@ public final class IspModelingUtils {
       return modeledNodes;
     }
 
-    createInternetNode(modeledNodes);
-    Configuration internet = modeledNodes.getConfigurations().get(INTERNET_HOST_NAME);
+    Configuration internet = createInternetNode(nf);
+    modeledNodes.addConfiguration(internet);
 
     modeledNodes.getConfigurations().values().stream()
         .filter(c -> c != internet)
@@ -462,8 +459,9 @@ public final class IspModelingUtils {
             c -> {
               long ispAsn = getAsnOfIspNode(c);
               if (asnToIspModel.get(ispAsn).getInternetConnection()) {
-                connectIspToInternet(
-                    ispAsn, asnToIspModel.get(ispAsn), c, internet, modeledNodes, nf);
+                Set<Layer1Edge> layer1Edges =
+                    connectIspToInternet(ispAsn, asnToIspModel.get(ispAsn), c, internet, nf);
+                layer1Edges.forEach(modeledNodes::addLayer1Edge);
               }
             });
 
@@ -472,10 +470,10 @@ public final class IspModelingUtils {
 
   /** Creates the modeled Internet node and inserts it into {@code modeledNodes} */
   @VisibleForTesting
-  static void createInternetNode(ModeledNodes modeledNodes) {
-    Configuration.Builder cb = Configuration.builder();
+  static Configuration createInternetNode(NetworkFactory nf) {
     Configuration internetConfiguration =
-        cb.setHostname(INTERNET_HOST_NAME)
+        nf.configurationBuilder()
+            .setHostname(INTERNET_HOST_NAME)
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
             .setDeviceModel(DeviceModel.BATFISH_INTERNET)
             .build();
@@ -532,20 +530,20 @@ public final class IspModelingUtils {
             interfaceLinkLocation(internetOutInterface),
             INTERNET_OUT_INTERFACE_LINK_LOCATION_INFO));
 
-    modeledNodes.addConfiguration(internetConfiguration);
+    return internetConfiguration;
   }
 
   /**
-   * Adds infrastructure needed to connect the ISP to the Internet: interfaces, traffic filters, bgp
-   * peers.
+   * Adds infrastructure to {@code ispConfiguration} and {@code internetConfiguration} needed to
+   * connect the ISP to the Internet: interfaces, traffic filters, bgp peers. Returns the layer1
+   * edges that are needed for physical connectivity.
    */
   @VisibleForTesting
-  static void connectIspToInternet(
+  static Set<Layer1Edge> connectIspToInternet(
       long ispAsn,
       IspModel ispModel,
       Configuration ispConfiguration,
       Configuration internetConfiguration,
-      ModeledNodes modeledNodes,
       NetworkFactory nf) {
 
     // add a static route for each additional prefix announced to the internet
@@ -625,27 +623,26 @@ public final class IspModelingUtils {
             Ipv4UnicastAddressFamily.builder().setExportPolicy(EXPORT_POLICY_ON_INTERNET).build())
         .build();
 
-    modeledNodes.addLayer1Edge(
-        internetConfiguration.getHostname(),
-        internetIface.getName(),
-        ispConfiguration.getHostname(),
-        ispIface.getName());
+    Layer1Node internetL1 =
+        new Layer1Node(internetConfiguration.getHostname(), internetIface.getName());
+    Layer1Node ispL1 = new Layer1Node(ispConfiguration.getHostname(), ispIface.getName());
+    return ImmutableSet.of(new Layer1Edge(internetL1, ispL1), new Layer1Edge(ispL1, internetL1));
   }
 
   /**
    * Creates the {@link Configuration} for the ISP node given an ASN and {@link IspModel} and
-   * inserts the node into {@code modeledNodes}.
+   * inserts the node into {@code modeledNodes}. Returns empty if no node is created.
    */
   @VisibleForTesting
-  static void createIspNode(
-      ModeledNodes modeledNodes, IspModel ispModel, NetworkFactory nf, BatfishLogger logger) {
+  static Optional<Configuration> createIspNode(
+      IspModel ispModel, NetworkFactory nf, BatfishLogger logger) {
     if (ispModel.getRemotes().isEmpty()) {
       logger.warnf("ISP information for ASN '%s' is not correct", ispModel.getAsn());
-      return;
+      return Optional.empty();
     }
 
     Configuration ispConfiguration =
-        Configuration.builder()
+        nf.configurationBuilder()
             .setHostname(ispModel.getHostname())
             .setHumanName(ispModel.getName())
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
@@ -670,20 +667,16 @@ public final class IspModelingUtils {
             ispConfiguration.getDefaultVrf());
     bgpProcess.setMultipathEbgp(true);
 
-    modeledNodes.addConfiguration(ispConfiguration);
+    return Optional.of(ispConfiguration);
   }
 
   /**
-   * Adds the infrastructure (interfaces, traffic filters, L1 edges, BGP peer) needed to connect the
-   * ISP to the snapshot. Add the L1 edges to modeled nodes.
+   * Adds to {@code ispConfiguration} the infrastructure (interfaces, traffic filters, L1 edges, BGP
+   * peer) needed to connect the ISP to the snapshot. Returns the resulting L1 edges.
    */
   @VisibleForTesting
-  static void connectIspToSnapshot(
-      ModeledNodes modeledNodes,
-      IspModel ispModel,
-      Configuration ispConfiguration,
-      NetworkFactory nf,
-      BatfishLogger logger) {
+  static Set<Layer1Edge> connectIspToSnapshot(
+      IspModel ispModel, Configuration ispConfiguration, NetworkFactory nf, BatfishLogger logger) {
 
     // Get the network-facing traffic filtering policy for this ISP.
     IspTrafficFilteringPolicy fp =
@@ -696,6 +689,8 @@ public final class IspModelingUtils {
     if (fromNetwork != null) {
       ispConfiguration.getIpAccessLists().put(fromNetwork.getName(), fromNetwork);
     }
+
+    ImmutableSet.Builder<Layer1Edge> layer1Edges = ImmutableSet.builder();
 
     ispModel
         .getRemotes()
@@ -713,16 +708,19 @@ public final class IspModelingUtils {
                       .setOutgoingFilter(toNetwork)
                       .setType(InterfaceType.PHYSICAL)
                       .build();
-              modeledNodes.addLayer1Edge(
-                  ispConfiguration.getHostname(),
-                  ispInterface.getName(),
-                  remote.getRemoteHostname(),
-                  remote.getRemoteIfaceName());
+              Layer1Node ispL1 =
+                  new Layer1Node(ispConfiguration.getHostname(), ispInterface.getName());
+              Layer1Node remoteL1 =
+                  new Layer1Node(remote.getRemoteHostname(), remote.getRemoteIfaceName());
+              layer1Edges.add(new Layer1Edge(ispL1, remoteL1));
+              layer1Edges.add(new Layer1Edge(remoteL1, ispL1));
               addBgpPeerToIsp(
                   remote.getRemoteBgpPeerConfig(),
                   ispInterface.getName(),
                   ispConfiguration.getDefaultVrf().getBgpProcess());
             });
+
+    return layer1Edges.build();
   }
 
   /**

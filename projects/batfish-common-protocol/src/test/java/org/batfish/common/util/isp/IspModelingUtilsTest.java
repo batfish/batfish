@@ -1,61 +1,5 @@
 package org.batfish.common.util.isp;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedSet;
-import org.batfish.common.BatfishLogger;
-import org.batfish.common.Warnings;
-import org.batfish.common.topology.Layer1Edge;
-import org.batfish.common.topology.Layer1Node;
-import org.batfish.common.util.isp.IspModel.Remote;
-import org.batfish.common.util.isp.IspModelingUtils.ModeledNodes;
-import org.batfish.datamodel.BgpActivePeerConfig;
-import org.batfish.datamodel.BgpProcess;
-import org.batfish.datamodel.BgpUnnumberedPeerConfig;
-import org.batfish.datamodel.ConcreteInterfaceAddress;
-import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.DeviceType;
-import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.NetworkFactory;
-import org.batfish.datamodel.OriginType;
-import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.PrefixRange;
-import org.batfish.datamodel.PrefixSpace;
-import org.batfish.datamodel.RoutingProtocol;
-import org.batfish.datamodel.StaticRoute;
-import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
-import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
-import org.batfish.datamodel.isp_configuration.IspAnnouncement;
-import org.batfish.datamodel.isp_configuration.IspConfiguration;
-import org.batfish.datamodel.isp_configuration.IspFilter;
-import org.batfish.datamodel.isp_configuration.IspNodeInfo;
-import org.batfish.datamodel.isp_configuration.traffic_filtering.IspTrafficFiltering;
-import org.batfish.datamodel.routing_policy.RoutingPolicy;
-import org.batfish.datamodel.routing_policy.expr.Conjunction;
-import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
-import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
-import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
-import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
-import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
-import org.batfish.datamodel.routing_policy.statement.If;
-import org.batfish.datamodel.routing_policy.statement.SetOrigin;
-import org.batfish.datamodel.routing_policy.statement.Statements;
-import org.batfish.specifier.InterfaceLinkLocation;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import static com.google.common.collect.Iterables.getOnlyElement;
 import static org.batfish.common.matchers.WarningMatchers.hasText;
 import static org.batfish.common.matchers.WarningsMatchers.hasRedFlag;
@@ -113,14 +57,68 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
-import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import org.batfish.common.BatfishLogger;
+import org.batfish.common.Warnings;
+import org.batfish.common.topology.Layer1Edge;
+import org.batfish.common.topology.Layer1Node;
+import org.batfish.common.util.isp.IspModel.Remote;
+import org.batfish.common.util.isp.IspModelingUtils.ModeledNodes;
+import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.BgpUnnumberedPeerConfig;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DeviceType;
+import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.OriginType;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.PrefixRange;
+import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
+import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
+import org.batfish.datamodel.isp_configuration.IspAnnouncement;
+import org.batfish.datamodel.isp_configuration.IspConfiguration;
+import org.batfish.datamodel.isp_configuration.IspFilter;
+import org.batfish.datamodel.isp_configuration.IspNodeInfo;
+import org.batfish.datamodel.isp_configuration.traffic_filtering.IspTrafficFiltering;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.Conjunction;
+import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
+import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
+import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
+import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetOrigin;
+import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.specifier.InterfaceLinkLocation;
+import org.junit.Before;
+import org.junit.Test;
 
 /** Tests for {@link IspModelingUtils} */
 public class IspModelingUtilsTest {
@@ -355,9 +353,7 @@ public class IspModelingUtilsTest {
 
   @Test
   public void testCreateIspNode() {
-    ModeledNodes modeledNodes = new ModeledNodes();
-    createIspNode(modeledNodes, _ispModel, new NetworkFactory(), _logger);
-    Configuration ispConfiguration = modeledNodes.getConfigurations().get(_ispName);
+    Configuration ispConfiguration = createIspNode(_ispModel, new NetworkFactory(), _logger).get();
 
     assertThat(
         ispConfiguration,
@@ -369,11 +365,9 @@ public class IspModelingUtilsTest {
 
   @Test
   public void testConnectIspToSnapshot() {
-    ModeledNodes modeledNodes = new ModeledNodes();
-    createIspNode(modeledNodes, _ispModel, new NetworkFactory(), _logger);
-    Configuration ispConfiguration = modeledNodes.getConfigurations().get(_ispName);
+    Configuration ispConfiguration = createIspNode(_ispModel, new NetworkFactory(), _logger).get();
 
-    connectIspToSnapshot(modeledNodes, _ispModel, ispConfiguration, _nf, _logger);
+    Set<Layer1Edge> layer1Edges = connectIspToSnapshot(_ispModel, ispConfiguration, _nf, _logger);
 
     assertThat(
         ispConfiguration,
@@ -402,7 +396,7 @@ public class IspModelingUtilsTest {
     assertThat(ispConfiguration.getRoutingPolicies(), hasKey(EXPORT_POLICY_ON_ISP_TO_CUSTOMERS));
 
     assertThat(
-        modeledNodes.getLayer1Edges(),
+        layer1Edges,
         equalTo(
             ImmutableSet.of(
                 new Layer1Edge(
@@ -438,11 +432,8 @@ public class IspModelingUtilsTest {
                     remotePeerConfig))
             .build();
 
-    ModeledNodes modeledNodes = new ModeledNodes();
-    createIspNode(modeledNodes, ispModel, new NetworkFactory(), _logger);
-    Configuration ispConfiguration = modeledNodes.getConfigurations().get(_ispName);
-
-    connectIspToSnapshot(modeledNodes, ispModel, ispConfiguration, _nf, _logger);
+    Configuration ispConfiguration = createIspNode(ispModel, new NetworkFactory(), _logger).get();
+    Set<Layer1Edge> layer1Edges = connectIspToSnapshot(ispModel, ispConfiguration, _nf, _logger);
 
     assertThat(
         ispConfiguration,
@@ -473,7 +464,7 @@ public class IspModelingUtilsTest {
     assertThat(ispConfiguration.getRoutingPolicies(), hasKey(EXPORT_POLICY_ON_ISP_TO_CUSTOMERS));
 
     assertThat(
-        modeledNodes.getLayer1Edges(),
+        layer1Edges,
         equalTo(
             ImmutableSet.of(
                 new Layer1Edge(
@@ -492,11 +483,9 @@ public class IspModelingUtilsTest {
   public void testCreateIspNode_invalid() {
     IspModel ispInfo = IspModel.builder().setAsn(_ispAsn).build();
     BatfishLogger logger = new BatfishLogger("debug", false);
-    ModeledNodes modeledNodes = new ModeledNodes();
-    createIspNode(modeledNodes, ispInfo, new NetworkFactory(), logger);
-    Configuration ispConfiguration = modeledNodes.getConfigurations().get(ispInfo.getName());
+    Optional<Configuration> ispConfiguration = createIspNode(ispInfo, new NetworkFactory(), logger);
 
-    assertThat(ispConfiguration, nullValue());
+    assertFalse(ispConfiguration.isPresent());
 
     assertThat(logger.getHistory(), hasSize(1));
     assertThat(
@@ -506,21 +495,14 @@ public class IspModelingUtilsTest {
   /** Basic ISP to Internet connectivity, without additional prefixes */
   @Test
   public void testConnectIspToInternet() {
-    ModeledNodes modeledNodes = new ModeledNodes();
     BatfishLogger logger = new BatfishLogger("output", false);
-    createIspNode(modeledNodes, _ispModel, _nf, logger);
-    connectIspToSnapshot(
-        modeledNodes,
-        _ispModel,
-        modeledNodes.getConfigurations().get(_ispModel.getHostname()),
-        _nf,
-        logger);
-    createInternetNode(modeledNodes);
+    Configuration ispConfiguration = createIspNode(_ispModel, _nf, logger).get();
+    connectIspToSnapshot(_ispModel, ispConfiguration, _nf, logger);
 
-    Configuration internet = modeledNodes.getConfigurations().get(INTERNET_HOST_NAME);
-    Configuration ispConfiguration = modeledNodes.getConfigurations().get(_ispName);
+    Configuration internet = createInternetNode(_nf);
 
-    connectIspToInternet(_ispAsn, _ispModel, ispConfiguration, internet, modeledNodes, _nf);
+    Set<Layer1Edge> layer1Edges =
+        connectIspToInternet(_ispAsn, _ispModel, ispConfiguration, internet, _nf);
     assertThat(
         ispConfiguration,
         allOf(
@@ -613,9 +595,11 @@ public class IspModelingUtilsTest {
     Layer1Node ispLayer1 = new Layer1Node(_ispName, ISP_TO_INTERNET_INTERFACE_NAME);
 
     assertThat(
-        modeledNodes.getLayer1Edges(),
-        hasItems(
-            new Layer1Edge(internetLayer1, ispLayer1), new Layer1Edge(ispLayer1, internetLayer1)));
+        layer1Edges,
+        equalTo(
+            ImmutableSet.of(
+                new Layer1Edge(internetLayer1, ispLayer1),
+                new Layer1Edge(ispLayer1, internetLayer1))));
   }
 
   /**
@@ -638,14 +622,11 @@ public class IspModelingUtilsTest {
             .setAdditionalPrefixesToInternet(additionalPrefixes)
             .build();
 
-    ModeledNodes modeledNodes = new ModeledNodes();
-    createIspNode(modeledNodes, ispModel, _nf, new BatfishLogger("debug", false));
-    createInternetNode(modeledNodes);
+    Configuration ispConfiguration =
+        createIspNode(ispModel, _nf, new BatfishLogger("debug", false)).get();
+    Configuration internet = createInternetNode(_nf);
 
-    Configuration internet = modeledNodes.getConfigurations().get(INTERNET_HOST_NAME);
-    Configuration ispConfiguration = modeledNodes.getConfigurations().get(_ispName);
-
-    connectIspToInternet(_ispAsn, ispModel, ispConfiguration, internet, modeledNodes, _nf);
+    connectIspToInternet(_ispAsn, ispModel, ispConfiguration, internet, _nf);
 
     assertThat(
         ispConfiguration.getDefaultVrf().getStaticRoutes(),
@@ -826,9 +807,7 @@ public class IspModelingUtilsTest {
 
   @Test
   public void testCreateInternetNode() {
-    ModeledNodes modeledNodes = new ModeledNodes();
-    createInternetNode(modeledNodes);
-    Configuration internet = modeledNodes.getConfigurations().get(INTERNET_HOST_NAME);
+    Configuration internet = createInternetNode(_nf);
     InterfaceAddress interfaceAddress =
         ConcreteInterfaceAddress.create(
             IspModelingUtils.INTERNET_OUT_ADDRESS,
