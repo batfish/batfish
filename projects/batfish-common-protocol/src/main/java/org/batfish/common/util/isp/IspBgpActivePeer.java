@@ -30,13 +30,11 @@ final class IspBgpActivePeer extends IspBgpPeer {
         snapshotBgpPeer.getRemoteAsns().least());
   }
 
-  @Nonnull
-  public Ip getPeerAddress() {
+  public @Nonnull Ip getPeerAddress() {
     return _peerAddress;
   }
 
-  @Nonnull
-  public Ip getLocalIp() {
+  public @Nonnull Ip getLocalIp() {
     return _localIp;
   }
 
@@ -60,8 +58,8 @@ final class IspBgpActivePeer extends IspBgpPeer {
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(this)
-        .add("_peerAddress", _peerAddress)
-        .add("_localIp", _localIp)
+        .add("peerAddress", _peerAddress)
+        .add("localIp", _localIp)
         .add("basePeer", super.toString())
         .toString();
   }
