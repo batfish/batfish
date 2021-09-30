@@ -7,11 +7,24 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 /** An {@link AstNode} representing a boolean function of the destination port. */
 @ParametersAreNonnullByDefault
-public class DportAstNode extends BooleanExprAstNode {
+public class DportAstNode implements BooleanExprAstNode {
 
   public DportAstNode(ComparatorAstNode comparator, Uint16AstNode value) {
     _comparator = comparator;
     _value = value;
+  }
+
+  @Override
+  public <T, U> T accept(BooleanExprAstNodeVisitor<T, U> visitor, U arg) {
+    return visitor.visitDportAstNode(this, arg);
+  }
+
+  public @Nonnull ComparatorAstNode getComparator() {
+    return _comparator;
+  }
+
+  public @Nonnull Uint16AstNode getValue() {
+    return _value;
   }
 
   @Override

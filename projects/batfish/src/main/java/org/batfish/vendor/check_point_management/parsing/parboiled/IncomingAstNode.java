@@ -9,10 +9,15 @@ import javax.annotation.ParametersAreNonnullByDefault;
  * incoming}.
  */
 @ParametersAreNonnullByDefault
-public final class IncomingAstNode extends BooleanExprAstNode {
+public final class IncomingAstNode implements BooleanExprAstNode {
 
   public static @Nonnull IncomingAstNode instance() {
     return INSTANCE;
+  }
+
+  @Override
+  public <T, U> T accept(BooleanExprAstNodeVisitor<T, U> visitor, U arg) {
+    return visitor.visitIncomingAstNode(this, arg);
   }
 
   private static final IncomingAstNode INSTANCE = new IncomingAstNode();

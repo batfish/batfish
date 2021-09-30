@@ -12,6 +12,11 @@ public final class LessThanOrEqualsAstNode implements ComparatorAstNode {
     return INSTANCE;
   }
 
+  @Override
+  public <T, U> T accept(ComparatorAstNodeVisitor<T, U> visitor, U value) {
+    return visitor.visitLessThanOrEqualsAstNode(this, value);
+  }
+
   private static final LessThanOrEqualsAstNode INSTANCE = new LessThanOrEqualsAstNode();
 
   @Override
