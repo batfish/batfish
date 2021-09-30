@@ -14,21 +14,19 @@ abstract class IspBgpPeer {
     _localAsn = localAsn;
   }
 
-  @Nonnull
-  public Long getRemoteAsn() {
+  public @Nonnull Long getRemoteAsn() {
     return _remoteAsn;
   }
 
-  @Nonnull
-  public Long getLocalAsn() {
+  public @Nonnull Long getLocalAsn() {
     return _localAsn;
   }
 
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(this)
-        .add("_remoteAsn", _remoteAsn)
-        .add("_localAsn", _localAsn)
+        .add("remoteAsn", _remoteAsn)
+        .add("localAsn", _localAsn)
         .toString();
   }
 }

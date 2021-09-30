@@ -163,13 +163,11 @@ final class IspModel {
     return _asn;
   }
 
-  @Nonnull
-  public String getHostname() {
+  public @Nonnull String getHostname() {
     return IspModelingUtils.getDefaultIspNodeName(_asn);
   }
 
-  @Nullable
-  public String getName() {
+  public @Nullable String getName() {
     return _name;
   }
 
@@ -181,14 +179,12 @@ final class IspModel {
    * Returns the prefixes that the ISP should announce to the Internet over the BGP connection
    * (beyond just passing along what it hears from other connected nodes)
    */
-  @Nonnull
-  public Set<Prefix> getAdditionalPrefixesToInternet() {
+  public @Nonnull Set<Prefix> getAdditionalPrefixesToInternet() {
     return _additionalPrefixesToInternet;
   }
 
   /** Returns the {@link IspTrafficFiltering traffic filtering policy} of this ISP. */
-  @Nonnull
-  public IspTrafficFiltering getTrafficFiltering() {
+  public @Nonnull IspTrafficFiltering getTrafficFiltering() {
     return _trafficFiltering;
   }
 }

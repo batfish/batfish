@@ -19,18 +19,15 @@ final class SnapshotConnection {
     _bgpPeer = bgpPeer;
   }
 
-  @Nonnull
-  public String getSnapshotHostname() {
+  public @Nonnull String getSnapshotHostname() {
     return _snapshotHostname;
   }
 
-  @Nonnull
-  public List<IspInterface> getInterfaces() {
+  public @Nonnull List<IspInterface> getInterfaces() {
     return _interfaces;
   }
 
-  @Nonnull
-  public IspBgpPeer getBgpPeer() {
+  public @Nonnull IspBgpPeer getBgpPeer() {
     return _bgpPeer;
   }
 

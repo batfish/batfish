@@ -25,8 +25,7 @@ final class IspBgpUnnumberedPeer extends IspBgpPeer {
         snapshotBgpPeer.getRemoteAsns().least());
   }
 
-  @Nonnull
-  public String getLocalIfacename() {
+  public @Nonnull String getLocalIfacename() {
     return _localIfaceName;
   }
 
@@ -49,7 +48,7 @@ final class IspBgpUnnumberedPeer extends IspBgpPeer {
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(this)
-        .add("_localIfaceName", _localIfaceName)
+        .add("localIfaceName", _localIfaceName)
         .add("basePeer", super.toString())
         .toString();
   }

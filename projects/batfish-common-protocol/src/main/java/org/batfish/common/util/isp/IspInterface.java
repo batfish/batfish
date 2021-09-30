@@ -19,18 +19,15 @@ final class IspInterface {
     _layer1Remote = layer1Remote;
   }
 
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
-  @Nonnull
-  public InterfaceAddress getAddress() {
+  public @Nonnull InterfaceAddress getAddress() {
     return _address;
   }
 
-  @Nonnull
-  public Layer1Node getLayer1Remote() {
+  public @Nonnull Layer1Node getLayer1Remote() {
     return _layer1Remote;
   }
 
