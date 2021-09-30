@@ -1,7 +1,6 @@
 package org.batfish.common.util.isp;
 
 import com.google.common.base.MoreObjects;
-
 import javax.annotation.Nonnull;
 
 /** Captures common settings used to create a BGP peer on the ISP node */

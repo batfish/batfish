@@ -1,12 +1,12 @@
 package org.batfish.common.util.isp;
 
-import com.google.common.base.MoreObjects;
 import static com.google.common.base.MoreObjects.firstNonNull;
+
+import com.google.common.base.MoreObjects;
+import java.util.Objects;
+import javax.annotation.Nonnull;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.Ip;
-
-import javax.annotation.Nonnull;
-import java.util.Objects;
 
 /** Captures settings used to create an unnumbered BGP peer on the ISP */
 final class IspBgpActivePeer extends IspBgpPeer {
