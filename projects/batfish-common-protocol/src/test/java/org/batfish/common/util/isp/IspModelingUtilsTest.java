@@ -1,52 +1,10 @@
 package org.batfish.common.util.isp;
 
-import static com.google.common.collect.Iterables.getOnlyElement;
-import static org.batfish.common.matchers.WarningMatchers.hasText;
-import static org.batfish.common.matchers.WarningsMatchers.hasRedFlag;
-import static org.batfish.common.util.isp.BlockReservedAddressesAtInternet.FROM_INTERNET_ACL_NAME;
-import static org.batfish.common.util.isp.BlockReservedAddressesAtInternet.TO_INTERNET_ACL_NAME;
-import static org.batfish.common.util.isp.IspModelingUtils.*;
-import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
-import static org.batfish.datamodel.BgpProcess.testBgpProcess;
-import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
-import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
-import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasInterfaceNeighbors;
-import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEbgp;
-import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbors;
-import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasRouterId;
-import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDeviceType;
-import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
-import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
-import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
-import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
-import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
-import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
-import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.anEmptyMap;
-import static org.hamcrest.Matchers.any;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasEntry;
-import static org.hamcrest.Matchers.hasItems;
-import static org.hamcrest.Matchers.hasKey;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Maps;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Map;
-import java.util.Set;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.topology.Layer1Edge;
@@ -92,6 +50,74 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.specifier.InterfaceLinkLocation;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Map;
+import java.util.Set;
+
+import static com.google.common.collect.Iterables.getOnlyElement;
+import static org.batfish.common.matchers.WarningMatchers.hasText;
+import static org.batfish.common.matchers.WarningsMatchers.hasRedFlag;
+import static org.batfish.common.util.isp.BlockReservedAddressesAtInternet.FROM_INTERNET_ACL_NAME;
+import static org.batfish.common.util.isp.BlockReservedAddressesAtInternet.TO_INTERNET_ACL_NAME;
+import static org.batfish.common.util.isp.IspModelingUtils.EXPORT_POLICY_ON_ISP_TO_CUSTOMERS;
+import static org.batfish.common.util.isp.IspModelingUtils.EXPORT_POLICY_ON_ISP_TO_INTERNET;
+import static org.batfish.common.util.isp.IspModelingUtils.HIGH_ADMINISTRATIVE_COST;
+import static org.batfish.common.util.isp.IspModelingUtils.INTERNET_HOST_NAME;
+import static org.batfish.common.util.isp.IspModelingUtils.INTERNET_NULL_ROUTED_PREFIXES;
+import static org.batfish.common.util.isp.IspModelingUtils.INTERNET_OUT_INTERFACE;
+import static org.batfish.common.util.isp.IspModelingUtils.INTERNET_OUT_INTERFACE_LINK_LOCATION_INFO;
+import static org.batfish.common.util.isp.IspModelingUtils.ISP_TO_INTERNET_INTERFACE_NAME;
+import static org.batfish.common.util.isp.IspModelingUtils.LINK_LOCAL_ADDRESS;
+import static org.batfish.common.util.isp.IspModelingUtils.LINK_LOCAL_IP;
+import static org.batfish.common.util.isp.IspModelingUtils.addBgpPeerToIsp;
+import static org.batfish.common.util.isp.IspModelingUtils.connectIspToInternet;
+import static org.batfish.common.util.isp.IspModelingUtils.connectIspToSnapshot;
+import static org.batfish.common.util.isp.IspModelingUtils.createInternetNode;
+import static org.batfish.common.util.isp.IspModelingUtils.createIspNode;
+import static org.batfish.common.util.isp.IspModelingUtils.getAdvertiseBgpStatement;
+import static org.batfish.common.util.isp.IspModelingUtils.getAdvertiseStaticStatement;
+import static org.batfish.common.util.isp.IspModelingUtils.getAsnOfIspNode;
+import static org.batfish.common.util.isp.IspModelingUtils.getDefaultIspNodeName;
+import static org.batfish.common.util.isp.IspModelingUtils.getInternetAndIspNodes;
+import static org.batfish.common.util.isp.IspModelingUtils.installRoutingPolicyForIspToCustomers;
+import static org.batfish.common.util.isp.IspModelingUtils.installRoutingPolicyForIspToInternet;
+import static org.batfish.common.util.isp.IspModelingUtils.internetToIspInterfaceName;
+import static org.batfish.common.util.isp.IspModelingUtils.ispNameConflicts;
+import static org.batfish.common.util.isp.IspModelingUtils.ispToRemoteInterfaceName;
+import static org.batfish.common.util.isp.IspModelingUtils.makeBgpProcess;
+import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
+import static org.batfish.datamodel.BgpProcess.testBgpProcess;
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasInterfaceNeighbors;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEbgp;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbors;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasRouterId;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDeviceType;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.anEmptyMap;
+import static org.hamcrest.Matchers.any;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 /** Tests for {@link IspModelingUtils} */
 public class IspModelingUtilsTest {
@@ -512,7 +538,7 @@ public class IspModelingUtilsTest {
     assertThat(
         internet,
         allOf(
-            hasHostname(IspModelingUtils.INTERNET_HOST_NAME),
+            hasHostname(INTERNET_HOST_NAME),
             hasInterface(
                 internetToIspInterfaceName(_ispName),
                 hasAllAddresses(equalTo(ImmutableSet.of(LINK_LOCAL_ADDRESS)))),
@@ -818,10 +844,10 @@ public class IspModelingUtilsTest {
     assertThat(
         internet,
         allOf(
-            hasHostname(IspModelingUtils.INTERNET_HOST_NAME),
+            hasHostname(INTERNET_HOST_NAME),
             hasDeviceType(equalTo(DeviceType.INTERNET)),
             hasInterface(
-                IspModelingUtils.INTERNET_OUT_INTERFACE,
+                INTERNET_OUT_INTERFACE,
                 hasAllAddresses(equalTo(ImmutableSet.of(interfaceAddress)))),
             hasVrf(
                 DEFAULT_VRF_NAME,
@@ -833,7 +859,7 @@ public class IspModelingUtilsTest {
                                     StaticRoute.testBuilder()
                                         .setNetwork(Prefix.ZERO)
                                         .setNextHopInterface(
-                                            IspModelingUtils.INTERNET_OUT_INTERFACE)
+                                            INTERNET_OUT_INTERFACE)
                                         .setAdministrativeCost(1)
                                         .build())
                                 .addAll(
@@ -903,7 +929,7 @@ public class IspModelingUtilsTest {
   @Test
   public void testGetInternetAndIspNodes_noInternet() {
     ModeledNodes modeledNodes =
-        IspModelingUtils.getInternetAndIspNodes(
+        getInternetAndIspNodes(
             ImmutableMap.of(_snapshotHostname, _snapshotHost),
             ImmutableList.of(
                 new IspConfiguration(
@@ -951,7 +977,7 @@ public class IspModelingUtilsTest {
         .build();
 
     ModeledNodes modeledNodes =
-        IspModelingUtils.getInternetAndIspNodes(
+        getInternetAndIspNodes(
             ImmutableMap.of(_snapshotHostname, _snapshotHost),
             ImmutableList.of(
                 new IspConfiguration(
