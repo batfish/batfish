@@ -19,14 +19,19 @@ public class IspNodeInfoTest {
         ImmutableList.of(new IspAnnouncement(Prefix.parse("1.1.1.1/32")));
     new EqualsTester()
         .addEqualityGroup(
-            new IspNodeInfo(42, "n1", prefixList, null),
-            new IspNodeInfo(42L, "n1", prefixList, null))
-        .addEqualityGroup(new IspNodeInfo(24, "n1", prefixList, null))
-        .addEqualityGroup(new IspNodeInfo(42, "other", prefixList, null))
+            new IspNodeInfo(42, "n1", true, prefixList, null),
+            new IspNodeInfo(42L, "n1", true, prefixList, null))
+        .addEqualityGroup(new IspNodeInfo(24, "n1", true, prefixList, null))
+        .addEqualityGroup(new IspNodeInfo(42, "other", true, prefixList, null))
+        .addEqualityGroup(new IspNodeInfo(42, "n1", false, ImmutableList.of(), null))
         .addEqualityGroup(
             new IspNodeInfo(
-                42, "n1", ImmutableList.of(new IspAnnouncement(Prefix.parse("2.2.2.2/32"))), null))
-        .addEqualityGroup(new IspNodeInfo(42, "n1", prefixList, IspTrafficFiltering.none()))
+                42,
+                "n1",
+                true,
+                ImmutableList.of(new IspAnnouncement(Prefix.parse("2.2.2.2/32"))),
+                null))
+        .addEqualityGroup(new IspNodeInfo(42, "n1", true, prefixList, IspTrafficFiltering.none()))
         .testEquals();
   }
 
@@ -36,6 +41,7 @@ public class IspNodeInfoTest {
         new IspNodeInfo(
             42,
             "n1",
+            true,
             ImmutableList.of(new IspAnnouncement(Prefix.parse("1.1.1.1/32"))),
             IspTrafficFiltering.none());
 
