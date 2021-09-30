@@ -230,6 +230,45 @@ public class A10GrammarTest {
   }
 
   @Test
+  public void testStaticRouteDeleteExtraction() {
+    String hostname = "static_route_delete";
+    A10Configuration c = parseVendorConfig(hostname);
+    Prefix prefix = Prefix.parse("10.100.0.0/16");
+    Ip forwardingRouterAddr = Ip.parse("10.100.4.6");
+
+    // Only the last static route was not deleted
+    assertThat(c.getStaticRoutes().keySet(), contains(prefix));
+    StaticRouteManager srmPrefix = c.getStaticRoutes().get(prefix);
+
+    assertThat(srmPrefix.getVariants().keySet(), contains(forwardingRouterAddr));
+    StaticRoute route = srmPrefix.getVariants().get(forwardingRouterAddr);
+
+    assertThat(route.getForwardingRouterAddress(), equalTo(forwardingRouterAddr));
+    assertThat(route.getDescription(), equalTo("baz"));
+    assertThat(route.getDistance(), equalTo(255));
+  }
+
+  @Test
+  public void testStaticRouteDeleteWarn() throws IOException {
+    String filename = "static_route_delete";
+    Batfish batfish = getBatfishForConfigurationNames(filename);
+    Warnings warnings =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+    assertThat(
+        warnings,
+        hasParseWarnings(
+            containsInAnyOrder(
+                hasComment("No routes exist for prefix 10.101.0.0/16"),
+                hasComment("No route exists for forwarding router address 10.100.4.100"),
+                hasComment("No route exists with description 'foo'"),
+                hasComment("No route exists with distance 1"))));
+  }
+
+  @Test
   public void testStaticRouteConversion() {
     String hostname = "static_route_convert";
     Configuration c = parseConfig(hostname);

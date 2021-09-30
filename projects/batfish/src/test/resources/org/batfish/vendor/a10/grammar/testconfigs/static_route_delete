@@ -1,0 +1,38 @@
+!BATFISH_FORMAT: a10_acos
+hostname static_route_delete
+!
+ip route 10.100.0.0 /16 10.100.4.1 description "baz" 255
+ip route 10.100.0.0 /16 10.100.4.2 description "baz" 255
+ip route 10.100.0.0 /16 10.100.4.3 description "baz" 255
+ip route 10.100.0.0 /16 10.100.4.4 description "baz" 255
+ip route 10.100.0.0 /16 10.100.4.5
+ip route 10.100.0.0 /16 10.100.4.6 description "baz" 255
+!
+! These lines remove the first five static routes
+! (description/distance are optional in delete line, but must match if specified)
+no ip route 10.100.0.0 /16 10.100.4.1
+no ip route 10.100.0.0 /16 10.100.4.2 description "baz"
+no ip route 10.100.0.0 /16 10.100.4.3 255
+no ip route 10.100.0.0 /16 10.100.4.4 description "baz" 255
+! Distance default can be explicitly specified in the delete line and still match
+no ip route 10.100.0.0 /16 10.100.4.5 1
+!
+! These lines fail to remove the fifth static route
+! Field value does not match (field: foo)
+no ip route 10.100.0.0 /16 10.100.4.6 description "foo"
+!
+! Field value does not match (field: 1)
+no ip route 10.100.0.0 /16 10.100.4.6 1
+!
+! Field value does not match
+no ip route 10.100.0.0 /16 10.100.4.100
+no ip route 10.101.0.0 /16 10.100.4.6
+!
+! % Incomplete command / not valid syntax
+!no ip route 10.100.0.0 /16
+!
+!
+!
+! Final static routes will be:
+! ip route 10.100.0.0 /16 10.100.4.6 description "baz" 255
+!

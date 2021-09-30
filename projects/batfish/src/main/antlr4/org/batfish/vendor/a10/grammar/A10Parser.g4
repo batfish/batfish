@@ -22,6 +22,7 @@ statement
    | s_interface
    | s_ip
    | s_lacp_trunk
+   | s_no
    | s_rba
    | s_trunk
    | s_vlan
@@ -30,5 +31,11 @@ statement
 s_ip: IP si;
 
 si: si_route;
+
+s_no: NO sn_ip;
+
+sn_ip: IP sni;
+
+sni: sni_route;
 
 s_hostname: HOSTNAME hostname NEWLINE;
