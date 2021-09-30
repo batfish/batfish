@@ -1,9 +1,9 @@
 package org.batfish.common.util.isp;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
-import org.batfish.common.util.isp.IspModel.Remote;
 import org.batfish.datamodel.BgpActivePeerConfig;
-import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.isp_configuration.traffic_filtering.IspTrafficFiltering;
 import org.junit.Test;
@@ -19,58 +19,22 @@ public class IspModelTest {
         .addEqualityGroup(builder.setName("other").build())
         .addEqualityGroup(
             builder
-                .setRemotes(
-                    new Remote(
+                .setSnapshotConnections(
+                    new SnapshotConnection(
                         "a",
-                        "b",
-                        ConcreteInterfaceAddress.parse("1.1.1.1/32"),
-                        BgpActivePeerConfig.builder().build()))
+                        ImmutableList.of(),
+                        IspBgpActivePeer.create(
+                            BgpActivePeerConfig.builder()
+                                .setLocalIp(Ip.ZERO)
+                                .setPeerAddress(Ip.ZERO)
+                                .setLocalAs(1L)
+                                .setRemoteAs(2L)
+                                .build())))
                 .build())
         .addEqualityGroup(
             builder.setAdditionalPrefixesToInternet(Prefix.parse("1.1.1.1/32")).build())
         .addEqualityGroup(
             builder.setTrafficFiltering(IspTrafficFiltering.blockReservedAddressesAtInternet()))
-        .testEquals();
-  }
-
-  @Test
-  public void testEqualsRemote() {
-    new EqualsTester()
-        .addEqualityGroup(
-            new Remote(
-                "a",
-                "b",
-                ConcreteInterfaceAddress.parse("1.1.1.1/32"),
-                BgpActivePeerConfig.builder().build()),
-            new Remote(
-                "a",
-                "b",
-                ConcreteInterfaceAddress.parse("1.1.1.1/32"),
-                BgpActivePeerConfig.builder().build()))
-        .addEqualityGroup(
-            new Remote(
-                "other",
-                "b",
-                ConcreteInterfaceAddress.parse("1.1.1.1/32"),
-                BgpActivePeerConfig.builder().build()))
-        .addEqualityGroup(
-            new Remote(
-                "a",
-                "other",
-                ConcreteInterfaceAddress.parse("1.1.1.1/32"),
-                BgpActivePeerConfig.builder().build()))
-        .addEqualityGroup(
-            new Remote(
-                "a",
-                "b",
-                ConcreteInterfaceAddress.parse("2.2.2.2/32"),
-                BgpActivePeerConfig.builder().build()))
-        .addEqualityGroup(
-            new Remote(
-                "other",
-                "b",
-                ConcreteInterfaceAddress.parse("1.1.1.1/32"),
-                BgpActivePeerConfig.builder().setDescription("other").build()))
         .testEquals();
   }
 }
