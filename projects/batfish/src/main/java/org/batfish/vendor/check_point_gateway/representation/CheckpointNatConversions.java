@@ -57,7 +57,7 @@ public class CheckpointNatConversions {
 
   @VisibleForTesting static final int NAT_PORT_FIRST = 10000;
   @VisibleForTesting static final int NAT_PORT_LAST = 60000;
-  @VisibleForTesting public static final Ip HIDE_BEHIND_GATEWAY_IP = Ip.parse("127.0.0.1");
+  @VisibleForTesting public static final Ip HIDE_BEHIND_GATEWAY_IP = Ip.ZERO;
 
   @VisibleForTesting
   static final TranslatedSourceToTransformationSteps TRANSLATED_SOURCE_TO_TRANSFORMATION_STEPS =
