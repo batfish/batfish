@@ -1,17 +1,17 @@
 package org.batfish.e2e.isp;
 
+import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertThat;
+
 import com.google.common.collect.ImmutableList;
+import java.io.IOException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertThat;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-
-import java.io.IOException;
 
 /** E2E test of ISP modeling */
 public class IspModelingTest {

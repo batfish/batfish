@@ -1,31 +1,46 @@
 package org.batfish.common.util.isp;
 
-import com.google.common.annotations.VisibleForTesting;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
+import static java.util.Comparator.naturalOrder;
+import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
+import static org.batfish.specifier.Location.interfaceLinkLocation;
+
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
-import static java.util.Comparator.naturalOrder;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Node;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
-import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
-import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.Interface;
-import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
@@ -62,22 +77,7 @@ import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
-import static org.batfish.specifier.Location.interfaceLinkLocation;
 import org.batfish.specifier.LocationInfo;
-
-import javax.annotation.Nonnull;
-import javax.annotation.ParametersAreNonnullByDefault;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 /** Util classes and functions to model ISPs and Internet for a given network */
 @ParametersAreNonnullByDefault
@@ -487,7 +487,8 @@ public final class IspModelingUtils {
       // can only happen if VRF was not specified
       warnings.redFlag(
           String.format(
-              "ISP Modeling: Multiple BGP neighbors with peer address %s found on node %s. Specify VRF to select one.",
+              "ISP Modeling: Multiple BGP neighbors with peer address %s found on node %s. Specify"
+                  + " VRF to select one.",
               bgpPeerInfo.getPeerAddress(), bgpPeerInfo.getHostname()));
       return Optional.empty();
     }

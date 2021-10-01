@@ -1,14 +1,14 @@
 package org.batfish.datamodel.isp_configuration;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import static com.google.common.base.MoreObjects.firstNonNull;
 import com.google.common.collect.ImmutableList;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Specification for modeling ISPs for a network snapshot. There are three parts to this

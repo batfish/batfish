@@ -1,17 +1,18 @@
 package org.batfish.datamodel.isp_configuration;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.common.collect.ImmutableList;
-import com.google.common.testing.EqualsTester;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import org.batfish.common.util.BatfishObjectMapper;
 import static org.batfish.common.util.Resources.readResource;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.batfish.datamodel.isp_configuration.traffic_filtering.IspTrafficFiltering;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.collect.ImmutableList;
+import com.google.common.testing.EqualsTester;
+import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.isp_configuration.traffic_filtering.IspTrafficFiltering;
 import org.junit.Test;
 
 /** Tests for {@link IspConfiguration} */
