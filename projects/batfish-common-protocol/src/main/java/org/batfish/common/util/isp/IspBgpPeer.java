@@ -7,10 +7,12 @@ import javax.annotation.Nonnull;
 abstract class IspBgpPeer {
   @Nonnull protected final Long _remoteAsn;
   @Nonnull protected final Long _localAsn;
+  protected final boolean _ebgpMultiHop;
 
-  public IspBgpPeer(Long remoteAsn, Long localAsn) {
+  public IspBgpPeer(Long remoteAsn, Long localAsn, boolean ebgpMultiHop) {
     _remoteAsn = remoteAsn;
     _localAsn = localAsn;
+    _ebgpMultiHop = ebgpMultiHop;
   }
 
   public @Nonnull Long getRemoteAsn() {
@@ -19,6 +21,10 @@ abstract class IspBgpPeer {
 
   public @Nonnull Long getLocalAsn() {
     return _localAsn;
+  }
+
+  public boolean getEbgpMultiHop() {
+    return _ebgpMultiHop;
   }
 
   @Override

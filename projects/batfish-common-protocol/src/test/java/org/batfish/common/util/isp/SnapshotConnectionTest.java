@@ -30,7 +30,7 @@ public class SnapshotConnectionTest {
             new SnapshotConnection(
                 "a",
                 ImmutableList.of(
-                    new IspInterface("name", LINK_LOCAL_ADDRESS, new Layer1Node("1", "2"))),
+                    new IspInterface("name", LINK_LOCAL_ADDRESS, new Layer1Node("1", "2"), null)),
                 ispBgpActivePeer))
         .addEqualityGroup(
             new SnapshotConnection(
