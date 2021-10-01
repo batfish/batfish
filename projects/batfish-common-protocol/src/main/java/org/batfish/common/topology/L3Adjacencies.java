@@ -1,10 +1,11 @@
 package org.batfish.common.topology;
 
-import java.io.Serializable;
-import java.util.Optional;
+import org.batfish.datamodel.collections.NodeInterfacePair;
+
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.collections.NodeInterfacePair;
+import java.io.Serializable;
+import java.util.Optional;
 
 /** Something that can tell whether two different L3 interfaces are in the same broadcast domain. */
 @ParametersAreNonnullByDefault
