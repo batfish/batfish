@@ -1,15 +1,15 @@
 package org.batfish.datamodel.isp_configuration;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
-import static com.google.common.base.Preconditions.checkArgument;
-import org.batfish.datamodel.Ip;
-
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import java.util.Objects;
+import org.batfish.datamodel.Ip;
 
 /**
  * BGP peer information used to create sessions to modeled ISPs. This specification identifies a BGP
