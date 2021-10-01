@@ -54,18 +54,22 @@ public class BgpPeerInfo {
     return new BgpPeerInfo(hostname, peerAddress, vrf, bgpPeerConnectivity);
   }
 
+  @JsonProperty(PROP_HOSTNAME)
   public String getHostname() {
     return _hostname;
   }
 
+  @JsonProperty(PROP_PEER_ADDRESS)
   public @Nonnull Ip getPeerAddress() {
     return _peerAddress;
   }
 
+  @JsonProperty(PROP_VRF)
   public @Nullable String getVrf() {
     return _vrf;
   }
 
+  @JsonProperty(PROP_ISP_ATTACHMENT)
   public @Nullable IspAttachment getIspAttachment() {
     return _ispAttachment;
   }

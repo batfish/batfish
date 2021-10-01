@@ -26,7 +26,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public class IspAttachment {
   private static final String PROP_HOSTNAME = "hostname";
   private static final String PROP_INTERFACE = "interface";
-  private static final String PROP_VLAN_TAG = "vlan";
+  private static final String PROP_VLAN_TAG = "vlanTag";
 
   @Nullable private final String _hostname;
   @Nonnull private final String _interface;
@@ -47,14 +47,17 @@ public class IspAttachment {
     return new IspAttachment(hostname, iface, vlanTag);
   }
 
+  @JsonProperty(PROP_HOSTNAME)
   public @Nullable String getHostname() {
     return _hostname;
   }
 
+  @JsonProperty(PROP_INTERFACE)
   public @Nonnull String getInterface() {
     return _interface;
   }
 
+  @JsonProperty(PROP_VLAN_TAG)
   public @Nullable Integer getVlanTag() {
     return _vlanTag;
   }
