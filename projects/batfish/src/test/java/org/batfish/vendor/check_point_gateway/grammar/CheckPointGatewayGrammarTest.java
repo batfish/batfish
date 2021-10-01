@@ -1795,24 +1795,6 @@ public class CheckPointGatewayGrammarTest {
               .setDstIp(otherIp)
               .setIngressNode(hostname)
               .build();
-      FlowEvaluator.FlowResult eth0PolicyResult =
-          FlowEvaluator.evaluate(
-              flow,
-              eth0.getName(),
-              eth0.getVrfName(),
-              eth0Policy,
-              c.getIpAccessLists(),
-              c.getIpSpaces(),
-              fibs);
-      FlowEvaluator.FlowResult eth1PolicyResult =
-          FlowEvaluator.evaluate(
-              flow,
-              eth1.getName(),
-              eth1.getVrfName(),
-              eth1Policy,
-              c.getIpAccessLists(),
-              c.getIpSpaces(),
-              fibs);
       testFunction.apply(
           flow, flow.toBuilder().setSrcIp(HIDE_BEHIND_GATEWAY_IP).build(), fibLookup);
     }
