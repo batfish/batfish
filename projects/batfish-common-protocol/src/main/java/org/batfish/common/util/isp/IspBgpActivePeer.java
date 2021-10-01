@@ -8,7 +8,7 @@ import javax.annotation.Nonnull;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.Ip;
 
-/** Captures settings used to create an unnumbered BGP peer on the ISP */
+/** Captures settings used to create an active BGP peer on the ISP */
 final class IspBgpActivePeer extends IspBgpPeer {
   @Nonnull private final Ip _peerAddress;
   @Nonnull private final Ip _localIp;
