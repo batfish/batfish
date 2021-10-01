@@ -960,8 +960,8 @@ public final class JFactory extends BDDFactory {
       return g;
     } else if (ISZERO(f)) {
       return h;
-    } else if (HIGH(f) == BDDONE
-        && LOW(f) == BDDZERO
+    } else if (HIGH(f) == BDDZERO
+        && LOW(f) == BDDONE
         && LEVEL(f) < LEVEL(g)
         && LEVEL(f) < LEVEL(h)) {
       // f is a single variable BDD, and its level is lower than g's and h's.
