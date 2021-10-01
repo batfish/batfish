@@ -28,11 +28,11 @@ public class IspAttachment {
   private static final String PROP_INTERFACE = "interface";
   private static final String PROP_VLAN_TAG = "vlan";
 
-  @Nonnull private final String _hostname;
+  @Nullable private final String _hostname;
   @Nonnull private final String _interface;
   @Nullable private final Integer _vlanTag;
 
-  public IspAttachment(String hostname, String iface, @Nullable Integer vlanTag) {
+  public IspAttachment(@Nullable String hostname, String iface, @Nullable Integer vlanTag) {
     _hostname = hostname;
     _interface = iface;
     _vlanTag = vlanTag;
@@ -43,12 +43,11 @@ public class IspAttachment {
       @JsonProperty(PROP_HOSTNAME) @Nullable String hostname,
       @JsonProperty(PROP_INTERFACE) @Nullable String iface,
       @JsonProperty(PROP_VLAN_TAG) @Nullable Integer vlanTag) {
-    checkNotNull(hostname, "Hostname cannot be null for BgpPeerConnectivity");
-    checkNotNull(iface, "Hostname cannot be null for BgpPeerConnectivity");
+    checkNotNull(iface, "interface cannot be null for BgpPeerConnectivity");
     return new IspAttachment(hostname, iface, vlanTag);
   }
 
-  public @Nonnull String getHostname() {
+  public @Nullable String getHostname() {
     return _hostname;
   }
 
@@ -66,7 +65,7 @@ public class IspAttachment {
       return false;
     }
     IspAttachment that = (IspAttachment) o;
-    return _hostname.equals(that._hostname)
+    return Objects.equals(_hostname, that._hostname)
         && _interface.equals(that._interface)
         && Objects.equals(_vlanTag, that._vlanTag);
   }

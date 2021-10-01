@@ -461,46 +461,35 @@ public final class IspModelingUtils {
       LongSpace remoteAsns,
       Map<String, Configuration> configurations,
       Warnings warnings) {
-    Configuration snapshotHost = configurations.get(bgpPeerInfo.getHostname());
-    if (snapshotHost == null) {
+    Configuration snapshotBgpHost = configurations.get(bgpPeerInfo.getHostname());
+    if (snapshotBgpHost == null) {
       warnings.redFlag(
           String.format("ISP Modeling: Non-existent border node %s", bgpPeerInfo.getHostname()));
       return Optional.empty();
     }
+    String bgpPeerVrf = bgpPeerInfo.getVrf();
     List<BgpActivePeerConfig> snapshotBgpPeers =
-        snapshotHost.getVrfs().values().stream()
+        snapshotBgpHost.getVrfs().values().stream()
+            .filter(vrf -> bgpPeerVrf == null || bgpPeerVrf.equalsIgnoreCase(vrf.getName()))
             .flatMap(vrf -> vrf.getBgpProcess().getActiveNeighbors().values().stream())
             .filter(peer -> bgpPeerInfo.getPeerAddress().equals(peer.getPeerAddress()))
             .collect(Collectors.toList());
     if (snapshotBgpPeers.isEmpty()) {
       warnings.redFlag(
           String.format(
-              "ISP Modeling: No BGP neighbor %s found on node %s",
-              bgpPeerInfo.getPeerAddress(), bgpPeerInfo.getHostname()));
+              "ISP Modeling: No BGP neighbor %s found on node %s in %s vrf",
+              bgpPeerInfo.getPeerAddress(),
+              bgpPeerInfo.getHostname(),
+              bgpPeerVrf == null ? "any" : bgpPeerVrf));
       return Optional.empty();
     }
     if (snapshotBgpPeers.size() > 1) {
-      if (bgpPeerInfo.getVrf() == null) {
-        warnings.redFlag(
-            String.format(
-                "ISP Modeling: Multiple BGP neighbor with peer address %s found on node %s. Specify VRF to select one.",
-                bgpPeerInfo.getPeerAddress(), bgpPeerInfo.getHostname()));
-        return Optional.empty();
-      }
-      Optional<BgpActivePeerConfig> snapshotBgpPeerOpt =
-          snapshotHost.getVrfs().values().stream()
-              .filter(vrf -> bgpPeerInfo.getVrf().equalsIgnoreCase(vrf.getName()))
-              .flatMap(vrf -> vrf.getBgpProcess().getActiveNeighbors().values().stream())
-              .filter(peer -> bgpPeerInfo.getPeerAddress().equals(peer.getPeerAddress()))
-              .findAny(); // there will be at most one matches
-      if (!snapshotBgpPeerOpt.isPresent()) {
-        warnings.redFlag(
-            String.format(
-                "ISP Modeling: BGP neighbor with peer address %s not found in VRF %s on node %s.",
-                bgpPeerInfo.getPeerAddress(), bgpPeerInfo.getVrf(), bgpPeerInfo.getHostname()));
-        return Optional.empty();
-      }
-      snapshotBgpPeers = ImmutableList.of(snapshotBgpPeerOpt.get());
+      // can only happen if VRF was not specified
+      warnings.redFlag(
+          String.format(
+              "ISP Modeling: Multiple BGP neighbors with peer address %s found on node %s. Specify VRF to select one.",
+              bgpPeerInfo.getPeerAddress(), bgpPeerInfo.getHostname()));
+      return Optional.empty();
     }
     BgpActivePeerConfig snapshotBgpPeer = snapshotBgpPeers.get(0);
     if (!isValidBgpPeerConfigForBgpPeerInfo(snapshotBgpPeer, remoteIps, remoteAsns)) {
@@ -520,7 +509,11 @@ public final class IspModelingUtils {
     }
 
     IspAttachment ispAttachment = bgpPeerInfo.getIspAttachment();
-    Configuration attachmentHost = configurations.get(ispAttachment.getHostname());
+    String attachmentHostname =
+        ispAttachment.getHostname() == null
+            ? snapshotBgpHost.getHostname()
+            : ispAttachment.getHostname();
+    Configuration attachmentHost = configurations.get(attachmentHostname);
     if (attachmentHost == null) {
       warnings.redFlag(
           String.format(
@@ -528,7 +521,7 @@ public final class IspModelingUtils {
       return Optional.empty();
     }
     Interface attachmentIface =
-        snapshotHost.getAllInterfaces().values().stream()
+        snapshotBgpHost.getAllInterfaces().values().stream()
             .filter(i -> i.getName().equalsIgnoreCase(ispAttachment.getInterface()))
             .findFirst()
             .orElse(null);
@@ -536,7 +529,7 @@ public final class IspModelingUtils {
       warnings.redFlag(
           String.format(
               "ISP Modeling: Non-existent attachment interface %s on node %s",
-              ispAttachment.getInterface(), ispAttachment.getHostname()));
+              ispAttachment.getInterface(), attachmentHostname));
       return Optional.empty();
     }
 

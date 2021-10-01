@@ -1,0 +1,22 @@
+{
+  "bgpPeers": [
+    {
+      "hostname": "as2border1",
+      "peerAddress": "240.2.2.3",
+      "ispAttachment": {
+        "interface": "GigabitEthernet0/0"
+      }
+    },
+    {
+      "hostname": "as2border2",
+      "peerAddress": "240.2.2.5",
+      "ispAttachment": {
+        "interface": "GigabitEthernet0/0"
+      }
+    }
+  ],
+  "filter": {
+    "onlyRemoteAsns": [],
+    "onlyRemoteIps": []
+  }
+}

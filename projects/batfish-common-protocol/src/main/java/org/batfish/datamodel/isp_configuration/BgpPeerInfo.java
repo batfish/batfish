@@ -25,7 +25,7 @@ public class BgpPeerInfo {
   private static final String PROP_HOSTNAME = "hostname";
   private static final String PROP_PEER_ADDRESS = "peerAddress";
   private static final String PROP_VRF = "vrf";
-  private static final String PROP_CONNECTIVITY = "connectivity";
+  private static final String PROP_ISP_ATTACHMENT = "ispAttachment";
 
   @Nonnull private final String _hostname;
   @Nonnull private final Ip _peerAddress;
@@ -48,7 +48,7 @@ public class BgpPeerInfo {
       @JsonProperty(PROP_HOSTNAME) @Nullable String hostname,
       @JsonProperty(PROP_PEER_ADDRESS) @Nullable Ip peerAddress,
       @JsonProperty(PROP_VRF) @Nullable String vrf,
-      @JsonProperty(PROP_CONNECTIVITY) @Nullable IspAttachment bgpPeerConnectivity) {
+      @JsonProperty(PROP_ISP_ATTACHMENT) @Nullable IspAttachment bgpPeerConnectivity) {
     checkArgument(hostname != null, "Missing %s", PROP_HOSTNAME);
     checkArgument(peerAddress != null, "Missing %s", PROP_PEER_ADDRESS);
     return new BgpPeerInfo(hostname, peerAddress, vrf, bgpPeerConnectivity);

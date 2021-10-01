@@ -35,6 +35,7 @@ import static org.batfish.common.util.isp.IspModelingUtils.getAdvertiseStaticSta
 import static org.batfish.common.util.isp.IspModelingUtils.getAsnOfIspNode;
 import static org.batfish.common.util.isp.IspModelingUtils.getDefaultIspNodeName;
 import static org.batfish.common.util.isp.IspModelingUtils.getInternetAndIspNodes;
+import static org.batfish.common.util.isp.IspModelingUtils.getSnapshotConnectionForBgpPeerInfo;
 import static org.batfish.common.util.isp.IspModelingUtils.getSnapshotConnectionsForBorderInterface;
 import static org.batfish.common.util.isp.IspModelingUtils.installRoutingPolicyForIspToCustomers;
 import static org.batfish.common.util.isp.IspModelingUtils.installRoutingPolicyForIspToInternet;
@@ -68,8 +69,10 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.isp_configuration.BgpPeerInfo;
 import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
 import org.batfish.datamodel.isp_configuration.IspAnnouncement;
+import org.batfish.datamodel.isp_configuration.IspAttachment;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
 import org.batfish.datamodel.isp_configuration.IspFilter;
 import org.batfish.datamodel.isp_configuration.IspNodeInfo;
@@ -100,6 +103,7 @@ import org.batfish.specifier.InterfaceLinkLocation;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.any;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
@@ -711,6 +715,163 @@ public class IspModelingUtilsTest {
                             new Layer1Node(_snapshotHostname, _snapshotInterfaceName),
                             null)),
                     IspBgpActivePeer.create(snapshotPeer2)))));
+  }
+
+  @Test
+  public void testGetSnapshotConnectionForBgpPeerInfo() {
+    Optional<SnapshotConnection> snapshotConnection =
+        getSnapshotConnectionForBgpPeerInfo(
+            new BgpPeerInfo(
+                _snapshotHostname,
+                _ispIp,
+                null,
+                new IspAttachment(null, _snapshotInterfaceName, null)),
+            ImmutableSet.of(),
+            ALL_AS_NUMBERS,
+            ImmutableMap.of(_snapshotHostname, _snapshotHost),
+            new Warnings());
+
+    assertThat(snapshotConnection.get(), equalTo(_snapshotConnection));
+  }
+
+  @Test
+  public void testGetSnapshotConnectionForBgpPeerInfo_missingBgpHost() {
+    Warnings warnings = new Warnings(true, true, true);
+    Optional<SnapshotConnection> connection =
+        getSnapshotConnectionForBgpPeerInfo(
+            new BgpPeerInfo(
+                "other", _ispIp, null, new IspAttachment(null, _snapshotInterfaceName, null)),
+            ImmutableSet.of(),
+            ALL_AS_NUMBERS,
+            ImmutableMap.of(_snapshotHostname, _snapshotHost),
+            warnings);
+    assertFalse(connection.isPresent());
+    assertThat(
+        warnings.getRedFlagWarnings(),
+        contains(hasText("ISP Modeling: Non-existent border node other")));
+  }
+
+  @Test
+  public void testGetSnapshotConnectionForBgpPeerInfo_missingBgpPeer() {
+    Warnings warnings = new Warnings(true, true, true);
+    Optional<SnapshotConnection> connection =
+        getSnapshotConnectionForBgpPeerInfo(
+            new BgpPeerInfo(
+                _snapshotHostname,
+                Ip.ZERO,
+                null,
+                new IspAttachment(null, _snapshotInterfaceName, null)),
+            ImmutableSet.of(),
+            ALL_AS_NUMBERS,
+            ImmutableMap.of(_snapshotHostname, _snapshotHost),
+            warnings);
+    assertFalse(connection.isPresent());
+    assertThat(
+        warnings.getRedFlagWarnings(),
+        contains(hasText("ISP Modeling: No BGP neighbor 0.0.0.0 found on node conf in any vrf")));
+  }
+
+  @Test
+  public void testGetSnapshotConnectionForBgpPeerInfo_multipleBgpPeers() {
+    // add another peer with the same peer address in a different vrf
+    _nf.vrfBuilder().setName("v2").setOwner(_snapshotHost).build();
+    BgpProcess bgpProcess = makeBgpProcess(_snapshotIp, _snapshotHost.getVrfs().get("v2"));
+    BgpActivePeerConfig.builder()
+        .setPeerAddress(_ispIp)
+        .setRemoteAs(_ispAsn)
+        .setLocalIp(_snapshotIp)
+        .setLocalAs(_snapshotAsn)
+        .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+        .setBgpProcess(bgpProcess)
+        .build();
+
+    Warnings warnings = new Warnings(true, true, true);
+    Optional<SnapshotConnection> connection =
+        getSnapshotConnectionForBgpPeerInfo(
+            new BgpPeerInfo(
+                _snapshotHostname,
+                _ispIp,
+                null,
+                new IspAttachment(null, _snapshotInterfaceName, null)),
+            ImmutableSet.of(),
+            ALL_AS_NUMBERS,
+            ImmutableMap.of(_snapshotHostname, _snapshotHost),
+            warnings);
+    assertFalse(connection.isPresent());
+    assertThat(
+        warnings.getRedFlagWarnings(),
+        contains(
+            hasText(
+                "ISP Modeling: Multiple BGP neighbors with peer address 1.1.1.1 found on node conf. Specify VRF to select one.")));
+  }
+
+  @Test
+  public void testGetSnapshotConnectionForBgpPeerInfo_invalidBgpPeer() {
+    // add a peer with missing remote as
+    BgpActivePeerConfig bgpPeer =
+        BgpActivePeerConfig.builder()
+            .setPeerAddress(Ip.ZERO)
+            .setLocalIp(_snapshotIp)
+            .setLocalAs(_snapshotAsn)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+            .setBgpProcess(_snapshotHost.getDefaultVrf().getBgpProcess())
+            .build();
+
+    Warnings warnings = new Warnings(true, true, true);
+    Optional<SnapshotConnection> connection =
+        getSnapshotConnectionForBgpPeerInfo(
+            new BgpPeerInfo(
+                _snapshotHostname,
+                bgpPeer.getPeerAddress(),
+                null,
+                new IspAttachment(null, _snapshotInterfaceName, null)),
+            ImmutableSet.of(),
+            ALL_AS_NUMBERS,
+            ImmutableMap.of(_snapshotHostname, _snapshotHost),
+            warnings);
+    assertFalse(connection.isPresent());
+    assertThat(
+        warnings.getRedFlagWarnings(),
+        contains(
+            hasText(
+                "ISP Modeling: BGP peer with peer address 0.0.0.0 on node conf is not valid.")));
+  }
+
+  @Test
+  public void testGetSnapshotConnectionForBgpPeerInfo_missingAttachmentHost() {
+    Warnings warnings = new Warnings(true, true, true);
+    Optional<SnapshotConnection> connection =
+        getSnapshotConnectionForBgpPeerInfo(
+            new BgpPeerInfo(
+                _snapshotHostname,
+                _ispIp,
+                null,
+                new IspAttachment("other", _snapshotInterfaceName, null)),
+            ImmutableSet.of(),
+            ALL_AS_NUMBERS,
+            ImmutableMap.of(_snapshotHostname, _snapshotHost),
+            warnings);
+    assertFalse(connection.isPresent());
+    assertThat(
+        warnings.getRedFlagWarnings(),
+        contains(hasText("ISP Modeling: Non-existent ISP attachment node other")));
+  }
+
+  @Test
+  public void testGetSnapshotConnectionForBgpPeerInfo_missingAttachmentInterface() {
+    Warnings warnings = new Warnings(true, true, true);
+    Optional<SnapshotConnection> connection =
+        getSnapshotConnectionForBgpPeerInfo(
+            new BgpPeerInfo(
+                _snapshotHostname, _ispIp, null, new IspAttachment(null, "other", null)),
+            ImmutableSet.of(),
+            ALL_AS_NUMBERS,
+            ImmutableMap.of(_snapshotHostname, _snapshotHost),
+            warnings);
+    assertFalse(connection.isPresent());
+    assertThat(
+        warnings.getRedFlagWarnings(),
+        contains(hasText("ISP Modeling: Non-existent attachment interface other on node conf")));
   }
 
   @Test
