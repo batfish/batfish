@@ -1,0 +1,10 @@
+{
+  "borderInterfaces": [
+    {
+      "borderInterface": {
+        "hostname": "border1",
+        "interface": "GigabitEthernet0/0"
+      }
+    }
+  ]
+}

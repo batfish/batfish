@@ -132,6 +132,7 @@ public class BfConsts {
   public static final String RELPATH_HOST_CONFIGS_DIR = "hosts";
   public static final String RELPATH_INPUT = "input";
   public static final String RELPATH_INTERFACE_BLACKLIST_FILE = "interface_blacklist";
+  public static final String RELPATH_ISP_CONFIG_FILE = "isp_config.json";
   public static final String RELPATH_L1_TOPOLOGY_PATH = "layer1_topology.json";
   public static final String RELPATH_NODE_BLACKLIST_FILE = "node_blacklist";
   public static final String RELPATH_NODE_ROLES_PATH = "node_roles.json";
