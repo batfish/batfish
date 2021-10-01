@@ -81,11 +81,9 @@ public final class BooleanExprAstNodeToAclLineMatchExpr
   @Override
   public @Nonnull AclLineMatchExpr visitDportAstNode(
       DportAstNode dportAstNode, Boolean permitUnsupported) {
-    return and(
-        inspectTraceElement(dportAstNode),
-        matchDstPort(
-            portRangeToIntegerSpace(
-                dportAstNode.getComparator(), dportAstNode.getValue().getValue())));
+    return matchDstPort(
+        portRangeToIntegerSpace(dportAstNode.getComparator(), dportAstNode.getValue().getValue()),
+        inspectTraceElement(dportAstNode));
   }
 
   @Override
@@ -117,13 +115,13 @@ public final class BooleanExprAstNodeToAclLineMatchExpr
   @Override
   public @Nonnull AclLineMatchExpr visitTcpAstNode(
       TcpAstNode tcpAstNode, Boolean permitUnsupported) {
-    return and(inspectTraceElement(tcpAstNode.getInspectText()), matchIpProtocol(TCP));
+    return matchIpProtocol(TCP, inspectTraceElement(tcpAstNode.getInspectText()));
   }
 
   @Override
   public @Nonnull AclLineMatchExpr visitUdpAstNode(
       UdpAstNode udpAstNode, Boolean permitUnsupported) {
-    return and(inspectTraceElement(udpAstNode.getInspectText()), matchIpProtocol(UDP));
+    return matchIpProtocol(UDP, inspectTraceElement(udpAstNode.getInspectText()));
   }
 
   @Override
