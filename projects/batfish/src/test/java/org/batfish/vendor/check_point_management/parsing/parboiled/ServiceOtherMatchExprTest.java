@@ -66,7 +66,7 @@ public final class ServiceOtherMatchExprTest {
     assertThat(
         parse("dport < 5 or dport>1"),
         equalTo(
-            new DportAstNode("dpot < 5", LessThanAstNode.instance(), Uint16AstNode.of(5))
+            new DportAstNode("dport < 5", LessThanAstNode.instance(), Uint16AstNode.of(5))
                 .or(
                     new DportAstNode(
                         "dport>1", GreaterThanAstNode.instance(), Uint16AstNode.of(1)))));
