@@ -41,7 +41,7 @@ public class MockFib implements Fib {
 
   private final Map<Prefix, IpSpace> _matchingIps;
 
-  private Map<Ip, Set<FibEntry>> _fibEntries;
+  private final Map<Ip, Set<FibEntry>> _fibEntries;
 
   private MockFib(Builder builder) {
     _matchingIps = ImmutableMap.copyOf(builder._matchingIps);
