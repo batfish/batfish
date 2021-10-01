@@ -367,6 +367,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
                     new If(
                         new PacketMatchExpr(new DeniedByAcl(iface.getIncomingFilter().getName())),
                         ImmutableList.of(new Return(Drop.instance()))));
+                iface.setIncomingFilter(null);
               }
               ifacePolicyStatements.addAll(generalStatements);
               String packetPolicyName = packetPolicyName(iface.getName());
