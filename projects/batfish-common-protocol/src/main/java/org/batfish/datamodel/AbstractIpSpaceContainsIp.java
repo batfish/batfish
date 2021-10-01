@@ -16,7 +16,7 @@ public abstract class AbstractIpSpaceContainsIp implements GenericIpSpaceVisitor
   @Override
   public final Boolean visitAclIpSpace(AclIpSpace aclIpSpace) {
     for (AclIpSpaceLine line : aclIpSpace.getLines()) {
-      if (line.getIpSpace().accept(this)) {
+      if (visit(line.getIpSpace())) {
         return line.getAction() == LineAction.PERMIT;
       }
     }
