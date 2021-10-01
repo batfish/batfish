@@ -301,14 +301,13 @@ public final class BooleanExprAstNodeToAclLineMatchExprTest {
 
   @Test
   public void testInspectTraceElement() {
-    assertThat(
-        inspectTraceElement("foo"), equalTo(TraceElement.of("Matched INSPECT expression 'foo'")));
+    assertThat(inspectTraceElement("foo"), equalTo(TraceElement.of("Matched: 'foo'")));
   }
 
   @Test
   public void testUnhandledInspectTraceElement() {
     assertThat(
         unhandledInspectTraceElement("foo"),
-        equalTo(TraceElement.of("Assumed matched unsupported INSPECT expression 'foo'")));
+        equalTo(TraceElement.of("Assumed matched since unsupported: 'foo'")));
   }
 }

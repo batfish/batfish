@@ -192,7 +192,7 @@ public final class BooleanExprAstNodeToAclLineMatchExpr
 
   @VisibleForTesting
   static @Nonnull TraceElement inspectTraceElement(String inspectText) {
-    return TraceElement.of(String.format("Matched INSPECT expression '%s'", inspectText));
+    return TraceElement.of(String.format("Matched: '%s'", inspectText));
   }
 
   private static @Nonnull TraceElement unhandledInspectTraceElement(HasInspectText hasInspectText) {
@@ -201,8 +201,7 @@ public final class BooleanExprAstNodeToAclLineMatchExpr
 
   @VisibleForTesting
   static @Nonnull TraceElement unhandledInspectTraceElement(String inspectText) {
-    return TraceElement.of(
-        String.format("Assumed matched unsupported INSPECT expression '%s'", inspectText));
+    return TraceElement.of(String.format("Assumed matched since unsupported: '%s'", inspectText));
   }
 
   private static final BooleanExprAstNodeToAclLineMatchExpr INSTANCE =
