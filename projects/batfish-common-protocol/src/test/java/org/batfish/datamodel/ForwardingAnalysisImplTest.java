@@ -22,11 +22,13 @@ import static org.batfish.datamodel.ForwardingAnalysisImpl.computeRoutesWithDest
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeRoutesWithNextHopIpArpFalseForInterface;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeRoutesWithNextHopIpArpTrue;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeSomeoneReplies;
+import static org.batfish.datamodel.ForwardingAnalysisImpl.routableSpace;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.union;
 import static org.batfish.datamodel.matchers.AclIpSpaceMatchers.hasLines;
 import static org.batfish.datamodel.matchers.AclIpSpaceMatchers.isAclIpSpaceThat;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.batfish.specifier.LocationInfoUtils.computeLocationInfo;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
@@ -761,6 +763,47 @@ public class ForwardingAnalysisImplTest {
     assertThat(result, not(containsIp(P2.getEndIp())));
   }
 
+  private static FibEntry mockFibEntry(Prefix network) {
+    return new FibEntry(
+        new FibForward(Ip.ZERO, "iface"),
+        ImmutableList.of(
+            StaticRoute.testBuilder().setAdministrativeCost(1).setNetwork(network).build()));
+  }
+
+  @Test
+  public void testRoutableIpSpace() {
+    Fib hasDefault =
+        MockFib.builder()
+            .setFibEntries(
+                ImmutableMap.of(
+                    Ip.ZERO,
+                    ImmutableSet.of(
+                        mockFibEntry(Prefix.parse("1.2.3.0/24")), mockFibEntry(Prefix.ZERO))))
+            .build();
+    assertThat(routableSpace(hasDefault), equalTo(UniverseIpSpace.INSTANCE));
+
+    Fib isEmpty = MockFib.builder().setFibEntries(ImmutableMap.of()).build();
+    assertThat(routableSpace(isEmpty), equalTo(EmptyIpSpace.INSTANCE));
+
+    Fib standard =
+        MockFib.builder()
+            .setFibEntries(
+                ImmutableMap.of(
+                    Ip.ZERO,
+                    ImmutableSet.of(
+                        mockFibEntry(Prefix.parse("1.2.3.0/24")),
+                        mockFibEntry(Prefix.parse("2.3.4.0/24")))))
+            .build();
+    assertThat(
+        routableSpace(standard),
+        allOf(
+            containsIp(Ip.parse("1.2.3.4")),
+            containsIp(Ip.parse("2.3.4.5")),
+            not(containsIp(Ip.ZERO)),
+            not(containsIp(Ip.parse("2.0.0.0"))),
+            not(containsIp(Ip.MAX))));
+  }
+
   @Test
   public void testComputeRoutableIps() {
     String c1 = "c1";
@@ -769,17 +812,7 @@ public class ForwardingAnalysisImplTest {
     // The only important part of the Fib for this test is the route networks.
     MockFib fib =
         MockFib.builder()
-            .setFibEntries(
-                ImmutableMap.of(
-                    Ip.ZERO,
-                    ImmutableSet.of(
-                        new FibEntry(
-                            new FibForward(Ip.ZERO, "iface"),
-                            ImmutableList.of(
-                                StaticRoute.testBuilder()
-                                    .setAdministrativeCost(1)
-                                    .setNetwork(prefix)
-                                    .build())))))
+            .setFibEntries(ImmutableMap.of(Ip.ZERO, ImmutableSet.of(mockFibEntry(prefix))))
             .build();
     Map<String, Map<String, Fib>> fibs = ImmutableMap.of(c1, ImmutableMap.of(v1, fib));
     Map<String, Map<String, IpSpace>> result = ForwardingAnalysisImpl.computeRoutableIps(fibs);
