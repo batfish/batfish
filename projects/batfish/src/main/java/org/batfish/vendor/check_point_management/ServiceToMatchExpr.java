@@ -1,11 +1,13 @@
 package org.batfish.vendor.check_point_management;
 
 import static org.batfish.datamodel.IntegerSpace.PORTS;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocol;
 import static org.batfish.datamodel.applications.PortsApplication.MAX_PORT_NUMBER;
 import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceCpmiAnyTraceElement;
 import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceGroupTraceElement;
 import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceIcmpTraceElement;
+import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceOtherMatchTraceElement;
 import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceOtherTraceElement;
 import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceTcpTraceElement;
 import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceUdpTraceElement;
@@ -76,22 +78,27 @@ public class ServiceToMatchExpr implements ServiceVisitor<AclLineMatchExpr, Bool
 
   @Override
   public AclLineMatchExpr visitServiceOther(ServiceOther serviceOther, Boolean permitUnsupported) {
-    // TODO: more detailed tracing
     IpProtocol ipProtocol = IpProtocol.fromNumber(serviceOther.getIpProtocol());
-    AclLineMatchExpr matchProtocol = matchIpProtocol(ipProtocol);
     TraceElement serviceTraceElement = serviceOtherTraceElement(serviceOther);
+    TraceElement protocolTraceElement = ipProtocolTraceElement(ipProtocol);
+    AclLineMatchExpr matchProtocol = matchIpProtocol(ipProtocol, protocolTraceElement);
     if (serviceOther.getMatchAst().equals(EmptyAstNode.instance())) {
-      return matchIpProtocol(ipProtocol, serviceTraceElement);
+      return and(serviceTraceElement, matchProtocol);
     }
+    String matchText = serviceOther.getMatch();
+    assert matchText != null;
     AclLineMatchExpr matchMatch =
-        BooleanExprAstNodeToAclLineMatchExpr.convert(serviceOther.getMatchAst(), permitUnsupported);
-    return AclLineMatchExprs.and(serviceTraceElement, matchProtocol, matchMatch);
+        and(
+            serviceOtherMatchTraceElement(matchText),
+            BooleanExprAstNodeToAclLineMatchExpr.convert(
+                serviceOther.getMatchAst(), permitUnsupported));
+    return and(serviceTraceElement, matchProtocol, matchMatch);
   }
 
   @Override
   public AclLineMatchExpr visitServiceTcp(ServiceTcp serviceTcp, Boolean permitUnsupported) {
     String portDefinition = serviceTcp.getPort();
-    return AclLineMatchExprs.and(
+    return and(
         serviceTcpTraceElement(serviceTcp),
         matchIpProtocol(IpProtocol.TCP, ipProtocolTraceElement(IpProtocol.TCP)),
         new MatchHeaderSpace(
@@ -104,7 +111,7 @@ public class ServiceToMatchExpr implements ServiceVisitor<AclLineMatchExpr, Bool
   @Override
   public AclLineMatchExpr visitServiceUdp(ServiceUdp serviceUdp, Boolean permitUnsupported) {
     String portDefinition = serviceUdp.getPort();
-    return AclLineMatchExprs.and(
+    return and(
         serviceUdpTraceElement(serviceUdp),
         matchIpProtocol(IpProtocol.UDP, ipProtocolTraceElement(IpProtocol.UDP)),
         new MatchHeaderSpace(
@@ -112,11 +119,6 @@ public class ServiceToMatchExpr implements ServiceVisitor<AclLineMatchExpr, Bool
                 .setDstPorts(portStringToIntegerSpace(portDefinition).getSubRanges())
                 .build(),
             destPortTraceElement(portDefinition)));
-  }
-
-  @VisibleForTesting
-  static TraceElement matchConditionTraceElement(String match) {
-    return TraceElement.of(String.format("Matched condition '%s'", match));
   }
 
   @VisibleForTesting

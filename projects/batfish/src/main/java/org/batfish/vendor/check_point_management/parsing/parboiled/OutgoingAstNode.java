@@ -1,6 +1,5 @@
 package org.batfish.vendor.check_point_management.parsing.parboiled;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -9,10 +8,10 @@ import javax.annotation.ParametersAreNonnullByDefault;
  * outgoing}.
  */
 @ParametersAreNonnullByDefault
-public final class OutgoingAstNode implements BooleanExprAstNode {
+public final class OutgoingAstNode extends VariableInspectTextBooleanExprAstNode {
 
-  public static @Nonnull OutgoingAstNode instance() {
-    return INSTANCE;
+  public OutgoingAstNode(String inspectText) {
+    super(inspectText);
   }
 
   @Override
@@ -20,17 +19,13 @@ public final class OutgoingAstNode implements BooleanExprAstNode {
     return visitor.visitOutgoingAstNode(this, arg);
   }
 
-  private static final OutgoingAstNode INSTANCE = new OutgoingAstNode();
-
   @Override
   public boolean equals(@Nullable Object obj) {
-    return this == obj || obj instanceof OutgoingAstNode;
+    return baseEquals(obj);
   }
 
   @Override
   public int hashCode() {
-    return 0x3FA69E8B; // randomly generated
+    return baseHashCode();
   }
-
-  private OutgoingAstNode() {}
 }

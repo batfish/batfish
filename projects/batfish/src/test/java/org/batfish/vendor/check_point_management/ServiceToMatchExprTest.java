@@ -5,9 +5,13 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDstPort;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocol;
 import static org.batfish.datamodel.applications.PortsApplication.MAX_PORT_NUMBER;
 import static org.batfish.datamodel.matchers.TraceTreeMatchers.isTraceTree;
+import static org.batfish.vendor.check_point_management.BooleanExprAstNodeToAclLineMatchExpr.inspectTraceElement;
+import static org.batfish.vendor.check_point_management.BooleanExprAstNodeToAclLineMatchExpr.unhandledInspectTraceElement;
 import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceCpmiAnyTraceElement;
 import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceGroupTraceElement;
 import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceIcmpTraceElement;
+import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceOtherMatchTraceElement;
+import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceOtherTraceElement;
 import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceTcpTraceElement;
 import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceUdpTraceElement;
 import static org.batfish.vendor.check_point_management.ServiceToMatchExpr.destPortTraceElement;
@@ -126,8 +130,7 @@ public final class ServiceToMatchExprTest {
   }
 
   @Test
-  public void testOther() {
-    // TODO: implement tracing and test
+  public void testOtherMatch() {
     String match = "uh_dport > 33000, (IPV4_VER (ip_ttl < 30))";
     ServiceOther service = ServiceOther.of("udp", IpProtocol.UDP.number(), match, Uid.of("1"));
     AclLineMatchExpr expr = _serviceToMatchExpr.visit(service, true);
@@ -137,19 +140,44 @@ public final class ServiceToMatchExprTest {
             matchIpProtocol(IpProtocol.UDP),
             matchDstPort(IntegerSpace.of(new SubRange(33001, 65535)))));
 
-    //    List<TraceTree> trace =
-    //        AclTracer.trace(
-    //            expr,
-    //            TEST_FLOW.toBuilder().setDstPort(33333).setIpProtocol(IpProtocol.UDP).build(),
-    //            "eth1",
-    //            ImmutableMap.of(),
-    //            ImmutableMap.of(),
-    //            ImmutableMap.of());
-    //    assertThat(
-    //        trace.get(0),
-    //        isTraceTree(
-    //            serviceOtherTraceElement(service),
-    // isTraceTree(matchConditionTraceElement(match))));
+    List<TraceTree> trace =
+        AclTracer.trace(
+            expr,
+            TEST_FLOW.toBuilder().setDstPort(33333).setIpProtocol(IpProtocol.UDP).build(),
+            "eth1",
+            ImmutableMap.of(),
+            ImmutableMap.of(),
+            ImmutableMap.of());
+    assertThat(
+        trace.get(0),
+        isTraceTree(
+            serviceOtherTraceElement(service),
+            isTraceTree(ipProtocolTraceElement(IpProtocol.UDP)),
+            isTraceTree(
+                serviceOtherMatchTraceElement(match),
+                isTraceTree(inspectTraceElement("uh_dport > 33000")),
+                isTraceTree(unhandledInspectTraceElement("IPV4_VER (ip_ttl < 30)")))));
+  }
+
+  @Test
+  public void testOtherNoMatch() {
+    ServiceOther service = ServiceOther.of("udp", IpProtocol.UDP.number(), null, Uid.of("1"));
+    AclLineMatchExpr expr = _serviceToMatchExpr.visit(service, true);
+    assertBddsEqual(expr, and(matchIpProtocol(IpProtocol.UDP)));
+
+    List<TraceTree> trace =
+        AclTracer.trace(
+            expr,
+            TEST_FLOW.toBuilder().setIpProtocol(IpProtocol.UDP).build(),
+            "eth1",
+            ImmutableMap.of(),
+            ImmutableMap.of(),
+            ImmutableMap.of());
+    assertThat(
+        trace.get(0),
+        isTraceTree(
+            serviceOtherTraceElement(service),
+            isTraceTree(ipProtocolTraceElement(IpProtocol.UDP))));
   }
 
   @Test
