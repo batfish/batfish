@@ -17,6 +17,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 import org.batfish.common.traceroute.TraceDag;
@@ -28,6 +29,7 @@ import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.InterfaceForwardingBehavior;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpSpaceContainsIp;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
@@ -49,6 +51,7 @@ public class TracerouteEngineImplContext {
   private final Map<String, Map<String, Fib>> _fibs;
   private final Set<Flow> _flows;
   private final ForwardingAnalysis _forwardingAnalysis;
+  private final Map<Ip, IpSpaceContainsIp> _containsIp;
   private final boolean _ignoreFilters;
   private final Topology _topology;
 
@@ -65,6 +68,7 @@ public class TracerouteEngineImplContext {
     _fibs = fibs;
     _ignoreFilters = ignoreFilters;
     _forwardingAnalysis = dataPlane.getForwardingAnalysis();
+    _containsIp = new ConcurrentHashMap<>();
     _sessionsByIngressInterface = buildSessionsByIngressInterface(sessions);
     _sessionsByOriginatingVrf = buildSessionsByOriginatingVrf(sessions);
     _topology = topology;
@@ -104,6 +108,8 @@ public class TracerouteEngineImplContext {
    *     FlowDisposition#NEIGHBOR_UNREACHABLE}
    */
   FlowDisposition computeDisposition(String hostname, String outgoingInterfaceName, Ip dstIp) {
+    IpSpaceContainsIp containsIp =
+        _containsIp.computeIfAbsent(dstIp, ip -> new IpSpaceContainsIp(ip, ImmutableMap.of()));
     String vrfName =
         _configurations.get(hostname).getAllInterfaces().get(outgoingInterfaceName).getVrfName();
     InterfaceForwardingBehavior interfaceForwardingBehavior =
@@ -113,17 +119,13 @@ public class TracerouteEngineImplContext {
             .get(vrfName)
             .getInterfaceForwardingBehavior()
             .get(outgoingInterfaceName);
-    if (interfaceForwardingBehavior.getDeliveredToSubnet().containsIp(dstIp, ImmutableMap.of())) {
+    if (containsIp.visit(interfaceForwardingBehavior.getDeliveredToSubnet())) {
       return FlowDisposition.DELIVERED_TO_SUBNET;
-    } else if (interfaceForwardingBehavior.getExitsNetwork().containsIp(dstIp, ImmutableMap.of())) {
+    } else if (containsIp.visit(interfaceForwardingBehavior.getExitsNetwork())) {
       return FlowDisposition.EXITS_NETWORK;
-    } else if (interfaceForwardingBehavior
-        .getInsufficientInfo()
-        .containsIp(dstIp, ImmutableMap.of())) {
+    } else if (containsIp.visit(interfaceForwardingBehavior.getInsufficientInfo())) {
       return FlowDisposition.INSUFFICIENT_INFO;
-    } else if (interfaceForwardingBehavior
-        .getNeighborUnreachable()
-        .containsIp(dstIp, ImmutableMap.of())) {
+    } else if (containsIp.visit(interfaceForwardingBehavior.getNeighborUnreachable())) {
       return FlowDisposition.NEIGHBOR_UNREACHABLE;
     } else {
       throw new BatfishException(
@@ -169,6 +171,8 @@ public class TracerouteEngineImplContext {
    */
   @Nonnull
   Optional<String> interfaceAcceptingIp(String node, String vrf, Ip ip) {
+    IpSpaceContainsIp containsIp =
+        _containsIp.computeIfAbsent(ip, i -> new IpSpaceContainsIp(i, ImmutableMap.of()));
     return _forwardingAnalysis
         .getVrfForwardingBehavior()
         .get(node)
@@ -176,7 +180,7 @@ public class TracerouteEngineImplContext {
         .getInterfaceForwardingBehavior()
         .entrySet()
         .stream()
-        .filter(e -> e.getValue().getAcceptedIps().containsIp(ip, ImmutableMap.of()))
+        .filter(e -> containsIp.visit(e.getValue().getAcceptedIps()))
         .map(Entry::getKey)
         .findAny(); // Should be zero or one.
   }
@@ -195,11 +199,9 @@ public class TracerouteEngineImplContext {
    * @return true if the node will respond to the ARP request
    */
   boolean repliesToArp(String node, String iface, Ip arpIp) {
-    return _forwardingAnalysis
-        .getArpReplies()
-        .get(node)
-        .get(iface)
-        .containsIp(arpIp, ImmutableMap.of());
+    IpSpaceContainsIp containsIp =
+        _containsIp.computeIfAbsent(arpIp, ip -> new IpSpaceContainsIp(ip, ImmutableMap.of()));
+    return containsIp.visit(_forwardingAnalysis.getArpReplies().get(node).get(iface));
   }
 
   @Nonnull
