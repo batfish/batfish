@@ -19,6 +19,9 @@ import org.batfish.datamodel.Ip;
  * <p>The specification also allows for optionally describing new connectivity needed to establish
  * the session, via {@link IspAttachment}. The BGP peering is not modeled if this new connectivity
  * conflicts with other information (e.g., L1 links conflict with existing L1).
+ *
+ * <p>If attachment is not provided, no interfaces are created on the ISP node to support this
+ * peering. The assumption is that other mechanisms have enabled the connectivity as needed.
  */
 @ParametersAreNonnullByDefault
 public class BgpPeerInfo {

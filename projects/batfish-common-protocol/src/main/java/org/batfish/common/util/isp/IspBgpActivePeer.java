@@ -13,8 +13,9 @@ final class IspBgpActivePeer extends IspBgpPeer {
   @Nonnull private final Ip _peerAddress;
   @Nonnull private final Ip _localIp;
 
-  public IspBgpActivePeer(Ip peerAddress, Ip localIp, Long remoteAsn, Long localAsn) {
-    super(remoteAsn, localAsn);
+  public IspBgpActivePeer(
+      Ip peerAddress, Ip localIp, Long remoteAsn, Long localAsn, boolean ebgpMultihop) {
+    super(remoteAsn, localAsn, ebgpMultihop);
     _peerAddress = peerAddress;
     _localIp = localIp;
   }
@@ -27,7 +28,8 @@ final class IspBgpActivePeer extends IspBgpPeer {
         snapshotBgpPeer.getLocalIp(),
         snapshotBgpPeer.getPeerAddress(),
         firstNonNull(snapshotBgpPeer.getConfederationAsn(), snapshotBgpPeer.getLocalAs()),
-        snapshotBgpPeer.getRemoteAsns().least());
+        snapshotBgpPeer.getRemoteAsns().least(),
+        snapshotBgpPeer.getEbgpMultihop());
   }
 
   public @Nonnull Ip getPeerAddress() {
@@ -47,12 +49,13 @@ final class IspBgpActivePeer extends IspBgpPeer {
     return _peerAddress.equals(that._peerAddress)
         && _localIp.equals(that._localIp)
         && _localAsn.equals(that._localAsn)
-        && _remoteAsn.equals(that._remoteAsn);
+        && _remoteAsn.equals(that._remoteAsn)
+        && (_ebgpMultiHop == that._ebgpMultiHop);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_peerAddress, _localIp);
+    return Objects.hash(_peerAddress, _localIp, _localAsn, _remoteAsn, _ebgpMultiHop);
   }
 
   @Override

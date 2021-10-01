@@ -502,11 +502,11 @@ public final class IspModelingUtils {
     }
 
     if (bgpPeerInfo.getIspAttachment() == null) {
-      warnings.redFlag(
-          String.format(
-              "ISP Modeling: Missing ISP attachment case is not currently handled. Skipping %s",
-              bgpPeerInfo));
-      return Optional.empty();
+      return Optional.of(
+          new SnapshotConnection(
+              snapshotBgpHost.getHostname(),
+              ImmutableList.of(),
+              IspBgpActivePeer.create(snapshotBgpPeer)));
     }
 
     IspAttachment ispAttachment = bgpPeerInfo.getIspAttachment();

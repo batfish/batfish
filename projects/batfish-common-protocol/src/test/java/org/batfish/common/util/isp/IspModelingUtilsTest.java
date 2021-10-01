@@ -227,7 +227,7 @@ public class IspModelingUtilsTest {
   public void testAddBgpPeerToIsp() {
     BgpProcess bgpProcess = testBgpProcess(Ip.ZERO);
     IspBgpActivePeer ispBgpActivePeer =
-        new IspBgpActivePeer(_snapshotIp, _ispIp, _snapshotAsn, _ispAsn);
+        new IspBgpActivePeer(_snapshotIp, _ispIp, _snapshotAsn, _ispAsn, false);
 
     addBgpPeerToIsp(ispBgpActivePeer, bgpProcess);
     BgpActivePeerConfig peer = getOnlyElement(bgpProcess.getActiveNeighbors().values());
@@ -251,7 +251,7 @@ public class IspModelingUtilsTest {
   public void testAddBgpPeerToIsp_Unnumbered() {
     BgpProcess bgpProcess = testBgpProcess(Ip.ZERO);
     IspBgpUnnumberedPeer ispBgpUnnumberedPeer =
-        new IspBgpUnnumberedPeer("iface", _snapshotAsn, _ispAsn);
+        new IspBgpUnnumberedPeer("iface", _snapshotAsn, _ispAsn, false);
     addBgpPeerToIsp(ispBgpUnnumberedPeer, bgpProcess);
     BgpUnnumberedPeerConfig peer = getOnlyElement(bgpProcess.getInterfaceNeighbors().values());
 
@@ -732,6 +732,25 @@ public class IspModelingUtilsTest {
             new Warnings());
 
     assertThat(snapshotConnection.get(), equalTo(_snapshotConnection));
+  }
+
+  @Test
+  public void testGetSnapshotConnectionForBgpPeerInfo_noAttachment() {
+    Optional<SnapshotConnection> snapshotConnection =
+        getSnapshotConnectionForBgpPeerInfo(
+            new BgpPeerInfo(_snapshotHostname, _ispIp, null, null),
+            ImmutableSet.of(),
+            ALL_AS_NUMBERS,
+            ImmutableMap.of(_snapshotHostname, _snapshotHost),
+            new Warnings());
+
+    assertThat(
+        snapshotConnection.get(),
+        equalTo(
+            new SnapshotConnection(
+                _snapshotHostname,
+                ImmutableList.of(),
+                IspBgpActivePeer.create(_snapshotActivePeer))));
   }
 
   @Test
