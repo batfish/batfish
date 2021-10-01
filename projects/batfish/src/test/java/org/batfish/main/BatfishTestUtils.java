@@ -176,6 +176,7 @@ public class BatfishTestUtils {
     byte[] externalBgpAnnouncementsBytes = testrigText.getExternalBgpAnnouncementBytes();
     Map<String, byte[]> hostsBytes = testrigText.getHostsBytes();
     Map<String, byte[]> iptablesFilesBytes = testrigText.getIptablesFilesBytes();
+    byte[] ispConfigBytes = testrigText.getIspConfigBytes();
     byte[] layer1TopologyBytes = testrigText.getLayer1TopologyBytes();
     byte[] runtimeDataBytes = testrigText.getRuntimeDataBytes();
     ConversionContext conversionContext = testrigText.getConversionContext();
@@ -213,6 +214,13 @@ public class BatfishTestUtils {
     }
     writeTemporarySnapshotInputFiles(hostsBytes, RELPATH_HOST_CONFIGS_DIR, storage, TEST_SNAPSHOT);
     writeTemporarySnapshotInputFiles(iptablesFilesBytes, "iptables", storage, TEST_SNAPSHOT);
+    if (ispConfigBytes != null) {
+      writeTemporarySnapshotInputFiles(
+          ImmutableMap.of(BfConsts.RELPATH_ISP_CONFIG_FILE, ispConfigBytes),
+          "batfish",
+          storage,
+          TEST_SNAPSHOT);
+    }
     if (layer1TopologyBytes != null) {
       writeTemporarySnapshotInputFiles(
           ImmutableMap.of(BfConsts.RELPATH_L1_TOPOLOGY_PATH, layer1TopologyBytes),

@@ -53,6 +53,7 @@ public class TestrigText {
     private byte[] _externalBgpAnnouncementsBytes;
     private Map<String, byte[]> _hostsBytes;
     private Map<String, byte[]> _iptablesFilesBytes;
+    private byte[] _ispConfigBytes;
     private byte[] _layer1TopologyBytes;
     private Map<String, byte[]> _routingTablesBytes;
     private byte[] _runtimeDataBytes;
@@ -67,6 +68,7 @@ public class TestrigText {
       testrigText.setExternalBgpAnnouncements(_externalBgpAnnouncementsBytes);
       testrigText.setHostsBytes(_hostsBytes);
       testrigText.setIptablesFilesBytes(_iptablesFilesBytes);
+      testrigText.setIspConfigBytes(_ispConfigBytes);
       testrigText.setLayer1TopologyBytes(_layer1TopologyBytes);
       testrigText.setRoutingTablesBytes(_routingTablesBytes);
       testrigText.setRuntimeDataBytes(_runtimeDataBytes);
@@ -161,6 +163,16 @@ public class TestrigText {
       return this;
     }
 
+    public @Nonnull Builder setIspConfigPrefix(@Nonnull String testrigResourcePrefix) {
+      _ispConfigBytes =
+          readTestrigResources(
+                  testrigResourcePrefix, null, ImmutableList.of(BfConsts.RELPATH_ISP_CONFIG_FILE))
+              .values()
+              .iterator()
+              .next();
+      return this;
+    }
+
     public @Nonnull Builder setLayer1TopologyPrefix(@Nonnull String testrigResourcePrefix) {
       _layer1TopologyBytes =
           readTestrigResources(
@@ -215,6 +227,7 @@ public class TestrigText {
   private byte[] _externalBgpAnnouncementBytes;
   private Map<String, byte[]> _hostsBytes;
   private Map<String, byte[]> _iptablesFilesBytes;
+  private byte[] _ispConfigBytes;
   private byte[] _layer1TopologyBytes;
   private Map<String, byte[]> _routingTablesBytes;
   private byte[] _runtimeDataBytes;
@@ -249,6 +262,10 @@ public class TestrigText {
 
   public Map<String, byte[]> getIptablesFilesBytes() {
     return _iptablesFilesBytes;
+  }
+
+  public @Nullable byte[] getIspConfigBytes() {
+    return _ispConfigBytes;
   }
 
   public @Nullable byte[] getLayer1TopologyBytes() {
@@ -293,6 +310,10 @@ public class TestrigText {
 
   public void setIptablesFilesBytes(Map<String, byte[]> iptablesFilesBytes) {
     _iptablesFilesBytes = iptablesFilesBytes;
+  }
+
+  public void setIspConfigBytes(@Nullable byte[] ispConfigBytes) {
+    _ispConfigBytes = ispConfigBytes;
   }
 
   public void setLayer1TopologyBytes(@Nullable byte[] layer1TopologyBytes) {

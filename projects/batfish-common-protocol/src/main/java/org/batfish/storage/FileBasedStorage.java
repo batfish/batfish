@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Streams.stream;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.BfConsts.RELPATH_INPUT;
+import static org.batfish.common.BfConsts.RELPATH_ISP_CONFIG_FILE;
 import static org.batfish.common.plugin.PluginConsumer.DEFAULT_HEADER_LENGTH_BYTES;
 import static org.batfish.common.plugin.PluginConsumer.detectFormat;
 
@@ -135,7 +136,6 @@ public class FileBasedStorage implements StorageProvider {
   private static final String RELPATH_ANSWER_JSON = "answer.json";
   private static final String RELPATH_ANALYSES_DIR = "analyses";
   private static final String RELPATH_BATFISH_CONFIGS_DIR = "batfish";
-  private static final String RELPATH_ISP_CONFIG_FILE = "isp_config.json";
   private static final String RELPATH_SNAPSHOT_ZIP_FILE = "snapshot.zip";
   private static final String RELPATH_DATA_PLANE = "dp";
   private static final String RELPATH_SERIALIZED_ENVIRONMENT_BGP_TABLES = "bgp_processed";
