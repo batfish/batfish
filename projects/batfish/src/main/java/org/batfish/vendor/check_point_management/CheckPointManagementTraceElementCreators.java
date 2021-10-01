@@ -41,7 +41,7 @@ public final class CheckPointManagementTraceElementCreators {
 
   @VisibleForTesting
   public static TraceElement serviceOtherMatchTraceElement(String matchText) {
-    return TraceElement.of(String.format("Matched INSPECT expression: '%s'", matchText));
+    return TraceElement.of(String.format("Matched the 'match' expression: '%s'", matchText));
   }
 
   @VisibleForTesting
