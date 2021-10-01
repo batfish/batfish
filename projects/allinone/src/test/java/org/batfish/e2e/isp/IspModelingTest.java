@@ -34,12 +34,12 @@ public class IspModelingTest {
 
   @Test
   public void testBasic() throws IOException {
-    IBatfish batfish = setup("basic", ImmutableList.of("as2border1.cfg", "as2border2.cfg"));
+    IBatfish batfish = setup("basic", ImmutableList.of("border1.cfg"));
     BgpTopology bgpTopology = batfish.getTopologyProvider().getBgpTopology(batfish.getSnapshot());
 
     // TODO: higher fidelity testing
 
-    // internet to two ISPs (4 unidirectional edges) + two ISPs to borders (4 uni edges)
-    assertThat(bgpTopology.getGraph().edges(), hasSize(8));
+    // internet to ISPs and ISPs to border (4 uni edges)
+    assertThat(bgpTopology.getGraph().edges(), hasSize(4));
   }
 }
