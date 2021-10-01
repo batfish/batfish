@@ -1,24 +1,31 @@
 package org.batfish.datamodel.isp_configuration;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
-import java.util.Objects;
+import static com.google.common.base.Preconditions.checkArgument;
+import org.batfish.datamodel.Ip;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.Ip;
+import java.util.Objects;
 
 /**
  * BGP peer information used to create sessions to modeled ISPs. This specification identifies a BGP
- * peer in the snapshot via 1) the hostname, and 2) peer address, and 3) vrf (optional, needed to
- * resolve ambiguity with peer addresses).
+ * <<<<<<< HEAD peer in the snapshot via 1) the hostname, and 2) peer address, and 3) vrf (optional,
+ * needed to resolve ambiguity with peer addresses).
  *
  * <p>The specification also allows for optionally describing new connectivity needed to establish
  * the session, via {@link IspAttachment}. The BGP peering is not modeled if this new connectivity
- * conflicts with other information (e.g., L1 links conflict with existing L1).
+ * conflicts with other information (e.g., L1 links conflict with existing L1). ======= peer in the
+ * snapshot via 1) the hostname, and 2) either a peer address or interface (for unnumbered peers),
+ * and 3) vrf (optional, needed to resolve ambiguity with peer addresses).
+ *
+ * <p>The specification also allows for describing new connectivity needed to establish the session,
+ * via {@link IspAttachment}. The BGP peering is not modeled if this new connectivity conflicts with
+ * other information (e.g., L1 links conflict with existing L1). >>>>>>>
+ * 5b3a83b663013568f90ffcbf909b6adbad49ffed
  */
 @ParametersAreNonnullByDefault
 public class BgpPeerInfo {
