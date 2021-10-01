@@ -23,7 +23,7 @@ abstract class IspBgpPeer {
     return _localAsn;
   }
 
-  public boolean isEbgpMultiHop() {
+  public boolean getEbgpMultiHop() {
     return _ebgpMultiHop;
   }
 

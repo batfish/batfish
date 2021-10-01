@@ -1001,6 +1001,7 @@ public final class IspModelingUtils {
     ispPeerConfig
         .setRemoteAs(ispBgpPeer.getRemoteAsn())
         .setLocalAs(ispBgpPeer.getLocalAsn())
+        .setEbgpMultihop(ispBgpPeer.getEbgpMultiHop())
         .setIpv4UnicastAddressFamily(
             Ipv4UnicastAddressFamily.builder()
                 .setExportPolicy(EXPORT_POLICY_ON_ISP_TO_CUSTOMERS)
