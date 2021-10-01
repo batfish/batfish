@@ -319,6 +319,7 @@ public class AwsConfiguration extends VendorConfiguration {
             .collect(Collectors.toList());
     return new IspConfiguration(
         ImmutableList.copyOf(borderInterfaces),
+        ImmutableList.of(),
         IspFilter.ALLOW_ALL,
         ImmutableList.of(
             new IspNodeInfo(

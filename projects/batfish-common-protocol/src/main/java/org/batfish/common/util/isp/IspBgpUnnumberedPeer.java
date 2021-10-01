@@ -11,8 +11,9 @@ import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 final class IspBgpUnnumberedPeer extends IspBgpPeer {
   @Nonnull private final String _localIfaceName;
 
-  public IspBgpUnnumberedPeer(String localIfaceName, Long remoteAsn, Long localAsn) {
-    super(remoteAsn, localAsn);
+  public IspBgpUnnumberedPeer(
+      String localIfaceName, Long remoteAsn, Long localAsn, boolean ebgpMultihop) {
+    super(remoteAsn, localAsn, ebgpMultihop);
     _localIfaceName = localIfaceName;
   }
 
@@ -22,7 +23,8 @@ final class IspBgpUnnumberedPeer extends IspBgpPeer {
     return new IspBgpUnnumberedPeer(
         snapshotIfacename,
         firstNonNull(snapshotBgpPeer.getConfederationAsn(), snapshotBgpPeer.getLocalAs()),
-        snapshotBgpPeer.getRemoteAsns().least());
+        snapshotBgpPeer.getRemoteAsns().least(),
+        snapshotBgpPeer.getEbgpMultihop());
   }
 
   public @Nonnull String getLocalIfacename() {
@@ -37,12 +39,13 @@ final class IspBgpUnnumberedPeer extends IspBgpPeer {
     IspBgpUnnumberedPeer that = (IspBgpUnnumberedPeer) o;
     return _localIfaceName.equals(that._localIfaceName)
         && _localAsn.equals(that._localAsn)
-        && _remoteAsn.equals(that._remoteAsn);
+        && _remoteAsn.equals(that._remoteAsn)
+        && (_ebgpMultiHop == that._ebgpMultiHop);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_localIfaceName);
+    return Objects.hash(_localIfaceName, _localAsn, _remoteAsn, _ebgpMultiHop);
   }
 
   @Override

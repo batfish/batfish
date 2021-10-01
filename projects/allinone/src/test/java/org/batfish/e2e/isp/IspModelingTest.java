@@ -42,4 +42,15 @@ public class IspModelingTest {
     // internet to ISPs and ISPs to border (4 uni edges)
     assertThat(bgpTopology.getGraph().edges(), hasSize(4));
   }
+
+  @Test
+  public void testBasicBgpPeerInfo() throws IOException {
+    IBatfish batfish = setup("basic-bgppeerinfo", ImmutableList.of("border1.cfg"));
+    BgpTopology bgpTopology = batfish.getTopologyProvider().getBgpTopology(batfish.getSnapshot());
+
+    // TODO: higher fidelity testing
+
+    // internet to ISPs and ISPs to border (4 uni edges)
+    assertThat(bgpTopology.getGraph().edges(), hasSize(4));
+  }
 }

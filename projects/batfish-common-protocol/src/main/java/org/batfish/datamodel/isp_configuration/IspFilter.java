@@ -11,7 +11,11 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 
-/** Apply filter on top of created ISPs through {@link BorderInterfaceInfo}s */
+/**
+ * Specification for a filter on top of ISPs and BGP peerings created through {@link
+ * IspConfiguration}. The filter allows limiting modeled nodes and peerings only to those that match
+ * whitelisted ASNs and IPs.
+ */
 public class IspFilter {
   public static final IspFilter ALLOW_ALL = new IspFilter(ImmutableList.of(), ImmutableList.of());
   private static final String PROP_ONLY_REMOTE_ASNS = "onlyRemoteAsns";

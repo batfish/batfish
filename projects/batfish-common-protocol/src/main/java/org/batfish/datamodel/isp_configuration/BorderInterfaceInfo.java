@@ -9,7 +9,22 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
-/** Border interface information used to create ISPs */
+/**
+ * Border interface information used to create ISPs. This specification is used for layer-3
+ * interfaces that are wired directly to one ISP, including physical interfaces (e.g., Ethernet1), a
+ * aggregate interfaces (e.g., Port-Channel1), and sub-interface of a physical or aggregate
+ * interface.
+ *
+ * <p>As {@link BorderInterfaceInfo} can only be used for directly-connected ISPs, multiple BGP
+ * sessions on the interface or subinterfaces must be to the same directly-connected ISP.
+ *
+ * <p>Batfish will automatically create new layer-1 edges between the physical interfaces
+ * corresponding to each {@link BorderInterfaceInfo} and its ISP. If any of these interfaces already
+ * have a layer-1 edge, ISP modeling will fail for this {@link BorderInterfaceInfo}.
+ */
+// TODO: check for layer-1 inconsistency and exclude this specification
+// TODO: add support for port channels and sub-interfaces in IspModelingUtils
+// TODO: add support for multiple sessions to the same ISP in IspModelingUtils
 public class BorderInterfaceInfo {
   private static final String PROP_BORDER_INTERFACE = "borderInterface";
 
