@@ -212,10 +212,10 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
     if (_prefixLength >= Prefix.MAX_PREFIX_LENGTH - 1) {
       return toIpSpace();
     }
-    return AclIpSpace.builder()
-        .thenRejecting(getStartIp().toIpSpace())
-        .thenRejecting(getEndIp().toIpSpace())
-        .thenPermitting(toIpSpace())
+    return IpWildcardSetIpSpace.builder()
+        .excluding(IpWildcard.create(getStartIp()))
+        .excluding(IpWildcard.create(getEndIp()))
+        .including(IpWildcard.create(this))
         .build();
   }
 

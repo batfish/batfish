@@ -3,6 +3,8 @@ package org.batfish.datamodel;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -55,9 +57,13 @@ public final class IpRange {
         high);
     ImmutableList.Builder<Prefix> prefixes = ImmutableList.builder();
     collectPrefixes(low, high, prefixes);
-    return AclIpSpace.builder()
-        .thenPermitting(prefixes.build().stream().map(Prefix::toIpSpace))
-        .build();
+    List<Prefix> prefixList = prefixes.build();
+    if (prefixList.size() == 1) {
+      return prefixList.get(0).toIpSpace();
+    }
+    return IpWildcardSetIpSpace.create(
+        ImmutableSet.of(),
+        prefixList.stream().map(IpWildcard::create).collect(ImmutableSet.toImmutableSet()));
   }
 
   private IpRange() {}

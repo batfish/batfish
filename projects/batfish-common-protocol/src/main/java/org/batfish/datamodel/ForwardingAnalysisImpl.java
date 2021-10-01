@@ -518,15 +518,19 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
         interfaceOwnedIps
             .getOrDefault(iface.getOwner().getHostname(), ImmutableMap.of())
             .getOrDefault(iface.getName(), ImmutableSet.of());
-    Set<LinkLocalAddress> linkLocalIps = iface.getAllLinkLocalAddresses();
-    if (concreteIps.isEmpty() && linkLocalIps.isEmpty()) {
+    Set<LinkLocalAddress> linkLocalAddresses = iface.getAllLinkLocalAddresses();
+    if (concreteIps.isEmpty() && linkLocalAddresses.isEmpty()) {
       return EmptyIpSpace.INSTANCE;
     }
-    IpWildcardSetIpSpace.Builder ipsAssignedToThisInterfaceBuilder = IpWildcardSetIpSpace.builder();
-    concreteIps.forEach(ip -> ipsAssignedToThisInterfaceBuilder.including(IpWildcard.create(ip)));
-    linkLocalIps.forEach(
-        addr -> ipsAssignedToThisInterfaceBuilder.including(IpWildcard.create(addr.getIp())));
-    return ipsAssignedToThisInterfaceBuilder.build();
+    Set<Ip> linkLocalIps =
+        linkLocalAddresses.stream().map(LinkLocalAddress::getIp).collect(Collectors.toSet());
+    Set<Ip> allIps = Sets.union(concreteIps, linkLocalIps);
+    if (allIps.size() == 1) {
+      return allIps.iterator().next().toIpSpace();
+    }
+    Set<IpWildcard> wildcards =
+        allIps.stream().map(IpWildcard::create).collect(ImmutableSet.toImmutableSet());
+    return IpWildcardSetIpSpace.create(ImmutableSet.of(), wildcards);
   }
 
   @VisibleForTesting
