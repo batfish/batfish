@@ -335,7 +335,13 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
       return;
     }
 
-    // Otherwise, collect packet policy statements that are needed on every interface.
+    /*
+    Otherwise, collect packet policy statements that are needed on every interface.
+    Overall packet policy structure on each interface will look like this:
+    1. If the traffic is denied by the interface's ingress filter, drop it.
+    2. If the dest IP is owned by the firewall, return FibLookup (which will result in accept).
+    3. Apply any matching transformations (see getTransformationStatements) and return FibLookup.
+    */
     List<Statement> generalStatements = new ArrayList<>(); // statements for all packet policies
     Return returnFibLookup = new Return(new FibLookup(IngressInterfaceVrf.instance()));
 
@@ -393,6 +399,36 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     return String.format("~PACKET_POLICY_%s~", ifaceName);
   }
 
+  /**
+   * Returns a list of statements to apply to incoming traffic to apply the correct transformations
+   * for the given {@code gateway}. The list will be empty iff no transformations can be matched.
+   *
+   * <ul>
+   *   Statements are formulated as follows:
+   *   <li>Match (static and hide) manual rules. On match, these statements apply the transformation
+   *       and return a FibLookup. Flows that match a manual rule are not eligible to match any
+   *       other rule, regardless of the matched rule's transformation.
+   *   <li>Match internal traffic for automatic hide rules (see {@link
+   *       CheckpointNatConversions#matchInternalTraffic}) that will not match any automatic static
+   *       source NAT rule (because automatic static rules take precedence over automatic hide). If
+   *       matched, these statements return a FibLookup with no transformation.
+   *   <li>Match automatic dest rules. If a rule is matched, apply the transformation and continue
+   *       to automatic source rules, skipping any remaining auto dest rules.
+   *   <li>Match automatic static source rules. If a rule is matched, apply the transformation and
+   *       return a FibLookup.
+   *   <li>Match automatic hide rules (which do source translation only). If a rule is matched,
+   *       apply the transformation and return a FibLookup.
+   * </ul>
+   *
+   * <ul>
+   *   This statement formulation implies certain assumptions/invariants:
+   *   <li>Internal traffic for an automatic hide rule is not subject to destination translation by
+   *       an automatic static rule. This needs to be tested.
+   *   <li>Aside from matching internal traffic, source translation by automatic rules (static and
+   *       hide) matches ONLY on source IP. If it matched on other fields, it would be incorrect to
+   *       apply destination NAT before matching auto source rules.
+   * </ul>
+   */
   private @Nonnull List<Statement> getTransformationStatements(
       NatRulebase natRulebase, GatewayOrServer gateway, Map<Uid, NamedManagementObject> objects) {
     ServiceToMatchExpr serviceToMatchExpr = new ServiceToMatchExpr(objects);
