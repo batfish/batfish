@@ -3,7 +3,7 @@ package org.batfish.vendor.check_point_gateway.representation;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
-import static org.batfish.datamodel.transformation.Transformation.when;
+import static org.batfish.datamodel.transformation.Transformation.always;
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourcePort;
@@ -25,7 +25,6 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.transformation.Noop;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.vendor.check_point_management.AddressRange;
@@ -58,6 +57,7 @@ public class CheckpointNatConversions {
 
   @VisibleForTesting static final int NAT_PORT_FIRST = 10000;
   @VisibleForTesting static final int NAT_PORT_LAST = 60000;
+  @VisibleForTesting public static final Ip HIDE_BEHIND_GATEWAY_IP = Ip.parse("127.0.0.1");
 
   @VisibleForTesting
   static final TranslatedSourceToTransformationSteps TRANSLATED_SOURCE_TO_TRANSFORMATION_STEPS =
@@ -334,23 +334,35 @@ public class CheckpointNatConversions {
   }
 
   /**
-   * Get the {@link Transformation} corresponding to the translated fields of the given manual NAT
-   * rule. Returns {@link Optional#empty()} if the rule has invalid original or translated fields.
+   * Get the {@link AclLineMatchExpr} corresponding to the traffic that matches the given manual NAT
+   * rule. Returns {@link Optional#empty()} if the rule has invalid original fields.
    */
-  static @Nonnull Optional<Transformation> manualRuleTransformation(
+  static @Nonnull Optional<AclLineMatchExpr> matchManualRule(
       org.batfish.vendor.check_point_management.NatRule natRule,
       ServiceToMatchExpr serviceToMatchExpr,
       AddressSpaceToMatchExpr addressSpaceToMatchExpr,
       Map<Uid, ? extends NamedManagementObject> objects,
       Warnings warnings) {
-    Optional<AclLineMatchExpr> maybeOrigMatchExpr =
-        toMatchExpr(
-            objects.get(natRule.getOriginalSource()),
-            objects.get(natRule.getOriginalDestination()),
-            objects.get(natRule.getOriginalService()),
-            serviceToMatchExpr,
-            addressSpaceToMatchExpr,
-            warnings);
+    return toMatchExpr(
+        objects.get(natRule.getOriginalSource()),
+        objects.get(natRule.getOriginalDestination()),
+        objects.get(natRule.getOriginalService()),
+        serviceToMatchExpr,
+        addressSpaceToMatchExpr,
+        warnings);
+  }
+
+  /**
+   * Get the {@link Transformation} corresponding to the translated fields of the given manual NAT
+   * rule. Returns {@link Optional#empty()} if the rule has invalid translated fields.
+   *
+   * <p>This transformation is expected to be used in a context where match conditions have already
+   * been checked, so does not have a guard condition.
+   */
+  static @Nonnull Optional<Transformation> manualRuleTransformation(
+      org.batfish.vendor.check_point_management.NatRule natRule,
+      Map<Uid, ? extends NamedManagementObject> objects,
+      Warnings warnings) {
     Optional<List<TransformationStep>> maybeSteps;
     if (natRule.getMethod() == NatMethod.HIDE) {
       maybeSteps =
@@ -363,22 +375,52 @@ public class CheckpointNatConversions {
       assert natRule.getMethod() == NatMethod.STATIC;
       maybeSteps = manualStaticTransformationSteps(natRule, objects, warnings);
     }
-    if (!maybeOrigMatchExpr.isPresent() || !maybeSteps.isPresent()) {
-      return Optional.empty();
-    }
-    return Optional.of(when(maybeOrigMatchExpr.get()).apply(maybeSteps.get()).build());
+    return maybeSteps.map(steps -> always().apply(steps).build());
   }
 
   /**
-   * Returns a list of functions that take in an interface's IP and return the {@link Transformation
-   * transformations} that should be applied to outgoing traffic on that interface to reflect the
-   * NAT settings on the given {@link HasNatSettings}. Returns an empty list and files warnings if
-   * the NAT settings cannot be converted.
+   * Returns true if the given {@link HasNatSettings} has settings that represent an automatic NAT
+   * rule that can be successfully converted. Otherwise files warnings as necessary.
    */
-  static @Nonnull List<Function<Ip, Transformation>> automaticHideRuleTransformationFunctions(
-      HasNatSettings hasNatSettings,
-      AddressSpaceToMatchExpr toMatchExprVisitor,
-      Warnings warnings) {
+  static boolean isValidAutomaticRule(HasNatSettings hasNatSettings, Warnings warnings) {
+    NatSettings natSettings = hasNatSettings.getNatSettings();
+    if (!natSettings.getAutoRule()) {
+      return false;
+    }
+    if (!"All".equals(natSettings.getInstallOn())) {
+      // TODO Support installing NAT rules on specific gateways.
+      // TODO What does it mean if install-on is missing?
+      warnings.redFlag(
+          String.format(
+              "Automatic NAT rules on specific gateways are not yet supported: NAT settings on %s"
+                  + " %s will be ignored",
+              hasNatSettings.getClass(), hasNatSettings.getName()));
+      return false;
+    }
+    if (natSettings.getMethod() == null) {
+      // TODO What does null method mean?
+      warnings.redFlag(
+          String.format(
+              "NAT settings on %s %s will be ignored: No NAT method set",
+              hasNatSettings.getClass(), hasNatSettings.getName()));
+      return false;
+    }
+    switch (natSettings.getMethod()) {
+      case HIDE:
+        return isValidAutomaticHideRule(hasNatSettings, warnings);
+      case STATIC:
+        return isValidAutomaticStaticRule(hasNatSettings, warnings);
+      default:
+        warnings.redFlag(
+            String.format(
+                "NAT method %s not recognized: NAT settings on %s %s will be ignored",
+                natSettings.getMethod(), hasNatSettings.getClass(), hasNatSettings.getName()));
+        return false;
+    }
+  }
+
+  private static boolean isValidAutomaticHideRule(
+      HasNatSettings hasNatSettings, Warnings warnings) {
     NatSettings natSettings = hasNatSettings.getNatSettings();
     assert natSettings.getAutoRule() && natSettings.getMethod() == NatMethod.HIDE;
     if (natSettings.getHideBehind() == null) {
@@ -387,65 +429,74 @@ public class CheckpointNatConversions {
               "NAT settings on %s %s are invalid and will be ignored: type is HIDE, but hide-behind"
                   + " is missing",
               hasNatSettings.getClass(), hasNatSettings.getName()));
-      return ImmutableList.of();
-    } else if (!"All".equals(natSettings.getInstallOn())) {
-      // TODO Support installing NAT rules on specific gateways.
-      // TODO What does it mean if install-on is missing?
+      return false;
+    } else if (natSettings.getHideBehind() instanceof UnhandledNatHideBehind) {
       warnings.redFlag(
           String.format(
-              "Automatic NAT rules on specific gateways are not yet supported: NAT settings on %s"
-                  + " %s will be ignored",
-              hasNatSettings.getClass(), hasNatSettings.getName()));
-      return ImmutableList.of();
+              "NAT hide-behind \"%s\" is not recognized: NAT settings on %s %s will be"
+                  + " ignored",
+              ((UnhandledNatHideBehind) natSettings.getHideBehind()).getName(),
+              hasNatSettings.getClass(),
+              hasNatSettings.getName()));
+      return false;
     }
+    return true;
+  }
 
-    // Get a function that, given the egress interface IP, yields the transformed IP to hide behind
-    Optional<Function<Ip, Ip>> transformedIpFuncOptional =
-        new NatHideBehindVisitor<Optional<Function<Ip, Ip>>>() {
+  private static boolean isValidAutomaticStaticRule(
+      HasNatSettings hasNatSettings, Warnings warnings) {
+    if (!(hasNatSettings instanceof Host)) {
+      // TODO Support automatic static NAT on constructs other than hosts
+      warnings.redFlag(
+          String.format(
+              "Automatic static NAT rules on non-host objects are not yet supported: NAT settings"
+                  + " on %s %s will be ignored",
+              hasNatSettings.getClass(), hasNatSettings.getName()));
+      return false;
+    } else if (((Host) hasNatSettings).getIpv4Address() == null) {
+      // TODO Support IPv6
+      return false;
+    }
+    NatSettings natSettings = hasNatSettings.getNatSettings();
+    assert natSettings.getAutoRule() && natSettings.getMethod() == NatMethod.STATIC;
+    if (natSettings.getIpv4Address() == null) {
+      // TODO Support IPv6 NAT
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * Get the {@link TransformationStep} to apply to the traffic that matches the given {@link
+   * HasNatSettings}. Assumes {@code hasNatSettings} has passed {@link
+   * #isValidAutomaticRule(HasNatSettings, Warnings)} and that the matching traffic is not internal
+   * (see {@link #matchInternalTraffic}).
+   */
+  static @Nonnull TransformationStep automaticHideRuleTransformationStep(
+      HasNatSettings hasNatSettings) {
+    NatSettings natSettings = hasNatSettings.getNatSettings();
+    assert natSettings.getHideBehind() != null; // guaranteed by isValidAutomaticHideRule
+    Ip transformedIp =
+        new NatHideBehindVisitor<Ip>() {
           @Override
-          public Optional<Function<Ip, Ip>> visitNatHideBehindGateway(
-              NatHideBehindGateway natHideBehindGateway) {
-            // need to use egress interface's IP to hide source
-            return Optional.of(Function.identity());
+          public Ip visitNatHideBehindGateway(NatHideBehindGateway natHideBehindGateway) {
+            // Need to use egress interface's IP to hide source.
+            // This stand-in IP will be translated to the egress interface's IP on egress.
+            return HIDE_BEHIND_GATEWAY_IP;
           }
 
           @Override
-          public Optional<Function<Ip, Ip>> visitNatHideBehindIp(NatHideBehindIp natHideBehindIp) {
-            return Optional.of(ip -> natHideBehindIp.getIp());
+          public Ip visitNatHideBehindIp(NatHideBehindIp natHideBehindIp) {
+            return natHideBehindIp.getIp();
           }
 
           @Override
-          public Optional<Function<Ip, Ip>> visitUnhandledNatHideBehind(
-              UnhandledNatHideBehind unhandledNatHideBehind) {
-            warnings.redFlag(
-                String.format(
-                    "NAT hide-behind \"%s\" is not recognized: NAT settings on %s %s will be"
-                        + " ignored",
-                    unhandledNatHideBehind.getName(),
-                    hasNatSettings.getClass(),
-                    hasNatSettings.getName()));
-            return Optional.empty();
+          public Ip visitUnhandledNatHideBehind(UnhandledNatHideBehind unhandledNatHideBehind) {
+            // isValidAutomaticHideRule guarantees hideBehind is not unhandled
+            throw new IllegalArgumentException();
           }
         }.visit(natSettings.getHideBehind());
-    if (!transformedIpFuncOptional.isPresent()) {
-      return ImmutableList.of();
-    }
-
-    ImmutableList.Builder<Function<Ip, Transformation>> funcs = ImmutableList.builder();
-    // If the hasNattingSettings is a Network or AddressRange, it should match but not transform
-    // traffic whose source and dest IPs are both within that IP space.
-    Optional<AclLineMatchExpr> matchInternalTraffic =
-        matchInternalTraffic(hasNatSettings, toMatchExprVisitor);
-    matchInternalTraffic.ifPresent(
-        matchInternal ->
-            funcs.add(egressIfaceIp -> when(matchInternal).apply(Noop.NOOP_SOURCE_NAT).build()));
-    // Add the function to produce the standard hide transformation.
-    funcs.add(
-        egressIfaceIp ->
-            when(toMatchExprVisitor.convertSource(hasNatSettings))
-                .apply(assignSourceIp(transformedIpFuncOptional.get().apply(egressIfaceIp)))
-                .build());
-    return funcs.build();
+    return assignSourceIp(transformedIp);
   }
 
   /**
@@ -455,7 +506,7 @@ public class CheckpointNatConversions {
    * matches such traffic if applicable for the given {@link HasNatSettings}, and otherwise an empty
    * optional.
    */
-  private static Optional<AclLineMatchExpr> matchInternalTraffic(
+  static Optional<AclLineMatchExpr> matchInternalTraffic(
       HasNatSettings hasNatSettings, AddressSpaceToMatchExpr toMatchExprVisitor) {
     return new HasNatSettingsVisitor<Optional<AclLineMatchExpr>>() {
       @Override
@@ -482,51 +533,46 @@ public class CheckpointNatConversions {
   }
 
   /**
-   * Returns a {@link Transformation} representing the NAT settings on the given {@link
-   * HasNatSettings}. Returns an empty optional and files warnings if the NAT settings cannot be
-   * converted.
+   * Get the {@link AclLineMatchExpr} corresponding to the traffic that matches the given {@link
+   * HasNatSettings}. Assumes {@code hasNatSettings} has passed {@link
+   * #isValidAutomaticRule(HasNatSettings, Warnings)}.
    *
-   * @param srcNat Whether the generated transformation should do source NAT. If {@code true}, the
-   *     transformation will match traffic from the original IP and translate its source to the
-   *     translated IP. Otherwise, it will match traffic destined for the translated IP and
-   *     translate it back to the original IP.
+   * @param srcNat Whether this match condition is for applying a source NAT rule as opposed to a
+   *     destination NAT rule. If true, it matches on the source IP being the rule's original IP;
+   *     otherwise, it matches on the destination IP being the rule's translated IP.
    */
-  static @Nonnull Optional<Transformation> automaticStaticRuleTransformation(
-      HasNatSettings hasNatSettings, boolean srcNat, Warnings warnings) {
-    if (!(hasNatSettings instanceof Host)) {
-      // TODO Support automatic static NAT on constructs other than hosts
-      warnings.redFlag(
-          String.format(
-              "Automatic static NAT rules on non-host objects are not yet supported: NAT settings"
-                  + " on %s %s will be ignored",
-              hasNatSettings.getClass(), hasNatSettings.getName()));
-      return Optional.empty();
+  static @Nonnull AclLineMatchExpr matchAutomaticStaticRule(
+      HasNatSettings hasNatSettings, boolean srcNat) {
+    if (srcNat) {
+      Host host = (Host) hasNatSettings;
+      assert host.getIpv4Address() != null;
+      return matchSrc(host.getIpv4Address());
     }
-    Ip hostIp = ((Host) hasNatSettings).getIpv4Address();
-    if (hostIp == null) {
-      // TODO support IPv6
-      return Optional.empty();
-    }
-
     NatSettings natSettings = hasNatSettings.getNatSettings();
-    assert natSettings.getAutoRule() && natSettings.getMethod() == NatMethod.STATIC;
-    Ip translatedIp = natSettings.getIpv4Address();
-    if (translatedIp == null) {
-      // TODO support IPv6 NAT
-      return Optional.empty();
-    } else if (!"All".equals(natSettings.getInstallOn())) {
-      // TODO Support installing NAT rules on specific gateways.
-      // TODO What does it mean if install-on is missing?
-      warnings.redFlag(
-          String.format(
-              "Automatic NAT rules on specific gateways are not yet supported: NAT settings on %s"
-                  + " %s will be ignored",
-              hasNatSettings.getClass(), hasNatSettings.getName()));
-      return Optional.empty();
+    assert natSettings.getIpv4Address() != null;
+    return matchDst(natSettings.getIpv4Address());
+  }
+
+  /**
+   * Get the {@link TransformationStep} corresponding to the traffic that matches the given {@link
+   * HasNatSettings}. Assumes {@code hasNatSettings} has passed {@link
+   * #isValidAutomaticRule(HasNatSettings, Warnings)}.
+   *
+   * @param srcNat Whether this transformation is for applying a source NAT rule as opposed to a
+   *     destination NAT rule. If true, the return value will assign the source IP to the NAT
+   *     settings translated IP; otherwise, it will assign the destination IP to the settings'
+   *     original IP.
+   */
+  static @Nonnull TransformationStep automaticStaticRuleTransformationStep(
+      HasNatSettings hasNatSettings, boolean srcNat) {
+    if (srcNat) {
+      NatSettings natSettings = hasNatSettings.getNatSettings();
+      assert natSettings.getIpv4Address() != null;
+      return assignSourceIp(natSettings.getIpv4Address());
     }
-    return srcNat
-        ? Optional.of(when(matchSrc(hostIp)).apply(assignSourceIp(translatedIp)).build())
-        : Optional.of(when(matchDst(translatedIp)).apply(assignDestinationIp(hostIp)).build());
+    Host host = (Host) hasNatSettings;
+    assert host.getIpv4Address() != null;
+    return assignDestinationIp(host.getIpv4Address());
   }
 
   /**

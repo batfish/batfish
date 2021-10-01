@@ -4,13 +4,23 @@ import static com.google.common.collect.Maps.immutableEntry;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.batfish.datamodel.FirewallSessionInterfaceInfo.Action.POST_NAT_FIB_LOOKUP;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
+import static org.batfish.datamodel.transformation.Transformation.always;
+import static org.batfish.datamodel.transformation.Transformation.when;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.aclName;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toIpAccessLists;
-import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.automaticHideRuleTransformationFunctions;
-import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.automaticStaticRuleTransformation;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.HIDE_BEHIND_GATEWAY_IP;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.automaticHideRuleTransformationStep;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.automaticStaticRuleTransformationStep;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getManualNatRules;
-import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getOutgoingTransformations;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.isValidAutomaticRule;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.manualRuleTransformation;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.matchAutomaticStaticRule;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.matchInternalTraffic;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.matchManualRule;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.mergeTransformations;
 import static org.batfish.vendor.check_point_management.AddressSpaceToIpSpaceMetadata.toIpSpaceMetadata;
 
@@ -34,6 +44,7 @@ import javax.annotation.Nonnull;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclAclLine;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -51,11 +62,23 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.VrrpGroup;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.DeniedByAcl;
+import org.batfish.datamodel.packet_policy.ApplyTransformation;
+import org.batfish.datamodel.packet_policy.Drop;
+import org.batfish.datamodel.packet_policy.FibLookup;
+import org.batfish.datamodel.packet_policy.If;
+import org.batfish.datamodel.packet_policy.IngressInterfaceVrf;
+import org.batfish.datamodel.packet_policy.PacketMatchExpr;
+import org.batfish.datamodel.packet_policy.PacketPolicy;
+import org.batfish.datamodel.packet_policy.Return;
+import org.batfish.datamodel.packet_policy.Statement;
 import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.transformation.Transformation;
+import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.vendor.ConversionContext;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.vendor.check_point_gateway.representation.BondingGroup.Mode;
@@ -72,8 +95,9 @@ import org.batfish.vendor.check_point_management.ManagementDomain;
 import org.batfish.vendor.check_point_management.ManagementPackage;
 import org.batfish.vendor.check_point_management.ManagementServer;
 import org.batfish.vendor.check_point_management.NamedManagementObject;
+import org.batfish.vendor.check_point_management.NatHideBehindGateway;
+import org.batfish.vendor.check_point_management.NatMethod;
 import org.batfish.vendor.check_point_management.NatRulebase;
-import org.batfish.vendor.check_point_management.NatSettings;
 import org.batfish.vendor.check_point_management.ServiceToMatchExpr;
 import org.batfish.vendor.check_point_management.Uid;
 import org.batfish.vendor.check_point_management.UnknownTypedManagementObject;
@@ -302,116 +326,212 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
   @SuppressWarnings("unused")
   private void convertNatRulebase(
       NatRulebase natRulebase, GatewayOrServer gateway, Map<Uid, NamedManagementObject> objects) {
+    // Compile a list of PacketPolicy statements that will apply transformations on ingress.
+    List<Statement> transformationStatements =
+        getTransformationStatements(natRulebase, gateway, objects);
+
+    // If there are no transformations to be applied, short-circuit.
+    if (transformationStatements.isEmpty()) {
+      return;
+    }
+
+    // Otherwise, collect packet policy statements that are needed on every interface.
+    List<Statement> generalStatements = new ArrayList<>(); // statements for all packet policies
+    Return returnFibLookup = new Return(new FibLookup(IngressInterfaceVrf.instance()));
+
+    // If the traffic is destined for an IP owned by the firewall, do not transform.
+    IpSpace ownedByFirewall =
+        AclIpSpace.union(
+            _c.getActiveInterfaces().values().stream()
+                .flatMap(iface -> iface.getAllConcreteAddresses().stream())
+                .map(ConcreteInterfaceAddress::getIp)
+                .map(Ip::toIpSpace)
+                .collect(ImmutableList.toImmutableList()));
+    generalStatements.add(
+        new If(new PacketMatchExpr(matchDst(ownedByFirewall)), ImmutableList.of(returnFibLookup)));
+
+    // Otherwise, apply transformation statements.
+    generalStatements.addAll((transformationStatements));
+
+    // Now for each interface, apply a packet policy that encompasses the incoming filter and
+    // transformations. Add an outgoing transformation to translate any HIDE_BEHIND_GATEWAY src IPs
+    // to the egress iface IP.
+    _c.getActiveInterfaces()
+        .values()
+        .forEach(
+            iface -> {
+              ImmutableList.Builder<Statement> ifacePolicyStatements = ImmutableList.builder();
+              // Incoming filter is ignored when packet policy is present, so apply it explicitly
+              if (iface.getIncomingFilter() != null) {
+                ifacePolicyStatements.add(
+                    new If(
+                        new PacketMatchExpr(new DeniedByAcl(iface.getIncomingFilter().getName())),
+                        ImmutableList.of(new Return(Drop.instance()))));
+              }
+              ifacePolicyStatements.addAll(generalStatements);
+              String packetPolicyName = packetPolicyName(iface.getName());
+              _c.getPacketPolicies()
+                  .put(
+                      packetPolicyName,
+                      new PacketPolicy(
+                          packetPolicyName, ifacePolicyStatements.build(), returnFibLookup));
+              iface.setPacketPolicy(packetPolicyName);
+              // Build outgoing transformation to correctly translate HIDE_BEHIND_GATEWAY src
+              if (iface.getConcreteAddress() != null) {
+                Transformation outgoing =
+                    when(matchSrc(HIDE_BEHIND_GATEWAY_IP))
+                        .apply(
+                            TransformationStep.assignSourceIp(iface.getConcreteAddress().getIp()))
+                        .build();
+                iface.setOutgoingTransformation(outgoing);
+              }
+            });
+  }
+
+  private static String packetPolicyName(String ifaceName) {
+    return String.format("~PACKET_POLICY_%s~", ifaceName);
+  }
+
+  private @Nonnull List<Statement> getTransformationStatements(
+      NatRulebase natRulebase, GatewayOrServer gateway, Map<Uid, NamedManagementObject> objects) {
     ServiceToMatchExpr serviceToMatchExpr = new ServiceToMatchExpr(objects);
     AddressSpaceToMatchExpr addressSpaceToMatchExpr = new AddressSpaceToMatchExpr(objects);
     Warnings warnings = getWarnings();
-    List<Transformation> manualRuleTransformations =
-        getManualNatRules(natRulebase, gateway)
-            .map(
-                natRule ->
-                    manualRuleTransformation(
-                        natRule, serviceToMatchExpr, addressSpaceToMatchExpr, objects, warnings))
-            .filter(Optional::isPresent)
-            .map(Optional::get)
-            .collect(ImmutableList.toImmutableList());
 
-    // Find automatic NAT rules
+    // List of PacketPolicy statements that will apply the transformation on ingress
+    ImmutableList.Builder<Statement> statements = ImmutableList.builder();
+    Return returnFibLookup = new Return(new FibLookup(IngressInterfaceVrf.instance()));
+
+    // First match any manual rules. If a manual rule is matched, no other rules can be matched,
+    // regardless of what translations the manual rule applies, so return.
+    getManualNatRules(natRulebase, gateway)
+        .forEach(
+            rule -> {
+              Optional<AclLineMatchExpr> matchCondition =
+                  matchManualRule(
+                      rule, serviceToMatchExpr, addressSpaceToMatchExpr, objects, warnings);
+              if (!matchCondition.isPresent()) {
+                return; // warning already filed
+              }
+              Optional<Transformation> transformation =
+                  manualRuleTransformation(rule, objects, warnings);
+              if (!transformation.isPresent()) {
+                return; // warning already filed
+              }
+              statements.add(
+                  new If(
+                      new PacketMatchExpr(matchCondition.get()),
+                      ImmutableList.of(
+                          new ApplyTransformation(transformation.get()), returnFibLookup)));
+            });
+
+    // Find automatic NAT rules; short circuit if there are none.
+    // TODO: consult generated rules for automatic rule ordering
     List<HasNatSettings> autoHideNatObjects = new ArrayList<>();
     List<HasNatSettings> autoStaticNatObjects = new ArrayList<>();
     objects.values().stream()
         .filter(HasNatSettings.class::isInstance)
         .map(HasNatSettings.class::cast)
+        .filter(hasNatSettings -> isValidAutomaticRule(hasNatSettings, warnings))
         .forEach(
             hasNatSettings -> {
-              NatSettings natSettings = hasNatSettings.getNatSettings();
-              if (!natSettings.getAutoRule()) {
-                return;
-              }
-              if (natSettings.getMethod() == null) {
-                // TODO What does null method mean?
-                warnings.redFlag(
-                    String.format(
-                        "NAT settings on %s %s will be ignored: No NAT method set",
-                        hasNatSettings.getClass(), hasNatSettings.getName()));
-                return;
-              }
-              switch (natSettings.getMethod()) {
-                case HIDE:
-                  autoHideNatObjects.add(hasNatSettings);
-                  return;
-                case STATIC:
-                  autoStaticNatObjects.add(hasNatSettings);
-                  return;
-                default:
-                  warnings.redFlag(
-                      String.format(
-                          "NAT method %s not recognized: NAT settings on %s %s will be ignored",
-                          natSettings.getMethod(),
-                          hasNatSettings.getClass(),
-                          hasNatSettings.getName()));
+              NatMethod method = hasNatSettings.getNatSettings().getMethod();
+              if (method == NatMethod.HIDE) {
+                autoHideNatObjects.add(hasNatSettings);
+              } else {
+                assert method == NatMethod.STATIC; // no other methods pass isValidAutomaticRule
+                autoStaticNatObjects.add(hasNatSettings);
               }
             });
+    if (autoHideNatObjects.isEmpty() && autoStaticNatObjects.isEmpty()) {
+      return statements.build();
+    }
 
-    // Convert automatic static rules (need inbound and outbound versions)
-    List<Transformation> autoStaticSrcTransformations =
-        autoStaticNatObjects.stream()
-            .map(
-                hasNatSettings -> automaticStaticRuleTransformation(hasNatSettings, true, warnings))
-            .filter(Optional::isPresent)
-            .map(Optional::get)
-            .collect(ImmutableList.toImmutableList());
+    // While we have the NAT hide settings, check if any hide behind gateway, and warn if any
+    // interfaces are missing an IP because this will cause the source translation to be wrong.
+    if (autoHideNatObjects.stream()
+            .anyMatch(
+                hideRule ->
+                    hideRule.getNatSettings().getHideBehind() instanceof NatHideBehindGateway)
+        && _c.getActiveInterfaces().values().stream()
+            .anyMatch(iface -> iface.getConcreteAddress() == null)) {
+      warnings.redFlag(
+          "Automatic hide-behind-gateway rules are not supported if matching traffic is routed out"
+              + " an interface with no concrete address");
+    }
+
+    if (!autoHideNatObjects.isEmpty()) {
+      // Automatic hide rules configured on network or address-range objects will match, but not
+      // translate, traffic whose src and dst are both within that network/address-range. Need to
+      // check for this condition before any dst NAT is applied, but avoid matching any traffic that
+      // would match a static src NAT rule (because static rules take precedence over hide).
+      // TODO Is traffic matching this condition still eligible to match a separate dst NAT rule?
+      // TODO Intranet-matching for auto static rules too, once we support them on non-host objects
+      List<AclLineMatchExpr> staticSrcRuleMatchExprs =
+          autoStaticNatObjects.stream()
+              .map(natObj -> matchAutomaticStaticRule(natObj, true))
+              .collect(ImmutableList.toImmutableList());
+      PacketMatchExpr notMatchingStaticSrcRule =
+          new PacketMatchExpr(not(or(staticSrcRuleMatchExprs)));
+      List<Statement> internalTrafficStatements =
+          autoHideNatObjects.stream()
+              .map(natObj -> matchInternalTraffic(natObj, addressSpaceToMatchExpr))
+              .filter(Optional::isPresent)
+              .map(Optional::get)
+              .map(
+                  matchInternal ->
+                      new If(new PacketMatchExpr(matchInternal), ImmutableList.of(returnFibLookup)))
+              .collect(ImmutableList.toImmutableList());
+      if (!internalTrafficStatements.isEmpty()) {
+        statements.add(new If(notMatchingStaticSrcRule, internalTrafficStatements));
+      }
+    }
+
+    // Apply dest translations for automatic static rules. If one of these is matched, the packet
+    // skips any remaining dest rules but may still match a source rule, so do not return yet.
+    // To achieve these semantics, create one transformation representing all possible destination
+    // translations (including match conditions) and apply this transformation unconditionally.
     List<Transformation> autoStaticDstTransformations =
         autoStaticNatObjects.stream()
             .map(
                 hasNatSettings ->
-                    automaticStaticRuleTransformation(hasNatSettings, false, warnings))
-            .filter(Optional::isPresent)
-            .map(Optional::get)
+                    when(matchAutomaticStaticRule(hasNatSettings, false))
+                        .apply(automaticStaticRuleTransformationStep(hasNatSettings, false))
+                        .build())
             .collect(ImmutableList.toImmutableList());
-    // Convert automatic hide rules (these transformations are functions of the egress iface IP)
-    List<Function<Ip, Transformation>> autoHideTransformationFuncs =
-        autoHideNatObjects.stream()
-            // TODO: consult generated rules for automatic hide rule ordering
-            .flatMap(
-                hasNatSettings ->
-                    automaticHideRuleTransformationFunctions(
-                        hasNatSettings, addressSpaceToMatchExpr, warnings)
-                        .stream())
-            .collect(ImmutableList.toImmutableList());
+    mergeTransformations(autoStaticDstTransformations)
+        .ifPresent(t -> statements.add(new ApplyTransformation(t)));
 
-    // Incoming transformation: manual rules, dst translation for automatic static rules
-    Optional<Transformation> incomingTransformation =
-        mergeTransformations(
-            ImmutableList.<Transformation>builder()
-                .addAll(manualRuleTransformations)
-                .addAll(autoStaticDstTransformations)
-                .build());
-    incomingTransformation.ifPresent(
-        t ->
-            _c.getActiveInterfaces().values().forEach(iface -> iface.setIncomingTransformation(t)));
+    // Apply source translations for automatic static rules. If one of these is matched, return
+    // FibLookup (packet is not eligible to match an auto hide rule).
+    for (HasNatSettings autoStaticNatObj : autoStaticNatObjects) {
+      AclLineMatchExpr matchCondition = matchAutomaticStaticRule(autoStaticNatObj, true);
+      TransformationStep transformationStep =
+          automaticStaticRuleTransformationStep(autoStaticNatObj, true);
 
-    // TODO: Prevent any outgoing transformation if the packet matched a manual NAT rule on ingress.
-    // If there are no egress-iface-specific transformations, all outgoing transformations are the
-    // same: source translation for automatic static rules
-    if (autoHideTransformationFuncs.isEmpty()) {
-      mergeTransformations(autoStaticSrcTransformations)
-          .ifPresent(
-              t ->
-                  _c.getActiveInterfaces()
-                      .values()
-                      .forEach(iface -> iface.setOutgoingTransformation(t)));
-    } else {
-      // Outgoing transformation: automatic hide rules, src translation for automatic static rules
-      for (org.batfish.datamodel.Interface iface : _c.getActiveInterfaces().values()) {
-        // Automatic static rules take precedence over automatic hide rules
-        ImmutableList.Builder<Transformation> outgoingTransformations = ImmutableList.builder();
-        outgoingTransformations.addAll(autoStaticSrcTransformations);
-        outgoingTransformations.addAll(
-            getOutgoingTransformations(iface, autoHideTransformationFuncs));
-        mergeTransformations(outgoingTransformations.build())
-            .ifPresent(iface::setOutgoingTransformation);
-      }
+      statements.add(
+          new If(
+              new PacketMatchExpr(matchCondition),
+              ImmutableList.of(
+                  new ApplyTransformation(always().apply(transformationStep).build()),
+                  returnFibLookup)));
     }
+
+    // Apply source translations for automatic hide rules. If one is matched, return FibLookup,
+    // though it doesn't really matter because these will be the last statements in the policy
+    // (and the default action will be FibLookup).
+    for (HasNatSettings autoHideNatObj : autoHideNatObjects) {
+      AclLineMatchExpr matchCondition = addressSpaceToMatchExpr.convertSource(autoHideNatObj);
+      TransformationStep transformationStep = automaticHideRuleTransformationStep(autoHideNatObj);
+      statements.add(
+          new If(
+              new PacketMatchExpr(matchCondition),
+              ImmutableList.of(
+                  new ApplyTransformation(always().apply(transformationStep).build()),
+                  returnFibLookup)));
+    }
+
+    return statements.build();
   }
 
   private @Nonnull Optional<ManagementPackage> findAccessPackage(

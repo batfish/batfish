@@ -30,10 +30,12 @@ import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.datamodel.transformation.Transformation.when;
+import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConfiguration.INTERFACE_ACL_NAME;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.aclName;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.HIDE_BEHIND_GATEWAY_IP;
 import static org.batfish.vendor.check_point_gateway.representation.Interface.DEFAULT_ETH_SPEED;
 import static org.batfish.vendor.check_point_gateway.representation.Interface.DEFAULT_INTERFACE_MTU;
 import static org.batfish.vendor.check_point_gateway.representation.Interface.DEFAULT_LOOPBACK_MTU;
@@ -64,11 +66,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiFunction;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.lang3.SerializationUtils;
+import org.apache.commons.lang3.function.TriFunction;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.matchers.ParseWarningMatchers;
@@ -78,21 +82,26 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceModel;
+import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
-import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.packet_policy.Action;
+import org.batfish.datamodel.packet_policy.Drop;
+import org.batfish.datamodel.packet_policy.FibLookup;
+import org.batfish.datamodel.packet_policy.FlowEvaluator;
+import org.batfish.datamodel.packet_policy.IngressInterfaceVrf;
+import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
-import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -130,6 +139,8 @@ import org.batfish.vendor.check_point_management.ManagementPackage;
 import org.batfish.vendor.check_point_management.ManagementServer;
 import org.batfish.vendor.check_point_management.NamedManagementObject;
 import org.batfish.vendor.check_point_management.NatHideBehindGateway;
+import org.batfish.vendor.check_point_management.NatHideBehindIp;
+import org.batfish.vendor.check_point_management.NatMethod;
 import org.batfish.vendor.check_point_management.NatRule;
 import org.batfish.vendor.check_point_management.NatRulebase;
 import org.batfish.vendor.check_point_management.NatSettings;
@@ -1248,56 +1259,161 @@ public class CheckPointGatewayGrammarTest {
 
   @Test
   public void testNatConversion() throws IOException {
-    Uid cpmiAnyUid = Uid.of("100");
-    CpmiAnyObject any = new CpmiAnyObject(cpmiAnyUid);
-    Uid policyTargetsUid = Uid.of("101");
-    PolicyTargets policyTargets = new PolicyTargets(policyTargetsUid);
-    Uid originalUid = Uid.of("102");
-    Original original = new Original(cpmiAnyUid);
-    Ip eth1Ip = Ip.parse("10.0.1.1");
-    Uid eth1IpUid = Uid.of("1");
-    Uid natUid = Uid.of("2");
-    Uid ruleUid = Uid.of("3");
-    Uid gwUid = Uid.of("4");
+    /*
+    NAT rules:
+    1. Manual static: Destination 5.5.5.5 is translated to 6.6.6.6
+    2. Manual hide: Source 7.7.7.7 is translated to 8.8.8.8
+    3. Automatic static 1: Source 10.10.10.10 translates to NAT IP 20.20.20.20
+                         (implies dest 20.20.20.20 translates to 10.10.10.10)
+    4. Automatic static 2: Source 20.20.20.21 translates to NAT IP 10.10.10.11
+                         (implies dest 10.10.10.11 translates to 20.20.20.21)
+    5. Automatic hide: Network 10.10.10.0/24 is hidden behind IP 30.30.30.30
+     */
     String hostname = "nat_rules";
+    Ip manualStaticOriginalDst = Ip.parse("5.5.5.5");
+    Ip manualStaticTranslatedDst = Ip.parse("6.6.6.6");
+    Ip manualHideOriginalSrc = Ip.parse("7.7.7.7");
+    Ip manualHideTranslatedSrc = Ip.parse("8.8.8.8");
+    Ip autoStatic1HostIp = Ip.parse("10.10.10.10");
+    Ip autoStatic1NatIp = Ip.parse("20.20.20.20");
+    Ip autoStatic2HostIp = Ip.parse("20.20.20.21");
+    Ip autoStatic2NatIp = Ip.parse("10.10.10.11");
+    Prefix autoHideNetwork = Prefix.parse("10.10.10.0/24");
+    Ip autoHideNatIp = Ip.parse("30.30.30.30");
 
-    // Attached to domain, NOT in NAT rulebase object dict
-    ImmutableList<TypedManagementObject> domainObjs =
-        ImmutableList.<TypedManagementObject>builder()
-            .add(new Host(eth1Ip, NAT_SETTINGS_TEST_INSTANCE, "eth1Ip", eth1IpUid))
-            .build();
+    AtomicInteger uidGenerator = new AtomicInteger();
+    NatSettings emptyNatSettings = new NatSettings(false, null, null, null, null);
 
-    ImmutableMap<Uid, TypedManagementObject> objs =
+    // Create manual rules and put them in rulebase
+    Uid cpmiAnyUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
+    CpmiAnyObject any = new CpmiAnyObject(cpmiAnyUid);
+    Uid originalUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
+    Original original = new Original(cpmiAnyUid);
+    Uid policyTargetsUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
+    PolicyTargets policyTargets = new PolicyTargets(policyTargetsUid);
+    Uid manualStaticOriginalHostUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
+    Host manualStaticOriginalHost =
+        new Host(
+            manualStaticOriginalDst,
+            emptyNatSettings,
+            "manualStaticOriginalHost",
+            manualStaticOriginalHostUid);
+    Uid manualStaticTranslatedHostUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
+    Host manualStaticTranslatedHost =
+        new Host(
+            manualStaticTranslatedDst,
+            emptyNatSettings,
+            "manualStaticTranslatedHost",
+            manualStaticTranslatedHostUid);
+    Uid manualHideOriginalHostUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
+    Host manualHideOriginalHost =
+        new Host(
+            manualHideOriginalSrc,
+            emptyNatSettings,
+            "manualHideOriginalHost",
+            manualHideOriginalHostUid);
+    Uid manualHideTranslatedHostUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
+    Host manualHideTranslatedHost =
+        new Host(
+            manualHideTranslatedSrc,
+            emptyNatSettings,
+            "manualHideTranslatedHost",
+            manualHideTranslatedHostUid);
+    ImmutableMap<Uid, TypedManagementObject> natObjs =
         ImmutableMap.<Uid, TypedManagementObject>builder()
             .put(cpmiAnyUid, any)
-            .put(policyTargetsUid, policyTargets)
             .put(originalUid, original)
+            .put(policyTargetsUid, policyTargets)
+            .put(manualStaticOriginalHostUid, manualStaticOriginalHost)
+            .put(manualStaticTranslatedHostUid, manualStaticTranslatedHost)
+            .put(manualHideOriginalHostUid, manualHideOriginalHost)
+            .put(manualHideTranslatedHostUid, manualHideTranslatedHost)
             .build();
-    NatRulebase rulebase =
-        new NatRulebase(
-            objs,
-            ImmutableList.of(
-                new NatRule(
-                    false,
-                    "",
-                    true,
-                    ImmutableList.of(cpmiAnyUid),
-                    HIDE,
-                    cpmiAnyUid,
-                    cpmiAnyUid,
-                    cpmiAnyUid,
-                    1,
-                    originalUid,
-                    originalUid,
-                    eth1IpUid,
-                    ruleUid)),
-            natUid);
+    Uid manualStaticRuleUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
+    NatRule manualStaticRule =
+        new NatRule(
+            false,
+            "",
+            true,
+            ImmutableList.of(policyTargetsUid),
+            NatMethod.STATIC,
+            manualStaticOriginalHostUid,
+            cpmiAnyUid,
+            cpmiAnyUid,
+            1,
+            manualStaticTranslatedHostUid,
+            originalUid,
+            originalUid,
+            manualStaticRuleUid);
+    Uid manualHideRuleUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
+    NatRule manualHideRule =
+        new NatRule(
+            false,
+            "",
+            true,
+            ImmutableList.of(policyTargetsUid),
+            NatMethod.HIDE,
+            cpmiAnyUid,
+            cpmiAnyUid,
+            manualHideOriginalHostUid,
+            2,
+            originalUid,
+            originalUid,
+            manualHideTranslatedHostUid,
+            manualHideRuleUid);
 
+    Uid rulebaseUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
+    NatRulebase rulebase =
+        new NatRulebase(natObjs, ImmutableList.of(manualStaticRule, manualHideRule), rulebaseUid);
+
+    // Create automatic rules
+    NatSettings autoStatic1NatSettings =
+        new NatSettings(true, null, "All", autoStatic1NatIp, NatMethod.STATIC);
+    NatSettings autoStatic2NatSettings =
+        new NatSettings(true, null, "All", autoStatic2NatIp, NatMethod.STATIC);
+    NatSettings autoHideNatSettings =
+        new NatSettings(true, new NatHideBehindIp(autoHideNatIp), "All", null, NatMethod.HIDE);
+    Uid autoStatic1HostUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
+    Host autoStatic1Host =
+        new Host(autoStatic1HostIp, autoStatic1NatSettings, "autoStatic1Host", autoStatic1HostUid);
+    Uid autoStatic2HostUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
+    Host autoStatic2Host =
+        new Host(autoStatic2HostIp, autoStatic2NatSettings, "autoStatic2Host", autoStatic2HostUid);
+    Uid autoHideNetworkUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
+    Network autoHideNetworkObj =
+        new Network(
+            "autoHideNetwork",
+            autoHideNatSettings,
+            autoHideNetwork.getStartIp(),
+            autoHideNetwork.getPrefixWildcard().inverted(),
+            autoHideNetworkUid);
+
+    // Create simple access layer to permit all traffic
+    Uid permitUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
+    RulebaseAction permit = new RulebaseAction("Accept", permitUid, "");
+    Uid accessRuleUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
+    Uid accessListUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
+    AccessLayer accessLayer =
+        new AccessLayer(
+            ImmutableMap.of(cpmiAnyUid, any, permitUid, permit),
+            ImmutableList.of(
+                AccessRule.testBuilder(cpmiAnyUid)
+                    .setUid(accessRuleUid)
+                    .setAction(permitUid)
+                    .build()),
+            accessListUid,
+            "accessLayer");
+
+    // TODO May need more complete list of objects later depending on implementation changes
+    ImmutableList<TypedManagementObject> domainObjs =
+        ImmutableList.of(any, autoStatic1Host, autoStatic2Host, autoHideNetworkObj, permit);
+
+    Uid packageUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
     ImmutableMap<Uid, ManagementPackage> packages =
         ImmutableMap.of(
-            Uid.of("2"),
+            packageUid,
             new ManagementPackage(
-                ImmutableList.of(),
+                ImmutableList.of(accessLayer),
                 rulebase,
                 new Package(
                     new Domain("d", Uid.of("0")),
@@ -1305,7 +1421,8 @@ public class CheckPointGatewayGrammarTest {
                     "p1",
                     false,
                     true,
-                    Uid.of("2"))));
+                    packageUid)));
+    Uid gwUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
     ImmutableMap<Uid, GatewayOrServer> gateways =
         ImmutableMap.of(
             gwUid,
@@ -1316,47 +1433,243 @@ public class CheckPointGatewayGrammarTest {
                     new org.batfish.vendor.check_point_management.Interface(
                         "eth0", new InterfaceTopology(false), Ip.parse("10.0.0.1"), 24),
                     new org.batfish.vendor.check_point_management.Interface(
-                        "eth1", new InterfaceTopology(false), Ip.parse("10.0.1.1"), 24)),
+                        "eth1", new InterfaceTopology(true), Ip.parse("10.0.1.1"), 24)),
                 new GatewayOrServerPolicy("p1", null),
                 gwUid));
 
     CheckpointManagementConfiguration mgmt = toCheckpointMgmtConfig(gateways, packages, domainObjs);
-    Map<String, Configuration> configs = parseTextConfigs(mgmt, hostname);
+    IBatfish bf = getBatfishForConfigurationNames(mgmt, hostname);
+    Map<String, Configuration> configs = bf.loadConfigurations(bf.getSnapshot());
     Configuration c = configs.get(hostname);
+    bf.computeDataPlane(bf.getSnapshot());
+    Map<String, Fib> fibs = bf.loadDataPlane(bf.getSnapshot()).getFibs().get(hostname);
 
-    // Check NAT properties
-    assertThat(c, hasInterface("eth0"));
-    assertNotNull(c.getAllInterfaces().get("eth0").getIncomingTransformation());
+    org.batfish.datamodel.Interface eth0 = c.getAllInterfaces().get("eth0");
+    org.batfish.datamodel.Interface eth1 = c.getAllInterfaces().get("eth1");
+    PacketPolicy eth0Policy = c.getPacketPolicies().get(eth0.getPacketPolicyName());
+    PacketPolicy eth1Policy = c.getPacketPolicies().get(eth1.getPacketPolicyName());
+
+    // Function to test that a given flow is transformed to the expected result flow
+    Action fibLookup = new FibLookup(IngressInterfaceVrf.instance());
+    BiFunction<Flow, Flow, Void> testFunction =
+        (testFlow, expectedFlow) -> {
+          FlowEvaluator.FlowResult eth0PolicyResult =
+              FlowEvaluator.evaluate(
+                  testFlow,
+                  eth0.getName(),
+                  eth0.getVrfName(),
+                  eth0Policy,
+                  c.getIpAccessLists(),
+                  c.getIpSpaces(),
+                  fibs);
+          FlowEvaluator.FlowResult eth1PolicyResult =
+              FlowEvaluator.evaluate(
+                  testFlow,
+                  eth1.getName(),
+                  eth1.getVrfName(),
+                  eth1Policy,
+                  c.getIpAccessLists(),
+                  c.getIpSpaces(),
+                  fibs);
+          assertThat(eth0PolicyResult.getFinalFlow(), equalTo(expectedFlow));
+          assertThat(eth1PolicyResult.getFinalFlow(), equalTo(expectedFlow));
+          assertThat(eth0PolicyResult.getAction(), equalTo(fibLookup));
+          assertThat(eth1PolicyResult.getAction(), equalTo(fibLookup));
+          return null;
+        };
+
+    // Set up test flows mapped to their expected transformed versions.
+    {
+      // Traffic may match no rules
+      Flow flow =
+          Flow.builder()
+              .setSrcIp(Ip.parse("1.1.1.1"))
+              .setDstIp(Ip.parse("1.1.1.2"))
+              .setIngressNode(hostname)
+              .build();
+      testFunction.apply(flow, flow);
+    }
+    {
+      // Traffic matching manual static rule cannot match further manual rules
+      Flow flow =
+          Flow.builder()
+              .setSrcIp(manualHideOriginalSrc) // would get translated by manual hide rule...
+              .setDstIp(manualStaticOriginalDst) // ...but matches manual static rule first
+              .setIngressNode(hostname)
+              .build();
+      testFunction.apply(flow, flow.toBuilder().setDstIp(manualStaticTranslatedDst).build());
+    }
+    {
+      // Traffic matching manual static rule cannot match automatic rules
+      Flow flow =
+          Flow.builder()
+              .setSrcIp(autoStatic1HostIp) // would get translated by auto static rule...
+              .setDstIp(manualStaticOriginalDst) // ...but matches manual static rule first
+              .setIngressNode(hostname)
+              .build();
+      testFunction.apply(flow, flow.toBuilder().setDstIp(manualStaticTranslatedDst).build());
+    }
+    {
+      // Traffic matching manual hide rule cannot match automatic rules
+      Flow flow =
+          Flow.builder()
+              .setSrcIp(manualHideOriginalSrc) // Matches manual hide rule, so...
+              .setDstIp(autoStatic1NatIp) // ...ineligible for auto static 1 rule
+              .setIngressNode(hostname)
+              .build();
+      testFunction.apply(flow, flow.toBuilder().setSrcIp(manualHideTranslatedSrc).build());
+    }
+    {
+      // Traffic can match an auto static dest rule and no source rule
+      Flow flow =
+          Flow.builder()
+              .setSrcIp(Ip.parse("1.1.1.1"))
+              .setDstIp(autoStatic1NatIp) // Matches dst translation for auto static 1 rule
+              .setIngressNode(hostname)
+              .build();
+      testFunction.apply(flow, flow.toBuilder().setDstIp(autoStatic1HostIp).build());
+    }
+    {
+      // Traffic can match an auto static source rule and no dest rule
+      Flow flow =
+          Flow.builder()
+              .setSrcIp(autoStatic1HostIp) // Matches source translation for auto static 1 rule
+              .setDstIp(Ip.parse("1.1.1.1"))
+              .setIngressNode(hostname)
+              .build();
+      testFunction.apply(flow, flow.toBuilder().setSrcIp(autoStatic1NatIp).build());
+    }
+    {
+      // Traffic can match an auto hide rule and no dest rule
+      Flow flow =
+          Flow.builder()
+              .setSrcIp(autoHideNetwork.getStartIp()) // Matches auto hide rule
+              .setDstIp(Ip.parse("1.1.1.1"))
+              .setIngressNode(hostname)
+              .build();
+      testFunction.apply(flow, flow.toBuilder().setSrcIp(autoHideNatIp).build());
+    }
+    {
+      // Traffic can match both an auto static dest rule and an auto static source rule
+      Flow flow =
+          Flow.builder()
+              .setSrcIp(autoStatic2HostIp) // Matches src translation for auto static 2 rule
+              .setDstIp(autoStatic1NatIp) // Matches dst translation for auto static 1 rule
+              .setIngressNode(hostname)
+              .build();
+      testFunction.apply(
+          flow, flow.toBuilder().setSrcIp(autoStatic2NatIp).setDstIp(autoStatic1HostIp).build());
+    }
+    {
+      // Traffic will still match both auto static dest rule and auto static source rule even if it
+      // would match intranet traffic for an auto hide rule
+      // (note that the hide rule's network contains both autoStatic1HostIp and autoStatic2NatIp,
+      // but auto static source rules take precedence over hide rules)
+      Flow flow =
+          Flow.builder()
+              .setSrcIp(autoStatic1HostIp) // Matches src translation for auto static 1 rule
+              .setDstIp(autoStatic2NatIp) // Matches dst translation for auto static 2 rule
+              .setIngressNode(hostname)
+              .build();
+      testFunction.apply(
+          flow, flow.toBuilder().setSrcIp(autoStatic1NatIp).setDstIp(autoStatic2HostIp).build());
+    }
+    {
+      // Traffic can match both an auto static dest rule and an auto hide source rule
+      Flow flow =
+          Flow.builder()
+              .setSrcIp(autoHideNetwork.getStartIp()) // Matches src translation for auto hide rule
+              .setDstIp(autoStatic1NatIp) // Matches dst translation for auto static 1 rule
+              .setIngressNode(hostname)
+              .build();
+      testFunction.apply(
+          flow, flow.toBuilder().setSrcIp(autoHideNatIp).setDstIp(autoStatic1HostIp).build());
+    }
+    {
+      // Intranet traffic for an auto hide rule (that doesn't match any auto static source rule) is
+      // not translated, even if it would match an auto static dst rule
+      // (note that autoHideNetwork contains autoStatic2NatIp)
+      // TODO Test that intranet traffic can't undergo dest translation due to another rule
+      Flow flow =
+          Flow.builder()
+              .setSrcIp(autoHideNetwork.getStartIp()) // Matches auto hide rule, so...
+              .setDstIp(autoStatic2NatIp) // ...ineligible for auto static 2 dst rule
+              .setIngressNode(hostname)
+              .build();
+      testFunction.apply(flow, flow);
+    }
+
+    // Check session properties
     assertThat(
-        c.getAllInterfaces().get("eth0").getFirewallSessionInterfaceInfo(),
+        eth0.getFirewallSessionInterfaceInfo(),
         equalTo(
             new FirewallSessionInterfaceInfo(
                 POST_NAT_FIB_LOOKUP, ImmutableList.of("eth0"), null, null)));
-    assertThat(c, hasInterface("eth1"));
-    assertNotNull(c.getAllInterfaces().get("eth1").getIncomingTransformation());
     assertThat(
-        c.getAllInterfaces().get("eth1").getFirewallSessionInterfaceInfo(),
+        eth1.getFirewallSessionInterfaceInfo(),
         equalTo(
             new FirewallSessionInterfaceInfo(
                 POST_NAT_FIB_LOOKUP, ImmutableList.of("eth1"), null, null)));
   }
 
   @Test
-  public void testAutomaticHideNatConversion() throws IOException {
+  public void testAutomaticHideBehindGatewayNatConversion() throws IOException {
     String hostname = "nat_rules";
     AtomicInteger uidGenerator = new AtomicInteger();
 
-    String hostIpName = "internalHost";
-    Uid hostUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
+    // Define two networks, one of which applies hide NAT
+    Prefix natted = Prefix.parse("10.0.0.0/16");
+    Prefix unnatted = Prefix.parse("20.0.0.0/16");
+    Uid natNetworkUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
+    Uid noNatNetworkUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
     NatSettings natSettings =
         new NatSettings(true, NatHideBehindGateway.INSTANCE, "All", null, HIDE);
-    ImmutableList<TypedManagementObject> domainObjs =
-        ImmutableList.of(new Host(Ip.parse("10.10.10.10"), natSettings, hostIpName, hostUid));
+    Network natNetwork =
+        new Network(
+            "network1",
+            natSettings,
+            natted.getStartIp(),
+            natted.getPrefixWildcard().inverted(),
+            natNetworkUid);
+    Network noNatNetwork =
+        new Network(
+            "network2",
+            new NatSettings(false, null, null, null, null),
+            unnatted.getStartIp(),
+            unnatted.getPrefixWildcard().inverted(),
+            noNatNetworkUid);
 
     // TODO Once we use the rulebase to correctly order auto hide rules, this rulebase will need a
     //      rule corresponding to the host's NatSettings above
     Uid natUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
     NatRulebase rulebase = new NatRulebase(ImmutableMap.of(), ImmutableList.of(), natUid);
+
+    // Create access layer to permit traffic to the NATted network and the other network.
+    Uid alUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
+    Uid ruleUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
+    Uid anyUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
+    CpmiAnyObject any = new CpmiAnyObject(anyUid);
+    Uid permitUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
+    RulebaseAction permit = new RulebaseAction("Accept", permitUid, "");
+    AccessLayer accessLayer =
+        new AccessLayer(
+            ImmutableMap.of(
+                anyUid,
+                any,
+                natNetworkUid,
+                natNetwork,
+                noNatNetworkUid,
+                noNatNetwork,
+                permitUid,
+                permit),
+            ImmutableList.of(
+                AccessRule.testBuilder(anyUid)
+                    .setUid(ruleUid)
+                    .setAction(permitUid)
+                    .setSource(ImmutableList.of(natNetworkUid, noNatNetworkUid))
+                    .build()),
+            alUid,
+            "accessLayer");
 
     Uid packageUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
     Uid domainUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
@@ -1364,7 +1677,7 @@ public class CheckPointGatewayGrammarTest {
         ImmutableMap.of(
             packageUid,
             new ManagementPackage(
-                ImmutableList.of(),
+                ImmutableList.of(accessLayer),
                 rulebase,
                 new Package(
                     new Domain("d", domainUid),
@@ -1391,36 +1704,146 @@ public class CheckPointGatewayGrammarTest {
                 new GatewayOrServerPolicy("p1", null),
                 gwUid));
 
+    // TODO This objects list may need to be more complete later depending on implementation changes
+    ImmutableList<TypedManagementObject> domainObjs =
+        ImmutableList.of(natNetwork, noNatNetwork, any, permit);
     CheckpointManagementConfiguration mgmt = toCheckpointMgmtConfig(gateways, packages, domainObjs);
-    Map<String, Configuration> configs = parseTextConfigs(mgmt, hostname);
+    IBatfish bf = getBatfishForConfigurationNames(mgmt, hostname);
+    Map<String, Configuration> configs = bf.loadConfigurations(bf.getSnapshot());
     Configuration c = configs.get(hostname);
+    bf.computeDataPlane(bf.getSnapshot());
+    Map<String, Fib> fibs = bf.loadDataPlane(bf.getSnapshot()).getFibs().get(hostname);
 
     // Test interfaces. This test uses two interfaces for two reasons:
     // 1. Some interface must own the gateway IP for the management data to match up, and we want to
     //    test that the transformation is a function of the egress interface IP, not the gateway IP.
     // 2. We want to test that the transformation is the same on internal and external interfaces.
-    assertThat(c, hasInterface("eth0"));
-    assertThat(c, hasInterface("eth1"));
     org.batfish.datamodel.Interface eth0 = c.getAllInterfaces().get("eth0");
     org.batfish.datamodel.Interface eth1 = c.getAllInterfaces().get("eth1");
+    PacketPolicy eth0Policy = c.getPacketPolicies().get(eth0.getPacketPolicyName());
+    PacketPolicy eth1Policy = c.getPacketPolicies().get(eth1.getPacketPolicyName());
 
-    // Automatic hide rule should not result in any incoming transformations
-    assertNull(eth0.getIncomingTransformation());
-    assertNull(eth1.getIncomingTransformation());
+    Ip ip1InNatNetwork = Ip.parse("10.0.10.10");
+    Ip ip2InNatNetwork = Ip.parse("10.0.10.11");
+    Ip ipInNoNatNetwork = Ip.parse("20.0.0.1");
+    Ip otherIp = Ip.parse("30.0.0.0"); // does not match either permitted network
+    // Function to test that a given flow is transformed to the expected result flow
+    TriFunction<Flow, Flow, Action, Void> testFunction =
+        (testFlow, expectedFlow, expectedAction) -> {
+          FlowEvaluator.FlowResult eth0PolicyResult =
+              FlowEvaluator.evaluate(
+                  testFlow,
+                  eth0.getName(),
+                  eth0.getVrfName(),
+                  eth0Policy,
+                  c.getIpAccessLists(),
+                  c.getIpSpaces(),
+                  fibs);
+          FlowEvaluator.FlowResult eth1PolicyResult =
+              FlowEvaluator.evaluate(
+                  testFlow,
+                  eth1.getName(),
+                  eth1.getVrfName(),
+                  eth1Policy,
+                  c.getIpAccessLists(),
+                  c.getIpSpaces(),
+                  fibs);
+          assertThat(eth0PolicyResult.getFinalFlow(), equalTo(expectedFlow));
+          assertThat(eth1PolicyResult.getFinalFlow(), equalTo(expectedFlow));
+          assertThat(eth0PolicyResult.getAction(), equalTo(expectedAction));
+          assertThat(eth1PolicyResult.getAction(), equalTo(expectedAction));
+          return null;
+        };
 
-    // Both interfaces should have an outgoing transformation to hide internal host
+    Action fibLookup = new FibLookup(IngressInterfaceVrf.instance());
+    {
+      // A flow destined to eth0's IP should not be transformed, regardless of ingress interface
+      Flow flow =
+          Flow.builder()
+              .setSrcIp(ip1InNatNetwork) // would get translated by hide rule...
+              .setDstIp(eth0Ip) // ...but is destined for firewall
+              .setIngressNode(hostname)
+              .build();
+      testFunction.apply(flow, flow, fibLookup);
+    }
+    {
+      // A flow destined to eth1's IP should not be transformed, regardless of ingress interface
+      Flow flow =
+          Flow.builder()
+              .setSrcIp(ip1InNatNetwork) // would get translated by hide rule...
+              .setDstIp(eth1Ip) // ...but is destined for firewall
+              .setIngressNode(hostname)
+              .build();
+      testFunction.apply(flow, flow, fibLookup);
+    }
+    {
+      // A flow destined to another IP in the NATted network should not be transformed because it is
+      // intranet traffic
+      Flow flow =
+          Flow.builder()
+              .setSrcIp(ip1InNatNetwork) // would get translated by hide rule...
+              .setDstIp(ip2InNatNetwork) // ...but is intranet traffic
+              .setIngressNode(hostname)
+              .build();
+      testFunction.apply(flow, flow, fibLookup);
+    }
+    {
+      // A flow from an IP in the NATted network destined to an IP outside it should be transformed
+      Flow flow =
+          Flow.builder()
+              .setSrcIp(ip1InNatNetwork)
+              .setDstIp(otherIp)
+              .setIngressNode(hostname)
+              .build();
+      FlowEvaluator.FlowResult eth0PolicyResult =
+          FlowEvaluator.evaluate(
+              flow,
+              eth0.getName(),
+              eth0.getVrfName(),
+              eth0Policy,
+              c.getIpAccessLists(),
+              c.getIpSpaces(),
+              fibs);
+      FlowEvaluator.FlowResult eth1PolicyResult =
+          FlowEvaluator.evaluate(
+              flow,
+              eth1.getName(),
+              eth1.getVrfName(),
+              eth1Policy,
+              c.getIpAccessLists(),
+              c.getIpSpaces(),
+              fibs);
+      testFunction.apply(
+          flow, flow.toBuilder().setSrcIp(HIDE_BEHIND_GATEWAY_IP).build(), fibLookup);
+    }
+    {
+      // A flow from an IP in the non-NATted network should not be transformed
+      Flow flow =
+          Flow.builder()
+              .setSrcIp(ipInNoNatNetwork)
+              .setDstIp(otherIp)
+              .setIngressNode(hostname)
+              .build();
+      testFunction.apply(flow, flow, fibLookup);
+    }
+    {
+      // A flow from an IP not in either network should be dropped
+      Flow flow =
+          Flow.builder()
+              .setSrcIp(otherIp)
+              .setDstIp(eth0Ip) // dst IP doesn't matter
+              .setIngressNode(hostname)
+              .build();
+      testFunction.apply(flow, flow, Drop.instance());
+    }
+
+    // Both interfaces should have an outgoing transformation to apply egress iface IP
     assertThat(
         eth0.getOutgoingTransformation(),
-        equalTo(
-            when(matchSrc(new IpSpaceReference(hostIpName)))
-                .apply(TransformationStep.assignSourceIp(eth0Ip))
-                .build()));
+        equalTo(when(matchSrc(HIDE_BEHIND_GATEWAY_IP)).apply(assignSourceIp(eth0Ip)).build()));
     assertThat(
         eth1.getOutgoingTransformation(),
-        equalTo(
-            when(matchSrc(new IpSpaceReference(hostIpName)))
-                .apply(TransformationStep.assignSourceIp(eth1Ip))
-                .build()));
+        equalTo(when(matchSrc(HIDE_BEHIND_GATEWAY_IP)).apply(assignSourceIp(eth1Ip)).build()));
   }
 
   @Test
