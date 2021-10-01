@@ -2,7 +2,6 @@ package org.batfish.common.util.isp;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.common.util.isp.IspModelingUtils.LINK_LOCAL_IP;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
@@ -14,10 +13,6 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.BgpActivePeerConfig;
-import org.batfish.datamodel.BgpPeerConfig;
-import org.batfish.datamodel.InterfaceAddress;
-import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.isp_configuration.traffic_filtering.IspTrafficFiltering;
 
@@ -36,7 +31,7 @@ final class IspModel {
           "Internet announcements should not be provided when internet connection is false");
       return new IspModel(
           _asn,
-          firstNonNull(_remotes, ImmutableList.of()),
+          firstNonNull(_snapshotConnections, ImmutableList.of()),
           _name,
           internetConnection,
           internetAnnouncements,
@@ -72,13 +67,15 @@ final class IspModel {
       return setAdditionalPrefixesToInternet(Arrays.asList(additionalPrefixesToInternet));
     }
 
-    public Builder setRemotes(@Nullable Iterable<Remote> remotes) {
-      _remotes = remotes == null ? null : ImmutableList.copyOf(remotes);
+    public Builder setSnapshotConnections(
+        @Nullable Iterable<SnapshotConnection> snapshotConnections) {
+      _snapshotConnections =
+          snapshotConnections == null ? null : ImmutableList.copyOf(snapshotConnections);
       return this;
     }
 
-    public Builder setRemotes(@Nonnull Remote... remotes) {
-      return setRemotes(Arrays.asList(remotes));
+    public Builder setSnapshotConnections(@Nonnull SnapshotConnection... snapshotConnections) {
+      return setSnapshotConnections(Arrays.asList(snapshotConnections));
     }
 
     public Builder setTrafficFiltering(@Nullable IspTrafficFiltering trafficFiltering) {
@@ -88,7 +85,7 @@ final class IspModel {
 
     private @Nullable Long _asn;
     private @Nullable String _name;
-    private @Nullable List<Remote> _remotes;
+    private @Nullable List<SnapshotConnection> _snapshotConnections;
     private Boolean _internetConnection;
     private @Nullable Set<Prefix> _additionalPrefixesToInternet;
     private @Nullable IspTrafficFiltering _trafficFiltering;
@@ -98,102 +95,22 @@ final class IspModel {
     return new Builder();
   }
 
-  /** Represents one remote end of the ISP node */
-  static final class Remote {
-
-    private @Nonnull final String _remoteHostname;
-    private @Nonnull final String _remoteIfaceName;
-    private @Nonnull final InterfaceAddress _ispIfaceAddress;
-    private @Nonnull final BgpPeerConfig _remoteBgpPeerConfig;
-
-    Remote(
-        String remoteHostname,
-        String remoteIfaceName,
-        InterfaceAddress ispIfaceAddress,
-        BgpPeerConfig remoteBgpPeerConfig) {
-      _remoteHostname = remoteHostname;
-      _remoteIfaceName = remoteIfaceName;
-      _ispIfaceAddress = ispIfaceAddress;
-      _remoteBgpPeerConfig = remoteBgpPeerConfig;
-    }
-
-    /** Returns what should be the Ip for the ISP interface that peers with this remote node */
-    public Ip getIspIfaceIp() {
-      if (_remoteBgpPeerConfig instanceof BgpActivePeerConfig) {
-        return ((BgpActivePeerConfig) _remoteBgpPeerConfig).getPeerAddress();
-      } else {
-        return LINK_LOCAL_IP;
-      }
-    }
-
-    @Nonnull
-    public String getRemoteHostname() {
-      return _remoteHostname;
-    }
-
-    @Nonnull
-    public String getRemoteIfaceName() {
-      return _remoteIfaceName;
-    }
-
-    @Nonnull
-    public InterfaceAddress getIspIfaceAddress() {
-      return _ispIfaceAddress;
-    }
-
-    @Nonnull
-    public BgpPeerConfig getRemoteBgpPeerConfig() {
-      return _remoteBgpPeerConfig;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) {
-        return true;
-      }
-      if (!(o instanceof Remote)) {
-        return false;
-      }
-      Remote neighbor = (Remote) o;
-      return _remoteHostname.equals(neighbor._remoteHostname)
-          && _remoteIfaceName.equals(neighbor._remoteIfaceName)
-          && _ispIfaceAddress.equals(neighbor._ispIfaceAddress)
-          && _remoteBgpPeerConfig.equals(neighbor._remoteBgpPeerConfig);
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hash(
-          _remoteHostname, _remoteIfaceName, _ispIfaceAddress, _remoteBgpPeerConfig);
-    }
-
-    @Override
-    public String toString() {
-      return MoreObjects.toStringHelper(this)
-          .add("remoteHostname", _remoteHostname)
-          .add("remoteIfaceName", _remoteIfaceName)
-          .add("ispInterfaceAddress", _ispIfaceAddress)
-          .add("remoteBgpActivePeerConfig", _remoteBgpPeerConfig)
-          .toString();
-    }
-  }
-
   private final long _asn;
   private final @Nullable String _name;
-  private @Nonnull List<Remote> _remotes;
+  private @Nonnull List<SnapshotConnection> _snapshotConnections;
   private final boolean _internetConnection;
   private final @Nonnull Set<Prefix> _additionalPrefixesToInternet;
   private final @Nonnull IspTrafficFiltering _trafficFiltering;
 
   private IspModel(
       long asn,
-      List<Remote> remotes,
+      List<SnapshotConnection> snapshotConnections,
       @Nullable String name,
       boolean internetConnection,
       Set<Prefix> additionalPrefixesToInternet,
       IspTrafficFiltering trafficFiltering) {
     _asn = asn;
-    _remotes = remotes;
+    _snapshotConnections = snapshotConnections;
     _name = name;
     _internetConnection = internetConnection;
     _additionalPrefixesToInternet = ImmutableSet.copyOf(additionalPrefixesToInternet);
@@ -201,8 +118,33 @@ final class IspModel {
   }
 
   @Nonnull
-  List<Remote> getRemotes() {
-    return ImmutableList.copyOf(_remotes);
+  List<SnapshotConnection> getSnapshotConnections() {
+    return ImmutableList.copyOf(_snapshotConnections);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof IspModel)) {
+      return false;
+    }
+    IspModel ispModel = (IspModel) o;
+    return _asn == ispModel._asn
+        && _internetConnection == ispModel._internetConnection
+        && Objects.equals(_name, ispModel._name)
+        && _snapshotConnections.equals(ispModel._snapshotConnections)
+        && _additionalPrefixesToInternet.equals(ispModel._additionalPrefixesToInternet)
+        && _trafficFiltering.equals(ispModel._trafficFiltering);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        _asn,
+        _name,
+        _snapshotConnections,
+        _internetConnection,
+        _additionalPrefixesToInternet,
+        _trafficFiltering);
   }
 
   @Override
@@ -211,44 +153,21 @@ final class IspModel {
         .omitNullValues()
         .add("asn", _asn)
         .add("name", _name)
-        .add("neighbors", _remotes)
+        .add("neighbors", _snapshotConnections)
         .add("additionalPrefixes", _additionalPrefixesToInternet)
         .add("trafficFiltering", _trafficFiltering)
         .toString();
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (!(o instanceof IspModel)) {
-      return false;
-    }
-    IspModel ispInfo = (IspModel) o;
-    return _asn == ispInfo._asn
-        && _remotes.equals(ispInfo._remotes)
-        && Objects.equals(_name, ispInfo._name)
-        && _additionalPrefixesToInternet.equals(ispInfo._additionalPrefixesToInternet)
-        && _trafficFiltering.equals(ispInfo._trafficFiltering);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(_asn, _remotes, _name, _additionalPrefixesToInternet, _trafficFiltering);
   }
 
   public long getAsn() {
     return _asn;
   }
 
-  @Nonnull
-  public String getHostname() {
+  public @Nonnull String getHostname() {
     return IspModelingUtils.getDefaultIspNodeName(_asn);
   }
 
-  @Nullable
-  public String getName() {
+  public @Nullable String getName() {
     return _name;
   }
 
@@ -260,14 +179,12 @@ final class IspModel {
    * Returns the prefixes that the ISP should announce to the Internet over the BGP connection
    * (beyond just passing along what it hears from other connected nodes)
    */
-  @Nonnull
-  public Set<Prefix> getAdditionalPrefixesToInternet() {
+  public @Nonnull Set<Prefix> getAdditionalPrefixesToInternet() {
     return _additionalPrefixesToInternet;
   }
 
   /** Returns the {@link IspTrafficFiltering traffic filtering policy} of this ISP. */
-  @Nonnull
-  public IspTrafficFiltering getTrafficFiltering() {
+  public @Nonnull IspTrafficFiltering getTrafficFiltering() {
     return _trafficFiltering;
   }
 }
