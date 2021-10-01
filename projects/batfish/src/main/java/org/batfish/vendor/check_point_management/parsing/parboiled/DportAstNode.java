@@ -7,9 +7,10 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 /** An {@link AstNode} representing a boolean function of the destination port. */
 @ParametersAreNonnullByDefault
-public class DportAstNode implements BooleanExprAstNode {
+public class DportAstNode extends VariableInspectTextBooleanExprAstNode {
 
-  public DportAstNode(ComparatorAstNode comparator, Uint16AstNode value) {
+  public DportAstNode(String inspectText, ComparatorAstNode comparator, Uint16AstNode value) {
+    super(inspectText);
     _comparator = comparator;
     _value = value;
   }
@@ -29,9 +30,7 @@ public class DportAstNode implements BooleanExprAstNode {
 
   @Override
   public boolean equals(@Nullable Object o) {
-    if (this == o) {
-      return true;
-    } else if (!(o instanceof DportAstNode)) {
+    if (!baseEquals(o)) {
       return false;
     }
     DportAstNode that = (DportAstNode) o;
@@ -40,7 +39,7 @@ public class DportAstNode implements BooleanExprAstNode {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_comparator, _value);
+    return Objects.hash(baseHashCode(), _comparator, _value);
   }
 
   private final @Nonnull ComparatorAstNode _comparator;

@@ -52,18 +52,15 @@ public class ServiceOtherMatchExpr extends BaseParser<AstNode> {
 
   Rule DportExpr() {
     return Sequence(
-        "dport",
-        Comparator(),
-        Uint16Expr(),
-        push(new DportAstNode((ComparatorAstNode) pop(1), (Uint16AstNode) pop())));
+        Sequence("dport", Comparator(), Uint16Expr()),
+        push(new DportAstNode(match().trim(), (ComparatorAstNode) pop(1), (Uint16AstNode) pop())));
   }
 
   Rule UhDportExpr() {
     return Sequence(
-        "uh_dport",
-        Comparator(),
-        Uint16Expr(),
-        push(new UhDportAstNode((ComparatorAstNode) pop(1), (Uint16AstNode) pop())));
+        Sequence("uh_dport", Comparator(), Uint16Expr()),
+        push(
+            new UhDportAstNode(match().trim(), (ComparatorAstNode) pop(1), (Uint16AstNode) pop())));
   }
 
   Rule Uint16Expr() {
@@ -111,15 +108,15 @@ public class ServiceOtherMatchExpr extends BaseParser<AstNode> {
   }
 
   Rule DirectionExpr() {
-    return Sequence("direction", "=", FirstOf(Incoming(), Outgoing()));
+    return FirstOf(Incoming(), Outgoing());
   }
 
   Rule Incoming() {
-    return Sequence("0", push(IncomingAstNode.instance()));
+    return Sequence(Sequence("direction", "=", "0"), push(new IncomingAstNode(match().trim())));
   }
 
   Rule Outgoing() {
-    return Sequence("1", push(OutgoingAstNode.instance()));
+    return Sequence(Sequence("direction", "=", "1"), push(new OutgoingAstNode(match().trim())));
   }
 
   Rule UnhandledExpr() {

@@ -6,7 +6,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 /** An {@link AstNode} representing the condition that the packet protocol is TCP. */
 @ParametersAreNonnullByDefault
-public final class TcpAstNode implements BooleanExprAstNode {
+public final class TcpAstNode implements BooleanExprAstNode, HasInspectText {
 
   public static @Nonnull TcpAstNode instance() {
     return INSTANCE;
@@ -15,6 +15,11 @@ public final class TcpAstNode implements BooleanExprAstNode {
   @Override
   public <T, U> T accept(BooleanExprAstNodeVisitor<T, U> visitor, U arg) {
     return visitor.visitTcpAstNode(this, arg);
+  }
+
+  @Override
+  public @Nonnull String getInspectText() {
+    return "tcp";
   }
 
   private static final TcpAstNode INSTANCE = new TcpAstNode();

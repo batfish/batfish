@@ -12,14 +12,16 @@ public final class OutgoingAstNodeTest {
 
   @Test
   public void testJavaSerialization() {
-    assertThat(
-        SerializationUtils.clone(OutgoingAstNode.instance()), equalTo(OutgoingAstNode.instance()));
+    OutgoingAstNode obj = new OutgoingAstNode("foo");
+    assertThat(SerializationUtils.clone(obj), equalTo(obj));
   }
 
   @Test
   public void testEquals() {
+    OutgoingAstNode obj = new OutgoingAstNode("foo");
     new EqualsTester()
-        .addEqualityGroup(OutgoingAstNode.instance(), OutgoingAstNode.instance())
+        .addEqualityGroup(obj, new OutgoingAstNode("foo"))
+        .addEqualityGroup(new OutgoingAstNode("bar"))
         .testEquals();
   }
 }

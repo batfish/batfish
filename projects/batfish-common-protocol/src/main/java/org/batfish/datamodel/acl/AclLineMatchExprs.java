@@ -138,11 +138,16 @@ public final class AclLineMatchExprs {
   }
 
   public static @Nonnull AclLineMatchExpr matchDstPort(IntegerSpace portSpace) {
+    return matchDstPort(portSpace, null);
+  }
+
+  public static @Nonnull AclLineMatchExpr matchDstPort(
+      IntegerSpace portSpace, @Nullable TraceElement traceElement) {
     checkArgument(
         0 <= portSpace.least() && portSpace.greatest() <= 0xFFFF,
         "Invalid port space: %s",
         portSpace);
-    return match(HeaderSpace.builder().setDstPorts(portSpace.getSubRanges()).build());
+    return match(HeaderSpace.builder().setDstPorts(portSpace.getSubRanges()).build(), traceElement);
   }
 
   public static AclLineMatchExpr matchDstPrefix(String prefix) {
