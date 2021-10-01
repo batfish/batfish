@@ -1,14 +1,13 @@
 package org.batfish.datamodel.isp_configuration;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.Objects;
 
 /**
  * A specification for connectivity needed to establish a BGP peering session specified by {@link
@@ -47,5 +46,33 @@ public class IspAttachment {
     checkNotNull(hostname, "Hostname cannot be null for BgpPeerConnectivity");
     checkNotNull(iface, "Hostname cannot be null for BgpPeerConnectivity");
     return new IspAttachment(hostname, iface, vlanTag);
+  }
+
+  public @Nonnull String getHostname() {
+    return _hostname;
+  }
+
+  public @Nonnull String getInterface() {
+    return _interface;
+  }
+
+  public @Nullable Integer getVlanTag() {
+    return _vlanTag;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof IspAttachment)) {
+      return false;
+    }
+    IspAttachment that = (IspAttachment) o;
+    return _hostname.equals(that._hostname)
+        && _interface.equals(that._interface)
+        && Objects.equals(_vlanTag, that._vlanTag);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_hostname, _interface, _vlanTag);
   }
 }

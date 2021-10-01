@@ -1,46 +1,31 @@
 package org.batfish.common.util.isp;
 
+import com.google.common.annotations.VisibleForTesting;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
-import static java.util.Comparator.naturalOrder;
-import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
-import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
-import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
-import static org.batfish.specifier.Location.interfaceLinkLocation;
-
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-import javax.annotation.Nonnull;
-import javax.annotation.ParametersAreNonnullByDefault;
+import static java.util.Comparator.naturalOrder;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Node;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
+import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.Interface;
+import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
@@ -59,8 +44,10 @@ import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.isp_configuration.BgpPeerInfo;
 import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
 import org.batfish.datamodel.isp_configuration.IspAnnouncement;
+import org.batfish.datamodel.isp_configuration.IspAttachment;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
 import org.batfish.datamodel.isp_configuration.IspNodeInfo;
 import org.batfish.datamodel.isp_configuration.traffic_filtering.IspTrafficFiltering;
@@ -75,7 +62,22 @@ import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import static org.batfish.specifier.Location.interfaceLinkLocation;
 import org.batfish.specifier.LocationInfo;
+
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /** Util classes and functions to model ISPs and Internet for a given network */
 @ParametersAreNonnullByDefault
@@ -123,8 +125,9 @@ public final class IspModelingUtils {
     return "To-" + ispHostname;
   }
 
-  public static String ispToRemoteInterfaceName(String remoteHostname, String remoteInterfaceName) {
-    return "To-" + remoteHostname + '-' + remoteInterfaceName;
+  public static String ispToSnapshotInterfaceName(
+      String snapshotHostname, String snapshotInterfaceName) {
+    return "To-" + snapshotHostname + '-' + snapshotInterfaceName;
   }
 
   @VisibleForTesting
@@ -243,9 +246,9 @@ public final class IspModelingUtils {
   }
 
   /**
-   * Combines the {@code BorderInterfaceInfo} objects across all {@code ispConfigurations},
-   * returning a map from ASN to the list of {@link SnapshotConnection} connections that ASN should
-   * have.
+   * Combines the {@link BorderInterfaceInfo} and {@link BgpPeerInfo} objects across all {@code
+   * ispConfigurations}, returning a map from ASN to the list of {@link SnapshotConnection}
+   * connections that ASN should have.
    */
   @VisibleForTesting
   static Map<Long, List<SnapshotConnection>> combineBorderInterfaces(
@@ -274,6 +277,17 @@ public final class IspModelingUtils {
         // get the ISP ASN from the first snapshot connection -- they should all be the same
         long asn = snapshotConnections.get(0).getBgpPeer().getLocalAsn();
         asnToRemotes.computeIfAbsent(asn, k -> ImmutableList.builder()).addAll(snapshotConnections);
+      }
+
+      for (BgpPeerInfo bgpPeerInfo : ispConfiguration.getBgpPeerInfos()) {
+        getSnapshotConnectionForBgpPeerInfo(
+                bgpPeerInfo, allowedIspIps, allowedIspAsns, configurations, warnings)
+            .ifPresent(
+                sc ->
+                    asnToRemotes
+                        .computeIfAbsent(
+                            sc.getBgpPeer().getLocalAsn(), k -> ImmutableList.builder())
+                        .add(sc));
       }
     }
 
@@ -318,7 +332,7 @@ public final class IspModelingUtils {
   }
 
   /**
-   * Given a {@link BorderInterfaceInfo} objects, return the {@link SnapshotConnection}s
+   * Given a {@link BorderInterfaceInfo} object, return the {@link SnapshotConnection}s
    * corresponding to it. Nothing is returned if the interface established BGP sessions with
    * multiple ISPs.
    *
@@ -367,7 +381,8 @@ public final class IspModelingUtils {
                     StreamSupport.stream(bgpProcess.getAllPeerConfigs().spliterator(), false))
             .filter(
                 bgpPeerConfig ->
-                    isValidBgpPeerConfig(bgpPeerConfig, localConcreteIps, remoteIps, remoteAsns))
+                    isValidBgpPeerForBorderInterfaceInfo(
+                        bgpPeerConfig, localConcreteIps, remoteIps, remoteAsns))
             .collect(Collectors.toList());
 
     if (validBgpPeers.isEmpty()) {
@@ -392,22 +407,23 @@ public final class IspModelingUtils {
     }
 
     return validBgpPeers.stream()
-        .map(peer -> makeSnapshotConnection(peer, snapshotHost.getHostname(), snapshotIface))
+        .map(peer -> makeSnapshotConnection(peer, snapshotIface))
         .collect(ImmutableList.toImmutableList());
   }
 
   /**
-   * Converts the {@code bgpPeerConfig} and {@borderInterface} information into a {@link
+   * Converts the {@code bgpPeerConfig} and snapshot iface information into a {@link
    * SnapshotConnection} object.
    */
-  @VisibleForTesting
-  static SnapshotConnection makeSnapshotConnection(
-      BgpPeerConfig bgpPeerConfig, String snapshotHostname, Interface snapshotIface) {
-    String ispIfaceName = ispToRemoteInterfaceName(snapshotHostname, snapshotIface.getName());
+  private static SnapshotConnection makeSnapshotConnection(
+      BgpPeerConfig bgpPeerConfig, Interface snapshotIface) {
+    String snapshotHostname = snapshotIface.getOwner().getHostname();
+    String ispIfaceName = ispToSnapshotInterfaceName(snapshotHostname, snapshotIface.getName());
     Layer1Node snapshotL1node = new Layer1Node(snapshotHostname, snapshotIface.getName());
+
     if (bgpPeerConfig instanceof BgpUnnumberedPeerConfig) {
       IspInterface ispInterface =
-          new IspInterface(ispIfaceName, LINK_LOCAL_ADDRESS, snapshotL1node);
+          new IspInterface(ispIfaceName, LINK_LOCAL_ADDRESS, snapshotL1node, null);
       return new SnapshotConnection(
           snapshotHostname,
           ImmutableList.of(ispInterface),
@@ -425,13 +441,108 @@ public final class IspModelingUtils {
       InterfaceAddress ispInterfaceAddress =
           ConcreteInterfaceAddress.create(peerAddress, ifaceAddress.getNetworkBits());
       IspInterface ispInterface =
-          new IspInterface(ispIfaceName, ispInterfaceAddress, snapshotL1node);
+          new IspInterface(ispIfaceName, ispInterfaceAddress, snapshotL1node, null);
       return new SnapshotConnection(
           snapshotHostname,
           ImmutableList.of(ispInterface),
           IspBgpActivePeer.create((BgpActivePeerConfig) bgpPeerConfig));
     }
     throw new IllegalArgumentException("makeRemote called with illegal BgpPeerConfig type");
+  }
+
+  /**
+   * Given a {@link BgpPeerInfo} object, return the corresponding {@link SnapshotConnection} object.
+   * Nothing is returned if the interface established BGP sessions with multiple ISPs.
+   */
+  @VisibleForTesting
+  static Optional<SnapshotConnection> getSnapshotConnectionForBgpPeerInfo(
+      BgpPeerInfo bgpPeerInfo,
+      Set<Ip> remoteIps,
+      LongSpace remoteAsns,
+      Map<String, Configuration> configurations,
+      Warnings warnings) {
+    Configuration snapshotHost = configurations.get(bgpPeerInfo.getHostname());
+    if (snapshotHost == null) {
+      warnings.redFlag(
+          String.format("ISP Modeling: Non-existent border node %s", bgpPeerInfo.getHostname()));
+      return Optional.empty();
+    }
+    List<BgpActivePeerConfig> snapshotBgpPeers =
+        snapshotHost.getVrfs().values().stream()
+            .flatMap(vrf -> vrf.getBgpProcess().getActiveNeighbors().values().stream())
+            .filter(peer -> bgpPeerInfo.getPeerAddress().equals(peer.getPeerAddress()))
+            .collect(Collectors.toList());
+    if (snapshotBgpPeers.isEmpty()) {
+      warnings.redFlag(
+          String.format(
+              "ISP Modeling: No BGP neighbor %s found on node %s",
+              bgpPeerInfo.getPeerAddress(), bgpPeerInfo.getHostname()));
+      return Optional.empty();
+    }
+    if (snapshotBgpPeers.size() > 1) {
+      if (bgpPeerInfo.getVrf() == null) {
+        warnings.redFlag(
+            String.format(
+                "ISP Modeling: Multiple BGP neighbor with peer address %s found on node %s. Specify VRF to select one.",
+                bgpPeerInfo.getPeerAddress(), bgpPeerInfo.getHostname()));
+        return Optional.empty();
+      }
+      Optional<BgpActivePeerConfig> snapshotBgpPeerOpt =
+          snapshotHost.getVrfs().values().stream()
+              .filter(vrf -> bgpPeerInfo.getVrf().equalsIgnoreCase(vrf.getName()))
+              .flatMap(vrf -> vrf.getBgpProcess().getActiveNeighbors().values().stream())
+              .filter(peer -> bgpPeerInfo.getPeerAddress().equals(peer.getPeerAddress()))
+              .findAny(); // there will be at most one matches
+      if (!snapshotBgpPeerOpt.isPresent()) {
+        warnings.redFlag(
+            String.format(
+                "ISP Modeling: BGP neighbor with peer address %s not found in VRF %s on node %s.",
+                bgpPeerInfo.getPeerAddress(), bgpPeerInfo.getVrf(), bgpPeerInfo.getHostname()));
+        return Optional.empty();
+      }
+      snapshotBgpPeers = ImmutableList.of(snapshotBgpPeerOpt.get());
+    }
+    BgpActivePeerConfig snapshotBgpPeer = snapshotBgpPeers.get(0);
+    if (!isValidBgpPeerConfigForBgpPeerInfo(snapshotBgpPeer, remoteIps, remoteAsns)) {
+      warnings.redFlag(
+          String.format(
+              "ISP Modeling: BGP peer with peer address %s on node %s is not valid.",
+              bgpPeerInfo.getPeerAddress(), bgpPeerInfo.getHostname()));
+      return Optional.empty();
+    }
+
+    if (bgpPeerInfo.getIspAttachment() == null) {
+      warnings.redFlag(
+          String.format(
+              "ISP Modeling: Missing ISP attachment case is not currently handled. Skipping %s",
+              bgpPeerInfo));
+      return Optional.empty();
+    }
+
+    IspAttachment ispAttachment = bgpPeerInfo.getIspAttachment();
+    Configuration attachmentHost = configurations.get(ispAttachment.getHostname());
+    if (attachmentHost == null) {
+      warnings.redFlag(
+          String.format(
+              "ISP Modeling: Non-existent ISP attachment node %s", ispAttachment.getHostname()));
+      return Optional.empty();
+    }
+    Interface attachmentIface =
+        snapshotHost.getAllInterfaces().values().stream()
+            .filter(i -> i.getName().equalsIgnoreCase(ispAttachment.getInterface()))
+            .findFirst()
+            .orElse(null);
+    if (attachmentIface == null) {
+      warnings.redFlag(
+          String.format(
+              "ISP Modeling: Non-existent attachment interface %s on node %s",
+              ispAttachment.getInterface(), ispAttachment.getHostname()));
+      return Optional.empty();
+    }
+
+    // TODO: Enforce interface type constraint here
+
+    return Optional.of(makeSnapshotConnection(snapshotBgpPeer, attachmentIface));
   }
 
   private static ModeledNodes createInternetAndIspNodes(
@@ -824,16 +935,19 @@ public final class IspModelingUtils {
   }
 
   @VisibleForTesting
-  static boolean isValidBgpPeerConfig(
+  static boolean isValidBgpPeerForBorderInterfaceInfo(
       BgpPeerConfig bgpPeerConfig,
-      Set<Ip> localConcreteIps,
+      Set<Ip> validLocalIps,
       Set<Ip> allowedRemoteIps,
       LongSpace allowedRemoteAsns) {
-    // local and remote ASNs are defined, and remote ASN is valid
     boolean commonCriteria =
-        Objects.nonNull(bgpPeerConfig.getLocalAs())
-            && !bgpPeerConfig.getRemoteAsns().equals(LongSpace.of(bgpPeerConfig.getLocalAs()))
-            && !allowedRemoteAsns.intersection(bgpPeerConfig.getRemoteAsns()).isEmpty();
+        Objects.nonNull(bgpPeerConfig.getLocalAs()) // local AS is defined
+            && !bgpPeerConfig
+                .getRemoteAsns()
+                .equals(LongSpace.of(bgpPeerConfig.getLocalAs())) // not iBGP
+            && !allowedRemoteAsns
+                .intersection(bgpPeerConfig.getRemoteAsns())
+                .isEmpty(); // remote AS is defined and allowed
     if (!commonCriteria) {
       return false;
     }
@@ -843,10 +957,11 @@ public final class IspModelingUtils {
       // limit to peers with statically determined local IP -- that is how we know that the
       // session is indeed tied to the interface
       return Objects.nonNull(bgpPeerConfig.getLocalIp())
-          && localConcreteIps.contains(bgpPeerConfig.getLocalIp())
-          && Objects.nonNull(activePeerConfig.getPeerAddress())
+          && validLocalIps.contains(bgpPeerConfig.getLocalIp())
+          && Objects.nonNull(activePeerConfig.getPeerAddress()) // peer address is defined
           && (allowedRemoteIps.isEmpty()
-              || allowedRemoteIps.contains(activePeerConfig.getPeerAddress()));
+              || allowedRemoteIps.contains(
+                  activePeerConfig.getPeerAddress())); // peer address is allowed
     }
     if (bgpPeerConfig instanceof BgpUnnumberedPeerConfig) {
       // peer interface is always non-null, so need to check
@@ -854,6 +969,24 @@ public final class IspModelingUtils {
     }
     // passive peers are not valid for ISP modeling
     return false;
+  }
+
+  @VisibleForTesting
+  static boolean isValidBgpPeerConfigForBgpPeerInfo(
+      BgpActivePeerConfig bgpPeerConfig, Set<Ip> allowedRemoteIps, LongSpace allowedRemoteAsns) {
+    return Objects.nonNull(bgpPeerConfig.getLocalAs()) // local AS is defined
+        && Objects.nonNull(
+            bgpPeerConfig.getLocalIp()) // local IP is defined -- used as peer address on ISP
+        && !bgpPeerConfig
+            .getRemoteAsns()
+            .equals(LongSpace.of(bgpPeerConfig.getLocalAs())) // not iBGP
+        && !allowedRemoteAsns
+            .intersection(bgpPeerConfig.getRemoteAsns())
+            .isEmpty() // remote AS is defined and allowed
+        && Objects.nonNull(bgpPeerConfig.getPeerAddress()) // peer address is defined
+        && (allowedRemoteIps.isEmpty()
+            || allowedRemoteIps.contains(
+                bgpPeerConfig.getPeerAddress())); // peer address is allowed
   }
 
   /**

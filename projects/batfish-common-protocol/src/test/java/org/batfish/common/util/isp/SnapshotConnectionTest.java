@@ -1,10 +1,9 @@
 package org.batfish.common.util.isp;
 
-import static org.batfish.common.util.isp.IspModelingUtils.LINK_LOCAL_ADDRESS;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
 import org.batfish.common.topology.Layer1Node;
+import static org.batfish.common.util.isp.IspModelingUtils.LINK_LOCAL_ADDRESS;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.Ip;
 import org.junit.Test;
@@ -30,7 +29,7 @@ public class SnapshotConnectionTest {
             new SnapshotConnection(
                 "a",
                 ImmutableList.of(
-                    new IspInterface("name", LINK_LOCAL_ADDRESS, new Layer1Node("1", "2"))),
+                    new IspInterface("name", LINK_LOCAL_ADDRESS, new Layer1Node("1", "2"), null)),
                 ispBgpActivePeer))
         .addEqualityGroup(
             new SnapshotConnection(

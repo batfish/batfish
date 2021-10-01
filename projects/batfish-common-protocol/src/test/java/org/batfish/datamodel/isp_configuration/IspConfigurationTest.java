@@ -1,18 +1,17 @@
 package org.batfish.datamodel.isp_configuration;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.batfish.common.util.Resources.readResource;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.equalTo;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import org.batfish.common.util.BatfishObjectMapper;
+import static org.batfish.common.util.Resources.readResource;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.isp_configuration.traffic_filtering.IspTrafficFiltering;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.equalTo;
 import org.junit.Test;
 
 /** Tests for {@link IspConfiguration} */
@@ -59,7 +58,7 @@ public class IspConfigurationTest {
             new IspConfiguration(
                 ImmutableList.of(
                     new BorderInterfaceInfo(NodeInterfacePair.of("node", "interface"))),
-                ImmutableList.of(new BgpPeerInfo("other", "other", null, null, null)),
+                ImmutableList.of(new BgpPeerInfo("other", Ip.ZERO, null, null)),
                 new IspFilter(ImmutableList.of(1234L), ImmutableList.of(Ip.parse("1.1.1.1"))),
                 ImmutableList.of(new IspNodeInfo(42, "n1"))))
         .testEquals();
@@ -70,7 +69,7 @@ public class IspConfigurationTest {
     IspConfiguration ispConfiguration =
         new IspConfiguration(
             ImmutableList.of(new BorderInterfaceInfo(NodeInterfacePair.of("node", "interface"))),
-            ImmutableList.of(new BgpPeerInfo("node", "interface", null, null, null)),
+            ImmutableList.of(new BgpPeerInfo("node", Ip.ZERO, null, null)),
             new IspFilter(ImmutableList.of(1234L), ImmutableList.of(Ip.parse("1.1.1.1"))),
             ImmutableList.of(new IspNodeInfo(42, "n1")));
 
