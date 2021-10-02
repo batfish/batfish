@@ -21,6 +21,8 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
  * <p>Batfish will automatically create new layer-1 edges between the physical interfaces
  * corresponding to each {@link BorderInterfaceInfo} and its ISP. If any of these interfaces already
  * have a layer-1 edge, ISP modeling will fail for this {@link BorderInterfaceInfo}.
+ *
+ * <p>Interface names are case-insensitive, but full names must be used (not short forms).
  */
 // TODO: check for layer-1 inconsistency and exclude this specification
 // TODO: add support for port channels and sub-interfaces in IspModelingUtils

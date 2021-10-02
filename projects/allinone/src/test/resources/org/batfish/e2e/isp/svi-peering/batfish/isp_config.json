@@ -1,0 +1,20 @@
+{
+  "bgpPeers": [
+    {
+      "hostname": "border1",
+      "peerAddress": "10.111.255.185",
+      "ispAttachment": {
+        "interface": "Ethernet3/1",
+        "vlanTag": 95
+      }
+    },
+    {
+      "hostname": "border2",
+      "peerAddress": "10.111.255.189",
+      "ispAttachment": {
+        "interface": "Ethernet3/1",
+        "vlanTag": 95
+      }
+    }
+  ]
+}
