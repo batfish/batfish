@@ -63,11 +63,13 @@ public class IspModelingTest {
     // internet to ISP, ISP to border1, and ISP to border2 (6 uni edges)
     assertThat(bgpTopology.getGraph().edges(), hasSize(6));
 
-    // confirm that we haven't bridged the borders
-    L3Adjacencies l3Adjacencies =
-        batfish.getTopologyProvider().getL3Adjacencies(batfish.getSnapshot());
-    NodeInterfacePair border1 = NodeInterfacePair.of("border1", "Vlan95");
-    NodeInterfacePair border2 = NodeInterfacePair.of("border2", "Vlan95");
-    assertFalse(l3Adjacencies.inSameBroadcastDomain(border1, border2));
+    // confirm that we haven't bridged the borders if we are using the new method
+    if (L3Adjacencies.USE_NEW_METHOD) {
+      L3Adjacencies l3Adjacencies =
+          batfish.getTopologyProvider().getL3Adjacencies(batfish.getSnapshot());
+      NodeInterfacePair border1 = NodeInterfacePair.of("border1", "Vlan95");
+      NodeInterfacePair border2 = NodeInterfacePair.of("border2", "Vlan95");
+      assertFalse(l3Adjacencies.inSameBroadcastDomain(border1, border2));
+    }
   }
 }
