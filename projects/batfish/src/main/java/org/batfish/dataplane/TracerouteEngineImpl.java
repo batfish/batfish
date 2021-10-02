@@ -1,7 +1,10 @@
 package org.batfish.dataplane;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.List;
@@ -21,6 +24,12 @@ import org.batfish.dataplane.traceroute.TracerouteEngineImplContext;
 
 /** The default implementation of a traceroute engine */
 public final class TracerouteEngineImpl implements TracerouteEngine {
+  /**
+   * To prevent traceroute engine from using arbitrary amounts of memory during a trace of many
+   * different flows, we chunk large requests.
+   */
+  private static final int CHUNK_SIZE = 256;
+
   private final DataPlane _dataPlane;
   private final Topology _topology;
   private final Map<String, Configuration> _configurations;
@@ -49,14 +58,23 @@ public final class TracerouteEngineImpl implements TracerouteEngine {
   @Override
   public Map<Flow, TraceDag> computeTraceDags(
       Set<Flow> flows, Set<FirewallSessionTraceInfo> sessions, boolean ignoreFilters) {
-    return new TracerouteEngineImplContext(
-            _dataPlane,
-            _topology,
-            sessions,
-            flows,
-            _dataPlane.getFibs(),
-            ignoreFilters,
-            _configurations)
-        .buildTraceDags();
+    ImmutableMap.Builder<Flow, TraceDag> result =
+        ImmutableMap.builderWithExpectedSize(flows.size());
+    Iterables.partition(flows, CHUNK_SIZE)
+        .forEach(
+            c ->
+                result.putAll(
+                    new TracerouteEngineImplContext(
+                            _dataPlane,
+                            _topology,
+                            sessions,
+                            // This copy is annoying, but should add negligible runtime overhead.
+                            // Copying is much faster than even producing a NO_ROUTE trace.
+                            ImmutableSet.copyOf(c),
+                            _dataPlane.getFibs(),
+                            ignoreFilters,
+                            _configurations)
+                        .buildTraceDags()));
+    return result.build();
   }
 }
