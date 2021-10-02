@@ -22,15 +22,17 @@ public class IspModelingTest {
 
   private static final String SNAPSHOTS_DIR = "org/batfish/e2e/isp";
 
-  private IBatfish setup(String snapshotName, Iterable<String> configFiles) throws IOException {
+  private IBatfish setup(String snapshotName, Iterable<String> configFiles, boolean setupL1)
+      throws IOException {
     String snapshotDir = SNAPSHOTS_DIR + "/" + snapshotName;
-    IBatfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder()
-                .setConfigurationFiles(snapshotDir, configFiles)
-                .setIspConfigPrefix(snapshotDir + "/batfish")
-                .build(),
-            _folder);
+    TestrigText.Builder testrigText =
+        TestrigText.builder()
+            .setConfigurationFiles(snapshotDir, configFiles)
+            .setIspConfigPrefix(snapshotDir + "/batfish");
+    if (setupL1) {
+      testrigText.setLayer1TopologyPrefix(snapshotDir + "/batfish");
+    }
+    IBatfish batfish = BatfishTestUtils.getBatfishFromTestrigText(testrigText.build(), _folder);
     batfish.computeDataPlane(batfish.getSnapshot());
     return batfish;
   }
@@ -39,7 +41,7 @@ public class IspModelingTest {
 
   @Test
   public void testBasic() throws IOException {
-    IBatfish batfish = setup("basic", ImmutableList.of("border1.cfg"));
+    IBatfish batfish = setup("basic", ImmutableList.of("border1.cfg"), false);
     BgpTopology bgpTopology = batfish.getTopologyProvider().getBgpTopology(batfish.getSnapshot());
 
     // internet to ISP and ISP to border (4 uni edges)
@@ -48,7 +50,7 @@ public class IspModelingTest {
 
   @Test
   public void testBasicBgpPeerInfo() throws IOException {
-    IBatfish batfish = setup("basic-bgppeerinfo", ImmutableList.of("border1.cfg"));
+    IBatfish batfish = setup("basic-bgppeerinfo", ImmutableList.of("border1.cfg"), false);
     BgpTopology bgpTopology = batfish.getTopologyProvider().getBgpTopology(batfish.getSnapshot());
 
     // internet to ISP and ISP to border (4 uni edges)
@@ -57,19 +59,17 @@ public class IspModelingTest {
 
   @Test
   public void testSviPeering() throws IOException {
-    IBatfish batfish = setup("svi-peering", ImmutableList.of("border1.cfg", "border2.cfg"));
+    IBatfish batfish = setup("svi-peering", ImmutableList.of("border1.cfg", "border2.cfg"), true);
     BgpTopology bgpTopology = batfish.getTopologyProvider().getBgpTopology(batfish.getSnapshot());
 
     // internet to ISP, ISP to border1, and ISP to border2 (6 uni edges)
     assertThat(bgpTopology.getGraph().edges(), hasSize(6));
 
     // confirm that we haven't bridged the borders if we are using the new method
-    if (L3Adjacencies.USE_NEW_METHOD) {
-      L3Adjacencies l3Adjacencies =
-          batfish.getTopologyProvider().getL3Adjacencies(batfish.getSnapshot());
-      NodeInterfacePair border1 = NodeInterfacePair.of("border1", "Vlan95");
-      NodeInterfacePair border2 = NodeInterfacePair.of("border2", "Vlan95");
-      assertFalse(l3Adjacencies.inSameBroadcastDomain(border1, border2));
-    }
+    L3Adjacencies l3Adjacencies =
+        batfish.getTopologyProvider().getL3Adjacencies(batfish.getSnapshot());
+    NodeInterfacePair border1 = NodeInterfacePair.of("border1", "Vlan95");
+    NodeInterfacePair border2 = NodeInterfacePair.of("border2", "Vlan95");
+    assertFalse(l3Adjacencies.inSameBroadcastDomain(border1, border2));
   }
 }
