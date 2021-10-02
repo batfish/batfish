@@ -13,8 +13,8 @@ import org.batfish.datamodel.Ip;
 
 /**
  * BGP peer information used to create sessions to modeled ISPs. This specification identifies a BGP
- * peer in the snapshot via 1) the hostname, and 2) peer address, and 3) vrf (optional, needed if
- * not default).
+ * peer in the snapshot via 1) the hostname, and 2) peer address, and 3) vrf name (optional, needed
+ * if not default). VRF names are matched in a case-insensitive manner.
  *
  * <p>The specification also allows for optionally describing new connectivity needed to establish
  * the session, via {@link IspAttachment}. The BGP peering is not modeled if this new connectivity

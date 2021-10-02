@@ -754,6 +754,64 @@ public class IspModelingUtilsTest {
   }
 
   @Test
+  public void testGetSnapshotConnectionForBgpPeerInfo_differentAttachmentInterface() {
+    Interface attachIface =
+        _nf.interfaceBuilder().setName("different").setOwner(_snapshotHost).build();
+    Optional<SnapshotConnection> snapshotConnection =
+        getSnapshotConnectionForBgpPeerInfo(
+            new BgpPeerInfo(
+                _snapshotHostname,
+                _ispIp,
+                null,
+                new IspAttachment(null, attachIface.getName(), null)),
+            ImmutableSet.of(),
+            ALL_AS_NUMBERS,
+            ImmutableMap.of(_snapshotHostname, _snapshotHost),
+            new Warnings());
+
+    assertThat(
+        snapshotConnection.get(),
+        equalTo(
+            new SnapshotConnection(
+                _snapshotHostname,
+                ImmutableList.of(
+                    new IspInterface(
+                        ispToSnapshotInterfaceName(_snapshotHostname, attachIface.getName()),
+                        ConcreteInterfaceAddress.create(_ispIp, 24),
+                        new Layer1Node(_snapshotHostname, attachIface.getName()),
+                        null)),
+                IspBgpActivePeer.create(_snapshotActivePeer))));
+  }
+
+  @Test
+  public void testGetSnapshotConnectionForBgpPeerInfo_withVlanTag() {
+    Optional<SnapshotConnection> snapshotConnection =
+        getSnapshotConnectionForBgpPeerInfo(
+            new BgpPeerInfo(
+                _snapshotHostname,
+                _ispIp,
+                null,
+                new IspAttachment(null, _snapshotInterfaceName, 23)),
+            ImmutableSet.of(),
+            ALL_AS_NUMBERS,
+            ImmutableMap.of(_snapshotHostname, _snapshotHost),
+            new Warnings());
+
+    assertThat(
+        snapshotConnection.get(),
+        equalTo(
+            new SnapshotConnection(
+                _snapshotHostname,
+                ImmutableList.of(
+                    new IspInterface(
+                        ispToSnapshotInterfaceName(_snapshotHostname, _snapshotInterfaceName),
+                        ConcreteInterfaceAddress.create(_ispIp, 24),
+                        new Layer1Node(_snapshotHostname, _snapshotInterfaceName),
+                        23)),
+                IspBgpActivePeer.create(_snapshotActivePeer))));
+  }
+
+  @Test
   public void testGetSnapshotConnectionForBgpPeerInfo_missingBgpHost() {
     Warnings warnings = new Warnings(true, true, true);
     Optional<SnapshotConnection> connection =
@@ -787,42 +845,8 @@ public class IspModelingUtilsTest {
     assertFalse(connection.isPresent());
     assertThat(
         warnings.getRedFlagWarnings(),
-        contains(hasText("ISP Modeling: No BGP neighbor 0.0.0.0 found on node conf in any vrf")));
-  }
-
-  @Test
-  public void testGetSnapshotConnectionForBgpPeerInfo_multipleBgpPeers() {
-    // add another peer with the same peer address in a different vrf
-    _nf.vrfBuilder().setName("v2").setOwner(_snapshotHost).build();
-    BgpProcess bgpProcess = makeBgpProcess(_snapshotIp, _snapshotHost.getVrfs().get("v2"));
-    BgpActivePeerConfig.builder()
-        .setPeerAddress(_ispIp)
-        .setRemoteAs(_ispAsn)
-        .setLocalIp(_snapshotIp)
-        .setLocalAs(_snapshotAsn)
-        .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
-        .setBgpProcess(bgpProcess)
-        .build();
-
-    Warnings warnings = new Warnings(true, true, true);
-    Optional<SnapshotConnection> connection =
-        getSnapshotConnectionForBgpPeerInfo(
-            new BgpPeerInfo(
-                _snapshotHostname,
-                _ispIp,
-                null,
-                new IspAttachment(null, _snapshotInterfaceName, null)),
-            ImmutableSet.of(),
-            ALL_AS_NUMBERS,
-            ImmutableMap.of(_snapshotHostname, _snapshotHost),
-            warnings);
-    assertFalse(connection.isPresent());
-    assertThat(
-        warnings.getRedFlagWarnings(),
         contains(
-            hasText(
-                "ISP Modeling: Multiple BGP neighbors with peer address 1.1.1.1 found on node conf."
-                    + " Specify VRF to select one.")));
+            hasText("ISP Modeling: No BGP neighbor 0.0.0.0 found on node conf in default vrf")));
   }
 
   @Test
@@ -852,9 +876,7 @@ public class IspModelingUtilsTest {
     assertFalse(connection.isPresent());
     assertThat(
         warnings.getRedFlagWarnings(),
-        contains(
-            hasText(
-                "ISP Modeling: BGP peer with peer address 0.0.0.0 on node conf is not valid.")));
+        contains(hasText("ISP Modeling: BGP neighbor 0.0.0.0 on node conf is invalid.")));
   }
 
   @Test

@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
@@ -55,6 +56,7 @@ import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
@@ -473,6 +475,8 @@ public final class IspModelingUtils {
             : bgpPeerInfo.getVrf();
     Optional<BgpActivePeerConfig> snapshotBgpPeerOpt =
         snapshotBgpHost.getVrfs().values().stream()
+            // Assume that case-insensitive matching is good enough, though some vendors have
+            // case-sensitive names per lab testing
             .filter(vrf -> vrf.getName().equalsIgnoreCase(bgpPeerVrf))
             .flatMap(vrf -> vrf.getBgpProcess().getActiveNeighbors().values().stream())
             .filter(peer -> bgpPeerInfo.getPeerAddress().equals(peer.getPeerAddress()))
@@ -552,11 +556,20 @@ public final class IspModelingUtils {
             ispAttachment.getVlanTag()));
   }
 
+  /**
+   * Infers the parameters of {@link SnapshotConnection} object needed to connect the ISP to the
+   * snapshot (what interface to create, which IP address to assign, ...) from the resolve BGP peer
+   * and attachment interface.
+   *
+   * <p>Currently the logic assumes that the physical connection will either be at the snapshot
+   * interface that terminates the BGP session or the attachment interface provides L2 connectivity
+   * to the BGP interface.
+   */
   private static SnapshotConnection makeSnapshotConnection(
       BgpActivePeerConfig snapshotBgpPeer,
       ConcreteInterfaceAddress snapshotBgpIfaceAddress,
       Interface snapshotAttachmentIface,
-      Integer vlanTag) {
+      @Nullable Integer vlanTag) {
     String snapshotAttachmentHostname = snapshotAttachmentIface.getOwner().getHostname();
     String ispIfaceName =
         ispToSnapshotInterfaceName(snapshotAttachmentHostname, snapshotAttachmentIface.getName());
@@ -867,6 +880,8 @@ public final class IspModelingUtils {
                                 .setOutgoingFilter(toNetwork)
                                 .setType(InterfaceType.PHYSICAL)
                                 .setEncapsulationVlan(iface.getVlanTag())
+                                .setSwitchport(false)
+                                .setSwitchportMode(SwitchportMode.NONE)
                                 .build();
                         Layer1Node ispL1 =
                             new Layer1Node(ispConfiguration.getHostname(), ispInterface.getName());
