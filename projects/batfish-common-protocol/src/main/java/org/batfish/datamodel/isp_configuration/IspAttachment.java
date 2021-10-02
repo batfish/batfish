@@ -21,6 +21,8 @@ import javax.annotation.ParametersAreNonnullByDefault;
  *
  * <p>The specification cannot express all types of connectivity between the snapshot and ISP, such
  * as loopback-based peering at the ISP side and multiple BGP sessions at the same ISP interface.
+ *
+ * <p>Interface names are case-insensitive, but full names must be used (not short forms).
  */
 @ParametersAreNonnullByDefault
 public class IspAttachment {
