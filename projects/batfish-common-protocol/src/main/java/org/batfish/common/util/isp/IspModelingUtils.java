@@ -14,8 +14,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -439,6 +439,7 @@ public final class IspModelingUtils {
       ConcreteInterfaceAddress ifaceAddress =
           snapshotIface.getAllConcreteAddresses().stream()
               .filter(addr -> Objects.equals(addr.getIp(), bgpPeerConfig.getLocalIp()))
+              .sorted() // for determinism
               .findFirst()
               .get();
       InterfaceAddress ispInterfaceAddress =
@@ -532,16 +533,17 @@ public final class IspModelingUtils {
 
     // TODO: Enforce interface type constraint here
 
+    // The ISP interface's address will be the peer-address of the snapshotBgpPeer. We also need to
+    // assign the prefix length to this interface. For that, we look up addresses on the
+    // snapshot with the peer's local IP (and vrf).
+    assert snapshotBgpPeer.getLocalIp() != null; // requirement for a valid peer
     Optional<ConcreteInterfaceAddress> snapshotBgpIfaceAddress =
-        snapshotBgpHost.getActiveInterfaces().values().stream()
-            .filter(iface -> iface.getVrfName().equalsIgnoreCase(bgpPeerVrf))
-            // prefer active interfaces
-            .sorted(Comparator.comparing(iface -> !iface.getActive()))
-            .flatMap(iface -> iface.getAllConcreteAddresses().stream())
-            .filter(iface -> Objects.equals(iface.getIp(), snapshotBgpPeer.getLocalIp()))
-            // for determinism
-            .sorted()
-            .findFirst();
+        inferSnapshotBgpIfaceAddress(
+            snapshotBgpHost.getAllInterfaces().values().stream()
+                .filter(iface -> iface.getVrfName().equalsIgnoreCase(bgpPeerVrf))
+                .collect(ImmutableSet.toImmutableSet()),
+            snapshotBgpPeer.getLocalIp());
+
     if (!snapshotBgpIfaceAddress.isPresent()) {
       warnings.redFlag(
           String.format(
@@ -555,7 +557,7 @@ public final class IspModelingUtils {
     return Optional.of(
         makeSnapshotConnection(
             snapshotBgpPeer,
-            snapshotBgpIfaceAddress.get(),
+            snapshotBgpIfaceAddress.get().getNetworkBits(),
             attachmentIface,
             ispAttachment.getVlanTag()));
   }
@@ -571,7 +573,7 @@ public final class IspModelingUtils {
    */
   private static SnapshotConnection makeSnapshotConnection(
       BgpActivePeerConfig snapshotBgpPeer,
-      ConcreteInterfaceAddress snapshotBgpIfaceAddress,
+      int networkBits,
       Interface snapshotAttachmentIface,
       @Nullable Integer vlanTag) {
     String snapshotAttachmentHostname = snapshotAttachmentIface.getOwner().getHostname();
@@ -583,13 +585,39 @@ public final class IspModelingUtils {
     Ip peerAddress = snapshotBgpPeer.getPeerAddress();
     checkArgument(peerAddress != null, "Peer address should not be null");
     InterfaceAddress ispInterfaceAddress =
-        ConcreteInterfaceAddress.create(peerAddress, snapshotBgpIfaceAddress.getNetworkBits());
+        ConcreteInterfaceAddress.create(peerAddress, networkBits);
     IspInterface ispInterface =
         new IspInterface(ispIfaceName, ispInterfaceAddress, snapshotL1node, vlanTag);
     return new SnapshotConnection(
         snapshotAttachmentHostname,
         ImmutableList.of(ispInterface),
         IspBgpActivePeer.create(snapshotBgpPeer));
+  }
+
+  /**
+   * Returns the {@link ConcreteInterfaceAddress} with matching IP among the set of interfaces
+   * provided.
+   *
+   * <p>The implementation prefers active interfaces, followed by lower addresses.
+   */
+  @VisibleForTesting
+  static Optional<ConcreteInterfaceAddress> inferSnapshotBgpIfaceAddress(
+      Collection<Interface> interfaces, Ip interfaceIp) {
+    Optional<ConcreteInterfaceAddress> lowestActiveAddress =
+        interfaces.stream()
+            .filter(Interface::getActive)
+            .flatMap(iface -> iface.getAllConcreteAddresses().stream())
+            .filter(addr -> Objects.equals(addr.getIp(), interfaceIp))
+            .sorted()
+            .findFirst();
+    if (lowestActiveAddress.isPresent()) {
+      return lowestActiveAddress;
+    }
+    return interfaces.stream()
+        .flatMap(iface -> iface.getAllConcreteAddresses().stream())
+        .filter(addr -> Objects.equals(addr.getIp(), interfaceIp))
+        .sorted()
+        .findFirst();
   }
 
   private static ModeledNodes createInternetAndIspNodes(

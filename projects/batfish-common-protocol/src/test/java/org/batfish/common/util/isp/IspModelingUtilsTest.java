@@ -28,6 +28,7 @@ import static org.batfish.common.util.isp.IspModelingUtils.getDefaultIspNodeName
 import static org.batfish.common.util.isp.IspModelingUtils.getInternetAndIspNodes;
 import static org.batfish.common.util.isp.IspModelingUtils.getSnapshotConnectionForBgpPeerInfo;
 import static org.batfish.common.util.isp.IspModelingUtils.getSnapshotConnectionsForBorderInterface;
+import static org.batfish.common.util.isp.IspModelingUtils.inferSnapshotBgpIfaceAddress;
 import static org.batfish.common.util.isp.IspModelingUtils.installRoutingPolicyForIspToCustomers;
 import static org.batfish.common.util.isp.IspModelingUtils.installRoutingPolicyForIspToInternet;
 import static org.batfish.common.util.isp.IspModelingUtils.internetToIspInterfaceName;
@@ -914,6 +915,44 @@ public class IspModelingUtilsTest {
     assertThat(
         warnings.getRedFlagWarnings(),
         contains(hasText("ISP Modeling: Non-existent attachment interface other on node conf")));
+  }
+
+  /** Test the preference order of inferSnapshotBgpIfaceAddress */
+  @Test
+  public void testInferSnapshotBgpIfaceAddress() {
+    Ip localIp = Ip.parse("1.1.1.1");
+    ConcreteInterfaceAddress addr22 = ConcreteInterfaceAddress.create(localIp, 22);
+    ConcreteInterfaceAddress addr23 = ConcreteInterfaceAddress.create(localIp, 23);
+    ConcreteInterfaceAddress addr24 = ConcreteInterfaceAddress.create(localIp, 24);
+    ConcreteInterfaceAddress addr25 = ConcreteInterfaceAddress.create(localIp, 25);
+    Interface active1 =
+        _nf.interfaceBuilder()
+            .setActive(true)
+            .setName("active1")
+            .setAddresses(addr24, addr25)
+            .build();
+
+    Interface inactive1 =
+        _nf.interfaceBuilder()
+            .setActive(false)
+            .setName("inactive1")
+            .setAddresses(addr22, addr23)
+            .build();
+
+    // lower address is picked
+    assertThat(
+        inferSnapshotBgpIfaceAddress(ImmutableList.of(active1), localIp),
+        equalTo(Optional.of(addr24)));
+
+    // active is picked even if a lower inactive is present
+    assertThat(
+        inferSnapshotBgpIfaceAddress(ImmutableList.of(active1, inactive1), localIp),
+        equalTo(Optional.of(addr24)));
+
+    // lower inactive is picked when nothing is active
+    assertThat(
+        inferSnapshotBgpIfaceAddress(ImmutableList.of(inactive1), localIp),
+        equalTo(Optional.of(addr22)));
   }
 
   @Test
