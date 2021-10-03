@@ -15,7 +15,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -428,6 +427,7 @@ public final class IspModelingUtils {
       IspInterface ispInterface =
           new IspInterface(ispIfaceName, LINK_LOCAL_ADDRESS, snapshotL1node, null);
       return new SnapshotConnection(
+          snapshotHostname,
           ImmutableList.of(ispInterface),
           IspBgpUnnumberedPeer.create((BgpUnnumberedPeerConfig) bgpPeerConfig, ispIfaceName));
     }
@@ -445,6 +445,7 @@ public final class IspModelingUtils {
       IspInterface ispInterface =
           new IspInterface(ispIfaceName, ispInterfaceAddress, snapshotL1node, null);
       return new SnapshotConnection(
+          snapshotHostname,
           ImmutableList.of(ispInterface),
           IspBgpActivePeer.create((BgpActivePeerConfig) bgpPeerConfig));
     }
@@ -497,7 +498,10 @@ public final class IspModelingUtils {
     }
     if (bgpPeerInfo.getIspAttachment() == null) {
       return Optional.of(
-          new SnapshotConnection(ImmutableList.of(), IspBgpActivePeer.create(snapshotBgpPeer)));
+          new SnapshotConnection(
+              snapshotBgpHost.getHostname(),
+              ImmutableList.of(),
+              IspBgpActivePeer.create(snapshotBgpPeer)));
     }
 
     IspAttachment ispAttachment = bgpPeerInfo.getIspAttachment();
@@ -527,13 +531,12 @@ public final class IspModelingUtils {
 
     // TODO: Enforce interface type constraint here
 
+    // TODO: search inactive interfaces too?
     Optional<ConcreteInterfaceAddress> snapshotBgpIfaceAddress =
-        snapshotBgpHost.getAllInterfaces().values().stream()
+        snapshotBgpHost.getActiveInterfaces().values().stream()
             .filter(iface -> iface.getVrfName().equalsIgnoreCase(bgpPeerVrf))
-            // prefer active interfaces
-            .sorted(Comparator.comparing(iface -> !iface.getActive()))
             .flatMap(iface -> iface.getAllConcreteAddresses().stream())
-            .filter(addr -> Objects.equals(addr.getIp(), snapshotBgpPeer.getLocalIp()))
+            .filter(iface -> Objects.equals(iface.getIp(), snapshotBgpPeer.getLocalIp()))
             .findFirst();
     if (!snapshotBgpIfaceAddress.isPresent()) {
       warnings.redFlag(
@@ -580,7 +583,9 @@ public final class IspModelingUtils {
     IspInterface ispInterface =
         new IspInterface(ispIfaceName, ispInterfaceAddress, snapshotL1node, vlanTag);
     return new SnapshotConnection(
-        ImmutableList.of(ispInterface), IspBgpActivePeer.create(snapshotBgpPeer));
+        snapshotAttachmentHostname,
+        ImmutableList.of(ispInterface),
+        IspBgpActivePeer.create(snapshotBgpPeer));
   }
 
   private static ModeledNodes createInternetAndIspNodes(
