@@ -42,20 +42,21 @@ final class IspBgpActivePeer extends IspBgpPeer {
 
   @Override
   public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
     if (!(o instanceof IspBgpActivePeer)) {
       return false;
     }
     IspBgpActivePeer that = (IspBgpActivePeer) o;
     return _peerAddress.equals(that._peerAddress)
         && _localIp.equals(that._localIp)
-        && _localAsn.equals(that._localAsn)
-        && _remoteAsn.equals(that._remoteAsn)
-        && (_ebgpMultiHop == that._ebgpMultiHop);
+        && super.equals(o);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_peerAddress, _localIp, _localAsn, _remoteAsn, _ebgpMultiHop);
+    return Objects.hash(_peerAddress, _localIp, super.hashCode());
   }
 
   @Override
