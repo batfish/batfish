@@ -533,25 +533,53 @@ public final class IspModelingUtils {
 
     // TODO: Enforce interface type constraint here
 
-    // The ISP interface's address will be the peer-address of the snapshotBgpPeer. We also need to
-    // assign the prefix length to this interface. For that, we look up addresses on the
-    // snapshot with the peer's local IP (and vrf).
-    assert snapshotBgpPeer.getLocalIp() != null; // requirement for a valid peer
-    Optional<ConcreteInterfaceAddress> snapshotBgpIfaceAddress =
-        inferSnapshotBgpIfaceAddress(
-            snapshotBgpHost.getAllInterfaces().values().stream()
-                .filter(iface -> iface.getVrfName().equalsIgnoreCase(bgpPeerVrf))
-                .collect(ImmutableSet.toImmutableSet()),
-            snapshotBgpPeer.getLocalIp());
+    // One last thing that we need to figure out is the prefix length to use for the address on the
+    // ISP's BGP interface (the address will be the local IP of the snapshot BGP peer). Cases to
+    // consider for how the attachment interface is configured:
+    // 1. Is not Layer3 ==> pick length based on the interface that has the BGP peer's local IP.
+    // Assume that the interface provides L2 connectivity to the snapshot BGP interface.
+    // 2. Is Layer3 and owns the local IP of the peering ==> use this address's prefix length.
+    // 3. Is Layer3 but does NOT own the local IP of the peering ==> do not make the connection at
+    // all for now. Additional configuration is needed to enable connectivity from the ISP to the
+    // snapshot's BGP interface.
 
-    if (!snapshotBgpIfaceAddress.isPresent()) {
-      warnings.redFlag(
-          String.format(
-              "ISP Modeling: No active interface with local IP %s found for neighbor %s on node %s",
-              snapshotBgpPeer.getLocalIp(),
-              bgpPeerInfo.getPeerAddress(),
-              snapshotBgpHost.getHostname()));
-      return Optional.empty();
+    assert snapshotBgpPeer.getLocalIp() != null; // requirement for a valid peer
+    Optional<ConcreteInterfaceAddress> snapshotBgpIfaceAddress;
+    if (attachmentIface.getAllAddresses().isEmpty()) { // case 1
+      snapshotBgpIfaceAddress =
+          inferSnapshotBgpIfaceAddress(
+              snapshotBgpHost.getAllInterfaces().values().stream()
+                  .filter(iface -> iface.getVrfName().equalsIgnoreCase(bgpPeerVrf))
+                  .collect(ImmutableSet.toImmutableSet()),
+              snapshotBgpPeer.getLocalIp());
+      if (!snapshotBgpIfaceAddress.isPresent()) {
+        warnings.redFlag(
+            String.format(
+                "ISP Modeling: No active interface with local IP %s found for neighbor %s on node"
+                    + " %s",
+                snapshotBgpPeer.getLocalIp(),
+                bgpPeerInfo.getPeerAddress(),
+                snapshotBgpHost.getHostname()));
+        return Optional.empty();
+      }
+    } else {
+      snapshotBgpIfaceAddress =
+          attachmentIface.getAllConcreteAddresses().stream()
+              .filter(addr -> Objects.equals(addr.getIp(), snapshotBgpPeer.getLocalIp()))
+              .sorted()
+              .findFirst();
+      if (!snapshotBgpIfaceAddress.isPresent()) {
+        warnings.redFlag(
+            String.format(
+                "ISP Modeling: The attachment interface %s[%s] cannot enable the BGP peering to"
+                    + " neighbor %s because it is Layer3 but does not own the BGP peer's local IP"
+                    + " %s",
+                attachmentHost,
+                attachmentIface.getName(),
+                snapshotBgpPeer.getPeerAddress(),
+                snapshotBgpPeer.getLocalIp()));
+        return Optional.empty();
+      }
     }
 
     return Optional.of(
