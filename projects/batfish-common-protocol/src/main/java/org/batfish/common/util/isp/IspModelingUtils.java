@@ -15,6 +15,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -526,12 +527,13 @@ public final class IspModelingUtils {
 
     // TODO: Enforce interface type constraint here
 
-    // TODO: search inactive interfaces too?
     Optional<ConcreteInterfaceAddress> snapshotBgpIfaceAddress =
-        snapshotBgpHost.getActiveInterfaces().values().stream()
+        snapshotBgpHost.getAllInterfaces().values().stream()
             .filter(iface -> iface.getVrfName().equalsIgnoreCase(bgpPeerVrf))
+            // prefer active interfaces
+            .sorted(Comparator.comparing(iface -> !iface.getActive()))
             .flatMap(iface -> iface.getAllConcreteAddresses().stream())
-            .filter(iface -> Objects.equals(iface.getIp(), snapshotBgpPeer.getLocalIp()))
+            .filter(addr -> Objects.equals(addr.getIp(), snapshotBgpPeer.getLocalIp()))
             .findFirst();
     if (!snapshotBgpIfaceAddress.isPresent()) {
       warnings.redFlag(
