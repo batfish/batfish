@@ -427,7 +427,6 @@ public final class IspModelingUtils {
       IspInterface ispInterface =
           new IspInterface(ispIfaceName, LINK_LOCAL_ADDRESS, snapshotL1node, null);
       return new SnapshotConnection(
-          snapshotHostname,
           ImmutableList.of(ispInterface),
           IspBgpUnnumberedPeer.create((BgpUnnumberedPeerConfig) bgpPeerConfig, ispIfaceName));
     }
@@ -445,7 +444,6 @@ public final class IspModelingUtils {
       IspInterface ispInterface =
           new IspInterface(ispIfaceName, ispInterfaceAddress, snapshotL1node, null);
       return new SnapshotConnection(
-          snapshotHostname,
           ImmutableList.of(ispInterface),
           IspBgpActivePeer.create((BgpActivePeerConfig) bgpPeerConfig));
     }
@@ -498,10 +496,7 @@ public final class IspModelingUtils {
     }
     if (bgpPeerInfo.getIspAttachment() == null) {
       return Optional.of(
-          new SnapshotConnection(
-              snapshotBgpHost.getHostname(),
-              ImmutableList.of(),
-              IspBgpActivePeer.create(snapshotBgpPeer)));
+          new SnapshotConnection(ImmutableList.of(), IspBgpActivePeer.create(snapshotBgpPeer)));
     }
 
     IspAttachment ispAttachment = bgpPeerInfo.getIspAttachment();
@@ -583,9 +578,7 @@ public final class IspModelingUtils {
     IspInterface ispInterface =
         new IspInterface(ispIfaceName, ispInterfaceAddress, snapshotL1node, vlanTag);
     return new SnapshotConnection(
-        snapshotAttachmentHostname,
-        ImmutableList.of(ispInterface),
-        IspBgpActivePeer.create(snapshotBgpPeer));
+        ImmutableList.of(ispInterface), IspBgpActivePeer.create(snapshotBgpPeer));
   }
 
   private static ModeledNodes createInternetAndIspNodes(

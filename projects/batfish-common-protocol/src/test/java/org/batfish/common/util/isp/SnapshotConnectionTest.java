@@ -23,18 +23,15 @@ public class SnapshotConnectionTest {
                 .build());
     new EqualsTester()
         .addEqualityGroup(
-            new SnapshotConnection("a", ImmutableList.of(), ispBgpActivePeer),
-            new SnapshotConnection("a", ImmutableList.of(), ispBgpActivePeer))
-        .addEqualityGroup(new SnapshotConnection("other", ImmutableList.of(), ispBgpActivePeer))
+            new SnapshotConnection(ImmutableList.of(), ispBgpActivePeer),
+            new SnapshotConnection(ImmutableList.of(), ispBgpActivePeer))
         .addEqualityGroup(
             new SnapshotConnection(
-                "a",
                 ImmutableList.of(
                     new IspInterface("name", LINK_LOCAL_ADDRESS, new Layer1Node("1", "2"), null)),
                 ispBgpActivePeer))
         .addEqualityGroup(
             new SnapshotConnection(
-                "a",
                 ImmutableList.of(),
                 IspBgpActivePeer.create(
                     BgpActivePeerConfig.builder()
