@@ -33,19 +33,19 @@ final class IspBgpUnnumberedPeer extends IspBgpPeer {
 
   @Override
   public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
     if (!(o instanceof IspBgpUnnumberedPeer)) {
       return false;
     }
     IspBgpUnnumberedPeer that = (IspBgpUnnumberedPeer) o;
-    return _localIfaceName.equals(that._localIfaceName)
-        && _localAsn.equals(that._localAsn)
-        && _remoteAsn.equals(that._remoteAsn)
-        && (_ebgpMultiHop == that._ebgpMultiHop);
+    return _localIfaceName.equals(that._localIfaceName) && super.equals(o);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_localIfaceName, _localAsn, _remoteAsn, _ebgpMultiHop);
+    return Objects.hash(_localIfaceName, super.hashCode());
   }
 
   @Override

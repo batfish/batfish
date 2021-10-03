@@ -158,7 +158,6 @@ public class IspModelingUtilsTest {
             .build();
     _snapshotConnection =
         new SnapshotConnection(
-            _snapshotHostname,
             ImmutableList.of(
                 new IspInterface(
                     ispToSnapshotInterfaceName(_snapshotHostname, _snapshotInterfaceName),
@@ -401,7 +400,6 @@ public class IspModelingUtilsTest {
             .setAsn(_ispAsn)
             .setSnapshotConnections(
                 new SnapshotConnection(
-                    _snapshotHostname,
                     ImmutableList.of(
                         new IspInterface(
                             ispIfaceName,
@@ -668,7 +666,6 @@ public class IspModelingUtilsTest {
         equalTo(
             ImmutableList.of(
                 new SnapshotConnection(
-                    configuration.getHostname(),
                     ImmutableList.of(
                         new IspInterface(
                             ispIfaceName,
@@ -707,7 +704,6 @@ public class IspModelingUtilsTest {
             ImmutableList.of(
                 _snapshotConnection,
                 new SnapshotConnection(
-                    _snapshotHostname,
                     ImmutableList.of(
                         new IspInterface(
                             ispIfaceName,
@@ -748,9 +744,7 @@ public class IspModelingUtilsTest {
         snapshotConnection.get(),
         equalTo(
             new SnapshotConnection(
-                _snapshotHostname,
-                ImmutableList.of(),
-                IspBgpActivePeer.create(_snapshotActivePeer))));
+                ImmutableList.of(), IspBgpActivePeer.create(_snapshotActivePeer))));
   }
 
   @Test
@@ -773,7 +767,6 @@ public class IspModelingUtilsTest {
         snapshotConnection.get(),
         equalTo(
             new SnapshotConnection(
-                _snapshotHostname,
                 ImmutableList.of(
                     new IspInterface(
                         ispToSnapshotInterfaceName(_snapshotHostname, attachIface.getName()),
@@ -801,7 +794,6 @@ public class IspModelingUtilsTest {
         snapshotConnection.get(),
         equalTo(
             new SnapshotConnection(
-                _snapshotHostname,
                 ImmutableList.of(
                     new IspInterface(
                         ispToSnapshotInterfaceName(_snapshotHostname, _snapshotInterfaceName),
@@ -1345,7 +1337,6 @@ public class IspModelingUtilsTest {
                     .setSnapshotConnections(
                         _snapshotConnection,
                         new SnapshotConnection(
-                            c2.getHostname(),
                             ImmutableList.of(
                                 new IspInterface(
                                     ispToSnapshotInterfaceName(

@@ -8,18 +8,12 @@ import javax.annotation.Nonnull;
 /** Represents one connection (interface(s), BGP peer) this ISP has to the snapshot */
 final class SnapshotConnection {
 
-  private @Nonnull final String _snapshotHostname;
   private @Nonnull final List<IspInterface> _interfaces;
   private @Nonnull final IspBgpPeer _bgpPeer;
 
-  SnapshotConnection(String snapshotHostname, List<IspInterface> interfaces, IspBgpPeer bgpPeer) {
-    _snapshotHostname = snapshotHostname;
+  SnapshotConnection(List<IspInterface> interfaces, IspBgpPeer bgpPeer) {
     _interfaces = interfaces;
     _bgpPeer = bgpPeer;
-  }
-
-  public @Nonnull String getSnapshotHostname() {
-    return _snapshotHostname;
   }
 
   public @Nonnull List<IspInterface> getInterfaces() {
@@ -32,24 +26,24 @@ final class SnapshotConnection {
 
   @Override
   public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
     if (!(o instanceof SnapshotConnection)) {
       return false;
     }
     SnapshotConnection that = (SnapshotConnection) o;
-    return _snapshotHostname.equals(that._snapshotHostname)
-        && _interfaces.equals(that._interfaces)
-        && _bgpPeer.equals(that._bgpPeer);
+    return _interfaces.equals(that._interfaces) && _bgpPeer.equals(that._bgpPeer);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_snapshotHostname, _interfaces, _bgpPeer);
+    return Objects.hash(_interfaces, _bgpPeer);
   }
 
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(this)
-        .add("snapshotHostname", _snapshotHostname)
         .add("interfaces", _interfaces)
         .add("bgpPeerConfig", _bgpPeer)
         .toString();
