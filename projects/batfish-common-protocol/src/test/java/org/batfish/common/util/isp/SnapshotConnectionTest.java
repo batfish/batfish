@@ -25,7 +25,6 @@ public class SnapshotConnectionTest {
         .addEqualityGroup(
             new SnapshotConnection(ImmutableList.of(), ispBgpActivePeer),
             new SnapshotConnection(ImmutableList.of(), ispBgpActivePeer))
-        .addEqualityGroup(new SnapshotConnection(ImmutableList.of(), ispBgpActivePeer))
         .addEqualityGroup(
             new SnapshotConnection(
                 ImmutableList.of(
