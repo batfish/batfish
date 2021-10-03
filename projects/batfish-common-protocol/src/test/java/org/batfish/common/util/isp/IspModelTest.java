@@ -21,6 +21,7 @@ public class IspModelTest {
             builder
                 .setSnapshotConnections(
                     new SnapshotConnection(
+                        "a",
                         ImmutableList.of(),
                         IspBgpActivePeer.create(
                             BgpActivePeerConfig.builder()
