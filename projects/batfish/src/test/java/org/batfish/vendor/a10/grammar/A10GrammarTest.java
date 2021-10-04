@@ -1024,7 +1024,6 @@ public class A10GrammarTest {
   @Test
   public void testNatPoolWarn() throws IOException {
     String filename = "nat_pool_warn";
-    // TODO
     Batfish batfish = getBatfishForConfigurationNames(filename);
 
     Warnings warnings =

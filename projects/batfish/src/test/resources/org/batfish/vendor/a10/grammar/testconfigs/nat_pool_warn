@@ -14,7 +14,7 @@ ip nat pool POOL2 10.2.10.101 10.2.10.100 netmask /24
 ip nat pool POOL3 10.3.10.100 10.3.10.101 netmask /0
 !
 ! Netmask doesn't contain pool range
-ip nat pool POOL4 10.4.11.0 10.4.11.2 netmask /31
+ip nat pool POOL4 10.4.11.1 10.4.11.2 netmask /31
 !
 ! Cannot overlap existing pool IPs
 ip nat pool POOL5 10.1.10.9 10.1.10.10 netmask /25

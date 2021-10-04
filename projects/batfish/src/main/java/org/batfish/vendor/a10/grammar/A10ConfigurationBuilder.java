@@ -604,6 +604,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   @Override
   public void exitSin_pool(A10Parser.Sin_poolContext ctx) {
+    // Only add the NAT pool if all its properties were valid
     if (_currentNatPoolValid) {
       _c.getNatPools().put(_currentNatPool.getName(), _currentNatPool);
     }
@@ -637,7 +638,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   @Override
   public void exitSinpp_vrid(A10Parser.Sinpp_vridContext ctx) {
-    // TODO enforce existence check when VRRP Is supported
+    // TODO enforce existence check when VRRP is supported
     Optional<Integer> vrid = toInteger(ctx.vrid());
     if (vrid.isPresent()) {
       _currentNatPool.setVrid(vrid.get());
@@ -926,6 +927,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
    */
   private int toInteger(A10Parser.Ip_netmaskContext ctx) {
     if (ctx.ip_slash_prefix() != null) {
+      // Remove leading slash
       return Integer.parseUnsignedInt(ctx.ip_slash_prefix().getText().substring(1));
     }
     assert ctx.subnet_mask() != null;
@@ -1020,7 +1022,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   private @Nonnull Optional<String> toString(
       ParserRuleContext messageCtx, A10Parser.Nat_pool_nameContext ctx) {
     return toStringWithLengthInSpace(
-        messageCtx, ctx.word(), NAT_POOL_LENGTH_RANGE, "nat pool name");
+        messageCtx, ctx.word(), NAT_POOL_NAME_LENGTH_RANGE, "nat pool name");
   }
 
   private @Nonnull Optional<String> toString(
@@ -1090,7 +1092,8 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   private static final IntegerSpace IP_ROUTE_DESCRIPTION_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 63));
   private static final IntegerSpace IP_ROUTE_DISTANCE_RANGE = IntegerSpace.of(Range.closed(1, 255));
-  private static final IntegerSpace NAT_POOL_LENGTH_RANGE = IntegerSpace.of(Range.closed(1, 63));
+  private static final IntegerSpace NAT_POOL_NAME_LENGTH_RANGE =
+      IntegerSpace.of(Range.closed(1, 63));
   private static final IntegerSpace SCALEOUT_DEVICE_ID_RANGE = IntegerSpace.of(Range.closed(1, 16));
   private static final IntegerSpace TRUNK_NUMBER_RANGE = IntegerSpace.of(Range.closed(1, 4096));
   private static final IntegerSpace TRUNK_PORTS_THRESHOLD_RANGE =
