@@ -6,22 +6,28 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.FALSE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
+import static org.batfish.datamodel.transformation.Transformation.always;
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourcePort;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.HIDE_BEHIND_GATEWAY_IP;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.NAT_PORT_FIRST;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.NAT_PORT_LAST;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.TRANSLATED_SOURCE_TO_TRANSFORMATION_STEPS;
-import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.automaticHideRuleTransformationFunctions;
-import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.automaticStaticRuleTransformation;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.automaticHideRuleTransformationStep;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.automaticStaticRuleTransformationStep;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.checkValidManualHide;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.checkValidManualStatic;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getApplicableNatRules;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getManualNatRules;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getOutgoingTransformations;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.isValidAutomaticRule;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.manualHideTransformationSteps;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.manualRuleTransformation;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.manualStaticTransformationSteps;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.matchAutomaticStaticRule;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.matchInternalTraffic;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.matchManualRule;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.mergeTransformations;
 import static org.batfish.vendor.check_point_management.TestSharedInstances.NAT_SETTINGS_TEST_INSTANCE;
 import static org.hamcrest.Matchers.contains;
@@ -29,7 +35,6 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -45,9 +50,8 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
-import org.batfish.datamodel.IpSpaceReference;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
-import org.batfish.datamodel.transformation.Noop;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.vendor.check_point_management.AddressRange;
@@ -72,7 +76,9 @@ import org.batfish.vendor.check_point_management.SimpleGateway;
 import org.batfish.vendor.check_point_management.TypedManagementObject;
 import org.batfish.vendor.check_point_management.Uid;
 import org.batfish.vendor.check_point_management.UnhandledNatHideBehind;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 /** Test of {@link CheckpointNatConversions}. */
 public final class CheckpointNatConversionsTest {
@@ -235,38 +241,12 @@ public final class CheckpointNatConversionsTest {
   }
 
   @Test
-  public void testManualHideRuleTransformation() {
+  public void testManualRuleTransformation_hide() {
     Warnings warnings = new Warnings();
     Uid hostUid = Uid.of("1");
     Ip hostIp = Ip.parse("1.1.1.1");
     String hostname = "host";
     Host host = new Host(hostIp, NAT_SETTINGS_TEST_INSTANCE, hostname, hostUid);
-    ServiceToMatchExpr serviceToMatchExpr = new ServiceToMatchExpr(ImmutableMap.of());
-    {
-      ImmutableMap<Uid, TypedManagementObject> objs =
-          ImmutableMap.of(hostUid, host, PT_UID, POLICY_TARGETS, ORIG_UID, ORIG);
-      NatRule rule =
-          new NatRule(
-              false,
-              "",
-              true,
-              ImmutableList.of(),
-              NatMethod.HIDE,
-              PT_UID,
-              PT_UID,
-              PT_UID,
-              1,
-              ORIG_UID,
-              ORIG_UID,
-              hostUid,
-              UID);
-
-      // invalid original fields
-      assertThat(
-          manualRuleTransformation(
-              rule, serviceToMatchExpr, ADDRESS_SPACE_TO_MATCH_EXPR, objs, warnings),
-          equalTo(Optional.empty()));
-    }
     {
       ImmutableMap<Uid, TypedManagementObject> objs =
           ImmutableMap.of(ANY_UID, ANY, PT_UID, POLICY_TARGETS);
@@ -287,10 +267,7 @@ public final class CheckpointNatConversionsTest {
               UID);
 
       // invalid translated fields
-      assertThat(
-          manualRuleTransformation(
-              rule, serviceToMatchExpr, ADDRESS_SPACE_TO_MATCH_EXPR, objs, warnings),
-          equalTo(Optional.empty()));
+      assertThat(manualRuleTransformation(rule, objs, warnings), equalTo(Optional.empty()));
     }
     {
       ImmutableMap<Uid, TypedManagementObject> objs =
@@ -302,7 +279,7 @@ public final class CheckpointNatConversionsTest {
               true,
               ImmutableList.of(),
               NatMethod.HIDE,
-              ANY_UID,
+              hostUid,
               ANY_UID,
               ANY_UID,
               1,
@@ -311,10 +288,9 @@ public final class CheckpointNatConversionsTest {
               hostUid,
               UID);
 
-      Transformation xform =
-          manualRuleTransformation(
-                  rule, serviceToMatchExpr, ADDRESS_SPACE_TO_MATCH_EXPR, objs, warnings)
-              .get();
+      Transformation xform = manualRuleTransformation(rule, objs, warnings).get();
+      // no match condition enforced in transformation (despite dest constraint)
+      assertThat(xform.getGuard(), equalTo(AclLineMatchExprs.TRUE));
       assertThat(
           xform.getTransformationSteps(),
           containsInAnyOrder(
@@ -323,122 +299,122 @@ public final class CheckpointNatConversionsTest {
   }
 
   @Test
-  public void testAutomaticHideRuleTransformation_hideBehindGateway() {
+  public void testMatchInternalTraffic() {
     NatSettings natSettings =
         new NatSettings(true, NatHideBehindGateway.INSTANCE, "All", null, NatMethod.HIDE);
-    Ip egressIfaceIp = Ip.parse("5.5.5.5");
     {
-      // Hide address range
+      // Test match internal traffic for an address-range
       AddressRange addressRange =
           new AddressRange(
               Ip.parse("1.1.1.0"), Ip.parse("1.1.1.255"), null, null, natSettings, "a1", UID);
-      Warnings warnings = new Warnings(true, true, true);
-      List<Function<Ip, Transformation>> funcs =
-          automaticHideRuleTransformationFunctions(
-              addressRange, ADDRESS_SPACE_TO_MATCH_EXPR, warnings);
-      assertThat(funcs, hasSize(2));
-      IpSpaceReference addrRangeRef = new IpSpaceReference(addressRange.getName());
       assertThat(
-          funcs.get(0).apply(egressIfaceIp),
+          matchInternalTraffic(addressRange, ADDRESS_SPACE_TO_MATCH_EXPR).get(),
           equalTo(
-              Transformation.when(and(matchSrc(addrRangeRef), matchDst(addrRangeRef)))
-                  .apply(Noop.NOOP_SOURCE_NAT)
-                  .build()));
-      assertThat(
-          funcs.get(1).apply(egressIfaceIp),
-          equalTo(
-              Transformation.when(matchSrc(addrRangeRef))
-                  .apply(assignSourceIp(egressIfaceIp))
-                  .build()));
-      assertThat(warnings.getRedFlagWarnings(), empty());
+              and(
+                  ADDRESS_SPACE_TO_MATCH_EXPR.convertSource(addressRange),
+                  ADDRESS_SPACE_TO_MATCH_EXPR.convertDest(addressRange))));
     }
     {
-      // Hide host
+      // Test match internal traffic for a network
+      Network network =
+          new Network("nw", natSettings, Ip.parse("1.1.1.0"), Ip.parse("255.255.255.0"), UID);
+      assertThat(
+          matchInternalTraffic(network, ADDRESS_SPACE_TO_MATCH_EXPR).get(),
+          equalTo(
+              and(
+                  ADDRESS_SPACE_TO_MATCH_EXPR.convertSource(network),
+                  ADDRESS_SPACE_TO_MATCH_EXPR.convertDest(network))));
+    }
+    {
+      // No such thing as internal traffic for a host
       Host host = new Host(Ip.parse("1.1.1.1"), natSettings, "host", UID);
-      Warnings warnings = new Warnings(true, true, true);
-      List<Function<Ip, Transformation>> funcs =
-          automaticHideRuleTransformationFunctions(host, ADDRESS_SPACE_TO_MATCH_EXPR, warnings);
-      assertThat(funcs, hasSize(1));
       assertThat(
-          funcs.get(0).apply(egressIfaceIp),
-          equalTo(
-              Transformation.when(matchSrc(new IpSpaceReference(host.getName())))
-                  .apply(assignSourceIp(egressIfaceIp))
-                  .build()));
-      assertThat(warnings.getRedFlagWarnings(), empty());
+          matchInternalTraffic(host, ADDRESS_SPACE_TO_MATCH_EXPR), equalTo(Optional.empty()));
+    }
+  }
+
+  @Test
+  public void testAutomaticHideRuleTransformationStep() {
+    {
+      // Hide behind gateway
+      NatSettings natSettings =
+          new NatSettings(true, NatHideBehindGateway.INSTANCE, "All", null, NatMethod.HIDE);
+      AddressRange addressRange =
+          new AddressRange(
+              Ip.parse("1.1.1.0"), Ip.parse("1.1.1.255"), null, null, natSettings, "a1", UID);
+      TransformationStep step = automaticHideRuleTransformationStep(addressRange);
+      assertThat(step, equalTo(assignSourceIp(HIDE_BEHIND_GATEWAY_IP)));
     }
     {
-      // Hide network
+      // Hide behind IP
+      Ip hideBehindIp = Ip.parse("5.5.5.5");
+      NatSettings natSettings =
+          new NatSettings(true, new NatHideBehindIp(hideBehindIp), "All", null, NatMethod.HIDE);
+      // use a different HasNatSettings type just for fun
+      Host host = new Host(Ip.parse("1.1.1.1"), natSettings, "host", UID);
+      TransformationStep step = automaticHideRuleTransformationStep(host);
+      assertThat(step, equalTo(assignSourceIp(hideBehindIp)));
+    }
+    {
+      // Unhandled hide-behind type (NAT settings like this should be filtered out before reaching
+      // this function)
+      NatSettings natSettings =
+          new NatSettings(true, new UnhandledNatHideBehind("foo"), "All", null, NatMethod.HIDE);
+      // use a different HasNatSettings type just for fun
       Network network =
           new Network("nw", natSettings, Ip.parse("1.0.0.0"), Ip.parse("255.255.255.0"), UID);
-      Warnings warnings = new Warnings(true, true, true);
-      List<Function<Ip, Transformation>> funcs =
-          automaticHideRuleTransformationFunctions(network, ADDRESS_SPACE_TO_MATCH_EXPR, warnings);
-      assertThat(funcs, hasSize(2));
-      IpSpaceReference networkRef = new IpSpaceReference(network.getName());
-      assertThat(
-          funcs.get(0).apply(egressIfaceIp),
-          equalTo(
-              Transformation.when(and(matchSrc(networkRef), matchDst(networkRef)))
-                  .apply(Noop.NOOP_SOURCE_NAT)
-                  .build()));
-      assertThat(
-          funcs.get(1).apply(egressIfaceIp),
-          equalTo(
-              Transformation.when(matchSrc(networkRef))
-                  .apply(assignSourceIp(egressIfaceIp))
-                  .build()));
-      assertThat(warnings.getRedFlagWarnings(), empty());
+      _thrown.expect(IllegalArgumentException.class);
+      automaticHideRuleTransformationStep(network);
     }
   }
 
   @Test
-  public void testAutomaticHideRuleTransformation_hideBehindIp() {
-    Ip hideBehindIp = Ip.parse("5.5.5.5");
-    NatSettings natSettings =
-        new NatSettings(true, new NatHideBehindIp(hideBehindIp), "All", null, NatMethod.HIDE);
-
-    // No need to test every type of HasNatSettings because this is done in hideBehindGateway test
-    Host host = new Host(Ip.parse("1.1.1.1"), natSettings, "host", UID);
-    Warnings warnings = new Warnings(true, true, true);
-    List<Function<Ip, Transformation>> funcs =
-        automaticHideRuleTransformationFunctions(host, ADDRESS_SPACE_TO_MATCH_EXPR, warnings);
-    assertThat(funcs, hasSize(1));
-    assertThat(
-        funcs.get(0).apply(Ip.parse("10.10.10.10")),
-        equalTo(
-            Transformation.when(matchSrc(new IpSpaceReference(host.getName())))
-                .apply(assignSourceIp(hideBehindIp))
-                .build()));
-    assertThat(warnings.getRedFlagWarnings(), empty());
+  public void testMatchAutomaticStaticRule() {
+    Ip natIp = Ip.parse("5.5.5.5");
+    Ip hostIp = Ip.parse("1.1.1.1");
+    NatSettings natSettings = new NatSettings(true, null, "All", natIp, NatMethod.STATIC);
+    Host host = new Host(hostIp, natSettings, "host", UID);
+    {
+      // Source NAT
+      AclLineMatchExpr match = matchAutomaticStaticRule(host, true);
+      assertThat(match, equalTo(matchSrc(hostIp.toIpSpace())));
+    }
+    {
+      // Destination NAT
+      AclLineMatchExpr match = matchAutomaticStaticRule(host, false);
+      assertThat(match, equalTo(matchDst(natIp.toIpSpace())));
+    }
   }
 
   @Test
-  public void testAutomaticHideRuleTransformationFunction_warnings() {
+  public void testAutomaticStaticRuleTransformationStep() {
+    Ip natIp = Ip.parse("5.5.5.5");
+    Ip hostIp = Ip.parse("1.1.1.1");
+    NatSettings natSettings = new NatSettings(true, null, "All", natIp, NatMethod.STATIC);
+    Host host = new Host(hostIp, natSettings, "host", UID);
     {
-      // Missing hide-behind
-      NatSettings natSettings = new NatSettings(true, null, "All", null, NatMethod.HIDE);
-      Host host = new Host(Ip.parse("1.1.1.1"), natSettings, "host", UID);
-      Warnings warnings = new Warnings(true, true, true);
-      List<Function<Ip, Transformation>> funcs =
-          automaticHideRuleTransformationFunctions(host, ADDRESS_SPACE_TO_MATCH_EXPR, warnings);
-      assertTrue(funcs.isEmpty());
-      assertThat(
-          warnings.getRedFlagWarnings(),
-          contains(hasText(containsString("type is HIDE, but hide-behind is missing"))));
+      // Source transformation
+      TransformationStep step = automaticStaticRuleTransformationStep(host, true);
+      assertThat(step, equalTo(assignSourceIp(natIp)));
     }
     {
-      // hide-behind setting is not recognized
+      // Destination NAT
+      TransformationStep step = automaticStaticRuleTransformationStep(host, false);
+      assertThat(step, equalTo(assignDestinationIp(hostIp)));
+    }
+  }
+
+  @Test
+  public void testIsValidAutomaticRule() {
+    {
+      // Not automatic
       NatSettings natSettings =
-          new NatSettings(true, new UnhandledNatHideBehind("garbage"), "All", null, NatMethod.HIDE);
+          new NatSettings(false, NatHideBehindGateway.INSTANCE, "All", null, NatMethod.HIDE);
       Host host = new Host(Ip.parse("1.1.1.1"), natSettings, "host", UID);
       Warnings warnings = new Warnings(true, true, true);
-      List<Function<Ip, Transformation>> funcs =
-          automaticHideRuleTransformationFunctions(host, ADDRESS_SPACE_TO_MATCH_EXPR, warnings);
-      assertTrue(funcs.isEmpty());
-      assertThat(
-          warnings.getRedFlagWarnings(),
-          contains(hasText(containsString("NAT hide-behind \"garbage\" is not recognized"))));
+      assertFalse(isValidAutomaticRule(host, warnings));
+      // No warnings; NatSettings can be for manual rule
+      assertThat(warnings.getRedFlagWarnings(), empty());
     }
     {
       // install-on is not "All" (individual gateways aren't yet supported)
@@ -446,9 +422,7 @@ public final class CheckpointNatConversionsTest {
           new NatSettings(true, NatHideBehindGateway.INSTANCE, "gateway1", null, NatMethod.HIDE);
       Host host = new Host(Ip.parse("1.1.1.1"), natSettings, "host", UID);
       Warnings warnings = new Warnings(true, true, true);
-      List<Function<Ip, Transformation>> funcs =
-          automaticHideRuleTransformationFunctions(host, ADDRESS_SPACE_TO_MATCH_EXPR, warnings);
-      assertTrue(funcs.isEmpty());
+      assertFalse(isValidAutomaticRule(host, warnings));
       assertThat(
           warnings.getRedFlagWarnings(),
           contains(
@@ -456,38 +430,52 @@ public final class CheckpointNatConversionsTest {
                   containsString(
                       "Automatic NAT rules on specific gateways are not yet supported"))));
     }
-  }
-
-  @Test
-  public void testAutomaticStaticRuleTransformation() {
-    Ip natIp = Ip.parse("5.5.5.5");
-    Ip hostIp = Ip.parse("1.1.1.1");
-    NatSettings natSettings = new NatSettings(true, null, "All", natIp, NatMethod.STATIC);
-    Host host = new Host(hostIp, natSettings, "host", UID);
-    Warnings warnings = new Warnings(true, true, true);
-    Optional<Transformation> srcTransform = automaticStaticRuleTransformation(host, true, warnings);
-    Optional<Transformation> dstTransform =
-        automaticStaticRuleTransformation(host, false, warnings);
-    assertTrue(srcTransform.isPresent() && dstTransform.isPresent());
-    assertThat(
-        srcTransform.get(),
-        equalTo(Transformation.when(matchSrc(hostIp)).apply(assignSourceIp(natIp)).build()));
-    assertThat(
-        dstTransform.get(),
-        equalTo(Transformation.when(matchDst(natIp)).apply(assignDestinationIp(hostIp)).build()));
-    assertThat(warnings.getRedFlagWarnings(), empty()); // Neither call generated warnings
-  }
-
-  @Test
-  public void testAutomaticStaticRuleTransformation_warnings() {
-    { // Non-host object
+    {
+      // No method set
+      NatSettings natSettings =
+          new NatSettings(true, NatHideBehindGateway.INSTANCE, "All", null, null);
+      Host host = new Host(Ip.parse("1.1.1.1"), natSettings, "host", UID);
+      Warnings warnings = new Warnings(true, true, true);
+      assertFalse(isValidAutomaticRule(host, warnings));
+      assertThat(
+          warnings.getRedFlagWarnings(), contains(hasText(containsString("No NAT method set"))));
+    }
+    {
+      // Hide rule missing hide-behind
+      NatSettings natSettings = new NatSettings(true, null, "All", null, NatMethod.HIDE);
+      Host host = new Host(Ip.parse("1.1.1.1"), natSettings, "host", UID);
+      Warnings warnings = new Warnings(true, true, true);
+      assertFalse(isValidAutomaticRule(host, warnings));
+      assertThat(
+          warnings.getRedFlagWarnings(),
+          contains(hasText(containsString("type is HIDE, but hide-behind is missing"))));
+    }
+    {
+      // Hide rule with unrecognized hide-behind setting
+      NatSettings natSettings =
+          new NatSettings(true, new UnhandledNatHideBehind("garbage"), "All", null, NatMethod.HIDE);
+      Host host = new Host(Ip.parse("1.1.1.1"), natSettings, "host", UID);
+      Warnings warnings = new Warnings(true, true, true);
+      assertFalse(isValidAutomaticRule(host, warnings));
+      assertThat(
+          warnings.getRedFlagWarnings(),
+          contains(hasText(containsString("NAT hide-behind \"garbage\" is not recognized"))));
+    }
+    {
+      // Valid hide rule
+      NatSettings natSettings =
+          new NatSettings(true, NatHideBehindGateway.INSTANCE, "All", null, NatMethod.HIDE);
+      Host host = new Host(Ip.parse("1.1.1.1"), natSettings, "host", UID);
+      assertTrue(isValidAutomaticRule(host, new Warnings(true, true, true)));
+    }
+    {
+      // Static rule on non-host object
       NatSettings natSettings =
           new NatSettings(true, null, "All", Ip.parse("5.5.5.5"), NatMethod.STATIC);
       Network network =
           new Network("nw", natSettings, Ip.parse("1.0.0.0"), Ip.parse("255.255.255.0"), UID);
       Warnings warnings = new Warnings(true, true, true);
-      Optional<Transformation> t = automaticStaticRuleTransformation(network, true, warnings);
-      assertFalse(t.isPresent());
+      assertFalse(isValidAutomaticRule(network, warnings));
       assertThat(
           warnings.getRedFlagWarnings(),
           contains(
@@ -495,36 +483,29 @@ public final class CheckpointNatConversionsTest {
                   containsString(
                       "Automatic static NAT rules on non-host objects are not yet supported"))));
     }
-    { // IPv6 host (assuming to be, since the host's IP is null)
+    {
+      // Static rule on IPv6 host (assuming to be, since the host's IP is null)
       NatSettings natSettings =
           new NatSettings(true, null, "All", Ip.parse("5.5.5.5"), NatMethod.STATIC);
       Host host = new Host(null, natSettings, "host", UID);
       Warnings warnings = new Warnings(true, true, true);
-      Optional<Transformation> t = automaticStaticRuleTransformation(host, true, warnings);
-      assertFalse(t.isPresent());
+      assertFalse(isValidAutomaticRule(host, warnings));
       assertThat(warnings.getRedFlagWarnings(), empty()); // no warning for missing IPv6 support
     }
-    { // IPv6 rule (assuming to be, since IPv4 address is null)
+    {
+      // Static IPv6 rule (assuming to be, since IPv4 address is null)
       NatSettings ipv6Settings = new NatSettings(true, null, "All", null, NatMethod.STATIC);
       Host host = new Host(Ip.parse("1.1.1.1"), ipv6Settings, "host", UID);
       Warnings warnings = new Warnings(true, true, true);
-      Optional<Transformation> t = automaticStaticRuleTransformation(host, true, warnings);
-      assertFalse(t.isPresent());
+      assertFalse(isValidAutomaticRule(host, warnings));
       assertThat(warnings.getRedFlagWarnings(), empty()); // no warning for missing IPv6 support
     }
-    { // install-on is not "All" (individual gateways aren't yet supported)
-      NatSettings gatewaySettings =
-          new NatSettings(true, null, "gateway1", Ip.parse("5.5.5.5"), NatMethod.STATIC);
-      Host host = new Host(Ip.parse("1.1.1.1"), gatewaySettings, "host", UID);
-      Warnings warnings = new Warnings(true, true, true);
-      Optional<Transformation> t = automaticStaticRuleTransformation(host, true, warnings);
-      assertFalse(t.isPresent());
-      assertThat(
-          warnings.getRedFlagWarnings(),
-          contains(
-              hasText(
-                  containsString(
-                      "Automatic NAT rules on specific gateways are not yet supported"))));
+    {
+      // Valid static rule
+      NatSettings natSettings =
+          new NatSettings(true, null, "All", Ip.parse("5.5.5.5"), NatMethod.STATIC);
+      Host host = new Host(Ip.parse("1.1.1.1"), natSettings, "host", UID);
+      assertTrue(isValidAutomaticRule(host, new Warnings(true, true, true)));
     }
   }
 
@@ -791,7 +772,65 @@ public final class CheckpointNatConversionsTest {
   }
 
   @Test
-  public void testManualStaticRuleTransformation() {
+  public void testMatchManualRule() {
+    Warnings warnings = new Warnings();
+    ServiceToMatchExpr serviceToMatchExpr = new ServiceToMatchExpr(ImmutableMap.of());
+    {
+      // Returns empty optional when toMatchExpr does (more thorough testing testNatOrigToMatchExpr)
+      ImmutableMap<Uid, TypedManagementObject> objs =
+          ImmutableMap.of(ANY_UID, ANY, ORIG_UID, ORIG, PT_UID, POLICY_TARGETS);
+      NatRule rule =
+          new NatRule(
+              false,
+              "",
+              true,
+              ImmutableList.of(),
+              NatMethod.STATIC,
+              PT_UID, // invalid
+              ANY_UID,
+              ANY_UID,
+              1,
+              ORIG_UID,
+              ORIG_UID,
+              ORIG_UID,
+              UID);
+      assertThat(
+          matchManualRule(rule, serviceToMatchExpr, ADDRESS_SPACE_TO_MATCH_EXPR, objs, warnings),
+          equalTo(Optional.empty()));
+    }
+    {
+      // Returns correct expr when toMatchExpr is successful
+      Uid hostUid = Uid.of("1");
+      Ip hostIp = Ip.parse("1.1.1.1");
+      Host host = new Host(hostIp, NAT_SETTINGS_TEST_INSTANCE, "name", hostUid);
+      BddTestbed tb =
+          new BddTestbed(ImmutableMap.of(), ImmutableMap.of(host.getName(), hostIp.toIpSpace()));
+      ImmutableMap<Uid, TypedManagementObject> objs =
+          ImmutableMap.of(ANY_UID, ANY, hostUid, host, ORIG_UID, ORIG);
+      NatRule rule =
+          new NatRule(
+              false,
+              "",
+              true,
+              ImmutableList.of(),
+              NatMethod.STATIC,
+              hostUid,
+              ANY_UID,
+              ANY_UID,
+              1,
+              ORIG_UID,
+              ORIG_UID,
+              ORIG_UID,
+              UID);
+      AclLineMatchExpr match =
+          matchManualRule(rule, serviceToMatchExpr, ADDRESS_SPACE_TO_MATCH_EXPR, objs, warnings)
+              .get();
+      assertThat(tb.toBDD(match), equalTo(tb.toBDD(matchDst(hostIp))));
+    }
+  }
+
+  @Test
+  public void testManualRuleTransformation_static() {
     Warnings warnings = new Warnings();
     Uid hostUid1 = Uid.of("1");
     Ip hostIp1 = Ip.parse("1.1.1.1");
@@ -801,16 +840,6 @@ public final class CheckpointNatConversionsTest {
     String hostname2 = "host2";
     Host host1 = new Host(hostIp1, NAT_SETTINGS_TEST_INSTANCE, hostname1, hostUid1);
     Host host2 = new Host(hostIp2, NAT_SETTINGS_TEST_INSTANCE, hostname2, hostUid2);
-    ServiceToMatchExpr serviceToMatchExpr = new ServiceToMatchExpr(ImmutableMap.of());
-    BddTestbed tb =
-        new BddTestbed(
-            ImmutableMap.of(),
-            ImmutableMap.of(
-                hostname1,
-                host1.getIpv4Address().toIpSpace(),
-                hostname2,
-                host2.getIpv4Address().toIpSpace()));
-
     {
       ImmutableMap<Uid, TypedManagementObject> objs =
           ImmutableMap.of(ANY_UID, ANY, PT_UID, POLICY_TARGETS);
@@ -831,10 +860,7 @@ public final class CheckpointNatConversionsTest {
               UID);
 
       // invalid fields
-      assertThat(
-          manualRuleTransformation(
-              rule, serviceToMatchExpr, ADDRESS_SPACE_TO_MATCH_EXPR, objs, warnings),
-          equalTo(Optional.empty()));
+      assertThat(manualRuleTransformation(rule, objs, warnings), equalTo(Optional.empty()));
     }
     {
       ImmutableMap<Uid, TypedManagementObject> objs =
@@ -855,12 +881,9 @@ public final class CheckpointNatConversionsTest {
               ORIG_UID,
               UID);
 
-      Transformation xform =
-          manualRuleTransformation(
-                  rule, serviceToMatchExpr, ADDRESS_SPACE_TO_MATCH_EXPR, objs, warnings)
-              .get();
-      assertThat(
-          tb.toBDD(xform.getGuard()), equalTo(tb.toBDD(AclLineMatchExprs.matchDst(hostIp1))));
+      Transformation xform = manualRuleTransformation(rule, objs, warnings).get();
+      // no match condition enforced in transformation (despite dest constraint)
+      assertThat(xform.getGuard(), equalTo(AclLineMatchExprs.TRUE));
       assertThat(xform.getTransformationSteps(), contains(assignDestinationIp(hostIp2)));
     }
   }
@@ -881,12 +904,10 @@ public final class CheckpointNatConversionsTest {
             .setAddress(ConcreteInterfaceAddress.create(ifaceIp, 24))
             .build();
     List<Function<Ip, Transformation>> transformationFuncs =
-        ImmutableList.of(ip -> Transformation.always().apply(assignSourceIp(ip)).build());
+        ImmutableList.of(ip -> always().apply(assignSourceIp(ip)).build());
     List<Transformation> outgoingTransformations =
         getOutgoingTransformations(viIface, transformationFuncs);
-    assertThat(
-        outgoingTransformations,
-        contains(Transformation.always().apply(assignSourceIp(ifaceIp)).build()));
+    assertThat(outgoingTransformations, contains(always().apply(assignSourceIp(ifaceIp)).build()));
   }
 
   @Test
@@ -896,20 +917,20 @@ public final class CheckpointNatConversionsTest {
       assertThat(mergeTransformations(transformations), equalTo(Optional.empty()));
     }
     {
-      Transformation t =
-          Transformation.always().apply(TransformationStep.assignSourceIp(Ip.ZERO)).build();
+      Transformation t = always().apply(TransformationStep.assignSourceIp(Ip.ZERO)).build();
       List<Transformation> transformations = ImmutableList.of(t);
       assertThat(mergeTransformations(transformations), equalTo(Optional.of(t)));
     }
     {
       Transformation.Builder tb1 = Transformation.when(FALSE).apply(assignDestinationIp(Ip.ZERO));
-      Transformation t2 =
-          Transformation.always().apply(TransformationStep.assignSourceIp(Ip.ZERO)).build();
+      Transformation t2 = always().apply(TransformationStep.assignSourceIp(Ip.ZERO)).build();
       List<Transformation> transformations = ImmutableList.of(tb1.build(), t2);
       assertThat(
           mergeTransformations(transformations), equalTo(Optional.of(tb1.setOrElse(t2).build())));
     }
   }
+
+  @Rule public ExpectedException _thrown = ExpectedException.none();
 
   private static final Uid UID = Uid.of("1001");
   private static final Uid PT_UID = Uid.of("1002");
