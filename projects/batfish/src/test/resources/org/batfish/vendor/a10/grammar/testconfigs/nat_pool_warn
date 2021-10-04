@@ -1,0 +1,29 @@
+!BATFISH_FORMAT: a10_acos
+hostname nat_pool_warn
+!
+! Valid
+ip nat pool POOL1 10.1.10.10 10.1.10.11 netmask /24
+!
+! Cannot modify existing nat pool
+ip nat pool POOL1 10.1.10.10 10.1.10.11 netmask /25
+!
+! End cannot be less than start
+ip nat pool POOL2 10.2.10.101 10.2.10.100 netmask /24
+!
+! Netmask must be > 0
+ip nat pool POOL3 10.3.10.100 10.3.10.101 netmask /0
+!
+! Netmask doesn't contain pool range
+ip nat pool POOL4 10.4.11.1 10.4.11.2 netmask /31
+!
+! Cannot overlap existing pool IPs
+ip nat pool POOL5 10.1.10.9 10.1.10.10 netmask /25
+!
+!
+!
+! Invalid scaleout-device-id
+ip nat pool POOL2 10.10.10.100 10.10.10.101 netmask /24 scaleout-device-id 17
+!
+! Invalid vrid
+ip nat pool POOL2 10.10.10.100 10.10.10.101 netmask /24 vrid 32
+!

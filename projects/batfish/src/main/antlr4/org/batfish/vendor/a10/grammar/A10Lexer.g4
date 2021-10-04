@@ -20,8 +20,10 @@ DESCRIPTION: 'description' -> pushMode(M_Word);
 DO_AUTO_RECOVERY: 'do-auto-recovery';
 ENABLE: 'enable';
 ETHERNET: 'ethernet';
+GATEWAY: 'gateway';
 HOSTNAME: 'hostname' -> pushMode(M_Word);
 IP: 'ip';
+IP_RR: 'ip-rr';
 INTERFACE: 'interface';
 LACP: 'lacp';
 LACP_TRUNK: 'lacp-trunk';
@@ -31,13 +33,18 @@ LOOPBACK: 'loopback';
 MODE: 'mode';
 MTU: 'mtu';
 NAME: 'name' -> pushMode(M_Word);
+NAT: 'nat';
+NETMASK: 'netmask';
 NO: 'no';
 PASSIVE: 'passive';
+POOL: 'pool' -> pushMode(M_Word);
+PORT_OVERLOAD: 'port-overload';
 PORTS_THRESHOLD: 'ports-threshold';
 RBA: 'rba' -> pushMode(M_Rba);
 ROLE: 'role';
 ROUTE: 'route';
 ROUTER_INTERFACE: 'router-interface';
+SCALEOUT_DEVICE_ID: 'scaleout-device-id';
 STATIC: 'static';
 SHORT: 'short';
 TAGGED: 'tagged';
@@ -50,6 +57,7 @@ UNTAGGED: 'untagged';
 USER_TAG: 'user-tag' -> pushMode(M_Word);
 VE: 've';
 VLAN: 'vlan';
+VRID: 'vrid';
 
 // Complex tokens
 COMMENT_LINE
