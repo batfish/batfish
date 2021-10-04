@@ -512,7 +512,7 @@ public final class IspModelingUtils {
       return Optional.empty();
     }
     Interface attachmentIface =
-        snapshotBgpHost.getAllInterfaces().values().stream()
+        attachmentHost.getAllInterfaces().values().stream()
             .filter(i -> i.getName().equalsIgnoreCase(ispAttachment.getInterface()))
             .findFirst()
             .orElse(null);
