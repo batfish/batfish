@@ -1319,16 +1319,6 @@ public class CheckPointGatewayGrammarTest {
             emptyNatSettings,
             "manualHideTranslatedHost",
             manualHideTranslatedHostUid);
-    ImmutableMap<Uid, TypedManagementObject> natObjs =
-        ImmutableMap.<Uid, TypedManagementObject>builder()
-            .put(cpmiAnyUid, any)
-            .put(originalUid, original)
-            .put(policyTargetsUid, policyTargets)
-            .put(manualStaticOriginalHostUid, manualStaticOriginalHost)
-            .put(manualStaticTranslatedHostUid, manualStaticTranslatedHost)
-            .put(manualHideOriginalHostUid, manualHideOriginalHost)
-            .put(manualHideTranslatedHostUid, manualHideTranslatedHost)
-            .build();
     Uid manualStaticRuleUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
     NatRule manualStaticRule =
         new NatRule(
@@ -1362,10 +1352,6 @@ public class CheckPointGatewayGrammarTest {
             manualHideTranslatedHostUid,
             manualHideRuleUid);
 
-    Uid rulebaseUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
-    NatRulebase rulebase =
-        new NatRulebase(natObjs, ImmutableList.of(manualStaticRule, manualHideRule), rulebaseUid);
-
     // Create automatic rules
     NatSettings autoStatic1NatSettings =
         new NatSettings(true, null, "All", autoStatic1NatIp, NatMethod.STATIC);
@@ -1387,6 +1373,81 @@ public class CheckPointGatewayGrammarTest {
             autoHideNetwork.getStartIp(),
             autoHideNetwork.getPrefixWildcard().inverted(),
             autoHideNetworkUid);
+    Uid autoStatic1RuleUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
+    NatRule autoStatic1Rule =
+        new NatRule(
+            true,
+            "",
+            true,
+            ImmutableList.of(policyTargetsUid),
+            NatMethod.STATIC,
+            cpmiAnyUid,
+            cpmiAnyUid,
+            autoStatic1HostUid,
+            3,
+            originalUid,
+            originalUid,
+            // TODO Translated source should really be populated but doesn't matter for current
+            // automatic rule conversion
+            originalUid,
+            autoStatic1RuleUid);
+    Uid autoStatic2RuleUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
+    NatRule autoStatic2Rule =
+        new NatRule(
+            true,
+            "",
+            true,
+            ImmutableList.of(policyTargetsUid),
+            NatMethod.STATIC,
+            cpmiAnyUid,
+            cpmiAnyUid,
+            autoStatic2HostUid,
+            4,
+            originalUid,
+            originalUid,
+            // TODO Translated source should really be populated but doesn't matter for current
+            // automatic rule conversion
+            originalUid,
+            autoStatic2RuleUid);
+    Uid autoHideRuleUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
+    NatRule autoHideRule =
+        new NatRule(
+            true,
+            "",
+            true,
+            ImmutableList.of(policyTargetsUid),
+            NatMethod.HIDE,
+            cpmiAnyUid,
+            cpmiAnyUid,
+            autoHideNetworkUid,
+            5,
+            originalUid,
+            originalUid,
+            // TODO Translated source should really be populated but doesn't matter for current
+            // automatic rule conversion
+            originalUid,
+            autoHideRuleUid);
+
+    ImmutableMap<Uid, TypedManagementObject> natObjs =
+        ImmutableMap.<Uid, TypedManagementObject>builder()
+            .put(cpmiAnyUid, any)
+            .put(originalUid, original)
+            .put(policyTargetsUid, policyTargets)
+            .put(manualStaticOriginalHostUid, manualStaticOriginalHost)
+            .put(manualStaticTranslatedHostUid, manualStaticTranslatedHost)
+            .put(manualHideOriginalHostUid, manualHideOriginalHost)
+            .put(manualHideTranslatedHostUid, manualHideTranslatedHost)
+            .put(autoStatic1HostUid, autoStatic1Host)
+            .put(autoStatic2HostUid, autoStatic2Host)
+            .put(autoHideNetworkUid, autoHideNetworkObj)
+            .build();
+    Uid rulebaseUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
+    NatRulebase rulebase =
+        new NatRulebase(
+            natObjs,
+            ImmutableList.of(
+                manualStaticRule, manualHideRule, autoStatic1Rule, autoStatic2Rule, autoHideRule),
+            rulebaseUid);
 
     // Create simple access layer to permit all traffic
     Uid permitUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
@@ -1639,16 +1700,43 @@ public class CheckPointGatewayGrammarTest {
             unnatted.getPrefixWildcard().inverted(),
             noNatNetworkUid);
 
-    // TODO Once we use the rulebase to correctly order auto hide rules, this rulebase will need a
-    //      rule corresponding to the host's NatSettings above
+    Uid anyUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
+    CpmiAnyObject any = new CpmiAnyObject(anyUid);
+    Uid originalUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
+    Original original = new Original(anyUid);
+    Uid policyTargetsUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
+    PolicyTargets policyTargets = new PolicyTargets(policyTargetsUid);
+    Uid autoHideRuleUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
+    NatRule autoHideRule =
+        new NatRule(
+            true,
+            "",
+            true,
+            ImmutableList.of(policyTargetsUid),
+            NatMethod.HIDE,
+            anyUid,
+            anyUid,
+            natNetworkUid,
+            1,
+            originalUid,
+            originalUid,
+            // TODO Translated source should really be populated but doesn't matter for current
+            // automatic rule conversion
+            originalUid,
+            autoHideRuleUid);
+    ImmutableMap<Uid, TypedManagementObject> natObjs =
+        ImmutableMap.<Uid, TypedManagementObject>builder()
+            .put(anyUid, any)
+            .put(originalUid, original)
+            .put(policyTargetsUid, policyTargets)
+            .put(natNetworkUid, natNetwork)
+            .build();
     Uid natUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
-    NatRulebase rulebase = new NatRulebase(ImmutableMap.of(), ImmutableList.of(), natUid);
+    NatRulebase rulebase = new NatRulebase(natObjs, ImmutableList.of(autoHideRule), natUid);
 
     // Create access layer to permit traffic to the NATted network and the other network.
     Uid alUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
-    Uid ruleUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
-    Uid anyUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
-    CpmiAnyObject any = new CpmiAnyObject(anyUid);
+    Uid accessRuleUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
     Uid permitUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
     RulebaseAction permit = new RulebaseAction("Accept", permitUid, "");
     AccessLayer accessLayer =
@@ -1664,7 +1752,7 @@ public class CheckPointGatewayGrammarTest {
                 permit),
             ImmutableList.of(
                 AccessRule.testBuilder(anyUid)
-                    .setUid(ruleUid)
+                    .setUid(accessRuleUid)
                     .setAction(permitUid)
                     .setSource(ImmutableList.of(natNetworkUid, noNatNetworkUid))
                     .build()),
