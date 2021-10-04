@@ -8,7 +8,8 @@ import
   A10_lacp_trunk,
   A10_rba,
   A10_trunk,
-  A10_vlan;
+  A10_vlan,
+  A10_vrrp_a;
 
 options {
    superClass = 'org.batfish.grammar.BatfishParser';
@@ -27,6 +28,7 @@ statement
    | s_rba
    | s_trunk
    | s_vlan
+   | s_vrrp_a
 ;
 
 s_ip: IP si;

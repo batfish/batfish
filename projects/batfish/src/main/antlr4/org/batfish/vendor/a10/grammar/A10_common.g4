@@ -12,6 +12,11 @@ word: WORD_SEPARATOR word_content;
 
 hostname: word;
 
+ethernet_or_trunk_reference
+:
+  ETHERNET ethnum = ethernet_number
+  | TRUNK trunknum = trunk_number
+;
 interface_name_str: word;
 
 nat_pool_name: word;
@@ -55,8 +60,11 @@ scaleout_device_id: uint8;
 // 1-4096
 trunk_number: uint16;
 
-// 1-31
+// 0-31
 vrid: uint8;
+
+// 1-31
+non_default_vrid: uint8;
 
 uint8: UINT8;
 

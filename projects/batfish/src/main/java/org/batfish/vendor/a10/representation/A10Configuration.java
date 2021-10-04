@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -157,6 +158,17 @@ public final class A10Configuration extends VendorConfiguration {
     // Only the first letter should be capitalized, similar to A10 `show` data
     return String.format(
         "%s%s %s", typeStr.substring(0, 1), typeStr.substring(1).toLowerCase(), num);
+  }
+
+  public @Nullable VrrpA getVrrpA() {
+    return _vrrpA;
+  }
+
+  public @Nonnull VrrpA getOrCreateVrrpA() {
+    if (_vrrpA == null) {
+      _vrrpA = new VrrpA();
+    }
+    return _vrrpA;
   }
 
   @Override
@@ -413,6 +425,7 @@ public final class A10Configuration extends VendorConfiguration {
   private Map<Integer, Interface> _interfacesVe;
   private Map<String, NatPool> _natPools;
   private Map<Prefix, StaticRouteManager> _staticRoutes;
+  private @Nullable VrrpA _vrrpA;
   private Map<Integer, Vlan> _vlans;
   private ConfigurationFormat _vendor;
 }

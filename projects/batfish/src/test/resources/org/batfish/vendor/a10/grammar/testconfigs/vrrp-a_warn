@@ -1,0 +1,27 @@
+!BATFISH_FORMAT: a10_acos
+hostname vrrp-a_warn
+!
+
+vrrp-a common
+  ! 1-4
+  device-id 5
+  ! 1-15
+  set-id 16
+!
+
+! 1-63 chars
+vrrp-a fail-over-policy-template 0000000000111111111122222222223333333333444444444455555555556666
+  ! weight 1-255
+  gateway 10.0.0.1 weight 0
+!
+
+! ethernet or trunk
+vrrp-a interface ethernet 50
+vrrp-a interface trunk 5000
+
+! 0-31
+vrrp-a vrid 32
+  blade-parameters
+    ! 1-255
+    priority 0
+!

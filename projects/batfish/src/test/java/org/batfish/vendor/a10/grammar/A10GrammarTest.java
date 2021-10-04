@@ -10,6 +10,7 @@ import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.ConfigurationFormat.A10_ACOS;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
@@ -28,6 +29,8 @@ import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.vendor.a10.representation.A10Configuration.getInterfaceName;
 import static org.batfish.vendor.a10.representation.A10StructureType.INTERFACE;
+import static org.batfish.vendor.a10.representation.A10StructureType.VRRP_A_FAIL_OVER_POLICY_TEMPLATE;
+import static org.batfish.vendor.a10.representation.A10StructureType.VRRP_A_VRID;
 import static org.batfish.vendor.a10.representation.A10StructureUsage.VLAN_TAGGED_INTERFACE;
 import static org.batfish.vendor.a10.representation.A10StructureUsage.VLAN_UNTAGGED_INTERFACE;
 import static org.batfish.vendor.a10.representation.Interface.DEFAULT_MTU;
@@ -74,6 +77,7 @@ import org.batfish.main.BatfishTestUtils;
 import org.batfish.vendor.ConversionContext;
 import org.batfish.vendor.a10.representation.A10Configuration;
 import org.batfish.vendor.a10.representation.Interface;
+import org.batfish.vendor.a10.representation.Interface.Type;
 import org.batfish.vendor.a10.representation.InterfaceReference;
 import org.batfish.vendor.a10.representation.NatPool;
 import org.batfish.vendor.a10.representation.StaticRoute;
@@ -81,6 +85,11 @@ import org.batfish.vendor.a10.representation.StaticRouteManager;
 import org.batfish.vendor.a10.representation.TrunkGroup;
 import org.batfish.vendor.a10.representation.TrunkInterface;
 import org.batfish.vendor.a10.representation.Vlan;
+import org.batfish.vendor.a10.representation.VrrpA;
+import org.batfish.vendor.a10.representation.VrrpACommon;
+import org.batfish.vendor.a10.representation.VrrpAFailOverPolicyTemplate;
+import org.batfish.vendor.a10.representation.VrrpAVrid;
+import org.batfish.vendor.a10.representation.VrrpaVridBladeParameters;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -1045,5 +1054,106 @@ public class A10GrammarTest {
                 hasComment("Invalid NAT pool range, overlaps with existing NAT pool"),
                 hasComment("Expected scaleout-device-id in range 1-16, but got '17'"),
                 hasComment("Expected vrid in range 1-31, but got '32'"))));
+  }
+
+  @Test
+  public void testVrrpAExtraction() {
+    String hostname = "vrrp-a";
+    A10Configuration c = parseVendorConfig(hostname);
+
+    VrrpA v = c.getVrrpA();
+    assertThat(v, notNullValue());
+
+    // vrrp-a common
+    VrrpACommon vc = v.getCommon();
+    assertThat(vc, notNullValue());
+    assertThat(vc.getDeviceId(), equalTo(2));
+    assertTrue(vc.getDisableDefaultVrid());
+    assertThat(vc.getSetId(), equalTo(1));
+    assertTrue(vc.getEnable());
+
+    // vrrp-a fail-over-policy-template
+    VrrpAFailOverPolicyTemplate fopt = v.getFailOverPolicyTemplates().get("gateway");
+    assertThat(fopt, notNullValue());
+    assertThat(fopt.getGateways().get(Ip.parse("10.0.0.1")), equalTo(100));
+
+    // vrrp-a interface
+    assertThat(v.getInterface(), equalTo(new InterfaceReference(Type.TRUNK, 2)));
+
+    // vrrp-a peer-group
+    assertThat(v.getPeerGroup(), contains(Ip.parse("10.0.1.1")));
+
+    // vrrp-a vrid
+    VrrpAVrid vrid = v.getVrids().get(0);
+    assertThat(vrid, notNullValue());
+    assertTrue(vrid.getPreemptModeDisable());
+    assertThat(vrid.getPreemptModeThreshold(), equalTo(1));
+    VrrpaVridBladeParameters vridbp = vrid.getBladeParameters();
+    assertThat(vridbp, notNullValue());
+    assertThat(vridbp.getPriority(), equalTo(200));
+    assertThat(vridbp.getFailOverPolicyTemplate(), equalTo("gateway"));
+
+    // vrrp-a vrid-lead
+    assertThat(v.getVridLead(), equalTo("default-vrid-lead"));
+  }
+
+  @Test
+  public void testVrrpAReferences() throws IOException {
+    String hostname = "vrrp-a";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Confirm reference counts
+    // referenced from vrrp-a interface, self
+    assertThat(
+        ccae,
+        hasNumReferrers(filename, INTERFACE, getInterfaceName(Interface.Type.ETHERNET, 1), 2));
+    // referenced from vrrp-a interface, vlan 4094, ethernet1
+    assertThat(
+        ccae, hasNumReferrers(filename, INTERFACE, getInterfaceName(Interface.Type.TRUNK, 2), 3));
+
+    // self-reference for vrid 0 only
+    assertThat(ccae, hasNumReferrers(filename, VRRP_A_VRID, "0", 1));
+    // Referenced from ip nat-pools with vrid 1
+    assertThat(ccae, hasNumReferrers(filename, VRRP_A_VRID, "1", 2));
+
+    // Referenced from vrrp-a vrid blade-parameters
+    assertThat(ccae, hasNumReferrers(filename, VRRP_A_FAIL_OVER_POLICY_TEMPLATE, "gateway", 1));
+
+    // Confirm definitions
+    assertThat(ccae, hasDefinedStructure(filename, VRRP_A_FAIL_OVER_POLICY_TEMPLATE, "gateway"));
+    assertThat(ccae, hasDefinedStructure(filename, VRRP_A_VRID, "0"));
+    assertThat(ccae, hasDefinedStructure(filename, VRRP_A_VRID, "1"));
+  }
+
+  @Test
+  public void testVrrpAWarn() throws IOException {
+    String filename = "vrrp-a_warn";
+    Batfish batfish = getBatfishForConfigurationNames(filename);
+    Warnings warnings =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+    assertThat(
+        warnings,
+        hasParseWarnings(
+            containsInAnyOrder(
+                hasComment("Expected vrrp-a device-id in range 1-4, but got '5'"),
+                hasComment("Expected vrrp-a set-id in range 1-15, but got '16'"),
+                hasComment(
+                    "Expected fail-over-policy-template name with length in range 1-63, but got"
+                        + " '0000000000111111111122222222223333333333444444444455555555556666'"),
+                hasComment(
+                    "Expected fail-over-policy-template gateway weight in range 1-255, but got"
+                        + " '0'"),
+                hasComment("Expected ethernet interface number in range 1-40, but got '50'"),
+                hasComment("Expected trunk interface number in range 1-4096, but got '5000'"),
+                hasComment("Expected vrrp-a vrid number in range 0-31, but got '32'"),
+                hasComment(
+                    "Expected vrrp-a vrid blade-paramters priority in range 1-255, but got '0'"))));
   }
 }
