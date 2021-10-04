@@ -581,8 +581,8 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   /** Return boolean indicating if the specified NAT pool ranges overlap. */
   private static boolean natRangesOverlap(Ip lhsStart, Ip lhsEnd, Ip rhsStart, Ip rhsEnd) {
-    assert lhsEnd.compareTo(lhsStart) > 0;
-    assert rhsEnd.compareTo(rhsStart) > 0;
+    assert lhsEnd.compareTo(lhsStart) >= 0;
+    assert rhsEnd.compareTo(rhsStart) >= 0;
     return lhsStart.compareTo(rhsEnd) <= 0 && rhsStart.compareTo(lhsEnd) <= 0;
   }
 

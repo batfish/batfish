@@ -1012,8 +1012,8 @@ public class A10GrammarTest {
     assertNull(pool1.getVrid());
 
     assertThat(pool2.getStart(), equalTo(Ip.parse("10.10.10.12")));
-    assertThat(pool2.getEnd(), equalTo(Ip.parse("10.10.10.13")));
-    assertThat(pool2.getNetmask(), equalTo(24));
+    assertThat(pool2.getEnd(), equalTo(Ip.parse("10.10.10.12")));
+    assertThat(pool2.getNetmask(), equalTo(32));
     assertThat(pool2.getGateway(), equalTo(Ip.parse("10.10.10.1")));
     assertTrue(pool2.getIpRr());
     assertTrue(pool2.getPortOverload());
