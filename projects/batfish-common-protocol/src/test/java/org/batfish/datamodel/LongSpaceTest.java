@@ -58,25 +58,31 @@ public final class LongSpaceTest {
 
   @Test
   public void testComplement() {
-    LongSpace notAllAsNumbers = LONGSPACE1.not(LONGSPACE1);
-    assertTrue("Complement of full space is empty", notAllAsNumbers.isEmpty());
+    Range<Long> numbers = Range.closed(0L, 10000L);
+    LongSpace allNumbers = LongSpace.of(numbers);
+    LongSpace notAllNumbers = allNumbers.complement(numbers);
+    assertTrue("Complement of full space is empty", notAllNumbers.isEmpty());
+    assertThat("Complement of empty is everything", EMPTY.complement(numbers), equalTo(allNumbers));
 
-    LongSpace portsWithExclusion = LONGSPACE1.toBuilder().excluding(Range.closed(10L, 20L)).build();
+    // Non-empty complement
+    LongSpace u8 = LongSpace.of(Range.closed(0L, 255L));
+    assertThat(u8.complement(numbers), equalTo(LongSpace.of(Range.closed(256L, 10000L))));
+    LongSpace middle = LongSpace.of(Range.closed(10L, 20L));
     assertThat(
-        portsWithExclusion.not(),
-        equalTo(LongSpace.builder().including(Range.closed(10L, 20L)).build()));
+        middle.complement(numbers),
+        equalTo(
+            LongSpace.builder()
+                .including(Range.closed(0L, 9L))
+                .including(Range.closed(21L, 10000L))
+                .build()));
+  }
 
-    // A bit contrived, but: a complement within a smaller space can produce a valid result
-    LongSpace small = _b.including(Range.closed(12L, 15L)).build();
-    assertThat(portsWithExclusion.not(small), equalTo(small));
-
-    // Test empty intersections
-    assertThat(
-        portsWithExclusion.not(LongSpace.builder().including(Range.closed(40L, 50L)).build()),
-        equalTo(EMPTY));
-    assertThat(portsWithExclusion.not(EMPTY), equalTo(EMPTY));
-
-    assertThat(EMPTY.not(), equalTo(EMPTY));
+  @Test
+  public void testComplementRejectsSmaller() {
+    _expected.expect(IllegalArgumentException.class);
+    _expected.expectMessage(
+        "Cannot take the complement of space 10-100 within a smaller bounds [5..5].");
+    LongSpace.of(Range.closed(10L, 100L)).complement(Range.singleton(5L));
   }
 
   @Test
