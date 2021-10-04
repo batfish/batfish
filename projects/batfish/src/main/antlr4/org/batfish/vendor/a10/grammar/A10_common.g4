@@ -14,13 +14,17 @@ hostname: word;
 
 interface_name_str: word;
 
+nat_pool_name: word;
+
 route_description: word;
 
 vlan_name: word;
 
 user_tag: word;
 
-ip_prefix: ip_address (subnet_mask | ip_slash_prefix);
+ip_prefix: ip_address ip_netmask;
+
+ip_netmask: subnet_mask | ip_slash_prefix;
 
 ip_address: IP_ADDRESS;
 
@@ -45,8 +49,14 @@ ports_threshold: uint8;
 // 1-300
 ports_threshold_timer: uint16;
 
+// 1-16
+scaleout_device_id: uint8;
+
 // 1-4096
 trunk_number: uint16;
+
+// 1-31
+vrid: uint8;
 
 uint8: UINT8;
 

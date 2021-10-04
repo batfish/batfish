@@ -1,0 +1,7 @@
+!BATFISH_FORMAT: a10_acos
+hostname nat_pool
+!
+ip nat pool POOL1 10.10.10.10 10.10.10.11 netmask /1
+!
+! TODO create vrid 1 once that is supported (this line is currently not valid)
+ip nat pool POOL2 10.10.10.12 10.10.10.12 netmask /32 gateway 10.10.10.1 ip-rr port-overload scaleout-device-id 1 vrid 2
