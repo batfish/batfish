@@ -38,6 +38,7 @@ public final class A10Configuration extends VendorConfiguration {
     _interfacesLoopback = new HashMap<>();
     _interfacesTrunk = new HashMap<>();
     _interfacesVe = new HashMap<>();
+    _natPools = new HashMap<>();
     _staticRoutes = new HashMap<>();
     _vlans = new HashMap<>();
   }
@@ -61,6 +62,10 @@ public final class A10Configuration extends VendorConfiguration {
 
   public Map<Integer, Interface> getInterfacesVe() {
     return _interfacesVe;
+  }
+
+  public Map<String, NatPool> getNatPools() {
+    return _natPools;
   }
 
   /** Map of route {@link Prefix} to {@link StaticRouteManager} for that prefix. */
@@ -392,6 +397,7 @@ public final class A10Configuration extends VendorConfiguration {
     _interfacesLoopback = ImmutableMap.copyOf(_interfacesLoopback);
     _interfacesVe = ImmutableMap.copyOf(_interfacesVe);
     _interfacesTrunk = ImmutableMap.copyOf(_interfacesTrunk);
+    _natPools = ImmutableMap.copyOf(_natPools);
     _staticRoutes = ImmutableMap.copyOf(_staticRoutes);
     _vlans = ImmutableMap.copyOf(_vlans);
   }
@@ -405,6 +411,7 @@ public final class A10Configuration extends VendorConfiguration {
   private Map<Integer, Interface> _interfacesLoopback;
   private Map<Integer, TrunkInterface> _interfacesTrunk;
   private Map<Integer, Interface> _interfacesVe;
+  private Map<String, NatPool> _natPools;
   private Map<Prefix, StaticRouteManager> _staticRoutes;
   private Map<Integer, Vlan> _vlans;
   private ConfigurationFormat _vendor;

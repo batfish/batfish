@@ -3,6 +3,7 @@ parser grammar A10Parser;
 import
   A10_common,
   A10_interface,
+  A10_ip_nat,
   A10_ip_route,
   A10_lacp_trunk,
   A10_rba,
@@ -30,7 +31,7 @@ statement
 
 s_ip: IP si;
 
-si: si_route;
+si: si_nat | si_route;
 
 s_no: NO sn_ip;
 

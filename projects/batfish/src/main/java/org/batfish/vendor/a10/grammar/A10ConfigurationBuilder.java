@@ -39,6 +39,7 @@ import org.batfish.vendor.a10.representation.A10StructureType;
 import org.batfish.vendor.a10.representation.A10StructureUsage;
 import org.batfish.vendor.a10.representation.Interface;
 import org.batfish.vendor.a10.representation.InterfaceReference;
+import org.batfish.vendor.a10.representation.NatPool;
 import org.batfish.vendor.a10.representation.StaticRoute;
 import org.batfish.vendor.a10.representation.StaticRouteManager;
 import org.batfish.vendor.a10.representation.TrunkGroup;
@@ -534,6 +535,117 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     toString(ctx, ctx.user_tag()).ifPresent(ut -> _currentTrunkGroup.setUserTag(ut));
   }
 
+  /**
+   * Creates and returns a NAT pool based on the specified settings. Adds a warning and returns
+   * {@link Optional#empty()} if the NAT pool cannot be created.
+   */
+  private Optional<NatPool> createNatPool(
+      ParserRuleContext ctx, Optional<String> maybeName, Ip start, Ip end, int netmask) {
+    if (!maybeName.isPresent()) {
+      // Already warned
+      return Optional.empty();
+    }
+    String name = maybeName.get();
+    if (_c.getNatPools().containsKey(name)) {
+      warn(ctx, "Cannot modify an existing NAT pool");
+      return Optional.empty();
+    }
+    if (start.compareTo(end) > 0) {
+      warn(ctx, "Invalid NAT pool range, the end address cannot be lower than the start address");
+      return Optional.empty();
+    }
+    if (netmask == 0) {
+      warn(ctx, "Invalid NAT pool netmask, must be > 0");
+      return Optional.empty();
+    }
+    if (!start.getNetworkAddress(netmask).equals(end.getNetworkAddress(netmask))) {
+      warn(ctx, "Invalid NAT pool range, all addresses must fit in specified netmask");
+      return Optional.empty();
+    }
+    Optional<NatPool> overlappinngPool =
+        _c.getNatPools().values().stream()
+            .filter(
+                otherPool -> natRangesOverlap(start, end, otherPool.getStart(), otherPool.getEnd()))
+            .findAny();
+    if (overlappinngPool.isPresent()) {
+      warn(
+          ctx,
+          String.format(
+              "Invalid NAT pool range, overlaps with existing NAT pool '%s'",
+              overlappinngPool.get().getName()));
+      return Optional.empty();
+    }
+
+    return Optional.of(new NatPool(name, start, end, netmask));
+  }
+
+  /** Return boolean indicating if the specified NAT pool ranges overlap. */
+  private static boolean natRangesOverlap(Ip lhsStart, Ip lhsEnd, Ip rhsStart, Ip rhsEnd) {
+    assert lhsEnd.compareTo(lhsStart) > 0;
+    assert rhsEnd.compareTo(rhsStart) > 0;
+    return lhsStart.compareTo(rhsEnd) <= 0 && rhsStart.compareTo(lhsEnd) <= 0;
+  }
+
+  @Override
+  public void enterSin_pool(A10Parser.Sin_poolContext ctx) {
+    Optional<String> name = toString(ctx, ctx.nat_pool_name());
+    Ip start = toIp(ctx.start);
+    Ip end = toIp(ctx.end);
+    int netmask = toInteger(ctx.ip_netmask());
+    _currentNatPoolValid = true;
+    _currentNatPool =
+        createNatPool(ctx, name, start, end, netmask)
+            .orElseGet(
+                () -> {
+                  _currentNatPoolValid = false;
+                  return new NatPool(ctx.nat_pool_name().getText(), start, end, netmask); // dummy
+                });
+  }
+
+  @Override
+  public void exitSin_pool(A10Parser.Sin_poolContext ctx) {
+    if (_currentNatPoolValid) {
+      _c.getNatPools().put(_currentNatPool.getName(), _currentNatPool);
+    }
+    _currentNatPool = null;
+  }
+
+  @Override
+  public void exitSinpp_gateway(A10Parser.Sinpp_gatewayContext ctx) {
+    _currentNatPool.setGateway(toIp(ctx.gateway));
+  }
+
+  @Override
+  public void exitSinpp_ip_rr(A10Parser.Sinpp_ip_rrContext ctx) {
+    _currentNatPool.setIpRr(true);
+  }
+
+  @Override
+  public void exitSinpp_port_overload(A10Parser.Sinpp_port_overloadContext ctx) {
+    _currentNatPool.setPortOverload(true);
+  }
+
+  @Override
+  public void exitSinpp_scaleout_device_id(A10Parser.Sinpp_scaleout_device_idContext ctx) {
+    Optional<Integer> scaleoutDeviceId = toInteger(ctx.scaleout_device_id());
+    if (scaleoutDeviceId.isPresent()) {
+      _currentNatPool.setScaleoutDeviceId(scaleoutDeviceId.get());
+    } else {
+      _currentNatPoolValid = false;
+    }
+  }
+
+  @Override
+  public void exitSinpp_vrid(A10Parser.Sinpp_vridContext ctx) {
+    // TODO enforce existence check when VRRP Is supported
+    Optional<Integer> vrid = toInteger(ctx.vrid());
+    if (vrid.isPresent()) {
+      _currentNatPool.setVrid(vrid.get());
+    } else {
+      _currentNatPoolValid = false;
+    }
+  }
+
   @Override
   public void enterS_lacp_trunk(A10Parser.S_lacp_trunkContext ctx) {
     Optional<Integer> maybeNum = toInteger(ctx.trunk_number());
@@ -770,12 +882,13 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   }
 
   private @Nonnull ConcreteInterfaceAddress toInterfaceAddress(A10Parser.Ip_prefixContext ctx) {
-    if (ctx.subnet_mask() != null) {
-      return ConcreteInterfaceAddress.create(toIp(ctx.ip_address()), toIp(ctx.subnet_mask()));
+    A10Parser.Ip_netmaskContext netmask = ctx.ip_netmask();
+    if (netmask.subnet_mask() != null) {
+      return ConcreteInterfaceAddress.create(toIp(ctx.ip_address()), toIp(netmask.subnet_mask()));
     }
-    assert ctx.ip_slash_prefix() != null;
+    assert netmask.ip_slash_prefix() != null;
     return ConcreteInterfaceAddress.parse(
-        ctx.ip_address().getText() + ctx.ip_slash_prefix().getText());
+        ctx.ip_address().getText() + netmask.ip_slash_prefix().getText());
   }
 
   /** Convert specified context into a prefix for a route, enforcing IP/mask requirements. */
@@ -791,11 +904,12 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   }
 
   private @Nonnull Prefix toPrefix(A10Parser.Ip_prefixContext ctx) {
-    if (ctx.subnet_mask() != null) {
-      return Prefix.create(toIp(ctx.ip_address()), toIp(ctx.subnet_mask()));
+    A10Parser.Ip_netmaskContext netmask = ctx.ip_netmask();
+    if (netmask.subnet_mask() != null) {
+      return Prefix.create(toIp(ctx.ip_address()), toIp(netmask.subnet_mask()));
     }
-    assert ctx.ip_slash_prefix() != null;
-    return Prefix.parse(ctx.ip_address().getText() + ctx.ip_slash_prefix().getText());
+    assert netmask.ip_slash_prefix() != null;
+    return Prefix.parse(ctx.ip_address().getText() + netmask.ip_slash_prefix().getText());
   }
 
   private @Nonnull Ip toIp(A10Parser.Ip_addressContext ctx) {
@@ -804,6 +918,18 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   private @Nonnull Ip toIp(A10Parser.Subnet_maskContext ctx) {
     return Ip.parse(ctx.getText());
+  }
+
+  /**
+   * Get the number of subnet bits for an {@link
+   * org.batfish.vendor.a10.grammar.A10Parser.Ip_netmaskContext}.
+   */
+  private int toInteger(A10Parser.Ip_netmaskContext ctx) {
+    if (ctx.ip_slash_prefix() != null) {
+      return Integer.parseUnsignedInt(ctx.ip_slash_prefix().getText().substring(1));
+    }
+    assert ctx.subnet_mask() != null;
+    return toIp(ctx.subnet_mask()).numSubnetBits();
   }
 
   private @Nonnull Optional<Integer> toInteger(A10Parser.Interface_mtuContext ctx) {
@@ -822,6 +948,14 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   private @Nonnull Optional<Integer> toInteger(A10Parser.Loopback_numberContext ctx) {
     return toIntegerInSpace(
         ctx, ctx.uint8(), INTERFACE_NUMBER_LOOPBACK_RANGE, "interface loopback number");
+  }
+
+  private @Nonnull Optional<Integer> toInteger(A10Parser.Scaleout_device_idContext ctx) {
+    return toIntegerInSpace(ctx, ctx.uint8(), SCALEOUT_DEVICE_ID_RANGE, "scaleout-device-id");
+  }
+
+  private @Nonnull Optional<Integer> toInteger(A10Parser.VridContext ctx) {
+    return toIntegerInSpace(ctx, ctx.uint8(), VRID_RANGE, "vrid");
   }
 
   private @Nonnull Optional<Integer> toIntegerInSpace(
@@ -881,6 +1015,12 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
         ctx.route_description().word(),
         IP_ROUTE_DESCRIPTION_LENGTH_RANGE,
         "ip route description");
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, A10Parser.Nat_pool_nameContext ctx) {
+    return toStringWithLengthInSpace(
+        messageCtx, ctx.word(), NAT_POOL_LENGTH_RANGE, "nat pool name");
   }
 
   private @Nonnull Optional<String> toString(
@@ -950,18 +1090,29 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   private static final IntegerSpace IP_ROUTE_DESCRIPTION_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 63));
   private static final IntegerSpace IP_ROUTE_DISTANCE_RANGE = IntegerSpace.of(Range.closed(1, 255));
+  private static final IntegerSpace NAT_POOL_LENGTH_RANGE = IntegerSpace.of(Range.closed(1, 63));
+  private static final IntegerSpace SCALEOUT_DEVICE_ID_RANGE = IntegerSpace.of(Range.closed(1, 16));
   private static final IntegerSpace TRUNK_NUMBER_RANGE = IntegerSpace.of(Range.closed(1, 4096));
   private static final IntegerSpace TRUNK_PORTS_THRESHOLD_RANGE =
       IntegerSpace.of(Range.closed(2, 8));
   private static final IntegerSpace USER_TAG_LENGTH_RANGE = IntegerSpace.of(Range.closed(1, 127));
   private static final IntegerSpace VLAN_NAME_LENGTH_RANGE = IntegerSpace.of(Range.closed(1, 63));
   private static final IntegerSpace VLAN_NUMBER_RANGE = IntegerSpace.of(Range.closed(2, 4094));
+  private static final IntegerSpace VRID_RANGE = IntegerSpace.of(Range.closed(1, 31));
 
   private static final Pattern HOSTNAME_PATTERN = Pattern.compile("^[A-Za-z0-9_-]+$");
 
   @Nonnull private A10Configuration _c;
 
   private Interface _currentInterface;
+
+  private NatPool _currentNatPool;
+
+  /**
+   * Boolean indicating if the {@code _currentNatPool} is valid (i.e. configured properties are
+   * valid)
+   */
+  private boolean _currentNatPoolValid;
 
   // Current trunk for ACOS v2 trunk stanza
   private TrunkInterface _currentTrunk;

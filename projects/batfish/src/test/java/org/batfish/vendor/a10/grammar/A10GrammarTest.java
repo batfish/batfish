@@ -75,6 +75,7 @@ import org.batfish.vendor.ConversionContext;
 import org.batfish.vendor.a10.representation.A10Configuration;
 import org.batfish.vendor.a10.representation.Interface;
 import org.batfish.vendor.a10.representation.InterfaceReference;
+import org.batfish.vendor.a10.representation.NatPool;
 import org.batfish.vendor.a10.representation.StaticRoute;
 import org.batfish.vendor.a10.representation.StaticRouteManager;
 import org.batfish.vendor.a10.representation.TrunkGroup;
@@ -990,5 +991,60 @@ public class A10GrammarTest {
                 "Ethernet1", org.batfish.datamodel.Interface.DependencyType.AGGREGATE),
             new org.batfish.datamodel.Interface.Dependency(
                 "Ethernet2", org.batfish.datamodel.Interface.DependencyType.AGGREGATE)));
+  }
+
+  @Test
+  public void testNatPoolExtraction() {
+    String hostname = "nat_pool";
+    A10Configuration c = parseVendorConfig(hostname);
+
+    assertThat(c.getNatPools().keySet(), contains("POOL1", "POOL2"));
+    NatPool pool1 = c.getNatPools().get("POOL1");
+    NatPool pool2 = c.getNatPools().get("POOL2");
+
+    assertThat(pool1.getStart(), equalTo(Ip.parse("10.10.10.10")));
+    assertThat(pool1.getEnd(), equalTo(Ip.parse("10.10.10.11")));
+    assertThat(pool1.getNetmask(), equalTo(1));
+    assertNull(pool1.getGateway());
+    assertFalse(pool1.getIpRr());
+    assertFalse(pool1.getPortOverload());
+    assertNull(pool1.getScaleoutDeviceId());
+    assertNull(pool1.getVrid());
+
+    assertThat(pool2.getStart(), equalTo(Ip.parse("10.10.10.12")));
+    assertThat(pool2.getEnd(), equalTo(Ip.parse("10.10.10.13")));
+    assertThat(pool2.getNetmask(), equalTo(24));
+    assertThat(pool2.getGateway(), equalTo(Ip.parse("10.10.10.1")));
+    assertTrue(pool2.getIpRr());
+    assertTrue(pool2.getPortOverload());
+    assertThat(pool2.getScaleoutDeviceId(), equalTo(1));
+    assertThat(pool2.getVrid(), equalTo(2));
+  }
+
+  @Test
+  public void testNatPoolWarn() throws IOException {
+    String filename = "nat_pool_warn";
+    // TODO
+    Batfish batfish = getBatfishForConfigurationNames(filename);
+
+    Warnings warnings =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+    assertThat(
+        warnings,
+        hasParseWarnings(
+            containsInAnyOrder(
+                hasComment("Cannot modify an existing NAT pool"),
+                hasComment(
+                    "Invalid NAT pool range, the end address cannot be lower than the start"
+                        + " address"),
+                hasComment("Invalid NAT pool netmask, must be > 0"),
+                hasComment("Invalid NAT pool range, all addresses must fit in specified netmask"),
+                hasComment("Invalid NAT pool range, overlaps with existing NAT pool 'POOL1'"),
+                hasComment("Expected scaleout-device-id in range 1-16, but got '17'"),
+                hasComment("Expected vrid in range 1-31, but got '32'"))));
   }
 }
