@@ -539,6 +539,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
    * Creates and returns a NAT pool based on the specified settings. Adds a warning and returns
    * {@link Optional#empty()} if the NAT pool cannot be created.
    */
+  @Nonnull
   private Optional<NatPool> createNatPool(
       ParserRuleContext ctx, Optional<String> maybeName, Ip start, Ip end, int netmask) {
     if (!maybeName.isPresent()) {
@@ -562,6 +563,8 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
       warn(ctx, "Invalid NAT pool range, all addresses must fit in specified netmask");
       return Optional.empty();
     }
+    // TODO more efficient pool overlap checking, e.g. leverage something like a running
+    // IntegerSpace
     Optional<NatPool> overlappinngPool =
         _c.getNatPools().values().stream()
             .filter(
