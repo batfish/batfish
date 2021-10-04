@@ -30,6 +30,8 @@ import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.hsrp.HsrpGroup;
@@ -502,7 +504,7 @@ public final class IpOwners {
    */
   private static Map<String, Map<String, Map<String, IpSpace>>> computeIfaceOwnedIpSpaces(
       Map<Ip, Map<String, Map<String, Set<String>>>> ipIfaceOwners) {
-    Map<String, Map<String, Map<String, AclIpSpace.Builder>>> builders = new HashMap<>();
+    Map<String, Map<String, Map<String, IpWildcardSetIpSpace.Builder>>> builders = new HashMap<>();
     ipIfaceOwners.forEach(
         (ip, nodeMap) ->
             nodeMap.forEach(
@@ -514,8 +516,8 @@ public final class IpOwners {
                                     builders
                                         .computeIfAbsent(node, k -> new HashMap<>())
                                         .computeIfAbsent(vrf, k -> new HashMap<>())
-                                        .computeIfAbsent(iface, k -> AclIpSpace.builder())
-                                        .thenPermitting(ip.toIpSpace())))));
+                                        .computeIfAbsent(iface, k -> IpWildcardSetIpSpace.builder())
+                                        .including(IpWildcard.create(ip))))));
     return toImmutableMap(
         builders,
         Entry::getKey, /* node */
