@@ -777,6 +777,40 @@ public class IspModelingUtilsTest {
   }
 
   @Test
+  public void testGetSnapshotConnectionForBgpPeerInfo_differentAttachmentHost() {
+    Configuration attachHost =
+        _nf.configurationBuilder()
+            .setHostname("attach")
+            .setConfigurationFormat(ConfigurationFormat.ARISTA)
+            .build();
+    Interface attachIface =
+        _nf.interfaceBuilder().setName("attach-iface").setOwner(attachHost).build();
+    Optional<SnapshotConnection> snapshotConnection =
+        getSnapshotConnectionForBgpPeerInfo(
+            new BgpPeerInfo(
+                _snapshotHostname,
+                _ispIp,
+                null,
+                new IspAttachment(attachHost.getHostname(), attachIface.getName(), null)),
+            ImmutableSet.of(),
+            ALL_AS_NUMBERS,
+            ImmutableMap.of(_snapshotHostname, _snapshotHost, attachHost.getHostname(), attachHost),
+            new Warnings());
+
+    assertThat(
+        snapshotConnection.get(),
+        equalTo(
+            new SnapshotConnection(
+                ImmutableList.of(
+                    new IspInterface(
+                        ispToSnapshotInterfaceName(attachHost.getHostname(), attachIface.getName()),
+                        ConcreteInterfaceAddress.create(_ispIp, 24),
+                        new Layer1Node(attachHost.getHostname(), attachIface.getName()),
+                        null)),
+                IspBgpActivePeer.create(_snapshotActivePeer))));
+  }
+
+  @Test
   public void testGetSnapshotConnectionForBgpPeerInfo_withVlanTag() {
     Optional<SnapshotConnection> snapshotConnection =
         getSnapshotConnectionForBgpPeerInfo(
