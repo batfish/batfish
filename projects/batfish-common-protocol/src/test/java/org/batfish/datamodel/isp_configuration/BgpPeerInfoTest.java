@@ -15,7 +15,8 @@ public class BgpPeerInfoTest {
     new EqualsTester()
         .addEqualityGroup(
             new BgpPeerInfo("host", Ip.ZERO, null, null),
-            new BgpPeerInfo("host", Ip.ZERO, null, null))
+            new BgpPeerInfo("host", Ip.ZERO, null, null),
+            new BgpPeerInfo("HoSt", Ip.ZERO, null, null)) // hostname is canonicalized
         .addEqualityGroup(new BgpPeerInfo("other", Ip.ZERO, null, null))
         .addEqualityGroup(new BgpPeerInfo("host", Ip.MAX, null, null))
         .addEqualityGroup(new BgpPeerInfo("host", Ip.ZERO, "vrf", null))

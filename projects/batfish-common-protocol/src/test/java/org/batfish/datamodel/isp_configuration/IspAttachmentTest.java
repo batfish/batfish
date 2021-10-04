@@ -13,10 +13,12 @@ public class IspAttachmentTest {
   public void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
-            new IspAttachment(null, "iface", null), new IspAttachment(null, "iface", null))
+            new IspAttachment("host", "iface", null),
+            new IspAttachment("host", "iface", null),
+            new IspAttachment("HoSt", "iface", null)) // hostname is canonicalized
         .addEqualityGroup(new IspAttachment("other", "iface", null))
-        .addEqualityGroup(new IspAttachment(null, "other", null))
-        .addEqualityGroup(new IspAttachment(null, "iface", 1))
+        .addEqualityGroup(new IspAttachment("host", "other", null))
+        .addEqualityGroup(new IspAttachment("host", "iface", 1))
         .testEquals();
   }
 
