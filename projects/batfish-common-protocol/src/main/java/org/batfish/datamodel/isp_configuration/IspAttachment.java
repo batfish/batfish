@@ -35,7 +35,7 @@ public class IspAttachment {
   @Nullable private final Integer _vlanTag;
 
   public IspAttachment(@Nullable String hostname, String iface, @Nullable Integer vlanTag) {
-    _hostname = hostname;
+    _hostname = hostname == null ? null : hostname.toLowerCase();
     _interface = iface;
     _vlanTag = vlanTag;
   }
