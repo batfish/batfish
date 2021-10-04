@@ -158,25 +158,24 @@ public final class IntegerSpaceTest {
 
   @Test
   public void testComplement() {
-    IntegerSpace notPorts = PORTS.not(PORTS);
+    Range<Integer> u16 = Range.closed(0, 65535);
+    IntegerSpace ports = IntegerSpace.builder().including(u16).build();
+    IntegerSpace notPorts = ports.complement(u16);
     assertTrue("Complement of full space is empty", notPorts.isEmpty());
 
-    IntegerSpace portsWithExclusion = PORTS.toBuilder().excluding(new SubRange(10, 20)).build();
+    // Non-empty complement
+    IntegerSpace u8 = IntegerSpace.builder().including(Range.closed(0, 255)).build();
     assertThat(
-        portsWithExclusion.not(),
-        equalTo(IntegerSpace.builder().including(new SubRange(10, 20)).build()));
-
-    // A bit contrived, but: a complement within a smaller space can produce a valid result
-    IntegerSpace small = _b.including(new SubRange(12, 15)).build();
-    assertThat(portsWithExclusion.not(small), equalTo(small));
-
-    // Test empty intersections
+        u8.complement(u16),
+        equalTo(IntegerSpace.builder().including(Range.closed(256, 65535)).build()));
+    IntegerSpace middle = IntegerSpace.builder().including(Range.closed(10, 20)).build();
     assertThat(
-        portsWithExclusion.not(IntegerSpace.builder().including(new SubRange(40, 50)).build()),
-        equalTo(EMPTY));
-    assertThat(portsWithExclusion.not(EMPTY), equalTo(EMPTY));
-
-    assertThat(EMPTY.not(), equalTo(EMPTY));
+        middle.complement(u16),
+        equalTo(
+            IntegerSpace.builder()
+                .including(Range.closed(0, 9))
+                .including(Range.closed(21, 65535))
+                .build()));
   }
 
   @Test

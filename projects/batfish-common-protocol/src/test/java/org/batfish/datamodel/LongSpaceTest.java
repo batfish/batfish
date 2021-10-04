@@ -58,25 +58,24 @@ public final class LongSpaceTest {
 
   @Test
   public void testComplement() {
-    LongSpace notAllAsNumbers = LONGSPACE1.not(LONGSPACE1);
-    assertTrue("Complement of full space is empty", notAllAsNumbers.isEmpty());
+    Range<Long> numbers = Range.closed(1L, 10000L);
+    LongSpace allNumbers = LongSpace.builder().including(numbers).build();
+    LongSpace notAllNumbers = allNumbers.complement(numbers);
+    assertTrue("Complement of full space is empty", notAllNumbers.isEmpty());
 
-    LongSpace portsWithExclusion = LONGSPACE1.toBuilder().excluding(Range.closed(10L, 20L)).build();
+    // Non-empty complement
+    LongSpace u8 = LongSpace.builder().including(Range.closed(0L, 255L)).build();
     assertThat(
-        portsWithExclusion.not(),
-        equalTo(LongSpace.builder().including(Range.closed(10L, 20L)).build()));
-
-    // A bit contrived, but: a complement within a smaller space can produce a valid result
-    LongSpace small = _b.including(Range.closed(12L, 15L)).build();
-    assertThat(portsWithExclusion.not(small), equalTo(small));
-
-    // Test empty intersections
+        u8.complement(numbers),
+        equalTo(LongSpace.builder().including(Range.closed(256L, 10000L)).build()));
+    LongSpace middle = LongSpace.builder().including(Range.closed(10L, 20L)).build();
     assertThat(
-        portsWithExclusion.not(LongSpace.builder().including(Range.closed(40L, 50L)).build()),
-        equalTo(EMPTY));
-    assertThat(portsWithExclusion.not(EMPTY), equalTo(EMPTY));
-
-    assertThat(EMPTY.not(), equalTo(EMPTY));
+        middle.complement(numbers),
+        equalTo(
+            LongSpace.builder()
+                .including(Range.closed(0L, 9L))
+                .including(Range.closed(21L, 10000L))
+                .build()));
   }
 
   @Test
