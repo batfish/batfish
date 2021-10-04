@@ -40,7 +40,7 @@ public class BgpPeerInfo {
       Ip peerAddress,
       @Nullable String vrf,
       @Nullable IspAttachment ispAttachment) {
-    _hostname = hostname;
+    _hostname = hostname.toLowerCase();
     _peerAddress = peerAddress;
     _vrf = vrf;
     _ispAttachment = ispAttachment;
