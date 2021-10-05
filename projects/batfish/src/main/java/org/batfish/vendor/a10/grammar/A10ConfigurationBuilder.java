@@ -2,6 +2,7 @@ package org.batfish.vendor.a10.grammar;
 
 import static org.batfish.vendor.a10.grammar.A10Lexer.WORD;
 import static org.batfish.vendor.a10.representation.A10Configuration.getInterfaceName;
+import static org.batfish.vendor.a10.representation.A10StructureType.SERVER;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Range;
@@ -40,6 +41,10 @@ import org.batfish.vendor.a10.representation.A10StructureUsage;
 import org.batfish.vendor.a10.representation.Interface;
 import org.batfish.vendor.a10.representation.InterfaceReference;
 import org.batfish.vendor.a10.representation.NatPool;
+import org.batfish.vendor.a10.representation.Server;
+import org.batfish.vendor.a10.representation.ServerPort;
+import org.batfish.vendor.a10.representation.ServerTarget;
+import org.batfish.vendor.a10.representation.ServerTargetAddress;
 import org.batfish.vendor.a10.representation.StaticRoute;
 import org.batfish.vendor.a10.representation.StaticRouteManager;
 import org.batfish.vendor.a10.representation.TrunkGroup;
@@ -733,6 +738,161 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
         });
   }
 
+  @Override
+  public void enterSs_server(A10Parser.Ss_serverContext ctx) {
+    Optional<String> maybeName = toString(ctx, ctx.slb_server_name());
+    if (!maybeName.isPresent()) {
+      _currentServer =
+          new Server(ctx.slb_server_name().getText(), new ServerTargetAddress(Ip.ZERO)); // dummy
+      return;
+    }
+
+    String name = maybeName.get();
+    if (ctx.slb_server_target() == null) {
+      _currentServer = _c.getServers().get(name);
+      // No match
+      if (_currentServer == null) {
+        warn(ctx, "Server target must be specified for a new server");
+        _currentServer =
+            new Server(ctx.slb_server_name().getText(), new ServerTargetAddress(Ip.ZERO)); // dummy
+        return;
+      }
+      // Updating existing server
+      _c.defineStructure(SERVER, name, ctx);
+      return;
+    }
+
+    // TODO enforce no target reuse
+    ServerTarget target = toServerTarget(ctx.slb_server_target());
+    _c.defineStructure(SERVER, name, ctx);
+    _currentServer = _c.getServers().computeIfAbsent(name, n -> new Server(n, target));
+    // Make sure target is up-to-date
+    _currentServer.setTarget(target);
+  }
+
+  @Nonnull
+  ServerTarget toServerTarget(A10Parser.Slb_server_targetContext ctx) {
+    assert ctx.ip_address() != null;
+    return new ServerTargetAddress(toIp(ctx.ip_address()));
+  }
+
+  @Override
+  public void exitSs_server(A10Parser.Ss_serverContext ctx) {
+    _currentServer = null;
+  }
+
+  @Override
+  public void exitSssd_conn_limit(A10Parser.Sssd_conn_limitContext ctx) {
+    toInteger(ctx.connection_limit()).ifPresent(l -> _currentServer.setConnLimit(l));
+  }
+
+  @Override
+  public void exitSssd_disable(A10Parser.Sssd_disableContext ctx) {
+    _currentServer.setEnable(false);
+  }
+
+  @Override
+  public void exitSssd_enable(A10Parser.Sssd_enableContext ctx) {
+    _currentServer.setEnable(true);
+  }
+
+  @Override
+  public void exitSssd_stats_data_disable(A10Parser.Sssd_stats_data_disableContext ctx) {
+    _currentServer.setStatsDataEnable(false);
+  }
+
+  @Override
+  public void exitSssd_stats_data_enable(A10Parser.Sssd_stats_data_enableContext ctx) {
+    _currentServer.setStatsDataEnable(true);
+  }
+
+  @Override
+  public void exitSssdt_server(A10Parser.Sssdt_serverContext ctx) {
+    toString(ctx, ctx.template_name()).ifPresent(n -> _currentServer.setServerTemplate(n));
+  }
+
+  @Override
+  public void exitSssd_weight(A10Parser.Sssd_weightContext ctx) {
+    toInteger(ctx.connection_weight()).ifPresent(w -> _currentServer.setWeight(w));
+  }
+
+  @Override
+  public void enterSssd_port(A10Parser.Sssd_portContext ctx) {
+    ServerPort.Type type = toType(ctx.tcp_or_udp());
+    Integer range;
+    if (ctx.port_range_value() != null) {
+      Optional<Integer> maybeRange = toInteger(ctx.port_range_value());
+      if (!maybeRange.isPresent()) {
+        // Already warned
+        _currentServerPort = new ServerPort(-1, type, null); // dummy
+        return;
+      }
+      range = maybeRange.get();
+    } else {
+      range = null;
+    }
+    _currentServerPort =
+        toInteger(ctx.port_number())
+            .map(
+                n ->
+                    _currentServer
+                        .getPorts()
+                        .computeIfAbsent(
+                            new ServerPort.ServerPortAndType(n, type),
+                            key -> new ServerPort(n, type, range)))
+            .orElseGet(() -> new ServerPort(-1, type, range)); // dummy
+    // Make sure range is up-to-date
+    _currentServerPort.setRange(range);
+  }
+
+  @Override
+  public void exitSssd_port(A10Parser.Sssd_portContext ctx) {
+    _currentServerPort = null;
+  }
+
+  @Override
+  public void exitSssdpd_conn_limit(A10Parser.Sssdpd_conn_limitContext ctx) {
+    toInteger(ctx.connection_limit()).ifPresent(l -> _currentServerPort.setConnLimit(l));
+  }
+
+  @Override
+  public void exitSssdpd_disable(A10Parser.Sssdpd_disableContext ctx) {
+    _currentServerPort.setEnable(false);
+  }
+
+  @Override
+  public void exitSssdpd_enable(A10Parser.Sssdpd_enableContext ctx) {
+    _currentServerPort.setEnable(true);
+  }
+
+  @Override
+  public void exitSssdpd_stats_data_disable(A10Parser.Sssdpd_stats_data_disableContext ctx) {
+    _currentServerPort.setStatsDataEnable(false);
+  }
+
+  @Override
+  public void exitSssdpd_stats_data_enable(A10Parser.Sssdpd_stats_data_enableContext ctx) {
+    _currentServerPort.setStatsDataEnable(true);
+  }
+
+  @Override
+  public void exitSssdpdt_port(A10Parser.Sssdpdt_portContext ctx) {
+    toString(ctx, ctx.template_name()).ifPresent(n -> _currentServerPort.setPortTemplate(n));
+  }
+
+  @Override
+  public void exitSssdpd_weight(A10Parser.Sssdpd_weightContext ctx) {
+    toInteger(ctx.connection_weight()).ifPresent(w -> _currentServerPort.setWeight(w));
+  }
+
+  private static ServerPort.Type toType(A10Parser.Tcp_or_udpContext ctx) {
+    if (ctx.TCP() != null) {
+      return ServerPort.Type.TCP;
+    }
+    assert ctx.UDP() != null;
+    return ServerPort.Type.UDP;
+  }
+
   Optional<List<InterfaceReference>> toInterfaces(A10Parser.Std_ethernetContext ctx) {
     ImmutableList.Builder<InterfaceReference> ifaces = ImmutableList.builder();
     for (A10Parser.Trunk_ethernet_interfaceContext iface : ctx.trunk_ethernet_interface()) {
@@ -937,6 +1097,14 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     return toIp(ctx.subnet_mask()).numSubnetBits();
   }
 
+  private @Nonnull Optional<Integer> toInteger(A10Parser.Connection_limitContext ctx) {
+    return toIntegerInSpace(ctx, ctx.uint32(), CONNECTION_LIMIT_RANGE, "conn-limit");
+  }
+
+  private @Nonnull Optional<Integer> toInteger(A10Parser.Connection_weightContext ctx) {
+    return toIntegerInSpace(ctx, ctx.uint16(), CONNECTION_WEIGHT_RANGE, "connection weight");
+  }
+
   private @Nonnull Optional<Integer> toInteger(A10Parser.Interface_mtuContext ctx) {
     return toIntegerInSpace(ctx, ctx.uint16(), INTERFACE_MTU_RANGE, "interface mtu");
   }
@@ -953,6 +1121,14 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   private @Nonnull Optional<Integer> toInteger(A10Parser.Loopback_numberContext ctx) {
     return toIntegerInSpace(
         ctx, ctx.uint8(), INTERFACE_NUMBER_LOOPBACK_RANGE, "interface loopback number");
+  }
+
+  private @Nonnull Optional<Integer> toInteger(A10Parser.Port_numberContext ctx) {
+    return toIntegerInSpace(ctx, ctx.uint16(), PORT_NUMBER_RANGE, "port");
+  }
+
+  private @Nonnull Optional<Integer> toInteger(A10Parser.Port_range_valueContext ctx) {
+    return toIntegerInSpace(ctx, ctx.uint8(), PORT_RANGE_VALUE_RANGE, "port range");
   }
 
   private @Nonnull Optional<Integer> toInteger(A10Parser.Scaleout_device_idContext ctx) {
@@ -1014,12 +1190,24 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   }
 
   private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, A10Parser.Slb_server_nameContext ctx) {
+    return toStringWithLengthInSpace(
+        messageCtx, ctx.word(), SLB_SERVER_NAME_LENGTH_RANGE, "slb server name");
+  }
+
+  private @Nonnull Optional<String> toString(
       ParserRuleContext messageCtx, A10Parser.Static_route_descriptionContext ctx) {
     return toStringWithLengthInSpace(
         messageCtx,
         ctx.route_description().word(),
         IP_ROUTE_DESCRIPTION_LENGTH_RANGE,
         "ip route description");
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, A10Parser.Template_nameContext ctx) {
+    return toStringWithLengthInSpace(
+        messageCtx, ctx.word(), TEMPLATE_NAME_LENGTH_RANGE, "template name");
   }
 
   private @Nonnull Optional<String> toString(
@@ -1085,6 +1273,10 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     return text.getText().replaceAll("\\\\", "");
   }
 
+  private static final IntegerSpace CONNECTION_LIMIT_RANGE =
+      IntegerSpace.of(Range.closed(1, 64000000));
+  private static final IntegerSpace CONNECTION_WEIGHT_RANGE =
+      IntegerSpace.of(Range.closed(1, 1000));
   private static final IntegerSpace INTERFACE_MTU_RANGE = IntegerSpace.of(Range.closed(434, 1500));
   private static final IntegerSpace INTERFACE_NUMBER_ETHERNET_RANGE =
       IntegerSpace.of(Range.closed(1, 40));
@@ -1097,7 +1289,13 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   private static final IntegerSpace IP_ROUTE_DISTANCE_RANGE = IntegerSpace.of(Range.closed(1, 255));
   private static final IntegerSpace NAT_POOL_NAME_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 63));
+  private static final IntegerSpace PORT_NUMBER_RANGE = IntegerSpace.of(Range.closed(0, 65535));
+  private static final IntegerSpace PORT_RANGE_VALUE_RANGE = IntegerSpace.of(Range.closed(0, 254));
   private static final IntegerSpace SCALEOUT_DEVICE_ID_RANGE = IntegerSpace.of(Range.closed(1, 16));
+  private static final IntegerSpace SLB_SERVER_NAME_LENGTH_RANGE =
+      IntegerSpace.of(Range.closed(1, 127));
+  private static final IntegerSpace TEMPLATE_NAME_LENGTH_RANGE =
+      IntegerSpace.of(Range.closed(1, 127));
   private static final IntegerSpace TRUNK_NUMBER_RANGE = IntegerSpace.of(Range.closed(1, 4096));
   private static final IntegerSpace TRUNK_PORTS_THRESHOLD_RANGE =
       IntegerSpace.of(Range.closed(2, 8));
@@ -1119,6 +1317,10 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
    * valid)
    */
   private boolean _currentNatPoolValid;
+
+  private Server _currentServer;
+
+  private ServerPort _currentServerPort;
 
   // Current trunk for ACOS v2 trunk stanza
   private TrunkInterface _currentTrunk;

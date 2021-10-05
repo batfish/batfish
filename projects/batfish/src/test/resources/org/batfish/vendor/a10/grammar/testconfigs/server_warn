@@ -1,0 +1,16 @@
+!BATFISH_FORMAT: a10_acos
+hostname server_warn
+!
+slb server SERVER1 10.0.0.1
+  conn-limit 64000001
+  conn-limit 0
+  weight 1001
+  weight 0
+  port 80 udp range 255
+!
+! Must specify a target for a new server
+slb server SERVER2
+!
+! TODO enforce no target reuse
+!slb server SERVER3 10.0.0.1
+!
