@@ -1,5 +1,6 @@
 package org.batfish.vendor.check_point_gateway.representation;
 
+import static com.google.common.collect.Maps.immutableEntry;
 import static org.batfish.common.matchers.WarningMatchers.hasText;
 import static org.batfish.common.matchers.WarningsMatchers.hasRedFlags;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.FALSE;
@@ -7,6 +8,7 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocol;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.aclName;
+import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.appliesToGateway;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.checkValidHeaderSpaceInputs;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.servicesToMatchExpr;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toAclLine;
@@ -27,6 +29,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.stream.Stream;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.BddTestbed;
@@ -50,8 +55,14 @@ import org.batfish.vendor.check_point_management.AccessRule;
 import org.batfish.vendor.check_point_management.AccessRuleOrSection;
 import org.batfish.vendor.check_point_management.AccessSection;
 import org.batfish.vendor.check_point_management.AddressSpaceToMatchExpr;
+import org.batfish.vendor.check_point_management.Cluster;
 import org.batfish.vendor.check_point_management.CpmiAnyObject;
+import org.batfish.vendor.check_point_management.CpmiGatewayCluster;
+import org.batfish.vendor.check_point_management.Domain;
+import org.batfish.vendor.check_point_management.GatewayOrServer;
+import org.batfish.vendor.check_point_management.GatewayOrServerPolicy;
 import org.batfish.vendor.check_point_management.Host;
+import org.batfish.vendor.check_point_management.ManagementDomain;
 import org.batfish.vendor.check_point_management.NamedManagementObject;
 import org.batfish.vendor.check_point_management.Network;
 import org.batfish.vendor.check_point_management.PolicyTargets;
@@ -61,6 +72,7 @@ import org.batfish.vendor.check_point_management.ServiceOther;
 import org.batfish.vendor.check_point_management.ServiceTcp;
 import org.batfish.vendor.check_point_management.ServiceToMatchExpr;
 import org.batfish.vendor.check_point_management.ServiceUdp;
+import org.batfish.vendor.check_point_management.SimpleGateway;
 import org.batfish.vendor.check_point_management.TypedManagementObject;
 import org.batfish.vendor.check_point_management.Uid;
 import org.junit.Test;
@@ -623,6 +635,105 @@ public final class CheckPointGatewayConversionsTest {
               .get(),
           FALSE);
     }
+  }
+
+  @Test
+  public void testAppliesToGateway() {
+    AtomicInteger uidGenerator = new AtomicInteger();
+    GatewayOrServerPolicy testPolicy = new GatewayOrServerPolicy(null, null);
+
+    // Two gateways
+    Uid gatewayUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
+    GatewayOrServer gateway =
+        new SimpleGateway(Ip.ZERO, "gw", ImmutableList.of(), testPolicy, gatewayUid);
+    Uid gateway2Uid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
+    GatewayOrServer gateway2 =
+        new SimpleGateway(Ip.ZERO, "gw2", ImmutableList.of(), testPolicy, gateway2Uid);
+
+    // Cluster containing the target gateway
+    Cluster cluster1 =
+        new CpmiGatewayCluster(
+            ImmutableList.of(gateway.getName(), gateway2.getName()),
+            null,
+            "cluster1",
+            ImmutableList.of(),
+            testPolicy,
+            Uid.of(String.valueOf(uidGenerator.getAndIncrement())));
+    // Cluster not containing the target gateway
+    Cluster cluster2 =
+        new CpmiGatewayCluster(
+            ImmutableList.of(gateway2.getName()),
+            null,
+            "cluster2",
+            ImmutableList.of(),
+            testPolicy,
+            Uid.of(String.valueOf(uidGenerator.getAndIncrement())));
+    // Cluster containing a cluster containing the target gateway
+    Cluster cluster3 =
+        new CpmiGatewayCluster(
+            ImmutableList.of(cluster1.getName()),
+            null,
+            "cluster3",
+            ImmutableList.of(),
+            testPolicy,
+            Uid.of(String.valueOf(uidGenerator.getAndIncrement())));
+    // Self-referential cluster not containing target gateway
+    Cluster cluster4 =
+        new CpmiGatewayCluster(
+            ImmutableList.of("cluster4"),
+            null,
+            "cluster4",
+            ImmutableList.of(),
+            testPolicy,
+            Uid.of(String.valueOf(uidGenerator.getAndIncrement())));
+    // Cluster containing nonexistent gateway (and not containing target gateway)
+    Cluster cluster5 =
+        new CpmiGatewayCluster(
+            ImmutableList.of("no way this gateway exists"),
+            null,
+            "cluster5",
+            ImmutableList.of(),
+            testPolicy,
+            Uid.of(String.valueOf(uidGenerator.getAndIncrement())));
+
+    Map<Uid, GatewayOrServer> gatewaysAndServers =
+        Stream.of(gateway, gateway2, cluster1, cluster2, cluster3, cluster4, cluster5)
+            .collect(ImmutableMap.toImmutableMap(GatewayOrServer::getUid, Function.identity()));
+    Domain domain = new Domain("domain", Uid.of(String.valueOf(uidGenerator.getAndIncrement())));
+    ManagementDomain mgmtDomain =
+        new ManagementDomain(domain, gatewaysAndServers, ImmutableMap.of(), ImmutableList.of());
+    Map.Entry<ManagementDomain, GatewayOrServer> domainAndGateway =
+        immutableEntry(mgmtDomain, gateway);
+
+    // Empty install-on list does not apply
+    assertFalse(appliesToGateway(ImmutableList.of(), ImmutableMap.of(), domainAndGateway));
+    // Install-on list containing policy targets does apply
+    Uid ptUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
+    assertTrue(
+        appliesToGateway(
+            ImmutableList.of(ptUid),
+            ImmutableMap.of(ptUid, new PolicyTargets(ptUid)),
+            domainAndGateway));
+    // Install-on list of gateway UID does apply
+    assertTrue(appliesToGateway(ImmutableList.of(gatewayUid), ImmutableMap.of(), domainAndGateway));
+    // Install-on list of a different gateway does not apply
+    assertFalse(
+        appliesToGateway(ImmutableList.of(gateway2Uid), ImmutableMap.of(), domainAndGateway));
+    // Install-on list of a cluster that contains the gateway does apply
+    assertTrue(
+        appliesToGateway(ImmutableList.of(cluster1.getUid()), ImmutableMap.of(), domainAndGateway));
+    // Install-on list of a cluster that doesn't contain the gateway does not apply
+    assertFalse(
+        appliesToGateway(ImmutableList.of(cluster2.getUid()), ImmutableMap.of(), domainAndGateway));
+    // Install-on list of a cluster that contains the cluster that contains the gateway does apply
+    assertTrue(
+        appliesToGateway(ImmutableList.of(cluster3.getUid()), ImmutableMap.of(), domainAndGateway));
+    // Checking a self-referential cluster and a cluster with a nonexistent gateway won't crash
+    assertFalse(
+        appliesToGateway(
+            ImmutableList.of(cluster4.getUid(), cluster5.getUid()),
+            ImmutableMap.of(),
+            domainAndGateway));
   }
 
   private void assertBddsEqual(AclLine left, AclLineMatchExpr right) {

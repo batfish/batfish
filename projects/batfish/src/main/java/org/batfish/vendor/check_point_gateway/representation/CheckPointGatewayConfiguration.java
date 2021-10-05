@@ -182,7 +182,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     // Now that VI interfaces exist, convert NAT rulebase if present
     mgmtPackage
         .map(ManagementPackage::getNatRulebase)
-        .ifPresent(r -> convertNatRulebase(r, domainAndGateway.get().getValue(), mgmtObjects));
+        .ifPresent(r -> convertNatRulebase(r, domainAndGateway.get(), mgmtObjects));
 
     vrf.getStaticRoutes()
         .addAll(
@@ -325,10 +325,12 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
    */
   @SuppressWarnings("unused")
   private void convertNatRulebase(
-      NatRulebase natRulebase, GatewayOrServer gateway, Map<Uid, NamedManagementObject> objects) {
+      NatRulebase natRulebase,
+      Entry<ManagementDomain, GatewayOrServer> domainAndGateway,
+      Map<Uid, NamedManagementObject> objects) {
     // Compile a list of PacketPolicy statements that will apply transformations on ingress.
     List<Statement> transformationStatements =
-        getTransformationStatements(natRulebase, gateway, objects);
+        getTransformationStatements(natRulebase, domainAndGateway, objects);
 
     // If there are no transformations to be applied, short-circuit.
     if (transformationStatements.isEmpty()) {
@@ -430,7 +432,9 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
    * </ul>
    */
   private @Nonnull List<Statement> getTransformationStatements(
-      NatRulebase natRulebase, GatewayOrServer gateway, Map<Uid, NamedManagementObject> objects) {
+      NatRulebase natRulebase,
+      Entry<ManagementDomain, GatewayOrServer> domainAndGateway,
+      Map<Uid, NamedManagementObject> objects) {
     ServiceToMatchExpr serviceToMatchExpr = new ServiceToMatchExpr(objects);
     AddressSpaceToMatchExpr addressSpaceToMatchExpr = new AddressSpaceToMatchExpr(objects);
     Warnings warnings = getWarnings();
@@ -441,7 +445,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
 
     // First match any manual rules. If a manual rule is matched, no other rules can be matched,
     // regardless of what translations the manual rule applies, so return.
-    getManualNatRules(natRulebase, gateway)
+    getManualNatRules(natRulebase, domainAndGateway)
         .forEach(
             rule -> {
               Optional<AclLineMatchExpr> matchCondition =
