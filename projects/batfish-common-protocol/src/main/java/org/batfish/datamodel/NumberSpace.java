@@ -259,6 +259,7 @@ public abstract class NumberSpace<
 
   private boolean isSingletonRange(Range<T> range) {
     // note that argument is guaranteed to be closedOpen Range
+    assert range.lowerBoundType() == BoundType.CLOSED && range.upperBoundType() == BoundType.OPEN;
     return range.upperEndpoint().equals(discreteDomain().next(range.lowerEndpoint()));
   }
 
@@ -333,6 +334,7 @@ public abstract class NumberSpace<
   }
 
   private @Nonnull String toRangeString(Range<T> r) {
+    assert r.lowerBoundType() == BoundType.CLOSED && r.upperBoundType() == BoundType.OPEN;
     return isSingletonRange(r)
         ? r.lowerEndpoint().toString()
         : String.format("%s-%s", r.lowerEndpoint(), discreteDomain().previous(r.upperEndpoint()));

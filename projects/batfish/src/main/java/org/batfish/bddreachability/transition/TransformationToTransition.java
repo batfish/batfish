@@ -7,6 +7,7 @@ import static org.batfish.bddreachability.transition.Transitions.compose;
 import static org.batfish.bddreachability.transition.Transitions.reverse;
 import static org.batfish.datamodel.transformation.ReturnFlowTransformation.returnFlowTransformation;
 
+import com.google.common.collect.BoundType;
 import com.google.common.collect.RangeSet;
 import java.util.Arrays;
 import java.util.IdentityHashMap;
@@ -55,7 +56,12 @@ public class TransformationToTransition {
     BDD erase = Arrays.stream(var.getBitvec()).reduce(var.getFactory().one(), BDD::and);
     BDD setValue =
         ranges.asRanges().stream()
-            .map(range -> var.range(range.lowerEndpoint().asLong(), range.upperEndpoint().asLong()))
+            .map(
+                range -> {
+                  assert range.lowerBoundType() == BoundType.CLOSED
+                      && range.upperBoundType() == BoundType.CLOSED;
+                  return var.range(range.lowerEndpoint().asLong(), range.upperEndpoint().asLong());
+                })
             .reduce(var.getFactory().zero(), BDD::or);
     return new EraseAndSet(erase, setValue);
   }

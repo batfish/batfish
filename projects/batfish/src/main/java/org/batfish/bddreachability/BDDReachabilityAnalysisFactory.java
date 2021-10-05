@@ -23,6 +23,7 @@ import static org.batfish.datamodel.transformation.TransformationUtil.visitTrans
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Suppliers;
+import com.google.common.collect.BoundType;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
@@ -1780,8 +1781,12 @@ public final class BDDReachabilityAnalysisFactory {
       BDD bdd =
           assignIpAddressFromPool.getIpRanges().asRanges().stream()
               .map(
-                  range ->
-                      var.range(range.lowerEndpoint().asLong(), range.upperEndpoint().asLong()))
+                  range -> {
+                    assert range.lowerBoundType() == BoundType.CLOSED
+                        && range.upperBoundType() == BoundType.CLOSED;
+                    return var.range(
+                        range.lowerEndpoint().asLong(), range.upperEndpoint().asLong());
+                  })
               .reduce(var.getFactory().zero(), BDD::or);
       _ipRanges.merge(ipField, bdd, BDD::or);
       return null;
