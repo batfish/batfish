@@ -3,10 +3,12 @@ package org.batfish.vendor.check_point_gateway.representation;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
@@ -26,8 +28,11 @@ import org.batfish.vendor.check_point_management.AccessRuleOrSection;
 import org.batfish.vendor.check_point_management.AccessSection;
 import org.batfish.vendor.check_point_management.AddressSpace;
 import org.batfish.vendor.check_point_management.AddressSpaceToMatchExpr;
+import org.batfish.vendor.check_point_management.Cluster;
 import org.batfish.vendor.check_point_management.GatewayOrServer;
+import org.batfish.vendor.check_point_management.ManagementDomain;
 import org.batfish.vendor.check_point_management.NamedManagementObject;
+import org.batfish.vendor.check_point_management.PolicyTargets;
 import org.batfish.vendor.check_point_management.RulebaseAction;
 import org.batfish.vendor.check_point_management.Service;
 import org.batfish.vendor.check_point_management.ServiceToMatchExpr;
@@ -337,10 +342,41 @@ public final class CheckPointGatewayConversions {
   }
 
   /** Return {@code true} iff any of the install-on UIDs applies to the given gateway. */
-  @SuppressWarnings("unused")
-  static boolean appliesToGateway(List<Uid> installOn, GatewayOrServer gateway) {
-    // TODO: implement
-    return true;
+  static boolean appliesToGateway(
+      List<Uid> installOn,
+      Map<Uid, TypedManagementObject> rulebaseObjs,
+      Map.Entry<ManagementDomain, GatewayOrServer> domainAndGateway) {
+    if (installOn.stream().map(rulebaseObjs::get).anyMatch(obj -> obj instanceof PolicyTargets)) {
+      // Install-on list includes policy targets. All gateways are affected.
+      return true;
+    }
+    Set<Uid> toCheck = new HashSet<>(installOn);
+    Uid gatewayUid = domainAndGateway.getValue().getUid();
+    if (toCheck.contains(gatewayUid)) {
+      return true;
+    }
+    Map<Uid, GatewayOrServer> gateways = domainAndGateway.getKey().getGatewaysAndServers();
+    Set<Uid> alreadyChecked = new HashSet<>();
+    Map<String, Uid> gatewayNamesToUids =
+        gateways.entrySet().stream()
+            .collect(ImmutableMap.toImmutableMap(e -> e.getValue().getName(), Map.Entry::getKey));
+    while (!toCheck.isEmpty()) {
+      Uid uid = toCheck.iterator().next();
+      if (uid.equals(gatewayUid)) {
+        return true;
+      }
+      toCheck.remove(uid);
+      alreadyChecked.add(uid);
+      GatewayOrServer gatewayOrServer = gateways.get(uid);
+      if (gatewayOrServer instanceof Cluster) {
+        ((Cluster) gatewayOrServer)
+            .getClusterMemberNames().stream()
+                .map(gatewayNamesToUids::get)
+                .filter(memberUid -> memberUid != null && !alreadyChecked.contains(memberUid))
+                .forEach(toCheck::add);
+      }
+    }
+    return false;
   }
 
   /** Returns the name we use for IpAccessList of AccessLayer */

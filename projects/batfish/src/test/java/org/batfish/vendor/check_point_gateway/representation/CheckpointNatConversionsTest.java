@@ -1,5 +1,6 @@
 package org.batfish.vendor.check_point_gateway.representation;
 
+import static com.google.common.collect.Maps.immutableEntry;
 import static org.batfish.common.matchers.WarningMatchers.hasText;
 import static org.batfish.common.matchers.WarningsMatchers.hasRedFlags;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.FALSE;
@@ -42,6 +43,7 @@ import static org.junit.Assert.assertTrue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import org.batfish.common.Warnings;
@@ -57,9 +59,11 @@ import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.vendor.check_point_management.AddressRange;
 import org.batfish.vendor.check_point_management.AddressSpaceToMatchExpr;
 import org.batfish.vendor.check_point_management.CpmiAnyObject;
+import org.batfish.vendor.check_point_management.Domain;
 import org.batfish.vendor.check_point_management.GatewayOrServer;
 import org.batfish.vendor.check_point_management.GatewayOrServerPolicy;
 import org.batfish.vendor.check_point_management.Host;
+import org.batfish.vendor.check_point_management.ManagementDomain;
 import org.batfish.vendor.check_point_management.NamedManagementObject;
 import org.batfish.vendor.check_point_management.NatHideBehindGateway;
 import org.batfish.vendor.check_point_management.NatHideBehindIp;
@@ -84,12 +88,42 @@ import org.junit.rules.ExpectedException;
 public final class CheckpointNatConversionsTest {
   @Test
   public void testGetApplicableNatRules() {
-    NatRule enabledRule =
+    NatRule ruleForAllGateways =
         new NatRule(
             true,
             "",
             true,
-            ImmutableList.of(),
+            ImmutableList.of(PT_UID), // apply rule to all policy targets (all gateways)
+            NatMethod.STATIC,
+            UID,
+            UID,
+            UID,
+            1,
+            UID,
+            UID,
+            UID,
+            UID);
+    NatRule ruleForThisGateway =
+        new NatRule(
+            true,
+            "",
+            true,
+            ImmutableList.of(TEST_GATEWAY.getUid()), // apply rule to this gateway
+            NatMethod.STATIC,
+            UID,
+            UID,
+            UID,
+            1,
+            UID,
+            UID,
+            UID,
+            UID);
+    NatRule inapplicableRule =
+        new NatRule(
+            true,
+            "",
+            true,
+            ImmutableList.of(), // do not apply rule to any gateways
             NatMethod.STATIC,
             UID,
             UID,
@@ -104,7 +138,7 @@ public final class CheckpointNatConversionsTest {
             true,
             "",
             false,
-            ImmutableList.of(),
+            ImmutableList.of(UID),
             NatMethod.STATIC,
             UID,
             UID,
@@ -115,23 +149,25 @@ public final class CheckpointNatConversionsTest {
             UID,
             UID);
     NatRulebase natRulebase =
-        new NatRulebase(ImmutableMap.of(), ImmutableList.of(enabledRule, disabledRule), UID);
+        new NatRulebase(
+            ImmutableMap.of(PT_UID, POLICY_TARGETS),
+            ImmutableList.of(
+                ruleForAllGateways, ruleForThisGateway, inapplicableRule, disabledRule),
+            UID);
     assertThat(
-        getApplicableNatRules(natRulebase, TEST_GATEWAY).collect(ImmutableList.toImmutableList()),
-        equalTo(ImmutableList.of(enabledRule)));
+        getApplicableNatRules(natRulebase, TEST_DOMAIN_AND_GATEWAY)
+            .collect(ImmutableList.toImmutableList()),
+        containsInAnyOrder(ruleForAllGateways, ruleForThisGateway));
   }
 
   @Test
   public void testGetManualNatRules() {
-    GatewayOrServer gateway =
-        new SimpleGateway(
-            Ip.ZERO, "foo", ImmutableList.of(), new GatewayOrServerPolicy(null, null), UID);
     NatRule autoRule =
         new NatRule(
             true,
             "",
             true,
-            ImmutableList.of(),
+            ImmutableList.of(UID),
             NatMethod.STATIC,
             UID,
             UID,
@@ -146,7 +182,7 @@ public final class CheckpointNatConversionsTest {
             false,
             "",
             true,
-            ImmutableList.of(),
+            ImmutableList.of(UID),
             NatMethod.STATIC,
             UID,
             UID,
@@ -159,7 +195,8 @@ public final class CheckpointNatConversionsTest {
     NatRulebase natRulebase =
         new NatRulebase(ImmutableMap.of(), ImmutableList.of(autoRule, manualRule), UID);
     assertThat(
-        getManualNatRules(natRulebase, gateway).collect(ImmutableList.toImmutableList()),
+        getManualNatRules(natRulebase, TEST_DOMAIN_AND_GATEWAY)
+            .collect(ImmutableList.toImmutableList()),
         equalTo(ImmutableList.of(manualRule)));
   }
 
@@ -938,6 +975,14 @@ public final class CheckpointNatConversionsTest {
   private static final GatewayOrServer TEST_GATEWAY =
       new SimpleGateway(
           Ip.ZERO, "foo", ImmutableList.of(), new GatewayOrServerPolicy(null, null), UID);
+  private static final ManagementDomain TEST_MANAGEMENT_DOMAIN =
+      new ManagementDomain(
+          new Domain("domain", Uid.of("1000")),
+          ImmutableMap.of(TEST_GATEWAY.getUid(), TEST_GATEWAY),
+          ImmutableMap.of(),
+          ImmutableList.of());
+  private static final Map.Entry<ManagementDomain, GatewayOrServer> TEST_DOMAIN_AND_GATEWAY =
+      immutableEntry(TEST_MANAGEMENT_DOMAIN, TEST_GATEWAY);
   private static final AddressSpaceToMatchExpr ADDRESS_SPACE_TO_MATCH_EXPR =
       new AddressSpaceToMatchExpr(ImmutableMap.of());
   private static final Uid ANY_UID = Uid.of("1003");
