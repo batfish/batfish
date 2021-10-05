@@ -63,8 +63,7 @@ public class IspNodeInfo {
     checkArgument(
         role == Role.TRANSIT || additionalAnnouncements.isEmpty(),
         "%s should not be provided unless role is TRANSIT",
-        PROP_ADDITIONAL_ANNOUNCEMENTS_TO_INTERNET,
-        PROP_ROLE);
+        PROP_ADDITIONAL_ANNOUNCEMENTS_TO_INTERNET);
     _asn = asn;
     _name = name;
     _role = role;
