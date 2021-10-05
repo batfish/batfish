@@ -242,11 +242,6 @@ public abstract class NumberSpace<
         .build();
   }
 
-  /** Indicates if two number spaces intersect. */
-  public final boolean intersects(S other) {
-    return !intersection(other).isEmpty();
-  }
-
   /** Returns true if this space is a contiguous space */
   public final boolean isContiguous() {
     return _rangeset.asRanges().size() <= 1;

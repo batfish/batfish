@@ -564,22 +564,14 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
       warn(ctx, "Invalid NAT pool range, all addresses must fit in specified netmask");
       return Optional.empty();
     }
-    // TODO more efficient pool overlap checking, e.g. leverage something like a running
-    // IntegerSpace
-
-    if (_allNatPools.intersects(LongSpace.of(Range.closed(start.asLong(), end.asLong())))) {
+    if (!_allNatPools
+        .intersection(LongSpace.of(Range.closed(start.asLong(), end.asLong())))
+        .isEmpty()) {
       warn(ctx, "Invalid NAT pool range, overlaps with existing NAT pool");
       return Optional.empty();
     }
 
     return Optional.of(new NatPool(name, start, end, netmask));
-  }
-
-  /** Return boolean indicating if the specified NAT pool ranges overlap. */
-  private static boolean natRangesOverlap(Ip lhsStart, Ip lhsEnd, Ip rhsStart, Ip rhsEnd) {
-    assert lhsEnd.compareTo(lhsStart) >= 0;
-    assert rhsEnd.compareTo(rhsStart) >= 0;
-    return lhsStart.compareTo(rhsEnd) <= 0 && rhsStart.compareTo(lhsEnd) <= 0;
   }
 
   @Override
