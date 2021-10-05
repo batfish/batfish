@@ -12,6 +12,7 @@ import com.google.common.testing.EqualsTester;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.isp_configuration.IspNodeInfo.Role;
 import org.batfish.datamodel.isp_configuration.traffic_filtering.IspTrafficFiltering;
 import org.junit.Test;
 
@@ -93,11 +94,12 @@ public class IspConfigurationTest {
     assertThat(
         c.getIspNodeInfos(),
         contains(
-            new IspNodeInfo(65401, "ISP-A", true, ImmutableList.of(), IspTrafficFiltering.none()),
+            new IspNodeInfo(
+                65401, "ISP-A", Role.TRANSIT, ImmutableList.of(), IspTrafficFiltering.none()),
             new IspNodeInfo(
                 65402,
                 "ISP-B",
-                true,
+                Role.TRANSIT,
                 ImmutableList.of(),
                 IspTrafficFiltering.blockReservedAddressesAtInternet())));
   }
