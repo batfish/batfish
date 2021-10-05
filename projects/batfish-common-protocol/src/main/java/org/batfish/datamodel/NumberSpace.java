@@ -348,9 +348,12 @@ public abstract class NumberSpace<
 
   /** Union two {@link NumberSpace}s together */
   public final S union(S other) {
-    B builder = toBuilder();
-    other._rangeset.asRanges().forEach(builder::including);
-    return builder.build();
+    TreeRangeSet<T> ret = TreeRangeSet.create(other._rangeset);
+    ret.addAll(_rangeset);
+    // NB: You might think that ImmutableRangeSet.builder() should work here, but it rejects
+    // overlapping ranges. There's a Guava-internal TO-DO about it.
+    // https://github.com/google/guava/blob/8075df7ffd63b4b96cd0bdfdc2dde71d08f672c9/guava/src/com/google/common/collect/ImmutableRangeSet.java#L739
+    return newBuilder().build(ret);
   }
 
   /**
