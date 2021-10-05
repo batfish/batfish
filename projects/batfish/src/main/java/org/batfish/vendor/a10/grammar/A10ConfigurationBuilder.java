@@ -24,6 +24,7 @@ import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.grammar.BatfishCombinedParser;
@@ -565,17 +566,9 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     }
     // TODO more efficient pool overlap checking, e.g. leverage something like a running
     // IntegerSpace
-    Optional<NatPool> overlappinngPool =
-        _c.getNatPools().values().stream()
-            .filter(
-                otherPool -> natRangesOverlap(start, end, otherPool.getStart(), otherPool.getEnd()))
-            .findAny();
-    if (overlappinngPool.isPresent()) {
-      warn(
-          ctx,
-          String.format(
-              "Invalid NAT pool range, overlaps with existing NAT pool '%s'",
-              overlappinngPool.get().getName()));
+
+    if (_allNatPools.intersects(LongSpace.of(Range.closed(start.asLong(), end.asLong())))) {
+      warn(ctx, "Invalid NAT pool range, overlaps with existing NAT pool");
       return Optional.empty();
     }
 
@@ -610,6 +603,11 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     // Only add the NAT pool if all its properties were valid
     if (_currentNatPoolValid) {
       _c.getNatPools().put(_currentNatPool.getName(), _currentNatPool);
+      _allNatPools =
+          _allNatPools.union(
+              LongSpace.of(
+                  Range.closed(
+                      _currentNatPool.getStart().asLong(), _currentNatPool.getEnd().asLong())));
     }
     _currentNatPool = null;
   }
@@ -1107,6 +1105,9 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   private static final IntegerSpace VRID_RANGE = IntegerSpace.of(Range.closed(1, 31));
 
   private static final Pattern HOSTNAME_PATTERN = Pattern.compile("^[A-Za-z0-9_-]+$");
+
+  /** Combination of all NAT pools, used for preventing pool overlap */
+  private LongSpace _allNatPools = LongSpace.EMPTY;
 
   @Nonnull private A10Configuration _c;
 
