@@ -19,39 +19,54 @@ import org.batfish.datamodel.isp_configuration.traffic_filtering.IspTrafficFilte
 public class IspNodeInfo {
   private static final String PROP_ASN = "asn";
   private static final String PROP_NAME = "name";
-  private static final String PROP_CONNECT_TO_INTERNET = "connectToInternet";
+  private static final String PROP_ROLE = "role";
   private static final String PROP_ADDITIONAL_ANNOUNCEMENTS_TO_INTERNET =
       "additionalAnnouncementsToInternet";
   private static final String PROP_TRAFFIC_FILTERING = "trafficFiltering";
 
+  /** Dictates certain default behaviors of this ISP node */
+  public enum Role {
+    /**
+     * The ISP provides transit to the Internet. It connects to the Internet and propagates the
+     * default route from there. It does not propagate any communities and blocks reserved address
+     * traffic (unless overriden by PROP_TRAFFIC_FILTERING) .
+     */
+    TRANSIT,
+    /**
+     * The ISP mimics a private backbone. It does not connect to the Internet and so does not
+     * provide the default route. It propagates communities and extended communities and does not
+     * filter any traffic (unless overridden by PROP_TRAFFIC_FILTERING).
+     */
+    PRIVATE_BACKBONE
+  }
+
   private final long _asn;
   @Nonnull private final String _name;
-  private final boolean _internetConnection;
+  @Nonnull private final Role _role;
   @Nonnull private final List<IspAnnouncement> _additionalAnnouncement;
   @Nullable private final IspTrafficFiltering _trafficFiltering;
 
   public IspNodeInfo(long asn, String name) {
-    this(asn, name, true, ImmutableList.of(), null);
+    this(asn, name, Role.TRANSIT, ImmutableList.of(), null);
   }
 
   public IspNodeInfo(long asn, String name, List<IspAnnouncement> additionalAnnouncements) {
-    this(asn, name, true, additionalAnnouncements, null);
+    this(asn, name, Role.TRANSIT, additionalAnnouncements, null);
   }
 
   public IspNodeInfo(
       long asn,
       String name,
-      boolean internetConnection,
+      Role role,
       List<IspAnnouncement> additionalAnnouncements,
       @Nullable IspTrafficFiltering trafficFiltering) {
     checkArgument(
-        internetConnection || additionalAnnouncements.isEmpty(),
-        "%s should not be provided when %s is false",
-        PROP_ADDITIONAL_ANNOUNCEMENTS_TO_INTERNET,
-        PROP_CONNECT_TO_INTERNET);
+        role == Role.TRANSIT || additionalAnnouncements.isEmpty(),
+        "%s should not be provided unless role is TRANSIT",
+        PROP_ADDITIONAL_ANNOUNCEMENTS_TO_INTERNET);
     _asn = asn;
     _name = name;
-    _internetConnection = internetConnection;
+    _role = role;
     _additionalAnnouncement = additionalAnnouncements;
     _trafficFiltering = trafficFiltering;
   }
@@ -67,22 +82,21 @@ public class IspNodeInfo {
     IspNodeInfo that = (IspNodeInfo) o;
     return _asn == that._asn
         && _name.equals(that._name)
-        && _internetConnection == that._internetConnection
+        && _role == that._role
         && _additionalAnnouncement.equals(that._additionalAnnouncement)
         && Objects.equals(_trafficFiltering, that._trafficFiltering);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(
-        _asn, _name, _internetConnection, _additionalAnnouncement, _trafficFiltering);
+    return Objects.hash(_asn, _name, _role, _additionalAnnouncement, _trafficFiltering);
   }
 
   @JsonCreator
   private static IspNodeInfo jsonCreator(
       @JsonProperty(PROP_ASN) @Nullable Long asn,
       @JsonProperty(PROP_NAME) @Nullable String name,
-      @JsonProperty(PROP_CONNECT_TO_INTERNET) @Nullable Boolean connectToInternet,
+      @JsonProperty(PROP_ROLE) @Nullable Role role,
       @JsonProperty(PROP_ADDITIONAL_ANNOUNCEMENTS_TO_INTERNET) @Nullable
           List<IspAnnouncement> additionalAnnouncements,
       @JsonProperty(PROP_TRAFFIC_FILTERING) @Nullable IspTrafficFiltering trafficFiltering) {
@@ -90,7 +104,7 @@ public class IspNodeInfo {
     return new IspNodeInfo(
         asn,
         firstNonNull(name, getDefaultIspNodeName(asn)),
-        firstNonNull(connectToInternet, true),
+        firstNonNull(role, Role.TRANSIT),
         firstNonNull(additionalAnnouncements, ImmutableList.of()),
         trafficFiltering);
   }
@@ -106,9 +120,9 @@ public class IspNodeInfo {
     return _name;
   }
 
-  @JsonProperty(PROP_CONNECT_TO_INTERNET)
-  public boolean getInternetConnection() {
-    return _internetConnection;
+  @JsonProperty(PROP_ROLE)
+  public Role getRole() {
+    return _role;
   }
 
   @JsonProperty(PROP_ADDITIONAL_ANNOUNCEMENTS_TO_INTERNET)

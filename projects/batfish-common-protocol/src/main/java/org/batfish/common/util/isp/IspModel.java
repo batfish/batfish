@@ -14,6 +14,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.isp_configuration.IspNodeInfo.Role;
 import org.batfish.datamodel.isp_configuration.traffic_filtering.IspTrafficFiltering;
 
 /** Contains the information required to model one ISP node */
@@ -23,17 +24,17 @@ final class IspModel {
   static final class Builder {
     IspModel build() {
       checkArgument(_asn != null, "Missing ASN");
-      boolean internetConnection = firstNonNull(_internetConnection, true);
+      Role role = firstNonNull(_role, Role.TRANSIT);
       Set<Prefix> internetAnnouncements =
           firstNonNull(_additionalPrefixesToInternet, ImmutableSet.of());
       checkArgument(
-          internetConnection || internetAnnouncements.isEmpty(),
-          "Internet announcements should not be provided when internet connection is false");
+          role == Role.TRANSIT || internetAnnouncements.isEmpty(),
+          "Internet announcements should not be provided when role is not transit.");
       return new IspModel(
           _asn,
           firstNonNull(_snapshotConnections, ImmutableList.of()),
           _name,
-          internetConnection,
+          role,
           internetAnnouncements,
           firstNonNull(_trafficFiltering, IspTrafficFiltering.none()));
     }
@@ -48,8 +49,8 @@ final class IspModel {
       return this;
     }
 
-    public Builder setInternetConnection(boolean internetConnection) {
-      _internetConnection = internetConnection;
+    public Builder setRole(Role role) {
+      _role = role;
       return this;
     }
 
@@ -86,7 +87,7 @@ final class IspModel {
     private @Nullable Long _asn;
     private @Nullable String _name;
     private @Nullable List<SnapshotConnection> _snapshotConnections;
-    private Boolean _internetConnection;
+    private Role _role;
     private @Nullable Set<Prefix> _additionalPrefixesToInternet;
     private @Nullable IspTrafficFiltering _trafficFiltering;
   }
@@ -98,7 +99,7 @@ final class IspModel {
   private final long _asn;
   private final @Nullable String _name;
   private @Nonnull List<SnapshotConnection> _snapshotConnections;
-  private final boolean _internetConnection;
+  private final Role _role;
   private final @Nonnull Set<Prefix> _additionalPrefixesToInternet;
   private final @Nonnull IspTrafficFiltering _trafficFiltering;
 
@@ -106,13 +107,13 @@ final class IspModel {
       long asn,
       List<SnapshotConnection> snapshotConnections,
       @Nullable String name,
-      boolean internetConnection,
+      Role role,
       Set<Prefix> additionalPrefixesToInternet,
       IspTrafficFiltering trafficFiltering) {
     _asn = asn;
     _snapshotConnections = snapshotConnections;
     _name = name;
-    _internetConnection = internetConnection;
+    _role = role;
     _additionalPrefixesToInternet = ImmutableSet.copyOf(additionalPrefixesToInternet);
     _trafficFiltering = trafficFiltering;
   }
@@ -132,7 +133,7 @@ final class IspModel {
     }
     IspModel ispModel = (IspModel) o;
     return _asn == ispModel._asn
-        && _internetConnection == ispModel._internetConnection
+        && _role == ispModel._role
         && Objects.equals(_name, ispModel._name)
         && _snapshotConnections.equals(ispModel._snapshotConnections)
         && _additionalPrefixesToInternet.equals(ispModel._additionalPrefixesToInternet)
@@ -142,12 +143,7 @@ final class IspModel {
   @Override
   public int hashCode() {
     return Objects.hash(
-        _asn,
-        _name,
-        _snapshotConnections,
-        _internetConnection,
-        _additionalPrefixesToInternet,
-        _trafficFiltering);
+        _asn, _name, _snapshotConnections, _role, _additionalPrefixesToInternet, _trafficFiltering);
   }
 
   @Override
@@ -174,8 +170,8 @@ final class IspModel {
     return _name;
   }
 
-  public boolean getInternetConnection() {
-    return _internetConnection;
+  public Role getRole() {
+    return _role;
   }
 
   /**

@@ -8,6 +8,7 @@ import com.google.common.testing.EqualsTester;
 import java.util.List;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.isp_configuration.IspNodeInfo.Role;
 import org.batfish.datamodel.isp_configuration.traffic_filtering.IspTrafficFiltering;
 import org.junit.Test;
 
@@ -19,19 +20,21 @@ public class IspNodeInfoTest {
         ImmutableList.of(new IspAnnouncement(Prefix.parse("1.1.1.1/32")));
     new EqualsTester()
         .addEqualityGroup(
-            new IspNodeInfo(42, "n1", true, prefixList, null),
-            new IspNodeInfo(42L, "n1", true, prefixList, null))
-        .addEqualityGroup(new IspNodeInfo(24, "n1", true, prefixList, null))
-        .addEqualityGroup(new IspNodeInfo(42, "other", true, prefixList, null))
-        .addEqualityGroup(new IspNodeInfo(42, "n1", false, ImmutableList.of(), null))
+            new IspNodeInfo(42, "n1", Role.TRANSIT, prefixList, null),
+            new IspNodeInfo(42L, "n1", Role.TRANSIT, prefixList, null))
+        .addEqualityGroup(new IspNodeInfo(24, "n1", Role.TRANSIT, prefixList, null))
+        .addEqualityGroup(new IspNodeInfo(42, "other", Role.TRANSIT, prefixList, null))
+        .addEqualityGroup(
+            new IspNodeInfo(42, "n1", Role.PRIVATE_BACKBONE, ImmutableList.of(), null))
         .addEqualityGroup(
             new IspNodeInfo(
                 42,
                 "n1",
-                true,
+                Role.TRANSIT,
                 ImmutableList.of(new IspAnnouncement(Prefix.parse("2.2.2.2/32"))),
                 null))
-        .addEqualityGroup(new IspNodeInfo(42, "n1", true, prefixList, IspTrafficFiltering.none()))
+        .addEqualityGroup(
+            new IspNodeInfo(42, "n1", Role.TRANSIT, prefixList, IspTrafficFiltering.none()))
         .testEquals();
   }
 
@@ -41,7 +44,7 @@ public class IspNodeInfoTest {
         new IspNodeInfo(
             42,
             "n1",
-            true,
+            Role.TRANSIT,
             ImmutableList.of(new IspAnnouncement(Prefix.parse("1.1.1.1/32"))),
             IspTrafficFiltering.none());
 
