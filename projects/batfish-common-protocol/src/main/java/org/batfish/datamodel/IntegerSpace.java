@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.BoundType;
 import com.google.common.collect.DiscreteDomain;
 import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.ImmutableSet;
@@ -64,7 +65,11 @@ public final class IntegerSpace extends NumberSpace<Integer, IntegerSpace, Integ
   /** Return this space as a set of included {@link SubRange}s */
   public @Nonnull Set<SubRange> getSubRanges() {
     return _rangeset.asRanges().stream()
-        .map(r -> new SubRange(r.lowerEndpoint(), r.upperEndpoint() - 1))
+        .map(
+            r -> {
+              assert r.lowerBoundType() == BoundType.CLOSED && r.upperBoundType() == BoundType.OPEN;
+              return new SubRange(r.lowerEndpoint(), r.upperEndpoint() - 1);
+            })
         .collect(ImmutableSet.toImmutableSet());
   }
 

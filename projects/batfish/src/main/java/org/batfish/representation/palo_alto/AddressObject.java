@@ -1,5 +1,6 @@
 package org.batfish.representation.palo_alto;
 
+import com.google.common.collect.BoundType;
 import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
@@ -60,6 +61,8 @@ public final class AddressObject implements Serializable {
     } else if (_prefix != null) {
       return _prefix.getPrefix().toIpSpace();
     } else if (_ipRange != null) {
+      assert _ipRange.lowerBoundType() == BoundType.CLOSED
+          && _ipRange.upperBoundType() == BoundType.CLOSED;
       return IpRange.range(_ipRange.lowerEndpoint(), _ipRange.upperEndpoint());
     }
     return EmptyIpSpace.INSTANCE;

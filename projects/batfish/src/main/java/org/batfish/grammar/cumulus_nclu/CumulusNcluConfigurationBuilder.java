@@ -358,7 +358,12 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
       builder.addAll(rangeSet);
     }
     return builder.build().asRanges().stream()
-        .flatMapToLong(r -> LongStream.rangeClosed(r.lowerEndpoint(), r.upperEndpoint()))
+        .flatMapToLong(
+            r -> {
+              assert r.lowerBoundType() == BoundType.CLOSED
+                  && r.upperBoundType() == BoundType.CLOSED;
+              return LongStream.rangeClosed(r.lowerEndpoint(), r.upperEndpoint());
+            })
         .mapToObj(i -> String.format("%s%d", prefix, i))
         .collect(ImmutableSet.toImmutableSet());
   }
