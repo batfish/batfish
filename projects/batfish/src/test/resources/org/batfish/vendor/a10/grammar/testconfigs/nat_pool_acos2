@@ -1,0 +1,6 @@
+!BATFISH_FORMAT: a10_acos
+!version 2.7.2, build 123 (Aug-5-2021,01:23)
+hostname nat_pool_acos2
+!
+! TODO create ha group 1 once that is supported (this line might not be valid as-is)
+ip nat pool POOL1 10.10.10.1 10.10.10.1 netmask /32 ha-group-id 1

@@ -21,6 +21,7 @@ DO_AUTO_RECOVERY: 'do-auto-recovery';
 ENABLE: 'enable';
 ETHERNET: 'ethernet';
 GATEWAY: 'gateway';
+HA_GROUP_ID: 'ha-group-id';
 HOSTNAME: 'hostname' -> pushMode(M_Word);
 IP: 'ip';
 IP_RR: 'ip-rr';
