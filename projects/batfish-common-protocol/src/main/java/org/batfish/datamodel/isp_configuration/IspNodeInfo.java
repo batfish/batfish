@@ -27,13 +27,15 @@ public class IspNodeInfo {
   /** Dictates certain default behaviors of this ISP node */
   public enum Role {
     /**
-     * The ISP provides transit to the Internet. Connects to the Internet and propagates the default
-     * from there. Does not propagate any communities.
+     * The ISP provides transit to the Internet. It connects to the Internet and propagates the
+     * default route from there. It does not propagate any communities and blocks reserved address
+     * traffic (unless overriden by PROP_TRAFFIC_FILTERING) .
      */
     TRANSIT,
     /**
-     * The ISP mimics a private backbone. Does not connect to the Internet and propagate
-     * communities.
+     * The ISP mimics a private backbone. It does not connect to the Internet and so does not
+     * provide the default route. It propagates communities and extended communities and does not
+     * filter any traffic (unless overridden by PROP_TRAFFIC_FILTERING).
      */
     PRIVATE_BACKBONE
   }
@@ -60,7 +62,7 @@ public class IspNodeInfo {
       @Nullable IspTrafficFiltering trafficFiltering) {
     checkArgument(
         role == Role.TRANSIT || additionalAnnouncements.isEmpty(),
-        "%s should not be provided role is not TRANSIT",
+        "%s should not be provided unless role is TRANSIT",
         PROP_ADDITIONAL_ANNOUNCEMENTS_TO_INTERNET,
         PROP_ROLE);
     _asn = asn;
