@@ -783,7 +783,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   @Override
   public void exitSssd_conn_limit(A10Parser.Sssd_conn_limitContext ctx) {
-    toInteger(ctx.connection_limit()).ifPresent(l -> _currentServer.setConnLimit(l));
+    toInteger(ctx, ctx.connection_limit()).ifPresent(l -> _currentServer.setConnLimit(l));
   }
 
   @Override
@@ -813,7 +813,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   @Override
   public void exitSssd_weight(A10Parser.Sssd_weightContext ctx) {
-    toInteger(ctx.connection_weight()).ifPresent(w -> _currentServer.setWeight(w));
+    toInteger(ctx, ctx.connection_weight()).ifPresent(w -> _currentServer.setWeight(w));
   }
 
   @Override
@@ -852,7 +852,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   @Override
   public void exitSssdpd_conn_limit(A10Parser.Sssdpd_conn_limitContext ctx) {
-    toInteger(ctx.connection_limit()).ifPresent(l -> _currentServerPort.setConnLimit(l));
+    toInteger(ctx, ctx.connection_limit()).ifPresent(l -> _currentServerPort.setConnLimit(l));
   }
 
   @Override
@@ -882,7 +882,17 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   @Override
   public void exitSssdpd_weight(A10Parser.Sssdpd_weightContext ctx) {
-    toInteger(ctx.connection_weight()).ifPresent(w -> _currentServerPort.setWeight(w));
+    toInteger(ctx, ctx.connection_weight()).ifPresent(w -> _currentServerPort.setWeight(w));
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, A10Parser.Connection_limitContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx.uint32(), CONNECTION_LIMIT_RANGE, "conn-limit");
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, A10Parser.Connection_weightContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx.uint16(), CONNECTION_WEIGHT_RANGE, "connection weight");
   }
 
   private static ServerPort.Type toType(A10Parser.Tcp_or_udpContext ctx) {
@@ -1095,14 +1105,6 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     }
     assert ctx.subnet_mask() != null;
     return toIp(ctx.subnet_mask()).numSubnetBits();
-  }
-
-  private @Nonnull Optional<Integer> toInteger(A10Parser.Connection_limitContext ctx) {
-    return toIntegerInSpace(ctx, ctx.uint32(), CONNECTION_LIMIT_RANGE, "conn-limit");
-  }
-
-  private @Nonnull Optional<Integer> toInteger(A10Parser.Connection_weightContext ctx) {
-    return toIntegerInSpace(ctx, ctx.uint16(), CONNECTION_WEIGHT_RANGE, "connection weight");
   }
 
   private @Nonnull Optional<Integer> toInteger(A10Parser.Interface_mtuContext ctx) {
