@@ -60,6 +60,7 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.isp_configuration.BgpPeerInfo;
@@ -68,6 +69,7 @@ import org.batfish.datamodel.isp_configuration.IspAnnouncement;
 import org.batfish.datamodel.isp_configuration.IspAttachment;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
 import org.batfish.datamodel.isp_configuration.IspNodeInfo;
+import org.batfish.datamodel.isp_configuration.IspNodeInfo.Role;
 import org.batfish.datamodel.isp_configuration.traffic_filtering.IspTrafficFiltering;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
@@ -309,14 +311,16 @@ public final class IspModelingUtils {
 
     // For properties that can't be merged, pick the first one.
     String ispName = ispNodeInfos.stream().map(IspNodeInfo::getName).findFirst().orElse(null);
-    boolean internetConnection =
-        ispNodeInfos.stream().map(IspNodeInfo::getInternetConnection).findFirst().orElse(true);
+    Role ispRole = ispNodeInfos.stream().map(IspNodeInfo::getRole).findFirst().orElse(Role.TRANSIT);
     IspTrafficFiltering filtering =
         ispNodeInfos.stream()
             .map(IspNodeInfo::getIspTrafficFiltering)
             .filter(Objects::nonNull)
             .findFirst()
-            .orElse(IspTrafficFiltering.blockReservedAddressesAtInternet());
+            .orElse(
+                ispRole == Role.TRANSIT
+                    ? IspTrafficFiltering.blockReservedAddressesAtInternet()
+                    : IspTrafficFiltering.none());
 
     // Merge the sets of additional announcements to internet is merging their prefixes
     Set<Prefix> additionalPrefixes =
@@ -327,7 +331,7 @@ public final class IspModelingUtils {
     return IspModel.builder()
         .setAsn(asn)
         .setName(ispName)
-        .setInternetConnection(internetConnection)
+        .setRole(ispRole)
         .setAdditionalPrefixesToInternet(additionalPrefixes)
         .setSnapshotConnections(snapshotConnections)
         .setTrafficFiltering(filtering)
@@ -660,7 +664,7 @@ public final class IspModelingUtils {
                         }));
 
     boolean needInternet =
-        asnToIspModel.values().stream().anyMatch(IspModel::getInternetConnection);
+        asnToIspModel.values().stream().anyMatch(model -> model.getRole() == Role.TRANSIT);
 
     // not proceeding if no ISPs were created or internet is not needed
     if (modeledNodes.getConfigurations().isEmpty() || !needInternet) {
@@ -675,7 +679,7 @@ public final class IspModelingUtils {
         .forEach(
             c -> {
               long ispAsn = getAsnOfIspNode(c);
-              if (asnToIspModel.get(ispAsn).getInternetConnection()) {
+              if (asnToIspModel.get(ispAsn).getRole() == Role.TRANSIT) {
                 Set<Layer1Edge> layer1Edges =
                     connectIspToInternet(ispAsn, asnToIspModel.get(ispAsn), c, internet, nf);
                 layer1Edges.forEach(modeledNodes::addLayer1Edge);
@@ -943,7 +947,8 @@ public final class IspModelingUtils {
                       });
               addBgpPeerToIsp(
                   snapshotConnection.getBgpPeer(),
-                  ispConfiguration.getDefaultVrf().getBgpProcess());
+                  ispConfiguration.getDefaultVrf().getBgpProcess(),
+                  ispModel.getRole());
             });
 
     return layer1Edges.build();
@@ -1093,7 +1098,7 @@ public final class IspModelingUtils {
    * sets the export policy meant for the ISP.
    */
   @VisibleForTesting
-  static void addBgpPeerToIsp(IspBgpPeer ispBgpPeer, BgpProcess bgpProcess) {
+  static void addBgpPeerToIsp(IspBgpPeer ispBgpPeer, BgpProcess bgpProcess, Role ispRole) {
     BgpPeerConfig.Builder<?, ?> ispPeerConfig =
         ispBgpPeer instanceof IspBgpActivePeer
             ? BgpActivePeerConfig.builder()
@@ -1110,6 +1115,11 @@ public final class IspModelingUtils {
         .setIpv4UnicastAddressFamily(
             Ipv4UnicastAddressFamily.builder()
                 .setExportPolicy(EXPORT_POLICY_ON_ISP_TO_CUSTOMERS)
+                .setAddressFamilyCapabilities(
+                    AddressFamilyCapabilities.builder()
+                        .setSendCommunity(ispRole == Role.PRIVATE_BACKBONE)
+                        .setSendExtendedCommunity(ispRole == Role.PRIVATE_BACKBONE)
+                        .build())
                 .build())
         .setBgpProcess(bgpProcess)
         .build();

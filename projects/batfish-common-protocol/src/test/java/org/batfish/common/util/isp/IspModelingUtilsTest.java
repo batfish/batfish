@@ -101,6 +101,7 @@ import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.isp_configuration.BgpPeerInfo;
@@ -110,6 +111,7 @@ import org.batfish.datamodel.isp_configuration.IspAttachment;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
 import org.batfish.datamodel.isp_configuration.IspFilter;
 import org.batfish.datamodel.isp_configuration.IspNodeInfo;
+import org.batfish.datamodel.isp_configuration.IspNodeInfo.Role;
 import org.batfish.datamodel.isp_configuration.traffic_filtering.IspTrafficFiltering;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
@@ -170,7 +172,7 @@ public class IspModelingUtilsTest {
         IspModel.builder()
             .setAsn(_ispAsn)
             .setName(_ispName)
-            .setInternetConnection(false)
+            .setRole(Role.TRANSIT)
             .setSnapshotConnections(_snapshotConnection)
             .setTrafficFiltering(IspTrafficFiltering.blockReservedAddressesAtInternet())
             .build();
@@ -229,7 +231,7 @@ public class IspModelingUtilsTest {
     IspBgpActivePeer ispBgpActivePeer =
         new IspBgpActivePeer(_snapshotIp, _ispIp, _snapshotAsn, _ispAsn, false);
 
-    addBgpPeerToIsp(ispBgpActivePeer, bgpProcess);
+    addBgpPeerToIsp(ispBgpActivePeer, bgpProcess, Role.TRANSIT);
     BgpActivePeerConfig peer = getOnlyElement(bgpProcess.getActiveNeighbors().values());
 
     assertThat(
@@ -252,7 +254,7 @@ public class IspModelingUtilsTest {
     BgpProcess bgpProcess = testBgpProcess(Ip.ZERO);
     IspBgpUnnumberedPeer ispBgpUnnumberedPeer =
         new IspBgpUnnumberedPeer("iface", _snapshotAsn, _ispAsn, false);
-    addBgpPeerToIsp(ispBgpUnnumberedPeer, bgpProcess);
+    addBgpPeerToIsp(ispBgpUnnumberedPeer, bgpProcess, Role.TRANSIT);
     BgpUnnumberedPeerConfig peer = getOnlyElement(bgpProcess.getInterfaceNeighbors().values());
 
     assertThat(
@@ -266,6 +268,35 @@ public class IspModelingUtilsTest {
                 .setIpv4UnicastAddressFamily(
                     Ipv4UnicastAddressFamily.builder()
                         .setExportPolicy(EXPORT_POLICY_ON_ISP_TO_CUSTOMERS)
+                        .build())
+                .build()));
+  }
+
+  @Test
+  public void testAddBgpPeerToIsp_sendCommunity() {
+    BgpProcess bgpProcess = testBgpProcess(Ip.ZERO);
+    IspBgpActivePeer ispBgpActivePeer =
+        new IspBgpActivePeer(_snapshotIp, _ispIp, _snapshotAsn, _ispAsn, false);
+
+    addBgpPeerToIsp(ispBgpActivePeer, bgpProcess, Role.PRIVATE_BACKBONE);
+    BgpActivePeerConfig peer = getOnlyElement(bgpProcess.getActiveNeighbors().values());
+
+    assertThat(
+        peer,
+        equalTo(
+            BgpActivePeerConfig.builder()
+                .setLocalIp(_ispIp)
+                .setPeerAddress(_snapshotIp)
+                .setLocalAs(_ispAsn)
+                .setRemoteAs(_snapshotAsn)
+                .setIpv4UnicastAddressFamily(
+                    Ipv4UnicastAddressFamily.builder()
+                        .setExportPolicy(EXPORT_POLICY_ON_ISP_TO_CUSTOMERS)
+                        .setAddressFamilyCapabilities(
+                            AddressFamilyCapabilities.builder()
+                                .setSendCommunity(true)
+                                .setSendExtendedCommunity(true)
+                                .build())
                         .build())
                 .build()));
   }
@@ -353,7 +384,7 @@ public class IspModelingUtilsTest {
 
     // compute the reverse config
     BgpProcess bgpProcess = testBgpProcess(Ip.ZERO);
-    addBgpPeerToIsp(_snapshotConnection.getBgpPeer(), bgpProcess);
+    addBgpPeerToIsp(_snapshotConnection.getBgpPeer(), bgpProcess, Role.TRANSIT);
     BgpActivePeerConfig expectedIspPeerConfig =
         getOnlyElement(bgpProcess.getActiveNeighbors().values());
 
@@ -426,7 +457,8 @@ public class IspModelingUtilsTest {
         IspBgpUnnumberedPeer.create(
             remotePeerConfig,
             ispToSnapshotInterfaceName(_snapshotHostname, _snapshotInterfaceName)),
-        bgpProcess);
+        bgpProcess,
+        ispModel.getRole());
     BgpUnnumberedPeerConfig expectedIspPeerConfig =
         getOnlyElement(bgpProcess.getInterfaceNeighbors().values());
 
@@ -1020,13 +1052,37 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testToIspModel_internetConnection() {
+  public void testToIspModel_role() {
     IspModel ispModel =
         toIspModel(
             _ispAsn,
             ImmutableList.of(),
-            ImmutableList.of(new IspNodeInfo(_ispAsn, "myisp", false, ImmutableList.of(), null)));
-    assertFalse(ispModel.getInternetConnection());
+            ImmutableList.of(
+                new IspNodeInfo(
+                    _ispAsn, "myisp", Role.PRIVATE_BACKBONE, ImmutableList.of(), null)));
+    assertThat(ispModel.getRole(), equalTo(Role.PRIVATE_BACKBONE));
+  }
+
+  @Test
+  public void testToIspModel_trafficFiltering() {
+    IspModel ispModelPrivate =
+        toIspModel(
+            _ispAsn,
+            ImmutableList.of(),
+            ImmutableList.of(
+                new IspNodeInfo(
+                    _ispAsn, "myisp", Role.PRIVATE_BACKBONE, ImmutableList.of(), null)));
+    assertThat(ispModelPrivate.getTrafficFiltering(), equalTo(IspTrafficFiltering.none()));
+
+    IspModel ispModelTransit =
+        toIspModel(
+            _ispAsn,
+            ImmutableList.of(),
+            ImmutableList.of(
+                new IspNodeInfo(_ispAsn, "myisp", Role.TRANSIT, ImmutableList.of(), null)));
+    assertThat(
+        ispModelTransit.getTrafficFiltering(),
+        equalTo(IspTrafficFiltering.blockReservedAddressesAtInternet()));
   }
 
   @Test
@@ -1153,7 +1209,7 @@ public class IspModelingUtilsTest {
     assertTrue(modeledNodes.getConfigurations().containsKey(_ispName));
   }
 
-  /** Check that the Internet node is not created when no ISP connects to it */
+  /** Check that the Internet node is not created when all ISPs are PRIVATE_BACKBONES */
   @Test
   public void testGetInternetAndIspNodes_noInternet() {
     ModeledNodes modeledNodes =
@@ -1169,7 +1225,7 @@ public class IspModelingUtilsTest {
                         new IspNodeInfo(
                             _ispAsn,
                             _ispName,
-                            false,
+                            Role.PRIVATE_BACKBONE,
                             ImmutableList.of(),
                             IspTrafficFiltering.none())))),
             new BatfishLogger("output", false),
@@ -1221,13 +1277,13 @@ public class IspModelingUtilsTest {
                         new IspNodeInfo(
                             _ispAsn,
                             _ispName,
-                            true,
+                            Role.TRANSIT,
                             ImmutableList.of(),
                             IspTrafficFiltering.none()),
                         new IspNodeInfo(
                             ispAsn2,
                             ispName2,
-                            false,
+                            Role.PRIVATE_BACKBONE,
                             ImmutableList.of(),
                             IspTrafficFiltering.none())))),
             new BatfishLogger("output", false),
