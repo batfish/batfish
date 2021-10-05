@@ -10,6 +10,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
 import com.google.common.primitives.Longs;
+import com.google.errorprone.annotations.concurrent.LazyInit;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
@@ -33,6 +34,7 @@ public class AsSet implements Serializable, Comparable<AsSet> {
 
   private final long[] _value;
   private final boolean _confederation;
+  @LazyInit private transient int _hashCode;
 
   private AsSet(long[] value, boolean confederation) {
     Arrays.sort(value);
@@ -142,7 +144,12 @@ public class AsSet implements Serializable, Comparable<AsSet> {
 
   @Override
   public int hashCode() {
-    return Arrays.hashCode(_value) * 31 + Boolean.hashCode(_confederation);
+    int h = _hashCode;
+    if (h == 0) {
+      h = Arrays.hashCode(_value) * 31 + Boolean.hashCode(_confederation);
+      _hashCode = h;
+    }
+    return h;
   }
 
   @JsonIgnore
