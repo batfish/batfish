@@ -293,7 +293,10 @@ public class IspModelingUtilsTest {
                     Ipv4UnicastAddressFamily.builder()
                         .setExportPolicy(EXPORT_POLICY_ON_ISP_TO_CUSTOMERS)
                         .setAddressFamilyCapabilities(
-                            AddressFamilyCapabilities.builder().setSendCommunity(true).build())
+                            AddressFamilyCapabilities.builder()
+                                .setSendCommunity(true)
+                                .setSendExtendedCommunity(true)
+                                .build())
                         .build())
                 .build()));
   }

@@ -1115,6 +1115,7 @@ public final class IspModelingUtils {
                 .setAddressFamilyCapabilities(
                     AddressFamilyCapabilities.builder()
                         .setSendCommunity(ispRole == Role.PRIVATE_BACKBONE)
+                        .setSendExtendedCommunity(ispRole == Role.PRIVATE_BACKBONE)
                         .build())
                 .build())
         .setBgpProcess(bgpProcess)
