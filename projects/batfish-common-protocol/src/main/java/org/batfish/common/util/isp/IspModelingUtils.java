@@ -317,7 +317,10 @@ public final class IspModelingUtils {
             .map(IspNodeInfo::getIspTrafficFiltering)
             .filter(Objects::nonNull)
             .findFirst()
-            .orElse(IspTrafficFiltering.blockReservedAddressesAtInternet());
+            .orElse(
+                ispRole == Role.TRANSIT
+                    ? IspTrafficFiltering.blockReservedAddressesAtInternet()
+                    : IspTrafficFiltering.none());
 
     // Merge the sets of additional announcements to internet is merging their prefixes
     Set<Prefix> additionalPrefixes =

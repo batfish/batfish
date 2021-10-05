@@ -1064,6 +1064,28 @@ public class IspModelingUtilsTest {
   }
 
   @Test
+  public void testToIspModel_trafficFiltering() {
+    IspModel ispModelPrivate =
+        toIspModel(
+            _ispAsn,
+            ImmutableList.of(),
+            ImmutableList.of(
+                new IspNodeInfo(
+                    _ispAsn, "myisp", Role.PRIVATE_BACKBONE, ImmutableList.of(), null)));
+    assertThat(ispModelPrivate.getTrafficFiltering(), equalTo(IspTrafficFiltering.none()));
+
+    IspModel ispModelTransit =
+        toIspModel(
+            _ispAsn,
+            ImmutableList.of(),
+            ImmutableList.of(
+                new IspNodeInfo(_ispAsn, "myisp", Role.TRANSIT, ImmutableList.of(), null)));
+    assertThat(
+        ispModelTransit.getTrafficFiltering(),
+        equalTo(IspTrafficFiltering.blockReservedAddressesAtInternet()));
+  }
+
+  @Test
   public void testToIspModel_mergeAdditionalPrefixes() {
     IspModel ispModel =
         toIspModel(
