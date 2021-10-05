@@ -22,7 +22,6 @@ import static org.batfish.vendor.check_point_gateway.representation.CheckpointNa
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getApplicableNatRules;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getOutgoingTransformations;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.isValidAutomaticHideRule;
-import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.isValidAutomaticRule;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.isValidAutomaticStaticRule;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.manualHideTransformationSteps;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.manualRuleTransformation;
@@ -31,6 +30,7 @@ import static org.batfish.vendor.check_point_gateway.representation.CheckpointNa
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.matchInternalTraffic;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.matchManualRule;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.mergeTransformations;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.shouldConvertAutomaticRule;
 import static org.batfish.vendor.check_point_management.TestSharedInstances.NAT_SETTINGS_TEST_INSTANCE;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -403,7 +403,7 @@ public final class CheckpointNatConversionsTest {
   }
 
   @Test
-  public void testIsValidAutomaticRule() {
+  public void testShouldConvertAutomaticRule() {
     Uid hostUid = Uid.of("12345");
     Host host = new Host(Ip.parse("1.1.1.1"), NAT_SETTINGS_TEST_INSTANCE, "host", hostUid);
     Map<Uid, TypedManagementObject> objs =
@@ -444,13 +444,13 @@ public final class CheckpointNatConversionsTest {
           .forEach(
               rule -> {
                 Warnings warnings = new Warnings(true, true, true);
-                assertFalse(isValidAutomaticRule(rule, objs, warnings));
+                assertFalse(shouldConvertAutomaticRule(rule, objs, warnings));
                 assertThat(warnings.getRedFlagWarnings(), empty());
               });
     }
     {
-      // Unexpected format: source is not a HasNatSettings
-      NatRule natRule =
+      // Rule that should be converted
+      NatRule rule =
           new NatRule(
               true,
               "",
@@ -459,48 +459,15 @@ public final class CheckpointNatConversionsTest {
               NatMethod.HIDE,
               ANY_UID,
               ANY_UID,
-              PT_UID,
+              hostUid, // Source constrained, other original fields not constrained
               1,
               ORIG_UID,
               ORIG_UID,
               ORIG_UID,
               UID);
       Warnings warnings = new Warnings(true, true, true);
-      assertFalse(isValidAutomaticRule(natRule, objs, warnings));
-      assertThat(
-          warnings.getRedFlagWarnings(),
-          contains(
-              hasText(
-                  containsString(
-                      "unexpected original source and destination types PolicyTargets and"
-                          + " CpmiAnyObject"))));
-    }
-    {
-      // Unexpected format: neither source nor dest are constrained
-      NatRule natRule =
-          new NatRule(
-              true,
-              "",
-              true,
-              ImmutableList.of(PT_UID),
-              NatMethod.HIDE,
-              ANY_UID,
-              ANY_UID,
-              ANY_UID,
-              1,
-              ORIG_UID,
-              ORIG_UID,
-              ORIG_UID,
-              UID);
-      Warnings warnings = new Warnings(true, true, true);
-      assertFalse(isValidAutomaticRule(natRule, objs, warnings));
-      assertThat(
-          warnings.getRedFlagWarnings(),
-          contains(
-              hasText(
-                  containsString(
-                      "unexpected original source and destination types CpmiAnyObject and"
-                          + " CpmiAnyObject"))));
+      assertTrue(shouldConvertAutomaticRule(rule, objs, warnings));
+      assertThat(warnings.getRedFlagWarnings(), empty());
     }
   }
 
