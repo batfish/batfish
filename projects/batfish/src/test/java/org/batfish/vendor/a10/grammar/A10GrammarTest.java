@@ -1042,7 +1042,7 @@ public class A10GrammarTest {
                         + " address"),
                 hasComment("Invalid NAT pool netmask, must be > 0"),
                 hasComment("Invalid NAT pool range, all addresses must fit in specified netmask"),
-                hasComment("Invalid NAT pool range, overlaps with existing NAT pool 'POOL1'"),
+                hasComment("Invalid NAT pool range, overlaps with existing NAT pool"),
                 hasComment("Expected scaleout-device-id in range 1-16, but got '17'"),
                 hasComment("Expected vrid in range 1-31, but got '32'"))));
   }
