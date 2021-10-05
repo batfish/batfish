@@ -2,6 +2,7 @@ package org.batfish.datamodel.transformation;
 
 import static org.batfish.datamodel.flow.TransformationStep.TransformationType.SOURCE_NAT;
 
+import com.google.common.collect.BoundType;
 import com.google.common.collect.Streams;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
@@ -58,10 +59,12 @@ public final class TransformationUtil {
               ? Stream.of()
               : assignIpAddressFromPool.getIpRanges().asRanges().stream()
                   .flatMapToLong(
-                      ipRange ->
-                          LongStream.range(
-                              ipRange.lowerEndpoint().asLong(),
-                              ipRange.upperEndpoint().asLong() + 1))
+                      ipRange -> {
+                        assert ipRange.lowerBoundType() == BoundType.CLOSED
+                            && ipRange.upperBoundType() == BoundType.CLOSED;
+                        return LongStream.range(
+                            ipRange.lowerEndpoint().asLong(), ipRange.upperEndpoint().asLong() + 1);
+                      })
                   .mapToObj(Ip::create);
         }
 

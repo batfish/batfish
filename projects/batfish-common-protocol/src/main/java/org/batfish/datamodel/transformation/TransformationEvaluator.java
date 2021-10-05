@@ -4,9 +4,11 @@ import static com.google.common.base.Verify.verifyNotNull;
 import static org.batfish.datamodel.FlowDiff.flowDiff;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.BoundType;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Range;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -140,7 +142,9 @@ public class TransformationEvaluator {
 
     @Override
     public Boolean visitAssignIpAddressFromPool(AssignIpAddressFromPool step) {
-      Ip ip = step.getIpRanges().asRanges().iterator().next().lowerEndpoint();
+      Range<Ip> range = step.getIpRanges().asRanges().iterator().next();
+      assert range.lowerBoundType() == BoundType.CLOSED;
+      Ip ip = range.lowerEndpoint();
       return set(step.getType(), step.getIpField(), get(step.getIpField()), ip);
     }
 
