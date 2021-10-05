@@ -44,7 +44,7 @@ public class IspNodeInfoTest {
         new IspNodeInfo(
             42,
             "n1",
-            Role.PRIVATE_BACKBONE,
+            Role.TRANSIT,
             ImmutableList.of(new IspAnnouncement(Prefix.parse("1.1.1.1/32"))),
             IspTrafficFiltering.none());
 
