@@ -10,7 +10,7 @@ import org.junit.Test;
 /** Tests of {@link ServerPort} */
 public class ServerPortTest {
   @Test
-  public void testKeyEquality() {
+  public void testServerPortAndTypeEquality() {
     ServerPort.ServerPortAndType obj = new ServerPort.ServerPortAndType(10, ServerPort.Type.UDP);
     new EqualsTester()
         .addEqualityGroup(obj, new ServerPort.ServerPortAndType(10, ServerPort.Type.UDP))
@@ -20,7 +20,7 @@ public class ServerPortTest {
   }
 
   @Test
-  public void testKeySerialization() {
+  public void testServerPortAndTypeSerialization() {
     ServerPort.ServerPortAndType obj = new ServerPort.ServerPortAndType(10, ServerPort.Type.UDP);
     ServerPort.ServerPortAndType clone = SerializationUtils.clone(obj);
     assertThat(obj, equalTo(clone));

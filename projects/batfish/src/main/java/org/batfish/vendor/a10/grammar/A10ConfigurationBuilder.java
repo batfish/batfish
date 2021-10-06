@@ -783,7 +783,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   @Override
   public void exitSssd_conn_limit(A10Parser.Sssd_conn_limitContext ctx) {
-    toInteger(ctx, ctx.connection_limit()).ifPresent(l -> _currentServer.setConnLimit(l));
+    toInteger(ctx, ctx.connection_limit()).ifPresent(_currentServer::setConnLimit);
   }
 
   @Override
@@ -808,12 +808,12 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   @Override
   public void exitSssdt_server(A10Parser.Sssdt_serverContext ctx) {
-    toString(ctx, ctx.template_name()).ifPresent(n -> _currentServer.setServerTemplate(n));
+    toString(ctx, ctx.template_name()).ifPresent(_currentServer::setServerTemplate);
   }
 
   @Override
   public void exitSssd_weight(A10Parser.Sssd_weightContext ctx) {
-    toInteger(ctx, ctx.connection_weight()).ifPresent(w -> _currentServer.setWeight(w));
+    toInteger(ctx, ctx.connection_weight()).ifPresent(_currentServer::setWeight);
   }
 
   @Override
@@ -821,7 +821,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     ServerPort.Type type = toType(ctx.tcp_or_udp());
     Integer range;
     if (ctx.port_range_value() != null) {
-      Optional<Integer> maybeRange = toInteger(ctx.port_range_value());
+      Optional<Integer> maybeRange = toInteger(ctx, ctx.port_range_value());
       if (!maybeRange.isPresent()) {
         // Already warned
         _currentServerPort = new ServerPort(-1, type, null); // dummy
@@ -832,7 +832,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
       range = null;
     }
     _currentServerPort =
-        toInteger(ctx.port_number())
+        toInteger(ctx, ctx.port_number())
             .map(
                 n ->
                     _currentServer
@@ -852,7 +852,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   @Override
   public void exitSssdpd_conn_limit(A10Parser.Sssdpd_conn_limitContext ctx) {
-    toInteger(ctx, ctx.connection_limit()).ifPresent(l -> _currentServerPort.setConnLimit(l));
+    toInteger(ctx, ctx.connection_limit()).ifPresent(_currentServerPort::setConnLimit);
   }
 
   @Override
@@ -877,12 +877,12 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   @Override
   public void exitSssdpdt_port(A10Parser.Sssdpdt_portContext ctx) {
-    toString(ctx, ctx.template_name()).ifPresent(n -> _currentServerPort.setPortTemplate(n));
+    toString(ctx, ctx.template_name()).ifPresent(_currentServerPort::setPortTemplate);
   }
 
   @Override
   public void exitSssdpd_weight(A10Parser.Sssdpd_weightContext ctx) {
-    toInteger(ctx, ctx.connection_weight()).ifPresent(w -> _currentServerPort.setWeight(w));
+    toInteger(ctx, ctx.connection_weight()).ifPresent(_currentServerPort::setWeight);
   }
 
   private @Nonnull Optional<Integer> toInteger(
@@ -893,6 +893,16 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   private @Nonnull Optional<Integer> toInteger(
       ParserRuleContext messageCtx, A10Parser.Connection_weightContext ctx) {
     return toIntegerInSpace(messageCtx, ctx.uint16(), CONNECTION_WEIGHT_RANGE, "connection weight");
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, A10Parser.Port_numberContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx.uint16(), PORT_NUMBER_RANGE, "port");
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, A10Parser.Port_range_valueContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx.uint8(), PORT_RANGE_VALUE_RANGE, "port range");
   }
 
   private static ServerPort.Type toType(A10Parser.Tcp_or_udpContext ctx) {
@@ -1123,14 +1133,6 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   private @Nonnull Optional<Integer> toInteger(A10Parser.Loopback_numberContext ctx) {
     return toIntegerInSpace(
         ctx, ctx.uint8(), INTERFACE_NUMBER_LOOPBACK_RANGE, "interface loopback number");
-  }
-
-  private @Nonnull Optional<Integer> toInteger(A10Parser.Port_numberContext ctx) {
-    return toIntegerInSpace(ctx, ctx.uint16(), PORT_NUMBER_RANGE, "port");
-  }
-
-  private @Nonnull Optional<Integer> toInteger(A10Parser.Port_range_valueContext ctx) {
-    return toIntegerInSpace(ctx, ctx.uint8(), PORT_RANGE_VALUE_RANGE, "port range");
   }
 
   private @Nonnull Optional<Integer> toInteger(A10Parser.Scaleout_device_idContext ctx) {
