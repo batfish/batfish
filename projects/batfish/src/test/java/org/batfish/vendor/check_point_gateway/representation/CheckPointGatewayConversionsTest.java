@@ -805,6 +805,12 @@ public final class CheckPointGatewayConversionsTest {
     assertFalse(
         appliesToGateway(
             ImmutableList.of(cluster4.getUid(), cluster5.getUid()), null, domainAndGateway));
+    // Checking a nonexistent UID won't crash
+    assertFalse(
+        appliesToGateway(
+            ImmutableList.of(Uid.of(String.valueOf(uidGenerator.getAndIncrement()))),
+            null,
+            domainAndGateway));
   }
 
   private void assertBddsEqual(AclLine left, AclLineMatchExpr right) {
