@@ -20,9 +20,9 @@ import static org.batfish.vendor.check_point_gateway.representation.CheckpointNa
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.checkValidManualHide;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.checkValidManualStatic;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getApplicableNatRules;
-import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getManualNatRules;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.getOutgoingTransformations;
-import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.isValidAutomaticRule;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.isValidAutomaticHideRule;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.isValidAutomaticStaticRule;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.manualHideTransformationSteps;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.manualRuleTransformation;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.manualStaticTransformationSteps;
@@ -30,6 +30,7 @@ import static org.batfish.vendor.check_point_gateway.representation.CheckpointNa
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.matchInternalTraffic;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.matchManualRule;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.mergeTransformations;
+import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.shouldConvertAutomaticRule;
 import static org.batfish.vendor.check_point_management.TestSharedInstances.NAT_SETTINGS_TEST_INSTANCE;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -158,46 +159,6 @@ public final class CheckpointNatConversionsTest {
         getApplicableNatRules(natRulebase, TEST_DOMAIN_AND_GATEWAY)
             .collect(ImmutableList.toImmutableList()),
         containsInAnyOrder(ruleForAllGateways, ruleForThisGateway));
-  }
-
-  @Test
-  public void testGetManualNatRules() {
-    NatRule autoRule =
-        new NatRule(
-            true,
-            "",
-            true,
-            ImmutableList.of(UID),
-            NatMethod.STATIC,
-            UID,
-            UID,
-            UID,
-            1,
-            UID,
-            UID,
-            UID,
-            UID);
-    NatRule manualRule =
-        new NatRule(
-            false,
-            "",
-            true,
-            ImmutableList.of(UID),
-            NatMethod.STATIC,
-            UID,
-            UID,
-            UID,
-            1,
-            UID,
-            UID,
-            UID,
-            UID);
-    NatRulebase natRulebase =
-        new NatRulebase(ImmutableMap.of(), ImmutableList.of(autoRule, manualRule), UID);
-    assertThat(
-        getManualNatRules(natRulebase, TEST_DOMAIN_AND_GATEWAY)
-            .collect(ImmutableList.toImmutableList()),
-        equalTo(ImmutableList.of(manualRule)));
   }
 
   @Test
@@ -442,47 +403,82 @@ public final class CheckpointNatConversionsTest {
   }
 
   @Test
-  public void testIsValidAutomaticRule() {
+  public void testShouldConvertAutomaticRule() {
+    Uid hostUid = Uid.of("12345");
+    Host host = new Host(Ip.parse("1.1.1.1"), NAT_SETTINGS_TEST_INSTANCE, "host", hostUid);
+    Map<Uid, TypedManagementObject> objs =
+        ImmutableMap.of(hostUid, host, ANY_UID, ANY, PT_UID, POLICY_TARGETS);
     {
-      // Not automatic
-      NatSettings natSettings =
-          new NatSettings(false, NatHideBehindGateway.INSTANCE, "All", null, NatMethod.HIDE);
-      Host host = new Host(Ip.parse("1.1.1.1"), natSettings, "host", UID);
+      // Rule types that are expected but ignored
+      ImmutableList.of(
+              new NatRule(
+                  true,
+                  "",
+                  true,
+                  ImmutableList.of(PT_UID),
+                  NatMethod.HIDE,
+                  // Original src and dst both constrained (match internal traffic for auto hide)
+                  hostUid,
+                  ANY_UID,
+                  hostUid,
+                  1,
+                  ORIG_UID,
+                  ORIG_UID,
+                  ORIG_UID,
+                  UID),
+              new NatRule(
+                  true,
+                  "",
+                  true,
+                  ImmutableList.of(PT_UID),
+                  NatMethod.HIDE,
+                  // Src not constrained, dst constrained (dst translation for an auto static rule)
+                  hostUid,
+                  ANY_UID,
+                  ANY_UID,
+                  1,
+                  ORIG_UID,
+                  ORIG_UID,
+                  ORIG_UID,
+                  UID))
+          .forEach(
+              rule -> {
+                Warnings warnings = new Warnings(true, true, true);
+                assertFalse(shouldConvertAutomaticRule(rule, objs, warnings));
+                assertThat(warnings.getRedFlagWarnings(), empty());
+              });
+    }
+    {
+      // Rule that should be converted
+      NatRule rule =
+          new NatRule(
+              true,
+              "",
+              true,
+              ImmutableList.of(PT_UID),
+              NatMethod.HIDE,
+              ANY_UID,
+              ANY_UID,
+              hostUid, // Source constrained, other original fields not constrained
+              1,
+              ORIG_UID,
+              ORIG_UID,
+              ORIG_UID,
+              UID);
       Warnings warnings = new Warnings(true, true, true);
-      assertFalse(isValidAutomaticRule(host, warnings));
-      // No warnings; NatSettings can be for manual rule
+      assertTrue(shouldConvertAutomaticRule(rule, objs, warnings));
       assertThat(warnings.getRedFlagWarnings(), empty());
     }
-    {
-      // install-on is not "All" (individual gateways aren't yet supported)
-      NatSettings natSettings =
-          new NatSettings(true, NatHideBehindGateway.INSTANCE, "gateway1", null, NatMethod.HIDE);
-      Host host = new Host(Ip.parse("1.1.1.1"), natSettings, "host", UID);
-      Warnings warnings = new Warnings(true, true, true);
-      assertFalse(isValidAutomaticRule(host, warnings));
-      assertThat(
-          warnings.getRedFlagWarnings(),
-          contains(
-              hasText(
-                  containsString(
-                      "Automatic NAT rules on specific gateways are not yet supported"))));
-    }
-    {
-      // No method set
-      NatSettings natSettings =
-          new NatSettings(true, NatHideBehindGateway.INSTANCE, "All", null, null);
-      Host host = new Host(Ip.parse("1.1.1.1"), natSettings, "host", UID);
-      Warnings warnings = new Warnings(true, true, true);
-      assertFalse(isValidAutomaticRule(host, warnings));
-      assertThat(
-          warnings.getRedFlagWarnings(), contains(hasText(containsString("No NAT method set"))));
-    }
+  }
+
+  @Test
+  public void testIsValidAutomaticHideRule() {
     {
       // Hide rule missing hide-behind
       NatSettings natSettings = new NatSettings(true, null, "All", null, NatMethod.HIDE);
       Host host = new Host(Ip.parse("1.1.1.1"), natSettings, "host", UID);
       Warnings warnings = new Warnings(true, true, true);
-      assertFalse(isValidAutomaticRule(host, warnings));
+      assertFalse(isValidAutomaticHideRule(host, warnings));
       assertThat(
           warnings.getRedFlagWarnings(),
           contains(hasText(containsString("type is HIDE, but hide-behind is missing"))));
@@ -493,7 +489,7 @@ public final class CheckpointNatConversionsTest {
           new NatSettings(true, new UnhandledNatHideBehind("garbage"), "All", null, NatMethod.HIDE);
       Host host = new Host(Ip.parse("1.1.1.1"), natSettings, "host", UID);
       Warnings warnings = new Warnings(true, true, true);
-      assertFalse(isValidAutomaticRule(host, warnings));
+      assertFalse(isValidAutomaticHideRule(host, warnings));
       assertThat(
           warnings.getRedFlagWarnings(),
           contains(hasText(containsString("NAT hide-behind \"garbage\" is not recognized"))));
@@ -503,8 +499,12 @@ public final class CheckpointNatConversionsTest {
       NatSettings natSettings =
           new NatSettings(true, NatHideBehindGateway.INSTANCE, "All", null, NatMethod.HIDE);
       Host host = new Host(Ip.parse("1.1.1.1"), natSettings, "host", UID);
-      assertTrue(isValidAutomaticRule(host, new Warnings(true, true, true)));
+      assertTrue(isValidAutomaticHideRule(host, new Warnings(true, true, true)));
     }
+  }
+
+  @Test
+  public void testIsValidAutomaticStaticRule() {
     {
       // Static rule on non-host object
       NatSettings natSettings =
@@ -512,7 +512,7 @@ public final class CheckpointNatConversionsTest {
       Network network =
           new Network("nw", natSettings, Ip.parse("1.0.0.0"), Ip.parse("255.255.255.0"), UID);
       Warnings warnings = new Warnings(true, true, true);
-      assertFalse(isValidAutomaticRule(network, warnings));
+      assertFalse(isValidAutomaticStaticRule(network, warnings));
       assertThat(
           warnings.getRedFlagWarnings(),
           contains(
@@ -526,7 +526,7 @@ public final class CheckpointNatConversionsTest {
           new NatSettings(true, null, "All", Ip.parse("5.5.5.5"), NatMethod.STATIC);
       Host host = new Host(null, natSettings, "host", UID);
       Warnings warnings = new Warnings(true, true, true);
-      assertFalse(isValidAutomaticRule(host, warnings));
+      assertFalse(isValidAutomaticStaticRule(host, warnings));
       assertThat(warnings.getRedFlagWarnings(), empty()); // no warning for missing IPv6 support
     }
     {
@@ -534,7 +534,7 @@ public final class CheckpointNatConversionsTest {
       NatSettings ipv6Settings = new NatSettings(true, null, "All", null, NatMethod.STATIC);
       Host host = new Host(Ip.parse("1.1.1.1"), ipv6Settings, "host", UID);
       Warnings warnings = new Warnings(true, true, true);
-      assertFalse(isValidAutomaticRule(host, warnings));
+      assertFalse(isValidAutomaticStaticRule(host, warnings));
       assertThat(warnings.getRedFlagWarnings(), empty()); // no warning for missing IPv6 support
     }
     {
@@ -542,7 +542,7 @@ public final class CheckpointNatConversionsTest {
       NatSettings natSettings =
           new NatSettings(true, null, "All", Ip.parse("5.5.5.5"), NatMethod.STATIC);
       Host host = new Host(Ip.parse("1.1.1.1"), natSettings, "host", UID);
-      assertTrue(isValidAutomaticRule(host, new Warnings(true, true, true)));
+      assertTrue(isValidAutomaticStaticRule(host, new Warnings(true, true, true)));
     }
   }
 
