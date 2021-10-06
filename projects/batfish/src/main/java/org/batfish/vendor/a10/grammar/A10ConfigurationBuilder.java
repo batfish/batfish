@@ -62,10 +62,10 @@ import org.batfish.vendor.a10.grammar.A10Parser.Vrrpac_set_idContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Vrrpaf_gatewayContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Vrrpaf_gateway_weightContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Vrrpapg_peerContext;
-import org.batfish.vendor.a10.grammar.A10Parser.Vrrpavrid_preempt_mode_disableContext;
-import org.batfish.vendor.a10.grammar.A10Parser.Vrrpavrid_preempt_mode_thresholdContext;
-import org.batfish.vendor.a10.grammar.A10Parser.Vrrpavridb_fail_over_policy_templateContext;
-import org.batfish.vendor.a10.grammar.A10Parser.Vrrpavridb_priorityContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Vrrpavi_preempt_mode_disableContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Vrrpavi_preempt_mode_thresholdContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Vrrpavib_fail_over_policy_templateContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Vrrpavib_priorityContext;
 import org.batfish.vendor.a10.grammar.A10Parser.WordContext;
 import org.batfish.vendor.a10.representation.A10Configuration;
 import org.batfish.vendor.a10.representation.A10StructureUsage;
@@ -746,7 +746,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   private @Nonnull Optional<Integer> toInteger(
       ParserRuleContext messageCtx, Vrrpa_device_id_numberContext ctx) {
-    return toIntegerInSpace(messageCtx, ctx.uint8(), DEVICE_ID_RANGE, "vrrp-a device-id");
+    return toIntegerInSpace(messageCtx, ctx.uint8(), VRRP_A_DEVICE_ID_RANGE, "vrrp-a device-id");
   }
 
   @Override
@@ -762,7 +762,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   private @Nonnull Optional<Integer> toInteger(
       ParserRuleContext messageCtx, Vrrpa_set_id_numberContext ctx) {
-    return toIntegerInSpace(messageCtx, ctx.uint8(), SET_ID_RANGE, "vrrp-a set-id");
+    return toIntegerInSpace(messageCtx, ctx.uint8(), VRRP_A_SET_ID_RANGE, "vrrp-a set-id");
   }
 
   @Override
@@ -891,12 +891,12 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   }
 
   @Override
-  public void exitVrrpavrid_preempt_mode_disable(Vrrpavrid_preempt_mode_disableContext ctx) {
+  public void exitVrrpavi_preempt_mode_disable(Vrrpavi_preempt_mode_disableContext ctx) {
     _currentVrid.setPreemptModeDisable(true);
   }
 
   @Override
-  public void exitVrrpavrid_preempt_mode_threshold(Vrrpavrid_preempt_mode_thresholdContext ctx) {
+  public void exitVrrpavi_preempt_mode_threshold(Vrrpavi_preempt_mode_thresholdContext ctx) {
     _currentVrid.setPreemptModeThreshold(toInteger(ctx.threshold));
   }
 
@@ -905,7 +905,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   }
 
   @Override
-  public void exitVrrpavridb_priority(Vrrpavridb_priorityContext ctx) {
+  public void exitVrrpavib_priority(Vrrpavib_priorityContext ctx) {
     toIntegerInSpace(
             ctx,
             ctx.vrrpa_priority_number().uint8(),
@@ -915,8 +915,8 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   }
 
   @Override
-  public void exitVrrpavridb_fail_over_policy_template(
-      Vrrpavridb_fail_over_policy_templateContext ctx) {
+  public void exitVrrpavib_fail_over_policy_template(
+      Vrrpavib_fail_over_policy_templateContext ctx) {
     Optional<String> maybeName = toString(ctx, ctx.name);
     if (!maybeName.isPresent()) {
       return;
@@ -1493,7 +1493,6 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
       IntegerSpace.of(Range.closed(1, 64000000));
   private static final IntegerSpace CONNECTION_WEIGHT_RANGE =
       IntegerSpace.of(Range.closed(1, 1000));
-  private static final IntegerSpace DEVICE_ID_RANGE = IntegerSpace.of(Range.closed(1, 4));
   private static final IntegerSpace FAIL_OVER_POLICY_TEMPLATE_GATEWAY_WEIGHT_RANGE =
       IntegerSpace.of(Range.closed(1, 255));
   private static final IntegerSpace FAIL_OVER_POLICY_TEMPLATE_NAME_LENGTH_RANGE =
@@ -1514,7 +1513,6 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   private static final IntegerSpace PORT_NUMBER_RANGE = IntegerSpace.of(Range.closed(0, 65535));
   private static final IntegerSpace PORT_RANGE_VALUE_RANGE = IntegerSpace.of(Range.closed(0, 254));
   private static final IntegerSpace SCALEOUT_DEVICE_ID_RANGE = IntegerSpace.of(Range.closed(1, 16));
-  private static final IntegerSpace SET_ID_RANGE = IntegerSpace.of(Range.closed(1, 15));
   private static final IntegerSpace SLB_SERVER_NAME_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 127));
   private static final IntegerSpace TEMPLATE_NAME_LENGTH_RANGE =
@@ -1528,6 +1526,8 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   private static final IntegerSpace VRID_LEAD_NAME_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 63));
   private static final IntegerSpace VRID_RANGE = IntegerSpace.of(Range.closed(0, 31));
+  private static final IntegerSpace VRRP_A_DEVICE_ID_RANGE = IntegerSpace.of(Range.closed(1, 4));
+  private static final IntegerSpace VRRP_A_SET_ID_RANGE = IntegerSpace.of(Range.closed(1, 15));
   private static final IntegerSpace VRRP_A_PRIORITY_RANGE = IntegerSpace.of(Range.closed(1, 255));
 
   private static final Pattern HOSTNAME_PATTERN = Pattern.compile("^[A-Za-z0-9_-]+$");

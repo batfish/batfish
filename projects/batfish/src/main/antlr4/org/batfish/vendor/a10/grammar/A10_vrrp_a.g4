@@ -115,36 +115,36 @@ vrrpa_vrid
 
 vrrpa_vrid_default: DEFAULT NEWLINE;
 
-vrrpa_vrid_id: vrid NEWLINE vrrpavrid*;
+vrrpa_vrid_id: vrid NEWLINE vrrpavi*;
 
-vrrpavrid
+vrrpavi
 :
-  vrrpavrid_preempt_mode
-  | vrrpavrid_blade_parameters
+  vrrpavi_preempt_mode
+  | vrrpavi_blade_parameters
 ;
 
-vrrpavrid_preempt_mode
+vrrpavi_preempt_mode
 :
   PREEMPT_MODE
   (
-    vrrpavrid_preempt_mode_disable
-    | vrrpavrid_preempt_mode_threshold
+    vrrpavi_preempt_mode_disable
+    | vrrpavi_preempt_mode_threshold
   )
 ;
 
-vrrpavrid_preempt_mode_disable: DISABLE NEWLINE;
+vrrpavi_preempt_mode_disable: DISABLE NEWLINE;
 
-vrrpavrid_preempt_mode_threshold: THRESHOLD threshold = uint8 NEWLINE;
+vrrpavi_preempt_mode_threshold: THRESHOLD threshold = uint8 NEWLINE;
 
-vrrpavrid_blade_parameters: BLADE_PARAMETERS NEWLINE vrrpavridb*;
+vrrpavi_blade_parameters: BLADE_PARAMETERS NEWLINE vrrpavib*;
 
-vrrpavridb
+vrrpavib
 :
-  vrrpavridb_priority
-  | vrrpavridb_fail_over_policy_template
+  vrrpavib_priority
+  | vrrpavib_fail_over_policy_template
 ;
 
-vrrpavridb_priority: PRIORITY vrrpa_priority_number NEWLINE;
+vrrpavib_priority: PRIORITY vrrpa_priority_number NEWLINE;
 
 vrrpa_priority_number
 :
@@ -152,7 +152,7 @@ vrrpa_priority_number
   uint8
 ;
 
-vrrpavridb_fail_over_policy_template
+vrrpavib_fail_over_policy_template
 :
   FAIL_OVER_POLICY_TEMPLATE name = fail_over_policy_template_name NEWLINE
 ;

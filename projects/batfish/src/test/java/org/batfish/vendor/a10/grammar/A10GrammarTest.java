@@ -46,6 +46,7 @@ import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -1131,6 +1132,13 @@ public class A10GrammarTest {
     assertThat(ccae, hasDefinedStructure(filename, VRRP_A_FAIL_OVER_POLICY_TEMPLATE, "gateway"));
     assertThat(ccae, hasDefinedStructure(filename, VRRP_A_VRID, "0"));
     assertThat(ccae, hasDefinedStructure(filename, VRRP_A_VRID, "1"));
+  }
+
+  @Test
+  public void testVrrpAAcos2Parsing() {
+    // TODO: extraction
+    String hostname = "vrrp-a_acos2";
+    assertNotNull(parseVendorConfig(hostname));
   }
 
   @Test

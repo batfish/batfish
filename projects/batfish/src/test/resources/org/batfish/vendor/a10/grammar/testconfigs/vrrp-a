@@ -4,9 +4,6 @@ hostname vrrp-a
 
 !!! vrrp-a config
 
-! ACOS2
-vrrp-a arp-retry 4
-
 vrrp-a common
   ! 1-4
   device-id 2
@@ -31,20 +28,11 @@ vrrp-a common
   restart-time 20
 !
 
-! ACOS2
-vrrp-a dead-timer 5
-
 ! 1-63 chars
 vrrp-a fail-over-policy-template gateway
   ! weight 1-255, mandatory
   gateway 10.0.0.1 weight 100
 !
-
-! ACOS2
-vrrp-a get_ready_time 60
-
-! ACOS2
-vrrp-a hello-interval 2
 
 ! ethernet or trunk
 vrrp-a interface ethernet 1
@@ -54,14 +42,8 @@ vrrp-a peer-group
   peer 10.0.1.1
 !
 
-! ACOS2
-vrrp-a preemption-delay 60
-
 ! default is enable
 vrrp-a session-sync disable
-
-! ACOS2
-vrrp-a track-event-delay 30
 
 ! 0-31
 vrrp-a vrid 0
@@ -75,9 +57,6 @@ vrrp-a vrid 0
 !
 vrrp-a vrid 1
 !
-
-! ACOS2
-vrrp-a vrid default
 
 ! 1-63 chars
 vrrp-a vrid-lead default-vrid-lead

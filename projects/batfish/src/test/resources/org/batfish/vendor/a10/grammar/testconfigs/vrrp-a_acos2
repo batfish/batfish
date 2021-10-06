@@ -1,0 +1,17 @@
+!BATFISH_FORMAT: a10_acos
+hostname vrrp-a_acos2
+!
+
+vrrp-a arp-retry 4
+
+vrrp-a dead-timer 5
+
+vrrp-a get_ready_time 60
+
+vrrp-a hello-interval 2
+
+vrrp-a preemption-delay 60
+
+vrrp-a track-event-delay 30
+
+vrrp-a vrid default
