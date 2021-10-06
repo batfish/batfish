@@ -168,25 +168,31 @@ public final class IntegerSpaceTest {
 
   @Test
   public void testComplement() {
-    IntegerSpace notPorts = PORTS.not(PORTS);
+    Range<Integer> u16 = Range.closed(0, 65535);
+    IntegerSpace ports = IntegerSpace.of(u16);
+    IntegerSpace notPorts = ports.complement(u16);
     assertTrue("Complement of full space is empty", notPorts.isEmpty());
+    assertThat("Complement of empty should be all", EMPTY.complement(u16), equalTo(ports));
 
-    IntegerSpace portsWithExclusion = PORTS.toBuilder().excluding(new SubRange(10, 20)).build();
+    // Non-empty complement
+    IntegerSpace u8 = IntegerSpace.of(Range.closed(0, 255));
+    assertThat(u8.complement(u16), equalTo(IntegerSpace.of(Range.closed(256, 65535))));
+    IntegerSpace middle = IntegerSpace.of(Range.closed(10, 20));
     assertThat(
-        portsWithExclusion.not(),
-        equalTo(IntegerSpace.builder().including(new SubRange(10, 20)).build()));
+        middle.complement(u16),
+        equalTo(
+            IntegerSpace.builder()
+                .including(Range.closed(0, 9))
+                .including(Range.closed(21, 65535))
+                .build()));
+  }
 
-    // A bit contrived, but: a complement within a smaller space can produce a valid result
-    IntegerSpace small = _b.including(new SubRange(12, 15)).build();
-    assertThat(portsWithExclusion.not(small), equalTo(small));
-
-    // Test empty intersections
-    assertThat(
-        portsWithExclusion.not(IntegerSpace.builder().including(new SubRange(40, 50)).build()),
-        equalTo(EMPTY));
-    assertThat(portsWithExclusion.not(EMPTY), equalTo(EMPTY));
-
-    assertThat(EMPTY.not(), equalTo(EMPTY));
+  @Test
+  public void testComplementRejectsSmaller() {
+    _expected.expect(IllegalArgumentException.class);
+    _expected.expectMessage(
+        "Cannot take the complement of space 10-100 within a smaller bounds [5..5].");
+    IntegerSpace.of(Range.closed(10, 100)).complement(Range.singleton(5));
   }
 
   @Test
