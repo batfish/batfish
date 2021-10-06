@@ -18,6 +18,7 @@ ADDRESS: 'address';
 ARP_RETRY: 'arp-retry';
 BLADE_PARAMETERS: 'blade-parameters';
 COMMON: 'common';
+CONN_LIMIT: 'conn-limit';
 DEAD_TIMER: 'dead-timer';
 DEFAULT: 'default';
 DESCRIPTION: 'description' -> pushMode(M_Word);
@@ -54,8 +55,18 @@ PREEMPT_MODE: 'preempt-mode';
 PREEMPTION_DELAY: 'preemption-delay';
 PRIORITY: 'priority';
 POOL: 'pool' -> pushMode(M_Word);
+PORT
+:
+  'port'
+  {
+    if (lastTokenType() == TEMPLATE) {
+      pushMode(M_Word);
+    }
+  }
+;
 PORT_OVERLOAD: 'port-overload';
 PORTS_THRESHOLD: 'ports-threshold';
+RANGE: 'range';
 RBA: 'rba' -> pushMode(M_Rba);
 RESTART_TIME: 'restart-time';
 ROLE: 'role';
@@ -64,9 +75,23 @@ ROUTER_INTERFACE: 'router-interface';
 SCALEOUT_DEVICE_ID: 'scaleout-device-id';
 SESSION_SYNC: 'session-sync';
 SET_ID: 'set-id';
+SERVER
+:
+  'server'
+  {
+    if (lastTokenType() == SLB || lastTokenType() == TEMPLATE) {
+      pushMode(M_Word);
+    }
+  }
+;
+SLB: 'slb';
 STATIC: 'static';
+STATS_DATA_DISABLE: 'stats-data-disable';
+STATS_DATA_ENABLE: 'stats-data-enable';
 SHORT: 'short';
 TAGGED: 'tagged';
+TCP: 'tcp';
+TEMPLATE: 'template';
 THRESHOLD: 'threshold';
 TIMEOUT: 'timeout';
 TIMER: 'timer';
@@ -74,6 +99,7 @@ TO: 'to';
 TRACK_EVENT_DELAY: 'track-event-delay';
 TRUNK: 'trunk';
 TRUNK_GROUP: 'trunk-group';
+UDP: 'udp';
 UNTAGGED: 'untagged';
 USER_TAG: 'user-tag' -> pushMode(M_Word);
 VE: 've';
