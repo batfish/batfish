@@ -932,6 +932,11 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
       return;
     }
     String name = maybeName.get();
+    assert _c.getVrrpA() != null;
+    if (!_c.getVrrpA().getFailOverPolicyTemplates().containsKey(name)) {
+      warn(ctx, String.format("Cannot assign non-existent fail-over-policy-template '%s'", name));
+      return;
+    }
     _c.referenceStructure(
         VRRP_A_FAIL_OVER_POLICY_TEMPLATE,
         name,

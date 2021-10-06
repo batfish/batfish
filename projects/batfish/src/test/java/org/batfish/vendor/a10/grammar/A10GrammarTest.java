@@ -1188,7 +1188,8 @@ public class A10GrammarTest {
                 hasComment("Expected trunk number in range 1-4096, but got '5000'"),
                 hasComment("Expected vrrp-a vrid number in range 0-31, but got '32'"),
                 hasComment(
-                    "Expected vrrp-a vrid blade-paramters priority in range 1-255, but got '0'"))));
+                    "Expected vrrp-a vrid blade-paramters priority in range 1-255, but got '0'"),
+                hasComment("Cannot assign non-existent fail-over-policy-template 'undefined'"))));
   }
 
   @Test

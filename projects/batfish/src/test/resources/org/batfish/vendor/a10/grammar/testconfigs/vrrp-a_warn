@@ -24,4 +24,5 @@ vrrp-a vrid 32
   blade-parameters
     ! 1-255
     priority 0
+    fail-over-policy-template undefined
 !
