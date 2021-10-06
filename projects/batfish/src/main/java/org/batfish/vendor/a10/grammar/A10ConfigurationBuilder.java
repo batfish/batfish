@@ -850,7 +850,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   private @Nonnull Optional<Integer> toInteger(
       ParserRuleContext messageCtx, Trunk_numberContext ctx) {
-    return toIntegerInSpace(messageCtx, ctx.uint16(), TRUNK_NUMBER_RANGE, "trunk interface number");
+    return toIntegerInSpace(messageCtx, ctx.uint16(), TRUNK_NUMBER_RANGE, "trunk number");
   }
 
   @Override
@@ -1272,10 +1272,6 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     return Optional.of(ifaces.build());
   }
 
-  Optional<Integer> toInteger(ParserRuleContext messageCtx, A10Parser.Trunk_numberContext ctx) {
-    return toIntegerInSpace(messageCtx, ctx.uint16(), TRUNK_NUMBER_RANGE, "trunk number");
-  }
-
   Optional<Integer> toInteger(ParserRuleContext messageCtx, A10Parser.Ports_thresholdContext ctx) {
     return toIntegerInSpace(
         messageCtx, ctx.uint8(), TRUNK_PORTS_THRESHOLD_RANGE, "trunk ports-threshold");
@@ -1348,15 +1344,9 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   }
 
   private @Nonnull Optional<Integer> toInteger(
-      ParserRuleContext messageCtx, A10Parser.Ethernet_numberContext ctx) {
-    return toIntegerInSpace(
-        messageCtx, ctx.uint8(), INTERFACE_NUMBER_ETHERNET_RANGE, "interface ethernet number");
-  }
-
-  private @Nonnull Optional<Integer> toInteger(
       ParserRuleContext messageCtx, A10Parser.Loopback_numberContext ctx) {
     return toIntegerInSpace(
-        messageCtx, ctx.uint8(), INTERFACE_NUMBER_LOOPBACK_RANGE, "interface loopback number");
+        messageCtx, ctx.uint8(), INTERFACE_NUMBER_LOOPBACK_RANGE, "loopback interface number");
   }
 
   private @Nonnull Optional<Integer> toInteger(

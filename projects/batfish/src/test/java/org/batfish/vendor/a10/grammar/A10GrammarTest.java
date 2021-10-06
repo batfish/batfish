@@ -648,8 +648,8 @@ public class A10GrammarTest {
                 hasComment(
                     "Expected interface name with length in range 1-63, but got"
                         + " '1234567890123456789012345678901234567890123456789012345678901234'"),
-                hasComment("Expected interface loopback number in range 0-10, but got '11'"),
-                hasComment("Expected interface ethernet number in range 1-40, but got '0'"))));
+                hasComment("Expected loopback interface number in range 0-10, but got '11'"),
+                hasComment("Expected ethernet interface number in range 1-40, but got '0'"))));
   }
 
   @Test
@@ -1156,7 +1156,7 @@ public class A10GrammarTest {
                     "Expected fail-over-policy-template gateway weight in range 1-255, but got"
                         + " '0'"),
                 hasComment("Expected ethernet interface number in range 1-40, but got '50'"),
-                hasComment("Expected trunk interface number in range 1-4096, but got '5000'"),
+                hasComment("Expected trunk number in range 1-4096, but got '5000'"),
                 hasComment("Expected vrrp-a vrid number in range 0-31, but got '32'"),
                 hasComment(
                     "Expected vrrp-a vrid blade-paramters priority in range 1-255, but got '0'"))));
