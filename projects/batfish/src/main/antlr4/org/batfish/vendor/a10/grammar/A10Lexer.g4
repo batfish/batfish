@@ -15,6 +15,7 @@ tokens {
 // A10 keywords
 ACTIVE: 'active';
 ADDRESS: 'address';
+CONN_LIMIT: 'conn-limit';
 DISABLE: 'disable';
 DESCRIPTION: 'description' -> pushMode(M_Word);
 DO_AUTO_RECOVERY: 'do-auto-recovery';
@@ -39,26 +40,52 @@ NETMASK: 'netmask';
 NO: 'no';
 PASSIVE: 'passive';
 POOL: 'pool' -> pushMode(M_Word);
+PORT
+:
+  'port'
+  {
+    if (lastTokenType() == TEMPLATE) {
+      pushMode(M_Word);
+    }
+  }
+;
 PORT_OVERLOAD: 'port-overload';
 PORTS_THRESHOLD: 'ports-threshold';
+RANGE: 'range';
 RBA: 'rba' -> pushMode(M_Rba);
 ROLE: 'role';
 ROUTE: 'route';
 ROUTER_INTERFACE: 'router-interface';
 SCALEOUT_DEVICE_ID: 'scaleout-device-id';
+SERVER
+:
+  'server'
+  {
+    if (lastTokenType() == SLB || lastTokenType() == TEMPLATE) {
+      pushMode(M_Word);
+    }
+  }
+;
+SLB: 'slb';
 STATIC: 'static';
+STATS_DATA_DISABLE: 'stats-data-disable';
+STATS_DATA_ENABLE: 'stats-data-enable';
 SHORT: 'short';
 TAGGED: 'tagged';
+TCP: 'tcp';
+TEMPLATE: 'template';
 TIMEOUT: 'timeout';
 TIMER: 'timer';
 TO: 'to';
 TRUNK: 'trunk';
 TRUNK_GROUP: 'trunk-group';
+UDP: 'udp';
 UNTAGGED: 'untagged';
 USER_TAG: 'user-tag' -> pushMode(M_Word);
 VE: 've';
 VLAN: 'vlan';
 VRID: 'vrid';
+WEIGHT: 'weight';
 
 // Complex tokens
 COMMENT_LINE

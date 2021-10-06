@@ -1,0 +1,35 @@
+!BATFISH_FORMAT: a10_acos
+hostname server
+!
+slb server SERVER1 10.0.0.1
+!
+slb server SERVER2 10.0.0.102
+  enable
+  stats-data-enable
+  template server SERVER_TEMPLATE
+  port 80 tcp range 10
+    conn-limit 10
+    enable
+    stats-data-enable
+    template port PORT_TEMPLATE
+  ! It is valid to re-enter an existing port definition
+  ! Changing the range on re-entry is okay, and omitting it removes the range
+  port 80 tcp
+    weight 999
+!
+slb server SERVER3 10.0.0.3
+  disable
+  stats-data-disable
+  port 81 udp range 11
+    disable
+    stats-data-disable
+!
+!
+! It is valid to re-enter an existing server and change the target
+slb server SERVER2 10.0.0.2
+  conn-limit 64000000
+!
+! It is also valid to re-enter an existing server without specifying the target
+slb server SERVER2
+  weight 1000
+!

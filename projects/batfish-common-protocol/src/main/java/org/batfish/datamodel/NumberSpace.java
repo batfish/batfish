@@ -188,7 +188,7 @@ public abstract class NumberSpace<
 
   /** Compute the difference between two {@link NumberSpace}s */
   public final S difference(S other) {
-    return intersection(other.not(getThis()));
+    return toBuilder().excluding(other).build();
   }
 
   protected abstract DiscreteDomain<T> discreteDomain();
@@ -223,7 +223,7 @@ public abstract class NumberSpace<
     return _rangeset.asRanges();
   }
 
-  /** This space as an immutabke {@link RangeSet}. */
+  /** This space as an immutable {@link RangeSet}. */
   public final RangeSet<T> getRangeSet() {
     return ImmutableRangeSet.copyOf(_rangeset);
   }
@@ -292,19 +292,18 @@ public abstract class NumberSpace<
   protected abstract B newBuilder();
 
   /**
-   * Take the complement of this space, bounded by existing lower and upper limits of the space.
-   * This can be used as a way to represent a set of excluded ranges as a positive space.
+   * Take the complement of this space, using the given {@link Range bounds}.
+   *
+   * <p>It is an error to provide a smaller bounds than this space represents.
    */
-  public final S not() {
-    if (_rangeset.isEmpty()) {
-      return empty();
-    }
-    return newBuilder().including(_rangeset.complement().subRangeSet(_rangeset.span())).build();
-  }
-
-  /** Take the complement of this space, bounded by some other {@link NumberSpace} */
-  public final S not(S within) {
-    return newBuilder().build(_rangeset.complement()).intersection(within);
+  public final S complement(Range<T> bounds) {
+    Range<T> canonicalBounds = bounds.canonical(discreteDomain());
+    checkArgument(
+        isEmpty() || canonicalBounds.encloses(_rangeset.span().canonical(discreteDomain())),
+        "Cannot take the complement of space %s within a smaller bounds %s.",
+        this,
+        bounds);
+    return newBuilder().build(_rangeset.complement().subRangeSet(canonicalBounds));
   }
 
   /**
@@ -348,9 +347,22 @@ public abstract class NumberSpace<
 
   /** Union two {@link NumberSpace}s together */
   public final S union(S other) {
-    B builder = toBuilder();
-    other._rangeset.asRanges().forEach(builder::including);
-    return builder.build();
+    if (isEmpty()) {
+      return other;
+    } else if (other.isEmpty()) {
+      return getThis();
+    }
+    if (!_rangeset.intersects(other._rangeset.span())) {
+      // ImmutableRangeSet rejects overlapping ranges. There's a Guava-internal TO-DO about it.
+      // https://github.com/google/guava/blob/8075df7ffd63b4b96cd0bdfdc2dde71d08f672c9/guava/src/com/google/common/collect/ImmutableRangeSet.java#L739
+      // So only use this shortcut if it's easy to prove that the two range sets don't overlap.
+      return newBuilder()
+          .build(ImmutableRangeSet.<T>builder().addAll(_rangeset).addAll(other._rangeset).build());
+    }
+    // Slow, but handle overlap.
+    TreeRangeSet<T> ret = TreeRangeSet.create(other._rangeset);
+    ret.addAll(_rangeset);
+    return newBuilder().build(ret);
   }
 
   /**

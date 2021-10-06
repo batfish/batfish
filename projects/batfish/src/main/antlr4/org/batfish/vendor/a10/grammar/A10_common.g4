@@ -18,6 +18,10 @@ nat_pool_name: word;
 
 route_description: word;
 
+slb_server_name: word;
+
+template_name: word;
+
 vlan_name: word;
 
 user_tag: word;
@@ -61,8 +65,22 @@ trunk_number: uint16;
 // 1-31
 vrid: uint8;
 
+// 1-64000000
+connection_limit: uint32;
+
+// 1-1000
+connection_weight: uint16;
+
+// 0-65535; 0 in this context seems to mean non-port-based protocol
+port_number: uint16;
+
+// 0-254
+port_range_value: uint8;
+
 uint8: UINT8;
 
 uint16: UINT8 | UINT16;
 
 uint32: UINT8 | UINT16 | UINT32;
+
+tcp_or_udp: TCP | UDP;

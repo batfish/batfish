@@ -9,7 +9,8 @@ import org.batfish.vendor.StructureType;
 
 /** Named structure-types for A10 devices */
 public enum A10StructureType implements StructureType {
-  INTERFACE("interface");
+  INTERFACE("interface"),
+  SERVER("server");
 
   // TODO add abstract structures to this map if/when they exist
   public static final Multimap<A10StructureType, A10StructureType> ABSTRACT_STRUCTURES =
