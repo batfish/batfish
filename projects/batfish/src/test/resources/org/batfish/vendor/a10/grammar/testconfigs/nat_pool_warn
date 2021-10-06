@@ -25,5 +25,6 @@ ip nat pool POOL5 10.1.10.9 10.1.10.10 netmask /25
 ip nat pool POOL2 10.10.10.100 10.10.10.101 netmask /24 scaleout-device-id 17
 !
 ! Invalid vrid
+ip nat pool POOL2 10.10.10.100 10.10.10.101 netmask /24 vrid 0
 ip nat pool POOL2 10.10.10.100 10.10.10.101 netmask /24 vrid 32
 !
