@@ -139,7 +139,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   @Override
   public void enterSid_ethernet(A10Parser.Sid_ethernetContext ctx) {
-    Optional<Integer> num = toInteger(ctx.num);
+    Optional<Integer> num = toInteger(ctx, ctx.num);
     num.ifPresent(
         n -> {
           _currentInterface =
@@ -165,7 +165,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   @Override
   public void enterSid_loopback(A10Parser.Sid_loopbackContext ctx) {
-    Optional<Integer> num = toInteger(ctx.num);
+    Optional<Integer> num = toInteger(ctx, ctx.num);
     num.ifPresent(
         n -> {
           _currentInterface =
@@ -191,7 +191,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   @Override
   public void enterSid_trunk(A10Parser.Sid_trunkContext ctx) {
-    Optional<Integer> num = toInteger(ctx.num);
+    Optional<Integer> num = toInteger(ctx, ctx.num);
     num.ifPresent(
         n ->
             _currentInterface =
@@ -219,7 +219,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   @Override
   public void exitSid_mtu(A10Parser.Sid_mtuContext ctx) {
-    toInteger(ctx.interface_mtu()).ifPresent(mtu -> _currentInterface.setMtu(mtu));
+    toInteger(ctx, ctx.interface_mtu()).ifPresent(mtu -> _currentInterface.setMtu(mtu));
   }
 
   @Override
@@ -242,13 +242,13 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
       warn(ctx, "Ports-threshold can only be configured on trunk interfaces.");
       return;
     }
-    toInteger(ctx.ports_threshold())
+    toInteger(ctx, ctx.ports_threshold())
         .ifPresent(n -> ((TrunkInterface) _currentInterface).setPortsThreshold(n));
   }
 
   @Override
   public void enterSid_ve(A10Parser.Sid_veContext ctx) {
-    Optional<Integer> maybeNum = toInteger(ctx.num);
+    Optional<Integer> maybeNum = toInteger(ctx, ctx.num);
     if (!maybeNum.isPresent()) {
       _currentInterface = new Interface(Interface.Type.VE, -1); // dummy
       return;
@@ -273,7 +273,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   @Override
   public void enterSidl_trunk(A10Parser.Sidl_trunkContext ctx) {
     TrunkGroup.Type type = TrunkGroup.Type.LACP;
-    toInteger(ctx.num)
+    toInteger(ctx, ctx.num)
         .ifPresent(
             n -> {
               Optional<String> maybeInvalidReason = isTrunkValidForCurrentIface(n, type);
@@ -352,7 +352,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     Optional<Integer> maybeDistance = Optional.empty();
     Optional<String> maybeDescription = Optional.empty();
     if (distCtx != null) {
-      maybeDistance = toInteger(distCtx);
+      maybeDistance = toInteger(ctx, distCtx);
       if (!maybeDistance.isPresent()) {
         // Already warned
         return Optional.empty();
@@ -373,7 +373,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   @Override
   public void enterS_vlan(A10Parser.S_vlanContext ctx) {
-    Optional<Integer> maybeVlanNum = toInteger(ctx.vlan_number());
+    Optional<Integer> maybeVlanNum = toInteger(ctx, ctx.vlan_number());
     if (maybeVlanNum.isPresent()) {
       _currentVlan = _c.getVlans().computeIfAbsent(maybeVlanNum.get(), Vlan::new);
       return;
@@ -393,7 +393,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   @Override
   public void exitSvd_router_interface(A10Parser.Svd_router_interfaceContext ctx) {
-    Optional<Integer> maybeNum = toInteger(ctx.vlan_number());
+    Optional<Integer> maybeNum = toInteger(ctx, ctx.vlan_number());
     if (maybeNum.isPresent()) {
       if (!maybeNum.get().equals(_currentVlan.getNumber())) {
         warn(ctx, "Virtual Ethernet interface number must be the same as VLAN ID.");
@@ -505,7 +505,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   @Override
   public void enterSid_trunk_group(A10Parser.Sid_trunk_groupContext ctx) {
     TrunkGroup.Type type = ctx.trunk_type() != null ? toType(ctx.trunk_type()) : null;
-    Optional<Integer> maybeNum = toInteger(ctx.trunk_number());
+    Optional<Integer> maybeNum = toInteger(ctx, ctx.trunk_number());
     if (!maybeNum.isPresent()) {
       _currentTrunkGroup = new TrunkGroup(-1, type); // dummy
       return;
@@ -626,7 +626,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   @Override
   public void exitSinpp_scaleout_device_id(A10Parser.Sinpp_scaleout_device_idContext ctx) {
-    Optional<Integer> scaleoutDeviceId = toInteger(ctx.scaleout_device_id());
+    Optional<Integer> scaleoutDeviceId = toInteger(ctx, ctx.scaleout_device_id());
     if (scaleoutDeviceId.isPresent()) {
       _currentNatPool.setScaleoutDeviceId(scaleoutDeviceId.get());
     } else {
@@ -637,7 +637,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   @Override
   public void exitSinpp_vrid(A10Parser.Sinpp_vridContext ctx) {
     // TODO enforce existence check when VRRP is supported
-    Optional<Integer> vrid = toInteger(ctx.vrid());
+    Optional<Integer> vrid = toInteger(ctx, ctx.vrid());
     if (vrid.isPresent()) {
       _currentNatPool.setVrid(vrid.get());
     } else {
@@ -647,7 +647,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   @Override
   public void enterS_lacp_trunk(A10Parser.S_lacp_trunkContext ctx) {
-    Optional<Integer> maybeNum = toInteger(ctx.trunk_number());
+    Optional<Integer> maybeNum = toInteger(ctx, ctx.trunk_number());
     _currentTrunk =
         maybeNum
             .map(
@@ -674,12 +674,12 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   @Override
   public void exitSltd_ports_threshold(A10Parser.Sltd_ports_thresholdContext ctx) {
-    toInteger(ctx.ports_threshold()).ifPresent(n -> _currentTrunk.setPortsThreshold(n));
+    toInteger(ctx, ctx.ports_threshold()).ifPresent(n -> _currentTrunk.setPortsThreshold(n));
   }
 
   @Override
   public void enterS_trunk(A10Parser.S_trunkContext ctx) {
-    Optional<Integer> maybeNum = toInteger(ctx.trunk_number());
+    Optional<Integer> maybeNum = toInteger(ctx, ctx.trunk_number());
     _currentTrunk =
         maybeNum
             .map(
@@ -906,7 +906,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   Optional<List<InterfaceReference>> toInterfaces(A10Parser.Std_ethernetContext ctx) {
     ImmutableList.Builder<InterfaceReference> ifaces = ImmutableList.builder();
     for (A10Parser.Trunk_ethernet_interfaceContext iface : ctx.trunk_ethernet_interface()) {
-      Optional<Integer> maybeNum = toInteger(iface.num);
+      Optional<Integer> maybeNum = toInteger(ctx, iface.num);
       if (!maybeNum.isPresent()) {
         // Already warned
         return Optional.empty();
@@ -943,9 +943,9 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   }
 
   private Optional<List<InterfaceReference>> toInterfaceReferences(
-      A10Parser.Vlan_ifaces_rangeContext ctx) {
+      ParserRuleContext messageCtx, A10Parser.Vlan_ifaces_rangeContext ctx) {
     Interface.Type type = toInterfaceType(ctx);
-    return toSubRange(ctx)
+    return toSubRange(messageCtx, ctx)
         .map(
             subRange ->
                 subRange
@@ -965,8 +965,8 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
     ImmutableList<Optional<List<InterfaceReference>>> references =
         Stream.concat(
-                ctx.vlan_ifaces_list().stream().map(this::toInterfaces),
-                ctx.vlan_ifaces_range().stream().map(this::toInterfaceReferences))
+                ctx.vlan_ifaces_list().stream().map(l -> toInterfaces(ctx, l)),
+                ctx.vlan_ifaces_range().stream().map(r -> toInterfaceReferences(ctx, r)))
             .collect(ImmutableList.toImmutableList());
     if (references.stream().anyMatch(maybeRefs -> !maybeRefs.isPresent())) {
       // Already warned
@@ -996,16 +996,17 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     return Interface.Type.TRUNK;
   }
 
-  Optional<SubRange> toSubRange(A10Parser.Vlan_ifaces_rangeContext ctx) {
+  Optional<SubRange> toSubRange(
+      ParserRuleContext messageCtx, A10Parser.Vlan_ifaces_rangeContext ctx) {
     Optional<Integer> maybeFrom;
     Optional<Integer> maybeTo;
     if (ctx.vlan_iface_ethernet_range() != null) {
-      maybeFrom = toInteger(ctx.vlan_iface_ethernet_range().num);
-      maybeTo = toInteger(ctx.vlan_iface_ethernet_range().to);
+      maybeFrom = toInteger(messageCtx, ctx.vlan_iface_ethernet_range().num);
+      maybeTo = toInteger(messageCtx, ctx.vlan_iface_ethernet_range().to);
     } else {
       assert ctx.vlan_iface_trunk_range() != null;
-      maybeFrom = toInteger(ctx.vlan_iface_trunk_range().num);
-      maybeTo = toInteger(ctx.vlan_iface_trunk_range().to);
+      maybeFrom = toInteger(messageCtx, ctx.vlan_iface_trunk_range().num);
+      maybeTo = toInteger(messageCtx, ctx.vlan_iface_trunk_range().to);
     }
 
     if (!maybeFrom.isPresent() || !maybeTo.isPresent()) {
@@ -1022,10 +1023,11 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     return Optional.of(new SubRange(from, to));
   }
 
-  Optional<List<InterfaceReference>> toInterfaces(A10Parser.Vlan_ifaces_listContext ctx) {
+  Optional<List<InterfaceReference>> toInterfaces(
+      ParserRuleContext messageCtx, A10Parser.Vlan_ifaces_listContext ctx) {
     ImmutableList.Builder<InterfaceReference> ifaces = ImmutableList.builder();
     for (A10Parser.Vlan_iface_ethernetContext iface : ctx.vlan_iface_ethernet()) {
-      Optional<Integer> maybeNum = toInteger(iface.num);
+      Optional<Integer> maybeNum = toInteger(messageCtx, iface.num);
       if (!maybeNum.isPresent()) {
         // Already warned
         return Optional.empty();
@@ -1033,7 +1035,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
       ifaces.add(new InterfaceReference(Interface.Type.ETHERNET, maybeNum.get()));
     }
     for (A10Parser.Vlan_iface_trunkContext iface : ctx.vlan_iface_trunk()) {
-      Optional<Integer> maybeNum = toInteger(iface.num);
+      Optional<Integer> maybeNum = toInteger(messageCtx, iface.num);
       if (!maybeNum.isPresent()) {
         // Already warned
         return Optional.empty();
@@ -1043,16 +1045,17 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     return Optional.of(ifaces.build());
   }
 
-  Optional<Integer> toInteger(A10Parser.Trunk_numberContext ctx) {
-    return toIntegerInSpace(ctx, ctx.uint16(), TRUNK_NUMBER_RANGE, "trunk number");
+  Optional<Integer> toInteger(ParserRuleContext messageCtx, A10Parser.Trunk_numberContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx.uint16(), TRUNK_NUMBER_RANGE, "trunk number");
   }
 
-  Optional<Integer> toInteger(A10Parser.Ports_thresholdContext ctx) {
-    return toIntegerInSpace(ctx, ctx.uint8(), TRUNK_PORTS_THRESHOLD_RANGE, "trunk ports-threshold");
+  Optional<Integer> toInteger(ParserRuleContext messageCtx, A10Parser.Ports_thresholdContext ctx) {
+    return toIntegerInSpace(
+        messageCtx, ctx.uint8(), TRUNK_PORTS_THRESHOLD_RANGE, "trunk ports-threshold");
   }
 
-  Optional<Integer> toInteger(A10Parser.Vlan_numberContext ctx) {
-    return toIntegerInSpace(ctx, ctx.uint16(), VLAN_NUMBER_RANGE, "vlan number");
+  Optional<Integer> toInteger(ParserRuleContext messageCtx, A10Parser.Vlan_numberContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx.uint16(), VLAN_NUMBER_RANGE, "vlan number");
   }
 
   private @Nonnull ConcreteInterfaceAddress toInterfaceAddress(A10Parser.Ip_prefixContext ctx) {
@@ -1107,30 +1110,37 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     return toIp(ctx.subnet_mask()).numSubnetBits();
   }
 
-  private @Nonnull Optional<Integer> toInteger(A10Parser.Interface_mtuContext ctx) {
-    return toIntegerInSpace(ctx, ctx.uint16(), INTERFACE_MTU_RANGE, "interface mtu");
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, A10Parser.Interface_mtuContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx.uint16(), INTERFACE_MTU_RANGE, "interface mtu");
   }
 
-  private @Nonnull Optional<Integer> toInteger(A10Parser.Static_route_distanceContext ctx) {
-    return toIntegerInSpace(ctx, ctx.uint8(), IP_ROUTE_DISTANCE_RANGE, "ip route distance");
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, A10Parser.Static_route_distanceContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx.uint8(), IP_ROUTE_DISTANCE_RANGE, "ip route distance");
   }
 
-  private @Nonnull Optional<Integer> toInteger(A10Parser.Ethernet_numberContext ctx) {
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, A10Parser.Ethernet_numberContext ctx) {
     return toIntegerInSpace(
-        ctx, ctx.uint8(), INTERFACE_NUMBER_ETHERNET_RANGE, "interface ethernet number");
+        messageCtx, ctx.uint8(), INTERFACE_NUMBER_ETHERNET_RANGE, "interface ethernet number");
   }
 
-  private @Nonnull Optional<Integer> toInteger(A10Parser.Loopback_numberContext ctx) {
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, A10Parser.Loopback_numberContext ctx) {
     return toIntegerInSpace(
-        ctx, ctx.uint8(), INTERFACE_NUMBER_LOOPBACK_RANGE, "interface loopback number");
+        messageCtx, ctx.uint8(), INTERFACE_NUMBER_LOOPBACK_RANGE, "interface loopback number");
   }
 
-  private @Nonnull Optional<Integer> toInteger(A10Parser.Scaleout_device_idContext ctx) {
-    return toIntegerInSpace(ctx, ctx.uint8(), SCALEOUT_DEVICE_ID_RANGE, "scaleout-device-id");
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, A10Parser.Scaleout_device_idContext ctx) {
+    return toIntegerInSpace(
+        messageCtx, ctx.uint8(), SCALEOUT_DEVICE_ID_RANGE, "scaleout-device-id");
   }
 
-  private @Nonnull Optional<Integer> toInteger(A10Parser.VridContext ctx) {
-    return toIntegerInSpace(ctx, ctx.uint8(), VRID_RANGE, "vrid");
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, A10Parser.VridContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx.uint8(), VRID_RANGE, "vrid");
   }
 
   private @Nonnull Optional<Integer> toIntegerInSpace(
