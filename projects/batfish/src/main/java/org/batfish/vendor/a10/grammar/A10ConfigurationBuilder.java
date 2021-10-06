@@ -611,12 +611,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   @Override
   public void exitSinpp_ha_group_id(A10Parser.Sinpp_ha_group_idContext ctx) {
-    Optional<Integer> maybeHaId = toInteger(ctx, ctx.ha_group_id());
-    if (!maybeHaId.isPresent()) {
-      // Already warned
-      return;
-    }
-    _currentNatPool.setHaGroupId(maybeHaId.get());
+    toInteger(ctx, ctx.ha_group_id()).ifPresent(_currentNatPool::setHaGroupId);
   }
 
   private @Nonnull Optional<Integer> toInteger(
