@@ -153,7 +153,17 @@ public final class IntegerSpaceTest {
         space.union(space2),
         equalTo(IntegerSpace.builder().including(Range.closed(0, 90)).build()));
 
+    IntegerSpace space3 = IntegerSpace.of(Range.closed(40, 200));
+    assertThat(
+        space.union(space3),
+        equalTo(
+            IntegerSpace.builder()
+                .including(Range.closed(0, 9))
+                .including(Range.closed(21, 200))
+                .build()));
+
     assertThat(PORTS.union(EMPTY), equalTo(PORTS));
+    assertThat(EMPTY.union(PORTS), equalTo(PORTS));
   }
 
   @Test
