@@ -93,6 +93,7 @@ public final class CheckPointGatewayConversionsTest {
   private static final Uid UID_ICMP = Uid.of("17");
   private static final Uid UID_ICMP_NO_CODE = Uid.of("18");
   private static final Uid UID_SERVICE_OTHER_UNHANDLED = Uid.of("19");
+  private static final Uid UID_POLICY_TARGETS = Uid.of("20");
   private static final ServiceTcp SERVICE_TCP_RANGES =
       new ServiceTcp("tcp_ranges", "1-100,105-106", UID_TCP_RANGES);
   private static final ServiceUdp SERVICE_UDP = new ServiceUdp("udp", "1234", UID_UDP);
@@ -131,6 +132,7 @@ public final class CheckPointGatewayConversionsTest {
           .put(UID_CPMI_ANY, CPMI_ANY)
           .put(UID_ACCEPT, new RulebaseAction("Accept", UID_ACCEPT, "Accept"))
           .put(UID_DROP, new RulebaseAction("Drop", UID_DROP, "Drop"))
+          .put(UID_POLICY_TARGETS, new PolicyTargets(UID_POLICY_TARGETS))
           .put(UID_SERVICE_TCP_22, new ServiceTcp("service_tcp_22", "22", UID_SERVICE_TCP_22))
           .put(UID_SERVICE_UDP_222, new ServiceUdp("service_udp_222", "222", UID_SERVICE_UDP_222))
           .put(UID_SERVICE_OTHER_UNHANDLED, SERVICE_OTHER_UNHANDLED)
@@ -180,6 +182,7 @@ public final class CheckPointGatewayConversionsTest {
 
   @Test
   public void testToIpAccessLists() {
+    AtomicInteger uidGenerator = new AtomicInteger();
     // Accept anywhere -> net1
     AccessSection accessSection =
         new AccessSection(
@@ -187,39 +190,44 @@ public final class CheckPointGatewayConversionsTest {
             ImmutableList.of(
                 // Drop everything - not enabled
                 AccessRule.testBuilder(UID_CPMI_ANY)
-                    .setUid(Uid.of("10"))
+                    .setUid(Uid.of(String.valueOf(uidGenerator.getAndIncrement())))
                     .setAction(UID_DROP)
                     .setEnabled(false)
+                    .setInstallOn(ImmutableList.of(UID_POLICY_TARGETS))
                     .setName("childRule0_drop_all")
                     .build(),
                 AccessRule.testBuilder(UID_CPMI_ANY)
-                    .setUid(Uid.of("4"))
+                    .setUid(Uid.of(String.valueOf(uidGenerator.getAndIncrement())))
                     .setAction(UID_ACCEPT)
-                    .setDestination(ImmutableList.of(Uid.of("11")))
+                    .setDestination(ImmutableList.of(UID_NET1))
+                    .setInstallOn(ImmutableList.of(UID_POLICY_TARGETS))
                     .setName("childRule1")
                     .build()),
-            Uid.of("uidSection"));
+            Uid.of(String.valueOf(uidGenerator.getAndIncrement())));
     ImmutableList<AccessRuleOrSection> rulebase =
         ImmutableList.of(
             // Drop everything - not enabled
             AccessRule.testBuilder(UID_CPMI_ANY)
-                .setUid(Uid.of("8"))
+                .setUid(Uid.of(String.valueOf(uidGenerator.getAndIncrement())))
                 .setAction(UID_DROP)
                 .setEnabled(false)
+                .setInstallOn(ImmutableList.of(UID_POLICY_TARGETS))
                 .setName("rule0_drop_all")
                 .build(),
             // Drop net1 -> anywhere
             AccessRule.testBuilder(UID_CPMI_ANY)
-                .setUid(Uid.of("2"))
+                .setUid(Uid.of(String.valueOf(uidGenerator.getAndIncrement())))
                 .setAction(UID_DROP)
-                .setSource(ImmutableList.of(Uid.of("11")))
+                .setSource(ImmutableList.of(UID_NET1))
+                .setInstallOn(ImmutableList.of(UID_POLICY_TARGETS))
                 .setName("rule1")
                 .build(),
             accessSection,
             // Drop all traffic
             AccessRule.testBuilder(UID_CPMI_ANY)
-                .setUid(Uid.of("6"))
+                .setUid(Uid.of(String.valueOf(uidGenerator.getAndIncrement())))
                 .setAction(UID_DROP)
+                .setInstallOn(ImmutableList.of(UID_POLICY_TARGETS))
                 .setName("rule2")
                 .build());
 
@@ -230,9 +238,24 @@ public final class CheckPointGatewayConversionsTest {
     AccessLayer accessLayer =
         new AccessLayer(TEST_OBJS, rulebase, Uid.of("uidLayer"), "accessLayerName");
 
+    Uid gatewayUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
+    GatewayOrServer gateway =
+        new SimpleGateway(
+            Ip.ZERO, "gw", ImmutableList.of(), new GatewayOrServerPolicy(null, null), gatewayUid);
+    Domain domain = new Domain("domain", Uid.of(String.valueOf(uidGenerator.getAndIncrement())));
+    ManagementDomain mgmtDomain =
+        new ManagementDomain(
+            domain, ImmutableMap.of(gatewayUid, gateway), ImmutableMap.of(), ImmutableList.of());
+    Map.Entry<ManagementDomain, GatewayOrServer> domainAndGateway =
+        immutableEntry(mgmtDomain, gateway);
     Map<String, IpAccessList> ipAccessLists =
         toIpAccessLists(
-            accessLayer, TEST_OBJS, _serviceToMatchExpr, _addressSpaceToMatchExpr, new Warnings());
+            accessLayer,
+            TEST_OBJS,
+            _serviceToMatchExpr,
+            _addressSpaceToMatchExpr,
+            domainAndGateway,
+            new Warnings());
     assertThat(
         ipAccessLists.keySet(), containsInAnyOrder(aclName(accessLayer), aclName(accessSection)));
 
@@ -592,46 +615,103 @@ public final class CheckPointGatewayConversionsTest {
 
   @Test
   public void testToAclLine() {
+    AtomicInteger uidGenerator = new AtomicInteger();
+    Uid ruleUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
+    Uid gatewayUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
+    GatewayOrServer gateway =
+        new SimpleGateway(
+            Ip.ZERO, "gw", ImmutableList.of(), new GatewayOrServerPolicy(null, null), gatewayUid);
+    Domain domain = new Domain("domain", Uid.of(String.valueOf(uidGenerator.getAndIncrement())));
+    ManagementDomain mgmtDomain =
+        new ManagementDomain(
+            domain, ImmutableMap.of(gatewayUid, gateway), ImmutableMap.of(), ImmutableList.of());
+    Map.Entry<ManagementDomain, GatewayOrServer> domainAndGateway =
+        immutableEntry(mgmtDomain, gateway);
     {
       AccessRule rule =
           AccessRule.testBuilder(UID_CPMI_ANY)
-              .setUid(Uid.of("10"))
+              .setUid(ruleUid)
               .setAction(UID_ACCEPT)
               .setEnabled(false)
+              .setInstallOn(ImmutableList.of(UID_POLICY_TARGETS))
               .setName("foo")
               .build();
       // disabled rule should yield empty result
       assertThat(
-          toAclLine(rule, TEST_OBJS, _serviceToMatchExpr, _addressSpaceToMatchExpr, new Warnings()),
+          toAclLine(
+              rule,
+              TEST_OBJS,
+              _serviceToMatchExpr,
+              _addressSpaceToMatchExpr,
+              domainAndGateway,
+              UID_POLICY_TARGETS,
+              new Warnings()),
           equalTo(Optional.empty()));
     }
     {
       AccessRule rule =
           AccessRule.testBuilder(UID_CPMI_ANY)
-              .setUid(Uid.of("10"))
+              .setUid(ruleUid)
               .setAction(UID_ACCEPT)
               .setEnabled(true)
+              .setInstallOn(ImmutableList.of())
+              .setName("foo")
+              .build();
+      // rule with empty install-on list should yield empty result
+      assertThat(
+          toAclLine(
+              rule,
+              TEST_OBJS,
+              _serviceToMatchExpr,
+              _addressSpaceToMatchExpr,
+              domainAndGateway,
+              UID_POLICY_TARGETS,
+              new Warnings()),
+          equalTo(Optional.empty()));
+    }
+    {
+      AccessRule rule =
+          AccessRule.testBuilder(UID_CPMI_ANY)
+              .setUid(ruleUid)
+              .setAction(UID_ACCEPT)
+              .setEnabled(true)
+              .setInstallOn(ImmutableList.of(UID_POLICY_TARGETS))
               .setName("foo")
               .setService(ImmutableList.of(UID_SERVICE_OTHER_UNHANDLED))
               .build();
       // unhandled in ACCEPT context is translated to TRUE
       assertBddsEqual(
-          toAclLine(rule, TEST_OBJS, _serviceToMatchExpr, _addressSpaceToMatchExpr, new Warnings())
+          toAclLine(
+                  rule,
+                  TEST_OBJS,
+                  _serviceToMatchExpr,
+                  _addressSpaceToMatchExpr,
+                  domainAndGateway,
+                  UID_POLICY_TARGETS,
+                  new Warnings())
               .get(),
           matchIpProtocol(SERVICE_OTHER_UNHANDLED.getIpProtocol()));
     }
     {
       AccessRule rule =
           AccessRule.testBuilder(UID_CPMI_ANY)
-              .setUid(Uid.of("10"))
+              .setUid(ruleUid)
               .setAction(UID_DROP)
               .setEnabled(true)
+              .setInstallOn(ImmutableList.of(UID_POLICY_TARGETS))
               .setName("foo")
               .setService(ImmutableList.of(UID_SERVICE_OTHER_UNHANDLED))
               .build();
       // unhandled in DROP context is translated to FALSE
       assertBddsEqual(
-          toAclLine(rule, TEST_OBJS, _serviceToMatchExpr, _addressSpaceToMatchExpr, new Warnings())
+          toAclLine(
+                  rule,
+                  TEST_OBJS,
+                  _serviceToMatchExpr,
+                  _addressSpaceToMatchExpr,
+                  domainAndGateway,
+                  UID_POLICY_TARGETS,
+                  new Warnings())
               .get(),
           FALSE);
     }
@@ -706,34 +786,25 @@ public final class CheckPointGatewayConversionsTest {
         immutableEntry(mgmtDomain, gateway);
 
     // Empty install-on list does not apply
-    assertFalse(appliesToGateway(ImmutableList.of(), ImmutableMap.of(), domainAndGateway));
+    assertFalse(appliesToGateway(ImmutableList.of(), UID_POLICY_TARGETS, domainAndGateway));
     // Install-on list containing policy targets does apply
-    Uid ptUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
     assertTrue(
         appliesToGateway(
-            ImmutableList.of(ptUid),
-            ImmutableMap.of(ptUid, new PolicyTargets(ptUid)),
-            domainAndGateway));
+            ImmutableList.of(UID_POLICY_TARGETS), UID_POLICY_TARGETS, domainAndGateway));
     // Install-on list of gateway UID does apply
-    assertTrue(appliesToGateway(ImmutableList.of(gatewayUid), ImmutableMap.of(), domainAndGateway));
+    assertTrue(appliesToGateway(ImmutableList.of(gatewayUid), null, domainAndGateway));
     // Install-on list of a different gateway does not apply
-    assertFalse(
-        appliesToGateway(ImmutableList.of(gateway2Uid), ImmutableMap.of(), domainAndGateway));
+    assertFalse(appliesToGateway(ImmutableList.of(gateway2Uid), null, domainAndGateway));
     // Install-on list of a cluster that contains the gateway does apply
-    assertTrue(
-        appliesToGateway(ImmutableList.of(cluster1.getUid()), ImmutableMap.of(), domainAndGateway));
+    assertTrue(appliesToGateway(ImmutableList.of(cluster1.getUid()), null, domainAndGateway));
     // Install-on list of a cluster that doesn't contain the gateway does not apply
-    assertFalse(
-        appliesToGateway(ImmutableList.of(cluster2.getUid()), ImmutableMap.of(), domainAndGateway));
+    assertFalse(appliesToGateway(ImmutableList.of(cluster2.getUid()), null, domainAndGateway));
     // Install-on list of a cluster that contains the cluster that contains the gateway does apply
-    assertTrue(
-        appliesToGateway(ImmutableList.of(cluster3.getUid()), ImmutableMap.of(), domainAndGateway));
+    assertTrue(appliesToGateway(ImmutableList.of(cluster3.getUid()), null, domainAndGateway));
     // Checking a self-referential cluster and a cluster with a nonexistent gateway won't crash
     assertFalse(
         appliesToGateway(
-            ImmutableList.of(cluster4.getUid(), cluster5.getUid()),
-            ImmutableMap.of(),
-            domainAndGateway));
+            ImmutableList.of(cluster4.getUid(), cluster5.getUid()), null, domainAndGateway));
   }
 
   private void assertBddsEqual(AclLine left, AclLineMatchExpr right) {
