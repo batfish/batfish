@@ -639,6 +639,16 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   }
 
   @Override
+  public void exitSinpp_ha_group_id(A10Parser.Sinpp_ha_group_idContext ctx) {
+    toInteger(ctx, ctx.ha_group_id()).ifPresent(_currentNatPool::setHaGroupId);
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, A10Parser.Ha_group_idContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx.uint8(), HA_GROUP_ID_RANGE, "ha-group-id");
+  }
+
+  @Override
   public void exitSinpp_ip_rr(A10Parser.Sinpp_ip_rrContext ctx) {
     _currentNatPool.setIpRr(true);
   }
@@ -1497,6 +1507,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
       IntegerSpace.of(Range.closed(1, 255));
   private static final IntegerSpace FAIL_OVER_POLICY_TEMPLATE_NAME_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 63));
+  private static final IntegerSpace HA_GROUP_ID_RANGE = IntegerSpace.of(Range.closed(1, 31));
   private static final IntegerSpace INTERFACE_MTU_RANGE = IntegerSpace.of(Range.closed(434, 1500));
   private static final IntegerSpace INTERFACE_NUMBER_ETHERNET_RANGE =
       IntegerSpace.of(Range.closed(1, 40));

@@ -16,6 +16,7 @@ sinp_properties
 :
    (
       sinpp_gateway
+      | sinpp_ha_group_id
       | sinpp_ip_rr
       | sinpp_port_overload
       | sinpp_scaleout_device_id
@@ -24,6 +25,8 @@ sinp_properties
 ;
 
 sinpp_gateway: GATEWAY gateway = ip_address;
+
+sinpp_ha_group_id: HA_GROUP_ID ha_group_id;
 
 sinpp_ip_rr: IP_RR;
 

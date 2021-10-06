@@ -33,6 +33,7 @@ GATEWAY: 'gateway';
 GET_READY_TIME: 'get-ready-time';
 GET_READY_TIME_ACOS2: 'get_ready_time';
 HELLO_INTERVAL: 'hello-interval';
+HA_GROUP_ID: 'ha-group-id';
 HOSTNAME: 'hostname' -> pushMode(M_Word);
 IP: 'ip';
 IP_RR: 'ip-rr';
