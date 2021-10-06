@@ -18,6 +18,11 @@ public final class NatPool implements Serializable {
     return _gateway;
   }
 
+  @Nullable
+  public Integer getHaGroupId() {
+    return _haGroupId;
+  }
+
   public boolean getIpRr() {
     return _ipRr;
   }
@@ -54,6 +59,10 @@ public final class NatPool implements Serializable {
     _gateway = gateway;
   }
 
+  public void setHaGroupId(int haGroupId) {
+    _haGroupId = haGroupId;
+  }
+
   public void setIpRr(boolean ipRr) {
     _ipRr = ipRr;
   }
@@ -79,6 +88,7 @@ public final class NatPool implements Serializable {
 
   @Nonnull private final Ip _end;
   @Nullable private Ip _gateway;
+  @Nullable private Integer _haGroupId;
   private boolean _ipRr;
   @Nonnull private final String _name;
   private final int _netmask;
