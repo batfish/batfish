@@ -1315,7 +1315,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   private static final IntegerSpace IP_ROUTE_DISTANCE_RANGE = IntegerSpace.of(Range.closed(1, 255));
   private static final IntegerSpace NAT_POOL_NAME_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 63));
-  private static final IntegerSpace NON_DEFAULT_VRID_RANGE = IntegerSpace.of(Range.closed(0, 31));
+  private static final IntegerSpace NON_DEFAULT_VRID_RANGE = IntegerSpace.of(Range.closed(1, 31));
   private static final IntegerSpace SCALEOUT_DEVICE_ID_RANGE = IntegerSpace.of(Range.closed(1, 16));
   private static final IntegerSpace SET_ID_RANGE = IntegerSpace.of(Range.closed(1, 15));
   private static final IntegerSpace TRUNK_NUMBER_RANGE = IntegerSpace.of(Range.closed(1, 4096));
