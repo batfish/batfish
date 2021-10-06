@@ -734,6 +734,11 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   }
 
   @Override
+  public void exitS_trunk(A10Parser.S_trunkContext ctx) {
+    _currentTrunk = null;
+  }
+
+  @Override
   public void exitVrrpac_device_id(Vrrpac_device_idContext ctx) {
     toInteger(ctx, ctx.vrrpa_device_id_number())
         .ifPresent(_c.getOrCreateVrrpA().getOrCreateCommon()::setDeviceId);
@@ -929,11 +934,6 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   public void exitVrrpa_vrid_lead(Vrrpa_vrid_leadContext ctx) {
     toStringWithLengthInSpace(ctx, ctx.name.word(), VRID_LEAD_NAME_LENGTH_RANGE, "vrrp-a vrid-lead")
         .ifPresent(_c.getOrCreateVrrpA()::setVridLead);
-  }
-
-  @Override
-  public void exitS_trunk(A10Parser.S_trunkContext ctx) {
-    _currentTrunk = null;
   }
 
   @Override
