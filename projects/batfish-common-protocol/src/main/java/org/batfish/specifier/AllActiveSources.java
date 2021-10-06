@@ -7,8 +7,8 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 
 /**
- * A {@link LocationSpecifier} specifying all {@link Location Locations} marked as a {@link
- * LocationInfo#isSource() source}.
+ * A {@link LocationSpecifier} specifying all {@link Location Locations} that are marked as a {@link
+ * LocationInfo#isSource() source and are active.}.
  */
 public final class AllActiveSources implements LocationSpecifier {
   public static final AllActiveSources ALL_ACTIVE_SOURCES = new AllActiveSources();
