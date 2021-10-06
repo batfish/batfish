@@ -223,7 +223,7 @@ public abstract class NumberSpace<
     return _rangeset.asRanges();
   }
 
-  /** This space as an immutabke {@link RangeSet}. */
+  /** This space as an immutable {@link RangeSet}. */
   public final RangeSet<T> getRangeSet() {
     return ImmutableRangeSet.copyOf(_rangeset);
   }
@@ -348,9 +348,22 @@ public abstract class NumberSpace<
 
   /** Union two {@link NumberSpace}s together */
   public final S union(S other) {
-    B builder = toBuilder();
-    other._rangeset.asRanges().forEach(builder::including);
-    return builder.build();
+    if (isEmpty()) {
+      return other;
+    } else if (other.isEmpty()) {
+      return getThis();
+    }
+    if (!_rangeset.intersects(other._rangeset.span())) {
+      // ImmutableRangeSet rejects overlapping ranges. There's a Guava-internal TO-DO about it.
+      // https://github.com/google/guava/blob/8075df7ffd63b4b96cd0bdfdc2dde71d08f672c9/guava/src/com/google/common/collect/ImmutableRangeSet.java#L739
+      // So only use this shortcut if it's easy to prove that the two range sets don't overlap.
+      return newBuilder()
+          .build(ImmutableRangeSet.<T>builder().addAll(_rangeset).addAll(other._rangeset).build());
+    }
+    // Slow, but handle overlap.
+    TreeRangeSet<T> ret = TreeRangeSet.create(other._rangeset);
+    ret.addAll(_rangeset);
+    return newBuilder().build(ret);
   }
 
   /**
