@@ -8,6 +8,9 @@ import static org.batfish.common.matchers.WarningsMatchers.hasParseWarnings;
 import static org.batfish.common.matchers.WarningsMatchers.hasRedFlags;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.ConfigurationFormat.A10_ACOS;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasAdministrativeCost;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHop;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
@@ -24,6 +27,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasNativeVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
+import static org.batfish.datamodel.matchers.StaticRouteMatchers.hasRecursive;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.vendor.a10.representation.A10Configuration.getInterfaceName;
@@ -69,6 +73,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -275,34 +280,32 @@ public class A10GrammarTest {
 
   @Test
   public void testStaticRouteConversion() {
-    String hostname = "static_route_convert";
-    Configuration c = parseConfig(hostname);
+    Configuration c = parseConfig("static_route_convert");
     Prefix prefix1 = Prefix.parse("10.100.0.0/16");
-    Ip forwardingRouterAddr1a = Ip.parse("10.100.4.1");
-    Ip forwardingRouterAddr1b = Ip.parse("10.100.4.2");
     Prefix prefix2 = Prefix.parse("10.101.0.0/16");
-    Ip forwardingRouterAddr2 = Ip.parse("10.100.4.3");
-    org.batfish.datamodel.StaticRoute.Builder baseSr =
-        org.batfish.datamodel.StaticRoute.builder().setRecursive(false);
-
     assertThat(
         c.getDefaultVrf().getStaticRoutes(),
         containsInAnyOrder(
-            baseSr
-                .setNetwork(prefix1)
-                .setAdministrativeCost(StaticRoute.DEFAULT_STATIC_ROUTE_DISTANCE)
-                .setNextHopIp(forwardingRouterAddr1a)
-                .build(),
-            baseSr
-                .setNetwork(prefix1)
-                .setAdministrativeCost(1)
-                .setNextHopIp(forwardingRouterAddr1b)
-                .build(),
-            baseSr
-                .setNetwork(prefix2)
-                .setAdministrativeCost(2)
-                .setNextHopIp(forwardingRouterAddr2)
-                .build()));
+            allOf(
+                hasPrefix(prefix1),
+                hasAdministrativeCost(StaticRoute.DEFAULT_STATIC_ROUTE_DISTANCE),
+                hasNextHop(NextHopIp.of(Ip.parse("10.100.4.1"))),
+                hasRecursive(false)),
+            allOf(
+                hasPrefix(prefix1),
+                hasAdministrativeCost(1),
+                hasNextHop(NextHopIp.of(Ip.parse("10.100.4.2"))),
+                hasRecursive(false)),
+            allOf(
+                hasPrefix(prefix2),
+                hasAdministrativeCost(2),
+                hasNextHop(NextHopIp.of(Ip.parse("10.100.4.3"))),
+                hasRecursive(false)),
+            allOf(
+                hasPrefix(Prefix.ZERO),
+                hasAdministrativeCost(1),
+                hasNextHop(NextHopIp.of(Ip.parse("10.100.4.4"))),
+                hasRecursive(false))));
   }
 
   @Test
