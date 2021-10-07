@@ -617,6 +617,16 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   }
 
   @Override
+  public void exitSinpp_ha_group_id(A10Parser.Sinpp_ha_group_idContext ctx) {
+    toInteger(ctx, ctx.ha_group_id()).ifPresent(_currentNatPool::setHaGroupId);
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, A10Parser.Ha_group_idContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx.uint8(), HA_GROUP_ID_RANGE, "ha-group-id");
+  }
+
+  @Override
   public void exitSinpp_ip_rr(A10Parser.Sinpp_ip_rrContext ctx) {
     _currentNatPool.setIpRr(true);
   }
@@ -1403,6 +1413,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
       IntegerSpace.of(Range.closed(1, 64000000));
   private static final IntegerSpace CONNECTION_WEIGHT_RANGE =
       IntegerSpace.of(Range.closed(1, 1000));
+  private static final IntegerSpace HA_GROUP_ID_RANGE = IntegerSpace.of(Range.closed(1, 31));
   private static final IntegerSpace HEALTH_CHECK_NAME_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 63));
   private static final IntegerSpace INTERFACE_MTU_RANGE = IntegerSpace.of(Range.closed(434, 1500));

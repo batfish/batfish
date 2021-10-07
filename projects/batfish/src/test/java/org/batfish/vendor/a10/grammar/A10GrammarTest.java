@@ -1012,6 +1012,7 @@ public class A10GrammarTest {
     assertThat(pool1.getEnd(), equalTo(Ip.parse("10.10.10.11")));
     assertThat(pool1.getNetmask(), equalTo(1));
     assertNull(pool1.getGateway());
+    assertNull(pool1.getHaGroupId());
     assertFalse(pool1.getIpRr());
     assertFalse(pool1.getPortOverload());
     assertNull(pool1.getScaleoutDeviceId());
@@ -1021,10 +1022,30 @@ public class A10GrammarTest {
     assertThat(pool2.getEnd(), equalTo(Ip.parse("10.10.10.12")));
     assertThat(pool2.getNetmask(), equalTo(32));
     assertThat(pool2.getGateway(), equalTo(Ip.parse("10.10.10.1")));
+    assertNull(pool2.getHaGroupId());
     assertTrue(pool2.getIpRr());
     assertTrue(pool2.getPortOverload());
     assertThat(pool2.getScaleoutDeviceId(), equalTo(1));
     assertThat(pool2.getVrid(), equalTo(2));
+  }
+
+  @Test
+  public void testNatPoolAcos2Extraction() {
+    String hostname = "nat_pool_acos2";
+    A10Configuration c = parseVendorConfig(hostname);
+
+    assertThat(c.getNatPools().keySet(), contains("POOL1"));
+    NatPool pool1 = c.getNatPools().get("POOL1");
+
+    assertThat(pool1.getStart(), equalTo(Ip.parse("10.10.10.1")));
+    assertThat(pool1.getEnd(), equalTo(Ip.parse("10.10.10.1")));
+    assertThat(pool1.getNetmask(), equalTo(32));
+    assertNull(pool1.getGateway());
+    assertThat(pool1.getHaGroupId(), equalTo(1));
+    assertFalse(pool1.getIpRr());
+    assertFalse(pool1.getPortOverload());
+    assertNull(pool1.getScaleoutDeviceId());
+    assertNull(pool1.getVrid());
   }
 
   @Test

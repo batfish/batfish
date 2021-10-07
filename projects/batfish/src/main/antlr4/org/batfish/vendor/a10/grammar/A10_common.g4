@@ -51,6 +51,9 @@ ethernet_number: uint8;
 // 0-10
 loopback_number: uint8;
 
+// 1-31
+ha_group_id: uint8;
+
 // 2-8
 ports_threshold: uint8;
 
