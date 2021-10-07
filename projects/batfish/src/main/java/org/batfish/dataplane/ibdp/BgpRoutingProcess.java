@@ -890,7 +890,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       }
       Bgpv4Route transformedIncomingRoute = transformedIncomingRouteBuilder.build();
 
-      // If new route gets leaked to other VRFs via RibGroup, this VRF should be its
+      // If new route gets leaked to other VRFs via RibGroup, this VRF should be its source VRF.
       AnnotatedRoute<AbstractRoute> annotatedTransformedRoute =
           annotateRoute(transformedIncomingRoute);
 
