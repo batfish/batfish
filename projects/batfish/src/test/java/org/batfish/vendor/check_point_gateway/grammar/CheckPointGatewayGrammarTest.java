@@ -1107,6 +1107,7 @@ public class CheckPointGatewayGrammarTest {
     CpmiAnyObject any = new CpmiAnyObject(cpmiAnyUid);
     Uid acceptUid = Uid.of("31");
     Uid dropUid = Uid.of("32");
+    Uid policyTargetsUid = Uid.of("33");
     Uid net1Uid = Uid.of("11");
     Uid net2Uid = Uid.of("12");
     // Attached to domain, NOT in access layer object dict
@@ -1134,6 +1135,7 @@ public class CheckPointGatewayGrammarTest {
                     net1Uid))
             .put(acceptUid, new RulebaseAction("Accept", acceptUid, "Accept"))
             .put(dropUid, new RulebaseAction("Drop", dropUid, "Drop"))
+            .put(policyTargetsUid, new PolicyTargets(policyTargetsUid))
             .build();
     ImmutableList<AccessRuleOrSection> rulebase =
         ImmutableList.of(
@@ -1141,11 +1143,13 @@ public class CheckPointGatewayGrammarTest {
                 .setAction(acceptUid)
                 .setDestination(ImmutableList.of(net2Uid))
                 .setSource(ImmutableList.of(net1Uid))
+                .setInstallOn(ImmutableList.of(policyTargetsUid))
                 .setUid(Uid.of("100"))
                 .setName("acceptNet1ToNet2")
                 .build(),
             AccessRule.testBuilder(cpmiAnyUid)
                 .setAction(dropUid)
+                .setInstallOn(ImmutableList.of(policyTargetsUid))
                 .setUid(Uid.of("101"))
                 .setName("dropAll")
                 .build());
@@ -1456,11 +1460,12 @@ public class CheckPointGatewayGrammarTest {
     Uid accessListUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
     AccessLayer accessLayer =
         new AccessLayer(
-            ImmutableMap.of(cpmiAnyUid, any, permitUid, permit),
+            ImmutableMap.of(cpmiAnyUid, any, permitUid, permit, policyTargetsUid, policyTargets),
             ImmutableList.of(
                 AccessRule.testBuilder(cpmiAnyUid)
                     .setUid(accessRuleUid)
                     .setAction(permitUid)
+                    .setInstallOn(ImmutableList.of(policyTargetsUid))
                     .build()),
             accessListUid,
             "accessLayer");
@@ -1741,20 +1746,19 @@ public class CheckPointGatewayGrammarTest {
     RulebaseAction permit = new RulebaseAction("Accept", permitUid, "");
     AccessLayer accessLayer =
         new AccessLayer(
-            ImmutableMap.of(
-                anyUid,
-                any,
-                natNetworkUid,
-                natNetwork,
-                noNatNetworkUid,
-                noNatNetwork,
-                permitUid,
-                permit),
+            ImmutableMap.<Uid, NamedManagementObject>builder()
+                .put(anyUid, any)
+                .put(natNetworkUid, natNetwork)
+                .put(noNatNetworkUid, noNatNetwork)
+                .put(permitUid, permit)
+                .put(policyTargetsUid, policyTargets)
+                .build(),
             ImmutableList.of(
                 AccessRule.testBuilder(anyUid)
                     .setUid(accessRuleUid)
                     .setAction(permitUid)
                     .setSource(ImmutableList.of(natNetworkUid, noNatNetworkUid))
+                    .setInstallOn(ImmutableList.of(policyTargetsUid))
                     .build()),
             alUid,
             "accessLayer");
