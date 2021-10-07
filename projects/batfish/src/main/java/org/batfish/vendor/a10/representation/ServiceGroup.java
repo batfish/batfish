@@ -78,7 +78,7 @@ public class ServiceGroup implements Serializable {
   public ServiceGroup(String name, ServerPort.Type type) {
     _name = name;
     _type = type;
-    _members = new HashMap();
+    _members = new HashMap<>();
   }
 
   @Nullable private String _healthCheck;
