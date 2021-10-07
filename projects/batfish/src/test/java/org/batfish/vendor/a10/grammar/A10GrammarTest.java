@@ -1087,7 +1087,8 @@ public class A10GrammarTest {
                 hasComment("Invalid NAT pool range, overlaps with existing NAT pool"),
                 hasComment("Expected scaleout-device-id in range 1-16, but got '17'"),
                 hasComment("Expected non-default vrid number in range 1-31, but got '0'"),
-                hasComment("Expected non-default vrid number in range 1-31, but got '32'"))));
+                hasComment("Expected non-default vrid number in range 1-31, but got '32'"),
+                hasComment("Cannot assign nat pool to undefined non-default vrid: 5"))));
   }
 
   @Test
