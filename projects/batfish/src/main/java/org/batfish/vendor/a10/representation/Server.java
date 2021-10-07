@@ -29,9 +29,11 @@ public final class Server implements Serializable {
     return _ports;
   }
 
+  /** Create a {@link ServerPort} and add it to the map of ports for this {@link Server}. */
   public void createPort(int port, ServerPort.Type type) {
-    ServerPort serverPort = new ServerPort(port, type, null);
-    _ports.put(new ServerPort.ServerPortAndType(port, type), serverPort);
+    ServerPort.ServerPortAndType key = new ServerPort.ServerPortAndType(port, type);
+    assert !_ports.containsKey(key);
+    _ports.put(key, new ServerPort(port, type, null));
   }
 
   @Nullable

@@ -19,7 +19,7 @@ sssg_definition
 
 sssgd_health_check: HEALTH_CHECK health_check_name NEWLINE;
 
-// TODO support declaring a new server in this context, e.g. provide IP address as well
+// TODO support declaring a new server in this context, i.e. when IP address is provided as well
 sssgd_member: MEMBER slb_server_name port_number NEWLINE sssgdm_definition*;
 
 sssgd_method: METHOD service_group_method NEWLINE;

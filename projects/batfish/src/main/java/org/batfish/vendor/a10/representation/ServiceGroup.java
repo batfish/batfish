@@ -24,11 +24,19 @@ public class ServiceGroup implements Serializable {
     return _name;
   }
 
+  /**
+   * Returns a map of {@link ServiceGroupMember.NameAndPort} (which uniquely identifies a {@link
+   * ServiceGroupMember}) to {@link ServiceGroupMember}.
+   */
   @Nonnull
   public Map<ServiceGroupMember.NameAndPort, ServiceGroupMember> getMembers() {
     return ImmutableMap.copyOf(_members);
   }
 
+  /**
+   * Get an existing {@link ServiceGroupMember} with the specified {@code name} and {@code port}, or
+   * create and add one if it doesn't already exist.
+   */
   @Nonnull
   public ServiceGroupMember getOrCreateMember(String name, int port) {
     ServiceGroupMember.NameAndPort nameAndPort = new ServiceGroupMember.NameAndPort(name, port);

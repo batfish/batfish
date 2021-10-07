@@ -710,7 +710,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   private @Nonnull Optional<String> toString(
       ParserRuleContext messageCtx, A10Parser.Service_group_nameContext ctx) {
     return toStringWithLengthInSpace(
-        messageCtx, ctx.word(), SERVICE_GROUP_NAME_LENGTH_RANGE, "slb service-group name");
+        messageCtx, ctx.word(), SERVICE_GROUP_NAME_LENGTH_RANGE, "service-group name");
   }
 
   @Override
