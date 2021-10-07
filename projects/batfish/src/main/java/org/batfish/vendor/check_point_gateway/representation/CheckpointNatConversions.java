@@ -35,6 +35,7 @@ import org.batfish.vendor.check_point_management.HasNatSettings;
 import org.batfish.vendor.check_point_management.HasNatSettingsVisitor;
 import org.batfish.vendor.check_point_management.Host;
 import org.batfish.vendor.check_point_management.ManagementDomain;
+import org.batfish.vendor.check_point_management.ManagementObject;
 import org.batfish.vendor.check_point_management.NamedManagementObject;
 import org.batfish.vendor.check_point_management.NatHideBehindGateway;
 import org.batfish.vendor.check_point_management.NatHideBehindIp;
@@ -51,6 +52,7 @@ import org.batfish.vendor.check_point_management.NatTranslatedSource;
 import org.batfish.vendor.check_point_management.NatTranslatedSourceVisitor;
 import org.batfish.vendor.check_point_management.Network;
 import org.batfish.vendor.check_point_management.Original;
+import org.batfish.vendor.check_point_management.PolicyTargets;
 import org.batfish.vendor.check_point_management.ServiceToMatchExpr;
 import org.batfish.vendor.check_point_management.TypedManagementObject;
 import org.batfish.vendor.check_point_management.Uid;
@@ -310,6 +312,12 @@ public class CheckpointNatConversions {
   /** Get a stream of the applicable NAT rules for the provided gateway. */
   static @Nonnull Stream<NatRule> getApplicableNatRules(
       NatRulebase natRulebase, Map.Entry<ManagementDomain, GatewayOrServer> domainAndGateway) {
+    Uid policyTargetsUid =
+        natRulebase.getObjectsDictionary().values().stream()
+            .filter(PolicyTargets.class::isInstance)
+            .map(ManagementObject::getUid)
+            .findAny()
+            .orElse(null);
     return natRulebase.getRulebase().stream()
         // Convert to stream of all rules
         .flatMap(
@@ -328,8 +336,7 @@ public class CheckpointNatConversions {
         .filter(NatRule::isEnabled)
         .filter(
             natRule ->
-                appliesToGateway(
-                    natRule.getInstallOn(), natRulebase.getObjectsDictionary(), domainAndGateway));
+                appliesToGateway(natRule.getInstallOn(), policyTargetsUid, domainAndGateway));
   }
 
   /**

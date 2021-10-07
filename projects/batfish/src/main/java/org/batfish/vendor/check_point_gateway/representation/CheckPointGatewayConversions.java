@@ -113,19 +113,39 @@ public final class CheckPointGatewayConversions {
       Map<Uid, NamedManagementObject> objects,
       ServiceToMatchExpr serviceToMatchExpr,
       AddressSpaceToMatchExpr addressSpaceToMatchExpr,
+      Map.Entry<ManagementDomain, GatewayOrServer> domainAndGateway,
       Warnings w) {
     ImmutableMap.Builder<String, IpAccessList> acls = ImmutableMap.builder();
     ImmutableList.Builder<AclLine> accessLayerLines = ImmutableList.builder();
+    Uid policyTargetsUid =
+        access.getObjectsDictionary().values().stream()
+            .filter(PolicyTargets.class::isInstance)
+            .map(NamedManagementObject::getUid)
+            .findAny()
+            .orElse(null);
     for (AccessRuleOrSection acl : access.getRulebase()) {
       if (acl instanceof AccessRule) {
-        toAclLine((AccessRule) acl, objects, serviceToMatchExpr, addressSpaceToMatchExpr, w)
+        toAclLine(
+                (AccessRule) acl,
+                objects,
+                serviceToMatchExpr,
+                addressSpaceToMatchExpr,
+                domainAndGateway,
+                policyTargetsUid,
+                w)
             .ifPresent(accessLayerLines::add);
         continue;
       }
       assert acl instanceof AccessSection;
       IpAccessList accessSection =
           toIpAccessList(
-              (AccessSection) acl, objects, serviceToMatchExpr, addressSpaceToMatchExpr, w);
+              (AccessSection) acl,
+              objects,
+              serviceToMatchExpr,
+              addressSpaceToMatchExpr,
+              domainAndGateway,
+              policyTargetsUid,
+              w);
       acls.put(accessSection.getName(), accessSection);
       accessLayerLines.add(new AclAclLine(accessSection.getName(), accessSection.getName()));
     }
@@ -147,13 +167,24 @@ public final class CheckPointGatewayConversions {
       Map<Uid, NamedManagementObject> objs,
       ServiceToMatchExpr serviceToMatchExpr,
       AddressSpaceToMatchExpr addressSpaceToMatchExpr,
+      Map.Entry<ManagementDomain, GatewayOrServer> domainAndGateway,
+      @Nullable Uid policyTargetsUid,
       Warnings w) {
     return IpAccessList.builder()
         .setName(aclName(section))
         .setSourceName(section.getName())
         .setLines(
             section.getRulebase().stream()
-                .map(r -> toAclLine(r, objs, serviceToMatchExpr, addressSpaceToMatchExpr, w))
+                .map(
+                    r ->
+                        toAclLine(
+                            r,
+                            objs,
+                            serviceToMatchExpr,
+                            addressSpaceToMatchExpr,
+                            domainAndGateway,
+                            policyTargetsUid,
+                            w))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(ImmutableList.toImmutableList()))
@@ -170,8 +201,11 @@ public final class CheckPointGatewayConversions {
       Map<Uid, NamedManagementObject> objs,
       ServiceToMatchExpr serviceToMatchExpr,
       AddressSpaceToMatchExpr addressSpaceToMatchExpr,
+      Map.Entry<ManagementDomain, GatewayOrServer> domainAndGateway,
+      @Nullable Uid policyTargetsUid,
       Warnings w) {
-    if (!rule.getEnabled()) {
+    if (!rule.getEnabled()
+        || !appliesToGateway(rule.getInstallOn(), policyTargetsUid, domainAndGateway)) {
       return Optional.empty();
     }
     LineAction action = toAction(objs.get(rule.getAction()), rule.getAction(), w);
@@ -341,12 +375,16 @@ public final class CheckPointGatewayConversions {
             .collect(ImmutableList.toImmutableList()));
   }
 
-  /** Return {@code true} iff any of the install-on UIDs applies to the given gateway. */
+  /**
+   * Return {@code true} iff any of the install-on UIDs applies to the given gateway.
+   *
+   * @param policyTargetsUid The UID of the {@link PolicyTargets} object, if it exists.
+   */
   static boolean appliesToGateway(
       List<Uid> installOn,
-      Map<Uid, TypedManagementObject> rulebaseObjs,
+      @Nullable Uid policyTargetsUid,
       Map.Entry<ManagementDomain, GatewayOrServer> domainAndGateway) {
-    if (installOn.stream().map(rulebaseObjs::get).anyMatch(obj -> obj instanceof PolicyTargets)) {
+    if (policyTargetsUid != null && installOn.contains(policyTargetsUid)) {
       // Install-on list includes policy targets. All gateways are affected.
       return true;
     }
