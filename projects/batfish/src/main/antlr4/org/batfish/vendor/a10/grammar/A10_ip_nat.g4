@@ -34,4 +34,4 @@ sinpp_port_overload: PORT_OVERLOAD;
 
 sinpp_scaleout_device_id: SCALEOUT_DEVICE_ID scaleout_device_id;
 
-sinpp_vrid: VRID vrid;
+sinpp_vrid: VRID non_default_vrid;
