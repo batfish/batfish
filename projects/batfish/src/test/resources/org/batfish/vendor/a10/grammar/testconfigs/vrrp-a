@@ -1,0 +1,90 @@
+!BATFISH_FORMAT: a10_acos
+hostname vrrp-a
+!
+
+!!! vrrp-a config
+
+vrrp-a common
+  ! 1-4
+  device-id 2
+  ! 1-15
+  set-id 1
+  disable-default-vrid
+  ! cannot be set until after device-id is configured
+  enable
+  ! 1-255 unit of 100ms, default is 2
+  hello-interval 3
+  ! 1-255 unit of 100ms, default is 60
+  preemption-delay 70
+  ! 2-255 default is 5
+  dead-timer 4
+  ! 1-255, default is 4
+  arp-retry 5
+  ! 1-100 unit of 100ms, default is 30
+  track-event-delay 40
+  ! 60-1200 unit of 100ms, default is 60
+  get-ready-time 50
+  ! 1-100
+  restart-time 20
+!
+
+! 1-63 chars
+vrrp-a fail-over-policy-template gateway
+  ! weight 1-255, mandatory
+  gateway 10.0.0.1 weight 100
+!
+
+! ethernet or trunk
+vrrp-a interface ethernet 1
+vrrp-a interface trunk 2
+
+vrrp-a peer-group
+  peer 10.0.1.1
+!
+
+! default is enable
+vrrp-a session-sync disable
+
+! 0-31
+vrrp-a vrid 0
+  preempt-mode disable
+  ! 0-255, default is 0
+  preempt-mode threshold 1
+  blade-parameters
+    ! 1-255 default is 150
+    priority 200
+    fail-over-policy-template gateway
+!
+vrrp-a vrid 1
+!
+
+! 1-63 chars
+vrrp-a vrid-lead default-vrid-lead
+
+!!! interface config
+interface trunk 2
+  mtu 1500
+  enable
+!
+
+vlan 4094
+  untagged trunk 2
+  router-interface ve 4094
+!
+
+interface ve 4094
+  mtu 1500
+  enable
+  ip address 10.0.1.2 255.255.255.0
+!
+
+interface ethernet 1
+  mtu 1500
+  enable
+  trunk-group 2 static
+!
+
+!!! nat-pools (for references)
+ip nat pool pool1_using_vrid_0 1.0.0.1 1.0.0.2 netmask /24
+ip nat pool pool2_using_vrid_1 2.0.0.1 2.0.0.2 netmask /24 vrid 1
+ip nat pool pool3_using_vrid_1 3.0.0.1 3.0.0.2 netmask /24 vrid 1

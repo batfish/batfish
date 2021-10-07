@@ -2,7 +2,14 @@ package org.batfish.vendor.a10.grammar;
 
 import static org.batfish.vendor.a10.grammar.A10Lexer.WORD;
 import static org.batfish.vendor.a10.representation.A10Configuration.getInterfaceName;
+import static org.batfish.vendor.a10.representation.A10StructureType.INTERFACE;
 import static org.batfish.vendor.a10.representation.A10StructureType.SERVER;
+import static org.batfish.vendor.a10.representation.A10StructureType.VRRP_A_FAIL_OVER_POLICY_TEMPLATE;
+import static org.batfish.vendor.a10.representation.A10StructureType.VRRP_A_VRID;
+import static org.batfish.vendor.a10.representation.A10StructureUsage.IP_NAT_POOL_VRID;
+import static org.batfish.vendor.a10.representation.A10StructureUsage.VRRP_A_INTERFACE;
+import static org.batfish.vendor.a10.representation.A10StructureUsage.VRRP_A_VRID_BLADE_PARAMETERS_FAIL_OVER_POLICY_TEMPLATE;
+import static org.batfish.vendor.a10.representation.A10StructureUsage.VRRP_A_VRID_DEFAULT_SELF_REFERENCE;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Range;
@@ -33,13 +40,37 @@ import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.vendor.a10.grammar.A10Parser.A10_configurationContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Ethernet_numberContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Ethernet_or_trunk_referenceContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Fail_over_policy_template_nameContext;
 import org.batfish.vendor.a10.grammar.A10Parser.HostnameContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Non_default_vridContext;
 import org.batfish.vendor.a10.grammar.A10Parser.S_hostnameContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Trunk_numberContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Uint8Context;
+import org.batfish.vendor.a10.grammar.A10Parser.VridContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Vrrpa_device_id_numberContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Vrrpa_fail_over_policy_templateContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Vrrpa_interfaceContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Vrrpa_set_id_numberContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Vrrpa_vrid_idContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Vrrpa_vrid_leadContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Vrrpac_device_idContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Vrrpac_disable_default_vridContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Vrrpac_enableContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Vrrpac_set_idContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Vrrpaf_gatewayContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Vrrpaf_gateway_weightContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Vrrpapg_peerContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Vrrpavi_preempt_mode_disableContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Vrrpavi_preempt_mode_thresholdContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Vrrpavib_fail_over_policy_templateContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Vrrpavib_priorityContext;
 import org.batfish.vendor.a10.grammar.A10Parser.WordContext;
 import org.batfish.vendor.a10.representation.A10Configuration;
-import org.batfish.vendor.a10.representation.A10StructureType;
 import org.batfish.vendor.a10.representation.A10StructureUsage;
 import org.batfish.vendor.a10.representation.Interface;
+import org.batfish.vendor.a10.representation.Interface.Type;
 import org.batfish.vendor.a10.representation.InterfaceReference;
 import org.batfish.vendor.a10.representation.NatPool;
 import org.batfish.vendor.a10.representation.Server;
@@ -51,6 +82,8 @@ import org.batfish.vendor.a10.representation.StaticRouteManager;
 import org.batfish.vendor.a10.representation.TrunkGroup;
 import org.batfish.vendor.a10.representation.TrunkInterface;
 import org.batfish.vendor.a10.representation.Vlan;
+import org.batfish.vendor.a10.representation.VrrpAFailOverPolicyTemplate;
+import org.batfish.vendor.a10.representation.VrrpAVrid;
 
 /** Given a parse tree, builds a {@link A10Configuration}. */
 public final class A10ConfigurationBuilder extends A10ParserBaseListener
@@ -146,12 +179,9 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
               _c.getInterfacesEthernet()
                   .computeIfAbsent(n, number -> new Interface(Interface.Type.ETHERNET, n));
           String ifaceName = getInterfaceName(_currentInterface);
-          _c.defineStructure(A10StructureType.INTERFACE, ifaceName, ctx);
+          _c.defineStructure(INTERFACE, ifaceName, ctx);
           _c.referenceStructure(
-              A10StructureType.INTERFACE,
-              ifaceName,
-              A10StructureUsage.INTERFACE_SELF_REF,
-              ctx.start.getLine());
+              INTERFACE, ifaceName, A10StructureUsage.INTERFACE_SELF_REF, ctx.start.getLine());
         });
     if (!num.isPresent()) {
       _currentInterface = new Interface(Interface.Type.ETHERNET, -1); // dummy
@@ -172,12 +202,9 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
               _c.getInterfacesLoopback()
                   .computeIfAbsent(n, number -> new Interface(Interface.Type.LOOPBACK, n));
           String ifaceName = getInterfaceName(_currentInterface);
-          _c.defineStructure(A10StructureType.INTERFACE, ifaceName, ctx);
+          _c.defineStructure(INTERFACE, ifaceName, ctx);
           _c.referenceStructure(
-              A10StructureType.INTERFACE,
-              ifaceName,
-              A10StructureUsage.INTERFACE_SELF_REF,
-              ctx.start.getLine());
+              INTERFACE, ifaceName, A10StructureUsage.INTERFACE_SELF_REF, ctx.start.getLine());
         });
     if (!num.isPresent()) {
       _currentInterface = new Interface(Interface.Type.LOOPBACK, -1); // dummy
@@ -196,7 +223,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
         n ->
             _currentInterface =
                 _c.getInterfacesTrunk().computeIfAbsent(n, number -> new TrunkInterface(n, null)));
-    _c.defineStructure(A10StructureType.INTERFACE, getInterfaceName(_currentInterface), ctx);
+    _c.defineStructure(INTERFACE, getInterfaceName(_currentInterface), ctx);
     if (!num.isPresent()) {
       _currentInterface = new TrunkInterface(-1, null); // dummy
     }
@@ -262,7 +289,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     }
     _currentInterface =
         _c.getInterfacesVe().computeIfAbsent(num, n -> new Interface(Interface.Type.VE, n));
-    _c.defineStructure(A10StructureType.INTERFACE, getInterfaceName(_currentInterface), ctx);
+    _c.defineStructure(INTERFACE, getInterfaceName(_currentInterface), ctx);
   }
 
   @Override
@@ -400,9 +427,9 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
         return;
       }
       String routerInterfaceName = getInterfaceName(Interface.Type.VE, maybeNum.get());
-      _c.defineStructure(A10StructureType.INTERFACE, routerInterfaceName, ctx);
+      _c.defineStructure(INTERFACE, routerInterfaceName, ctx);
       _c.referenceStructure(
-          A10StructureType.INTERFACE,
+          INTERFACE,
           routerInterfaceName,
           A10StructureUsage.VLAN_ROUTER_INTERFACE,
           ctx.start.getLine());
@@ -494,12 +521,9 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
         .getMembers()
         .add(new InterfaceReference(_currentInterface.getType(), _currentInterface.getNumber()));
     String trunkName = getInterfaceName(trunkInterface);
-    _c.defineStructure(A10StructureType.INTERFACE, trunkName, ctx);
+    _c.defineStructure(INTERFACE, trunkName, ctx);
     _c.referenceStructure(
-        A10StructureType.INTERFACE,
-        trunkName,
-        A10StructureUsage.INTERFACE_TRUNK_GROUP,
-        ctx.start.getLine());
+        INTERFACE, trunkName, A10StructureUsage.INTERFACE_TRUNK_GROUP, ctx.start.getLine());
   }
 
   @Override
@@ -647,12 +671,21 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   @Override
   public void exitSinpp_vrid(A10Parser.Sinpp_vridContext ctx) {
     // TODO enforce existence check when VRRP is supported
-    Optional<Integer> vrid = toInteger(ctx, ctx.vrid());
-    if (vrid.isPresent()) {
-      _currentNatPool.setVrid(vrid.get());
+    Optional<Integer> maybeVrid = toInteger(ctx, ctx.non_default_vrid());
+    if (maybeVrid.isPresent()) {
+      int vrid = maybeVrid.get();
+      _c.referenceStructure(
+          VRRP_A_VRID, Integer.toString(vrid), IP_NAT_POOL_VRID, ctx.getStart().getLine());
+      _currentNatPool.setVrid(vrid);
     } else {
       _currentNatPoolValid = false;
     }
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Non_default_vridContext ctx) {
+    return toIntegerInSpace(
+        messageCtx, ctx.uint8(), NON_DEFAULT_VRID_RANGE, "non-default vrid number");
   }
 
   @Override
@@ -666,9 +699,9 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
                       _c.getInterfacesTrunk()
                           .computeIfAbsent(n, num -> new TrunkInterface(num, TrunkGroup.Type.LACP));
                   String trunkName = getInterfaceName(trunkInterface);
-                  _c.defineStructure(A10StructureType.INTERFACE, trunkName, ctx);
+                  _c.defineStructure(INTERFACE, trunkName, ctx);
                   _c.referenceStructure(
-                      A10StructureType.INTERFACE,
+                      INTERFACE,
                       trunkName,
                       A10StructureUsage.INTERFACE_SELF_REF,
                       ctx.start.getLine());
@@ -699,9 +732,9 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
                           .computeIfAbsent(
                               n, num -> new TrunkInterface(num, TrunkGroup.Type.STATIC));
                   String trunkName = getInterfaceName(trunkInterface);
-                  _c.defineStructure(A10StructureType.INTERFACE, trunkName, ctx);
+                  _c.defineStructure(INTERFACE, trunkName, ctx);
                   _c.referenceStructure(
-                      A10StructureType.INTERFACE,
+                      INTERFACE,
                       trunkName,
                       A10StructureUsage.INTERFACE_SELF_REF,
                       ctx.start.getLine());
@@ -713,6 +746,209 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   @Override
   public void exitS_trunk(A10Parser.S_trunkContext ctx) {
     _currentTrunk = null;
+  }
+
+  @Override
+  public void exitVrrpac_device_id(Vrrpac_device_idContext ctx) {
+    toInteger(ctx, ctx.vrrpa_device_id_number())
+        .ifPresent(_c.getOrCreateVrrpA().getOrCreateCommon()::setDeviceId);
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Vrrpa_device_id_numberContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx.uint8(), VRRP_A_DEVICE_ID_RANGE, "vrrp-a device-id");
+  }
+
+  @Override
+  public void exitVrrpac_disable_default_vrid(Vrrpac_disable_default_vridContext ctx) {
+    _c.getOrCreateVrrpA().getOrCreateCommon().setDisableDefaultVrid(true);
+  }
+
+  @Override
+  public void exitVrrpac_set_id(Vrrpac_set_idContext ctx) {
+    toInteger(ctx, ctx.vrrpa_set_id_number())
+        .ifPresent(_c.getOrCreateVrrpA().getOrCreateCommon()::setSetId);
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Vrrpa_set_id_numberContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx.uint8(), VRRP_A_SET_ID_RANGE, "vrrp-a set-id");
+  }
+
+  @Override
+  public void exitVrrpac_enable(Vrrpac_enableContext ctx) {
+    _c.getOrCreateVrrpA().getOrCreateCommon().setEnable(true);
+  }
+
+  @Override
+  public void enterVrrpa_fail_over_policy_template(Vrrpa_fail_over_policy_templateContext ctx) {
+    Optional<String> maybeName = toString(ctx, ctx.name);
+    if (!maybeName.isPresent()) {
+      // dummy
+      _currentVrrpAFailOverPolicyTemplate = new VrrpAFailOverPolicyTemplate();
+      return;
+    }
+    String name = maybeName.get();
+    _currentVrrpAFailOverPolicyTemplate =
+        _c.getOrCreateVrrpA().getOrCreateFailOverPolicyTemplate(name);
+    _c.defineStructure(VRRP_A_FAIL_OVER_POLICY_TEMPLATE, name, ctx);
+  }
+
+  @Override
+  public void exitVrrpa_fail_over_policy_template(Vrrpa_fail_over_policy_templateContext ctx) {
+    _currentVrrpAFailOverPolicyTemplate = null;
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, Fail_over_policy_template_nameContext ctx) {
+    return toStringWithLengthInSpace(
+        messageCtx,
+        ctx.word(),
+        FAIL_OVER_POLICY_TEMPLATE_NAME_LENGTH_RANGE,
+        "fail-over-policy-template name");
+  }
+
+  @Override
+  public void exitVrrpaf_gateway(Vrrpaf_gatewayContext ctx) {
+    toInteger(ctx, ctx.weight)
+        .ifPresent(
+            weight ->
+                _currentVrrpAFailOverPolicyTemplate.addOrReplaceGateway(toIp(ctx.gwip), weight));
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Vrrpaf_gateway_weightContext ctx) {
+    return toIntegerInSpace(
+        messageCtx,
+        ctx.uint8(),
+        FAIL_OVER_POLICY_TEMPLATE_GATEWAY_WEIGHT_RANGE,
+        "fail-over-policy-template gateway weight");
+  }
+
+  @Override
+  public void exitVrrpa_interface(Vrrpa_interfaceContext ctx) {
+    Optional<InterfaceReference> maybeRef = toInterfaceReference(ctx, ctx.ref);
+    if (!maybeRef.isPresent()) {
+      return;
+    }
+    InterfaceReference ref = maybeRef.get();
+    _c.getOrCreateVrrpA().setInterface(ref);
+    _c.referenceStructure(
+        INTERFACE, getInterfaceName(ref), VRRP_A_INTERFACE, ctx.getStart().getLine());
+  }
+
+  private @Nonnull Optional<InterfaceReference> toInterfaceReference(
+      ParserRuleContext messageCtx, Ethernet_or_trunk_referenceContext ctx) {
+    if (ctx.ETHERNET() != null) {
+      return toInterfaceReference(messageCtx, ctx.ethnum);
+    } else {
+      assert ctx.TRUNK() != null;
+      return toInterfaceReference(messageCtx, ctx.trunknum);
+    }
+  }
+
+  private @Nonnull Optional<InterfaceReference> toInterfaceReference(
+      ParserRuleContext messageCtx, Ethernet_numberContext ctx) {
+    return toInteger(messageCtx, ctx).map(num -> new InterfaceReference(Type.ETHERNET, num));
+  }
+
+  private @Nonnull Optional<InterfaceReference> toInterfaceReference(
+      ParserRuleContext messageCtx, Trunk_numberContext ctx) {
+    return toInteger(messageCtx, ctx).map(num -> new InterfaceReference(Type.TRUNK, num));
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Ethernet_numberContext ctx) {
+    return toIntegerInSpace(
+        messageCtx, ctx.uint8(), INTERFACE_NUMBER_ETHERNET_RANGE, "ethernet interface number");
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Trunk_numberContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx.uint16(), TRUNK_NUMBER_RANGE, "trunk number");
+  }
+
+  @Override
+  public void exitVrrpapg_peer(Vrrpapg_peerContext ctx) {
+    _c.getOrCreateVrrpA().addPeerGroupPeer(toIp(ctx.ip));
+  }
+
+  @Override
+  public void enterVrrpa_vrid_id(Vrrpa_vrid_idContext ctx) {
+    Optional<Integer> maybeId = toInteger(ctx, ctx.vrid());
+    if (!maybeId.isPresent()) {
+      _currentVrid = new VrrpAVrid();
+      return;
+    }
+    int id = maybeId.get();
+    _currentVrid = _c.getOrCreateVrrpA().getOrCreateVrid(id);
+    String name = Integer.toString(id);
+    _c.defineStructure(VRRP_A_VRID, name, ctx);
+    if (id == 0) {
+      // VRID 0 always exists and is not referenced explicitly, so add self-reference.
+      _c.referenceStructure(
+          VRRP_A_VRID, name, VRRP_A_VRID_DEFAULT_SELF_REFERENCE, ctx.getStart().getLine());
+    }
+  }
+
+  private @Nonnull Optional<Integer> toInteger(ParserRuleContext messageCtx, VridContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx.uint8(), VRID_RANGE, "vrrp-a vrid number");
+  }
+
+  @Override
+  public void exitVrrpa_vrid_id(Vrrpa_vrid_idContext ctx) {
+    _currentVrid = null;
+  }
+
+  @Override
+  public void exitVrrpavi_preempt_mode_disable(Vrrpavi_preempt_mode_disableContext ctx) {
+    _currentVrid.setPreemptModeDisable(true);
+  }
+
+  @Override
+  public void exitVrrpavi_preempt_mode_threshold(Vrrpavi_preempt_mode_thresholdContext ctx) {
+    _currentVrid.setPreemptModeThreshold(toInteger(ctx.threshold));
+  }
+
+  private int toInteger(Uint8Context ctx) {
+    return Integer.parseInt(ctx.getText());
+  }
+
+  @Override
+  public void exitVrrpavib_priority(Vrrpavib_priorityContext ctx) {
+    toIntegerInSpace(
+            ctx,
+            ctx.vrrpa_priority_number().uint8(),
+            VRRP_A_PRIORITY_RANGE,
+            "vrrp-a vrid blade-paramters priority")
+        .ifPresent(_currentVrid.getOrCreateBladeParameters()::setPriority);
+  }
+
+  @Override
+  public void exitVrrpavib_fail_over_policy_template(
+      Vrrpavib_fail_over_policy_templateContext ctx) {
+    Optional<String> maybeName = toString(ctx, ctx.name);
+    if (!maybeName.isPresent()) {
+      return;
+    }
+    String name = maybeName.get();
+    assert _c.getVrrpA() != null;
+    if (!_c.getVrrpA().getFailOverPolicyTemplates().containsKey(name)) {
+      warn(ctx, String.format("Cannot assign non-existent fail-over-policy-template '%s'", name));
+      return;
+    }
+    _c.referenceStructure(
+        VRRP_A_FAIL_OVER_POLICY_TEMPLATE,
+        name,
+        VRRP_A_VRID_BLADE_PARAMETERS_FAIL_OVER_POLICY_TEMPLATE,
+        ctx.getStart().getLine());
+    _currentVrid.getOrCreateBladeParameters().setFailOverPolicyTemplate(name);
+  }
+
+  @Override
+  public void exitVrrpa_vrid_lead(Vrrpa_vrid_leadContext ctx) {
+    toStringWithLengthInSpace(ctx, ctx.name.word(), VRID_LEAD_NAME_LENGTH_RANGE, "vrrp-a vrid-lead")
+        .ifPresent(_c.getOrCreateVrrpA()::setVridLead);
   }
 
   @Override
@@ -729,10 +965,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
           ifaces.forEach(
               iface -> {
                 _c.referenceStructure(
-                    A10StructureType.INTERFACE,
-                    getInterfaceName(iface),
-                    A10StructureUsage.TRUNK_INTERFACE,
-                    line);
+                    INTERFACE, getInterfaceName(iface), A10StructureUsage.TRUNK_INTERFACE, line);
                 _currentTrunk.getMembers().add(iface);
               });
         });
@@ -991,8 +1224,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
                   List<InterfaceReference> refs = maybeRef.get();
                   refs.forEach(
                       iface ->
-                          _c.referenceStructure(
-                              A10StructureType.INTERFACE, getInterfaceName(iface), usage, line));
+                          _c.referenceStructure(INTERFACE, getInterfaceName(iface), usage, line));
                   return refs.stream();
                 })
             .collect(ImmutableList.toImmutableList()));
@@ -1053,10 +1285,6 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
       ifaces.add(new InterfaceReference(Interface.Type.TRUNK, maybeNum.get()));
     }
     return Optional.of(ifaces.build());
-  }
-
-  Optional<Integer> toInteger(ParserRuleContext messageCtx, A10Parser.Trunk_numberContext ctx) {
-    return toIntegerInSpace(messageCtx, ctx.uint16(), TRUNK_NUMBER_RANGE, "trunk number");
   }
 
   Optional<Integer> toInteger(ParserRuleContext messageCtx, A10Parser.Ports_thresholdContext ctx) {
@@ -1131,26 +1359,15 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   }
 
   private @Nonnull Optional<Integer> toInteger(
-      ParserRuleContext messageCtx, A10Parser.Ethernet_numberContext ctx) {
-    return toIntegerInSpace(
-        messageCtx, ctx.uint8(), INTERFACE_NUMBER_ETHERNET_RANGE, "interface ethernet number");
-  }
-
-  private @Nonnull Optional<Integer> toInteger(
       ParserRuleContext messageCtx, A10Parser.Loopback_numberContext ctx) {
     return toIntegerInSpace(
-        messageCtx, ctx.uint8(), INTERFACE_NUMBER_LOOPBACK_RANGE, "interface loopback number");
+        messageCtx, ctx.uint8(), INTERFACE_NUMBER_LOOPBACK_RANGE, "loopback interface number");
   }
 
   private @Nonnull Optional<Integer> toInteger(
       ParserRuleContext messageCtx, A10Parser.Scaleout_device_idContext ctx) {
     return toIntegerInSpace(
         messageCtx, ctx.uint8(), SCALEOUT_DEVICE_ID_RANGE, "scaleout-device-id");
-  }
-
-  private @Nonnull Optional<Integer> toInteger(
-      ParserRuleContext messageCtx, A10Parser.VridContext ctx) {
-    return toIntegerInSpace(messageCtx, ctx.uint8(), VRID_RANGE, "vrid");
   }
 
   private @Nonnull Optional<Integer> toIntegerInSpace(
@@ -1291,6 +1508,10 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
       IntegerSpace.of(Range.closed(1, 64000000));
   private static final IntegerSpace CONNECTION_WEIGHT_RANGE =
       IntegerSpace.of(Range.closed(1, 1000));
+  private static final IntegerSpace FAIL_OVER_POLICY_TEMPLATE_GATEWAY_WEIGHT_RANGE =
+      IntegerSpace.of(Range.closed(1, 255));
+  private static final IntegerSpace FAIL_OVER_POLICY_TEMPLATE_NAME_LENGTH_RANGE =
+      IntegerSpace.of(Range.closed(1, 63));
   private static final IntegerSpace HA_GROUP_ID_RANGE = IntegerSpace.of(Range.closed(1, 31));
   private static final IntegerSpace INTERFACE_MTU_RANGE = IntegerSpace.of(Range.closed(434, 1500));
   private static final IntegerSpace INTERFACE_NUMBER_ETHERNET_RANGE =
@@ -1304,6 +1525,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   private static final IntegerSpace IP_ROUTE_DISTANCE_RANGE = IntegerSpace.of(Range.closed(1, 255));
   private static final IntegerSpace NAT_POOL_NAME_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 63));
+  private static final IntegerSpace NON_DEFAULT_VRID_RANGE = IntegerSpace.of(Range.closed(1, 31));
   private static final IntegerSpace PORT_NUMBER_RANGE = IntegerSpace.of(Range.closed(0, 65535));
   private static final IntegerSpace PORT_RANGE_VALUE_RANGE = IntegerSpace.of(Range.closed(0, 254));
   private static final IntegerSpace SCALEOUT_DEVICE_ID_RANGE = IntegerSpace.of(Range.closed(1, 16));
@@ -1317,7 +1539,12 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   private static final IntegerSpace USER_TAG_LENGTH_RANGE = IntegerSpace.of(Range.closed(1, 127));
   private static final IntegerSpace VLAN_NAME_LENGTH_RANGE = IntegerSpace.of(Range.closed(1, 63));
   private static final IntegerSpace VLAN_NUMBER_RANGE = IntegerSpace.of(Range.closed(2, 4094));
-  private static final IntegerSpace VRID_RANGE = IntegerSpace.of(Range.closed(1, 31));
+  private static final IntegerSpace VRID_LEAD_NAME_LENGTH_RANGE =
+      IntegerSpace.of(Range.closed(1, 63));
+  private static final IntegerSpace VRID_RANGE = IntegerSpace.of(Range.closed(0, 31));
+  private static final IntegerSpace VRRP_A_DEVICE_ID_RANGE = IntegerSpace.of(Range.closed(1, 4));
+  private static final IntegerSpace VRRP_A_SET_ID_RANGE = IntegerSpace.of(Range.closed(1, 15));
+  private static final IntegerSpace VRRP_A_PRIORITY_RANGE = IntegerSpace.of(Range.closed(1, 255));
 
   private static final Pattern HOSTNAME_PATTERN = Pattern.compile("^[A-Za-z0-9_-]+$");
 
@@ -1329,6 +1556,8 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   private Interface _currentInterface;
 
   private NatPool _currentNatPool;
+
+  private VrrpAFailOverPolicyTemplate _currentVrrpAFailOverPolicyTemplate;
 
   /**
    * Boolean indicating if the {@code _currentNatPool} is valid (i.e. configured properties are
@@ -1346,6 +1575,8 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   private TrunkGroup _currentTrunkGroup;
 
   private Vlan _currentVlan;
+
+  private VrrpAVrid _currentVrid;
 
   @Nonnull private A10CombinedParser _parser;
 
