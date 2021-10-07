@@ -39,6 +39,7 @@ public final class A10Configuration extends VendorConfiguration {
     _interfacesTrunk = new HashMap<>();
     _interfacesVe = new HashMap<>();
     _natPools = new HashMap<>();
+    _serviceGroups = new HashMap<>();
     _servers = new HashMap<>();
     _staticRoutes = new HashMap<>();
     _vlans = new HashMap<>();
@@ -67,6 +68,19 @@ public final class A10Configuration extends VendorConfiguration {
 
   public Map<String, NatPool> getNatPools() {
     return _natPools;
+  }
+
+  public Map<String, ServiceGroup> getServiceGroups() {
+    return ImmutableMap.copyOf(_serviceGroups);
+  }
+
+  public ServiceGroup getOrCreateServiceGroup(String name, ServerPort.Type type) {
+    ServiceGroup group = _serviceGroups.get(name);
+    if (group == null) {
+      group = new ServiceGroup(name, type);
+      _serviceGroups.put(name, group);
+    }
+    return group;
   }
 
   public Map<String, Server> getServers() {
@@ -404,6 +418,7 @@ public final class A10Configuration extends VendorConfiguration {
     _interfacesTrunk = ImmutableMap.copyOf(_interfacesTrunk);
     _natPools = ImmutableMap.copyOf(_natPools);
     _servers = ImmutableMap.copyOf(_servers);
+    _serviceGroups = ImmutableMap.copyOf(_serviceGroups);
     _staticRoutes = ImmutableMap.copyOf(_staticRoutes);
     _vlans = ImmutableMap.copyOf(_vlans);
   }
@@ -419,6 +434,7 @@ public final class A10Configuration extends VendorConfiguration {
   private Map<Integer, Interface> _interfacesVe;
   private Map<String, NatPool> _natPools;
   private Map<String, Server> _servers;
+  private Map<String, ServiceGroup> _serviceGroups;
   private Map<Prefix, StaticRouteManager> _staticRoutes;
   private Map<Integer, Vlan> _vlans;
   private ConfigurationFormat _vendor;

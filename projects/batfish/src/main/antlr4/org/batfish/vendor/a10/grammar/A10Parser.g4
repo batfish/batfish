@@ -8,6 +8,7 @@ import
   A10_lacp_trunk,
   A10_rba,
   A10_slb_server,
+  A10_slb_service_group,
   A10_trunk,
   A10_vlan;
 
@@ -45,4 +46,4 @@ s_hostname: HOSTNAME hostname NEWLINE;
 
 s_slb: SLB ss;
 
-ss: ss_server;
+ss: ss_server | ss_service_group;

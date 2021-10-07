@@ -29,6 +29,11 @@ public final class Server implements Serializable {
     return _ports;
   }
 
+  public void createPort(int port, ServerPort.Type type) {
+    ServerPort serverPort = new ServerPort(port, type, null);
+    _ports.put(new ServerPort.ServerPortAndType(port, type), serverPort);
+  }
+
   @Nullable
   public String getServerTemplate() {
     return _serverTemplate;

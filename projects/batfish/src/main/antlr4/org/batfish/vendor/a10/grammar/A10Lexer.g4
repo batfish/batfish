@@ -22,6 +22,7 @@ DO_AUTO_RECOVERY: 'do-auto-recovery';
 ENABLE: 'enable';
 ETHERNET: 'ethernet';
 GATEWAY: 'gateway';
+HEALTH_CHECK: 'health-check' -> pushMode(M_Word);
 HOSTNAME: 'hostname' -> pushMode(M_Word);
 IP: 'ip';
 IP_RR: 'ip-rr';
@@ -29,8 +30,11 @@ INTERFACE: 'interface';
 LACP: 'lacp';
 LACP_TRUNK: 'lacp-trunk';
 LACP_UDLD: 'lacp-udld';
+LEAST_REQUEST: 'least-request';
 LONG: 'long';
 LOOPBACK: 'loopback';
+MEMBER: 'member' -> pushMode(M_Word);
+METHOD: 'method';
 MODE: 'mode';
 MTU: 'mtu';
 NAME: 'name' -> pushMode(M_Word);
@@ -50,9 +54,11 @@ PORT
 ;
 PORT_OVERLOAD: 'port-overload';
 PORTS_THRESHOLD: 'ports-threshold';
+PRIORITY: 'priority';
 RANGE: 'range';
 RBA: 'rba' -> pushMode(M_Rba);
 ROLE: 'role';
+ROUND_ROBIN: 'round-robin';
 ROUTE: 'route';
 ROUTER_INTERFACE: 'router-interface';
 SCALEOUT_DEVICE_ID: 'scaleout-device-id';
@@ -65,6 +71,7 @@ SERVER
     }
   }
 ;
+SERVICE_GROUP: 'service-group' -> pushMode(M_Word);
 SLB: 'slb';
 STATIC: 'static';
 STATS_DATA_DISABLE: 'stats-data-disable';
