@@ -4,9 +4,11 @@ import static org.batfish.vendor.a10.grammar.A10Lexer.WORD;
 import static org.batfish.vendor.a10.representation.A10Configuration.getInterfaceName;
 import static org.batfish.vendor.a10.representation.A10StructureType.INTERFACE;
 import static org.batfish.vendor.a10.representation.A10StructureType.SERVER;
+import static org.batfish.vendor.a10.representation.A10StructureType.SERVICE_GROUP;
 import static org.batfish.vendor.a10.representation.A10StructureType.VRRP_A_FAIL_OVER_POLICY_TEMPLATE;
 import static org.batfish.vendor.a10.representation.A10StructureType.VRRP_A_VRID;
 import static org.batfish.vendor.a10.representation.A10StructureUsage.IP_NAT_POOL_VRID;
+import static org.batfish.vendor.a10.representation.A10StructureUsage.SERVICE_GROUP_MEMBER;
 import static org.batfish.vendor.a10.representation.A10StructureUsage.VRRP_A_INTERFACE;
 import static org.batfish.vendor.a10.representation.A10StructureUsage.VRRP_A_VRID_BLADE_PARAMETERS_FAIL_OVER_POLICY_TEMPLATE;
 import static org.batfish.vendor.a10.representation.A10StructureUsage.VRRP_A_VRID_DEFAULT_SELF_REFERENCE;
@@ -77,6 +79,8 @@ import org.batfish.vendor.a10.representation.Server;
 import org.batfish.vendor.a10.representation.ServerPort;
 import org.batfish.vendor.a10.representation.ServerTarget;
 import org.batfish.vendor.a10.representation.ServerTargetAddress;
+import org.batfish.vendor.a10.representation.ServiceGroup;
+import org.batfish.vendor.a10.representation.ServiceGroupMember;
 import org.batfish.vendor.a10.representation.StaticRoute;
 import org.batfish.vendor.a10.representation.StaticRouteManager;
 import org.batfish.vendor.a10.representation.TrunkGroup;
@@ -728,6 +732,132 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   }
 
   @Override
+  public void enterSs_service_group(A10Parser.Ss_service_groupContext ctx) {
+    Optional<String> maybeName = toString(ctx, ctx.service_group_name());
+    ServerPort.Type type = toType(ctx.tcp_or_udp());
+    if (!maybeName.isPresent()) {
+      _currentServiceGroup = new ServiceGroup(ctx.service_group_name().getText(), type); // dummy
+      return;
+    }
+    _currentServiceGroup = _c.getOrCreateServiceGroup(maybeName.get(), type);
+
+    if (type != _currentServiceGroup.getType()) {
+      warn(
+          ctx,
+          "Cannot modify the service-group type field at runtime, ignoring this service-group"
+              + " block.");
+      _currentServiceGroup = new ServiceGroup(ctx.service_group_name().getText(), type); // dummy
+      return;
+    }
+
+    _c.defineStructure(SERVICE_GROUP, maybeName.get(), ctx);
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, A10Parser.Service_group_nameContext ctx) {
+    return toStringWithLengthInSpace(
+        messageCtx, ctx.word(), SERVICE_GROUP_NAME_LENGTH_RANGE, "service-group name");
+  }
+
+  @Override
+  public void exitSs_service_group(A10Parser.Ss_service_groupContext ctx) {
+    _currentServiceGroup = null;
+  }
+
+  @Override
+  public void exitSssgd_health_check(A10Parser.Sssgd_health_checkContext ctx) {
+    // TODO add reject if invalid ref, and add ref once health checks are supported
+    toString(ctx, ctx.health_check_name()).ifPresent(_currentServiceGroup::setHealthCheck);
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, A10Parser.Health_check_nameContext ctx) {
+    return toStringWithLengthInSpace(
+        messageCtx, ctx.word(), HEALTH_CHECK_NAME_LENGTH_RANGE, "health-check name");
+  }
+
+  @Override
+  public void exitSssgd_method(A10Parser.Sssgd_methodContext ctx) {
+    _currentServiceGroup.setMethod(toMethod(ctx.service_group_method()));
+  }
+
+  public ServiceGroup.Method toMethod(A10Parser.Service_group_methodContext ctx) {
+    if (ctx.LEAST_REQUEST() != null) {
+      return ServiceGroup.Method.LEAST_REQUEST;
+    }
+    assert ctx.ROUND_ROBIN() != null;
+    return ServiceGroup.Method.ROUND_ROBIN;
+  }
+
+  @Override
+  public void exitSssgd_stats_data_disable(A10Parser.Sssgd_stats_data_disableContext ctx) {
+    _currentServiceGroup.setStatsDataEnable(false);
+  }
+
+  @Override
+  public void exitSssgd_stats_data_enable(A10Parser.Sssgd_stats_data_enableContext ctx) {
+    _currentServiceGroup.setStatsDataEnable(true);
+  }
+
+  @Override
+  public void enterSssgd_member(A10Parser.Sssgd_memberContext ctx) {
+    Optional<String> maybeName = toString(ctx, ctx.slb_server_name());
+    Optional<Integer> maybePort = toInteger(ctx, ctx.port_number());
+    if (!maybeName.isPresent() || !maybePort.isPresent()) {
+      _currentServiceGroupMember =
+          new ServiceGroupMember(ctx.slb_server_name().getText(), -1); // dummy
+      return;
+    }
+    String name = maybeName.get();
+    int port = maybePort.get();
+    Server server = _c.getServers().get(name);
+
+    if (server == null) {
+      warn(ctx, String.format("Specified server '%s' does not exist.", name));
+      _currentServiceGroupMember = new ServiceGroupMember(name, port); // dummy
+      return;
+    }
+
+    _currentServiceGroupMember = _currentServiceGroup.getOrCreateMember(name, port);
+
+    // Create port for specified server if it doesn't already exist
+    if (!server
+        .getPorts()
+        .containsKey(new ServerPort.ServerPortAndType(port, _currentServiceGroup.getType()))) {
+      _c.defineStructure(SERVER, name, ctx);
+      server.createPort(port, _currentServiceGroup.getType());
+    }
+    _c.referenceStructure(SERVER, name, SERVICE_GROUP_MEMBER, ctx.start.getLine());
+  }
+
+  @Override
+  public void exitSssgd_member(A10Parser.Sssgd_memberContext ctx) {
+    _currentServiceGroupMember = null;
+  }
+
+  @Override
+  public void exitSssgdmd_disable(A10Parser.Sssgdmd_disableContext ctx) {
+    _currentServiceGroupMember.setEnable(false);
+  }
+
+  @Override
+  public void exitSssgdmd_enable(A10Parser.Sssgdmd_enableContext ctx) {
+    _currentServiceGroupMember.setEnable(true);
+  }
+
+  @Override
+  public void exitSssgdmd_priority(A10Parser.Sssgdmd_priorityContext ctx) {
+    toInteger(ctx, ctx.service_group_member_priority())
+        .ifPresent(_currentServiceGroupMember::setPriority);
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, A10Parser.Service_group_member_priorityContext ctx) {
+    return toIntegerInSpace(
+        messageCtx, ctx.uint8(), SERVICE_GROUP_MEMBER_PRIORITY_RANGE, "member priority");
+  }
+
+  @Override
   public void enterS_trunk(A10Parser.S_trunkContext ctx) {
     Optional<Integer> maybeNum = toInteger(ctx, ctx.trunk_number());
     _currentTrunk =
@@ -1073,13 +1203,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     }
     _currentServerPort =
         toInteger(ctx, ctx.port_number())
-            .map(
-                n ->
-                    _currentServer
-                        .getPorts()
-                        .computeIfAbsent(
-                            new ServerPort.ServerPortAndType(n, type),
-                            key -> new ServerPort(n, type, range)))
+            .map(n -> _currentServer.getOrCreatePort(n, type, range))
             .orElseGet(() -> new ServerPort(-1, type, range)); // dummy
     // Make sure range is up-to-date
     _currentServerPort.setRange(range);
@@ -1520,6 +1644,8 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   private static final IntegerSpace FAIL_OVER_POLICY_TEMPLATE_NAME_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 63));
   private static final IntegerSpace HA_GROUP_ID_RANGE = IntegerSpace.of(Range.closed(1, 31));
+  private static final IntegerSpace HEALTH_CHECK_NAME_LENGTH_RANGE =
+      IntegerSpace.of(Range.closed(1, 63));
   private static final IntegerSpace INTERFACE_MTU_RANGE = IntegerSpace.of(Range.closed(434, 1500));
   private static final IntegerSpace INTERFACE_NUMBER_ETHERNET_RANGE =
       IntegerSpace.of(Range.closed(1, 40));
@@ -1536,6 +1662,10 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   private static final IntegerSpace PORT_NUMBER_RANGE = IntegerSpace.of(Range.closed(0, 65535));
   private static final IntegerSpace PORT_RANGE_VALUE_RANGE = IntegerSpace.of(Range.closed(0, 254));
   private static final IntegerSpace SCALEOUT_DEVICE_ID_RANGE = IntegerSpace.of(Range.closed(1, 16));
+  private static final IntegerSpace SERVICE_GROUP_MEMBER_PRIORITY_RANGE =
+      IntegerSpace.of(Range.closed(1, 16));
+  private static final IntegerSpace SERVICE_GROUP_NAME_LENGTH_RANGE =
+      IntegerSpace.of(Range.closed(1, 127));
   private static final IntegerSpace SLB_SERVER_NAME_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 127));
   private static final IntegerSpace TEMPLATE_NAME_LENGTH_RANGE =
@@ -1571,6 +1701,10 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
    * valid)
    */
   private boolean _currentNatPoolValid;
+
+  private ServiceGroup _currentServiceGroup;
+
+  private ServiceGroupMember _currentServiceGroupMember;
 
   private Server _currentServer;
 

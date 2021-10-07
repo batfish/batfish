@@ -34,6 +34,7 @@ GET_READY_TIME: 'get-ready-time';
 GET_READY_TIME_ACOS2: 'get_ready_time';
 HELLO_INTERVAL: 'hello-interval';
 HA_GROUP_ID: 'ha-group-id';
+HEALTH_CHECK: 'health-check' -> pushMode(M_Word);
 HOSTNAME: 'hostname' -> pushMode(M_Word);
 IP: 'ip';
 IP_RR: 'ip-rr';
@@ -41,8 +42,11 @@ INTERFACE: 'interface';
 LACP: 'lacp';
 LACP_TRUNK: 'lacp-trunk';
 LACP_UDLD: 'lacp-udld';
+LEAST_REQUEST: 'least-request';
 LONG: 'long';
 LOOPBACK: 'loopback';
+MEMBER: 'member' -> pushMode(M_Word);
+METHOD: 'method';
 MODE: 'mode';
 MTU: 'mtu';
 NAME: 'name' -> pushMode(M_Word);
@@ -52,9 +56,6 @@ NO: 'no';
 PASSIVE: 'passive';
 PEER: 'peer';
 PEER_GROUP: 'peer-group';
-PREEMPT_MODE: 'preempt-mode';
-PREEMPTION_DELAY: 'preemption-delay';
-PRIORITY: 'priority';
 POOL: 'pool' -> pushMode(M_Word);
 PORT
 :
@@ -67,10 +68,14 @@ PORT
 ;
 PORT_OVERLOAD: 'port-overload';
 PORTS_THRESHOLD: 'ports-threshold';
+PREEMPT_MODE: 'preempt-mode';
+PREEMPTION_DELAY: 'preemption-delay';
+PRIORITY: 'priority';
 RANGE: 'range';
 RBA: 'rba' -> pushMode(M_Rba);
 RESTART_TIME: 'restart-time';
 ROLE: 'role';
+ROUND_ROBIN: 'round-robin';
 ROUTE: 'route';
 ROUTER_INTERFACE: 'router-interface';
 SCALEOUT_DEVICE_ID: 'scaleout-device-id';
@@ -85,6 +90,7 @@ SERVER
     }
   }
 ;
+SERVICE_GROUP: 'service-group' -> pushMode(M_Word);
 SLB: 'slb';
 STATIC: 'static';
 STATS_DATA_DISABLE: 'stats-data-disable';
