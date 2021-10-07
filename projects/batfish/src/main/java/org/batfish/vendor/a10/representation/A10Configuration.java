@@ -74,13 +74,9 @@ public final class A10Configuration extends VendorConfiguration {
     return ImmutableMap.copyOf(_serviceGroups);
   }
 
+  @Nonnull
   public ServiceGroup getOrCreateServiceGroup(String name, ServerPort.Type type) {
-    ServiceGroup group = _serviceGroups.get(name);
-    if (group == null) {
-      group = new ServiceGroup(name, type);
-      _serviceGroups.put(name, group);
-    }
-    return group;
+    return _serviceGroups.computeIfAbsent(name, n -> new ServiceGroup(name, type));
   }
 
   public Map<String, Server> getServers() {

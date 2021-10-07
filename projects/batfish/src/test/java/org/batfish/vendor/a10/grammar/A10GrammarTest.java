@@ -1161,40 +1161,45 @@ public class A10GrammarTest {
 
     assertThat(c.getServiceGroups().keySet(), containsInAnyOrder("SG1", "SG2", "SG3"));
 
-    ServiceGroup sg1 = c.getServiceGroups().get("SG1");
-    ServiceGroup sg2 = c.getServiceGroups().get("SG2");
-    ServiceGroup sg3 = c.getServiceGroups().get("SG3");
+    {
+      ServiceGroup sg1 = c.getServiceGroups().get("SG1");
+      assertNull(sg1.getHealthCheck());
+      assertThat(sg1.getName(), equalTo("SG1"));
+      assertNull(sg1.getStatsDataEnable());
+      assertThat(sg1.getType(), equalTo(ServerPort.Type.TCP));
+      assertThat(sg1.getMembers(), anEmptyMap());
+    }
 
-    assertNull(sg1.getHealthCheck());
-    assertThat(sg1.getName(), equalTo("SG1"));
-    assertNull(sg1.getStatsDataEnable());
-    assertThat(sg1.getType(), equalTo(ServerPort.Type.TCP));
-    assertThat(sg1.getMembers(), anEmptyMap());
+    {
+      ServiceGroup sg2 = c.getServiceGroups().get("SG2");
 
-    assertThat(sg2.getHealthCheck(), equalTo("HEALTH_CHECK_NAME"));
-    assertThat(sg2.getName(), equalTo("SG2"));
-    assertThat(sg2.getMethod(), equalTo(ServiceGroup.Method.LEAST_REQUEST));
-    assertTrue(sg2.getStatsDataEnable());
-    assertThat(sg2.getType(), equalTo(ServerPort.Type.TCP));
-    assertThat(
-        sg2.getMembers().keySet(),
-        containsInAnyOrder(
-            new ServiceGroupMember.NameAndPort("SERVER1", 80),
-            new ServiceGroupMember.NameAndPort("SERVER2", 80),
-            new ServiceGroupMember.NameAndPort("SERVER3", 80),
-            new ServiceGroupMember.NameAndPort("SERVER3", 81)));
-    // Make sure the new port reference in SG1 created a port for the server
-    assertThat(c.getServers(), hasKey("SERVER3"));
-    assertThat(
-        c.getServers().get("SERVER3").getPorts(),
-        hasKey(new ServerPort.ServerPortAndType(81, ServerPort.Type.TCP)));
-
-    assertThat(sg3.getName(), equalTo("SG3"));
-    assertThat(sg3.getMethod(), equalTo(ServiceGroup.Method.ROUND_ROBIN));
-    assertFalse(sg3.getStatsDataEnable());
-    assertThat(sg3.getType(), equalTo(ServerPort.Type.UDP));
-    assertThat(
-        sg3.getMembers().keySet(), contains(new ServiceGroupMember.NameAndPort("SERVER1", 8080)));
+      assertThat(sg2.getHealthCheck(), equalTo("HEALTH_CHECK_NAME"));
+      assertThat(sg2.getName(), equalTo("SG2"));
+      assertThat(sg2.getMethod(), equalTo(ServiceGroup.Method.LEAST_REQUEST));
+      assertTrue(sg2.getStatsDataEnable());
+      assertThat(sg2.getType(), equalTo(ServerPort.Type.TCP));
+      assertThat(
+          sg2.getMembers().keySet(),
+          containsInAnyOrder(
+              new ServiceGroupMember.NameAndPort("SERVER1", 80),
+              new ServiceGroupMember.NameAndPort("SERVER2", 80),
+              new ServiceGroupMember.NameAndPort("SERVER3", 80),
+              new ServiceGroupMember.NameAndPort("SERVER3", 81)));
+      // Make sure the new port reference in SG1 created a port for the server
+      assertThat(c.getServers(), hasKey("SERVER3"));
+      assertThat(
+          c.getServers().get("SERVER3").getPorts(),
+          hasKey(new ServerPort.ServerPortAndType(81, ServerPort.Type.TCP)));
+    }
+    {
+      ServiceGroup sg3 = c.getServiceGroups().get("SG3");
+      assertThat(sg3.getName(), equalTo("SG3"));
+      assertThat(sg3.getMethod(), equalTo(ServiceGroup.Method.ROUND_ROBIN));
+      assertFalse(sg3.getStatsDataEnable());
+      assertThat(sg3.getType(), equalTo(ServerPort.Type.UDP));
+      assertThat(
+          sg3.getMembers().keySet(), contains(new ServiceGroupMember.NameAndPort("SERVER1", 8080)));
+    }
   }
 
   @Test
@@ -1215,7 +1220,7 @@ public class A10GrammarTest {
                 hasComment(
                     "Cannot modify the service-group type field at runtime, ignoring this"
                         + " service-group block."),
-                hasComment("Specified server does not exist."),
+                hasComment("Specified server 'SERVER_UNDEF' does not exist."),
                 hasComment("Expected member priority in range 1-16, but got '0'"),
                 hasComment("Expected member priority in range 1-16, but got '17'"))));
   }

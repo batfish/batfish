@@ -1,7 +1,7 @@
 package org.batfish.vendor.a10.representation;
 
-import com.google.common.collect.ImmutableMap;
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nonnull;
@@ -30,7 +30,7 @@ public class ServiceGroup implements Serializable {
    */
   @Nonnull
   public Map<ServiceGroupMember.NameAndPort, ServiceGroupMember> getMembers() {
-    return ImmutableMap.copyOf(_members);
+    return Collections.unmodifiableMap(_members);
   }
 
   /**
@@ -39,13 +39,8 @@ public class ServiceGroup implements Serializable {
    */
   @Nonnull
   public ServiceGroupMember getOrCreateMember(String name, int port) {
-    ServiceGroupMember.NameAndPort nameAndPort = new ServiceGroupMember.NameAndPort(name, port);
-    ServiceGroupMember member = _members.get(nameAndPort);
-    if (member == null) {
-      member = new ServiceGroupMember(nameAndPort.getName(), nameAndPort.getPort());
-      _members.put(nameAndPort, member);
-    }
-    return member;
+    return _members.computeIfAbsent(
+        new ServiceGroupMember.NameAndPort(name, port), nap -> new ServiceGroupMember(name, port));
   }
 
   @Nullable

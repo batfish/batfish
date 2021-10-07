@@ -6,6 +6,7 @@ import org.batfish.vendor.StructureUsage;
 public enum A10StructureUsage implements StructureUsage {
   INTERFACE_SELF_REF("interface"),
   INTERFACE_TRUNK_GROUP("interface trunk-group"),
+  SERVICE_GROUP_MEMBER("service-group member"),
   // ACOS v2 member of a trunk
   TRUNK_INTERFACE("trunk interface"),
   VLAN_ROUTER_INTERFACE("vlan router-interface"),

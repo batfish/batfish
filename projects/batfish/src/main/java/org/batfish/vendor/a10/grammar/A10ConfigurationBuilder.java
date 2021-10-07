@@ -3,6 +3,8 @@ package org.batfish.vendor.a10.grammar;
 import static org.batfish.vendor.a10.grammar.A10Lexer.WORD;
 import static org.batfish.vendor.a10.representation.A10Configuration.getInterfaceName;
 import static org.batfish.vendor.a10.representation.A10StructureType.SERVER;
+import static org.batfish.vendor.a10.representation.A10StructureType.SERVICE_GROUP;
+import static org.batfish.vendor.a10.representation.A10StructureUsage.SERVICE_GROUP_MEMBER;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Range;
@@ -698,13 +700,17 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
       return;
     }
     _currentServiceGroup = _c.getOrCreateServiceGroup(maybeName.get(), type);
+
     if (type != _currentServiceGroup.getType()) {
       warn(
           ctx,
           "Cannot modify the service-group type field at runtime, ignoring this service-group"
               + " block.");
       _currentServiceGroup = new ServiceGroup(ctx.service_group_name().getText(), type); // dummy
+      return;
     }
+
+    _c.defineStructure(SERVICE_GROUP, maybeName.get(), ctx);
   }
 
   private @Nonnull Optional<String> toString(
@@ -720,6 +726,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   @Override
   public void exitSssgd_health_check(A10Parser.Sssgd_health_checkContext ctx) {
+    // TODO add reject if invalid ref, and add ref once health checks are supported
     toString(ctx, ctx.health_check_name()).ifPresent(_currentServiceGroup::setHealthCheck);
   }
 
@@ -766,7 +773,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     Server server = _c.getServers().get(name);
 
     if (server == null) {
-      warn(ctx, "Specified server does not exist.");
+      warn(ctx, String.format("Specified server '%s' does not exist.", name));
       _currentServiceGroupMember = new ServiceGroupMember(name, port); // dummy
       return;
     }
@@ -780,6 +787,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
       _c.defineStructure(SERVER, name, ctx);
       server.createPort(port, _currentServiceGroup.getType());
     }
+    _c.referenceStructure(SERVER, name, SERVICE_GROUP_MEMBER, ctx.start.getLine());
   }
 
   @Override
@@ -955,13 +963,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     }
     _currentServerPort =
         toInteger(ctx, ctx.port_number())
-            .map(
-                n ->
-                    _currentServer
-                        .getPorts()
-                        .computeIfAbsent(
-                            new ServerPort.ServerPortAndType(n, type),
-                            key -> new ServerPort(n, type, range)))
+            .map(n -> _currentServer.getOrCreatePort(n, type, range))
             .orElseGet(() -> new ServerPort(-1, type, range)); // dummy
     // Make sure range is up-to-date
     _currentServerPort.setRange(range);

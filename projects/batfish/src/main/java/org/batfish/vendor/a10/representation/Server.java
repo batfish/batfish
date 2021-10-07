@@ -29,6 +29,12 @@ public final class Server implements Serializable {
     return _ports;
   }
 
+  /** Returns the requested port; creates one and adds it if it doesn't already exist. */
+  public ServerPort getOrCreatePort(int port, ServerPort.Type type, @Nullable Integer range) {
+    return _ports.computeIfAbsent(
+        new ServerPort.ServerPortAndType(port, type), pat -> new ServerPort(port, type, range));
+  }
+
   /** Create a {@link ServerPort} and add it to the map of ports for this {@link Server}. */
   public void createPort(int port, ServerPort.Type type) {
     ServerPort.ServerPortAndType key = new ServerPort.ServerPortAndType(port, type);
