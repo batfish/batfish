@@ -15,13 +15,24 @@ tokens {
 // A10 keywords
 ACTIVE: 'active';
 ADDRESS: 'address';
+ARP_RETRY: 'arp-retry';
+BLADE_PARAMETERS: 'blade-parameters';
+COMMON: 'common';
 CONN_LIMIT: 'conn-limit';
-DISABLE: 'disable';
+DEAD_TIMER: 'dead-timer';
+DEFAULT: 'default';
 DESCRIPTION: 'description' -> pushMode(M_Word);
+DEVICE_ID: 'device-id';
+DISABLE: 'disable';
+DISABLE_DEFAULT_VRID: 'disable-default-vrid';
 DO_AUTO_RECOVERY: 'do-auto-recovery';
 ENABLE: 'enable';
 ETHERNET: 'ethernet';
+FAIL_OVER_POLICY_TEMPLATE: 'fail-over-policy-template' -> pushMode(M_Word);
 GATEWAY: 'gateway';
+GET_READY_TIME: 'get-ready-time';
+GET_READY_TIME_ACOS2: 'get_ready_time';
+HELLO_INTERVAL: 'hello-interval';
 HA_GROUP_ID: 'ha-group-id';
 HEALTH_CHECK: 'health-check' -> pushMode(M_Word);
 HOSTNAME: 'hostname' -> pushMode(M_Word);
@@ -43,6 +54,11 @@ NAT: 'nat';
 NETMASK: 'netmask';
 NO: 'no';
 PASSIVE: 'passive';
+PEER: 'peer';
+PEER_GROUP: 'peer-group';
+PREEMPT_MODE: 'preempt-mode';
+PREEMPTION_DELAY: 'preemption-delay';
+PRIORITY: 'priority';
 POOL: 'pool' -> pushMode(M_Word);
 PORT
 :
@@ -58,11 +74,14 @@ PORTS_THRESHOLD: 'ports-threshold';
 PRIORITY: 'priority';
 RANGE: 'range';
 RBA: 'rba' -> pushMode(M_Rba);
+RESTART_TIME: 'restart-time';
 ROLE: 'role';
 ROUND_ROBIN: 'round-robin';
 ROUTE: 'route';
 ROUTER_INTERFACE: 'router-interface';
 SCALEOUT_DEVICE_ID: 'scaleout-device-id';
+SESSION_SYNC: 'session-sync';
+SET_ID: 'set-id';
 SERVER
 :
   'server'
@@ -81,9 +100,11 @@ SHORT: 'short';
 TAGGED: 'tagged';
 TCP: 'tcp';
 TEMPLATE: 'template';
+THRESHOLD: 'threshold';
 TIMEOUT: 'timeout';
 TIMER: 'timer';
 TO: 'to';
+TRACK_EVENT_DELAY: 'track-event-delay';
 TRUNK: 'trunk';
 TRUNK_GROUP: 'trunk-group';
 UDP: 'udp';
@@ -92,6 +113,8 @@ USER_TAG: 'user-tag' -> pushMode(M_Word);
 VE: 've';
 VLAN: 'vlan';
 VRID: 'vrid';
+VRID_LEAD: 'vrid-lead' -> pushMode(M_Word);
+VRRP_A: 'vrrp-a';
 WEIGHT: 'weight';
 
 // Complex tokens

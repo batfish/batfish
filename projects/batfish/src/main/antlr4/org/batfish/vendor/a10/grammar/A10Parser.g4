@@ -10,7 +10,8 @@ import
   A10_slb_server,
   A10_slb_service_group,
   A10_trunk,
-  A10_vlan;
+  A10_vlan,
+  A10_vrrp_a;
 
 options {
    superClass = 'org.batfish.grammar.BatfishParser';
@@ -30,6 +31,7 @@ statement
    | s_slb
    | s_trunk
    | s_vlan
+   | s_vrrp_a
 ;
 
 s_ip: IP si;

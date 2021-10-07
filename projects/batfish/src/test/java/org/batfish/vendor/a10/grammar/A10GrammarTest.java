@@ -8,10 +8,15 @@ import static org.batfish.common.matchers.WarningsMatchers.hasParseWarnings;
 import static org.batfish.common.matchers.WarningsMatchers.hasRedFlags;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.ConfigurationFormat.A10_ACOS;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasAdministrativeCost;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHop;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddressMetadata;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasChannelGroup;
@@ -24,10 +29,13 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasNativeVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
+import static org.batfish.datamodel.matchers.StaticRouteMatchers.hasRecursive;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.vendor.a10.representation.A10Configuration.getInterfaceName;
 import static org.batfish.vendor.a10.representation.A10StructureType.INTERFACE;
+import static org.batfish.vendor.a10.representation.A10StructureType.VRRP_A_FAIL_OVER_POLICY_TEMPLATE;
+import static org.batfish.vendor.a10.representation.A10StructureType.VRRP_A_VRID;
 import static org.batfish.vendor.a10.representation.A10StructureUsage.VLAN_TAGGED_INTERFACE;
 import static org.batfish.vendor.a10.representation.A10StructureUsage.VLAN_UNTAGGED_INTERFACE;
 import static org.batfish.vendor.a10.representation.Interface.DEFAULT_MTU;
@@ -39,10 +47,12 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -63,18 +73,21 @@ import org.batfish.common.runtime.SnapshotRuntimeData;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.vendor.ConversionContext;
 import org.batfish.vendor.a10.representation.A10Configuration;
 import org.batfish.vendor.a10.representation.Interface;
+import org.batfish.vendor.a10.representation.Interface.Type;
 import org.batfish.vendor.a10.representation.InterfaceReference;
 import org.batfish.vendor.a10.representation.NatPool;
 import org.batfish.vendor.a10.representation.Server;
@@ -87,6 +100,11 @@ import org.batfish.vendor.a10.representation.StaticRouteManager;
 import org.batfish.vendor.a10.representation.TrunkGroup;
 import org.batfish.vendor.a10.representation.TrunkInterface;
 import org.batfish.vendor.a10.representation.Vlan;
+import org.batfish.vendor.a10.representation.VrrpA;
+import org.batfish.vendor.a10.representation.VrrpACommon;
+import org.batfish.vendor.a10.representation.VrrpAFailOverPolicyTemplate;
+import org.batfish.vendor.a10.representation.VrrpAVrid;
+import org.batfish.vendor.a10.representation.VrrpaVridBladeParameters;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -277,34 +295,32 @@ public class A10GrammarTest {
 
   @Test
   public void testStaticRouteConversion() {
-    String hostname = "static_route_convert";
-    Configuration c = parseConfig(hostname);
+    Configuration c = parseConfig("static_route_convert");
     Prefix prefix1 = Prefix.parse("10.100.0.0/16");
-    Ip forwardingRouterAddr1a = Ip.parse("10.100.4.1");
-    Ip forwardingRouterAddr1b = Ip.parse("10.100.4.2");
     Prefix prefix2 = Prefix.parse("10.101.0.0/16");
-    Ip forwardingRouterAddr2 = Ip.parse("10.100.4.3");
-    org.batfish.datamodel.StaticRoute.Builder baseSr =
-        org.batfish.datamodel.StaticRoute.builder().setRecursive(false);
-
     assertThat(
         c.getDefaultVrf().getStaticRoutes(),
         containsInAnyOrder(
-            baseSr
-                .setNetwork(prefix1)
-                .setAdministrativeCost(StaticRoute.DEFAULT_STATIC_ROUTE_DISTANCE)
-                .setNextHopIp(forwardingRouterAddr1a)
-                .build(),
-            baseSr
-                .setNetwork(prefix1)
-                .setAdministrativeCost(1)
-                .setNextHopIp(forwardingRouterAddr1b)
-                .build(),
-            baseSr
-                .setNetwork(prefix2)
-                .setAdministrativeCost(2)
-                .setNextHopIp(forwardingRouterAddr2)
-                .build()));
+            allOf(
+                hasPrefix(prefix1),
+                hasAdministrativeCost(StaticRoute.DEFAULT_STATIC_ROUTE_DISTANCE),
+                hasNextHop(NextHopIp.of(Ip.parse("10.100.4.1"))),
+                hasRecursive(false)),
+            allOf(
+                hasPrefix(prefix1),
+                hasAdministrativeCost(1),
+                hasNextHop(NextHopIp.of(Ip.parse("10.100.4.2"))),
+                hasRecursive(false)),
+            allOf(
+                hasPrefix(prefix2),
+                hasAdministrativeCost(2),
+                hasNextHop(NextHopIp.of(Ip.parse("10.100.4.3"))),
+                hasRecursive(false)),
+            allOf(
+                hasPrefix(Prefix.ZERO),
+                hasAdministrativeCost(1),
+                hasNextHop(NextHopIp.of(Ip.parse("10.100.4.4"))),
+                hasRecursive(false))));
   }
 
   @Test
@@ -641,8 +657,8 @@ public class A10GrammarTest {
                 hasComment(
                     "Expected interface name with length in range 1-63, but got"
                         + " '1234567890123456789012345678901234567890123456789012345678901234'"),
-                hasComment("Expected interface loopback number in range 0-10, but got '11'"),
-                hasComment("Expected interface ethernet number in range 1-40, but got '0'"))));
+                hasComment("Expected loopback interface number in range 0-10, but got '11'"),
+                hasComment("Expected ethernet interface number in range 1-40, but got '0'"))));
   }
 
   @Test
@@ -658,6 +674,10 @@ public class A10GrammarTest {
                 hasInterfaceType(InterfaceType.PHYSICAL),
                 hasSwitchPortMode(SwitchportMode.NONE),
                 hasAllAddresses(contains(ConcreteInterfaceAddress.parse("10.0.1.1/24"))),
+                hasAddressMetadata(
+                    hasEntry(
+                        ConcreteInterfaceAddress.parse("10.0.1.1/24"),
+                        ConnectedRouteMetadata.builder().setGenerateLocalRoute(false).build())),
                 isActive(),
                 hasDescription("this is a comp\"licat'ed name"),
                 hasHumanName("Ethernet 1"),
@@ -1071,7 +1091,118 @@ public class A10GrammarTest {
                 hasComment("Invalid NAT pool range, all addresses must fit in specified netmask"),
                 hasComment("Invalid NAT pool range, overlaps with existing NAT pool"),
                 hasComment("Expected scaleout-device-id in range 1-16, but got '17'"),
-                hasComment("Expected vrid in range 1-31, but got '32'"))));
+                hasComment("Expected non-default vrid number in range 1-31, but got '0'"),
+                hasComment("Expected non-default vrid number in range 1-31, but got '32'"),
+                hasComment("Cannot assign nat pool to undefined non-default vrid: 5"))));
+  }
+
+  @Test
+  public void testVrrpAExtraction() {
+    String hostname = "vrrp-a";
+    A10Configuration c = parseVendorConfig(hostname);
+
+    VrrpA v = c.getVrrpA();
+    assertThat(v, notNullValue());
+
+    // vrrp-a common
+    VrrpACommon vc = v.getCommon();
+    assertThat(vc, notNullValue());
+    assertThat(vc.getDeviceId(), equalTo(2));
+    assertTrue(vc.getDisableDefaultVrid());
+    assertThat(vc.getSetId(), equalTo(1));
+    assertTrue(vc.getEnable());
+
+    // vrrp-a fail-over-policy-template
+    VrrpAFailOverPolicyTemplate fopt = v.getFailOverPolicyTemplates().get("gateway");
+    assertThat(fopt, notNullValue());
+    assertThat(fopt.getGateways().get(Ip.parse("10.0.0.1")), equalTo(100));
+
+    // vrrp-a interface
+    assertThat(v.getInterface(), equalTo(new InterfaceReference(Type.TRUNK, 2)));
+
+    // vrrp-a peer-group
+    assertThat(v.getPeerGroup(), contains(Ip.parse("10.0.1.1")));
+
+    // vrrp-a vrid
+    VrrpAVrid vrid = v.getVrids().get(0);
+    assertThat(vrid, notNullValue());
+    assertTrue(vrid.getPreemptModeDisable());
+    assertThat(vrid.getPreemptModeThreshold(), equalTo(1));
+    VrrpaVridBladeParameters vridbp = vrid.getBladeParameters();
+    assertThat(vridbp, notNullValue());
+    assertThat(vridbp.getPriority(), equalTo(200));
+    assertThat(vridbp.getFailOverPolicyTemplate(), equalTo("gateway"));
+
+    // vrrp-a vrid-lead
+    assertThat(v.getVridLead(), equalTo("default-vrid-lead"));
+  }
+
+  @Test
+  public void testVrrpAReferences() throws IOException {
+    String hostname = "vrrp-a";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Confirm reference counts
+    // referenced from vrrp-a interface, self
+    assertThat(
+        ccae,
+        hasNumReferrers(filename, INTERFACE, getInterfaceName(Interface.Type.ETHERNET, 1), 2));
+    // referenced from vrrp-a interface, vlan 4094, ethernet1
+    assertThat(
+        ccae, hasNumReferrers(filename, INTERFACE, getInterfaceName(Interface.Type.TRUNK, 2), 3));
+
+    // self-reference for vrid 0 only
+    assertThat(ccae, hasNumReferrers(filename, VRRP_A_VRID, "0", 1));
+    // Referenced from ip nat-pools with vrid 1
+    assertThat(ccae, hasNumReferrers(filename, VRRP_A_VRID, "1", 2));
+
+    // Referenced from vrrp-a vrid blade-parameters
+    assertThat(ccae, hasNumReferrers(filename, VRRP_A_FAIL_OVER_POLICY_TEMPLATE, "gateway", 1));
+
+    // Confirm definitions
+    assertThat(ccae, hasDefinedStructure(filename, VRRP_A_FAIL_OVER_POLICY_TEMPLATE, "gateway"));
+    assertThat(ccae, hasDefinedStructure(filename, VRRP_A_VRID, "0"));
+    assertThat(ccae, hasDefinedStructure(filename, VRRP_A_VRID, "1"));
+  }
+
+  @Test
+  public void testVrrpAAcos2Parsing() {
+    // TODO: extraction
+    String hostname = "vrrp-a_acos2";
+    assertNotNull(parseVendorConfig(hostname));
+  }
+
+  @Test
+  public void testVrrpAWarn() throws IOException {
+    String filename = "vrrp-a_warn";
+    Batfish batfish = getBatfishForConfigurationNames(filename);
+    Warnings warnings =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+    assertThat(
+        warnings,
+        hasParseWarnings(
+            containsInAnyOrder(
+                hasComment("Expected vrrp-a device-id in range 1-4, but got '5'"),
+                hasComment("Expected vrrp-a set-id in range 1-15, but got '16'"),
+                hasComment(
+                    "Expected fail-over-policy-template name with length in range 1-63, but got"
+                        + " '0000000000111111111122222222223333333333444444444455555555556666'"),
+                hasComment(
+                    "Expected fail-over-policy-template gateway weight in range 1-255, but got"
+                        + " '0'"),
+                hasComment("Expected ethernet interface number in range 1-40, but got '50'"),
+                hasComment("Expected trunk number in range 1-4096, but got '5000'"),
+                hasComment("Expected vrrp-a vrid number in range 0-31, but got '32'"),
+                hasComment(
+                    "Expected vrrp-a vrid blade-paramters priority in range 1-255, but got '0'"),
+                hasComment("Cannot assign non-existent fail-over-policy-template 'undefined'"))));
   }
 
   @Test

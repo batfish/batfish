@@ -173,7 +173,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
 
     // Initial management data conversion
     domainAndGateway.ifPresent(e -> convertCluster(e.getValue(), e.getKey()));
-    mgmtPackage.ifPresent(pakij -> convertPackage(pakij, mgmtObjects));
+    mgmtPackage.ifPresent(pakij -> convertPackage(pakij, mgmtObjects, domainAndGateway.get()));
 
     // Gateways don't have VRFs, so put everything in a generated default VRF
     Vrf vrf = new Vrf(VRF_NAME);
@@ -233,7 +233,9 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
   }
 
   private void convertAccessLayers(
-      List<AccessLayer> accessLayers, Map<Uid, NamedManagementObject> objects) {
+      List<AccessLayer> accessLayers,
+      Map<Uid, NamedManagementObject> objects,
+      Entry<ManagementDomain, GatewayOrServer> domainAndGateway) {
     // TODO support matching multiple access layers
     if (accessLayers.size() > 1) {
       _w.redFlag(
@@ -244,7 +246,8 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     AddressSpaceToMatchExpr addressSpaceToMatchExpr = new AddressSpaceToMatchExpr(objects);
     for (AccessLayer al : accessLayers) {
       Map<String, IpAccessList> acl =
-          toIpAccessLists(al, objects, serviceToMatchExpr, addressSpaceToMatchExpr, _w);
+          toIpAccessLists(
+              al, objects, serviceToMatchExpr, addressSpaceToMatchExpr, domainAndGateway, _w);
       _c.getIpAccessLists().putAll(acl);
     }
     IpAccessList interfaceAcl =
@@ -298,9 +301,12 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
    * Convert constructs in the specified package to their VI model equivalent and add them to the VI
    * configuration. (Does not include NAT rulebase conversion.)
    */
-  private void convertPackage(ManagementPackage pakij, Map<Uid, NamedManagementObject> objects) {
+  private void convertPackage(
+      ManagementPackage pakij,
+      Map<Uid, NamedManagementObject> objects,
+      Entry<ManagementDomain, GatewayOrServer> domainAndGateway) {
     convertObjects(objects);
-    convertAccessLayers(pakij.getAccessLayers(), objects);
+    convertAccessLayers(pakij.getAccessLayers(), objects, domainAndGateway);
   }
 
   /**
