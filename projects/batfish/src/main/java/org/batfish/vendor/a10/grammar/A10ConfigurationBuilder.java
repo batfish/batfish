@@ -670,16 +670,23 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   @Override
   public void exitSinpp_vrid(A10Parser.Sinpp_vridContext ctx) {
-    // TODO enforce existence check when VRRP is supported
     Optional<Integer> maybeVrid = toInteger(ctx, ctx.non_default_vrid());
-    if (maybeVrid.isPresent()) {
-      int vrid = maybeVrid.get();
-      _c.referenceStructure(
-          VRRP_A_VRID, Integer.toString(vrid), IP_NAT_POOL_VRID, ctx.getStart().getLine());
-      _currentNatPool.setVrid(vrid);
-    } else {
+    if (!maybeVrid.isPresent()) {
       _currentNatPoolValid = false;
+      return;
     }
+    int vrid = maybeVrid.get();
+    assert vrid != 0;
+    if (!Optional.ofNullable(_c.getVrrpA())
+        .map(vrrpA -> vrrpA.getVrids().containsKey(vrid))
+        .orElse(false)) {
+      _currentNatPoolValid = false;
+      warn(ctx, String.format("Cannot assign nat pool to undefined non-default vrid: %d", vrid));
+      return;
+    }
+    _c.referenceStructure(
+        VRRP_A_VRID, Integer.toString(vrid), IP_NAT_POOL_VRID, ctx.getStart().getLine());
+    _currentNatPool.setVrid(vrid);
   }
 
   private @Nonnull Optional<Integer> toInteger(
