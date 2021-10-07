@@ -12,6 +12,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurat
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddressMetadata;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasChannelGroup;
@@ -39,6 +40,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
@@ -63,6 +65,7 @@ import org.batfish.common.runtime.SnapshotRuntimeData;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
@@ -656,6 +659,10 @@ public class A10GrammarTest {
                 hasInterfaceType(InterfaceType.PHYSICAL),
                 hasSwitchPortMode(SwitchportMode.NONE),
                 hasAllAddresses(contains(ConcreteInterfaceAddress.parse("10.0.1.1/24"))),
+                hasAddressMetadata(
+                    hasEntry(
+                        ConcreteInterfaceAddress.parse("10.0.1.1/24"),
+                        ConnectedRouteMetadata.builder().setGenerateLocalRoute(false).build())),
                 isActive(),
                 hasDescription("this is a comp\"licat'ed name"),
                 hasHumanName("Ethernet 1"),
