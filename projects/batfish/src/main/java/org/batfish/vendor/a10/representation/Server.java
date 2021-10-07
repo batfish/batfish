@@ -30,6 +30,7 @@ public final class Server implements Serializable {
   }
 
   /** Returns the requested port; creates one and adds it if it doesn't already exist. */
+  @Nonnull
   public ServerPort getOrCreatePort(int port, ServerPort.Type type, @Nullable Integer range) {
     return _ports.computeIfAbsent(
         new ServerPort.ServerPortAndType(port, type), pat -> new ServerPort(port, type, range));
