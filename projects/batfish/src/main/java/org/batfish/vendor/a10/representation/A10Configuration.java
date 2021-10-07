@@ -17,8 +17,10 @@ import java.util.Optional;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.batfish.common.VendorConversionException;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceType;
@@ -229,7 +231,6 @@ public final class A10Configuration extends VendorConfiguration {
     org.batfish.datamodel.Interface.Builder newIface =
         org.batfish.datamodel.Interface.builder()
             .setActive(getInterfaceEnabledEffective(iface))
-            .setAddress(iface.getIpAddress())
             .setMtu(getInterfaceMtuEffective(iface))
             .setType(getInterfaceType(iface))
             .setName(name)
@@ -239,6 +240,14 @@ public final class A10Configuration extends VendorConfiguration {
     newIface.setDescription(iface.getName());
     newIface.setHumanName(getInterfaceHumanName(iface));
     newIface.setDeclaredNames(ImmutableList.of(name));
+
+    if (iface.getIpAddress() != null) {
+      ConcreteInterfaceAddress address = iface.getIpAddress();
+      ConnectedRouteMetadata meta =
+          ConnectedRouteMetadata.builder().setGenerateLocalRoute(false).build();
+      newIface.setAddress(address);
+      newIface.setAddressMetadata(ImmutableMap.of(address, meta));
+    }
 
     // VLANs
     boolean vlanIsConfigured = hasVlanSettings(iface);
