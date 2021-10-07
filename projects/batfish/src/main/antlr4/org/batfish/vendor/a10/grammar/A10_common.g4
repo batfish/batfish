@@ -10,6 +10,8 @@ single_quoted_string: SINGLE_QUOTE text = quoted_text? SINGLE_QUOTE;
 word_content: (double_quoted_string | single_quoted_string | WORD)+;
 word: WORD_SEPARATOR word_content;
 
+health_check_name: word;
+
 hostname: word;
 
 ethernet_or_trunk_reference
@@ -22,6 +24,8 @@ interface_name_str: word;
 nat_pool_name: word;
 
 route_description: word;
+
+service_group_name: word;
 
 slb_server_name: word;
 

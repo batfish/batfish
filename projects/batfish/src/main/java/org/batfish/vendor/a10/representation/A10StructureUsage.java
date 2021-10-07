@@ -7,6 +7,7 @@ public enum A10StructureUsage implements StructureUsage {
   INTERFACE_SELF_REF("interface"),
   INTERFACE_TRUNK_GROUP("interface trunk-group"),
   IP_NAT_POOL_VRID("ip nat pool vrid"),
+  SERVICE_GROUP_MEMBER("service-group member"),
   // ACOS v2 member of a trunk
   TRUNK_INTERFACE("trunk interface"),
   VLAN_ROUTER_INTERFACE("vlan router-interface"),
