@@ -35,7 +35,7 @@ ip_prefix: ip_address ip_netmask;
 
 ip_netmask: subnet_mask | ip_slash_prefix;
 
-ip_address: IP_ADDRESS;
+ip_address: IP_ADDRESS | SUBNET_MASK;
 
 ip_slash_prefix: IP_SLASH_PREFIX;
 
