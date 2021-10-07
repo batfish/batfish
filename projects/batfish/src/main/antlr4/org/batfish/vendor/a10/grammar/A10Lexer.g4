@@ -56,9 +56,6 @@ NO: 'no';
 PASSIVE: 'passive';
 PEER: 'peer';
 PEER_GROUP: 'peer-group';
-PREEMPT_MODE: 'preempt-mode';
-PREEMPTION_DELAY: 'preemption-delay';
-PRIORITY: 'priority';
 POOL: 'pool' -> pushMode(M_Word);
 PORT
 :
@@ -71,6 +68,8 @@ PORT
 ;
 PORT_OVERLOAD: 'port-overload';
 PORTS_THRESHOLD: 'ports-threshold';
+PREEMPT_MODE: 'preempt-mode';
+PREEMPTION_DELAY: 'preemption-delay';
 PRIORITY: 'priority';
 RANGE: 'range';
 RBA: 'rba' -> pushMode(M_Rba);
