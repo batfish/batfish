@@ -22,6 +22,8 @@ public class BDDInteger {
   /** Certain API calls are only valid when this BDD has only variables in it. */
   private boolean _hasVariablesOnly;
 
+  private BDD _vars;
+
   /*
    * Create an integer, but don't initialize its bit values
    */
@@ -387,12 +389,14 @@ public class BDDInteger {
     checkState(
         _hasVariablesOnly,
         "getVars can only be called on a BDDInteger with hasVariablesOnly() true");
-    if (_bitvec.length == 0) {
-      return _factory.one(); // empty set
+    if (_vars == null) {
+      _vars =
+          _bitvec.length == 0
+              ? _factory.one() // empty set
+              : BDDOps.andNull(_bitvec);
+      assert _vars != null;
     }
-    BDD ret = BDDOps.andNull(_bitvec);
-    assert ret != null;
-    return ret;
+    return _vars;
   }
 
   public BDDFactory getFactory() {
