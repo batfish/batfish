@@ -347,7 +347,7 @@ public final class AristaConfiguration extends VendorConfiguration {
 
   private String _domainName;
 
-  private Map<String, VlanTrunkGroup> _eosVlanTrunkGroups;
+  private final Map<String, VlanTrunkGroup> _eosVlanTrunkGroups;
 
   private AristaEosVxlan _eosVxlan;
 
@@ -1164,24 +1164,15 @@ public final class AristaConfiguration extends VendorConfiguration {
       case TRUNK:
         newIface.setNativeVlan(firstNonNull(iface.getNativeVlan(), 1));
         /*
-         * Compute allowed VLANs:
-         * - If allowed VLANs are set, honor them;
-         * - Otherwise prune allowed VLANs based on configured trunk groups (if any).
-         *
-         * https://www.arista.com/en/um-eos/eos-section-19-3-vlan-configuration-procedures#ww1152330
+         * Compute allowed VLANs as configured allowed vlans (or default) minus vlans in other trunk groups.
+         * https://www.arista.com/en/um-eos/eos-virtual-lans-vlans#xx1152205
          */
-        if (iface.getAllowedVlans() != null) {
-          newIface.setAllowedVlans(iface.getAllowedVlans());
-        } else if (!iface.getVlanTrunkGroups().isEmpty()) {
-          newIface.setAllowedVlans(
-              iface.getVlanTrunkGroups().stream()
-                  .map(_eosVlanTrunkGroups::get)
-                  .map(VlanTrunkGroup::getVlans)
-                  .reduce(IntegerSpace::union)
-                  .get());
-        } else {
-          newIface.setAllowedVlans(Interface.ALL_VLANS);
-        }
+        IntegerSpace.Builder allowedVlans =
+            firstNonNull(iface.getAllowedVlans(), Interface.ALL_VLANS).toBuilder();
+        _eosVlanTrunkGroups.values().stream()
+            .filter(group -> !iface.getVlanTrunkGroups().contains(group.getName()))
+            .forEach(group -> allowedVlans.excluding(group.getVlans()));
+        newIface.setAllowedVlans(allowedVlans.build());
         break;
 
       default:
