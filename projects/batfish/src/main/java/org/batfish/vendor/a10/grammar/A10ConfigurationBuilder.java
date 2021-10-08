@@ -11,6 +11,7 @@ import static org.batfish.vendor.a10.representation.A10StructureType.VRRP_A_VRID
 import static org.batfish.vendor.a10.representation.A10StructureUsage.IP_NAT_POOL_VRID;
 import static org.batfish.vendor.a10.representation.A10StructureUsage.SERVICE_GROUP_MEMBER;
 import static org.batfish.vendor.a10.representation.A10StructureUsage.VIRTUAL_SERVER_SELF_REF;
+import static org.batfish.vendor.a10.representation.A10StructureUsage.VIRTUAL_SERVER_VRID;
 import static org.batfish.vendor.a10.representation.A10StructureUsage.VRRP_A_INTERFACE;
 import static org.batfish.vendor.a10.representation.A10StructureUsage.VRRP_A_VRID_BLADE_PARAMETERS_FAIL_OVER_POLICY_TEMPLATE;
 import static org.batfish.vendor.a10.representation.A10StructureUsage.VRRP_A_VRID_DEFAULT_SELF_REFERENCE;
@@ -1386,7 +1387,26 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   @Override
   public void exitSsvs_vrid(A10Parser.Ssvs_vridContext ctx) {
-    toInteger(ctx, ctx.vrid()).ifPresent(_currentVirtualServer::setVrid);
+    toInteger(ctx, ctx.non_default_vrid())
+        .ifPresent(
+            vrid -> {
+              assert vrid != 0;
+              if (!Optional.ofNullable(_c.getVrrpA())
+                  .map(vrrpA -> vrrpA.getVrids().containsKey(vrid))
+                  .orElse(false)) {
+                warn(
+                    ctx,
+                    String.format(
+                        "Cannot assign virtual-server to undefined non-default vrid: %d", vrid));
+                return;
+              }
+              _c.referenceStructure(
+                  VRRP_A_VRID,
+                  Integer.toString(vrid),
+                  VIRTUAL_SERVER_VRID,
+                  ctx.getStart().getLine());
+              _currentVirtualServer.setVrid(vrid);
+            });
   }
 
   @Override

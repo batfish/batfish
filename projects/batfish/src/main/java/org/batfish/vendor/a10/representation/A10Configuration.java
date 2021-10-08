@@ -243,6 +243,7 @@ public final class A10Configuration extends VendorConfiguration {
     _staticRoutes.forEach(
         (prefix, manager) ->
             manager.getVariants().forEach((ip, sr) -> convertStaticRoute(vrf, prefix, sr)));
+
     markStructures();
     return ImmutableList.of(_c);
   }

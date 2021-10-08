@@ -12,7 +12,6 @@ virtual_server_target: ip_address;
 
 ssvs_definition
 :
-// TODO more?
    ssvs_disable
    | ssvs_enable
    | ssvs_redistribution_flagged
@@ -35,13 +34,12 @@ ssvs_stats_data_enable: STATS_DATA_ENABLE NEWLINE;
 
 ssvs_template: TEMPLATE null_rest_of_line;
 
-ssvs_vrid: VRID vrid NEWLINE;
+ssvs_vrid: VRID non_default_vrid NEWLINE;
 
 ssvs_port: PORT port_number virtual_server_port_type (RANGE port_range_value)? NEWLINE ssvsp_definition*;
 
 ssvsp_definition
 :
-   // TODO more?
    ssvspd_bucket_count
    | ssvspd_conn_limit
    | ssvspd_disable
@@ -65,7 +63,6 @@ ssvspd_enable: ENABLE NEWLINE;
 
 ssvspd_def_selection_if_pref_failed: DEF_SELECTION_IF_PREF_FAILED NEWLINE;
 
-// TODO all this and more
 ssvspd_name: NAME virtual_service_name NEWLINE;
 
 ssvspd_service_group: SERVICE_GROUP service_group_name NEWLINE;
@@ -85,5 +82,5 @@ ssvspd_enable: ENABLE NEWLINE;
 // 1-256
 traffic_bucket_count: uint16;
 
-// TODO add TCP_PROXY?
+// TODO add many more types
 virtual_server_port_type: TCP | UDP;

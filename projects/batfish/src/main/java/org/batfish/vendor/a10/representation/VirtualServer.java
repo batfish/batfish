@@ -1,6 +1,7 @@
 package org.batfish.vendor.a10.representation;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nonnull;
@@ -21,7 +22,7 @@ public final class VirtualServer implements Serializable {
 
   @Nonnull
   public Map<VirtualServerPort.PortAndType, VirtualServerPort> getPorts() {
-    return _ports;
+    return Collections.unmodifiableMap(_ports);
   }
 
   @Nullable
@@ -35,16 +36,6 @@ public final class VirtualServer implements Serializable {
     return _ports.computeIfAbsent(
         new VirtualServerPort.PortAndType(port, type),
         pat -> new VirtualServerPort(port, type, range));
-  }
-
-  /**
-   * Create a {@link VirtualServerPort} and add it to the map of ports for this {@link
-   * VirtualServer}.
-   */
-  public void createPort(int port, VirtualServerPort.Type type) {
-    VirtualServerPort.PortAndType key = new VirtualServerPort.PortAndType(port, type);
-    assert !_ports.containsKey(key);
-    _ports.put(key, new VirtualServerPort(port, type, null));
   }
 
   @Nullable

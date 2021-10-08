@@ -19,9 +19,9 @@ slb service-group SG1 tcp
   member SERVER3 80
     enable
 !
-ip nat pool POOL1 10.10.10.10 10.10.10.11 netmask /24 vrid 1
+vrrp-a vrid 1
 !
-! TODO create vrid when they're supported
+ip nat pool POOL1 10.10.10.10 10.10.10.11 netmask /24 vrid 1
 !
 !
 slb virtual-server VS1 10.0.0.101
