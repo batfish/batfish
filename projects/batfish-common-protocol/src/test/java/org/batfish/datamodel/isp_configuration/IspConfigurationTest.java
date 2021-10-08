@@ -28,41 +28,55 @@ public class IspConfigurationTest {
                     new BorderInterfaceInfo(NodeInterfacePair.of("node", "interface"))),
                 ImmutableList.of(),
                 new IspFilter(ImmutableList.of(1234L), ImmutableList.of(Ip.parse("1.1.1.1"))),
-                ImmutableList.of(new IspNodeInfo(42, "n1"))),
+                ImmutableList.of(new IspNodeInfo(42, "n1")),
+                ImmutableList.of()),
             new IspConfiguration(
                 ImmutableList.of(
                     new BorderInterfaceInfo(NodeInterfacePair.of("node", "interface"))),
                 ImmutableList.of(),
                 new IspFilter(ImmutableList.of(1234L), ImmutableList.of(Ip.parse("1.1.1.1"))),
-                ImmutableList.of(new IspNodeInfo(42, "n1"))))
+                ImmutableList.of(new IspNodeInfo(42, "n1")),
+                ImmutableList.of()))
         .addEqualityGroup(
             new IspConfiguration(
                 ImmutableList.of(
                     new BorderInterfaceInfo(NodeInterfacePair.of("node", "interface"))),
                 ImmutableList.of(),
                 new IspFilter(ImmutableList.of(5678L), ImmutableList.of(Ip.parse("2.2.2.2"))),
-                ImmutableList.of(new IspNodeInfo(42, "n1"))))
+                ImmutableList.of(new IspNodeInfo(42, "n1")),
+                ImmutableList.of()))
         .addEqualityGroup(
             new IspConfiguration(
                 ImmutableList.of(
                     new BorderInterfaceInfo(NodeInterfacePair.of("diffNode", "diffInterface"))),
                 ImmutableList.of(),
                 new IspFilter(ImmutableList.of(1234L), ImmutableList.of(Ip.parse("1.1.1.1"))),
-                ImmutableList.of(new IspNodeInfo(42, "n1"))))
-        .addEqualityGroup(
-            new IspConfiguration(
-                ImmutableList.of(
-                    new BorderInterfaceInfo(NodeInterfacePair.of("node", "interface"))),
-                ImmutableList.of(),
-                new IspFilter(ImmutableList.of(1234L), ImmutableList.of(Ip.parse("1.1.1.1"))),
-                ImmutableList.of(new IspNodeInfo(24, "diffName"))))
+                ImmutableList.of(new IspNodeInfo(42, "n1")),
+                ImmutableList.of()))
         .addEqualityGroup(
             new IspConfiguration(
                 ImmutableList.of(
                     new BorderInterfaceInfo(NodeInterfacePair.of("node", "interface"))),
                 ImmutableList.of(new BgpPeerInfo("other", Ip.ZERO, null, null)),
                 new IspFilter(ImmutableList.of(1234L), ImmutableList.of(Ip.parse("1.1.1.1"))),
-                ImmutableList.of(new IspNodeInfo(42, "n1"))))
+                ImmutableList.of(new IspNodeInfo(42, "n1")),
+                ImmutableList.of()))
+        .addEqualityGroup(
+            new IspConfiguration(
+                ImmutableList.of(
+                    new BorderInterfaceInfo(NodeInterfacePair.of("node", "interface"))),
+                ImmutableList.of(),
+                new IspFilter(ImmutableList.of(1234L), ImmutableList.of(Ip.parse("1.1.1.1"))),
+                ImmutableList.of(new IspNodeInfo(24, "diffName")),
+                ImmutableList.of()))
+        .addEqualityGroup(
+            new IspConfiguration(
+                ImmutableList.of(
+                    new BorderInterfaceInfo(NodeInterfacePair.of("node", "interface"))),
+                ImmutableList.of(),
+                new IspFilter(ImmutableList.of(1234L), ImmutableList.of(Ip.parse("1.1.1.1"))),
+                ImmutableList.of(new IspNodeInfo(24, "n1")),
+                ImmutableList.of(new IspPeeringInfo(1L, 2L))))
         .testEquals();
   }
 
@@ -73,7 +87,8 @@ public class IspConfigurationTest {
             ImmutableList.of(new BorderInterfaceInfo(NodeInterfacePair.of("node", "interface"))),
             ImmutableList.of(new BgpPeerInfo("node", Ip.ZERO, null, null)),
             new IspFilter(ImmutableList.of(1234L), ImmutableList.of(Ip.parse("1.1.1.1"))),
-            ImmutableList.of(new IspNodeInfo(42, "n1")));
+            ImmutableList.of(new IspNodeInfo(42, "n1")),
+            ImmutableList.of(new IspPeeringInfo(1L, 2L)));
 
     assertThat(
         BatfishObjectMapper.clone(ispConfiguration, IspConfiguration.class),

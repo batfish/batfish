@@ -102,6 +102,7 @@ public final class IspModelingUtils {
   static final String EXPORT_POLICY_ON_INTERNET = "exportPolicyOnInternet";
   static final String EXPORT_POLICY_ON_ISP_TO_CUSTOMERS = "exportPolicyOnIspToCustomers";
   static final String EXPORT_POLICY_ON_ISP_TO_INTERNET = "exportPolicyOnIspToInternet";
+  static final String EXPORT_POLICY_FOR_ISP_PEERING = "exportPolicyForIspPeering";
   static final long INTERNET_AS = 65537L;
   public static final String INTERNET_HOST_NAME = "internet";
   static final Ip INTERNET_OUT_ADDRESS = INTERNET_OUT_SUBNET.getFirstHostIp();
@@ -133,6 +134,11 @@ public final class IspModelingUtils {
   public static String ispToSnapshotInterfaceName(
       String snapshotHostname, String snapshotInterfaceName) {
     return "To-" + snapshotHostname + '-' + snapshotInterfaceName;
+  }
+
+  @VisibleForTesting
+  static String ispPeeringInterfaceName(String otherIsp) {
+    return "To-" + otherIsp;
   }
 
   @VisibleForTesting
@@ -203,7 +209,9 @@ public final class IspModelingUtils {
       return new ModeledNodes();
     }
 
-    return createInternetAndIspNodes(ispModels, new NetworkFactory(), logger);
+    Set<IspPeering> ispPeerings = combineIspPeerings(ispConfigurations, ispModels, warnings);
+
+    return createInternetAndIspNodes(ispModels, ispPeerings, new NetworkFactory(), logger);
   }
 
   /**
@@ -248,6 +256,38 @@ public final class IspModelingUtils {
     // TODO: Warn about ISP ASNs that appear in IspNodeInfo but are pulled from configs
 
     return ispModelsBuilder.build();
+  }
+
+  /**
+   * Returns {@link IspPeering} objects across all ISP configuration objects, after de-duplication
+   * and removing invalid ASNs.
+   */
+  @VisibleForTesting
+  static Set<IspPeering> combineIspPeerings(
+      List<IspConfiguration> ispConfigurations, Map<Long, IspModel> ispModels, Warnings warnings) {
+    ImmutableSet.Builder<IspPeering> ispPeerings = ImmutableSet.builder();
+    ispConfigurations.stream()
+        .flatMap(ispConfig -> ispConfig.getIspPeeringInfos().stream())
+        .forEach(
+            peeringInfo -> {
+              if (!ispModels.containsKey(peeringInfo.getAsn1())) {
+                warnings.redFlag(
+                    String.format(
+                        "ISP Modeling: Could not find ISP with ASN %s, specified for ISP peering",
+                        peeringInfo.getAsn1()));
+                return;
+              }
+              if (!ispModels.containsKey(peeringInfo.getAsn2())) {
+                warnings.redFlag(
+                    String.format(
+                        "ISP Modeling: Could not find ISP with ASN %s, specified for ISP peering",
+                        peeringInfo.getAsn2()));
+                return;
+              }
+              ispPeerings.add(new IspPeering(peeringInfo.getAsn1(), peeringInfo.getAsn2()));
+            });
+
+    return ispPeerings.build();
   }
 
   /**
@@ -646,7 +686,10 @@ public final class IspModelingUtils {
   }
 
   private static ModeledNodes createInternetAndIspNodes(
-      Map<Long, IspModel> asnToIspModel, NetworkFactory nf, BatfishLogger logger) {
+      Map<Long, IspModel> asnToIspModel,
+      Set<IspPeering> ispPeerings,
+      NetworkFactory nf,
+      BatfishLogger logger) {
     ModeledNodes modeledNodes = new ModeledNodes();
 
     asnToIspModel
@@ -663,30 +706,115 @@ public final class IspModelingUtils {
                           layer1Edges.forEach(modeledNodes::addLayer1Edge);
                         }));
 
-    boolean needInternet =
-        asnToIspModel.values().stream().anyMatch(model -> model.getRole() == Role.TRANSIT);
-
-    // not proceeding if no ISPs were created or internet is not needed
-    if (modeledNodes.getConfigurations().isEmpty() || !needInternet) {
+    // not proceeding if no ISPs were created
+    if (modeledNodes.getConfigurations().isEmpty()) {
       return modeledNodes;
     }
 
-    Configuration internet = createInternetNode(nf);
-    modeledNodes.addConfiguration(internet);
+    boolean needInternet =
+        asnToIspModel.values().stream().anyMatch(model -> model.getRole() == Role.TRANSIT);
 
-    modeledNodes.getConfigurations().values().stream()
-        .filter(c -> c != internet)
-        .forEach(
-            c -> {
-              long ispAsn = getAsnOfIspNode(c);
-              if (asnToIspModel.get(ispAsn).getRole() == Role.TRANSIT) {
-                Set<Layer1Edge> layer1Edges =
-                    connectIspToInternet(ispAsn, asnToIspModel.get(ispAsn), c, internet, nf);
-                layer1Edges.forEach(modeledNodes::addLayer1Edge);
-              }
-            });
+    if (needInternet) {
+      Configuration internet = createInternetNode(nf);
+      modeledNodes.addConfiguration(internet);
+
+      modeledNodes.getConfigurations().values().stream()
+          .filter(c -> c != internet)
+          .forEach(
+              c -> {
+                long ispAsn = getAsnOfIspNode(c);
+                if (asnToIspModel.get(ispAsn).getRole() == Role.TRANSIT) {
+                  Set<Layer1Edge> layer1Edges =
+                      connectIspToInternet(ispAsn, asnToIspModel.get(ispAsn), c, internet, nf);
+                  layer1Edges.forEach(modeledNodes::addLayer1Edge);
+                }
+              });
+    }
+
+    ispPeerings.forEach(
+        ispPeering -> {
+          IspModel ispModel1 = asnToIspModel.get(ispPeering.getAsn1());
+          IspModel ispModel2 = asnToIspModel.get(ispPeering.getAsn2());
+          Configuration ispConfiguration1 =
+              modeledNodes.getConfigurations().get(ispModel1.getHostname());
+          Configuration ispConfiguration2 =
+              modeledNodes.getConfigurations().get(ispModel2.getHostname());
+          if (ispConfiguration1 == null || ispConfiguration2 == null) {
+            return;
+          }
+          Set<Layer1Edge> layer1Edges =
+              connectPeerIsps(
+                  ispPeering, ispModel1, ispModel2, ispConfiguration1, ispConfiguration2, nf);
+          layer1Edges.forEach(modeledNodes::addLayer1Edge);
+        });
 
     return modeledNodes;
+  }
+
+  @VisibleForTesting
+  static Set<Layer1Edge> connectPeerIsps(
+      IspPeering ispPeering,
+      IspModel ispModel1,
+      IspModel ispModel2,
+      Configuration ispConfiguration1,
+      Configuration ispConfiguration2,
+      NetworkFactory nf) {
+
+    Interface iface1 =
+        createIspPeeringInterface(ispConfiguration1, ispConfiguration2.getHostname(), nf);
+    Interface iface2 =
+        createIspPeeringInterface(ispConfiguration2, ispConfiguration1.getHostname(), nf);
+
+    createIspPeeringBgpPeer(
+        ispConfiguration1, ispModel1, iface1.getName(), ispPeering.getAsn1(), ispPeering.getAsn2());
+    createIspPeeringBgpPeer(
+        ispConfiguration2, ispModel2, iface2.getName(), ispPeering.getAsn2(), ispPeering.getAsn1());
+
+    Layer1Node ispL1 = new Layer1Node(ispConfiguration1.getHostname(), iface1.getName());
+    Layer1Node ispL2 = new Layer1Node(ispConfiguration2.getHostname(), iface2.getName());
+    return ImmutableSet.of(new Layer1Edge(ispL1, ispL2), new Layer1Edge(ispL2, ispL1));
+  }
+
+  private static void createIspPeeringBgpPeer(
+      Configuration ispConfiguration,
+      IspModel ispModel,
+      String ifaceName,
+      long localAs,
+      long remoteAs) {
+
+    if (!ispConfiguration.getRoutingPolicies().containsKey(EXPORT_POLICY_FOR_ISP_PEERING)) {
+      ispConfiguration
+          .getRoutingPolicies()
+          .put(EXPORT_POLICY_FOR_ISP_PEERING, installRoutingPolicyForIspPeering(ispConfiguration));
+    }
+
+    BgpUnnumberedPeerConfig.builder()
+        .setPeerInterface(ifaceName)
+        .setLocalAs(localAs)
+        .setRemoteAs(remoteAs)
+        .setLocalIp(LINK_LOCAL_IP)
+        .setBgpProcess(ispConfiguration.getDefaultVrf().getBgpProcess())
+        .setIpv4UnicastAddressFamily(
+            Ipv4UnicastAddressFamily.builder()
+                .setExportPolicy(EXPORT_POLICY_FOR_ISP_PEERING)
+                .setAddressFamilyCapabilities(
+                    AddressFamilyCapabilities.builder()
+                        .setSendCommunity(ispModel.getRole() == Role.PRIVATE_BACKBONE)
+                        .setSendExtendedCommunity(ispModel.getRole() == Role.PRIVATE_BACKBONE)
+                        .build())
+                .build())
+        .build();
+  }
+
+  private static Interface createIspPeeringInterface(
+      Configuration ispConfiguration, String otherHostname, NetworkFactory nf) {
+    return nf.interfaceBuilder()
+        .setOwner(ispConfiguration)
+        .setName(ispPeeringInterfaceName(otherHostname))
+        .setVrf(ispConfiguration.getDefaultVrf())
+        .setAddress(LINK_LOCAL_ADDRESS)
+        .setType(InterfaceType.PHYSICAL)
+        .build();
   }
 
   /** Creates the modeled Internet node and inserts it into {@code modeledNodes} */
@@ -1035,6 +1163,16 @@ public final class IspModelingUtils {
         .setOwner(isp)
         .setStatements(
             ImmutableList.of(getAdvertiseBgpStatement(), getAdvertiseStaticStatement(prefixSpace)))
+        .build();
+  }
+
+  /** Creates a routing policy to export all BGP routes */
+  @VisibleForTesting
+  static RoutingPolicy installRoutingPolicyForIspPeering(Configuration isp) {
+    return RoutingPolicy.builder()
+        .setName(EXPORT_POLICY_FOR_ISP_PEERING)
+        .setOwner(isp)
+        .setStatements(ImmutableList.of(getAdvertiseBgpStatement()))
         .build();
   }
 

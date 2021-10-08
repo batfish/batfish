@@ -29,26 +29,31 @@ public class IspConfiguration {
   private static final String PROP_BGP_PEERS = "bgpPeers";
   private static final String PROP_FILTER = "filter";
   private static final String PROP_ISP_NODE_INFO = "ispNodeInfo";
+  private static final String PROP_ISP_PEERINGS = "ispPeerings";
 
   @Nonnull private final List<BorderInterfaceInfo> _borderInterfaces;
   @Nonnull private final List<BgpPeerInfo> _bgpPeersInfos;
   @Nonnull private final IspFilter _filter;
   @Nonnull private final List<IspNodeInfo> _ispNodeInfos;
 
+  @Nonnull private final List<IspPeeringInfo> _ispPeeringInfos;
+
   public IspConfiguration(
       @Nonnull List<BorderInterfaceInfo> borderInterfaces, @Nonnull IspFilter filter) {
-    this(borderInterfaces, ImmutableList.of(), filter, ImmutableList.of());
+    this(borderInterfaces, ImmutableList.of(), filter, ImmutableList.of(), ImmutableList.of());
   }
 
   public IspConfiguration(
       @Nonnull List<BorderInterfaceInfo> borderInterfaces,
       @Nonnull List<BgpPeerInfo> bgpPeerInfos,
       @Nonnull IspFilter filter,
-      @Nonnull List<IspNodeInfo> ispNodeInfos) {
+      @Nonnull List<IspNodeInfo> ispNodeInfos,
+      List<IspPeeringInfo> ispPeeringInfos) {
     _borderInterfaces = ImmutableList.copyOf(borderInterfaces);
     _bgpPeersInfos = ImmutableList.copyOf(bgpPeerInfos);
     _filter = filter;
     _ispNodeInfos = ispNodeInfos;
+    _ispPeeringInfos = ispPeeringInfos;
   }
 
   @JsonCreator
@@ -57,12 +62,14 @@ public class IspConfiguration {
           List<BorderInterfaceInfo> borderInterfaceInfos,
       @JsonProperty(PROP_BGP_PEERS) @Nullable List<BgpPeerInfo> bgpPeerInfos,
       @JsonProperty(PROP_FILTER) @Nullable IspFilter filter,
-      @JsonProperty(PROP_ISP_NODE_INFO) @Nullable List<IspNodeInfo> ispNodeInfos) {
+      @JsonProperty(PROP_ISP_NODE_INFO) @Nullable List<IspNodeInfo> ispNodeInfos,
+      @JsonProperty(PROP_ISP_PEERINGS) @Nullable List<IspPeeringInfo> ispPeeringInfos) {
     return new IspConfiguration(
         firstNonNull(borderInterfaceInfos, ImmutableList.of()),
         firstNonNull(bgpPeerInfos, ImmutableList.of()),
         firstNonNull(filter, IspFilter.ALLOW_ALL),
-        firstNonNull(ispNodeInfos, ImmutableList.of()));
+        firstNonNull(ispNodeInfos, ImmutableList.of()),
+        firstNonNull(ispPeeringInfos, ImmutableList.of()));
   }
 
   @Override
@@ -77,13 +84,15 @@ public class IspConfiguration {
     return Objects.equals(_borderInterfaces, that._borderInterfaces)
         && Objects.equals(_bgpPeersInfos, that._bgpPeersInfos)
         && Objects.equals(_filter, that._filter)
-        && Objects.equals(_ispNodeInfos, that._ispNodeInfos);
+        && Objects.equals(_ispNodeInfos, that._ispNodeInfos)
+        && Objects.equals(_ispPeeringInfos, that._ispPeeringInfos);
   }
 
   @Override
   public int hashCode() {
 
-    return Objects.hash(_borderInterfaces, _bgpPeersInfos, _filter, _ispNodeInfos);
+    return Objects.hash(
+        _borderInterfaces, _bgpPeersInfos, _filter, _ispNodeInfos, _ispPeeringInfos);
   }
 
   @JsonProperty(PROP_BORDER_INTERFACES)
@@ -108,5 +117,10 @@ public class IspConfiguration {
   @Nonnull
   public List<IspNodeInfo> getIspNodeInfos() {
     return _ispNodeInfos;
+  }
+
+  @Nonnull
+  public List<IspPeeringInfo> getIspPeeringInfos() {
+    return _ispPeeringInfos;
   }
 }

@@ -1,0 +1,36 @@
+{
+  "bgpPeers": [
+    {
+      "hostname": "border1",
+      "peerAddress": "10.111.255.185",
+      "ispAttachment": {
+        "interface": "Ethernet3/1",
+        "vlanTag": 95
+      }
+    },
+    {
+      "hostname": "border2",
+      "peerAddress": "10.111.255.189",
+      "ispAttachment": {
+        "interface": "Ethernet3/1",
+        "vlanTag": 95
+      }
+    }
+  ],
+  "ispNodeInfo": [
+    {
+      "asn": 1,
+      "role": "PRIVATE_BACKBONE"
+    },
+    {
+      "asn": 2,
+      "role": "PRIVATE_BACKBONE"
+    }
+  ],
+  "ispPeerings": [
+    {
+      "asn1": 1,
+      "asn2": 2
+    }
+  ]
+}
