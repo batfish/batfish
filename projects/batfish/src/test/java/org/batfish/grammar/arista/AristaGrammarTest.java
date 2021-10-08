@@ -1708,8 +1708,10 @@ public class AristaGrammarTest {
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
 
     assertThat(
-        c, hasInterface("Port-Channel1", hasAllowedVlans(IntegerSpace.of(Range.closed(1, 2)))));
+        c, hasInterface("Port-Channel1", hasAllowedVlans(IntegerSpace.of(Range.closed(1, 4094)))));
     assertThat(c, hasInterface("Port-Channel2", hasAllowedVlans(IntegerSpace.of(99))));
+    assertThat(
+        c, hasInterface("Port-Channel3", hasAllowedVlans(IntegerSpace.of(Range.closed(6, 4094)))));
   }
 
   @Test
