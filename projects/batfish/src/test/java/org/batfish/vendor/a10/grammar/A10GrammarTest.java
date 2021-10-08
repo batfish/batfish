@@ -99,6 +99,9 @@ import org.batfish.vendor.a10.representation.StaticRoute;
 import org.batfish.vendor.a10.representation.StaticRouteManager;
 import org.batfish.vendor.a10.representation.TrunkGroup;
 import org.batfish.vendor.a10.representation.TrunkInterface;
+import org.batfish.vendor.a10.representation.VirtualServer;
+import org.batfish.vendor.a10.representation.VirtualServerPort;
+import org.batfish.vendor.a10.representation.VirtualServerTargetAddress;
 import org.batfish.vendor.a10.representation.Vlan;
 import org.batfish.vendor.a10.representation.VrrpA;
 import org.batfish.vendor.a10.representation.VrrpACommon;
@@ -1017,6 +1020,94 @@ public class A10GrammarTest {
                 "Ethernet1", org.batfish.datamodel.Interface.DependencyType.AGGREGATE),
             new org.batfish.datamodel.Interface.Dependency(
                 "Ethernet2", org.batfish.datamodel.Interface.DependencyType.AGGREGATE)));
+  }
+
+  @Test
+  public void testVirtualServerExtraction() {
+    String hostname = "virtual_server";
+    A10Configuration c = parseVendorConfig(hostname);
+
+    VirtualServerPort.PortAndType tcp80 =
+        new VirtualServerPort.PortAndType(80, VirtualServerPort.Type.TCP);
+    VirtualServerPort.PortAndType udp81 =
+        new VirtualServerPort.PortAndType(81, VirtualServerPort.Type.UDP);
+
+    assertThat(c.getVirtualServers().keySet(), containsInAnyOrder("VS1", "VS2", "VS3"));
+    VirtualServer server1 = c.getVirtualServer("VS1");
+    VirtualServer server2 = c.getVirtualServer("VS2");
+    VirtualServer server3 = c.getVirtualServer("VS3");
+
+    assertNull(server1.getEnable());
+    assertThat(server1.getName(), equalTo("VS1"));
+    assertThat(server1.getPorts(), anEmptyMap());
+    assertNull(server1.getRedistributionFlagged());
+    assertNull(server1.getStatsDataEnable());
+    assertThat(
+        server1.getTarget(), equalTo(new VirtualServerTargetAddress(Ip.parse("10.0.0.101"))));
+    assertNull(server1.getVrid());
+
+    assertTrue(server2.getEnable());
+    assertThat(server2.getName(), equalTo("VS2"));
+    assertTrue(server2.getRedistributionFlagged());
+    assertTrue(server2.getStatsDataEnable());
+    assertThat(
+        server2.getTarget(), equalTo(new VirtualServerTargetAddress(Ip.parse("10.0.0.102"))));
+    assertThat(server2.getVrid(), equalTo(1));
+    Map<VirtualServerPort.PortAndType, VirtualServerPort> server2Ports = server2.getPorts();
+    assertThat(server2Ports.keySet(), contains(tcp80));
+    VirtualServerPort server2Port80 = server2Ports.get(tcp80);
+    assertThat(server2Port80.getBucketCount(), equalTo(100));
+    assertThat(server2Port80.getConnLimit(), equalTo(1000));
+    assertTrue(server2Port80.getDefSelectionIfPrefFailed());
+    assertTrue(server2Port80.getEnable());
+    assertThat(server2Port80.getName(), equalTo("PORT_NAME"));
+    assertThat(server2Port80.getNumber(), equalTo(80));
+    assertNull(server2Port80.getRange());
+    assertThat(server2Port80.getServiceGroup(), equalTo("SG1"));
+    assertThat(server2Port80.getSourceNat(), equalTo("POOL1"));
+    assertTrue(server2Port80.getStatsDataEnable());
+    assertThat(server2Port80.getType(), equalTo(VirtualServerPort.Type.TCP));
+
+    assertFalse(server3.getEnable());
+    assertThat(server3.getName(), equalTo("VS3"));
+    assertFalse(server3.getStatsDataEnable());
+    Map<VirtualServerPort.PortAndType, VirtualServerPort> server3Ports = server3.getPorts();
+    assertThat(server3Ports.keySet(), contains(udp81));
+    VirtualServerPort server3Port81 = server3Ports.get(udp81);
+    assertNull(server3Port81.getBucketCount());
+    assertNull(server3Port81.getConnLimit());
+    assertNull(server3Port81.getDefSelectionIfPrefFailed());
+    assertFalse(server3Port81.getEnable());
+    assertNull(server3Port81.getName());
+    assertThat(server3Port81.getNumber(), equalTo(81));
+    assertThat(server3Port81.getRange(), equalTo(11));
+    assertNull(server3Port81.getServiceGroup());
+    assertNull(server3Port81.getSourceNat());
+    assertFalse(server3Port81.getStatsDataEnable());
+    assertThat(server3Port81.getType(), equalTo(VirtualServerPort.Type.UDP));
+  }
+
+  @Test
+  public void testVirtualServerWarn() throws IOException {
+    String filename = "virtual_server_warn";
+    Batfish batfish = getBatfishForConfigurationNames(filename);
+
+    Warnings warnings =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+    assertThat(
+        warnings,
+        hasParseWarnings(
+            containsInAnyOrder(
+                hasComment("Server target must be specified for a new virtual-server"),
+                hasComment("Expected traffic bucket-count in range 1-256, but got '0'"),
+                hasComment("Expected traffic bucket-count in range 1-256, but got '257'"),
+                hasComment("Expected conn-limit in range 1-64000000, but got '0'"),
+                hasComment("Expected conn-limit in range 1-64000000, but got '64000001'"),
+                hasComment("Expected port range in range 0-254, but got '255'"))));
   }
 
   @Test

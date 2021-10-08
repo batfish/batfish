@@ -1,0 +1,53 @@
+!BATFISH_FORMAT: a10_acos
+hostname virtual_server
+!
+slb server SERVER1 10.0.0.1
+  port 80 tcp
+!
+slb server SERVER2 10.0.0.2
+  port 80 tcp
+!
+slb server SERVER3 10.0.0.3
+  port 80 tcp
+!
+!
+slb service-group SG1 tcp
+  member SERVER1 80
+    disable
+  member SERVER2 80
+    enable
+  member SERVER3 80
+    enable
+!
+ip nat pool POOL1 10.10.10.10 10.10.10.11 netmask /24 vrid 1
+!
+! TODO create vrid when they're supported
+!
+!
+slb virtual-server VS1 10.0.0.101
+!
+slb virtual-server VS2 10.0.0.102
+  enable
+  stats-data-enable
+  redistribution-flagged
+  vrid 1
+  port 80 tcp range 10
+    bucket-count 100
+    conn-limit 1000
+    def-selection-if-pref-failed
+    enable
+    name PORT_NAME
+    service-group SG1
+    source-nat pool POOL1
+  ! It is valid to re-enter an existing port definition
+  ! Changing the range on re-entry is okay, and omitting it removes the range
+  port 80 tcp
+    stats-data-enable
+!
+slb virtual-server VS3 10.0.0.103
+  disable
+  stats-data-disable
+  port 81 udp range 11
+    disable
+    stats-data-disable
+!

@@ -10,6 +10,7 @@ public enum A10StructureUsage implements StructureUsage {
   SERVICE_GROUP_MEMBER("service-group member"),
   // ACOS v2 member of a trunk
   TRUNK_INTERFACE("trunk interface"),
+  VIRTUAL_SERVER_SELF_REF("virtual-server"),
   VLAN_ROUTER_INTERFACE("vlan router-interface"),
   VLAN_TAGGED_INTERFACE("vlan tagged interface"),
   VLAN_UNTAGGED_INTERFACE("vlan untagged interface"),

@@ -1,0 +1,17 @@
+!BATFISH_FORMAT: a10_acos
+hostname virtual_server_warn
+!
+slb virtual-server VS1 10.0.0.101
+  port 80 udp range 255
+  port 80 udp
+    bucket-count 0
+    bucket-count 257
+    conn-limit 0
+    conn-limit 64000001
+!
+! Must specify a target for a new server
+slb virtual-server VS2
+!
+! TODO enforce no target reuse
+!slb virtual-server VS3 10.0.0.101
+!

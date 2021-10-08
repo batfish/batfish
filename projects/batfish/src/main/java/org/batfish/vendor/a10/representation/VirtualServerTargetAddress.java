@@ -4,8 +4,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 
-/** Datamodel class representing an IP address for a load balancer server */
-public final class ServerTargetAddress implements ServerTarget {
+/** Datamodel class representing an IP address for a load balancer virtual-server */
+public final class VirtualServerTargetAddress implements VirtualServerTarget {
   @Override
   public int hashCode() {
     return _address.hashCode();
@@ -15,10 +15,10 @@ public final class ServerTargetAddress implements ServerTarget {
   public boolean equals(@Nullable Object obj) {
     if (obj == this) {
       return true;
-    } else if (!(obj instanceof ServerTargetAddress)) {
+    } else if (!(obj instanceof VirtualServerTargetAddress)) {
       return false;
     }
-    ServerTargetAddress o = (ServerTargetAddress) obj;
+    VirtualServerTargetAddress o = (VirtualServerTargetAddress) obj;
     return _address.equals(o._address);
   }
 
@@ -27,14 +27,14 @@ public final class ServerTargetAddress implements ServerTarget {
     return _address;
   }
 
-  public ServerTargetAddress(Ip address) {
+  public VirtualServerTargetAddress(Ip address) {
     _address = address;
   }
 
   @Nonnull private final Ip _address;
 
   @Override
-  public <T> T accept(ServerTargetVisitor<T> visitor) {
+  public <T> T accept(VirtualServerTargetVisitor<T> visitor) {
     return visitor.visitAddress(this);
   }
 }

@@ -5,10 +5,12 @@ import static org.batfish.vendor.a10.representation.A10Configuration.getInterfac
 import static org.batfish.vendor.a10.representation.A10StructureType.INTERFACE;
 import static org.batfish.vendor.a10.representation.A10StructureType.SERVER;
 import static org.batfish.vendor.a10.representation.A10StructureType.SERVICE_GROUP;
+import static org.batfish.vendor.a10.representation.A10StructureType.VIRTUAL_SERVER;
 import static org.batfish.vendor.a10.representation.A10StructureType.VRRP_A_FAIL_OVER_POLICY_TEMPLATE;
 import static org.batfish.vendor.a10.representation.A10StructureType.VRRP_A_VRID;
 import static org.batfish.vendor.a10.representation.A10StructureUsage.IP_NAT_POOL_VRID;
 import static org.batfish.vendor.a10.representation.A10StructureUsage.SERVICE_GROUP_MEMBER;
+import static org.batfish.vendor.a10.representation.A10StructureUsage.VIRTUAL_SERVER_SELF_REF;
 import static org.batfish.vendor.a10.representation.A10StructureUsage.VRRP_A_INTERFACE;
 import static org.batfish.vendor.a10.representation.A10StructureUsage.VRRP_A_VRID_BLADE_PARAMETERS_FAIL_OVER_POLICY_TEMPLATE;
 import static org.batfish.vendor.a10.representation.A10StructureUsage.VRRP_A_VRID_DEFAULT_SELF_REFERENCE;
@@ -85,6 +87,10 @@ import org.batfish.vendor.a10.representation.StaticRoute;
 import org.batfish.vendor.a10.representation.StaticRouteManager;
 import org.batfish.vendor.a10.representation.TrunkGroup;
 import org.batfish.vendor.a10.representation.TrunkInterface;
+import org.batfish.vendor.a10.representation.VirtualServer;
+import org.batfish.vendor.a10.representation.VirtualServerPort;
+import org.batfish.vendor.a10.representation.VirtualServerTarget;
+import org.batfish.vendor.a10.representation.VirtualServerTargetAddress;
 import org.batfish.vendor.a10.representation.Vlan;
 import org.batfish.vendor.a10.representation.VrrpAFailOverPolicyTemplate;
 import org.batfish.vendor.a10.representation.VrrpAVrid;
@@ -1316,6 +1322,191 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     return TrunkGroup.Type.STATIC;
   }
 
+  @Override
+  public void enterSs_virtual_server(A10Parser.Ss_virtual_serverContext ctx) {
+    Optional<String> maybeName = toString(ctx, ctx.virtual_server_name());
+    if (!maybeName.isPresent()) {
+      _currentVirtualServer =
+          new VirtualServer(
+              ctx.virtual_server_name().getText(),
+              new VirtualServerTargetAddress(Ip.ZERO)); // dummy
+      return;
+    }
+
+    String name = maybeName.get();
+    if (ctx.virtual_server_target() == null) {
+      _currentVirtualServer = _c.getVirtualServer(name);
+      // No match
+      if (_currentVirtualServer == null) {
+        warn(ctx, "Server target must be specified for a new virtual-server");
+        _currentVirtualServer =
+            new VirtualServer(
+                ctx.virtual_server_name().getText(),
+                new VirtualServerTargetAddress(Ip.ZERO)); // dummy
+        return;
+      }
+      // Updating existing server
+      _c.defineStructure(VIRTUAL_SERVER, name, ctx);
+      return;
+    }
+
+    // TODO enforce no target reuse
+    VirtualServerTarget target = toVirtualServerTarget(ctx.virtual_server_target());
+    _c.defineStructure(VIRTUAL_SERVER, name, ctx);
+    _c.referenceStructure(VIRTUAL_SERVER, name, VIRTUAL_SERVER_SELF_REF, ctx.start.getLine());
+    _currentVirtualServer = _c.getOrCreateVirtualServer(name, target);
+    // Make sure target is up-to-date
+    _currentVirtualServer.setTarget(target);
+  }
+
+  @Override
+  public void exitSsvs_disable(A10Parser.Ssvs_disableContext ctx) {
+    _currentVirtualServer.setEnable(false);
+  }
+
+  @Override
+  public void exitSsvs_enable(A10Parser.Ssvs_enableContext ctx) {
+    _currentVirtualServer.setEnable(true);
+  }
+
+  @Override
+  public void exitSsvs_redistribution_flagged(A10Parser.Ssvs_redistribution_flaggedContext ctx) {
+    _currentVirtualServer.setRedistributionFlagged(true);
+  }
+
+  @Override
+  public void exitSsvs_stats_data_disable(A10Parser.Ssvs_stats_data_disableContext ctx) {
+    _currentVirtualServer.setStatsDataEnable(false);
+  }
+
+  @Override
+  public void exitSsvs_stats_data_enable(A10Parser.Ssvs_stats_data_enableContext ctx) {
+    _currentVirtualServer.setStatsDataEnable(true);
+  }
+
+  @Override
+  public void exitSsvs_vrid(A10Parser.Ssvs_vridContext ctx) {
+    toInteger(ctx, ctx.vrid()).ifPresent(_currentVirtualServer::setVrid);
+  }
+
+  @Override
+  public void enterSsvs_port(A10Parser.Ssvs_portContext ctx) {
+    VirtualServerPort.Type type = toType(ctx.virtual_server_port_type());
+    Integer range;
+    if (ctx.port_range_value() != null) {
+      Optional<Integer> maybeRange = toInteger(ctx, ctx.port_range_value());
+      if (!maybeRange.isPresent()) {
+        // Already warned
+        _currentVirtualServerPort = new VirtualServerPort(-1, type, null); // dummy
+        return;
+      }
+      range = maybeRange.get();
+    } else {
+      range = null;
+    }
+    _currentVirtualServerPort =
+        toInteger(ctx, ctx.port_number())
+            .map(n -> _currentVirtualServer.getOrCreatePort(n, type, range))
+            .orElseGet(() -> new VirtualServerPort(-1, type, range)); // dummy
+    // Make sure range is up-to-date
+    _currentVirtualServerPort.setRange(range);
+  }
+
+  @Override
+  public void exitSsvs_port(A10Parser.Ssvs_portContext ctx) {
+    _currentVirtualServerPort = null;
+  }
+
+  @Override
+  public void exitSsvspd_bucket_count(A10Parser.Ssvspd_bucket_countContext ctx) {
+    toInteger(ctx, ctx.traffic_bucket_count()).ifPresent(_currentVirtualServerPort::setBucketCount);
+  }
+
+  @Override
+  public void exitSsvspd_conn_limit(A10Parser.Ssvspd_conn_limitContext ctx) {
+    toInteger(ctx, ctx.connection_limit()).ifPresent(_currentVirtualServerPort::setConnLimit);
+  }
+
+  @Override
+  public void exitSsvspd_disable(A10Parser.Ssvspd_disableContext ctx) {
+    _currentVirtualServerPort.setEnable(false);
+  }
+
+  @Override
+  public void exitSsvspd_enable(A10Parser.Ssvspd_enableContext ctx) {
+    _currentVirtualServerPort.setEnable(true);
+  }
+
+  @Override
+  public void exitSsvspd_def_selection_if_pref_failed(
+      A10Parser.Ssvspd_def_selection_if_pref_failedContext ctx) {
+    _currentVirtualServerPort.setDefSelectionIfPrefFailed(true);
+  }
+
+  @Override
+  public void exitSsvspd_name(A10Parser.Ssvspd_nameContext ctx) {
+    toString(ctx, ctx.virtual_service_name()).ifPresent(_currentVirtualServerPort::setName);
+  }
+
+  @Override
+  public void exitSsvspd_service_group(A10Parser.Ssvspd_service_groupContext ctx) {
+    toString(ctx, ctx.service_group_name()).ifPresent(_currentVirtualServerPort::setServiceGroup);
+  }
+
+  @Override
+  public void exitSsvspd_source_nat(A10Parser.Ssvspd_source_natContext ctx) {
+    toString(ctx, ctx.nat_pool_name()).ifPresent(_currentVirtualServerPort::setSourceNat);
+  }
+
+  @Override
+  public void exitSsvspd_stats_data_disable(A10Parser.Ssvspd_stats_data_disableContext ctx) {
+    _currentVirtualServerPort.setStatsDataEnable(false);
+  }
+
+  @Override
+  public void exitSsvspd_stats_data_enable(A10Parser.Ssvspd_stats_data_enableContext ctx) {
+    _currentVirtualServerPort.setStatsDataEnable(true);
+  }
+
+  @Nonnull
+  VirtualServerTarget toVirtualServerTarget(A10Parser.Virtual_server_targetContext ctx) {
+    assert ctx.ip_address() != null;
+    return new VirtualServerTargetAddress(toIp(ctx.ip_address()));
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, A10Parser.Virtual_server_nameContext ctx) {
+    return toStringWithLengthInSpace(
+        messageCtx, ctx.word(), VIRTUAL_SERVER_NAME_LENGTH_RANGE, "virtual-server name");
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, A10Parser.Virtual_service_nameContext ctx) {
+    return toStringWithLengthInSpace(
+        messageCtx, ctx.word(), VIRTUAL_SERVICE_NAME_LENGTH_RANGE, "virtual service name");
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, A10Parser.Traffic_bucket_countContext ctx) {
+    return toIntegerInSpace(
+        messageCtx, ctx.uint16(), TRAFFIC_BUCKET_COUNT_RANGE, "traffic bucket-count");
+  }
+
+  private @Nonnull static VirtualServerPort.Type toType(
+      A10Parser.Virtual_server_port_typeContext ctx) {
+    if (ctx.TCP() != null) {
+      return VirtualServerPort.Type.TCP;
+    }
+    // TODO support more types
+    assert ctx.UDP() != null;
+    return VirtualServerPort.Type.UDP;
+  }
+
+  @Override
+  public void exitSs_virtual_server(A10Parser.Ss_virtual_serverContext ctx) {
+    _currentVirtualServer = null;
+  }
+
   private Optional<List<InterfaceReference>> toInterfaceReferences(
       ParserRuleContext messageCtx, A10Parser.Vlan_ifaces_rangeContext ctx) {
     Interface.Type type = toInterfaceType(ctx);
@@ -1670,10 +1861,16 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
       IntegerSpace.of(Range.closed(1, 127));
   private static final IntegerSpace TEMPLATE_NAME_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 127));
+  private static final IntegerSpace TRAFFIC_BUCKET_COUNT_RANGE =
+      IntegerSpace.of(Range.closed(1, 256));
   private static final IntegerSpace TRUNK_NUMBER_RANGE = IntegerSpace.of(Range.closed(1, 4096));
   private static final IntegerSpace TRUNK_PORTS_THRESHOLD_RANGE =
       IntegerSpace.of(Range.closed(2, 8));
   private static final IntegerSpace USER_TAG_LENGTH_RANGE = IntegerSpace.of(Range.closed(1, 127));
+  private static final IntegerSpace VIRTUAL_SERVER_NAME_LENGTH_RANGE =
+      IntegerSpace.of(Range.closed(1, 127));
+  private static final IntegerSpace VIRTUAL_SERVICE_NAME_LENGTH_RANGE =
+      IntegerSpace.of(Range.closed(1, 127));
   private static final IntegerSpace VLAN_NAME_LENGTH_RANGE = IntegerSpace.of(Range.closed(1, 63));
   private static final IntegerSpace VLAN_NUMBER_RANGE = IntegerSpace.of(Range.closed(2, 4094));
   private static final IntegerSpace VRID_LEAD_NAME_LENGTH_RANGE =
@@ -1714,6 +1911,10 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   private TrunkInterface _currentTrunk;
 
   private TrunkGroup _currentTrunkGroup;
+
+  private VirtualServer _currentVirtualServer;
+
+  private VirtualServerPort _currentVirtualServerPort;
 
   private Vlan _currentVlan;
 

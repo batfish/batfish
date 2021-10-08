@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +46,7 @@ public final class A10Configuration extends VendorConfiguration {
     _serviceGroups = new HashMap<>();
     _servers = new HashMap<>();
     _staticRoutes = new HashMap<>();
+    _virtualServers = new HashMap<>();
     _vlans = new HashMap<>();
   }
 
@@ -84,6 +86,25 @@ public final class A10Configuration extends VendorConfiguration {
 
   public Map<String, Server> getServers() {
     return _servers;
+  }
+
+  @Nonnull
+  public Map<String, VirtualServer> getVirtualServers() {
+    return Collections.unmodifiableMap(_virtualServers);
+  }
+
+  @Nullable
+  public VirtualServer getVirtualServer(String name) {
+    return _virtualServers.get(name);
+  }
+
+  /**
+   * Get the {@link VirtualServer} corresponding to the provided name, creating it (with the
+   * specified {@link VirtualServerTarget}) if it doesn't already exist.
+   */
+  @Nonnull
+  public VirtualServer getOrCreateVirtualServer(String name, VirtualServerTarget target) {
+    return _virtualServers.computeIfAbsent(name, n -> new VirtualServer(n, target));
   }
 
   /** Map of route {@link Prefix} to {@link StaticRouteManager} for that prefix. */
@@ -222,7 +243,6 @@ public final class A10Configuration extends VendorConfiguration {
     _staticRoutes.forEach(
         (prefix, manager) ->
             manager.getVariants().forEach((ip, sr) -> convertStaticRoute(vrf, prefix, sr)));
-
     markStructures();
     return ImmutableList.of(_c);
   }
@@ -437,6 +457,7 @@ public final class A10Configuration extends VendorConfiguration {
     _servers = ImmutableMap.copyOf(_servers);
     _serviceGroups = ImmutableMap.copyOf(_serviceGroups);
     _staticRoutes = ImmutableMap.copyOf(_staticRoutes);
+    _virtualServers = ImmutableMap.copyOf(_virtualServers);
     _vlans = ImmutableMap.copyOf(_vlans);
   }
 
@@ -453,6 +474,7 @@ public final class A10Configuration extends VendorConfiguration {
   private Map<String, Server> _servers;
   private Map<String, ServiceGroup> _serviceGroups;
   private Map<Prefix, StaticRouteManager> _staticRoutes;
+  private Map<String, VirtualServer> _virtualServers;
   private @Nullable VrrpA _vrrpA;
   private Map<Integer, Vlan> _vlans;
   private ConfigurationFormat _vendor;

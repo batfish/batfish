@@ -12,6 +12,7 @@ public enum A10StructureType implements StructureType {
   INTERFACE("interface"),
   SERVER("server"),
   SERVICE_GROUP("service-group"),
+  VIRTUAL_SERVER("virtual-server"),
   VRRP_A_FAIL_OVER_POLICY_TEMPLATE("vrrp-a fail-over-policy-template"),
   VRRP_A_VRID("vrrp-a vrid");
 
