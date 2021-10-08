@@ -5,7 +5,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -19,8 +18,8 @@ public class IspPeeringInfo {
   private static final String PROP_ASN1 = "asn1";
   private static final String PROP_ASN2 = "asn2";
 
-  @Nonnull private final long _asn1;
-  @Nonnull private final long _asn2;
+  private final long _asn1;
+  private final long _asn2;
 
   public IspPeeringInfo(long asn1, long asn2) {
     _asn1 = asn1;

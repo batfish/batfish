@@ -119,6 +119,7 @@ public class IspConfiguration {
     return _ispNodeInfos;
   }
 
+  @JsonProperty(PROP_ISP_PEERINGS)
   @Nonnull
   public List<IspPeeringInfo> getIspPeeringInfos() {
     return _ispPeeringInfos;
