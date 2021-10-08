@@ -1777,7 +1777,11 @@ GRE: 'gre';
 
 GREEN: 'green';
 
-GROUP: 'group';
+GROUP: 'group' {
+  if (lastTokenType() == TRUNK) {
+    pushMode(M_Name);
+  }
+};
 
 GROUP_LIST: 'group-list';
 
