@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Sets;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -206,6 +207,15 @@ public class Interface implements Serializable {
   public void addVlanTrunkGroup(@Nonnull String groupName) {
     _vlanTrunkGroups =
         ImmutableSet.<String>builder().addAll(_vlanTrunkGroups).add(groupName).build();
+  }
+
+  public void clearVlanTrunkGroups() {
+    _vlanTrunkGroups = ImmutableSet.of();
+  }
+
+  public void removeVlanTrunkGroup(@Nonnull String groupName) {
+    _vlanTrunkGroups =
+        ImmutableSet.copyOf(Sets.difference(_vlanTrunkGroups, ImmutableSet.of(groupName)));
   }
 
   public void setAllowedVlans(@Nullable IntegerSpace allowedVlans) {

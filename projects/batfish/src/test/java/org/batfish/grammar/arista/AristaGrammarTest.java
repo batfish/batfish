@@ -78,6 +78,7 @@ import static org.batfish.representation.arista.AristaStructureType.INTERFACE;
 import static org.batfish.representation.arista.AristaStructureType.POLICY_MAP;
 import static org.batfish.representation.arista.AristaStructureType.VXLAN;
 import static org.batfish.representation.arista.Conversions.nameOfSourceNatIpSpaceFromAcl;
+import static org.batfish.representation.arista.Interface.ALL_VLANS;
 import static org.batfish.representation.arista.OspfProcess.getReferenceOspfBandwidth;
 import static org.batfish.representation.arista.eos.AristaBgpProcess.DEFAULT_VRF;
 import static org.batfish.representation.arista.eos.AristaRedistributeType.OSPF;
@@ -1465,7 +1466,13 @@ public class AristaGrammarTest {
         equalTo(IntegerSpace.of(Range.closed(1, 4094))));
     assertThat(
         c.getAllInterfaces().get("Port-Channel6").getAllowedVlans(),
-        equalTo(IntegerSpace.of(Range.closed(1, 4))));
+        equalTo(IntegerSpace.builder().including(1, 3, 4).build()));
+    assertThat(c.getAllInterfaces().get("Port-Channel7").getAllowedVlans(), equalTo(ALL_VLANS));
+    assertThat(
+        c.getAllInterfaces().get("Port-Channel8").getAllowedVlans(),
+        equalTo(IntegerSpace.builder().including(ALL_VLANS).excluding(7).build()));
+    assertThat(c.getAllInterfaces().get("Port-Channel9").getAllowedVlans(), equalTo(ALL_VLANS));
+    assertThat(c.getAllInterfaces().get("Port-Channel10").getAllowedVlans(), equalTo(ALL_VLANS));
   }
 
   @Test
@@ -1712,6 +1719,10 @@ public class AristaGrammarTest {
     assertThat(c, hasInterface("Port-Channel2", hasAllowedVlans(IntegerSpace.of(99))));
     assertThat(
         c, hasInterface("Port-Channel3", hasAllowedVlans(IntegerSpace.of(Range.closed(6, 4094)))));
+    assertThat(
+        c, hasInterface("Port-Channel4", hasAllowedVlans(IntegerSpace.of(Range.closed(2, 4094)))));
+    assertThat(
+        c, hasInterface("Port-Channel5", hasAllowedVlans(IntegerSpace.of(Range.closed(6, 4094)))));
   }
 
   @Test

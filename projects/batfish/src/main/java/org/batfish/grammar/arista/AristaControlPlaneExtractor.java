@@ -591,7 +591,9 @@ import org.batfish.grammar.arista.AristaParser.If_no_ip_proxy_arp_eosContext;
 import org.batfish.grammar.arista.AristaParser.If_no_shutdown_eosContext;
 import org.batfish.grammar.arista.AristaParser.If_no_speed_eosContext;
 import org.batfish.grammar.arista.AristaParser.If_no_st_portfastContext;
-import org.batfish.grammar.arista.AristaParser.If_no_switchport_switchportContext;
+import org.batfish.grammar.arista.AristaParser.If_no_switchport_switchport_eosContext;
+import org.batfish.grammar.arista.AristaParser.If_noswpt_allowed_eosContext;
+import org.batfish.grammar.arista.AristaParser.If_noswpt_group_eosContext;
 import org.batfish.grammar.arista.AristaParser.If_service_policyContext;
 import org.batfish.grammar.arista.AristaParser.If_shutdown_eosContext;
 import org.batfish.grammar.arista.AristaParser.If_spanning_treeContext;
@@ -602,10 +604,9 @@ import org.batfish.grammar.arista.AristaParser.If_st_portfastContext;
 import org.batfish.grammar.arista.AristaParser.If_switchport_accessContext;
 import org.batfish.grammar.arista.AristaParser.If_switchport_modeContext;
 import org.batfish.grammar.arista.AristaParser.If_switchport_switchportContext;
-import org.batfish.grammar.arista.AristaParser.If_switchport_trunk_allowedContext;
-import org.batfish.grammar.arista.AristaParser.If_switchport_trunk_encapsulationContext;
+import org.batfish.grammar.arista.AristaParser.If_switchport_trunk_allowed_eosContext;
 import org.batfish.grammar.arista.AristaParser.If_switchport_trunk_group_eosContext;
-import org.batfish.grammar.arista.AristaParser.If_switchport_trunk_nativeContext;
+import org.batfish.grammar.arista.AristaParser.If_switchport_trunk_native_eosContext;
 import org.batfish.grammar.arista.AristaParser.If_vrf_nameContext;
 import org.batfish.grammar.arista.AristaParser.If_vrrpContext;
 import org.batfish.grammar.arista.AristaParser.Ifcg_num_eosContext;
@@ -5093,12 +5094,27 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitIf_no_switchport_switchport(If_no_switchport_switchportContext ctx) {
+  public void exitIf_no_switchport_switchport_eos(If_no_switchport_switchport_eosContext ctx) {
     _currentInterfaces.forEach(
         i -> {
           i.setSwitchport(false);
           i.setSwitchportMode(SwitchportMode.NONE);
         });
+  }
+
+  @Override
+  public void exitIf_noswpt_allowed_eos(If_noswpt_allowed_eosContext ctx) {
+    _currentInterfaces.forEach(i -> i.setAllowedVlans(null));
+  }
+
+  @Override
+  public void exitIf_noswpt_group_eos(If_noswpt_group_eosContext ctx) {
+    if (ctx.name == null) {
+      _currentInterfaces.forEach(Interface::clearVlanTrunkGroups);
+    } else {
+      String groupName = ctx.name.getText();
+      _currentInterfaces.forEach(i -> i.removeVlanTrunkGroup(groupName));
+    }
   }
 
   @Override
@@ -5228,31 +5244,35 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitIf_switchport_trunk_allowed(If_switchport_trunk_allowedContext ctx) {
-    if (ctx.NONE() != null) {
+  public void exitIf_switchport_trunk_allowed_eos(If_switchport_trunk_allowed_eosContext ctx) {
+    if (ctx.ALL() != null) {
+      _currentInterfaces.forEach(iface -> iface.setAllowedVlans(Interface.ALL_VLANS));
+      return;
+    } else if (ctx.NONE() != null) {
       _currentInterfaces.forEach(iface -> iface.setAllowedVlans(IntegerSpace.EMPTY));
       return;
     }
-    IntegerSpace allowed = IntegerSpace.builder().includingAllSubRanges(toRange(ctx.r)).build();
-    for (Interface currentInterface : _currentInterfaces) {
-      if (ctx.ADD() != null) {
-        currentInterface.setAllowedVlans(
-            IntegerSpace.builder()
-                .including(allowed)
-                .including(firstNonNull(currentInterface.getAllowedVlans(), IntegerSpace.EMPTY))
-                .build());
-      } else {
-        currentInterface.setAllowedVlans(allowed);
-      }
-    }
-  }
 
-  @Override
-  public void exitIf_switchport_trunk_encapsulation(If_switchport_trunk_encapsulationContext ctx) {
-    SwitchportEncapsulationType type = toEncapsulation(ctx.e);
+    // The result is dependent on the provided vlans.
+    IntegerSpace allowed = IntegerSpace.builder().includingAllSubRanges(toRange(ctx.r)).build();
+    if (ctx.EXCEPT() != null) {
+      IntegerSpace except = Interface.ALL_VLANS.difference(allowed);
+      _currentInterfaces.forEach(iface -> iface.setAllowedVlans(except));
+      return;
+    } else if (ctx.ADD() == null && ctx.REMOVE() == null) {
+      _currentInterfaces.forEach(iface -> iface.setAllowedVlans(allowed));
+      return;
+    }
+
+    // The result is dependent on the already-configured VLANs.
     for (Interface currentInterface : _currentInterfaces) {
-      currentInterface.setSwitchportMode(SwitchportMode.TRUNK);
-      currentInterface.setSwitchportTrunkEncapsulation(type);
+      IntegerSpace current = firstNonNull(currentInterface.getAllowedVlans(), Interface.ALL_VLANS);
+      if (ctx.ADD() != null) {
+        currentInterface.setAllowedVlans(IntegerSpace.unionOf(allowed, current));
+      } else {
+        assert ctx.REMOVE() != null;
+        currentInterface.setAllowedVlans(current.difference(allowed));
+      }
     }
   }
 
@@ -5266,7 +5286,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitIf_switchport_trunk_native(If_switchport_trunk_nativeContext ctx) {
+  public void exitIf_switchport_trunk_native_eos(If_switchport_trunk_native_eosContext ctx) {
     int vlan = toInteger(ctx.vlan);
     for (Interface currentInterface : _currentInterfaces) {
       currentInterface.setNativeVlan(vlan);
