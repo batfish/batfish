@@ -1,8 +1,10 @@
 package org.batfish.vendor.a10.grammar;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.vendor.a10.grammar.A10Lexer.WORD;
 import static org.batfish.vendor.a10.representation.A10Configuration.getInterfaceName;
 import static org.batfish.vendor.a10.representation.A10StructureType.INTERFACE;
+import static org.batfish.vendor.a10.representation.A10StructureType.NAT_POOL;
 import static org.batfish.vendor.a10.representation.A10StructureType.SERVER;
 import static org.batfish.vendor.a10.representation.A10StructureType.SERVICE_GROUP;
 import static org.batfish.vendor.a10.representation.A10StructureType.VIRTUAL_SERVER;
@@ -11,10 +13,13 @@ import static org.batfish.vendor.a10.representation.A10StructureType.VRRP_A_VRID
 import static org.batfish.vendor.a10.representation.A10StructureUsage.IP_NAT_POOL_VRID;
 import static org.batfish.vendor.a10.representation.A10StructureUsage.SERVICE_GROUP_MEMBER;
 import static org.batfish.vendor.a10.representation.A10StructureUsage.VIRTUAL_SERVER_SELF_REF;
+import static org.batfish.vendor.a10.representation.A10StructureUsage.VIRTUAL_SERVER_SERVICE_GROUP;
+import static org.batfish.vendor.a10.representation.A10StructureUsage.VIRTUAL_SERVER_SOURCE_NAT_POOL;
 import static org.batfish.vendor.a10.representation.A10StructureUsage.VIRTUAL_SERVER_VRID;
 import static org.batfish.vendor.a10.representation.A10StructureUsage.VRRP_A_INTERFACE;
 import static org.batfish.vendor.a10.representation.A10StructureUsage.VRRP_A_VRID_BLADE_PARAMETERS_FAIL_OVER_POLICY_TEMPLATE;
 import static org.batfish.vendor.a10.representation.A10StructureUsage.VRRP_A_VRID_DEFAULT_SELF_REFERENCE;
+import static org.batfish.vendor.a10.representation.VrrpA.DEFAULT_VRID;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Range;
@@ -634,12 +639,14 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   public void exitSin_pool(A10Parser.Sin_poolContext ctx) {
     // Only add the NAT pool if all its properties were valid
     if (_currentNatPoolValid) {
-      _c.getNatPools().put(_currentNatPool.getName(), _currentNatPool);
+      String name = _currentNatPool.getName();
+      _c.getNatPools().put(name, _currentNatPool);
       _allNatPools =
           _allNatPools.union(
               LongSpace.of(
                   Range.closed(
                       _currentNatPool.getStart().asLong(), _currentNatPool.getEnd().asLong())));
+      _c.defineStructure(NAT_POOL, name, ctx);
     }
     _currentNatPool = null;
   }
@@ -687,7 +694,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
       return;
     }
     int vrid = maybeVrid.get();
-    assert vrid != 0;
+    assert vrid != DEFAULT_VRID;
     if (!Optional.ofNullable(_c.getVrrpA())
         .map(vrrpA -> vrrpA.getVrids().containsKey(vrid))
         .orElse(false)) {
@@ -1375,14 +1382,22 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     _currentVirtualServer.setRedistributionFlagged(true);
   }
 
-  @Override
-  public void exitSsvs_stats_data_disable(A10Parser.Ssvs_stats_data_disableContext ctx) {
-    _currentVirtualServer.setStatsDataEnable(false);
-  }
-
-  @Override
-  public void exitSsvs_stats_data_enable(A10Parser.Ssvs_stats_data_enableContext ctx) {
-    _currentVirtualServer.setStatsDataEnable(true);
+  /**
+   * Return the vrid for the NAT pool(s) associated with the current virtual-server. Returns {@link
+   * Optional#empty()} if there are no NAT pools assigned for the current virtual-server.
+   */
+  private Optional<Integer> getNatPoolVrid() {
+    return _currentVirtualServer.getPorts().values().stream()
+        .map(VirtualServerPort::getSourceNat)
+        .filter(Objects::nonNull)
+        .map(
+            name -> {
+              NatPool pool = _c.getNatPools().get(name);
+              assert pool != null; // sanity check, undefined refs are not allowed
+              return pool;
+            })
+        .map(pool -> Optional.ofNullable(pool.getVrid()).orElse(DEFAULT_VRID))
+        .findAny();
   }
 
   @Override
@@ -1390,10 +1405,20 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     toInteger(ctx, ctx.non_default_vrid())
         .ifPresent(
             vrid -> {
-              assert vrid != 0;
-              if (!Optional.ofNullable(_c.getVrrpA())
-                  .map(vrrpA -> vrrpA.getVrids().containsKey(vrid))
-                  .orElse(false)) {
+              assert vrid != DEFAULT_VRID;
+
+              Optional<Integer> natPoolVrid = getNatPoolVrid();
+              if (natPoolVrid.isPresent() && !natPoolVrid.get().equals(vrid)) {
+                warn(
+                    ctx,
+                    String.format(
+                        "Cannot assign virtual-server to vrid %d, it contains a NAT pool in vrid"
+                            + " %d",
+                        vrid, natPoolVrid.get()));
+                return;
+              }
+
+              if (_c.getVrrpA() == null || !_c.getVrrpA().getVrids().containsKey(vrid)) {
                 warn(
                     ctx,
                     String.format(
@@ -1443,11 +1468,6 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   }
 
   @Override
-  public void exitSsvspd_conn_limit(A10Parser.Ssvspd_conn_limitContext ctx) {
-    toInteger(ctx, ctx.connection_limit()).ifPresent(_currentVirtualServerPort::setConnLimit);
-  }
-
-  @Override
   public void exitSsvspd_disable(A10Parser.Ssvspd_disableContext ctx) {
     _currentVirtualServerPort.setEnable(false);
   }
@@ -1470,22 +1490,51 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   @Override
   public void exitSsvspd_service_group(A10Parser.Ssvspd_service_groupContext ctx) {
-    toString(ctx, ctx.service_group_name()).ifPresent(_currentVirtualServerPort::setServiceGroup);
+    toString(ctx, ctx.service_group_name())
+        .ifPresent(
+            sg -> {
+              if (!_c.getServiceGroups().containsKey(sg)) {
+                warn(
+                    ctx,
+                    String.format(
+                        "Cannot add non-existent service-group to virtual-server %s",
+                        _currentVirtualServer.getName()));
+                return;
+              }
+              _currentVirtualServerPort.setServiceGroup(sg);
+              _c.referenceStructure(
+                  SERVICE_GROUP, sg, VIRTUAL_SERVER_SERVICE_GROUP, ctx.start.getLine());
+            });
   }
 
   @Override
   public void exitSsvspd_source_nat(A10Parser.Ssvspd_source_natContext ctx) {
-    toString(ctx, ctx.nat_pool_name()).ifPresent(_currentVirtualServerPort::setSourceNat);
-  }
-
-  @Override
-  public void exitSsvspd_stats_data_disable(A10Parser.Ssvspd_stats_data_disableContext ctx) {
-    _currentVirtualServerPort.setStatsDataEnable(false);
-  }
-
-  @Override
-  public void exitSsvspd_stats_data_enable(A10Parser.Ssvspd_stats_data_enableContext ctx) {
-    _currentVirtualServerPort.setStatsDataEnable(true);
+    toString(ctx, ctx.nat_pool_name())
+        .ifPresent(
+            poolName -> {
+              NatPool pool = _c.getNatPools().get(poolName);
+              if (pool == null) {
+                warn(
+                    ctx,
+                    String.format(
+                        "Cannot add non-existent nat pool to virtual-server %s",
+                        _currentVirtualServer.getName()));
+                return;
+              }
+              int poolVrid = firstNonNull(pool.getVrid(), DEFAULT_VRID);
+              int serverVrid = firstNonNull(_currentVirtualServer.getVrid(), DEFAULT_VRID);
+              if (poolVrid != serverVrid) {
+                warn(
+                    ctx,
+                    String.format(
+                        "Cannot assign a NAT pool in vrid %d, the virtual-server is in vrid %d",
+                        poolVrid, serverVrid));
+                return;
+              }
+              _currentVirtualServerPort.setSourceNat(poolName);
+              _c.referenceStructure(
+                  NAT_POOL, poolName, VIRTUAL_SERVER_SOURCE_NAT_POOL, ctx.start.getLine());
+            });
   }
 
   @Nonnull

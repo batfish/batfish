@@ -75,10 +75,6 @@ ssvspd_stats_data_enable: STATS_DATA_ENABLE NEWLINE;
 
 ssvspd_template: TEMPLATE null_rest_of_line;
 
-ssvspd_disable: DISABLE NEWLINE;
-
-ssvspd_enable: ENABLE NEWLINE;
-
 // 1-256
 traffic_bucket_count: uint16;
 

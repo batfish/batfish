@@ -1,6 +1,13 @@
 !BATFISH_FORMAT: a10_acos
 hostname virtual_server_warn
 !
+vrrp-a vrid 2
+!
+vrrp-a vrid 3
+!
+ip nat pool POOL_VRID2 10.10.10.2 10.10.10.2 netmask /32 vrid 2
+ip nat pool POOL_VRID3 10.10.10.3 10.10.10.3 netmask /32 vrid 3
+!
 slb virtual-server VS1 10.0.0.101
   port 80 udp range 255
   port 80 udp
@@ -8,12 +15,30 @@ slb virtual-server VS1 10.0.0.101
     bucket-count 257
     conn-limit 0
     conn-limit 64000001
+    ! Non-existent service-group
+    service-group UNDEFINED_SG
+    ! Non-existent nat pool
+    source-nat pool UNDEFINED_POOL
   ! Non-existent vrid
   vrid 1
+  !
+  vrid 3
+  port 80 udp
+    ! Cannot use NAT pool with a different vrid
+    source-nat pool POOL_VRID2
 !
 ! Must specify a target for a new server
 slb virtual-server VS2
 !
-! TODO enforce no target reuse
-!slb virtual-server VS3 10.0.0.101
 !
+slb virtual-server VS3 10.0.0.103
+  vrid 2
+  port 80 udp
+    source-nat pool POOL_VRID2
+  ! Cannot specify different vrid than associated NAT pool
+  vrid 3
+!
+! TODO enforce no target reuse
+!slb virtual-server VS4 10.0.0.101
+!
+

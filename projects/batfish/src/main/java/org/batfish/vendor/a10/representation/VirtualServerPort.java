@@ -47,11 +47,6 @@ public class VirtualServerPort implements Serializable {
     return _bucketCount;
   }
 
-  @Nullable
-  public Integer getConnLimit() {
-    return _connLimit;
-  }
-
   /** Description from the cli: Use default server selection method if prefer method failed. */
   @Nullable
   public Boolean getDefSelectionIfPrefFailed() {
@@ -87,11 +82,6 @@ public class VirtualServerPort implements Serializable {
     return _sourceNat;
   }
 
-  @Nullable
-  public Boolean getStatsDataEnable() {
-    return _statsDataEnable;
-  }
-
   @Nonnull
   public Type getType() {
     return _type;
@@ -99,10 +89,6 @@ public class VirtualServerPort implements Serializable {
 
   public void setBucketCount(int bucketCount) {
     _bucketCount = bucketCount;
-  }
-
-  public void setConnLimit(int connLimit) {
-    _connLimit = connLimit;
   }
 
   public void setDefSelectionIfPrefFailed(boolean defSelectionIfPrefFailed) {
@@ -129,10 +115,6 @@ public class VirtualServerPort implements Serializable {
     _sourceNat = sourceNat;
   }
 
-  public void setStatsDataEnable(boolean statsDataEnable) {
-    _statsDataEnable = statsDataEnable;
-  }
-
   public VirtualServerPort(int number, Type type, @Nullable Integer range) {
     _number = number;
     _type = type;
@@ -140,7 +122,6 @@ public class VirtualServerPort implements Serializable {
   }
 
   @Nullable private Integer _bucketCount;
-  @Nullable private Integer _connLimit;
   @Nullable private Boolean _defSelectionIfPrefFailed;
   @Nullable private Boolean _enable;
   @Nullable private String _name;
@@ -148,6 +129,5 @@ public class VirtualServerPort implements Serializable {
   @Nullable private Integer _range;
   @Nullable private String _serviceGroup;
   @Nullable private String _sourceNat;
-  @Nullable private Boolean _statsDataEnable;
   @Nonnull private Type _type;
 }

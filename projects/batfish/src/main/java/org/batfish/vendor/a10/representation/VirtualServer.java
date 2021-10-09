@@ -43,11 +43,6 @@ public final class VirtualServer implements Serializable {
     return _redistributionFlagged;
   }
 
-  @Nullable
-  public Boolean getStatsDataEnable() {
-    return _statsDataEnable;
-  }
-
   @Nonnull
   public VirtualServerTarget getTarget() {
     return _target;
@@ -64,10 +59,6 @@ public final class VirtualServer implements Serializable {
 
   public void setEnable(boolean enable) {
     _enable = enable;
-  }
-
-  public void setStatsDataEnable(boolean statsDataEnable) {
-    _statsDataEnable = statsDataEnable;
   }
 
   public void setTarget(VirtualServerTarget target) {
@@ -88,7 +79,6 @@ public final class VirtualServer implements Serializable {
   @Nonnull private final String _name;
   @Nonnull private final Map<VirtualServerPort.PortAndType, VirtualServerPort> _ports;
   @Nullable private Boolean _redistributionFlagged;
-  @Nullable private Boolean _statsDataEnable;
   @Nonnull private VirtualServerTarget _target;
   @Nullable private Integer _vrid;
 }
