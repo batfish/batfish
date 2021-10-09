@@ -1,0 +1,36 @@
+!BATFISH_FORMAT: a10_acos
+hostname service_group
+!
+slb server SERVER1 10.0.0.1
+  port 80 tcp
+  port 8080 udp
+!
+slb server SERVER2 10.0.0.2
+  port 80 tcp
+!
+slb server SERVER3 10.0.0.3
+  port 80 tcp
+!
+!
+slb service-group SG1 tcp
+!
+slb service-group SG2 tcp
+  ! TODO define health-check when those are supported
+  health-check HEALTH_CHECK_NAME
+  member SERVER1 80
+    disable
+    priority 1
+  member SERVER2 80
+    enable
+    priority 16
+  member SERVER3 80
+  ! Can define new ports for a server in this context
+  member SERVER3 81
+  method least-request
+  stats-data-enable
+!
+slb service-group SG3 udp
+  stats-data-disable
+  method round-robin
+  member SERVER1 8080
+!

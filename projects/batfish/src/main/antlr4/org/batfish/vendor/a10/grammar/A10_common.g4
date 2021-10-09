@@ -10,13 +10,22 @@ single_quoted_string: SINGLE_QUOTE text = quoted_text? SINGLE_QUOTE;
 word_content: (double_quoted_string | single_quoted_string | WORD)+;
 word: WORD_SEPARATOR word_content;
 
+health_check_name: word;
+
 hostname: word;
 
+ethernet_or_trunk_reference
+:
+  ETHERNET ethnum = ethernet_number
+  | TRUNK trunknum = trunk_number
+;
 interface_name_str: word;
 
 nat_pool_name: word;
 
 route_description: word;
+
+service_group_name: word;
 
 slb_server_name: word;
 
@@ -30,7 +39,7 @@ ip_prefix: ip_address ip_netmask;
 
 ip_netmask: subnet_mask | ip_slash_prefix;
 
-ip_address: IP_ADDRESS;
+ip_address: IP_ADDRESS | SUBNET_MASK;
 
 ip_slash_prefix: IP_SLASH_PREFIX;
 
@@ -62,8 +71,11 @@ scaleout_device_id: uint8;
 // 1-4096
 trunk_number: uint16;
 
-// 1-31
+// 0-31
 vrid: uint8;
+
+// 1-31
+non_default_vrid: uint8;
 
 // 1-64000000
 connection_limit: uint32;

@@ -1,0 +1,18 @@
+!BATFISH_FORMAT: a10_acos
+hostname service_group_warn
+!
+! Just needed for a valid ref below
+slb server SERVER1 10.0.0.1
+  port 80 tcp
+!
+!
+slb service-group SG1 tcp
+  member SERVER_UNDEF 80
+  member SERVER1 80
+    ! Bad priorities
+    priority 0
+    priority 17
+!
+! Cannot change type / protocol
+slb service-group SG1 udp
+!

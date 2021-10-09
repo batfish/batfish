@@ -5,11 +5,11 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.SubRange;
 
-/** A VLAN trunk group configuration, Arista-specific concept */
+/** A VLAN trunk group configuration. */
 @ParametersAreNonnullByDefault
 public final class VlanTrunkGroup implements Serializable {
 
-  private String _name;
+  private final String _name;
   private IntegerSpace _vlans;
 
   public VlanTrunkGroup(String name) {

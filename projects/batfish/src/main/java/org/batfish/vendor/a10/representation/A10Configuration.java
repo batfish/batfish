@@ -16,9 +16,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.common.VendorConversionException;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceType;
@@ -39,6 +42,7 @@ public final class A10Configuration extends VendorConfiguration {
     _interfacesTrunk = new HashMap<>();
     _interfacesVe = new HashMap<>();
     _natPools = new HashMap<>();
+    _serviceGroups = new HashMap<>();
     _servers = new HashMap<>();
     _staticRoutes = new HashMap<>();
     _vlans = new HashMap<>();
@@ -67,6 +71,15 @@ public final class A10Configuration extends VendorConfiguration {
 
   public Map<String, NatPool> getNatPools() {
     return _natPools;
+  }
+
+  public Map<String, ServiceGroup> getServiceGroups() {
+    return ImmutableMap.copyOf(_serviceGroups);
+  }
+
+  @Nonnull
+  public ServiceGroup getOrCreateServiceGroup(String name, ServerPort.Type type) {
+    return _serviceGroups.computeIfAbsent(name, n -> new ServiceGroup(name, type));
   }
 
   public Map<String, Server> getServers() {
@@ -164,6 +177,17 @@ public final class A10Configuration extends VendorConfiguration {
         "%s%s %s", typeStr.substring(0, 1), typeStr.substring(1).toLowerCase(), num);
   }
 
+  public @Nullable VrrpA getVrrpA() {
+    return _vrrpA;
+  }
+
+  public @Nonnull VrrpA getOrCreateVrrpA() {
+    if (_vrrpA == null) {
+      _vrrpA = new VrrpA();
+    }
+    return _vrrpA;
+  }
+
   @Override
   public List<Configuration> toVendorIndependentConfigurations() throws VendorConversionException {
     String hostname = getHostname();
@@ -229,7 +253,6 @@ public final class A10Configuration extends VendorConfiguration {
     org.batfish.datamodel.Interface.Builder newIface =
         org.batfish.datamodel.Interface.builder()
             .setActive(getInterfaceEnabledEffective(iface))
-            .setAddress(iface.getIpAddress())
             .setMtu(getInterfaceMtuEffective(iface))
             .setType(getInterfaceType(iface))
             .setName(name)
@@ -239,6 +262,14 @@ public final class A10Configuration extends VendorConfiguration {
     newIface.setDescription(iface.getName());
     newIface.setHumanName(getInterfaceHumanName(iface));
     newIface.setDeclaredNames(ImmutableList.of(name));
+
+    if (iface.getIpAddress() != null) {
+      ConcreteInterfaceAddress address = iface.getIpAddress();
+      ConnectedRouteMetadata meta =
+          ConnectedRouteMetadata.builder().setGenerateLocalRoute(false).build();
+      newIface.setAddress(address);
+      newIface.setAddressMetadata(ImmutableMap.of(address, meta));
+    }
 
     // VLANs
     boolean vlanIsConfigured = hasVlanSettings(iface);
@@ -404,6 +435,7 @@ public final class A10Configuration extends VendorConfiguration {
     _interfacesTrunk = ImmutableMap.copyOf(_interfacesTrunk);
     _natPools = ImmutableMap.copyOf(_natPools);
     _servers = ImmutableMap.copyOf(_servers);
+    _serviceGroups = ImmutableMap.copyOf(_serviceGroups);
     _staticRoutes = ImmutableMap.copyOf(_staticRoutes);
     _vlans = ImmutableMap.copyOf(_vlans);
   }
@@ -419,7 +451,9 @@ public final class A10Configuration extends VendorConfiguration {
   private Map<Integer, Interface> _interfacesVe;
   private Map<String, NatPool> _natPools;
   private Map<String, Server> _servers;
+  private Map<String, ServiceGroup> _serviceGroups;
   private Map<Prefix, StaticRouteManager> _staticRoutes;
+  private @Nullable VrrpA _vrrpA;
   private Map<Integer, Vlan> _vlans;
   private ConfigurationFormat _vendor;
 }
