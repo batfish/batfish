@@ -35,7 +35,6 @@ public class IspConfiguration {
   @Nonnull private final List<BgpPeerInfo> _bgpPeersInfos;
   @Nonnull private final IspFilter _filter;
   @Nonnull private final List<IspNodeInfo> _ispNodeInfos;
-
   @Nonnull private final List<IspPeeringInfo> _ispPeeringInfos;
 
   public IspConfiguration(

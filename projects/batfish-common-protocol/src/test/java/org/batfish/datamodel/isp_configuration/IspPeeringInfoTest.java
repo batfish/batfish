@@ -30,10 +30,16 @@ public class IspPeeringInfoTest {
   }
 
   @Test
-  public void testJsonSerialization() {
+  public void testJsonSerializationIspPeeringInfo() {
     IspPeeringInfo ispPeeringInfo = new IspPeeringInfo(new Peer(1L), new Peer(2L));
 
     assertThat(
         BatfishObjectMapper.clone(ispPeeringInfo, IspPeeringInfo.class), equalTo(ispPeeringInfo));
+  }
+
+  @Test
+  public void testJsonSerializationPeer() {
+    Peer peer = new Peer(1L);
+    assertThat(BatfishObjectMapper.clone(peer, Peer.class), equalTo(peer));
   }
 }

@@ -101,7 +101,7 @@ public class IspPeeringInfo {
       return false;
     }
     IspPeeringInfo that = (IspPeeringInfo) o;
-    return _peer1 == that._peer1 && _peer2 == that._peer2;
+    return _peer1.equals(that._peer1) && _peer2.equals(that._peer2);
   }
 
   @Override
