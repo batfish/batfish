@@ -29,8 +29,12 @@
   ],
   "ispPeerings": [
     {
-      "asn1": 1,
-      "asn2": 2
+      "peer1": {
+        "asn": 1
+      },
+      "peer2": {
+        "asn": 2
+      }
     }
   ]
 }

@@ -270,21 +270,21 @@ public final class IspModelingUtils {
         .flatMap(ispConfig -> ispConfig.getIspPeeringInfos().stream())
         .forEach(
             peeringInfo -> {
-              if (!ispModels.containsKey(peeringInfo.getAsn1())) {
+              if (!ispModels.containsKey(peeringInfo.getPeer1().getAsn())) {
                 warnings.redFlag(
                     String.format(
                         "ISP Modeling: Could not find ISP with ASN %s, specified for ISP peering",
-                        peeringInfo.getAsn1()));
+                        peeringInfo.getPeer1().getAsn()));
                 return;
               }
-              if (!ispModels.containsKey(peeringInfo.getAsn2())) {
+              if (!ispModels.containsKey(peeringInfo.getPeer2().getAsn())) {
                 warnings.redFlag(
                     String.format(
                         "ISP Modeling: Could not find ISP with ASN %s, specified for ISP peering",
-                        peeringInfo.getAsn2()));
+                        peeringInfo.getPeer2().getAsn()));
                 return;
               }
-              ispPeerings.add(new IspPeering(peeringInfo.getAsn1(), peeringInfo.getAsn2()));
+              ispPeerings.add(IspPeering.create(peeringInfo));
             });
 
     return ispPeerings.build();

@@ -2,6 +2,7 @@ package org.batfish.common.util.isp;
 
 import java.util.Objects;
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.isp_configuration.IspPeeringInfo;
 
 /** Internal representation of inter-ISP peerings */
 public class IspPeering {
@@ -13,6 +14,10 @@ public class IspPeering {
     // canonicalize by using the lower number as asn1
     _asn1 = Math.min(asn1, asn2);
     _asn2 = Math.max(asn1, asn2);
+  }
+
+  static IspPeering create(IspPeeringInfo peeringInfo) {
+    return new IspPeering(peeringInfo.getPeer1().getAsn(), peeringInfo.getPeer2().getAsn());
   }
 
   public long getAsn1() {

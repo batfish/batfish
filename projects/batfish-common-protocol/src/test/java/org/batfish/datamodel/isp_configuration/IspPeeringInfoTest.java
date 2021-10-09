@@ -5,22 +5,33 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.testing.EqualsTester;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.isp_configuration.IspPeeringInfo.Peer;
 import org.junit.Test;
 
 public class IspPeeringInfoTest {
 
   @Test
-  public void testEquals() {
+  public void testEqualsIspPeeringInfo() {
     new EqualsTester()
-        .addEqualityGroup(new IspPeeringInfo(1, 2), new IspPeeringInfo(1, 2))
-        .addEqualityGroup(new IspPeeringInfo(10, 2))
-        .addEqualityGroup(new IspPeeringInfo(1, 20))
+        .addEqualityGroup(
+            new IspPeeringInfo(new Peer(1), new Peer(2)),
+            new IspPeeringInfo(new Peer(1), new Peer(2)))
+        .addEqualityGroup(new IspPeeringInfo(new Peer(10), new Peer(2)))
+        .addEqualityGroup(new IspPeeringInfo(new Peer(1), new Peer(20)))
+        .testEquals();
+  }
+
+  @Test
+  public void testEqualsPeer() {
+    new EqualsTester()
+        .addEqualityGroup(new Peer(1), new Peer(1))
+        .addEqualityGroup(new Peer(2))
         .testEquals();
   }
 
   @Test
   public void testJsonSerialization() {
-    IspPeeringInfo ispPeeringInfo = new IspPeeringInfo(1L, 2L);
+    IspPeeringInfo ispPeeringInfo = new IspPeeringInfo(new Peer(1L), new Peer(2L));
 
     assertThat(
         BatfishObjectMapper.clone(ispPeeringInfo, IspPeeringInfo.class), equalTo(ispPeeringInfo));

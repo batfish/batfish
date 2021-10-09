@@ -117,6 +117,7 @@ import org.batfish.datamodel.isp_configuration.IspFilter;
 import org.batfish.datamodel.isp_configuration.IspNodeInfo;
 import org.batfish.datamodel.isp_configuration.IspNodeInfo.Role;
 import org.batfish.datamodel.isp_configuration.IspPeeringInfo;
+import org.batfish.datamodel.isp_configuration.IspPeeringInfo.Peer;
 import org.batfish.datamodel.isp_configuration.traffic_filtering.IspTrafficFiltering;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
@@ -1396,7 +1397,7 @@ public class IspModelingUtilsTest {
                     ImmutableList.of(),
                     IspFilter.ALLOW_ALL,
                     ImmutableList.of(),
-                    ImmutableList.of(new IspPeeringInfo(_ispAsn, ispAsn2)))),
+                    ImmutableList.of(new IspPeeringInfo(new Peer(_ispAsn), new Peer(ispAsn2))))),
             new BatfishLogger("output", false),
             new Warnings());
 
@@ -1676,13 +1677,15 @@ public class IspModelingUtilsTest {
                     ImmutableList.of(),
                     IspFilter.ALLOW_ALL,
                     ImmutableList.of(),
-                    ImmutableList.of(new IspPeeringInfo(1L, 2L), new IspPeeringInfo(1L, 3L))),
+                    ImmutableList.of(
+                        new IspPeeringInfo(new Peer(1L), new Peer(2L)),
+                        new IspPeeringInfo(new Peer(1L), new Peer(3L)))),
                 new IspConfiguration(
                     ImmutableList.of(),
                     ImmutableList.of(),
                     IspFilter.ALLOW_ALL,
                     ImmutableList.of(),
-                    ImmutableList.of(new IspPeeringInfo(2L, 1L)))), // duplicate
+                    ImmutableList.of(new IspPeeringInfo(new Peer(2L), new Peer(1L))))), // duplicate
             ispModels,
             new Warnings());
 
@@ -1702,7 +1705,7 @@ public class IspModelingUtilsTest {
                   ImmutableList.of(),
                   IspFilter.ALLOW_ALL,
                   ImmutableList.of(),
-                  ImmutableList.of(new IspPeeringInfo(10L, _ispAsn)))),
+                  ImmutableList.of(new IspPeeringInfo(new Peer(10L), new Peer(_ispAsn))))),
           ispModels,
           warnings);
       assertThat(
@@ -1720,7 +1723,7 @@ public class IspModelingUtilsTest {
                   ImmutableList.of(),
                   IspFilter.ALLOW_ALL,
                   ImmutableList.of(),
-                  ImmutableList.of(new IspPeeringInfo(_ispAsn, 20)))),
+                  ImmutableList.of(new IspPeeringInfo(new Peer(_ispAsn), new Peer(20))))),
           ispModels,
           warnings);
       assertThat(

@@ -4,7 +4,9 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 import java.util.Objects;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -15,33 +17,79 @@ import javax.annotation.ParametersAreNonnullByDefault;
  */
 @ParametersAreNonnullByDefault
 public class IspPeeringInfo {
-  private static final String PROP_ASN1 = "asn1";
-  private static final String PROP_ASN2 = "asn2";
+  private static final String PROP_PEER1 = "peer1";
+  private static final String PROP_PEER2 = "peer2";
 
-  private final long _asn1;
-  private final long _asn2;
+  public static class Peer {
+    private static final String PROP_ASN = "asn";
 
-  public IspPeeringInfo(long asn1, long asn2) {
-    _asn1 = asn1;
-    _asn2 = asn2;
+    private final long _asn;
+
+    public Peer(long asn) {
+      _asn = asn;
+    }
+
+    @JsonProperty(PROP_ASN)
+    public long getAsn() {
+      return _asn;
+    }
+
+    @JsonCreator
+    private static Peer jsonCreator(@JsonProperty(PROP_ASN) @Nullable Long asn) {
+      checkArgument(asn != null, "Missing %", PROP_ASN);
+      return new Peer(asn);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof Peer)) {
+        return false;
+      }
+      Peer that = (Peer) o;
+      return _asn == that._asn;
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(_asn);
+    }
+
+    @Override
+    public String toString() {
+      return MoreObjects.toStringHelper(this).add("asn", _asn).toString();
+    }
+  }
+
+  @Nonnull private final Peer _peer1;
+  @Nonnull private final Peer _peer2;
+
+  public IspPeeringInfo(Peer peer1, Peer peer2) {
+    checkArgument(
+        peer1._asn != peer2._asn, "Same ASN (%s) for both ISPs is not supported", peer1._asn);
+    _peer1 = peer1;
+    _peer2 = peer2;
   }
 
   @JsonCreator
   private static IspPeeringInfo jsonCreator(
-      @JsonProperty(PROP_ASN1) @Nullable Long asn1, @JsonProperty(PROP_ASN2) @Nullable Long asn2) {
-    checkArgument(asn1 != null, "Missing %", PROP_ASN1);
-    checkArgument(asn2 != null, "Missing %", PROP_ASN2);
-    return new IspPeeringInfo(asn1, asn2);
+      @JsonProperty(PROP_PEER1) @Nullable Peer peer1,
+      @JsonProperty(PROP_PEER2) @Nullable Peer peer2) {
+    checkArgument(peer1 != null, "Missing %", PROP_PEER1);
+    checkArgument(peer2 != null, "Missing %", PROP_PEER2);
+    return new IspPeeringInfo(peer1, peer2);
   }
 
-  @JsonProperty(PROP_ASN1)
-  public long getAsn1() {
-    return _asn1;
+  @JsonProperty(PROP_PEER1)
+  public Peer getPeer1() {
+    return _peer1;
   }
 
-  @JsonProperty(PROP_ASN2)
-  public long getAsn2() {
-    return _asn2;
+  @JsonProperty(PROP_PEER2)
+  public Peer getPeer2() {
+    return _peer2;
   }
 
   @Override
@@ -53,11 +101,16 @@ public class IspPeeringInfo {
       return false;
     }
     IspPeeringInfo that = (IspPeeringInfo) o;
-    return _asn1 == that._asn1 && _asn2 == that._asn2;
+    return _peer1 == that._peer1 && _peer2 == that._peer2;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_asn1, _asn2);
+    return Objects.hash(_peer1, _peer2);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this).add("peer1", _peer1).add("peer2", _peer2).toString();
   }
 }

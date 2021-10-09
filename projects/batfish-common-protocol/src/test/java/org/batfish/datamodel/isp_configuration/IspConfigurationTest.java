@@ -13,6 +13,7 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.isp_configuration.IspNodeInfo.Role;
+import org.batfish.datamodel.isp_configuration.IspPeeringInfo.Peer;
 import org.batfish.datamodel.isp_configuration.traffic_filtering.IspTrafficFiltering;
 import org.junit.Test;
 
@@ -76,7 +77,7 @@ public class IspConfigurationTest {
                 ImmutableList.of(),
                 new IspFilter(ImmutableList.of(1234L), ImmutableList.of(Ip.parse("1.1.1.1"))),
                 ImmutableList.of(new IspNodeInfo(24, "n1")),
-                ImmutableList.of(new IspPeeringInfo(1L, 2L))))
+                ImmutableList.of(new IspPeeringInfo(new Peer(1L), new Peer(2L)))))
         .testEquals();
   }
 
@@ -88,7 +89,7 @@ public class IspConfigurationTest {
             ImmutableList.of(new BgpPeerInfo("node", Ip.ZERO, null, null)),
             new IspFilter(ImmutableList.of(1234L), ImmutableList.of(Ip.parse("1.1.1.1"))),
             ImmutableList.of(new IspNodeInfo(42, "n1")),
-            ImmutableList.of(new IspPeeringInfo(1L, 2L)));
+            ImmutableList.of(new IspPeeringInfo(new Peer(1L), new Peer(2L))));
 
     assertThat(
         BatfishObjectMapper.clone(ispConfiguration, IspConfiguration.class),
