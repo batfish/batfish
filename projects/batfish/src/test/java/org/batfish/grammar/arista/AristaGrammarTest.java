@@ -129,7 +129,6 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
 import org.batfish.common.matchers.WarningMatchers;
-import org.batfish.common.plugin.IBatfish;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AclIpSpace;
@@ -293,8 +292,12 @@ public class AristaGrammarTest {
   }
 
   private @Nonnull Configuration parseConfig(String hostname) {
+    return parseConfig(hostname, false);
+  }
+
+  private @Nonnull Configuration parseConfig(String hostname, boolean allowUnrecognized) {
     try {
-      Map<String, Configuration> configs = parseTextConfigs(hostname);
+      Map<String, Configuration> configs = parseTextConfigs(allowUnrecognized, hostname);
       String canonicalHostname = hostname.toLowerCase();
       assertThat(configs, hasKey(canonicalHostname));
       Configuration c = configs.get(canonicalHostname);
@@ -307,8 +310,14 @@ public class AristaGrammarTest {
 
   private @Nonnull Map<String, Configuration> parseTextConfigs(String... configurationNames)
       throws IOException {
-    IBatfish iBatfish = getBatfishForConfigurationNames(configurationNames);
-    return iBatfish.loadConfigurations(iBatfish.getSnapshot());
+    return parseTextConfigs(false, configurationNames);
+  }
+
+  private @Nonnull Map<String, Configuration> parseTextConfigs(
+      boolean allowUnrecognized, String... configurationNames) throws IOException {
+    Batfish batfish = getBatfishForConfigurationNames(configurationNames);
+    batfish.getSettings().setDisableUnrecognized(!allowUnrecognized);
+    return batfish.loadConfigurations(batfish.getSnapshot());
   }
 
   /** Tests out-of-order lines, remarks, auto-numbering first and later lines. */
@@ -2293,7 +2302,7 @@ public class AristaGrammarTest {
 
   @Test
   public void testInterfaceConversion() {
-    Configuration c = parseConfig("arista_interface");
+    Configuration c = parseConfig("arista_interface", true);
     assertThat(
         c,
         hasInterface(
@@ -2922,7 +2931,7 @@ public class AristaGrammarTest {
 
   @Test
   public void testParseInterfaceShowRunAll() {
-    Configuration c = parseConfig("arista_interface_show_run_all");
+    Configuration c = parseConfig("arista_interface_show_run_all", true);
     // Test relies on the last line in each interface being this description.
     assertThat(c, hasInterface("Ethernet1/1", hasDescription("Made it to the end of Ethernet1/1")));
     assertThat(c, hasInterface("Ethernet1/2", hasDescription("Made it to the end of Ethernet1/2")));
@@ -2932,7 +2941,7 @@ public class AristaGrammarTest {
 
   @Test
   public void testParseInterfaceShowRunAll2() {
-    Configuration c = parseConfig("arista_interface_show_run_all_2");
+    Configuration c = parseConfig("arista_interface_show_run_all_2", true);
     // Test relies on the last line in each interface being this description.
     assertThat(c, hasInterface("Ethernet1/1", hasDescription("Made it to the end of Ethernet1/1")));
     assertThat(c, hasInterface("Ethernet1/3", hasDescription("Made it to the end of Ethernet1/3")));
@@ -2942,7 +2951,7 @@ public class AristaGrammarTest {
 
   @Test
   public void testParseInterfaceShowRunAll3() {
-    Configuration c = parseConfig("arista_interface_show_run_all_3");
+    Configuration c = parseConfig("arista_interface_show_run_all_3", true);
     // Test relies on the last line in each interface being this description.
     assertThat(c, hasInterface("Ethernet1/1", hasDescription("Made it to the end of Ethernet1/1")));
     assertThat(c, hasInterface("Ethernet1/3", hasDescription("Made it to the end of Ethernet1/3")));
