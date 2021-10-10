@@ -2332,6 +2332,12 @@ public class AristaGrammarTest {
   }
 
   @Test
+  public void testMacAccessList() {
+    // doesn't crash.
+    parseVendorConfig("arista_mac_access_list");
+  }
+
+  @Test
   public void testMulticastParsing() {
     // doesn't crash.
     parseVendorConfig("arista_multicast");

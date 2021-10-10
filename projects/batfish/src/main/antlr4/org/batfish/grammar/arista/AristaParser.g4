@@ -1450,6 +1450,28 @@ lxpnl_null
    ) null_rest_of_line
 ;
 
+macacl_null
+:
+    macacl_line_null
+    | macacl_no_null
+    | macacl_remark_null
+;
+
+macacl_line_null
+:
+    dec? (PERMIT|DENY) null_rest_of_line
+;
+
+macacl_no_null
+:
+    NO dec NEWLINE
+;
+
+macacl_remark_null
+:
+    REMARK null_rest_of_line
+;
+
 map_class_null
 :
    NO?
@@ -2601,6 +2623,18 @@ s_lpts
    )*
 ;
 
+s_mac_access_list
+:
+    (
+        NO
+        | DEFAULT
+    )?
+    MAC ACCESS_LIST null_rest_of_line
+    (
+       macacl_null
+    )*
+;
+
 s_management
 :
    MANAGEMENT
@@ -3368,6 +3402,7 @@ stanza
    | s_license
    | s_logging
    | s_lpts
+   | s_mac_access_list
    | s_management
    | s_map_class
    | s_media_termination
