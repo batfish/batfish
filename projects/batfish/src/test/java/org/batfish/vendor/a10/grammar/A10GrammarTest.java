@@ -32,6 +32,8 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.StaticRouteMatchers.hasRecursive;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
+import static org.batfish.main.BatfishTestUtils.getBatfish;
+import static org.batfish.vendor.a10.representation.A10Configuration.SNAT_PORT_POOL_START;
 import static org.batfish.vendor.a10.representation.A10Configuration.getInterfaceName;
 import static org.batfish.vendor.a10.representation.A10StructureType.INTERFACE;
 import static org.batfish.vendor.a10.representation.A10StructureType.VRRP_A_FAIL_OVER_POLICY_TEMPLATE;
@@ -57,15 +59,22 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
 import org.batfish.common.matchers.WarningMatchers;
 import org.batfish.common.plugin.IBatfish;
@@ -74,12 +83,18 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRouteMetadata;
+import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.flow.ExitOutputIfaceStep;
+import org.batfish.datamodel.flow.Hop;
+import org.batfish.datamodel.flow.Step;
+import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
@@ -1449,5 +1464,67 @@ public class A10GrammarTest {
                 hasComment("Specified server 'SERVER_UNDEF' does not exist."),
                 hasComment("Expected member priority in range 1-16, but got '0'"),
                 hasComment("Expected member priority in range 1-16, but got '17'"))));
+  }
+
+  @Test
+  public void testVirtualServerConversion() throws IOException {
+    Configuration c = parseConfig("virtual_server_convert");
+
+    Batfish batfish = getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _folder);
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+
+    // This flow matches the virtual-server and should get SNAT and DNAT
+    Flow flowMatch =
+        Flow.builder()
+            .setIngressNode(c.getHostname())
+            .setIngressInterface("Ethernet1")
+            .setSrcIp(Ip.parse("192.168.0.1"))
+            .setDstIp(Ip.parse("10.0.0.100"))
+            // Arbitrary src port
+            .setSrcPort(123)
+            .setDstPort(81)
+            .setIpProtocol(IpProtocol.TCP)
+            .build();
+    // These flows don't match a(n enabled) virtual-server
+    Flow flowNoMatchProtocol = flowMatch.toBuilder().setIpProtocol(IpProtocol.UDP).build();
+    Flow flowNoMatchEnable = flowMatch.toBuilder().setDstIp(Ip.parse("10.0.0.101")).build();
+
+    SortedMap<Flow, List<Trace>> traces =
+        batfish
+            .getTracerouteEngine(snapshot)
+            .computeTraces(
+                ImmutableSet.of(flowMatch, flowNoMatchProtocol, flowNoMatchEnable), false);
+
+    // Flow matching the virtual-server should get both SNAT and DNAT
+    assertThat(
+        getTransformedFlow(Iterables.getOnlyElement(traces.get(flowMatch))),
+        equalTo(
+            flowMatch.toBuilder()
+                .setSrcIp(Ip.parse("10.10.10.10"))
+                .setSrcPort(SNAT_PORT_POOL_START)
+                .setDstIp(Ip.parse("10.0.0.3"))
+                .setDstPort(80)
+                .build()));
+    // No transformations for flows *not* matching a virtual-server
+    assertNull(getTransformedFlow(Iterables.getOnlyElement(traces.get(flowNoMatchProtocol))));
+    assertNull(getTransformedFlow(Iterables.getOnlyElement(traces.get(flowNoMatchEnable))));
+  }
+
+  /**
+   * Extracts transformed flow from a trace that is expected to contain one hop with one {@link
+   * ExitOutputIfaceStep}. The transformed flow is taken from that step.
+   */
+  private static Flow getTransformedFlow(Trace trace) {
+    List<Hop> hops = trace.getHops();
+    assert hops.size() == 1;
+    List<Step<?>> steps = hops.get(0).getSteps();
+    List<ExitOutputIfaceStep> exitIfaceSteps =
+        steps.stream()
+            .filter(s -> s instanceof ExitOutputIfaceStep)
+            .map(ExitOutputIfaceStep.class::cast)
+            .collect(ImmutableList.toImmutableList());
+    assert exitIfaceSteps.size() == 1;
+    return exitIfaceSteps.get(0).getDetail().getTransformedFlow();
   }
 }
