@@ -16,6 +16,7 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
+import java.util.Optional;
 import org.batfish.datamodel.BddTestbed;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
@@ -86,10 +87,10 @@ public class A10ConfigurationTest {
   public void testToProtocol() {
     assertThat(
         toProtocol(new VirtualServerPort(1, VirtualServerPort.Type.TCP, 0)),
-        equalTo(IpProtocol.TCP));
+        equalTo(Optional.of(IpProtocol.TCP)));
     assertThat(
         toProtocol(new VirtualServerPort(1, VirtualServerPort.Type.UDP, 0)),
-        equalTo(IpProtocol.UDP));
+        equalTo(Optional.of(IpProtocol.UDP)));
   }
 
   @Test
