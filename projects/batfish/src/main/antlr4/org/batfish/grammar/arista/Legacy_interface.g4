@@ -888,7 +888,7 @@ if_no
     | if_no_shutdown_eos
     | if_no_spanning_tree
     | if_no_speed_eos
-    | if_no_switchport
+    | if_no_switchport_eos
     | if_no_traffic_loopback_eos
     | if_no_vrrp
   )
@@ -1070,42 +1070,38 @@ if_no_speed_eos
   SPEED NEWLINE
 ;
 
-if_no_switchport
+if_no_switchport_eos
 :
   SWITCHPORT
   (
-    if_no_switchport_switchport
-    | if_no_switchport_null
+    if_no_switchport_switchport_eos
+    | if_no_switchport_trunk_eos
   )
 ;
 
 // "no switchport"
-if_no_switchport_switchport
+if_no_switchport_switchport_eos
 :
   NEWLINE
 ;
 
-if_no_switchport_null
+if_no_switchport_trunk_eos
 :
+  TRUNK
   (
-    BACKUP
-    | BLOCK
-    | CAPTURE
-    | DOT1Q
-    | EMPTY
-    | MAC
-    | MODE
-    | MONITOR
-    | NONEGOTIATE
-    | PHONE
-    | PORT_SECURITY
-    | PRIORITY
-    | TAP
-    | TOOL
-    | TRUNK
-    | VOICE
-    | VLAN
-  ) null_rest_of_line
+    if_noswpt_allowed_eos
+    | if_noswpt_group_eos
+  )
+;
+
+if_noswpt_allowed_eos
+:
+  ALLOWED VLAN NEWLINE
+;
+
+if_noswpt_group_eos
+:
+  GROUP (name = VARIABLE)? NEWLINE
 ;
 
 if_no_traffic_loopback_eos
@@ -1585,15 +1581,11 @@ if_switchport
   (
     if_switchport_switchport
     | if_switchport_access
+    // | if_switchport_backup_eos
+    // | if_switchport_backup_link_eos (not on 4.21, on 4.23)
     | if_switchport_mode
-    | if_switchport_null
-    | if_switchport_private_vlan_association
-    | if_switchport_private_vlan_host_association
-    | if_switchport_private_vlan_mapping
-    | if_switchport_trunk_allowed
-    | if_switchport_trunk_encapsulation
-    | if_switchport_trunk_group_eos
-    | if_switchport_trunk_native
+    // | if_switchport_port_security_eos
+    | if_switchport_trunk_eos
   )
 ;
 
@@ -1635,75 +1627,38 @@ if_switchport_mode
    ) NEWLINE
 ;
 
-if_switchport_null
-:
-  (
-    BACKUP
-    | BLOCK
-    | CAPTURE
-    | DOT1Q
-    | EMPTY
-    | MAC
-    | MONITOR
-    | NONEGOTIATE
-    | PORT_SECURITY
-    | PRIORITY
-    | RECIRCULATION
-    | TAP
-    | TOOL
-    | VOICE
-    | VLAN
-  ) null_rest_of_line
-;
-
 if_switchport_mode_monitor
 :
    MONITOR BUFFER_LIMIT limit=dec (BYTES | KBYTES | MBYTES | PACKETS)
 ;
 
-if_switchport_private_vlan_association
+if_switchport_trunk_eos
 :
-   PRIVATE_VLAN ASSOCIATION TRUNK primary_vlan_id = dec
-   secondary_vlan_id = dec NEWLINE
+  TRUNK (
+    if_switchport_trunk_allowed_eos
+    | if_switchport_trunk_group_eos
+    | if_switchport_trunk_native_eos
+  )
 ;
 
-if_switchport_private_vlan_host_association
+if_switchport_trunk_allowed_eos
 :
-   PRIVATE_VLAN HOST_ASSOCIATION primary_vlan_id = dec
-   secondary_vlan_id = dec NEWLINE
-;
-
-if_switchport_private_vlan_mapping
-:
-  PRIVATE_VLAN MAPPING TRUNK? primary_vlan_id = dec
-  secondary_vlan_list = range NEWLINE
-;
-
-if_switchport_trunk_allowed
-:
-   TRUNK ALLOWED VLAN
+   ALLOWED VLAN
    (
-      NONE
-      |
-      (
-         ADD? r = range
-      )
+      ALL
+      | NONE
+      | (ADD | REMOVE | EXCEPT)? r = range
    ) NEWLINE
-;
-
-if_switchport_trunk_encapsulation
-:
-   TRUNK ENCAPSULATION e = switchport_trunk_encapsulation NEWLINE
 ;
 
 if_switchport_trunk_group_eos
 :
-   TRUNK GROUP name = variable NEWLINE
+   GROUP name = variable NEWLINE
 ;
 
-if_switchport_trunk_native
+if_switchport_trunk_native_eos
 :
-   TRUNK NATIVE VLAN vlan = dec NEWLINE
+   NATIVE VLAN vlan = dec NEWLINE
 ;
 
 if_traffic_loopback_eos

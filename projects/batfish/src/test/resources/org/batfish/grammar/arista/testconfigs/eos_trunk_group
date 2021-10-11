@@ -20,9 +20,21 @@ interface Port-Channel2
    switchport trunk allowed vlan 99
    ! Trunks groups don't add allowed vlans, just prevent pruning. So only 99 is allowed.
    switchport trunk group GROUP1
-   switchport trunk group GROUP2
 !
 interface Port-Channel3
    switchport mode trunk
    ! All vlans are allowed, but the vlans in non-default groups should be pruned away.
+!
+interface Port-Channel4
+   switchport mode trunk
+   ! Removing single group works
+   switchport trunk group GROUP1
+   switchport trunk group GROUP2
+   no switchport trunk group GROUP1
+!
+interface Port-Channel5
+   switchport mode trunk
+   ! Removing all groups works
+   switchport trunk group GROUP1
+   no switchport trunk group
 !

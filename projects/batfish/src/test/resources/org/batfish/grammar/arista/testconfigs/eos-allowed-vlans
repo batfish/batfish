@@ -3,26 +3,55 @@
 hostname eos-allowed-vlans
 !
 interface Port-Channel1
+   description fixed allowed VLANs
    switchport trunk allowed vlan 1,2
    switchport mode trunk
 !
 interface Port-Channel2
+   description fixed allowed VLANs, out of order
    switchport mode trunk
    switchport trunk allowed vlan 2,3
 !
 interface Port-Channel3
+   description no allowed vlans, out of order
    switchport mode trunk
    switchport trunk allowed vlan none
 !
 interface Port-Channel4
+   description no allowed vlans
    switchport trunk allowed vlan none
    switchport mode trunk
 !
 interface Port-Channel5
+   description default allowed vlans
    switchport mode trunk
 !
 interface Port-Channel6
+   description fixed, add, remove vlans
    switchport trunk allowed vlan 1,2
    switchport trunk allowed vlan add 3,4
+   switchport trunk allowed vlan remove 2
+   switchport mode trunk
+!
+interface Port-Channel7
+   description default and add is a no-op
+   switchport trunk allowed vlan add 7
+   switchport mode trunk
+!
+interface Port-Channel8
+   description except
+   switchport trunk allowed vlan except 7
+   switchport mode trunk
+!
+interface Port-Channel9
+   description all
+   switchport trunk allowed vlan 1
+   switchport trunk allowed vlan all
+   switchport mode trunk
+!
+interface Port-Channel10
+   description no means defaults
+   switchport trunk allowed vlan 1
+   no switchport trunk allowed vlan
    switchport mode trunk
 !
