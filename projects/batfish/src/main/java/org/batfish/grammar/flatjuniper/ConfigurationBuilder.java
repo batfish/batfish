@@ -176,7 +176,6 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
-import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.LargeCommunity;
@@ -841,6 +840,7 @@ import org.batfish.representation.juniper.TcpSynFin;
 import org.batfish.representation.juniper.Vlan;
 import org.batfish.representation.juniper.VlanRange;
 import org.batfish.representation.juniper.VlanReference;
+import org.batfish.representation.juniper.VrrpGroup;
 import org.batfish.representation.juniper.Zone;
 
 public class ConfigurationBuilder extends FlatJuniperParserBaseListener
@@ -2433,15 +2433,24 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void enterIfia_vrrp_group(Ifia_vrrp_groupContext ctx) {
+    // TODO: Current Juniper data model puts vrrp-groups at interface level, but they are declared
+    //       at address level. The behavior is undefined if multiple real addresses declare groups
+    //       with the same VRID. Presumably, the configuration cannot be committed in this case; but
+    //       we need to verify and do something reasonable. For now, we are ignoring all but the
+    //       first address that uses a given VRID.
     int group = toInt(ctx.number);
     VrrpGroup currentVrrpGroup = _currentInterfaceOrRange.getVrrpGroups().get(group);
     if (currentVrrpGroup == null) {
-      currentVrrpGroup = new VrrpGroup(group);
+      currentVrrpGroup = new VrrpGroup(_currentInterfaceAddress);
       currentVrrpGroup.setPreempt(DEFAULT_VRRP_PREEMPT);
       currentVrrpGroup.setPriority(DEFAULT_VRRP_PRIORITY);
       _currentInterfaceOrRange.getVrrpGroups().put(group, currentVrrpGroup);
+    } else if (!currentVrrpGroup.getSourceAddress().equals(_currentInterfaceAddress)) {
+      // Subsequent address using the same VRID is ignored
+      _currentVrrpGroup = new VrrpGroup(_currentInterfaceAddress); // dummy
+    } else {
+      _currentVrrpGroup = currentVrrpGroup;
     }
-    _currentVrrpGroup = currentVrrpGroup;
   }
 
   @Override
@@ -4479,10 +4488,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitIfiav_virtual_address(Ifiav_virtual_addressContext ctx) {
-    Ip virtualAddress = Ip.parse(ctx.IP_ADDRESS().getText());
-    int prefixLength = _currentInterfaceAddress.getNetworkBits();
-    _currentVrrpGroup.setVirtualAddress(
-        ConcreteInterfaceAddress.create(virtualAddress, prefixLength));
+    _currentVrrpGroup.setVirtualAddress(Ip.parse(ctx.IP_ADDRESS().getText()));
   }
 
   @Override

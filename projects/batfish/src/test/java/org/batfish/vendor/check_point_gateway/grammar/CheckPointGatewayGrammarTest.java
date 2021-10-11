@@ -159,6 +159,7 @@ import org.junit.rules.TemporaryFolder;
 
 @ParametersAreNonnullByDefault
 public class CheckPointGatewayGrammarTest {
+
   private static final String TESTCONFIGS_PREFIX =
       "org/batfish/vendor/check_point_gateway/grammar/testconfigs/";
   private static final String SNAPSHOTS_PREFIX =
@@ -2007,9 +2008,10 @@ public class CheckPointGatewayGrammarTest {
     VrrpGroup vrrpGroup = c1.getAllInterfaces().get(ifaceName).getVrrpGroups().get(0);
 
     assertNotNull(vrrpGroup);
+    assertThat(vrrpGroup.getVirtualAddresses(), contains(clusterIp));
     assertThat(
-        vrrpGroup.getVirtualAddress(),
-        equalTo(ConcreteInterfaceAddress.create(clusterIp, prefixLength)));
+        vrrpGroup.getSourceAddress(),
+        equalTo(ConcreteInterfaceAddress.create(memberIp, prefixLength)));
     assertTrue(vrrpGroup.getPreempt());
     assertThat(vrrpGroup.getPriority(), equalTo(VrrpGroup.MAX_PRIORITY - 1));
   }

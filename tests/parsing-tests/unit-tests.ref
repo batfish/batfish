@@ -86323,6 +86323,10 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Cannot assign more than one access vlan: [bippetyboppety] to interface 'xe-0/0/5:0.0'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Cannot create VRRP group for vrid 5 on interface 'irb.5' because no virtual-address is assigned."
             }
           ]
         },

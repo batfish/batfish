@@ -14,7 +14,6 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
-import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.VrrpGroup;
 import org.junit.Before;
 import org.junit.Test;
@@ -25,8 +24,7 @@ public class VrrpComputationTest {
   private NetworkFactory _nf;
   private Interface _i1;
   private Interface _i2;
-  private ConcreteInterfaceAddress _virtInterfaceAddr =
-      ConcreteInterfaceAddress.create(Ip.parse("1.1.1.1"), Prefix.MAX_PREFIX_LENGTH);
+  private final Ip _virtInterfaceAddr = Ip.parse("1.1.1.1");
 
   @Before
   public void setup() {
@@ -44,18 +42,25 @@ public class VrrpComputationTest {
     Configuration.Builder cb = _nf.configurationBuilder();
     cb.setConfigurationFormat(ConfigurationFormat.JUNIPER);
 
+    ConcreteInterfaceAddress i1SourceAddress = ConcreteInterfaceAddress.parse("1.1.1.22/32");
+    ConcreteInterfaceAddress i2SourceAddress = ConcreteInterfaceAddress.parse("1.1.1.33/32");
+
     int vrrpGroupId = 1;
     int priority = 100;
-    VrrpGroup vg1 = new VrrpGroup(vrrpGroupId);
-    vg1.setPriority(priority);
-    vg1.setVirtualAddress(_virtInterfaceAddr);
-    VrrpGroup vg2 = new VrrpGroup(vrrpGroupId);
+    VrrpGroup.Builder vg1 =
+        VrrpGroup.builder()
+            .setPriority(priority)
+            .setSourceAddress(i1SourceAddress)
+            .setVirtualAddresses(_virtInterfaceAddr);
+    VrrpGroup.Builder vg2 =
+        VrrpGroup.builder()
+            .setSourceAddress(i2SourceAddress)
+            .setVirtualAddresses(_virtInterfaceAddr);
     if (equalPriority) {
       vg2.setPriority(priority);
     } else {
       vg2.setPriority(priority + 1);
     }
-    vg2.setVirtualAddress(_virtInterfaceAddr);
 
     Configuration c1 = cb.setHostname("n1").build();
     Configuration c2 = cb.setHostname("n2").build();
@@ -64,14 +69,14 @@ public class VrrpComputationTest {
 
     _i1 =
         ib.setOwner(c1)
-            .setAddress(ConcreteInterfaceAddress.parse("1.1.1.22/32"))
-            .setVrrpGroups(ImmutableSortedMap.of(vrrpGroupId, vg1))
+            .setAddress(i1SourceAddress)
+            .setVrrpGroups(ImmutableSortedMap.of(vrrpGroupId, vg1.build()))
             .build();
 
     _i2 =
         ib.setOwner(c2)
-            .setAddress(ConcreteInterfaceAddress.parse("1.1.1.33/32"))
-            .setVrrpGroups(ImmutableSortedMap.of(vrrpGroupId, vg2))
+            .setAddress(i2SourceAddress)
+            .setVrrpGroups(ImmutableSortedMap.of(vrrpGroupId, vg2.build()))
             .build();
 
     return ImmutableSortedMap.of("n1", c1, "n2", c2);
@@ -85,7 +90,7 @@ public class VrrpComputationTest {
     Map<Ip, Set<String>> owners =
         new IpOwners(configs, GlobalBroadcastNoPointToPoint.instance()).getNodeOwners(false);
 
-    assertThat(owners.get(_virtInterfaceAddr.getIp()), contains("n2"));
+    assertThat(owners.get(_virtInterfaceAddr), contains("n2"));
   }
 
   /**
@@ -100,7 +105,7 @@ public class VrrpComputationTest {
         new IpOwners(configs, GlobalBroadcastNoPointToPoint.instance()).getNodeOwners(false);
 
     // Ensure node that has higher interface IP wins
-    assertThat(owners.get(_virtInterfaceAddr.getIp()), contains("n2"));
+    assertThat(owners.get(_virtInterfaceAddr), contains("n2"));
   }
 
   @Test
@@ -123,7 +128,7 @@ public class VrrpComputationTest {
     assertThat(
         interfaceOwners,
         hasEntry(
-            equalTo(_virtInterfaceAddr.getIp()),
+            equalTo(_virtInterfaceAddr),
             hasEntry(equalTo(_i2.getOwner().getHostname()), contains(_i2.getName()))));
   }
 }
