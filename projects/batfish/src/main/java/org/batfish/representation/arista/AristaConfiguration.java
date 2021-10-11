@@ -2502,6 +2502,7 @@ public final class AristaConfiguration extends VendorConfiguration {
     markConcreteStructure(AristaStructureType.BFD_TEMPLATE);
     markConcreteStructure(AristaStructureType.INTERFACE);
     markConcreteStructure(AristaStructureType.IP_ACCESS_LIST_STANDARD);
+    markConcreteStructure(AristaStructureType.MAC_ACCESS_LIST);
 
     // mark references to ACLs that may not appear in data model
     markIpOrMacAcls(

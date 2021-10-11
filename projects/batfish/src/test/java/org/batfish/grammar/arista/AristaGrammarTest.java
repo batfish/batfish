@@ -38,6 +38,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNoUndefinedReferences;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRedFlagWarning;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasDstIp;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasSrcIp;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAccessVlan;
@@ -75,6 +76,7 @@ import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.arista.AristaConfiguration.DEFAULT_LOCAL_BGP_WEIGHT;
 import static org.batfish.representation.arista.AristaStructureType.INTERFACE;
+import static org.batfish.representation.arista.AristaStructureType.MAC_ACCESS_LIST;
 import static org.batfish.representation.arista.AristaStructureType.POLICY_MAP;
 import static org.batfish.representation.arista.AristaStructureType.VXLAN;
 import static org.batfish.representation.arista.Conversions.nameOfSourceNatIpSpaceFromAcl;
@@ -2332,9 +2334,21 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testMacAccessList() {
-    // doesn't crash.
-    parseVendorConfig("arista_mac_access_list");
+  public void testMacAccessList() throws IOException {
+    String hostname = "arista_mac_access_list";
+    String filename = "configs/" + hostname;
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(
+        ccae,
+        allOf(
+            hasNumReferrers(filename, MAC_ACCESS_LIST, "referenced", 2),
+            hasNumReferrers(filename, MAC_ACCESS_LIST, "unused", 0),
+            hasUndefinedReference(filename, MAC_ACCESS_LIST, "undefinedIn"),
+            hasUndefinedReference(filename, MAC_ACCESS_LIST, "undefinedOut")));
   }
 
   @Test

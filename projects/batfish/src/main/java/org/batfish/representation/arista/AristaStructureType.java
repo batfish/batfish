@@ -30,7 +30,7 @@ public enum AristaStructureType implements StructureType {
   ISAKMP_PROFILE("crypto isakmp profile"),
   KEYRING("crypto keyring"),
   L2TP_CLASS("l2tp-class"),
-  MAC_ACCESS_LIST("mac acl"),
+  MAC_ACCESS_LIST("mac access-list"),
   NAMED_RSA_PUB_KEY("crypto named rsa pubkey"),
   NAT_POOL("nat pool"),
   PEER_FILTER("peer-filter"),

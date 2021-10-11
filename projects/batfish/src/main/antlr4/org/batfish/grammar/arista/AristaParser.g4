@@ -9,6 +9,7 @@ Arista_cvx,
 Arista_email,
 Arista_igmp,
 Arista_logging,
+Arista_mac,
 Arista_mlag,
 Arista_vlan,
 Legacy_aaa,
@@ -1450,28 +1451,6 @@ lxpnl_null
    ) null_rest_of_line
 ;
 
-macacl_null
-:
-    macacl_line_null
-    | macacl_no_null
-    | macacl_remark_null
-;
-
-macacl_line_null
-:
-    dec? (PERMIT|DENY) null_rest_of_line
-;
-
-macacl_no_null
-:
-    NO dec NEWLINE
-;
-
-macacl_remark_null
-:
-    REMARK null_rest_of_line
-;
-
 map_class_null
 :
    NO?
@@ -2166,6 +2145,7 @@ s_default
   (
     default_ip
     | sdef_hardware
+    | default_mac
     | default_snmp_server
   )
 ;
@@ -2623,18 +2603,6 @@ s_lpts
    )*
 ;
 
-s_mac_access_list
-:
-    (
-        NO
-        | DEFAULT
-    )?
-    MAC ACCESS_LIST null_rest_of_line
-    (
-       macacl_null
-    )*
-;
-
 s_management
 :
    MANAGEMENT
@@ -2694,6 +2662,7 @@ s_no
     | no_errdisable
     | no_ip
     | no_logging
+    | no_mac
     | no_snmp_server
   )
 ;
@@ -3361,6 +3330,7 @@ stanza
    | s_email
    | s_enable
    | s_end
+   | s_eos_mac
    | s_eos_mlag
    | s_ephone_dn_template
    | s_errdisable
@@ -3402,7 +3372,6 @@ stanza
    | s_license
    | s_logging
    | s_lpts
-   | s_mac_access_list
    | s_management
    | s_map_class
    | s_media_termination
