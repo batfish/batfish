@@ -50,6 +50,8 @@ public enum AristaStructureUsage implements StructureUsage {
   INTERFACE_IP_ACCESS_GROUP_IN("interface ip access-group in"),
   INTERFACE_IP_ACCESS_GROUP_OUT("interface ip access-group out"),
   INTERFACE_IP_INBAND_ACCESS_GROUP("interface ip inband access-group"),
+  INTERFACE_MAC_ACCESS_GROUP_IN("interface mac access-group in"),
+  INTERFACE_MAC_ACCESS_GROUP_OUT("interface mac access-group out"),
   INTERFACE_IP_MULTICAST_BOUNDARY("interface ip multicast boundary"),
   INTERFACE_IPV6_TRAFFIC_FILTER_IN("interface ipv6 traffic-filter in"),
   INTERFACE_IPV6_TRAFFIC_FILTER_OUT("interface ipv6 traffic-filter out"),

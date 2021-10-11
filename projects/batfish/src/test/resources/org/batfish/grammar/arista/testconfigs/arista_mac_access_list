@@ -1,0 +1,28 @@
+!RANCID-CONTENT-TYPE: arista
+! device: localhost (EOS-4.25.1.1F)
+!
+hostname arista_mac_access_list
+!
+no mac access-list vl201
+!
+default mac access-list vl201
+!
+mac access-list referenced
+   10 deny vlan 202 0x000 any any
+   20 permit vlan 202 0x000 any any
+   deny vlan 202 0x000 any any
+   permit vlan 202 0x000 any any
+   no 10
+   remark blah
+!
+mac access-list unused
+   10 deny vlan 202 0x000 any any
+!
+interface Ethernet1
+  mac access-group referenced in
+  mac access-group referenced out
+!
+interface Ethernet1
+  mac access-group undefinedIn in
+  mac access-group undefinedOut out
+!

@@ -29,6 +29,7 @@ import static org.batfish.representation.arista.AristaStructureType.ISAKMP_POLIC
 import static org.batfish.representation.arista.AristaStructureType.ISAKMP_PROFILE;
 import static org.batfish.representation.arista.AristaStructureType.KEYRING;
 import static org.batfish.representation.arista.AristaStructureType.L2TP_CLASS;
+import static org.batfish.representation.arista.AristaStructureType.MAC_ACCESS_LIST;
 import static org.batfish.representation.arista.AristaStructureType.NAMED_RSA_PUB_KEY;
 import static org.batfish.representation.arista.AristaStructureType.NAT_POOL;
 import static org.batfish.representation.arista.AristaStructureType.PEER_FILTER;
@@ -85,6 +86,8 @@ import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_I
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IP_ACCESS_GROUP_OUT;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IP_INBAND_ACCESS_GROUP;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IP_MULTICAST_BOUNDARY;
+import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_MAC_ACCESS_GROUP_IN;
+import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_MAC_ACCESS_GROUP_OUT;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_PIM_NEIGHBOR_FILTER;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_SELF_REF;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_SERVICE_POLICY;
@@ -628,6 +631,7 @@ import org.batfish.grammar.arista.AristaParser.Ifipo_dead_interval_eosContext;
 import org.batfish.grammar.arista.AristaParser.Ifipo_hello_interval_eosContext;
 import org.batfish.grammar.arista.AristaParser.Ifipo_network_eosContext;
 import org.batfish.grammar.arista.AristaParser.Ifipp_neighbor_filter_eosContext;
+import org.batfish.grammar.arista.AristaParser.Ifmac_access_groupContext;
 import org.batfish.grammar.arista.AristaParser.Iftunnel_destinationContext;
 import org.batfish.grammar.arista.AristaParser.Iftunnel_modeContext;
 import org.batfish.grammar.arista.AristaParser.Iftunnel_protectionContext;
@@ -669,6 +673,7 @@ import org.batfish.grammar.arista.AristaParser.Literal_standard_communityContext
 import org.batfish.grammar.arista.AristaParser.Logging_vrfContext;
 import org.batfish.grammar.arista.AristaParser.Logging_vrf_hostContext;
 import org.batfish.grammar.arista.AristaParser.Logging_vrf_source_interfaceContext;
+import org.batfish.grammar.arista.AristaParser.Mac_access_listContext;
 import org.batfish.grammar.arista.AristaParser.Management_ssh_ip_access_groupContext;
 import org.batfish.grammar.arista.AristaParser.Management_telnet_ip_access_groupContext;
 import org.batfish.grammar.arista.AristaParser.Match_as_path_access_list_rm_stanzaContext;
@@ -5012,6 +5017,19 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
+  public void exitIfmac_access_group(Ifmac_access_groupContext ctx) {
+    String name = ctx.name.getText();
+    AristaStructureUsage usage;
+    if (ctx.IN() != null) {
+      usage = INTERFACE_MAC_ACCESS_GROUP_IN;
+    } else {
+      assert ctx.OUT() != null;
+      usage = INTERFACE_MAC_ACCESS_GROUP_OUT;
+    }
+    _configuration.referenceStructure(MAC_ACCESS_LIST, name, usage, ctx.name.getStart().getLine());
+  }
+
+  @Override
   public void exitIf_isis_metric(If_isis_metricContext ctx) {
     long metric = toLong(ctx.metric);
     for (Interface iface : _currentInterfaces) {
@@ -5695,6 +5713,12 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     v.setLoggingSourceInterface(name);
     _configuration.referenceStructure(
         INTERFACE, name, LOGGING_SOURCE_INTERFACE, ctx.name.getStart().getLine());
+  }
+
+  @Override
+  public void enterMac_access_list(Mac_access_listContext ctx) {
+    String name = ctx.name.getText();
+    _configuration.defineStructure(MAC_ACCESS_LIST, name, ctx);
   }
 
   @Override
