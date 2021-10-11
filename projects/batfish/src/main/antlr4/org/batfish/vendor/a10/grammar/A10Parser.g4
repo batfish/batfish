@@ -9,6 +9,7 @@ import
   A10_rba,
   A10_slb_server,
   A10_slb_service_group,
+  A10_slb_virtual_server,
   A10_trunk,
   A10_vlan,
   A10_vrrp_a;
@@ -48,4 +49,4 @@ s_hostname: HOSTNAME hostname NEWLINE;
 
 s_slb: SLB ss;
 
-ss: ss_server | ss_service_group;
+ss: ss_server | ss_service_group | ss_virtual_server;

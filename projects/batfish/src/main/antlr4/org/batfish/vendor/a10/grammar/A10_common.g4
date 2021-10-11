@@ -35,6 +35,12 @@ vlan_name: word;
 
 user_tag: word;
 
+// 1-127 chars
+virtual_server_name: word;
+
+// 1-127 chars
+virtual_service_name: word;
+
 ip_prefix: ip_address ip_netmask;
 
 ip_netmask: subnet_mask | ip_slash_prefix;
