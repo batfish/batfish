@@ -327,7 +327,8 @@ public class AwsConfiguration extends VendorConfiguration {
                 AWS_BACKBONE_HUMAN_NAME,
                 AwsPrefixes.getPrefixes(AwsPrefixes.SERVICE_AMAZON).stream()
                     .map(IspAnnouncement::new)
-                    .collect(ImmutableList.toImmutableList()))));
+                    .collect(ImmutableList.toImmutableList()))),
+        ImmutableList.of());
   }
 
   /**

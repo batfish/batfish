@@ -12,6 +12,7 @@ junit_tests(
     deps = [
         "//projects/batfish:batfish_testlib",
         "//projects/batfish-common-protocol:common",
+        "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/matchers",
         "@maven//:com_google_guava_guava",
         "@maven//:com_google_guava_guava_testlib",
         "@maven//:junit_junit",
