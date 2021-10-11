@@ -1,0 +1,33 @@
+! Command: show running-config
+! device: bgp-redistribute-undefined (vEOS, EOS-4.21.1.1F)
+!
+! boot system flash:/vEOS-lab.swi
+!
+! Purpose: Undefined redistribute route-map permits all. Verified in vEOS as above.
+!
+hostname bgp-redistribute-undefined
+!
+interface Ethernet1
+   no switchport
+   ip address 1.2.3.4/24
+!
+ip routing
+!
+router bgp 1
+   neighbor 1.2.3.100 remote-as 2
+   neighbor 1.2.3.100 description Arista won't show you bgp routes unless you have at least one neighbor
+   neighbor 1.2.3.100 maximum-routes 12000
+   redistribute connected route-map undefined
+!
+end
+!
+! show ip bgp
+!  BGP routing table information for VRF default
+!  Router identifier 1.2.3.4, local AS number 1
+!  Route status codes: s - suppressed, * - valid, > - active, # - not installed, E - ECMP head, e - ECMP
+!                      S - Stale, c - Contributing to ECMP, b - backup, L - labeled-unicast
+!  Origin codes: i - IGP, e - EGP, ? - incomplete
+!  AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Link Local Nexthop
+!
+!          Network                Next Hop              Metric  LocPref Weight  Path
+!   * >     1.2.3.0/24             -                     1       0       -       i

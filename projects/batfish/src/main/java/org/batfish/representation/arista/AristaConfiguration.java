@@ -895,7 +895,7 @@ public final class AristaConfiguration extends VendorConfiguration {
       Optional.ofNullable(connectedPolicy.getRouteMap())
           .filter(_routeMaps::containsKey)
           .map(CallExpr::new)
-          .ifPresent(conditions::add);
+          .ifPresent(conditions::add); /* Confirmed in lab: redistribute undefined is permit all. */
       conditions.add(new MatchProtocol(RoutingProtocol.CONNECTED));
       // TODO redistributeDefaultRoute
       Conjunction connected = new Conjunction(conditions.build());
