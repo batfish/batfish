@@ -78,6 +78,7 @@ import static org.batfish.representation.arista.AristaStructureType.INTERFACE;
 import static org.batfish.representation.arista.AristaStructureType.POLICY_MAP;
 import static org.batfish.representation.arista.AristaStructureType.VXLAN;
 import static org.batfish.representation.arista.Conversions.nameOfSourceNatIpSpaceFromAcl;
+import static org.batfish.representation.arista.Interface.ALL_VLANS;
 import static org.batfish.representation.arista.OspfProcess.getReferenceOspfBandwidth;
 import static org.batfish.representation.arista.eos.AristaBgpProcess.DEFAULT_VRF;
 import static org.batfish.representation.arista.eos.AristaRedistributeType.OSPF;
@@ -128,7 +129,6 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
 import org.batfish.common.matchers.WarningMatchers;
-import org.batfish.common.plugin.IBatfish;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AclIpSpace;
@@ -292,8 +292,12 @@ public class AristaGrammarTest {
   }
 
   private @Nonnull Configuration parseConfig(String hostname) {
+    return parseConfig(hostname, false);
+  }
+
+  private @Nonnull Configuration parseConfig(String hostname, boolean allowUnrecognized) {
     try {
-      Map<String, Configuration> configs = parseTextConfigs(hostname);
+      Map<String, Configuration> configs = parseTextConfigs(allowUnrecognized, hostname);
       String canonicalHostname = hostname.toLowerCase();
       assertThat(configs, hasKey(canonicalHostname));
       Configuration c = configs.get(canonicalHostname);
@@ -306,8 +310,14 @@ public class AristaGrammarTest {
 
   private @Nonnull Map<String, Configuration> parseTextConfigs(String... configurationNames)
       throws IOException {
-    IBatfish iBatfish = getBatfishForConfigurationNames(configurationNames);
-    return iBatfish.loadConfigurations(iBatfish.getSnapshot());
+    return parseTextConfigs(false, configurationNames);
+  }
+
+  private @Nonnull Map<String, Configuration> parseTextConfigs(
+      boolean allowUnrecognized, String... configurationNames) throws IOException {
+    Batfish batfish = getBatfishForConfigurationNames(configurationNames);
+    batfish.getSettings().setDisableUnrecognized(!allowUnrecognized);
+    return batfish.loadConfigurations(batfish.getSnapshot());
   }
 
   /** Tests out-of-order lines, remarks, auto-numbering first and later lines. */
@@ -1465,7 +1475,13 @@ public class AristaGrammarTest {
         equalTo(IntegerSpace.of(Range.closed(1, 4094))));
     assertThat(
         c.getAllInterfaces().get("Port-Channel6").getAllowedVlans(),
-        equalTo(IntegerSpace.of(Range.closed(1, 4))));
+        equalTo(IntegerSpace.builder().including(1, 3, 4).build()));
+    assertThat(c.getAllInterfaces().get("Port-Channel7").getAllowedVlans(), equalTo(ALL_VLANS));
+    assertThat(
+        c.getAllInterfaces().get("Port-Channel8").getAllowedVlans(),
+        equalTo(IntegerSpace.builder().including(ALL_VLANS).excluding(7).build()));
+    assertThat(c.getAllInterfaces().get("Port-Channel9").getAllowedVlans(), equalTo(ALL_VLANS));
+    assertThat(c.getAllInterfaces().get("Port-Channel10").getAllowedVlans(), equalTo(ALL_VLANS));
   }
 
   @Test
@@ -1712,6 +1728,10 @@ public class AristaGrammarTest {
     assertThat(c, hasInterface("Port-Channel2", hasAllowedVlans(IntegerSpace.of(99))));
     assertThat(
         c, hasInterface("Port-Channel3", hasAllowedVlans(IntegerSpace.of(Range.closed(6, 4094)))));
+    assertThat(
+        c, hasInterface("Port-Channel4", hasAllowedVlans(IntegerSpace.of(Range.closed(2, 4094)))));
+    assertThat(
+        c, hasInterface("Port-Channel5", hasAllowedVlans(IntegerSpace.of(Range.closed(6, 4094)))));
   }
 
   @Test
@@ -2282,7 +2302,7 @@ public class AristaGrammarTest {
 
   @Test
   public void testInterfaceConversion() {
-    Configuration c = parseConfig("arista_interface");
+    Configuration c = parseConfig("arista_interface", true);
     assertThat(
         c,
         hasInterface(
@@ -2911,7 +2931,7 @@ public class AristaGrammarTest {
 
   @Test
   public void testParseInterfaceShowRunAll() {
-    Configuration c = parseConfig("arista_interface_show_run_all");
+    Configuration c = parseConfig("arista_interface_show_run_all", true);
     // Test relies on the last line in each interface being this description.
     assertThat(c, hasInterface("Ethernet1/1", hasDescription("Made it to the end of Ethernet1/1")));
     assertThat(c, hasInterface("Ethernet1/2", hasDescription("Made it to the end of Ethernet1/2")));
@@ -2921,7 +2941,7 @@ public class AristaGrammarTest {
 
   @Test
   public void testParseInterfaceShowRunAll2() {
-    Configuration c = parseConfig("arista_interface_show_run_all_2");
+    Configuration c = parseConfig("arista_interface_show_run_all_2", true);
     // Test relies on the last line in each interface being this description.
     assertThat(c, hasInterface("Ethernet1/1", hasDescription("Made it to the end of Ethernet1/1")));
     assertThat(c, hasInterface("Ethernet1/3", hasDescription("Made it to the end of Ethernet1/3")));
@@ -2931,7 +2951,7 @@ public class AristaGrammarTest {
 
   @Test
   public void testParseInterfaceShowRunAll3() {
-    Configuration c = parseConfig("arista_interface_show_run_all_3");
+    Configuration c = parseConfig("arista_interface_show_run_all_3", true);
     // Test relies on the last line in each interface being this description.
     assertThat(c, hasInterface("Ethernet1/1", hasDescription("Made it to the end of Ethernet1/1")));
     assertThat(c, hasInterface("Ethernet1/3", hasDescription("Made it to the end of Ethernet1/3")));
