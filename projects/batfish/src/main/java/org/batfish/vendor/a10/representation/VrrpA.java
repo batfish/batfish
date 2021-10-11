@@ -11,6 +11,7 @@ import org.batfish.datamodel.Ip;
 
 /** Master configuration for vrrp-a. */
 public final class VrrpA implements Serializable {
+  public static final int DEFAULT_VRID = 0;
 
   public VrrpA() {
     _failOverPolicyTemplates = ImmutableMap.of();
