@@ -1,5 +1,7 @@
 package org.batfish.e2e.isp;
 
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -8,6 +10,7 @@ import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.topology.L3Adjacencies;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.main.BatfishTestUtils;
@@ -71,5 +74,22 @@ public class IspModelingTest {
     NodeInterfacePair border1 = NodeInterfacePair.of("border1", "Vlan95");
     NodeInterfacePair border2 = NodeInterfacePair.of("border2", "Vlan95");
     assertFalse(l3Adjacencies.inSameBroadcastDomain(border1, border2));
+  }
+
+  @Test
+  public void testIspPeering() throws IOException {
+    IBatfish batfish = setup("isp-peering", ImmutableList.of("border1.cfg", "border2.cfg"), true);
+    BgpTopology bgpTopology = batfish.getTopologyProvider().getBgpTopology(batfish.getSnapshot());
+
+    // border1 <-> ISP1, border2 <-> ISP2, ISP1 <-> ISP2 (6 uni edges)
+    assertThat(bgpTopology.getGraph().edges(), hasSize(6));
+
+    // check that routes are propagating between border routers via the two ISPs
+    assertThat(
+        batfish.loadDataPlane(batfish.getSnapshot()).getBgpRoutes().row("border1").get("default"),
+        contains(hasPrefix(Prefix.parse("1.1.1.0/24")), hasPrefix(Prefix.parse("2.2.2.0/24"))));
+    assertThat(
+        batfish.loadDataPlane(batfish.getSnapshot()).getBgpRoutes().row("border2").get("default"),
+        contains(hasPrefix(Prefix.parse("1.1.1.0/24")), hasPrefix(Prefix.parse("2.2.2.0/24"))));
   }
 }

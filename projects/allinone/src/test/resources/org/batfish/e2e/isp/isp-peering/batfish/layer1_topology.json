@@ -1,0 +1,24 @@
+{
+  "edges": [
+    {
+      "node1": {
+        "hostname": "border1",
+        "interfaceName": "Ethernet1/1"
+      },
+      "node2": {
+        "hostname": "border2",
+        "interfaceName": "Ethernet1/1"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "border2",
+        "interfaceName": "Ethernet1/1"
+      },
+      "node2": {
+        "hostname": "border1",
+        "interfaceName": "Ethernet1/1"
+      }
+    }
+  ]
+}

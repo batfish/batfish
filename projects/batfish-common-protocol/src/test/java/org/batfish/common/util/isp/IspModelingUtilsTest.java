@@ -17,8 +17,10 @@ import static org.batfish.common.util.isp.IspModelingUtils.LINK_LOCAL_ADDRESS;
 import static org.batfish.common.util.isp.IspModelingUtils.LINK_LOCAL_IP;
 import static org.batfish.common.util.isp.IspModelingUtils.addBgpPeerToIsp;
 import static org.batfish.common.util.isp.IspModelingUtils.combineBorderInterfaces;
+import static org.batfish.common.util.isp.IspModelingUtils.combineIspPeerings;
 import static org.batfish.common.util.isp.IspModelingUtils.connectIspToInternet;
 import static org.batfish.common.util.isp.IspModelingUtils.connectIspToSnapshot;
+import static org.batfish.common.util.isp.IspModelingUtils.connectPeerIsps;
 import static org.batfish.common.util.isp.IspModelingUtils.createInternetNode;
 import static org.batfish.common.util.isp.IspModelingUtils.createIspNode;
 import static org.batfish.common.util.isp.IspModelingUtils.getAdvertiseBgpStatement;
@@ -34,6 +36,7 @@ import static org.batfish.common.util.isp.IspModelingUtils.installRoutingPolicyF
 import static org.batfish.common.util.isp.IspModelingUtils.internetToIspInterfaceName;
 import static org.batfish.common.util.isp.IspModelingUtils.isValidBgpPeerForBorderInterfaceInfo;
 import static org.batfish.common.util.isp.IspModelingUtils.ispNameConflicts;
+import static org.batfish.common.util.isp.IspModelingUtils.ispPeeringInterfaceName;
 import static org.batfish.common.util.isp.IspModelingUtils.ispToSnapshotInterfaceName;
 import static org.batfish.common.util.isp.IspModelingUtils.makeBgpProcess;
 import static org.batfish.common.util.isp.IspModelingUtils.toIspModel;
@@ -61,6 +64,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
@@ -112,6 +116,8 @@ import org.batfish.datamodel.isp_configuration.IspConfiguration;
 import org.batfish.datamodel.isp_configuration.IspFilter;
 import org.batfish.datamodel.isp_configuration.IspNodeInfo;
 import org.batfish.datamodel.isp_configuration.IspNodeInfo.Role;
+import org.batfish.datamodel.isp_configuration.IspPeeringInfo;
+import org.batfish.datamodel.isp_configuration.IspPeeringInfo.Peer;
 import org.batfish.datamodel.isp_configuration.traffic_filtering.IspTrafficFiltering;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
@@ -655,6 +661,44 @@ public class IspModelingUtilsTest {
         hasEntry(
             EXPORT_POLICY_ON_ISP_TO_INTERNET,
             installRoutingPolicyForIspToInternet(ispConfiguration, prefixSpace)));
+  }
+
+  @Test
+  public void testConnectIspPeers() {
+    IspModel ispModel2 =
+        IspModel.builder()
+            .setAsn(23)
+            .setSnapshotConnections(_ispModel.getSnapshotConnections())
+            .build();
+    Configuration isp1 = createIspNode(_ispModel, _nf, _logger).get();
+    Configuration isp2 = createIspNode(ispModel2, _nf, _logger).get();
+
+    Set<Layer1Edge> layerEdges =
+        connectPeerIsps(
+            new IspPeering(_ispAsn, ispModel2.getAsn()), _ispModel, ispModel2, isp1, isp2, _nf);
+
+    assertTrue(isp1.getAllInterfaces().containsKey(ispPeeringInterfaceName(isp2.getHostname())));
+    assertTrue(isp2.getAllInterfaces().containsKey(ispPeeringInterfaceName(isp1.getHostname())));
+
+    assertTrue(
+        isp1.getDefaultVrf()
+            .getBgpProcess()
+            .getInterfaceNeighbors()
+            .containsKey(ispPeeringInterfaceName(isp2.getHostname())));
+    assertTrue(
+        isp2.getDefaultVrf()
+            .getBgpProcess()
+            .getInterfaceNeighbors()
+            .containsKey(ispPeeringInterfaceName(isp1.getHostname())));
+
+    Layer1Node ispL1 =
+        new Layer1Node(isp1.getHostname(), ispPeeringInterfaceName(isp2.getHostname()));
+    Layer1Node ispL2 =
+        new Layer1Node(isp2.getHostname(), ispPeeringInterfaceName(isp1.getHostname()));
+
+    assertThat(
+        layerEdges,
+        equalTo(ImmutableSet.of(new Layer1Edge(ispL1, ispL2), new Layer1Edge(ispL2, ispL1))));
   }
 
   @Test
@@ -1227,7 +1271,8 @@ public class IspModelingUtilsTest {
                             _ispName,
                             Role.PRIVATE_BACKBONE,
                             ImmutableList.of(),
-                            IspTrafficFiltering.none())))),
+                            IspTrafficFiltering.none())),
+                    ImmutableList.of())),
             new BatfishLogger("output", false),
             new Warnings());
 
@@ -1285,7 +1330,8 @@ public class IspModelingUtilsTest {
                             ispName2,
                             Role.PRIVATE_BACKBONE,
                             ImmutableList.of(),
-                            IspTrafficFiltering.none())))),
+                            IspTrafficFiltering.none())),
+                    ImmutableList.of())),
             new BatfishLogger("output", false),
             new Warnings());
 
@@ -1313,6 +1359,56 @@ public class IspModelingUtilsTest {
         ispNode2.getAllInterfaces().keySet(),
         equalTo(
             ImmutableSet.of(ispToSnapshotInterfaceName(_snapshotHostname, snapshotInterface2))));
+  }
+
+  /** Test that ISP peerings are processed */
+  @Test
+  public void testGetInternetAndIspNodes_ispPeerings() {
+    // add another interface and peer to the configuration we already have
+    String snapshotInterface2 = "interface2";
+    Ip snapshotIp2 = Ip.parse("3.3.3.3");
+    Ip ispIp2 = Ip.parse("4.4.4.4");
+    long ispAsn2 = 4L;
+    String ispName2 = getDefaultIspNodeName(ispAsn2);
+    _nf.interfaceBuilder()
+        .setName(snapshotInterface2)
+        .setOwner(_snapshotHost)
+        .setAddress(ConcreteInterfaceAddress.create(snapshotIp2, 24))
+        .build();
+    BgpActivePeerConfig.builder()
+        .setPeerAddress(ispIp2)
+        .setRemoteAs(ispAsn2)
+        .setLocalIp(snapshotIp2)
+        .setLocalAs(_snapshotAsn)
+        .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+        .setBgpProcess(_snapshotHost.getDefaultVrf().getBgpProcess())
+        .build();
+
+    ModeledNodes modeledNodes =
+        getInternetAndIspNodes(
+            ImmutableMap.of(_snapshotHostname, _snapshotHost),
+            ImmutableList.of(
+                new IspConfiguration(
+                    ImmutableList.of(
+                        new BorderInterfaceInfo(
+                            NodeInterfacePair.of(_snapshotHostname, _snapshotInterfaceName)),
+                        new BorderInterfaceInfo(
+                            NodeInterfacePair.of(_snapshotHostname, snapshotInterface2))),
+                    ImmutableList.of(),
+                    IspFilter.ALLOW_ALL,
+                    ImmutableList.of(),
+                    ImmutableList.of(new IspPeeringInfo(new Peer(_ispAsn), new Peer(ispAsn2))))),
+            new BatfishLogger("output", false),
+            new Warnings());
+
+    // Having a layer1 edge means that ISP peering was processed
+    // Tests of the helper function checks if the peering is properly created
+    assertThat(
+        modeledNodes.getLayer1Edges(),
+        hasItem(
+            new Layer1Edge(
+                new Layer1Node(_ispName, ispPeeringInterfaceName(ispName2)),
+                new Layer1Node(ispName2, ispPeeringInterfaceName(_ispName)))));
   }
 
   @Test
@@ -1568,5 +1664,72 @@ public class IspModelingUtilsTest {
     // Conflict when node name matches ISP hostame.
     String message = getOnlyElement(ispNameConflicts(configurationsConflict, ispInfoMap));
     assertThat(message, containsString("ASN 1"));
+  }
+
+  @Test
+  public void testCombineIspPeerings() {
+    Map<Long, IspModel> ispModels = ImmutableMap.of(1L, _ispModel, 2L, _ispModel, 3L, _ispModel);
+    Set<IspPeering> ispPeerings =
+        combineIspPeerings(
+            ImmutableList.of(
+                new IspConfiguration(
+                    ImmutableList.of(),
+                    ImmutableList.of(),
+                    IspFilter.ALLOW_ALL,
+                    ImmutableList.of(),
+                    ImmutableList.of(
+                        new IspPeeringInfo(new Peer(1L), new Peer(2L)),
+                        new IspPeeringInfo(new Peer(1L), new Peer(3L)))),
+                new IspConfiguration(
+                    ImmutableList.of(),
+                    ImmutableList.of(),
+                    IspFilter.ALLOW_ALL,
+                    ImmutableList.of(),
+                    ImmutableList.of(new IspPeeringInfo(new Peer(2L), new Peer(1L))))), // duplicate
+            ispModels,
+            new Warnings());
+
+    assertThat(ispPeerings, equalTo(ImmutableSet.of(new IspPeering(1, 2), new IspPeering(1, 3))));
+  }
+
+  @Test
+  public void testCombineIspPeerings_missingAsns() {
+    Map<Long, IspModel> ispModels = ImmutableMap.of(_ispAsn, _ispModel);
+    {
+      // missing asn1
+      Warnings warnings = new Warnings(true, true, true);
+      combineIspPeerings(
+          ImmutableList.of(
+              new IspConfiguration(
+                  ImmutableList.of(),
+                  ImmutableList.of(),
+                  IspFilter.ALLOW_ALL,
+                  ImmutableList.of(),
+                  ImmutableList.of(new IspPeeringInfo(new Peer(10L), new Peer(_ispAsn))))),
+          ispModels,
+          warnings);
+      assertThat(
+          warnings,
+          hasRedFlag(
+              hasText("ISP Modeling: Could not find ISP with ASN 10, specified for ISP peering")));
+    }
+    {
+      // missing asn2
+      Warnings warnings = new Warnings(true, true, true);
+      combineIspPeerings(
+          ImmutableList.of(
+              new IspConfiguration(
+                  ImmutableList.of(),
+                  ImmutableList.of(),
+                  IspFilter.ALLOW_ALL,
+                  ImmutableList.of(),
+                  ImmutableList.of(new IspPeeringInfo(new Peer(_ispAsn), new Peer(20))))),
+          ispModels,
+          warnings);
+      assertThat(
+          warnings,
+          hasRedFlag(
+              hasText("ISP Modeling: Could not find ISP with ASN 20, specified for ISP peering")));
+    }
   }
 }
