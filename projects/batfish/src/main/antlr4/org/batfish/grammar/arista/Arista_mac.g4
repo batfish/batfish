@@ -1,7 +1,5 @@
 parser grammar Arista_mac;
 
-import Legacy_common;
-
 default_mac
 :
     MAC default_mac_access_list
@@ -60,7 +58,7 @@ no_mac_access_list
    ACCESS_LIST variable NEWLINE
 ;
 
-s_eos_mac
+s_mac
 :
     MAC mac_access_list
 ;

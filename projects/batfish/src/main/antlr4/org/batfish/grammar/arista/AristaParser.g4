@@ -3330,7 +3330,6 @@ stanza
    | s_email
    | s_enable
    | s_end
-   | s_eos_mac
    | s_eos_mlag
    | s_ephone_dn_template
    | s_errdisable
@@ -3372,6 +3371,7 @@ stanza
    | s_license
    | s_logging
    | s_lpts
+   | s_mac
    | s_management
    | s_map_class
    | s_media_termination
