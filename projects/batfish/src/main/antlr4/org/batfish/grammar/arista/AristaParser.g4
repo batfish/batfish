@@ -9,6 +9,7 @@ Arista_cvx,
 Arista_email,
 Arista_igmp,
 Arista_logging,
+Arista_mac,
 Arista_mlag,
 Arista_vlan,
 Legacy_aaa,
@@ -2144,6 +2145,7 @@ s_default
   (
     default_ip
     | sdef_hardware
+    | default_mac
     | default_snmp_server
   )
 ;
@@ -2660,6 +2662,7 @@ s_no
     | no_errdisable
     | no_ip
     | no_logging
+    | no_mac
     | no_snmp_server
   )
 ;
@@ -3368,6 +3371,7 @@ stanza
    | s_license
    | s_logging
    | s_lpts
+   | s_mac
    | s_management
    | s_map_class
    | s_media_termination
