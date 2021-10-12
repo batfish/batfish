@@ -33,8 +33,8 @@ import static org.batfish.datamodel.matchers.StaticRouteMatchers.hasRecursive;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.main.BatfishTestUtils.getBatfish;
-import static org.batfish.vendor.a10.representation.A10Configuration.SNAT_PORT_POOL_START;
 import static org.batfish.vendor.a10.representation.A10Configuration.getInterfaceName;
+import static org.batfish.vendor.a10.representation.A10Conversion.SNAT_PORT_POOL_START;
 import static org.batfish.vendor.a10.representation.A10StructureType.INTERFACE;
 import static org.batfish.vendor.a10.representation.A10StructureType.VRRP_A_FAIL_OVER_POLICY_TEMPLATE;
 import static org.batfish.vendor.a10.representation.A10StructureType.VRRP_A_VRID;
@@ -1466,6 +1466,10 @@ public class A10GrammarTest {
                 hasComment("Expected member priority in range 1-16, but got '17'"))));
   }
 
+  /**
+   * Test that transformations are applied as expected. More extensive unit testing of conversion
+   * occurs elsewhere.
+   */
   @Test
   public void testVirtualServerConversion() throws IOException {
     Configuration c = parseConfig("virtual_server_convert");

@@ -3,10 +3,10 @@ package org.batfish.vendor.a10.representation;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.FirewallSessionInterfaceInfo.Action.POST_NAT_FIB_LOOKUP;
-import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
-import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationPort;
-import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
-import static org.batfish.datamodel.transformation.TransformationStep.assignSourcePort;
+import static org.batfish.vendor.a10.representation.A10Conversion.orElseChain;
+import static org.batfish.vendor.a10.representation.A10Conversion.toDstTransformationSteps;
+import static org.batfish.vendor.a10.representation.A10Conversion.toMatchCondition;
+import static org.batfish.vendor.a10.representation.A10Conversion.toSnatTransformationStep;
 import static org.batfish.vendor.a10.representation.Interface.DEFAULT_MTU;
 import static org.batfish.vendor.a10.representation.StaticRoute.DEFAULT_STATIC_ROUTE_DISTANCE;
 
@@ -19,7 +19,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -31,18 +30,13 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceType;
-import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.transformation.ApplyAll;
 import org.batfish.datamodel.transformation.ApplyAny;
@@ -53,8 +47,6 @@ import org.batfish.vendor.VendorConfiguration;
 
 /** Datamodel class representing an A10 device configuration. */
 public final class A10Configuration extends VendorConfiguration {
-  public static final int SNAT_PORT_POOL_START = 2048;
-  public static final int SNAT_PORT_POOL_END = NamedPort.EPHEMERAL_HIGHEST.number();
 
   public A10Configuration() {
     _interfacesEthernet = new HashMap<>();
@@ -279,7 +271,7 @@ public final class A10Configuration extends VendorConfiguration {
         orElseChain(
             _virtualServers.values().stream()
                 .filter(vs -> firstNonNull(vs.getEnable(), true))
-                .flatMap(s -> toSimpleTransformations(s).stream())
+                .flatMap(vs -> toSimpleTransformations(vs).stream())
                 .collect(ImmutableList.toImmutableList()));
     xform.ifPresent(
         x ->
@@ -294,8 +286,9 @@ public final class A10Configuration extends VendorConfiguration {
   }
 
   /**
-   * Returns the list of load-balancing {@link SimpleTransformation}s for the specified {@link
-   * VirtualServer}.
+   * Returns the list of intermediate {@link SimpleTransformation}s used to build the VI {@link
+   * Transformation}. Each element corresponds to the transformation for a {@link Server} member of
+   * the specified {@link VirtualServer}.
    */
   @Nonnull
   private List<SimpleTransformation> toSimpleTransformations(VirtualServer server) {
@@ -309,48 +302,6 @@ public final class A10Configuration extends VendorConfiguration {
         .collect(ImmutableList.toImmutableList());
   }
 
-  /** Returns the {@link SubRange} representing the specified {@link VirtualServerPort}'s ports. */
-  @VisibleForTesting
-  @Nonnull
-  static SubRange toSubRange(VirtualServerPort port) {
-    return new SubRange(
-        port.getNumber(), port.getNumber() + Optional.ofNullable(port.getRange()).orElse(0));
-  }
-
-  /** Returns the {@link IpProtocol} corresponding to the specified virtual-server port. */
-  @VisibleForTesting
-  @Nonnull
-  static Optional<IpProtocol> toProtocol(VirtualServerPort port) {
-    VirtualServerPort.Type type = port.getType();
-    switch (type) {
-      case TCP:
-        return Optional.of(IpProtocol.TCP);
-      case UDP:
-        return Optional.of(IpProtocol.UDP);
-      default:
-        assert false;
-        return Optional.empty();
-    }
-  }
-
-  /**
-   * Returns the match condition, when a flow is destined for the specified virtual-server member
-   * (e.g. when NAT should apply for the member).
-   */
-  @VisibleForTesting
-  @Nonnull
-  static AclLineMatchExpr toMatchCondition(
-      VirtualServerTarget target,
-      VirtualServerPort port,
-      VirtualServerTargetToIpSpace virtualServerTargetToIpSpace) {
-    HeaderSpace.Builder headerSpace =
-        HeaderSpace.builder()
-            .setDstIps(virtualServerTargetToIpSpace.visit(target))
-            .setDstPorts(toSubRange(port));
-    toProtocol(port).ifPresent(headerSpace::setIpProtocols);
-    return AclLineMatchExprs.match(headerSpace.build());
-  }
-
   /**
    * Returns the full transformation (DNAT and SNAT if applicable) for the specified virtual-server
    * port.
@@ -359,7 +310,7 @@ public final class A10Configuration extends VendorConfiguration {
   private TransformationStep toTransformationStep(VirtualServerPort port) {
     // No service-group means no load balancing
     String serviceGroupName = port.getServiceGroup();
-    if (serviceGroupName == null || _serviceGroups.get(serviceGroupName) == null) {
+    if (serviceGroupName == null) {
       return Noop.NOOP_DEST_NAT;
     }
     ServiceGroup serviceGroup = _serviceGroups.get(serviceGroupName);
@@ -367,80 +318,13 @@ public final class A10Configuration extends VendorConfiguration {
     ApplyAny dnatStep = new ApplyAny(toDstTransformationSteps(serviceGroup, _servers));
 
     String snatName = port.getSourceNat();
-    if (snatName == null || !_natPools.containsKey(snatName)) {
+    if (snatName == null) {
       return dnatStep;
     }
-    TransformationStep snatStep = toSnatTransformationStep(_natPools.get(snatName));
+    NatPool natPool = _natPools.get(snatName);
+    TransformationStep snatStep = toSnatTransformationStep(natPool);
 
     return new ApplyAll(snatStep, dnatStep);
-  }
-
-  /** Returns the source transformation step for the specified NAT pool. */
-  @Nonnull
-  private static TransformationStep toSnatTransformationStep(NatPool pool) {
-    return new ApplyAll(
-        assignSourceIp(pool.getStart(), pool.getEnd()),
-        assignSourcePort(SNAT_PORT_POOL_START, SNAT_PORT_POOL_END));
-  }
-
-  /** Returns the destination transformation steps for the specified service-group. */
-  @VisibleForTesting
-  @Nonnull
-  static List<TransformationStep> toDstTransformationSteps(
-      ServiceGroup serviceGroup, Map<String, Server> servers) {
-    return serviceGroup.getMembers().values().stream()
-        .map(
-            m -> {
-              Server server = servers.get(m.getName());
-              ServerPort.ServerPortAndType serverPortKey =
-                  new ServerPort.ServerPortAndType(m.getPort(), serviceGroup.getType());
-
-              // Guaranteed by extraction
-              assert server != null;
-              ServerPort serverPort = server.getPorts().get(serverPortKey);
-              assert serverPort != null;
-
-              if (!firstNonNull(server.getEnable(), true)
-                  || !firstNonNull(serverPort.getEnable(), true)) {
-                return null;
-              }
-
-              return new ApplyAll(
-                  toDstPortTransformationStep(serverPort), toDstIpTransformationStep(server));
-            })
-        .filter(Objects::nonNull)
-        .collect(ImmutableList.toImmutableList());
-  }
-
-  /** Returns the destination IP transformation step for the specified server. */
-  @Nonnull
-  private static TransformationStep toDstIpTransformationStep(Server server) {
-    return assignDestinationIp(ServerTargetToIp.INSTANCE.visit(server.getTarget()));
-  }
-
-  /** Returns the destination port transformation step for the specified server. */
-  @Nonnull
-  private static TransformationStep toDstPortTransformationStep(ServerPort serverPort) {
-    int portRangeEnd =
-        serverPort.getNumber() + Optional.ofNullable(serverPort.getRange()).orElse(0);
-    return assignDestinationPort(serverPort.getNumber(), portRangeEnd);
-  }
-
-  /**
-   * Returns a {@link Transformation} that chains the provided {@link SimpleTransformation}s
-   * orElse-wise. Returns {@link Optional#empty()} if there are no transformations.
-   */
-  public static @Nonnull Optional<Transformation> orElseChain(
-      Iterable<SimpleTransformation> simpleTransformations) {
-    Transformation current = null;
-    for (SimpleTransformation earlier : simpleTransformations) {
-      current =
-          Transformation.when(earlier.getGuard())
-              .apply(earlier.getStep())
-              .setOrElse(current)
-              .build();
-    }
-    return Optional.ofNullable(current);
   }
 
   private void convertStaticRoute(Vrf vrf, Prefix prefix, StaticRoute staticRoute) {
