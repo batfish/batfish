@@ -1,11 +1,11 @@
 package org.batfish.symbolic;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.Names.escapeNameIfNeeded;
 
 import java.util.Comparator;
 import java.util.Objects;
 import javax.annotation.Nonnull;
-import org.batfish.common.BatfishException;
 
 /** Location where reachability analysis begins. */
 public final class IngressLocation implements Comparable<IngressLocation> {
@@ -40,10 +40,9 @@ public final class IngressLocation implements Comparable<IngressLocation> {
   }
 
   public @Nonnull String getInterface() {
-    if (_pointType == Type.INTERFACE_LINK) {
-      return _pointWithinNode;
-    }
-    throw new BatfishException("IngressLocation type is not interface: " + _pointType);
+    checkArgument(
+        _pointType == Type.INTERFACE_LINK, "IngressLocation type is not interface: " + _pointType);
+    return _pointWithinNode;
   }
 
   public @Nonnull String getNode() {
@@ -59,14 +58,12 @@ public final class IngressLocation implements Comparable<IngressLocation> {
   }
 
   public @Nonnull String getVrf() {
-    if (_pointType == Type.VRF) {
-      return _pointWithinNode;
-    }
-    throw new BatfishException("IngressLocation type is not vrf: " + _pointType);
+    checkArgument(_pointType == Type.VRF, "IngressLocation type is not vrf: " + _pointType);
+    return _pointWithinNode;
   }
 
   @Override
-  public int compareTo(IngressLocation other) {
+  public int compareTo(@Nonnull IngressLocation other) {
     return Comparator.comparing(IngressLocation::getType)
         .thenComparing(IngressLocation::getNode)
         .thenComparing(IngressLocation::getPointWithinNode)
