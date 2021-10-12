@@ -75,6 +75,7 @@ import static org.batfish.datamodel.transformation.TransformationStep.assignSour
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.arista.AristaConfiguration.DEFAULT_LOCAL_BGP_WEIGHT;
+import static org.batfish.representation.arista.AristaConfiguration.aclLineStructureName;
 import static org.batfish.representation.arista.AristaStructureType.INTERFACE;
 import static org.batfish.representation.arista.AristaStructureType.MAC_ACCESS_LIST;
 import static org.batfish.representation.arista.AristaStructureType.POLICY_MAP;
@@ -120,6 +121,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.stream.Collectors;
@@ -134,6 +136,7 @@ import org.batfish.common.matchers.WarningMatchers;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpActivePeerConfig;
@@ -214,6 +217,7 @@ import org.batfish.main.TestrigText;
 import org.batfish.representation.arista.AristaConfiguration;
 import org.batfish.representation.arista.AristaStaticSourceNat;
 import org.batfish.representation.arista.AristaStaticSourceNat.Protocol;
+import org.batfish.representation.arista.AristaStructureType;
 import org.batfish.representation.arista.ExpandedCommunityList;
 import org.batfish.representation.arista.ExpandedCommunityListLine;
 import org.batfish.representation.arista.IpAsPathAccessList;
@@ -256,6 +260,7 @@ import org.batfish.representation.arista.eos.AristaBgpVrfIpv4UnicastAddressFamil
 import org.batfish.representation.arista.eos.AristaBgpVrfIpv6UnicastAddressFamily;
 import org.batfish.representation.arista.eos.AristaEosVxlan;
 import org.batfish.representation.arista.eos.AristaRedistributeType;
+import org.batfish.vendor.VendorStructureId;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -2718,10 +2723,33 @@ public class AristaGrammarTest {
 
   @Test
   public void testParseAclShowRunAll() {
-    Configuration c = parseConfig("arista_acl_show_run_all");
-    // Tests that the ACLs parse.
-    assertThat(c, hasIpAccessList("SOME_ACL", hasLines(hasSize(1))));
-    assertThat(c, hasIpAccessList("SOME_EXT_ACL", hasLines(hasSize(1))));
+    String hostname = "arista_acl_show_run_all";
+    String filename = "configs/" + hostname;
+    Configuration c = parseConfig(hostname);
+    // Tests that the ACLs parse and their lines have correct VSIDs
+    String standardAclName = "SOME_ACL";
+    assertThat(c, hasIpAccessList(standardAclName, hasLines(hasSize(1))));
+    AclLine standard = c.getIpAccessLists().get(standardAclName).getLines().get(0);
+    assertThat(
+        standard.getVendorStructureId(),
+        equalTo(
+            Optional.of(
+                new VendorStructureId(
+                    filename,
+                    AristaStructureType.IP_ACCESS_LIST_STANDARD_LINE.getDescription(),
+                    aclLineStructureName(standardAclName, standard.getName())))));
+
+    String extendedAclName = "SOME_EXT_ACL";
+    assertThat(c, hasIpAccessList(extendedAclName, hasLines(hasSize(1))));
+    AclLine extended = c.getIpAccessLists().get(extendedAclName).getLines().get(0);
+    assertThat(
+        extended.getVendorStructureId(),
+        equalTo(
+            Optional.of(
+                new VendorStructureId(
+                    filename,
+                    AristaStructureType.IPV4_ACCESS_LIST_EXTENDED_LINE.getDescription(),
+                    aclLineStructureName(extendedAclName, extended.getName())))));
   }
 
   @Test

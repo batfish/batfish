@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Comparator.naturalOrder;
 import static java.util.stream.Collectors.toCollection;
 import static org.batfish.datamodel.ConfigurationFormat.ARISTA;
+import static org.batfish.representation.arista.AristaConfiguration.aclLineStructureName;
 import static org.batfish.representation.arista.AristaStructureType.ACCESS_LIST;
 import static org.batfish.representation.arista.AristaStructureType.AS_PATH_ACCESS_LIST;
 import static org.batfish.representation.arista.AristaStructureType.BFD_TEMPLATE;
@@ -20,11 +21,13 @@ import static org.batfish.representation.arista.AristaStructureType.IPSEC_PROFIL
 import static org.batfish.representation.arista.AristaStructureType.IPSEC_TRANSFORM_SET;
 import static org.batfish.representation.arista.AristaStructureType.IPV4_ACCESS_LIST;
 import static org.batfish.representation.arista.AristaStructureType.IPV4_ACCESS_LIST_EXTENDED;
+import static org.batfish.representation.arista.AristaStructureType.IPV4_ACCESS_LIST_EXTENDED_LINE;
 import static org.batfish.representation.arista.AristaStructureType.IPV6_ACCESS_LIST;
 import static org.batfish.representation.arista.AristaStructureType.IPV6_ACCESS_LIST_EXTENDED;
 import static org.batfish.representation.arista.AristaStructureType.IPV6_ACCESS_LIST_STANDARD;
 import static org.batfish.representation.arista.AristaStructureType.IP_ACCESS_LIST;
 import static org.batfish.representation.arista.AristaStructureType.IP_ACCESS_LIST_STANDARD;
+import static org.batfish.representation.arista.AristaStructureType.IP_ACCESS_LIST_STANDARD_LINE;
 import static org.batfish.representation.arista.AristaStructureType.ISAKMP_POLICY;
 import static org.batfish.representation.arista.AristaStructureType.ISAKMP_PROFILE;
 import static org.batfish.representation.arista.AristaStructureType.KEYRING;
@@ -93,6 +96,8 @@ import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_S
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_SERVICE_POLICY;
 import static org.batfish.representation.arista.AristaStructureUsage.IPSEC_PROFILE_ISAKMP_PROFILE;
 import static org.batfish.representation.arista.AristaStructureUsage.IPSEC_PROFILE_TRANSFORM_SET;
+import static org.batfish.representation.arista.AristaStructureUsage.IPV4_ACCESS_LIST_EXTENDED_LINE_SELF_REFERENCE;
+import static org.batfish.representation.arista.AristaStructureUsage.IP_ACCESS_LIST_STANDARD_LINE_SELF_REFERENCE;
 import static org.batfish.representation.arista.AristaStructureUsage.IP_DOMAIN_LOOKUP_INTERFACE;
 import static org.batfish.representation.arista.AristaStructureUsage.IP_NAT_DESTINATION_ACCESS_LIST;
 import static org.batfish.representation.arista.AristaStructureUsage.IP_NAT_SOURCE_ACCESS_LIST;
@@ -1403,6 +1408,16 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       long lastKey = lines.isEmpty() ? 0L : lines.lastKey();
       _currentAclSeq = lastKey + 10;
     }
+    // structure definition tracking
+    String structName =
+        aclLineStructureName(_currentStandardAcl.getName(), _currentAclSeq.toString());
+    int configLine = ctx.start.getLine();
+    _configuration.defineSingleLineStructure(IP_ACCESS_LIST_STANDARD_LINE, structName, configLine);
+    _configuration.referenceStructure(
+        IP_ACCESS_LIST_STANDARD_LINE,
+        structName,
+        IP_ACCESS_LIST_STANDARD_LINE_SELF_REFERENCE,
+        configLine);
   }
 
   @Override
@@ -4377,6 +4392,17 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
             .setSrcAddressSpecifier(srcAddressSpecifier)
             .build();
     _currentExtendedAcl.addLine(line);
+
+    // structure definition tracking
+    String structName = aclLineStructureName(_currentExtendedAcl.getName(), name);
+    int configLine = ctx.start.getLine();
+    _configuration.defineSingleLineStructure(
+        IPV4_ACCESS_LIST_EXTENDED_LINE, structName, configLine);
+    _configuration.referenceStructure(
+        IPV4_ACCESS_LIST_EXTENDED_LINE,
+        structName,
+        IPV4_ACCESS_LIST_EXTENDED_LINE_SELF_REFERENCE,
+        configLine);
   }
 
   private AccessListServiceSpecifier computeExtendedAccessListServiceSpecifier(
