@@ -1,0 +1,47 @@
+!BATFISH_FORMAT: a10_acos
+hostname virtual_server_convert
+!
+!
+!
+interface ethernet 1
+  ip address 10.0.0.10 255.255.255.0
+  enable
+!
+!
+ip nat pool POOL1 10.10.10.10 10.10.10.10 netmask /32
+!
+!
+! Enabled here but disabled in member reference
+slb server SERVER1 10.0.0.1
+  enable
+  port 80 tcp
+!
+! Disabled server
+slb server SERVER2 10.0.0.2
+  disable
+  port 80 tcp
+!
+! This is the first effectively enabled real server
+slb server SERVER3 10.0.0.3
+  port 80 tcp
+!
+!
+slb service-group SG1 tcp
+  member SERVER1 80
+    disable
+  member SERVER2 80
+    enable
+  member SERVER3 80
+    enable
+!
+slb virtual-server VS1 10.0.0.100
+  port 81 tcp
+    service-group SG1
+    source-nat pool POOL1
+!
+slb virtual-server VS2 10.0.0.101
+  disable
+  port 81 tcp
+    service-group SG1
+    source-nat pool POOL1
+!

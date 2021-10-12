@@ -2,6 +2,11 @@ package org.batfish.vendor.a10.representation;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.FirewallSessionInterfaceInfo.Action.POST_NAT_FIB_LOOKUP;
+import static org.batfish.vendor.a10.representation.A10Conversion.orElseChain;
+import static org.batfish.vendor.a10.representation.A10Conversion.toDstTransformationSteps;
+import static org.batfish.vendor.a10.representation.A10Conversion.toMatchCondition;
+import static org.batfish.vendor.a10.representation.A10Conversion.toSnatTransformationStep;
 import static org.batfish.vendor.a10.representation.Interface.DEFAULT_MTU;
 import static org.batfish.vendor.a10.representation.StaticRoute.DEFAULT_STATIC_ROUTE_DISTANCE;
 
@@ -24,6 +29,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.DeviceModel;
+import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.LineAction;
@@ -32,6 +38,11 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.route.nh.NextHopIp;
+import org.batfish.datamodel.transformation.ApplyAll;
+import org.batfish.datamodel.transformation.ApplyAny;
+import org.batfish.datamodel.transformation.Noop;
+import org.batfish.datamodel.transformation.Transformation;
+import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.vendor.VendorConfiguration;
 
 /** Datamodel class representing an A10 device configuration. */
@@ -244,8 +255,76 @@ public final class A10Configuration extends VendorConfiguration {
         (prefix, manager) ->
             manager.getVariants().forEach((ip, sr) -> convertStaticRoute(vrf, prefix, sr)));
 
+    // Must be done after interface conversion
+    convertVirtualServers();
+
     markStructures();
     return ImmutableList.of(_c);
+  }
+
+  /**
+   * Convert virtual-servers to load-balancing VI constructs and attach resulting transformations to
+   * interfaces. Modifies VI interfaces and must be called after those are created.
+   */
+  private void convertVirtualServers() {
+    Optional<Transformation> xform =
+        orElseChain(
+            _virtualServers.values().stream()
+                .filter(vs -> firstNonNull(vs.getEnable(), true))
+                .flatMap(vs -> toSimpleTransformations(vs).stream())
+                .collect(ImmutableList.toImmutableList()));
+    xform.ifPresent(
+        x ->
+            _c.getAllInterfaces()
+                .forEach(
+                    (name, iface) -> {
+                      iface.setFirewallSessionInterfaceInfo(
+                          new FirewallSessionInterfaceInfo(
+                              POST_NAT_FIB_LOOKUP, ImmutableList.of(iface.getName()), null, null));
+                      iface.setIncomingTransformation(x);
+                    }));
+  }
+
+  /**
+   * Returns the list of intermediate {@link SimpleTransformation}s used to build the VI {@link
+   * Transformation}. Each element corresponds to the transformation for a {@link Server} member of
+   * the specified {@link VirtualServer}.
+   */
+  @Nonnull
+  private List<SimpleTransformation> toSimpleTransformations(VirtualServer server) {
+    return server.getPorts().values().stream()
+        .filter(p -> firstNonNull(p.getEnable(), true))
+        .map(
+            p ->
+                new SimpleTransformation(
+                    toMatchCondition(server.getTarget(), p, VirtualServerTargetToIpSpace.INSTANCE),
+                    toTransformationStep(p)))
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  /**
+   * Returns the full transformation (DNAT and SNAT if applicable) for the specified virtual-server
+   * port.
+   */
+  @Nonnull
+  private TransformationStep toTransformationStep(VirtualServerPort port) {
+    // No service-group means no load balancing
+    String serviceGroupName = port.getServiceGroup();
+    if (serviceGroupName == null) {
+      return Noop.NOOP_DEST_NAT;
+    }
+    ServiceGroup serviceGroup = _serviceGroups.get(serviceGroupName);
+    assert serviceGroup != null;
+    ApplyAny dnatStep = new ApplyAny(toDstTransformationSteps(serviceGroup, _servers));
+
+    String snatName = port.getSourceNat();
+    if (snatName == null) {
+      return dnatStep;
+    }
+    NatPool natPool = _natPools.get(snatName);
+    TransformationStep snatStep = toSnatTransformationStep(natPool);
+
+    return new ApplyAll(snatStep, dnatStep);
   }
 
   private void convertStaticRoute(Vrf vrf, Prefix prefix, StaticRoute staticRoute) {
