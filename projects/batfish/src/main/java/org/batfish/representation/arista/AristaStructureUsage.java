@@ -61,6 +61,8 @@ public enum AristaStructureUsage implements StructureUsage {
   INTERFACE_SERVICE_POLICY("interface service-policy"),
   INTERFACE_SERVICE_POLICY_CONTROL_SUBSCRIBER("interface service-policy type control subscriber"),
   INTERFACE_TRAFFIC_ZONE_MEMBER("interface zone-member"),
+  IP_ACCESS_LIST_STANDARD_LINE_SELF_REFERENCE("ip access-list standard line"),
+  IPV4_ACCESS_LIST_EXTENDED_LINE_SELF_REFERENCE("extended ipv4 access-list line"),
   IP_DOMAIN_LOOKUP_INTERFACE("ip domain lookup interface"),
   IP_ROUTE_NHINT("ip route next-hop interface"),
   IP_NAT_DESTINATION_ACCESS_LIST("ip nat destination acl"),

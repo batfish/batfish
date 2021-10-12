@@ -71610,6 +71610,20 @@
               "definitionLines" : "5-8",
               "numReferrers" : 0
             }
+          },
+          "extended ipv4 access-list line" : {
+            "abcd: 10 deny tcp any 102.66.49.113/24 neq www https syn" : {
+              "definitionLines" : "7",
+              "numReferrers" : 1
+            },
+            "abcd: 20 deny ip any any" : {
+              "definitionLines" : "8",
+              "numReferrers" : 1
+            },
+            "abcd: 5 permit vlan 123 0x000 udp any 224.0.0.0/4" : {
+              "definitionLines" : "6",
+              "numReferrers" : 1
+            }
           }
         },
         "configs/arista_bgp" : {
@@ -71680,12 +71694,24 @@
               "definitionLines" : "30-31",
               "numReferrers" : 1
             }
+          },
+          "ip access-list standard line" : {
+            "sshabc: 10" : {
+              "definitionLines" : "31",
+              "numReferrers" : 1
+            }
           }
         },
         "configs/arista_nat" : {
           "extended ipv4 access-list" : {
             "acl1" : {
               "definitionLines" : "7-8",
+              "numReferrers" : 1
+            }
+          },
+          "extended ipv4 access-list line" : {
+            "acl1: permit ip any any" : {
+              "definitionLines" : "8",
               "numReferrers" : 1
             }
           },
@@ -76882,6 +76908,25 @@
         ]
       },
       "referencedStructures" : {
+        "configs/arista_acl" : {
+          "extended ipv4 access-list line" : {
+            "abcd: 10 deny tcp any 102.66.49.113/24 neq www https syn" : {
+              "extended ipv4 access-list line" : [
+                7
+              ]
+            },
+            "abcd: 20 deny ip any any" : {
+              "extended ipv4 access-list line" : [
+                8
+              ]
+            },
+            "abcd: 5 permit vlan 123 0x000 udp any 224.0.0.0/4" : {
+              "extended ipv4 access-list line" : [
+                6
+              ]
+            }
+          }
+        },
         "configs/arista_bgp" : {
           "bgp peer-group" : {
             "UNDEFINED_PEER_GROUP" : {
@@ -76976,6 +77021,13 @@
           }
         },
         "configs/arista_misc" : {
+          "ip access-list standard line" : {
+            "sshabc: 10" : {
+              "ip access-list standard line" : [
+                31
+              ]
+            }
+          },
           "ipv4 acl" : {
             "abc" : {
               "management telnet ip access-group" : [
@@ -76990,6 +77042,13 @@
           }
         },
         "configs/arista_nat" : {
+          "extended ipv4 access-list line" : {
+            "acl1: permit ip any any" : {
+              "extended ipv4 access-list line" : [
+                8
+              ]
+            }
+          },
           "interface" : {
             "Ethernet1" : {
               "interface" : [
