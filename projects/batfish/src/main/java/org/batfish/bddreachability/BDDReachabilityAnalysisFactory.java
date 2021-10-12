@@ -120,6 +120,8 @@ import org.batfish.symbolic.state.PreOutInterfaceInsufficientInfo;
 import org.batfish.symbolic.state.PreOutInterfaceNeighborUnreachable;
 import org.batfish.symbolic.state.PreOutVrf;
 import org.batfish.symbolic.state.Query;
+import org.batfish.symbolic.state.SetupSessionDeliveredToSubnet;
+import org.batfish.symbolic.state.SetupSessionExitsNetwork;
 import org.batfish.symbolic.state.StateExpr;
 import org.batfish.symbolic.state.VrfAccept;
 
@@ -767,7 +769,8 @@ public final class BDDReachabilityAnalysisFactory {
         generateRules_PreOutEdge_PreOutEdgePostNat(),
         generateRules_PreOutEdgePostNat_NodeDropAclOut(),
         generateRules_PreOutEdgePostNat_PreInInterface(),
-        generateRules_PreOutInterfaceDisposition_NodeInterfaceDisposition(),
+        generateRules_PreOutInterfaceDisposition_SetupSessionDisposition(),
+        generateRules_SetupSessionDisposition_NodeInterfaceDisposition(),
         generateRules_PreOutInterfaceDisposition_NodeDropAclOut(),
         generateRules_VrfAccept_NodeAccept(),
         generateFibRules());
@@ -834,13 +837,7 @@ public final class BDDReachabilityAnalysisFactory {
               String node = iface.getOwner().getHostname();
               String ifaceName = iface.getName();
               return new Edge(
-                  nodeInterfaceDispositionConstructor.apply(node, ifaceName),
-                  dispositionNode,
-                  removeNodeSpecificConstraints(
-                      node,
-                      _lastHopMgr,
-                      _bddOutgoingOriginalFlowFilterManagers.get(node),
-                      _bddSourceManagers.get(node)));
+                  nodeInterfaceDispositionConstructor.apply(node, ifaceName), dispositionNode);
             });
   }
 
@@ -1360,7 +1357,7 @@ public final class BDDReachabilityAnalysisFactory {
   }
 
   @VisibleForTesting
-  Stream<Edge> generateRules_PreOutInterfaceDisposition_NodeInterfaceDisposition() {
+  Stream<Edge> generateRules_PreOutInterfaceDisposition_SetupSessionDisposition() {
     return getInterfaces()
         .flatMap(
             iface -> {
@@ -1388,32 +1385,79 @@ public final class BDDReachabilityAnalysisFactory {
                * 3. outgoing transformation
                * 4. post-transformation filter
                */
-              Transition transition =
+              Transition sessionTransition =
                   compose(
                       constraint(permitBeforeNatBDD.and(permitOriginalFlowBdd)),
                       outgoingTransformation,
                       constraint(permitAfterNatBDD));
-              if (transition == ZERO) {
+
+              if (sessionTransition == ZERO) {
                 return Stream.of();
               }
+
+              /* For failure dispostions we don't setup sessions. So do 1-4 above, then:
+               * 5. erase node-specific constraints
+               */
+              Transition nonSessionTransition =
+                  compose(
+                      sessionTransition,
+                      removeNodeSpecificConstraints(
+                          node, _lastHopMgr, originalFlowFilterMgr, _bddSourceManagers.get(node)));
 
               return Stream.of(
                   new Edge(
                       new PreOutInterfaceDeliveredToSubnet(node, ifaceName),
-                      new NodeInterfaceDeliveredToSubnet(node, ifaceName),
-                      transition),
+                      new SetupSessionDeliveredToSubnet(node, ifaceName),
+                      sessionTransition),
                   new Edge(
                       new PreOutInterfaceExitsNetwork(node, ifaceName),
-                      new NodeInterfaceExitsNetwork(node, ifaceName),
-                      transition),
+                      new SetupSessionExitsNetwork(node, ifaceName),
+                      sessionTransition),
                   new Edge(
                       new PreOutInterfaceInsufficientInfo(node, ifaceName),
+                      // skip setup session for II
                       new NodeInterfaceInsufficientInfo(node, ifaceName),
-                      transition),
+                      nonSessionTransition),
                   new Edge(
                       new PreOutInterfaceNeighborUnreachable(node, ifaceName),
+                      // skip setup session for NU
                       new NodeInterfaceNeighborUnreachable(node, ifaceName),
-                      transition));
+                      nonSessionTransition));
+            });
+  }
+
+  @VisibleForTesting
+  Stream<Edge> generateRules_SetupSessionDisposition_NodeInterfaceDisposition() {
+    return _configs.values().stream()
+        .flatMap(
+            c -> {
+              String node = c.getHostname();
+
+              Transition transition =
+                  removeNodeSpecificConstraints(
+                      node,
+                      _lastHopMgr,
+                      _bddOutgoingOriginalFlowFilterManagers.get(node),
+                      _bddSourceManagers.get(node));
+
+              /* We only setup sessions for successful ARP failure dispositions (i.e.
+               * DeliveredToSubnet and ExitsNetwork).
+               * see generateRules_PreOutInterfaceDisposition_SetupSessionDisposition
+               */
+              return c.activeInterfaces()
+                  .flatMap(
+                      iface -> {
+                        String ifaceName = iface.getName();
+                        return Stream.of(
+                            new Edge(
+                                new SetupSessionDeliveredToSubnet(node, ifaceName),
+                                new NodeInterfaceDeliveredToSubnet(node, ifaceName),
+                                transition),
+                            new Edge(
+                                new SetupSessionExitsNetwork(node, ifaceName),
+                                new NodeInterfaceExitsNetwork(node, ifaceName),
+                                transition));
+                      });
             });
   }
 

@@ -28,6 +28,8 @@ import org.batfish.symbolic.state.PreOutInterfaceInsufficientInfo;
 import org.batfish.symbolic.state.PreOutInterfaceNeighborUnreachable;
 import org.batfish.symbolic.state.PreOutVrf;
 import org.batfish.symbolic.state.PreOutVrfSession;
+import org.batfish.symbolic.state.SetupSessionDeliveredToSubnet;
+import org.batfish.symbolic.state.SetupSessionExitsNetwork;
 import org.batfish.symbolic.state.StateExpr;
 import org.batfish.symbolic.state.StateExprVisitor;
 import org.batfish.symbolic.state.VrfAccept;
@@ -130,12 +132,12 @@ final class SessionCreationNodeVisitor implements StateExprVisitor<NodeInterface
   @Override
   public NodeInterfacePair visitNodeInterfaceDeliveredToSubnet(
       NodeInterfaceDeliveredToSubnet expr) {
-    return NodeInterfacePair.of(expr.getHostname(), expr.getInterface());
+    return null;
   }
 
   @Override
   public NodeInterfacePair visitNodeInterfaceExitsNetwork(NodeInterfaceExitsNetwork expr) {
-    return NodeInterfacePair.of(expr.getHostname(), expr.getInterface());
+    return null;
   }
 
   @Override
@@ -234,6 +236,20 @@ final class SessionCreationNodeVisitor implements StateExprVisitor<NodeInterface
   @Override
   public NodeInterfacePair visitQuery() {
     return null;
+  }
+
+  @Override
+  public NodeInterfacePair visitSetupSessionDeliveredToSubnet(
+      SetupSessionDeliveredToSubnet setupSessionDeliveredToSubnet) {
+    return NodeInterfacePair.of(
+        setupSessionDeliveredToSubnet.getHostname(), setupSessionDeliveredToSubnet.getInterface());
+  }
+
+  @Override
+  public NodeInterfacePair visitSetupSessionExitsNetwork(
+      SetupSessionExitsNetwork setupSessionExitsNetwork) {
+    return NodeInterfacePair.of(
+        setupSessionExitsNetwork.getHostname(), setupSessionExitsNetwork.getInterface());
   }
 
   @Override

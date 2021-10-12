@@ -29,6 +29,8 @@ import org.batfish.symbolic.state.PreOutInterfaceInsufficientInfo;
 import org.batfish.symbolic.state.PreOutInterfaceNeighborUnreachable;
 import org.batfish.symbolic.state.PreOutVrf;
 import org.batfish.symbolic.state.PreOutVrfSession;
+import org.batfish.symbolic.state.SetupSessionDeliveredToSubnet;
+import org.batfish.symbolic.state.SetupSessionExitsNetwork;
 import org.batfish.symbolic.state.StateExpr;
 import org.batfish.symbolic.state.StateExprVisitor;
 import org.batfish.symbolic.state.VrfAccept;
@@ -249,6 +251,18 @@ public class ReversePassOriginationState implements StateExprVisitor<StateExpr> 
 
   @Override
   public StateExpr visitQuery() {
+    return null;
+  }
+
+  @Override
+  public StateExpr visitSetupSessionDeliveredToSubnet(
+      SetupSessionDeliveredToSubnet setupSessionDeliveredToSubnet) {
+    return null;
+  }
+
+  @Override
+  public StateExpr visitSetupSessionExitsNetwork(
+      SetupSessionExitsNetwork setupSessionExitsNetwork) {
     return null;
   }
 

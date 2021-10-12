@@ -83,5 +83,9 @@ public interface StateExprVisitor<R> {
 
   R visitQuery();
 
+  R visitSetupSessionDeliveredToSubnet(SetupSessionDeliveredToSubnet setupSessionDeliveredToSubnet);
+
+  R visitSetupSessionExitsNetwork(SetupSessionExitsNetwork setupSessionExitsNetwork);
+
   R visitVrfAccept(VrfAccept vrfAccept);
 }
