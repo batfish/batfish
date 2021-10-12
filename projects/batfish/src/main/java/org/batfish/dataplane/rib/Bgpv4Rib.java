@@ -29,14 +29,13 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
       BgpTieBreaker tieBreaker,
       @Nullable Integer maxPaths,
       @Nullable MultipathEquivalentAsPathMatchMode multipathEquivalentAsPathMatchMode,
-      boolean withBackups,
       boolean clusterListAsIgpCost) {
     super(
         mainRib,
         tieBreaker,
         maxPaths,
         multipathEquivalentAsPathMatchMode,
-        withBackups,
+        true,
         clusterListAsIgpCost);
   }
 

@@ -22,7 +22,7 @@ public class BgpRibTest {
 
   @Test
   public void testBestPathComparator() {
-    BgpRib<Bgpv4Route> rib = new Bgpv4Rib(null, BgpTieBreaker.ROUTER_ID, 1, null, false, false);
+    BgpRib<Bgpv4Route> rib = new Bgpv4Rib(null, BgpTieBreaker.ROUTER_ID, 1, null, false);
     Bgpv4Route.Builder rb =
         Bgpv4Route.testBuilder()
             .setNetwork(Prefix.ZERO)
@@ -61,7 +61,7 @@ public class BgpRibTest {
 
   @Test
   public void testBestPathComparator_ClusterListAsIgpCost() {
-    BgpRib<Bgpv4Route> rib = new Bgpv4Rib(null, BgpTieBreaker.ROUTER_ID, 1, null, false, true);
+    BgpRib<Bgpv4Route> rib = new Bgpv4Rib(null, BgpTieBreaker.ROUTER_ID, 1, null, true);
     Bgpv4Route.Builder rb =
         Bgpv4Route.testBuilder()
             .setNetwork(Prefix.ZERO)
@@ -101,7 +101,7 @@ public class BgpRibTest {
 
   @Test
   public void testBestPathComparator_Default() {
-    BgpRib<Bgpv4Route> rib = new Bgpv4Rib(null, BgpTieBreaker.ROUTER_ID, 1, null, false, false);
+    BgpRib<Bgpv4Route> rib = new Bgpv4Rib(null, BgpTieBreaker.ROUTER_ID, 1, null, false);
     Bgpv4Route.Builder rb =
         Bgpv4Route.testBuilder()
             .setNetwork(Prefix.ZERO)
