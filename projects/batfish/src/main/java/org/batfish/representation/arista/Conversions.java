@@ -7,6 +7,7 @@ import static org.batfish.datamodel.Interface.INVALID_LOCAL_INTERFACE;
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
 import static org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
 import static org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
+import static org.batfish.representation.arista.AristaConfiguration.aclLineStructureName;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -488,10 +489,23 @@ public class Conversions {
     return new Ip6AccessList(name, lines);
   }
 
-  static IpAccessList toIpAccessList(ExtendedAccessList eaList) {
+  static IpAccessList toIpAccessList(ExtendedAccessList eaList, String filename) {
+    boolean isStandard = eaList.getParent() != null;
+    AristaStructureType lineType =
+        isStandard
+            ? AristaStructureType.IP_ACCESS_LIST_STANDARD_LINE
+            : AristaStructureType.IPV4_ACCESS_LIST_EXTENDED_LINE;
     List<AclLine> lines =
         eaList.getLines().stream()
-            .map(Conversions::toIpAccessListLine)
+            .map(
+                l ->
+                    toIpAccessListLine(l)
+                        .setVendorStructureId(
+                            new VendorStructureId(
+                                filename,
+                                lineType.getDescription(),
+                                aclLineStructureName(eaList.getName(), l.getName())))
+                        .build())
             .collect(ImmutableList.toImmutableList());
     String sourceType =
         eaList.getParent() != null
@@ -997,7 +1011,7 @@ public class Conversions {
         .build();
   }
 
-  private static ExprAclLine toIpAccessListLine(ExtendedAccessListLine line) {
+  private static ExprAclLine.Builder toIpAccessListLine(ExtendedAccessListLine line) {
     IpSpace srcIpSpace = line.getSourceAddressSpecifier().toIpSpace();
     IpSpace dstIpSpace = line.getDestinationAddressSpecifier().toIpSpace();
     AclLineMatchExpr matchService = line.getServiceSpecifier().toAclLineMatchExpr();
@@ -1022,8 +1036,7 @@ public class Conversions {
     return ExprAclLine.builder()
         .setAction(line.getAction())
         .setMatchCondition(match)
-        .setName(line.getName())
-        .build();
+        .setName(line.getName());
   }
 
   private static Route6FilterLine toRoute6FilterLine(ExtendedIpv6AccessListLine fromLine) {

@@ -311,6 +311,14 @@ public final class AristaConfiguration extends VendorConfiguration {
     throw new BatfishException("Invalid interface name prefix: '" + prefix + "'");
   }
 
+  /**
+   * The structure name of an ACL line for definition/reference tracking. All lines in a config are
+   * in the same namespace, so we have to qualify them with the name of the ACL.
+   */
+  public static @Nonnull String aclLineStructureName(String aclName, String lineName) {
+    return String.format("%s: %s", aclName, lineName);
+  }
+
   private static String getRouteMapClausePolicyName(RouteMap map, int continueTarget) {
     String mapName = map.getName();
     String clausePolicyName = "~RMCLAUSE~" + mapName + "~" + continueTarget + "~";
@@ -2106,14 +2114,15 @@ public final class AristaConfiguration extends VendorConfiguration {
         RouteFilterList rfList = Conversions.toRouteFilterList(saList, _filename);
         c.getRouteFilterLists().put(rfList.getName(), rfList);
       }
-      c.getIpAccessLists().put(saList.getName(), toIpAccessList(saList.toExtendedAccessList()));
+      c.getIpAccessLists()
+          .put(saList.getName(), toIpAccessList(saList.toExtendedAccessList(), _filename));
     }
     for (ExtendedAccessList eaList : _extendedAccessLists.values()) {
       if (isAclUsedForRouting(eaList.getName())) {
         RouteFilterList rfList = Conversions.toRouteFilterList(eaList, _filename);
         c.getRouteFilterLists().put(rfList.getName(), rfList);
       }
-      IpAccessList ipaList = toIpAccessList(eaList);
+      IpAccessList ipaList = toIpAccessList(eaList, _filename);
       c.getIpAccessLists().put(ipaList.getName(), ipaList);
     }
 
@@ -2502,6 +2511,8 @@ public final class AristaConfiguration extends VendorConfiguration {
     markConcreteStructure(AristaStructureType.BFD_TEMPLATE);
     markConcreteStructure(AristaStructureType.INTERFACE);
     markConcreteStructure(AristaStructureType.IP_ACCESS_LIST_STANDARD);
+    markConcreteStructure(AristaStructureType.IP_ACCESS_LIST_STANDARD_LINE);
+    markConcreteStructure(AristaStructureType.IPV4_ACCESS_LIST_EXTENDED_LINE);
     markConcreteStructure(AristaStructureType.MAC_ACCESS_LIST);
 
     // mark references to ACLs that may not appear in data model
