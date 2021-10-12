@@ -7,6 +7,7 @@ import static org.batfish.bddreachability.TestNetworkSources.ORIGINATING_FROM_DE
 import static org.batfish.bddreachability.TestNetworkSources.PEER_IFACE_NAME;
 import static org.batfish.bddreachability.TestNetworkSources.PEER_NAME;
 import static org.batfish.bddreachability.TestNetworkSources.VRF_NAME;
+import static org.batfish.bddreachability.transition.Transitions.compose;
 import static org.batfish.bddreachability.transition.Transitions.constraint;
 import static org.batfish.bddreachability.transition.Transitions.removeSourceConstraint;
 import static org.hamcrest.Matchers.equalTo;
@@ -43,6 +44,8 @@ import org.batfish.symbolic.state.PreOutInterfaceDeliveredToSubnet;
 import org.batfish.symbolic.state.PreOutInterfaceExitsNetwork;
 import org.batfish.symbolic.state.PreOutInterfaceInsufficientInfo;
 import org.batfish.symbolic.state.PreOutInterfaceNeighborUnreachable;
+import org.batfish.symbolic.state.SetupSessionDeliveredToSubnet;
+import org.batfish.symbolic.state.SetupSessionExitsNetwork;
 import org.batfish.symbolic.state.StateExpr;
 import org.batfish.symbolic.state.VrfAccept;
 import org.junit.BeforeClass;
@@ -117,7 +120,8 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
    * interface with the OriginatingFromDevice ACL.
    */
   @Test
-  public void preOutVrf_NodeInterfaceNeighborUnreachable_OriginatingFromDevice() {
+  public void
+      preOutInterfaceNeighborUnreachable_NodeInterfaceNeighborUnreachable_OriginatingFromDevice() {
     Transition transition =
         edges
             .get(
@@ -126,71 +130,97 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
             .get(
                 new NodeInterfaceNeighborUnreachable(
                     CONFIG_NAME, ORIGINATING_FROM_DEVICE_ACL_IFACE_NAME));
-    assertEquals(transition, constraint(originatingFromDeviceBdd));
+    assertEquals(
+        compose(constraint(originatingFromDeviceBdd), removeSourceConstraint(srcMgr)), transition);
   }
 
   /**
-   * Test the PreOutInterfaceDeliveredToSubnet -> NodeInterfaceDeliveredToSubnet edge for the
+   * Test the PreOutInterfaceDeliveredToSubnet -> SetupSessionDeliveredToSubnet edge for the
    * interface with the OriginatingFromDevice ACL.
    */
   @Test
-  public void preOutInterfaceDelivered_NodeInterfaceDelivered_OriginatingFromDevice() {
+  public void preOutInterfaceDelivered_SetupSessionDelivered_OriginatingFromDevice() {
     Transition transition =
         edges
             .get(
                 new PreOutInterfaceDeliveredToSubnet(
                     CONFIG_NAME, ORIGINATING_FROM_DEVICE_ACL_IFACE_NAME))
             .get(
-                new NodeInterfaceDeliveredToSubnet(
+                new SetupSessionDeliveredToSubnet(
                     CONFIG_NAME, ORIGINATING_FROM_DEVICE_ACL_IFACE_NAME));
 
-    assertEquals(transition, constraint(originatingFromDeviceBdd));
+    assertEquals(constraint(originatingFromDeviceBdd), transition);
   }
 
   /*
-   * Test the PreOutInterfaceExitsNetwork -> NodeInterfaceExitsNetwork edge for the interface with the
+   * Test the PreOutInterfaceExitsNetwork -> SetupSessionExitsNetwork edge for the interface with the
    * OriginatingFromDevice ACL.
    */
   @Test
-  public void preOutInterfaceExitsNetwork_NodeInterfaceExitsNetwork_OriginatingFromDevice() {
+  public void preOutInterfaceExitsNetwork_SetupSessionExitsNetwork_OriginatingFromDevice() {
     Transition transition =
         edges
             .get(
                 new PreOutInterfaceExitsNetwork(
                     CONFIG_NAME, ORIGINATING_FROM_DEVICE_ACL_IFACE_NAME))
-            .get(
-                new NodeInterfaceExitsNetwork(CONFIG_NAME, ORIGINATING_FROM_DEVICE_ACL_IFACE_NAME));
-    assertEquals(transition, constraint(originatingFromDeviceBdd));
+            .get(new SetupSessionExitsNetwork(CONFIG_NAME, ORIGINATING_FROM_DEVICE_ACL_IFACE_NAME));
+    assertEquals(constraint(originatingFromDeviceBdd), transition);
   }
 
   /*
-   * Test the PreOutVrf -> DeliveredToSubnet edge for the interface with the
+   * Test the PreOutInterfaceDeliveredToSubnet -> SetupSessionDeliveredToSubnet edge for the interface with the
    * MatchSrcInterface ACL.
    */
   @Test
-  public void preOutInterfaceDelivered_NodeInterfaceDelivered_MatchSrcInterface() {
+  public void preOutInterfaceDelivered_SetupSessionDelivered_MatchSrcInterface() {
     Transition transition =
         edges
             .get(
                 new PreOutInterfaceDeliveredToSubnet(
                     CONFIG_NAME, MATCH_SRC_INTERFACE_ACL_IFACE_NAME))
             .get(
+                new SetupSessionDeliveredToSubnet(CONFIG_NAME, MATCH_SRC_INTERFACE_ACL_IFACE_NAME));
+    assertEquals(constraint(matchSrcInterfaceBdd), transition);
+  }
+
+  /*
+   * Test the SetupSessionDeliveredToSubnet -> NodeInterfaceDeliveredToSubnet edge
+   */
+  @Test
+  public void preOutInterfaceDelivered_NodeInterfaceDelivered() {
+    Transition transition =
+        edges
+            .get(new SetupSessionDeliveredToSubnet(CONFIG_NAME, MATCH_SRC_INTERFACE_ACL_IFACE_NAME))
+            .get(
                 new NodeInterfaceDeliveredToSubnet(
                     CONFIG_NAME, MATCH_SRC_INTERFACE_ACL_IFACE_NAME));
-    assertEquals(transition, constraint(matchSrcInterfaceBdd));
+    assertEquals(removeSourceConstraint(srcMgr), transition);
   }
 
   /**
-   * Test the PreOutInterfaceExitsNetwork -> NodeInterfaceExitsNetwork edge for the interface with
+   * Test the PreOutInterfaceExitsNetwork -> SetupSessionExitsNetwork edge for the interface with
    * the MatchSrcInterface ACL.
    */
   @Test
-  public void preOutInterfaceExitsNetwork_NodeInterfaceExitsNetwork_MatchSrcInterface() {
+  public void preOutInterfaceExitsNetwork_SetupSessionExitsNetwork_MatchSrcInterface() {
     Transition transition =
         edges
             .get(new PreOutInterfaceExitsNetwork(CONFIG_NAME, MATCH_SRC_INTERFACE_ACL_IFACE_NAME))
+            .get(new SetupSessionExitsNetwork(CONFIG_NAME, MATCH_SRC_INTERFACE_ACL_IFACE_NAME));
+    assertEquals(constraint(matchSrcInterfaceBdd), transition);
+  }
+
+  /**
+   * Test the SetupSessionExitsNetwork -> NodeInterfaceExitsNetwork edge for the interface with the
+   * MatchSrcInterface ACL.
+   */
+  @Test
+  public void setupSessionExitsNetwork_NodeInterfaceExitsNetwork() {
+    Transition transition =
+        edges
+            .get(new SetupSessionExitsNetwork(CONFIG_NAME, MATCH_SRC_INTERFACE_ACL_IFACE_NAME))
             .get(new NodeInterfaceExitsNetwork(CONFIG_NAME, MATCH_SRC_INTERFACE_ACL_IFACE_NAME));
-    assertEquals(transition, constraint(matchSrcInterfaceBdd));
+    assertEquals(removeSourceConstraint(srcMgr), transition);
   }
 
   /**
@@ -206,7 +236,8 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
                     CONFIG_NAME, MATCH_SRC_INTERFACE_ACL_IFACE_NAME))
             .get(
                 new NodeInterfaceInsufficientInfo(CONFIG_NAME, MATCH_SRC_INTERFACE_ACL_IFACE_NAME));
-    assertEquals(transition, constraint(matchSrcInterfaceBdd));
+    assertEquals(
+        compose(constraint(matchSrcInterfaceBdd), removeSourceConstraint(srcMgr)), transition);
   }
 
   /*

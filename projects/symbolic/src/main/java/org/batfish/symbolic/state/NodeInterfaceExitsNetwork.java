@@ -2,6 +2,7 @@ package org.batfish.symbolic.state;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
+/** Represents the point at which a for has exited the network via a particular interface. */
 @ParametersAreNonnullByDefault
 public final class NodeInterfaceExitsNetwork extends InterfaceStateExpr {
   public NodeInterfaceExitsNetwork(String hostname, String iface) {
