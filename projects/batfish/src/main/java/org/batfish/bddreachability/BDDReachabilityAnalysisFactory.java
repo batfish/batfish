@@ -1440,6 +1440,10 @@ public final class BDDReachabilityAnalysisFactory {
                       _bddOutgoingOriginalFlowFilterManagers.get(node),
                       _bddSourceManagers.get(node));
 
+              /* We only setup sessions for successful ARP failure dispositions (i.e.
+               * DeliveredToSubnet and ExitsNetwork).
+               * see generateRules_PreOutInterfaceDisposition_SetupSessionDisposition
+               */
               return c.activeInterfaces()
                   .flatMap(
                       iface -> {
