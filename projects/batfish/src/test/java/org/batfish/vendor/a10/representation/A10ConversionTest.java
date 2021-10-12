@@ -27,7 +27,19 @@ public class A10ConversionTest {
   private final BddTestbed _tb = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
 
   @Test
-  public void testToSubRange() {
+  public void testToIntegerSpace() {
+    // Real ports
+    assertThat(
+        toIntegerSpace(new ServerPort(80, ServerPort.Type.TCP, null)),
+        equalTo(IntegerSpace.of(new SubRange(80, 80))));
+    assertThat(
+        toIntegerSpace(new ServerPort(80, ServerPort.Type.TCP, 0)),
+        equalTo(IntegerSpace.of(new SubRange(80, 80))));
+    assertThat(
+        toIntegerSpace(new ServerPort(80, ServerPort.Type.TCP, 10)),
+        equalTo(IntegerSpace.of(new SubRange(80, 90))));
+
+    // Virtual ports
     assertThat(
         toIntegerSpace(new VirtualServerPort(80, VirtualServerPort.Type.TCP, null)),
         equalTo(IntegerSpace.of(new SubRange(80, 80))));
