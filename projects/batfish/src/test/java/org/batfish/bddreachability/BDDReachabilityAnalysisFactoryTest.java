@@ -132,8 +132,6 @@ import org.batfish.symbolic.state.NodeDropAclIn;
 import org.batfish.symbolic.state.NodeDropAclOut;
 import org.batfish.symbolic.state.NodeDropNoRoute;
 import org.batfish.symbolic.state.NodeDropNullRoute;
-import org.batfish.symbolic.state.NodeInterfaceDeliveredToSubnet;
-import org.batfish.symbolic.state.NodeInterfaceExitsNetwork;
 import org.batfish.symbolic.state.NodeInterfaceInsufficientInfo;
 import org.batfish.symbolic.state.NodeInterfaceNeighborUnreachable;
 import org.batfish.symbolic.state.OriginateInterface;
@@ -151,6 +149,8 @@ import org.batfish.symbolic.state.PreOutInterfaceInsufficientInfo;
 import org.batfish.symbolic.state.PreOutInterfaceNeighborUnreachable;
 import org.batfish.symbolic.state.PreOutVrf;
 import org.batfish.symbolic.state.Query;
+import org.batfish.symbolic.state.SetupSessionDeliveredToSubnet;
+import org.batfish.symbolic.state.SetupSessionExitsNetwork;
 import org.batfish.symbolic.state.StateExpr;
 import org.hamcrest.Matcher;
 import org.junit.Rule;
@@ -791,7 +791,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
         analysis
             .getForwardEdgeMap()
             .get(new PreOutInterfaceDeliveredToSubnet(config.getHostname(), ifaceName))
-            .get(new NodeInterfaceDeliveredToSubnet(config.getHostname(), ifaceName));
+            .get(new SetupSessionDeliveredToSubnet(config.getHostname(), ifaceName));
 
     HeaderSpaceToBDD toBDD = new HeaderSpaceToBDD(_pkt, ImmutableMap.of());
     BDD preNatAclBdd = toBDD.toBDD(preNatAclHeaderSpace);
@@ -887,14 +887,14 @@ public final class BDDReachabilityAnalysisFactoryTest {
     Transition transition =
         forwardEdges
             .get(new PreOutInterfaceDeliveredToSubnet(hostname, ifaceName))
-            .get(new NodeInterfaceDeliveredToSubnet(hostname, ifaceName));
+            .get(new SetupSessionDeliveredToSubnet(hostname, ifaceName));
     assertThat(transition.transitForward(origSrcIpBdd), equalTo(dispositionBdd));
 
     // ExitsNetwork
     transition =
         forwardEdges
             .get(new PreOutInterfaceExitsNetwork(hostname, ifaceName))
-            .get(new NodeInterfaceExitsNetwork(hostname, ifaceName));
+            .get(new SetupSessionExitsNetwork(hostname, ifaceName));
     assertThat(transition.transitForward(origSrcIpBdd), equalTo(dispositionBdd));
 
     // InsufficientInfo
@@ -2009,33 +2009,35 @@ public final class BDDReachabilityAnalysisFactoryTest {
     StateExpr insufficientInfo = new PreOutInterfaceInsufficientInfo(c1, i1);
 
     // Flow needs to start with the expected constraint for outgoing original flow filters
+    BDDOutgoingOriginalFlowFilterManager originalFlowFilterManager =
+        factory.getBddOutgoingOriginalFlowFilterManagers().get(c1);
     BDD originalFlowFiltersConstraint =
-        factory
-            .getBddOutgoingOriginalFlowFilterManagers()
-            .get(c1)
-            .outgoingOriginalFlowFiltersConstraint();
+        originalFlowFilterManager.outgoingOriginalFlowFiltersConstraint();
     BDD src1Bdd = _pkt.getSrcIp().value(srcIp1.asLong());
 
     // Test permit edges, to NodeInterface[Disposition] states
-    StateExpr nodeDeliveredToSubnet = new NodeInterfaceDeliveredToSubnet(c1, i1);
-    StateExpr nodeExitsNetwork = new NodeInterfaceExitsNetwork(c1, i1);
+    StateExpr setupSessionDeliveredToSubnet = new SetupSessionDeliveredToSubnet(c1, i1);
+    StateExpr setupSessionExitsNetwork = new SetupSessionExitsNetwork(c1, i1);
     StateExpr nodeNeighborUnreachable = new NodeInterfaceNeighborUnreachable(c1, i1);
     StateExpr nodeInsufficientInfo = new NodeInterfaceInsufficientInfo(c1, i1);
     List<Edge> permitEdges =
         factory
-            .generateRules_PreOutInterfaceDisposition_NodeInterfaceDisposition()
+            .generateRules_PreOutInterfaceDisposition_SetupSessionDisposition()
             .collect(ImmutableList.toImmutableList());
 
-    // Node-specific constraints cleared later in generateRules_NodeInterfaceDisposition_Disposition
-    Matcher<Transition> expectedTransition =
+    // Node-specific constraints cleared later in
+    // generateRules_SetupSessionDisposition_NodeInterfaceDisposition
+    Matcher<Transition> setupSessionTransition =
         mapsForward(originalFlowFiltersConstraint, originalFlowFiltersConstraint.and(src1Bdd));
+    Matcher<Transition> nonSetupSessionTransition =
+        mapsForward(originalFlowFiltersConstraint, src1Bdd);
     assertThat(
         permitEdges,
         containsInAnyOrder(
-            edge(deliveredToSubnet, nodeDeliveredToSubnet, expectedTransition),
-            edge(exitsNetwork, nodeExitsNetwork, expectedTransition),
-            edge(neighborUnreachable, nodeNeighborUnreachable, expectedTransition),
-            edge(insufficientInfo, nodeInsufficientInfo, expectedTransition)));
+            edge(deliveredToSubnet, setupSessionDeliveredToSubnet, setupSessionTransition),
+            edge(exitsNetwork, setupSessionExitsNetwork, setupSessionTransition),
+            edge(neighborUnreachable, nodeNeighborUnreachable, nonSetupSessionTransition),
+            edge(insufficientInfo, nodeInsufficientInfo, nonSetupSessionTransition)));
 
     // Test deny edges, to NodeDropAclOut state
     StateExpr nodeDropAclOut = new NodeDropAclOut(c1);
