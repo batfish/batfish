@@ -79,4 +79,11 @@ ssvspd_template: TEMPLATE null_rest_of_line;
 traffic_bucket_count: uint16;
 
 // TODO add many more types
-virtual_server_port_type: TCP | UDP;
+virtual_server_port_type
+:
+   HTTP
+   | HTTPS
+   | TCP
+   | TCP_PROXY
+   | UDP
+;

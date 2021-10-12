@@ -1,5 +1,6 @@
 package org.batfish.vendor.a10.representation;
 
+import static org.batfish.vendor.a10.representation.A10Configuration.arePortTypesCompatible;
 import static org.batfish.vendor.a10.representation.A10Conversion.toDstTransformationSteps;
 import static org.batfish.vendor.a10.representation.A10Conversion.toIntegerSpace;
 import static org.batfish.vendor.a10.representation.A10Conversion.toMatchCondition;
@@ -7,8 +8,12 @@ import static org.batfish.vendor.a10.representation.A10Conversion.toProtocol;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.batfish.datamodel.BddTestbed;
@@ -54,11 +59,25 @@ public class A10ConversionTest {
   @Test
   public void testToProtocol() {
     assertThat(
+        toProtocol(new VirtualServerPort(1, VirtualServerPort.Type.HTTP, 0)),
+        equalTo(Optional.of(IpProtocol.TCP)));
+    assertThat(
+        toProtocol(new VirtualServerPort(1, VirtualServerPort.Type.HTTPS, 0)),
+        equalTo(Optional.of(IpProtocol.TCP)));
+    assertThat(
         toProtocol(new VirtualServerPort(1, VirtualServerPort.Type.TCP, 0)),
+        equalTo(Optional.of(IpProtocol.TCP)));
+    assertThat(
+        toProtocol(new VirtualServerPort(1, VirtualServerPort.Type.TCP_PROXY, 0)),
         equalTo(Optional.of(IpProtocol.TCP)));
     assertThat(
         toProtocol(new VirtualServerPort(1, VirtualServerPort.Type.UDP, 0)),
         equalTo(Optional.of(IpProtocol.UDP)));
+
+    for (VirtualServerPort.Type type : VirtualServerPort.Type.values()) {
+      // Should not throw
+      toProtocol(new VirtualServerPort(1, type, 0)).get();
+    }
   }
 
   @Test
@@ -115,5 +134,26 @@ public class A10ConversionTest {
             new ApplyAll(
                 TransformationStep.assignDestinationPort(90, 91),
                 TransformationStep.assignDestinationIp(server1Ip))));
+  }
+
+  @Test
+  public void testArePortTypesCompatible() {
+    List<VirtualServerPort.Type> tcpCompatibleVirtualTypes =
+        ImmutableList.of(
+            VirtualServerPort.Type.HTTP,
+            VirtualServerPort.Type.HTTPS,
+            VirtualServerPort.Type.TCP,
+            VirtualServerPort.Type.TCP_PROXY);
+    List<VirtualServerPort.Type> udpCompatibleVirtualTypes =
+        ImmutableList.of(VirtualServerPort.Type.UDP);
+
+    for (VirtualServerPort.Type typeToCheck : tcpCompatibleVirtualTypes) {
+      assertTrue(arePortTypesCompatible(ServerPort.Type.TCP, typeToCheck));
+      assertFalse(arePortTypesCompatible(ServerPort.Type.UDP, typeToCheck));
+    }
+    for (VirtualServerPort.Type typeToCheck : udpCompatibleVirtualTypes) {
+      assertFalse(arePortTypesCompatible(ServerPort.Type.TCP, typeToCheck));
+      assertTrue(arePortTypesCompatible(ServerPort.Type.UDP, typeToCheck));
+    }
   }
 }

@@ -9,10 +9,12 @@ import static org.batfish.vendor.a10.representation.VirtualServerPort.Type.UDP;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.IpProtocol;
@@ -63,7 +65,13 @@ public class A10Conversion {
   @Nonnull
   static Optional<IpProtocol> toProtocol(VirtualServerPort port) {
     VirtualServerPort.Type type = port.getType();
-    if (type == VirtualServerPort.Type.TCP) {
+    Set<VirtualServerPort.Type> tcpTypes =
+        ImmutableSet.of(
+            VirtualServerPort.Type.HTTP,
+            VirtualServerPort.Type.HTTPS,
+            VirtualServerPort.Type.TCP,
+            VirtualServerPort.Type.TCP_PROXY);
+    if (tcpTypes.contains(type)) {
       return Optional.of(IpProtocol.TCP);
     }
     assert type == UDP;

@@ -523,6 +523,24 @@ public final class A10Configuration extends VendorConfiguration {
   }
 
   /**
+   * Returns a boolean indicating if the specified {@link ServerPort.Type} and {@link
+   * VirtualServerPort.Type} are compatible.
+   */
+  public static boolean arePortTypesCompatible(
+      ServerPort.Type realType, VirtualServerPort.Type virtualType) {
+    if (realType == ServerPort.Type.UDP) {
+      return ImmutableSet.of(VirtualServerPort.Type.UDP).contains(virtualType);
+    }
+    assert realType == ServerPort.Type.TCP;
+    return ImmutableSet.of(
+            VirtualServerPort.Type.HTTP,
+            VirtualServerPort.Type.HTTPS,
+            VirtualServerPort.Type.TCP,
+            VirtualServerPort.Type.TCP_PROXY)
+        .contains(virtualType);
+  }
+
+  /**
    * Finalize configuration after it is finished being built. Does things like making structures
    * immutable.
    *
