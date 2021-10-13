@@ -7077,8 +7077,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       passwordString = ctx.up_arista_md5().pass.getText();
     } else if (ctx.up_arista_sha512() != null) {
       passwordString = ctx.up_arista_sha512().pass.getText();
-    } else if (ctx.up_cisco() != null) {
-      passwordString = ctx.up_cisco().up_cisco_tail().pass.getText();
     } else if (ctx.NOPASSWORD() != null) {
       passwordString = "";
     } else {
