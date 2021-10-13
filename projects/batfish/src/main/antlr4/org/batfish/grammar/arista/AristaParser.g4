@@ -2141,6 +2141,7 @@ s_default
     | sdef_hardware
     | default_mac
     | default_snmp_server
+    | default_vlan_internal
   )
 ;
 
@@ -2658,6 +2659,7 @@ s_no
     | no_logging
     | no_mac
     | no_snmp_server
+    | no_vlan_internal
   )
 ;
 
@@ -3010,19 +3012,6 @@ s_username_attributes
    )*
 ;
 
-s_vlan_eos
-:
-   VLAN eos_vlan_id NEWLINE
-   (
-     eos_vlan_name
-     | eos_vlan_state
-     | eos_vlan_trunk
-     | eos_vlan_no_name
-     | eos_vlan_no_state
-     | eos_vlan_no_trunk
-   )*
-;
-
 s_vpc
 :
    NO? VPC null_rest_of_line
@@ -3371,7 +3360,6 @@ stanza
    | s_no
    | s_no_bfd
    | s_no_enable
-   | s_no_vlan_internal_eos
    | s_no_vlan_eos
    | s_ntp
    | s_nv
@@ -3416,8 +3404,8 @@ stanza
    | s_user_role
    | s_username
    | s_username_attributes
-   | s_vlan_eos
-   | s_vlan_internal_eos
+   | s_vlan
+   | s_vlan_internal
    | s_vpc
    | s_vpdn_group
    | s_vpn

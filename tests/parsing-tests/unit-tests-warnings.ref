@@ -820,6 +820,20 @@
         "Comment" : "This feature is not currently supported"
       },
       {
+        "Filename" : "configs/eos_trunk_group",
+        "Line" : 15,
+        "Text" : "vlan internal allocation policy ascending range 4 5",
+        "Parser_Context" : "[s_vlan_internal stanza arista_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/eos_trunk_group",
+        "Line" : 16,
+        "Text" : "vlan internal allocation policy descending range 8 9",
+        "Parser_Context" : "[s_vlan_internal stanza arista_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
         "Filename" : "configs/f5_bigip/f5_bigip_structured_cm",
         "Line" : 65,
         "Text" : "cert /Common/dtdi.crt",
@@ -1318,10 +1332,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 182 results",
+      "notes" : "Found 184 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 182
+      "numResults" : 184
     }
   }
 ]
