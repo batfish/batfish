@@ -3232,6 +3232,13 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
           }
 
           @Override
+          public BoolExpr visitRouteMapMatchIpMulticast(
+              RouteMapMatchIpMulticast routeMapMatchIpMulticast) {
+            // TODO: unimplemented. Likely not applicable to PBR.
+            return null;
+          }
+
+          @Override
           public BoolExpr visitRouteMapMatchIpv6Address(
               RouteMapMatchIpv6Address routeMapMatchIpv6Address) {
             // incompatible with IPv4 forwarding, so fail-closed, match nothing
@@ -3480,6 +3487,13 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                             new MatchPrefixSet(
                                 DestinationNetwork.instance(), new NamedPrefixSet(name)))
                     .collect(ImmutableList.toImmutableList()));
+          }
+
+          @Override
+          public BooleanExpr visitRouteMapMatchIpMulticast(
+              RouteMapMatchIpMulticast routeMapMatchIpMulticast) {
+            // TODO: unimplemented.
+            return BooleanExprs.FALSE;
           }
 
           @Override
