@@ -1,1125 +1,1099 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.0.0</modelVersion>
 
-  <name>Batfish</name>
-  <url>https://www.batfish.org</url>
-  <inceptionYear>2014</inceptionYear>
+    <name>Batfish</name>
+    <url>https://www.batfish.org</url>
+    <inceptionYear>2014</inceptionYear>
 
-  <groupId>org.batfish</groupId>
-  <artifactId>batfish-parent</artifactId>
-  <version>0.36.0</version>
+    <groupId>org.batfish</groupId>
+    <artifactId>batfish-parent</artifactId>
+    <version>0.36.0</version>
 
-  <packaging>pom</packaging>
+    <packaging>pom</packaging>
 
-  <licenses>
-    <license>
-      <name>Apache License, Version 2.0</name>
-      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
-      <distribution>repo</distribution>
-    </license>
-  </licenses>
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
 
-  <properties>
-    <!-- Configuration of Maven project itself. Please keep alphabetical. -->
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <properties>
+        <!-- Configuration of Maven project itself. Please keep alphabetical. -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-    <!-- The versions of Apache Maven plugins used. Please keep alphabetical.-->
-    <antlr4-maven-plugin.version>4.7.2</antlr4-maven-plugin.version>
-    <dependency-check-plugin.version>6.2.0</dependency-check-plugin.version>
-    <maven-checkstyle-plugin.version>3.1.0</maven-checkstyle-plugin.version>
-    <maven-compiler-plugin.version>3.6.1</maven-compiler-plugin.version>
-    <maven-dependency-plugin.version>3.1.2</maven-dependency-plugin.version>
-    <maven-enforcer-plugin.version>3.0.0-M1</maven-enforcer-plugin.version>
-    <maven-findbugs-plugin.version>3.0.5</maven-findbugs-plugin.version>
-    <maven-install-plugin.version>2.5.2</maven-install-plugin.version>
-    <maven-jacoco-plugin.version>0.8.2</maven-jacoco-plugin.version>
-    <maven-jar-plugin.version>3.0.2</maven-jar-plugin.version>
-    <maven-javadoc-plugin.version>3.0.1</maven-javadoc-plugin.version>
-    <maven-jxr-plugin.version>2.5</maven-jxr-plugin.version>
-    <maven-license-plugin.version>1.13</maven-license-plugin.version>
-    <maven-pmd-plugin.version>3.10.0</maven-pmd-plugin.version>
-    <maven-project-info-reports-plugin.version>2.9</maven-project-info-reports-plugin.version>
-    <maven-shade-plugin.version>3.0.0</maven-shade-plugin.version>
-    <maven-surefire-plugin.version>3.0.0-M1</maven-surefire-plugin.version>
-    <pmd.version>6.23.0</pmd.version>
-    <puppycrawl.version>8.29</puppycrawl.version>
+        <!-- The versions of Apache Maven plugins used. Please keep alphabetical.-->
+        <antlr4-maven-plugin.version>4.7.2</antlr4-maven-plugin.version>
+        <dependency-check-plugin.version>6.2.0</dependency-check-plugin.version>
+        <maven-checkstyle-plugin.version>3.1.0</maven-checkstyle-plugin.version>
+        <maven-compiler-plugin.version>3.6.1</maven-compiler-plugin.version>
+        <maven-dependency-plugin.version>3.1.2</maven-dependency-plugin.version>
+        <maven-enforcer-plugin.version>3.0.0-M1</maven-enforcer-plugin.version>
+        <maven-findbugs-plugin.version>3.0.5</maven-findbugs-plugin.version>
+        <maven-install-plugin.version>2.5.2</maven-install-plugin.version>
+        <maven-jacoco-plugin.version>0.8.2</maven-jacoco-plugin.version>
+        <maven-jar-plugin.version>3.0.2</maven-jar-plugin.version>
+        <maven-javadoc-plugin.version>3.0.1</maven-javadoc-plugin.version>
+        <maven-jxr-plugin.version>2.5</maven-jxr-plugin.version>
+        <maven-license-plugin.version>1.13</maven-license-plugin.version>
+        <maven-pmd-plugin.version>3.10.0</maven-pmd-plugin.version>
+        <maven-project-info-reports-plugin.version>2.9</maven-project-info-reports-plugin.version>
+        <maven-shade-plugin.version>3.0.0</maven-shade-plugin.version>
+        <maven-surefire-plugin.version>3.0.0-M1</maven-surefire-plugin.version>
+        <pmd.version>6.23.0</pmd.version>
+        <puppycrawl.version>8.29</puppycrawl.version>
 
-    <!-- The versions of Java libraries used. Please keep alphabetical. -->
-    <antlr4.version>4.7.2</antlr4.version>
-    <antlr4-runtime.version>4.7.2</antlr4-runtime.version>
-    <asm.version>7.0</asm.version>
-    <automaton.version>1.12-1</automaton.version>
-    <autoservice.version>1.0-rc6</autoservice.version>
-    <beanutils.version>1.9.4</beanutils.version>
-    <build-helper-maven-plugin.version>3.0.0</build-helper-maven-plugin.version>
-    <caffeine.version>2.9.2</caffeine.version>
-    <commons-cli.version>1.4</commons-cli.version>
-    <commons-collections4.version>4.4</commons-collections4.version>
-    <commons-configuration2.version>2.7</commons-configuration2.version>
-    <commons-exec.version>1.3</commons-exec.version>
-    <commons-io.version>2.8.0</commons-io.version>
-    <commons-lang3.version>3.12.0</commons-lang3.version>
-    <commons-text.version>1.9</commons-text.version>
-    <diffutils.version>4.10</diffutils.version>
-    <errorprone.version>2.3.1</errorprone.version>
-    <grizzly.version>2.4.3</grizzly.version>
-    <guava.version>28.1-jre</guava.version>
-    <guava-eea.version>0.0.1</guava-eea.version>
-    <hamcrest.version>2.2</hamcrest.version>
-    <icu4j.version>69.1</icu4j.version>
-    <jackson.version>2.10.5.20201202</jackson.version>
-    <javax-activation.version>1.1</javax-activation.version>
-    <javax-annotation-api.version>1.3.2</javax-annotation-api.version>
-    <jaeger.version>1.2.0</jaeger.version>
-    <jaxb-api.version>2.3.0</jaxb-api.version>
-    <jaxrs.version>2.1.1</jaxrs.version>
-    <jdk-eea.version>0.0.1</jdk-eea.version>
-    <jersey.version>2.27</jersey.version>
-    <jettison.version>1.4.0</jettison.version>
-    <jgrapht-core.version>1.3.1</jgrapht-core.version>
-    <jline.version>3.13.1</jline.version>
-    <jsonassert.version>1.5.0</jsonassert.version>
-    <jsr305.version>3.0.2</jsr305.version>
-    <junit.version>4.12</junit.version>
-    <log4j.version>2.14.1</log4j.version>
-    <lz4.version>1.7.1</lz4.version>
-    <mockito.version>3.3.3</mockito.version>
-    <opentracing-jaxrs2.version>1.0.0</opentracing-jaxrs2.version>
-    <opentracing.version>0.33.0</opentracing.version>
-    <parboiled.version>1.3.1</parboiled.version>
-    <re2j.version>1.4</re2j.version>
-    <servlet.version>4.0.0</servlet.version>
-    <sqlite-jdbc.version>3.25.2</sqlite-jdbc.version>
+        <!-- The versions of Java libraries used. Please keep alphabetical. -->
+        <antlr4.version>4.7.2</antlr4.version>
+        <antlr4-runtime.version>4.7.2</antlr4-runtime.version>
+        <asm.version>7.0</asm.version>
+        <automaton.version>1.12-1</automaton.version>
+        <autoservice.version>1.0-rc6</autoservice.version>
+        <beanutils.version>1.9.4</beanutils.version>
+        <build-helper-maven-plugin.version>3.0.0</build-helper-maven-plugin.version>
+        <caffeine.version>2.9.2</caffeine.version>
+        <commons-cli.version>1.4</commons-cli.version>
+        <commons-collections4.version>4.4</commons-collections4.version>
+        <commons-configuration2.version>2.7</commons-configuration2.version>
+        <commons-exec.version>1.3</commons-exec.version>
+        <commons-io.version>2.8.0</commons-io.version>
+        <commons-lang3.version>3.12.0</commons-lang3.version>
+        <commons-text.version>1.9</commons-text.version>
+        <diffutils.version>4.10</diffutils.version>
+        <errorprone.version>2.7.1</errorprone.version>
+        <grizzly.version>2.4.3</grizzly.version>
+        <guava.version>31.0.1-jre</guava.version>
+        <guava-eea.version>0.0.1</guava-eea.version>
+        <hamcrest.version>2.2</hamcrest.version>
+        <icu4j.version>69.1</icu4j.version>
+        <jackson.version>2.10.5.20201202</jackson.version>
+        <javax-activation.version>1.1</javax-activation.version>
+        <javax-annotation-api.version>1.3.2</javax-annotation-api.version>
+        <jaeger.version>1.2.0</jaeger.version>
+        <jaxb-api.version>2.3.0</jaxb-api.version>
+        <jaxrs.version>2.1.1</jaxrs.version>
+        <jdk-eea.version>0.0.1</jdk-eea.version>
+        <jersey.version>2.27</jersey.version>
+        <jettison.version>1.4.0</jettison.version>
+        <jgrapht-core.version>1.3.1</jgrapht-core.version>
+        <jline.version>3.13.1</jline.version>
+        <jsonassert.version>1.5.0</jsonassert.version>
+        <jsr305.version>3.0.2</jsr305.version>
+        <junit.version>4.12</junit.version>
+        <log4j.version>2.14.1</log4j.version>
+        <lz4.version>1.7.1</lz4.version>
+        <mockito.version>3.3.3</mockito.version>
+        <opentracing-jaxrs2.version>1.0.0</opentracing-jaxrs2.version>
+        <opentracing.version>0.33.0</opentracing.version>
+        <parboiled.version>1.3.1</parboiled.version>
+        <re2j.version>1.4</re2j.version>
+        <servlet.version>4.0.0</servlet.version>
+        <sqlite-jdbc.version>3.25.2</sqlite-jdbc.version>
 
-    <!-- Transitive dependencies managed up for security reasons. -->
-    <checker.version>3.10.0</checker.version>
-    <httpclient.version>4.5.13</httpclient.version>
-    <httpcore.version>4.4.14</httpcore.version>
-    <libthrift.version>0.14.0</libthrift.version>
-    <okhttp.version>3.14.8</okhttp.version>
-    <tomcat-embed-core.version>8.5.69</tomcat-embed-core.version>
-
-    <!--
-      Annotation paths for Eclipse. The Eclipse workspace must first have the M2_REPO classpath variable configured.
-      This can be done via:
-      mvn -Declipse.workspace="/path/to/eclipse/workspace" eclipse:configure-workspace
-    -->
-    <m2e.eea.annotationpath.jre>
-      M2_REPO/org/lastnpe/eea/jdk-eea/${jdk-eea.version}/jdk-eea-${jdk-eea.version}.jar
-    </m2e.eea.annotationpath.jre>
-    <!-- For now we only use guava annotations. Only one jar can be specified, so this is all that is possible
-         until resolution of https://github.com/lastnpe/eclipse-null-eea-augments/issues/51 -->
-    <m2e.eea.annotationpath.maven>
-      M2_REPO/org/lastnpe/eea/guava-eea/${guava-eea.version}/guava-eea-${guava-eea.version}.jar
-    </m2e.eea.annotationpath.maven>
-  </properties>
+        <!-- Transitive dependencies managed up for security reasons. -->
+        <checker.version>3.10.0</checker.version>
+        <httpclient.version>4.5.13</httpclient.version>
+        <httpcore.version>4.4.14</httpcore.version>
+        <libthrift.version>0.14.0</libthrift.version>
+        <okhttp.version>3.14.8</okhttp.version>
+        <tomcat-embed-core.version>8.5.69</tomcat-embed-core.version>
+    </properties>
 
 
-  <profiles>
-    <profile>
-      <id>fast</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-      <properties>
-        <checkstyle.skip>true</checkstyle.skip>
-        <findbugs.skip>true</findbugs.skip>
-        <jacoco.skip>true</jacoco.skip>
-        <maven.javadoc.skip>true</maven.javadoc.skip>
-        <mdep.analyze.skip>true</mdep.analyze.skip>
-        <pmd.skip>true</pmd.skip>
-        <skipTests>true</skipTests>
-      </properties>
-    </profile>
-  </profiles>
+    <profiles>
+        <profile>
+            <id>fast</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <checkstyle.skip>true</checkstyle.skip>
+                <findbugs.skip>true</findbugs.skip>
+                <jacoco.skip>true</jacoco.skip>
+                <maven.javadoc.skip>true</maven.javadoc.skip>
+                <mdep.analyze.skip>true</mdep.analyze.skip>
+                <pmd.skip>true</pmd.skip>
+                <skipTests>true</skipTests>
+            </properties>
+        </profile>
+    </profiles>
 
-  <build>
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <artifactId>maven-compiler-plugin</artifactId>
-          <version>${maven-compiler-plugin.version}</version>
-          <configuration>
-            <annotationProcessorPaths>
-              <path>
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${maven-compiler-plugin.version}</version>
+                    <configuration>
+                        <annotationProcessorPaths>
+                            <path>
+                                <groupId>com.google.auto.service</groupId>
+                                <artifactId>auto-service</artifactId>
+                                <version>${autoservice.version}</version>
+                            </path>
+                        </annotationProcessorPaths>
+                        <source>1.8</source>
+                        <target>1.8</target>
+                        <showWarnings>true</showWarnings>
+                        <compilerArgs>
+                            <arg>-Werror</arg>
+                            <arg>-Xlint:all</arg>
+                            <arg>-Xlint:-options</arg>
+                            <arg>-Xlint:-processing</arg>
+                            <arg>-Xlint:-serial</arg>
+                            <arg>-XDignore.symbol.file</arg>
+                        </compilerArgs>
+                        <fork>true</fork>
+                        <maxmem>2048m</maxmem>
+                        <useIncrementalCompilation>false</useIncrementalCompilation>
+                    </configuration>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-checkstyle-plugin</artifactId>
+                    <version>${maven-checkstyle-plugin.version}</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.puppycrawl.tools</groupId>
+                            <artifactId>checkstyle</artifactId>
+                            <version>${puppycrawl.version}</version>
+                        </dependency>
+                    </dependencies>
+                    <configuration>
+                        <configLocation>checkstyle.xml</configLocation>
+                        <consoleOutput>true</consoleOutput>
+                        <failOnViolation>true</failOnViolation>
+                        <includeResources>false</includeResources>
+                        <includeTestSourceDirectory>true</includeTestSourceDirectory>
+                        <sourceDirectories>${project.build.sourceDirectory}</sourceDirectories>
+                        <testSourceDirectories>${project.build.testSourceDirectory}</testSourceDirectories>
+                        <violationSeverity>warning</violationSeverity>
+                    </configuration>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <version>${maven-dependency-plugin.version}</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-enforcer-plugin</artifactId>
+                    <version>${maven-enforcer-plugin.version}</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-install-plugin</artifactId>
+                    <version>${maven-install-plugin.version}</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>${maven-jar-plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>test-jar</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>${maven-javadoc-plugin.version}</version>
+                    <configuration>
+                        <doclint>all,-missing</doclint>
+                        <failOnError>true</failOnError>
+                        <failOnWarnings>false</failOnWarnings>
+                        <notimestamp>true</notimestamp>
+                        <quiet>true</quiet>
+                        <source>8</source>
+                        <!-- TODO: Do a better job excluding generated files-->
+                        <sourceFileExcludes>
+                            <sourceFileExclude>**/CiscoLexer.java</sourceFileExclude>
+                            <sourceFileExclude>**/CiscoParser.java</sourceFileExclude>
+                            <sourceFileExclude>**/CiscoParserBaseListener.java</sourceFileExclude>
+                            <sourceFileExclude>**/CiscoParserListener.java</sourceFileExclude>
+
+                            <sourceFileExclude>**/F5BigipImishLexer.java</sourceFileExclude>
+                            <sourceFileExclude>**/F5BigipImishParser.java</sourceFileExclude>
+                            <sourceFileExclude>**/F5BigipImishParserBaseListener.java</sourceFileExclude>
+                            <sourceFileExclude>**/F5BigipImishParserListener.java</sourceFileExclude>
+
+                            <sourceFileExclude>**/F5BigipStructuredLexer.java</sourceFileExclude>
+                            <sourceFileExclude>**/F5BigipStructuredParser.java</sourceFileExclude>
+                            <sourceFileExclude>**/F5BigipStructuredParserBaseListener.java</sourceFileExclude>
+                            <sourceFileExclude>**/F5BigipStructuredParserListener.java</sourceFileExclude>
+
+                            <sourceFileExclude>**/FlatJuniperLexer.java</sourceFileExclude>
+                            <sourceFileExclude>**/FlatJuniperParser.java</sourceFileExclude>
+                            <sourceFileExclude>**/FlatJuniperParserBaseListener.java</sourceFileExclude>
+                            <sourceFileExclude>**/FlatJuniperParserListener.java</sourceFileExclude>
+
+                            <sourceFileExclude>**/FlatVyosLexer.java</sourceFileExclude>
+                            <sourceFileExclude>**/FlatVyosParser.java</sourceFileExclude>
+                            <sourceFileExclude>**/FlatVyosParserBaseListener.java</sourceFileExclude>
+                            <sourceFileExclude>**/FlatVyosParserListener.java</sourceFileExclude>
+
+                            <sourceFileExclude>**/FortiosLexer.java</sourceFileExclude>
+                            <sourceFileExclude>**/FortiosParser.java</sourceFileExclude>
+                            <sourceFileExclude>**/FortiosParserBaseListener.java</sourceFileExclude>
+                            <sourceFileExclude>**/FortiosParserListener.java</sourceFileExclude>
+
+                            <sourceFileExclude>**/IptablesLexer.java</sourceFileExclude>
+                            <sourceFileExclude>**/IptablesParser.java</sourceFileExclude>
+                            <sourceFileExclude>**/IptablesParserBaseListener.java</sourceFileExclude>
+                            <sourceFileExclude>**/IptablesParserListener.java</sourceFileExclude>
+
+                            <sourceFileExclude>**/JuniperLexer.java</sourceFileExclude>
+                            <sourceFileExclude>**/JuniperParser.java</sourceFileExclude>
+                            <sourceFileExclude>**/JuniperParserBaseListener.java</sourceFileExclude>
+                            <sourceFileExclude>**/JuniperParserListener.java</sourceFileExclude>
+
+                            <sourceFileExclude>**/MrvLexer.java</sourceFileExclude>
+                            <sourceFileExclude>**/MrvParser.java</sourceFileExclude>
+                            <sourceFileExclude>**/MrvParserBaseListener.java</sourceFileExclude>
+                            <sourceFileExclude>**/MrvParserListener.java</sourceFileExclude>
+
+                            <sourceFileExclude>**/PaloAltoLexer.java</sourceFileExclude>
+                            <sourceFileExclude>**/PaloAltoParser.java</sourceFileExclude>
+                            <sourceFileExclude>**/PaloAltoParserBaseListener.java</sourceFileExclude>
+                            <sourceFileExclude>**/PaloAltoParserListener.java</sourceFileExclude>
+
+                            <sourceFileExclude>**/EosRoutingTableLexer.java</sourceFileExclude>
+                            <sourceFileExclude>**/EosRoutingTableParser.java</sourceFileExclude>
+                            <sourceFileExclude>**/EosRoutingTableParserBaseListener.java</sourceFileExclude>
+                            <sourceFileExclude>**/EosRoutingTableParserListener.java</sourceFileExclude>
+
+                            <sourceFileExclude>**/IosRoutingTableLexer.java</sourceFileExclude>
+                            <sourceFileExclude>**/IosRoutingTableParser.java</sourceFileExclude>
+                            <sourceFileExclude>**/IosRoutingTableParserBaseListener.java</sourceFileExclude>
+                            <sourceFileExclude>**/IosRoutingTableParserListener.java</sourceFileExclude>
+
+                            <sourceFileExclude>**/NxosRoutingTableLexer.java</sourceFileExclude>
+                            <sourceFileExclude>**/NxosRoutingTableParser.java</sourceFileExclude>
+                            <sourceFileExclude>**/NxosRoutingTableParserBaseListener.java</sourceFileExclude>
+                            <sourceFileExclude>**/NxosRoutingTableParserListener.java</sourceFileExclude>
+
+                            <sourceFileExclude>**/VyosLexer.java</sourceFileExclude>
+                            <sourceFileExclude>**/VyosParser.java</sourceFileExclude>
+                            <sourceFileExclude>**/VyosParserBaseListener.java</sourceFileExclude>
+                            <sourceFileExclude>**/VyosParserListener.java</sourceFileExclude>
+                        </sourceFileExcludes>
+                    </configuration>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jxr-plugin</artifactId>
+                    <version>${maven-jxr-plugin.version}</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-pmd-plugin</artifactId>
+                    <version>${maven-pmd-plugin.version}</version>
+                    <configuration>
+                        <excludeRoots>
+                            <excludeRoot>${project.build.directory}/generated-sources</excludeRoot>
+                            <excludeRoot>${project.build.directory}/generated-test-sources</excludeRoot>
+                        </excludeRoots>
+                        <includeTests>true</includeTests>
+                        <rulesets>
+                            <ruleset>org/batfish/pmd/pmd-ruleset.xml</ruleset>
+                        </rulesets>
+                        <printFailingErrors>true</printFailingErrors>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>check</id>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                            <configuration>
+                                <failOnViolation>true</failOnViolation>
+                            </configuration>
+                        </execution>
+                    </executions>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.batfish</groupId>
+                            <artifactId>build-tools</artifactId>
+                            <version>${project.version}</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>net.sourceforge.pmd</groupId>
+                            <artifactId>pmd-core</artifactId>
+                            <version>${pmd.version}</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>net.sourceforge.pmd</groupId>
+                            <artifactId>pmd-java</artifactId>
+                            <version>${pmd.version}</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-shade-plugin</artifactId>
+                    <version>${maven-shade-plugin.version}</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${maven-surefire-plugin.version}</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-project-info-reports-plugin</artifactId>
+                    <version>${maven-project-info-reports-plugin.version}</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.antlr</groupId>
+                    <artifactId>antlr4-maven-plugin</artifactId>
+                    <version>${antlr4-maven-plugin.version}</version>
+                    <configuration>
+                        <treatWarningsAsErrors>true</treatWarningsAsErrors>
+                    </configuration>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.antlr</groupId>
+                            <artifactId>antlr4</artifactId>
+                            <version>${antlr4.version}</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>build-helper-maven-plugin</artifactId>
+                    <version>${build-helper-maven-plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <id>add-test-sources</id>
+                            <phase>generate-test-sources</phase>
+                            <goals>
+                                <goal>add-test-source</goal>
+                            </goals>
+                            <configuration>
+                                <sources>
+                                    <source>${project.build.directory}/generated-test-sources/antlr4</source>
+                                </sources>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>findbugs-maven-plugin</artifactId>
+                    <version>${maven-findbugs-plugin.version}</version>
+                    <configuration>
+                        <includeTests>false</includeTests>
+                    </configuration>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>license-maven-plugin</artifactId>
+                    <version>${maven-license-plugin.version}</version>
+                    <configuration>
+                        <licenseMerges>
+                            <licenseMerge>Apache-2.0|The Apache Software License, Version 2.0|Apache License,
+                                Version 2.0|Apache 2.0|Apache License 2.0|Apache 2|Apache License, 2.0
+                            </licenseMerge>
+                            <licenseMerge>MIT|MIT License|MIT license|The MIT License</licenseMerge>
+                        </licenseMerges>
+                    </configuration>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <version>${maven-jacoco-plugin.version}</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.owasp</groupId>
+                    <artifactId>dependency-check-maven</artifactId>
+                    <version>${dependency-check-plugin.version}</version>
+                    <configuration>
+                        <skip>true</skip>
+                        <failBuildOnCVSS>4</failBuildOnCVSS>
+                        <suppressionFiles>org/batfish/owasp/suppressions.xml</suppressionFiles>
+                    </configuration>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.batfish</groupId>
+                            <artifactId>build-tools</artifactId>
+                            <version>${project.version}</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>analyze-only</goal>
+                        </goals>
+                        <configuration>
+                            <failOnWarning>true</failOnWarning>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>enforce-maven</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <dependencyConvergence/>
+                                <requireJavaVersion>
+                                    <version>[1.8,)</version>
+                                </requireJavaVersion>
+                                <requireMavenVersion>
+                                    <version>3.3.9</version>
+                                </requireMavenVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>findbugs-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jxr-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-pmd-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </reporting>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Batfish modules. -->
+            <dependency>
+                <groupId>org.batfish</groupId>
+                <artifactId>allinone</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.batfish</groupId>
+                <artifactId>batfish</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.batfish</groupId>
+                <artifactId>bdd</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.batfish</groupId>
+                <artifactId>batfish-client</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.batfish</groupId>
+                <artifactId>batfish-common-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.batfish</groupId>
+                <artifactId>batfish-common-protocol</artifactId>
+                <classifier>tests</classifier>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.batfish</groupId>
+                <artifactId>batfish</artifactId>
+                <classifier>tests</classifier>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.batfish</groupId>
+                <artifactId>build-tools</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.batfish</groupId>
+                <artifactId>coordinator</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.batfish</groupId>
+                <artifactId>minesweeper</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.batfish</groupId>
+                <artifactId>minesweeper</artifactId>
+                <classifier>tests</classifier>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.batfish</groupId>
+                <artifactId>question</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.batfish</groupId>
+                <artifactId>symbolic</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.batfish</groupId>
+                <artifactId>symbolic</artifactId>
+                <classifier>tests</classifier>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- External modules. -->
+            <dependency>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${jackson.version}</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+
+            <dependency>
+                <groupId>com.github.ben-manes.caffeine</groupId>
+                <artifactId>caffeine</artifactId>
+                <version>${caffeine.version}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>com.google.auto.service</groupId>
                 <artifactId>auto-service</artifactId>
                 <version>${autoservice.version}</version>
-              </path>
-            </annotationProcessorPaths>
-            <source>1.8</source>
-            <target>1.8</target>
-            <showWarnings>true</showWarnings>
-            <compilerArgs>
-              <arg>-Werror</arg>
-              <arg>-Xlint:all</arg>
-              <arg>-Xlint:-options</arg>
-              <arg>-Xlint:-processing</arg>
-              <arg>-Xlint:-serial</arg>
-              <arg>-XDignore.symbol.file</arg>
-            </compilerArgs>
-            <fork>true</fork>
-            <maxmem>2048m</maxmem>
-            <useIncrementalCompilation>false</useIncrementalCompilation>
-          </configuration>
-        </plugin>
-
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-checkstyle-plugin</artifactId>
-          <version>${maven-checkstyle-plugin.version}</version>
-          <dependencies>
-            <dependency>
-              <groupId>com.puppycrawl.tools</groupId>
-              <artifactId>checkstyle</artifactId>
-              <version>${puppycrawl.version}</version>
             </dependency>
-          </dependencies>
-          <configuration>
-            <configLocation>checkstyle.xml</configLocation>
-            <consoleOutput>true</consoleOutput>
-            <failOnViolation>true</failOnViolation>
-            <includeResources>false</includeResources>
-            <includeTestSourceDirectory>true</includeTestSourceDirectory>
-            <sourceDirectories>${project.build.sourceDirectory}</sourceDirectories>
-            <testSourceDirectories>${project.build.testSourceDirectory}</testSourceDirectories>
-            <violationSeverity>warning</violationSeverity>
-          </configuration>
-        </plugin>
 
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-dependency-plugin</artifactId>
-          <version>${maven-dependency-plugin.version}</version>
-        </plugin>
-
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-enforcer-plugin</artifactId>
-          <version>${maven-enforcer-plugin.version}</version>
-        </plugin>
-
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-install-plugin</artifactId>
-          <version>${maven-install-plugin.version}</version>
-        </plugin>
-
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-jar-plugin</artifactId>
-          <version>${maven-jar-plugin.version}</version>
-          <executions>
-            <execution>
-              <goals>
-                <goal>test-jar</goal>
-              </goals>
-            </execution>
-          </executions>
-        </plugin>
-
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-javadoc-plugin</artifactId>
-          <version>${maven-javadoc-plugin.version}</version>
-          <configuration>
-            <doclint>all,-missing</doclint>
-            <failOnError>true</failOnError>
-            <failOnWarnings>false</failOnWarnings>
-            <notimestamp>true</notimestamp>
-            <quiet>true</quiet>
-            <source>8</source>
-            <!-- TODO: Do a better job excluding generated files-->
-            <sourceFileExcludes>
-              <sourceFileExclude>**/CiscoLexer.java</sourceFileExclude>
-              <sourceFileExclude>**/CiscoParser.java</sourceFileExclude>
-              <sourceFileExclude>**/CiscoParserBaseListener.java</sourceFileExclude>
-              <sourceFileExclude>**/CiscoParserListener.java</sourceFileExclude>
-
-              <sourceFileExclude>**/F5BigipImishLexer.java</sourceFileExclude>
-              <sourceFileExclude>**/F5BigipImishParser.java</sourceFileExclude>
-              <sourceFileExclude>**/F5BigipImishParserBaseListener.java</sourceFileExclude>
-              <sourceFileExclude>**/F5BigipImishParserListener.java</sourceFileExclude>
-
-              <sourceFileExclude>**/F5BigipStructuredLexer.java</sourceFileExclude>
-              <sourceFileExclude>**/F5BigipStructuredParser.java</sourceFileExclude>
-              <sourceFileExclude>**/F5BigipStructuredParserBaseListener.java</sourceFileExclude>
-              <sourceFileExclude>**/F5BigipStructuredParserListener.java</sourceFileExclude>
-
-              <sourceFileExclude>**/FlatJuniperLexer.java</sourceFileExclude>
-              <sourceFileExclude>**/FlatJuniperParser.java</sourceFileExclude>
-              <sourceFileExclude>**/FlatJuniperParserBaseListener.java</sourceFileExclude>
-              <sourceFileExclude>**/FlatJuniperParserListener.java</sourceFileExclude>
-
-              <sourceFileExclude>**/FlatVyosLexer.java</sourceFileExclude>
-              <sourceFileExclude>**/FlatVyosParser.java</sourceFileExclude>
-              <sourceFileExclude>**/FlatVyosParserBaseListener.java</sourceFileExclude>
-              <sourceFileExclude>**/FlatVyosParserListener.java</sourceFileExclude>
-
-              <sourceFileExclude>**/FortiosLexer.java</sourceFileExclude>
-              <sourceFileExclude>**/FortiosParser.java</sourceFileExclude>
-              <sourceFileExclude>**/FortiosParserBaseListener.java</sourceFileExclude>
-              <sourceFileExclude>**/FortiosParserListener.java</sourceFileExclude>
-
-              <sourceFileExclude>**/IptablesLexer.java</sourceFileExclude>
-              <sourceFileExclude>**/IptablesParser.java</sourceFileExclude>
-              <sourceFileExclude>**/IptablesParserBaseListener.java</sourceFileExclude>
-              <sourceFileExclude>**/IptablesParserListener.java</sourceFileExclude>
-
-              <sourceFileExclude>**/JuniperLexer.java</sourceFileExclude>
-              <sourceFileExclude>**/JuniperParser.java</sourceFileExclude>
-              <sourceFileExclude>**/JuniperParserBaseListener.java</sourceFileExclude>
-              <sourceFileExclude>**/JuniperParserListener.java</sourceFileExclude>
-
-              <sourceFileExclude>**/MrvLexer.java</sourceFileExclude>
-              <sourceFileExclude>**/MrvParser.java</sourceFileExclude>
-              <sourceFileExclude>**/MrvParserBaseListener.java</sourceFileExclude>
-              <sourceFileExclude>**/MrvParserListener.java</sourceFileExclude>
-
-              <sourceFileExclude>**/PaloAltoLexer.java</sourceFileExclude>
-              <sourceFileExclude>**/PaloAltoParser.java</sourceFileExclude>
-              <sourceFileExclude>**/PaloAltoParserBaseListener.java</sourceFileExclude>
-              <sourceFileExclude>**/PaloAltoParserListener.java</sourceFileExclude>
-
-              <sourceFileExclude>**/EosRoutingTableLexer.java</sourceFileExclude>
-              <sourceFileExclude>**/EosRoutingTableParser.java</sourceFileExclude>
-              <sourceFileExclude>**/EosRoutingTableParserBaseListener.java</sourceFileExclude>
-              <sourceFileExclude>**/EosRoutingTableParserListener.java</sourceFileExclude>
-
-              <sourceFileExclude>**/IosRoutingTableLexer.java</sourceFileExclude>
-              <sourceFileExclude>**/IosRoutingTableParser.java</sourceFileExclude>
-              <sourceFileExclude>**/IosRoutingTableParserBaseListener.java</sourceFileExclude>
-              <sourceFileExclude>**/IosRoutingTableParserListener.java</sourceFileExclude>
-
-              <sourceFileExclude>**/NxosRoutingTableLexer.java</sourceFileExclude>
-              <sourceFileExclude>**/NxosRoutingTableParser.java</sourceFileExclude>
-              <sourceFileExclude>**/NxosRoutingTableParserBaseListener.java</sourceFileExclude>
-              <sourceFileExclude>**/NxosRoutingTableParserListener.java</sourceFileExclude>
-
-              <sourceFileExclude>**/VyosLexer.java</sourceFileExclude>
-              <sourceFileExclude>**/VyosParser.java</sourceFileExclude>
-              <sourceFileExclude>**/VyosParserBaseListener.java</sourceFileExclude>
-              <sourceFileExclude>**/VyosParserListener.java</sourceFileExclude>
-            </sourceFileExcludes>
-          </configuration>
-        </plugin>
-
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-jxr-plugin</artifactId>
-          <version>${maven-jxr-plugin.version}</version>
-        </plugin>
-
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-pmd-plugin</artifactId>
-          <version>${maven-pmd-plugin.version}</version>
-          <configuration>
-            <excludeRoots>
-              <excludeRoot>${project.build.directory}/generated-sources</excludeRoot>
-              <excludeRoot>${project.build.directory}/generated-test-sources</excludeRoot>
-            </excludeRoots>
-            <includeTests>true</includeTests>
-            <rulesets>
-              <ruleset>org/batfish/pmd/pmd-ruleset.xml</ruleset>
-            </rulesets>
-            <printFailingErrors>true</printFailingErrors>
-          </configuration>
-          <executions>
-            <execution>
-              <id>check</id>
-              <goals>
-                <goal>check</goal>
-              </goals>
-              <configuration>
-                <failOnViolation>true</failOnViolation>
-              </configuration>
-            </execution>
-          </executions>
-          <dependencies>
             <dependency>
-              <groupId>org.batfish</groupId>
-              <artifactId>build-tools</artifactId>
-              <version>${project.version}</version>
+                <groupId>com.google.auto.service</groupId>
+                <artifactId>auto-service-annotations</artifactId>
+                <version>${autoservice.version}</version>
             </dependency>
+
             <dependency>
-              <groupId>net.sourceforge.pmd</groupId>
-              <artifactId>pmd-core</artifactId>
-              <version>${pmd.version}</version>
+                <groupId>com.google.code.findbugs</groupId>
+                <artifactId>jsr305</artifactId>
+                <version>${jsr305.version}</version>
             </dependency>
+
             <dependency>
-              <groupId>net.sourceforge.pmd</groupId>
-              <artifactId>pmd-java</artifactId>
-              <version>${pmd.version}</version>
+                <groupId>com.google.errorprone</groupId>
+                <artifactId>error_prone_annotations</artifactId>
+                <version>${errorprone.version}</version>
             </dependency>
-          </dependencies>
-        </plugin>
 
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-shade-plugin</artifactId>
-          <version>${maven-shade-plugin.version}</version>
-        </plugin>
-
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-surefire-plugin</artifactId>
-          <version>${maven-surefire-plugin.version}</version>
-        </plugin>
-
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-project-info-reports-plugin</artifactId>
-          <version>${maven-project-info-reports-plugin.version}</version>
-        </plugin>
-
-        <plugin>
-          <groupId>org.antlr</groupId>
-          <artifactId>antlr4-maven-plugin</artifactId>
-          <version>${antlr4-maven-plugin.version}</version>
-          <configuration>
-            <treatWarningsAsErrors>true</treatWarningsAsErrors>
-          </configuration>
-          <dependencies>
             <dependency>
-              <groupId>org.antlr</groupId>
-              <artifactId>antlr4</artifactId>
-              <version>${antlr4.version}</version>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${guava.version}</version>
             </dependency>
-          </dependencies>
-        </plugin>
 
-        <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>build-helper-maven-plugin</artifactId>
-          <version>${build-helper-maven-plugin.version}</version>
-          <executions>
-            <execution>
-              <id>add-test-sources</id>
-              <phase>generate-test-sources</phase>
-              <goals>
-                <goal>add-test-source</goal>
-              </goals>
-              <configuration>
-                <sources>
-                  <source>${project.build.directory}/generated-test-sources/antlr4</source>
-                </sources>
-              </configuration>
-            </execution>
-          </executions>
-        </plugin>
-
-        <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>findbugs-maven-plugin</artifactId>
-          <version>${maven-findbugs-plugin.version}</version>
-          <configuration>
-            <includeTests>false</includeTests>
-          </configuration>
-        </plugin>
-
-        <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>license-maven-plugin</artifactId>
-          <version>${maven-license-plugin.version}</version>
-          <configuration>
-            <licenseMerges>
-              <licenseMerge>Apache-2.0|The Apache Software License, Version 2.0|Apache License,
-                Version 2.0|Apache 2.0|Apache License 2.0|Apache 2|Apache License, 2.0
-              </licenseMerge>
-              <licenseMerge>MIT|MIT License|MIT license|The MIT License</licenseMerge>
-            </licenseMerges>
-          </configuration>
-        </plugin>
-
-        <plugin>
-          <groupId>org.jacoco</groupId>
-          <artifactId>jacoco-maven-plugin</artifactId>
-          <version>${maven-jacoco-plugin.version}</version>
-        </plugin>
-
-        <plugin>
-          <groupId>org.owasp</groupId>
-          <artifactId>dependency-check-maven</artifactId>
-          <version>${dependency-check-plugin.version}</version>
-          <configuration>
-            <skip>true</skip>
-            <failBuildOnCVSS>4</failBuildOnCVSS>
-            <suppressionFiles>org/batfish/owasp/suppressions.xml</suppressionFiles>
-          </configuration>
-          <dependencies>
             <dependency>
-              <groupId>org.batfish</groupId>
-              <artifactId>build-tools</artifactId>
-              <version>${project.version}</version>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava-testlib</artifactId>
+                <version>${guava.version}</version>
             </dependency>
-          </dependencies>
-        </plugin>
-      </plugins>
-    </pluginManagement>
-
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-checkstyle-plugin</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>check</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>analyze-only</goal>
-            </goals>
-            <configuration>
-              <failOnWarning>true</failOnWarning>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-enforcer-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>enforce-maven</id>
-            <goals>
-              <goal>enforce</goal>
-            </goals>
-            <configuration>
-              <rules>
-                <dependencyConvergence/>
-                <requireJavaVersion>
-                  <version>[1.8,)</version>
-                </requireJavaVersion>
-                <requireMavenVersion>
-                  <version>3.3.9</version>
-                </requireMavenVersion>
-              </rules>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>findbugs-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>check</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
-        <groupId>org.jacoco</groupId>
-        <artifactId>jacoco-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>prepare-agent</id>
-            <goals>
-              <goal>prepare-agent</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-javadoc-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>attach-javadocs</id>
-            <goals>
-              <goal>jar</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
-
-  <reporting>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jxr-plugin</artifactId>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-pmd-plugin</artifactId>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-project-info-reports-plugin</artifactId>
-      </plugin>
-    </plugins>
-  </reporting>
-
-  <dependencyManagement>
-    <dependencies>
-      <!-- Batfish modules. -->
-      <dependency>
-        <groupId>org.batfish</groupId>
-        <artifactId>allinone</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.batfish</groupId>
-        <artifactId>batfish</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.batfish</groupId>
-        <artifactId>bdd</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.batfish</groupId>
-        <artifactId>batfish-client</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.batfish</groupId>
-        <artifactId>batfish-common-protocol</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.batfish</groupId>
-        <artifactId>batfish-common-protocol</artifactId>
-        <classifier>tests</classifier>
-        <version>${project.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.batfish</groupId>
-        <artifactId>batfish</artifactId>
-        <classifier>tests</classifier>
-        <version>${project.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.batfish</groupId>
-        <artifactId>build-tools</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.batfish</groupId>
-        <artifactId>coordinator</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.batfish</groupId>
-        <artifactId>minesweeper</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.batfish</groupId>
-        <artifactId>minesweeper</artifactId>
-        <classifier>tests</classifier>
-        <version>${project.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.batfish</groupId>
-        <artifactId>question</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.batfish</groupId>
-        <artifactId>symbolic</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.batfish</groupId>
-        <artifactId>symbolic</artifactId>
-        <classifier>tests</classifier>
-        <version>${project.version}</version>
-      </dependency>
-
-      <!-- External modules. -->
-      <dependency>
-        <groupId>com.fasterxml.jackson</groupId>
-        <artifactId>jackson-bom</artifactId>
-        <version>${jackson.version}</version>
-        <scope>import</scope>
-        <type>pom</type>
-      </dependency>
-
-      <dependency>
-        <groupId>com.github.ben-manes.caffeine</groupId>
-        <artifactId>caffeine</artifactId>
-        <version>${caffeine.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>com.google.auto.service</groupId>
-        <artifactId>auto-service</artifactId>
-        <version>${autoservice.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>com.google.auto.service</groupId>
-        <artifactId>auto-service-annotations</artifactId>
-        <version>${autoservice.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>com.google.code.findbugs</groupId>
-        <artifactId>jsr305</artifactId>
-        <version>${jsr305.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>com.google.errorprone</groupId>
-        <artifactId>error_prone_annotations</artifactId>
-        <version>${errorprone.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>com.google.guava</groupId>
-        <artifactId>guava</artifactId>
-        <version>${guava.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>com.google.guava</groupId>
-        <artifactId>guava-testlib</artifactId>
-        <version>${guava.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>com.google.re2j</groupId>
-        <artifactId>re2j</artifactId>
-        <version>${re2j.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>com.ibm.icu</groupId>
-        <artifactId>icu4j</artifactId>
-        <version>${icu4j.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>com.squareup.okhttp3</groupId>
-        <artifactId>okhttp</artifactId>
-        <version>${okhttp.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>commons-beanutils</groupId>
-        <artifactId>commons-beanutils</artifactId>
-        <version>${beanutils.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>commons-cli</groupId>
-        <artifactId>commons-cli</artifactId>
-        <version>${commons-cli.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>commons-io</groupId>
-        <artifactId>commons-io</artifactId>
-        <version>${commons-io.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>dk.brics</groupId>
-        <artifactId>automaton</artifactId>
-        <version>${automaton.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>io.github.java-diff-utils</groupId>
-        <artifactId>java-diff-utils</artifactId>
-        <version>${diffutils.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>io.jaegertracing</groupId>
-        <artifactId>jaeger-core</artifactId>
-        <version>${jaeger.version}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-          </exclusion>
-        </exclusions>
-      </dependency>
-
-      <dependency>
-        <groupId>io.jaegertracing</groupId>
-        <artifactId>jaeger-thrift</artifactId>
-        <version>${jaeger.version}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-          </exclusion>
-        </exclusions>
-      </dependency>
-
-      <dependency>
-        <groupId>io.opentracing</groupId>
-        <artifactId>opentracing-api</artifactId>
-        <version>${opentracing.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>io.opentracing</groupId>
-        <artifactId>opentracing-mock</artifactId>
-        <version>${opentracing.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>io.opentracing</groupId>
-        <artifactId>opentracing-noop</artifactId>
-        <version>${opentracing.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>io.opentracing</groupId>
-        <artifactId>opentracing-util</artifactId>
-        <version>${opentracing.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>io.opentracing.contrib</groupId>
-        <artifactId>opentracing-jaxrs2</artifactId>
-        <version>${opentracing-jaxrs2.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>javax.activation</groupId>
-        <artifactId>activation</artifactId>
-        <version>${javax-activation.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>javax.annotation</groupId>
-        <artifactId>javax.annotation-api</artifactId>
-        <version>${javax-annotation-api.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>javax.servlet</groupId>
-        <artifactId>javax.servlet-api</artifactId>
-        <version>${servlet.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>javax.ws.rs</groupId>
-        <artifactId>javax.ws.rs-api</artifactId>
-        <version>${jaxrs.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>javax.xml.bind</groupId>
-        <artifactId>jaxb-api</artifactId>
-        <version>${jaxb-api.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.jgrapht</groupId>
-        <artifactId>jgrapht-core</artifactId>
-        <version>${jgrapht-core.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.jline</groupId>
-        <artifactId>jline</artifactId>
-        <version>${jline.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.lz4</groupId>
-        <artifactId>lz4-java</artifactId>
-        <version>${lz4.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>junit</groupId>
-        <artifactId>junit</artifactId>
-        <version>${junit.version}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest-core</artifactId>
-          </exclusion>
-        </exclusions>
-      </dependency>
-
-      <dependency>
-        <groupId>org.antlr</groupId>
-        <artifactId>antlr4</artifactId>
-        <version>${antlr4.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.antlr</groupId>
-        <artifactId>antlr4-runtime</artifactId>
-        <version>${antlr4-runtime.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.apache.commons</groupId>
-        <artifactId>commons-collections4</artifactId>
-        <version>${commons-collections4.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.apache.commons</groupId>
-        <artifactId>commons-configuration2</artifactId>
-        <version>${commons-configuration2.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.apache.commons</groupId>
-        <artifactId>commons-exec</artifactId>
-        <version>${commons-exec.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.apache.commons</groupId>
-        <artifactId>commons-lang3</artifactId>
-        <version>${commons-lang3.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.apache.commons</groupId>
-        <artifactId>commons-text</artifactId>
-        <version>${commons-text.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.apache.httpcomponents</groupId>
-        <artifactId>httpclient</artifactId>
-        <version>${httpclient.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.apache.httpcomponents</groupId>
-        <artifactId>httpcore</artifactId>
-        <version>${httpcore.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.apache.logging.log4j</groupId>
-        <artifactId>log4j-api</artifactId>
-        <version>${log4j.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.apache.logging.log4j</groupId>
-        <artifactId>log4j-core</artifactId>
-        <version>${log4j.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.apache.logging.log4j</groupId>
-        <artifactId>log4j-slf4j-impl</artifactId>
-        <version>${log4j.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.apache.thrift</groupId>
-        <artifactId>libthrift</artifactId>
-        <version>${libthrift.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.apache.tomcat.embed</groupId>
-        <artifactId>tomcat-embed-core</artifactId>
-        <version>${tomcat-embed-core.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.checkerframework</groupId>
-        <artifactId>checker-qual</artifactId>
-        <version>${checker.version}</version>
-      </dependency>
-
-
-      <dependency>
-        <groupId>org.codehaus.jettison</groupId>
-        <artifactId>jettison</artifactId>
-        <version>${jettison.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.glassfish.grizzly</groupId>
-        <artifactId>grizzly-framework</artifactId>
-        <version>${grizzly.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.glassfish.grizzly</groupId>
-        <artifactId>grizzly-http-server</artifactId>
-        <version>${grizzly.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.glassfish.jersey.containers</groupId>
-        <artifactId>jersey-container-grizzly2-http</artifactId>
-        <version>${jersey.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.glassfish.jersey.core</groupId>
-        <artifactId>jersey-client</artifactId>
-        <version>${jersey.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.glassfish.jersey.core</groupId>
-        <artifactId>jersey-common</artifactId>
-        <version>${jersey.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.glassfish.jersey.core</groupId>
-        <artifactId>jersey-server</artifactId>
-        <version>${jersey.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.glassfish.jersey.inject</groupId>
-        <artifactId>jersey-hk2</artifactId>
-        <version>${jersey.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.glassfish.jersey.media</groupId>
-        <artifactId>jersey-media-json-jackson</artifactId>
-        <version>${jersey.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.glassfish.jersey.media</groupId>
-        <artifactId>jersey-media-json-jettison</artifactId>
-        <version>${jersey.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.glassfish.jersey.media</groupId>
-        <artifactId>jersey-media-multipart</artifactId>
-        <version>${jersey.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.glassfish.jersey.test-framework</groupId>
-        <artifactId>jersey-test-framework-core</artifactId>
-        <version>${jersey.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.glassfish.jersey.test-framework.providers</groupId>
-        <artifactId>jersey-test-framework-provider-grizzly2</artifactId>
-        <version>${jersey.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.hamcrest</groupId>
-        <artifactId>hamcrest</artifactId>
-        <version>${hamcrest.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.lastnpe.eea</groupId>
-        <artifactId>guava-eea</artifactId>
-        <version>${guava-eea.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.lastnpe.eea</groupId>
-        <artifactId>jdk-eea</artifactId>
-        <version>${jdk-eea.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.mockito</groupId>
-        <artifactId>mockito-core</artifactId>
-        <version>${mockito.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.mockito</groupId>
-        <artifactId>mockito-inline</artifactId>
-        <version>${mockito.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.ow2.asm</groupId>
-        <artifactId>asm</artifactId>
-        <version>${asm.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.parboiled</groupId>
-        <artifactId>parboiled-core</artifactId>
-        <version>${parboiled.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.parboiled</groupId>
-        <artifactId>parboiled-java</artifactId>
-        <version>${parboiled.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.skyscreamer</groupId>
-        <artifactId>jsonassert</artifactId>
-        <version>${jsonassert.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.xerial</groupId>
-        <artifactId>sqlite-jdbc</artifactId>
-        <version>${sqlite-jdbc.version}</version>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
-
-  <modules>
-    <module>allinone</module>
-    <module>batfish</module>
-    <module>batfish-client</module>
-    <module>batfish-common-protocol</module>
-    <module>bdd</module>
-    <module>build-tools</module>
-    <module>coordinator</module>
-    <module>minesweeper</module>
-    <module>question</module>
-    <module>symbolic</module>
-  </modules>
+
+            <dependency>
+                <groupId>com.google.re2j</groupId>
+                <artifactId>re2j</artifactId>
+                <version>${re2j.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.ibm.icu</groupId>
+                <artifactId>icu4j</artifactId>
+                <version>${icu4j.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.squareup.okhttp3</groupId>
+                <artifactId>okhttp</artifactId>
+                <version>${okhttp.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-beanutils</groupId>
+                <artifactId>commons-beanutils</artifactId>
+                <version>${beanutils.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-cli</groupId>
+                <artifactId>commons-cli</artifactId>
+                <version>${commons-cli.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>${commons-io.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>dk.brics</groupId>
+                <artifactId>automaton</artifactId>
+                <version>${automaton.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.github.java-diff-utils</groupId>
+                <artifactId>java-diff-utils</artifactId>
+                <version>${diffutils.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.jaegertracing</groupId>
+                <artifactId>jaeger-core</artifactId>
+                <version>${jaeger.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-api</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>io.jaegertracing</groupId>
+                <artifactId>jaeger-thrift</artifactId>
+                <version>${jaeger.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-api</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>io.opentracing</groupId>
+                <artifactId>opentracing-api</artifactId>
+                <version>${opentracing.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.opentracing</groupId>
+                <artifactId>opentracing-mock</artifactId>
+                <version>${opentracing.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.opentracing</groupId>
+                <artifactId>opentracing-noop</artifactId>
+                <version>${opentracing.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.opentracing</groupId>
+                <artifactId>opentracing-util</artifactId>
+                <version>${opentracing.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.opentracing.contrib</groupId>
+                <artifactId>opentracing-jaxrs2</artifactId>
+                <version>${opentracing-jaxrs2.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>javax.activation</groupId>
+                <artifactId>activation</artifactId>
+                <version>${javax-activation.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>javax.annotation</groupId>
+                <artifactId>javax.annotation-api</artifactId>
+                <version>${javax-annotation-api.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>javax.servlet</groupId>
+                <artifactId>javax.servlet-api</artifactId>
+                <version>${servlet.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>javax.ws.rs</groupId>
+                <artifactId>javax.ws.rs-api</artifactId>
+                <version>${jaxrs.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>javax.xml.bind</groupId>
+                <artifactId>jaxb-api</artifactId>
+                <version>${jaxb-api.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jgrapht</groupId>
+                <artifactId>jgrapht-core</artifactId>
+                <version>${jgrapht-core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jline</groupId>
+                <artifactId>jline</artifactId>
+                <version>${jline.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.lz4</groupId>
+                <artifactId>lz4-java</artifactId>
+                <version>${lz4.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>${junit.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.hamcrest</groupId>
+                        <artifactId>hamcrest-core</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.antlr</groupId>
+                <artifactId>antlr4</artifactId>
+                <version>${antlr4.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.antlr</groupId>
+                <artifactId>antlr4-runtime</artifactId>
+                <version>${antlr4-runtime.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-collections4</artifactId>
+                <version>${commons-collections4.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-configuration2</artifactId>
+                <version>${commons-configuration2.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-exec</artifactId>
+                <version>${commons-exec.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>${commons-lang3.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-text</artifactId>
+                <version>${commons-text.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>${httpclient.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpcore</artifactId>
+                <version>${httpcore.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-api</artifactId>
+                <version>${log4j.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-core</artifactId>
+                <version>${log4j.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-slf4j-impl</artifactId>
+                <version>${log4j.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.thrift</groupId>
+                <artifactId>libthrift</artifactId>
+                <version>${libthrift.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-core</artifactId>
+                <version>${tomcat-embed-core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.checkerframework</groupId>
+                <artifactId>checker-qual</artifactId>
+                <version>${checker.version}</version>
+            </dependency>
+
+
+            <dependency>
+                <groupId>org.codehaus.jettison</groupId>
+                <artifactId>jettison</artifactId>
+                <version>${jettison.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.glassfish.grizzly</groupId>
+                <artifactId>grizzly-framework</artifactId>
+                <version>${grizzly.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.glassfish.grizzly</groupId>
+                <artifactId>grizzly-http-server</artifactId>
+                <version>${grizzly.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.glassfish.jersey.containers</groupId>
+                <artifactId>jersey-container-grizzly2-http</artifactId>
+                <version>${jersey.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.glassfish.jersey.core</groupId>
+                <artifactId>jersey-client</artifactId>
+                <version>${jersey.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.glassfish.jersey.core</groupId>
+                <artifactId>jersey-common</artifactId>
+                <version>${jersey.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.glassfish.jersey.core</groupId>
+                <artifactId>jersey-server</artifactId>
+                <version>${jersey.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.glassfish.jersey.inject</groupId>
+                <artifactId>jersey-hk2</artifactId>
+                <version>${jersey.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.glassfish.jersey.media</groupId>
+                <artifactId>jersey-media-json-jackson</artifactId>
+                <version>${jersey.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.glassfish.jersey.media</groupId>
+                <artifactId>jersey-media-json-jettison</artifactId>
+                <version>${jersey.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.glassfish.jersey.media</groupId>
+                <artifactId>jersey-media-multipart</artifactId>
+                <version>${jersey.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.glassfish.jersey.test-framework</groupId>
+                <artifactId>jersey-test-framework-core</artifactId>
+                <version>${jersey.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.glassfish.jersey.test-framework.providers</groupId>
+                <artifactId>jersey-test-framework-provider-grizzly2</artifactId>
+                <version>${jersey.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.hamcrest</groupId>
+                <artifactId>hamcrest</artifactId>
+                <version>${hamcrest.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-core</artifactId>
+                <version>${mockito.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-inline</artifactId>
+                <version>${mockito.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.ow2.asm</groupId>
+                <artifactId>asm</artifactId>
+                <version>${asm.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.parboiled</groupId>
+                <artifactId>parboiled-core</artifactId>
+                <version>${parboiled.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.parboiled</groupId>
+                <artifactId>parboiled-java</artifactId>
+                <version>${parboiled.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.skyscreamer</groupId>
+                <artifactId>jsonassert</artifactId>
+                <version>${jsonassert.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.xerial</groupId>
+                <artifactId>sqlite-jdbc</artifactId>
+                <version>${sqlite-jdbc.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <modules>
+        <module>allinone</module>
+        <module>batfish</module>
+        <module>batfish-client</module>
+        <module>batfish-common-protocol</module>
+        <module>bdd</module>
+        <module>build-tools</module>
+        <module>coordinator</module>
+        <module>minesweeper</module>
+        <module>question</module>
+        <module>symbolic</module>
+    </modules>
 </project>

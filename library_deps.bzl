@@ -1,3 +1,5 @@
+load("@rules_jvm_external//:specs.bzl", "maven")
+
 # See: https://github.com/bazelbuild/rules_jvm_external#exporting-and-consuming-artifacts-from-external-repositories
 BATFISH_MAVEN_ARTIFACTS = [
     "com.fasterxml.jackson.core:jackson-annotations:2.10.5",
@@ -12,9 +14,9 @@ BATFISH_MAVEN_ARTIFACTS = [
     "com.google.auto.service:auto-service:1.0-rc6",
     "com.google.auto.service:auto-service-annotations:1.0-rc6",
     "com.google.code.findbugs:jsr305:3.0.2",
-    "com.google.errorprone:error_prone_annotations:2.3.1",
-    "com.google.guava:guava:28.1-jre",
-    "com.google.guava:guava-testlib:28.1-jre",
+    "com.google.errorprone:error_prone_annotations:2.7.1",
+    "com.google.guava:guava:31.0.1-jre",
+    maven.artifact(group = "com.google.guava", artifact = "guava-testlib", version = "31.0.1-jre", exclusions = [maven.exclusion(group = "junit", artifact = "junit")]),
     "com.google.re2j:re2j:1.4",
     "com.ibm.icu:icu4j:69.1",
     "com.squareup.okhttp3:okhttp:3.14.8",
