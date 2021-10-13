@@ -794,7 +794,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     org.batfish.vendor.check_point_management.Interface clusterInterface =
         Optional.ofNullable(_clusterInterfaces).orElse(ImmutableMap.of()).get(ifaceName);
     if (clusterInterface != null) {
-      createClusterVrrpGroup(clusterInterface, newIface);
+      createClusterVrrpGroup(iface, clusterInterface, newIface);
     }
 
     newIface.build();
@@ -802,18 +802,25 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
 
   /** Create a VRRP group for the virtual IP the cluster associates with this interface. */
   private void createClusterVrrpGroup(
-      org.batfish.vendor.check_point_management.Interface clusterInterface, Builder newIface) {
-    Ip ip = clusterInterface.getIpv4Address();
-    if (ip == null) {
-      return;
+      Interface iface,
+      org.batfish.vendor.check_point_management.Interface clusterInterface,
+      Builder newIface) {
+    ConcreteInterfaceAddress sourceAddress = iface.getAddress();
+    if (sourceAddress == null) {
+      _w.redFlag(
+          String.format(
+              "Cannot assign virtual IP on interface '%s' since it has no source IP for control"
+                  + " traffic",
+              iface.getName()));
     }
-    Integer maskLength = clusterInterface.getIpv4MaskLength();
-    assert maskLength != null;
+    Ip virtualIp = clusterInterface.getIpv4Address();
+    assert virtualIp != null;
     newIface.setVrrpGroups(
         ImmutableSortedMap.of(
             0,
             VrrpGroup.builder()
-                .setVirtualAddress(ConcreteInterfaceAddress.create(ip, maskLength))
+                .setSourceAddress(sourceAddress)
+                .setVirtualAddresses(virtualIp)
                 // prefer member with lowest cluster member index
                 .setPriority(VrrpGroup.MAX_PRIORITY - _clusterMemberIndex)
                 .setPreempt(true)

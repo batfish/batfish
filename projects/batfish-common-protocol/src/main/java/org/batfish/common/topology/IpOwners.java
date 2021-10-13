@@ -219,7 +219,8 @@ public final class IpOwners {
       boolean excludeInactive,
       L3Adjacencies l3Adjacencies) {
     Map<Ip, Map<String, Set<String>>> ipOwners = new HashMap<>();
-    Table<ConcreteInterfaceAddress, Integer, Set<Interface>> vrrpGroups = HashBasedTable.create();
+    // vrid -> interface -> ips owned by interface if it wins election
+    Map<Integer, Map<Interface, Set<Ip>>> vrrpGroups = new HashMap<>();
     Table<Ip, Integer, Set<Interface>> hsrpGroups = HashBasedTable.create();
     allInterfaces.forEach(
         (hostname, interfaces) ->
@@ -340,13 +341,11 @@ public final class IpOwners {
 
   /** extract VRRP info from a given interface and add it to the {@code vrrpGroups} table */
   @VisibleForTesting
-  static void extractVrrp(
-      Table<ConcreteInterfaceAddress, Integer, Set<Interface>> vrrpGroups, Interface i) {
+  static void extractVrrp(Map<Integer, Map<Interface, Set<Ip>>> vrrpGroups, Interface i) {
     i.getVrrpGroups()
         .forEach(
-            (groupNum, vrrpGroup) -> {
-              ConcreteInterfaceAddress address = vrrpGroup.getVirtualAddress();
-              if (address == null) {
+            (vrid, vrrpGroup) -> {
+              if (vrrpGroup.getSourceAddress() == null) {
                 /*
                  * Invalid VRRP configuration. The VRRP has no source IP address that
                  * would be used for VRRP election. This interface could never win the
@@ -354,12 +353,20 @@ public final class IpOwners {
                  */
                 return;
               }
-              Set<Interface> candidates = vrrpGroups.get(address, groupNum);
-              if (candidates == null) {
-                candidates = Collections.newSetFromMap(new IdentityHashMap<>());
-                vrrpGroups.put(address, groupNum, candidates);
+              if (vrrpGroup.getVirtualAddresses().isEmpty()) {
+                /*
+                 * Invalid VRRP configuration. The VRRP has no virtual IP addresses set, so should
+                 * not participate in  VRRP election. This interface could never win the election,
+                 * so is not a candidate.
+                 */
+                return;
               }
-              candidates.add(i);
+              Map<Interface, Set<Ip>> candidates = vrrpGroups.get(vrid);
+              if (candidates == null) {
+                candidates = new IdentityHashMap<>();
+                vrrpGroups.put(vrid, candidates);
+              }
+              candidates.put(i, i.getVrrpGroups().get(vrid).getVirtualAddresses());
             });
   }
 
@@ -369,40 +376,39 @@ public final class IpOwners {
    */
   static void processVrrpGroups(
       Map<Ip, Map<String, Set<String>>> ipOwners,
-      Table<ConcreteInterfaceAddress, Integer, Set<Interface>> vrrpGroups,
+      Map<Integer, Map<Interface, Set<Ip>>> vrrpGroups,
       L3Adjacencies l3Adjacencies) {
-    vrrpGroups
-        .cellSet()
-        .forEach(
-            cell -> {
-              ConcreteInterfaceAddress address = cell.getRowKey();
-              assert address != null;
-              Integer groupNum = cell.getColumnKey();
-              assert groupNum != null;
-              Set<Interface> candidates = cell.getValue();
-              assert candidates != null;
+    vrrpGroups.forEach(
+        (vrid, ipSpaceByCandidate) -> {
+          assert vrid != null;
+          Set<Interface> candidates = ipSpaceByCandidate.keySet();
 
-              Set<Set<Interface>> candidatePartitions =
-                  partitionVrrpCandidates(candidates, l3Adjacencies);
+          Set<Set<Interface>> candidatePartitions =
+              partitionVrrpCandidates(candidates, l3Adjacencies);
 
-              candidatePartitions.forEach(
-                  cp -> {
-                    /*
-                     * Compare priorities first, then highest interface IP, then hostname, then interface name.
-                     */
-                    Interface vrrpMaster =
-                        Collections.max(
-                            cp,
-                            Comparator.comparingInt(
-                                    (Interface o) -> o.getVrrpGroups().get(groupNum).getPriority())
-                                .thenComparing(o -> o.getConcreteAddress().getIp())
-                                .thenComparing(o -> NodeInterfacePair.of(o)));
-                    ipOwners
-                        .computeIfAbsent(address.getIp(), k -> new HashMap<>())
-                        .computeIfAbsent(vrrpMaster.getOwner().getHostname(), k -> new HashSet<>())
-                        .add(vrrpMaster.getName());
-                  });
-            });
+          candidatePartitions.forEach(
+              cp -> {
+                /*
+                 * Compare priorities first, then highest interface IP, then hostname, then interface name.
+                 */
+                Interface vrrpMaster =
+                    Collections.max(
+                        cp,
+                        Comparator.comparingInt(
+                                (Interface o) -> o.getVrrpGroups().get(vrid).getPriority())
+                            .thenComparing(o -> o.getConcreteAddress().getIp())
+                            .thenComparing(o -> NodeInterfacePair.of(o)));
+                ipSpaceByCandidate
+                    .get(vrrpMaster)
+                    .forEach(
+                        ip ->
+                            ipOwners
+                                .computeIfAbsent(ip, k -> new HashMap<>())
+                                .computeIfAbsent(
+                                    vrrpMaster.getOwner().getHostname(), k -> new HashSet<>())
+                                .add(vrrpMaster.getName()));
+              });
+        });
   }
 
   /**

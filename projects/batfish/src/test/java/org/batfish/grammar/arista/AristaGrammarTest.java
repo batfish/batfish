@@ -2389,7 +2389,8 @@ public class AristaGrammarTest {
     Interface i = c.getAllInterfaces().get("Vlan20");
     assertThat(i.getVrrpGroups(), hasKey(1));
     VrrpGroup group = i.getVrrpGroups().get(1);
-    assertThat(group.getVirtualAddress(), equalTo(ConcreteInterfaceAddress.parse("1.2.3.4/24")));
+    assertThat(group.getVirtualAddresses(), contains(Ip.parse("1.2.3.4")));
+    assertThat(group.getSourceAddress(), equalTo(ConcreteInterfaceAddress.parse("2.2.2.2/24")));
     assertThat(group.getPriority(), equalTo(200));
   }
 

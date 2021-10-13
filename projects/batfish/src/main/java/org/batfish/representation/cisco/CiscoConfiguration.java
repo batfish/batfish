@@ -548,30 +548,29 @@ public final class CiscoConfiguration extends VendorConfiguration {
             vrrpInterface
                 .getVrrpGroups()
                 .forEach(
-                    (groupNum, vrrpGroup) -> {
-                      org.batfish.datamodel.VrrpGroup newGroup =
-                          new org.batfish.datamodel.VrrpGroup(groupNum);
+                    (vrid, vrrpGroup) -> {
+                      org.batfish.datamodel.VrrpGroup.Builder newGroup =
+                          org.batfish.datamodel.VrrpGroup.builder();
                       newGroup.setPreempt(vrrpGroup.getPreempt());
                       newGroup.setPriority(vrrpGroup.getPriority());
                       ConcreteInterfaceAddress ifaceAddress = iface.getConcreteAddress();
                       if (ifaceAddress != null) {
-                        int prefixLength = ifaceAddress.getNetworkBits();
-                        Ip address = vrrpGroup.getVirtualAddress();
-                        if (address != null) {
-                          ConcreteInterfaceAddress virtualAddress =
-                              ConcreteInterfaceAddress.create(address, prefixLength);
-                          newGroup.setVirtualAddress(virtualAddress);
+                        newGroup.setSourceAddress(ifaceAddress);
+                        Ip virtualAddress = vrrpGroup.getVirtualAddress();
+                        if (virtualAddress != null) {
+                          newGroup.setVirtualAddresses(virtualAddress);
                         } else {
                           _w.redFlag(
                               "No virtual address set for VRRP on interface: '" + ifaceName + "'");
                         }
                       } else {
                         _w.redFlag(
-                            "Could not determine prefix length of VRRP address on interface '"
-                                + ifaceName
-                                + "' due to missing prefix");
+                            String.format(
+                                "Could not determine source address of VRRP control traffic on"
+                                    + " interface '%s' due to missing ip address",
+                                ifaceName));
                       }
-                      iface.addVrrpGroup(groupNum, newGroup);
+                      iface.addVrrpGroup(vrid, newGroup.build());
                     });
           }
         });
