@@ -666,7 +666,7 @@ public class RibTest {
     assertThat(
         rib.mergeRouteGetDelta(betterRoute).getActions().collect(ImmutableList.toImmutableList()),
         containsInAnyOrder(
-            RouteAdvertisement.replacing(worseRoute), RouteAdvertisement.adding(betterRoute)));
+            RouteAdvertisement.withdrawing(worseRoute), RouteAdvertisement.adding(betterRoute)));
   }
 
   @Test

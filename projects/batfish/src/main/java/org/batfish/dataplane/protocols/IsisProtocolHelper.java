@@ -51,7 +51,7 @@ public class IsisProtocolHelper {
             ra -> {
               IsisRoute newRoute = ra.getRoute().toBuilder().setOverload(true).build();
               if (ra.isWithdrawn()) {
-                deltaWithOverloadTrue.remove(newRoute, ra.getReason());
+                deltaWithOverloadTrue.remove(newRoute);
               } else {
                 deltaWithOverloadTrue.add(newRoute);
               }

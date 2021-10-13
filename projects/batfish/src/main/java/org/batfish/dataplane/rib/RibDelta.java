@@ -16,7 +16,6 @@ import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.Prefix;
-import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 
 /**
  * Represents a change in RIB state
@@ -34,18 +33,12 @@ public final class RibDelta<R extends AbstractRouteDecorator> {
     _actions = ImmutableList.copyOf(actions);
   }
 
-  /**
-   * Create a new {@link RibDelta} advertising the input route with {@link Reason} {@link
-   * Reason#ADD}.
-   */
+  /** Create a new {@link RibDelta} advertising the input route */
   public static <R extends AbstractRouteDecorator> RibDelta<R> adding(R route) {
     return new RibDelta<>(ImmutableList.of(RouteAdvertisement.adding(route)));
   }
 
-  /**
-   * Create a new {@link RibDelta} advertising the input routes with {@link Reason} {@link
-   * Reason#ADD}.
-   */
+  /** Create a new {@link RibDelta} advertising the input routes */
   public static <R extends AbstractRouteDecorator> RibDelta<R> adding(Collection<R> routes) {
     ImmutableList.Builder<RouteAdvertisement<R>> builder =
         ImmutableList.builderWithExpectedSize(routes.size());
@@ -125,7 +118,7 @@ public final class RibDelta<R extends AbstractRouteDecorator> {
             ra -> {
               AnnotatedRoute<T> tRoute = new AnnotatedRoute<>(ra.getRoute(), vrfName);
               if (ra.isWithdrawn()) {
-                importer.remove(tRoute, ra.getReason());
+                importer.remove(tRoute);
               } else {
                 importer.add(tRoute);
               }
@@ -174,11 +167,11 @@ public final class RibDelta<R extends AbstractRouteDecorator> {
      *
      * @param route that was removed
      */
-    public Builder<R> remove(R route, Reason reason) {
+    public Builder<R> remove(R route) {
       RouteAdvertisement<R> old =
           _actions.put(
-              route, RouteAdvertisement.<R>builder().setRoute(route).setReason(reason).build());
-      if (old != null && old.getReason() == Reason.ADD) {
+              route, RouteAdvertisement.<R>builder().setRoute(route).setWithdrawn(true).build());
+      if (old != null && !old.isWithdrawn()) {
         // In this same delta, we added the route and are now withdrawing. Instead, no-op.
         _actions.remove(route);
       }
@@ -190,9 +183,9 @@ public final class RibDelta<R extends AbstractRouteDecorator> {
      *
      * @param routes that were removed
      */
-    public Builder<R> remove(Collection<R> routes, Reason reason) {
+    public Builder<R> remove(Collection<R> routes) {
       for (R route : routes) {
-        remove(route, reason);
+        remove(route);
       }
       return this;
     }
@@ -230,7 +223,7 @@ public final class RibDelta<R extends AbstractRouteDecorator> {
     @Nonnull
     public <T extends R> Builder<R> from(RouteAdvertisement<T> routeAdvertisement) {
       if (routeAdvertisement.isWithdrawn()) {
-        remove(routeAdvertisement.getRoute(), routeAdvertisement.getReason());
+        remove(routeAdvertisement.getRoute());
       } else {
         add(routeAdvertisement.getRoute());
       }
@@ -328,7 +321,7 @@ public final class RibDelta<R extends AbstractRouteDecorator> {
         (uRouteAdvertisement) -> {
           T tRoute = converter.apply(uRouteAdvertisement.getRoute());
           if (uRouteAdvertisement.isWithdrawn()) {
-            builder.from(importingRib.removeRouteGetDelta(tRoute, uRouteAdvertisement.getReason()));
+            builder.from(importingRib.removeRouteGetDelta(tRoute));
           } else {
             builder.from(importingRib.mergeRouteGetDelta(tRoute));
           }

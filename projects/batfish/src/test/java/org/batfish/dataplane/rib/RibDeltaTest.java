@@ -17,7 +17,6 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.dataplane.rib.RibDelta.Builder;
-import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -66,13 +65,12 @@ public class RibDeltaTest {
         .addEqualityGroup(RibDelta.builder().build(), RibDelta.builder().build())
         .addEqualityGroup(
             RibDelta.builder().add(sr1).build(), RibDelta.<StaticRoute>builder().add(sr1).build())
-        .addEqualityGroup(RibDelta.builder().remove(sr1, Reason.WITHDRAW).build())
-        .addEqualityGroup(RibDelta.builder().remove(sr1, Reason.REPLACE).build())
+        .addEqualityGroup(RibDelta.builder().remove(sr1).build())
         .addEqualityGroup(RibDelta.builder().add(sr2))
         .addEqualityGroup(RibDelta.builder().add(sr3))
-        .addEqualityGroup(RibDelta.builder().remove(sr2, Reason.WITHDRAW).build())
+        .addEqualityGroup(RibDelta.builder().remove(sr2).build())
         .addEqualityGroup(RibDelta.builder().add(sr1).add(sr2).build())
-        .addEqualityGroup(RibDelta.builder().add(sr1).remove(sr2, Reason.WITHDRAW).build())
+        .addEqualityGroup(RibDelta.builder().add(sr1).remove(sr2).build())
         .addEqualityGroup(new Object())
         .testEquals();
   }
@@ -146,15 +144,15 @@ public class RibDeltaTest {
             .setMetric(0L)
             .setTag(1L)
             .build();
-    _builder.remove(route1, Reason.WITHDRAW);
-    _builder.remove(route2, Reason.WITHDRAW);
+    _builder.remove(route1);
+    _builder.remove(route2);
 
     // Ensure routes are added in order
     RibDelta<AbstractRoute> delta = _builder.build();
     assertThat(delta.getRoutes(), contains(route1, route2));
 
     // Test that re-removing a route does not change resulting set
-    _builder.remove(route3, Reason.WITHDRAW);
+    _builder.remove(route3);
     delta = _builder.build();
     assertThat(delta.getRoutes(), contains(route1, route2));
   }
@@ -205,13 +203,7 @@ public class RibDeltaTest {
     // betterRoute was replaced by bestRoute, and both show in the delta.
     assertThat(
         secondRound,
-        contains(
-            equalTo(
-                RouteAdvertisement.<Bgpv4Route>builder()
-                    .setRoute(betterRoute)
-                    .setReason(Reason.REPLACE)
-                    .build()),
-            equalTo(new RouteAdvertisement<>(bestRoute))));
+        contains(RouteAdvertisement.withdrawing(betterRoute), new RouteAdvertisement<>(bestRoute)));
   }
 
   /** Test that the routes are exact route matches are removed from the RIB by default */
@@ -244,8 +236,7 @@ public class RibDeltaTest {
 
     // Setup
     rib.mergeRoute(r1);
-    RibDelta<Bgpv4Route> delta =
-        RibDelta.<Bgpv4Route>builder().add(r2).remove(r1, Reason.WITHDRAW).build();
+    RibDelta<Bgpv4Route> delta = RibDelta.<Bgpv4Route>builder().add(r2).remove(r1).build();
     // Test
     RibDelta.importRibDelta(rib, delta);
     // r1 remains due to different protocol

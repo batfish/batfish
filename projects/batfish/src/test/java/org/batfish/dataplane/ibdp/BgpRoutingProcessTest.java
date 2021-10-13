@@ -22,6 +22,7 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertFalse;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -86,7 +87,6 @@ import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.dataplane.rib.Rib;
 import org.batfish.dataplane.rib.RibDelta;
 import org.batfish.dataplane.rib.RouteAdvertisement;
-import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -825,7 +825,7 @@ public class BgpRoutingProcessTest {
             .collect(ImmutableList.toImmutableList());
 
     // Initially, there should only be adds.
-    deltaAdverts.forEach(advert -> assertThat(advert.getReason(), equalTo(Reason.ADD)));
+    deltaAdverts.forEach(advert -> assertFalse(advert.isWithdrawn()));
     return deltaAdverts;
   }
 

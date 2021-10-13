@@ -3,22 +3,21 @@ package org.batfish.matchers;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.dataplane.rib.RouteAdvertisement;
-import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
 @ParametersAreNonnullByDefault
 public final class RouteAdvertisementMatchersImpl {
 
-  static final class HasReason
-      extends FeatureMatcher<RouteAdvertisement<? extends AbstractRouteDecorator>, Reason> {
-    HasReason(Matcher<? super Reason> subMatcher) {
-      super(subMatcher, "A RouteAdvertisement with reason:", "reason");
+  static final class IsWithdrawn
+      extends FeatureMatcher<RouteAdvertisement<? extends AbstractRouteDecorator>, Boolean> {
+    IsWithdrawn(Matcher<? super Boolean> subMatcher) {
+      super(subMatcher, "A RouteAdvertisement with withdrawn:", "withdrawn");
     }
 
     @Override
-    protected Reason featureValueOf(RouteAdvertisement<? extends AbstractRouteDecorator> actual) {
-      return actual.getReason();
+    protected Boolean featureValueOf(RouteAdvertisement<? extends AbstractRouteDecorator> actual) {
+      return actual.isWithdrawn();
     }
   }
 

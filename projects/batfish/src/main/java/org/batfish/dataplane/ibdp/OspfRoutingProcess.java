@@ -71,7 +71,6 @@ import org.batfish.dataplane.rib.OspfIntraAreaRib;
 import org.batfish.dataplane.rib.OspfRib;
 import org.batfish.dataplane.rib.RibDelta;
 import org.batfish.dataplane.rib.RouteAdvertisement;
-import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 
 /** An OSPF routing process, a dataplane version of {@link OspfProcess} */
 @ParametersAreNonnullByDefault
@@ -494,7 +493,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   private static <R extends AbstractRoute, T extends R> RibDelta<R> processRouteAdvertisement(
       RouteAdvertisement<T> ra, AbstractRib<R> rib) {
     if (ra.isWithdrawn()) {
-      return rib.removeRouteGetDelta(ra.getRoute(), ra.getReason());
+      return rib.removeRouteGetDelta(ra.getRoute());
     } else {
       return rib.mergeRouteGetDelta(ra.getRoute());
     }
@@ -675,7 +674,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
         interAreaDelta.from(
             processRouteAdvertisement(
                 RouteAdvertisement.<OspfInterAreaRoute>builder()
-                    .setReason(routeAdvertisement.getReason())
+                    .setWithdrawn(routeAdvertisement.isWithdrawn())
                     .setRoute(interAreaRoute)
                     .build(),
                 _interAreaRib));
@@ -1140,7 +1139,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
 
     return Optional.of(
         RouteAdvertisement.<OspfInterAreaRoute>builder()
-            .setReason(Reason.ADD)
+            .setWithdrawn(false)
             .setRoute(
                 OspfInterAreaRoute.builder()
                     .setNetwork(Prefix.ZERO)

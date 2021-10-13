@@ -6,7 +6,6 @@ import static org.hamcrest.Matchers.equalTo;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
-import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 import org.junit.Test;
 
 public final class RibTreeTest {
@@ -34,13 +33,6 @@ public final class RibTreeTest {
     RibDelta<StaticRoute> addR2 = ribTree.mergeRoute(r2);
     assertThat(addR2, equalTo(RibDelta.adding(r2)));
     RibDelta<StaticRoute> addR3 = ribTree.mergeRoute(r3);
-    assertThat(
-        addR3,
-        equalTo(
-            RibDelta.builder()
-                .remove(r1, Reason.REPLACE)
-                .remove(r2, Reason.REPLACE)
-                .add(r3)
-                .build()));
+    assertThat(addR3, equalTo(RibDelta.builder().remove(r1).remove(r2).add(r3).build()));
   }
 }

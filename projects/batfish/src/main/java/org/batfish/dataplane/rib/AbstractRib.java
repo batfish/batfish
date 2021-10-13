@@ -17,7 +17,6 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.ResolutionRestriction;
-import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 
 /**
  * Implements general RIB (Routing Information Base) semantics. RIB stores routes for different
@@ -228,25 +227,19 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
    * Remove given route from the RIB
    *
    * @param route route to remove
-   * @param reason The reason for route removal (will propagate to the returned delta)
    * @return a {@link RibDelta} object indicating that the route was removed or @{code null} if the
    *     route was not present in the RIB
    */
   @Nonnull
-  public RibDelta<R> removeRouteGetDelta(R route, Reason reason) {
+  public RibDelta<R> removeRouteGetDelta(R route) {
     // Remove the backup route first, then remove route from rib
     removeBackupRoute(route);
-    RibDelta<R> delta = _tree.removeRouteGetDelta(route, reason);
+    RibDelta<R> delta = _tree.removeRouteGetDelta(route);
     if (!delta.isEmpty()) {
       // A change to routes has been made
       _allRoutes = null;
     }
     return delta;
-  }
-
-  @Nonnull
-  public RibDelta<R> removeRouteGetDelta(R route) {
-    return removeRouteGetDelta(route, Reason.WITHDRAW);
   }
 
   /**
@@ -256,7 +249,7 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
    * @return True if the route was located and removed
    */
   public boolean removeRoute(R route) {
-    return !removeRouteGetDelta(route, Reason.WITHDRAW).isEmpty();
+    return !removeRouteGetDelta(route).isEmpty();
   }
 
   /**

@@ -19,7 +19,6 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.PrefixTrieMultiMap;
 import org.batfish.datamodel.ResolutionRestriction;
-import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 
 /**
  * Used to store the routes, supports longest prefix match operation.
@@ -46,16 +45,14 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
    * @return {@link RibDelta} if the route was removed, otherwise {@code null};
    */
   @Nonnull
-  RibDelta<R> removeRouteGetDelta(R route, Reason reason) {
-    assert reason != Reason.ADD : "cannot remove a route with reason ADD";
-
+  RibDelta<R> removeRouteGetDelta(R route) {
     Prefix network = route.getNetwork();
     boolean removed = _root.remove(network, route);
     if (!removed) {
       return RibDelta.empty();
     }
 
-    RouteAdvertisement<R> removeRoute = new RouteAdvertisement<>(route, reason);
+    RouteAdvertisement<R> removeRoute = new RouteAdvertisement<>(route, true);
 
     if (!_root.get(network).isEmpty()) {
       // we still have a route for the network, so don't need to re-merge backups
@@ -145,8 +142,7 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
    * Add a new route into the RIB, potentially replacing other routes
    *
    * @param route route to add
-   * @return a {@link RibDelta} objects indicating which routes where added and evicted from this
-   *     RIB
+   * @return a {@link RibDelta} object indicating which routes were added and removed from this RIB
    */
   @Nonnull
   RibDelta<R> mergeRoute(R route) {
@@ -184,7 +180,7 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
       // build the RibDelta directly, since we know the routes are distinct
       List<RouteAdvertisement<R>> actions =
           Streams.concat(
-                  routes.stream().map(RouteAdvertisement::replacing),
+                  routes.stream().map(RouteAdvertisement::withdrawing),
                   Stream.of(RouteAdvertisement.adding(route)))
               .collect(ImmutableList.toImmutableList());
       assert actions.stream().map(RouteAdvertisement::getRoute).distinct().count() == actions.size()

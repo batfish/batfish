@@ -92,7 +92,6 @@ import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.dataplane.rib.RibDelta;
 import org.batfish.dataplane.rib.RouteAdvertisement;
-import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 import org.junit.Test;
 
 /** Tests of {@link VirtualRouter} */
@@ -488,7 +487,7 @@ public class VirtualRouterTest {
     assertThat(q, hasSize(1));
 
     // Repeats are allowed; So existing route + 1 add + 1 remove = 3 total
-    builder.remove(sr2, Reason.WITHDRAW);
+    builder.remove(sr2);
     VirtualRouter.queueDelta(q, builder.build());
     assertThat(q, hasSize(3));
   }
@@ -516,7 +515,7 @@ public class VirtualRouterTest {
     RibDelta.Builder<AbstractRoute> builder = RibDelta.builder();
 
     // Test queueing empty deltas
-    builder.add(sr1).remove(sr2, Reason.WITHDRAW);
+    builder.add(sr1).remove(sr2);
     VirtualRouter.queueDelta(q, builder.build());
 
     // Check queuing order.

@@ -30,7 +30,6 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopIp;
-import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -185,7 +184,7 @@ public class AbstractRibTest {
   }
 
   /**
-   * Ensure that {@link GenericRibReadOnly#longestPrefixMatch(Ip, int,
+   * Ensure that {@link org.batfish.datamodel.GenericRibReadOnly#longestPrefixMatch(Ip, int,
    * org.batfish.datamodel.ResolutionRestriction)} returns correct routes when the RIB is non-empty
    */
   @Test
@@ -358,13 +357,13 @@ public class AbstractRibTest {
 
     // Check only route r remains
     assertThat(_rib.getTypedRoutes(), contains(r));
-    assertThat(actions, contains(new RouteAdvertisement<>(_mostGeneralRoute, Reason.WITHDRAW)));
+    assertThat(actions, contains(RouteAdvertisement.withdrawing(_mostGeneralRoute)));
 
     // Remove route r
     d = _rib.removeRouteGetDelta(r);
     actions = d.getActions().collect(Collectors.toList());
     assertThat(_rib.getTypedRoutes(), empty());
-    assertThat(actions, contains(new RouteAdvertisement<>(r, Reason.WITHDRAW)));
+    assertThat(actions, contains(RouteAdvertisement.withdrawing(r)));
   }
 
   /**

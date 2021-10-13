@@ -56,7 +56,6 @@ import org.batfish.dataplane.rib.EigrpRib;
 import org.batfish.dataplane.rib.RibDelta;
 import org.batfish.dataplane.rib.RibDelta.Builder;
 import org.batfish.dataplane.rib.RouteAdvertisement;
-import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 
 /** An instance of an EigrpProcess as constructed and used by {@link VirtualRouter} */
 @ParametersAreNonnullByDefault
@@ -209,7 +208,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
                 builder.add(outputRoute);
                 _externalRib.mergeRouteGetDelta(outputRoute);
               } else {
-                builder.remove(outputRoute, Reason.WITHDRAW);
+                builder.remove(outputRoute);
                 _externalRib.removeRouteGetDelta(outputRoute);
               }
             });

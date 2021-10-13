@@ -10,9 +10,8 @@ import static org.batfish.dataplane.ibdp.OspfRoutingProcess.filterInterAreaRoute
 import static org.batfish.dataplane.ibdp.OspfRoutingProcess.getIfaceAddressesForIntraAreaRoutes;
 import static org.batfish.dataplane.ibdp.OspfRoutingProcess.transformInterAreaRoutesOnExportNonABR;
 import static org.batfish.dataplane.ibdp.OspfRoutingProcess.transformIntraAreaRoutesOnExport;
-import static org.batfish.dataplane.rib.RouteAdvertisement.Reason.ADD;
-import static org.batfish.matchers.RouteAdvertisementMatchers.hasReason;
 import static org.batfish.matchers.RouteAdvertisementMatchers.hasRoute;
+import static org.batfish.matchers.RouteAdvertisementMatchers.isAdding;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
@@ -346,7 +345,7 @@ public class OspfRoutingProcessTest {
     // Must not crash on non-existent interface
     RibDelta<OspfIntraAreaRoute> delta = _routingProcess.initializeRoutesByArea(AREA0_CONFIG);
     // All routes were added
-    assertTrue(delta.getActions().allMatch(r -> r.getReason() == ADD));
+    assertTrue(delta.getActions().noneMatch(RouteAdvertisement::isWithdrawn));
 
     /*
       Requirements:
@@ -452,8 +451,7 @@ public class OspfRoutingProcessTest {
                 nextHopIp)
             .get(),
         allOf(
-            hasRoute(allOf(hasPrefix(Prefix.ZERO), hasNextHopIp(equalTo(nextHopIp)))),
-            hasReason(ADD)));
+            hasRoute(allOf(hasPrefix(Prefix.ZERO), hasNextHopIp(equalTo(nextHopIp)))), isAdding()));
     // STUB area
     assertThat(
         computeDefaultInterAreaRouteToInject(
@@ -464,8 +462,7 @@ public class OspfRoutingProcessTest {
                 nextHopIp)
             .get(),
         allOf(
-            hasRoute(allOf(hasPrefix(Prefix.ZERO), hasNextHopIp(equalTo(nextHopIp)))),
-            hasReason(ADD)));
+            hasRoute(allOf(hasPrefix(Prefix.ZERO), hasNextHopIp(equalTo(nextHopIp)))), isAdding()));
   }
 
   @Test
@@ -491,7 +488,7 @@ public class OspfRoutingProcessTest {
         contains(
             allOf(
                 hasRoute(allOf(hasPrefix(Prefix.ZERO), hasNextHopIp(equalTo(nextHopIp)))),
-                hasReason(ADD))));
+                isAdding())));
 
     // Any subsequent calls for the same edge -- no need to inject default route
     for (int i = 0; i < 10; i++) {
@@ -512,7 +509,7 @@ public class OspfRoutingProcessTest {
         contains(
             allOf(
                 hasRoute(allOf(hasPrefix(Prefix.ZERO), hasNextHopIp(equalTo(nextHopIp)))),
-                hasReason(ADD))));
+                isAdding())));
   }
 
   @Test

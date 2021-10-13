@@ -109,7 +109,6 @@ import org.batfish.dataplane.rib.RibDelta.Builder;
 import org.batfish.dataplane.rib.RipInternalRib;
 import org.batfish.dataplane.rib.RipRib;
 import org.batfish.dataplane.rib.RouteAdvertisement;
-import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 import org.batfish.dataplane.rib.StaticRib;
 
 public final class VirtualRouter {
@@ -297,8 +296,8 @@ public final class VirtualRouter {
         .forEach(
             r -> {
               @SuppressWarnings("unchecked") // Ok to upcast to R since immutable.
-              RouteAdvertisement<R> sanitized = (RouteAdvertisement<R>) r.sanitizeForExport();
-              queue.add(sanitized);
+              RouteAdvertisement<R> cast = (RouteAdvertisement<R>) r;
+              queue.add(cast);
             });
   }
 
@@ -532,8 +531,7 @@ public final class VirtualRouter {
         /*
          * If the route is not in the RIB, this has no effect. But might add some overhead (TODO)
          */
-        _mainRibRouteDeltaBuilder.from(
-            _mainRib.removeRouteGetDelta(annotateRoute(sr), Reason.WITHDRAW));
+        _mainRibRouteDeltaBuilder.from(_mainRib.removeRouteGetDelta(annotateRoute(sr)));
       }
     }
   }
@@ -989,7 +987,7 @@ public final class VirtualRouter {
                     .setNonRouting(false)
                     .build();
             if (withdraw) {
-              deltaBuilder.remove(newRoute, Reason.WITHDRAW);
+              deltaBuilder.remove(newRoute);
             } else {
               IsisLevelRib levelStagingRib =
                   routeLevel == IsisLevel.LEVEL_1 ? _isisL1StagingRib : _isisL2StagingRib;
@@ -1153,7 +1151,7 @@ public final class VirtualRouter {
                       IsisRoute r = newRoute.get();
                       if (ra.isWithdrawn()) {
                         _isisL2StagingRib.removeRoute(r);
-                        upgradedRoutes.remove(newRoute.get(), ra.getReason());
+                        upgradedRoutes.remove(newRoute.get());
                       } else {
                         _isisL2StagingRib.mergeRoute(r);
                         upgradedRoutes.add(newRoute.get());

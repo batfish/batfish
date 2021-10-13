@@ -101,7 +101,6 @@ import org.batfish.dataplane.rib.Rib;
 import org.batfish.dataplane.rib.RibDelta;
 import org.batfish.dataplane.rib.RibDelta.Builder;
 import org.batfish.dataplane.rib.RouteAdvertisement;
-import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 
 /**
  * BGP routing process. A dataplane counter-part of {@link BgpProcess}. Maintains state necessary
@@ -899,7 +898,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         ribDeltas.get(targetRib).from(targetRib.removeRouteGetDelta(transformedIncomingRoute));
         _bgpv4DeltaBuilder.from(_bgpv4Rib.removeRouteGetDelta(transformedIncomingRoute));
         if (useRibGroups) {
-          perNeighborDeltaForRibGroups.remove(annotatedTransformedRoute, Reason.WITHDRAW);
+          perNeighborDeltaForRibGroups.remove(annotatedTransformedRoute);
         }
       } else {
         // Merge into target and overall RIBs and update deltas
@@ -968,7 +967,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                       return null;
                     }
                     return RouteAdvertisement.<Bgpv4Route>builder()
-                        .setReason(adv.getReason())
+                        .setWithdrawn(adv.isWithdrawn())
                         .setRoute(bgpRoute)
                         .build();
                   })
@@ -1037,7 +1036,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                       .map(
                           r ->
                               RouteAdvertisement.<AnnotatedRoute<Bgpv4Route>>builder()
-                                  .setReason(r.getReason())
+                                  .setWithdrawn(r.isWithdrawn())
                                   .setRoute(annotateRoute(r.getRoute()))
                                   .build()))
               .filter(
@@ -1104,15 +1103,11 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                               remoteBgpRoutingProcess,
                               session,
                               Type.IPV4_UNICAST);
-                      // REPLACE does not make sense across routers, update with WITHDRAW
                       return transformedRoute
                           .map(
                               bgpv4Route ->
                                   RouteAdvertisement.<Bgpv4Route>builder()
-                                      .setReason(
-                                          adv.getReason() == Reason.REPLACE
-                                              ? Reason.WITHDRAW
-                                              : adv.getReason())
+                                      .setWithdrawn(adv.isWithdrawn())
                                       .setRoute(bgpv4Route)
                                       .build())
                           .orElse(null);
@@ -1246,7 +1241,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     // Withdraw old aggregates. Withdrawals may be canceled out by activated aggregates below.
     currentRoutes.stream()
         .filter(r -> r.getProtocol() == RoutingProtocol.AGGREGATE)
-        .forEach(prevAggregate -> aggDeltaBuilder.remove(prevAggregate, Reason.WITHDRAW));
+        .forEach(aggDeltaBuilder::remove);
     Multimap<Prefix, Bgpv4Route> potentialContributorsByAggregatePrefix =
         MultimapBuilder.hashKeys(_process.getAggregates().size()).linkedListValues().build();
     // Map each non-aggregate potential contributor to its most specific containing aggregate if it
@@ -1514,10 +1509,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                     .map(
                         r ->
                             RouteAdvertisement.<R>builder()
-                                .setReason(
-                                    adv.getReason() == Reason.REPLACE
-                                        ? Reason.WITHDRAW
-                                        : adv.getReason())
+                                .setWithdrawn(adv.isWithdrawn())
                                 .setRoute(r)
                                 .build()))
         .filter(Optional::isPresent)
@@ -1917,8 +1909,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     RibDelta<R> delta;
     BgpRib<R> rib = getRib(clazz, RibType.COMBINED);
     if (routeAdvertisement.isWithdrawn()) {
-      delta =
-          rib.removeRouteGetDelta(routeAdvertisement.getRoute(), routeAdvertisement.getReason());
+      delta = rib.removeRouteGetDelta(routeAdvertisement.getRoute());
     } else {
       delta = rib.mergeRouteGetDelta(routeAdvertisement.getRoute());
     }
