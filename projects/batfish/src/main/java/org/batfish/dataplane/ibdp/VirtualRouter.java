@@ -532,8 +532,7 @@ public final class VirtualRouter {
         /*
          * If the route is not in the RIB, this has no effect. But might add some overhead (TODO)
          */
-        _mainRibRouteDeltaBuilder.from(
-            _mainRib.removeRouteGetDelta(annotateRoute(sr), Reason.WITHDRAW));
+        _mainRibRouteDeltaBuilder.from(_mainRib.removeRouteGetDelta(annotateRoute(sr)));
       }
     }
   }
