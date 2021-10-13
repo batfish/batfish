@@ -18,6 +18,7 @@ public final class RouteMapEntry implements Serializable {
   private @Nullable RouteMapMatchInterface _matchInterface;
   private @Nullable RouteMapMatchIpAddress _matchIpAddress;
   private @Nullable RouteMapMatchIpAddressPrefixList _matchIpAddressPrefixList;
+  private @Nullable RouteMapMatchIpMulticast _matchIpMulticast;
   private @Nullable RouteMapMatchIpv6Address _matchIpv6Address;
   private @Nullable RouteMapMatchIpv6AddressPrefixList _matchIpv6AddressPrefixList;
   private @Nullable RouteMapMatchMetric _matchMetric;
@@ -70,6 +71,7 @@ public final class RouteMapEntry implements Serializable {
             _matchInterface,
             _matchIpAddress,
             _matchIpAddressPrefixList,
+            _matchIpMulticast,
             _matchIpv6Address,
             _matchIpv6AddressPrefixList,
             _matchMetric,
@@ -90,6 +92,10 @@ public final class RouteMapEntry implements Serializable {
 
   public @Nullable RouteMapMatchIpAddressPrefixList getMatchIpAddressPrefixList() {
     return _matchIpAddressPrefixList;
+  }
+
+  public @Nullable RouteMapMatchIpMulticast getMatchIpMulticast() {
+    return _matchIpMulticast;
   }
 
   public @Nullable RouteMapMatchIpv6Address getMatchIpv6Address() {
@@ -218,6 +224,10 @@ public final class RouteMapEntry implements Serializable {
   public void setMatchIpAddressPrefixList(
       @Nullable RouteMapMatchIpAddressPrefixList matchIpAddressPrefixList) {
     _matchIpAddressPrefixList = matchIpAddressPrefixList;
+  }
+
+  public void setMatchIpMulticast(@Nullable RouteMapMatchIpMulticast matchIpMulticast) {
+    _matchIpMulticast = matchIpMulticast;
   }
 
   public void setMatchIpv6Address(@Nullable RouteMapMatchIpv6Address matchIpv6Address) {

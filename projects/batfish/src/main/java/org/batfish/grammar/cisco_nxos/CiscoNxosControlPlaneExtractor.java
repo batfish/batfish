@@ -603,6 +603,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_tagContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_vlanContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmmip6a_pbrContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmmip6a_prefix_listContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmmip_multicastContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmmipa_pbrContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmmipa_prefix_listContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rms_comm_listContext;
@@ -821,6 +822,7 @@ import org.batfish.representation.cisco_nxos.RouteMapMatchCommunity;
 import org.batfish.representation.cisco_nxos.RouteMapMatchInterface;
 import org.batfish.representation.cisco_nxos.RouteMapMatchIpAddress;
 import org.batfish.representation.cisco_nxos.RouteMapMatchIpAddressPrefixList;
+import org.batfish.representation.cisco_nxos.RouteMapMatchIpMulticast;
 import org.batfish.representation.cisco_nxos.RouteMapMatchIpv6Address;
 import org.batfish.representation.cisco_nxos.RouteMapMatchIpv6AddressPrefixList;
 import org.batfish.representation.cisco_nxos.RouteMapMatchMetric;
@@ -6389,6 +6391,12 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         });
     _currentRouteMapEntry.setMatchIpAddressPrefixList(
         new RouteMapMatchIpAddressPrefixList(names.build()));
+  }
+
+  @Override
+  public void exitRmmip_multicast(Rmmip_multicastContext ctx) {
+    todo(ctx);
+    _currentRouteMapEntry.setMatchIpMulticast(new RouteMapMatchIpMulticast());
   }
 
   @Override
