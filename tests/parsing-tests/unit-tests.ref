@@ -55955,8 +55955,8 @@
             "                                      WILDCARD:'<*>')",
             "                                    (ifia_vrrp_group",
             "                                      VRRP_GROUP:'vrrp-group'",
-            "                                      name = (variable*",
-            "                                        text = WILDCARD:'<*>')",
+            "                                      (wildcard*",
+            "                                        WILDCARD:'<*>')",
             "                                      (ifiav_preempt",
             "                                        PREEMPT:'preempt'",
             "                                        HOLD_TIME:'hold-time'",
@@ -86326,7 +86326,7 @@
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Cannot create VRRP group for vrid 5 on interface 'irb.5' because no virtual-address is assigned."
+              "text" : "Configuration will not actually commit. Cannot create VRRP group for vrid 5 on interface 'irb.5' because no virtual-address is assigned."
             }
           ]
         },
