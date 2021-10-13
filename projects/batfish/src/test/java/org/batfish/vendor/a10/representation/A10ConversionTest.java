@@ -74,9 +74,38 @@ public class A10ConversionTest {
         toProtocol(new VirtualServerPort(1, VirtualServerPort.Type.UDP, 0)),
         equalTo(Optional.of(IpProtocol.UDP)));
 
+    // Make sure all types are handled
     for (VirtualServerPort.Type type : VirtualServerPort.Type.values()) {
       // Should not throw
       toProtocol(new VirtualServerPort(1, type, 0)).get();
+    }
+  }
+
+  @Test
+  public void testArePortTypesCompatible() {
+    List<VirtualServerPort.Type> tcpCompatibleVirtualTypes =
+        ImmutableList.of(
+            VirtualServerPort.Type.HTTP,
+            VirtualServerPort.Type.HTTPS,
+            VirtualServerPort.Type.TCP,
+            VirtualServerPort.Type.TCP_PROXY);
+    List<VirtualServerPort.Type> udpCompatibleVirtualTypes =
+        ImmutableList.of(VirtualServerPort.Type.UDP);
+
+    for (VirtualServerPort.Type typeToCheck : tcpCompatibleVirtualTypes) {
+      assertTrue(arePortTypesCompatible(ServerPort.Type.TCP, typeToCheck));
+      assertFalse(arePortTypesCompatible(ServerPort.Type.UDP, typeToCheck));
+    }
+    for (VirtualServerPort.Type typeToCheck : udpCompatibleVirtualTypes) {
+      assertFalse(arePortTypesCompatible(ServerPort.Type.TCP, typeToCheck));
+      assertTrue(arePortTypesCompatible(ServerPort.Type.UDP, typeToCheck));
+    }
+
+    // Make sure all types are handled
+    for (VirtualServerPort.Type typeToCheck : VirtualServerPort.Type.values()) {
+      assertTrue(
+          arePortTypesCompatible(ServerPort.Type.TCP, typeToCheck)
+              || arePortTypesCompatible(ServerPort.Type.UDP, typeToCheck));
     }
   }
 
@@ -134,26 +163,5 @@ public class A10ConversionTest {
             new ApplyAll(
                 TransformationStep.assignDestinationPort(90, 91),
                 TransformationStep.assignDestinationIp(server1Ip))));
-  }
-
-  @Test
-  public void testArePortTypesCompatible() {
-    List<VirtualServerPort.Type> tcpCompatibleVirtualTypes =
-        ImmutableList.of(
-            VirtualServerPort.Type.HTTP,
-            VirtualServerPort.Type.HTTPS,
-            VirtualServerPort.Type.TCP,
-            VirtualServerPort.Type.TCP_PROXY);
-    List<VirtualServerPort.Type> udpCompatibleVirtualTypes =
-        ImmutableList.of(VirtualServerPort.Type.UDP);
-
-    for (VirtualServerPort.Type typeToCheck : tcpCompatibleVirtualTypes) {
-      assertTrue(arePortTypesCompatible(ServerPort.Type.TCP, typeToCheck));
-      assertFalse(arePortTypesCompatible(ServerPort.Type.UDP, typeToCheck));
-    }
-    for (VirtualServerPort.Type typeToCheck : udpCompatibleVirtualTypes) {
-      assertFalse(arePortTypesCompatible(ServerPort.Type.TCP, typeToCheck));
-      assertTrue(arePortTypesCompatible(ServerPort.Type.UDP, typeToCheck));
-    }
   }
 }
