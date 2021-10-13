@@ -566,8 +566,6 @@ enable_password
    (
       ep_plaintext
       | ep_sha512
-      // Do not reorder ep_cisco_encryption
-      | ep_cisco_encryption
    ) NEWLINE
 ;
 
@@ -580,11 +578,6 @@ enable_secret
       )
       | double_quoted_string
    ) NEWLINE
-;
-
-ep_cisco_encryption
-:
-   (type = dec)? (pass = variable_secret) (LEVEL level = dec)? (PBKDF2 | ENCRYPTED)?
 ;
 
 ep_plaintext
@@ -3029,16 +3022,6 @@ s_vlan_eos
    )*
 ;
 
-s_vlan_internal_cisco
-:
-   NO? VLAN INTERNAL ALLOCATION POLICY (ASCENDING | DESCENDING) NEWLINE
-;
-
-s_vlan_name
-:
-   VLAN_NAME name = variable_permissive NEWLINE
-;
-
 s_vpc
 :
    NO? VPC null_rest_of_line
@@ -3433,7 +3416,6 @@ stanza
    | s_username_attributes
    | s_vlan_eos
    | s_vlan_internal_eos
-   | s_vlan_name
    | s_vpc
    | s_vpdn_group
    | s_vpn
@@ -3676,7 +3658,6 @@ u_password
       (
          up_arista_md5
          | up_arista_sha512
-         | up_cisco
       )
    )
    |
@@ -3717,22 +3698,6 @@ up_arista_md5
 up_arista_sha512
 :
    SHA512 pass = SHA512_ARISTA
-;
-
-up_cisco
-:
-   dec? up_cisco_tail
-;
-
-up_cisco_tail
-:
-   (pass = variable_secret)
-   (
-      ENCRYPTED
-      | MSCHAP
-      | NT_ENCRYPTED
-      | PBKDF2
-   )?
 ;
 
 ur_access_list
