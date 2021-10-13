@@ -11,6 +11,7 @@ Arista_igmp,
 Arista_logging,
 Arista_mac,
 Arista_mlag,
+Arista_ptp,
 Arista_vlan,
 Legacy_aaa,
 Legacy_acl,
@@ -3381,6 +3382,7 @@ stanza
    | s_policy_map
    | s_privilege
    | s_process_max_time
+   | s_ptp
    | s_qos_mapping
    | s_queue_monitor
    | s_radius_server

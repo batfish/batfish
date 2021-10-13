@@ -3017,6 +3017,13 @@ public class AristaGrammarTest {
   }
 
   @Test
+  public void testPtp() {
+    Configuration c = parseConfig("ptp");
+    assertThat(
+        c, hasInterface("Port-Channel2", hasDescription("made it to the end of Port-Channel2")));
+  }
+
+  @Test
   public void testEnforceFirstAsExtraction() {
     AristaConfiguration config = parseVendorConfig("arista_bgp_enforce_first_as");
     assertThat(config.getAristaBgp().getDefaultVrf().getEnforceFirstAs(), equalTo(Boolean.TRUE));
