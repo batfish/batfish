@@ -1318,6 +1318,7 @@ DYNAMIC_MCAST_OPTIMIZATION_THRESH: 'dynamic-mcast-optimization-thresh';
 E164: 'e164';
 
 E164_PATTERN_MAP: 'e164-pattern-map';
+E2ETRANSPARENT: 'e2etransparent';
 
 EAP_PASSTHROUGH: 'eap-passthrough';
 
@@ -1690,6 +1691,7 @@ FORTYG_FULL: '40gfull';
 FORWARD: 'forward';
 
 FORWARD_DIGITS: 'forward-digits';
+FORWARD_V1: 'forward-v1';
 
 FORWARDER: 'forwarder';
 
@@ -1758,6 +1760,7 @@ GLOBAL_PORT_SECURITY: 'global-port-security';
 GOPHER: 'gopher';
 
 GODI: 'godi';
+GPTP: 'gptp';
 
 GRACEFUL: 'graceful';
 
@@ -3150,6 +3153,7 @@ OVSDB_SHUTDOWN: 'ovsdb-shutdown';
 OWNER: 'owner';
 
 P2P: 'p2p';
+P2PTRANSPARENT: 'p2ptransparent';
 
 PACKET: 'packet';
 
