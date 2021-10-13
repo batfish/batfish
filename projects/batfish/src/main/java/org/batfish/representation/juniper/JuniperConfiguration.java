@@ -1894,14 +1894,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
         ImmutableSortedMap.naturalOrder();
     vrrpGroups.forEach(
         (vrid, vrrpGroup) -> {
-          Ip virtualAddress = vrrpGroup.getVirtualAddress();
-          if (virtualAddress == null) {
-            // TODO: Should this instead compete and install no virtual addresses when master?
-            //       Can such a configuration even be committed?
+          Set<Ip> virtualAddresses = vrrpGroup.getVirtualAddresses();
+          if (virtualAddresses.isEmpty()) {
             _w.redFlag(
                 String.format(
-                    "Cannot create VRRP group for vrid %d on interface '%s' because no"
-                        + " virtual-address is assigned.",
+                    "Configuration will not actually commit. Cannot create VRRP group for vrid %d"
+                        + " on interface '%s' because no virtual-address is assigned.",
                     vrid, ifaceName));
             return;
           }
@@ -1911,7 +1909,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                   .setPreempt(vrrpGroup.getPreempt())
                   .setPriority(vrrpGroup.getPriority())
                   .setSourceAddress(vrrpGroup.getSourceAddress())
-                  .setVirtualAddresses(virtualAddress)
+                  .setVirtualAddresses(virtualAddresses)
                   .build());
         });
     return groupsBuilder.build();

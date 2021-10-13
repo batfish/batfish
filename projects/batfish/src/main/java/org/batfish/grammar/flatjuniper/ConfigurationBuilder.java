@@ -2433,24 +2433,20 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void enterIfia_vrrp_group(Ifia_vrrp_groupContext ctx) {
-    // TODO: Current Juniper data model puts vrrp-groups at interface level, but they are declared
-    //       at address level. The behavior is undefined if multiple real addresses declare groups
-    //       with the same VRID. Presumably, the configuration cannot be committed in this case; but
-    //       we need to verify and do something reasonable. For now, we are ignoring all but the
-    //       first address that uses a given VRID.
-    int group = toInt(ctx.number);
-    VrrpGroup currentVrrpGroup = _currentInterfaceOrRange.getVrrpGroups().get(group);
+    int vrid = toInt(ctx.number);
+    VrrpGroup currentVrrpGroup = _currentInterfaceOrRange.getVrrpGroups().get(vrid);
     if (currentVrrpGroup == null) {
       currentVrrpGroup = new VrrpGroup(_currentInterfaceAddress);
       currentVrrpGroup.setPreempt(DEFAULT_VRRP_PREEMPT);
       currentVrrpGroup.setPriority(DEFAULT_VRRP_PRIORITY);
-      _currentInterfaceOrRange.getVrrpGroups().put(group, currentVrrpGroup);
+      _currentInterfaceOrRange.getVrrpGroups().put(vrid, currentVrrpGroup);
     } else if (!currentVrrpGroup.getSourceAddress().equals(_currentInterfaceAddress)) {
-      // Subsequent address using the same VRID is ignored
-      _currentVrrpGroup = new VrrpGroup(_currentInterfaceAddress); // dummy
-    } else {
-      _currentVrrpGroup = currentVrrpGroup;
+      throw new WillNotCommitException(
+          String.format(
+              "Multiple inet addresses with the same VRRP VRID %d on interface '%s'",
+              vrid, _currentInterfaceOrRange.getName()));
     }
+    _currentVrrpGroup = currentVrrpGroup;
   }
 
   @Override
@@ -4488,7 +4484,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitIfiav_virtual_address(Ifiav_virtual_addressContext ctx) {
-    _currentVrrpGroup.setVirtualAddress(Ip.parse(ctx.IP_ADDRESS().getText()));
+    Ip virtualAddress = Ip.parse(ctx.IP_ADDRESS().getText());
+    if (!_currentInterfaceAddress.getPrefix().containsIp(virtualAddress)) {
+      throw new WillNotCommitException(
+          String.format(
+              "Cannot assign virtual-address %s outside of subnet for inet address %s",
+              virtualAddress, _currentInterfaceAddress));
+    }
+    _currentVrrpGroup.addVirtualAddress(virtualAddress);
   }
 
   @Override

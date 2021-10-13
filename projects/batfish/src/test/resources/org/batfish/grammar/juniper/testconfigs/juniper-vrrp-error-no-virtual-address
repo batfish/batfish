@@ -1,0 +1,5 @@
+#
+set system host-name juniper-vrrp-error-no-virtual-address
+#
+set interfaces xe-0/0/0 unit 0 family inet address 10.0.0.1/24 vrrp-group 1 priority 5
+#

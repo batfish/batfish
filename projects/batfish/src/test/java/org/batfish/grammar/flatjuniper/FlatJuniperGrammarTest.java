@@ -60,6 +60,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasIncomingFilter
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasIsisProcess;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNoUndefinedReferences;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasRedFlagWarning;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferenceBandwidth;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterList;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterLists;
@@ -392,6 +393,7 @@ import org.batfish.representation.juniper.TcpNoFlag;
 import org.batfish.representation.juniper.TcpSynFin;
 import org.batfish.representation.juniper.VlanRange;
 import org.batfish.representation.juniper.VlanReference;
+import org.batfish.representation.juniper.VrrpGroup;
 import org.batfish.representation.juniper.Zone;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
@@ -6273,5 +6275,78 @@ public final class FlatJuniperGrammarTest {
 
     assertTrue(r.processReadOnly(new ConnectedRoute(Prefix.create(ZERO, 24), "blah")));
     assertFalse(r.processReadOnly(new ConnectedRoute(Prefix.create(ZERO, 25), "blah")));
+  }
+
+  @Test
+  public void testVrrpExtraction() {
+    String hostname = "juniper-vrrp";
+    JuniperConfiguration vc = parseJuniperConfig(hostname);
+    org.batfish.representation.juniper.Interface i =
+        vc.getMasterLogicalSystem().getInterfaces().get("xe-0/0/0").getUnits().get("xe-0/0/0.0");
+    assertThat(i.getVrrpGroups(), hasKeys(1, 2));
+    {
+      VrrpGroup v = i.getVrrpGroups().get(1);
+      assertThat(v.getSourceAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.0.1/24")));
+      assertThat(v.getVirtualAddresses(), contains(Ip.parse("10.0.0.2")));
+    }
+    {
+      VrrpGroup v = i.getVrrpGroups().get(2);
+      assertThat(v.getSourceAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.1.1/24")));
+      assertThat(
+          v.getVirtualAddresses(), containsInAnyOrder(Ip.parse("10.0.1.2"), Ip.parse("10.0.1.3")));
+    }
+  }
+
+  @Test
+  public void testVrrpConversion() {
+    String hostname = "juniper-vrrp";
+    Configuration c = parseConfig(hostname);
+    Interface i = c.getAllInterfaces().get("xe-0/0/0.0");
+    assertThat(i.getVrrpGroups(), hasKeys(1, 2));
+    {
+      org.batfish.datamodel.VrrpGroup v = i.getVrrpGroups().get(1);
+      assertThat(v.getSourceAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.0.1/24")));
+      assertThat(v.getVirtualAddresses(), contains(Ip.parse("10.0.0.2")));
+    }
+    {
+      org.batfish.datamodel.VrrpGroup v = i.getVrrpGroups().get(2);
+      assertThat(v.getSourceAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.1.1/24")));
+      assertThat(
+          v.getVirtualAddresses(), containsInAnyOrder(Ip.parse("10.0.1.2"), Ip.parse("10.0.1.3")));
+    }
+  }
+
+  @Test
+  public void testVrrpErrorMultipleSourceAddressesForVrid() {
+    String hostname = "juniper-vrrp-error-multiple-source-addresses-for-vrid";
+    _thrown.expectMessage(
+        "Multiple inet addresses with the same VRRP VRID 1 on interface 'xe-0/0/0.0'");
+    parseJuniperConfig(hostname);
+  }
+
+  @Test
+  public void testVrrpErrorVirtualAddressOutsideSourceAddressSubnet() {
+    String hostname = "juniper-vrrp-error-virtual-address-outside-source-address-subnet";
+    _thrown.expectMessage(
+        "Cannot assign virtual-address 10.0.1.2 outside of subnet for inet address 10.0.0.1/24");
+    parseJuniperConfig(hostname);
+  }
+
+  @Test
+  public void testVrrpErrorNoVirtualAddress() throws IOException {
+    String hostname = "juniper-vrrp-error-no-virtual-address";
+    String filename = "configs/" + hostname;
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(
+        ccae,
+        hasRedFlagWarning(
+            hostname,
+            equalTo(
+                "Configuration will not actually commit. Cannot create VRRP group for vrid 1 on"
+                    + " interface 'xe-0/0/0.0' because no virtual-address is assigned.")));
   }
 }

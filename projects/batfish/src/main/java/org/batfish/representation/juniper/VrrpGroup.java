@@ -1,8 +1,9 @@
 package org.batfish.representation.juniper;
 
+import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
+import java.util.Set;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Ip;
@@ -12,6 +13,7 @@ import org.batfish.datamodel.Ip;
 public final class VrrpGroup implements Serializable {
 
   public VrrpGroup(ConcreteInterfaceAddress sourceAddress) {
+    _virtualAddresses = ImmutableSet.of();
     _sourceAddress = sourceAddress;
   }
 
@@ -35,16 +37,23 @@ public final class VrrpGroup implements Serializable {
     return _sourceAddress;
   }
 
-  public @Nullable Ip getVirtualAddress() {
-    return _virtualAddress;
+  public @Nonnull Set<Ip> getVirtualAddresses() {
+    return _virtualAddresses;
   }
 
-  public void setVirtualAddress(@Nullable Ip virtualAddress) {
-    _virtualAddress = virtualAddress;
+  public void addVirtualAddress(Ip virtualAddress) {
+    if (_virtualAddresses.contains(virtualAddress)) {
+      return;
+    }
+    _virtualAddresses =
+        ImmutableSet.<Ip>builderWithExpectedSize(_virtualAddresses.size() + 1)
+            .addAll(_virtualAddresses)
+            .add(virtualAddress)
+            .build();
   }
 
   private boolean _preempt;
   private int _priority;
   private final @Nonnull ConcreteInterfaceAddress _sourceAddress;
-  private @Nullable Ip _virtualAddress;
+  private @Nonnull Set<Ip> _virtualAddresses;
 }
