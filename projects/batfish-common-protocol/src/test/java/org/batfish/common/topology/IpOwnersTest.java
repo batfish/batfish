@@ -15,6 +15,7 @@ import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
@@ -426,21 +427,51 @@ public class IpOwnersTest {
 
   @Test
   public void testExtractVrrp() {
-    Map<Integer, Map<Interface, Set<Ip>>> groups = new HashMap<>();
     ConcreteInterfaceAddress sourceAddress = ConcreteInterfaceAddress.parse("1.2.3.4/24");
-    Interface i = Interface.builder().setName("name").setAddress(sourceAddress).build();
-    extractVrrp(groups, i);
-    assertTrue(groups.isEmpty());
+    {
+      // no VrrpGroups
+      Map<Integer, Map<Interface, Set<Ip>>> groups = new HashMap<>();
+      Interface i = Interface.builder().setName("name").setAddress(sourceAddress).build();
+      extractVrrp(groups, i);
 
-    Ip ip1 = Ip.parse("1.1.1.1");
-    i.setVrrpGroups(
-        ImmutableSortedMap.of(
-            1,
-            VrrpGroup.builder().setSourceAddress(sourceAddress).setVirtualAddresses(ip1).build()));
-    extractVrrp(groups, i);
+      assertThat(groups, anEmptyMap());
+    }
+    {
+      // no source-address
+      Map<Integer, Map<Interface, Set<Ip>>> groups = new HashMap<>();
+      Ip ip1 = Ip.parse("1.1.1.1");
+      Interface i =
+          Interface.builder()
+              .setName("name")
+              .setAddress(sourceAddress)
+              .setVrrpGroups(
+                  ImmutableSortedMap.of(1, VrrpGroup.builder().setVirtualAddresses(ip1).build()))
+              .build();
+      extractVrrp(groups, i);
 
-    // Cannot check equality the obvious way with an IdentityHashMap
-    assertThat(groups.get(1), allOf(aMapWithSize(1), hasEntry(i, ImmutableSet.of(ip1))));
+      assertThat(groups, anEmptyMap());
+    }
+    {
+      // valid VrrpGroup
+      Map<Integer, Map<Interface, Set<Ip>>> groups = new HashMap<>();
+      Ip ip1 = Ip.parse("1.1.1.1");
+      Interface i =
+          Interface.builder()
+              .setName("name")
+              .setAddress(sourceAddress)
+              .setVrrpGroups(
+                  ImmutableSortedMap.of(
+                      1,
+                      VrrpGroup.builder()
+                          .setSourceAddress(sourceAddress)
+                          .setVirtualAddresses(ip1)
+                          .build()))
+              .build();
+      extractVrrp(groups, i);
+
+      // Cannot check equality the obvious way with an IdentityHashMap
+      assertThat(groups.get(1), allOf(aMapWithSize(1), hasEntry(i, ImmutableSet.of(ip1))));
+    }
   }
 
   @Test

@@ -31,7 +31,7 @@ public final class VrrpPropertiesAnswerer extends Answerer {
 
   public static final String COL_INTERFACE = "Interface";
   public static final String COL_GROUP_ID = "Group_Id";
-  public static final String COL_VIRTUAL_ADDRESSES = "Virtual_Address";
+  public static final String COL_VIRTUAL_ADDRESSES = "Virtual_Addresses";
   public static final String COL_SOURCE_ADDRESS = "Source_Address";
   public static final String COL_PRIORITY = "Priority";
   public static final String COL_PREEMPT = "Preempt";
@@ -123,7 +123,6 @@ public final class VrrpPropertiesAnswerer extends Answerer {
   @VisibleForTesting
   static void populateRow(RowBuilder row, Integer id, VrrpGroup group) {
     row.put(COL_GROUP_ID, id)
-        // TODO: fixme
         .put(COL_VIRTUAL_ADDRESSES, ImmutableSortedSet.copyOf(group.getVirtualAddresses()))
         .put(COL_SOURCE_ADDRESS, group.getSourceAddress())
         .put(COL_PRIORITY, group.getPriority())
