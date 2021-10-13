@@ -60,6 +60,9 @@ route-map match_ip_address permit 10
 route-map match_ip_address_prefix_list permit 10
   match ip address prefix-list prefix_list1
 
+route-map match_ip_multicast permit 10
+  match ip multicast group 224.0.0.0/4
+
 route-map match_ipv6_address permit 10
   match ipv6 address ipv6_access_list1
 

@@ -16,6 +16,8 @@ public interface RouteMapMatchVisitor<T> {
   T visitRouteMapMatchIpAddressPrefixList(
       RouteMapMatchIpAddressPrefixList routeMapMatchIpAddressPrefixList);
 
+  T visitRouteMapMatchIpMulticast(RouteMapMatchIpMulticast routeMapMatchIpMulticast);
+
   T visitRouteMapMatchIpv6Address(RouteMapMatchIpv6Address routeMapMatchIpv6Address);
 
   T visitRouteMapMatchIpv6AddressPrefixList(

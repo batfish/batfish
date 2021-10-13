@@ -84,7 +84,10 @@ rmm_interface
 
 rmm_ip
 :
-  IP rmmip_address
+  IP (
+    rmmip_address
+    | rmmip_multicast
+  )
 ;
 
 rmmip_address
@@ -104,6 +107,11 @@ rmmipa_pbr
 rmmipa_prefix_list
 :
   PREFIX_LIST names += ip_prefix_list_name+ NEWLINE
+;
+
+rmmip_multicast
+:
+  MULTICAST null_rest_of_line
 ;
 
 rmm_ipv6
