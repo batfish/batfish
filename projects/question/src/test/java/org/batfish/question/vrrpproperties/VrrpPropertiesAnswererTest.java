@@ -4,8 +4,8 @@ import static org.batfish.question.vrrpproperties.VrrpPropertiesAnswerer.COL_GRO
 import static org.batfish.question.vrrpproperties.VrrpPropertiesAnswerer.COL_INTERFACE;
 import static org.batfish.question.vrrpproperties.VrrpPropertiesAnswerer.COL_PREEMPT;
 import static org.batfish.question.vrrpproperties.VrrpPropertiesAnswerer.COL_PRIORITY;
-import static org.batfish.question.vrrpproperties.VrrpPropertiesAnswerer.COL_VIRTUAL_ADDRESS;
-import static org.batfish.question.vrrpproperties.VrrpPropertiesAnswerer.COL_VIRTUAL_PREFIX_LENGTH;
+import static org.batfish.question.vrrpproperties.VrrpPropertiesAnswerer.COL_SOURCE_ADDRESS;
+import static org.batfish.question.vrrpproperties.VrrpPropertiesAnswerer.COL_VIRTUAL_ADDRESSES;
 import static org.batfish.question.vrrpproperties.VrrpPropertiesAnswerer.getProperties;
 import static org.batfish.question.vrrpproperties.VrrpPropertiesAnswerer.populateRow;
 import static org.hamcrest.Matchers.equalTo;
@@ -13,6 +13,7 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultiset;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -31,6 +32,7 @@ import org.batfish.specifier.NameNodeSpecifier;
 import org.batfish.specifier.NameRegexInterfaceSpecifier;
 import org.junit.Test;
 
+/** Test of {@link VrrpPropertiesAnswerer}. */
 public final class VrrpPropertiesAnswererTest {
 
   private static final Map<String, ColumnMetadata> _columnMap =
@@ -43,7 +45,8 @@ public final class VrrpPropertiesAnswererTest {
 
     VrrpGroup group =
         VrrpGroup.builder()
-            .setVirtualAddress(ConcreteInterfaceAddress.create(Ip.parse("1.1.1.1"), 32))
+            .setVirtualAddresses(Ip.parse("1.1.1.1"))
+            .setSourceAddress(ConcreteInterfaceAddress.create(Ip.parse("1.1.1.2"), 29))
             .setPriority(23)
             .setPreempt(true)
             .build();
@@ -108,9 +111,12 @@ public final class VrrpPropertiesAnswererTest {
   public void testPopulateRow() {
     RowBuilder row = Row.builder(_columnMap);
     Ip address = Ip.parse("2.2.2.2");
+    ConcreteInterfaceAddress sourceAddress =
+        ConcreteInterfaceAddress.create(Ip.parse("2.2.2.1"), 29);
     VrrpGroup group =
         VrrpGroup.builder()
-            .setVirtualAddress(ConcreteInterfaceAddress.create(address, 30))
+            .setVirtualAddresses(address)
+            .setSourceAddress(sourceAddress)
             .setPriority(23)
             .setPreempt(true)
             .build();
@@ -120,8 +126,8 @@ public final class VrrpPropertiesAnswererTest {
         equalTo(
             Row.builder(_columnMap)
                 .put(COL_GROUP_ID, 42)
-                .put(COL_VIRTUAL_ADDRESS, address)
-                .put(COL_VIRTUAL_PREFIX_LENGTH, 30)
+                .put(COL_VIRTUAL_ADDRESSES, ImmutableSet.of(address))
+                .put(COL_SOURCE_ADDRESS, sourceAddress)
                 .put(COL_PRIORITY, 23)
                 .put(COL_PREEMPT, true)
                 .build()));

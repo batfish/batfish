@@ -45,6 +45,7 @@ import java.util.NavigableMap;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -1749,7 +1750,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (mtu != null) {
       newIface.setMtu(mtu);
     }
-    newIface.setVrrpGroups(iface.getVrrpGroups());
+    newIface.setVrrpGroups(convertVrrpGroups(iface.getName(), iface.getVrrpGroups()));
     newIface.setVrf(_c.getVrfs().get(iface.getRoutingInstance()));
     newIface.setAdditionalArpIps(
         AclIpSpace.union(
@@ -1885,6 +1886,33 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
     newIface.setBandwidth(iface.getBandwidth());
     return newIface;
+  }
+
+  private @Nonnull SortedMap<Integer, org.batfish.datamodel.VrrpGroup> convertVrrpGroups(
+      String ifaceName, Map<Integer, VrrpGroup> vrrpGroups) {
+    ImmutableSortedMap.Builder<Integer, org.batfish.datamodel.VrrpGroup> groupsBuilder =
+        ImmutableSortedMap.naturalOrder();
+    vrrpGroups.forEach(
+        (vrid, vrrpGroup) -> {
+          Set<Ip> virtualAddresses = vrrpGroup.getVirtualAddresses();
+          if (virtualAddresses.isEmpty()) {
+            _w.redFlag(
+                String.format(
+                    "Configuration will not actually commit. Cannot create VRRP group for vrid %d"
+                        + " on interface '%s' because no virtual-address is assigned.",
+                    vrid, ifaceName));
+            return;
+          }
+          groupsBuilder.put(
+              vrid,
+              org.batfish.datamodel.VrrpGroup.builder()
+                  .setPreempt(vrrpGroup.getPreempt())
+                  .setPriority(vrrpGroup.getPriority())
+                  .setSourceAddress(vrrpGroup.getSourceAddress())
+                  .setVirtualAddresses(virtualAddresses)
+                  .build());
+        });
+    return groupsBuilder.build();
   }
 
   private @Nullable Integer computeAccessVlan(String ifaceName, List<VlanMember> vlanMembers) {

@@ -1501,6 +1501,7 @@ public final class Interface extends ComparableStructure<String> {
     }
   }
 
+  /** VRID -> VRID configuration */
   @JsonProperty(PROP_VRRP_GROUPS)
   public SortedMap<Integer, VrrpGroup> getVrrpGroups() {
     return _vrrpGroups;

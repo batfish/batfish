@@ -1,39 +1,37 @@
 package org.batfish.datamodel;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import javax.annotation.Nonnull;
-import org.batfish.common.util.ComparableStructure;
+import static com.google.common.base.MoreObjects.firstNonNull;
 
-public class VrrpGroup extends ComparableStructure<Integer> {
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
+import java.io.Serializable;
+import java.util.Set;
+import java.util.SortedSet;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
+
+/** Configuration for a VRID on a router. */
+@ParametersAreNonnullByDefault
+public final class VrrpGroup implements Serializable {
 
   public static final int MAX_PRIORITY = 255;
 
-  public static class Builder {
-    private int _name;
-
-    private int _priority;
-
-    private ConcreteInterfaceAddress _virtualAddress;
-
+  public static final class Builder {
     private boolean _preempt;
+    private int _priority;
+    private @Nullable ConcreteInterfaceAddress _sourceAddress;
+    private @Nonnull ImmutableSet.Builder<Ip> _virtualAddresses;
 
-    public VrrpGroup build() {
-      return new VrrpGroup(this);
+    public @Nonnull VrrpGroup build() {
+      return new VrrpGroup(_preempt, _priority, _sourceAddress, _virtualAddresses.build());
     }
 
-    public Builder setName(int name) {
-      _name = name;
-      return this;
-    }
-
-    public Builder setPriority(int priority) {
+    public @Nonnull Builder setPriority(int priority) {
       _priority = priority;
-      return this;
-    }
-
-    public Builder setVirtualAddress(ConcreteInterfaceAddress virtualAddress) {
-      _virtualAddress = virtualAddress;
       return this;
     }
 
@@ -41,33 +39,73 @@ public class VrrpGroup extends ComparableStructure<Integer> {
       _preempt = preempt;
       return this;
     }
+
+    public @Nonnull Builder setSourceAddress(@Nullable ConcreteInterfaceAddress sourceAddress) {
+      _sourceAddress = sourceAddress;
+      return this;
+    }
+
+    public @Nonnull Builder addVirtualAddress(Ip virtualAddress) {
+      _virtualAddresses.add(virtualAddress);
+      return this;
+    }
+
+    public @Nonnull Builder addVirtualAddresses(Iterable<Ip> virtualAddresses) {
+      _virtualAddresses.addAll(virtualAddresses);
+      return this;
+    }
+
+    public @Nonnull Builder setVirtualAddresses(Ip virtualAddress) {
+      _virtualAddresses = ImmutableSet.<Ip>builder().add(virtualAddress);
+      return this;
+    }
+
+    public @Nonnull Builder setVirtualAddresses(Iterable<Ip> virtualAddresses) {
+      _virtualAddresses = ImmutableSet.<Ip>builder().addAll(virtualAddresses);
+      return this;
+    }
+
+    private Builder() {
+      _virtualAddresses = ImmutableSet.builder();
+    }
   }
 
   private static final String PROP_PREEMPT = "preempt";
   private static final String PROP_PRIORITY = "priority";
-
-  private static final String PROP_VIRTUAL_ADDRESS = "virtualAddress";
+  private static final String PROP_SOURCE_ADDRESS = "sourceAddress";
+  private static final String PROP_VIRTUAL_ADDRESSES = "virtualAddresses";
 
   private boolean _preempt;
-
   private int _priority;
-
-  private ConcreteInterfaceAddress _virtualAddress;
+  private @Nullable ConcreteInterfaceAddress _sourceAddress;
+  private @Nonnull Set<Ip> _virtualAddresses;
 
   public static Builder builder() {
     return new Builder();
   }
 
-  @JsonCreator
-  public VrrpGroup(@JsonProperty(PROP_NAME) Integer name) {
-    super(name);
+  public VrrpGroup(
+      boolean preempt,
+      int priority,
+      @Nullable ConcreteInterfaceAddress sourceAddress,
+      Set<Ip> virtualAddresses) {
+    _preempt = preempt;
+    _priority = priority;
+    _sourceAddress = sourceAddress;
+    _virtualAddresses = virtualAddresses;
   }
 
-  private VrrpGroup(Builder builder) {
-    super(builder._name);
-    _preempt = builder._preempt;
-    _priority = builder._priority;
-    _virtualAddress = builder._virtualAddress;
+  @JsonCreator
+  private static @Nonnull VrrpGroup create(
+      @JsonProperty(PROP_PREEMPT) @Nullable Boolean preempt,
+      @JsonProperty(PROP_PRIORITY) @Nullable Integer priority,
+      @JsonProperty(PROP_SOURCE_ADDRESS) @Nullable ConcreteInterfaceAddress sourceAddress,
+      @JsonProperty(PROP_VIRTUAL_ADDRESSES) @Nullable Iterable<Ip> virtualAddresses) {
+    return new VrrpGroup(
+        firstNonNull(preempt, Boolean.FALSE),
+        firstNonNull(priority, 0),
+        sourceAddress,
+        ImmutableSet.copyOf(firstNonNull(virtualAddresses, ImmutableSet.of())));
   }
 
   @JsonProperty(PROP_PREEMPT)
@@ -80,23 +118,18 @@ public class VrrpGroup extends ComparableStructure<Integer> {
     return _priority;
   }
 
-  @JsonProperty(PROP_VIRTUAL_ADDRESS)
-  public ConcreteInterfaceAddress getVirtualAddress() {
-    return _virtualAddress;
+  @JsonProperty(PROP_SOURCE_ADDRESS)
+  public @Nullable ConcreteInterfaceAddress getSourceAddress() {
+    return _sourceAddress;
   }
 
-  @JsonProperty(PROP_PREEMPT)
-  public void setPreempt(boolean preempt) {
-    _preempt = preempt;
+  @JsonIgnore
+  public @Nonnull Set<Ip> getVirtualAddresses() {
+    return _virtualAddresses;
   }
 
-  @JsonProperty(PROP_PRIORITY)
-  public void setPriority(int priority) {
-    _priority = priority;
-  }
-
-  @JsonProperty(PROP_VIRTUAL_ADDRESS)
-  public void setVirtualAddress(ConcreteInterfaceAddress virtualAddress) {
-    _virtualAddress = virtualAddress;
+  @JsonProperty(PROP_VIRTUAL_ADDRESSES)
+  private @Nonnull SortedSet<Ip> getVirtualAddressesSorted() {
+    return ImmutableSortedSet.copyOf(_virtualAddresses);
   }
 }

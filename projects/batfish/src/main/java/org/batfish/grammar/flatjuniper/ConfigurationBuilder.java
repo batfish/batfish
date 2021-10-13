@@ -176,7 +176,6 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
-import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.LargeCommunity;
@@ -841,6 +840,7 @@ import org.batfish.representation.juniper.TcpSynFin;
 import org.batfish.representation.juniper.Vlan;
 import org.batfish.representation.juniper.VlanRange;
 import org.batfish.representation.juniper.VlanReference;
+import org.batfish.representation.juniper.VrrpGroup;
 import org.batfish.representation.juniper.Zone;
 
 public class ConfigurationBuilder extends FlatJuniperParserBaseListener
@@ -2433,13 +2433,23 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void enterIfia_vrrp_group(Ifia_vrrp_groupContext ctx) {
-    int group = toInt(ctx.number);
-    VrrpGroup currentVrrpGroup = _currentInterfaceOrRange.getVrrpGroups().get(group);
+    int vrid = toInt(ctx.number);
+    VrrpGroup currentVrrpGroup = _currentInterfaceOrRange.getVrrpGroups().get(vrid);
     if (currentVrrpGroup == null) {
-      currentVrrpGroup = new VrrpGroup(group);
+      currentVrrpGroup = new VrrpGroup(_currentInterfaceAddress);
       currentVrrpGroup.setPreempt(DEFAULT_VRRP_PREEMPT);
       currentVrrpGroup.setPriority(DEFAULT_VRRP_PRIORITY);
-      _currentInterfaceOrRange.getVrrpGroups().put(group, currentVrrpGroup);
+      _currentInterfaceOrRange.getVrrpGroups().put(vrid, currentVrrpGroup);
+    } else if (!currentVrrpGroup.getSourceAddress().equals(_currentInterfaceAddress)) {
+      // Note that we are keeping the VRRP configuration for the first source-address we encounter
+      // using this VRID.
+      warn(
+          ctx,
+          String.format(
+              "Configuration will not commit. Multiple inet addresses with the same VRRP VRID %d on"
+                  + " interface '%s'",
+              vrid, _currentInterfaceOrRange.getName()));
+      _currentVrrpGroup = new VrrpGroup(_currentInterfaceAddress); // dummy
     }
     _currentVrrpGroup = currentVrrpGroup;
   }
@@ -4480,9 +4490,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitIfiav_virtual_address(Ifiav_virtual_addressContext ctx) {
     Ip virtualAddress = Ip.parse(ctx.IP_ADDRESS().getText());
-    int prefixLength = _currentInterfaceAddress.getNetworkBits();
-    _currentVrrpGroup.setVirtualAddress(
-        ConcreteInterfaceAddress.create(virtualAddress, prefixLength));
+    if (!_currentInterfaceAddress.getPrefix().containsIp(virtualAddress)) {
+      warn(
+          ctx,
+          String.format(
+              "Will not commit. Cannot assign virtual-address %s outside of subnet for inet address"
+                  + " %s",
+              virtualAddress, _currentInterfaceAddress));
+      return;
+    }
+    _currentVrrpGroup.addVirtualAddress(virtualAddress);
   }
 
   @Override
