@@ -60,6 +60,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasIncomingFilter
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasIsisProcess;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNoUndefinedReferences;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasParseWarning;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRedFlagWarning;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferenceBandwidth;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterList;
@@ -296,6 +297,7 @@ import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
+import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.BgpConfederation;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -6317,26 +6319,41 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testVrrpErrorMultipleSourceAddressesForVrid() {
+  public void testVrrpErrorMultipleSourceAddressesForVrid() throws IOException {
     String hostname = "juniper-vrrp-error-multiple-source-addresses-for-vrid";
-    _thrown.expectMessage(
-        "Multiple inet addresses with the same VRRP VRID 1 on interface 'xe-0/0/0.0'");
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.loadConfigurations(batfish.getSnapshot());
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+    assertThat(
+        pvcae,
+        hasParseWarning(
+            "configs/" + hostname,
+            containsString(
+                "Multiple inet addresses with the same VRRP VRID 1 on interface 'xe-0/0/0.0'")));
     parseJuniperConfig(hostname);
   }
 
   @Test
-  public void testVrrpErrorVirtualAddressOutsideSourceAddressSubnet() {
+  public void testVrrpErrorVirtualAddressOutsideSourceAddressSubnet() throws IOException {
     String hostname = "juniper-vrrp-error-virtual-address-outside-source-address-subnet";
-    _thrown.expectMessage(
-        "Cannot assign virtual-address 10.0.1.2 outside of subnet for inet address 10.0.0.1/24");
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.loadConfigurations(batfish.getSnapshot());
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+    assertThat(
+        pvcae,
+        hasParseWarning(
+            "configs/" + hostname,
+            containsString(
+                "Cannot assign virtual-address 10.0.1.2 outside of subnet for inet address"
+                    + " 10.0.0.1/24")));
     parseJuniperConfig(hostname);
   }
 
   @Test
   public void testVrrpErrorNoVirtualAddress() throws IOException {
     String hostname = "juniper-vrrp-error-no-virtual-address";
-    String filename = "configs/" + hostname;
-
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());

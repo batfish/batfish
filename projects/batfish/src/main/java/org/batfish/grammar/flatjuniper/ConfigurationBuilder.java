@@ -2441,10 +2441,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       currentVrrpGroup.setPriority(DEFAULT_VRRP_PRIORITY);
       _currentInterfaceOrRange.getVrrpGroups().put(vrid, currentVrrpGroup);
     } else if (!currentVrrpGroup.getSourceAddress().equals(_currentInterfaceAddress)) {
-      throw new WillNotCommitException(
+      // Note that we are keeping the VRRP configuration for the first source-address we encounter
+      // using this VRID.
+      warn(
+          ctx,
           String.format(
-              "Multiple inet addresses with the same VRRP VRID %d on interface '%s'",
+              "Configuration will not commit. Multiple inet addresses with the same VRRP VRID %d on"
+                  + " interface '%s'",
               vrid, _currentInterfaceOrRange.getName()));
+      _currentVrrpGroup = new VrrpGroup(_currentInterfaceAddress); // dummy
     }
     _currentVrrpGroup = currentVrrpGroup;
   }
@@ -4486,10 +4491,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitIfiav_virtual_address(Ifiav_virtual_addressContext ctx) {
     Ip virtualAddress = Ip.parse(ctx.IP_ADDRESS().getText());
     if (!_currentInterfaceAddress.getPrefix().containsIp(virtualAddress)) {
-      throw new WillNotCommitException(
+      warn(
+          ctx,
           String.format(
-              "Cannot assign virtual-address %s outside of subnet for inet address %s",
+              "Will not commit. Cannot assign virtual-address %s outside of subnet for inet address"
+                  + " %s",
               virtualAddress, _currentInterfaceAddress));
+      return;
     }
     _currentVrrpGroup.addVirtualAddress(virtualAddress);
   }
