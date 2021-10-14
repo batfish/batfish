@@ -12,6 +12,7 @@ Arista_logging,
 Arista_mac,
 Arista_mlag,
 Arista_multicast,
+Arista_pim,
 Arista_ptp,
 Arista_vlan,
 Legacy_aaa,
@@ -1927,7 +1928,6 @@ router_multicast_stanza
       IGMP
       | MLD
       | MSDP
-      | PIM
    ) NEWLINE router_multicast_tail
 ;
 
@@ -2809,6 +2809,7 @@ s_router
     | s_router_multicast
     | s_router_ospf
     | s_router_ospfv3
+    | s_router_pim
     | s_router_rip
     | s_router_vrrp
   )

@@ -1,0 +1,17 @@
+!RANCID-CONTENT-TYPE: arista
+! device: pim_v24 (DCS-7050SX3-48YC8, EOS-4.24.5M)
+!
+hostname pim_v24
+!
+interface Ethernet1
+   no switchport
+   pim ipv4 sparse-mode
+   description interface has pim
+!
+ip access-list standard ACL
+   10 permit 224.0.0.0/24
+!
+router pim sparse-mode
+   ipv4
+      rp address 1.2.3.4 access-list ACL
+!

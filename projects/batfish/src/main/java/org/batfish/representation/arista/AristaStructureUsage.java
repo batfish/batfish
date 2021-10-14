@@ -112,7 +112,7 @@ public enum AristaStructureUsage implements StructureUsage {
   PIM_ACCEPT_REGISTER_ACL("pim accept-register acl"),
   PIM_ACCEPT_REGISTER_ROUTE_MAP("pim accept-register route-map"),
   PIM_ACCEPT_RP_ACL("pim accept-rp acl"),
-  PIM_RP_ADDRESS_ACL("pim rp-address"),
+  PIM_RP_ADDRESS_ACL("pim rp address access-list"),
   PIM_RP_ANNOUNCE_FILTER("pim rp announce filter"),
   PIM_RP_CANDIDATE_ACL("pim rp candidate acl"),
   PIM_SEND_RP_ANNOUNCE_ACL("pim send rp announce acl"),

@@ -707,6 +707,7 @@ import org.batfish.grammar.arista.AristaParser.Pim_rp_addressContext;
 import org.batfish.grammar.arista.AristaParser.Pim_rp_announce_filterContext;
 import org.batfish.grammar.arista.AristaParser.Pim_rp_candidateContext;
 import org.batfish.grammar.arista.AristaParser.Pim_send_rp_announceContext;
+import org.batfish.grammar.arista.AristaParser.Pim_sm4_rp_addressContext;
 import org.batfish.grammar.arista.AristaParser.Pim_spt_thresholdContext;
 import org.batfish.grammar.arista.AristaParser.Pm_classContext;
 import org.batfish.grammar.arista.AristaParser.Pm_event_classContext;
@@ -779,6 +780,7 @@ import org.batfish.grammar.arista.AristaParser.S_peer_filterContext;
 import org.batfish.grammar.arista.AristaParser.S_policy_mapContext;
 import org.batfish.grammar.arista.AristaParser.S_router_multicastContext;
 import org.batfish.grammar.arista.AristaParser.S_router_ospfContext;
+import org.batfish.grammar.arista.AristaParser.S_router_pimContext;
 import org.batfish.grammar.arista.AristaParser.S_router_ripContext;
 import org.batfish.grammar.arista.AristaParser.S_serviceContext;
 import org.batfish.grammar.arista.AristaParser.S_service_policy_globalContext;
@@ -3917,6 +3919,13 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
+  public void exitPim_sm4_rp_address(Pim_sm4_rp_addressContext ctx) {
+    String aclName = ctx.name.getText();
+    _configuration.referenceStructure(
+        IPV4_ACCESS_LIST, aclName, PIM_RP_ADDRESS_ACL, ctx.name.getStart().getLine());
+  }
+
+  @Override
   public void enterS_router_ospf(S_router_ospfContext ctx) {
     String procName = ctx.name.getText();
     if (ctx.vrf != null) {
@@ -6663,6 +6672,11 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     _currentOspfProcess.computeNetworks(_configuration.getInterfaces().values());
     _currentOspfProcess = null;
     _currentVrf = AristaConfiguration.DEFAULT_VRF_NAME;
+  }
+
+  @Override
+  public void enterS_router_pim(S_router_pimContext ctx) {
+    warn(ctx.getParent(), "Batfish does not model multicast");
   }
 
   @Override
