@@ -561,8 +561,6 @@ import org.batfish.grammar.arista.AristaParser.Eos_rbv_local_asContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbv_rdContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbv_route_targetContext;
 import org.batfish.grammar.arista.AristaParser.Eos_vlan_idContext;
-import org.batfish.grammar.arista.AristaParser.Eos_vlan_nameContext;
-import org.batfish.grammar.arista.AristaParser.Eos_vlan_trunkContext;
 import org.batfish.grammar.arista.AristaParser.Eos_vxif_arpContext;
 import org.batfish.grammar.arista.AristaParser.Eos_vxif_descriptionContext;
 import org.batfish.grammar.arista.AristaParser.Eos_vxif_vxlan_floodContext;
@@ -694,6 +692,7 @@ import org.batfish.grammar.arista.AristaParser.Net_is_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.No_ip_prefix_list_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.No_ip_routeContext;
 import org.batfish.grammar.arista.AristaParser.No_route_map_stanzaContext;
+import org.batfish.grammar.arista.AristaParser.No_vlanContext;
 import org.batfish.grammar.arista.AristaParser.Ntp_serverContext;
 import org.batfish.grammar.arista.AristaParser.Origin_expr_literalContext;
 import org.batfish.grammar.arista.AristaParser.Ospf_areaContext;
@@ -791,8 +790,8 @@ import org.batfish.grammar.arista.AristaParser.S_system_service_policyContext;
 import org.batfish.grammar.arista.AristaParser.S_tacacs_serverContext;
 import org.batfish.grammar.arista.AristaParser.S_trackContext;
 import org.batfish.grammar.arista.AristaParser.S_usernameContext;
-import org.batfish.grammar.arista.AristaParser.S_vlan_eosContext;
-import org.batfish.grammar.arista.AristaParser.S_vlan_internal_eosContext;
+import org.batfish.grammar.arista.AristaParser.S_vlanContext;
+import org.batfish.grammar.arista.AristaParser.S_vlan_internalContext;
 import org.batfish.grammar.arista.AristaParser.S_vrf_definitionContext;
 import org.batfish.grammar.arista.AristaParser.Sd_switchport_blankContext;
 import org.batfish.grammar.arista.AristaParser.Sd_switchport_shutdownContext;
@@ -837,6 +836,15 @@ import org.batfish.grammar.arista.AristaParser.Viaf_vrrpContext;
 import org.batfish.grammar.arista.AristaParser.Viafv_addressContext;
 import org.batfish.grammar.arista.AristaParser.Viafv_preemptContext;
 import org.batfish.grammar.arista.AristaParser.Viafv_priorityContext;
+import org.batfish.grammar.arista.AristaParser.Vlan_d_nameContext;
+import org.batfish.grammar.arista.AristaParser.Vlan_d_stateContext;
+import org.batfish.grammar.arista.AristaParser.Vlan_d_trunkContext;
+import org.batfish.grammar.arista.AristaParser.Vlan_nameContext;
+import org.batfish.grammar.arista.AristaParser.Vlan_no_nameContext;
+import org.batfish.grammar.arista.AristaParser.Vlan_no_stateContext;
+import org.batfish.grammar.arista.AristaParser.Vlan_no_trunkContext;
+import org.batfish.grammar.arista.AristaParser.Vlan_stateContext;
+import org.batfish.grammar.arista.AristaParser.Vlan_trunkContext;
 import org.batfish.grammar.arista.AristaParser.Vrf_nameContext;
 import org.batfish.grammar.arista.AristaParser.Vrfd_descriptionContext;
 import org.batfish.grammar.arista.AristaParser.Vrrp_interfaceContext;
@@ -929,7 +937,8 @@ import org.batfish.representation.arista.StubSettings;
 import org.batfish.representation.arista.Tunnel;
 import org.batfish.representation.arista.Tunnel.TunnelMode;
 import org.batfish.representation.arista.UnimplementedAccessListServiceSpecifier;
-import org.batfish.representation.arista.VlanTrunkGroup;
+import org.batfish.representation.arista.Vlan;
+import org.batfish.representation.arista.Vlan.State;
 import org.batfish.representation.arista.Vrf;
 import org.batfish.representation.arista.VrrpGroup;
 import org.batfish.representation.arista.VrrpInterface;
@@ -1193,7 +1202,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   private User _currentUser;
 
-  @Nullable private IntegerSpace _currentVlans;
+  @Nonnull private List<Vlan> _currentVlans = ImmutableList.of();
 
   private Integer _currentVxlanVlanNum;
 
@@ -3378,8 +3387,13 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void enterEos_vlan_id(Eos_vlan_idContext ctx) {
-    _currentVlans = toIntegerSpace(ctx);
+  public void enterS_vlan(S_vlanContext ctx) {
+    IntegerSpace vlans = toIntegerSpace(ctx.eos_vlan_id());
+    _currentVlans =
+        vlans
+            .intStream()
+            .mapToObj(_configuration::getOrCreateVlan)
+            .collect(ImmutableList.toImmutableList());
   }
 
   @Override
@@ -5323,7 +5337,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitIf_switchport_trunk_group_eos(If_switchport_trunk_group_eosContext ctx) {
     String groupName = ctx.name.getText();
-    _configuration.getEosVlanTrunkGroups().putIfAbsent(groupName, new VlanTrunkGroup(groupName));
     for (Interface currentInterface : _currentInterfaces) {
       currentInterface.addVlanTrunkGroup(groupName);
     }
@@ -5930,22 +5943,56 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitEos_vlan_name(Eos_vlan_nameContext ctx) {
-    _configuration.getNamedVlans().put(ctx.name.getText(), _currentVlans);
+  public void exitVlan_name(Vlan_nameContext ctx) {
+    String name = ctx.name.getText();
+    _currentVlans.forEach(v -> v.setName(name));
   }
 
   @Override
-  public void exitS_vlan_internal_eos(S_vlan_internal_eosContext ctx) {
-    todo(ctx);
+  public void exitVlan_d_name(Vlan_d_nameContext ctx) {
+    _currentVlans.forEach(v -> v.setName(null));
   }
 
   @Override
-  public void exitEos_vlan_trunk(Eos_vlan_trunkContext ctx) {
+  public void exitVlan_d_state(Vlan_d_stateContext ctx) {
+    _currentVlans.forEach(v -> v.setState(null));
+  }
+
+  @Override
+  public void exitVlan_d_trunk(Vlan_d_trunkContext ctx) {
+    _currentVlans.forEach(v -> v.setTrunkGroup(null));
+  }
+
+  @Override
+  public void exitVlan_no_name(Vlan_no_nameContext ctx) {
+    _currentVlans.forEach(v -> v.setName(null));
+  }
+
+  @Override
+  public void exitVlan_no_state(Vlan_no_stateContext ctx) {
+    _currentVlans.forEach(v -> v.setState(null));
+  }
+
+  @Override
+  public void exitVlan_no_trunk(Vlan_no_trunkContext ctx) {
+    _currentVlans.forEach(v -> v.setTrunkGroup(null));
+  }
+
+  @Override
+  public void exitVlan_state(Vlan_stateContext ctx) {
+    State state = ctx.ACTIVE() != null ? State.ACTIVE : State.SUSPEND;
+    _currentVlans.forEach(v -> v.setState(state));
+  }
+
+  @Override
+  public void exitVlan_trunk(Vlan_trunkContext ctx) {
     String groupName = ctx.name.getText();
-    VlanTrunkGroup trunkGroup =
-        _configuration.getEosVlanTrunkGroups().computeIfAbsent(groupName, VlanTrunkGroup::new);
-    assert _currentVlans != null;
-    trunkGroup.addVlans(_currentVlans);
+    _currentVlans.forEach(v -> v.setTrunkGroup(groupName));
+  }
+
+  @Override
+  public void exitS_vlan_internal(S_vlan_internalContext ctx) {
+    todo(ctx);
   }
 
   @Override
@@ -5958,6 +6005,12 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   public void exitNo_route_map_stanza(No_route_map_stanzaContext ctx) {
     String mapName = ctx.name.getText();
     _configuration.getRouteMaps().remove(mapName);
+  }
+
+  @Override
+  public void exitNo_vlan(No_vlanContext ctx) {
+    IntegerSpace vlans = toIntegerSpace(ctx.eos_vlan_id());
+    vlans.intStream().forEach(_configuration::removeVlan);
   }
 
   @Override
@@ -6671,8 +6724,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitS_vlan_eos(S_vlan_eosContext ctx) {
-    _currentVlans = null;
+  public void exitS_vlan(S_vlanContext ctx) {
+    _currentVlans = ImmutableList.of();
   }
 
   @Override

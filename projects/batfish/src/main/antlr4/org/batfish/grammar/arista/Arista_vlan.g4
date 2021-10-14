@@ -1,4 +1,4 @@
-parser grammar Arista_mlag;
+parser grammar Arista_vlan;
 
 import Legacy_common;
 
@@ -6,42 +6,86 @@ options {
    tokenVocab = AristaLexer;
 }
 
-eos_vlan_name
+no_vlan: VLAN eos_vlan_id NEWLINE;
+
+s_vlan
+:
+   VLAN eos_vlan_id NEWLINE
+   vlan_inner*
+;
+
+vlan_inner
+:
+  vlan_default
+  | vlan_name
+  | vlan_no
+  | vlan_state
+  | vlan_trunk
+;
+
+vlan_default
+:
+  DEFAULT (
+    vlan_d_name
+    | vlan_d_state
+    | vlan_d_trunk
+  )
+;
+
+vlan_d_name: NAME NEWLINE;
+vlan_d_state: STATE NEWLINE;
+vlan_d_trunk: TRUNK GROUP NEWLINE;
+
+vlan_name
 :
    NAME name = variable NEWLINE
 ;
 
-eos_vlan_no_name
+vlan_no
 :
-   (NO | DEFAULT) NAME (name = variable)? NEWLINE
+  NO (
+    vlan_no_name
+    | vlan_no_state
+    | vlan_no_trunk
+  )
 ;
 
-eos_vlan_no_state
+vlan_no_name
 :
-   (NO | DEFAULT) STATE (ACTIVE | SUSPEND)? NEWLINE
+   NAME (name = variable)? NEWLINE
 ;
 
-eos_vlan_no_trunk
+vlan_no_state
 :
-   (NO | DEFAULT) TRUNK GROUP (name = variable)? NEWLINE
+   STATE (ACTIVE | SUSPEND)? NEWLINE
 ;
 
-eos_vlan_state
+vlan_no_trunk
+:
+   TRUNK GROUP (name = variable)? NEWLINE
+;
+
+vlan_state
 :
    STATE (ACTIVE | SUSPEND) NEWLINE
 ;
 
-eos_vlan_trunk
+vlan_trunk
 :
    TRUNK GROUP name = variable NEWLINE
 ;
 
-s_no_vlan_internal_eos
+default_vlan_internal
 :
-   (NO | DEFAULT)? VLAN INTERNAL ALLOCATION POLICY (ASCENDING | DESCENDING)? (RANGE lo=dec hi=dec)? NEWLINE
+   VLAN INTERNAL ALLOCATION POLICY (ASCENDING | DESCENDING)? (RANGE lo=dec hi=dec)? NEWLINE
 ;
 
-s_vlan_internal_eos
+no_vlan_internal
+:
+   VLAN INTERNAL ALLOCATION POLICY (ASCENDING | DESCENDING)? (RANGE lo=dec hi=dec)? NEWLINE
+;
+
+s_vlan_internal
 :
    VLAN INTERNAL ALLOCATION POLICY (ASCENDING | DESCENDING) RANGE lo=dec hi=dec NEWLINE
 ;
