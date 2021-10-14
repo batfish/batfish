@@ -777,6 +777,7 @@ import org.batfish.grammar.arista.AristaParser.S_loggingContext;
 import org.batfish.grammar.arista.AristaParser.S_ntpContext;
 import org.batfish.grammar.arista.AristaParser.S_peer_filterContext;
 import org.batfish.grammar.arista.AristaParser.S_policy_mapContext;
+import org.batfish.grammar.arista.AristaParser.S_router_multicastContext;
 import org.batfish.grammar.arista.AristaParser.S_router_ospfContext;
 import org.batfish.grammar.arista.AristaParser.S_router_ripContext;
 import org.batfish.grammar.arista.AristaParser.S_serviceContext;
@@ -6650,6 +6651,11 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitS_logging(S_loggingContext ctx) {
     _no = false;
+  }
+
+  @Override
+  public void enterS_router_multicast(S_router_multicastContext ctx) {
+    warn(ctx.getParent(), "Batfish does not model multicast");
   }
 
   @Override

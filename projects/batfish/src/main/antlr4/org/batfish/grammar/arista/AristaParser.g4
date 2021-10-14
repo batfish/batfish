@@ -11,6 +11,7 @@ Arista_igmp,
 Arista_logging,
 Arista_mac,
 Arista_mlag,
+Arista_multicast,
 Arista_ptp,
 Arista_vlan,
 Legacy_aaa,
@@ -2805,6 +2806,7 @@ s_router
   ROUTER (
     router_bgp_stanza
     | router_isis_stanza
+    | s_router_multicast
     | s_router_ospf
     | s_router_ospfv3
     | s_router_rip
