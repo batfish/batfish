@@ -1,6 +1,13 @@
 !BATFISH_FORMAT: a10_acos
 hostname virtual_server_warn
 !
+slb server SERVER1 10.0.0.1
+  port 80 udp
+!
+slb service-group SG1 udp
+  member SERVER1 80
+!
+!
 vrrp-a vrid 2
 !
 vrrp-a vrid 3
@@ -38,7 +45,11 @@ slb virtual-server VS3 10.0.0.103
   ! Cannot specify different vrid than associated NAT pool
   vrid 3
 !
-! TODO enforce no target reuse
-!slb virtual-server VS4 10.0.0.101
+slb virtual-server VS4 10.0.0.104
+  port 1 https
+    ! Incompatible real port type (https is TCP, not UDP)
+    service-group SG1
 !
-
+! TODO enforce no target reuse
+!slb virtual-server VS5 10.0.0.101
+!
