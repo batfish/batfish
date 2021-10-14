@@ -24,6 +24,7 @@ import static org.batfish.vendor.a10.representation.VrrpA.DEFAULT_VRID;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Range;
 import com.google.common.primitives.Ints;
+import com.google.common.primitives.Longs;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -79,6 +80,12 @@ import org.batfish.vendor.a10.grammar.A10Parser.Vrrpavib_priorityContext;
 import org.batfish.vendor.a10.grammar.A10Parser.WordContext;
 import org.batfish.vendor.a10.representation.A10Configuration;
 import org.batfish.vendor.a10.representation.A10StructureUsage;
+import org.batfish.vendor.a10.representation.BgpNeighbor;
+import org.batfish.vendor.a10.representation.BgpNeighborId;
+import org.batfish.vendor.a10.representation.BgpNeighborIdAddress;
+import org.batfish.vendor.a10.representation.BgpNeighborUpdateSource;
+import org.batfish.vendor.a10.representation.BgpNeighborUpdateSourceAddress;
+import org.batfish.vendor.a10.representation.BgpProcess;
 import org.batfish.vendor.a10.representation.Interface;
 import org.batfish.vendor.a10.representation.Interface.Type;
 import org.batfish.vendor.a10.representation.InterfaceReference;
@@ -744,6 +751,248 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   public void exitSltd_ports_threshold(A10Parser.Sltd_ports_thresholdContext ctx) {
     toInteger(ctx, ctx.ports_threshold()).ifPresent(n -> _currentTrunk.setPortsThreshold(n));
   }
+
+  @Override
+  public void enterSr_bgp(A10Parser.Sr_bgpContext ctx) {
+    Optional<Long> maybeAsn = toLong(ctx, ctx.bgp_asn());
+    if (!maybeAsn.isPresent()) {
+      _currentBgpProcess = new BgpProcess(-1); // dummy
+      return;
+    }
+
+    _currentBgpProcess = _c.getOrCreateBgpProcess(maybeAsn.get());
+    if (_currentBgpProcess.getNumber() != maybeAsn.get()) {
+      warn(
+          ctx,
+          String.format("BGP is already configured with asn %d", _currentBgpProcess.getNumber()));
+      _currentBgpProcess = new BgpProcess(-1); // dummy
+    }
+  }
+
+  @Override
+  public void exitSr_bgp(A10Parser.Sr_bgpContext ctx) {
+    _currentBgpProcess = null;
+  }
+
+  @Override
+  public void exitSrb_maximum_paths(A10Parser.Srb_maximum_pathsContext ctx) {
+    toInteger(ctx, ctx.bgp_max_paths()).ifPresent(_currentBgpProcess::setMaximumPaths);
+  }
+
+  @Override
+  public void exitSrbb_default_local_preference(
+      A10Parser.Srbb_default_local_preferenceContext ctx) {
+    toLong(ctx, ctx.bgp_local_preference())
+        .ifPresent(_currentBgpProcess::setDefaultLocalPreference);
+  }
+
+  @Override
+  public void exitSrbb_router_id(A10Parser.Srbb_router_idContext ctx) {
+    // TODO see what constraints there are
+    _currentBgpProcess.setRouterId(toIp(ctx.ip_address()));
+  }
+
+  @Nonnull
+  private BgpNeighborId toBgpNeighborId(A10Parser.Bgp_neighborContext ctx) {
+    assert ctx.ip_address() != null;
+    return new BgpNeighborIdAddress(toIp(ctx.ip_address()));
+  }
+
+  @Override
+  public void enterSrb_neighbor(A10Parser.Srb_neighborContext ctx) {
+    _currentBgpNeighborValid = true;
+    BgpNeighborId id = toBgpNeighborId(ctx.bgp_neighbor());
+
+    _currentBgpNeighbor = _currentBgpProcess.getNeighbor(id);
+    if (_currentBgpNeighbor == null) {
+      // Don't add the neighbor to the process until we know it is valid
+      _currentBgpNeighbor = new BgpNeighbor(id);
+    }
+
+    // The first neighbor statement must be remote-as or peer-group
+    // TODO handle peer-group check
+    if (ctx.srbn().srbn_remote_as() == null && _currentBgpNeighbor.getRemoteAs() == null) {
+      _currentBgpNeighborValid = false;
+      warn(ctx, "Must specify neighbor remote-as or peer-group first");
+    }
+  }
+
+  @Override
+  public void exitSrb_neighbor(A10Parser.Srb_neighborContext ctx) {
+    if (_currentBgpNeighborValid) {
+      _currentBgpProcess.addNeighborIfAbsent(_currentBgpNeighbor);
+    }
+    _currentBgpNeighbor = null;
+  }
+
+  @Override
+  public void exitSrbn_activate(A10Parser.Srbn_activateContext ctx) {
+    _currentBgpNeighbor.setActivate(true);
+  }
+
+  @Override
+  public void exitSrbn_description(A10Parser.Srbn_descriptionContext ctx) {
+    Optional<String> maybeDescr = toString(ctx, ctx.bgp_neighbor_description());
+    if (!maybeDescr.isPresent()) {
+      _currentBgpNeighborValid = false;
+      return;
+    }
+    _currentBgpNeighbor.setDescription(maybeDescr.get());
+  }
+
+  @Override
+  public void exitSrbn_maximum_prefix(A10Parser.Srbn_maximum_prefixContext ctx) {
+    Optional<Integer> maybeMaxPrefix = toInteger(ctx, ctx.bgp_neighbor_max_prefix());
+    if (!maybeMaxPrefix.isPresent()) {
+      return;
+    }
+
+    Optional<Integer> maybeThreshold = Optional.empty();
+    if (ctx.bgp_neighbor_max_prefix_threshold() != null) {
+      maybeThreshold = toInteger(ctx, ctx.bgp_neighbor_max_prefix_threshold());
+      if (!maybeThreshold.isPresent()) {
+        return;
+      }
+    }
+
+    _currentBgpNeighbor.setMaximumPrefix(maybeMaxPrefix.get());
+    maybeThreshold.ifPresent(_currentBgpNeighbor::setMaximumPrefixThreshold);
+  }
+
+  @Override
+  public void exitSrbn_remote_as(A10Parser.Srbn_remote_asContext ctx) {
+    Optional<Long> maybeRemoteAs = toLong(ctx, ctx.bgp_asn());
+    if (!maybeRemoteAs.isPresent()) {
+      _currentBgpNeighborValid = false;
+      return;
+    }
+    _currentBgpNeighbor.setRemoteAs(maybeRemoteAs.get());
+  }
+
+  @Override
+  public void exitSrbn_send_community(A10Parser.Srbn_send_communityContext ctx) {
+    _currentBgpNeighbor.setSendCommunity(toSendCommunity(ctx.send_community()));
+  }
+
+  @Nonnull
+  private BgpNeighbor.SendCommunity toSendCommunity(A10Parser.Send_communityContext ctx) {
+    if (ctx.BOTH() != null) {
+      return BgpNeighbor.SendCommunity.BOTH;
+    } else if (ctx.EXTENDED() != null) {
+      return BgpNeighbor.SendCommunity.EXTENDED;
+    } else if (ctx.NONE() != null) {
+      return BgpNeighbor.SendCommunity.NONE;
+    }
+    assert ctx.STANDARD() != null;
+    return BgpNeighbor.SendCommunity.STANDARD;
+  }
+
+  @Override
+  public void exitSrbn_weight(A10Parser.Srbn_weightContext ctx) {
+    Optional<Integer> maybeWeight = toInteger(ctx, ctx.bgp_neighbor_weight());
+    if (!maybeWeight.isPresent()) {
+      _currentBgpNeighborValid = false;
+      return;
+    }
+    _currentBgpNeighbor.setWeight(maybeWeight.get());
+  }
+
+  @Override
+  public void exitSrbn_update_source(A10Parser.Srbn_update_sourceContext ctx) {
+    Optional<BgpNeighborUpdateSource> maybeUpdateSource =
+        toUpdateSource(ctx.bgp_neighbor_update_source());
+    if (!maybeUpdateSource.isPresent()) {
+      _currentBgpNeighborValid = false;
+      return;
+    }
+    _currentBgpNeighbor.setUpdateSource(maybeUpdateSource.get());
+  }
+
+  @Nonnull
+  Optional<BgpNeighborUpdateSource> toUpdateSource(
+      A10Parser.Bgp_neighbor_update_sourceContext ctx) {
+    assert ctx.ip_address() != null;
+    return Optional.of(new BgpNeighborUpdateSourceAddress(toIp(ctx.ip_address())));
+  }
+
+  @Override
+  public void exitSrbr_connected(A10Parser.Srbr_connectedContext ctx) {
+    _currentBgpProcess.setRedistributeConnected(true);
+  }
+
+  @Override
+  public void exitSrbr_floating_ip(A10Parser.Srbr_floating_ipContext ctx) {
+    _currentBgpProcess.setRedistributeFloatingIp(true);
+  }
+
+  @Override
+  public void exitSrbr_ip_nat(A10Parser.Srbr_ip_natContext ctx) {
+    _currentBgpProcess.setRedistributeIpNat(true);
+  }
+
+  @Override
+  public void exitSrbrv_only_flagged(A10Parser.Srbrv_only_flaggedContext ctx) {
+    _currentBgpProcess.setRedistributeVipOnlyFlagged(true);
+  }
+
+  @Override
+  public void exitSrbrv_only_not_flagged(A10Parser.Srbrv_only_not_flaggedContext ctx) {
+    _currentBgpProcess.setRedistributeVipOnlyNotFlagged(true);
+  }
+
+  private @Nonnull Optional<Long> toLong(
+      ParserRuleContext messageCtx, A10Parser.Bgp_asnContext ctx) {
+    return toLongInSpace(messageCtx, ctx.uint32(), BGP_ASN_RANGE, "bgp asn");
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, A10Parser.Bgp_max_pathsContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx.uint8(), BGP_MAX_PATHS_RANGE, "maximum-paths");
+  }
+
+  private @Nonnull Optional<Long> toLong(
+      ParserRuleContext messageCtx, A10Parser.Bgp_local_preferenceContext ctx) {
+    return toLongInSpace(
+        messageCtx, ctx.uint32(), BGP_DEFAULT_LOCAL_PREFERENCE_RANGE, "default local-preference");
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, A10Parser.Bgp_neighbor_weightContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx.uint16(), BGP_NEIGHBOR_WEIGHT_RANGE, "neighbor weight");
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, A10Parser.Bgp_neighbor_max_prefixContext ctx) {
+    return toIntegerInSpace(
+        messageCtx, ctx.uint32(), BGP_MAX_PREFIX_RANGE, "neighbor maximum-prefix");
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, A10Parser.Bgp_neighbor_max_prefix_thresholdContext ctx) {
+    return toIntegerInSpace(
+        messageCtx,
+        ctx.uint8(),
+        BGP_MAX_PREFIX_THRESHOLD_RANGE,
+        "neighbor maximum-prefix threshold");
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, A10Parser.Bgp_neighbor_descriptionContext ctx) {
+    return toStringWithLengthInSpace(
+        messageCtx, ctx.word(), BGP_NEIGHBOR_DESCRIPTION_LENGTH_RANGE, "neighbor description");
+  }
+
+  private static final LongSpace BGP_ASN_RANGE = LongSpace.of(Range.closed(1L, 4294967295L));
+  private static final IntegerSpace BGP_MAX_PATHS_RANGE = IntegerSpace.of(Range.closed(1, 64));
+  private static final LongSpace BGP_DEFAULT_LOCAL_PREFERENCE_RANGE =
+      LongSpace.of(Range.closed(0L, 4294967295L));
+  private static final IntegerSpace BGP_NEIGHBOR_WEIGHT_RANGE =
+      IntegerSpace.of(Range.closed(0, 65535));
+  private static final IntegerSpace BGP_MAX_PREFIX_RANGE = IntegerSpace.of(Range.closed(1, 65536));
+  private static final IntegerSpace BGP_MAX_PREFIX_THRESHOLD_RANGE =
+      IntegerSpace.of(Range.closed(1, 100));
+  private static final IntegerSpace BGP_NEIGHBOR_DESCRIPTION_LENGTH_RANGE =
+      IntegerSpace.of(Range.closed(1, 80));
 
   @Override
   public void enterSs_service_group(A10Parser.Ss_service_groupContext ctx) {
@@ -1776,6 +2025,11 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     return toIntegerInSpace(messageCtx, ctx.getText(), space, name);
   }
 
+  private @Nonnull Optional<Long> toLongInSpace(
+      ParserRuleContext messageCtx, A10Parser.Uint32Context ctx, LongSpace space, String name) {
+    return toLongInSpace(messageCtx, ctx.getText(), space, name);
+  }
+
   /**
    * Convert a {@link String} to an {@link Integer} if it represents a number that is contained in
    * the provided {@code space}, or else {@link Optional#empty}.
@@ -1783,6 +2037,20 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   private @Nonnull Optional<Integer> toIntegerInSpace(
       ParserRuleContext messageCtx, String str, IntegerSpace space, String name) {
     Integer num = Ints.tryParse(str);
+    if (num == null || !space.contains(num)) {
+      warn(messageCtx, String.format("Expected %s in range %s, but got '%d'", name, space, num));
+      return Optional.empty();
+    }
+    return Optional.of(num);
+  }
+
+  /**
+   * Convert a {@link String} to an {@link Long} if it represents a number that is contained in the
+   * provided {@code space}, or else {@link Optional#empty}.
+   */
+  private @Nonnull Optional<Long> toLongInSpace(
+      ParserRuleContext messageCtx, String str, LongSpace space, String name) {
+    Long num = Longs.tryParse(str);
     if (num == null || !space.contains(num)) {
       warn(messageCtx, String.format("Expected %s in range %s, but got '%d'", name, space, num));
       return Optional.empty();
@@ -1955,6 +2223,12 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   private LongSpace _allNatPools = LongSpace.EMPTY;
 
   @Nonnull private A10Configuration _c;
+
+  private BgpProcess _currentBgpProcess;
+
+  private BgpNeighbor _currentBgpNeighbor;
+
+  private boolean _currentBgpNeighborValid;
 
   private Interface _currentInterface;
 

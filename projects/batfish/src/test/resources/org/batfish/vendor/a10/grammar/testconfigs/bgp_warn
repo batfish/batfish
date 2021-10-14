@@ -1,0 +1,20 @@
+!BATFISH_FORMAT: a10_acos
+hostname bgp_warn
+!
+! Bad ASN
+router bgp 0
+!
+router bgp 1
+  maximum-paths 0
+  maximum-paths 65
+  ! Must specify remote-as or peer-group first
+  neighbor 10.1.1.1 weight 10
+  neighbor 10.1.1.1 remote-as 65535
+  neighbor 10.1.1.1 maximum-prefix 0
+  neighbor 10.1.1.1 maximum-prefix 65537 10
+  neighbor 10.1.1.1 maximum-prefix 1 0
+  neighbor 10.1.1.1 maximum-prefix 1 101
+!
+! BGP is already configured
+router bgp 2
+!

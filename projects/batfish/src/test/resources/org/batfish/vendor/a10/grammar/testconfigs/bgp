@@ -1,0 +1,31 @@
+!BATFISH_FORMAT: a10_acos
+hostname bgp
+!
+router bgp 1
+  bgp default local-preference 100
+  bgp fast-external-failover
+  bgp log-neighbor-changes
+  bgp nexthop-trigger-count 0
+  bgp router-id 10.10.10.10
+  bgp scan-time 60
+  maximum-paths 1
+  timers bgp 30 90
+  synchronization
+  neighbor 10.10.10.100 remote-as 4294967295
+  neighbor 10.10.10.100 activate
+  neighbor 10.10.10.100 capability route-refresh
+  neighbor 10.10.10.100 description DESCRIPTION
+  neighbor 10.10.10.100 fall-over bfd
+  neighbor 10.10.10.100 maximum-prefix 128 64
+  neighbor 10.10.10.100 send-community both
+  neighbor 10.10.10.100 soft-reconfiguration inbound
+  neighbor 10.10.10.100 timers 3 9
+  neighbor 10.10.10.100 weight 0
+  neighbor 10.10.10.100 update-source 10.10.10.200
+  neighbor 10.10.10.101 remote-as 65535
+  redistribute connected
+  redistribute floating-ip
+  redistribute ip-nat
+  redistribute vip only-flagged
+  redistribute vip only-not-flagged
+!
