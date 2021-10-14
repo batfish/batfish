@@ -23,7 +23,6 @@ import org.batfish.datamodel.ResolutionRestriction;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.route.nh.NextHopIp;
-import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 
@@ -96,7 +95,7 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
           _ribResolutionTrie.removeNextHopIp(nextHopIp);
         }
       }
-      return processSideEffects(route, Rib.super.removeRouteGetDelta(route, Reason.WITHDRAW));
+      return processSideEffects(route, Rib.super.removeRouteGetDelta(route));
     }
 
     /**
