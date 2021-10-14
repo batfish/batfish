@@ -5771,9 +5771,9 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitManagement_ssh_ip_access_group(Management_ssh_ip_access_groupContext ctx) {
-    String name = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
-    _configuration.referenceStructure(IPV4_ACCESS_LIST, name, MANAGEMENT_SSH_ACCESS_GROUP, line);
+    String acl = ctx.acl.getText();
+    int line = ctx.acl.getStart().getLine();
+    _configuration.referenceStructure(IPV4_ACCESS_LIST, acl, MANAGEMENT_SSH_ACCESS_GROUP, line);
   }
 
   @Override
