@@ -788,7 +788,6 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   @Override
   public void exitSrbb_router_id(A10Parser.Srbb_router_idContext ctx) {
-    // TODO see what constraints there are
     _currentBgpProcess.setRouterId(toIp(ctx.ip_address()));
   }
 
@@ -800,28 +799,24 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   @Override
   public void enterSrb_neighbor(A10Parser.Srb_neighborContext ctx) {
-    _currentBgpNeighborValid = true;
     BgpNeighborId id = toBgpNeighborId(ctx.bgp_neighbor());
 
-    _currentBgpNeighbor = _currentBgpProcess.getNeighbor(id);
-    if (_currentBgpNeighbor == null) {
-      // Don't add the neighbor to the process until we know it is valid
-      _currentBgpNeighbor = new BgpNeighbor(id);
-    }
+    BgpNeighbor existingNeighbor = _currentBgpProcess.getNeighbor(id);
 
     // The first neighbor statement must be remote-as or peer-group
     // TODO handle peer-group check
-    if (ctx.srbn().srbn_remote_as() == null && _currentBgpNeighbor.getRemoteAs() == null) {
-      _currentBgpNeighborValid = false;
+    if (ctx.srbn().srbn_remote_as() == null
+        && (existingNeighbor == null || existingNeighbor.getRemoteAs() == null)) {
       warn(ctx, "Must specify neighbor remote-as or peer-group first");
+      _currentBgpNeighbor = new BgpNeighbor(id); // dummy
+      return;
     }
+
+    _currentBgpNeighbor = _currentBgpProcess.getOrCreateNeighbor(id);
   }
 
   @Override
   public void exitSrb_neighbor(A10Parser.Srb_neighborContext ctx) {
-    if (_currentBgpNeighborValid) {
-      _currentBgpProcess.addNeighborIfAbsent(_currentBgpNeighbor);
-    }
     _currentBgpNeighbor = null;
   }
 
@@ -832,18 +827,14 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   @Override
   public void exitSrbn_description(A10Parser.Srbn_descriptionContext ctx) {
-    Optional<String> maybeDescr = toString(ctx, ctx.bgp_neighbor_description());
-    if (!maybeDescr.isPresent()) {
-      _currentBgpNeighborValid = false;
-      return;
-    }
-    _currentBgpNeighbor.setDescription(maybeDescr.get());
+    toString(ctx, ctx.bgp_neighbor_description()).ifPresent(_currentBgpNeighbor::setDescription);
   }
 
   @Override
   public void exitSrbn_maximum_prefix(A10Parser.Srbn_maximum_prefixContext ctx) {
     Optional<Integer> maybeMaxPrefix = toInteger(ctx, ctx.bgp_neighbor_max_prefix());
     if (!maybeMaxPrefix.isPresent()) {
+      // Already warned
       return;
     }
 
@@ -851,6 +842,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     if (ctx.bgp_neighbor_max_prefix_threshold() != null) {
       maybeThreshold = toInteger(ctx, ctx.bgp_neighbor_max_prefix_threshold());
       if (!maybeThreshold.isPresent()) {
+        // Already warned
         return;
       }
     }
@@ -861,12 +853,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   @Override
   public void exitSrbn_remote_as(A10Parser.Srbn_remote_asContext ctx) {
-    Optional<Long> maybeRemoteAs = toLong(ctx, ctx.bgp_asn());
-    if (!maybeRemoteAs.isPresent()) {
-      _currentBgpNeighborValid = false;
-      return;
-    }
-    _currentBgpNeighbor.setRemoteAs(maybeRemoteAs.get());
+    toLong(ctx, ctx.bgp_asn()).ifPresent(_currentBgpNeighbor::setRemoteAs);
   }
 
   @Override
@@ -889,23 +876,13 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   @Override
   public void exitSrbn_weight(A10Parser.Srbn_weightContext ctx) {
-    Optional<Integer> maybeWeight = toInteger(ctx, ctx.bgp_neighbor_weight());
-    if (!maybeWeight.isPresent()) {
-      _currentBgpNeighborValid = false;
-      return;
-    }
-    _currentBgpNeighbor.setWeight(maybeWeight.get());
+    toInteger(ctx, ctx.bgp_neighbor_weight()).ifPresent(_currentBgpNeighbor::setWeight);
   }
 
   @Override
   public void exitSrbn_update_source(A10Parser.Srbn_update_sourceContext ctx) {
-    Optional<BgpNeighborUpdateSource> maybeUpdateSource =
-        toUpdateSource(ctx.bgp_neighbor_update_source());
-    if (!maybeUpdateSource.isPresent()) {
-      _currentBgpNeighborValid = false;
-      return;
-    }
-    _currentBgpNeighbor.setUpdateSource(maybeUpdateSource.get());
+    toUpdateSource(ctx.bgp_neighbor_update_source())
+        .ifPresent(_currentBgpNeighbor::setUpdateSource);
   }
 
   @Nonnull
@@ -2227,8 +2204,6 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   private BgpProcess _currentBgpProcess;
 
   private BgpNeighbor _currentBgpNeighbor;
-
-  private boolean _currentBgpNeighborValid;
 
   private Interface _currentInterface;
 
