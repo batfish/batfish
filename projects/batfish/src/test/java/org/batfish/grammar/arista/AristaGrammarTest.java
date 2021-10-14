@@ -241,6 +241,8 @@ import org.batfish.representation.arista.StandardCommunityListLine;
 import org.batfish.representation.arista.StaticRoute;
 import org.batfish.representation.arista.StaticRoute.NextHop;
 import org.batfish.representation.arista.StaticRouteManager;
+import org.batfish.representation.arista.Vlan;
+import org.batfish.representation.arista.Vlan.State;
 import org.batfish.representation.arista.VrrpInterface;
 import org.batfish.representation.arista.eos.AristaBgpAggregateNetwork;
 import org.batfish.representation.arista.eos.AristaBgpBestpathTieBreaker;
@@ -3022,6 +3024,54 @@ public class AristaGrammarTest {
     Configuration c = parseConfig("ptp");
     assertThat(
         c, hasInterface("Port-Channel2", hasDescription("made it to the end of Port-Channel2")));
+  }
+
+  @Test
+  public void testVlanExtraction() {
+    AristaConfiguration c = parseVendorConfig("vlan");
+    {
+      Vlan vlan1 = c.getVlan(1);
+      assertThat(vlan1, not(nullValue()));
+      assertThat(vlan1.getName(), equalTo("default"));
+      assertThat(vlan1.getState(), equalTo(State.ACTIVE));
+      assertThat(vlan1.getTrunkGroup(), nullValue());
+    }
+    {
+      Vlan vlan = c.getVlan(2);
+      assertThat(vlan, not(nullValue()));
+      assertThat(vlan.getName(), equalTo("vlan2"));
+      assertThat(vlan.getState(), equalTo(State.SUSPEND));
+      assertThat(vlan.getTrunkGroup(), equalTo("G3"));
+    }
+    {
+      Vlan vlan = c.getVlan(3);
+      assertThat(vlan, not(nullValue()));
+      assertThat(vlan.getName(), nullValue());
+      assertThat(vlan.getState(), equalTo(State.ACTIVE));
+      assertThat(vlan.getTrunkGroup(), nullValue());
+    }
+    {
+      Vlan vlan = c.getVlan(4);
+      assertThat(vlan, not(nullValue()));
+      assertThat(vlan.getName(), nullValue());
+      assertThat(vlan.getState(), equalTo(State.SUSPEND));
+      assertThat(vlan.getTrunkGroup(), equalTo("G3"));
+    }
+    {
+      Vlan vlan = c.getVlan(5);
+      assertThat(vlan, not(nullValue()));
+      assertThat(vlan.getName(), nullValue());
+      assertThat(vlan.getState(), equalTo(State.ACTIVE));
+      assertThat(vlan.getTrunkGroup(), nullValue());
+    }
+    {
+      Vlan vlan = c.getVlan(6);
+      assertThat(vlan, nullValue());
+    }
+    {
+      Vlan vlan = c.getVlan(7);
+      assertThat(vlan, not(nullValue()));
+    }
   }
 
   @Test
