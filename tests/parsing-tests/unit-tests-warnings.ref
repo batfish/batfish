@@ -46,14 +46,14 @@
         "Filename" : "configs/arista_bgp",
         "Line" : 13,
         "Text" : "ospf3 match internal route-map ROUTE_MAP",
-        "Parser_Context" : "[eos_rbir_ospf3 eos_rbi_redistribute eos_rb_inner eos_router_bgp_tail router_bgp_stanza stanza arista_configuration]",
+        "Parser_Context" : "[eos_rbir_ospf3 eos_rbi_redistribute eos_rb_inner eos_router_bgp_tail router_bgp_stanza s_router stanza arista_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/arista_bgp",
         "Line" : 14,
         "Text" : "ospf3 match external route-map UNDEFINED_MAP",
-        "Parser_Context" : "[eos_rbir_ospf3 eos_rbi_redistribute eos_rb_inner eos_router_bgp_tail router_bgp_stanza stanza arista_configuration]",
+        "Parser_Context" : "[eos_rbir_ospf3 eos_rbi_redistribute eos_rb_inner eos_router_bgp_tail router_bgp_stanza s_router stanza arista_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {

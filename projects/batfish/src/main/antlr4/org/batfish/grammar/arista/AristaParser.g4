@@ -2800,9 +2800,21 @@ s_role
    NO? ROLE null_rest_of_line
 ;
 
+s_router
+:
+  ROUTER (
+    router_bgp_stanza
+    | router_isis_stanza
+    | s_router_ospf
+    | s_router_ospfv3
+    | s_router_rip
+    | s_router_vrrp
+  )
+;
+
 s_router_vrrp
 :
-   NO? ROUTER VRRP NEWLINE
+   VRRP NEWLINE
    (
       vrrp_interface
    )*
@@ -3256,8 +3268,6 @@ stanza
    | no_ip_prefix_list_stanza
    | no_route_map_stanza
    | route_map_stanza
-   | router_bgp_stanza
-   | router_isis_stanza
    | router_multicast_stanza
    | rsvp_stanza
    | s_aaa
@@ -3372,10 +3382,7 @@ stanza
    | s_redundancy
    | s_rf
    | s_role
-   | s_router_ospf
-   | s_router_ospfv3
-   | s_router_rip
-   | s_router_vrrp
+   | s_router
    | s_sccp
    | s_service
    | s_service_policy_global

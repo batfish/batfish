@@ -497,7 +497,7 @@ s_ipv6_router_ospf
 
 s_router_ospf
 :
-   ROUTER OSPF name = variable (VRF vrf = vrf_name)? NEWLINE
+   OSPF name = variable (VRF vrf = vrf_name)? NEWLINE
    (
       ro_address_family
       | ro_area_default_cost
@@ -529,7 +529,7 @@ s_router_ospf
 
 s_router_ospfv3
 :
-   ROUTER OSPFV3 procname = variable NEWLINE
+   OSPFV3 procname = variable NEWLINE
    (
       rov3_address_family
       | rov3_common

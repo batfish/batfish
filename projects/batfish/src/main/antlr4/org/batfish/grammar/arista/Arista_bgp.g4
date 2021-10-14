@@ -15,7 +15,7 @@ eos_neighbor_id
 
 router_bgp_stanza
 :
-   ROUTER BGP
+   BGP
    (
       procnum = bgp_asn
    )? NEWLINE
