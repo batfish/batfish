@@ -38,7 +38,10 @@ public class VirtualServerPort implements Serializable {
 
   // TODO support more types
   public enum Type {
+    HTTP,
+    HTTPS,
     TCP,
+    TCP_PROXY,
     UDP
   }
 
