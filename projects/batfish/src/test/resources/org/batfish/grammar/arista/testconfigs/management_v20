@@ -1,0 +1,30 @@
+! Command: show running-config
+! device: management_v20 (DCS-7280QR-C36, EOS-4.20.13.1M)
+!
+! boot system flash:/EOS-4.20.13.1M.swi
+hostname management_v20
+!
+vrf definition MGMT
+   rd 1:1
+!
+interface Management1
+   vrf forwarding MGMT
+   ip address 10.0.0.1/24
+!
+ip route vrf MGMT 0.0.0.0/0 10.0.0.100
+!
+no ip routing vrf MGMT
+!
+management api http-commands
+   protocol unix-socket
+   no shutdown
+   !
+   vrf MGMT
+      no shutdown
+   !
+   vrf default
+      no shutdown
+!
+management ssh
+   idle-timeout 60
+!

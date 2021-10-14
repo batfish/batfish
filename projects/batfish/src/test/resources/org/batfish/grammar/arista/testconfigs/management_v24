@@ -1,0 +1,30 @@
+! Command: show running-config
+! device: management_v24 (DCS-7050SX3-48YC8, EOS-4.24.5M)
+!
+! boot system flash:/EOS-4.24.5M.swi
+hostname management_v24
+!
+vrf instance management
+!
+interface Management1
+   vrf management
+   ip address 172.1.2.3/27
+!
+ip access-list SSH_ACL
+   counters per-entry
+   10 permit tcp 10.0.0.0/24 any range ssh telnet
+!
+no ip routing vrf management
+!
+ip route vrf management 0.0.0.0/0  172.1.2.1
+!
+management api http-commands
+   no shutdown
+!
+management ssh
+   ip access-group SSH_ACL vrf management in
+   ip access-group SSH_ACL in
+   !
+   vrf default
+      no shutdown
+!
