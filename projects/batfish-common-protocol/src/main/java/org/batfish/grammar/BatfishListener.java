@@ -4,6 +4,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
+import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.Warnings;
 
 /** Interface providing common parse-tree listener utility methods with default implementations. */
@@ -56,5 +57,14 @@ public interface BatfishListener extends ParseTreeListener {
    */
   default void warn(ParserRuleContext ctx, String message) {
     getWarnings().addWarning(ctx, getWarningText(ctx), getParser(), message);
+  }
+
+  /**
+   * Helper for adding generic warning for {@link ParserRuleContext}, using text from the given
+   * {@link TerminalNode}. Generally should not be overridden.
+   */
+  default void warn(ParserRuleContext ctx, TerminalNode node, String message) {
+    String text = node.getText();
+    getWarnings().addWarningOnLine(node.getSymbol().getLine(), ctx, text, getParser(), message);
   }
 }
