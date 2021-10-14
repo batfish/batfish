@@ -3020,6 +3020,28 @@ public class AristaGrammarTest {
   }
 
   @Test
+  public void testPimV20() {
+    Configuration c = parseConfig("pim_v20");
+    assertThat(c, hasInterface("Ethernet1", hasDescription("interface has pim")));
+  }
+
+  @Test
+  public void testPimV24() {
+    Configuration c = parseConfig("pim_v24");
+    assertThat(c, hasInterface("Ethernet1", hasDescription("interface has pim")));
+  }
+
+  @Test
+  public void testManagementV20() {
+    parseConfig("management_v20");
+  }
+
+  @Test
+  public void testManagementV24() {
+    parseConfig("management_v24");
+  }
+
+  @Test
   public void testPtp() {
     Configuration c = parseConfig("ptp");
     assertThat(

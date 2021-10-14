@@ -11,6 +11,8 @@ Arista_igmp,
 Arista_logging,
 Arista_mac,
 Arista_mlag,
+Arista_multicast,
+Arista_pim,
 Arista_ptp,
 Arista_vlan,
 Legacy_aaa,
@@ -59,7 +61,6 @@ address_family_multicast_tail
       )
       | null_af_multicast_tail
       | interface_multicast_stanza
-      | ip_pim_tail
    )*
 ;
 
@@ -1063,6 +1064,8 @@ no_ip_route
   NEWLINE
 ;
 
+no_ip_routing: ROUTING (VRF name = variable)? NEWLINE;
+
 ip_sla_null
 :
    NO?
@@ -1548,19 +1551,18 @@ management_egress_interface_selection_null
 management_ssh
 :
    SSH NEWLINE
-   (
-      management_ssh_ip_access_group
-      | management_ssh_null
-   )*
+   management_ssh_inner*
+;
+
+management_ssh_inner:
+  management_ssh_ip_access_group
+  | management_ssh_null
+  | management_ssh_vrf
 ;
 
 management_ssh_ip_access_group
 :
-   IP ACCESS_GROUP name = variable
-   (
-      IN
-      | OUT
-   ) NEWLINE
+   IP ACCESS_GROUP acl=variable (VRF vrf=variable)? (IN | OUT) NEWLINE
 ;
 
 management_ssh_null
@@ -1572,6 +1574,18 @@ management_ssh_null
       | SHUTDOWN
    ) null_rest_of_line
 ;
+
+management_ssh_vrf:
+  VRF name=variable NEWLINE
+  management_ssh_vrf_inner*
+;
+
+management_ssh_vrf_inner
+:
+  management_ssh_vrf_no
+;
+
+management_ssh_vrf_no: NO SHUTDOWN NEWLINE;
 
 management_telnet
 :
@@ -1926,7 +1940,6 @@ router_multicast_stanza
       IGMP
       | MLD
       | MSDP
-      | PIM
    ) NEWLINE router_multicast_tail
 ;
 
@@ -2411,6 +2424,7 @@ s_ip
     | s_ip_igmp
     | s_ip_name_server
     | s_ip_nbar
+    | s_ip_pim
     | s_ip_probe
     | s_ip_route
     | s_ip_routing
@@ -2675,6 +2689,7 @@ no_ip
   (
     no_ip_igmp
     | no_ip_route
+    | no_ip_routing
   )
 ;
 
@@ -2800,9 +2815,23 @@ s_role
    NO? ROLE null_rest_of_line
 ;
 
+s_router
+:
+  ROUTER (
+    router_bgp_stanza
+    | router_isis_stanza
+    | s_router_multicast
+    | s_router_ospf
+    | s_router_ospfv3
+    | s_router_pim
+    | s_router_rip
+    | s_router_vrrp
+  )
+;
+
 s_router_vrrp
 :
-   NO? ROUTER VRRP NEWLINE
+   VRRP NEWLINE
    (
       vrrp_interface
    )*
@@ -3256,8 +3285,6 @@ stanza
    | no_ip_prefix_list_stanza
    | no_route_map_stanza
    | route_map_stanza
-   | router_bgp_stanza
-   | router_isis_stanza
    | router_multicast_stanza
    | rsvp_stanza
    | s_aaa
@@ -3325,7 +3352,6 @@ stanza
    | s_ip_domain
    | s_ip_name_server
    | s_ip_nat
-   | s_ip_pim
    | s_ip_sla
    | s_ip_source_route
    | s_ip_ssh
@@ -3372,10 +3398,7 @@ stanza
    | s_redundancy
    | s_rf
    | s_role
-   | s_router_ospf
-   | s_router_ospfv3
-   | s_router_rip
-   | s_router_vrrp
+   | s_router
    | s_sccp
    | s_service
    | s_service_policy_global

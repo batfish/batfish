@@ -494,7 +494,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   private static <R extends AbstractRoute, T extends R> RibDelta<R> processRouteAdvertisement(
       RouteAdvertisement<T> ra, AbstractRib<R> rib) {
     if (ra.isWithdrawn()) {
-      return rib.removeRouteGetDelta(ra.getRoute(), ra.getReason());
+      return rib.removeRouteGetDelta(ra.getRoute());
     } else {
       return rib.mergeRouteGetDelta(ra.getRoute());
     }

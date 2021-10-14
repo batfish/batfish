@@ -3,6 +3,8 @@ package org.batfish.vendor.a10.representation;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.FirewallSessionInterfaceInfo.Action.POST_NAT_FIB_LOOKUP;
+import static org.batfish.vendor.a10.representation.A10Conversion.VIRTUAL_TCP_PORT_TYPES;
+import static org.batfish.vendor.a10.representation.A10Conversion.VIRTUAL_UDP_PORT_TYPES;
 import static org.batfish.vendor.a10.representation.A10Conversion.getEnabledVrids;
 import static org.batfish.vendor.a10.representation.A10Conversion.getNatPoolIps;
 import static org.batfish.vendor.a10.representation.A10Conversion.getNatPoolIpsForAllVrids;
@@ -626,6 +628,19 @@ public final class A10Configuration extends VendorConfiguration {
     return _vlans.values().stream()
         .filter(v -> v.getTagged().contains(ref))
         .collect(ImmutableList.toImmutableList());
+  }
+
+  /**
+   * Returns a boolean indicating if the specified {@link ServerPort.Type} and {@link
+   * VirtualServerPort.Type} are compatible.
+   */
+  public static boolean arePortTypesCompatible(
+      ServerPort.Type realType, VirtualServerPort.Type virtualType) {
+    if (realType == ServerPort.Type.UDP) {
+      return VIRTUAL_UDP_PORT_TYPES.contains(virtualType);
+    }
+    assert realType == ServerPort.Type.TCP;
+    return VIRTUAL_TCP_PORT_TYPES.contains(virtualType);
   }
 
   /**

@@ -1913,8 +1913,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     RibDelta<R> delta;
     BgpRib<R> rib = getRib(clazz, RibType.COMBINED);
     if (routeAdvertisement.isWithdrawn()) {
-      delta =
-          rib.removeRouteGetDelta(routeAdvertisement.getRoute(), routeAdvertisement.getReason());
+      delta = rib.removeRouteGetDelta(routeAdvertisement.getRoute());
     } else {
       delta = rib.mergeRouteGetDelta(routeAdvertisement.getRoute());
     }

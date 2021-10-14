@@ -9,12 +9,14 @@ import static org.batfish.vendor.a10.representation.VirtualServerPort.Type.UDP;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
@@ -45,6 +47,18 @@ public class A10Conversion {
   static final boolean DEFAULT_VRRP_A_PREEMPT = true;
   @VisibleForTesting public static final int DEFAULT_VRRP_A_PRIORITY = 150;
 
+  /** Set of {@link VirtualServerPort.Type}s that use {@code tcp} protocol */
+  static final Set<VirtualServerPort.Type> VIRTUAL_TCP_PORT_TYPES =
+      ImmutableSet.of(
+          VirtualServerPort.Type.HTTP,
+          VirtualServerPort.Type.HTTPS,
+          VirtualServerPort.Type.TCP,
+          VirtualServerPort.Type.TCP_PROXY);
+
+  /** Set of {@link VirtualServerPort.Type}s that use {@code udp} protocol */
+  static final Set<VirtualServerPort.Type> VIRTUAL_UDP_PORT_TYPES =
+      ImmutableSet.of(VirtualServerPort.Type.UDP);
+
   /** Returns the {@link IntegerSpace} representing the specified {@link ServerPort}'s ports. */
   @VisibleForTesting
   @Nonnull
@@ -74,7 +88,7 @@ public class A10Conversion {
   @Nonnull
   static Optional<IpProtocol> toProtocol(VirtualServerPort port) {
     VirtualServerPort.Type type = port.getType();
-    if (type == VirtualServerPort.Type.TCP) {
+    if (VIRTUAL_TCP_PORT_TYPES.contains(type)) {
       return Optional.of(IpProtocol.TCP);
     }
     assert type == UDP;

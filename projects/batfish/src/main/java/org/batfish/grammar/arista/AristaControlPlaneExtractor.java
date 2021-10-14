@@ -144,6 +144,7 @@ import static org.batfish.representation.arista.AristaStructureUsage.POLICY_MAP_
 import static org.batfish.representation.arista.AristaStructureUsage.POLICY_MAP_EVENT_CLASS_ACTIVATE;
 import static org.batfish.representation.arista.AristaStructureUsage.RIP_DISTRIBUTE_LIST;
 import static org.batfish.representation.arista.AristaStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL;
+import static org.batfish.representation.arista.AristaStructureUsage.ROUTER_PIM_RP_ADDRESS_ACCESS_LIST;
 import static org.batfish.representation.arista.AristaStructureUsage.ROUTER_VRRP_INTERFACE;
 import static org.batfish.representation.arista.AristaStructureUsage.ROUTE_MAP_CONTINUE;
 import static org.batfish.representation.arista.AristaStructureUsage.ROUTE_MAP_ENTRY_AUTO_REF;
@@ -707,6 +708,7 @@ import org.batfish.grammar.arista.AristaParser.Pim_rp_addressContext;
 import org.batfish.grammar.arista.AristaParser.Pim_rp_announce_filterContext;
 import org.batfish.grammar.arista.AristaParser.Pim_rp_candidateContext;
 import org.batfish.grammar.arista.AristaParser.Pim_send_rp_announceContext;
+import org.batfish.grammar.arista.AristaParser.Pim_sm4_rp_addressContext;
 import org.batfish.grammar.arista.AristaParser.Pim_spt_thresholdContext;
 import org.batfish.grammar.arista.AristaParser.Pm_classContext;
 import org.batfish.grammar.arista.AristaParser.Pm_event_classContext;
@@ -777,7 +779,9 @@ import org.batfish.grammar.arista.AristaParser.S_loggingContext;
 import org.batfish.grammar.arista.AristaParser.S_ntpContext;
 import org.batfish.grammar.arista.AristaParser.S_peer_filterContext;
 import org.batfish.grammar.arista.AristaParser.S_policy_mapContext;
+import org.batfish.grammar.arista.AristaParser.S_router_multicastContext;
 import org.batfish.grammar.arista.AristaParser.S_router_ospfContext;
+import org.batfish.grammar.arista.AristaParser.S_router_pimContext;
 import org.batfish.grammar.arista.AristaParser.S_router_ripContext;
 import org.batfish.grammar.arista.AristaParser.S_serviceContext;
 import org.batfish.grammar.arista.AristaParser.S_service_policy_globalContext;
@@ -3719,11 +3723,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     _no = ctx.NO() != null;
   }
 
-  @Override
-  public void enterS_ip_pim(S_ip_pimContext ctx) {
-    _no = ctx.NO() != null;
-  }
-
   private @Nonnull Optional<NextHop> toNextHop(Ip_route_nexthopContext ctx) {
     if (ctx.null0 != null) {
       return Optional.of(new NextHop(null, null, true));
@@ -3913,6 +3912,16 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     } else {
       _currentPeerFilter.addLine(toInteger(ctx.seq), asSpace, action);
     }
+  }
+
+  @Override
+  public void exitPim_sm4_rp_address(Pim_sm4_rp_addressContext ctx) {
+    String aclName = ctx.name.getText();
+    _configuration.referenceStructure(
+        IPV4_ACCESS_LIST,
+        aclName,
+        ROUTER_PIM_RP_ADDRESS_ACCESS_LIST,
+        ctx.name.getStart().getLine());
   }
 
   @Override
@@ -5762,9 +5771,9 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitManagement_ssh_ip_access_group(Management_ssh_ip_access_groupContext ctx) {
-    String name = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
-    _configuration.referenceStructure(IPV4_ACCESS_LIST, name, MANAGEMENT_SSH_ACCESS_GROUP, line);
+    String acl = ctx.acl.getText();
+    int line = ctx.acl.getStart().getLine();
+    _configuration.referenceStructure(IPV4_ACCESS_LIST, acl, MANAGEMENT_SSH_ACCESS_GROUP, line);
   }
 
   @Override
@@ -6080,7 +6089,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitPim_rp_address(Pim_rp_addressContext ctx) {
-    if (!_no && ctx.name != null) {
+    if (ctx.name != null) {
       String name = ctx.name.getText();
       int line = ctx.name.getStart().getLine();
       _configuration.referenceStructure(
@@ -6653,10 +6662,20 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
+  public void enterS_router_multicast(S_router_multicastContext ctx) {
+    warn(ctx, ctx.MULTICAST(), "Batfish does not model multicast");
+  }
+
+  @Override
   public void exitS_router_ospf(S_router_ospfContext ctx) {
     _currentOspfProcess.computeNetworks(_configuration.getInterfaces().values());
     _currentOspfProcess = null;
     _currentVrf = AristaConfiguration.DEFAULT_VRF_NAME;
+  }
+
+  @Override
+  public void enterS_router_pim(S_router_pimContext ctx) {
+    warn(ctx, ctx.PIM(), "Batfish does not model multicast");
   }
 
   @Override
