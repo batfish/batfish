@@ -1064,6 +1064,8 @@ no_ip_route
   NEWLINE
 ;
 
+no_ip_routing: ROUTING (VRF name = variable)? NEWLINE;
+
 ip_sla_null
 :
    NO?
@@ -1549,19 +1551,18 @@ management_egress_interface_selection_null
 management_ssh
 :
    SSH NEWLINE
-   (
-      management_ssh_ip_access_group
-      | management_ssh_null
-   )*
+   management_ssh_inner*
+;
+
+management_ssh_inner:
+  management_ssh_ip_access_group
+  | management_ssh_null
+  | management_ssh_vrf
 ;
 
 management_ssh_ip_access_group
 :
-   IP ACCESS_GROUP name = variable
-   (
-      IN
-      | OUT
-   ) NEWLINE
+   IP ACCESS_GROUP acl=variable (VRF vrf=variable)? (IN | OUT) NEWLINE
 ;
 
 management_ssh_null
@@ -1573,6 +1574,18 @@ management_ssh_null
       | SHUTDOWN
    ) null_rest_of_line
 ;
+
+management_ssh_vrf:
+  VRF name=variable NEWLINE
+  management_ssh_vrf_inner*
+;
+
+management_ssh_vrf_inner
+:
+  management_ssh_vrf_no
+;
+
+management_ssh_vrf_no: NO SHUTDOWN NEWLINE;
 
 management_telnet
 :
@@ -2676,6 +2689,7 @@ no_ip
   (
     no_ip_igmp
     | no_ip_route
+    | no_ip_routing
   )
 ;
 

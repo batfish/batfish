@@ -3032,6 +3032,16 @@ public class AristaGrammarTest {
   }
 
   @Test
+  public void testManagementV20() {
+    parseConfig("management_v20");
+  }
+
+  @Test
+  public void testManagementV24() {
+    parseConfig("management_v24");
+  }
+
+  @Test
   public void testPtp() {
     Configuration c = parseConfig("ptp");
     assertThat(
