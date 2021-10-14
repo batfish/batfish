@@ -6663,7 +6663,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void enterS_router_multicast(S_router_multicastContext ctx) {
-    warn(ctx.getParent(), "Batfish does not model multicast");
+    warn(ctx, ctx.MULTICAST(), "Batfish does not model multicast");
   }
 
   @Override
@@ -6675,7 +6675,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void enterS_router_pim(S_router_pimContext ctx) {
-    warn(ctx.getParent(), "Batfish does not model multicast");
+    warn(ctx, ctx.PIM(), "Batfish does not model multicast");
   }
 
   @Override
