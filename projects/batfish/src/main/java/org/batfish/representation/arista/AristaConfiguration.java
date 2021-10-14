@@ -355,8 +355,6 @@ public final class AristaConfiguration extends VendorConfiguration {
 
   private String _domainName;
 
-  private final Map<String, VlanTrunkGroup> _eosVlanTrunkGroups;
-
   private AristaEosVxlan _eosVxlan;
 
   @Nullable private MlagConfiguration _eosMlagConfiguration;
@@ -388,8 +386,6 @@ public final class AristaConfiguration extends VendorConfiguration {
 
   private final @Nonnull Map<String, NatPool> _natPools;
 
-  private final Map<String, IntegerSpace> _namedVlans;
-
   private String _ntpSourceInterface;
 
   private final Map<String, AristaBgpPeerFilter> _peerFilters;
@@ -418,6 +414,8 @@ public final class AristaConfiguration extends VendorConfiguration {
 
   private ConfigurationFormat _vendor;
 
+  private final Map<Integer, Vlan> _vlans;
+
   private final Map<String, Vrf> _vrfs;
 
   private final SortedMap<String, VrrpInterface> _vrrpGroups;
@@ -431,7 +429,6 @@ public final class AristaConfiguration extends VendorConfiguration {
     _cryptoMapSets = new HashMap<>();
     _dhcpRelayServers = new ArrayList<>();
     _dnsServers = new TreeSet<>();
-    _eosVlanTrunkGroups = new HashMap<>();
     _expandedCommunityLists = new TreeMap<>();
     _extendedAccessLists = new TreeMap<>();
     _extendedIpv6AccessLists = new TreeMap<>();
@@ -444,7 +441,6 @@ public final class AristaConfiguration extends VendorConfiguration {
     _keyrings = new TreeMap<>();
     _macAccessLists = new TreeMap<>();
     _natPools = new TreeMap<>();
-    _namedVlans = new HashMap<>();
     _peerFilters = new HashMap<>();
     _prefixLists = new TreeMap<>();
     _prefix6Lists = new TreeMap<>();
@@ -454,9 +450,17 @@ public final class AristaConfiguration extends VendorConfiguration {
     _standardCommunityLists = new TreeMap<>();
     _tacacsServers = new TreeSet<>();
     _trackingGroups = new TreeMap<>();
+    _vlans = new HashMap<>();
     _vrfs = new TreeMap<>();
-    _vrfs.put(Configuration.DEFAULT_VRF_NAME, new Vrf(Configuration.DEFAULT_VRF_NAME));
     _vrrpGroups = new TreeMap<>();
+
+    // Initialize default vlan.
+    Vlan vlan1 = new Vlan(1);
+    vlan1.setName("default");
+    _vlans.put(vlan1.getId(), vlan1);
+
+    // Initialize default VRF.
+    _vrfs.put(DEFAULT_VRF_NAME, new Vrf(DEFAULT_VRF_NAME));
   }
 
   private void applyVrrp(Configuration c) {
@@ -467,19 +471,17 @@ public final class AristaConfiguration extends VendorConfiguration {
             vrrpInterface
                 .getVrrpGroups()
                 .forEach(
-                    (groupNum, vrrpGroup) -> {
-                      org.batfish.datamodel.VrrpGroup newGroup =
-                          new org.batfish.datamodel.VrrpGroup(groupNum);
+                    (vrid, vrrpGroup) -> {
+                      org.batfish.datamodel.VrrpGroup.Builder newGroup =
+                          org.batfish.datamodel.VrrpGroup.builder();
                       newGroup.setPreempt(vrrpGroup.getPreempt());
                       newGroup.setPriority(vrrpGroup.getPriority());
                       ConcreteInterfaceAddress ifaceAddress = iface.getConcreteAddress();
                       if (ifaceAddress != null) {
-                        int prefixLength = ifaceAddress.getNetworkBits();
-                        Ip address = vrrpGroup.getVirtualAddress();
-                        if (address != null) {
-                          ConcreteInterfaceAddress virtualAddress =
-                              ConcreteInterfaceAddress.create(address, prefixLength);
-                          newGroup.setVirtualAddress(virtualAddress);
+                        newGroup.setSourceAddress(ifaceAddress);
+                        Ip virtualAddress = vrrpGroup.getVirtualAddress();
+                        if (virtualAddress != null) {
+                          newGroup.setVirtualAddresses(virtualAddress);
                         } else {
                           _w.redFlag(
                               "No virtual address set for VRRP on interface: '" + ifaceName + "'");
@@ -490,7 +492,7 @@ public final class AristaConfiguration extends VendorConfiguration {
                                 + ifaceName
                                 + "' due to missing prefix");
                       }
-                      iface.addVrrpGroup(groupNum, newGroup);
+                      iface.addVrrpGroup(vrid, newGroup.build());
                     });
           }
         });
@@ -555,11 +557,6 @@ public final class AristaConfiguration extends VendorConfiguration {
     return _dnsSourceInterface;
   }
 
-  @Nonnull
-  public Map<String, VlanTrunkGroup> getEosVlanTrunkGroups() {
-    return _eosVlanTrunkGroups;
-  }
-
   public AristaEosVxlan getEosVxlan() {
     return _eosVxlan;
   }
@@ -622,10 +619,6 @@ public final class AristaConfiguration extends VendorConfiguration {
     return _natPools;
   }
 
-  public Map<String, IntegerSpace> getNamedVlans() {
-    return _namedVlans;
-  }
-
   public String getNtpSourceInterface() {
     return _ntpSourceInterface;
   }
@@ -680,6 +673,18 @@ public final class AristaConfiguration extends VendorConfiguration {
 
   public ConfigurationFormat getVendor() {
     return _vendor;
+  }
+
+  public @Nonnull Vlan getOrCreateVlan(int i) {
+    return _vlans.computeIfAbsent(i, Vlan::new);
+  }
+
+  public @Nullable Vlan getVlan(int i) {
+    return _vlans.get(i);
+  }
+
+  public void removeVlan(int i) {
+    _vlans.remove(i);
   }
 
   public Map<String, Vrf> getVrfs() {
@@ -1177,9 +1182,12 @@ public final class AristaConfiguration extends VendorConfiguration {
          */
         IntegerSpace.Builder allowedVlans =
             firstNonNull(iface.getAllowedVlans(), Interface.ALL_VLANS).toBuilder();
-        _eosVlanTrunkGroups.values().stream()
-            .filter(group -> !iface.getVlanTrunkGroups().contains(group.getName()))
-            .forEach(group -> allowedVlans.excluding(group.getVlans()));
+        _vlans.values().stream()
+            .filter(
+                v ->
+                    v.getTrunkGroup() != null
+                        && !iface.getVlanTrunkGroups().contains(v.getTrunkGroup()))
+            .forEach(v -> allowedVlans.excluding(v.getId()));
         newIface.setAllowedVlans(allowedVlans.build());
         break;
 
@@ -2541,6 +2549,7 @@ public final class AristaConfiguration extends VendorConfiguration {
         AristaStructureUsage.PIM_SEND_RP_ANNOUNCE_ACL,
         AristaStructureUsage.PIM_SPT_THRESHOLD_ACL,
         AristaStructureUsage.ROUTE_MAP_MATCH_IPV4_ACCESS_LIST,
+        AristaStructureUsage.ROUTER_PIM_RP_ADDRESS_ACCESS_LIST,
         AristaStructureUsage.SNMP_SERVER_COMMUNITY_ACL4,
         AristaStructureUsage.SSH_IPV4_ACL);
     markIpv6Acls(
@@ -2646,7 +2655,7 @@ public final class AristaConfiguration extends VendorConfiguration {
         .setUdpPort(firstNonNull(vxlan.getUdpPort(), AristaEosVxlan.DEFAULT_UDP_PORT))
         .setVlan(vlan)
         .setVni(vni)
-        .setSrcVrf(Configuration.DEFAULT_VRF_NAME)
+        .setSrcVrf(DEFAULT_VRF_NAME)
         .build();
   }
 
@@ -2675,7 +2684,7 @@ public final class AristaConfiguration extends VendorConfiguration {
         .setSourceAddress(sourceAddress)
         .setUdpPort(firstNonNull(vxlan.getUdpPort(), AristaEosVxlan.DEFAULT_UDP_PORT))
         .setVni(vni)
-        .setSrcVrf(Configuration.DEFAULT_VRF_NAME)
+        .setSrcVrf(DEFAULT_VRF_NAME)
         .build();
   }
 

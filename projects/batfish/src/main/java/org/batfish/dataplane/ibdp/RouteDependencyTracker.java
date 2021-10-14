@@ -10,7 +10,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.dataplane.rib.AbstractRib;
 import org.batfish.dataplane.rib.RibDelta;
-import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 
 @ParametersAreNonnullByDefault
 public final class RouteDependencyTracker<
@@ -53,7 +52,7 @@ public final class RouteDependencyTracker<
     }
     RibDelta.Builder<R> b = RibDelta.builder();
     for (R depRoute : dependents) {
-      b.from(rib.removeRouteGetDelta(depRoute, Reason.WITHDRAW));
+      b.from(rib.removeRouteGetDelta(depRoute));
     }
     // Now the route is gone and will have no dependents
     _routeDependents.remove(route);

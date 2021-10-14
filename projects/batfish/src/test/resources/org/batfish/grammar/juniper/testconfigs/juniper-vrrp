@@ -1,0 +1,12 @@
+#
+set system host-name juniper-vrrp
+#
+
+# one virtual-addresses
+set interfaces xe-0/0/0 unit 0 family inet address 10.0.0.1/24 vrrp-group 1 virtual-address 10.0.0.2
+
+# multiple virtual-addresses
+set interfaces xe-0/0/0 unit 0 family inet address 10.0.1.1/24 vrrp-group 2 virtual-address 10.0.1.2
+set interfaces xe-0/0/0 unit 0 family inet address 10.0.1.1/24 vrrp-group 2 virtual-address 10.0.1.3
+
+#

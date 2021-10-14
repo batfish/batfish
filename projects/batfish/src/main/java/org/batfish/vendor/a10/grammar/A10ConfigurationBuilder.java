@@ -2,6 +2,7 @@ package org.batfish.vendor.a10.grammar;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.vendor.a10.grammar.A10Lexer.WORD;
+import static org.batfish.vendor.a10.representation.A10Configuration.arePortTypesCompatible;
 import static org.batfish.vendor.a10.representation.A10Configuration.getInterfaceName;
 import static org.batfish.vendor.a10.representation.A10StructureType.INTERFACE;
 import static org.batfish.vendor.a10.representation.A10StructureType.NAT_POOL;
@@ -1718,8 +1719,9 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   public void exitSsvspd_service_group(A10Parser.Ssvspd_service_groupContext ctx) {
     toString(ctx, ctx.service_group_name())
         .ifPresent(
-            sg -> {
-              if (!_c.getServiceGroups().containsKey(sg)) {
+            sgName -> {
+              ServiceGroup sg = _c.getServiceGroups().get(sgName);
+              if (sg == null) {
                 warn(
                     ctx,
                     String.format(
@@ -1727,9 +1729,18 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
                         _currentVirtualServer.getName()));
                 return;
               }
-              _currentVirtualServerPort.setServiceGroup(sg);
+              if (!arePortTypesCompatible(sg.getType(), _currentVirtualServerPort.getType())) {
+                warn(
+                    ctx,
+                    String.format(
+                        "Service-group port type %s is not compatible with virtual-server port type"
+                            + " %s",
+                        sg.getType(), _currentVirtualServerPort.getType()));
+                return;
+              }
+              _currentVirtualServerPort.setServiceGroup(sgName);
               _c.referenceStructure(
-                  SERVICE_GROUP, sg, VIRTUAL_SERVER_SERVICE_GROUP, ctx.start.getLine());
+                  SERVICE_GROUP, sgName, VIRTUAL_SERVER_SERVICE_GROUP, ctx.start.getLine());
             });
   }
 
@@ -1789,8 +1800,14 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   private @Nonnull static VirtualServerPort.Type toType(
       A10Parser.Virtual_server_port_typeContext ctx) {
-    if (ctx.TCP() != null) {
+    if (ctx.HTTP() != null) {
+      return VirtualServerPort.Type.HTTP;
+    } else if (ctx.HTTPS() != null) {
+      return VirtualServerPort.Type.HTTPS;
+    } else if (ctx.TCP() != null) {
       return VirtualServerPort.Type.TCP;
+    } else if (ctx.TCP_PROXY() != null) {
+      return VirtualServerPort.Type.TCP_PROXY;
     }
     // TODO support more types
     assert ctx.UDP() != null;

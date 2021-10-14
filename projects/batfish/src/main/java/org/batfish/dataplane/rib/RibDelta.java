@@ -328,7 +328,7 @@ public final class RibDelta<R extends AbstractRouteDecorator> {
         (uRouteAdvertisement) -> {
           T tRoute = converter.apply(uRouteAdvertisement.getRoute());
           if (uRouteAdvertisement.isWithdrawn()) {
-            builder.from(importingRib.removeRouteGetDelta(tRoute, uRouteAdvertisement.getReason()));
+            builder.from(importingRib.removeRouteGetDelta(tRoute));
           } else {
             builder.from(importingRib.mergeRouteGetDelta(tRoute));
           }

@@ -11,6 +11,9 @@ Arista_igmp,
 Arista_logging,
 Arista_mac,
 Arista_mlag,
+Arista_multicast,
+Arista_pim,
+Arista_ptp,
 Arista_vlan,
 Legacy_aaa,
 Legacy_acl,
@@ -58,7 +61,6 @@ address_family_multicast_tail
       )
       | null_af_multicast_tail
       | interface_multicast_stanza
-      | ip_pim_tail
    )*
 ;
 
@@ -566,8 +568,6 @@ enable_password
    (
       ep_plaintext
       | ep_sha512
-      // Do not reorder ep_cisco_encryption
-      | ep_cisco_encryption
    ) NEWLINE
 ;
 
@@ -580,11 +580,6 @@ enable_secret
       )
       | double_quoted_string
    ) NEWLINE
-;
-
-ep_cisco_encryption
-:
-   (type = dec)? (pass = variable_secret) (LEVEL level = dec)? (PBKDF2 | ENCRYPTED)?
 ;
 
 ep_plaintext
@@ -1068,6 +1063,8 @@ no_ip_route
   (distance = protocol_distance)?
   NEWLINE
 ;
+
+no_ip_routing: ROUTING (VRF name = variable)? NEWLINE;
 
 ip_sla_null
 :
@@ -1554,19 +1551,18 @@ management_egress_interface_selection_null
 management_ssh
 :
    SSH NEWLINE
-   (
-      management_ssh_ip_access_group
-      | management_ssh_null
-   )*
+   management_ssh_inner*
+;
+
+management_ssh_inner:
+  management_ssh_ip_access_group
+  | management_ssh_null
+  | management_ssh_vrf
 ;
 
 management_ssh_ip_access_group
 :
-   IP ACCESS_GROUP name = variable
-   (
-      IN
-      | OUT
-   ) NEWLINE
+   IP ACCESS_GROUP acl=variable (VRF vrf=variable)? (IN | OUT) NEWLINE
 ;
 
 management_ssh_null
@@ -1578,6 +1574,18 @@ management_ssh_null
       | SHUTDOWN
    ) null_rest_of_line
 ;
+
+management_ssh_vrf:
+  VRF name=variable NEWLINE
+  management_ssh_vrf_inner*
+;
+
+management_ssh_vrf_inner
+:
+  management_ssh_vrf_no
+;
+
+management_ssh_vrf_no: NO SHUTDOWN NEWLINE;
 
 management_telnet
 :
@@ -1932,7 +1940,6 @@ router_multicast_stanza
       IGMP
       | MLD
       | MSDP
-      | PIM
    ) NEWLINE router_multicast_tail
 ;
 
@@ -2147,6 +2154,7 @@ s_default
     | sdef_hardware
     | default_mac
     | default_snmp_server
+    | default_vlan_internal
   )
 ;
 
@@ -2416,6 +2424,7 @@ s_ip
     | s_ip_igmp
     | s_ip_name_server
     | s_ip_nbar
+    | s_ip_pim
     | s_ip_probe
     | s_ip_route
     | s_ip_routing
@@ -2664,6 +2673,8 @@ s_no
     | no_logging
     | no_mac
     | no_snmp_server
+    | no_vlan
+    | no_vlan_internal
   )
 ;
 
@@ -2678,6 +2689,7 @@ no_ip
   (
     no_ip_igmp
     | no_ip_route
+    | no_ip_routing
   )
 ;
 
@@ -2689,11 +2701,6 @@ s_no_bfd
 s_no_enable
 :
    NO ENABLE PASSWORD (LEVEL level = dec)? NEWLINE
-;
-
-s_no_vlan_eos
-:
-  (NO | DEFAULT) VLAN eos_vlan_id NEWLINE
 ;
 
 s_nv
@@ -2808,9 +2815,23 @@ s_role
    NO? ROLE null_rest_of_line
 ;
 
+s_router
+:
+  ROUTER (
+    router_bgp_stanza
+    | router_isis_stanza
+    | s_router_multicast
+    | s_router_ospf
+    | s_router_ospfv3
+    | s_router_pim
+    | s_router_rip
+    | s_router_vrrp
+  )
+;
+
 s_router_vrrp
 :
-   NO? ROUTER VRRP NEWLINE
+   VRRP NEWLINE
    (
       vrrp_interface
    )*
@@ -3014,29 +3035,6 @@ s_username_attributes
    (
       ua_null
    )*
-;
-
-s_vlan_eos
-:
-   VLAN eos_vlan_id NEWLINE
-   (
-     eos_vlan_name
-     | eos_vlan_state
-     | eos_vlan_trunk
-     | eos_vlan_no_name
-     | eos_vlan_no_state
-     | eos_vlan_no_trunk
-   )*
-;
-
-s_vlan_internal_cisco
-:
-   NO? VLAN INTERNAL ALLOCATION POLICY (ASCENDING | DESCENDING) NEWLINE
-;
-
-s_vlan_name
-:
-   VLAN_NAME name = variable_permissive NEWLINE
 ;
 
 s_vpc
@@ -3287,8 +3285,6 @@ stanza
    | no_ip_prefix_list_stanza
    | no_route_map_stanza
    | route_map_stanza
-   | router_bgp_stanza
-   | router_isis_stanza
    | router_multicast_stanza
    | rsvp_stanza
    | s_aaa
@@ -3356,7 +3352,6 @@ stanza
    | s_ip_domain
    | s_ip_name_server
    | s_ip_nat
-   | s_ip_pim
    | s_ip_sla
    | s_ip_source_route
    | s_ip_ssh
@@ -3387,8 +3382,6 @@ stanza
    | s_no
    | s_no_bfd
    | s_no_enable
-   | s_no_vlan_internal_eos
-   | s_no_vlan_eos
    | s_ntp
    | s_nv
    | s_openflow
@@ -3398,16 +3391,14 @@ stanza
    | s_policy_map
    | s_privilege
    | s_process_max_time
+   | s_ptp
    | s_qos_mapping
    | s_queue_monitor
    | s_radius_server
    | s_redundancy
    | s_rf
    | s_role
-   | s_router_ospf
-   | s_router_ospfv3
-   | s_router_rip
-   | s_router_vrrp
+   | s_router
    | s_sccp
    | s_service
    | s_service_policy_global
@@ -3431,9 +3422,8 @@ stanza
    | s_user_role
    | s_username
    | s_username_attributes
-   | s_vlan_eos
-   | s_vlan_internal_eos
-   | s_vlan_name
+   | s_vlan
+   | s_vlan_internal
    | s_vpc
    | s_vpdn_group
    | s_vpn
@@ -3676,7 +3666,6 @@ u_password
       (
          up_arista_md5
          | up_arista_sha512
-         | up_cisco
       )
    )
    |
@@ -3717,22 +3706,6 @@ up_arista_md5
 up_arista_sha512
 :
    SHA512 pass = SHA512_ARISTA
-;
-
-up_cisco
-:
-   dec? up_cisco_tail
-;
-
-up_cisco_tail
-:
-   (pass = variable_secret)
-   (
-      ENCRYPTED
-      | MSCHAP
-      | NT_ENCRYPTED
-      | PBKDF2
-   )?
 ;
 
 ur_access_list

@@ -241,6 +241,8 @@ import org.batfish.representation.arista.StandardCommunityListLine;
 import org.batfish.representation.arista.StaticRoute;
 import org.batfish.representation.arista.StaticRoute.NextHop;
 import org.batfish.representation.arista.StaticRouteManager;
+import org.batfish.representation.arista.Vlan;
+import org.batfish.representation.arista.Vlan.State;
 import org.batfish.representation.arista.VrrpInterface;
 import org.batfish.representation.arista.eos.AristaBgpAggregateNetwork;
 import org.batfish.representation.arista.eos.AristaBgpBestpathTieBreaker;
@@ -2389,7 +2391,8 @@ public class AristaGrammarTest {
     Interface i = c.getAllInterfaces().get("Vlan20");
     assertThat(i.getVrrpGroups(), hasKey(1));
     VrrpGroup group = i.getVrrpGroups().get(1);
-    assertThat(group.getVirtualAddress(), equalTo(ConcreteInterfaceAddress.parse("1.2.3.4/24")));
+    assertThat(group.getVirtualAddresses(), contains(Ip.parse("1.2.3.4")));
+    assertThat(group.getSourceAddress(), equalTo(ConcreteInterfaceAddress.parse("2.2.2.2/24")));
     assertThat(group.getPriority(), equalTo(200));
   }
 
@@ -3014,6 +3017,83 @@ public class AristaGrammarTest {
         c.getLoggingServers(),
         containsInAnyOrder("1.2.3.4", "1.2.3.5", "1.2.3.6", "some_host.company.com"));
     assertThat(c.getLoggingSourceInterface(), equalTo("Loopback0"));
+  }
+
+  @Test
+  public void testPimV20() {
+    Configuration c = parseConfig("pim_v20");
+    assertThat(c, hasInterface("Ethernet1", hasDescription("interface has pim")));
+  }
+
+  @Test
+  public void testPimV24() {
+    Configuration c = parseConfig("pim_v24");
+    assertThat(c, hasInterface("Ethernet1", hasDescription("interface has pim")));
+  }
+
+  @Test
+  public void testManagementV20() {
+    parseConfig("management_v20");
+  }
+
+  @Test
+  public void testManagementV24() {
+    parseConfig("management_v24");
+  }
+
+  @Test
+  public void testPtp() {
+    Configuration c = parseConfig("ptp");
+    assertThat(
+        c, hasInterface("Port-Channel2", hasDescription("made it to the end of Port-Channel2")));
+  }
+
+  @Test
+  public void testVlanExtraction() {
+    AristaConfiguration c = parseVendorConfig("vlan");
+    {
+      Vlan vlan1 = c.getVlan(1);
+      assertThat(vlan1, not(nullValue()));
+      assertThat(vlan1.getName(), equalTo("default"));
+      assertThat(vlan1.getState(), equalTo(State.ACTIVE));
+      assertThat(vlan1.getTrunkGroup(), nullValue());
+    }
+    {
+      Vlan vlan = c.getVlan(2);
+      assertThat(vlan, not(nullValue()));
+      assertThat(vlan.getName(), equalTo("vlan2"));
+      assertThat(vlan.getState(), equalTo(State.SUSPEND));
+      assertThat(vlan.getTrunkGroup(), equalTo("G3"));
+    }
+    {
+      Vlan vlan = c.getVlan(3);
+      assertThat(vlan, not(nullValue()));
+      assertThat(vlan.getName(), nullValue());
+      assertThat(vlan.getState(), equalTo(State.ACTIVE));
+      assertThat(vlan.getTrunkGroup(), nullValue());
+    }
+    {
+      Vlan vlan = c.getVlan(4);
+      assertThat(vlan, not(nullValue()));
+      assertThat(vlan.getName(), nullValue());
+      assertThat(vlan.getState(), equalTo(State.SUSPEND));
+      assertThat(vlan.getTrunkGroup(), equalTo("G3"));
+    }
+    {
+      Vlan vlan = c.getVlan(5);
+      assertThat(vlan, not(nullValue()));
+      assertThat(vlan.getName(), nullValue());
+      assertThat(vlan.getState(), equalTo(State.ACTIVE));
+      assertThat(vlan.getTrunkGroup(), nullValue());
+    }
+    {
+      Vlan vlan = c.getVlan(6);
+      assertThat(vlan, nullValue());
+    }
+    {
+      Vlan vlan = c.getVlan(7);
+      assertThat(vlan, not(nullValue()));
+    }
   }
 
   @Test

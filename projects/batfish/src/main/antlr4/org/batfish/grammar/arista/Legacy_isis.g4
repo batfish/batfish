@@ -275,7 +275,7 @@ redistribute_static_is_stanza
 
 router_isis_stanza
 :
-   ROUTER ISIS
+   ISIS
    (
       name = variable
    )? NEWLINE is_stanza*

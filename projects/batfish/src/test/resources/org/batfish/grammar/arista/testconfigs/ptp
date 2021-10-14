@@ -1,0 +1,22 @@
+!RANCID-CONTENT-TYPE: arista
+! device: ptp (DCS-7050SX3-48YC8, EOS-4.24.5M)
+!
+hostname ptp
+!
+vlan 7
+   name PTP-MGMT
+!
+ptp domain 1
+ptp source ip 1.2.3.4
+ptp ttl 32
+ptp mode boundary
+!
+interface Port-Channel2
+   switchport mode trunk
+   ptp enable
+   ptp sync-message interval -3
+   ptp announce interval 0
+   ptp delay-req interval -3
+   ptp vlan 7
+   description made it to the end of Port-Channel2
+!

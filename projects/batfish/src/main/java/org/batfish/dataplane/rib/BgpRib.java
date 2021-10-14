@@ -29,7 +29,6 @@ import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.route.nh.NextHopVisitor;
 import org.batfish.datamodel.route.nh.NextHopVrf;
-import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 
 /**
  * A generic BGP RIB containing the common properties among the RIBs for different types of BGP
@@ -160,8 +159,8 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
 
   @Nonnull
   @Override
-  public RibDelta<R> removeRouteGetDelta(R route, Reason reason) {
-    RibDelta<R> delta = super.removeRouteGetDelta(route, reason);
+  public RibDelta<R> removeRouteGetDelta(R route) {
+    RibDelta<R> delta = super.removeRouteGetDelta(route);
     if (!delta.isEmpty()) {
       delta.getPrefixes().forEach(this::selectBestPath);
       delta

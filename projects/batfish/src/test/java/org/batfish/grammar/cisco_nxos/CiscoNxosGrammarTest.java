@@ -372,6 +372,7 @@ import org.batfish.representation.cisco_nxos.RouteMapMatchCommunity;
 import org.batfish.representation.cisco_nxos.RouteMapMatchInterface;
 import org.batfish.representation.cisco_nxos.RouteMapMatchIpAddress;
 import org.batfish.representation.cisco_nxos.RouteMapMatchIpAddressPrefixList;
+import org.batfish.representation.cisco_nxos.RouteMapMatchIpMulticast;
 import org.batfish.representation.cisco_nxos.RouteMapMatchIpv6Address;
 import org.batfish.representation.cisco_nxos.RouteMapMatchIpv6AddressPrefixList;
 import org.batfish.representation.cisco_nxos.RouteMapMatchMetric;
@@ -6618,6 +6619,8 @@ public final class CiscoNxosGrammarTest {
             computeRoutingPolicyName("match_ip_address", 10),
             "match_ip_address_prefix_list",
             computeRoutingPolicyName("match_ip_address_prefix_list", 10),
+            "match_ip_multicast",
+            computeRoutingPolicyName("match_ip_multicast", 10),
             "match_ipv6_address",
             computeRoutingPolicyName("match_ipv6_address", 10),
             "match_ipv6_address_prefix_list",
@@ -6802,6 +6805,11 @@ public final class CiscoNxosGrammarTest {
       assertRoutingPolicyDeniesRoute(rp, base);
       Bgpv4Route route = base.toBuilder().setNetwork(Prefix.parse("192.168.1.0/24")).build();
       assertRoutingPolicyPermitsRoute(rp, route);
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("match_ip_multicast");
+      assertRoutingPolicyDeniesRoute(rp, base);
+      // TODO: implement
     }
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("match_metric");
@@ -7184,6 +7192,7 @@ public final class CiscoNxosGrammarTest {
             "match_interface",
             "match_ip_address",
             "match_ip_address_prefix_list",
+            "match_ip_multicast",
             "match_ipv6_address",
             "match_ipv6_address_prefix_list",
             "match_metric",
@@ -7326,6 +7335,15 @@ public final class CiscoNxosGrammarTest {
       RouteMapMatchIpAddressPrefixList match = entry.getMatchIpAddressPrefixList();
       assertThat(entry.getMatches().collect(onlyElement()), equalTo(match));
       assertThat(match.getNames(), contains("prefix_list1"));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("match_ip_multicast");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSequence(), equalTo(10));
+      RouteMapMatchIpMulticast match = entry.getMatchIpMulticast();
+      assertThat(entry.getMatches().collect(onlyElement()), equalTo(match));
     }
     {
       RouteMap rm = vc.getRouteMaps().get("match_ipv6_address");

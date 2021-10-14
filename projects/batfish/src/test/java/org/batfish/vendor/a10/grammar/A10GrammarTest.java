@@ -1050,6 +1050,12 @@ public class A10GrammarTest {
         new VirtualServerPort.PortAndType(80, VirtualServerPort.Type.TCP);
     VirtualServerPort.PortAndType udp81 =
         new VirtualServerPort.PortAndType(81, VirtualServerPort.Type.UDP);
+    VirtualServerPort.PortAndType tcpProxy101 =
+        new VirtualServerPort.PortAndType(101, VirtualServerPort.Type.TCP_PROXY);
+    VirtualServerPort.PortAndType http102 =
+        new VirtualServerPort.PortAndType(102, VirtualServerPort.Type.HTTP);
+    VirtualServerPort.PortAndType https103 =
+        new VirtualServerPort.PortAndType(103, VirtualServerPort.Type.HTTPS);
 
     assertThat(c.getVirtualServers().keySet(), containsInAnyOrder("VS1", "VS2", "VS3"));
 
@@ -1091,7 +1097,7 @@ public class A10GrammarTest {
       assertFalse(server3.getEnable());
       assertThat(server3.getName(), equalTo("VS3"));
       Map<VirtualServerPort.PortAndType, VirtualServerPort> server3Ports = server3.getPorts();
-      assertThat(server3Ports.keySet(), contains(udp81));
+      assertThat(server3Ports.keySet(), containsInAnyOrder(udp81, tcpProxy101, http102, https103));
       VirtualServerPort server3Port81 = server3Ports.get(udp81);
       assertNull(server3Port81.getBucketCount());
       assertNull(server3Port81.getDefSelectionIfPrefFailed());
@@ -1102,6 +1108,12 @@ public class A10GrammarTest {
       assertNull(server3Port81.getServiceGroup());
       assertNull(server3Port81.getSourceNat());
       assertThat(server3Port81.getType(), equalTo(VirtualServerPort.Type.UDP));
+
+      // Check other virtual port types
+      assertThat(
+          server3Ports.get(tcpProxy101).getType(), equalTo(VirtualServerPort.Type.TCP_PROXY));
+      assertThat(server3Ports.get(http102).getType(), equalTo(VirtualServerPort.Type.HTTP));
+      assertThat(server3Ports.get(https103).getType(), equalTo(VirtualServerPort.Type.HTTPS));
     }
   }
 
@@ -1129,8 +1141,10 @@ public class A10GrammarTest {
                     "Cannot assign virtual-server to vrid 3, it contains a NAT pool in vrid 2"),
                 hasComment("Cannot add non-existent service-group to virtual-server VS1"),
                 hasComment("Cannot add non-existent nat pool to virtual-server VS1"),
+                hasComment("Cannot assign a NAT pool in vrid 2, the virtual-server is in vrid 3"),
                 hasComment(
-                    "Cannot assign a NAT pool in vrid 2, the virtual-server is in vrid 3"))));
+                    "Service-group port type UDP is not compatible with virtual-server port type"
+                        + " HTTPS"))));
   }
 
   @Test

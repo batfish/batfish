@@ -476,11 +476,7 @@ ifia_primary
 
 ifia_vrrp_group
 :
-   VRRP_GROUP
-   (
-      number = dec
-      | name = variable
-   )
+   VRRP_GROUP (wildcard | number = dec)
    (
       apply
       | ifiav_accept_data

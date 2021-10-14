@@ -1,0 +1,29 @@
+!RANCID-CONTENT-TYPE: arista
+! device: vlan (DCS-7050SX3-48YC8, EOS-4.24.5M)
+!
+hostname vlan
+!
+vlan 1
+   no name
+vlan 2
+   name vlan2
+   state active
+   trunk group G1
+vlan 2-4
+   state suspend
+   trunk group G3
+vlan 3
+   name vlan3
+   no name
+   no state
+   no trunk group
+vlan 5
+   name vlan5
+   default name
+   state suspend
+   default state
+   trunk group G5
+   default trunk group
+vlan 6-7
+no vlan 6
+!

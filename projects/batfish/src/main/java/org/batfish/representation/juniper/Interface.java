@@ -19,7 +19,6 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.SubRange;
-import org.batfish.datamodel.VrrpGroup;
 
 public class Interface implements Serializable {
 
