@@ -256,6 +256,10 @@ public class A10Conversion {
         .map(Optional::get);
   }
 
+  /**
+   * Extracts the virtual {@link Ip} of a {@link VirtualServerTarget} - if any - that the device may
+   * own.
+   */
   private static final class VirtualServerTargetVirtualAddressExtractor
       implements VirtualServerTargetVisitor<Optional<Ip>> {
     private static final VirtualServerTargetVirtualAddressExtractor INSTANCE =

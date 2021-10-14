@@ -294,9 +294,14 @@ public final class A10Configuration extends VendorConfiguration {
     }
   }
 
+  /**
+   * Process vrrp-a vrids in the case vrrp-a is disabled. Causes the device to own all virtual IPs
+   * for all vrids.
+   */
   private void convertVrrpADisabled() {
-    // Adds all virtual addresses to every inteface with a concrete IPv4 address.
-    // Sets address metadata so no connected nor local routes are generated for virtual addresses.
+    // Overview:
+    // - Add all virtual addresses to every inteface with a concrete IPv4 address.
+    // - Set address metadata so no connected nor local routes are generated for virtual addresses.
     List<ConcreteInterfaceAddress> virtualAddresses =
         Stream.concat(
                 getNatPoolIpsForAllVrids(_natPools.values()),
@@ -333,7 +338,16 @@ public final class A10Configuration extends VendorConfiguration {
             });
   }
 
+  /**
+   * Process vrrp-a vrids in the case vrrp-a is enabled. Causes the device to own all virtual
+   * addresses for each vrid for which it is VRRP master.
+   */
   private void convertVrrpAEnabled() {
+    // Overview:
+    // - Add a VrrpGroup for each enabled vrid on all L3 interfaces with a primary
+    //   ConcreteInterfaceAddress.
+    // - Each created VrrpGroup contains all the virtual addresses the device should own when it is
+    //   master for the corresponding vrid.
     assert _vrrpA != null;
     // vrid -> virtual addresses
     ImmutableSetMultimap.Builder<Integer, Ip> virtualAddressesByEnabledVridBuilder =
@@ -354,7 +368,7 @@ public final class A10Configuration extends VendorConfiguration {
     // VRID 0 may be used even if it is not configured explicitly.
     assert virtualAddressesByEnabledVrid.keySet().stream()
         .allMatch(vrid -> vrid == 0 || _vrrpA.getVrids().containsKey(vrid));
-    // Craate VrrpGroup builders for each vrid. We cannot make final VrrpGroups because we are
+    // Create VrrpGroup builders for each vrid. We cannot make final VrrpGroups because we are
     // missing source address, which varies per interface.
     ImmutableMap.Builder<Integer, VrrpGroup.Builder> vrrpGroupBuildersBuilder =
         ImmutableMap.builder();

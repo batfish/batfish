@@ -1295,7 +1295,7 @@ public class A10GrammarTest {
                       .setSourceAddress(i1Address)
                       .build())));
       // Should not contain virtual addresses
-      assertThat(i.getAllAddresses(), contains(ConcreteInterfaceAddress.parse("10.0.1.1/24")));
+      assertThat(i.getAllAddresses(), contains(i1Address));
       // Should not contain address metadata for virtual addresses
       assertThat(i.getAddressMetadata(), hasKeys(i1Address));
     }
