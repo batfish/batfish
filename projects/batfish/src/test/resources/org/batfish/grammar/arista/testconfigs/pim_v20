@@ -1,0 +1,19 @@
+! Command: show running-config
+! device: pim_v20 (DCS-7280QR-C36, EOS-4.20.13.1M)
+!
+! boot system flash:/EOS-4.20.13.1M.swi
+hostname pim_v20
+!
+ip pim bfd
+ip pim ssm range ACL
+ip pim rp-address 1.2.3.4 access-list ACL override
+ip pim rp-address 1.2.3.5 access-list ACL
+!
+interface Ethernet1
+   no switchport
+   ip pim sparse-mode
+   description interface has pim
+!
+ip access-list standard ACL
+   10 permit 224.0.0.0/24
+!

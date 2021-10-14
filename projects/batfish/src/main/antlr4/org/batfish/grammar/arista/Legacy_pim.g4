@@ -6,19 +6,6 @@ options {
    tokenVocab = AristaLexer;
 }
 
-ip_pim_tail
-:
-   pim_accept_register
-   | pim_accept_rp
-   | pim_null
-   | pim_rp_address
-   | pim_rp_announce_filter
-   | pim_rp_candidate
-   | pim_send_rp_announce
-   | pim_spt_threshold
-   | pim_ssm
-;
-
 pim_accept_register
 :
    ACCEPT_REGISTER
@@ -45,28 +32,7 @@ pim_accept_rp
    )? NEWLINE
 ;
 
-pim_null
-:
-   (
-      AUTORP
-      | BIDIR_ENABLE
-      | BIDIR_OFFER_INTERVAL
-      | BIDIR_OFFER_LIMIT
-      | BIDIR_RP_LIMIT
-      | BSR_CANDIDATE
-      | DM_FALLBACK
-      | EVENT_HISTORY
-      | LOG_NEIGHBOR_CHANGES
-      | MTU
-      | REGISTER_RATE_LIMIT
-      | REGISTER_SOURCE
-      | RPF_VECTOR
-      | SEND_RP_DISCOVERY
-      | SG_EXPIRY_TIMER
-      | SNOOPING
-      | V1_RP_REACHABILITY
-   ) null_rest_of_line
-;
+pim_bfd_eos: BFD NEWLINE;
 
 pim_rp_address
 :
@@ -150,8 +116,16 @@ pim_ssm
    ) NEWLINE
 ;
 
-s_ip_pim
-:
-   NO? IP PIM ip_pim_tail
-;
+// ip pim is older syntax (4.20 ; router pim in EOS 4.24)
+s_ip_pim: PIM (
+  pim_accept_register
+  | pim_accept_rp
+  | pim_bfd_eos
+  | pim_rp_address
+  | pim_rp_announce_filter
+  | pim_rp_candidate
+  | pim_send_rp_announce
+  | pim_spt_threshold
+  | pim_ssm
+);
 

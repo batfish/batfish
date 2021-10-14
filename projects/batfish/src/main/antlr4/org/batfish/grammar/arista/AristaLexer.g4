@@ -3854,6 +3854,8 @@ ROUTES: 'routes';
 
 ROUTING: 'routing';
 
+RP: 'rp';
+
 RP_ADDRESS: 'rp-address';
 
 RP_ANNOUNCE_FILTER: 'rp-announce-filter';
