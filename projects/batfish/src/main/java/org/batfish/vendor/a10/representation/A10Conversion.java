@@ -36,6 +36,18 @@ public class A10Conversion {
 
   public static final int SNAT_PORT_POOL_END = NamedPort.EPHEMERAL_HIGHEST.number();
 
+  /** Set of {@link VirtualServerPort.Type}s that use {@code tcp} protocol */
+  public static final Set<VirtualServerPort.Type> VIRTUAL_TCP_PORT_TYPES =
+      ImmutableSet.of(
+          VirtualServerPort.Type.HTTP,
+          VirtualServerPort.Type.HTTPS,
+          VirtualServerPort.Type.TCP,
+          VirtualServerPort.Type.TCP_PROXY);
+
+  /** Set of {@link VirtualServerPort.Type}s that use {@code udp} protocol */
+  public static final Set<VirtualServerPort.Type> VIRTUAL_UDP_PORT_TYPES =
+      ImmutableSet.of(VirtualServerPort.Type.UDP);
+
   /** Returns the {@link IntegerSpace} representing the specified {@link ServerPort}'s ports. */
   @VisibleForTesting
   @Nonnull
@@ -65,13 +77,7 @@ public class A10Conversion {
   @Nonnull
   static Optional<IpProtocol> toProtocol(VirtualServerPort port) {
     VirtualServerPort.Type type = port.getType();
-    Set<VirtualServerPort.Type> tcpTypes =
-        ImmutableSet.of(
-            VirtualServerPort.Type.HTTP,
-            VirtualServerPort.Type.HTTPS,
-            VirtualServerPort.Type.TCP,
-            VirtualServerPort.Type.TCP_PROXY);
-    if (tcpTypes.contains(type)) {
+    if (VIRTUAL_TCP_PORT_TYPES.contains(type)) {
       return Optional.of(IpProtocol.TCP);
     }
     assert type == UDP;
