@@ -116,6 +116,7 @@ pim_ssm
    ) NEWLINE
 ;
 
+// ip pim is older syntax (4.20 ; router pim in EOS 4.24)
 s_ip_pim: PIM (
   pim_accept_register
   | pim_accept_rp

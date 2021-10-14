@@ -6,6 +6,7 @@ options {
    tokenVocab = AristaLexer;
 }
 
+// router pim is newer syntax (4.24 ; ip pim in EOS 4.20)
 s_router_pim: PIM (
   pim_sparse_mode
 );
