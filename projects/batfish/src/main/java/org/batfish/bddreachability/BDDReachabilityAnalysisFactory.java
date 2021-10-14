@@ -62,7 +62,6 @@ import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.bdd.MemoizedIpAccessListToBdd;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.Interface;
@@ -177,7 +176,7 @@ public final class BDDReachabilityAnalysisFactory {
   private final @Nullable LastHopOutgoingInterfaceManager _lastHopMgr;
 
   // node --> iface --> bdd nats
-  private Map<String, Map<String, Transition>> _bddIncomingTransformations;
+  private final Map<String, Map<String, Transition>> _bddIncomingTransformations;
   private final Map<String, Map<String, Transition>> _bddOutgoingTransformations;
 
   private final Map<String, Configuration> _configs;
@@ -1780,8 +1779,8 @@ public final class BDDReachabilityAnalysisFactory {
   }
 
   class RangeComputer implements TransformationStepVisitor<Void> {
-    private Map<IpField, BDD> _ipRanges;
-    private Map<PortField, BDD> _portRanges;
+    private final Map<IpField, BDD> _ipRanges;
+    private final Map<PortField, BDD> _portRanges;
 
     public RangeComputer() {
       _ipRanges = new HashMap<>();
@@ -1953,49 +1952,6 @@ public final class BDDReachabilityAnalysisFactory {
                 nodeEntry.getValue().getActiveInterfaces().values(),
                 Interface::getName,
                 Interface::getVrfName));
-  }
-
-  private static Map<String, Map<String, Map<String, BDD>>> computeIfaceAcceptBDDs(
-      Map<String, Configuration> configs,
-      Map<String, Map<String, Map<String, IpSpace>>> acceptIps, // hostname -> vrf -> iface -> ips
-      IpSpaceToBDD ipSpaceToBDD) {
-    Span span =
-        GlobalTracer.get()
-            .buildSpan("BDDReachabilityAnalysisFactory.computeIfaceAcceptBDDs")
-            .start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
-      // Iterate over configs because we want all node/vrf/iface keys to be present in the map
-      return toImmutableMap(
-          configs,
-          Entry::getKey, /* hostname */
-          nodeEntry -> {
-            String hostname = nodeEntry.getKey();
-            Configuration c = nodeEntry.getValue();
-            Map<String, Map<String, IpSpace>> nodeAcceptIps =
-                acceptIps.getOrDefault(hostname, ImmutableMap.of());
-            return toImmutableMap(
-                c.getVrfs().keySet(),
-                Function.identity(), /* vrf */
-                vrf -> {
-                  Map<String, IpSpace> vrfAcceptIps =
-                      nodeAcceptIps.getOrDefault(vrf, ImmutableMap.of());
-                  // Create entry for every interface in the current VRF
-                  return c.getAllInterfaces().values().stream()
-                      .filter(iface -> iface.getVrfName().equals(vrf))
-                      .map(Interface::getName)
-                      .collect(
-                          ImmutableMap.toImmutableMap(
-                              Function.identity(), /* interface */
-                              ifaceName ->
-                                  vrfAcceptIps
-                                      .getOrDefault(ifaceName, EmptyIpSpace.INSTANCE)
-                                      .accept(ipSpaceToBDD)));
-                });
-          });
-    } finally {
-      span.finish();
-    }
   }
 
   private Map<String, Map<String, Map<String, BDD>>> computeNextVrfBDDs(
