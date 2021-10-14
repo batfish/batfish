@@ -75,10 +75,6 @@ public final class A10Configuration extends VendorConfiguration {
     return _bgpProcess;
   }
 
-  public void setBgpProcess(BgpProcess bgpProcess) {
-    _bgpProcess = bgpProcess;
-  }
-
   @Override
   public String getHostname() {
     return _hostname;

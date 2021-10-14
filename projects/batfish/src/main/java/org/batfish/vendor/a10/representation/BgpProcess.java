@@ -41,24 +41,13 @@ public class BgpProcess implements Serializable {
     BgpNeighbor neighbor = _neighbors.get(id);
     if (neighbor == null) {
       neighbor = new BgpNeighbor(id);
-      addNeighborIfAbsent(neighbor);
+      _neighbors =
+          ImmutableMap.<BgpNeighborId, BgpNeighbor>builder()
+              .putAll(_neighbors)
+              .put(neighbor.getId(), neighbor)
+              .build();
     }
     return neighbor;
-  }
-
-  /**
-   * Adds the new {@link BgpNeighbor} for the process if it doesn't already exist. If a neighbor
-   * already exists with the corresponding {@link BgpNeighborId}, this is a no-op.
-   */
-  public void addNeighborIfAbsent(BgpNeighbor neighbor) {
-    if (_neighbors.containsKey(neighbor.getId())) {
-      return;
-    }
-    _neighbors =
-        ImmutableMap.<BgpNeighborId, BgpNeighbor>builder()
-            .putAll(_neighbors)
-            .put(neighbor.getId(), neighbor)
-            .build();
   }
 
   public long getNumber() {
