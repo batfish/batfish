@@ -683,6 +683,10 @@ public final class AristaConfiguration extends VendorConfiguration {
     return _vlans.get(i);
   }
 
+  public void removeVlan(int i) {
+    _vlans.remove(i);
+  }
+
   public Map<String, Vrf> getVrfs() {
     return _vrfs;
   }

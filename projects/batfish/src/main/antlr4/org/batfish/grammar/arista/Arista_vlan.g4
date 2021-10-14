@@ -1,10 +1,12 @@
-parser grammar Arista_mlag;
+parser grammar Arista_vlan;
 
 import Legacy_common;
 
 options {
    tokenVocab = AristaLexer;
 }
+
+no_vlan: VLAN eos_vlan_id NEWLINE;
 
 s_vlan
 :

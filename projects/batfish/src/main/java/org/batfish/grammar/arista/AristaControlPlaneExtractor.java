@@ -692,6 +692,7 @@ import org.batfish.grammar.arista.AristaParser.Net_is_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.No_ip_prefix_list_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.No_ip_routeContext;
 import org.batfish.grammar.arista.AristaParser.No_route_map_stanzaContext;
+import org.batfish.grammar.arista.AristaParser.No_vlanContext;
 import org.batfish.grammar.arista.AristaParser.Ntp_serverContext;
 import org.batfish.grammar.arista.AristaParser.Origin_expr_literalContext;
 import org.batfish.grammar.arista.AristaParser.Ospf_areaContext;
@@ -6004,6 +6005,12 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   public void exitNo_route_map_stanza(No_route_map_stanzaContext ctx) {
     String mapName = ctx.name.getText();
     _configuration.getRouteMaps().remove(mapName);
+  }
+
+  @Override
+  public void exitNo_vlan(No_vlanContext ctx) {
+    IntegerSpace vlans = toIntegerSpace(ctx.eos_vlan_id());
+    vlans.intStream().forEach(_configuration::removeVlan);
   }
 
   @Override

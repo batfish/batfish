@@ -24,4 +24,6 @@ vlan 5
    default state
    trunk group G5
    default trunk group
+vlan 6-7
+no vlan 6
 !

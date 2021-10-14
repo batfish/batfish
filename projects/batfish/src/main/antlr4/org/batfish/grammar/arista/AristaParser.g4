@@ -2659,6 +2659,7 @@ s_no
     | no_logging
     | no_mac
     | no_snmp_server
+    | no_vlan
     | no_vlan_internal
   )
 ;
@@ -2685,11 +2686,6 @@ s_no_bfd
 s_no_enable
 :
    NO ENABLE PASSWORD (LEVEL level = dec)? NEWLINE
-;
-
-s_no_vlan_eos
-:
-  (NO | DEFAULT) VLAN eos_vlan_id NEWLINE
 ;
 
 s_nv
@@ -3360,7 +3356,6 @@ stanza
    | s_no
    | s_no_bfd
    | s_no_enable
-   | s_no_vlan_eos
    | s_ntp
    | s_nv
    | s_openflow

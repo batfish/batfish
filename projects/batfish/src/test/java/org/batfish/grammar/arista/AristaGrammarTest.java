@@ -3064,6 +3064,14 @@ public class AristaGrammarTest {
       assertThat(vlan.getState(), equalTo(State.ACTIVE));
       assertThat(vlan.getTrunkGroup(), nullValue());
     }
+    {
+      Vlan vlan = c.getVlan(6);
+      assertThat(vlan, nullValue());
+    }
+    {
+      Vlan vlan = c.getVlan(7);
+      assertThat(vlan, not(nullValue()));
+    }
   }
 
   @Test
