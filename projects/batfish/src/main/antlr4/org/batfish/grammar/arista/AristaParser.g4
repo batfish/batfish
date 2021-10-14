@@ -61,7 +61,6 @@ address_family_multicast_tail
       )
       | null_af_multicast_tail
       | interface_multicast_stanza
-      | ip_pim_tail
    )*
 ;
 
@@ -2412,6 +2411,7 @@ s_ip
     | s_ip_igmp
     | s_ip_name_server
     | s_ip_nbar
+    | s_ip_pim
     | s_ip_probe
     | s_ip_route
     | s_ip_routing
@@ -3338,7 +3338,6 @@ stanza
    | s_ip_domain
    | s_ip_name_server
    | s_ip_nat
-   | s_ip_pim
    | s_ip_sla
    | s_ip_source_route
    | s_ip_ssh

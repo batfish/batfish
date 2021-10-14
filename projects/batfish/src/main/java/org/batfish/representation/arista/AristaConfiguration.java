@@ -2549,6 +2549,7 @@ public final class AristaConfiguration extends VendorConfiguration {
         AristaStructureUsage.PIM_SEND_RP_ANNOUNCE_ACL,
         AristaStructureUsage.PIM_SPT_THRESHOLD_ACL,
         AristaStructureUsage.ROUTE_MAP_MATCH_IPV4_ACCESS_LIST,
+        AristaStructureUsage.ROUTER_PIM_RP_ADDRESS_ACCESS_LIST,
         AristaStructureUsage.SNMP_SERVER_COMMUNITY_ACL4,
         AristaStructureUsage.SSH_IPV4_ACL);
     markIpv6Acls(

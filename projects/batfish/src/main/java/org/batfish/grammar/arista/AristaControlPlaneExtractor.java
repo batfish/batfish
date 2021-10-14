@@ -144,6 +144,7 @@ import static org.batfish.representation.arista.AristaStructureUsage.POLICY_MAP_
 import static org.batfish.representation.arista.AristaStructureUsage.POLICY_MAP_EVENT_CLASS_ACTIVATE;
 import static org.batfish.representation.arista.AristaStructureUsage.RIP_DISTRIBUTE_LIST;
 import static org.batfish.representation.arista.AristaStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL;
+import static org.batfish.representation.arista.AristaStructureUsage.ROUTER_PIM_RP_ADDRESS_ACCESS_LIST;
 import static org.batfish.representation.arista.AristaStructureUsage.ROUTER_VRRP_INTERFACE;
 import static org.batfish.representation.arista.AristaStructureUsage.ROUTE_MAP_CONTINUE;
 import static org.batfish.representation.arista.AristaStructureUsage.ROUTE_MAP_ENTRY_AUTO_REF;
@@ -3722,11 +3723,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     _no = ctx.NO() != null;
   }
 
-  @Override
-  public void enterS_ip_pim(S_ip_pimContext ctx) {
-    _no = ctx.NO() != null;
-  }
-
   private @Nonnull Optional<NextHop> toNextHop(Ip_route_nexthopContext ctx) {
     if (ctx.null0 != null) {
       return Optional.of(new NextHop(null, null, true));
@@ -3922,7 +3918,10 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   public void exitPim_sm4_rp_address(Pim_sm4_rp_addressContext ctx) {
     String aclName = ctx.name.getText();
     _configuration.referenceStructure(
-        IPV4_ACCESS_LIST, aclName, PIM_RP_ADDRESS_ACL, ctx.name.getStart().getLine());
+        IPV4_ACCESS_LIST,
+        aclName,
+        ROUTER_PIM_RP_ADDRESS_ACCESS_LIST,
+        ctx.name.getStart().getLine());
   }
 
   @Override
@@ -6090,7 +6089,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitPim_rp_address(Pim_rp_addressContext ctx) {
-    if (!_no && ctx.name != null) {
+    if (ctx.name != null) {
       String name = ctx.name.getText();
       int line = ctx.name.getStart().getLine();
       _configuration.referenceStructure(
