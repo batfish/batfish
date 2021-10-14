@@ -2180,10 +2180,12 @@ public class F5BigipConfiguration extends VendorConfiguration {
       return Optional.empty();
     }
     return Optional.of(
-        new KernelRoute(
-            Prefix.create(
-                virtualAddress.getAddress(),
-                Optional.ofNullable(virtualAddress.getMask()).orElse(Ip.MAX))));
+        KernelRoute.builder()
+            .setNetwork(
+                Prefix.create(
+                    virtualAddress.getAddress(),
+                    Optional.ofNullable(virtualAddress.getMask()).orElse(Ip.MAX)))
+            .build());
   }
 
   private void warnIfInvalidRoute(Route route) {
