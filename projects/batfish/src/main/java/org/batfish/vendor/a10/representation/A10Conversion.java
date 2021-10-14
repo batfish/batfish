@@ -37,7 +37,7 @@ public class A10Conversion {
   public static final int SNAT_PORT_POOL_END = NamedPort.EPHEMERAL_HIGHEST.number();
 
   /** Set of {@link VirtualServerPort.Type}s that use {@code tcp} protocol */
-  public static final Set<VirtualServerPort.Type> VIRTUAL_TCP_PORT_TYPES =
+  static final Set<VirtualServerPort.Type> VIRTUAL_TCP_PORT_TYPES =
       ImmutableSet.of(
           VirtualServerPort.Type.HTTP,
           VirtualServerPort.Type.HTTPS,
@@ -45,7 +45,7 @@ public class A10Conversion {
           VirtualServerPort.Type.TCP_PROXY);
 
   /** Set of {@link VirtualServerPort.Type}s that use {@code udp} protocol */
-  public static final Set<VirtualServerPort.Type> VIRTUAL_UDP_PORT_TYPES =
+  static final Set<VirtualServerPort.Type> VIRTUAL_UDP_PORT_TYPES =
       ImmutableSet.of(VirtualServerPort.Type.UDP);
 
   /** Returns the {@link IntegerSpace} representing the specified {@link ServerPort}'s ports. */
