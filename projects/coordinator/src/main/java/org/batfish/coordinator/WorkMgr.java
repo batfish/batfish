@@ -1276,8 +1276,18 @@ public class WorkMgr extends AbstractCoordinator {
 
   /** Move runtime_data.json under batfish/ if it's at the top level. */
   private void moveRuntimeDataFile(Path dir) {
-    // Move runtime data file at top-level to batfish/ subfolder
+    File runtimeDataNewLoc =
+        dir.resolve(BfConsts.RELPATH_BATFISH).resolve(BfConsts.RELPATH_RUNTIME_DATA_FILE).toFile();
     File runtimeDataOldLoc = dir.resolve(BfConsts.RELPATH_RUNTIME_DATA_FILE).toFile();
+    if (runtimeDataNewLoc.exists()) {
+      // The runtime data file already exists under batfish subdirectory. Delete the one at the root
+      // directory (if it
+      // exists).
+      runtimeDataOldLoc.delete();
+      return;
+    }
+
+    // Move runtime data file at top-level to batfish/ subfolder
     if (runtimeDataOldLoc.exists()) {
       File batfishDir = dir.resolve(BfConsts.RELPATH_BATFISH).toFile();
       try {

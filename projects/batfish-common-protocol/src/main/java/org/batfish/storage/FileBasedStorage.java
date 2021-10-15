@@ -402,7 +402,6 @@ public class FileBasedStorage implements StorageProvider {
 
   @Override
   public @Nullable SnapshotRuntimeData loadRuntimeData(NetworkId network, SnapshotId snapshot) {
-    // Prefer runtime data inside of batfish/ subfolder over top level
     Path path =
         getSnapshotDir(network, snapshot)
             .resolve(
@@ -411,7 +410,6 @@ public class FileBasedStorage implements StorageProvider {
                     RELPATH_BATFISH_CONFIGS_DIR,
                     BfConsts.RELPATH_RUNTIME_DATA_FILE));
     if (!Files.exists(path)) {
-      // Neither file was present in input.
       return null;
     }
 

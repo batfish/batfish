@@ -2000,6 +2000,49 @@ public final class WorkMgrTest {
                 .build()));
   }
 
+  /**
+   * If runtime_data.json exists at the root snapshot directory and under batfish/ discard the
+   * former.
+   */
+  @Test
+  public void testInitSnapshot_runtimeData_bothLocations() throws JsonProcessingException {
+    String n1 = "n1";
+    String i1 = "i1";
+    String i2 = "i2";
+    SnapshotRuntimeData outerRuntimeData =
+        SnapshotRuntimeData.builder()
+            .setRuntimeData(
+                ImmutableMap.of(n1, RuntimeData.builder().setInterfaceLineUp(i1, false).build()))
+            .build();
+    SnapshotRuntimeData innerRuntimeData =
+        SnapshotRuntimeData.builder()
+            .setRuntimeData(
+                ImmutableMap.of(n1, RuntimeData.builder().setInterfaceLineUp(i2, false).build()))
+            .build();
+
+    // Create snapshot
+    String networkName = "network";
+    String snapshotName = "snapshotName";
+    Path srcDir = createSnapshot(snapshotName, "file.type", "! empty config", _folder);
+    Path snapshotDir = srcDir.resolve(snapshotName);
+    CommonUtil.writeFile(
+        snapshotDir.resolve(BfConsts.RELPATH_RUNTIME_DATA_FILE),
+        BatfishObjectMapper.writePrettyString(outerRuntimeData));
+    Path batfishDir = snapshotDir.resolve(BfConsts.RELPATH_BATFISH);
+    batfishDir.toFile().mkdir();
+    CommonUtil.writeFile(
+        batfishDir.resolve(BfConsts.RELPATH_RUNTIME_DATA_FILE),
+        BatfishObjectMapper.writePrettyString(innerRuntimeData));
+    _manager.initNetwork(networkName, null);
+    _manager.initSnapshot(networkName, snapshotName, srcDir, false, Instant.now());
+
+    // Interface blacklist should not exist in new snapshot
+    NetworkId networkId = _idManager.getNetworkId(networkName).get();
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshotName, networkId).get();
+    assertNull(_storage.loadInterfaceBlacklist(networkId, snapshotId));
+    assertThat(_storage.loadRuntimeData(networkId, snapshotId), equalTo(innerRuntimeData));
+  }
+
   @Test
   public void testInitSnapshotBadPackaging() {
     String networkName = "network";
