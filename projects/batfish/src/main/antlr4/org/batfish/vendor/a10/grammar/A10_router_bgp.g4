@@ -61,6 +61,7 @@ srbn
    | srbn_send_community
    | srbn_weight
    | srbn_update_source
+   | srbn_null
 ;
 
 srbn_null
