@@ -1,0 +1,26 @@
+!BATFISH_FORMAT: a10_acos
+hostname vrrp-a-disabled
+!
+
+vrrp-a vrid 1
+!
+
+interface ethernet 1
+  mtu 1500
+  enable
+  ip address 10.0.1.1 255.255.255.0
+!
+
+interface ethernet 2
+  mtu 1500
+  enable
+!
+
+ip nat pool pool1 1.0.0.1 1.0.0.2 netmask /24 vrid 1
+
+slb virtual-server vs1 2.0.0.1
+  vrid 1
+!
+
+!
+

@@ -29,11 +29,13 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasNativeVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
+import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.matchers.StaticRouteMatchers.hasRecursive;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.main.BatfishTestUtils.getBatfish;
 import static org.batfish.vendor.a10.representation.A10Configuration.getInterfaceName;
+import static org.batfish.vendor.a10.representation.A10Conversion.DEFAULT_VRRP_A_PRIORITY;
 import static org.batfish.vendor.a10.representation.A10Conversion.SNAT_PORT_POOL_START;
 import static org.batfish.vendor.a10.representation.A10StructureType.INTERFACE;
 import static org.batfish.vendor.a10.representation.A10StructureType.VRRP_A_FAIL_OVER_POLICY_TEMPLATE;
@@ -50,7 +52,10 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
@@ -90,9 +95,11 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep;
 import org.batfish.datamodel.flow.Hop;
+import org.batfish.datamodel.flow.InboundStep;
 import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.route.nh.NextHopIp;
@@ -1266,6 +1273,100 @@ public class A10GrammarTest {
   }
 
   @Test
+  public void testVrrpAEnabledConversion() {
+    String hostname = "vrrp-a-enabled";
+    Configuration c = parseConfig(hostname);
+
+    String i1Name = getInterfaceName(Type.ETHERNET, 1);
+    String i2Name = getInterfaceName(Type.ETHERNET, 2);
+    int vrid = 1;
+
+    assertThat(c.getAllInterfaces(), hasKeys(i1Name, i2Name));
+    {
+      org.batfish.datamodel.Interface i = c.getAllInterfaces().get(i1Name);
+      ConcreteInterfaceAddress i1Address = ConcreteInterfaceAddress.parse("10.0.1.1/24");
+      assertThat(
+          i.getVrrpGroups(),
+          equalTo(
+              ImmutableSortedMap.of(
+                  vrid,
+                  VrrpGroup.builder()
+                      .setPreempt(true)
+                      .setPriority(DEFAULT_VRRP_A_PRIORITY)
+                      .setVirtualAddresses(
+                          ImmutableSet.of(
+                              Ip.parse("1.0.0.1"), Ip.parse("1.0.0.2"), Ip.parse("2.0.0.1")))
+                      .setSourceAddress(i1Address)
+                      .build())));
+      // Should not contain virtual addresses
+      assertThat(i.getAllAddresses(), contains(i1Address));
+      // Should not contain address metadata for virtual addresses
+      assertThat(i.getAddressMetadata(), hasKeys(i1Address));
+    }
+    {
+      org.batfish.datamodel.Interface i = c.getAllInterfaces().get(i2Name);
+      assertThat(i.getVrrpGroups(), anEmptyMap());
+      // Should not contain virtual addresses
+      assertThat(i.getAllAddresses(), empty());
+      // Should not contain address metadata
+      assertThat(i.getAddressMetadata(), anEmptyMap());
+    }
+  }
+
+  @Test
+  public void testVrrpADisabledConversion() {
+    String hostname = "vrrp-a-disabled";
+    Configuration c = parseConfig(hostname);
+
+    String i1Name = getInterfaceName(Type.ETHERNET, 1);
+    String i2Name = getInterfaceName(Type.ETHERNET, 2);
+
+    {
+      org.batfish.datamodel.Interface i = c.getAllInterfaces().get(i1Name);
+      ConnectedRouteMetadata expectedConnectedRouteMetadata =
+          ConnectedRouteMetadata.builder()
+              .setGenerateConnectedRoute(false)
+              .setGenerateLocalRoute(false)
+              .build();
+      ConcreteInterfaceAddress i1Address = ConcreteInterfaceAddress.parse("10.0.1.1/24");
+      assertThat(
+          i.getAllAddresses(),
+          containsInAnyOrder(
+              i1Address,
+              ConcreteInterfaceAddress.parse("1.0.0.1/32"),
+              ConcreteInterfaceAddress.parse("1.0.0.2/32"),
+              ConcreteInterfaceAddress.parse("2.0.0.1/32")));
+      assertThat(
+          i.getAddressMetadata(),
+          hasKeys(
+              i1Address,
+              ConcreteInterfaceAddress.parse("1.0.0.1/32"),
+              ConcreteInterfaceAddress.parse("1.0.0.2/32"),
+              ConcreteInterfaceAddress.parse("2.0.0.1/32")));
+      ImmutableSet.of(
+              ConcreteInterfaceAddress.parse("1.0.0.1/32"),
+              ConcreteInterfaceAddress.parse("1.0.0.2/32"),
+              ConcreteInterfaceAddress.parse("2.0.0.1/32"))
+          .forEach(
+              virtualAddress ->
+                  assertThat(
+                      i.getAddressMetadata(),
+                      hasEntry(virtualAddress, expectedConnectedRouteMetadata)));
+      // Should not contain vrrp configuration
+      assertThat(i.getVrrpGroups(), anEmptyMap());
+    }
+    {
+      org.batfish.datamodel.Interface i = c.getAllInterfaces().get(i2Name);
+      // Should not contain virtual addresses
+      assertThat(i.getAllAddresses(), empty());
+      // Should not contain address metadata
+      assertThat(i.getAddressMetadata(), anEmptyMap());
+      // Should not contain vrrp configuration
+      assertThat(i.getVrrpGroups(), anEmptyMap());
+    }
+  }
+
+  @Test
   public void testVrrpAReferences() throws IOException {
     String hostname = "vrrp-a";
     String filename = "configs/" + hostname;
@@ -1528,8 +1629,12 @@ public class A10GrammarTest {
                 .setDstIp(Ip.parse("10.0.0.3"))
                 .setDstPort(80)
                 .build()));
-    // No transformations for flows *not* matching a virtual-server
-    assertNull(getTransformedFlow(Iterables.getOnlyElement(traces.get(flowNoMatchProtocol))));
+    //// No transformations for flows *not* matching a virtual-server.
+
+    // Since dst IP is that of an enabled virtual-server, the flow is accepted
+    assertInbound(Iterables.getOnlyElement(traces.get(flowNoMatchProtocol)));
+
+    // Since dst IP is that of a disabled virtual-server, the flow is forwarded untransformed.
     assertNull(getTransformedFlow(Iterables.getOnlyElement(traces.get(flowNoMatchEnable))));
   }
 
@@ -1548,6 +1653,14 @@ public class A10GrammarTest {
             .collect(ImmutableList.toImmutableList());
     assert exitIfaceSteps.size() == 1;
     return exitIfaceSteps.get(0).getDetail().getTransformedFlow();
+  }
+
+  /** Assert that trace has a single hop with an inbound step. */
+  private static void assertInbound(Trace trace) {
+    List<Hop> hops = trace.getHops();
+    assertThat(hops, hasSize(1));
+    List<Step<?>> steps = hops.get(0).getSteps();
+    assertThat(steps, hasItem(instanceOf(InboundStep.class)));
   }
 
   @Test
