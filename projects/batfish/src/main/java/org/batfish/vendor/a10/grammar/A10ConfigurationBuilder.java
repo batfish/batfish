@@ -1464,6 +1464,18 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   }
 
   @Override
+  public void exitSsvspd_aflex(A10Parser.Ssvspd_aflexContext ctx) {
+    toString(ctx, ctx.aflex_name()).ifPresent(_currentVirtualServerPort::setAflex);
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, A10Parser.Aflex_nameContext ctx) {
+    return toStringWithLengthInSpace(messageCtx, ctx.word(), AFLEX_NAME_LENGTH_RANGE, "aflex name");
+  }
+
+  private static final IntegerSpace AFLEX_NAME_LENGTH_RANGE = IntegerSpace.of(Range.closed(1, 63));
+
+  @Override
   public void exitSsvspd_bucket_count(A10Parser.Ssvspd_bucket_countContext ctx) {
     toInteger(ctx, ctx.traffic_bucket_count()).ifPresent(_currentVirtualServerPort::setBucketCount);
   }

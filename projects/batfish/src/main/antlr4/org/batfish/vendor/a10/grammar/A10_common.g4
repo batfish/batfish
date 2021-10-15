@@ -10,6 +10,8 @@ single_quoted_string: SINGLE_QUOTE text = quoted_text? SINGLE_QUOTE;
 word_content: (double_quoted_string | single_quoted_string | WORD)+;
 word: WORD_SEPARATOR word_content;
 
+aflex_name: word;
+
 health_check_name: word;
 
 hostname: word;

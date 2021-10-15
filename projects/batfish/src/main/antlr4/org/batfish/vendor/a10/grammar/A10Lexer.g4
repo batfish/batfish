@@ -15,6 +15,7 @@ tokens {
 // A10 keywords
 ACTIVE: 'active';
 ADDRESS: 'address';
+AFLEX: 'aflex' -> pushMode(M_Word);
 ARP_RETRY: 'arp-retry';
 BLADE_PARAMETERS: 'blade-parameters';
 BUCKET_COUNT: 'bucket-count';
