@@ -80,6 +80,20 @@ public final class A10Configuration extends VendorConfiguration {
     _vlans = new HashMap<>();
   }
 
+  @Nullable
+  public BgpProcess getBgpProcess() {
+    return _bgpProcess;
+  }
+
+  /** Gets the {@link BgpProcess} for this device, creating a new one if none already exists. */
+  @Nonnull
+  public BgpProcess getOrCreateBgpProcess(long number) {
+    if (_bgpProcess == null) {
+      _bgpProcess = new BgpProcess(number);
+    }
+    return _bgpProcess;
+  }
+
   @Override
   public String getHostname() {
     return _hostname;
@@ -679,6 +693,7 @@ public final class A10Configuration extends VendorConfiguration {
   /** Map of interface names to interface. Used for converting aggregate interfaces. */
   private transient Map<String, Interface> _ifaceNametoIface;
 
+  @Nullable private BgpProcess _bgpProcess;
   private Configuration _c;
   private String _hostname;
   private Map<Integer, Interface> _interfacesEthernet;
