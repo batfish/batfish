@@ -1,10 +1,16 @@
 package org.batfish.vendor.a10.representation;
 
 import static org.batfish.vendor.a10.representation.A10Configuration.arePortTypesCompatible;
+import static org.batfish.vendor.a10.representation.A10Conversion.DEFAULT_VRRP_A_PREEMPT;
+import static org.batfish.vendor.a10.representation.A10Conversion.DEFAULT_VRRP_A_PRIORITY;
+import static org.batfish.vendor.a10.representation.A10Conversion.getNatPoolIps;
+import static org.batfish.vendor.a10.representation.A10Conversion.getVirtualServerIps;
 import static org.batfish.vendor.a10.representation.A10Conversion.toDstTransformationSteps;
 import static org.batfish.vendor.a10.representation.A10Conversion.toIntegerSpace;
 import static org.batfish.vendor.a10.representation.A10Conversion.toMatchCondition;
 import static org.batfish.vendor.a10.representation.A10Conversion.toProtocol;
+import static org.batfish.vendor.a10.representation.A10Conversion.toVrrpGroupBuilder;
+import static org.batfish.vendor.a10.representation.A10Conversion.toVrrpGroups;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
@@ -13,15 +19,18 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.batfish.datamodel.BddTestbed;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.transformation.ApplyAll;
 import org.batfish.datamodel.transformation.TransformationStep;
@@ -163,5 +172,102 @@ public class A10ConversionTest {
             new ApplyAll(
                 TransformationStep.assignDestinationPort(90, 91),
                 TransformationStep.assignDestinationIp(server1Ip))));
+  }
+
+  @Test
+  public void testGetNatPoolIps() {
+    Ip pool0Start = Ip.parse("10.0.0.1");
+    Ip pool0End = Ip.parse("10.0.0.3");
+    Ip pool1Start = Ip.parse("10.0.1.1");
+    Ip pool1End = Ip.parse("10.0.1.2");
+    NatPool natPoolVrid0 = new NatPool("pool0", pool0Start, pool0End, 24);
+    NatPool natPoolVrid1 = new NatPool("pool1", pool1Start, pool1End, 24);
+    natPoolVrid1.setVrid(1);
+    List<NatPool> natPools = ImmutableList.of(natPoolVrid0, natPoolVrid1);
+
+    assertThat(
+        getNatPoolIps(natPools, 0).collect(ImmutableSet.toImmutableSet()),
+        containsInAnyOrder(pool0Start, pool0End, Ip.parse("10.0.0.2")));
+    assertThat(
+        getNatPoolIps(natPools, 1).collect(ImmutableSet.toImmutableSet()),
+        containsInAnyOrder(pool1Start, pool1End));
+  }
+
+  @Test
+  public void testGetVirtualServerIps() {
+    Ip vs0Ip = Ip.parse("10.0.0.1");
+    Ip vs1EnabledIp = Ip.parse("10.0.1.1");
+    Ip vs1DisabledIp = Ip.parse("10.0.3.1");
+    VirtualServer vs0 = new VirtualServer("vs0", new VirtualServerTargetAddress(vs0Ip));
+    VirtualServer vs1Enabled =
+        new VirtualServer("vs1Enabled", new VirtualServerTargetAddress(vs1EnabledIp));
+    vs1Enabled.setVrid(1);
+    VirtualServer vs1Disabled =
+        new VirtualServer("vs1Disbled", new VirtualServerTargetAddress(vs1DisabledIp));
+    vs1Disabled.setVrid(1);
+    vs1Disabled.setEnable(false);
+    List<VirtualServer> virtualServers = ImmutableList.of(vs0, vs1Enabled, vs1Disabled);
+
+    assertThat(
+        getVirtualServerIps(virtualServers, 0).collect(ImmutableSet.toImmutableSet()),
+        containsInAnyOrder(vs0Ip));
+    assertThat(
+        getVirtualServerIps(virtualServers, 1).collect(ImmutableSet.toImmutableSet()),
+        containsInAnyOrder(vs1EnabledIp));
+  }
+
+  @Test
+  public void testToVrrpGroupBuilder() {
+    Ip ip = Ip.parse("1.1.1.1");
+    // null vrid config (must be vrid 0)
+    assertThat(
+        toVrrpGroupBuilder(null, ImmutableSet.of(ip)).build(),
+        equalTo(
+            VrrpGroup.builder()
+                .setPreempt(DEFAULT_VRRP_A_PREEMPT)
+                .setPriority(DEFAULT_VRRP_A_PRIORITY)
+                .setVirtualAddresses(ImmutableSet.of(ip))
+                .build()));
+
+    // non-null vrid config
+    VrrpAVrid vridConfig = new VrrpAVrid();
+    vridConfig.setPreemptModeDisable(true);
+    vridConfig.getOrCreateBladeParameters().setPriority(5);
+
+    assertThat(
+        toVrrpGroupBuilder(vridConfig, ImmutableSet.of(ip)).build(),
+        equalTo(
+            VrrpGroup.builder()
+                .setPreempt(false)
+                .setPriority(5)
+                .setVirtualAddresses(ImmutableSet.of(ip))
+                .build()));
+  }
+
+  @Test
+  public void testToVrrpGroups() {
+    Map<Integer, VrrpGroup.Builder> vrrpGroupBuilders =
+        ImmutableMap.of(
+            1,
+            VrrpGroup.builder()
+                .setPriority(5)
+                .setPreempt(true)
+                .setVirtualAddresses(Ip.parse("1.1.1.1")));
+    ConcreteInterfaceAddress sourceAddress =
+        ConcreteInterfaceAddress.create(Ip.parse("2.2.2.2"), 24);
+    org.batfish.datamodel.Interface iface =
+        org.batfish.datamodel.Interface.builder().setName("foo").setAddress(sourceAddress).build();
+
+    assertThat(
+        toVrrpGroups(iface, vrrpGroupBuilders),
+        equalTo(
+            ImmutableMap.of(
+                1,
+                VrrpGroup.builder()
+                    .setPriority(5)
+                    .setPreempt(true)
+                    .setVirtualAddresses(Ip.parse("1.1.1.1"))
+                    .setSourceAddress(sourceAddress)
+                    .build())));
   }
 }
