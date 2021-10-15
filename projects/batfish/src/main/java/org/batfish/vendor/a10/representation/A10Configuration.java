@@ -5,10 +5,18 @@ import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.FirewallSessionInterfaceInfo.Action.POST_NAT_FIB_LOOKUP;
 import static org.batfish.vendor.a10.representation.A10Conversion.VIRTUAL_TCP_PORT_TYPES;
 import static org.batfish.vendor.a10.representation.A10Conversion.VIRTUAL_UDP_PORT_TYPES;
+import static org.batfish.vendor.a10.representation.A10Conversion.getEnabledVrids;
+import static org.batfish.vendor.a10.representation.A10Conversion.getNatPoolIps;
+import static org.batfish.vendor.a10.representation.A10Conversion.getNatPoolIpsForAllVrids;
+import static org.batfish.vendor.a10.representation.A10Conversion.getVirtualServerIps;
+import static org.batfish.vendor.a10.representation.A10Conversion.getVirtualServerIpsForAllVrids;
+import static org.batfish.vendor.a10.representation.A10Conversion.isVrrpAEnabled;
 import static org.batfish.vendor.a10.representation.A10Conversion.orElseChain;
 import static org.batfish.vendor.a10.representation.A10Conversion.toDstTransformationSteps;
 import static org.batfish.vendor.a10.representation.A10Conversion.toMatchCondition;
 import static org.batfish.vendor.a10.representation.A10Conversion.toSnatTransformationStep;
+import static org.batfish.vendor.a10.representation.A10Conversion.toVrrpGroupBuilder;
+import static org.batfish.vendor.a10.representation.A10Conversion.toVrrpGroups;
 import static org.batfish.vendor.a10.representation.Interface.DEFAULT_MTU;
 import static org.batfish.vendor.a10.representation.StaticRoute.DEFAULT_STATIC_ROUTE_DISTANCE;
 
@@ -16,12 +24,18 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
+import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.SetMultimap;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.SortedMap;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -33,12 +47,15 @@ import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.IntegerSpace;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.transformation.ApplyAll;
 import org.batfish.datamodel.transformation.ApplyAny;
@@ -259,9 +276,112 @@ public final class A10Configuration extends VendorConfiguration {
 
     // Must be done after interface conversion
     convertVirtualServers();
+    convertVrrpA();
 
     markStructures();
     return ImmutableList.of(_c);
+  }
+
+  private void convertVrrpA() {
+    // If vrrp-a is disabled, then the device should act as if it owns all addresses that would have
+    // been part of vrrp-a.
+    // If vrrp-a is enabled, then the device should own all addresses for VRIDs that are enabled.
+    // TODO: handle floating-ips
+    if (!isVrrpAEnabled(_vrrpA)) {
+      convertVrrpADisabled();
+    } else {
+      convertVrrpAEnabled();
+    }
+  }
+
+  /**
+   * Process vrrp-a vrids in the case vrrp-a is disabled. Causes the device to own all virtual IPs
+   * for all vrids.
+   */
+  private void convertVrrpADisabled() {
+    // Overview:
+    // - Add all virtual addresses to every inteface with a concrete IPv4 address.
+    // - Set address metadata so no connected nor local routes are generated for virtual addresses.
+    List<ConcreteInterfaceAddress> virtualAddresses =
+        Stream.concat(
+                getNatPoolIpsForAllVrids(_natPools.values()),
+                getVirtualServerIpsForAllVrids(_virtualServers.values()))
+            .map(ip -> ConcreteInterfaceAddress.create(ip, Prefix.MAX_PREFIX_LENGTH))
+            .collect(ImmutableList.toImmutableList());
+    ConnectedRouteMetadata connectedRouteMetadata =
+        ConnectedRouteMetadata.builder()
+            .setGenerateConnectedRoute(false)
+            .setGenerateLocalRoute(false)
+            .build();
+    SortedMap<ConcreteInterfaceAddress, ConnectedRouteMetadata> addressMetadata =
+        virtualAddresses.stream()
+            .collect(
+                ImmutableSortedMap.toImmutableSortedMap(
+                    Comparator.naturalOrder(),
+                    virtualAddress -> virtualAddress,
+                    unused -> connectedRouteMetadata));
+    _c.getAllInterfaces().values().stream()
+        .filter(i -> i.getConcreteAddress() != null)
+        .forEach(
+            iface -> {
+              iface.setAllAddresses(
+                  ImmutableSortedSet.<InterfaceAddress>naturalOrder()
+                      .addAll(iface.getAllAddresses())
+                      .addAll(virtualAddresses)
+                      .build());
+              iface.setAddressMetadata(
+                  ImmutableSortedMap
+                      .<ConcreteInterfaceAddress, ConnectedRouteMetadata>naturalOrder()
+                      .putAll(iface.getAddressMetadata())
+                      .putAll(addressMetadata)
+                      .build());
+            });
+  }
+
+  /**
+   * Process vrrp-a vrids in the case vrrp-a is enabled. Causes the device to own all virtual
+   * addresses for each vrid for which it is VRRP master.
+   */
+  private void convertVrrpAEnabled() {
+    // Overview:
+    // - Add a VrrpGroup for each enabled vrid on all L3 interfaces with a primary
+    //   ConcreteInterfaceAddress.
+    // - Each created VrrpGroup contains all the virtual addresses the device should own when it is
+    //   master for the corresponding vrid.
+    assert _vrrpA != null;
+    // vrid -> virtual addresses
+    ImmutableSetMultimap.Builder<Integer, Ip> virtualAddressesByEnabledVridBuilder =
+        ImmutableSetMultimap.builder();
+    // VRID 0 always exists, but may be disabled. Other VRIDs exist only if they are declared, and
+    // cannot be disabled independently.
+    // Grab the virtual addresses for each VRID from NAT pools and virtual-servers
+    getEnabledVrids(_vrrpA)
+        .forEach(
+            vrid -> {
+              Stream.concat(
+                      getNatPoolIps(_natPools.values(), vrid),
+                      getVirtualServerIps(_virtualServers.values(), vrid))
+                  .forEach(ip -> virtualAddressesByEnabledVridBuilder.put(vrid, ip));
+            });
+    SetMultimap<Integer, Ip> virtualAddressesByEnabledVrid =
+        virtualAddressesByEnabledVridBuilder.build();
+    // VRID 0 may be used even if it is not configured explicitly.
+    assert virtualAddressesByEnabledVrid.keySet().stream()
+        .allMatch(vrid -> vrid == 0 || _vrrpA.getVrids().containsKey(vrid));
+    // Create VrrpGroup builders for each vrid. We cannot make final VrrpGroups because we are
+    // missing source address, which varies per interface.
+    ImmutableMap.Builder<Integer, VrrpGroup.Builder> vrrpGroupBuildersBuilder =
+        ImmutableMap.builder();
+    virtualAddressesByEnabledVrid
+        .asMap()
+        .forEach(
+            (vrid, virtualAddresses) ->
+                vrrpGroupBuildersBuilder.put(
+                    vrid, toVrrpGroupBuilder(_vrrpA.getVrids().get(vrid), virtualAddresses)));
+    // Create and assign the final VRRP groups on each interface with a concrete IPv4 address.
+    _c.getAllInterfaces().values().stream()
+        .filter(i -> i.getConcreteAddress() != null)
+        .forEach(i -> i.setVrrpGroups(toVrrpGroups(i, vrrpGroupBuildersBuilder.build())));
   }
 
   /**
@@ -272,7 +392,7 @@ public final class A10Configuration extends VendorConfiguration {
     Optional<Transformation> xform =
         orElseChain(
             _virtualServers.values().stream()
-                .filter(vs -> firstNonNull(vs.getEnable(), true))
+                .filter(A10Conversion::isVirtualServerEnabled)
                 .flatMap(vs -> toSimpleTransformations(vs).stream())
                 .collect(ImmutableList.toImmutableList()));
     xform.ifPresent(
@@ -295,7 +415,7 @@ public final class A10Configuration extends VendorConfiguration {
   @Nonnull
   private List<SimpleTransformation> toSimpleTransformations(VirtualServer server) {
     return server.getPorts().values().stream()
-        .filter(p -> firstNonNull(p.getEnable(), true))
+        .filter(A10Conversion::isVirtualServerPortEnabled)
         .map(
             p ->
                 new SimpleTransformation(

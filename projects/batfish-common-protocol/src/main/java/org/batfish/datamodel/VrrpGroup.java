@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
@@ -106,6 +107,25 @@ public final class VrrpGroup implements Serializable {
         firstNonNull(priority, 0),
         sourceAddress,
         ImmutableSet.copyOf(firstNonNull(virtualAddresses, ImmutableSet.of())));
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    } else if (!(o instanceof VrrpGroup)) {
+      return false;
+    }
+    VrrpGroup that = (VrrpGroup) o;
+    return _preempt == that._preempt
+        && _priority == that._priority
+        && Objects.equals(_sourceAddress, that._sourceAddress)
+        && _virtualAddresses.equals(that._virtualAddresses);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_preempt, _priority, _sourceAddress, _virtualAddresses);
   }
 
   @JsonProperty(PROP_PREEMPT)
