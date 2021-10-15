@@ -53,6 +53,9 @@ subnet_mask: SUBNET_MASK;
 
 null_rest_of_line: ~NEWLINE* NEWLINE;
 
+// 1-4294967295
+bgp_asn: uint32;
+
 // 2-4094
 vlan_number: uint16;
 

@@ -7,6 +7,7 @@ import
   A10_ip_route,
   A10_lacp_trunk,
   A10_rba,
+  A10_router_bgp,
   A10_slb_server,
   A10_slb_service_group,
   A10_slb_virtual_server,
@@ -29,6 +30,7 @@ statement
    | s_lacp_trunk
    | s_no
    | s_rba
+   | s_router
    | s_slb
    | s_trunk
    | s_vlan
@@ -46,6 +48,8 @@ sn_ip: IP sni;
 sni: sni_route;
 
 s_hostname: HOSTNAME hostname NEWLINE;
+
+s_router: ROUTER sr_bgp;
 
 s_slb: SLB ss;
 
