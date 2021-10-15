@@ -55,25 +55,27 @@ bgp_neighbor: ip_address;
 srbn
 :
    srbn_activate
-   | srbn_capability
    | srbn_description
-   | srbn_fall_over
    | srbn_maximum_prefix
    | srbn_remote_as
    | srbn_send_community
-   | srbn_soft_reconfiguration
-   | srbn_timers
    | srbn_weight
    | srbn_update_source
 ;
 
+srbn_null
+:
+   (
+      CAPABILITY
+      | FALL_OVER
+      | SOFT_RECONFIGURATION
+      | TIMERS
+   ) null_rest_of_line
+;
+
 srbn_activate: ACTIVATE NEWLINE;
 
-srbn_capability: CAPABILITY null_rest_of_line;
-
 srbn_description: DESCRIPTION bgp_neighbor_description NEWLINE;
-
-srbn_fall_over: FALL_OVER null_rest_of_line;
 
 srbn_maximum_prefix: MAXIMUM_PREFIX bgp_neighbor_max_prefix bgp_neighbor_max_prefix_threshold? NEWLINE;
 
@@ -82,10 +84,6 @@ srbn_remote_as: REMOTE_AS bgp_asn NEWLINE;
 srbn_send_community: SEND_COMMUNITY send_community NEWLINE;
 
 send_community: BOTH | EXTENDED | STANDARD | NONE;
-
-srbn_soft_reconfiguration: SOFT_RECONFIGURATION null_rest_of_line;
-
-srbn_timers: TIMERS null_rest_of_line;
 
 srbn_weight: WEIGHT bgp_neighbor_weight NEWLINE;
 

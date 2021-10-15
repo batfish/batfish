@@ -9,6 +9,11 @@ import org.batfish.datamodel.Ip;
 
 /** Data model class representing BGP configuration. */
 public class BgpProcess implements Serializable {
+
+  public long getAsn() {
+    return _asn;
+  }
+
   @Nullable
   public Long getDefaultLocalPreference() {
     return _defaultLocalPreference;
@@ -23,10 +28,7 @@ public class BgpProcess implements Serializable {
     return _neighbors;
   }
 
-  /**
-   * Get the {@link BgpNeighbor} given by the specified {@link BgpNeighborId}, creating a new
-   * neighbor if it doesn't already exist.
-   */
+  /** Get the {@link BgpNeighbor} given by the specified {@link BgpNeighborId}. */
   @Nullable
   public BgpNeighbor getNeighbor(BgpNeighborId id) {
     return _neighbors.get(id);
@@ -48,10 +50,6 @@ public class BgpProcess implements Serializable {
               .build();
     }
     return neighbor;
-  }
-
-  public long getNumber() {
-    return _number;
   }
 
   @Nullable
@@ -112,14 +110,14 @@ public class BgpProcess implements Serializable {
     _routerId = routerId;
   }
 
-  public BgpProcess(long number) {
-    _number = number;
+  public BgpProcess(long asn) {
+    _asn = asn;
     _neighbors = ImmutableMap.of();
   }
 
+  private final long _asn;
   @Nullable private Long _defaultLocalPreference;
   @Nonnull private Map<BgpNeighborId, BgpNeighbor> _neighbors;
-  private final long _number;
   @Nullable private Integer _maximumPaths;
   private boolean _redistributeConnected;
   private boolean _redistributeFloatingIp;

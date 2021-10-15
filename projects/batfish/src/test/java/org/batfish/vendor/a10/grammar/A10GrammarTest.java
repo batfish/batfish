@@ -1557,7 +1557,7 @@ public class A10GrammarTest {
     BgpProcess bgp = c.getBgpProcess();
 
     assertNotNull(bgp);
-    assertThat(bgp.getNumber(), equalTo(1L));
+    assertThat(bgp.getAsn(), equalTo(1L));
     assertThat(bgp.getDefaultLocalPreference(), equalTo(100L));
     assertThat(bgp.getMaximumPaths(), equalTo(1));
     assertThat(bgp.getRouterId(), equalTo(Ip.parse("10.10.10.10")));
@@ -1571,7 +1571,7 @@ public class A10GrammarTest {
       BgpNeighbor neighbor1 = bgp.getNeighbor(new BgpNeighborIdAddress(Ip.parse("10.10.10.100")));
       assertNotNull(neighbor1);
       assertThat(neighbor1.getRemoteAs(), equalTo(4294967295L));
-      assertTrue(neighbor1.isActivate());
+      assertTrue(neighbor1.getActivate());
       assertThat(neighbor1.getDescription(), equalTo("DESCRIPTION"));
       assertThat(neighbor1.getMaximumPrefix(), equalTo(128));
       assertThat(neighbor1.getMaximumPrefixThreshold(), equalTo(64));
@@ -1585,7 +1585,7 @@ public class A10GrammarTest {
       BgpNeighbor neighbor2 = bgp.getNeighbor(new BgpNeighborIdAddress(Ip.parse("10.10.10.101")));
       assertNotNull(neighbor2);
       assertThat(neighbor2.getRemoteAs(), equalTo(65535L));
-      assertFalse(neighbor2.isActivate());
+      assertNull(neighbor2.getActivate());
       assertNull(neighbor2.getDescription());
       assertNull(neighbor2.getMaximumPrefix());
       assertNull(neighbor2.getMaximumPrefixThreshold());
@@ -1597,8 +1597,8 @@ public class A10GrammarTest {
 
   @Test
   public void testBgpWarn() throws IOException {
-    String filename = "bgp_warn";
-    Batfish batfish = getBatfishForConfigurationNames(filename);
+    String hostname = "bgp_warn";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
 
     Warnings warnings =
         getOnlyElement(
@@ -1621,5 +1621,13 @@ public class A10GrammarTest {
                     "Expected neighbor maximum-prefix threshold in range 1-100, but got '0'"),
                 hasComment(
                     "Expected neighbor maximum-prefix threshold in range 1-100, but got '101'"))));
+
+    A10Configuration c = parseVendorConfig(hostname);
+    BgpProcess bgp = c.getBgpProcess();
+    BgpNeighbor neighbor = bgp.getNeighbor(new BgpNeighborIdAddress(Ip.parse("10.1.1.1")));
+    assertNotNull(neighbor);
+    // None of these should have been set, even where the line has one valid and one invalid value
+    assertNull(neighbor.getMaximumPrefix());
+    assertNull(neighbor.getMaximumPrefixThreshold());
   }
 }

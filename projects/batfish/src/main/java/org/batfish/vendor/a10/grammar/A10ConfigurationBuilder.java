@@ -762,10 +762,9 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     }
 
     _currentBgpProcess = _c.getOrCreateBgpProcess(maybeAsn.get());
-    if (_currentBgpProcess.getNumber() != maybeAsn.get()) {
+    if (_currentBgpProcess.getAsn() != maybeAsn.get()) {
       warn(
-          ctx,
-          String.format("BGP is already configured with asn %d", _currentBgpProcess.getNumber()));
+          ctx, String.format("BGP is already configured with asn %d", _currentBgpProcess.getAsn()));
       _currentBgpProcess = new BgpProcess(-1); // dummy
     }
   }
@@ -806,8 +805,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
     // The first neighbor statement must be remote-as or peer-group
     // TODO handle peer-group check
-    if (ctx.srbn().srbn_remote_as() == null
-        && (existingNeighbor == null || existingNeighbor.getRemoteAs() == null)) {
+    if (ctx.srbn().srbn_remote_as() == null && existingNeighbor == null) {
       warn(ctx, "Must specify neighbor remote-as or peer-group first");
       _currentBgpNeighbor = new BgpNeighbor(id); // dummy
       return;

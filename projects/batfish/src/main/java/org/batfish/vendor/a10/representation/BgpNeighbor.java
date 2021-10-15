@@ -13,7 +13,8 @@ public class BgpNeighbor implements Serializable {
     STANDARD,
   }
 
-  public boolean isActivate() {
+  @Nullable
+  public Boolean getActivate() {
     return _activate;
   }
 
@@ -93,7 +94,7 @@ public class BgpNeighbor implements Serializable {
     _id = id;
   }
 
-  private boolean _activate;
+  @Nullable private Boolean _activate;
   @Nullable private String _description;
   @Nonnull private final BgpNeighborId _id;
   @Nullable private Integer _maximumPrefix;
