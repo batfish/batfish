@@ -403,22 +403,21 @@ public class FileBasedStorage implements StorageProvider {
   @Override
   public @Nullable SnapshotRuntimeData loadRuntimeData(NetworkId network, SnapshotId snapshot) {
     // Prefer runtime data inside of batfish/ subfolder over top level
-    Path insideBatfish =
-        Paths.get(RELPATH_INPUT, RELPATH_BATFISH_CONFIGS_DIR, BfConsts.RELPATH_RUNTIME_DATA_FILE);
-    Path topLevel = Paths.get(RELPATH_INPUT, BfConsts.RELPATH_RUNTIME_DATA_FILE);
-    Optional<Path> path =
-        Stream.of(insideBatfish, topLevel)
-            .map(p -> getSnapshotDir(network, snapshot).resolve(p))
-            .filter(Files::exists)
-            .findFirst();
-    if (!path.isPresent()) {
+    Path path =
+        getSnapshotDir(network, snapshot)
+            .resolve(
+                Paths.get(
+                    RELPATH_INPUT,
+                    RELPATH_BATFISH_CONFIGS_DIR,
+                    BfConsts.RELPATH_RUNTIME_DATA_FILE));
+    if (!Files.exists(path)) {
       // Neither file was present in input.
       return null;
     }
 
     AtomicInteger counter = _newBatch.apply("Reading runtime data", 1);
     try {
-      return BatfishObjectMapper.mapper().readValue(path.get().toFile(), SnapshotRuntimeData.class);
+      return BatfishObjectMapper.mapper().readValue(path.toFile(), SnapshotRuntimeData.class);
     } catch (IOException e) {
       _logger.warnf(
           "Unexpected exception caught while loading runtime data for snapshot %s: %s",

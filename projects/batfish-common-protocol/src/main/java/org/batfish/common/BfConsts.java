@@ -124,6 +124,7 @@ public class BfConsts {
 
   public static final String RELPATH_AWS_CONFIGS_DIR = "aws_configs";
   public static final String RELPATH_AWS_CONFIGS_FILE = "aws_configs";
+  public static final String RELPATH_BATFISH = "batfish";
   public static final String RELPATH_CHECKPOINT_MANAGEMENT_DIR = "checkpoint_management";
   public static final String RELPATH_CONFIGURATIONS_DIR = "configs";
   public static final String RELPATH_EDGE_BLACKLIST_FILE = "edge_blacklist";
