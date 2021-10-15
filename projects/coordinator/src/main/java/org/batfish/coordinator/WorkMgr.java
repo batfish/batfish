@@ -1281,8 +1281,7 @@ public class WorkMgr extends AbstractCoordinator {
     File runtimeDataOldLoc = dir.resolve(BfConsts.RELPATH_RUNTIME_DATA_FILE).toFile();
     if (runtimeDataNewLoc.exists()) {
       // The runtime data file already exists under batfish subdirectory. Delete the one at the root
-      // directory (if it
-      // exists).
+      // directory (if it exists).
       runtimeDataOldLoc.delete();
       return;
     }
