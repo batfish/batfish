@@ -1522,6 +1522,16 @@ public final class VirtualRouter {
     return vs.addToFloodList(route.getVniIp());
   }
 
+  /**
+   * Activates and deactivates routes in protocol-specific routing processes based on what NHIPs are
+   * now resolvable.
+   */
+  void updateResolvableRoutes() {
+    if (_bgpRoutingProcess != null) {
+      _bgpRoutingProcess.updateResolvableRoutes(_mainRibDeltaPrevRound);
+    }
+  }
+
   /** Redistribute routes learned in the previous round into known routing processes */
   void redistribute() {
     Streams.concat(
