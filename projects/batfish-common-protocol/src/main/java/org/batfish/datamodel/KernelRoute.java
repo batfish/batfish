@@ -1,11 +1,14 @@
 package org.batfish.datamodel;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.datamodel.Route.UNSET_ROUTE_TAG;
+import static java.util.Comparator.comparing;
+import static java.util.Comparator.naturalOrder;
+import static java.util.Comparator.nullsFirst;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Comparator;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -21,12 +24,13 @@ public final class KernelRoute extends AbstractRoute implements Comparable<Kerne
 
   // The comparator has no impact on route preference in RIBs and should not be used as such
   private static final Comparator<KernelRoute> COMPARATOR =
-      Comparator.comparing(KernelRoute::getNetwork)
+      comparing(KernelRoute::getNetwork)
           .thenComparing(KernelRoute::getNextHopIp)
           .thenComparing(KernelRoute::getNextHopInterface)
           .thenComparing(KernelRoute::getMetric)
           .thenComparing(KernelRoute::getAdministrativeCost)
           .thenComparing(KernelRoute::getTag)
+          .thenComparing(KernelRoute::getRequiredOwnedIp, nullsFirst(naturalOrder()))
           .thenComparing(KernelRoute::getNonRouting)
           .thenComparing(KernelRoute::getNonForwarding);
 
@@ -35,7 +39,7 @@ public final class KernelRoute extends AbstractRoute implements Comparable<Kerne
     @Nonnull
     @Override
     public KernelRoute build() {
-      return new KernelRoute(getNetwork(), getTag());
+      return new KernelRoute(getNetwork(), getAdmin(), getTag(), _requiredOwnedIp);
     }
 
     @Nonnull
@@ -43,6 +47,13 @@ public final class KernelRoute extends AbstractRoute implements Comparable<Kerne
     protected Builder getThis() {
       return this;
     }
+
+    public @Nonnull Builder setRequiredOwnedIp(@Nullable Ip requiredOwnedIp) {
+      _requiredOwnedIp = requiredOwnedIp;
+      return this;
+    }
+
+    private @Nullable Ip _requiredOwnedIp;
   }
 
   public static Builder builder() {
@@ -51,26 +62,20 @@ public final class KernelRoute extends AbstractRoute implements Comparable<Kerne
 
   @JsonCreator
   @SuppressWarnings("unused")
-  private static KernelRoute create(
+  private static @Nonnull KernelRoute create(
       @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
       @JsonProperty(PROP_ADMINISTRATIVE_COST) int adminCost,
       @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface,
       @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
+      @JsonProperty(PROP_REQUIRED_OWNED_IP) @Nullable Ip requiredOwnedIp,
       @JsonProperty(PROP_TAG) long tag) {
     checkArgument(network != null, "Cannot create kernel route: missing %s", PROP_NETWORK);
-    return new KernelRoute(network, adminCost, tag);
+    return new KernelRoute(network, adminCost, tag, requiredOwnedIp);
   }
 
-  public KernelRoute(Prefix network) {
-    this(network, UNSET_ROUTE_TAG);
-  }
-
-  private KernelRoute(Prefix network, int admin, long tag) {
+  private KernelRoute(Prefix network, int admin, long tag, @Nullable Ip requiredOwnedIp) {
     super(network, admin, tag, false, true);
-  }
-
-  public KernelRoute(Prefix network, long tag) {
-    this(network, 0, tag);
+    _requiredOwnedIp = requiredOwnedIp;
   }
 
   @Override
@@ -89,11 +94,18 @@ public final class KernelRoute extends AbstractRoute implements Comparable<Kerne
     return RoutingProtocol.KERNEL;
   }
 
+  public @Nullable Ip getRequiredOwnedIp() {
+    return _requiredOwnedIp;
+  }
+
   /////// Keep #toBuilder, #equals, and #hashCode in sync ////////
 
   @Override
   public Builder toBuilder() {
-    return builder().setNetwork(getNetwork()).setTag(getTag());
+    return builder()
+        .setNetwork(getNetwork())
+        .setRequiredOwnedIp(getRequiredOwnedIp())
+        .setTag(getTag());
   }
 
   @Override
@@ -104,11 +116,17 @@ public final class KernelRoute extends AbstractRoute implements Comparable<Kerne
       return false;
     }
     KernelRoute rhs = (KernelRoute) o;
-    return _network.equals(rhs._network) && _tag == rhs._tag;
+    return _network.equals(rhs._network)
+        && _tag == rhs._tag
+        && Objects.equals(_requiredOwnedIp, rhs._requiredOwnedIp);
   }
 
   @Override
   public int hashCode() {
-    return _network.hashCode() * 31 + Long.hashCode(_tag);
+    return Objects.hash(_network, _tag, _requiredOwnedIp);
   }
+
+  private static final String PROP_REQUIRED_OWNED_IP = "requiredOwnedIp";
+
+  private final @Nullable Ip _requiredOwnedIp;
 }

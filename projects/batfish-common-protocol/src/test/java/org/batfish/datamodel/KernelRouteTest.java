@@ -7,6 +7,7 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
 
+/** Test of {@link KernelRoute}. */
 public final class KernelRouteTest {
 
   @Test
@@ -17,18 +18,29 @@ public final class KernelRouteTest {
         .addEqualityGroup(kr, kr, builder.build())
         .addEqualityGroup(builder.setNetwork(Prefix.ZERO).build())
         .addEqualityGroup((builder.setTag(5L).build()))
+        .addEqualityGroup((builder.setRequiredOwnedIp(Ip.ZERO).build()))
         .testEquals();
   }
 
   @Test
   public void testJacksonSerialization() {
-    KernelRoute route = new KernelRoute(Prefix.ZERO);
+    KernelRoute route =
+        KernelRoute.builder()
+            .setNetwork(Prefix.ZERO)
+            .setTag(5L)
+            .setRequiredOwnedIp(Ip.ZERO)
+            .build();
     assertEquals(route, BatfishObjectMapper.clone(route, KernelRoute.class));
   }
 
   @Test
   public void testSerialization() {
-    KernelRoute route = new KernelRoute(Prefix.ZERO);
+    KernelRoute route =
+        KernelRoute.builder()
+            .setNetwork(Prefix.ZERO)
+            .setTag(5L)
+            .setRequiredOwnedIp(Ip.ZERO)
+            .build();
     assertEquals(route, SerializationUtils.clone(route));
   }
 }

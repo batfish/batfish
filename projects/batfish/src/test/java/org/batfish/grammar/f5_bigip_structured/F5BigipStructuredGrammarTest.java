@@ -476,7 +476,8 @@ public final class F5BigipStructuredGrammarTest {
     Bgpv4Route bgpv4RouteAllowedOnlyByCommonPolicy =
         bgpRouteBuilder.setNetwork(Prefix.strict("10.0.1.0/24")).build();
     ConnectedRoute connectedRoute = new ConnectedRoute(Prefix.strict("10.0.0.0/24"), "blah");
-    KernelRoute kernelRoute = new KernelRoute(Prefix.strict("10.0.0.0/24"));
+    KernelRoute kernelRoute =
+        KernelRoute.builder().setNetwork(Prefix.strict("10.0.0.0/24")).build();
 
     // common export policy
     assertThat(c.getRoutingPolicies(), hasKey(commonExportPolicyName));
@@ -1354,7 +1355,10 @@ public final class F5BigipStructuredGrammarTest {
 
     assertThat(
         c,
-        hasDefaultVrf(hasKernelRoutes(contains(new KernelRoute(Prefix.strict("192.0.2.8/32"))))));
+        hasDefaultVrf(
+            hasKernelRoutes(
+                contains(
+                    KernelRoute.builder().setNetwork(Prefix.strict("192.0.2.8/32")).build()))));
   }
 
   @Test
