@@ -17,6 +17,7 @@ s_bgp
   | sb_network
   | sb_no
   | sb_redistribute
+  | sb_timers
   | sbafi_neighbor
   )*
 ;
@@ -312,7 +313,8 @@ sbn_peer_group_decl
 
 sbn_property
 :
-  sbnp_description
+ sbnp_advertisement_interval
+| sbnp_description
 | sbnp_ebgp_multihop
 | sbnp_peer_group
 | sbnp_bfd
@@ -320,7 +322,14 @@ sbn_property
 | sbnp_remote_as
 | sbnp_update_source
 | sbnp_local_as
+| sbnp_timers
 ;
+
+sbnp_advertisement_interval
+:
+   ADVERTISEMENT_INTERVAL uint32
+;
+
 
 sbnp_bfd
 :
@@ -360,6 +369,11 @@ sbnp_update_source
 sbnp_local_as
 :
   LOCAL_AS asn = autonomous_system (NO_PREPEND REPLACE_AS?)?
+;
+
+sbnp_timers
+:
+  TIMERS CONNECT uint32
 ;
 
 sb_network
@@ -454,4 +468,9 @@ sbn_password
 sbnobd_ipv4_unicast
 :
     IPV4_UNICAST
+;
+
+sb_timers
+:
+    TIMERS BGP uint32 uint32 NEWLINE
 ;
