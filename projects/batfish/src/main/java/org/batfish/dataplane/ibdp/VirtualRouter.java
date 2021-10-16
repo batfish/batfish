@@ -59,6 +59,7 @@ import org.batfish.datamodel.GenericRibReadOnly;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IsisRoute;
+import org.batfish.datamodel.KernelRoute;
 import org.batfish.datamodel.LocalRoute;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Prefix;
@@ -307,9 +308,10 @@ public final class VirtualRouter {
    * iterations (e.g., static route RIB, connected route RIB, etc.)
    */
   @VisibleForTesting
-  void initForIgpComputation(TopologyContext topologyContext) {
+  void initForIgpComputation(
+      TopologyContext topologyContext, Map<Ip, Map<String, Set<String>>> ipVrfOwners) {
     initConnectedRib();
-    initKernelRib();
+    initKernelRib(ipVrfOwners);
     initLocalRib();
     initStaticRibs();
     // Always import local and connected routes into your own rib
@@ -641,12 +643,30 @@ public final class VirtualRouter {
   }
 
   /**
-   * Initialize the kernel RIB -- a RIB containing non-forwarding routes installed unconditionally
-   * for the purpose of redistribution
+   * Initialize the kernel routes -- a set of non-forwarding routes installed for the purpose of
+   * redistribution.
+   *
+   * @param ipVrfOwners For {@link KernelRoute}s with a required owned ip, this structure is used to
+   *     see whether the IP is owned.
    */
   @VisibleForTesting
-  void initKernelRib() {
-    _vrf.getKernelRoutes().stream().map(this::annotateRoute).forEach(_kernelRib::mergeRoute);
+  void initKernelRib(Map<Ip, Map<String, Set<String>>> ipVrfOwners) {
+    _vrf.getKernelRoutes().stream()
+        .filter(kr -> shouldActivateKernelRoute(kr, ipVrfOwners))
+        .map(this::annotateRoute)
+        .forEach(_kernelRib::mergeRoute);
+  }
+
+  @VisibleForTesting
+  boolean shouldActivateKernelRoute(KernelRoute kr, Map<Ip, Map<String, Set<String>>> ipVrfOwners) {
+    Ip requiredOwnedIp = kr.getRequiredOwnedIp();
+    if (requiredOwnedIp == null) {
+      return true;
+    }
+    return ipVrfOwners
+        .getOrDefault(requiredOwnedIp, ImmutableMap.of())
+        .getOrDefault(_c.getHostname(), ImmutableSet.of())
+        .contains(_name);
   }
 
   /**
@@ -1377,7 +1397,8 @@ public final class VirtualRouter {
     }
   }
 
-  private <R extends AbstractRoute> AnnotatedRoute<R> annotateRoute(@Nonnull R route) {
+  @VisibleForTesting
+  <R extends AbstractRoute> AnnotatedRoute<R> annotateRoute(@Nonnull R route) {
     return new AnnotatedRoute<>(route, _name);
   }
 

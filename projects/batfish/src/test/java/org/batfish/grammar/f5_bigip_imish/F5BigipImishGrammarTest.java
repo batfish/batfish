@@ -148,12 +148,16 @@ public final class F5BigipImishGrammarTest {
 
   private void assertAcceptsKernelRoute(RoutingPolicy rp) {
     Bgpv4Route.Builder outputBuilder = makeBgpOutputRouteBuilder();
-    assertTrue(rp.process(new KernelRoute(Prefix.ZERO), outputBuilder, Direction.OUT));
+    assertTrue(
+        rp.process(
+            KernelRoute.builder().setNetwork(Prefix.ZERO).build(), outputBuilder, Direction.OUT));
   }
 
   private void assertRejectsKernelRoute(RoutingPolicy rp) {
     Bgpv4Route.Builder outputBuilder = makeBgpOutputRouteBuilder();
-    assertFalse(rp.process(new KernelRoute(Prefix.ZERO), outputBuilder, Direction.OUT));
+    assertFalse(
+        rp.process(
+            KernelRoute.builder().setNetwork(Prefix.ZERO).build(), outputBuilder, Direction.OUT));
   }
 
   private Batfish getBatfishForConfigurationNames(String... configurationNames) throws IOException {
@@ -743,7 +747,8 @@ public final class F5BigipImishGrammarTest {
     Bgpv4Route bgpv4RouteAllowedOnlyByCommonPolicy =
         bgpRouteBuilder.setNetwork(Prefix.strict("10.0.1.0/24")).build();
     ConnectedRoute connectedRoute = new ConnectedRoute(Prefix.strict("10.0.0.0/24"), "blah");
-    KernelRoute kernelRoute = new KernelRoute(Prefix.strict("10.0.0.0/24"));
+    KernelRoute kernelRoute =
+        KernelRoute.builder().setNetwork(Prefix.strict("10.0.0.0/24")).build();
 
     // common export policy
     assertThat(c.getRoutingPolicies(), hasKey(commonExportPolicyName));

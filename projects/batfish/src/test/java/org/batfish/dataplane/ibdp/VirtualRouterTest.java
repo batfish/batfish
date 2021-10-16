@@ -119,6 +119,11 @@ public class VirtualRouterTest {
     return n.getVirtualRouterOrThrow(DEFAULT_VRF_NAME);
   }
 
+  private static VirtualRouter makeA10VirtualRouter(String hostname) {
+    Node n = TestUtils.makeA10Router(hostname);
+    return n.getVirtualRouterOrThrow(DEFAULT_VRF_NAME);
+  }
+
   private static VirtualRouter makeIosVirtualRouter(String hostname) {
     Node n = TestUtils.makeIosRouter(hostname);
     return n.getVirtualRouterOrThrow(DEFAULT_VRF_NAME);
@@ -271,20 +276,78 @@ public class VirtualRouterTest {
   @Test
   public void testInitKernelRib() {
     // Setup
-    VirtualRouter vr = makeF5VirtualRouter(null);
+    String hostname = "n1";
+    Ip missingRequiredOwnedIp = Ip.parse("10.0.0.0");
+    Ip presentRequiredOwnedIp = Ip.parse("10.0.1.0");
+    Prefix missingOwnedIpPrefix = Prefix.create(missingRequiredOwnedIp, 24);
+    Prefix presentOwnedIpPrefix = Prefix.create(presentRequiredOwnedIp, 24);
+    KernelRoute noRequiredOwnedIpRoute = KernelRoute.builder().setNetwork(Prefix.ZERO).build();
+    KernelRoute missingRequiredOwnedIpRoute =
+        KernelRoute.builder()
+            .setNetwork(missingOwnedIpPrefix)
+            .setTag(10L)
+            .setRequiredOwnedIp(missingRequiredOwnedIp)
+            .build();
+    KernelRoute presentRequiredOwnedIpRoute =
+        KernelRoute.builder()
+            .setNetwork(presentOwnedIpPrefix)
+            .setTag(11L)
+            .setRequiredOwnedIp(presentRequiredOwnedIp)
+            .build();
+    Map<Ip, Map<String, Set<String>>> ipVrfOwners =
+        ImmutableMap.of(
+            presentRequiredOwnedIp, ImmutableMap.of(hostname, ImmutableSet.of(DEFAULT_VRF_NAME)));
+    VirtualRouter vr = makeF5VirtualRouter(hostname);
     vr.getConfiguration()
         .getDefaultVrf()
-        .setKernelRoutes(ImmutableSortedSet.of(new KernelRoute(Prefix.ZERO)));
+        .setKernelRoutes(
+            ImmutableSortedSet.of(
+                noRequiredOwnedIpRoute, missingRequiredOwnedIpRoute, presentRequiredOwnedIpRoute));
     vr.initRibs();
 
     // Test
-    vr.initKernelRib();
+    vr.initKernelRib(ipVrfOwners);
 
     // Assert that all kernel routes have been processed
+    // The kernel route missing the required owned IP should not be present in the RIB.
     assertThat(
         vr._kernelRib.getTypedRoutes(),
         equalTo(
-            ImmutableSet.of(new AnnotatedRoute<>(new KernelRoute(Prefix.ZERO), DEFAULT_VRF_NAME))));
+            ImmutableSet.of(
+                vr.annotateRoute(noRequiredOwnedIpRoute),
+                vr.annotateRoute(presentRequiredOwnedIpRoute))));
+  }
+
+  @Test
+  public void testShouldActivateKernelRoute() {
+    // Setup
+    String hostname = "n1";
+    Ip missingRequiredOwnedIp = Ip.parse("10.0.0.0");
+    Ip presentRequiredOwnedIp = Ip.parse("10.0.1.0");
+    Prefix missingOwnedIpPrefix = Prefix.create(missingRequiredOwnedIp, 24);
+    Prefix presentOwnedIpPrefix = Prefix.create(presentRequiredOwnedIp, 24);
+    KernelRoute noRequiredOwnedIpRoute = KernelRoute.builder().setNetwork(Prefix.ZERO).build();
+    KernelRoute missingRequiredOwnedIpRoute =
+        KernelRoute.builder()
+            .setNetwork(missingOwnedIpPrefix)
+            .setTag(10L)
+            .setRequiredOwnedIp(missingRequiredOwnedIp)
+            .build();
+    KernelRoute presentRequiredOwnedIpRoute =
+        KernelRoute.builder()
+            .setNetwork(presentOwnedIpPrefix)
+            .setTag(11L)
+            .setRequiredOwnedIp(presentRequiredOwnedIp)
+            .build();
+    Map<Ip, Map<String, Set<String>>> ipVrfOwners =
+        ImmutableMap.of(
+            presentRequiredOwnedIp, ImmutableMap.of(hostname, ImmutableSet.of(DEFAULT_VRF_NAME)));
+    VirtualRouter vr = makeA10VirtualRouter(hostname);
+
+    // Test
+    assertTrue(vr.shouldActivateKernelRoute(noRequiredOwnedIpRoute, ipVrfOwners));
+    assertTrue(vr.shouldActivateKernelRoute(presentRequiredOwnedIpRoute, ipVrfOwners));
+    assertFalse(vr.shouldActivateKernelRoute(missingRequiredOwnedIpRoute, ipVrfOwners));
   }
 
   /** Check that initialization of Local RIB is as expected */

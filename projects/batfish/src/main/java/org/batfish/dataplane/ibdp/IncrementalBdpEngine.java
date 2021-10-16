@@ -241,7 +241,7 @@ final class IncrementalBdpEngine {
        */
       IncrementalBdpAnswerElement answerElement = new IncrementalBdpAnswerElement();
       // TODO: eventually, IGP needs to be part of fixed-point below, because tunnels.
-      computeIgpDataPlane(nodes, vrs, initialTopologyContext, answerElement);
+      computeIgpDataPlane(nodes, vrs, initialTopologyContext, ipVrfOwners, answerElement);
 
       LOGGER.info("Initialize virtual routers before topology fixed point");
       Span initializationSpan =
@@ -552,6 +552,7 @@ final class IncrementalBdpEngine {
       SortedMap<String, Node> nodes,
       List<VirtualRouter> vrs,
       TopologyContext topologyContext,
+      Map<Ip, Map<String, Set<String>>> ipVrfOwners,
       IncrementalBdpAnswerElement ae) {
     Span span = GlobalTracer.get().buildSpan("Compute IGP").start();
     LOGGER.info("Compute IGP");
@@ -568,7 +569,7 @@ final class IncrementalBdpEngine {
       LOGGER.info("Initialize for IGP computation");
       try (Scope innerScope = GlobalTracer.get().scopeManager().activate(initializeSpan)) {
         assert innerScope != null; // avoid unused warning
-        vrs.parallelStream().forEach(vr -> vr.initForIgpComputation(topologyContext));
+        vrs.parallelStream().forEach(vr -> vr.initForIgpComputation(topologyContext, ipVrfOwners));
       } finally {
         initializeSpan.finish();
       }
