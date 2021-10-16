@@ -646,7 +646,8 @@ public final class VirtualRouter {
    * Initialize the kernel routes -- a set of non-forwarding routes installed for the purpose of
    * redistribution.
    *
-   * @param ipVrfOwners
+   * @param ipVrfOwners For {@link KernelRoute}s with a required owned ip, this structure is used to
+   *     see whether the IP is owned.
    */
   @VisibleForTesting
   void initKernelRib(Map<Ip, Map<String, Set<String>>> ipVrfOwners) {
