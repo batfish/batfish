@@ -525,7 +525,7 @@ public final class CumulusConversions {
         .setGroup(neighbor.getPeerGroup())
         .setLocalAs(localAs)
         .setRemoteAsns(neighbor.getRemoteAs().getRemoteAs(localAs))
-        .setEbgpMultihop(neighbor.getEbgpMultihop() != null)
+        .setEbgpMultihop(firstNonNull(neighbor.getEbgpMultihop(), false))
         .setGeneratedRoutes(
             bgpDefaultOriginate(neighbor) ? ImmutableSet.of(GENERATED_DEFAULT_ROUTE) : null)
         // Ipv4 unicast is enabled by default

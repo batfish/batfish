@@ -334,7 +334,7 @@ sbnp_description
 
 sbnp_ebgp_multihop
 :
-  EBGP_MULTIHOP num = uint32
+  EBGP_MULTIHOP (num = uint32)?
 ;
 
 sbnp_password
