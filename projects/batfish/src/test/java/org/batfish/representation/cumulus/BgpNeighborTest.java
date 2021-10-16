@@ -23,7 +23,7 @@ public final class BgpNeighborTest {
     BgpPeerGroupNeighbor pg = new BgpPeerGroupNeighbor("pg");
     pg.setBgpNeighborSource(new BgpNeighborSourceAddress(Ip.MAX));
     pg.setDescription("pg desc");
-    pg.setEbgpMultihop(5L);
+    pg.setEbgpMultihop(true);
     BgpNeighborIpv4UnicastAddressFamily pgIpv4 = new BgpNeighborIpv4UnicastAddressFamily();
     pgIpv4.setNextHopSelf(true);
     pg.setIpv4UnicastAddressFamily(pgIpv4);
@@ -36,7 +36,7 @@ public final class BgpNeighborTest {
       BgpIpNeighbor leaf = new BgpIpNeighbor("leaf", Ip.parse("1.2.3.4"));
       leaf.setBgpNeighborSource(new BgpNeighborSourceAddress(Ip.ZERO));
       leaf.setDescription("leaf desc");
-      leaf.setEbgpMultihop(1L);
+      leaf.setEbgpMultihop(false);
       BgpNeighborIpv4UnicastAddressFamily leafIpv4 = new BgpNeighborIpv4UnicastAddressFamily();
       leafIpv4.setNextHopSelf(false);
       leaf.setIpv4UnicastAddressFamily(leafIpv4);
@@ -50,7 +50,7 @@ public final class BgpNeighborTest {
 
       assertThat(leaf.getBgpNeighborSource(), equalTo(new BgpNeighborSourceAddress(Ip.ZERO)));
       assertThat(leaf.getDescription(), equalTo("leaf desc"));
-      assertThat(leaf.getEbgpMultihop(), equalTo(1L));
+      assertThat(leaf.getEbgpMultihop(), equalTo(false));
       assertThat(leaf.getIpv4UnicastAddressFamily().getNextHopSelf(), not(equalTo(Boolean.TRUE)));
       assertThat(
           leaf.getL2vpnEvpnAddressFamily().getRouteReflectorClient(), not(equalTo(Boolean.TRUE)));
@@ -66,7 +66,7 @@ public final class BgpNeighborTest {
       assertThat(leaf.getBgpNeighborSource(), equalTo(new BgpNeighborSourceAddress(Ip.MAX)));
       // don't inherit description
       assertThat(leaf.getDescription(), nullValue());
-      assertThat(leaf.getEbgpMultihop(), equalTo(5L));
+      assertThat(leaf.getEbgpMultihop(), equalTo(true));
       assertThat(leaf.getIpv4UnicastAddressFamily().getNextHopSelf(), equalTo(Boolean.TRUE));
       assertThat(leaf.getL2vpnEvpnAddressFamily().getRouteReflectorClient(), equalTo(Boolean.TRUE));
       assertThat(leaf.getRemoteAs(), equalTo(RemoteAs.explicit(8)));
