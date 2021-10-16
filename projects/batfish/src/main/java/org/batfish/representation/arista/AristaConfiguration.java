@@ -96,6 +96,7 @@ import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.IkePhase1Key;
@@ -1164,6 +1165,10 @@ public final class AristaConfiguration extends VendorConfiguration {
         if (iface.getAddress() != null) {
           newIface.setAddress(iface.getAddress());
           allPrefixes.add(iface.getAddress());
+
+          ConnectedRouteMetadata meta =
+              ConnectedRouteMetadata.builder().setGenerateLocalRoute(false).build();
+          newIface.setAddressMetadata(ImmutableSortedMap.of(iface.getAddress(), meta));
         }
         allPrefixes.addAll(iface.getSecondaryAddresses());
         newIface.setAllAddresses(allPrefixes.build());

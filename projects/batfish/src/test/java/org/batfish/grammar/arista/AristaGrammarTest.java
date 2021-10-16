@@ -42,6 +42,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedRefer
 import static org.batfish.datamodel.matchers.FlowMatchers.hasDstIp;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasSrcIp;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAccessVlan;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddressMetadata;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
@@ -152,6 +153,7 @@ import org.batfish.datamodel.Bgpv4Route.Builder;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
@@ -2356,6 +2358,10 @@ public class AristaGrammarTest {
                 hasSwitchPortMode(SwitchportMode.NONE),
                 hasEncapsulationVlan(400),
                 hasAllAddresses(contains(ConcreteInterfaceAddress.parse("4.4.4.4/24"))),
+                hasAddressMetadata(
+                    hasEntry(
+                        ConcreteInterfaceAddress.parse("4.4.4.4/24"),
+                        ConnectedRouteMetadata.builder().setGenerateLocalRoute(false).build())),
                 isActive())));
     assertThat(c, hasInterface("UnconnectedEthernet5", hasInterfaceType(InterfaceType.UNKNOWN)));
   }
