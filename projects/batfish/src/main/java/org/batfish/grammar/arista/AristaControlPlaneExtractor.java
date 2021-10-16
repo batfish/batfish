@@ -6,6 +6,7 @@ import static java.util.Comparator.naturalOrder;
 import static java.util.stream.Collectors.toCollection;
 import static org.batfish.datamodel.ConfigurationFormat.ARISTA;
 import static org.batfish.representation.arista.AristaConfiguration.aclLineStructureName;
+import static org.batfish.representation.arista.AristaConfiguration.computeRouteMapEntryName;
 import static org.batfish.representation.arista.AristaStructureType.ACCESS_LIST;
 import static org.batfish.representation.arista.AristaStructureType.AS_PATH_ACCESS_LIST;
 import static org.batfish.representation.arista.AristaStructureType.BFD_TEMPLATE;
@@ -977,10 +978,6 @@ import org.batfish.vendor.VendorConfiguration;
 public class AristaControlPlaneExtractor extends AristaParserBaseListener
     implements SilentSyntaxListener, ControlPlaneExtractor {
   private static final IntegerSpace ADMIN_DISTANCE_SPACE = IntegerSpace.of(Range.closed(1, 255));
-
-  public static @Nonnull String computeRouteMapEntryName(String routeMapName, int sequence) {
-    return String.format("%s %d", routeMapName, sequence);
-  }
 
   @Override
   public String getInputText() {

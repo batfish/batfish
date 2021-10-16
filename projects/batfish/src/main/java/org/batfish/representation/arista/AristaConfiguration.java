@@ -133,6 +133,7 @@ import org.batfish.datamodel.SnmpCommunity;
 import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.TunnelConfiguration;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
@@ -170,6 +171,7 @@ import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetWeight;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.datamodel.tracking.TrackMethod;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.vendor_family.cisco.Aaa;
@@ -188,6 +190,7 @@ import org.batfish.representation.arista.eos.AristaBgpVrfIpv4UnicastAddressFamil
 import org.batfish.representation.arista.eos.AristaEosVxlan;
 import org.batfish.representation.arista.eos.AristaRedistributeType;
 import org.batfish.vendor.VendorConfiguration;
+import org.batfish.vendor.VendorStructureId;
 
 public final class AristaConfiguration extends VendorConfiguration {
   /** Matches anything but the IPv4 default route. */
@@ -1886,7 +1889,9 @@ public final class AristaConfiguration extends VendorConfiguration {
         .build();
   }
 
-  private @Nonnull Statement toStatement(
+  @VisibleForTesting
+  @Nonnull
+  Statement toStatement(
       Configuration c,
       String routeMapName,
       RouteMapClause entry,
@@ -1929,7 +1934,30 @@ public final class AristaConfiguration extends VendorConfiguration {
         noMatchNext != null && continueTargets.contains(noMatchNext)
             ? ImmutableList.of(call(computeRoutingPolicyName(routeMapName, noMatchNext)))
             : ImmutableList.of();
-    return new If(guard, trueStatements, noMatchStatements);
+    return new If(
+        guard,
+        ImmutableList.of(
+            toTraceableStatement(trueStatements, _filename, routeMapName, entry.getSeqNum())),
+        noMatchStatements);
+  }
+
+  private static Statement toTraceableStatement(
+      List<Statement> statements, String filename, String routeMapName, int seqNum) {
+    return new TraceableStatement(
+        TraceElement.builder()
+            .add("Matched ")
+            .add(
+                String.format("route-map %s sequence-number %d", routeMapName, seqNum),
+                new VendorStructureId(
+                    filename,
+                    AristaStructureType.ROUTE_MAP_ENTRY.getDescription(),
+                    computeRouteMapEntryName(routeMapName, seqNum)))
+            .build(),
+        statements);
+  }
+
+  public static @Nonnull String computeRouteMapEntryName(String routeMapName, int sequence) {
+    return String.format("%s %d", routeMapName, sequence);
   }
 
   private static @Nonnull Statement callInContext(String routingPolicyName) {
