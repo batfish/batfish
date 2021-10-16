@@ -3,10 +3,14 @@ package org.batfish.vendor.a10.representation;
 import static org.batfish.vendor.a10.representation.A10Configuration.arePortTypesCompatible;
 import static org.batfish.vendor.a10.representation.A10Conversion.DEFAULT_VRRP_A_PREEMPT;
 import static org.batfish.vendor.a10.representation.A10Conversion.DEFAULT_VRRP_A_PRIORITY;
+import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_NAT_POOL;
+import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_VIRTUAL_SERVER_FLAGGED;
+import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_VIRTUAL_SERVER_UNFLAGGED;
 import static org.batfish.vendor.a10.representation.A10Conversion.getNatPoolIps;
 import static org.batfish.vendor.a10.representation.A10Conversion.getVirtualServerIps;
 import static org.batfish.vendor.a10.representation.A10Conversion.toDstTransformationSteps;
 import static org.batfish.vendor.a10.representation.A10Conversion.toIntegerSpace;
+import static org.batfish.vendor.a10.representation.A10Conversion.toKernelRoute;
 import static org.batfish.vendor.a10.representation.A10Conversion.toMatchCondition;
 import static org.batfish.vendor.a10.representation.A10Conversion.toProtocol;
 import static org.batfish.vendor.a10.representation.A10Conversion.toVrrpGroupBuilder;
@@ -29,6 +33,8 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.KernelRoute;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
@@ -269,5 +275,49 @@ public class A10ConversionTest {
                     .setVirtualAddresses(Ip.parse("1.1.1.1"))
                     .setSourceAddress(sourceAddress)
                     .build())));
+  }
+
+  @Test
+  public void testToKernelRouteVirtualServer() {
+    Ip target = Ip.parse("10.0.0.1");
+    {
+      // unflagged
+      VirtualServer vs = new VirtualServer("vs", new VirtualServerTargetAddress(target));
+      assertThat(
+          toKernelRoute(vs),
+          equalTo(
+              KernelRoute.builder()
+                  .setNetwork(Prefix.strict("10.0.0.1/32"))
+                  .setRequiredOwnedIp(target)
+                  .setTag(KERNEL_ROUTE_TAG_VIRTUAL_SERVER_UNFLAGGED)
+                  .build()));
+    }
+    {
+      // flagged
+      VirtualServer vs = new VirtualServer("vs", new VirtualServerTargetAddress(target));
+      vs.setRedistributionFlagged(true);
+      assertThat(
+          toKernelRoute(vs),
+          equalTo(
+              KernelRoute.builder()
+                  .setNetwork(Prefix.strict("10.0.0.1/32"))
+                  .setRequiredOwnedIp(target)
+                  .setTag(KERNEL_ROUTE_TAG_VIRTUAL_SERVER_FLAGGED)
+                  .build()));
+    }
+  }
+
+  @Test
+  public void testToKernelRouteNatPool() {
+    Ip start = Ip.parse("10.0.0.1");
+    NatPool pool = new NatPool("pool1", start, Ip.parse("10.0.0.5"), 24);
+    assertThat(
+        toKernelRoute(pool),
+        equalTo(
+            KernelRoute.builder()
+                .setNetwork(Prefix.strict("10.0.0.0/24"))
+                .setRequiredOwnedIp(start)
+                .setTag(KERNEL_ROUTE_TAG_NAT_POOL)
+                .build()));
   }
 }

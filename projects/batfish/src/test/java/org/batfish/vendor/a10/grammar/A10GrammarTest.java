@@ -36,6 +36,8 @@ import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.main.BatfishTestUtils.getBatfish;
 import static org.batfish.vendor.a10.representation.A10Configuration.getInterfaceName;
 import static org.batfish.vendor.a10.representation.A10Conversion.DEFAULT_VRRP_A_PRIORITY;
+import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_NAT_POOL;
+import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_VIRTUAL_SERVER_UNFLAGGED;
 import static org.batfish.vendor.a10.representation.A10Conversion.SNAT_PORT_POOL_START;
 import static org.batfish.vendor.a10.representation.A10StructureType.INTERFACE;
 import static org.batfish.vendor.a10.representation.A10StructureType.VRRP_A_FAIL_OVER_POLICY_TEMPLATE;
@@ -93,6 +95,7 @@ import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.KernelRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.VrrpGroup;
@@ -1596,6 +1599,21 @@ public class A10GrammarTest {
     Batfish batfish = getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _folder);
     NetworkSnapshot snapshot = batfish.getSnapshot();
     batfish.computeDataPlane(snapshot);
+
+    // test kernel routes
+    assertThat(
+        c.getDefaultVrf().getKernelRoutes(),
+        containsInAnyOrder(
+            KernelRoute.builder()
+                .setNetwork(Prefix.strict("10.0.0.100/32"))
+                .setRequiredOwnedIp(Ip.parse("10.0.0.100"))
+                .setTag(KERNEL_ROUTE_TAG_VIRTUAL_SERVER_UNFLAGGED)
+                .build(),
+            KernelRoute.builder()
+                .setNetwork(Prefix.strict("10.10.10.10/32"))
+                .setRequiredOwnedIp(Ip.parse("10.10.10.10"))
+                .setTag(KERNEL_ROUTE_TAG_NAT_POOL)
+                .build()));
 
     // This flow matches the virtual-server and should get SNAT and DNAT
     Flow flowMatch =
