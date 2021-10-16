@@ -120,7 +120,7 @@ public class VirtualRouterTest {
   }
 
   private static VirtualRouter makeA10VirtualRouter(String hostname) {
-    Node n = TestUtils.makeF5Router(hostname);
+    Node n = TestUtils.makeA10Router(hostname);
     return n.getVirtualRouterOrThrow(DEFAULT_VRF_NAME);
   }
 
