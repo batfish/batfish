@@ -42,6 +42,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedRefer
 import static org.batfish.datamodel.matchers.FlowMatchers.hasDstIp;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasSrcIp;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAccessVlan;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddressMetadata;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
@@ -113,6 +114,7 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
 import com.google.common.graph.ValueGraph;
@@ -152,6 +154,7 @@ import org.batfish.datamodel.Bgpv4Route.Builder;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
@@ -2355,7 +2358,19 @@ public class AristaGrammarTest {
                 hasInterfaceType(InterfaceType.LOGICAL),
                 hasSwitchPortMode(SwitchportMode.NONE),
                 hasEncapsulationVlan(400),
-                hasAllAddresses(contains(ConcreteInterfaceAddress.parse("4.4.4.4/24"))),
+                hasAllAddresses(
+                    contains(
+                        ConcreteInterfaceAddress.parse("4.4.4.4/24"),
+                        ConcreteInterfaceAddress.parse("5.5.5.5/32"))),
+                hasAddressMetadata(
+                    equalTo(
+                        ImmutableSortedMap.of(
+                            ConcreteInterfaceAddress.parse("4.4.4.4/24"),
+                            ConnectedRouteMetadata.builder().setGenerateLocalRoute(false).build(),
+                            ConcreteInterfaceAddress.parse("5.5.5.5/32"),
+                            ConnectedRouteMetadata.builder()
+                                .setGenerateLocalRoute(false)
+                                .build()))),
                 isActive())));
     assertThat(c, hasInterface("UnconnectedEthernet5", hasInterfaceType(InterfaceType.UNKNOWN)));
   }
