@@ -114,6 +114,7 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
 import com.google.common.graph.ValueGraph;
@@ -2357,11 +2358,19 @@ public class AristaGrammarTest {
                 hasInterfaceType(InterfaceType.LOGICAL),
                 hasSwitchPortMode(SwitchportMode.NONE),
                 hasEncapsulationVlan(400),
-                hasAllAddresses(contains(ConcreteInterfaceAddress.parse("4.4.4.4/24"))),
-                hasAddressMetadata(
-                    hasEntry(
+                hasAllAddresses(
+                    contains(
                         ConcreteInterfaceAddress.parse("4.4.4.4/24"),
-                        ConnectedRouteMetadata.builder().setGenerateLocalRoute(false).build())),
+                        ConcreteInterfaceAddress.parse("5.5.5.5/32"))),
+                hasAddressMetadata(
+                    equalTo(
+                        ImmutableSortedMap.of(
+                            ConcreteInterfaceAddress.parse("4.4.4.4/24"),
+                            ConnectedRouteMetadata.builder().setGenerateLocalRoute(false).build(),
+                            ConcreteInterfaceAddress.parse("5.5.5.5/32"),
+                            ConnectedRouteMetadata.builder()
+                                .setGenerateLocalRoute(false)
+                                .build()))),
                 isActive())));
     assertThat(c, hasInterface("UnconnectedEthernet5", hasInterfaceType(InterfaceType.UNKNOWN)));
   }

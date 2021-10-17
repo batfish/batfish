@@ -1,6 +1,7 @@
 package org.batfish.representation.arista;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.ImmutableSortedMap.toImmutableSortedMap;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
@@ -72,6 +73,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -105,7 +107,6 @@ import org.batfish.datamodel.IkePhase1Proposal;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6AccessList;
@@ -1161,17 +1162,24 @@ public final class AristaConfiguration extends VendorConfiguration {
           newIface.setAutoState(iface.getAutoState());
         }
         // All prefixes is the combination of the interface prefix + any secondary prefixes.
-        ImmutableSet.Builder<InterfaceAddress> allPrefixes = ImmutableSet.builder();
+        ImmutableSet.Builder<ConcreteInterfaceAddress> allPrefixesBuilder = ImmutableSet.builder();
         if (iface.getAddress() != null) {
           newIface.setAddress(iface.getAddress());
-          allPrefixes.add(iface.getAddress());
-
-          ConnectedRouteMetadata meta =
-              ConnectedRouteMetadata.builder().setGenerateLocalRoute(false).build();
-          newIface.setAddressMetadata(ImmutableSortedMap.of(iface.getAddress(), meta));
+          allPrefixesBuilder.add(iface.getAddress());
         }
-        allPrefixes.addAll(iface.getSecondaryAddresses());
-        newIface.setAllAddresses(allPrefixes.build());
+        allPrefixesBuilder.addAll(iface.getSecondaryAddresses());
+        ImmutableSet<ConcreteInterfaceAddress> allPrefixes = allPrefixesBuilder.build();
+        newIface.setAllAddresses(allPrefixes);
+        newIface.setAddressMetadata(
+            allPrefixes.stream()
+                .collect(
+                    toImmutableSortedMap(
+                        Function.identity(),
+                        addr ->
+                            ConnectedRouteMetadata.builder()
+                                .setGenerateLocalRoute(false)
+                                .build())));
+
         break;
 
       case ACCESS:
