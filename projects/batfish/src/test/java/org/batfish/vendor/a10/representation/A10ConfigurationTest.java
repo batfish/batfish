@@ -58,17 +58,23 @@ public class A10ConfigurationTest {
   public void testVrrpAAppliesToInterface() {
     org.batfish.datamodel.Interface.Builder ifaceBuilder =
         org.batfish.datamodel.Interface.builder().setName("placeholder");
+    // No concrete address
     assertFalse(
         A10Configuration.vrrpAAppliesToInterface(
-            ifaceBuilder.setType(InterfaceType.LOOPBACK).build()));
+            ifaceBuilder.setType(InterfaceType.PHYSICAL).setAddress(null).build()));
+    // Loopback interface
     assertFalse(
         A10Configuration.vrrpAAppliesToInterface(
-            ifaceBuilder.setType(InterfaceType.PHYSICAL).build()));
+            ifaceBuilder
+                .setType(InterfaceType.LOOPBACK)
+                .setAddress(ConcreteInterfaceAddress.parse("10.10.10.10/32"))
+                .build()));
+
     assertTrue(
         A10Configuration.vrrpAAppliesToInterface(
             ifaceBuilder
                 .setType(InterfaceType.PHYSICAL)
-                .setAddress(ConcreteInterfaceAddress.parse("10.10.10.10/24"))
+                .setAddress(ConcreteInterfaceAddress.parse("10.10.10.10/32"))
                 .build()));
     assertTrue(
         A10Configuration.vrrpAAppliesToInterface(
