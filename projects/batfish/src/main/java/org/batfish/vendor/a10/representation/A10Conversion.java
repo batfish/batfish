@@ -278,7 +278,15 @@ public class A10Conversion {
       Collection<VirtualServer> virtualServers) {
     return virtualServers.stream()
         .filter(A10Conversion::isVirtualServerEnabled)
+        .filter(
+            vs ->
+                vs.getPorts().values().stream()
+                    .anyMatch(A10Conversion::getVirtualServerPortEnabled))
         .map(A10Conversion::toKernelRoute);
+  }
+
+  private static boolean getVirtualServerPortEnabled(VirtualServerPort port) {
+    return firstNonNull(port.getEnable(), Boolean.TRUE);
   }
 
   @VisibleForTesting

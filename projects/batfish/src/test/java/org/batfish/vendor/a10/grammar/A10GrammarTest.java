@@ -1768,23 +1768,13 @@ public class A10GrammarTest {
                 .setTag(KERNEL_ROUTE_TAG_NAT_POOL)
                 .build(),
             KernelRoute.builder()
-                .setNetwork(Prefix.strict("10.0.1.1/32"))
-                .setRequiredOwnedIp(Ip.parse("10.0.1.1"))
-                .setTag(KERNEL_ROUTE_TAG_NAT_POOL)
-                .build(),
-            KernelRoute.builder()
-                .setNetwork(Prefix.strict("10.0.2.0/29"))
-                .setRequiredOwnedIp(Ip.parse("10.0.2.1"))
-                .setTag(KERNEL_ROUTE_TAG_NAT_POOL)
-                .build(),
-            KernelRoute.builder()
                 .setNetwork(Prefix.strict("10.0.5.1/32"))
                 .setRequiredOwnedIp(Ip.parse("10.0.5.1"))
                 .setTag(KERNEL_ROUTE_TAG_VIRTUAL_SERVER_UNFLAGGED)
                 .build(),
             KernelRoute.builder()
-                .setNetwork(Prefix.strict("10.0.1.1/32"))
-                .setRequiredOwnedIp(Ip.parse("10.0.1.1"))
+                .setNetwork(Prefix.strict("10.0.6.1/32"))
+                .setRequiredOwnedIp(Ip.parse("10.0.6.1"))
                 .setTag(KERNEL_ROUTE_TAG_VIRTUAL_SERVER_FLAGGED)
                 .build()));
   }
