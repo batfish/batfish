@@ -111,10 +111,10 @@ public final class RouteAdvertisement<T> {
   public int hashCode() {
     int h = _hashCode;
     if (h == 0) {
-      h = 31 * _route.hashCode() + _reason.hashCode();
+      h = 31 * _route.hashCode() + _reason.ordinal();
       _hashCode = h;
     }
-    return _hashCode;
+    return h;
   }
 
   @Override
