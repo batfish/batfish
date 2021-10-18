@@ -9,6 +9,8 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.datamodel.InterfaceType;
 import org.junit.Test;
 
 /** Tests of {@link A10Configuration}. */
@@ -50,5 +52,29 @@ public class A10ConfigurationTest {
         getInterfaceHumanName(new Interface(Interface.Type.LOOPBACK, 9)), equalTo("Loopback 9"));
     assertThat(
         getInterfaceHumanName(new Interface(Interface.Type.VE, 9)), equalTo("VirtualEthernet 9"));
+  }
+
+  @Test
+  public void testVrrpAAppliesToInterface() {
+    org.batfish.datamodel.Interface.Builder ifaceBuilder =
+        org.batfish.datamodel.Interface.builder().setName("placeholder");
+    assertFalse(
+        A10Configuration.vrrpAAppliesToInterface(
+            ifaceBuilder.setType(InterfaceType.LOOPBACK).build()));
+    assertFalse(
+        A10Configuration.vrrpAAppliesToInterface(
+            ifaceBuilder.setType(InterfaceType.PHYSICAL).build()));
+    assertTrue(
+        A10Configuration.vrrpAAppliesToInterface(
+            ifaceBuilder
+                .setType(InterfaceType.PHYSICAL)
+                .setAddress(ConcreteInterfaceAddress.parse("10.10.10.10/24"))
+                .build()));
+    assertTrue(
+        A10Configuration.vrrpAAppliesToInterface(
+            ifaceBuilder
+                .setType(InterfaceType.AGGREGATED)
+                .setAddress(ConcreteInterfaceAddress.parse("10.10.10.10/24"))
+                .build()));
   }
 }
