@@ -954,6 +954,105 @@ public final class WorkMgrTest {
     String baseSnapshotName = "snapshotName";
     Path srcDir = createSnapshot(baseSnapshotName, "file.type", "! empty config", _folder);
     Path snapshotDir = srcDir.resolve(baseSnapshotName);
+    Path batfishDir = snapshotDir.resolve(BfConsts.RELPATH_BATFISH);
+    batfishDir.toFile().mkdir();
+    CommonUtil.writeFile(
+        batfishDir.resolve(BfConsts.RELPATH_RUNTIME_DATA_FILE),
+        BatfishObjectMapper.writePrettyString(runtimeData));
+    _manager.initNetwork(networkName, null);
+    _manager.initSnapshot(networkName, baseSnapshotName, srcDir, false, Instant.now());
+
+    // Create fork
+    String forkName = "fork";
+    _manager.forkSnapshot(
+        networkName,
+        new ForkSnapshotBean(
+            baseSnapshotName, forkName, deactivate, null, null, activate, null, null, null));
+    NetworkId networkId = _idManager.getNetworkId(networkName).get();
+    SnapshotId forkId = _idManager.getSnapshotId(forkName, networkId).get();
+
+    // Interface blacklist should not exist in fork
+    assertNull(_storage.loadInterfaceBlacklist(networkId, forkId));
+    assertThat(
+        _storage.loadRuntimeData(networkId, forkId),
+        equalTo(
+            SnapshotRuntimeData.builder()
+                .setInterfacesLineDown(expectedDown)
+                .setInterfacesLineUp(expectedUp)
+                .build()));
+  }
+
+  /**
+   * We handle runtime_data.json at the snapshot root directory as well as in its preferred location
+   * under batfish/.
+   */
+  @Test
+  public void testForkSnapshot_runtimeDataInBase_oldLocation() throws IOException {
+    /*
+    Setup:
+    4 devices (n1, n2, n3, n4)
+    3 interfaces each (i1, i2, i3)
+    Original snapshot runtime data says all i1 are line down, all i2 are line up, nothing about i3
+    Fork deactivates all n1 and n2 interfaces
+    Fork activates all n1 and n3 interfaces
+     */
+    // Create base snapshot runtime data
+    String n1 = "n1";
+    String n2 = "n2";
+    String n3 = "n3";
+    String n4 = "n4";
+    String i1 = "i1";
+    String i2 = "i2";
+    String i3 = "i3";
+    RuntimeData deviceData =
+        RuntimeData.builder().setInterfaceLineUp(i1, false).setInterfaceLineUp(i2, true).build();
+    SnapshotRuntimeData runtimeData =
+        SnapshotRuntimeData.builder()
+            .setRuntimeData(
+                ImmutableMap.of(n1, deviceData, n2, deviceData, n3, deviceData, n4, deviceData))
+            .build();
+
+    // Create activate/deactivate lists
+    Set<NodeInterfacePair> n1Ifaces =
+        ImmutableSet.of(
+            NodeInterfacePair.of(n1, i1),
+            NodeInterfacePair.of(n1, i2),
+            NodeInterfacePair.of(n1, i3));
+    Set<NodeInterfacePair> n2Ifaces =
+        ImmutableSet.of(
+            NodeInterfacePair.of(n2, i1),
+            NodeInterfacePair.of(n2, i2),
+            NodeInterfacePair.of(n2, i3));
+    Set<NodeInterfacePair> n3Ifaces =
+        ImmutableSet.of(
+            NodeInterfacePair.of(n3, i1),
+            NodeInterfacePair.of(n3, i2),
+            NodeInterfacePair.of(n3, i3));
+    List<NodeInterfacePair> deactivate =
+        Streams.concat(n1Ifaces.stream(), n2Ifaces.stream())
+            .collect(ImmutableList.toImmutableList());
+    List<NodeInterfacePair> activate =
+        Streams.concat(n1Ifaces.stream(), n3Ifaces.stream())
+            .collect(ImmutableList.toImmutableList());
+
+    /*
+    Expected runtime data in fork:
+    - All activated interfaces (n1:i1, n1:i2, n1:i3, n3:i1, n3:i2, n3:i3) should be up
+    - All deactivated interfaces that were not activated (n2:i1, n2:i2, n2:i3) should be down
+    - n4:i1 should be line down because runtime data says so
+    - n4:i2 should be line up because runtime data says so
+    - n4:i3 should not be in runtime data because no info was given about it (will interpret as up)
+     */
+    Set<NodeInterfacePair> expectedDown =
+        Sets.union(n2Ifaces, ImmutableSet.of(NodeInterfacePair.of(n4, i1)));
+    Set<NodeInterfacePair> expectedUp =
+        Sets.union(ImmutableSet.copyOf(activate), ImmutableSet.of(NodeInterfacePair.of(n4, i2)));
+
+    // Create base snapshot
+    String networkName = "network";
+    String baseSnapshotName = "snapshotName";
+    Path srcDir = createSnapshot(baseSnapshotName, "file.type", "! empty config", _folder);
+    Path snapshotDir = srcDir.resolve(baseSnapshotName);
     CommonUtil.writeFile(
         snapshotDir.resolve(BfConsts.RELPATH_RUNTIME_DATA_FILE),
         BatfishObjectMapper.writePrettyString(runtimeData));
@@ -1766,8 +1865,13 @@ public final class WorkMgrTest {
     assertThat(_manager.getLatestSnapshot(networkName), equalTo(Optional.of(snapshotName)));
   }
 
+  /**
+   * We handle runtime_data.json at the snapshot root directory as well as in its preferred location
+   * under batfish/.
+   */
   @Test
-  public void testInitSnapshot_interfaceBlacklistAndRuntimeData() throws JsonProcessingException {
+  public void testInitSnapshot_interfaceBlacklistAndRuntimeData_oldLocation()
+      throws JsonProcessingException {
     /*
     Interface runtime data setup for two devices n1 and n2:
     - i1 is down on both
@@ -1828,6 +1932,115 @@ public final class WorkMgrTest {
                 .setInterfacesLineDown(expectedDown)
                 .setInterfacesLineUp(expectedUp)
                 .build()));
+  }
+
+  @Test
+  public void testInitSnapshot_interfaceBlacklistAndRuntimeData() throws JsonProcessingException {
+    /*
+    Interface runtime data setup for two devices n1 and n2:
+    - i1 is down on both
+    - i2 is up on both
+    - i3 is unspecified on both
+    Interface blacklist setup: Everything on n1 is blacklisted
+     */
+    String n1 = "n1";
+    String n2 = "n2";
+    String i1 = "i1";
+    String i2 = "i2";
+    String i3 = "i3";
+    RuntimeData deviceData =
+        RuntimeData.builder().setInterfaceLineUp(i1, false).setInterfaceLineUp(i2, true).build();
+    SnapshotRuntimeData runtimeData =
+        SnapshotRuntimeData.builder()
+            .setRuntimeData(ImmutableMap.of(n1, deviceData, n2, deviceData))
+            .build();
+    Set<NodeInterfacePair> blacklist =
+        ImmutableSet.of(
+            NodeInterfacePair.of(n1, i1),
+            NodeInterfacePair.of(n1, i2),
+            NodeInterfacePair.of(n1, i3));
+
+    /*
+    Expected runtime data after init:
+    - All blacklisted interfaces (n1:i1, n1:i2, n1:i3) should be down
+    - n2:i1 should be line down because runtime data says so
+    - n2:i2 should be line up because runtime data says so
+    - n2:i3 should not be in runtime data because no info was given about it (will interpret as up)
+     */
+    Set<NodeInterfacePair> expectedDown =
+        Sets.union(blacklist, ImmutableSet.of(NodeInterfacePair.of(n2, i1)));
+    Set<NodeInterfacePair> expectedUp = ImmutableSet.of(NodeInterfacePair.of(n2, i2));
+
+    // Create snapshot
+    String networkName = "network";
+    String snapshotName = "snapshotName";
+    Path srcDir = createSnapshot(snapshotName, "file.type", "! empty config", _folder);
+    Path snapshotDir = srcDir.resolve(snapshotName);
+    Path batfishDir = snapshotDir.resolve(BfConsts.RELPATH_BATFISH);
+    batfishDir.toFile().mkdir();
+    CommonUtil.writeFile(
+        batfishDir.resolve(BfConsts.RELPATH_RUNTIME_DATA_FILE),
+        BatfishObjectMapper.writePrettyString(runtimeData));
+    CommonUtil.writeFile(
+        snapshotDir.resolve(BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE),
+        BatfishObjectMapper.writePrettyString(blacklist));
+    _manager.initNetwork(networkName, null);
+    _manager.initSnapshot(networkName, snapshotName, srcDir, false, Instant.now());
+
+    // Interface blacklist should not exist in new snapshot
+    NetworkId networkId = _idManager.getNetworkId(networkName).get();
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshotName, networkId).get();
+    assertNull(_storage.loadInterfaceBlacklist(networkId, snapshotId));
+    assertThat(
+        _storage.loadRuntimeData(networkId, snapshotId),
+        equalTo(
+            SnapshotRuntimeData.builder()
+                .setInterfacesLineDown(expectedDown)
+                .setInterfacesLineUp(expectedUp)
+                .build()));
+  }
+
+  /**
+   * If runtime_data.json exists at the root snapshot directory and under batfish/ discard the
+   * former.
+   */
+  @Test
+  public void testInitSnapshot_runtimeData_bothLocations() throws JsonProcessingException {
+    String n1 = "n1";
+    String i1 = "i1";
+    String i2 = "i2";
+    SnapshotRuntimeData outerRuntimeData =
+        SnapshotRuntimeData.builder()
+            .setRuntimeData(
+                ImmutableMap.of(n1, RuntimeData.builder().setInterfaceLineUp(i1, false).build()))
+            .build();
+    SnapshotRuntimeData innerRuntimeData =
+        SnapshotRuntimeData.builder()
+            .setRuntimeData(
+                ImmutableMap.of(n1, RuntimeData.builder().setInterfaceLineUp(i2, false).build()))
+            .build();
+
+    // Create snapshot
+    String networkName = "network";
+    String snapshotName = "snapshotName";
+    Path srcDir = createSnapshot(snapshotName, "file.type", "! empty config", _folder);
+    Path snapshotDir = srcDir.resolve(snapshotName);
+    CommonUtil.writeFile(
+        snapshotDir.resolve(BfConsts.RELPATH_RUNTIME_DATA_FILE),
+        BatfishObjectMapper.writePrettyString(outerRuntimeData));
+    Path batfishDir = snapshotDir.resolve(BfConsts.RELPATH_BATFISH);
+    batfishDir.toFile().mkdir();
+    CommonUtil.writeFile(
+        batfishDir.resolve(BfConsts.RELPATH_RUNTIME_DATA_FILE),
+        BatfishObjectMapper.writePrettyString(innerRuntimeData));
+    _manager.initNetwork(networkName, null);
+    _manager.initSnapshot(networkName, snapshotName, srcDir, false, Instant.now());
+
+    // Interface blacklist should not exist in new snapshot
+    NetworkId networkId = _idManager.getNetworkId(networkName).get();
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshotName, networkId).get();
+    assertNull(_storage.loadInterfaceBlacklist(networkId, snapshotId));
+    assertThat(_storage.loadRuntimeData(networkId, snapshotId), equalTo(innerRuntimeData));
   }
 
   @Test
