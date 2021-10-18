@@ -24,6 +24,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.IntegerSpace;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.KernelRoute;
@@ -393,5 +394,16 @@ public class A10Conversion {
         (vrid, vrrpGroupBuilder) ->
             builder.put(vrid, vrrpGroupBuilder.setSourceAddress(sourceAddress).build()));
     return builder.build();
+  }
+
+  /**
+   * Returns a boolean indicating if the specified VI interface should have VRRP-A configuration
+   * associated with it.
+   */
+  static boolean vrrpAAppliesToInterface(org.batfish.datamodel.Interface iface) {
+    if (iface.getInterfaceType() == InterfaceType.LOOPBACK) {
+      return false;
+    }
+    return iface.getConcreteAddress() != null;
   }
 }

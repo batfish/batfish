@@ -60,6 +60,8 @@ public interface BooleanExprVisitor<T, U> {
 
   T visitMatchRouteType(MatchRouteType matchRouteType, U arg);
 
+  T visitMatchSourceProtocol(MatchSourceProtocol matchSourceProtocol, U arg);
+
   T visitMatchSourceVrf(MatchSourceVrf matchSourceVrf, U arg);
 
   T visitMatchTag(MatchTag matchTag, U arg);
