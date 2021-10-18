@@ -1445,52 +1445,65 @@ public class A10GrammarTest {
     ServerPort.ServerPortAndType udp81 = new ServerPort.ServerPortAndType(81, ServerPort.Type.UDP);
 
     assertThat(c.getServers().keySet(), containsInAnyOrder("SERVER1", "SERVER2", "SERVER3"));
-    Server server1 = c.getServers().get("SERVER1");
-    Server server2 = c.getServers().get("SERVER2");
-    Server server3 = c.getServers().get("SERVER3");
 
-    assertNull(server1.getConnLimit());
-    assertNull(server1.getEnable());
-    assertThat(server1.getName(), equalTo("SERVER1"));
-    assertThat(server1.getPorts(), anEmptyMap());
-    assertNull(server1.getServerTemplate());
-    assertNull(server1.getStatsDataEnable());
-    assertThat(server1.getTarget(), equalTo(new ServerTargetAddress(Ip.parse("10.0.0.1"))));
-    assertNull(server1.getWeight());
+    {
+      Server server1 = c.getServers().get("SERVER1");
+      assertNull(server1.getConnLimit());
+      assertNull(server1.getEnable());
+      assertNull(server1.getHealthCheck());
+      assertNull(server1.getHealthCheckDisable());
+      assertThat(server1.getName(), equalTo("SERVER1"));
+      assertThat(server1.getPorts(), anEmptyMap());
+      assertNull(server1.getServerTemplate());
+      assertNull(server1.getStatsDataEnable());
+      assertThat(server1.getTarget(), equalTo(new ServerTargetAddress(Ip.parse("10.0.0.1"))));
+      assertNull(server1.getWeight());
+    }
 
-    assertThat(server2.getConnLimit(), equalTo(64000000));
-    assertTrue(server2.getEnable());
-    assertThat(server2.getName(), equalTo("SERVER2"));
-    assertThat(server2.getServerTemplate(), equalTo("SERVER_TEMPLATE"));
-    assertTrue(server2.getStatsDataEnable());
-    assertThat(server2.getTarget(), equalTo(new ServerTargetAddress(Ip.parse("10.0.0.2"))));
-    assertThat(server2.getWeight(), equalTo(1000));
-    Map<ServerPort.ServerPortAndType, ServerPort> server2Ports = server2.getPorts();
-    assertThat(server2Ports.keySet(), contains(tcp80));
-    ServerPort server2Port80 = server2Ports.get(tcp80);
-    assertThat(server2Port80.getConnLimit(), equalTo(10));
-    assertTrue(server2Port80.getEnable());
-    assertThat(server2Port80.getNumber(), equalTo(80));
-    assertThat(server2Port80.getPortTemplate(), equalTo("PORT_TEMPLATE"));
-    assertNull(server2Port80.getRange());
-    assertTrue(server2Port80.getStatsDataEnable());
-    assertThat(server2Port80.getType(), equalTo(ServerPort.Type.TCP));
-    assertThat(server2Port80.getWeight(), equalTo(999));
+    {
+      Server server2 = c.getServers().get("SERVER2");
+      assertThat(server2.getConnLimit(), equalTo(64000000));
+      assertTrue(server2.getEnable());
+      assertThat(server2.getHealthCheck(), equalTo("HEALTH_CHECK_NAME"));
+      assertThat(server2.getName(), equalTo("SERVER2"));
+      assertThat(server2.getServerTemplate(), equalTo("SERVER_TEMPLATE"));
+      assertTrue(server2.getStatsDataEnable());
+      assertThat(server2.getTarget(), equalTo(new ServerTargetAddress(Ip.parse("10.0.0.2"))));
+      assertThat(server2.getWeight(), equalTo(1000));
+      Map<ServerPort.ServerPortAndType, ServerPort> server2Ports = server2.getPorts();
+      assertThat(server2Ports.keySet(), contains(tcp80));
+      ServerPort server2Port80 = server2Ports.get(tcp80);
+      assertThat(server2Port80.getConnLimit(), equalTo(10));
+      assertTrue(server2Port80.getEnable());
+      assertThat(server2Port80.getHealthCheck(), equalTo("HEALTH_CHECK_NAME2"));
+      assertNull(server2Port80.getHealthCheckDisable());
+      assertThat(server2Port80.getNumber(), equalTo(80));
+      assertThat(server2Port80.getPortTemplate(), equalTo("PORT_TEMPLATE"));
+      assertNull(server2Port80.getRange());
+      assertTrue(server2Port80.getStatsDataEnable());
+      assertThat(server2Port80.getType(), equalTo(ServerPort.Type.TCP));
+      assertThat(server2Port80.getWeight(), equalTo(999));
+    }
 
-    assertFalse(server3.getEnable());
-    assertThat(server3.getName(), equalTo("SERVER3"));
-    assertFalse(server3.getStatsDataEnable());
-    Map<ServerPort.ServerPortAndType, ServerPort> server3Ports = server3.getPorts();
-    assertThat(server3Ports.keySet(), contains(udp81));
-    ServerPort server3Port81 = server3Ports.get(udp81);
-    assertNull(server3Port81.getConnLimit());
-    assertFalse(server3Port81.getEnable());
-    assertThat(server3Port81.getNumber(), equalTo(81));
-    assertNull(server3Port81.getPortTemplate());
-    assertThat(server3Port81.getRange(), equalTo(11));
-    assertFalse(server3Port81.getStatsDataEnable());
-    assertThat(server3Port81.getType(), equalTo(ServerPort.Type.UDP));
-    assertNull(server3Port81.getWeight());
+    {
+      Server server3 = c.getServers().get("SERVER3");
+      assertFalse(server3.getEnable());
+      assertThat(server3.getName(), equalTo("SERVER3"));
+      assertFalse(server3.getStatsDataEnable());
+      Map<ServerPort.ServerPortAndType, ServerPort> server3Ports = server3.getPorts();
+      assertThat(server3Ports.keySet(), contains(udp81));
+      ServerPort server3Port81 = server3Ports.get(udp81);
+      assertNull(server3Port81.getConnLimit());
+      assertFalse(server3Port81.getEnable());
+      assertNull(server3Port81.getHealthCheck());
+      assertTrue(server3Port81.getHealthCheckDisable());
+      assertThat(server3Port81.getNumber(), equalTo(81));
+      assertNull(server3Port81.getPortTemplate());
+      assertThat(server3Port81.getRange(), equalTo(11));
+      assertFalse(server3Port81.getStatsDataEnable());
+      assertThat(server3Port81.getType(), equalTo(ServerPort.Type.UDP));
+      assertNull(server3Port81.getWeight());
+    }
   }
 
   @Test
@@ -1526,6 +1539,7 @@ public class A10GrammarTest {
     {
       ServiceGroup sg1 = c.getServiceGroups().get("SG1");
       assertNull(sg1.getHealthCheck());
+      assertNull(sg1.getHealthCheckDisable());
       assertThat(sg1.getName(), equalTo("SG1"));
       assertNull(sg1.getStatsDataEnable());
       assertThat(sg1.getType(), equalTo(ServerPort.Type.TCP));
@@ -1556,6 +1570,7 @@ public class A10GrammarTest {
     {
       ServiceGroup sg3 = c.getServiceGroups().get("SG3");
       assertThat(sg3.getName(), equalTo("SG3"));
+      assertTrue(sg3.getHealthCheckDisable());
       assertThat(sg3.getMethod(), equalTo(ServiceGroup.Method.ROUND_ROBIN));
       assertFalse(sg3.getStatsDataEnable());
       assertThat(sg3.getType(), equalTo(ServerPort.Type.UDP));

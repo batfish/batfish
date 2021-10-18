@@ -87,6 +87,24 @@ public final class Server implements Serializable {
     _weight = weight;
   }
 
+  @Nullable
+  public String getHealthCheck() {
+    return _healthCheck;
+  }
+
+  public void setHealthCheck(String healthCheck) {
+    _healthCheck = healthCheck;
+  }
+
+  @Nullable
+  public Boolean getHealthCheckDisable() {
+    return _healthCheckDisable;
+  }
+
+  public void setHealthCheckDisable(boolean healthCheckDisable) {
+    _healthCheckDisable = healthCheckDisable;
+  }
+
   public Server(String name, ServerTarget target) {
     _name = name;
     _ports = new HashMap<>();
@@ -95,6 +113,8 @@ public final class Server implements Serializable {
 
   @Nullable private Integer _connLimit;
   @Nullable private Boolean _enable;
+  @Nullable private String _healthCheck;
+  @Nullable private Boolean _healthCheckDisable;
   @Nonnull private final String _name;
   @Nonnull private final Map<ServerPort.ServerPortAndType, ServerPort> _ports;
   @Nonnull private ServerTarget _target;

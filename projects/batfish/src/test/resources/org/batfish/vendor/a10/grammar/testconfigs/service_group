@@ -30,6 +30,7 @@ slb service-group SG2 tcp
   stats-data-enable
 !
 slb service-group SG3 udp
+  health-check-disable
   stats-data-disable
   method round-robin
   member SERVER1 8080
