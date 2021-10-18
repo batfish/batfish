@@ -16,6 +16,7 @@ tokens {
 ACTIVATE: 'activate';
 ACTIVE: 'active';
 ADDRESS: 'address';
+AFLEX: 'aflex' -> pushMode(M_Word);
 ARP_RETRY: 'arp-retry';
 BFD: 'bfd';
 BGP: 'bgp';
