@@ -37,6 +37,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -333,12 +334,12 @@ public final class A10Configuration extends VendorConfiguration {
     // Overview:
     // - Add all virtual addresses to every inteface with a concrete IPv4 address.
     // - Set address metadata so no connected nor local routes are generated for virtual addresses.
-    List<ConcreteInterfaceAddress> virtualAddresses =
+    Set<ConcreteInterfaceAddress> virtualAddresses =
         Stream.concat(
                 getNatPoolIpsForAllVrids(_natPools.values()),
                 getVirtualServerIpsForAllVrids(_virtualServers.values()))
             .map(ip -> ConcreteInterfaceAddress.create(ip, Prefix.MAX_PREFIX_LENGTH))
-            .collect(ImmutableList.toImmutableList());
+            .collect(ImmutableSet.toImmutableSet());
     ConnectedRouteMetadata connectedRouteMetadata =
         ConnectedRouteMetadata.builder()
             .setGenerateConnectedRoute(false)

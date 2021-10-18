@@ -1,6 +1,7 @@
 package org.batfish.representation.arista;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.ImmutableSortedMap.toImmutableSortedMap;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
@@ -72,6 +73,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -96,6 +98,7 @@ import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.IkePhase1Key;
@@ -104,7 +107,6 @@ import org.batfish.datamodel.IkePhase1Proposal;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6AccessList;
@@ -133,6 +135,7 @@ import org.batfish.datamodel.SnmpCommunity;
 import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.TunnelConfiguration;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
@@ -170,6 +173,7 @@ import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetWeight;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.datamodel.tracking.TrackMethod;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.vendor_family.cisco.Aaa;
@@ -188,6 +192,7 @@ import org.batfish.representation.arista.eos.AristaBgpVrfIpv4UnicastAddressFamil
 import org.batfish.representation.arista.eos.AristaEosVxlan;
 import org.batfish.representation.arista.eos.AristaRedistributeType;
 import org.batfish.vendor.VendorConfiguration;
+import org.batfish.vendor.VendorStructureId;
 
 public final class AristaConfiguration extends VendorConfiguration {
   /** Matches anything but the IPv4 default route. */
@@ -1160,13 +1165,24 @@ public final class AristaConfiguration extends VendorConfiguration {
           newIface.setAutoState(iface.getAutoState());
         }
         // All prefixes is the combination of the interface prefix + any secondary prefixes.
-        ImmutableSet.Builder<InterfaceAddress> allPrefixes = ImmutableSet.builder();
+        ImmutableSet.Builder<ConcreteInterfaceAddress> allPrefixesBuilder = ImmutableSet.builder();
         if (iface.getAddress() != null) {
           newIface.setAddress(iface.getAddress());
-          allPrefixes.add(iface.getAddress());
+          allPrefixesBuilder.add(iface.getAddress());
         }
-        allPrefixes.addAll(iface.getSecondaryAddresses());
-        newIface.setAllAddresses(allPrefixes.build());
+        allPrefixesBuilder.addAll(iface.getSecondaryAddresses());
+        ImmutableSet<ConcreteInterfaceAddress> allPrefixes = allPrefixesBuilder.build();
+        newIface.setAllAddresses(allPrefixes);
+        newIface.setAddressMetadata(
+            allPrefixes.stream()
+                .collect(
+                    toImmutableSortedMap(
+                        Function.identity(),
+                        addr ->
+                            ConnectedRouteMetadata.builder()
+                                .setGenerateLocalRoute(false)
+                                .build())));
+
         break;
 
       case ACCESS:
@@ -1886,7 +1902,9 @@ public final class AristaConfiguration extends VendorConfiguration {
         .build();
   }
 
-  private @Nonnull Statement toStatement(
+  @VisibleForTesting
+  @Nonnull
+  Statement toStatement(
       Configuration c,
       String routeMapName,
       RouteMapClause entry,
@@ -1929,7 +1947,30 @@ public final class AristaConfiguration extends VendorConfiguration {
         noMatchNext != null && continueTargets.contains(noMatchNext)
             ? ImmutableList.of(call(computeRoutingPolicyName(routeMapName, noMatchNext)))
             : ImmutableList.of();
-    return new If(guard, trueStatements, noMatchStatements);
+    return new If(
+        guard,
+        ImmutableList.of(
+            toTraceableStatement(trueStatements, _filename, routeMapName, entry.getSeqNum())),
+        noMatchStatements);
+  }
+
+  private static Statement toTraceableStatement(
+      List<Statement> statements, String filename, String routeMapName, int seqNum) {
+    return new TraceableStatement(
+        TraceElement.builder()
+            .add("Matched ")
+            .add(
+                String.format("route-map %s sequence-number %d", routeMapName, seqNum),
+                new VendorStructureId(
+                    filename,
+                    AristaStructureType.ROUTE_MAP_ENTRY.getDescription(),
+                    computeRouteMapEntryName(routeMapName, seqNum)))
+            .build(),
+        statements);
+  }
+
+  public static @Nonnull String computeRouteMapEntryName(String routeMapName, int sequence) {
+    return String.format("%s %d", routeMapName, sequence);
   }
 
   private static @Nonnull Statement callInContext(String routingPolicyName) {

@@ -1092,6 +1092,7 @@ public class A10GrammarTest {
       Map<VirtualServerPort.PortAndType, VirtualServerPort> server2Ports = server2.getPorts();
       assertThat(server2Ports.keySet(), contains(tcp80));
       VirtualServerPort server2Port80 = server2Ports.get(tcp80);
+      assertThat(server2Port80.getAflex(), equalTo("AFLEX_SCRIPT1"));
       assertThat(server2Port80.getBucketCount(), equalTo(100));
       assertTrue(server2Port80.getDefSelectionIfPrefFailed());
       assertTrue(server2Port80.getEnable());
@@ -1110,6 +1111,7 @@ public class A10GrammarTest {
       Map<VirtualServerPort.PortAndType, VirtualServerPort> server3Ports = server3.getPorts();
       assertThat(server3Ports.keySet(), containsInAnyOrder(udp81, tcpProxy101, http102, https103));
       VirtualServerPort server3Port81 = server3Ports.get(udp81);
+      assertNull(server3Port81.getAflex());
       assertNull(server3Port81.getBucketCount());
       assertNull(server3Port81.getDefSelectionIfPrefFailed());
       assertFalse(server3Port81.getEnable());

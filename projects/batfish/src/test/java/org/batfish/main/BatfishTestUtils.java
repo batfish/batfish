@@ -231,7 +231,7 @@ public class BatfishTestUtils {
     if (runtimeDataBytes != null) {
       writeTemporarySnapshotInputFiles(
           ImmutableMap.of(BfConsts.RELPATH_RUNTIME_DATA_FILE, runtimeDataBytes),
-          "",
+          BfConsts.RELPATH_BATFISH,
           storage,
           TEST_SNAPSHOT);
     }
