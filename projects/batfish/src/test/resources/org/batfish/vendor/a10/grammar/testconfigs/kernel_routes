@@ -1,0 +1,35 @@
+!BATFISH_FORMAT: a10_acos
+hostname kernel_routes
+!
+!
+!
+interface ethernet 1
+  ip address 10.0.0.10 255.255.255.0
+  enable
+!
+!
+! no overlap
+ip nat pool POOL1 10.10.10.10 10.10.10.10 netmask /32
+! overlaps with interface subnet, but not interface address
+ip nat pool POOL2 10.0.0.11 10.0.0.11 netmask /24
+! overlaps with virtual-server, same length
+ip nat pool POOL3 10.0.1.1 10.0.1.1 netmask /32
+! less specific than virtual-server
+ip nat pool POOL4 10.0.2.1 10.0.2.2 netmask /29
+!
+!
+slb server SERVER1 10.0.0.1
+  enable
+  port 80 tcp
+!
+!
+! no overlap
+slb virtual-server VS1 10.0.5.1
+!
+! overlaps with ip nat pool, same length
+slb virtual-server VS3 10.0.1.1
+  redistribution-flagged
+!
+! more specific than ip nat pool
+slb virtual-server VS4 10.0.2.3
+!

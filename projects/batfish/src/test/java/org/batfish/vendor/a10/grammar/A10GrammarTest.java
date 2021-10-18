@@ -37,6 +37,7 @@ import static org.batfish.main.BatfishTestUtils.getBatfish;
 import static org.batfish.vendor.a10.representation.A10Configuration.getInterfaceName;
 import static org.batfish.vendor.a10.representation.A10Conversion.DEFAULT_VRRP_A_PRIORITY;
 import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_NAT_POOL;
+import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_VIRTUAL_SERVER_FLAGGED;
 import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_VIRTUAL_SERVER_UNFLAGGED;
 import static org.batfish.vendor.a10.representation.A10Conversion.SNAT_PORT_POOL_START;
 import static org.batfish.vendor.a10.representation.A10StructureType.INTERFACE;
@@ -1600,21 +1601,6 @@ public class A10GrammarTest {
     NetworkSnapshot snapshot = batfish.getSnapshot();
     batfish.computeDataPlane(snapshot);
 
-    // test kernel routes
-    assertThat(
-        c.getDefaultVrf().getKernelRoutes(),
-        containsInAnyOrder(
-            KernelRoute.builder()
-                .setNetwork(Prefix.strict("10.0.0.100/32"))
-                .setRequiredOwnedIp(Ip.parse("10.0.0.100"))
-                .setTag(KERNEL_ROUTE_TAG_VIRTUAL_SERVER_UNFLAGGED)
-                .build(),
-            KernelRoute.builder()
-                .setNetwork(Prefix.strict("10.10.10.10/32"))
-                .setRequiredOwnedIp(Ip.parse("10.10.10.10"))
-                .setTag(KERNEL_ROUTE_TAG_NAT_POOL)
-                .build()));
-
     // This flow matches the virtual-server and should get SNAT and DNAT
     Flow flowMatch =
         Flow.builder()
@@ -1760,5 +1746,44 @@ public class A10GrammarTest {
     // None of these should have been set, even where the line has one valid and one invalid value
     assertNull(neighbor.getMaximumPrefix());
     assertNull(neighbor.getMaximumPrefixThreshold());
+  }
+
+  @Test
+  public void testKernelRoutes() {
+    Configuration c = parseConfig("kernel_routes");
+    // test kernel routes
+    assertThat(
+        c.getDefaultVrf().getKernelRoutes(),
+        containsInAnyOrder(
+            KernelRoute.builder()
+                .setNetwork(Prefix.strict("10.10.10.10/32"))
+                .setRequiredOwnedIp(Ip.parse("10.10.10.10"))
+                .setTag(KERNEL_ROUTE_TAG_NAT_POOL)
+                .build(),
+            KernelRoute.builder()
+                .setNetwork(Prefix.strict("10.0.0.0/24"))
+                .setRequiredOwnedIp(Ip.parse("10.0.0.11"))
+                .setTag(KERNEL_ROUTE_TAG_NAT_POOL)
+                .build(),
+            KernelRoute.builder()
+                .setNetwork(Prefix.strict("10.0.1.1/32"))
+                .setRequiredOwnedIp(Ip.parse("10.0.1.1"))
+                .setTag(KERNEL_ROUTE_TAG_NAT_POOL)
+                .build(),
+            KernelRoute.builder()
+                .setNetwork(Prefix.strict("10.0.2.0/29"))
+                .setRequiredOwnedIp(Ip.parse("10.0.2.1"))
+                .setTag(KERNEL_ROUTE_TAG_NAT_POOL)
+                .build(),
+            KernelRoute.builder()
+                .setNetwork(Prefix.strict("10.0.5.1/32"))
+                .setRequiredOwnedIp(Ip.parse("10.0.5.1"))
+                .setTag(KERNEL_ROUTE_TAG_VIRTUAL_SERVER_UNFLAGGED)
+                .build(),
+            KernelRoute.builder()
+                .setNetwork(Prefix.strict("10.0.1.1/32"))
+                .setRequiredOwnedIp(Ip.parse("10.0.1.1"))
+                .setTag(KERNEL_ROUTE_TAG_VIRTUAL_SERVER_FLAGGED)
+                .build()));
   }
 }
