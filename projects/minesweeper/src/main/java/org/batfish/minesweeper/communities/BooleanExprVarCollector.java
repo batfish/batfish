@@ -32,6 +32,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProcessAsn;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.MatchRouteType;
+import org.batfish.datamodel.routing_policy.expr.MatchSourceProtocol;
 import org.batfish.datamodel.routing_policy.expr.MatchSourceVrf;
 import org.batfish.datamodel.routing_policy.expr.MatchTag;
 import org.batfish.datamodel.routing_policy.expr.Not;
@@ -192,6 +193,12 @@ public class BooleanExprVarCollector
 
   @Override
   public Set<CommunityVar> visitMatchRouteType(MatchRouteType matchRouteType, Configuration arg) {
+    return ImmutableSet.of();
+  }
+
+  @Override
+  public Set<CommunityVar> visitMatchSourceProtocol(
+      MatchSourceProtocol matchSourceProtocol, Configuration arg) {
     return ImmutableSet.of();
   }
 
