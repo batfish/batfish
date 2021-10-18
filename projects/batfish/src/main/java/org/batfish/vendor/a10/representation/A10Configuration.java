@@ -305,7 +305,6 @@ public final class A10Configuration extends VendorConfiguration {
    * slb virtual-server}s.
    */
   private void createKernelRoutes() {
-    // TODO: support non-default VRF?
     _c.getDefaultVrf()
         .setKernelRoutes(
             Stream.concat(

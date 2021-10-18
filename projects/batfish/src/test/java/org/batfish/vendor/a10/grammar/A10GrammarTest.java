@@ -1753,7 +1753,6 @@ public class A10GrammarTest {
   @Test
   public void testKernelRoutes() {
     Configuration c = parseConfig("kernel_routes");
-    // test kernel routes
     assertThat(
         c.getDefaultVrf().getKernelRoutes(),
         containsInAnyOrder(

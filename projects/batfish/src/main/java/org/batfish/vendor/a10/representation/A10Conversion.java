@@ -281,13 +281,8 @@ public class A10Conversion {
         .filter(A10Conversion::isVirtualServerEnabled)
         .filter(
             vs ->
-                vs.getPorts().values().stream()
-                    .anyMatch(A10Conversion::getVirtualServerPortEnabled))
+                vs.getPorts().values().stream().anyMatch(A10Conversion::isVirtualServerPortEnabled))
         .map(A10Conversion::toKernelRoute);
-  }
-
-  private static boolean getVirtualServerPortEnabled(VirtualServerPort port) {
-    return firstNonNull(port.getEnable(), Boolean.TRUE);
   }
 
   @VisibleForTesting
@@ -309,10 +304,7 @@ public class A10Conversion {
     return firstNonNull(virtualServer.getRedistributionFlagged(), Boolean.FALSE);
   }
 
-  /**
-   * Extracts the virtual {@link Ip} of a {@link VirtualServerTarget} - if any - that the device may
-   * own.
-   */
+  /** Extracts the virtual {@link Ip} of a {@link VirtualServerTarget} that the device may own. */
   private static final class VirtualServerTargetVirtualAddressExtractor
       implements VirtualServerTargetVisitor<Ip> {
     // TODO: this may need to return a set of IPs; or a prefix or an IP.
