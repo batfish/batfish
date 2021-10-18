@@ -23,7 +23,9 @@ interface ethernet 2
 !
 
 ip nat pool pool1 1.0.0.1 1.0.0.2 netmask /24 vrid 1
+ip nat pool pool2 2.0.0.1 2.0.0.1 netmask /32 vrid 1
 
+! overlaps with nat pool, but that is ok
 slb virtual-server vs1 2.0.0.1
   vrid 1
 !
