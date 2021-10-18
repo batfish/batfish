@@ -1,0 +1,43 @@
+!Command: show running-config
+!Running configuration last done at: Fri Oct 15 20:21:17 2021
+!Time: Fri Oct 15 20:52:17 2021
+
+version 9.2(3) Bios:version
+hostname r2
+
+feature bgp
+
+ip prefix-list ALL seq 5 permit 0.0.0.0/0
+route-map DENY_ALL deny 10
+  match ip address prefix-list ALL
+route-map IBGP_IN permit 10
+  set ip next-hop 5.5.5.5
+  set local-preference 300
+route-map PERMIT_ALL permit 10
+
+interface Ethernet1/1
+  no switchport
+  ip address 10.10.10.1/30
+  no shutdown
+
+interface Ethernet1/2
+  no switchport
+  ip address 12.12.12.1/30
+  no shutdown
+
+interface loopback0
+  ip address 1.1.1.1/32
+boot nxos bootflash:/nxos.9.2.3.bin
+router bgp 65001
+  router-id 1.1.1.1
+  address-family ipv4 unicast
+  neighbor 10.10.10.2
+    remote-as 65002
+    address-family ipv4 unicast
+      route-map PERMIT_ALL in
+      route-map DENY_ALL out
+  neighbor 12.12.12.2
+    remote-as 65001
+    address-family ipv4 unicast
+      route-map IBGP_IN in
+      route-map DENY_ALL out

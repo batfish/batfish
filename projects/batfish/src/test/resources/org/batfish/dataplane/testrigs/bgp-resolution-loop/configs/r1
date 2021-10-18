@@ -1,0 +1,26 @@
+!Command: show running-config
+!Running configuration last done at: Fri Oct 15 20:55:29 2021
+!Time: Fri Oct 15 20:55:38 2021
+
+version 9.2(3) Bios:version
+hostname r1
+
+feature bgp
+
+route-map PERMIT_ALL permit 10
+
+interface Ethernet1/2
+  no switchport
+  ip address 12.12.12.2/30
+  no shutdown
+
+interface loopback0
+  ip address 3.3.3.3/32
+boot nxos bootflash:/nxos.9.2.3.bin
+router bgp 65001
+  router-id 3.3.3.3
+  neighbor 12.12.12.1
+    remote-as 65001
+    address-family ipv4 unicast
+      route-map PERMIT_ALL out
+      default-originate
