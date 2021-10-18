@@ -32,6 +32,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
         HasReadableCommunities,
         HasReadableLocalPreference,
         HasReadableOriginType,
+        HasReadableSourceProtocol,
         HasReadableWeight {
 
   /** Local-preference has a maximum value of u32 max. */
@@ -425,9 +426,8 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     return _receivedFromRouteReflectorClient;
   }
 
-  @Nullable
   @JsonProperty(PROP_SRC_PROTOCOL)
-  public RoutingProtocol getSrcProtocol() {
+  public @Nullable RoutingProtocol getSrcProtocol() {
     return _srcProtocol;
   }
 
