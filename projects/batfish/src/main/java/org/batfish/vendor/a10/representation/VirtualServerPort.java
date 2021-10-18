@@ -46,6 +46,15 @@ public class VirtualServerPort implements Serializable {
   }
 
   @Nullable
+  public String getAflex() {
+    return _aflex;
+  }
+
+  public void setAflex(@Nullable String aflex) {
+    _aflex = aflex;
+  }
+
+  @Nullable
   public Integer getBucketCount() {
     return _bucketCount;
   }
@@ -124,6 +133,7 @@ public class VirtualServerPort implements Serializable {
     _range = range;
   }
 
+  @Nullable private String _aflex;
   @Nullable private Integer _bucketCount;
   @Nullable private Boolean _defSelectionIfPrefFailed;
   @Nullable private Boolean _enable;
