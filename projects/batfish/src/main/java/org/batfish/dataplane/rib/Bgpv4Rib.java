@@ -54,12 +54,14 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
       }
     }
 
+    @Nonnull
     Stream<Ip> getAffectedNextHopIps(Stream<Prefix> changedPrefixes) {
       return changedPrefixes
           .flatMap(prefix -> _mainRibPrefixesAndBgpNhips.getAffectedNextHopIps(prefix).stream())
           .distinct();
     }
 
+    @Nonnull
     Set<Bgpv4Route> getRoutesWithNhip(Ip nhip) {
       return _bgpRoutesByNhip.get(nhip);
     }
@@ -130,10 +132,8 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
 
   public RibDelta<Bgpv4Route> updateActiveRoutes(
       RibDelta<AnnotatedRoute<AbstractRoute>> mainRibDelta) {
-    if (_mainRib == null) {
-      // Shouldn't happen outside of tests
-      return RibDelta.empty();
-    }
+    // Should only be null in tests, and those tests shouldn't be using this function
+    assert _mainRib != null;
 
     // Update resolvability enforcer's record of main RIB prefixes
     _resolvabilityEnforcer.updateMainRibPrefixes(mainRibDelta);
