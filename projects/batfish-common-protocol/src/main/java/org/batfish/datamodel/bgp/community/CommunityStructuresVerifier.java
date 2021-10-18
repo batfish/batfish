@@ -80,6 +80,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProcessAsn;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.MatchRouteType;
+import org.batfish.datamodel.routing_policy.expr.MatchSourceProtocol;
 import org.batfish.datamodel.routing_policy.expr.MatchSourceVrf;
 import org.batfish.datamodel.routing_policy.expr.MatchTag;
 import org.batfish.datamodel.routing_policy.expr.Not;
@@ -288,6 +289,12 @@ public final class CommunityStructuresVerifier {
     @Override
     public Void visitMatchRouteType(
         MatchRouteType matchRouteType, CommunityStructuresVerifierContext arg) {
+      return null;
+    }
+
+    @Override
+    public Void visitMatchSourceProtocol(
+        MatchSourceProtocol matchSourceProtocol, CommunityStructuresVerifierContext arg) {
       return null;
     }
 
