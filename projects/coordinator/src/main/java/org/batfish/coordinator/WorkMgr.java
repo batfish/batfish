@@ -29,6 +29,7 @@ import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.util.GlobalTracer;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -1273,6 +1274,31 @@ public class WorkMgr extends AbstractCoordinator {
     initSnapshot(networkName, snapshotName, srcDir, autoAnalyze, creationTime, null);
   }
 
+  /** Move runtime_data.json under batfish/ if it's at the top level. */
+  private void moveRuntimeDataFile(Path dir) {
+    File runtimeDataNewLoc =
+        dir.resolve(BfConsts.RELPATH_BATFISH).resolve(BfConsts.RELPATH_RUNTIME_DATA_FILE).toFile();
+    File runtimeDataOldLoc = dir.resolve(BfConsts.RELPATH_RUNTIME_DATA_FILE).toFile();
+    if (runtimeDataNewLoc.exists()) {
+      // The runtime data file already exists under batfish subdirectory. Delete the one at the root
+      // directory (if it exists).
+      FileUtils.deleteQuietly(runtimeDataOldLoc);
+      return;
+    }
+
+    // Move runtime data file at top-level to batfish/ subfolder
+    if (runtimeDataOldLoc.exists()) {
+      File batfishDir = dir.resolve(BfConsts.RELPATH_BATFISH).toFile();
+      try {
+        FileUtils.forceMkdir(batfishDir);
+        FileUtils.copyFileToDirectory(runtimeDataOldLoc, batfishDir);
+        FileUtils.deleteQuietly(runtimeDataOldLoc);
+      } catch (IOException e) {
+        _logger.warn("Failed to move runtime data file into batfish/ folder");
+      }
+    }
+  }
+
   public void initSnapshot(
       String networkName,
       String snapshotName,
@@ -1283,12 +1309,16 @@ public class WorkMgr extends AbstractCoordinator {
     Path subDir = getSnapshotSubdir(srcDir);
     validateSnapshotDir(subDir);
 
+    moveRuntimeDataFile(subDir);
+
     // If interface blacklist was provided, delete it and copy contents into runtime data
     List<NodeInterfacePair> ifaceBlacklist =
         deserializeAndDeleteInterfaceBlacklist(
             subDir.resolve(BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE));
     updateRuntimeData(
-        subDir.resolve(BfConsts.RELPATH_RUNTIME_DATA_FILE), ifaceBlacklist, ImmutableList.of());
+        subDir.resolve(BfConsts.RELPATH_BATFISH).resolve(BfConsts.RELPATH_RUNTIME_DATA_FILE),
+        ifaceBlacklist,
+        ImmutableList.of());
 
     SortedSet<Path> subFileList = getEntries(subDir);
 
@@ -1508,6 +1538,8 @@ public class WorkMgr extends AbstractCoordinator {
       FileUtils.deleteDirectory(unzipDir.toFile());
     }
 
+    moveRuntimeDataFile(newSnapshotInputsDir);
+
     // Update line-up/line-down interface statuses
     Set<NodeInterfacePair> deactivate = new HashSet<>();
     if (forkSnapshotBean.deactivateInterfaces != null) {
@@ -1520,7 +1552,11 @@ public class WorkMgr extends AbstractCoordinator {
     List<NodeInterfacePair> restore =
         firstNonNull(forkSnapshotBean.restoreInterfaces, ImmutableList.of());
     updateRuntimeData(
-        newSnapshotInputsDir.resolve(BfConsts.RELPATH_RUNTIME_DATA_FILE), deactivate, restore);
+        newSnapshotInputsDir
+            .resolve(BfConsts.RELPATH_BATFISH)
+            .resolve(BfConsts.RELPATH_RUNTIME_DATA_FILE),
+        deactivate,
+        restore);
 
     // Add user-specified failures to new blacklists
     addToSerializedList(
@@ -1587,6 +1623,7 @@ public class WorkMgr extends AbstractCoordinator {
             .setInterfacesLineUp(restoreIfaces)
             .build();
     try {
+      runtimeDataPath.getParent().toFile().mkdir();
       CommonUtil.writeFile(runtimeDataPath, BatfishObjectMapper.writeString(updatedRuntimeData));
     } catch (JsonProcessingException e) {
       // TODO Warn here?
