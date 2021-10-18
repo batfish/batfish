@@ -11,6 +11,7 @@ import static org.batfish.vendor.a10.representation.A10Conversion.toMatchConditi
 import static org.batfish.vendor.a10.representation.A10Conversion.toProtocol;
 import static org.batfish.vendor.a10.representation.A10Conversion.toVrrpGroupBuilder;
 import static org.batfish.vendor.a10.representation.A10Conversion.toVrrpGroups;
+import static org.batfish.vendor.a10.representation.A10Conversion.vrrpAAppliesToInterface;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
@@ -27,6 +28,7 @@ import org.batfish.datamodel.BddTestbed;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IntegerSpace;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
@@ -269,5 +271,35 @@ public class A10ConversionTest {
                     .setVirtualAddresses(Ip.parse("1.1.1.1"))
                     .setSourceAddress(sourceAddress)
                     .build())));
+  }
+
+  @Test
+  public void testVrrpAAppliesToInterface() {
+    org.batfish.datamodel.Interface.Builder ifaceBuilder =
+        org.batfish.datamodel.Interface.builder().setName("placeholder");
+    // No concrete address
+    assertFalse(
+        vrrpAAppliesToInterface(
+            ifaceBuilder.setType(InterfaceType.PHYSICAL).setAddress(null).build()));
+    // Loopback interface
+    assertFalse(
+        vrrpAAppliesToInterface(
+            ifaceBuilder
+                .setType(InterfaceType.LOOPBACK)
+                .setAddress(ConcreteInterfaceAddress.parse("10.10.10.10/32"))
+                .build()));
+
+    assertTrue(
+        vrrpAAppliesToInterface(
+            ifaceBuilder
+                .setType(InterfaceType.PHYSICAL)
+                .setAddress(ConcreteInterfaceAddress.parse("10.10.10.10/32"))
+                .build()));
+    assertTrue(
+        vrrpAAppliesToInterface(
+            ifaceBuilder
+                .setType(InterfaceType.AGGREGATED)
+                .setAddress(ConcreteInterfaceAddress.parse("10.10.10.10/24"))
+                .build()));
   }
 }
