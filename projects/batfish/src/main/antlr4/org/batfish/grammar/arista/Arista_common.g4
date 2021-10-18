@@ -4,6 +4,12 @@ options {
    tokenVocab = AristaLexer;
 }
 
+bgp_local_pref
+:
+  // full range of values: 0-4294967295
+  p = uint32
+;
+
 interface_address
 :
   ip = IP_ADDRESS subnet = IP_ADDRESS

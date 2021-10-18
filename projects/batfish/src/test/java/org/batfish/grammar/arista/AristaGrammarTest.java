@@ -250,6 +250,7 @@ import org.batfish.representation.arista.VrrpInterface;
 import org.batfish.representation.arista.eos.AristaBgpAggregateNetwork;
 import org.batfish.representation.arista.eos.AristaBgpBestpathTieBreaker;
 import org.batfish.representation.arista.eos.AristaBgpDefaultOriginate;
+import org.batfish.representation.arista.eos.AristaBgpNeighbor;
 import org.batfish.representation.arista.eos.AristaBgpNeighbor.RemovePrivateAsMode;
 import org.batfish.representation.arista.eos.AristaBgpNeighborAddressFamily;
 import org.batfish.representation.arista.eos.AristaBgpNetworkConfiguration;
@@ -1856,12 +1857,14 @@ public class AristaGrammarTest {
       assertThat(config.getAristaBgp().getPeerGroups(), hasKey(peergName));
       AristaBgpPeerGroupNeighbor neighbor = config.getAristaBgp().getPeerGroups().get(peergName);
       assertThat(config.getAristaBgp().getPeerGroups().get(peergName).getAllowAsIn(), equalTo(3));
+      assertThat(neighbor.getExportLocalPref(), equalTo(40L));
       assertThat(neighbor.getRemovePrivateAsMode(), nullValue());
       assertThat(neighbor.getRouteReflectorClient(), nullValue());
     }
     {
       AristaBgpPeerGroupNeighbor pg = config.getAristaBgp().getPeerGroups().get("PEER_G2");
       assertThat(pg, notNullValue());
+      assertThat(pg.getExportLocalPref(), nullValue());
       assertThat(pg.getRouteReflectorClient(), equalTo(Boolean.TRUE));
     }
     {
@@ -1876,6 +1879,7 @@ public class AristaGrammarTest {
       assertThat(neighbor.getDescription(), equalTo("SOME NEIGHBOR"));
       assertTrue(neighbor.getDontCapabilityNegotiate());
       assertThat(neighbor.getEbgpMultihop(), equalTo(Integer.MAX_VALUE));
+      assertThat(neighbor.getExportLocalPref(), nullValue());
       assertThat(neighbor.getLocalAs(), equalTo(65111L));
       assertTrue(neighbor.getNextHopSelf());
       assertTrue(neighbor.getNextHopUnchanged());
@@ -1898,6 +1902,8 @@ public class AristaGrammarTest {
       assertThat(defaultOriginate.getAlways(), equalTo(true));
       assertThat(defaultOriginate.getRouteMap(), equalTo("DEF_ORIG_MAP"));
       assertThat(neighbor.getEbgpMultihop(), equalTo(10));
+      assertThat(
+          neighbor.getExportLocalPref(), equalTo(AristaBgpNeighbor.SYSTEM_DEFAULT_LOCALPREF));
       assertThat(neighbor.getRemoteAs(), equalTo(36L));
       assertThat(neighbor.getRemovePrivateAsMode(), is(RemovePrivateAsMode.ALL));
       assertThat(neighbor.getRouteReflectorClient(), nullValue());

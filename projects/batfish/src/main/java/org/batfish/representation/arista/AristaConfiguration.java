@@ -879,6 +879,7 @@ public final class AristaConfiguration extends VendorConfiguration {
         RoutingPolicy.builder().setOwner(c).setName(redistPolicyName);
 
     // Arista sets local routes' local preference to 0
+    // actually, it is unset but treated like 0 in terms of BgpRib comparisons.
     redistributionPolicy.addStatement(new SetLocalPreference(new LiteralLong(0)));
     redistributionPolicy.addStatement(new SetWeight(new LiteralInt(DEFAULT_LOCAL_BGP_WEIGHT)));
 
