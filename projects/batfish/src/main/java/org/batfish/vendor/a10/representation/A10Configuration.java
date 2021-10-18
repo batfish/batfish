@@ -336,7 +336,7 @@ public final class A10Configuration extends VendorConfiguration {
                     virtualAddress -> virtualAddress,
                     unused -> connectedRouteMetadata));
     _c.getAllInterfaces().values().stream()
-        .filter(i -> i.getConcreteAddress() != null)
+        .filter(A10Conversion::vrrpAAppliesToInterface)
         .forEach(
             iface -> {
               iface.setAllAddresses(
@@ -395,7 +395,7 @@ public final class A10Configuration extends VendorConfiguration {
                     vrid, toVrrpGroupBuilder(_vrrpA.getVrids().get(vrid), virtualAddresses)));
     // Create and assign the final VRRP groups on each interface with a concrete IPv4 address.
     _c.getAllInterfaces().values().stream()
-        .filter(i -> i.getConcreteAddress() != null)
+        .filter(A10Conversion::vrrpAAppliesToInterface)
         .forEach(i -> i.setVrrpGroups(toVrrpGroups(i, vrrpGroupBuildersBuilder.build())));
   }
 
