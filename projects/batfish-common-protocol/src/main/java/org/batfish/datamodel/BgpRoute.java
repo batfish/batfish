@@ -427,6 +427,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   }
 
   @JsonProperty(PROP_SRC_PROTOCOL)
+  @Override
   public @Nullable RoutingProtocol getSrcProtocol() {
     return _srcProtocol;
   }
