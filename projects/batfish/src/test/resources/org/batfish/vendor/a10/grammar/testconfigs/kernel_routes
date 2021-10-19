@@ -1,0 +1,40 @@
+!BATFISH_FORMAT: a10_acos
+hostname kernel_routes
+!
+!
+interface ethernet 1
+  ip address 10.0.0.10 255.255.255.0
+  enable
+!
+!
+ip nat pool POOL1 10.10.10.10 10.10.10.10 netmask /32
+! overlaps with interface subnet, but not interface address
+ip nat pool POOL2 10.0.0.11 10.0.0.11 netmask /24
+!
+!
+slb server SERVER1 10.0.0.1
+  enable
+  port 22 tcp
+!
+slb service-group SG1 tcp
+  member SERVER1 22
+    enable
+!
+slb virtual-server VS1 10.0.5.1
+  port 22 tcp
+    service-group SG1
+!
+slb virtual-server VS2 10.0.6.1
+  redistribution-flagged
+  port 22 tcp
+    service-group SG1
+!
+! no service-group, so no kernel route
+slb virtual-server VS3 10.0.7.1
+!
+! no enabled port, so no kernel route
+slb virtual-server VS4 10.0.8.1
+  port 22 tcp
+    disable
+    service-group SG1
+!
