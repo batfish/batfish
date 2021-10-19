@@ -6,10 +6,18 @@ interface ethernet 1
   name "this is a comp\"l"'icat\'ed 'name
   mtu 1234
   enable
+  lldp enable tx rx
+  lldp enable tx
+  ! Other properties; ignored for now
+  load-interval 10
+  ipg-bit-time 11
+  duplexity auto
+  speed auto
 !
 interface ethernet 9
   ip address 10.0.2.1 255.255.255.0
   name baz
+  lldp enable rx tx
   disable
 !
 interface loopback 0

@@ -89,6 +89,7 @@ import org.batfish.vendor.a10.representation.BgpNeighborUpdateSourceAddress;
 import org.batfish.vendor.a10.representation.BgpProcess;
 import org.batfish.vendor.a10.representation.Interface;
 import org.batfish.vendor.a10.representation.Interface.Type;
+import org.batfish.vendor.a10.representation.InterfaceLldp;
 import org.batfish.vendor.a10.representation.InterfaceReference;
 import org.batfish.vendor.a10.representation.NatPool;
 import org.batfish.vendor.a10.representation.Server;
@@ -280,6 +281,23 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
       return;
     }
     _currentInterface.setIpAddress(toInterfaceAddress(ctx.ip_prefix()));
+  }
+
+  @Override
+  public void exitSidll_enable(A10Parser.Sidll_enableContext ctx) {
+    boolean enableRx = false;
+    boolean enableTx = false;
+    for (A10Parser.SidlleContext enable : ctx.sidlle()) {
+      if (enable.RX() != null) {
+        enableRx = true;
+        continue;
+      }
+      assert enable.TX() != null;
+      enableTx = true;
+    }
+    InterfaceLldp lldp = _currentInterface.getOrCreateLldp();
+    lldp.setEnableRx(enableRx);
+    lldp.setEnableTx(enableTx);
   }
 
   @Override
