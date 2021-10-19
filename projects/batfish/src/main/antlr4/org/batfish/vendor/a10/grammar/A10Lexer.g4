@@ -13,6 +13,7 @@ tokens {
 }
 
 // A10 keywords
+ACCESS_LIST: 'access-list';
 ACTIVATE: 'activate';
 ACTIVE: 'active';
 ADDRESS: 'address';
