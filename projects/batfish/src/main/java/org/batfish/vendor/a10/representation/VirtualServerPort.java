@@ -136,6 +136,19 @@ public class VirtualServerPort implements Serializable {
     _sourceNat = sourceNat;
   }
 
+  /**
+   * From docs: Force the ACOS device to send replies to clients back through the last hop on which
+   * the request for the virtual port's service was received.
+   */
+  @Nullable
+  public Boolean getUseRcvHopForResp() {
+    return _useRcvHopForResp;
+  }
+
+  public void setUseRcvHopForResp(Boolean useRcvHopForResp) {
+    _useRcvHopForResp = useRcvHopForResp;
+  }
+
   public VirtualServerPort(int number, Type type, @Nullable Integer range) {
     _number = number;
     _type = type;
@@ -153,4 +166,5 @@ public class VirtualServerPort implements Serializable {
   @Nullable private String _serviceGroup;
   @Nullable private String _sourceNat;
   @Nonnull private Type _type;
+  @Nullable private Boolean _useRcvHopForResp;
 }
