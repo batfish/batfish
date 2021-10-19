@@ -1103,6 +1103,7 @@ public class A10GrammarTest {
       assertThat(server2Port80.getServiceGroup(), equalTo("SG1"));
       assertThat(server2Port80.getSourceNat(), equalTo("POOL1"));
       assertThat(server2Port80.getType(), equalTo(VirtualServerPort.Type.TCP));
+      assertTrue(server2Port80.getUseRcvHopForResp());
     }
 
     {
@@ -1123,6 +1124,7 @@ public class A10GrammarTest {
       assertNull(server3Port81.getServiceGroup());
       assertNull(server3Port81.getSourceNat());
       assertThat(server3Port81.getType(), equalTo(VirtualServerPort.Type.UDP));
+      assertNull(server3Port81.getUseRcvHopForResp());
 
       // Check other virtual port types
       assertThat(

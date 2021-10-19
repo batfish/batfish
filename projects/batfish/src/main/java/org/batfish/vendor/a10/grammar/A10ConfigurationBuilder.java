@@ -1844,6 +1844,11 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
             });
   }
 
+  @Override
+  public void exitSsvspd_use_rcv_hop_for_resp(A10Parser.Ssvspd_use_rcv_hop_for_respContext ctx) {
+    _currentVirtualServerPort.setUseRcvHopForResp(true);
+  }
+
   @Nonnull
   VirtualServerTarget toVirtualServerTarget(A10Parser.Virtual_server_targetContext ctx) {
     assert ctx.ip_address() != null;
