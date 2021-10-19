@@ -32,6 +32,8 @@ ADVERTISE_ALL_VNI: 'advertise-all-vni';
 
 ADVERTISE_DEFAULT_GW: 'advertise-default-gw';
 
+ADVERTISEMENT_INTERVAL: 'advertisement-interval';
+
 AGENTX: 'agentx';
 
 AGGREGATE_ADDRESS: 'aggregate-address';
@@ -124,6 +126,8 @@ COMMUNITY
 COMMUNITY_LIST: 'community-list';
 
 CONFEDERATION: 'confederation';
+
+CONNECT: 'connect';
 
 CONNECTED: 'connected';
 
@@ -363,6 +367,8 @@ PERMIT: 'permit';
 
 POINT_TO_POINT: 'point-to-point';
 
+PRECISION: 'precision';
+
 PREFIX_LEN: 'prefix-len';
 
 PREFIX_LIST
@@ -371,6 +377,8 @@ PREFIX_LIST
 ;
 
 PREPEND: 'prepend';
+
+PROTOCOL: 'protocol';
 
 EXCLUDE: 'exclude';
 
@@ -430,6 +438,10 @@ SUPPRESS_RA: 'suppress-ra';
 SYSLOG: 'syslog';
 
 TAG: 'tag';
+
+TIMERS: 'timers';
+
+TIMESTAMP: 'timestamp';
 
 TRADITIONAL: 'traditional';
 

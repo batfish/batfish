@@ -2244,6 +2244,12 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testIpForwarding() {
+    // does not crash
+    parseLines("ip forwarding\n");
+  }
+
+  @Test
   public void testNoIpForwarding() {
     parseLines("no ip forwarding\n");
     assertThat(
@@ -2265,6 +2271,7 @@ public class CumulusFrrGrammarTest {
   public void testLog() {
     parse("log file /var/log/frr/frr.log\n");
     parse("log commands\n");
+    parse("log timestamp precision 6\n");
   }
 
   @Test
@@ -2575,5 +2582,31 @@ public class CumulusFrrGrammarTest {
 
     // init from the back
     assertThat(_frr.getInterfaceInitOrder(), contains("swp3", "swp1", "swp2"));
+  }
+
+  @Test
+  public void testBgpTimers() {
+    // does not crash
+    parseLines("router bgp 65432", "  timers bgp 3 15");
+  }
+
+  @Test
+  public void testBgpNeighborTimers() {
+    // does not crash
+    parseLines("router bgp 65432", "  neighbor PEERS timers connect 15");
+  }
+
+  @Test
+  public void testBgpNeighborAdvertisementInterval() {
+    // does not crash
+    parseLines("router bgp 65432", "  neighbor swp49 advertisement-interval 0");
+  }
+
+  @Test
+  public void testIpv6_noWarnings() {
+    // top-level ipv6 commands are not warned
+    _warnings = new Warnings(false, true, false);
+    parseLines("ipv6 protocol route-map set-src-address");
+    assertThat(_warnings.getRedFlagWarnings(), empty());
   }
 }
