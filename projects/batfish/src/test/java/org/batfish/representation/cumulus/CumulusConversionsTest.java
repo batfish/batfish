@@ -732,7 +732,7 @@ public final class CumulusConversionsTest {
     Ip peerIp = Ip.parse("10.0.0.2");
     BgpIpNeighbor neighbor = new BgpIpNeighbor("BgpNeighbor", peerIp);
     neighbor.setRemoteAs(RemoteAs.internal());
-    neighbor.setEbgpMultihop(3L);
+    neighbor.setEbgpMultihop(true);
 
     // set bgp process
     org.batfish.datamodel.BgpProcess newProc =

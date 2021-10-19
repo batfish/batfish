@@ -101,7 +101,7 @@ public abstract class BgpNeighbor implements Serializable {
   private @Nullable RemoteAs _remoteAs;
   private @Nullable BgpNeighborIpv4UnicastAddressFamily _ipv4UnicastAddressFamily;
   private @Nullable BgpNeighborL2vpnEvpnAddressFamily _l2vpnEvpnAddressFamily;
-  private @Nullable Long _ebgpMultihop;
+  private @Nullable Boolean _ebgpMultihop;
   private @Nullable BgpNeighborSource _bgpNeighborSource;
   private @Nullable Long _localAs;
 
@@ -164,11 +164,11 @@ public abstract class BgpNeighbor implements Serializable {
     return _remoteAs;
   }
 
-  public @Nullable Long getEbgpMultihop() {
+  public @Nullable Boolean getEbgpMultihop() {
     return _ebgpMultihop;
   }
 
-  public void setEbgpMultihop(@Nullable Long ebgpMultihop) {
+  public void setEbgpMultihop(@Nullable Boolean ebgpMultihop) {
     _ebgpMultihop = ebgpMultihop;
   }
 

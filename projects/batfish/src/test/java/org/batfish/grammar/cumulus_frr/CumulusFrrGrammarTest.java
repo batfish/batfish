@@ -1650,18 +1650,48 @@ public class CumulusFrrGrammarTest {
 
   @Test
   public void testBgpNeighborEbgpMultihopPeerGroup() {
-    parseLines("router bgp 10000", "neighbor N peer-group", "neighbor N ebgp-multihop 3");
+    _warnings = new Warnings(false, true, false);
+    parseLines(
+        "router bgp 10000",
+        "neighbor N peer-group",
+        "neighbor N ebgp-multihop 3",
+        "neighbor M peer-group",
+        "neighbor M ebgp-multihop",
+        "neighbor L peer-group");
     assertThat(
         _frr.getBgpProcess().getDefaultVrf().getNeighbors().get("N").getEbgpMultihop(),
-        equalTo(3L));
+        equalTo(true));
+    assertThat(
+        _frr.getBgpProcess().getDefaultVrf().getNeighbors().get("M").getEbgpMultihop(),
+        equalTo(true));
+    assertThat(
+        _frr.getBgpProcess().getDefaultVrf().getNeighbors().get("L").getEbgpMultihop(),
+        equalTo(null));
+    assertThat(
+        Iterables.getOnlyElement(_warnings.getParseWarnings()),
+        hasComment("Neighbor recognized as ebgp-multihop, but distance limit is not enforced"));
   }
 
   @Test
   public void testBgpNeighborEbgpMultihopPeer() {
-    parseLines("router bgp 10000", "neighbor 10.0.0.1 ebgp-multihop 3");
+    _warnings = new Warnings(false, true, false);
+    parseLines(
+        "router bgp 10000",
+        "neighbor 10.0.0.1 ebgp-multihop 3",
+        "neighbor 10.0.0.2 ebgp-multihop",
+        "neighbor 10.0.0.3 bfd");
     assertThat(
         _frr.getBgpProcess().getDefaultVrf().getNeighbors().get("10.0.0.1").getEbgpMultihop(),
-        equalTo(3L));
+        equalTo(true));
+    assertThat(
+        _frr.getBgpProcess().getDefaultVrf().getNeighbors().get("10.0.0.2").getEbgpMultihop(),
+        equalTo(true));
+    assertThat(
+        _frr.getBgpProcess().getDefaultVrf().getNeighbors().get("10.0.0.3").getEbgpMultihop(),
+        equalTo(null));
+    assertThat(
+        Iterables.getOnlyElement(_warnings.getParseWarnings()),
+        hasComment("Neighbor recognized as ebgp-multihop, but distance limit is not enforced"));
   }
 
   /**
