@@ -27,7 +27,9 @@ import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.KernelRoute;
 import org.batfish.datamodel.NamedPort;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -47,6 +49,9 @@ public class A10Conversion {
   public static final int SNAT_PORT_POOL_END = NamedPort.EPHEMERAL_HIGHEST.number();
   static final boolean DEFAULT_VRRP_A_PREEMPT = true;
   @VisibleForTesting public static final int DEFAULT_VRRP_A_PRIORITY = 150;
+  @VisibleForTesting public static final long KERNEL_ROUTE_TAG_NAT_POOL = 1L;
+  @VisibleForTesting public static final long KERNEL_ROUTE_TAG_VIRTUAL_SERVER_FLAGGED = 2L;
+  @VisibleForTesting public static final long KERNEL_ROUTE_TAG_VIRTUAL_SERVER_UNFLAGGED = 3L;
 
   /** Set of {@link VirtualServerPort.Type}s that use {@code tcp} protocol */
   static final Set<VirtualServerPort.Type> VIRTUAL_TCP_PORT_TYPES =
@@ -210,16 +215,32 @@ public class A10Conversion {
         vrrpA.getVrids().keySet().stream().filter(vrid -> vrid != 0));
   }
 
-  /** Get all the IPs (not the subnets) of all {@code ip nat-pool}s assigned to the given vrid. */
+  /** Get all the IPs (not the subnets) of all {@code ip nat pool}s assigned to the given vrid. */
   static @Nonnull Stream<Ip> getNatPoolIps(Collection<NatPool> natPools, int vrid) {
     return natPools.stream()
         .filter(pool -> vrid == getNatPoolVrid(pool))
         .flatMap(pool -> enumerateIps(pool.getStart(), pool.getEnd()));
   }
 
-  /** Get all the IPs (not the subnets) of all {@code ip nat-pool}s. */
+  /** Get all the IPs (not the subnets) of all {@code ip nat pool}s. */
   static @Nonnull Stream<Ip> getNatPoolIpsForAllVrids(Collection<NatPool> natPools) {
     return natPools.stream().flatMap(pool -> enumerateIps(pool.getStart(), pool.getEnd()));
+  }
+
+  /** Get all of the the kernel routes generated for all {@code ip nat pool}s. */
+  static @Nonnull Stream<KernelRoute> getNatPoolKernelRoutes(Collection<NatPool> natPools) {
+    return natPools.stream().map(A10Conversion::toKernelRoute);
+  }
+
+  @VisibleForTesting
+  static @Nonnull KernelRoute toKernelRoute(NatPool natPool) {
+    Ip requiredOwnedIp = natPool.getStart();
+    Prefix network = Prefix.create(requiredOwnedIp, natPool.getNetmask());
+    return KernelRoute.builder()
+        .setNetwork(network)
+        .setRequiredOwnedIp(requiredOwnedIp)
+        .setTag(KERNEL_ROUTE_TAG_NAT_POOL)
+        .build();
   }
 
   private static int getNatPoolVrid(NatPool natPool) {
@@ -242,9 +263,7 @@ public class A10Conversion {
     return virtualServers.stream()
         .filter(A10Conversion::isVirtualServerEnabled)
         .filter(vs -> vrid == getVirtualServerVrid(vs))
-        .map(VirtualServerTargetVirtualAddressExtractor::extractIp)
-        .filter(Optional::isPresent)
-        .map(Optional::get);
+        .map(VirtualServerTargetVirtualAddressExtractor::extractIp);
   }
 
   /** Get all the IPs (not the subnets) of all enabled {@code slb virtual-server}s. */
@@ -252,27 +271,72 @@ public class A10Conversion {
       Collection<VirtualServer> virtualServers) {
     return virtualServers.stream()
         .filter(A10Conversion::isVirtualServerEnabled)
-        .map(VirtualServerTargetVirtualAddressExtractor::extractIp)
-        .filter(Optional::isPresent)
-        .map(Optional::get);
+        .map(VirtualServerTargetVirtualAddressExtractor::extractIp);
   }
 
-  /**
-   * Extracts the virtual {@link Ip} of a {@link VirtualServerTarget} - if any - that the device may
-   * own.
-   */
+  /** Get all of the the kernel routes generated for all enabled {@code slb virtual-server}s. */
+  static @Nonnull Stream<KernelRoute> getVirtualServerKernelRoutes(
+      Collection<VirtualServer> virtualServers) {
+    return virtualServers.stream()
+        .filter(A10Conversion::isVirtualServerEnabled)
+        .filter(
+            vs ->
+                vs.getPorts().values().stream().anyMatch(A10Conversion::isVirtualServerPortEnabled))
+        .map(A10Conversion::toKernelRoute);
+  }
+
+  @VisibleForTesting
+  static @Nonnull KernelRoute toKernelRoute(VirtualServer virtualServer) {
+    Ip requiredOwnedIp = VirtualServerTargetVirtualAddressExtractor.extractIp(virtualServer);
+    Prefix network = VirtualServerTargetKernelRouteNetworkExtractor.extractNetwork(virtualServer);
+    long tag =
+        getRedistributionFlagged(virtualServer)
+            ? KERNEL_ROUTE_TAG_VIRTUAL_SERVER_FLAGGED
+            : KERNEL_ROUTE_TAG_VIRTUAL_SERVER_UNFLAGGED;
+    return KernelRoute.builder()
+        .setNetwork(network)
+        .setRequiredOwnedIp(requiredOwnedIp)
+        .setTag(tag)
+        .build();
+  }
+
+  private static boolean getRedistributionFlagged(VirtualServer virtualServer) {
+    return firstNonNull(virtualServer.getRedistributionFlagged(), Boolean.FALSE);
+  }
+
+  /** Extracts the virtual {@link Ip} of a {@link VirtualServerTarget} that the device may own. */
   private static final class VirtualServerTargetVirtualAddressExtractor
-      implements VirtualServerTargetVisitor<Optional<Ip>> {
+      implements VirtualServerTargetVisitor<Ip> {
+    // TODO: this may need to return a set of IPs; or a prefix or an IP.
     private static final VirtualServerTargetVirtualAddressExtractor INSTANCE =
         new VirtualServerTargetVirtualAddressExtractor();
 
-    private static @Nonnull Optional<Ip> extractIp(VirtualServer virtualServer) {
+    private static @Nonnull Ip extractIp(VirtualServer virtualServer) {
       return virtualServer.getTarget().accept(INSTANCE);
     }
 
     @Override
-    public Optional<Ip> visitAddress(VirtualServerTargetAddress address) {
-      return Optional.of(address.getAddress());
+    public Ip visitAddress(VirtualServerTargetAddress address) {
+      return address.getAddress();
+    }
+  }
+
+  /**
+   * Extracts the network of the {@link KernelRoute} corresponding to a {@link VirtualServerTarget}.
+   */
+  private static final class VirtualServerTargetKernelRouteNetworkExtractor
+      implements VirtualServerTargetVisitor<Prefix> {
+    // TODO: this may need to return a set of IPs; or a prefix or an IP.
+    private static final VirtualServerTargetKernelRouteNetworkExtractor INSTANCE =
+        new VirtualServerTargetKernelRouteNetworkExtractor();
+
+    private static @Nonnull Prefix extractNetwork(VirtualServer virtualServer) {
+      return virtualServer.getTarget().accept(INSTANCE);
+    }
+
+    @Override
+    public Prefix visitAddress(VirtualServerTargetAddress address) {
+      return Prefix.create(address.getAddress(), Prefix.MAX_PREFIX_LENGTH);
     }
   }
 

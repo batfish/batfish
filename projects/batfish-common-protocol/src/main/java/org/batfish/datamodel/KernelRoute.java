@@ -1,5 +1,6 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Comparator.comparing;
 import static java.util.Comparator.naturalOrder;
@@ -124,6 +125,16 @@ public final class KernelRoute extends AbstractRoute implements Comparable<Kerne
   @Override
   public int hashCode() {
     return Objects.hash(_network, _tag, _requiredOwnedIp);
+  }
+
+  @Override
+  public String toString() {
+    return toStringHelper(this)
+        .omitNullValues()
+        .add("_network", _network)
+        .add("_tag", _tag)
+        .add("_requiredOwnedIp", _requiredOwnedIp)
+        .toString();
   }
 
   private static final String PROP_REQUIRED_OWNED_IP = "requiredOwnedIp";
