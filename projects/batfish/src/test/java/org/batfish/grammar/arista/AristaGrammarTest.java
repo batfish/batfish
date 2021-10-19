@@ -284,9 +284,9 @@ public class AristaGrammarTest {
     Settings settings = new Settings();
     configureBatfishTestSettings(settings);
     AristaCombinedParser parser = new AristaCombinedParser(src, settings);
+    Warnings w = new Warnings();
     AristaControlPlaneExtractor extractor =
-        new AristaControlPlaneExtractor(
-            src, parser, ARISTA, new Warnings(), new SilentSyntaxCollection());
+        new AristaControlPlaneExtractor(src, parser, ARISTA, w, new SilentSyntaxCollection());
     ParserRuleContext tree =
         Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     extractor.processParseTree(TEST_SNAPSHOT, tree);
@@ -294,7 +294,9 @@ public class AristaGrammarTest {
         (AristaConfiguration) extractor.getVendorConfiguration();
     vendorConfiguration.setFilename(TESTCONFIGS_PREFIX + hostname);
     // crash if not serializable
-    return SerializationUtils.clone(vendorConfiguration);
+    AristaConfiguration cloned = SerializationUtils.clone(vendorConfiguration);
+    cloned.setWarnings(w);
+    return cloned;
   }
 
   private @Nonnull Batfish getBatfishForConfigurationNames(String... configurationNames)
@@ -1852,6 +1854,10 @@ public class AristaGrammarTest {
   @Test
   public void testNeighborExtraction() {
     AristaConfiguration config = parseVendorConfig("arista_bgp_neighbors");
+    // Can test BGP inheritance by grabbing peers from postConversionWork.
+    AristaConfiguration postConversionWork = SerializationUtils.clone(config);
+    postConversionWork.setWarnings(config.getWarnings());
+    postConversionWork.toVendorIndependentConfigurations();
     {
       String peergName = "PEER_G";
       assertThat(config.getAristaBgp().getPeerGroups(), hasKey(peergName));
@@ -1860,6 +1866,10 @@ public class AristaGrammarTest {
       assertThat(neighbor.getExportLocalPref(), equalTo(40L));
       assertThat(neighbor.getRemovePrivateAsMode(), nullValue());
       assertThat(neighbor.getRouteReflectorClient(), nullValue());
+
+      AristaBgpPeerGroupNeighbor postNeighbor =
+          postConversionWork.getAristaBgp().getPeerGroups().get(peergName);
+      assertThat(postNeighbor.getExportLocalPref(), equalTo(40L));
     }
     {
       AristaBgpPeerGroupNeighbor pg = config.getAristaBgp().getPeerGroups().get("PEER_G2");
@@ -1892,6 +1902,10 @@ public class AristaGrammarTest {
       assertTrue(neighbor.getSendCommunity());
       assertThat(neighbor.getShutdown(), nullValue());
       assertThat(neighbor.getUpdateSource(), equalTo("Loopback0"));
+
+      AristaBgpV4Neighbor postNeighbor =
+          postConversionWork.getAristaBgp().getDefaultVrf().getV4neighbors().get(neighborAddr);
+      assertThat(postNeighbor.getExportLocalPref(), equalTo(40L));
     }
     {
       Ip neighborAddr = Ip.parse("2.2.2.2");
@@ -1909,6 +1923,11 @@ public class AristaGrammarTest {
       assertThat(neighbor.getRouteReflectorClient(), nullValue());
       assertThat(neighbor.getShutdown(), equalTo(Boolean.TRUE));
       // TODO: default-originate
+
+      AristaBgpV4Neighbor postNeighbor =
+          postConversionWork.getAristaBgp().getDefaultVrf().getV4neighbors().get(neighborAddr);
+      assertThat(
+          postNeighbor.getExportLocalPref(), equalTo(AristaBgpNeighbor.SYSTEM_DEFAULT_LOCALPREF));
     }
     {
       Ip neighborAddr = Ip.parse("3.3.3.3");
