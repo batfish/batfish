@@ -24,19 +24,28 @@ BGP: 'bgp';
 BLADE_PARAMETERS: 'blade-parameters';
 BOTH: 'both';
 BUCKET_COUNT: 'bucket-count';
+CACHE: 'cache';
 CAPABILITY: 'capability';
+CIPHER: 'cipher';
+CLIENT_SSL: 'client-ssl';
 COMMON: 'common';
 CONN_LIMIT: 'conn-limit';
 CONNECTED: 'connected';
+CONNECTION_REUSE: 'connection-reuse';
+COOKIE: 'cookie';
 DEAD_TIMER: 'dead-timer';
 DEF_SELECTION_IF_PREF_FAILED: 'def-selection-if-pref-failed';
 DEFAULT: 'default';
 DESCRIPTION: 'description' -> pushMode(M_Word);
+DESTINATION_IP: 'destination-ip';
 DEVICE_ID: 'device-id';
+DIAMETER: 'diameter';
 DISABLE: 'disable';
 DISABLE_DEFAULT_VRID: 'disable-default-vrid';
+DNS: 'dns';
 DO_AUTO_RECOVERY: 'do-auto-recovery';
 DYNAMIC: 'dynamic';
+DYNAMIC_SERVICE: 'dynamic-service';
 ENABLE: 'enable';
 ETHERNET: 'ethernet';
 EXTENDED: 'extended';
@@ -91,16 +100,10 @@ ORF: 'orf';
 PASSIVE: 'passive';
 PEER: 'peer';
 PEER_GROUP: 'peer-group';
+PERSIST: 'persist';
+POLICY: 'policy';
 POOL: 'pool' -> pushMode(M_Word);
-PORT
-:
-  'port'
-  {
-    if (lastTokenType() == TEMPLATE) {
-      pushMode(M_Word);
-    }
-  }
-;
+PORT: 'port';
 PORT_OVERLOAD: 'port-overload';
 PORTS_THRESHOLD: 'ports-threshold';
 PREEMPT_MODE: 'preempt-mode';
@@ -128,16 +131,19 @@ SERVER
 :
   'server'
   {
-    if (lastTokenType() == SLB || lastTokenType() == TEMPLATE) {
+    if (lastTokenType() == SLB) {
       pushMode(M_Word);
     }
   }
 ;
+SERVER_SSL: 'server-ssl';
 SERVICE_GROUP: 'service-group' -> pushMode(M_Word);
 SERVICE_LEAST_CONNECTION: 'service-least-connection';
 SHORT: 'short';
+SIP: 'sip';
 SLB: 'slb';
 SOFT_RECONFIGURATION: 'soft-reconfiguration';
+SOURCE_IP: 'source-ip';
 SOURCE_NAT: 'source-nat';
 STANDARD: 'standard';
 STATIC: 'static';
@@ -147,7 +153,7 @@ SYNCHRONIZATION: 'synchronization';
 TAGGED: 'tagged';
 TCP: 'tcp';
 TCP_PROXY: 'tcp-proxy';
-TEMPLATE: 'template';
+TEMPLATE: 'template' -> pushMode(M_Template);
 THRESHOLD: 'threshold';
 TIMEOUT: 'timeout';
 TIMER: 'timer';
@@ -169,6 +175,7 @@ VLAN: 'vlan';
 VRID: 'vrid';
 VRID_LEAD: 'vrid-lead' -> pushMode(M_Word);
 VRRP_A: 'vrrp-a';
+WAF: 'waf';
 WEIGHT: 'weight';
 
 // Complex tokens
@@ -402,3 +409,39 @@ M_RbaLine_RBA_LINE: F_Word F_Whitespace+ ('no-access'|'read'|'partition-only'|'o
 M_RbaLine_NEWLINE: F_Newline -> type(NEWLINE);
 M_RbaLine_COMMENT_LINE: F_Whitespace* '!' {lastTokenType() == NEWLINE}? F_NonNewlineChar* (F_Newline | EOF) -> skip;
 M_RbaLine_END: F_NonWhitespace+ {less();} -> popMode;
+
+mode M_Template;
+M_Template_WS: F_Whitespace+ -> skip, mode(M_TemplateValue);
+M_Template_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_TemplateValue;
+M_TemplateValue_CACHE: 'cache' -> type(CACHE), mode(M_Word);
+M_TemplateValue_CIPHER: 'cipher' -> type(CIPHER), mode(M_Word);
+M_TemplateValue_CLIENT_SSL: 'client-ssl' -> type(CLIENT_SSL), mode(M_Word);
+M_TemplateValue_CONNECTION_REUSE: 'connection-reuse' -> type(CONNECTION_REUSE), mode(M_Word);
+M_TemplateValue_DIAMETER: 'diameter' -> type(DIAMETER), mode(M_Word);
+M_TemplateValue_DNS: 'dns' -> type(DNS), mode(M_Word);
+M_TemplateValue_DYNAMIC_SERVICE: 'dynamic-service' -> type(DYNAMIC_SERVICE), mode(M_Word);
+M_TemplateValue_HTTP: 'http' -> type(HTTP), mode(M_Word);
+M_TemplateValue_PERSIST: 'persist' -> type(PERSIST), mode(M_TemplatePersist);
+M_TemplateValue_POLICY: 'policy' -> type(POLICY), mode(M_Word);
+M_TemplateValue_PORT: 'port' -> type(PORT), mode(M_Word);
+M_TemplateValue_SERVER: 'server' -> type(SERVER), mode(M_Word);
+M_TemplateValue_SERVER_SSL: 'server-ssl' -> type(SERVER_SSL), mode(M_Word);
+M_TemplateValue_SIP: 'sip' -> type(SIP), mode(M_Word);
+M_TemplateValue_TCP: 'tcp' -> type(TCP), mode(M_Word);
+M_TemplateValue_TCP_PROXY: 'tcp-proxy' -> type(TCP_PROXY), mode(M_Word);
+M_TemplateValue_UDP: 'udp' -> type(UDP), mode(M_Word);
+M_TemplateValue_VIRTUAL_PORT: 'virtual-port' -> type(VIRTUAL_PORT), mode(M_Word);
+M_TemplateValue_WAF: 'waf' -> type(WAF), mode(M_Word);
+M_TemplateValue_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_TemplatePersist;
+M_TemplatePersist_WS: F_Whitespace+ -> skip, mode(M_TemplatePersistValue);
+M_TemplatePersist_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_TemplatePersistValue;
+M_TemplatePersistValue_COOKIE: 'cookie' -> type(COOKIE), mode(M_Word);
+M_TemplatePersistValue_DESTINATION_IP: 'destination-ip' -> type(DESTINATION_IP), mode(M_Word);
+M_TemplatePersistValue_SOURCE_IP: 'source-ip' -> type(SOURCE_IP), mode(M_Word);
+M_TemplatePersistValue_NEWLINE: F_Newline -> type(NEWLINE), popMode;
