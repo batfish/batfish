@@ -274,7 +274,7 @@ import org.junit.rules.TemporaryFolder;
 public class AristaGrammarTest {
   private static final String DEFAULT_VRF_NAME = "default";
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/arista/testconfigs/";
-  private static final String TESTRIGS_PREFIX = "org/batfish/grammar/arista/testrigs/";
+  private static final String SNAPSHOTS_PREFIX = "org/batfish/grammar/arista/snapshots/";
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
@@ -429,7 +429,7 @@ public class AristaGrammarTest {
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
                 .setConfigurationFiles(
-                    TESTRIGS_PREFIX + testrigName, ImmutableList.of(aristaName, iosName))
+                    SNAPSHOTS_PREFIX + testrigName, ImmutableList.of(aristaName, iosName))
                 .build(),
             _folder);
     batfish.getSettings().setDisableUnrecognized(false);
@@ -479,7 +479,7 @@ public class AristaGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(SNAPSHOTS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
 
@@ -552,7 +552,7 @@ public class AristaGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(SNAPSHOTS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
@@ -590,7 +590,7 @@ public class AristaGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(SNAPSHOTS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
@@ -680,7 +680,7 @@ public class AristaGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(SNAPSHOTS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
 
@@ -759,7 +759,7 @@ public class AristaGrammarTest {
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
                 .setConfigurationFiles(
-                    TESTRIGS_PREFIX + "arista-redistribute-default-route",
+                    SNAPSHOTS_PREFIX + "arista-redistribute-default-route",
                     ImmutableList.of(advertiser, receiver))
                 .build(),
             _folder);
@@ -928,7 +928,7 @@ public class AristaGrammarTest {
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
                 .setConfigurationFiles(
-                    TESTRIGS_PREFIX + "nat-source-static", ImmutableList.of("r1", "r2"))
+                    SNAPSHOTS_PREFIX + "nat-source-static", ImmutableList.of("r1", "r2"))
                 .build(),
             _folder);
     NetworkSnapshot snapshot = batfish.getSnapshot();
@@ -1396,7 +1396,8 @@ public class AristaGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationFiles(TESTRIGS_PREFIX + snapshotName, ImmutableList.of(c1, c2, c3))
+                .setConfigurationFiles(
+                    SNAPSHOTS_PREFIX + snapshotName, ImmutableList.of(c1, c2, c3))
                 .build(),
             _folder);
     batfish.computeDataPlane(batfish.getSnapshot());
