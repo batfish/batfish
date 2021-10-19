@@ -22,7 +22,6 @@ import java.util.IdentityHashMap;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSession;
 import javax.ws.rs.client.ClientBuilder;
@@ -166,20 +165,6 @@ public class CommonUtil {
       biConsumer.accept(i, t);
       i++;
     }
-  }
-
-  @Nullable
-  public static Integer getInterfaceVlanNumber(String ifaceName) {
-    String prefix = "vlan";
-    String ifaceNameLower = ifaceName.toLowerCase();
-    String withoutDot = ifaceNameLower.replaceAll("\\.", "");
-    if (withoutDot.startsWith(prefix)) {
-      String vlanStr = withoutDot.substring(prefix.length());
-      if (vlanStr.length() > 0) {
-        return Integer.parseInt(vlanStr);
-      }
-    }
-    return null;
   }
 
   @Nonnull
