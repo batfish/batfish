@@ -124,7 +124,6 @@ import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.TopologyContainer;
 import org.batfish.common.topology.TopologyProvider;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.isp.IspModelingUtils;
 import org.batfish.common.util.isp.IspModelingUtils.ModeledNodes;
 import org.batfish.config.Settings;
@@ -912,12 +911,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Map<Integer, Interface> vlanInterfaces = new HashMap<>();
       Map<Integer, Integer> vlanMemberCounts = new HashMap<>();
       Set<Interface> nonVlanInterfaces = new HashSet<>();
-      Integer vlanNumber = null;
       // Populate vlanInterface and nonVlanInterfaces, and initialize
       // vlanMemberCounts:
       for (Interface iface : c.getActiveInterfaces().values()) {
-        if ((iface.getInterfaceType() == InterfaceType.VLAN)
-            && ((vlanNumber = CommonUtil.getInterfaceVlanNumber(iface.getName())) != null)) {
+        Integer vlanNumber = iface.getVlan();
+        if (iface.getInterfaceType() == InterfaceType.VLAN && vlanNumber != null) {
           vlanInterfaces.put(vlanNumber, iface);
           vlanMemberCounts.put(vlanNumber, 0);
         } else {
@@ -937,14 +935,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
             vlanInterfaces.keySet().forEach(vlans::including);
           }
           // Add the native VLAN as well.
-          vlanNumber = iface.getNativeVlan();
-          if (vlanNumber != null) {
-            vlans.including(vlanNumber);
+          Integer nativeVlan = iface.getNativeVlan();
+          if (nativeVlan != null) {
+            vlans.including(nativeVlan);
           }
         } else if (iface.getSwitchportMode() == SwitchportMode.ACCESS) { // access mode ACCESS
-          vlanNumber = iface.getAccessVlan();
-          if (vlanNumber != null) {
-            vlans.including(vlanNumber);
+          Integer accessVlan = iface.getAccessVlan();
+          if (accessVlan != null) {
+            vlans.including(accessVlan);
           }
           // Any other Switch Port mode is unsupported
         } else if (iface.getSwitchportMode() != SwitchportMode.NONE) {
@@ -961,9 +959,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
       SubRange normalVlanRange = c.getNormalVlanRange();
       for (Map.Entry<Integer, Integer> entry : vlanMemberCounts.entrySet()) {
         if (entry.getValue() == 0) {
-          vlanNumber = entry.getKey();
-          if ((vlanNumber >= normalVlanRange.getStart())
-              && (vlanNumber <= normalVlanRange.getEnd())) {
+          int vlanNumber = entry.getKey();
+          if (normalVlanRange.includes(vlanNumber)) {
             Interface iface = vlanInterfaces.get(vlanNumber);
             if ((iface != null) && iface.getAutoState()) {
               _logger.warnf(
