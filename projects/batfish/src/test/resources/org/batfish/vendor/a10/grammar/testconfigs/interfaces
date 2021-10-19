@@ -9,6 +9,7 @@ interface ethernet 1
   lldp enable tx rx
   lldp enable tx
   ! Other properties; ignored for now
+  lldp notification enable
   load-interval 10
   ipg-bit-time 11
   duplexity auto
