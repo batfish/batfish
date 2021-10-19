@@ -1304,7 +1304,7 @@ public final class VirtualRouter {
                 .flatMap(Queue::stream),
             Stream.of(_routesForIsisRedistribution),
             // Processes
-            Stream.of(_ospfProcesses.values().stream().map(OspfRoutingProcess::iterationHashCode)),
+            _ospfProcesses.values().stream().map(OspfRoutingProcess::iterationHashCode),
             Stream.of(_eigrpProcesses)
                 .flatMap(m -> m.values().stream())
                 .map(EigrpRoutingProcess::computeIterationHashCode),
