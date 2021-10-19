@@ -1,5 +1,7 @@
 package org.batfish.common.util;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.math.IntMath;
@@ -16,9 +18,14 @@ import java.util.SortedMap;
 import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /** Utility functions for dealing with collections. */
 public final class CollectionUtil {
+  private static final Logger LOGGER = LogManager.getLogger(CollectionUtil.class);
+
   /**
    * Create a new {@link com.google.common.collect.ImmutableMap} from the given {@link Map}, unless
    * that map is already an immutable map.
@@ -91,6 +98,15 @@ public final class CollectionUtil {
         () -> new int[2],
         // accumulator: single element added to hashcode
         (a, o) -> {
+          checkArgument(!(o instanceof Stream), "Cannot hash a stream, check the caller");
+          int hash = Objects.hashCode(o);
+          if (o != null && hash == System.identityHashCode(o)) {
+            // Not an assert or a check, since collisions can happen.
+            LOGGER.warn(
+                "Hashing an object with identityHashCode usually means that object does not"
+                    + " implement hashCode: {}",
+                o.getClass());
+          }
           a[0] = a[0] * 31 + Objects.hashCode(o);
           a[1]++;
         },
@@ -102,15 +118,6 @@ public final class CollectionUtil {
         },
         // finisher: collapse the state to a single int
         a -> IntMath.pow(31, a[1]) + a[0]);
-  }
-
-  /**
-   * A collector that returns a hashcode of all the objects in a stream (order-independent).
-   *
-   * <p>Equivalent to collecting elements into a set and calling {@link Set#hashCode()}
-   */
-  public static <T> Collector<T, ?, Integer> toUnorderedHashCode() {
-    return Collectors.summingInt(Objects::hashCode);
   }
 
   /** Return the max values of the input collection according to the input comparator. */
