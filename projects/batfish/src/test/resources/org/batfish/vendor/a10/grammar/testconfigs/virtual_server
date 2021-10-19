@@ -39,6 +39,10 @@ slb virtual-server VS2 10.0.0.102
     service-group SG1
     source-nat pool POOL1
     aflex AFLEX_SCRIPT1
+    no-auto-up-on-aflex
+    use-rcv-hop-for-resp
+    ! TODO support more template references, like
+    !template persist source-ip TEMPLATE_NAME
   ! It is valid to re-enter an existing port definition
   ! Changing the range on re-entry is okay, and omitting it removes the range
   port 80 tcp
