@@ -118,6 +118,7 @@ import org.batfish.vendor.a10.representation.BgpNeighborUpdateSourceAddress;
 import org.batfish.vendor.a10.representation.BgpProcess;
 import org.batfish.vendor.a10.representation.Interface;
 import org.batfish.vendor.a10.representation.Interface.Type;
+import org.batfish.vendor.a10.representation.InterfaceLldp;
 import org.batfish.vendor.a10.representation.InterfaceReference;
 import org.batfish.vendor.a10.representation.NatPool;
 import org.batfish.vendor.a10.representation.Server;
@@ -646,31 +647,47 @@ public class A10GrammarTest {
     Map<Integer, Interface> loops = c.getInterfacesLoopback();
     assertThat(eths.keySet(), containsInAnyOrder(1, 9));
     assertThat(loops.keySet(), containsInAnyOrder(0, 10));
+    {
+      Interface eth1 = eths.get(1);
+      assertTrue(eth1.getEnabled());
+      assertThat(eth1.getIpAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.1.1/24")));
+      assertThat(eth1.getMtu(), equalTo(1234));
+      assertThat(eth1.getName(), equalTo("this is a comp\"licat'ed name"));
+      assertThat(eth1.getNumber(), equalTo(1));
+      assertThat(eth1.getType(), equalTo(Interface.Type.ETHERNET));
+      InterfaceLldp lldp = eth1.getLldp();
+      assertNotNull(lldp);
+      assertFalse(lldp.getEnableRx());
+      assertTrue(lldp.getEnableTx());
+    }
 
-    Interface eth1 = eths.get(1);
-    Interface eth9 = eths.get(9);
-    assertTrue(eth1.getEnabled());
-    assertThat(eth1.getIpAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.1.1/24")));
-    assertThat(eth1.getMtu(), equalTo(1234));
-    assertThat(eth1.getName(), equalTo("this is a comp\"licat'ed name"));
-    assertThat(eth1.getNumber(), equalTo(1));
-    assertThat(eth1.getType(), equalTo(Interface.Type.ETHERNET));
+    {
+      Interface eth9 = eths.get(9);
+      assertFalse(eth9.getEnabled());
+      assertThat(eth9.getIpAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.2.1/24")));
+      assertNull(eth9.getMtu());
+      assertThat(eth9.getName(), equalTo("baz"));
+      assertThat(eth9.getNumber(), equalTo(9));
+      assertThat(eth9.getType(), equalTo(Interface.Type.ETHERNET));
+      InterfaceLldp lldp = eth9.getLldp();
+      assertNotNull(lldp);
+      assertTrue(lldp.getEnableRx());
+      assertTrue(lldp.getEnableTx());
+    }
 
-    assertFalse(eth9.getEnabled());
-    assertThat(eth9.getIpAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.2.1/24")));
-    assertNull(eth9.getMtu());
-    assertThat(eth9.getName(), equalTo("baz"));
-    assertThat(eth9.getNumber(), equalTo(9));
-    assertThat(eth9.getType(), equalTo(Interface.Type.ETHERNET));
+    {
+      Interface loop0 = loops.get(0);
+      assertNull(loop0.getEnabled());
+      assertThat(loop0.getIpAddress(), equalTo(ConcreteInterfaceAddress.parse("192.168.0.1/32")));
+      assertThat(loop0.getNumber(), equalTo(0));
+      assertThat(loop0.getType(), equalTo(Interface.Type.LOOPBACK));
+      assertNull(loop0.getLldp());
+    }
 
-    Interface loop0 = loops.get(0);
-    Interface loop10 = loops.get(10);
-    assertNull(loop0.getEnabled());
-    assertThat(loop0.getIpAddress(), equalTo(ConcreteInterfaceAddress.parse("192.168.0.1/32")));
-    assertThat(loop0.getNumber(), equalTo(0));
-    assertThat(loop0.getType(), equalTo(Interface.Type.LOOPBACK));
-
-    assertNull(loop10.getIpAddress());
+    {
+      Interface loop10 = loops.get(10);
+      assertNull(loop10.getIpAddress());
+    }
   }
 
   @Test
