@@ -62,6 +62,7 @@ INTERFACE: 'interface';
 LACP: 'lacp';
 LACP_TRUNK: 'lacp-trunk';
 LACP_UDLD: 'lacp-udld';
+LEAST_CONNECTION: 'least-connection';
 LEAST_REQUEST: 'least-request';
 LOCAL_PREFERENCE: 'local-preference';
 LOG_NEIGHBOR_CHANGES: 'log-neighbor-changes';
@@ -71,6 +72,7 @@ MAXIMUM_PATHS: 'maximum-paths';
 MAXIMUM_PREFIX: 'maximum-prefix';
 MEMBER: 'member' -> pushMode(M_Word);
 METHOD: 'method';
+MIN_ACTIVE_MEMBER: 'min-active-member';
 MODE: 'mode';
 MTU: 'mtu';
 NAME: 'name' -> pushMode(M_Word);
@@ -129,6 +131,7 @@ SERVER
   }
 ;
 SERVICE_GROUP: 'service-group' -> pushMode(M_Word);
+SERVICE_LEAST_CONNECTION: 'service-least-connection';
 SHORT: 'short';
 SLB: 'slb';
 SOFT_RECONFIGURATION: 'soft-reconfiguration';

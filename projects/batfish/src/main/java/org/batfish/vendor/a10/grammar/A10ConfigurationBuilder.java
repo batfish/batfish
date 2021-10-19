@@ -1026,12 +1026,30 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   }
 
   public ServiceGroup.Method toMethod(A10Parser.Service_group_methodContext ctx) {
-    if (ctx.LEAST_REQUEST() != null) {
+    if (ctx.LEAST_CONNECTION() != null) {
+      return ServiceGroup.Method.LEAST_CONNECTION;
+    } else if (ctx.LEAST_REQUEST() != null) {
       return ServiceGroup.Method.LEAST_REQUEST;
+    } else if (ctx.SERVICE_LEAST_CONNECTION() != null) {
+      return ServiceGroup.Method.SERVICE_LEAST_CONNECTION;
     }
     assert ctx.ROUND_ROBIN() != null;
     return ServiceGroup.Method.ROUND_ROBIN;
   }
+
+  @Override
+  public void exitSssgd_min_active_member(A10Parser.Sssgd_min_active_memberContext ctx) {
+    toInteger(ctx, ctx.minimum_active_member()).ifPresent(_currentServiceGroup::setMinActiveMember);
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, A10Parser.Minimum_active_memberContext ctx) {
+    return toIntegerInSpace(
+        messageCtx, ctx.uint16(), MINIMUM_ACTIVE_MEMBER_RANGE, "min-active-member");
+  }
+
+  private static final IntegerSpace MINIMUM_ACTIVE_MEMBER_RANGE =
+      IntegerSpace.of(Range.closed(1, 1024));
 
   @Override
   public void exitSssgd_stats_data_disable(A10Parser.Sssgd_stats_data_disableContext ctx) {
