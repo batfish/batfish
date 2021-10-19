@@ -10,9 +10,9 @@ interface Ethernet1/1
   no shutdown
 
 interface loopback0
-  ip address 2.2.2.2/32
+  ip address 3.3.3.3/32
 router bgp 65002
-  router-id 2.2.2.2
+  router-id 3.3.3.3
   neighbor 10.10.10.1
     remote-as 65001
     address-family ipv4 unicast
