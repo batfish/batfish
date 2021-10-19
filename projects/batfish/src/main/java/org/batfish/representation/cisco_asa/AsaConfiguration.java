@@ -55,6 +55,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Streams;
+import com.google.common.primitives.Ints;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -80,7 +81,6 @@ import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.util.CollectionUtil;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.BgpActivePeerConfig;
@@ -1563,7 +1563,12 @@ public final class AsaConfiguration extends VendorConfiguration {
             .setType(computeInterfaceType(iface.getName(), c.getConfigurationFormat()))
             .build();
     if (newIface.getInterfaceType() == InterfaceType.VLAN) {
-      newIface.setVlan(CommonUtil.getInterfaceVlanNumber(ifaceName));
+      Integer vlan = Ints.tryParse(ifaceName.substring("vlan".length()));
+      newIface.setVlan(vlan);
+      if (vlan == null) {
+        _w.redFlag("Unable assign vlan for interface " + ifaceName);
+      }
+      newIface.setAutoState(iface.getAutoState());
     }
     String vrfName = iface.getVrf();
     Vrf vrf = _vrfs.computeIfAbsent(vrfName, Vrf::new);
@@ -1575,7 +1580,6 @@ public final class AsaConfiguration extends VendorConfiguration {
         CollectionUtil.toImmutableMap(
             iface.getHsrpGroups(), Entry::getKey, e -> AsaConversions.toHsrpGroup(e.getValue())));
     newIface.setHsrpVersion(iface.getHsrpVersion());
-    newIface.setAutoState(iface.getAutoState());
     newIface.setVrf(c.getVrfs().get(vrfName));
     newIface.setSpeed(
         firstNonNull(

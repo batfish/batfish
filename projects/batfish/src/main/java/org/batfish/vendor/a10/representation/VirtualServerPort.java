@@ -46,6 +46,15 @@ public class VirtualServerPort implements Serializable {
   }
 
   @Nullable
+  public String getAccessList() {
+    return _accessList;
+  }
+
+  public void setAccessList(String accessList) {
+    _accessList = accessList;
+  }
+
+  @Nullable
   public String getAflex() {
     return _aflex;
   }
@@ -133,6 +142,7 @@ public class VirtualServerPort implements Serializable {
     _range = range;
   }
 
+  @Nullable private String _accessList;
   @Nullable private String _aflex;
   @Nullable private Integer _bucketCount;
   @Nullable private Boolean _defSelectionIfPrefFailed;

@@ -10,8 +10,10 @@ import javax.annotation.Nullable;
 /** Datamodel class representing configuration of a service-group. */
 public class ServiceGroup implements Serializable {
   public enum Method {
+    LEAST_CONNECTION,
     LEAST_REQUEST,
     ROUND_ROBIN,
+    SERVICE_LEAST_CONNECTION,
   }
 
   @Nullable
@@ -79,6 +81,15 @@ public class ServiceGroup implements Serializable {
     _healthCheckDisable = healthCheckDisable;
   }
 
+  @Nullable
+  public Integer getMinActiveMember() {
+    return _minActiveMember;
+  }
+
+  public void setMinActiveMember(@Nullable Integer minActiveMember) {
+    _minActiveMember = minActiveMember;
+  }
+
   public ServiceGroup(String name, ServerPort.Type type) {
     _name = name;
     _type = type;
@@ -90,6 +101,7 @@ public class ServiceGroup implements Serializable {
   @Nonnull private final Map<ServiceGroupMember.NameAndPort, ServiceGroupMember> _members;
   @Nonnull private final String _name;
   @Nullable private Method _method;
+  @Nullable private Integer _minActiveMember;
   @Nonnull private final ServerPort.Type _type;
   @Nullable private Boolean _statsDataEnable;
 }

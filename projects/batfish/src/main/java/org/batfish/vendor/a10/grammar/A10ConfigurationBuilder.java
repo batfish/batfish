@@ -1044,12 +1044,30 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   }
 
   public ServiceGroup.Method toMethod(A10Parser.Service_group_methodContext ctx) {
-    if (ctx.LEAST_REQUEST() != null) {
+    if (ctx.LEAST_CONNECTION() != null) {
+      return ServiceGroup.Method.LEAST_CONNECTION;
+    } else if (ctx.LEAST_REQUEST() != null) {
       return ServiceGroup.Method.LEAST_REQUEST;
+    } else if (ctx.SERVICE_LEAST_CONNECTION() != null) {
+      return ServiceGroup.Method.SERVICE_LEAST_CONNECTION;
     }
     assert ctx.ROUND_ROBIN() != null;
     return ServiceGroup.Method.ROUND_ROBIN;
   }
+
+  @Override
+  public void exitSssgd_min_active_member(A10Parser.Sssgd_min_active_memberContext ctx) {
+    toInteger(ctx, ctx.minimum_active_member()).ifPresent(_currentServiceGroup::setMinActiveMember);
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, A10Parser.Minimum_active_memberContext ctx) {
+    return toIntegerInSpace(
+        messageCtx, ctx.uint16(), MINIMUM_ACTIVE_MEMBER_RANGE, "min-active-member");
+  }
+
+  private static final IntegerSpace MINIMUM_ACTIVE_MEMBER_RANGE =
+      IntegerSpace.of(Range.closed(1, 1024));
 
   @Override
   public void exitSssgd_stats_data_disable(A10Parser.Sssgd_stats_data_disableContext ctx) {
@@ -1731,6 +1749,21 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   public void exitSsvs_port(A10Parser.Ssvs_portContext ctx) {
     _currentVirtualServerPort = null;
   }
+
+  @Override
+  public void exitSsvspd_access_list(A10Parser.Ssvspd_access_listContext ctx) {
+    // TODO verify ACL exists and add struct refs
+    toString(ctx, ctx.access_list_name()).ifPresent(_currentVirtualServerPort::setAccessList);
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, A10Parser.Access_list_nameContext ctx) {
+    return toStringWithLengthInSpace(
+        messageCtx, ctx.word(), ACCESS_LIST_NAME_LENGTH_RANGE, "access-list name");
+  }
+
+  private static final IntegerSpace ACCESS_LIST_NAME_LENGTH_RANGE =
+      IntegerSpace.of(Range.closed(1, 16));
 
   @Override
   public void exitSsvspd_aflex(A10Parser.Ssvspd_aflexContext ctx) {
