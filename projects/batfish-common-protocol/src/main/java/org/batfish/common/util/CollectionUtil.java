@@ -107,7 +107,7 @@ public final class CollectionUtil {
                     + " implement hashCode: {}",
                 o.getClass());
           }
-          a[0] = a[0] * 31 + Objects.hashCode(o);
+          a[0] = a[0] * 31 + hash;
           a[1]++;
         },
         // combiner: merge two hashcodes
