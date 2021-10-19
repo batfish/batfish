@@ -70,6 +70,15 @@ public class ServiceGroup implements Serializable {
     _statsDataEnable = statsDataEnable;
   }
 
+  @Nullable
+  public Boolean getHealthCheckDisable() {
+    return _healthCheckDisable;
+  }
+
+  public void setHealthCheckDisable(boolean healthCheckDisable) {
+    _healthCheckDisable = healthCheckDisable;
+  }
+
   public ServiceGroup(String name, ServerPort.Type type) {
     _name = name;
     _type = type;
@@ -77,6 +86,7 @@ public class ServiceGroup implements Serializable {
   }
 
   @Nullable private String _healthCheck;
+  @Nullable private Boolean _healthCheckDisable;
   @Nonnull private final Map<ServiceGroupMember.NameAndPort, ServiceGroupMember> _members;
   @Nonnull private final String _name;
   @Nullable private Method _method;

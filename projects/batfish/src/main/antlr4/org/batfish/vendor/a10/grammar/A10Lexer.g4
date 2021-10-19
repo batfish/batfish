@@ -50,6 +50,7 @@ GRACEFUL_RESTART: 'graceful-restart';
 HELLO_INTERVAL: 'hello-interval';
 HA_GROUP_ID: 'ha-group-id';
 HEALTH_CHECK: 'health-check' -> pushMode(M_Word);
+HEALTH_CHECK_DISABLE: 'health-check-disable';
 HOSTNAME: 'hostname' -> pushMode(M_Word);
 HTTP: 'http';
 HTTPS: 'https';
