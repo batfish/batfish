@@ -1,0 +1,13 @@
+#
+set system host-name irb-deactivate
+
+# Vlan2 has a member
+set interfaces xe-2/0/0 unit 0 family ethernet-switching vlan members V2
+set interfaces irb unit 2 family inet address 2.0.0.0/31
+set vlans V2 l3-interface irb.2
+set vlans V2 vlan-id 2
+
+# Vlan5 does not have a member
+set interfaces irb unit 5 family inet address 5.0.0.0/31
+set vlans V5 l3-interface irb.5
+set vlans V5 vlan-id 5
