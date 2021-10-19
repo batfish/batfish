@@ -316,6 +316,11 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   }
 
   @Override
+  public void exitSid_speed(A10Parser.Sid_speedContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
   public void enterSid_ve(A10Parser.Sid_veContext ctx) {
     Optional<Integer> maybeNum = toInteger(ctx, ctx.num);
     if (!maybeNum.isPresent()) {
