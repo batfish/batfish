@@ -40,7 +40,8 @@ ssvs_port: PORT port_number virtual_server_port_type (RANGE port_range_value)? N
 
 ssvsp_definition
 :
-   ssvspd_aflex
+   ssvspd_access_list
+   | ssvspd_aflex
    | ssvspd_bucket_count
    | ssvspd_conn_limit
    | ssvspd_disable
@@ -53,6 +54,8 @@ ssvsp_definition
    | ssvspd_stats_data_enable
    | ssvspd_template
 ;
+
+ssvspd_access_list: ACCESS_LIST NAME access_list_name NEWLINE;
 
 ssvspd_aflex: AFLEX aflex_name NEWLINE;
 

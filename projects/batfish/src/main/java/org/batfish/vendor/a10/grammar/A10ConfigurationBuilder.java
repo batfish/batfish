@@ -1715,6 +1715,21 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   }
 
   @Override
+  public void exitSsvspd_access_list(A10Parser.Ssvspd_access_listContext ctx) {
+    // TODO verify ACL exists and add struct refs
+    toString(ctx, ctx.access_list_name()).ifPresent(_currentVirtualServerPort::setAccessList);
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, A10Parser.Access_list_nameContext ctx) {
+    return toStringWithLengthInSpace(
+        messageCtx, ctx.word(), ACCESS_LIST_NAME_LENGTH_RANGE, "access-list name");
+  }
+
+  private static final IntegerSpace ACCESS_LIST_NAME_LENGTH_RANGE =
+      IntegerSpace.of(Range.closed(1, 16));
+
+  @Override
   public void exitSsvspd_aflex(A10Parser.Ssvspd_aflexContext ctx) {
     toString(ctx, ctx.aflex_name()).ifPresent(_currentVirtualServerPort::setAflex);
   }
