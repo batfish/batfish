@@ -1009,6 +1009,11 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     toString(ctx, ctx.health_check_name()).ifPresent(_currentServiceGroup::setHealthCheck);
   }
 
+  @Override
+  public void exitSssgd_health_check_disable(A10Parser.Sssgd_health_check_disableContext ctx) {
+    _currentServiceGroup.setHealthCheckDisable(true);
+  }
+
   private @Nonnull Optional<String> toString(
       ParserRuleContext messageCtx, A10Parser.Health_check_nameContext ctx) {
     return toStringWithLengthInSpace(
@@ -1406,6 +1411,17 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   }
 
   @Override
+  public void exitSssd_health_check(A10Parser.Sssd_health_checkContext ctx) {
+    // TODO add reject if invalid ref, and add ref once health checks are supported
+    toString(ctx, ctx.health_check_name()).ifPresent(_currentServer::setHealthCheck);
+  }
+
+  @Override
+  public void exitSssd_health_check_disable(A10Parser.Sssd_health_check_disableContext ctx) {
+    _currentServer.setHealthCheckDisable(true);
+  }
+
+  @Override
   public void exitSssd_stats_data_disable(A10Parser.Sssd_stats_data_disableContext ctx) {
     _currentServer.setStatsDataEnable(false);
   }
@@ -1466,6 +1482,17 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   @Override
   public void exitSssdpd_enable(A10Parser.Sssdpd_enableContext ctx) {
     _currentServerPort.setEnable(true);
+  }
+
+  @Override
+  public void exitSssdpd_health_check(A10Parser.Sssdpd_health_checkContext ctx) {
+    // TODO add reject if invalid ref, and add ref once health checks are supported
+    toString(ctx, ctx.health_check_name()).ifPresent(_currentServerPort::setHealthCheck);
+  }
+
+  @Override
+  public void exitSssdpd_health_check_disable(A10Parser.Sssdpd_health_check_disableContext ctx) {
+    _currentServerPort.setHealthCheckDisable(true);
   }
 
   @Override

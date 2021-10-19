@@ -11,6 +11,7 @@ ss_service_group: SERVICE_GROUP service_group_name tcp_or_udp? NEWLINE sssg_defi
 sssg_definition
 :
    sssgd_health_check
+   | sssgd_health_check_disable
    | sssgd_member
    | sssgd_method
    | sssgd_stats_data_disable
@@ -18,6 +19,8 @@ sssg_definition
 ;
 
 sssgd_health_check: HEALTH_CHECK health_check_name NEWLINE;
+
+sssgd_health_check_disable: HEALTH_CHECK_DISABLE NEWLINE;
 
 // TODO support declaring a new server in this context, i.e. when IP address is provided as well
 sssgd_member: MEMBER slb_server_name port_number NEWLINE sssgdm_definition*;
