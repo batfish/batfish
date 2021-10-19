@@ -1,7 +1,6 @@
 package org.batfish.representation.arista;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.ImmutableSortedMap.toImmutableSortedMap;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
@@ -56,6 +55,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
+import com.google.common.primitives.Ints;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -87,7 +87,6 @@ import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.MemoizedIpAccessListToBdd;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.BgpActivePeerConfig;
@@ -1161,7 +1160,11 @@ public final class AristaConfiguration extends VendorConfiguration {
                 iface.getSwitchportTrunkEncapsulation(), SwitchportEncapsulationType.DOT1Q));
         newIface.setEncapsulationVlan(iface.getEncapsulationVlan());
         if (newIface.getInterfaceType() == InterfaceType.VLAN) {
-          newIface.setVlan(CommonUtil.getInterfaceVlanNumber(ifaceName));
+          Integer vlan = Ints.tryParse(ifaceName.substring("vlan".length()));
+          newIface.setVlan(vlan);
+          if (vlan == null) {
+            _w.redFlag("Unable assign vlan for interface " + ifaceName);
+          }
           newIface.setAutoState(iface.getAutoState());
         }
         // All prefixes is the combination of the interface prefix + any secondary prefixes.
