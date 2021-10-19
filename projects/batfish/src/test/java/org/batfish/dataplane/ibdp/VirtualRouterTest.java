@@ -18,7 +18,9 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -950,5 +952,40 @@ public class VirtualRouterTest {
     assertFalse(
         shouldGenerateConnectedRoute(
             ConnectedRouteMetadata.builder().setGenerateConnectedRoute(false).build()));
+  }
+
+  @Test
+  public void testComputeIterationHashCode_identicalInstances() {
+    // Two different but identical VirtualRouter instances should have the same hashcode.
+    // This guarantees hashcode is implemented for all objects that factor in.
+    VirtualRouter vr1 = makeIosVirtualRouter("c1");
+    VirtualRouter vr2 = makeIosVirtualRouter("c2");
+    // Need to init queues and delta builders to compute hashcode without NPE
+    TopologyContext emptyTopology = TopologyContext.builder().build();
+    vr1.initQueuesAndDeltaBuilders(emptyTopology);
+    vr2.initQueuesAndDeltaBuilders(emptyTopology);
+
+    assertEquals(vr1.computeIterationHashCode(), vr2.computeIterationHashCode());
+  }
+
+  @Test
+  public void testComputeIterationHashCode_mainRibChange() {
+    VirtualRouter vr = makeIosVirtualRouter("c");
+    Configuration c = vr.getConfiguration();
+    addInterfaces(c, ImmutableMap.of("i", ConcreteInterfaceAddress.parse("1.1.1.1/30")));
+    TopologyContext emptyTopology = TopologyContext.builder().build();
+
+    // Init queues and delta builders. This is necessary to compute hashcode without NPE, but
+    // will not initialize connected routes.
+    vr.initQueuesAndDeltaBuilders(emptyTopology);
+    int vrInitialHashcode = vr.computeIterationHashCode();
+
+    // Now init connected routes. This should cause a change in the main RIB.
+    Map<Ip, Map<String, Set<String>>> ipVrfOwners =
+        new IpOwners(ImmutableMap.of(c.getHostname(), c), emptyTopology.getL3Adjacencies())
+            .getIpVrfOwners();
+    vr.initForIgpComputation(emptyTopology, ipVrfOwners);
+
+    assertNotEquals(vrInitialHashcode, vr.computeIterationHashCode());
   }
 }
