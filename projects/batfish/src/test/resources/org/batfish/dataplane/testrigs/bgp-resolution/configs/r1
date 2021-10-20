@@ -1,0 +1,23 @@
+!RANCID-CONTENT-TYPE: cisco
+hostname r1
+!
+! Interface to r2
+interface FastEthernet0/0
+ no shutdown
+ ip address 10.10.10.1 255.255.255.0
+!
+! Interface receiving external BGP announcement
+interface FastEthernet1/0
+ no shutdown
+ ip address 11.11.11.1 255.255.255.0
+!
+interface Loopback0
+ ip address 1.1.1.1 255.255.255.255
+!
+router bgp 1
+ router-id 1.1.1.1
+ ! Peer with r2
+ neighbor 10.10.10.2 remote-as 2
+ ! External peer
+ neighbor 11.11.11.2 remote-as 1
+!

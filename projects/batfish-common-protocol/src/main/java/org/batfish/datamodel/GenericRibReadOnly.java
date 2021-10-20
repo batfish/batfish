@@ -12,6 +12,9 @@ public interface GenericRibReadOnly<R extends AbstractRouteDecorator> extends Se
   /** Return set of {@link AbstractRoute abstract routes} this RIB contains. */
   Set<AbstractRoute> getRoutes();
 
+  /** Return set of routes stored for this exact prefix, if any. */
+  Set<R> getRoutes(Prefix prefix);
+
   /** Return set of {@link R typed routes} this RIB contains. */
   Set<R> getTypedRoutes();
 

@@ -581,6 +581,13 @@ public class RoutesAnswererTest {
     }
 
     @Override
+    public Set<R> getRoutes(Prefix prefix) {
+      return _routes.stream()
+          .filter(r -> r.getNetwork().equals(prefix))
+          .collect(ImmutableSet.toImmutableSet());
+    }
+
+    @Override
     public Set<R> getTypedRoutes() {
       return _routes;
     }

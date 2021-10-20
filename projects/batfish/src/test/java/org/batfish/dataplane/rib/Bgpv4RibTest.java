@@ -2,6 +2,7 @@ package org.batfish.dataplane.rib;
 
 import static org.batfish.dataplane.ibdp.TestUtils.annotateRoute;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
@@ -19,6 +20,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpTieBreaker;
@@ -925,5 +927,52 @@ public class Bgpv4RibTest {
     assertThat(
         ibgpBpr.comparePreference(ibgpNewerHigherOriginator, ibgpLowerOriginator), lessThan(0));
     assertThat(bmr.comparePreference(ibgpNewerHigherOriginator, ibgpLowerOriginator), equalTo(0));
+  }
+
+  @Test
+  public void testBgpRouteResolution() {
+    Ip nhip = Ip.parse("1.1.1.1");
+    Bgpv4Route dependentRoute =
+        Bgpv4Route.testBuilder()
+            .setNetwork(Prefix.parse("5.0.0.0/8"))
+            .setNextHop(NextHopIp.of(nhip))
+            .build();
+    AnnotatedRoute<AbstractRoute> resolvingRoute =
+        new AnnotatedRoute<>(
+            StaticRoute.testBuilder().setNetwork(nhip.toPrefix()).build(), "default");
+    {
+      // Main RIB does not initially contain resolving route
+      Rib mainRib = new Rib();
+      Bgpv4Rib bgpRib = new Bgpv4Rib(mainRib, BgpTieBreaker.ARRIVAL_ORDER, 1, null, false);
+
+      // Add dependent route. It should not be activated since it isn't resolvable in the main RIB
+      assertThat(bgpRib.mergeRouteGetDelta(dependentRoute), equalTo(RibDelta.empty()));
+      assertThat(bgpRib.getTypedRoutes(), empty());
+
+      // Add resolving route to main RIB and update BGP. Dependent route should be activated
+      RibDelta<AnnotatedRoute<AbstractRoute>> mainRibDelta =
+          mainRib.mergeRouteGetDelta(resolvingRoute);
+      assertThat(bgpRib.updateActiveRoutes(mainRibDelta), equalTo(RibDelta.adding(dependentRoute)));
+      assertThat(bgpRib.getTypedRoutes(), contains(dependentRoute));
+    }
+    {
+      // Main RIB initially does contain resolving route
+      Rib mainRib = new Rib();
+      mainRib.mergeRoute(resolvingRoute);
+      Bgpv4Rib bgpRib = new Bgpv4Rib(mainRib, BgpTieBreaker.ARRIVAL_ORDER, 1, null, false);
+
+      // Add dependent route. It should be activated because it is resolvable in the main RIB
+      assertThat(
+          bgpRib.mergeRouteGetDelta(dependentRoute), equalTo(RibDelta.adding(dependentRoute)));
+      assertThat(bgpRib.getTypedRoutes(), contains(dependentRoute));
+
+      // Remove resolving route from main RIB and update BGP. Dependent route should be deactivated
+      RibDelta<AnnotatedRoute<AbstractRoute>> mainRibDelta =
+          mainRib.removeRouteGetDelta(resolvingRoute);
+      assertThat(
+          bgpRib.updateActiveRoutes(mainRibDelta),
+          equalTo(RibDelta.of(RouteAdvertisement.withdrawing(dependentRoute))));
+      assertThat(bgpRib.getTypedRoutes(), empty());
+    }
   }
 }

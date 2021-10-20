@@ -122,7 +122,7 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
       if (delta.getActions().count() == 1) {
         // No backup replacement, but there may be existing route(s) before an add or after a
         // withdraw. Need to check if anything now present matches resolution restriction.
-        if (extractRoutes(prefix).stream().anyMatch(_resolutionRestriction)) {
+        if (getRoutes(prefix).stream().anyMatch(_resolutionRestriction)) {
           _ribResolutionTrie.addPrefix(prefix);
         } else {
           _ribResolutionTrie.removePrefix(prefix);
@@ -211,7 +211,7 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
         AnnotatedRoute<AbstractRoute> affectedRoute,
         Collection<AnnotatedRoute<AbstractRoute>> remainingAffectedRoutes) {
       if (_backupRoutes.containsEntry(affectedRoute.getNetwork(), affectedRoute)
-          && !extractRoutes(affectedRoute.getNetwork()).contains(affectedRoute)) {
+          && !getRoutes(affectedRoute.getNetwork()).contains(affectedRoute)) {
         // The affected route is currently in backup. It cannot be activated nor deactivated until
         // all better routes have been removed/deactivated. It has already been removed from the
         // resolution graph, and its affected routes should have already been queued when a better

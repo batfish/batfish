@@ -148,6 +148,17 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
         .collect(ImmutableSet.toImmutableSet());
   }
 
+  /**
+   * Extract routes stored for this exact prefix, if any.
+   *
+   * <p>Does not collect routes for any other prefixes. Does not alter memoized routes.
+   */
+  @Override
+  @Nonnull
+  public Set<R> getRoutes(Prefix prefix) {
+    return _tree.getRoutes(prefix);
+  }
+
   @Override
   @Nonnull
   public Set<R> getTypedRoutes() {
@@ -251,15 +262,6 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
    */
   public boolean removeRoute(R route) {
     return !removeRouteGetDelta(route).isEmpty();
-  }
-
-  /**
-   * Extract routes stored for this exact prefix, if any.
-   *
-   * <p>Does not collect routes for any other prefixes. Does not alter memoized routes.
-   */
-  protected Set<R> extractRoutes(Prefix prefix) {
-    return _tree.getRoutes(prefix);
   }
 
   @Override
