@@ -6093,7 +6093,8 @@ public final class FlatJuniperGrammarTest {
     JuniperConfiguration vc = parseJuniperConfig("juniper-vlan-access");
 
     assertThat(
-        vc.getMasterLogicalSystem().getInterfaces(), hasKeys("et-0/0/2", "et-0/0/3", "et-0/0/4"));
+        vc.getMasterLogicalSystem().getInterfaces(),
+        hasKeys("et-0/0/2", "et-0/0/3", "et-0/0/4", "et-0/0/5"));
     {
       String ifaceName = "et-0/0/2";
       String unitName = String.format("%s.0", ifaceName);
@@ -6106,7 +6107,7 @@ public final class FlatJuniperGrammarTest {
       assertThat(unit.getEthernetSwitching().getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
       VlanReference member =
           (VlanReference) getOnlyElement(unit.getEthernetSwitching().getVlanMembers());
-      assertThat(member.getName(), equalTo("foo"));
+      assertThat(member.getName(), equalTo("TWO"));
     }
     {
       String ifaceName = "et-0/0/3";
@@ -6132,6 +6133,20 @@ public final class FlatJuniperGrammarTest {
 
       assertThat(unit.getEthernetSwitching().getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
     }
+    {
+      String ifaceName = "et-0/0/5";
+      String unitName = String.format("%s.0", ifaceName);
+      org.batfish.representation.juniper.Interface iface =
+          vc.getMasterLogicalSystem().getInterfaces().get(ifaceName);
+
+      assertThat(iface.getUnits(), hasKeys(unitName));
+      org.batfish.representation.juniper.Interface unit = iface.getUnits().get(unitName);
+
+      assertThat(unit.getEthernetSwitching().getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
+      VlanReference member =
+          (VlanReference) getOnlyElement(unit.getEthernetSwitching().getVlanMembers());
+      assertThat(member.getName(), equalTo("NOTSET"));
+    }
   }
 
   @Test
@@ -6146,9 +6161,13 @@ public final class FlatJuniperGrammarTest {
     assertThat(c, hasInterface("et-0/0/3.0", hasSwitchPortMode(SwitchportMode.ACCESS)));
     assertThat(c, hasInterface("et-0/0/3.0", hasAccessVlan(2)));
 
-    assertThat(c, hasInterface("et-0/0/4.0", isSwitchport(false)));
-    assertThat(c, hasInterface("et-0/0/4.0", hasSwitchPortMode(SwitchportMode.NONE)));
-    assertThat(c, hasInterface("et-0/0/4.0", hasAccessVlan(nullValue())));
+    assertThat(c, hasInterface("et-0/0/4.0", isSwitchport()));
+    assertThat(c, hasInterface("et-0/0/4.0", hasSwitchPortMode(SwitchportMode.ACCESS)));
+    assertThat(c, hasInterface("et-0/0/4.0", hasAccessVlan(1)));
+
+    assertThat(c, hasInterface("et-0/0/5.0", isSwitchport(false)));
+    assertThat(c, hasInterface("et-0/0/5.0", hasSwitchPortMode(SwitchportMode.NONE)));
+    assertThat(c, hasInterface("et-0/0/5.0", hasAccessVlan(nullValue())));
   }
 
   @Test

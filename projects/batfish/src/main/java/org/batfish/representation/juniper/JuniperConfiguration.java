@@ -12,6 +12,7 @@ import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.EXCEPT_FIRST;
 import static org.batfish.datamodel.routing_policy.statement.Statements.ReturnFalse;
 import static org.batfish.datamodel.routing_policy.statement.Statements.ReturnTrue;
+import static org.batfish.representation.juniper.EthernetSwitching.DEFAULT_VLAN_MEMBER;
 import static org.batfish.representation.juniper.JuniperStructureType.ADDRESS_BOOK;
 import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STATEMENT_TERM;
 import static org.batfish.representation.juniper.NatPacketLocation.interfaceLocation;
@@ -1916,25 +1917,31 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   private @Nullable Integer computeAccessVlan(String ifaceName, List<VlanMember> vlanMembers) {
-    if (vlanMembers.isEmpty()) {
-      return null;
-    }
-    if (vlanMembers.size() > 1) {
+    List<VlanMember> effectiveMembers =
+        !vlanMembers.isEmpty() ? vlanMembers : ImmutableList.of(DEFAULT_VLAN_MEMBER);
+    if (effectiveMembers.size() > 1) {
       _w.redFlag(
           String.format(
-              "Cannot assign more than one access vlan: %s to interface '%s'",
-              vlanMembers, ifaceName));
+              "More than one member declared for interface %s: %s", ifaceName, effectiveMembers));
       return null;
     }
-    IntegerSpace members = vlanMembersToIntegerSpace(vlanMembers);
-    if (!members.isSingleton()) {
+
+    VlanMember member = effectiveMembers.get(0);
+    IntegerSpace members = vlanMembersToIntegerSpace(effectiveMembers);
+    if (members.isSingleton()) {
+      // This is the expected case. One member, with one vlan assigned.
+      return members.singletonValue();
+    } else if (members.isEmpty()) {
       _w.redFlag(
           String.format(
-              "Cannot assign more than one access vlan: %s to interface '%s'",
-              vlanMembers, ifaceName));
+              "Cannot assign access vlan to interface %s: no vlan-id is assigned to vlan %s",
+              ifaceName, member));
       return null;
     }
-    return members.singletonValue();
+    _w.redFlag(
+        String.format(
+            "Cannot assign more than one access vlan to interface %s: %s", ifaceName, member));
+    return null;
   }
 
   private @Nonnull IntegerSpace vlanMembersToIntegerSpace(Collection<VlanMember> vlanMembers) {
