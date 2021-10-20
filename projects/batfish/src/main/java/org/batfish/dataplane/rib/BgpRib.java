@@ -39,7 +39,7 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
 
   private static final int MAX_RESOLUTION_DEPTH = 10;
 
-  /** Main RIB to use for IGP cost estimation */
+  /** Main RIB to use for IGP cost estimation and next hop resolution */
   @Nullable protected final GenericRibReadOnly<AnnotatedRoute<AbstractRoute>> _mainRib;
   /** Tie breaker to use if all route attributes appear to be equal */
   @Nonnull protected final BgpTieBreaker _tieBreaker;
@@ -221,7 +221,7 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
   }
 
   private void selectBestPath(Prefix prefix) {
-    Optional<R> s = extractRoutes(prefix).stream().max(this::bestPathComparator);
+    Optional<R> s = getRoutes(prefix).stream().max(this::bestPathComparator);
     if (!s.isPresent()) {
       // Remove best path and return
       _bestPaths.remove(prefix);

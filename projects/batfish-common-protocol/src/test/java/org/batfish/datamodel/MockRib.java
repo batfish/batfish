@@ -98,6 +98,13 @@ public class MockRib implements GenericRib<AnnotatedRoute<AbstractRoute>> {
   }
 
   @Override
+  public Set<AnnotatedRoute<AbstractRoute>> getRoutes(Prefix prefix) {
+    return getTypedRoutes().stream()
+        .filter(r -> r.getNetwork().equals(prefix))
+        .collect(ImmutableSet.toImmutableSet());
+  }
+
+  @Override
   public Set<AnnotatedRoute<AbstractRoute>> getTypedRoutes() {
     return _routes;
   }
