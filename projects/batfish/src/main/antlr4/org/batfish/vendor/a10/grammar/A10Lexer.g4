@@ -77,7 +77,7 @@ LOOPBACK: 'loopback';
 MAXIMUM_PATHS: 'maximum-paths';
 MAXIMUM_PREFIX: 'maximum-prefix';
 MEMBER: 'member' -> pushMode(M_Word);
-METHOD: 'method';
+METHOD: 'method' -> pushMode(M_Method);
 MIN_ACTIVE_MEMBER: 'min-active-member';
 MODE: 'mode';
 MTU: 'mtu';
@@ -366,6 +366,9 @@ fragment
 F_EscapedSingleQuote: '\\' ['];
 
 // Modes
+mode M_Method;
+
+
 mode M_DoubleQuote;
 M_DoubleQuote_DOUBLE_QUOTE: '"' -> type(DOUBLE_QUOTE), popMode;
 M_DoubleQuote_QUOTED_TEXT: (F_EscapedDoubleQuote | ~'"')+ -> type(QUOTED_TEXT);

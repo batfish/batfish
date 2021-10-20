@@ -251,6 +251,23 @@ public class A10GrammarTest {
   }
 
   @Test
+  public void testHealthMonitor() {
+    String hostname = "health_monitor";
+    A10Configuration c = parseVendorConfig(hostname);
+    assertThat(
+        c.getHealthMonitors().keySet(),
+        containsInAnyOrder("HM1", "HM2", "HM3", "HM4", "HM5", "HM6", "HM7", "HM8"));
+  }
+
+  /** ACOS v2 style syntax */
+  @Test
+  public void testHealthMonitorAcos2() {
+    String hostname = "health_monitor_acos2";
+    A10Configuration c = parseVendorConfig(hostname);
+    assertThat(c.getHealthMonitors().keySet(), containsInAnyOrder("HM1"));
+  }
+
+  @Test
   public void testStaticRouteExtraction() {
     String hostname = "static_route";
     A10Configuration c = parseVendorConfig(hostname);

@@ -1,0 +1,7 @@
+!BATFISH_FORMAT: a10_acos
+!version 2.7.2, build 123 (Aug-5-2021,01:23)
+hostname health_monitor_acos2
+!
+health monitor HM1 interval 5 retry 3 timeout 5 up-retry 9
+  method icmp
+!
