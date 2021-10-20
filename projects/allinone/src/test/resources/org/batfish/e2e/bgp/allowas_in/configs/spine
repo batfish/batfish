@@ -1,0 +1,7 @@
+hostname spine
+!
+interface Ethernet1/1
+   ip address 10.0.0.0/31
+!
+router bgp 1
+   neighbor 10.0.0.1 remote-as 2

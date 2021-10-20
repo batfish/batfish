@@ -1,0 +1,16 @@
+! boot system flash:/EOS-4.22.3M.swi
+hostname leaf1
+!
+interface Ethernet1/1
+   switchport access vlan 2
+interface Ethernet48/1
+   no switchport
+   ip address 10.0.0.1/31
+interface Vlan2
+   ip address 20.0.0.2/24
+!
+router bgp 2
+   neighbor LEAF_TO_SPINE allowas-in 1
+   neighbor 20.0.0.1 remote-as 2
+   neighbor 10.0.0.0 peer-group LEAF_TO_SPINE
+   neighbor 10.0.0.0 remote-as 1
