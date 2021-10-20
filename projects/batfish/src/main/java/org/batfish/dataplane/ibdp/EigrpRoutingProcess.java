@@ -231,6 +231,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
 
   @Override
   public boolean isDirty() {
+    // if you change this, decide whether you need to change #iterationHashCode
     return !_incomingInternalRoutes.values().stream().allMatch(Queue::isEmpty)
         || !_incomingExternalRoutes.values().stream().allMatch(Queue::isEmpty)
         || !_changeSet.isEmpty()
@@ -591,21 +592,17 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
   }
 
   /**
-   * Compute the "hashcode" of this router for the iBDP purposes. The hashcode is computed from the
-   * following data structures:
-   *
-   * <ul>
-   *   <li>EIGRP Rib {@link #_rib}
-   *   <li>message queues ({@link #_incomingExternalRoutes}, {@link #_incomingInternalRoutes})
-   * </ul>
-   *
-   * @return integer hashcode
+   * Compute the "hashcode" of this router for the iBDP purposes. The hashcode should include
+   * everything in {@link #isDirty()} at least.
    */
   int computeIterationHashCode() {
+    assert _queuedForRedistribution.isEmpty(); // expected invariant
+    assert _initializationDelta.isEmpty(); // expected invariant
     return Streams.concat(
             Stream.of(_rib),
             _incomingInternalRoutes.values().stream(),
-            _incomingExternalRoutes.values().stream())
+            _incomingExternalRoutes.values().stream(),
+            _changeSet.build().getActions())
         .collect(toOrderedHashCode());
   }
 
