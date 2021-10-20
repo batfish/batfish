@@ -1299,15 +1299,12 @@ public final class VirtualRouter {
             Stream.of(_mainRib.getTypedRoutes()),
             // Exported routes
             // Message queues
-            Stream.of(_isisIncomingRoutes, _crossVrfIncomingRoutes)
-                .flatMap(m -> m.values().stream())
-                .flatMap(Queue::stream),
-            Stream.of(_routesForIsisRedistribution),
+            _isisIncomingRoutes.values().stream().flatMap(Queue::stream),
+            _crossVrfIncomingRoutes.values().stream().flatMap(Queue::stream),
+            _routesForIsisRedistribution.build().getActions(),
             // Processes
-            Stream.of(_ospfProcesses.values().stream().map(OspfRoutingProcess::iterationHashCode)),
-            Stream.of(_eigrpProcesses)
-                .flatMap(m -> m.values().stream())
-                .map(EigrpRoutingProcess::computeIterationHashCode),
+            _ospfProcesses.values().stream().map(OspfRoutingProcess::iterationHashCode),
+            _eigrpProcesses.values().stream().map(EigrpRoutingProcess::computeIterationHashCode),
             Stream.of(_bgpRoutingProcess == null ? 0 : _bgpRoutingProcess.iterationHashCode()))
         .collect(toOrderedHashCode());
   }
@@ -1520,6 +1517,16 @@ public final class VirtualRouter {
       return vs;
     }
     return vs.addToFloodList(route.getVniIp());
+  }
+
+  /**
+   * Activates and deactivates routes in protocol-specific routing processes based on what NHIPs are
+   * now resolvable.
+   */
+  void updateResolvableRoutes() {
+    if (_bgpRoutingProcess != null) {
+      _bgpRoutingProcess.updateResolvableRoutes(_mainRibDeltaPrevRound);
+    }
   }
 
   /** Redistribute routes learned in the previous round into known routing processes */

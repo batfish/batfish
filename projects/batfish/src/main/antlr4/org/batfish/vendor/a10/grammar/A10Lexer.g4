@@ -25,7 +25,10 @@ BGP: 'bgp';
 BLADE_PARAMETERS: 'blade-parameters';
 BOTH: 'both';
 BUCKET_COUNT: 'bucket-count';
+CACHE: 'cache';
 CAPABILITY: 'capability';
+CIPHER: 'cipher';
+CLIENT_SSL: 'client-ssl';
 COMMON: 'common';
 COMPOUND
 :
@@ -38,6 +41,8 @@ COMPOUND
 ;
 CONN_LIMIT: 'conn-limit';
 CONNECTED: 'connected';
+CONNECTION_REUSE: 'connection-reuse';
+COOKIE: 'cookie';
 DATABASE
 :
   'database'
@@ -51,13 +56,16 @@ DEAD_TIMER: 'dead-timer';
 DEF_SELECTION_IF_PREF_FAILED: 'def-selection-if-pref-failed';
 DEFAULT: 'default';
 DESCRIPTION: 'description' -> pushMode(M_Word);
+DESTINATION_IP: 'destination-ip';
 DEVICE_ID: 'device-id';
+DIAMETER: 'diameter';
 DISABLE: 'disable';
 DISABLE_DEFAULT_VRID: 'disable-default-vrid';
 DNS: 'dns';
 DO_AUTO_RECOVERY: 'do-auto-recovery';
 DUPLEXITY: 'duplexity';
 DYNAMIC: 'dynamic';
+DYNAMIC_SERVICE: 'dynamic-service';
 ENABLE: 'enable';
 ETHERNET: 'ethernet';
 EXPECT: 'expect';
@@ -161,6 +169,8 @@ OVERRIDE_PORT: 'override-port';
 PASSIVE: 'passive';
 PEER: 'peer';
 PEER_GROUP: 'peer-group';
+PERSIST: 'persist';
+POLICY: 'policy';
 POOL: 'pool' -> pushMode(M_Word);
 POP3: 'pop3';
 PORT
@@ -211,11 +221,12 @@ SERVER
 :
   'server'
   {
-    if (lastTokenType() == SLB || lastTokenType() == TEMPLATE) {
+    if (lastTokenType() == SLB) {
       pushMode(M_Word);
     }
   }
 ;
+SERVER_SSL: 'server-ssl';
 SERVICE_GROUP: 'service-group' -> pushMode(M_Word);
 SERVICE_LEAST_CONNECTION: 'service-least-connection';
 SHORT: 'short';
@@ -224,6 +235,7 @@ SLB: 'slb';
 SMTP: 'smtp';
 SNMP: 'snmp';
 SOFT_RECONFIGURATION: 'soft-reconfiguration';
+SOURCE_IP: 'source-ip';
 SOURCE_NAT: 'source-nat';
 SPEED: 'speed';
 SSL_CIPHERS: 'ssl-ciphers';
@@ -236,7 +248,7 @@ TACPLUS: 'tacplus';
 TAGGED: 'tagged';
 TCP: 'tcp';
 TCP_PROXY: 'tcp-proxy';
-TEMPLATE: 'template';
+TEMPLATE: 'template' -> pushMode(M_Template);
 THRESHOLD: 'threshold';
 TIMEOUT: 'timeout';
 TIMER: 'timer';
@@ -261,6 +273,7 @@ VLAN: 'vlan';
 VRID: 'vrid';
 VRID_LEAD: 'vrid-lead' -> pushMode(M_Word);
 VRRP_A: 'vrrp-a';
+WAF: 'waf';
 WEIGHT: 'weight';
 
 // Complex tokens
@@ -505,3 +518,33 @@ M_RbaLine_RBA_LINE: F_Word F_Whitespace+ ('no-access'|'read'|'partition-only'|'o
 M_RbaLine_NEWLINE: F_Newline -> type(NEWLINE);
 M_RbaLine_COMMENT_LINE: F_Whitespace* '!' {lastTokenType() == NEWLINE}? F_NonNewlineChar* (F_Newline | EOF) -> skip;
 M_RbaLine_END: F_NonWhitespace+ {less();} -> popMode;
+
+mode M_Template;
+M_Template_WS: F_Whitespace+ -> skip;
+M_Template_CACHE: 'cache' -> type(CACHE), mode(M_Word);
+M_Template_CIPHER: 'cipher' -> type(CIPHER), mode(M_Word);
+M_Template_CLIENT_SSL: 'client-ssl' -> type(CLIENT_SSL), mode(M_Word);
+M_Template_CONNECTION_REUSE: 'connection-reuse' -> type(CONNECTION_REUSE), mode(M_Word);
+M_Template_DIAMETER: 'diameter' -> type(DIAMETER), mode(M_Word);
+M_Template_DNS: 'dns' -> type(DNS), mode(M_Word);
+M_Template_DYNAMIC_SERVICE: 'dynamic-service' -> type(DYNAMIC_SERVICE), mode(M_Word);
+M_Template_HTTP: 'http' -> type(HTTP), mode(M_Word);
+M_Template_PERSIST: 'persist' -> type(PERSIST), mode(M_TemplatePersist);
+M_Template_POLICY: 'policy' -> type(POLICY), mode(M_Word);
+M_Template_PORT: 'port' -> type(PORT), mode(M_Word);
+M_Template_SERVER: 'server' -> type(SERVER), mode(M_Word);
+M_Template_SERVER_SSL: 'server-ssl' -> type(SERVER_SSL), mode(M_Word);
+M_Template_SIP: 'sip' -> type(SIP), mode(M_Word);
+M_Template_TCP: 'tcp' -> type(TCP), mode(M_Word);
+M_Template_TCP_PROXY: 'tcp-proxy' -> type(TCP_PROXY), mode(M_Word);
+M_Template_UDP: 'udp' -> type(UDP), mode(M_Word);
+M_Template_VIRTUAL_PORT: 'virtual-port' -> type(VIRTUAL_PORT), mode(M_Word);
+M_Template_WAF: 'waf' -> type(WAF), mode(M_Word);
+M_Template_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_TemplatePersist;
+M_TemplatePersist_WS: F_Whitespace+ -> skip;
+M_TemplatePersist_COOKIE: 'cookie' -> type(COOKIE), mode(M_Word);
+M_TemplatePersist_DESTINATION_IP: 'destination-ip' -> type(DESTINATION_IP), mode(M_Word);
+M_TemplatePersist_SOURCE_IP: 'source-ip' -> type(SOURCE_IP), mode(M_Word);
+M_TemplatePersist_NEWLINE: F_Newline -> type(NEWLINE), popMode;

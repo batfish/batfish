@@ -77,12 +77,20 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
+import org.batfish.datamodel.routing_policy.expr.IntComparator;
+import org.batfish.datamodel.routing_policy.expr.LiteralLong;
+import org.batfish.datamodel.routing_policy.expr.MatchBgpSessionType;
+import org.batfish.datamodel.routing_policy.expr.MatchBgpSessionType.Type;
+import org.batfish.datamodel.routing_policy.expr.MatchLocalPreference;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
+import org.batfish.datamodel.routing_policy.expr.MatchSourceProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.expr.UnchangedNextHop;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
@@ -502,6 +510,28 @@ final class AristaConversions {
 
     // Export policy
     List<Statement> exportStatements = new LinkedList<>();
+
+    // First, change unset local preference for local (non-learned) routes to (neighbor-specific)
+    // default value. Only applies to IBGP peers.
+    If overrideUnsetLocalPref =
+        new If(
+            new Conjunction(
+                ImmutableList.of(
+                    // This is an IBGP session.
+                    new MatchBgpSessionType(Type.IBGP),
+                    // The route being exported is not learned.
+                    new Not(new MatchSourceProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP)),
+                    // The route being exported has the unset default local preference of 0 (since
+                    // we can't yet model unset explicitly)
+                    new MatchLocalPreference(IntComparator.EQ, new LiteralLong(0)))),
+            ImmutableList.of(
+                new SetLocalPreference(
+                    new LiteralLong(
+                        firstNonNull(
+                            neighbor.getExportLocalPref(),
+                            AristaBgpNeighbor.SYSTEM_DEFAULT_LOCALPREF)))));
+    exportStatements.add(overrideUnsetLocalPref);
+
     if (v4Enabled
         && neighbor.getDefaultOriginate() != null
         && neighbor.getDefaultOriginate().getEnabled()) {

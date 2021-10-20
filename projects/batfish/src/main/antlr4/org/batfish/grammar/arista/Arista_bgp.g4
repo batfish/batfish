@@ -1597,7 +1597,15 @@ eos_rbi_default
 eos_rbid_neighbor
 :
   NEIGHBOR nid = eos_neighbor_id
-  eos_rbidn_monitoring
+  (
+    eos_rbidn_export_localpref
+    | eos_rbidn_monitoring
+  )
+;
+
+eos_rbidn_export_localpref
+:
+  EXPORT_LOCALPREF NEWLINE
 ;
 
 eos_rbidn_monitoring
@@ -1781,7 +1789,7 @@ eos_rbinc_enforce_first_as
 
 eos_rbinc_export_localpref
 :
-  EXPORT_LOCALPREF value = dec NEWLINE
+  EXPORT_LOCALPREF value = bgp_local_pref NEWLINE
 ;
 
 eos_rbinc_fall_over

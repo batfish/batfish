@@ -560,6 +560,10 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     return result;
   }
 
+  public void updateResolvableRoutes(RibDelta<AnnotatedRoute<AbstractRoute>> mainRibDelta) {
+    _bgpv4DeltaBuilder.from(_bgpv4Rib.updateActiveRoutes(mainRibDelta));
+  }
+
   @Override
   public void redistribute(RibDelta<AnnotatedRoute<AbstractRoute>> mainRibDelta) {
     // Legacy redistribution model. (Unnecessary if redistribution is done from BGP RIB.)

@@ -1,0 +1,21 @@
+!RANCID-CONTENT-TYPE: cisco
+hostname r2
+!
+! Interface to r1
+interface FastEthernet0/0
+ no shutdown
+ ip address 10.10.10.2 255.255.255.0
+!
+interface Loopback0
+ ip address 2.2.2.2 255.255.255.255
+!
+! Static route that resolves NHIP of external route advertised to r1
+ip route 5.5.5.5 255.255.255.255 null0
+!
+router bgp 2
+ router-id 2.2.2.2
+ neighbor 10.10.10.1 remote-as 1
+ address-family ipv4
+  redistribute static
+ exit-address-family
+!
