@@ -6,6 +6,7 @@ import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.FirewallSessionInterfaceInfo.Action.POST_NAT_FIB_LOOKUP;
 import static org.batfish.vendor.a10.representation.A10Conversion.VIRTUAL_TCP_PORT_TYPES;
 import static org.batfish.vendor.a10.representation.A10Conversion.VIRTUAL_UDP_PORT_TYPES;
+import static org.batfish.vendor.a10.representation.A10Conversion.createBgpProcess;
 import static org.batfish.vendor.a10.representation.A10Conversion.getEnabledVrids;
 import static org.batfish.vendor.a10.representation.A10Conversion.getNatPoolIps;
 import static org.batfish.vendor.a10.representation.A10Conversion.getNatPoolIpsForAllVrids;
@@ -295,9 +296,17 @@ public final class A10Configuration extends VendorConfiguration {
     convertVirtualServers();
     convertVrrpA();
     createKernelRoutes();
+    convertBgp();
 
     markStructures();
     return ImmutableList.of(_c);
+  }
+
+  private void convertBgp() {
+    if (_bgpProcess == null) {
+      return;
+    }
+    createBgpProcess(_bgpProcess, _c, _w);
   }
 
   /**

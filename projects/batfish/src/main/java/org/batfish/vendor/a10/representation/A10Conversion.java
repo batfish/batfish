@@ -1,6 +1,11 @@
 package org.batfish.vendor.a10.representation;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
+import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
+import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
+import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationPort;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
@@ -12,6 +17,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -22,21 +28,43 @@ import java.util.stream.LongStream;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.common.Warnings;
+import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.KernelRoute;
 import org.batfish.datamodel.NamedPort;
+import org.batfish.datamodel.Names;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
+import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
+import org.batfish.datamodel.routing_policy.expr.CallExpr;
+import org.batfish.datamodel.routing_policy.expr.Conjunction;
+import org.batfish.datamodel.routing_policy.expr.IntComparator;
+import org.batfish.datamodel.routing_policy.expr.LiteralInt;
+import org.batfish.datamodel.routing_policy.expr.LiteralLong;
+import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
+import org.batfish.datamodel.routing_policy.expr.MatchTag;
+import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetWeight;
+import org.batfish.datamodel.routing_policy.statement.Statement;
+import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.transformation.ApplyAll;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
+import org.batfish.vendor.a10.representation.BgpNeighbor.SendCommunity;
 
 /** Conversion helpers for converting VS model {@link A10Configuration} to the VI model. */
 public class A10Conversion {
@@ -52,7 +80,11 @@ public class A10Conversion {
   @VisibleForTesting public static final long KERNEL_ROUTE_TAG_NAT_POOL = 1L;
   @VisibleForTesting public static final long KERNEL_ROUTE_TAG_VIRTUAL_SERVER_FLAGGED = 2L;
   @VisibleForTesting public static final long KERNEL_ROUTE_TAG_VIRTUAL_SERVER_UNFLAGGED = 3L;
-
+  @VisibleForTesting public static final long KERNEL_ROUTE_TAG_FLOATING_IP = 4L;
+  @VisibleForTesting static final int DEFAULT_EBGP_ADMIN_COST = 20;
+  @VisibleForTesting static final int DEFAULT_IBGP_ADMIN_COST = 200;
+  @VisibleForTesting static final int DEFAULT_LOCAL_ADMIN_COST = 200;
+  @VisibleForTesting static final int DEFAULT_LOCAL_BGP_WEIGHT = 32768;
   /** Set of {@link VirtualServerPort.Type}s that use {@code tcp} protocol */
   static final Set<VirtualServerPort.Type> VIRTUAL_TCP_PORT_TYPES =
       ImmutableSet.of(
@@ -397,5 +429,209 @@ public class A10Conversion {
       return false;
     }
     return iface.getConcreteAddress() != null;
+  }
+
+  static void createBgpProcess(BgpProcess bgpProcess, Configuration c, Warnings w) {
+    Ip routerId = bgpProcess.getRouterId();
+    if (routerId == null) {
+      w.redFlag("Converting a BgpProcess without an explicit router-id is currently unsupported");
+      return;
+    }
+    org.batfish.datamodel.BgpProcess newBgpProcess =
+        org.batfish.datamodel.BgpProcess.builder()
+            .setRouterId(routerId)
+            .setEbgpAdminCost(DEFAULT_EBGP_ADMIN_COST)
+            .setIbgpAdminCost(DEFAULT_IBGP_ADMIN_COST)
+            .setLocalAdminCost(DEFAULT_LOCAL_ADMIN_COST)
+            .setVrf(c.getDefaultVrf())
+            .build();
+
+    boolean multipath = firstNonNull(bgpProcess.getMaximumPaths(), 1) > 1;
+    newBgpProcess.setMultipathEbgp(multipath);
+    newBgpProcess.setMultipathIbgp(multipath);
+    // TODO: verify
+    newBgpProcess.setMultipathEquivalentAsPathMatchMode(EXACT_PATH);
+    // TODO: verify
+    newBgpProcess.setTieBreaker(BgpTieBreaker.ROUTER_ID);
+    long defaultLocalAs = bgpProcess.getAsn();
+
+    // TODO: support alternate default local-preference
+
+    // Next we build up the BGP common export policy.
+    RoutingPolicy.Builder bgpCommonExportPolicy =
+        RoutingPolicy.builder()
+            .setOwner(c)
+            .setName(Names.generatedBgpCommonExportPolicyName(DEFAULT_VRF_NAME));
+
+    // Finalize common export policy
+    bgpCommonExportPolicy.addStatement(Statements.ReturnTrue.toStaticStatement()).build();
+
+    // Create BGP redistribution policy to import main RIB routes into BGP RIB
+    String redistPolicyName = generatedBgpRedistributionPolicyName(DEFAULT_VRF_NAME);
+    RoutingPolicy.Builder redistributionPolicy =
+        RoutingPolicy.builder().setOwner(c).setName(redistPolicyName);
+    redistributionPolicy.addStatement(new SetWeight(new LiteralInt(DEFAULT_LOCAL_BGP_WEIGHT)));
+
+    // Redistribute connected
+    if (bgpProcess.isRedistributeConnected()) {
+      BooleanExpr guard = new MatchProtocol(RoutingProtocol.CONNECTED);
+      guard.setComment("Redistribute connected routes into BGP");
+      redistributionPolicy.addStatement(
+          new If(guard, ImmutableList.of(Statements.ExitAccept.toStaticStatement())));
+    }
+
+    // Redistribute floating-ip
+    if (bgpProcess.isRedistributeFloatingIp()) {
+      ImmutableList.Builder<BooleanExpr> conditions = ImmutableList.builder();
+      conditions.add(new MatchProtocol(RoutingProtocol.KERNEL));
+      conditions.add(new MatchTag(IntComparator.EQ, new LiteralLong(KERNEL_ROUTE_TAG_FLOATING_IP)));
+      Conjunction guard = new Conjunction(conditions.build());
+      guard.setComment("Redistribute floating-ip routes into BGP");
+      redistributionPolicy.addStatement(
+          new If(guard, ImmutableList.of(Statements.ExitAccept.toStaticStatement())));
+    }
+
+    // Redistribute ip-nat
+    if (bgpProcess.isRedistributeIpNat()) {
+      ImmutableList.Builder<BooleanExpr> conditions = ImmutableList.builder();
+      conditions.add(new MatchProtocol(RoutingProtocol.KERNEL));
+      conditions.add(new MatchTag(IntComparator.EQ, new LiteralLong(KERNEL_ROUTE_TAG_NAT_POOL)));
+      Conjunction guard = new Conjunction(conditions.build());
+      guard.setComment("Redistribute ip nat pool routes into BGP");
+      redistributionPolicy.addStatement(
+          new If(guard, ImmutableList.of(Statements.ExitAccept.toStaticStatement())));
+    }
+
+    // Redistribute vip only-flagged
+    if (bgpProcess.isRedistributeVipOnlyFlagged()) {
+      ImmutableList.Builder<BooleanExpr> conditions = ImmutableList.builder();
+      conditions.add(new MatchProtocol(RoutingProtocol.KERNEL));
+      conditions.add(
+          new MatchTag(IntComparator.EQ, new LiteralLong(KERNEL_ROUTE_TAG_VIRTUAL_SERVER_FLAGGED)));
+      Conjunction guard = new Conjunction(conditions.build());
+      guard.setComment("Redistribute redistribution-flagged slb virtual-server routes into BGP");
+      redistributionPolicy.addStatement(
+          new If(guard, ImmutableList.of(Statements.ExitAccept.toStaticStatement())));
+    }
+
+    // Redistribute vip not-flagged
+    if (bgpProcess.isRedistributeVipOnlyNotFlagged()) {
+      ImmutableList.Builder<BooleanExpr> conditions = ImmutableList.builder();
+      conditions.add(new MatchProtocol(RoutingProtocol.KERNEL));
+      conditions.add(
+          new MatchTag(
+              IntComparator.EQ, new LiteralLong(KERNEL_ROUTE_TAG_VIRTUAL_SERVER_UNFLAGGED)));
+      Conjunction guard = new Conjunction(conditions.build());
+      guard.setComment(
+          "Redistribute non-redistribution-flagged slb virtual-server routes into BGP");
+      redistributionPolicy.addStatement(
+          new If(guard, ImmutableList.of(Statements.ExitAccept.toStaticStatement())));
+    }
+
+    // Finalize redistribution policy and attach to process
+    redistributionPolicy.addStatement(Statements.ExitReject.toStaticStatement()).build();
+    newBgpProcess.setRedistributionPolicy(redistPolicyName);
+
+    // Create and attach neighbors
+    // TODO: support deactivated neighbor
+    bgpProcess
+        .getNeighbors()
+        .forEach(
+            (bgpNeighborId, bgpNeighbor) -> {
+              createAndAttachBgpNeighbor(
+                  bgpNeighborId, defaultLocalAs, bgpNeighbor, newBgpProcess, c, w);
+            });
+  }
+
+  @VisibleForTesting
+  static void createAndAttachBgpNeighbor(
+      BgpNeighborId bgpNeighborId,
+      long defaultLocalAs,
+      BgpNeighbor bgpNeighbor,
+      org.batfish.datamodel.BgpProcess newBgpProcess,
+      Configuration c,
+      Warnings w) {
+    // TODO: use visitor, support peer-groups
+    assert bgpNeighborId instanceof BgpNeighborIdAddress;
+    Ip remoteIp = ((BgpNeighborIdAddress) bgpNeighborId).getAddress();
+    Long remoteAs = bgpNeighbor.getRemoteAs();
+    if (remoteAs == null) {
+      w.redFlag(String.format("Cannot create bgp neighbor %s without a remote-as", remoteIp));
+      return;
+    }
+    SendCommunity sendCommunity = bgpNeighbor.getSendCommunity();
+    boolean sendStandard =
+        sendCommunity == SendCommunity.STANDARD || sendCommunity == SendCommunity.BOTH;
+    boolean sendExtended =
+        sendCommunity == SendCommunity.EXTENDED || sendCommunity == SendCommunity.BOTH;
+
+    BgpActivePeerConfig.builder()
+        .setBgpProcess(newBgpProcess)
+        .setLocalIp(
+            computeUpdateSource(
+                c.getAllInterfaces(DEFAULT_VRF_NAME), remoteIp, bgpNeighbor.getUpdateSource(), w))
+        .setPeerAddress(remoteIp)
+        .setLocalAs(defaultLocalAs)
+        .setRemoteAs(remoteAs)
+        .setDescription(bgpNeighbor.getDescription())
+        .setIpv4UnicastAddressFamily(
+            Ipv4UnicastAddressFamily.builder()
+                // TODO: support route-maps
+                .setExportPolicy(computeExportPolicy(bgpNeighborId, c))
+                .setAddressFamilyCapabilities(
+                    AddressFamilyCapabilities.builder()
+                        .setSendCommunity(sendStandard)
+                        .setSendExtendedCommunity(sendExtended)
+                        .build())
+                .build())
+        // build and attach neighbor
+        .build();
+  }
+
+  private static @Nonnull String computeExportPolicy(BgpNeighborId bgpNeighborId, Configuration c) {
+    // TODO: support non-IP neighbor-id
+    assert bgpNeighborId instanceof BgpNeighborIdAddress;
+    Conjunction peerExportGuard = new Conjunction();
+    List<BooleanExpr> peerExportConditions = peerExportGuard.getConjuncts();
+    List<Statement> exportStatements = new LinkedList<>();
+    exportStatements.add(
+        new If(
+            "peer-export policy main conditional: exitAccept if true / exitReject if false",
+            peerExportGuard,
+            ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+            ImmutableList.of(Statements.ExitReject.toStaticStatement())));
+    peerExportConditions.add(new CallExpr(generatedBgpCommonExportPolicyName(DEFAULT_VRF_NAME)));
+    RoutingPolicy exportPolicy =
+        new RoutingPolicy(
+            generatedBgpPeerExportPolicyName(
+                DEFAULT_VRF_NAME, ((BgpNeighborIdAddress) bgpNeighborId).getAddress().toString()),
+            c);
+    exportPolicy.setStatements(exportStatements);
+    c.getRoutingPolicies().put(exportPolicy.getName(), exportPolicy);
+    return exportPolicy.getName();
+  }
+
+  @VisibleForTesting
+  static @Nullable Ip computeUpdateSource(
+      Map<String, org.batfish.datamodel.Interface> interfaces,
+      Ip remoteIp,
+      @Nullable BgpNeighborUpdateSource updateSource,
+      Warnings warnings) {
+    if (updateSource != null) {
+      // TODO: support interface update-source
+      assert updateSource instanceof BgpNeighborUpdateSourceAddress;
+      return ((BgpNeighborUpdateSourceAddress) updateSource).getAddress();
+    }
+    Optional<Ip> firstMatchingInterfaceAddress =
+        interfaces.values().stream()
+            .flatMap(i -> i.getAllConcreteAddresses().stream())
+            .filter(ia -> ia != null && ia.getPrefix().containsIp(remoteIp))
+            .map(ConcreteInterfaceAddress::getIp)
+            .findFirst();
+    if (firstMatchingInterfaceAddress.isPresent()) {
+      return firstMatchingInterfaceAddress.get();
+    }
+    warnings.redFlag(String.format("BGP neighbor %s: could not determine update source", remoteIp));
+    return null;
   }
 }
