@@ -1650,18 +1650,48 @@ public class CumulusFrrGrammarTest {
 
   @Test
   public void testBgpNeighborEbgpMultihopPeerGroup() {
-    parseLines("router bgp 10000", "neighbor N peer-group", "neighbor N ebgp-multihop 3");
+    _warnings = new Warnings(false, true, false);
+    parseLines(
+        "router bgp 10000",
+        "neighbor N peer-group",
+        "neighbor N ebgp-multihop 3",
+        "neighbor M peer-group",
+        "neighbor M ebgp-multihop",
+        "neighbor L peer-group");
     assertThat(
         _frr.getBgpProcess().getDefaultVrf().getNeighbors().get("N").getEbgpMultihop(),
-        equalTo(3L));
+        equalTo(true));
+    assertThat(
+        _frr.getBgpProcess().getDefaultVrf().getNeighbors().get("M").getEbgpMultihop(),
+        equalTo(true));
+    assertThat(
+        _frr.getBgpProcess().getDefaultVrf().getNeighbors().get("L").getEbgpMultihop(),
+        equalTo(null));
+    assertThat(
+        Iterables.getOnlyElement(_warnings.getParseWarnings()),
+        hasComment("Neighbor recognized as ebgp-multihop, but distance limit is not enforced"));
   }
 
   @Test
   public void testBgpNeighborEbgpMultihopPeer() {
-    parseLines("router bgp 10000", "neighbor 10.0.0.1 ebgp-multihop 3");
+    _warnings = new Warnings(false, true, false);
+    parseLines(
+        "router bgp 10000",
+        "neighbor 10.0.0.1 ebgp-multihop 3",
+        "neighbor 10.0.0.2 ebgp-multihop",
+        "neighbor 10.0.0.3 bfd");
     assertThat(
         _frr.getBgpProcess().getDefaultVrf().getNeighbors().get("10.0.0.1").getEbgpMultihop(),
-        equalTo(3L));
+        equalTo(true));
+    assertThat(
+        _frr.getBgpProcess().getDefaultVrf().getNeighbors().get("10.0.0.2").getEbgpMultihop(),
+        equalTo(true));
+    assertThat(
+        _frr.getBgpProcess().getDefaultVrf().getNeighbors().get("10.0.0.3").getEbgpMultihop(),
+        equalTo(null));
+    assertThat(
+        Iterables.getOnlyElement(_warnings.getParseWarnings()),
+        hasComment("Neighbor recognized as ebgp-multihop, but distance limit is not enforced"));
   }
 
   /**
@@ -2244,6 +2274,12 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testIpForwarding() {
+    // does not crash
+    parseLines("ip forwarding\n");
+  }
+
+  @Test
   public void testNoIpForwarding() {
     parseLines("no ip forwarding\n");
     assertThat(
@@ -2265,6 +2301,7 @@ public class CumulusFrrGrammarTest {
   public void testLog() {
     parse("log file /var/log/frr/frr.log\n");
     parse("log commands\n");
+    parse("log timestamp precision 6\n");
   }
 
   @Test
@@ -2575,5 +2612,31 @@ public class CumulusFrrGrammarTest {
 
     // init from the back
     assertThat(_frr.getInterfaceInitOrder(), contains("swp3", "swp1", "swp2"));
+  }
+
+  @Test
+  public void testBgpTimers() {
+    // does not crash
+    parseLines("router bgp 65432", "  timers bgp 3 15");
+  }
+
+  @Test
+  public void testBgpNeighborTimers() {
+    // does not crash
+    parseLines("router bgp 65432", "  neighbor PEERS timers connect 15");
+  }
+
+  @Test
+  public void testBgpNeighborAdvertisementInterval() {
+    // does not crash
+    parseLines("router bgp 65432", "  neighbor swp49 advertisement-interval 0");
+  }
+
+  @Test
+  public void testIpv6_noWarnings() {
+    // top-level ipv6 commands are not warned
+    _warnings = new Warnings(false, true, false);
+    parseLines("ipv6 protocol route-map set-src-address");
+    assertThat(_warnings.getRedFlagWarnings(), empty());
   }
 }

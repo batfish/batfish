@@ -1,0 +1,23 @@
+! Command: show running-config
+! device: listener (vEOS, EOS-4.23.0.1F)
+!
+! boot system flash:/vEOS-lab.swi
+!
+hostname listener
+!
+interface Ethernet1
+   no switchport
+   ip address 10.12.11.2/24
+!
+interface Loopback0
+   ip address 172.16.2.1/32
+!
+ip routing
+!
+router bgp 65000
+   router-id 10.12.11.2
+   neighbor 10.12.11.1 remote-as 65000
+   neighbor 10.12.11.1 maximum-routes 12000
+   neighbor 10.12.11.1 export-localpref 250
+   network 172.16.2.1/32
+!

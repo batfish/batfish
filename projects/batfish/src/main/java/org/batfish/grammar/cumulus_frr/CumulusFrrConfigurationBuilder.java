@@ -1302,8 +1302,12 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitSbnp_ebgp_multihop(Sbnp_ebgp_multihopContext ctx) {
-    long num = parseLong(ctx.num.getText());
-    _currentBgpNeighbor.setEbgpMultihop(num);
+    if (ctx.num != null) {
+      warn(
+          ctx.getParent(),
+          "Neighbor recognized as ebgp-multihop, but distance limit is not enforced");
+    }
+    _currentBgpNeighbor.setEbgpMultihop(true);
   }
 
   @Override

@@ -16,6 +16,8 @@ sss_definition
    sssd_conn_limit
    | sssd_disable
    | sssd_enable
+   | sssd_health_check
+   | sssd_health_check_disable
    | sssd_port
    | sssd_stats_data_disable
    | sssd_stats_data_enable
@@ -28,6 +30,10 @@ sssd_conn_limit: CONN_LIMIT connection_limit NEWLINE;
 sssd_disable: DISABLE NEWLINE;
 
 sssd_enable: ENABLE NEWLINE;
+
+sssd_health_check: HEALTH_CHECK health_check_name NEWLINE;
+
+sssd_health_check_disable: HEALTH_CHECK_DISABLE NEWLINE;
 
 sssd_stats_data_disable: STATS_DATA_DISABLE NEWLINE;
 
@@ -46,6 +52,8 @@ sssdp_definition
    sssdpd_conn_limit
    | sssdpd_disable
    | sssdpd_enable
+   | sssdpd_health_check
+   | sssdpd_health_check_disable
    | sssdpd_stats_data_disable
    | sssdpd_stats_data_enable
    | sssdpd_template
@@ -57,6 +65,10 @@ sssdpd_conn_limit: CONN_LIMIT connection_limit NEWLINE;
 sssdpd_disable: DISABLE NEWLINE;
 
 sssdpd_enable: ENABLE NEWLINE;
+
+sssdpd_health_check: HEALTH_CHECK health_check_name NEWLINE;
+
+sssdpd_health_check_disable: HEALTH_CHECK_DISABLE NEWLINE;
 
 sssdpd_stats_data_disable: STATS_DATA_DISABLE NEWLINE;
 

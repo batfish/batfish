@@ -40,19 +40,25 @@ ssvs_port: PORT port_number virtual_server_port_type (RANGE port_range_value)? N
 
 ssvsp_definition
 :
-   ssvspd_aflex
+   ssvspd_access_list
+   | ssvspd_aflex
    | ssvspd_bucket_count
    | ssvspd_conn_limit
    | ssvspd_disable
    | ssvspd_enable
    | ssvspd_def_selection_if_pref_failed
    | ssvspd_name
+   | ssvspd_no_auto_up_on_aflex
+   | ssvspd_optimization_level
    | ssvspd_service_group
    | ssvspd_source_nat
    | ssvspd_stats_data_disable
    | ssvspd_stats_data_enable
    | ssvspd_template
+   | ssvspd_use_rcv_hop_for_resp
 ;
+
+ssvspd_access_list: ACCESS_LIST NAME access_list_name NEWLINE;
 
 ssvspd_aflex: AFLEX aflex_name NEWLINE;
 
@@ -68,6 +74,10 @@ ssvspd_def_selection_if_pref_failed: DEF_SELECTION_IF_PREF_FAILED NEWLINE;
 
 ssvspd_name: NAME virtual_service_name NEWLINE;
 
+ssvspd_no_auto_up_on_aflex: NO_AUTO_UP_ON_AFLEX NEWLINE;
+
+ssvspd_optimization_level: OPTIMIZATION_LEVEL null_rest_of_line;
+
 ssvspd_service_group: SERVICE_GROUP service_group_name NEWLINE;
 
 ssvspd_source_nat: SOURCE_NAT POOL nat_pool_name NEWLINE;
@@ -77,6 +87,8 @@ ssvspd_stats_data_disable: STATS_DATA_DISABLE NEWLINE;
 ssvspd_stats_data_enable: STATS_DATA_ENABLE NEWLINE;
 
 ssvspd_template: TEMPLATE null_rest_of_line;
+
+ssvspd_use_rcv_hop_for_resp: USE_RCV_HOP_FOR_RESP NEWLINE;
 
 // 1-256
 traffic_bucket_count: uint16;

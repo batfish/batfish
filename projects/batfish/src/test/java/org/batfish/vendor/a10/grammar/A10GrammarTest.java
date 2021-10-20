@@ -36,6 +36,9 @@ import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.main.BatfishTestUtils.getBatfish;
 import static org.batfish.vendor.a10.representation.A10Configuration.getInterfaceName;
 import static org.batfish.vendor.a10.representation.A10Conversion.DEFAULT_VRRP_A_PRIORITY;
+import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_NAT_POOL;
+import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_VIRTUAL_SERVER_FLAGGED;
+import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_VIRTUAL_SERVER_UNFLAGGED;
 import static org.batfish.vendor.a10.representation.A10Conversion.SNAT_PORT_POOL_START;
 import static org.batfish.vendor.a10.representation.A10StructureType.INTERFACE;
 import static org.batfish.vendor.a10.representation.A10StructureType.VRRP_A_FAIL_OVER_POLICY_TEMPLATE;
@@ -93,6 +96,7 @@ import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.KernelRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.VrrpGroup;
@@ -114,6 +118,7 @@ import org.batfish.vendor.a10.representation.BgpNeighborUpdateSourceAddress;
 import org.batfish.vendor.a10.representation.BgpProcess;
 import org.batfish.vendor.a10.representation.Interface;
 import org.batfish.vendor.a10.representation.Interface.Type;
+import org.batfish.vendor.a10.representation.InterfaceLldp;
 import org.batfish.vendor.a10.representation.InterfaceReference;
 import org.batfish.vendor.a10.representation.NatPool;
 import org.batfish.vendor.a10.representation.Server;
@@ -642,31 +647,47 @@ public class A10GrammarTest {
     Map<Integer, Interface> loops = c.getInterfacesLoopback();
     assertThat(eths.keySet(), containsInAnyOrder(1, 9));
     assertThat(loops.keySet(), containsInAnyOrder(0, 10));
+    {
+      Interface eth1 = eths.get(1);
+      assertTrue(eth1.getEnabled());
+      assertThat(eth1.getIpAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.1.1/24")));
+      assertThat(eth1.getMtu(), equalTo(1234));
+      assertThat(eth1.getName(), equalTo("this is a comp\"licat'ed name"));
+      assertThat(eth1.getNumber(), equalTo(1));
+      assertThat(eth1.getType(), equalTo(Interface.Type.ETHERNET));
+      InterfaceLldp lldp = eth1.getLldp();
+      assertNotNull(lldp);
+      assertFalse(lldp.getEnableRx());
+      assertTrue(lldp.getEnableTx());
+    }
 
-    Interface eth1 = eths.get(1);
-    Interface eth9 = eths.get(9);
-    assertTrue(eth1.getEnabled());
-    assertThat(eth1.getIpAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.1.1/24")));
-    assertThat(eth1.getMtu(), equalTo(1234));
-    assertThat(eth1.getName(), equalTo("this is a comp\"licat'ed name"));
-    assertThat(eth1.getNumber(), equalTo(1));
-    assertThat(eth1.getType(), equalTo(Interface.Type.ETHERNET));
+    {
+      Interface eth9 = eths.get(9);
+      assertFalse(eth9.getEnabled());
+      assertThat(eth9.getIpAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.2.1/24")));
+      assertNull(eth9.getMtu());
+      assertThat(eth9.getName(), equalTo("baz"));
+      assertThat(eth9.getNumber(), equalTo(9));
+      assertThat(eth9.getType(), equalTo(Interface.Type.ETHERNET));
+      InterfaceLldp lldp = eth9.getLldp();
+      assertNotNull(lldp);
+      assertTrue(lldp.getEnableRx());
+      assertTrue(lldp.getEnableTx());
+    }
 
-    assertFalse(eth9.getEnabled());
-    assertThat(eth9.getIpAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.2.1/24")));
-    assertNull(eth9.getMtu());
-    assertThat(eth9.getName(), equalTo("baz"));
-    assertThat(eth9.getNumber(), equalTo(9));
-    assertThat(eth9.getType(), equalTo(Interface.Type.ETHERNET));
+    {
+      Interface loop0 = loops.get(0);
+      assertNull(loop0.getEnabled());
+      assertThat(loop0.getIpAddress(), equalTo(ConcreteInterfaceAddress.parse("192.168.0.1/32")));
+      assertThat(loop0.getNumber(), equalTo(0));
+      assertThat(loop0.getType(), equalTo(Interface.Type.LOOPBACK));
+      assertNull(loop0.getLldp());
+    }
 
-    Interface loop0 = loops.get(0);
-    Interface loop10 = loops.get(10);
-    assertNull(loop0.getEnabled());
-    assertThat(loop0.getIpAddress(), equalTo(ConcreteInterfaceAddress.parse("192.168.0.1/32")));
-    assertThat(loop0.getNumber(), equalTo(0));
-    assertThat(loop0.getType(), equalTo(Interface.Type.LOOPBACK));
-
-    assertNull(loop10.getIpAddress());
+    {
+      Interface loop10 = loops.get(10);
+      assertNull(loop10.getIpAddress());
+    }
   }
 
   @Test
@@ -1088,6 +1109,7 @@ public class A10GrammarTest {
       Map<VirtualServerPort.PortAndType, VirtualServerPort> server2Ports = server2.getPorts();
       assertThat(server2Ports.keySet(), contains(tcp80));
       VirtualServerPort server2Port80 = server2Ports.get(tcp80);
+      assertThat(server2Port80.getAccessList(), equalTo("ACL_NAME"));
       assertThat(server2Port80.getAflex(), equalTo("AFLEX_SCRIPT1"));
       assertThat(server2Port80.getBucketCount(), equalTo(100));
       assertTrue(server2Port80.getDefSelectionIfPrefFailed());
@@ -1098,6 +1120,7 @@ public class A10GrammarTest {
       assertThat(server2Port80.getServiceGroup(), equalTo("SG1"));
       assertThat(server2Port80.getSourceNat(), equalTo("POOL1"));
       assertThat(server2Port80.getType(), equalTo(VirtualServerPort.Type.TCP));
+      assertTrue(server2Port80.getUseRcvHopForResp());
     }
 
     {
@@ -1107,6 +1130,7 @@ public class A10GrammarTest {
       Map<VirtualServerPort.PortAndType, VirtualServerPort> server3Ports = server3.getPorts();
       assertThat(server3Ports.keySet(), containsInAnyOrder(udp81, tcpProxy101, http102, https103));
       VirtualServerPort server3Port81 = server3Ports.get(udp81);
+      assertNull(server3Port81.getAccessList());
       assertNull(server3Port81.getAflex());
       assertNull(server3Port81.getBucketCount());
       assertNull(server3Port81.getDefSelectionIfPrefFailed());
@@ -1117,6 +1141,7 @@ public class A10GrammarTest {
       assertNull(server3Port81.getServiceGroup());
       assertNull(server3Port81.getSourceNat());
       assertThat(server3Port81.getType(), equalTo(VirtualServerPort.Type.UDP));
+      assertNull(server3Port81.getUseRcvHopForResp());
 
       // Check other virtual port types
       assertThat(
@@ -1445,52 +1470,65 @@ public class A10GrammarTest {
     ServerPort.ServerPortAndType udp81 = new ServerPort.ServerPortAndType(81, ServerPort.Type.UDP);
 
     assertThat(c.getServers().keySet(), containsInAnyOrder("SERVER1", "SERVER2", "SERVER3"));
-    Server server1 = c.getServers().get("SERVER1");
-    Server server2 = c.getServers().get("SERVER2");
-    Server server3 = c.getServers().get("SERVER3");
 
-    assertNull(server1.getConnLimit());
-    assertNull(server1.getEnable());
-    assertThat(server1.getName(), equalTo("SERVER1"));
-    assertThat(server1.getPorts(), anEmptyMap());
-    assertNull(server1.getServerTemplate());
-    assertNull(server1.getStatsDataEnable());
-    assertThat(server1.getTarget(), equalTo(new ServerTargetAddress(Ip.parse("10.0.0.1"))));
-    assertNull(server1.getWeight());
+    {
+      Server server1 = c.getServers().get("SERVER1");
+      assertNull(server1.getConnLimit());
+      assertNull(server1.getEnable());
+      assertNull(server1.getHealthCheck());
+      assertNull(server1.getHealthCheckDisable());
+      assertThat(server1.getName(), equalTo("SERVER1"));
+      assertThat(server1.getPorts(), anEmptyMap());
+      assertNull(server1.getServerTemplate());
+      assertNull(server1.getStatsDataEnable());
+      assertThat(server1.getTarget(), equalTo(new ServerTargetAddress(Ip.parse("10.0.0.1"))));
+      assertNull(server1.getWeight());
+    }
 
-    assertThat(server2.getConnLimit(), equalTo(64000000));
-    assertTrue(server2.getEnable());
-    assertThat(server2.getName(), equalTo("SERVER2"));
-    assertThat(server2.getServerTemplate(), equalTo("SERVER_TEMPLATE"));
-    assertTrue(server2.getStatsDataEnable());
-    assertThat(server2.getTarget(), equalTo(new ServerTargetAddress(Ip.parse("10.0.0.2"))));
-    assertThat(server2.getWeight(), equalTo(1000));
-    Map<ServerPort.ServerPortAndType, ServerPort> server2Ports = server2.getPorts();
-    assertThat(server2Ports.keySet(), contains(tcp80));
-    ServerPort server2Port80 = server2Ports.get(tcp80);
-    assertThat(server2Port80.getConnLimit(), equalTo(10));
-    assertTrue(server2Port80.getEnable());
-    assertThat(server2Port80.getNumber(), equalTo(80));
-    assertThat(server2Port80.getPortTemplate(), equalTo("PORT_TEMPLATE"));
-    assertNull(server2Port80.getRange());
-    assertTrue(server2Port80.getStatsDataEnable());
-    assertThat(server2Port80.getType(), equalTo(ServerPort.Type.TCP));
-    assertThat(server2Port80.getWeight(), equalTo(999));
+    {
+      Server server2 = c.getServers().get("SERVER2");
+      assertThat(server2.getConnLimit(), equalTo(64000000));
+      assertTrue(server2.getEnable());
+      assertThat(server2.getHealthCheck(), equalTo("HEALTH_CHECK_NAME"));
+      assertThat(server2.getName(), equalTo("SERVER2"));
+      assertThat(server2.getServerTemplate(), equalTo("SERVER_TEMPLATE"));
+      assertTrue(server2.getStatsDataEnable());
+      assertThat(server2.getTarget(), equalTo(new ServerTargetAddress(Ip.parse("10.0.0.2"))));
+      assertThat(server2.getWeight(), equalTo(1000));
+      Map<ServerPort.ServerPortAndType, ServerPort> server2Ports = server2.getPorts();
+      assertThat(server2Ports.keySet(), contains(tcp80));
+      ServerPort server2Port80 = server2Ports.get(tcp80);
+      assertThat(server2Port80.getConnLimit(), equalTo(10));
+      assertTrue(server2Port80.getEnable());
+      assertThat(server2Port80.getHealthCheck(), equalTo("HEALTH_CHECK_NAME2"));
+      assertNull(server2Port80.getHealthCheckDisable());
+      assertThat(server2Port80.getNumber(), equalTo(80));
+      assertThat(server2Port80.getPortTemplate(), equalTo("PORT_TEMPLATE"));
+      assertNull(server2Port80.getRange());
+      assertTrue(server2Port80.getStatsDataEnable());
+      assertThat(server2Port80.getType(), equalTo(ServerPort.Type.TCP));
+      assertThat(server2Port80.getWeight(), equalTo(999));
+    }
 
-    assertFalse(server3.getEnable());
-    assertThat(server3.getName(), equalTo("SERVER3"));
-    assertFalse(server3.getStatsDataEnable());
-    Map<ServerPort.ServerPortAndType, ServerPort> server3Ports = server3.getPorts();
-    assertThat(server3Ports.keySet(), contains(udp81));
-    ServerPort server3Port81 = server3Ports.get(udp81);
-    assertNull(server3Port81.getConnLimit());
-    assertFalse(server3Port81.getEnable());
-    assertThat(server3Port81.getNumber(), equalTo(81));
-    assertNull(server3Port81.getPortTemplate());
-    assertThat(server3Port81.getRange(), equalTo(11));
-    assertFalse(server3Port81.getStatsDataEnable());
-    assertThat(server3Port81.getType(), equalTo(ServerPort.Type.UDP));
-    assertNull(server3Port81.getWeight());
+    {
+      Server server3 = c.getServers().get("SERVER3");
+      assertFalse(server3.getEnable());
+      assertThat(server3.getName(), equalTo("SERVER3"));
+      assertFalse(server3.getStatsDataEnable());
+      Map<ServerPort.ServerPortAndType, ServerPort> server3Ports = server3.getPorts();
+      assertThat(server3Ports.keySet(), contains(udp81));
+      ServerPort server3Port81 = server3Ports.get(udp81);
+      assertNull(server3Port81.getConnLimit());
+      assertFalse(server3Port81.getEnable());
+      assertNull(server3Port81.getHealthCheck());
+      assertTrue(server3Port81.getHealthCheckDisable());
+      assertThat(server3Port81.getNumber(), equalTo(81));
+      assertNull(server3Port81.getPortTemplate());
+      assertThat(server3Port81.getRange(), equalTo(11));
+      assertFalse(server3Port81.getStatsDataEnable());
+      assertThat(server3Port81.getType(), equalTo(ServerPort.Type.UDP));
+      assertNull(server3Port81.getWeight());
+    }
   }
 
   @Test
@@ -1521,11 +1559,14 @@ public class A10GrammarTest {
     String hostname = "service_group";
     A10Configuration c = parseVendorConfig(hostname);
 
-    assertThat(c.getServiceGroups().keySet(), containsInAnyOrder("SG1", "SG2", "SG3"));
+    assertThat(
+        c.getServiceGroups().keySet(), containsInAnyOrder("SG1", "SG2", "SG3", "SG4", "SG5"));
 
     {
       ServiceGroup sg1 = c.getServiceGroups().get("SG1");
       assertNull(sg1.getHealthCheck());
+      assertNull(sg1.getHealthCheckDisable());
+      assertNull(sg1.getMinActiveMember());
       assertThat(sg1.getName(), equalTo("SG1"));
       assertNull(sg1.getStatsDataEnable());
       assertThat(sg1.getType(), equalTo(ServerPort.Type.TCP));
@@ -1538,6 +1579,7 @@ public class A10GrammarTest {
       assertThat(sg2.getHealthCheck(), equalTo("HEALTH_CHECK_NAME"));
       assertThat(sg2.getName(), equalTo("SG2"));
       assertThat(sg2.getMethod(), equalTo(ServiceGroup.Method.LEAST_REQUEST));
+      assertThat(sg2.getMinActiveMember(), equalTo(1));
       assertTrue(sg2.getStatsDataEnable());
       assertThat(sg2.getType(), equalTo(ServerPort.Type.TCP));
       assertThat(
@@ -1556,12 +1598,20 @@ public class A10GrammarTest {
     {
       ServiceGroup sg3 = c.getServiceGroups().get("SG3");
       assertThat(sg3.getName(), equalTo("SG3"));
+      assertTrue(sg3.getHealthCheckDisable());
       assertThat(sg3.getMethod(), equalTo(ServiceGroup.Method.ROUND_ROBIN));
       assertFalse(sg3.getStatsDataEnable());
       assertThat(sg3.getType(), equalTo(ServerPort.Type.UDP));
       assertThat(
           sg3.getMembers().keySet(), contains(new ServiceGroupMember.NameAndPort("SERVER1", 8080)));
     }
+
+    // Extraction of other balancing methods
+    assertThat(
+        c.getServiceGroups().get("SG4").getMethod(), equalTo(ServiceGroup.Method.LEAST_CONNECTION));
+    assertThat(
+        c.getServiceGroups().get("SG5").getMethod(),
+        equalTo(ServiceGroup.Method.SERVICE_LEAST_CONNECTION));
   }
 
   @Test
@@ -1583,6 +1633,8 @@ public class A10GrammarTest {
                     "Cannot modify the service-group type field at runtime, ignoring this"
                         + " service-group block."),
                 hasComment("Specified server 'SERVER_UNDEF' does not exist."),
+                hasComment("Expected min-active-member in range 1-1024, but got '0'"),
+                hasComment("Expected min-active-member in range 1-1024, but got '1025'"),
                 hasComment("Expected member priority in range 1-16, but got '0'"),
                 hasComment("Expected member priority in range 1-16, but got '17'"))));
   }
@@ -1744,5 +1796,33 @@ public class A10GrammarTest {
     // None of these should have been set, even where the line has one valid and one invalid value
     assertNull(neighbor.getMaximumPrefix());
     assertNull(neighbor.getMaximumPrefixThreshold());
+  }
+
+  @Test
+  public void testKernelRoutes() {
+    Configuration c = parseConfig("kernel_routes");
+    assertThat(
+        c.getDefaultVrf().getKernelRoutes(),
+        containsInAnyOrder(
+            KernelRoute.builder()
+                .setNetwork(Prefix.strict("10.10.10.10/32"))
+                .setRequiredOwnedIp(Ip.parse("10.10.10.10"))
+                .setTag(KERNEL_ROUTE_TAG_NAT_POOL)
+                .build(),
+            KernelRoute.builder()
+                .setNetwork(Prefix.strict("10.0.0.0/24"))
+                .setRequiredOwnedIp(Ip.parse("10.0.0.11"))
+                .setTag(KERNEL_ROUTE_TAG_NAT_POOL)
+                .build(),
+            KernelRoute.builder()
+                .setNetwork(Prefix.strict("10.0.5.1/32"))
+                .setRequiredOwnedIp(Ip.parse("10.0.5.1"))
+                .setTag(KERNEL_ROUTE_TAG_VIRTUAL_SERVER_UNFLAGGED)
+                .build(),
+            KernelRoute.builder()
+                .setNetwork(Prefix.strict("10.0.6.1/32"))
+                .setRequiredOwnedIp(Ip.parse("10.0.6.1"))
+                .setTag(KERNEL_ROUTE_TAG_VIRTUAL_SERVER_FLAGGED)
+                .build()));
   }
 }

@@ -42,6 +42,11 @@ ip_as_path
   AS_PATH ACCESS_LIST name = word action = access_list_action as_path_regex = REGEX NEWLINE
 ;
 
+ip_forwarding
+:
+   FORWARDING NEWLINE
+;
+
 s_agentx
 :
   AGENTX NEWLINE
@@ -98,6 +103,7 @@ s_ip
   (
     ip_as_path
     | ip_community_list
+    | ip_forwarding
     | ip_prefix_list
     | ip_route
   )
@@ -128,6 +134,7 @@ s_log
     SYSLOG loglevel?
     | FILE REMARK_TEXT
     | COMMANDS
+    | TIMESTAMP PRECISION uint32
   ) NEWLINE
 ;
 

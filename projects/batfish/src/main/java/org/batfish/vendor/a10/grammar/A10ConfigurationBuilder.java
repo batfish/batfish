@@ -89,6 +89,7 @@ import org.batfish.vendor.a10.representation.BgpNeighborUpdateSourceAddress;
 import org.batfish.vendor.a10.representation.BgpProcess;
 import org.batfish.vendor.a10.representation.Interface;
 import org.batfish.vendor.a10.representation.Interface.Type;
+import org.batfish.vendor.a10.representation.InterfaceLldp;
 import org.batfish.vendor.a10.representation.InterfaceReference;
 import org.batfish.vendor.a10.representation.NatPool;
 import org.batfish.vendor.a10.representation.Server;
@@ -283,6 +284,23 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   }
 
   @Override
+  public void exitSidll_enable(A10Parser.Sidll_enableContext ctx) {
+    boolean enableRx = false;
+    boolean enableTx = false;
+    for (A10Parser.SidlleContext enable : ctx.sidlle()) {
+      if (enable.RX() != null) {
+        enableRx = true;
+        continue;
+      }
+      assert enable.TX() != null;
+      enableTx = true;
+    }
+    InterfaceLldp lldp = _currentInterface.getOrCreateLldp();
+    lldp.setEnableRx(enableRx);
+    lldp.setEnableTx(enableTx);
+  }
+
+  @Override
   public void exitSid_name(A10Parser.Sid_nameContext ctx) {
     toString(ctx, ctx.interface_name_str()).ifPresent(n -> _currentInterface.setName(n));
   }
@@ -295,6 +313,11 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     }
     toInteger(ctx, ctx.ports_threshold())
         .ifPresent(n -> ((TrunkInterface) _currentInterface).setPortsThreshold(n));
+  }
+
+  @Override
+  public void exitSid_speed(A10Parser.Sid_speedContext ctx) {
+    todo(ctx);
   }
 
   @Override
@@ -1009,6 +1032,11 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     toString(ctx, ctx.health_check_name()).ifPresent(_currentServiceGroup::setHealthCheck);
   }
 
+  @Override
+  public void exitSssgd_health_check_disable(A10Parser.Sssgd_health_check_disableContext ctx) {
+    _currentServiceGroup.setHealthCheckDisable(true);
+  }
+
   private @Nonnull Optional<String> toString(
       ParserRuleContext messageCtx, A10Parser.Health_check_nameContext ctx) {
     return toStringWithLengthInSpace(
@@ -1021,12 +1049,30 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   }
 
   public ServiceGroup.Method toMethod(A10Parser.Service_group_methodContext ctx) {
-    if (ctx.LEAST_REQUEST() != null) {
+    if (ctx.LEAST_CONNECTION() != null) {
+      return ServiceGroup.Method.LEAST_CONNECTION;
+    } else if (ctx.LEAST_REQUEST() != null) {
       return ServiceGroup.Method.LEAST_REQUEST;
+    } else if (ctx.SERVICE_LEAST_CONNECTION() != null) {
+      return ServiceGroup.Method.SERVICE_LEAST_CONNECTION;
     }
     assert ctx.ROUND_ROBIN() != null;
     return ServiceGroup.Method.ROUND_ROBIN;
   }
+
+  @Override
+  public void exitSssgd_min_active_member(A10Parser.Sssgd_min_active_memberContext ctx) {
+    toInteger(ctx, ctx.minimum_active_member()).ifPresent(_currentServiceGroup::setMinActiveMember);
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, A10Parser.Minimum_active_memberContext ctx) {
+    return toIntegerInSpace(
+        messageCtx, ctx.uint16(), MINIMUM_ACTIVE_MEMBER_RANGE, "min-active-member");
+  }
+
+  private static final IntegerSpace MINIMUM_ACTIVE_MEMBER_RANGE =
+      IntegerSpace.of(Range.closed(1, 1024));
 
   @Override
   public void exitSssgd_stats_data_disable(A10Parser.Sssgd_stats_data_disableContext ctx) {
@@ -1406,6 +1452,17 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   }
 
   @Override
+  public void exitSssd_health_check(A10Parser.Sssd_health_checkContext ctx) {
+    // TODO add reject if invalid ref, and add ref once health checks are supported
+    toString(ctx, ctx.health_check_name()).ifPresent(_currentServer::setHealthCheck);
+  }
+
+  @Override
+  public void exitSssd_health_check_disable(A10Parser.Sssd_health_check_disableContext ctx) {
+    _currentServer.setHealthCheckDisable(true);
+  }
+
+  @Override
   public void exitSssd_stats_data_disable(A10Parser.Sssd_stats_data_disableContext ctx) {
     _currentServer.setStatsDataEnable(false);
   }
@@ -1466,6 +1523,17 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   @Override
   public void exitSssdpd_enable(A10Parser.Sssdpd_enableContext ctx) {
     _currentServerPort.setEnable(true);
+  }
+
+  @Override
+  public void exitSssdpd_health_check(A10Parser.Sssdpd_health_checkContext ctx) {
+    // TODO add reject if invalid ref, and add ref once health checks are supported
+    toString(ctx, ctx.health_check_name()).ifPresent(_currentServerPort::setHealthCheck);
+  }
+
+  @Override
+  public void exitSssdpd_health_check_disable(A10Parser.Sssdpd_health_check_disableContext ctx) {
+    _currentServerPort.setHealthCheckDisable(true);
   }
 
   @Override
@@ -1688,6 +1756,21 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   }
 
   @Override
+  public void exitSsvspd_access_list(A10Parser.Ssvspd_access_listContext ctx) {
+    // TODO verify ACL exists and add struct refs
+    toString(ctx, ctx.access_list_name()).ifPresent(_currentVirtualServerPort::setAccessList);
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, A10Parser.Access_list_nameContext ctx) {
+    return toStringWithLengthInSpace(
+        messageCtx, ctx.word(), ACCESS_LIST_NAME_LENGTH_RANGE, "access-list name");
+  }
+
+  private static final IntegerSpace ACCESS_LIST_NAME_LENGTH_RANGE =
+      IntegerSpace.of(Range.closed(1, 16));
+
+  @Override
   public void exitSsvspd_aflex(A10Parser.Ssvspd_aflexContext ctx) {
     toString(ctx, ctx.aflex_name()).ifPresent(_currentVirtualServerPort::setAflex);
   }
@@ -1782,6 +1865,11 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
               _c.referenceStructure(
                   NAT_POOL, poolName, VIRTUAL_SERVER_SOURCE_NAT_POOL, ctx.start.getLine());
             });
+  }
+
+  @Override
+  public void exitSsvspd_use_rcv_hop_for_resp(A10Parser.Ssvspd_use_rcv_hop_for_respContext ctx) {
+    _currentVirtualServerPort.setUseRcvHopForResp(true);
   }
 
   @Nonnull

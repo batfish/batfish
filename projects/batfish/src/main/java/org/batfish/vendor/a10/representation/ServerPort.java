@@ -102,6 +102,24 @@ public class ServerPort implements Serializable {
     _weight = weight;
   }
 
+  @Nullable
+  public String getHealthCheck() {
+    return _healthCheck;
+  }
+
+  public void setHealthCheck(String healthCheck) {
+    _healthCheck = healthCheck;
+  }
+
+  @Nullable
+  public Boolean getHealthCheckDisable() {
+    return _healthCheckDisable;
+  }
+
+  public void setHealthCheckDisable(boolean healthCheckDisable) {
+    _healthCheckDisable = healthCheckDisable;
+  }
+
   public ServerPort(int number, Type type, @Nullable Integer range) {
     _number = number;
     _type = type;
@@ -110,6 +128,8 @@ public class ServerPort implements Serializable {
 
   @Nullable private Integer _connLimit;
   @Nullable private Boolean _enable;
+  @Nullable private String _healthCheck;
+  @Nullable private Boolean _healthCheckDisable;
   private final int _number;
   @Nullable private String _portTemplate;
   @Nullable private Integer _range;

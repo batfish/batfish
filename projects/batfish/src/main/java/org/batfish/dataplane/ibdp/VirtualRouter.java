@@ -1299,15 +1299,12 @@ public final class VirtualRouter {
             Stream.of(_mainRib.getTypedRoutes()),
             // Exported routes
             // Message queues
-            Stream.of(_isisIncomingRoutes, _crossVrfIncomingRoutes)
-                .flatMap(m -> m.values().stream())
-                .flatMap(Queue::stream),
-            Stream.of(_routesForIsisRedistribution),
+            _isisIncomingRoutes.values().stream().flatMap(Queue::stream),
+            _crossVrfIncomingRoutes.values().stream().flatMap(Queue::stream),
+            _routesForIsisRedistribution.build().getActions(),
             // Processes
             _ospfProcesses.values().stream().map(OspfRoutingProcess::iterationHashCode),
-            Stream.of(_eigrpProcesses)
-                .flatMap(m -> m.values().stream())
-                .map(EigrpRoutingProcess::computeIterationHashCode),
+            _eigrpProcesses.values().stream().map(EigrpRoutingProcess::computeIterationHashCode),
             Stream.of(_bgpRoutingProcess == null ? 0 : _bgpRoutingProcess.iterationHashCode()))
         .collect(toOrderedHashCode());
   }

@@ -4,7 +4,7 @@ package(
 )
 
 filegroup(
-    name = "testrigs",
+    name = "snapshots",
     srcs = glob(
         ["**"],
         exclude = ["BUILD"],

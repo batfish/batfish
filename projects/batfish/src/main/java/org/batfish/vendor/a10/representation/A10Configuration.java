@@ -1,6 +1,7 @@
 package org.batfish.vendor.a10.representation;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static java.util.Comparator.naturalOrder;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.FirewallSessionInterfaceInfo.Action.POST_NAT_FIB_LOOKUP;
 import static org.batfish.vendor.a10.representation.A10Conversion.VIRTUAL_TCP_PORT_TYPES;
@@ -8,8 +9,10 @@ import static org.batfish.vendor.a10.representation.A10Conversion.VIRTUAL_UDP_PO
 import static org.batfish.vendor.a10.representation.A10Conversion.getEnabledVrids;
 import static org.batfish.vendor.a10.representation.A10Conversion.getNatPoolIps;
 import static org.batfish.vendor.a10.representation.A10Conversion.getNatPoolIpsForAllVrids;
+import static org.batfish.vendor.a10.representation.A10Conversion.getNatPoolKernelRoutes;
 import static org.batfish.vendor.a10.representation.A10Conversion.getVirtualServerIps;
 import static org.batfish.vendor.a10.representation.A10Conversion.getVirtualServerIpsForAllVrids;
+import static org.batfish.vendor.a10.representation.A10Conversion.getVirtualServerKernelRoutes;
 import static org.batfish.vendor.a10.representation.A10Conversion.isVrrpAEnabled;
 import static org.batfish.vendor.a10.representation.A10Conversion.orElseChain;
 import static org.batfish.vendor.a10.representation.A10Conversion.toDstTransformationSteps;
@@ -30,7 +33,6 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.SetMultimap;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -292,9 +294,23 @@ public final class A10Configuration extends VendorConfiguration {
     // Must be done after interface conversion
     convertVirtualServers();
     convertVrrpA();
+    createKernelRoutes();
 
     markStructures();
     return ImmutableList.of(_c);
+  }
+
+  /**
+   * Create {@link org.batfish.datamodel.KernelRoute}s from {@code ip nat pool} networks and {@code
+   * slb virtual-server}s.
+   */
+  private void createKernelRoutes() {
+    _c.getDefaultVrf()
+        .setKernelRoutes(
+            Stream.concat(
+                    getNatPoolKernelRoutes(_natPools.values()),
+                    getVirtualServerKernelRoutes(_virtualServers.values()))
+                .collect(ImmutableSortedSet.toImmutableSortedSet(naturalOrder())));
   }
 
   private void convertVrrpA() {
@@ -332,7 +348,7 @@ public final class A10Configuration extends VendorConfiguration {
         virtualAddresses.stream()
             .collect(
                 ImmutableSortedMap.toImmutableSortedMap(
-                    Comparator.naturalOrder(),
+                    naturalOrder(),
                     virtualAddress -> virtualAddress,
                     unused -> connectedRouteMetadata));
     _c.getAllInterfaces().values().stream()

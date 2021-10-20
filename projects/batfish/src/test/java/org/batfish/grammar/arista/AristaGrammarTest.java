@@ -250,6 +250,7 @@ import org.batfish.representation.arista.VrrpInterface;
 import org.batfish.representation.arista.eos.AristaBgpAggregateNetwork;
 import org.batfish.representation.arista.eos.AristaBgpBestpathTieBreaker;
 import org.batfish.representation.arista.eos.AristaBgpDefaultOriginate;
+import org.batfish.representation.arista.eos.AristaBgpNeighbor;
 import org.batfish.representation.arista.eos.AristaBgpNeighbor.RemovePrivateAsMode;
 import org.batfish.representation.arista.eos.AristaBgpNeighborAddressFamily;
 import org.batfish.representation.arista.eos.AristaBgpNetworkConfiguration;
@@ -274,7 +275,7 @@ import org.junit.rules.TemporaryFolder;
 public class AristaGrammarTest {
   private static final String DEFAULT_VRF_NAME = "default";
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/arista/testconfigs/";
-  private static final String TESTRIGS_PREFIX = "org/batfish/grammar/arista/testrigs/";
+  private static final String SNAPSHOTS_PREFIX = "org/batfish/grammar/arista/snapshots/";
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
@@ -283,9 +284,9 @@ public class AristaGrammarTest {
     Settings settings = new Settings();
     configureBatfishTestSettings(settings);
     AristaCombinedParser parser = new AristaCombinedParser(src, settings);
+    Warnings w = new Warnings();
     AristaControlPlaneExtractor extractor =
-        new AristaControlPlaneExtractor(
-            src, parser, ARISTA, new Warnings(), new SilentSyntaxCollection());
+        new AristaControlPlaneExtractor(src, parser, ARISTA, w, new SilentSyntaxCollection());
     ParserRuleContext tree =
         Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     extractor.processParseTree(TEST_SNAPSHOT, tree);
@@ -293,7 +294,9 @@ public class AristaGrammarTest {
         (AristaConfiguration) extractor.getVendorConfiguration();
     vendorConfiguration.setFilename(TESTCONFIGS_PREFIX + hostname);
     // crash if not serializable
-    return SerializationUtils.clone(vendorConfiguration);
+    AristaConfiguration cloned = SerializationUtils.clone(vendorConfiguration);
+    cloned.setWarnings(w);
+    return cloned;
   }
 
   private @Nonnull Batfish getBatfishForConfigurationNames(String... configurationNames)
@@ -429,7 +432,7 @@ public class AristaGrammarTest {
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
                 .setConfigurationFiles(
-                    TESTRIGS_PREFIX + testrigName, ImmutableList.of(aristaName, iosName))
+                    SNAPSHOTS_PREFIX + testrigName, ImmutableList.of(aristaName, iosName))
                 .build(),
             _folder);
     batfish.getSettings().setDisableUnrecognized(false);
@@ -479,7 +482,7 @@ public class AristaGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(SNAPSHOTS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
 
@@ -552,7 +555,7 @@ public class AristaGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(SNAPSHOTS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
@@ -590,7 +593,7 @@ public class AristaGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(SNAPSHOTS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
@@ -680,7 +683,7 @@ public class AristaGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(SNAPSHOTS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
 
@@ -759,7 +762,7 @@ public class AristaGrammarTest {
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
                 .setConfigurationFiles(
-                    TESTRIGS_PREFIX + "arista-redistribute-default-route",
+                    SNAPSHOTS_PREFIX + "arista-redistribute-default-route",
                     ImmutableList.of(advertiser, receiver))
                 .build(),
             _folder);
@@ -928,7 +931,7 @@ public class AristaGrammarTest {
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
                 .setConfigurationFiles(
-                    TESTRIGS_PREFIX + "nat-source-static", ImmutableList.of("r1", "r2"))
+                    SNAPSHOTS_PREFIX + "nat-source-static", ImmutableList.of("r1", "r2"))
                 .build(),
             _folder);
     NetworkSnapshot snapshot = batfish.getSnapshot();
@@ -1396,7 +1399,8 @@ public class AristaGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationFiles(TESTRIGS_PREFIX + snapshotName, ImmutableList.of(c1, c2, c3))
+                .setConfigurationFiles(
+                    SNAPSHOTS_PREFIX + snapshotName, ImmutableList.of(c1, c2, c3))
                 .build(),
             _folder);
     batfish.computeDataPlane(batfish.getSnapshot());
@@ -1850,17 +1854,27 @@ public class AristaGrammarTest {
   @Test
   public void testNeighborExtraction() {
     AristaConfiguration config = parseVendorConfig("arista_bgp_neighbors");
+    // Can test BGP inheritance by grabbing peers from postConversionWork.
+    AristaConfiguration postConversionWork = SerializationUtils.clone(config);
+    postConversionWork.setWarnings(config.getWarnings());
+    postConversionWork.toVendorIndependentConfigurations();
     {
       String peergName = "PEER_G";
       assertThat(config.getAristaBgp().getPeerGroups(), hasKey(peergName));
       AristaBgpPeerGroupNeighbor neighbor = config.getAristaBgp().getPeerGroups().get(peergName);
       assertThat(config.getAristaBgp().getPeerGroups().get(peergName).getAllowAsIn(), equalTo(3));
+      assertThat(neighbor.getExportLocalPref(), equalTo(40L));
       assertThat(neighbor.getRemovePrivateAsMode(), nullValue());
       assertThat(neighbor.getRouteReflectorClient(), nullValue());
+
+      AristaBgpPeerGroupNeighbor postNeighbor =
+          postConversionWork.getAristaBgp().getPeerGroups().get(peergName);
+      assertThat(postNeighbor.getExportLocalPref(), equalTo(40L));
     }
     {
       AristaBgpPeerGroupNeighbor pg = config.getAristaBgp().getPeerGroups().get("PEER_G2");
       assertThat(pg, notNullValue());
+      assertThat(pg.getExportLocalPref(), nullValue());
       assertThat(pg.getRouteReflectorClient(), equalTo(Boolean.TRUE));
     }
     {
@@ -1875,6 +1889,7 @@ public class AristaGrammarTest {
       assertThat(neighbor.getDescription(), equalTo("SOME NEIGHBOR"));
       assertTrue(neighbor.getDontCapabilityNegotiate());
       assertThat(neighbor.getEbgpMultihop(), equalTo(Integer.MAX_VALUE));
+      assertThat(neighbor.getExportLocalPref(), nullValue());
       assertThat(neighbor.getLocalAs(), equalTo(65111L));
       assertTrue(neighbor.getNextHopSelf());
       assertTrue(neighbor.getNextHopUnchanged());
@@ -1887,6 +1902,10 @@ public class AristaGrammarTest {
       assertTrue(neighbor.getSendCommunity());
       assertThat(neighbor.getShutdown(), nullValue());
       assertThat(neighbor.getUpdateSource(), equalTo("Loopback0"));
+
+      AristaBgpV4Neighbor postNeighbor =
+          postConversionWork.getAristaBgp().getDefaultVrf().getV4neighbors().get(neighborAddr);
+      assertThat(postNeighbor.getExportLocalPref(), equalTo(40L));
     }
     {
       Ip neighborAddr = Ip.parse("2.2.2.2");
@@ -1897,11 +1916,18 @@ public class AristaGrammarTest {
       assertThat(defaultOriginate.getAlways(), equalTo(true));
       assertThat(defaultOriginate.getRouteMap(), equalTo("DEF_ORIG_MAP"));
       assertThat(neighbor.getEbgpMultihop(), equalTo(10));
+      assertThat(
+          neighbor.getExportLocalPref(), equalTo(AristaBgpNeighbor.SYSTEM_DEFAULT_LOCALPREF));
       assertThat(neighbor.getRemoteAs(), equalTo(36L));
       assertThat(neighbor.getRemovePrivateAsMode(), is(RemovePrivateAsMode.ALL));
       assertThat(neighbor.getRouteReflectorClient(), nullValue());
       assertThat(neighbor.getShutdown(), equalTo(Boolean.TRUE));
       // TODO: default-originate
+
+      AristaBgpV4Neighbor postNeighbor =
+          postConversionWork.getAristaBgp().getDefaultVrf().getV4neighbors().get(neighborAddr);
+      assertThat(
+          postNeighbor.getExportLocalPref(), equalTo(AristaBgpNeighbor.SYSTEM_DEFAULT_LOCALPREF));
     }
     {
       Ip neighborAddr = Ip.parse("3.3.3.3");

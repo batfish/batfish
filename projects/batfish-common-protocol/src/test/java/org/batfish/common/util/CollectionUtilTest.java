@@ -4,7 +4,6 @@ import static org.batfish.common.util.CollectionUtil.maxValues;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.batfish.common.util.CollectionUtil.toMap;
 import static org.batfish.common.util.CollectionUtil.toOrderedHashCode;
-import static org.batfish.common.util.CollectionUtil.toUnorderedHashCode;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
@@ -57,12 +56,9 @@ public class CollectionUtilTest {
         Stream.of(2, 1).collect(toOrderedHashCode()), equalTo(ImmutableList.of(2, 1).hashCode()));
   }
 
-  @Test
-  public void testToUnorderedHashCode() {
-    assertThat(Stream.of().collect(toUnorderedHashCode()), equalTo(ImmutableSet.of().hashCode()));
-    assertThat(Stream.of(1).collect(toUnorderedHashCode()), equalTo(ImmutableSet.of(1).hashCode()));
-    assertThat(
-        Stream.of(1, 2).collect(toUnorderedHashCode()), equalTo(ImmutableSet.of(2, 1).hashCode()));
+  @Test(expected = IllegalArgumentException.class)
+  public void testToOrderedHashCodeRejectsStreams() {
+    int ignored = Stream.of(Stream.of(1)).collect(toOrderedHashCode());
   }
 
   @Test

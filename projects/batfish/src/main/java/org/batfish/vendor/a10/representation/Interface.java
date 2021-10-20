@@ -69,6 +69,20 @@ public class Interface implements Serializable {
     _trunkGroup = trunkGroup;
   }
 
+  @Nullable
+  public InterfaceLldp getLldp() {
+    return _lldp;
+  }
+
+  /** Get LLDP configuration object for this interface, creating one if it doesn't already exist. */
+  @Nonnull
+  public InterfaceLldp getOrCreateLldp() {
+    if (_lldp == null) {
+      _lldp = new InterfaceLldp();
+    }
+    return _lldp;
+  }
+
   public Interface(Type type, int number) {
     _number = number;
     _type = type;
@@ -77,6 +91,7 @@ public class Interface implements Serializable {
   @Nullable private Boolean _enabled;
   @Nonnull private final Type _type;
   @Nullable private ConcreteInterfaceAddress _ipAddress;
+  @Nullable private InterfaceLldp _lldp;
   @Nullable private Integer _mtu;
   @Nullable private String _name;
   private final int _number;

@@ -17,6 +17,7 @@ slb service-group SG1 tcp
 slb service-group SG2 tcp
   ! TODO define health-check when those are supported
   health-check HEALTH_CHECK_NAME
+  min-active-member 1
   member SERVER1 80
     disable
     priority 1
@@ -30,7 +31,14 @@ slb service-group SG2 tcp
   stats-data-enable
 !
 slb service-group SG3 udp
+  health-check-disable
   stats-data-disable
   method round-robin
   member SERVER1 8080
+!
+slb service-group SG4 udp
+  method least-connection
+!
+slb service-group SG5 udp
+  method service-least-connection
 !
