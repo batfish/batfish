@@ -1922,7 +1922,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (effectiveMembers.size() > 1) {
       _w.redFlag(
           String.format(
-              "More than one member declared for interface %s: %s", ifaceName, effectiveMembers));
+              "Cannot assign access vlan to interface %s: more than one member declared %s",
+              ifaceName, effectiveMembers));
       return null;
     }
 
