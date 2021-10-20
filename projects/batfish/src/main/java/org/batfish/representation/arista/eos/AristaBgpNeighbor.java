@@ -6,6 +6,8 @@ import javax.annotation.Nullable;
 
 /** Base class for all Arista BGP neighbors */
 public abstract class AristaBgpNeighbor implements Serializable {
+  public static final long SYSTEM_DEFAULT_LOCALPREF = 100;
+
   public enum RemovePrivateAsMode {
     NONE,
     BASIC,
@@ -20,6 +22,7 @@ public abstract class AristaBgpNeighbor implements Serializable {
   @Nullable private Boolean _dontCapabilityNegotiate;
   @Nullable private Integer _ebgpMultihop;
   @Nullable private Boolean _enforceFirstAs;
+  @Nullable private Long _exportLocalPref;
   @Nullable private Long _localAs;
   @Nullable private Boolean _nextHopPeer;
   @Nullable private Boolean _nextHopSelf;
@@ -96,6 +99,14 @@ public abstract class AristaBgpNeighbor implements Serializable {
 
   public void setEnforceFirstAs(@Nullable Boolean enforceFirstAs) {
     _enforceFirstAs = enforceFirstAs;
+  }
+
+  public @Nullable Long getExportLocalPref() {
+    return _exportLocalPref;
+  }
+
+  public void setExportLocalPref(@Nullable Long exportLocalPref) {
+    _exportLocalPref = exportLocalPref;
   }
 
   @Nonnull
@@ -234,6 +245,9 @@ public abstract class AristaBgpNeighbor implements Serializable {
     }
     if (_enforceFirstAs == null) {
       _enforceFirstAs = other._enforceFirstAs;
+    }
+    if (_exportLocalPref == null) {
+      _exportLocalPref = other._exportLocalPref;
     }
     if (_localAs == null) {
       _localAs = other._localAs;

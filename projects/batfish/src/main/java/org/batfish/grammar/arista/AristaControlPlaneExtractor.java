@@ -313,6 +313,7 @@ import org.batfish.grammar.arista.AristaParser.Aclstd_seqContext;
 import org.batfish.grammar.arista.AristaParser.Arista_configurationContext;
 import org.batfish.grammar.arista.AristaParser.As_exprContext;
 import org.batfish.grammar.arista.AristaParser.Bgp_asnContext;
+import org.batfish.grammar.arista.AristaParser.Bgp_local_prefContext;
 import org.batfish.grammar.arista.AristaParser.Cd_match_addressContext;
 import org.batfish.grammar.arista.AristaParser.Cd_set_isakmp_profileContext;
 import org.batfish.grammar.arista.AristaParser.Cd_set_peerContext;
@@ -490,6 +491,8 @@ import org.batfish.grammar.arista.AristaParser.Eos_rbibd_ipv4u_enabledContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbibl_limitContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbibl_rangeContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbibtrans_listen_portContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbid_neighborContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbidn_export_localprefContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbin_peer_groupContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinc_additional_pathsContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinc_allowas_inContext;
@@ -532,6 +535,7 @@ import org.batfish.grammar.arista.AristaParser.Eos_rbinon_default_originateConte
 import org.batfish.grammar.arista.AristaParser.Eos_rbinon_descriptionContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinon_ebgp_multihopContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinon_enforce_first_asContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbinon_export_localprefContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinon_local_asContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinon_next_hop_peerContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinon_next_hop_selfContext;
@@ -2676,6 +2680,39 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
+  public void enterEos_rbid_neighbor(Eos_rbid_neighborContext ctx) {
+    if (ctx.nid.v4 != null) {
+      Ip address = toIp(ctx.nid.v4);
+      _currentAristaBgpNeighbor =
+          _currentAristaBgpVrf.getOrCreateV4Neighbor(address); // ensure peer exists
+    } else if (ctx.nid.pg != null) {
+      String name = ctx.nid.pg.getText();
+      _currentAristaBgpNeighbor =
+          _currentAristaBgpProcess.getOrCreatePeerGroup(name); // ensure peer exists
+      _configuration.referenceStructure(
+          BGP_PEER_GROUP, name, BGP_NEIGHBOR_PEER_GROUP, ctx.getStart().getLine());
+    } else if (ctx.nid.v6 != null) {
+      // TODO: v6 neighbors
+      _currentAristaBgpNeighbor = new AristaBgpPeerGroupNeighbor("dummy");
+    } else {
+      throw new IllegalStateException(
+          String.format("Unknown neighbor type in %s", getFullText(ctx)));
+    }
+    _currentAristaBgpNeighborAddressFamily = _currentAristaBgpNeighbor.getGenericAddressFamily();
+  }
+
+  @Override
+  public void exitEos_rbid_neighbor(Eos_rbid_neighborContext ctx) {
+    _currentAristaBgpNeighbor = null;
+    _currentAristaBgpNeighborAddressFamily = null;
+  }
+
+  @Override
+  public void exitEos_rbidn_export_localpref(Eos_rbidn_export_localprefContext ctx) {
+    _currentAristaBgpNeighbor.setExportLocalPref(null);
+  }
+
+  @Override
   public void exitEos_rbi_default_metric(Eos_rbi_default_metricContext ctx) {
     _currentAristaBgpVrf.setDefaultMetric(toLong(ctx.metric));
   }
@@ -2775,7 +2812,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitEos_rbinc_export_localpref(Eos_rbinc_export_localprefContext ctx) {
-    todo(ctx);
+    long localpref = toLong(ctx.value);
+    _currentAristaBgpNeighbor.setExportLocalPref(localpref);
   }
 
   @Override
@@ -3028,6 +3066,12 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitEos_rbinon_enforce_first_as(Eos_rbinon_enforce_first_asContext ctx) {
     _currentAristaBgpNeighbor.setEnforceFirstAs(false);
+  }
+
+  @Override
+  public void exitEos_rbinon_export_localpref(Eos_rbinon_export_localprefContext ctx) {
+    // No means "set it to the default value" ; default means clear it and inherit as appropriate
+    _currentAristaBgpNeighbor.setExportLocalPref(AristaBgpNeighbor.SYSTEM_DEFAULT_LOCALPREF);
   }
 
   @Override
@@ -8122,6 +8166,10 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       Ip mask = toIp(ctx.subnet);
       return ConcreteInterfaceAddress.create(ip, mask);
     }
+  }
+
+  private static long toLong(Bgp_local_prefContext ctx) {
+    return toLong(ctx.p);
   }
 
   private static long toLong(Ospf_areaContext ctx) {

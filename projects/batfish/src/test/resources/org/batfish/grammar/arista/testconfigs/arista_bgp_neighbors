@@ -6,6 +6,7 @@ router bgp 1
   bgp cluster-id 99.99.99.99
   neighbor PEER_G peer-group
   neighbor PEER_G allowas-in 3
+  neighbor PEER_G export-localpref 40
   ! "peer group" is new syntax for EOS 4.23 and on
   neighbor PEER_G2 peer group
   neighbor PEER_G2 route-reflector-client
@@ -17,6 +18,8 @@ router bgp 1
   neighbor 1.1.1.1 dont-capability-negotiate
   neighbor 1.1.1.1 ebgp-multihop
   neighbor 1.1.1.1 enforce-first-as
+  neighbor 1.1.1.1 export-localpref 55
+  default neighbor 1.1.1.1 export-localpref
   neighbor 1.1.1.1 fall-over bfd
   neighbor 1.1.1.1 local-as 65111 no-prepend replace-as
   neighbor 1.1.1.1 local-as 65111 no-prepend replace-as fallback
@@ -35,6 +38,7 @@ router bgp 1
   neighbor 2.2.2.2 default-originate always route-map DEF_ORIG_MAP
   neighbor 2.2.2.2 ebgp-multihop 10
   no neighbor 2.2.2.2 enforce-first-as
+  no neighbor 2.2.2.2 export-localpref
   neighbor 2.2.2.2 remove-private-as all
   neighbor 2.2.2.2 shutdown
 !
