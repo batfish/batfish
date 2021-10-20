@@ -40,6 +40,7 @@ import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_T
 import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_VIRTUAL_SERVER_FLAGGED;
 import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_VIRTUAL_SERVER_UNFLAGGED;
 import static org.batfish.vendor.a10.representation.A10Conversion.SNAT_PORT_POOL_START;
+import static org.batfish.vendor.a10.representation.A10StructureType.HEALTH_MONITOR;
 import static org.batfish.vendor.a10.representation.A10StructureType.INTERFACE;
 import static org.batfish.vendor.a10.representation.A10StructureType.VRRP_A_FAIL_OVER_POLICY_TEMPLATE;
 import static org.batfish.vendor.a10.representation.A10StructureType.VRRP_A_VRID;
@@ -265,6 +266,21 @@ public class A10GrammarTest {
     String hostname = "health_monitor_acos2";
     A10Configuration c = parseVendorConfig(hostname);
     assertThat(c.getHealthMonitors().keySet(), containsInAnyOrder("HM1"));
+  }
+
+  @Test
+  public void testHealthMonitorReference() throws IOException {
+    String hostname = "health_monitor_reference";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Confirm reference counts
+    assertThat(ccae, hasNumReferrers(filename, HEALTH_MONITOR, "HM_SERVER", 1));
+    assertThat(ccae, hasNumReferrers(filename, HEALTH_MONITOR, "HM_SERVER_PORT", 1));
+    assertThat(ccae, hasNumReferrers(filename, HEALTH_MONITOR, "HM_SERVICE_GROUP", 1));
+    assertThat(ccae, hasNumReferrers(filename, HEALTH_MONITOR, "HM_UNUSED", 0));
   }
 
   @Test
@@ -1568,7 +1584,13 @@ public class A10GrammarTest {
                 hasComment("Expected conn-limit in range 1-64000000, but got '64000001'"),
                 hasComment("Expected connection weight in range 1-1000, but got '0'"),
                 hasComment("Expected connection weight in range 1-1000, but got '1001'"),
-                hasComment("Expected port range in range 0-254, but got '255'"))));
+                hasComment("Expected port range in range 0-254, but got '255'"),
+                hasComment(
+                    "Cannot reference non-existent health monitor UNDEFINED_PORT_HM for server port"
+                        + " 42 in server SERVER1"),
+                hasComment(
+                    "Cannot reference non-existent health monitor UNDEFINED_SERVER_HM for server"
+                        + " SERVER1"))));
   }
 
   @Test
@@ -1653,7 +1675,10 @@ public class A10GrammarTest {
                 hasComment("Expected min-active-member in range 1-1024, but got '0'"),
                 hasComment("Expected min-active-member in range 1-1024, but got '1025'"),
                 hasComment("Expected member priority in range 1-16, but got '0'"),
-                hasComment("Expected member priority in range 1-16, but got '17'"))));
+                hasComment("Expected member priority in range 1-16, but got '17'"),
+                hasComment(
+                    "Cannot reference non-existent health monitor UNDEFINED for service-group"
+                        + " SG1"))));
   }
 
   /**

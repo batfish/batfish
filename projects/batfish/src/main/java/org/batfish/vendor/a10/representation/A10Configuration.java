@@ -102,6 +102,12 @@ public final class A10Configuration extends VendorConfiguration {
     return _healthMonitors;
   }
 
+  public void createHealthMonitorIfAbsent(String name) {
+    if (_healthMonitors.get(name) == null) {
+      _healthMonitors.put(name, new HealthMonitor(name));
+    }
+  }
+
   @Override
   public String getHostname() {
     return _hostname;

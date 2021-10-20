@@ -34,4 +34,23 @@ health_check_method
 :
    COMPOUND
    | DATABASE
+   | DNS
+   | EXTERNAL
+   | FTP
+   | HTTP
+   | HTTPS
+   | ICMP
+   | IMAP
+   | KERBEROS_KDC
+   | LDAP
+   | NTP
+   | POP3
+   | RADIUS
+   | RTSP
+   | SIP
+   | SMTP
+   | SNMP
+   | TACPLUS
+   | TCP
+   | UDP
 ;

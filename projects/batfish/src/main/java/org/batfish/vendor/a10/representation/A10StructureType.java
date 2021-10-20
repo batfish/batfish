@@ -9,6 +9,7 @@ import org.batfish.vendor.StructureType;
 
 /** Named structure-types for A10 devices */
 public enum A10StructureType implements StructureType {
+  HEALTH_MONITOR("health monitor"),
   INTERFACE("interface"),
   NAT_POOL("ip nat pool"),
   SERVER("server"),

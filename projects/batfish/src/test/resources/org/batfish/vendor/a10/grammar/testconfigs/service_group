@@ -12,10 +12,12 @@ slb server SERVER3 10.0.0.3
   port 80 tcp
 !
 !
+health monitor HEALTH_CHECK_NAME
+!
+!
 slb service-group SG1 tcp
 !
 slb service-group SG2 tcp
-  ! TODO define health-check when those are supported
   health-check HEALTH_CHECK_NAME
   min-active-member 1
   member SERVER1 80
