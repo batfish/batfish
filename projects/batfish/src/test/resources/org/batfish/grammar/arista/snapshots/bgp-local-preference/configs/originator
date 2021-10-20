@@ -1,0 +1,35 @@
+! Command: show running-config
+! device: originator (vEOS, EOS-4.23.0.1F)
+!
+! boot system flash:/vEOS-lab.swi
+!
+hostname originator
+!
+interface Ethernet1
+   no switchport
+   ip address 10.12.11.1/24
+!
+interface Loopback1
+   ip address 172.16.1.1/32
+!
+interface Loopback2
+   ip address 172.16.1.2/32
+!
+ip routing
+!
+ip prefix-list CONNECTED_1 seq 10 permit 172.16.1.1/32
+ip prefix-list CONNECTED_2 seq 10 permit 172.16.1.2/32
+!
+route-map CONNECTED permit 10
+   match ip address prefix-list CONNECTED_1
+!
+route-map CONNECTED permit 20
+   match ip address prefix-list CONNECTED_2
+   set local-preference 5
+!
+router bgp 65000
+   router-id 10.12.11.1
+   neighbor 10.12.11.2 remote-as 65000
+   neighbor 10.12.11.2 maximum-routes 12000
+   redistribute connected route-map CONNECTED
+!
