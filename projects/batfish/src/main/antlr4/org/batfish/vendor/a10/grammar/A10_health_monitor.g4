@@ -6,6 +6,8 @@ options {
     tokenVocab = A10Lexer;
 }
 
+// ACOS v2 allows some definition on the initial declaration line
+// so consume that with null_rest_of_line
 s_health_monitor: HEALTH MONITOR health_check_name null_rest_of_line shm_definition*;
 
 shm_definition

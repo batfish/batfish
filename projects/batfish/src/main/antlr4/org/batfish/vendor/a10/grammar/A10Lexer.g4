@@ -5,7 +5,6 @@ options {
 }
 
 tokens {
-  METHOD_DEFINITION,
   QUOTED_TEXT,
   RBA_LINE,
   RBA_TAIL,
@@ -28,10 +27,26 @@ BOTH: 'both';
 BUCKET_COUNT: 'bucket-count';
 CAPABILITY: 'capability';
 COMMON: 'common';
-COMPOUND: 'compound';
+COMPOUND
+:
+  'compound'
+  {
+    if (lastTokenType() == METHOD) {
+      pushMode(M_Words);
+    }
+  }
+;
 CONN_LIMIT: 'conn-limit';
 CONNECTED: 'connected';
-DATABASE: 'database';
+DATABASE
+:
+  'database'
+  {
+    if (lastTokenType() == METHOD) {
+      pushMode(M_Words);
+    }
+  }
+;
 DEAD_TIMER: 'dead-timer';
 DEF_SELECTION_IF_PREF_FAILED: 'def-selection-if-pref-failed';
 DEFAULT: 'default';
@@ -45,8 +60,17 @@ DUPLEXITY: 'duplexity';
 DYNAMIC: 'dynamic';
 ENABLE: 'enable';
 ETHERNET: 'ethernet';
+EXPECT: 'expect';
 EXTENDED: 'extended';
-EXTERNAL: 'external';
+EXTERNAL
+:
+  'external'
+  {
+    if (lastTokenType() == METHOD) {
+      pushMode(M_Words);
+    }
+  }
+;
 FAIL_OVER_POLICY_TEMPLATE: 'fail-over-policy-template' -> pushMode(M_Word);
 FALL_OVER: 'fall-over';
 FAST_EXTERNAL_FAILOVER: 'fast-external-failover';
@@ -58,12 +82,29 @@ GET_READY_TIME_ACOS2: 'get_ready_time';
 GRACEFUL_RESTART: 'graceful-restart';
 HELLO_INTERVAL: 'hello-interval';
 HA_GROUP_ID: 'ha-group-id';
+HALFOPEN: 'halfopen';
 HEALTH: 'health';
 HEALTH_CHECK: 'health-check' -> pushMode(M_Word);
 HEALTH_CHECK_DISABLE: 'health-check-disable';
 HOSTNAME: 'hostname' -> pushMode(M_Word);
-HTTP: 'http';
-HTTPS: 'https';
+HTTP
+:
+  'http'
+  {
+    if (lastTokenType() == METHOD) {
+      pushMode(M_Words);
+    }
+  }
+;
+HTTPS
+:
+  'https'
+  {
+    if (lastTokenType() == METHOD) {
+      pushMode(M_Words);
+    }
+  }
+;
 ICMP: 'icmp';
 INTERVAL: 'interval';
 IMAP: 'imap';
@@ -89,7 +130,7 @@ LOOPBACK: 'loopback';
 MAXIMUM_PATHS: 'maximum-paths';
 MAXIMUM_PREFIX: 'maximum-prefix';
 MEMBER: 'member' -> pushMode(M_Word);
-METHOD: 'method' -> pushMode(M_Method);
+METHOD: 'method';
 MIN_ACTIVE_MEMBER: 'min-active-member';
 MODE: 'mode';
 MONITOR
@@ -136,7 +177,15 @@ PORTS_THRESHOLD: 'ports-threshold';
 PREEMPT_MODE: 'preempt-mode';
 PREEMPTION_DELAY: 'preemption-delay';
 PRIORITY: 'priority';
-RADIUS: 'radius';
+RADIUS
+:
+  'radius'
+  {
+    if (lastTokenType() == METHOD) {
+      pushMode(M_Words);
+    }
+  }
+;
 RANGE: 'range';
 RBA: 'rba' -> pushMode(M_Rba);
 RESTART_TIME: 'restart-time';
@@ -177,7 +226,7 @@ SNMP: 'snmp';
 SOFT_RECONFIGURATION: 'soft-reconfiguration';
 SOURCE_NAT: 'source-nat';
 SPEED: 'speed';
-SSL_CIPHERS: 'ssl-ciphers' -> pushMode(M_Word);
+SSL_CIPHERS: 'ssl-ciphers';
 STANDARD: 'standard';
 STATIC: 'static';
 STATS_DATA_DISABLE: 'stats-data-disable';
@@ -201,6 +250,7 @@ UDP: 'udp';
 UNTAGGED: 'untagged';
 UP_RETRY: 'up-retry';
 UPDATE_SOURCE: 'update-source';
+URL: 'url';
 USE_RCV_HOP_FOR_RESP: 'use-rcv-hop-for-resp';
 USER_TAG: 'user-tag' -> pushMode(M_Word);
 VE: 've';
@@ -399,37 +449,6 @@ fragment
 F_EscapedSingleQuote: '\\' ['];
 
 // Modes
-mode M_Method;
-M_Method_WS: F_Whitespace+ -> skip, mode(M_MethodValue);
-M_Method_NEWLINE: F_Newline -> type(NEWLINE), popMode;
-
-mode M_MethodValue;
-M_MethodValue_COMPOUND: 'compound' -> type(COMPOUND), mode(M_MethodDefinition);
-M_MethodValue_DATABASE: 'database' -> type(DATABASE), mode(M_MethodDefinition);
-M_MethodValue_DNS: 'dns' -> type(DNS), mode(M_MethodDefinition);
-M_MethodValue_EXTERNAL: 'external' -> type(EXTERNAL), mode(M_MethodDefinition);
-M_MethodValue_FTP: 'ftp' -> type(FTP), mode(M_MethodDefinition);
-M_MethodValue_HTTP: 'http' -> type(HTTP), mode(M_MethodDefinition);
-M_MethodValue_HTTPS: 'https' -> type(HTTPS), mode(M_MethodDefinition);
-M_MethodValue_ICMP: 'icmp' -> type(ICMP), mode(M_MethodDefinition);
-M_MethodValue_IMAP: 'imap' -> type(IMAP), mode(M_MethodDefinition);
-M_MethodValue_KERBEROS_KDC: 'kerberos_kdc' -> type(KERBEROS_KDC), mode(M_MethodDefinition);
-M_MethodValue_LDAP: 'ldap' -> type(LDAP), mode(M_MethodDefinition);
-M_MethodValue_NTP: 'ntp' -> type(NTP), mode(M_MethodDefinition);
-M_MethodValue_POP3: 'pop3' -> type(POP3), mode(M_MethodDefinition);
-M_MethodValue_RADIUS: 'radius' -> type(RADIUS), mode(M_MethodDefinition);
-M_MethodValue_RTSP: 'rtsp' -> type(RTSP), mode(M_MethodDefinition);
-M_MethodValue_SIP: 'sip' -> type(SIP), mode(M_MethodDefinition);
-M_MethodValue_SMTP: 'smtp' -> type(SMTP), mode(M_MethodDefinition);
-M_MethodValue_SNMP: 'snmp' -> type(SNMP), mode(M_MethodDefinition);
-M_MethodValue_TACPLUS: 'tacplus' -> type(TACPLUS), mode(M_MethodDefinition);
-M_MethodValue_TCP: 'tcp' -> type(TCP), mode(M_MethodDefinition);
-M_MethodValue_UDP: 'udp' -> type(UDP), mode(M_MethodDefinition);
-
-mode M_MethodDefinition;
-M_MethodDefinition_METHOD_DEFINITION: F_NonNewlineChar+ -> type(METHOD_DEFINITION);
-M_MethodDefinition_NEWLINE: F_Newline -> type(NEWLINE), popMode;
-
 mode M_DoubleQuote;
 M_DoubleQuote_DOUBLE_QUOTE: '"' -> type(DOUBLE_QUOTE), popMode;
 M_DoubleQuote_QUOTED_TEXT: (F_EscapedDoubleQuote | ~'"')+ -> type(QUOTED_TEXT);
@@ -448,6 +467,17 @@ M_WordValue_SINGLE_QUOTE: ['] -> type(SINGLE_QUOTE), pushMode(M_SingleQuote);
 M_WordValue_WORD: F_Word -> type(WORD);
 M_WordValue_WS: F_Whitespace+ -> skip, popMode;
 M_WordValue_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_Words;
+M_Words_WS: F_Whitespace+ -> type(WORD_SEPARATOR), mode(M_WordsValue);
+M_Words_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_WordsValue;
+M_WordsValue_DOUBLE_QUOTE: '"' -> type(DOUBLE_QUOTE), pushMode(M_DoubleQuote);
+M_WordsValue_SINGLE_QUOTE: ['] -> type(SINGLE_QUOTE), pushMode(M_SingleQuote);
+M_WordsValue_WORD: F_Word -> type(WORD);
+M_WordsValue_WS: F_Whitespace+ -> type(WORD_SEPARATOR);
+M_WordsValue_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 
 mode M_Rba;
 M_Rba_WS: F_Whitespace+ -> skip;
