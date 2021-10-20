@@ -697,7 +697,8 @@ final class IncrementalBdpEngine {
             assert redistscope != null; // avoid unused warning
             vrs.parallelStream().forEach(VirtualRouter::redistribute);
 
-            // Handle cross-VRF leaking here too.
+            // Handle process-specific route resolution and cross-VRF leaking here too.
+            vrs.parallelStream().forEach(VirtualRouter::updateResolvableRoutes);
             queueRoutesForCrossVrfLeaking(vrs);
           } finally {
             redistributeSpan.finish();
