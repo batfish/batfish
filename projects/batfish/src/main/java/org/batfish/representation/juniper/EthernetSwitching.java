@@ -12,6 +12,8 @@ import org.batfish.datamodel.SwitchportMode;
 @ParametersAreNonnullByDefault
 public final class EthernetSwitching implements Serializable {
 
+  public static VlanMember DEFAULT_VLAN_MEMBER = new VlanReference("default");
+
   public EthernetSwitching() {
     _vlanMembers = new LinkedList<>();
   }

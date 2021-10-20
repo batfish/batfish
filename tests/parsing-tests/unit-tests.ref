@@ -86360,15 +86360,15 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Cannot assign more than one access vlan: [1-1000] to interface 'ae0.0'"
+              "text" : "Cannot assign access vlan to interface xe-0/0/5:0.0: no vlan-id is assigned to vlan bippetyboppety"
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Cannot assign more than one access vlan: [all] to interface 'xe-0/0/0:0.0'"
+              "text" : "Cannot assign more than one access vlan to interface ae0.0: 1-1000"
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Cannot assign more than one access vlan: [bippetyboppety] to interface 'xe-0/0/5:0.0'"
+              "text" : "Cannot assign more than one access vlan to interface xe-0/0/0:0.0: all"
             },
             {
               "tag" : "MISCELLANEOUS",

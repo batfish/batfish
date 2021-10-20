@@ -3,9 +3,14 @@
 set system host-name juniper-vlan-access
 #
 set interfaces et-0/0/2 unit 0 family ethernet-switching interface-mode access
-set interfaces et-0/0/2 unit 0 family ethernet-switching vlan members foo
+set interfaces et-0/0/2 unit 0 family ethernet-switching vlan members TWO
 set interfaces et-0/0/3 unit 0 family ethernet-switching interface-mode access
 set interfaces et-0/0/3 unit 0 family ethernet-switching vlan members 2
 set interfaces et-0/0/4 unit 0 family ethernet-switching interface-mode access
-set vlans foo vlan-id 2
+set interfaces et-0/0/5 unit 0 family ethernet-switching interface-mode access
+set interfaces et-0/0/5 unit 0 family ethernet-switching vlan members NOTSET
+#
+set vlans TWO vlan-id 2
+set vlans default vlan-id 1
+set vlans NOTSET
 #
