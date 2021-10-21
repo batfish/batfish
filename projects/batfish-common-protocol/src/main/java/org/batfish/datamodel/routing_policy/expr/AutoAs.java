@@ -3,12 +3,12 @@ package org.batfish.datamodel.routing_policy.expr;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.BgpRoute;
-import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 
@@ -49,13 +49,13 @@ public final class AutoAs extends AsExpr {
         BgpRoute<?, ?> bgpRoute = (BgpRoute<?, ?>) environment.getOriginalRoute();
         asPath = bgpRoute.getAsPath();
       }
-      // really should not receive empty as-path in route from neighbor
+      // really should not receive empty as-path in route from EBGP neighbor
       List<AsSet> asSets = asPath.getAsSets();
       if (asSets.isEmpty()) {
         // Default to remote AS. TODO Is this the correct behavior?
-        BgpSessionProperties sessionProps = environment.getBgpSessionProperties();
-        checkState(sessionProps != null, "Expected BGP session properties");
-        return sessionProps.getHeadAs();
+        Optional<Long> remoteAs = environment.getRemoteAs();
+        checkState(remoteAs.isPresent(), "Expected BGP session properties");
+        return remoteAs.get();
       }
       SortedSet<Long> firstAsSetAsns = asSets.get(0).getAsns();
       // TODO: see if clients of AsExpr should really be provided the entire AsSet instead of a
@@ -65,9 +65,9 @@ public final class AutoAs extends AsExpr {
       return firstAsSetAsns.first();
     }
     assert direction == Direction.OUT;
-    BgpSessionProperties sessionProps = environment.getBgpSessionProperties();
-    checkState(sessionProps != null, "Expected BGP session properties");
-    return sessionProps.getHeadAs();
+    Optional<Long> localAs = environment.getLocalAs();
+    checkState(localAs.isPresent(), "Expected BGP session properties");
+    return localAs.get();
   }
 
   @Override

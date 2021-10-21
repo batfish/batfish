@@ -1,7 +1,6 @@
 package org.batfish.datamodel.routing_policy.expr;
 
 import javax.annotation.Nullable;
-import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.routing_policy.Environment;
@@ -24,9 +23,10 @@ public class SelfNextHop extends NextHopExpr {
 
   @Override
   public @Nullable NextHop evaluate(Environment env) {
-    // BgpSessionProperties are for session directed toward the node with the policy being executed
-    BgpSessionProperties sessionProperties = env.getBgpSessionProperties();
-    return sessionProperties == null ? null : NextHopIp.of(sessionProperties.getHeadIp());
+    // TODO: does this make sense in direction IN?
+    // It seems weird. Such a route would never be resolvable to an interface, as the IP is
+    // owned.
+    return env.getLocalIp().map(NextHopIp::of).orElse(null);
   }
 
   @Override

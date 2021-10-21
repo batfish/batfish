@@ -101,7 +101,7 @@ public class AutoAsTest {
             .setBgpSessionProperties(sessionProps)
             .setOriginalRoute(BGP_ROUTE)
             .build();
-    assertThat(INSTANCE.evaluate(env), equalTo(11111L));
+    assertThat(INSTANCE.evaluate(env), equalTo(22222L));
   }
 
   @Test
@@ -128,19 +128,13 @@ public class AutoAsTest {
             .setDirection(Direction.OUT)
             .setBgpSessionProperties(sessionProps)
             .build();
-    assertThat(INSTANCE.evaluate(env), equalTo(11111L));
+    assertThat(INSTANCE.evaluate(env), equalTo(22222L));
   }
 
   @Test
   public void testEvaluateDirectionOut_noBgpSessionProps() {
-    Environment env = Environment.builder(C).setDirection(Direction.OUT).build();
+    Environment env = Environment.builder(C).build();
     _thrown.expectMessage("Expected BGP session properties");
     INSTANCE.evaluate(env);
-  }
-
-  @Test
-  public void testEvaluate_noDirection() {
-    _thrown.expect(AssertionError.class);
-    INSTANCE.evaluate(Environment.builder(C).build());
   }
 }

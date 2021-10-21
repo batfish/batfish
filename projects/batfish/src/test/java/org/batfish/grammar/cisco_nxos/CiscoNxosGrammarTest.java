@@ -765,12 +765,11 @@ public final class CiscoNxosGrammarTest {
     Bgpv4Route.Builder outputRouteBuilder =
         Bgpv4Route.testBuilder().setNextHopIp(UNSET_ROUTE_NEXT_HOP_IP);
 
-    Ip sessionPropsHeadIp = Ip.parse("1.1.1.1");
     BgpSessionProperties.Builder sessionProps =
         BgpSessionProperties.builder()
             .setHeadAs(1L)
             .setTailAs(1L)
-            .setHeadIp(sessionPropsHeadIp)
+            .setHeadIp(Ip.parse("1.1.1.1"))
             .setTailIp(Ip.parse("2.2.2.2"));
     BgpSessionProperties ibgpSession = sessionProps.setSessionType(SessionType.IBGP).build();
     BgpSessionProperties ebgpSession =
@@ -790,7 +789,8 @@ public final class CiscoNxosGrammarTest {
     assertTrue(shouldExportToEbgp);
     assertThat(outputRouteBuilder.getNextHopIp(), equalTo(originalNhip));
 
-    // Original route has unset next hop IP: sets output route nhip to head IP of session props
+    // Original route has unset next hop IP: leaves unset (and expects pipeline downstream to
+    // handle)
     outputRouteBuilder.setNextHopIp(UNSET_ROUTE_NEXT_HOP_IP);
     Bgpv4Route noNhipRoute =
         originalRoute.toBuilder().setNextHop(NextHopDiscard.instance()).build();
@@ -798,7 +798,7 @@ public final class CiscoNxosGrammarTest {
         nhipUnchangedPolicy.processBgpRoute(
             noNhipRoute, outputRouteBuilder, ebgpSession, Direction.OUT, null);
     assertTrue(shouldExportToEbgpUnsetNextHop);
-    assertThat(outputRouteBuilder.getNextHopIp(), equalTo(sessionPropsHeadIp));
+    assertThat(outputRouteBuilder.getNextHopIp(), equalTo(UNSET_ROUTE_NEXT_HOP_IP));
   }
 
   @Test
@@ -9253,7 +9253,7 @@ public final class CiscoNxosGrammarTest {
             .setPeerAddress(fromConfig.getLocalIp())
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
-    BgpSessionProperties session = BgpSessionProperties.from(neighborConfig, fromConfig, false);
+    BgpSessionProperties session = BgpSessionProperties.from(fromConfig, neighborConfig, false);
     rp.processBgpRoute(inputRoute, outputRoute, session, Direction.OUT, null);
     assertThat(outputRoute.getNextHopIp(), equalTo(expectedTransformedNextHopIp));
   }

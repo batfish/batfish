@@ -6,6 +6,7 @@ import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.BiFunction;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -19,6 +20,7 @@ import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.PrefixSpace;
@@ -86,7 +88,7 @@ public class Environment {
   private final Map<String, CommunitySet> _communitySets;
   private boolean _defaultAction;
   private String _defaultPolicy;
-  private final Direction _direction;
+  private final @Nonnull Direction _direction;
   @Nullable private final EigrpProcess _eigrpProcess;
   private boolean _error;
   private BgpRoute.Builder<?, ?> _intermediateBgpAttributes;
@@ -125,7 +127,7 @@ public class Environment {
       Map<String, CommunitySet> communitySets,
       boolean defaultAction,
       String defaultPolicy,
-      Direction direction,
+      @Nonnull Direction direction,
       @Nullable EigrpProcess eigrpProcess,
       boolean error,
       BgpRoute.Builder<?, ?> intermediateBgpAttributes,
@@ -237,7 +239,7 @@ public class Environment {
     return _defaultPolicy;
   }
 
-  public Direction getDirection() {
+  public @Nonnull Direction getDirection() {
     return _direction;
   }
 
@@ -264,6 +266,61 @@ public class Environment {
 
   public boolean getLocalDefaultAction() {
     return _localDefaultAction;
+  }
+
+  /**
+   * Returns the BGP local AS for the current environment and direction. Returns {@link
+   * Optional#empty()} if there are no {@link BgpSessionProperties}.
+   */
+  public Optional<Long> getLocalAs() {
+    if (_bgpSessionProperties == null) {
+      return Optional.empty();
+    }
+    if (_direction == Direction.IN) {
+      return Optional.of(_bgpSessionProperties.getHeadAs());
+    }
+    return Optional.of(_bgpSessionProperties.getTailAs());
+  }
+  /**
+   * Returns the BGP local IP for the current environment and direction. Returns {@link
+   * Optional#empty()} if there are no {@link BgpSessionProperties}.
+   */
+  public Optional<Ip> getLocalIp() {
+    if (_bgpSessionProperties == null) {
+      return Optional.empty();
+    }
+    if (_direction == Direction.IN) {
+      return Optional.of(_bgpSessionProperties.getHeadIp());
+    }
+    return Optional.of(_bgpSessionProperties.getTailIp());
+  }
+
+  /**
+   * Returns the BGP remote AS for the current environment and direction. Returns {@link
+   * Optional#empty()} if there are no {@link BgpSessionProperties}.
+   */
+  public Optional<Long> getRemoteAs() {
+    if (_bgpSessionProperties == null) {
+      return Optional.empty();
+    }
+    if (_direction == Direction.IN) {
+      return Optional.of(_bgpSessionProperties.getTailAs());
+    }
+    return Optional.of(_bgpSessionProperties.getHeadAs());
+  }
+
+  /**
+   * Returns the BGP remote IP for the current environment and direction. Returns {@link
+   * Optional#empty()} if there are no {@link BgpSessionProperties}.
+   */
+  public Optional<Ip> getRemoteIp() {
+    if (_bgpSessionProperties == null) {
+      return Optional.empty();
+    }
+    if (_direction == Direction.IN) {
+      return Optional.of(_bgpSessionProperties.getTailIp());
+    }
+    return Optional.of(_bgpSessionProperties.getHeadIp());
   }
 
   /** Whether the output route's tag has been explicitly set in the current routing policy */
@@ -385,7 +442,7 @@ public class Environment {
     private Map<String, CommunitySet> _communitySets;
     private boolean _defaultAction;
     private String _defaultPolicy;
-    private Direction _direction;
+    private @Nonnull Direction _direction = Direction.OUT;
     @Nullable private EigrpProcess _eigrpProcess;
     private boolean _error;
     private BgpRoute.Builder<?, ?> _intermediateBgpAttributes;
@@ -472,7 +529,7 @@ public class Environment {
       return this;
     }
 
-    public Builder setDirection(Direction direction) {
+    public Builder setDirection(@Nonnull Direction direction) {
       _direction = direction;
       return this;
     }

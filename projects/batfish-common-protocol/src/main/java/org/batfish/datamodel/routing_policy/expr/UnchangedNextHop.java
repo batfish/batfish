@@ -38,10 +38,11 @@ public class UnchangedNextHop extends NextHopExpr {
     }
     // Preserve original NHIP if present
     Ip originalRouteNextHop = env.getOriginalRoute().getNextHopIp();
-    if (originalRouteNextHop != null && originalRouteNextHop != Route.UNSET_ROUTE_NEXT_HOP_IP) {
+    if (!originalRouteNextHop.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
       return NextHopIp.of(originalRouteNextHop);
     }
-    return NextHopIp.of(sessionProperties.getHeadIp());
+
+    return null; // no-op, will be changed elsewhere in the pipeline
   }
 
   @Override

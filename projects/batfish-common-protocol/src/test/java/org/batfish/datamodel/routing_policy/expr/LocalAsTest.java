@@ -51,6 +51,6 @@ public class LocalAsTest {
                     .setTailAs(4)
                     .build())
             .build();
-    assertThat(LocalAs.instance().evaluate(e), equalTo(3L));
+    assertThat(LocalAs.instance().evaluate(e), equalTo(4L));
   }
 }

@@ -334,20 +334,22 @@ public final class BgpSessionProperties {
     SessionType sessionType = getSessionType(initiator);
 
     EnumSet<Type> addressFamilyIntersection = getAddressFamilyIntersection(initiator, listener);
+    BgpPeerConfig directionalSender = reverseDirection ? listener : initiator;
+    BgpPeerConfig directionalReceiver = reverseDirection ? initiator : listener;
     return new BgpSessionProperties(
         addressFamilyIntersection,
         addressFamilyIntersection.contains(Type.IPV4_UNICAST)
             ? ImmutableMap.of(
                 Type.IPV4_UNICAST,
                 new RouteExchange(
-                    computeAdditionalPaths(initiator, listener, sessionType),
+                    computeAdditionalPaths(directionalSender, directionalReceiver, sessionType),
                     !SessionType.isEbgp(sessionType)
-                        && initiator
+                        && directionalSender
                             .getIpv4UnicastAddressFamily()
                             .getAddressFamilyCapabilities()
                             .getAdvertiseExternal(),
                     SessionType.isEbgp(sessionType)
-                        && initiator
+                        && directionalSender
                             .getIpv4UnicastAddressFamily()
                             .getAddressFamilyCapabilities()
                             .getAdvertiseInactive()))

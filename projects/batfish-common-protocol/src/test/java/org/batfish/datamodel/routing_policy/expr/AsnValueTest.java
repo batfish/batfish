@@ -12,6 +12,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.routing_policy.Environment;
+import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.junit.Test;
 
 /** Tests of {@link AsnValue}. */
@@ -44,6 +45,7 @@ public class AsnValueTest {
             .build();
     Environment e =
         Environment.builder(c)
+            .setDirection(Direction.IN)
             .setBgpSessionProperties(
                 BgpSessionProperties.builder()
                     .setHeadIp(Ip.ZERO)
