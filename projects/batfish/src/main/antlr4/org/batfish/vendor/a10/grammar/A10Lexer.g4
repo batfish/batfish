@@ -126,7 +126,15 @@ KERBEROS_KDC: 'kerberos-kdc';
 LACP: 'lacp';
 LACP_TRUNK: 'lacp-trunk';
 LACP_UDLD: 'lacp-udld';
-LDAP: 'ldap';
+LDAP
+:
+  'ldap'
+  {
+    if (lastTokenType() == METHOD) {
+      pushMode(M_Words);
+    }
+  }
+;
 LEAST_CONNECTION: 'least-connection';
 LEAST_REQUEST: 'least-request';
 LLDP: 'lldp';
@@ -446,7 +454,7 @@ F_Word: F_WordChar+;
 fragment
 F_WordChar
 :
-  [0-9A-Za-z!@#$%^&*()_=+.;:{}/]
+  [0-9A-Za-z!@#$%^&*()_=+.;:{}/<>]
   | '-'
 ;
 

@@ -262,7 +262,7 @@ public class A10GrammarTest {
     A10Configuration c = parseVendorConfig(hostname);
     assertThat(
         c.getHealthMonitors().keySet(),
-        containsInAnyOrder("HM1", "HM2", "HM3", "HM4", "HM5", "HM6", "HM7", "HM8"));
+        containsInAnyOrder("HM1", "HM2", "HM3", "HM4", "HM5", "HM6", "HM7", "HM8", "HM9"));
   }
 
   /** ACOS v2 style syntax */

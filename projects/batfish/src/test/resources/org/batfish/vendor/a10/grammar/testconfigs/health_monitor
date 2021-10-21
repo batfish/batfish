@@ -26,8 +26,11 @@ health monitor HM6
   method compound sub SOMETHING sub SOMETHING_ELSE and
 !
 health monitor HM7
-  method http port 80 expect response-code 200-300 host foo.example.com url GET /healthcheck
+  method http port 80 expect <body>Something</body> host foo.example.com url GET /healthcheck
 !
 health monitor HM8
   method https port 443 expect "Server is healthy" cert foo.example.com key foo.example.com key-pass-phrase encrypted 1234567890ABCDEFG disable-sslv2hello
+!
+health monitor HM9
+  method ldap port 1234 overssl binddn cn=Users password encrypted FoObArBaZ 
 !
