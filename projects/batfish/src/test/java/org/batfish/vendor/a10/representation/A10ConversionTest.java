@@ -44,7 +44,6 @@ import static org.batfish.vendor.a10.representation.A10Conversion.toVrrpGroups;
 import static org.batfish.vendor.a10.representation.A10Conversion.vrrpAAppliesToInterface;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
@@ -491,6 +490,7 @@ public class A10ConversionTest {
       assertFalse(redist.processReadOnly(natPool));
       assertFalse(redist.processReadOnly(vipFlagged));
       assertFalse(redist.processReadOnly(vipUnflagged));
+      assertThat(w.getRedFlagWarnings(), empty());
 
       // reset
       bgpProcess.setRedistributeConnected(false);
@@ -507,6 +507,7 @@ public class A10ConversionTest {
       assertFalse(redist.processReadOnly(natPool));
       assertFalse(redist.processReadOnly(vipFlagged));
       assertFalse(redist.processReadOnly(vipUnflagged));
+      assertThat(w.getRedFlagWarnings(), empty());
 
       // reset
       bgpProcess.setRedistributeFloatingIp(false);
@@ -523,6 +524,7 @@ public class A10ConversionTest {
       assertTrue(redist.processReadOnly(natPool));
       assertFalse(redist.processReadOnly(vipFlagged));
       assertFalse(redist.processReadOnly(vipUnflagged));
+      assertThat(w.getRedFlagWarnings(), empty());
 
       // reset
       bgpProcess.setRedistributeIpNat(false);
@@ -539,6 +541,7 @@ public class A10ConversionTest {
       assertFalse(redist.processReadOnly(natPool));
       assertTrue(redist.processReadOnly(vipFlagged));
       assertFalse(redist.processReadOnly(vipUnflagged));
+      assertThat(w.getRedFlagWarnings(), empty());
 
       // reset
       bgpProcess.setRedistributeVipOnlyFlagged(false);
@@ -555,6 +558,7 @@ public class A10ConversionTest {
       assertFalse(redist.processReadOnly(natPool));
       assertFalse(redist.processReadOnly(vipFlagged));
       assertTrue(redist.processReadOnly(vipUnflagged));
+      assertThat(w.getRedFlagWarnings(), empty());
 
       // reset
       bgpProcess.setRedistributeVipOnlyNotFlagged(false);
@@ -584,6 +588,7 @@ public class A10ConversionTest {
     bgpNeighbor.setUpdateSource(new BgpNeighborUpdateSourceAddress(localIp));
     bgpNeighbor.setDescription(description);
     bgpNeighbor.setSendCommunity(SendCommunity.BOTH);
+    bgpNeighbor.setRemoteAs(remoteAs);
     org.batfish.datamodel.BgpProcess newBgpProcess =
         org.batfish.datamodel.BgpProcess.builder()
             .setRouterId(routerId)
@@ -593,15 +598,7 @@ public class A10ConversionTest {
             .build();
     Configuration c = testConfig();
     {
-      // neighbor should not be created without remoteAs
       Warnings w = new Warnings(false, true, true);
-      createAndAttachBgpNeighbor(id, defaultLocalAs, bgpNeighbor, newBgpProcess, c, w);
-      assertThat(newBgpProcess.getActiveNeighbors(), anEmptyMap());
-      assertThat(w, hasRedFlag(hasText("Cannot create bgp neighbor 10.0.0.2 without a remote-as")));
-    }
-    {
-      Warnings w = new Warnings(false, true, true);
-      bgpNeighbor.setRemoteAs(remoteAs);
       createAndAttachBgpNeighbor(id, defaultLocalAs, bgpNeighbor, newBgpProcess, c, w);
 
       assertThat(

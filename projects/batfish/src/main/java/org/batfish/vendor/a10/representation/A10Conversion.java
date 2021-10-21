@@ -431,6 +431,7 @@ public class A10Conversion {
     return iface.getConcreteAddress() != null;
   }
 
+  /** Convert the BGP process and associated routing policies, and attach them to the config. */
   static void createBgpProcess(BgpProcess bgpProcess, Configuration c, Warnings w) {
     Ip routerId = bgpProcess.getRouterId();
     if (routerId == null) {
@@ -449,9 +450,9 @@ public class A10Conversion {
     boolean multipath = firstNonNull(bgpProcess.getMaximumPaths(), 1) > 1;
     newBgpProcess.setMultipathEbgp(multipath);
     newBgpProcess.setMultipathIbgp(multipath);
-    // TODO: verify
+    // TODO: verify: https://github.com/batfish/batfish/issues/7567
     newBgpProcess.setMultipathEquivalentAsPathMatchMode(EXACT_PATH);
-    // TODO: verify
+    // TODO: verify: https://github.com/batfish/batfish/issues/7567
     newBgpProcess.setTieBreaker(BgpTieBreaker.ROUTER_ID);
     long defaultLocalAs = bgpProcess.getAsn();
 
@@ -543,6 +544,9 @@ public class A10Conversion {
             });
   }
 
+  /**
+   * Create a {@link BgpActivePeerConfig} for a bgp neighbor, and attach it to the new BGP process.
+   */
   @VisibleForTesting
   static void createAndAttachBgpNeighbor(
       BgpNeighborId bgpNeighborId,
@@ -555,10 +559,7 @@ public class A10Conversion {
     assert bgpNeighborId instanceof BgpNeighborIdAddress;
     Ip remoteIp = ((BgpNeighborIdAddress) bgpNeighborId).getAddress();
     Long remoteAs = bgpNeighbor.getRemoteAs();
-    if (remoteAs == null) {
-      w.redFlag(String.format("Cannot create bgp neighbor %s without a remote-as", remoteIp));
-      return;
-    }
+    assert remoteAs != null;
     SendCommunity sendCommunity = bgpNeighbor.getSendCommunity();
     boolean sendStandard =
         sendCommunity == SendCommunity.STANDARD || sendCommunity == SendCommunity.BOTH;
@@ -588,6 +589,7 @@ public class A10Conversion {
         .build();
   }
 
+  /** Create export policy for a bgp neighbor, populate it in the config, and returns its name. */
   private static @Nonnull String computeExportPolicy(BgpNeighborId bgpNeighborId, Configuration c) {
     // TODO: support non-IP neighbor-id
     assert bgpNeighborId instanceof BgpNeighborIdAddress;
@@ -611,6 +613,11 @@ public class A10Conversion {
     return exportPolicy.getName();
   }
 
+  /**
+   * Compute the update source IP for a bgp neighbor. Use explicit update source IP if avaialble.
+   * Otherwise, use interface address in subnet containing the peer IP. If one cannot be found,
+   * return {@code null}.
+   */
   @VisibleForTesting
   static @Nullable Ip computeUpdateSource(
       Map<String, org.batfish.datamodel.Interface> interfaces,
