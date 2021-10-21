@@ -11,6 +11,7 @@ import static org.batfish.datamodel.ConfigurationFormat.A10_ACOS;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasAdministrativeCost;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHop;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasActiveNeighbor;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
@@ -31,6 +32,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.matchers.StaticRouteMatchers.hasRecursive;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.main.BatfishTestUtils.getBatfish;
@@ -50,6 +52,7 @@ import static org.batfish.vendor.a10.representation.Interface.DEFAULT_MTU;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
+import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
@@ -89,6 +92,7 @@ import org.batfish.common.matchers.WarningMatchers;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.runtime.SnapshotRuntimeData;
 import org.batfish.config.Settings;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRouteMetadata;
@@ -108,6 +112,7 @@ import org.batfish.datamodel.flow.InboundStep;
 import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.route.nh.NextHopIp;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -1802,6 +1807,26 @@ public class A10GrammarTest {
       assertNull(neighbor2.getWeight());
       assertNull(neighbor2.getUpdateSource());
     }
+  }
+
+  @Test
+  public void testBgpConversion() {
+    String hostname = "bgp";
+    Configuration c = parseConfig(hostname);
+    Ip peerIp = Ip.parse("10.10.10.100");
+
+    assertThat(c.getDefaultVrf(), hasBgpProcess(hasActiveNeighbor(peerIp, anything())));
+    RoutingPolicy peerExportPolicy =
+        c.getRoutingPolicies()
+            .get(
+                c.getDefaultVrf()
+                    .getBgpProcess()
+                    .getActiveNeighbors()
+                    .get(peerIp)
+                    .getIpv4UnicastAddressFamily()
+                    .getExportPolicy());
+    assertTrue(
+        peerExportPolicy.processReadOnly(Bgpv4Route.testBuilder().setNetwork(Prefix.ZERO).build()));
   }
 
   @Test
