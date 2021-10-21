@@ -71,6 +71,7 @@ import org.batfish.vendor.VendorConfiguration;
 public final class A10Configuration extends VendorConfiguration {
 
   public A10Configuration() {
+    _healthMonitors = new HashMap<>();
     _interfacesEthernet = new HashMap<>();
     _interfacesLoopback = new HashMap<>();
     _interfacesTrunk = new HashMap<>();
@@ -95,6 +96,17 @@ public final class A10Configuration extends VendorConfiguration {
       _bgpProcess = new BgpProcess(number);
     }
     return _bgpProcess;
+  }
+
+  @Nonnull
+  public Map<String, HealthMonitor> getHealthMonitors() {
+    return _healthMonitors;
+  }
+
+  public void createHealthMonitorIfAbsent(String name) {
+    if (_healthMonitors.get(name) == null) {
+      _healthMonitors.put(name, new HealthMonitor(name));
+    }
   }
 
   @Override
@@ -695,6 +707,7 @@ public final class A10Configuration extends VendorConfiguration {
    * <p>This should only be called once, at the end of parsing and extraction.
    */
   public void finalizeStructures() {
+    _healthMonitors = ImmutableMap.copyOf(_healthMonitors);
     _interfacesEthernet = ImmutableMap.copyOf(_interfacesEthernet);
     _interfacesLoopback = ImmutableMap.copyOf(_interfacesLoopback);
     _interfacesVe = ImmutableMap.copyOf(_interfacesVe);
@@ -712,6 +725,7 @@ public final class A10Configuration extends VendorConfiguration {
 
   @Nullable private BgpProcess _bgpProcess;
   private Configuration _c;
+  private Map<String, HealthMonitor> _healthMonitors;
   private String _hostname;
   private Map<Integer, Interface> _interfacesEthernet;
   private Map<Integer, Interface> _interfacesLoopback;

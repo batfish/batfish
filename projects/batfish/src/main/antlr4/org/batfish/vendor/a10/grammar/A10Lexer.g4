@@ -30,10 +30,28 @@ CAPABILITY: 'capability';
 CIPHER: 'cipher';
 CLIENT_SSL: 'client-ssl';
 COMMON: 'common';
+COMPOUND
+:
+  'compound'
+  {
+    if (lastTokenType() == METHOD) {
+      pushMode(M_Words);
+    }
+  }
+;
 CONN_LIMIT: 'conn-limit';
 CONNECTED: 'connected';
 CONNECTION_REUSE: 'connection-reuse';
 COOKIE: 'cookie';
+DATABASE
+:
+  'database'
+  {
+    if (lastTokenType() == METHOD) {
+      pushMode(M_Words);
+    }
+  }
+;
 DEAD_TIMER: 'dead-timer';
 DEF_SELECTION_IF_PREF_FAILED: 'def-selection-if-pref-failed';
 DEFAULT: 'default';
@@ -50,31 +68,65 @@ DYNAMIC: 'dynamic';
 DYNAMIC_SERVICE: 'dynamic-service';
 ENABLE: 'enable';
 ETHERNET: 'ethernet';
+EXPECT: 'expect';
 EXTENDED: 'extended';
+EXTERNAL
+:
+  'external'
+  {
+    if (lastTokenType() == METHOD) {
+      pushMode(M_Words);
+    }
+  }
+;
 FAIL_OVER_POLICY_TEMPLATE: 'fail-over-policy-template' -> pushMode(M_Word);
 FALL_OVER: 'fall-over';
 FAST_EXTERNAL_FAILOVER: 'fast-external-failover';
 FLOATING_IP: 'floating-ip';
+FTP: 'ftp';
 GATEWAY: 'gateway';
 GET_READY_TIME: 'get-ready-time';
 GET_READY_TIME_ACOS2: 'get_ready_time';
 GRACEFUL_RESTART: 'graceful-restart';
 HELLO_INTERVAL: 'hello-interval';
 HA_GROUP_ID: 'ha-group-id';
+HALFOPEN: 'halfopen';
+HEALTH: 'health';
 HEALTH_CHECK: 'health-check' -> pushMode(M_Word);
 HEALTH_CHECK_DISABLE: 'health-check-disable';
 HOSTNAME: 'hostname' -> pushMode(M_Word);
-HTTP: 'http';
-HTTPS: 'https';
+HTTP
+:
+  'http'
+  {
+    if (lastTokenType() == METHOD) {
+      pushMode(M_Words);
+    }
+  }
+;
+HTTPS
+:
+  'https'
+  {
+    if (lastTokenType() == METHOD) {
+      pushMode(M_Words);
+    }
+  }
+;
+ICMP: 'icmp';
+INTERVAL: 'interval';
+IMAP: 'imap';
 IP: 'ip';
 IP_NAT: 'ip-nat';
 IP_RR: 'ip-rr';
 IPG_BIT_TIME: 'ipg-bit-time';
 INBOUND: 'inbound';
 INTERFACE: 'interface';
+KERBEROS_KDC: 'kerberos-kdc';
 LACP: 'lacp';
 LACP_TRUNK: 'lacp-trunk';
 LACP_UDLD: 'lacp-udld';
+LDAP: 'ldap';
 LEAST_CONNECTION: 'least-connection';
 LEAST_REQUEST: 'least-request';
 LLDP: 'lldp';
@@ -89,6 +141,15 @@ MEMBER: 'member' -> pushMode(M_Word);
 METHOD: 'method';
 MIN_ACTIVE_MEMBER: 'min-active-member';
 MODE: 'mode';
+MONITOR
+:
+  'monitor'
+  {
+    if (lastTokenType() == HEALTH) {
+      pushMode(M_Word);
+    }
+  }
+;
 MTU: 'mtu';
 NAME: 'name' -> pushMode(M_Word);
 NAT: 'nat';
@@ -99,28 +160,49 @@ NO: 'no';
 NO_AUTO_UP_ON_AFLEX: 'no-auto-up-on-aflex';
 NONE: 'none';
 NOTIFICATION: 'notification';
+NTP: 'ntp';
 ONLY_FLAGGED: 'only-flagged';
 ONLY_NOT_FLAGGED: 'only-not-flagged';
 OPTIMIZATION_LEVEL: 'optimization-level';
 ORF: 'orf';
+OVERRIDE_PORT: 'override-port';
 PASSIVE: 'passive';
 PEER: 'peer';
 PEER_GROUP: 'peer-group';
 PERSIST: 'persist';
 POLICY: 'policy';
 POOL: 'pool' -> pushMode(M_Word);
-PORT: 'port';
+POP3: 'pop3';
+PORT
+:
+  'port'
+  {
+    if (lastTokenType() == TEMPLATE) {
+      pushMode(M_Word);
+    }
+  }
+;
 PORT_OVERLOAD: 'port-overload';
 PORTS_THRESHOLD: 'ports-threshold';
 PREEMPT_MODE: 'preempt-mode';
 PREEMPTION_DELAY: 'preemption-delay';
 PRIORITY: 'priority';
+RADIUS
+:
+  'radius'
+  {
+    if (lastTokenType() == METHOD) {
+      pushMode(M_Words);
+    }
+  }
+;
 RANGE: 'range';
 RBA: 'rba' -> pushMode(M_Rba);
 RESTART_TIME: 'restart-time';
 REDISTRIBUTE: 'redistribute';
 REDISTRIBUTION_FLAGGED: 'redistribution-flagged';
 REMOTE_AS: 'remote-as';
+RETRY: 'retry';
 ROLE: 'role';
 ROUND_ROBIN: 'round-robin';
 ROUTE: 'route';
@@ -128,6 +210,7 @@ ROUTE_REFRESH: 'route-refresh';
 ROUTER: 'router';
 ROUTER_ID: 'router-id';
 ROUTER_INTERFACE: 'router-interface';
+RTSP: 'rtsp';
 RX: 'rx';
 SCALEOUT_DEVICE_ID: 'scaleout-device-id';
 SCAN_TIME: 'scan-time';
@@ -149,15 +232,19 @@ SERVICE_LEAST_CONNECTION: 'service-least-connection';
 SHORT: 'short';
 SIP: 'sip';
 SLB: 'slb';
+SMTP: 'smtp';
+SNMP: 'snmp';
 SOFT_RECONFIGURATION: 'soft-reconfiguration';
 SOURCE_IP: 'source-ip';
 SOURCE_NAT: 'source-nat';
 SPEED: 'speed';
+SSL_CIPHERS: 'ssl-ciphers' -> pushMode(M_Word);
 STANDARD: 'standard';
 STATIC: 'static';
 STATS_DATA_DISABLE: 'stats-data-disable';
 STATS_DATA_ENABLE: 'stats-data-enable';
 SYNCHRONIZATION: 'synchronization';
+TACPLUS: 'tacplus';
 TAGGED: 'tagged';
 TCP: 'tcp';
 TCP_PROXY: 'tcp-proxy';
@@ -173,7 +260,9 @@ TRUNK_GROUP: 'trunk-group';
 TX: 'tx';
 UDP: 'udp';
 UNTAGGED: 'untagged';
+UP_RETRY: 'up-retry';
 UPDATE_SOURCE: 'update-source';
+URL: 'url';
 USE_RCV_HOP_FOR_RESP: 'use-rcv-hop-for-resp';
 USER_TAG: 'user-tag' -> pushMode(M_Word);
 VE: 've';
@@ -391,6 +480,17 @@ M_WordValue_SINGLE_QUOTE: ['] -> type(SINGLE_QUOTE), pushMode(M_SingleQuote);
 M_WordValue_WORD: F_Word -> type(WORD);
 M_WordValue_WS: F_Whitespace+ -> skip, popMode;
 M_WordValue_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_Words;
+M_Words_WS: F_Whitespace+ -> type(WORD_SEPARATOR), mode(M_WordsValue);
+M_Words_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_WordsValue;
+M_WordsValue_DOUBLE_QUOTE: '"' -> type(DOUBLE_QUOTE), pushMode(M_DoubleQuote);
+M_WordsValue_SINGLE_QUOTE: ['] -> type(SINGLE_QUOTE), pushMode(M_SingleQuote);
+M_WordsValue_WORD: F_Word -> type(WORD);
+M_WordsValue_WS: F_Whitespace+ -> type(WORD_SEPARATOR);
+M_WordsValue_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 
 mode M_Rba;
 M_Rba_WS: F_Whitespace+ -> skip;

@@ -2,6 +2,7 @@ parser grammar A10Parser;
 
 import
   A10_common,
+  A10_health_monitor,
   A10_interface,
   A10_ip_nat,
   A10_ip_route,
@@ -24,7 +25,8 @@ a10_configuration: NEWLINE? statement+ EOF;
 
 statement
 :
-   s_hostname
+   s_health_monitor
+   | s_hostname
    | s_interface
    | s_ip
    | s_lacp_trunk

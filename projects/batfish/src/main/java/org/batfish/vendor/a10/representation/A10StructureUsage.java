@@ -7,6 +7,9 @@ public enum A10StructureUsage implements StructureUsage {
   INTERFACE_SELF_REF("interface"),
   INTERFACE_TRUNK_GROUP("interface trunk-group"),
   IP_NAT_POOL_VRID("ip nat pool vrid"),
+  SERVER_HEALTH_CHECK("server health-check"),
+  SERVER_PORT_HEALTH_CHECK("server port health-check"),
+  SERVICE_GROUP_HEALTH_CHECK("service-group health-check"),
   SERVICE_GROUP_MEMBER("service-group member"),
   // ACOS v2 member of a trunk
   TRUNK_INTERFACE("trunk interface"),
