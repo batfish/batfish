@@ -34,7 +34,6 @@ public final class EnvironmentTest {
             .setHostname("c")
             .setConfigurationFormat(ConfigurationFormat.UNKNOWN)
             .build();
-    // No BGP properties
     BgpSessionProperties props =
         BgpSessionProperties.builder()
             .setHeadAs(1)
