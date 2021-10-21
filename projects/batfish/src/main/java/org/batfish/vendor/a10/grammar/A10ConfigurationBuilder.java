@@ -1161,7 +1161,6 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     }
     _c.referenceStructure(SERVER, name, SERVICE_GROUP_MEMBER, ctx.start.getLine());
   }
-  // TODO handle disable and priority for v2
 
   @Override
   public void exitSssgd_member_disable(A10Parser.Sssgd_member_disableContext ctx) {
