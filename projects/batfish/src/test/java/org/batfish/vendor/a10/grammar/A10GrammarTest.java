@@ -1122,6 +1122,8 @@ public class A10GrammarTest {
         new VirtualServerPort.PortAndType(102, VirtualServerPort.Type.HTTP);
     VirtualServerPort.PortAndType https103 =
         new VirtualServerPort.PortAndType(103, VirtualServerPort.Type.HTTPS);
+    VirtualServerPort.PortAndType radius104 =
+        new VirtualServerPort.PortAndType(104, VirtualServerPort.Type.RADIUS);
 
     assertThat(c.getVirtualServers().keySet(), containsInAnyOrder("VS1", "VS2", "VS3"));
 
@@ -1166,7 +1168,9 @@ public class A10GrammarTest {
       assertFalse(server3.getEnable());
       assertThat(server3.getName(), equalTo("VS3"));
       Map<VirtualServerPort.PortAndType, VirtualServerPort> server3Ports = server3.getPorts();
-      assertThat(server3Ports.keySet(), containsInAnyOrder(udp81, tcpProxy101, http102, https103));
+      assertThat(
+          server3Ports.keySet(),
+          containsInAnyOrder(udp81, tcpProxy101, http102, https103, radius104));
       VirtualServerPort server3Port81 = server3Ports.get(udp81);
       assertNull(server3Port81.getAccessList());
       assertNull(server3Port81.getAflex());
@@ -1186,6 +1190,7 @@ public class A10GrammarTest {
           server3Ports.get(tcpProxy101).getType(), equalTo(VirtualServerPort.Type.TCP_PROXY));
       assertThat(server3Ports.get(http102).getType(), equalTo(VirtualServerPort.Type.HTTP));
       assertThat(server3Ports.get(https103).getType(), equalTo(VirtualServerPort.Type.HTTPS));
+      assertThat(server3Ports.get(radius104).getType(), equalTo(VirtualServerPort.Type.RADIUS));
     }
   }
 

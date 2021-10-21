@@ -1955,6 +1955,8 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
       return VirtualServerPort.Type.HTTP;
     } else if (ctx.HTTPS() != null) {
       return VirtualServerPort.Type.HTTPS;
+    } else if (ctx.RADIUS() != null) {
+      return VirtualServerPort.Type.RADIUS;
     } else if (ctx.TCP() != null) {
       return VirtualServerPort.Type.TCP;
     } else if (ctx.TCP_PROXY() != null) {

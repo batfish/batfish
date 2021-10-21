@@ -63,4 +63,5 @@ slb virtual-server VS3 10.0.0.103
   port 101 tcp-proxy
   port 102 http
   port 103 https
+  port 104 radius
 !
