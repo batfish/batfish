@@ -1114,13 +1114,33 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   @Override
   public void enterSssgd_member(A10Parser.Sssgd_memberContext ctx) {
     Optional<String> maybeName = toString(ctx, ctx.slb_server_name());
-    Optional<Integer> maybePort = toInteger(ctx, ctx.port_number());
-    if (!maybeName.isPresent() || !maybePort.isPresent()) {
+    if (!maybeName.isPresent()) {
       _currentServiceGroupMember =
           new ServiceGroupMember(ctx.slb_server_name().getText(), -1); // dummy
       return;
     }
     String name = maybeName.get();
+
+    // Extract port number
+    Optional<Integer> maybePort;
+    // ACOS v2 - port is embedded in the reference "word"
+    if (ctx.sssgd_member_tail().sssgd_member_acos2_tail() != null) {
+      if (!name.contains(":")) {
+        warn(ctx, "Member reference must include port when not specified separately");
+        return;
+      }
+      maybePort = toPortNumber(ctx, name.substring(name.lastIndexOf(":") + 1));
+      name = name.substring(0, name.lastIndexOf(":"));
+    } else {
+      // ACOS v4+ - port is specified separately
+      assert ctx.sssgd_member_tail().sssgd_member_port_number() != null;
+      maybePort = toInteger(ctx, ctx.sssgd_member_tail().sssgd_member_port_number().port_number());
+    }
+    if (!maybePort.isPresent()) {
+      _currentServiceGroupMember = new ServiceGroupMember(name, -1); // dummy
+      return;
+    }
+
     int port = maybePort.get();
     Server server = _c.getServers().get(name);
 
@@ -1140,6 +1160,17 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
       server.createPort(port, _currentServiceGroup.getType());
     }
     _c.referenceStructure(SERVER, name, SERVICE_GROUP_MEMBER, ctx.start.getLine());
+  }
+
+  @Override
+  public void exitSssgd_member_disable(A10Parser.Sssgd_member_disableContext ctx) {
+    _currentServiceGroupMember.setEnable(false);
+  }
+
+  @Override
+  public void exitSssgd_member_priority(A10Parser.Sssgd_member_priorityContext ctx) {
+    toInteger(ctx, ctx.service_group_member_priority())
+        .ifPresent(_currentServiceGroupMember::setPriority);
   }
 
   @Override
@@ -1622,6 +1653,10 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   private @Nonnull Optional<Integer> toInteger(
       ParserRuleContext messageCtx, A10Parser.Port_numberContext ctx) {
     return toIntegerInSpace(messageCtx, ctx.uint16(), PORT_NUMBER_RANGE, "port");
+  }
+
+  private @Nonnull Optional<Integer> toPortNumber(ParserRuleContext messageCtx, String str) {
+    return toIntegerInSpace(messageCtx, str, PORT_NUMBER_RANGE, "port");
   }
 
   private @Nonnull Optional<Integer> toInteger(
@@ -2183,7 +2218,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
       ParserRuleContext messageCtx, String str, IntegerSpace space, String name) {
     Integer num = Ints.tryParse(str);
     if (num == null || !space.contains(num)) {
-      warn(messageCtx, String.format("Expected %s in range %s, but got '%d'", name, space, num));
+      warn(messageCtx, String.format("Expected %s in range %s, but got '%s'", name, space, str));
       return Optional.empty();
     }
     return Optional.of(num);

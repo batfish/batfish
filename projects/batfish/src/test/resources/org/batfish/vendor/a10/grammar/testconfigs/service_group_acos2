@@ -1,0 +1,16 @@
+!BATFISH_FORMAT: a10_acos
+!version 2.7.2, build 123 (Aug-5-2021,01:23)
+hostname service_group_acos2
+!
+slb server SERVER:1 10.0.0.1
+  port 80 tcp
+  port 81 tcp
+  port 82 tcp
+  port 83 tcp
+!
+slb service-group SG1 tcp
+  member SERVER:1:80
+  member SERVER:1:81 disable
+  member SERVER:1:82 priority 1
+  member SERVER:1:83 disable priority 1
+!
