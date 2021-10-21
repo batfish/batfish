@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.vendor.a10.grammar.A10Lexer.WORD;
 import static org.batfish.vendor.a10.representation.A10Configuration.arePortTypesCompatible;
 import static org.batfish.vendor.a10.representation.A10Configuration.getInterfaceName;
+import static org.batfish.vendor.a10.representation.A10StructureType.HEALTH_MONITOR;
 import static org.batfish.vendor.a10.representation.A10StructureType.INTERFACE;
 import static org.batfish.vendor.a10.representation.A10StructureType.NAT_POOL;
 import static org.batfish.vendor.a10.representation.A10StructureType.SERVER;
@@ -12,6 +13,9 @@ import static org.batfish.vendor.a10.representation.A10StructureType.VIRTUAL_SER
 import static org.batfish.vendor.a10.representation.A10StructureType.VRRP_A_FAIL_OVER_POLICY_TEMPLATE;
 import static org.batfish.vendor.a10.representation.A10StructureType.VRRP_A_VRID;
 import static org.batfish.vendor.a10.representation.A10StructureUsage.IP_NAT_POOL_VRID;
+import static org.batfish.vendor.a10.representation.A10StructureUsage.SERVER_HEALTH_CHECK;
+import static org.batfish.vendor.a10.representation.A10StructureUsage.SERVER_PORT_HEALTH_CHECK;
+import static org.batfish.vendor.a10.representation.A10StructureUsage.SERVICE_GROUP_HEALTH_CHECK;
 import static org.batfish.vendor.a10.representation.A10StructureUsage.SERVICE_GROUP_MEMBER;
 import static org.batfish.vendor.a10.representation.A10StructureUsage.VIRTUAL_SERVER_SELF_REF;
 import static org.batfish.vendor.a10.representation.A10StructureUsage.VIRTUAL_SERVER_SERVICE_GROUP;
@@ -188,6 +192,16 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   @Override
   public void exitA10_configuration(A10_configurationContext ctx) {
     _c.finalizeStructures();
+  }
+
+  @Override
+  public void exitS_health_monitor(A10Parser.S_health_monitorContext ctx) {
+    toString(ctx, ctx.health_check_name())
+        .ifPresent(
+            name -> {
+              _c.defineStructure(HEALTH_MONITOR, name, ctx);
+              _c.createHealthMonitorIfAbsent(name);
+            });
   }
 
   @Override
@@ -1028,8 +1042,21 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   @Override
   public void exitSssgd_health_check(A10Parser.Sssgd_health_checkContext ctx) {
-    // TODO add reject if invalid ref, and add ref once health checks are supported
-    toString(ctx, ctx.health_check_name()).ifPresent(_currentServiceGroup::setHealthCheck);
+    toString(ctx, ctx.health_check_name())
+        .ifPresent(
+            name -> {
+              if (!_c.getHealthMonitors().containsKey(name)) {
+                warn(
+                    ctx,
+                    String.format(
+                        "Cannot reference non-existent health monitor %s for service-group %s",
+                        name, _currentServiceGroup.getName()));
+                return;
+              }
+              _c.referenceStructure(
+                  HEALTH_MONITOR, name, SERVICE_GROUP_HEALTH_CHECK, ctx.start.getLine());
+              _currentServiceGroup.setHealthCheck(name);
+            });
   }
 
   @Override
@@ -1485,8 +1512,20 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   @Override
   public void exitSssd_health_check(A10Parser.Sssd_health_checkContext ctx) {
-    // TODO add reject if invalid ref, and add ref once health checks are supported
-    toString(ctx, ctx.health_check_name()).ifPresent(_currentServer::setHealthCheck);
+    toString(ctx, ctx.health_check_name())
+        .ifPresent(
+            name -> {
+              if (!_c.getHealthMonitors().containsKey(name)) {
+                warn(
+                    ctx,
+                    String.format(
+                        "Cannot reference non-existent health monitor %s for server %s",
+                        name, _currentServer.getName()));
+                return;
+              }
+              _c.referenceStructure(HEALTH_MONITOR, name, SERVER_HEALTH_CHECK, ctx.start.getLine());
+              _currentServer.setHealthCheck(name);
+            });
   }
 
   @Override
@@ -1559,8 +1598,22 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   @Override
   public void exitSssdpd_health_check(A10Parser.Sssdpd_health_checkContext ctx) {
-    // TODO add reject if invalid ref, and add ref once health checks are supported
-    toString(ctx, ctx.health_check_name()).ifPresent(_currentServerPort::setHealthCheck);
+    toString(ctx, ctx.health_check_name())
+        .ifPresent(
+            name -> {
+              if (!_c.getHealthMonitors().containsKey(name)) {
+                warn(
+                    ctx,
+                    String.format(
+                        "Cannot reference non-existent health monitor %s for server port %d in"
+                            + " server %s",
+                        name, _currentServerPort.getNumber(), _currentServer.getName()));
+                return;
+              }
+              _c.referenceStructure(
+                  HEALTH_MONITOR, name, SERVER_PORT_HEALTH_CHECK, ctx.start.getLine());
+              _currentServerPort.setHealthCheck(name);
+            });
   }
 
   @Override

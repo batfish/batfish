@@ -1,0 +1,33 @@
+!BATFISH_FORMAT: a10_acos
+hostname health_monitor
+!
+health monitor HM1
+  retry 1
+  up-retry 2
+  interval 3 timeout 4
+  ssl-ciphers DEFAULT
+  method external program SOMETHING
+  method external
+!
+health monitor HM2
+  method icmp
+!
+health monitor HM3
+  override-port 65534
+  method tcp port 65534 halfopen
+!
+health monitor HM4
+  method udp port 1
+!
+health monitor HM5
+  method database oracle db-name database.example.com username healthcheck password encrypted FOOBARBAZ
+!
+health monitor HM6
+  method compound sub SOMETHING sub SOMETHING_ELSE and
+!
+health monitor HM7
+  method http port 80 expect response-code 200-300 host foo.example.com url GET /healthcheck
+!
+health monitor HM8
+  method https port 443 expect "Server is healthy" cert foo.example.com key foo.example.com key-pass-phrase encrypted 1234567890ABCDEFG disable-sslv2hello
+!
