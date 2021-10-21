@@ -396,6 +396,19 @@ public class A10ConversionTest {
   }
 
   @Test
+  public void testToKernelRouteFloatingIp() {
+    Ip floatingIp = Ip.parse("10.0.0.1");
+    assertThat(
+        toKernelRoute(floatingIp),
+        equalTo(
+            KernelRoute.builder()
+                .setNetwork(Prefix.strict("10.0.0.1/32"))
+                .setRequiredOwnedIp(floatingIp)
+                .setTag(KERNEL_ROUTE_TAG_FLOATING_IP)
+                .build()));
+  }
+
+  @Test
   public void testCreateBgpProcess() {
     Ip routerId = Ip.parse("10.1.1.1");
     long remoteAs = 6L;

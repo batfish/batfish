@@ -119,9 +119,12 @@ vrrpa_vrid_id: vrid NEWLINE vrrpavi*;
 
 vrrpavi
 :
-  vrrpavi_preempt_mode
+  vrrpavi_floating_ip
+  | vrrpavi_preempt_mode
   | vrrpavi_blade_parameters
 ;
+
+vrrpavi_floating_ip: FLOATING_IP ip = ip_address NEWLINE;
 
 vrrpavi_preempt_mode
 :

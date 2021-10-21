@@ -9,6 +9,7 @@ vrrp-a common
 !
 
 vrrp-a vrid 1
+  floating-ip 3.0.0.1
 !
 
 interface ethernet 1
