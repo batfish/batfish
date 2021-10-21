@@ -114,26 +114,32 @@ public final class A10Configuration extends VendorConfiguration {
     return _hostname;
   }
 
+  @Nonnull
   public Map<Integer, Interface> getInterfacesEthernet() {
     return _interfacesEthernet;
   }
 
+  @Nonnull
   public Map<Integer, Interface> getInterfacesLoopback() {
     return _interfacesLoopback;
   }
 
+  @Nonnull
   public Map<Integer, TrunkInterface> getInterfacesTrunk() {
     return _interfacesTrunk;
   }
 
+  @Nonnull
   public Map<Integer, Interface> getInterfacesVe() {
     return _interfacesVe;
   }
 
+  @Nonnull
   public Map<String, NatPool> getNatPools() {
     return _natPools;
   }
 
+  @Nonnull
   public Map<String, ServiceGroup> getServiceGroups() {
     return ImmutableMap.copyOf(_serviceGroups);
   }
@@ -143,6 +149,7 @@ public final class A10Configuration extends VendorConfiguration {
     return _serviceGroups.computeIfAbsent(name, n -> new ServiceGroup(name, type));
   }
 
+  @Nonnull
   public Map<String, Server> getServers() {
     return _servers;
   }
@@ -167,6 +174,7 @@ public final class A10Configuration extends VendorConfiguration {
   }
 
   /** Map of route {@link Prefix} to {@link StaticRouteManager} for that prefix. */
+  @Nonnull
   public Map<Prefix, StaticRouteManager> getStaticRoutes() {
     return _staticRoutes;
   }
@@ -205,10 +213,12 @@ public final class A10Configuration extends VendorConfiguration {
     return firstNonNull(iface.getMtu(), DEFAULT_MTU);
   }
 
+  @Nonnull
   public Map<Integer, Vlan> getVlans() {
     return _vlans;
   }
 
+  @Nonnull
   public static InterfaceType getInterfaceType(Interface iface) {
     switch (iface.getType()) {
       case ETHERNET:
@@ -268,6 +278,7 @@ public final class A10Configuration extends VendorConfiguration {
     return _vrrpA;
   }
 
+  @Nonnull
   @Override
   public List<Configuration> toVendorIndependentConfigurations() throws VendorConversionException {
     String hostname = getHostname();
@@ -674,12 +685,14 @@ public final class A10Configuration extends VendorConfiguration {
   }
 
   /** Get the untagged VLAN for the specified interface, if one exists. */
+  @Nonnull
   public Optional<Vlan> getUntaggedVlan(Interface iface) {
     InterfaceReference ref = new InterfaceReference(iface.getType(), iface.getNumber());
     return _vlans.values().stream().filter(v -> v.getUntagged().contains(ref)).findFirst();
   }
 
   /** Returns all VLANs associated with the specified tagged interface. */
+  @Nonnull
   private List<Vlan> getTaggedVlans(Interface iface) {
     InterfaceReference ref = new InterfaceReference(iface.getType(), iface.getNumber());
     return _vlans.values().stream()
@@ -721,22 +734,22 @@ public final class A10Configuration extends VendorConfiguration {
   }
 
   /** Map of interface names to interface. Used for converting aggregate interfaces. */
-  private transient Map<String, Interface> _ifaceNametoIface;
+  @Nullable private transient Map<String, Interface> _ifaceNametoIface;
 
   @Nullable private BgpProcess _bgpProcess;
-  private Configuration _c;
-  private Map<String, HealthMonitor> _healthMonitors;
-  private String _hostname;
-  private Map<Integer, Interface> _interfacesEthernet;
-  private Map<Integer, Interface> _interfacesLoopback;
-  private Map<Integer, TrunkInterface> _interfacesTrunk;
-  private Map<Integer, Interface> _interfacesVe;
-  private Map<String, NatPool> _natPools;
-  private Map<String, Server> _servers;
-  private Map<String, ServiceGroup> _serviceGroups;
-  private Map<Prefix, StaticRouteManager> _staticRoutes;
-  private Map<String, VirtualServer> _virtualServers;
-  private @Nullable VrrpA _vrrpA;
-  private Map<Integer, Vlan> _vlans;
-  private ConfigurationFormat _vendor;
+  @Nullable private Configuration _c;
+  @Nonnull private Map<String, HealthMonitor> _healthMonitors;
+  @Nullable private String _hostname;
+  @Nonnull private Map<Integer, Interface> _interfacesEthernet;
+  @Nonnull private Map<Integer, Interface> _interfacesLoopback;
+  @Nonnull private Map<Integer, TrunkInterface> _interfacesTrunk;
+  @Nonnull private Map<Integer, Interface> _interfacesVe;
+  @Nonnull private Map<String, NatPool> _natPools;
+  @Nonnull private Map<String, Server> _servers;
+  @Nonnull private Map<String, ServiceGroup> _serviceGroups;
+  @Nonnull private Map<Prefix, StaticRouteManager> _staticRoutes;
+  @Nonnull private Map<String, VirtualServer> _virtualServers;
+  @Nullable private VrrpA _vrrpA;
+  @Nonnull private Map<Integer, Vlan> _vlans;
+  @Nullable private ConfigurationFormat _vendor;
 }
