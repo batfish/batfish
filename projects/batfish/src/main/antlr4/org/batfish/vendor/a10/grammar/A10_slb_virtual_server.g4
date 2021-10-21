@@ -98,6 +98,7 @@ virtual_server_port_type
 :
    HTTP
    | HTTPS
+   | RADIUS
    | TCP
    | TCP_PROXY
    | UDP
