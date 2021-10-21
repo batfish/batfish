@@ -40,6 +40,7 @@ public class VirtualServerPort implements Serializable {
   public enum Type {
     HTTP,
     HTTPS,
+    RADIUS,
     TCP,
     TCP_PROXY,
     UDP

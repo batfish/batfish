@@ -10,7 +10,6 @@ import static org.batfish.datamodel.transformation.TransformationStep.assignDest
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationPort;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourcePort;
-import static org.batfish.vendor.a10.representation.VirtualServerPort.Type.UDP;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -95,7 +94,7 @@ public class A10Conversion {
 
   /** Set of {@link VirtualServerPort.Type}s that use {@code udp} protocol */
   static final Set<VirtualServerPort.Type> VIRTUAL_UDP_PORT_TYPES =
-      ImmutableSet.of(VirtualServerPort.Type.UDP);
+      ImmutableSet.of(VirtualServerPort.Type.RADIUS, VirtualServerPort.Type.UDP);
 
   /** Returns the {@link IntegerSpace} representing the specified {@link ServerPort}'s ports. */
   @VisibleForTesting
@@ -129,7 +128,7 @@ public class A10Conversion {
     if (VIRTUAL_TCP_PORT_TYPES.contains(type)) {
       return Optional.of(IpProtocol.TCP);
     }
-    assert type == UDP;
+    assert VIRTUAL_UDP_PORT_TYPES.contains(type);
     return Optional.of(IpProtocol.UDP);
   }
 

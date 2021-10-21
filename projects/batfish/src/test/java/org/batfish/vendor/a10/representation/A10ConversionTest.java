@@ -121,6 +121,9 @@ public class A10ConversionTest {
         toProtocol(new VirtualServerPort(1, VirtualServerPort.Type.HTTPS, 0)),
         equalTo(Optional.of(IpProtocol.TCP)));
     assertThat(
+        toProtocol(new VirtualServerPort(1, VirtualServerPort.Type.RADIUS, 0)),
+        equalTo(Optional.of(IpProtocol.UDP)));
+    assertThat(
         toProtocol(new VirtualServerPort(1, VirtualServerPort.Type.TCP, 0)),
         equalTo(Optional.of(IpProtocol.TCP)));
     assertThat(
@@ -146,7 +149,7 @@ public class A10ConversionTest {
             VirtualServerPort.Type.TCP,
             VirtualServerPort.Type.TCP_PROXY);
     List<VirtualServerPort.Type> udpCompatibleVirtualTypes =
-        ImmutableList.of(VirtualServerPort.Type.UDP);
+        ImmutableList.of(VirtualServerPort.Type.RADIUS, VirtualServerPort.Type.UDP);
 
     for (VirtualServerPort.Type typeToCheck : tcpCompatibleVirtualTypes) {
       assertTrue(arePortTypesCompatible(ServerPort.Type.TCP, typeToCheck));
