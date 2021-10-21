@@ -48,5 +48,11 @@ public final class EnvironmentTest {
     assertThat(eIn.getLocalIp(), equalTo(Optional.of(Ip.ZERO)));
     assertThat(eIn.getRemoteAs(), equalTo(Optional.of(2L)));
     assertThat(eIn.getRemoteIp(), equalTo(Optional.of(Ip.MAX)));
+    Environment eOut =
+        Environment.builder(c).setBgpSessionProperties(props).setDirection(Direction.OUT).build();
+    assertThat(eOut.getLocalAs(), equalTo(Optional.of(2L)));
+    assertThat(eOut.getLocalIp(), equalTo(Optional.of(Ip.MAX)));
+    assertThat(eOut.getRemoteAs(), equalTo(Optional.of(1L)));
+    assertThat(eOut.getRemoteIp(), equalTo(Optional.of(Ip.ZERO)));
   }
 }
