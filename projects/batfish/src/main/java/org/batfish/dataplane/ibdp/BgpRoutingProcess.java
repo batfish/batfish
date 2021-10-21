@@ -1481,7 +1481,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     Stream<RouteAdvertisement<EvpnType3Route>> evpnAdvertisements =
         getEvpnTransformedRouteStream(outgoingEdge, delta, nc, allNodes, ourSession);
     getNeighborBgpProcess(outgoingEdge.head(), allNodes)
-        // Make sure to reverse the edge for enqueuing advertisements
         .enqueueEvpnType3Routes(outgoingEdge, evpnAdvertisements);
   }
 
