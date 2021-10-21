@@ -15,6 +15,10 @@ slb service-group SG1 tcp
     ! Bad priorities
     priority 0
     priority 17
+  ! ACOS v2 syntax, bad port
+  member SERVER1:65536
+  member SERVER1:
+  member SERVER1
 !
 ! Cannot change type / protocol
 slb service-group SG1 udp
