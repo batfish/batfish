@@ -737,9 +737,9 @@ public final class A10Configuration extends VendorConfiguration {
   @Nullable private transient Map<String, Interface> _ifaceNametoIface;
 
   @Nullable private BgpProcess _bgpProcess;
-  @Nullable private Configuration _c;
+  private Configuration _c;
   @Nonnull private Map<String, HealthMonitor> _healthMonitors;
-  @Nullable private String _hostname;
+  private String _hostname;
   @Nonnull private Map<Integer, Interface> _interfacesEthernet;
   @Nonnull private Map<Integer, Interface> _interfacesLoopback;
   @Nonnull private Map<Integer, TrunkInterface> _interfacesTrunk;
@@ -751,5 +751,5 @@ public final class A10Configuration extends VendorConfiguration {
   @Nonnull private Map<String, VirtualServer> _virtualServers;
   @Nullable private VrrpA _vrrpA;
   @Nonnull private Map<Integer, Vlan> _vlans;
-  @Nullable private ConfigurationFormat _vendor;
+  private ConfigurationFormat _vendor;
 }
