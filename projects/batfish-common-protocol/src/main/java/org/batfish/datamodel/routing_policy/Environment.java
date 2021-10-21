@@ -100,7 +100,7 @@ public class Environment {
   @Nullable
   private final BiFunction<RibExpr, PrefixSpace, Boolean> _ribIntersectsPrefixSpaceEvaluator;
 
-  private AbstractRoute _originalRoute;
+  private final AbstractRoute _originalRoute;
   @Nullable private final AbstractRoute6 _originalRoute6;
   private final AbstractRouteBuilder<?, ?> _outputRoute;
   private final Map<String, RoutingPolicy> _routingPolicies;
@@ -115,8 +115,8 @@ public class Environment {
 
   private Environment(
       Map<String, AsPathAccessList> asPathAccessLists,
-      Map<String, AsPathExpr> asPathExprs,
-      Map<String, AsPathMatchExpr> asPathMatchExprs,
+      @Nonnull Map<String, AsPathExpr> asPathExprs,
+      @Nonnull Map<String, AsPathMatchExpr> asPathMatchExprs,
       @Nullable BgpSessionProperties bgpSessionProperties,
       boolean buffered,
       boolean callExprContext,
@@ -368,7 +368,7 @@ public class Environment {
     return _routeFilterLists;
   }
 
-  public String getRouteSourceVrf() {
+  public @Nullable String getRouteSourceVrf() {
     return _routeSourceVrf;
   }
 
