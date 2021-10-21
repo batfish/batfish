@@ -1,11 +1,15 @@
 !BATFISH_FORMAT: a10_acos
 hostname server
 !
+health monitor HEALTH_CHECK_NAME
+!
+health monitor HEALTH_CHECK_NAME2
+!
+!
 slb server SERVER1 10.0.0.1
 !
 slb server SERVER2 10.0.0.102
   enable
-  ! TODO define health-checks when those are supported
   health-check HEALTH_CHECK_NAME
   stats-data-enable
   template server SERVER_TEMPLATE
