@@ -24,15 +24,20 @@ import org.junit.Test;
 /** Tests of {@link BgpSessionProperties} */
 public class BgpSessionPropertiesTest {
   @Test
-  public void testSessionCreation() {
+  public void testSessionCreationEbgp() {
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip2 = Ip.parse("2.2.2.2");
     long as1 = 1;
     long as2 = 2;
-    Ipv4UnicastAddressFamily addressFamily =
+    Ipv4UnicastAddressFamily addressFamily1 =
         Ipv4UnicastAddressFamily.builder()
             .setAddressFamilyCapabilities(
                 AddressFamilyCapabilities.builder().setAdvertiseInactive(true).build())
+            .build();
+    Ipv4UnicastAddressFamily addressFamily2 =
+        Ipv4UnicastAddressFamily.builder()
+            .setAddressFamilyCapabilities(
+                AddressFamilyCapabilities.builder().setAdvertiseInactive(false).build())
             .build();
     BgpActivePeerConfig p1 =
         BgpActivePeerConfig.builder()
@@ -40,7 +45,7 @@ public class BgpSessionPropertiesTest {
             .setLocalAs(as1)
             .setRemoteAs(as2)
             .setPeerAddress(ip2)
-            .setIpv4UnicastAddressFamily(addressFamily)
+            .setIpv4UnicastAddressFamily(addressFamily1)
             .build();
     BgpActivePeerConfig p2 =
         BgpActivePeerConfig.builder()
@@ -48,23 +53,105 @@ public class BgpSessionPropertiesTest {
             .setLocalAs(as2)
             .setRemoteAs(as1)
             .setPeerAddress(ip1)
-            .setIpv4UnicastAddressFamily(addressFamily)
+            .setIpv4UnicastAddressFamily(addressFamily2)
             .build();
-    BgpSessionProperties session = BgpSessionProperties.from(p1, p2, false);
+    {
+      BgpSessionProperties forwardSession =
+          BgpSessionProperties.builder()
+              .setAddressFamilies(ImmutableList.of(addressFamily1.getType()))
+              .setTailAs(as1)
+              .setHeadAs(as2)
+              .setTailIp(ip1)
+              .setHeadIp(ip2)
+              .setSessionType(SessionType.EBGP_SINGLEHOP)
+              .setRouteExchangeSettings(
+                  // Add paths false, advertise external false, advertise inactive true
+                  ImmutableMap.of(addressFamily1.getType(), new RouteExchange(false, false, true)))
+              .build();
+      assertThat(BgpSessionProperties.from(p1, p2, false), equalTo(forwardSession));
+    }
+    {
+      BgpSessionProperties reverseSession =
+          BgpSessionProperties.builder()
+              .setAddressFamilies(ImmutableList.of(addressFamily1.getType()))
+              .setTailAs(as2)
+              .setHeadAs(as1)
+              .setTailIp(ip2)
+              .setHeadIp(ip1)
+              .setSessionType(SessionType.EBGP_SINGLEHOP)
+              .setRouteExchangeSettings(
+                  // Add paths false, advertise external false, advertise inactive true
+                  ImmutableMap.of(addressFamily1.getType(), new RouteExchange(false, false, false)))
+              .build();
+      assertThat(BgpSessionProperties.from(p1, p2, true), equalTo(reverseSession));
+    }
+  }
 
-    BgpSessionProperties expectedSession =
-        BgpSessionProperties.builder()
-            .setAddressFamilies(ImmutableList.of(addressFamily.getType()))
-            .setTailAs(as1)
-            .setHeadAs(as2)
-            .setTailIp(ip1)
-            .setHeadIp(ip2)
-            .setSessionType(SessionType.EBGP_SINGLEHOP)
-            .setRouteExchangeSettings(
-                // Add paths false, advertise external false, advertise inactive true
-                ImmutableMap.of(addressFamily.getType(), new RouteExchange(false, false, true)))
+  @Test
+  public void testSessionCreationIbgp() {
+    Ip ip1 = Ip.parse("1.1.1.1");
+    Ip ip2 = Ip.parse("2.2.2.2");
+    long as = 1;
+    Ipv4UnicastAddressFamily addressFamily1 =
+        Ipv4UnicastAddressFamily.builder()
+            .setAddressFamilyCapabilities(
+                AddressFamilyCapabilities.builder()
+                    .setAdditionalPathsSelectAll(true)
+                    .setAdditionalPathsSend(true)
+                    .setAdvertiseExternal(true)
+                    .build())
             .build();
-    assertThat(session, equalTo(expectedSession));
+    Ipv4UnicastAddressFamily addressFamily2 =
+        Ipv4UnicastAddressFamily.builder()
+            .setAddressFamilyCapabilities(
+                AddressFamilyCapabilities.builder().setAdditionalPathsReceive(true).build())
+            .build();
+    BgpActivePeerConfig p1 =
+        BgpActivePeerConfig.builder()
+            .setLocalIp(ip1)
+            .setLocalAs(as)
+            .setRemoteAs(as)
+            .setPeerAddress(ip2)
+            .setIpv4UnicastAddressFamily(addressFamily1)
+            .build();
+    BgpActivePeerConfig p2 =
+        BgpActivePeerConfig.builder()
+            .setLocalIp(ip2)
+            .setLocalAs(as)
+            .setRemoteAs(as)
+            .setPeerAddress(ip1)
+            .setIpv4UnicastAddressFamily(addressFamily2)
+            .build();
+    {
+      BgpSessionProperties forwardSession =
+          BgpSessionProperties.builder()
+              .setAddressFamilies(ImmutableList.of(addressFamily1.getType()))
+              .setTailAs(as)
+              .setHeadAs(as)
+              .setTailIp(ip1)
+              .setHeadIp(ip2)
+              .setSessionType(SessionType.IBGP)
+              .setRouteExchangeSettings(
+                  // Add paths false, advertise external false, advertise inactive true
+                  ImmutableMap.of(addressFamily1.getType(), new RouteExchange(true, true, false)))
+              .build();
+      assertThat(BgpSessionProperties.from(p1, p2, false), equalTo(forwardSession));
+    }
+    {
+      BgpSessionProperties reverseSession =
+          BgpSessionProperties.builder()
+              .setAddressFamilies(ImmutableList.of(addressFamily1.getType()))
+              .setTailAs(as)
+              .setHeadAs(as)
+              .setTailIp(ip2)
+              .setHeadIp(ip1)
+              .setSessionType(SessionType.IBGP)
+              .setRouteExchangeSettings(
+                  // Add paths false, advertise external false, advertise inactive true
+                  ImmutableMap.of(addressFamily1.getType(), new RouteExchange(false, false, false)))
+              .build();
+      assertThat(BgpSessionProperties.from(p1, p2, true), equalTo(reverseSession));
+    }
   }
 
   @Test

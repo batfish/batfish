@@ -383,18 +383,18 @@ public final class BgpSessionProperties {
 
   /** Computes whether two peers have compatible configuration to enable add-path */
   private static boolean computeAdditionalPaths(
-      BgpPeerConfig initiator, BgpPeerConfig listener, SessionType sessionType) {
+      BgpPeerConfig sender, BgpPeerConfig receiver, SessionType sessionType) {
     // TODO: support address families other than IPv4 unicast
-    Ipv4UnicastAddressFamily initiatorAF = initiator.getIpv4UnicastAddressFamily();
-    Ipv4UnicastAddressFamily listenerAF = listener.getIpv4UnicastAddressFamily();
-    if (initiatorAF == null || listenerAF == null) {
+    Ipv4UnicastAddressFamily senderAF = sender.getIpv4UnicastAddressFamily();
+    Ipv4UnicastAddressFamily receiverAF = receiver.getIpv4UnicastAddressFamily();
+    if (senderAF == null || receiverAF == null) {
       return false;
     }
-    AddressFamilyCapabilities initiatorCapabilities = initiatorAF.getAddressFamilyCapabilities();
+    AddressFamilyCapabilities senderCapabilities = senderAF.getAddressFamilyCapabilities();
     return !SessionType.isEbgp(sessionType)
-        && listenerAF.getAddressFamilyCapabilities().getAdditionalPathsReceive()
-        && initiatorCapabilities.getAdditionalPathsSend()
-        && initiatorCapabilities.getAdditionalPathsSelectAll();
+        && receiverAF.getAddressFamilyCapabilities().getAdditionalPathsReceive()
+        && senderCapabilities.getAdditionalPathsSend()
+        && senderCapabilities.getAdditionalPathsSelectAll();
   }
 
   @VisibleForTesting
