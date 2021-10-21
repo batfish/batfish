@@ -98,6 +98,7 @@ public final class A10Configuration extends VendorConfiguration {
     return _bgpProcess;
   }
 
+  @Nonnull
   public Map<String, HealthMonitor> getHealthMonitors() {
     return _healthMonitors;
   }

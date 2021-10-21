@@ -7,7 +7,7 @@ import javax.annotation.Nonnull;
  * Datamodel class representing the configuration of a {@code health monitor}, used to monitor the
  * health of load balancer service or server.
  */
-public class HealthMonitor implements Serializable {
+public final class HealthMonitor implements Serializable {
   @Nonnull
   public String getName() {
     return _name;
@@ -17,5 +17,5 @@ public class HealthMonitor implements Serializable {
     _name = name;
   }
 
-  @Nonnull private String _name;
+  @Nonnull private final String _name;
 }
