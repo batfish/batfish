@@ -1615,6 +1615,45 @@ public class A10GrammarTest {
   }
 
   @Test
+  public void testServiceGroupAcos2Extraction() {
+    String hostname = "service_group_acos2";
+    A10Configuration c = parseVendorConfig(hostname);
+
+    assertThat(c.getServiceGroups().keySet(), containsInAnyOrder("SG1"));
+
+    ServiceGroup sg1 = c.getServiceGroups().get("SG1");
+
+    {
+      ServiceGroupMember port80 =
+          sg1.getMembers().get(new ServiceGroupMember.NameAndPort("SERVER:1", 80));
+      assertNotNull(port80);
+      assertNull(port80.getEnable());
+      assertNull(port80.getPriority());
+    }
+    {
+      ServiceGroupMember port81 =
+          sg1.getMembers().get(new ServiceGroupMember.NameAndPort("SERVER:1", 81));
+      assertNotNull(port81);
+      assertFalse(port81.getEnable());
+      assertNull(port81.getPriority());
+    }
+    {
+      ServiceGroupMember port82 =
+          sg1.getMembers().get(new ServiceGroupMember.NameAndPort("SERVER:1", 82));
+      assertNotNull(port82);
+      assertNull(port82.getEnable());
+      assertThat(port82.getPriority(), equalTo(1));
+    }
+    {
+      ServiceGroupMember port83 =
+          sg1.getMembers().get(new ServiceGroupMember.NameAndPort("SERVER:1", 83));
+      assertNotNull(port83);
+      assertFalse(port83.getEnable());
+      assertThat(port83.getPriority(), equalTo(1));
+    }
+  }
+
+  @Test
   public void testServiceGroupWarn() throws IOException {
     String filename = "service_group_warn";
     Batfish batfish = getBatfishForConfigurationNames(filename);
@@ -1636,7 +1675,10 @@ public class A10GrammarTest {
                 hasComment("Expected min-active-member in range 1-1024, but got '0'"),
                 hasComment("Expected min-active-member in range 1-1024, but got '1025'"),
                 hasComment("Expected member priority in range 1-16, but got '0'"),
-                hasComment("Expected member priority in range 1-16, but got '17'"))));
+                hasComment("Expected member priority in range 1-16, but got '17'"),
+                hasComment("Expected port in range 0-65535, but got '65536'"),
+                hasComment("Expected port in range 0-65535, but got ''"),
+                hasComment("Member reference must include port when not specified separately"))));
   }
 
   /**

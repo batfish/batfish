@@ -24,7 +24,19 @@ sssgd_health_check: HEALTH_CHECK health_check_name NEWLINE;
 sssgd_health_check_disable: HEALTH_CHECK_DISABLE NEWLINE;
 
 // TODO support declaring a new server in this context, i.e. when IP address is provided as well
-sssgd_member: MEMBER slb_server_name port_number NEWLINE sssgdm_definition*;
+sssgd_member: MEMBER slb_server_name sssgd_member_tail sssgdm_definition*;
+
+sssgd_member_tail: sssgd_member_port_number | sssgd_member_acos2_tail;
+
+// Syntax for ACOS v4+
+sssgd_member_port_number: port_number NEWLINE;
+
+// Alternate syntax for ACOS v2
+sssgd_member_acos2_tail: (sssgd_member_disable | sssgd_member_priority)* NEWLINE;
+
+sssgd_member_disable: DISABLE;
+
+sssgd_member_priority: PRIORITY service_group_member_priority;
 
 sssgd_method: METHOD service_group_method NEWLINE;
 
