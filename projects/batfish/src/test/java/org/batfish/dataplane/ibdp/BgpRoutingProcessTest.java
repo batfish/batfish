@@ -331,17 +331,17 @@ public class BgpRoutingProcessTest {
         new BgpPeerConfigId("someHost", DEFAULT_VRF_NAME, ip1.toPrefix(), false);
     BgpSessionProperties.Builder sessionBuilderForward =
         BgpSessionProperties.builder()
-            .setHeadAs(remoteAs)
-            .setTailAs(localAs)
-            .setHeadIp(ip2)
-            .setTailIp(ip1)
+            .setRemoteAs(remoteAs)
+            .setLocalAs(localAs)
+            .setRemoteIp(ip2)
+            .setLocalIp(ip1)
             .setAddressFamilies(ImmutableSet.of(Type.EVPN));
     BgpSessionProperties.Builder sessionBuilderReverse =
         BgpSessionProperties.builder()
-            .setHeadAs(localAs)
-            .setTailAs(remoteAs)
-            .setHeadIp(ip1)
-            .setTailIp(ip2)
+            .setRemoteAs(localAs)
+            .setLocalAs(remoteAs)
+            .setRemoteIp(ip1)
+            .setLocalIp(ip2)
             .setAddressFamilies(ImmutableSet.of(Type.EVPN));
     graph.putEdgeValue(peer1Id, peer2Id, sessionBuilderForward.build());
     graph.putEdgeValue(peer2Id, peer1Id, sessionBuilderReverse.build());
@@ -481,17 +481,17 @@ public class BgpRoutingProcessTest {
         new BgpPeerConfigId("c2", DEFAULT_VRF_NAME, localIp.toPrefix(), false);
     BgpSessionProperties.Builder sessionBuilderForward =
         BgpSessionProperties.builder()
-            .setHeadAs(localAs)
-            .setTailAs(peerAs)
-            .setHeadIp(localIp)
-            .setTailIp(peerIp)
+            .setRemoteAs(localAs)
+            .setLocalAs(peerAs)
+            .setRemoteIp(localIp)
+            .setLocalIp(peerIp)
             .setAddressFamilies(ImmutableSet.of(Type.EVPN));
     BgpSessionProperties.Builder sessionBuilderReverse =
         BgpSessionProperties.builder()
-            .setHeadAs(peerAs)
-            .setTailAs(localAs)
-            .setHeadIp(peerIp)
-            .setTailIp(localIp)
+            .setRemoteAs(peerAs)
+            .setLocalAs(localAs)
+            .setRemoteIp(peerIp)
+            .setLocalIp(localIp)
             .setAddressFamilies(ImmutableSet.of(Type.EVPN));
     graph.putEdgeValue(
         peer1Id,

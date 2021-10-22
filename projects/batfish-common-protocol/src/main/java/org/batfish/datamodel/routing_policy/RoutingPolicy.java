@@ -261,9 +261,8 @@ public class RoutingPolicy implements Serializable {
    *
    * @param inputRoute Input route to process
    * @param outputRoute Builder for output BGP route; may be modified by policy
-   * @param sessionProperties {@link BgpSessionProperties} representing the session <em>from</em>
-   *     the remote node <em>to</em> the node processing the policy (regardless of whether this
-   *     policy is currently being used for import or export)
+   * @param sessionProperties {@link BgpSessionProperties} representing the session for the local
+   *     node. In other words, local properties should be TAIL and remote properties should be HEAD.
    * @param direction {@link Direction} in which route is being sent
    * @param ribIntersectsPrefixSpaceEvaluator function that evaluates whether there is any
    *     intersection between the prefixes of the routes in the RIB represented by a provided {@link

@@ -535,21 +535,10 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
     // TODO: _localType3Routes is not enough
     //    Ideally we need to re-send all EVPN routes we have to new neighbors
-    edgesWentUp.forEach(
-        edge -> {
-          BgpPeerConfigId remoteConfigId = edge.tail();
-          BgpSessionProperties session = getSessionProperties(_topology, edge);
-          getNeighborBgpProcess(remoteConfigId, allNodes)
-              .enqueueEvpnType3Routes(
-                  // Make sure to reverse the edge
-                  edge.reverse(),
-                  getEvpnTransformedRouteStream(
-                      edge,
-                      new BgpDelta<>(_localType3Routes, RibDelta.empty()),
-                      nc,
-                      allNodes,
-                      session));
-        });
+    for (EdgeId edge : edgesWentUp) {
+      sendEvpnType3RoutesToEdge(
+          edge.reverse(), new BgpDelta<>(_localType3Routes, RibDelta.empty()), nc, allNodes);
+    }
   }
 
   @Nonnull
@@ -812,23 +801,25 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     // Setup helper vars
     BgpPeerConfigId remoteConfigId = edgeId.tail();
     BgpPeerConfigId ourConfigId = edgeId.head();
-    BgpSessionProperties sessionProperties =
-        getBgpSessionProperties(bgpTopology, new EdgeId(remoteConfigId, ourConfigId));
+    // Verify that "ourConfigId" really is ours.
+    assert ourConfigId.getHostname().equals(_hostname);
+
+    BgpSessionProperties ourSessionProperties =
+        getBgpSessionProperties(bgpTopology, edgeId.reverse());
     BgpPeerConfig ourBgpConfig = requireNonNull(nc.getBgpPeerConfig(edgeId.head()));
     assert ourBgpConfig.getIpv4UnicastAddressFamily() != null;
     // sessionProperties represents the incoming edge, so its tailIp is the remote peer's IP
     boolean useRibGroups =
         ourBgpConfig.getAppliedRibGroup() != null
             && !ourBgpConfig.getAppliedRibGroup().getImportRibs().isEmpty();
-    Ip remoteIp = sessionProperties.getTailIp();
 
-    Bgpv4Rib targetRib = sessionProperties.isEbgp() ? _ebgpv4Rib : _ibgpv4Rib;
+    Bgpv4Rib targetRib = ourSessionProperties.isEbgp() ? _ebgpv4Rib : _ibgpv4Rib;
     Builder<AnnotatedRoute<AbstractRoute>> perNeighborDeltaForRibGroups = RibDelta.builder();
 
-    BgpRoutingProcess neighborProcess = getNeighborBgpProcess(remoteConfigId, nodes);
+    BgpRoutingProcess remoteProcess = getNeighborBgpProcess(remoteConfigId, nodes);
     Iterator<RouteAdvertisement<Bgpv4Route>> exportedRoutes =
-        neighborProcess
-            .getOutgoingRoutesForEdge(edgeId.reverse(), nodes, bgpTopology, nc, isNewSession)
+        remoteProcess
+            .getOutgoingRoutesForEdge(edgeId, nodes, bgpTopology, nc, isNewSession)
             .iterator();
 
     // Process all routes from neighbor
@@ -840,21 +831,21 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       Bgpv4Route.Builder transformedIncomingRouteBuilder =
           transformBgpRouteOnImport(
               remoteRoute,
-              sessionProperties.getHeadAs(),
+              ourSessionProperties.getLocalAs(),
               ourBgpConfig
                   .getIpv4UnicastAddressFamily()
                   .getAddressFamilyCapabilities()
                   .getAllowLocalAsIn(),
-              sessionProperties.isEbgp(),
+              ourSessionProperties.isEbgp(),
               _process,
-              sessionProperties.getTailIp(),
+              ourSessionProperties.getRemoteIp(),
               ourConfigId.getPeerInterface());
       if (transformedIncomingRouteBuilder == null) {
         // Route could not be imported for core protocol reasons
         _prefixTracer.filtered(
             remoteRoute.getNetwork(),
             remoteConfigId.getHostname(),
-            remoteIp,
+            ourSessionProperties.getRemoteIp(),
             remoteConfigId.getVrfName(),
             null,
             IN);
@@ -872,7 +863,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
               importPolicy.processBgpRoute(
                   remoteRoute,
                   transformedIncomingRouteBuilder,
-                  sessionProperties,
+                  ourSessionProperties,
                   IN,
                   _ribExprEvaluator);
         }
@@ -882,7 +873,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         _prefixTracer.filtered(
             remoteRoute.getNetwork(),
             remoteConfigId.getHostname(),
-            remoteIp,
+            ourSessionProperties.getRemoteIp(),
             remoteConfigId.getVrfName(),
             importPolicyName,
             IN);
@@ -911,7 +902,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         _prefixTracer.installed(
             transformedIncomingRoute.getNetwork(),
             remoteConfigId.getHostname(),
-            remoteIp,
+            ourSessionProperties.getRemoteIp(),
             remoteConfigId.getVrfName(),
             importPolicyName);
       }
@@ -938,12 +929,18 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       BgpTopology bgpTopology,
       NetworkConfigurations networkConfigurations,
       boolean isNewSession) {
-    BgpSessionProperties session = BgpRoutingProcess.getBgpSessionProperties(bgpTopology, edge);
+    BgpPeerConfigId remoteConfigId = edge.head();
+    BgpPeerConfigId ourConfigId = edge.tail();
+    // Confirm edge directionality.
+    assert ourConfigId.getHostname().equals(_hostname);
+    BgpPeerConfig ourConfig = networkConfigurations.getBgpPeerConfig(edge.tail());
+    BgpPeerConfig remoteConfig = networkConfigurations.getBgpPeerConfig(edge.head());
 
-    BgpPeerConfigId remoteConfigId = edge.tail();
-    BgpPeerConfigId ourConfigId = edge.head();
-    BgpPeerConfig ourConfig = networkConfigurations.getBgpPeerConfig(edge.head());
-    BgpPeerConfig remoteConfig = networkConfigurations.getBgpPeerConfig(edge.tail());
+    // Note: Edge needs to be our -> remote, so that the properties it has like advertise-external
+    // correspond to the local device.
+    BgpSessionProperties ourSession = BgpRoutingProcess.getBgpSessionProperties(bgpTopology, edge);
+    // Verify session properties
+    assert Objects.equals(ourSession.getLocalAs(), ourConfig.getLocalAs());
 
     BgpRoutingProcess remoteBgpRoutingProcess = getNeighborBgpProcess(remoteConfigId, allNodes);
 
@@ -963,7 +960,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                   adv -> {
                     _prefixTracer.originated(adv.getRoute().getNetwork());
                     Bgpv4Route bgpRoute =
-                        exportNonBgpRouteToBgp(adv.getRoute(), remoteConfigId, ourConfig, session);
+                        exportNonBgpRouteToBgp(
+                            adv.getRoute(), remoteConfigId, ourConfig, ourSession);
                     if (bgpRoute == null) {
                       return null;
                     }
@@ -992,7 +990,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     RibDelta<Bgpv4Route> bgpv4DeltaPrev;
     Set<Bgpv4Route> ebgpv4Prev;
     RibDelta<Bgpv4Route> ebgpv4DeltaPrev;
-    if (session.getAdditionalPaths()) {
+    if (ourSession.getAdditionalPaths()) {
       /*
       TODO: https://github.com/batfish/batfish/issues/704
          Add path is broken for all intents and purposes.
@@ -1010,7 +1008,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       ebgpv4Prev = _ebgpv4PrevBestPath;
       ebgpv4DeltaPrev = _ebgpv4DeltaPrevBestPath;
     }
-    if (session.getAdvertiseExternal()) {
+    if (ourSession.getAdvertiseExternal()) {
       if (isNewSession) {
         bgpRibExports.from(
             ebgpv4Prev.stream().map(this::annotateRoute).map(RouteAdvertisement::new));
@@ -1018,7 +1016,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       importDeltaToBuilder(bgpRibExports, ebgpv4DeltaPrev, _vrfName);
     }
 
-    if (session.getAdvertiseInactive()) {
+    if (ourSession.getAdvertiseInactive()) {
       if (isNewSession) {
         bgpRibExports.from(
             bgpv4Prev.stream().map(this::annotateRoute).map(RouteAdvertisement::new));
@@ -1048,7 +1046,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                           || (_exportFromBgpRib
                               && Ip.ZERO.equals(r.getRoute().getRoute().getReceivedFromIp()))
                           // RIB-failure routes included
-                          || isReflectable(r.getRoute(), session, ourConfig)
+                          || isReflectable(r.getRoute(), ourSession, ourConfig)
                           // RIB-failure routes excluded
                           || _mainRib.containsRoute(r.getRoute())));
     }
@@ -1065,7 +1063,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                 r -> {
                   // Activate route and convert to BGP if activated
                   Bgpv4Route bgpv4Route =
-                      processNeighborSpecificGeneratedRoute(r, session.getHeadIp());
+                      processNeighborSpecificGeneratedRoute(r, ourSession.getLocalIp());
                   if (bgpv4Route == null) {
                     // Route was not activated
                     return Optional.<Bgpv4Route>empty();
@@ -1078,7 +1076,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                       ourConfig,
                       remoteConfig,
                       remoteBgpRoutingProcess,
-                      session,
+                      ourSession,
                       Type.IPV4_UNICAST);
                 })
             .filter(Optional::isPresent)
@@ -1102,7 +1100,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                               ourConfig,
                               remoteConfig,
                               remoteBgpRoutingProcess,
-                              session,
+                              ourSession,
                               Type.IPV4_UNICAST);
                       // REPLACE does not make sense across routers, update with WITHDRAW
                       return transformedRoute
@@ -1377,9 +1375,10 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     BgpPeerConfig ourBgpConfig = nc.getBgpPeerConfig(ourConfigId);
     assert ourBgpConfig != null; // because the edge exists
     assert ourBgpConfig.getEvpnAddressFamily() != null;
-    // sessionProperties represents the incoming edge, so its tailIp is the remote peer's IP
-    BgpSessionProperties sessionProperties = getSessionProperties(_topology, edge);
-    EvpnRib<R> targetRib = getRib(clazz, sessionProperties.isEbgp() ? RibType.EBGP : RibType.IBGP);
+    // Reverse the edge so that these are "our" session properties - tail is this node.
+    BgpSessionProperties ourSessionProperties = getSessionProperties(_topology, edge.reverse());
+    EvpnRib<R> targetRib =
+        getRib(clazz, ourSessionProperties.isEbgp() ? RibType.EBGP : RibType.IBGP);
     RibDelta.Builder<R> toAdvertise = RibDelta.builder();
     RibDelta.Builder<R> toMerge = RibDelta.builder();
     while (!queue.isEmpty()) {
@@ -1388,14 +1387,14 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       B transformedBuilder =
           transformBgpRouteOnImport(
               route,
-              sessionProperties.getHeadAs(),
+              ourSessionProperties.getLocalAs(),
               ourBgpConfig
                   .getEvpnAddressFamily()
                   .getAddressFamilyCapabilities()
                   .getAllowLocalAsIn(),
-              sessionProperties.isEbgp(),
+              ourSessionProperties.isEbgp(),
               _process,
-              sessionProperties.getTailIp(),
+              ourSessionProperties.getRemoteIp(),
               ourConfigId.getPeerInterface());
       if (transformedBuilder == null) {
         continue;
@@ -1409,7 +1408,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         if (importPolicy != null) {
           acceptIncoming =
               importPolicy.processBgpRoute(
-                  route, transformedBuilder, sessionProperties, IN, _ribExprEvaluator);
+                  route, transformedBuilder, ourSessionProperties, IN, _ribExprEvaluator);
         }
       }
       if (!acceptIncoming) {
@@ -1454,11 +1453,11 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     }
 
     BgpDelta<R> advertiseDelta =
-        sessionProperties.isEbgp()
+        ourSessionProperties.isEbgp()
             ? new BgpDelta<>(toAdvertise.build(), RibDelta.empty())
             : new BgpDelta<>(RibDelta.empty(), toAdvertise.build());
     BgpDelta<R> mergeDelta =
-        sessionProperties.isEbgp()
+        ourSessionProperties.isEbgp()
             ? new BgpDelta<>(toMerge.build(), RibDelta.empty())
             : new BgpDelta<>(RibDelta.empty(), toMerge.build());
     return new DeltaPair<>(advertiseDelta, mergeDelta);
@@ -1469,28 +1468,36 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       BgpDelta<EvpnType3Route> evpnDelta, NetworkConfigurations nc, Map<String, Node> allNodes) {
     _evpnType3IncomingRoutes
         .keySet()
-        .forEach(
-            edge -> {
-              BgpPeerConfigId remoteConfigId = edge.tail();
-              BgpSessionProperties session = getSessionProperties(_topology, edge);
-              getNeighborBgpProcess(remoteConfigId, allNodes)
-                  .enqueueEvpnType3Routes(
-                      // Make sure to reverse the edge
-                      edge.reverse(),
-                      getEvpnTransformedRouteStream(edge, evpnDelta, nc, allNodes, session));
-            });
+        .forEach(edge -> sendEvpnType3RoutesToEdge(edge.reverse(), evpnDelta, nc, allNodes));
+  }
+
+  private void sendEvpnType3RoutesToEdge(
+      EdgeId outgoingEdge,
+      BgpDelta<EvpnType3Route> delta,
+      NetworkConfigurations nc,
+      Map<String, Node> allNodes) {
+    // Confirm edge is outgoing.
+    assert _hostname.equals(outgoingEdge.tail().getHostname());
+    BgpSessionProperties ourSession = getSessionProperties(_topology, outgoingEdge);
+    Stream<RouteAdvertisement<EvpnType3Route>> evpnAdvertisements =
+        getEvpnTransformedRouteStream(outgoingEdge, delta, nc, allNodes, ourSession);
+    getNeighborBgpProcess(outgoingEdge.head(), allNodes)
+        .enqueueEvpnType3Routes(outgoingEdge, evpnAdvertisements);
   }
 
   @Nonnull
   private <B extends EvpnRoute.Builder<B, R>, R extends EvpnRoute<B, R>>
       Stream<RouteAdvertisement<R>> getEvpnTransformedRouteStream(
-          EdgeId edge,
+          EdgeId outgoingEdge,
           BgpDelta<R> evpnDelta,
           NetworkConfigurations nc,
           Map<String, Node> allNodes,
-          BgpSessionProperties session) {
-    BgpPeerConfigId remoteConfigId = edge.tail();
-    BgpPeerConfigId ourConfigId = edge.head();
+          BgpSessionProperties ourSession) {
+    BgpPeerConfigId ourConfigId = outgoingEdge.tail();
+    BgpPeerConfigId remoteConfigId = outgoingEdge.head();
+    // Verify ourConfig is for this process.
+    assert _hostname.equals(ourConfigId.getHostname());
+
     BgpPeerConfig ourConfig = nc.getBgpPeerConfig(ourConfigId);
     BgpPeerConfig remoteConfig = nc.getBgpPeerConfig(remoteConfigId);
     assert ourConfig != null; // Invariant of the edge existing
@@ -1509,7 +1516,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                         ourConfig,
                         remoteConfig,
                         remoteBgpRoutingProcess,
-                        session,
+                        ourSession,
                         Type.EVPN)
                     .map(
                         r ->
@@ -1532,8 +1539,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    * @param ourConfig {@link BgpPeerConfig} that sends the route
    * @param remoteConfig {@link BgpPeerConfig} that will be receiving the route
    * @param remoteBgpRoutingProcess {@link BgpRoutingProcess} that will be recieving the route
-   * @param sessionProperties {@link BgpSessionProperties} representing the <em>incoming</em> edge:
-   *     i.e. the edge from {@code remoteConfig} to {@code ourConfig}
+   * @param ourSessionProperties {@link BgpSessionProperties} representing the <em>outgoing</em>
+   *     edge: i.e. the edge from {@code ourConfig} to {@code remoteConfig}
    * @param afType {@link AddressFamily.Type} for which the transformation should occur
    * @return The transformed route as a {@link Bgpv4Route}, or {@code null} if the route should not
    *     be exported.
@@ -1546,8 +1553,10 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
           BgpPeerConfig ourConfig,
           BgpPeerConfig remoteConfig,
           BgpRoutingProcess remoteBgpRoutingProcess,
-          BgpSessionProperties sessionProperties,
+          BgpSessionProperties ourSessionProperties,
           AddressFamily.Type afType) {
+    // Verify that our means this routing process
+    assert ourConfigId.getHostname().equals(_hostname);
 
     // Do some sanity checking first -- AF and policies should exist
     AddressFamily addressFamily = ourConfig.getAddressFamily(afType);
@@ -1565,7 +1574,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         BgpProtocolHelper.transformBgpRoutePreExport(
             ourConfig,
             remoteConfig,
-            sessionProperties,
+            ourSessionProperties,
             _process,
             remoteBgpRoutingProcess._process,
             exportCandidate,
@@ -1581,19 +1590,16 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         exportPolicy.processBgpRoute(
             exportCandidate,
             transformedOutgoingRouteBuilder,
-            sessionProperties,
+            ourSessionProperties,
             Direction.OUT,
             _ribExprEvaluator);
-
-    // sessionProperties represents the incoming edge, so its tailIp is the remote peer's IP
-    Ip remoteIp = sessionProperties.getTailIp();
 
     if (!shouldExport) {
       // This route could not be exported due to export policy
       _prefixTracer.filtered(
           exportCandidate.getNetwork(),
           remoteConfigId.getHostname(),
-          remoteIp,
+          ourSessionProperties.getRemoteIp(),
           remoteConfigId.getVrfName(),
           exportPolicyName,
           Direction.OUT);
@@ -1602,10 +1608,10 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     // Apply final post-policy transformations before sending advertisement to neighbor
     BgpProtocolHelper.transformBgpRoutePostExport(
         transformedOutgoingRouteBuilder,
-        sessionProperties.isEbgp(),
-        sessionProperties.getConfedSessionType(),
-        sessionProperties.getHeadAs(),
-        sessionProperties.getHeadIp(),
+        ourSessionProperties.isEbgp(),
+        ourSessionProperties.getConfedSessionType(),
+        ourSessionProperties.getLocalAs(),
+        ourSessionProperties.getLocalIp(),
         exportCandidate.getNextHopIp());
     // Successfully exported route
     R transformedOutgoingRoute = transformedOutgoingRouteBuilder.build();
@@ -1613,7 +1619,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     _prefixTracer.sentTo(
         transformedOutgoingRoute.getNetwork(),
         remoteConfigId.getHostname(),
-        remoteIp,
+        ourSessionProperties.getRemoteIp(),
         remoteConfigId.getVrfName(),
         exportPolicyName);
 
@@ -1626,18 +1632,22 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    *
    * @param exportCandidate a route to try and export
    * @param ourConfig {@link BgpPeerConfig} that sends the route
-   * @param sessionProperties {@link BgpSessionProperties} representing the <em>incoming</em> edge:
-   *     i.e. the edge from {@code remoteConfig} to {@code ourConfig}
+   * @param ourSessionProperties {@link BgpSessionProperties} representing the <em>outgoing</em>
+   *     edge: i.e. the edge from {@code ourConfig} to {@code remoteConfig}
    * @return The transformed route as a {@link Bgpv4Route}, or {@code null} if the route should not
    *     be exported.
+   */
+  /*
+   * Notes:
+   *   our == edge.tail == sender == local          (this BgpRoutingProcess)
+   *   remote == edge.head == receiver              (the neighbor's BgpRoutingProcess)
    */
   @Nullable
   Bgpv4Route exportNonBgpRouteToBgp(
       @Nonnull AnnotatedRoute<AbstractRoute> exportCandidate,
       @Nonnull BgpPeerConfigId remoteConfigId,
       @Nonnull BgpPeerConfig ourConfig,
-      @Nonnull BgpSessionProperties sessionProperties) {
-
+      @Nonnull BgpSessionProperties ourSessionProperties) {
     String exportPolicyName =
         Optional.ofNullable(ourConfig.getIpv4UnicastAddressFamily())
             .map(AddressFamily::getExportPolicy)
@@ -1647,7 +1657,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     }
     RoutingPolicy exportPolicy = _policies.getOrThrow(exportPolicyName);
     RoutingProtocol protocol =
-        sessionProperties.isEbgp() ? RoutingProtocol.BGP : RoutingProtocol.IBGP;
+        ourSessionProperties.isEbgp() ? RoutingProtocol.BGP : RoutingProtocol.IBGP;
+
     Bgpv4Route.Builder transformedOutgoingRouteBuilder =
         exportCandidate.getRoute() instanceof GeneratedRoute
             ? BgpProtocolHelper.convertGeneratedRouteToBgp(
@@ -1657,13 +1668,13 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                     .flatMap(_policies::get)
                     .orElse(null),
                 _process.getRouterId(),
-                sessionProperties.getHeadIp(),
+                ourSessionProperties.getLocalIp(),
                 false)
                 .toBuilder()
             : BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
                 exportCandidate,
                 getRouterId(),
-                sessionProperties.getHeadIp(),
+                ourSessionProperties.getLocalIp(),
                 _process.getAdminCost(protocol),
                 protocol);
 
@@ -1672,19 +1683,16 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         exportPolicy.processBgpRoute(
             exportCandidate,
             transformedOutgoingRouteBuilder,
-            sessionProperties,
+            ourSessionProperties,
             Direction.OUT,
             _ribExprEvaluator);
-
-    // sessionProperties represents the incoming edge, so its tailIp is the remote peer's IP
-    Ip remoteIp = sessionProperties.getHeadIp();
 
     if (!shouldExport) {
       // This route could not be exported due to export policy
       _prefixTracer.filtered(
           exportCandidate.getNetwork(),
           remoteConfigId.getHostname(),
-          remoteIp,
+          ourSessionProperties.getRemoteIp(),
           remoteConfigId.getVrfName(),
           exportPolicyName,
           Direction.OUT);
@@ -1694,10 +1702,10 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     // Apply final post-policy transformations before sending advertisement to neighbor
     BgpProtocolHelper.transformBgpRoutePostExport(
         transformedOutgoingRouteBuilder,
-        sessionProperties.isEbgp(),
-        sessionProperties.getConfedSessionType(),
-        sessionProperties.getHeadAs(),
-        sessionProperties.getHeadIp(),
+        ourSessionProperties.isEbgp(),
+        ourSessionProperties.getConfedSessionType(),
+        ourSessionProperties.getLocalAs(),
+        ourSessionProperties.getLocalIp(),
         Route.UNSET_ROUTE_NEXT_HOP_IP);
 
     // Successfully exported route
@@ -1705,7 +1713,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     _prefixTracer.sentTo(
         transformedOutgoingRoute.getNetwork(),
         remoteConfigId.getHostname(),
-        remoteIp,
+        ourSessionProperties.getRemoteIp(),
         remoteConfigId.getVrfName(),
         exportPolicyName);
 
@@ -1832,17 +1840,17 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       RoutingPolicy ipv4ImportPolicy,
       RibExprEvaluator ribExprEvaluator) {
     // concoct a minimal session properties object: helps with route map constructs like
-    // next-hop peer-address
-    BgpSessionProperties bgpSessionProperties =
+    // next-hop peer-address. note that "tail" is "this node" for routing policy.
+    BgpSessionProperties ourSessionProperties =
         (neighbor.getLocalAs() != null
                 && !neighbor.getRemoteAsns().isEmpty()
                 && neighbor.getLocalIp() != null
                 && neighbor.getPeerAddress() != null)
             ? BgpSessionProperties.builder()
-                .setHeadAs(neighbor.getLocalAs())
-                .setTailAs(neighbor.getRemoteAsns().least())
-                .setHeadIp(neighbor.getLocalIp())
-                .setTailIp(neighbor.getPeerAddress())
+                .setLocalAs(neighbor.getLocalAs())
+                .setRemoteAs(neighbor.getRemoteAsns().least())
+                .setLocalIp(neighbor.getLocalIp())
+                .setRemoteIp(neighbor.getPeerAddress())
                 .setAddressFamilies(
                     ImmutableSet.of(Type.IPV4_UNICAST)) // the import policy is IPV4 itself
                 .build()
@@ -1850,7 +1858,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
     // TODO Figure out whether transformedOutgoingRoute ought to have an annotation
     return ipv4ImportPolicy.processBgpRoute(
-        inputRoute, outputRouteBuilder, bgpSessionProperties, IN, ribExprEvaluator);
+        inputRoute, outputRouteBuilder, ourSessionProperties, IN, ribExprEvaluator);
   }
 
   /**

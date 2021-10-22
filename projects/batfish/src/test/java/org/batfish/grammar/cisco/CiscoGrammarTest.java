@@ -3564,11 +3564,11 @@ public final class CiscoGrammarTest {
     Ip bgpPeerId = Ip.parse("2.2.2.2");
     Ip nextHopIp = Ip.parse("3.3.3.3"); // not actually in config, just made up
     BgpSessionProperties.Builder spb =
-        BgpSessionProperties.builder().setTailAs(1L).setTailIp(bgpPeerId).setHeadIp(nextHopIp);
+        BgpSessionProperties.builder().setLocalAs(1L).setLocalIp(bgpPeerId).setRemoteIp(nextHopIp);
     BgpSessionProperties ibgpSessionProps =
-        spb.setHeadAs(1L).setSessionType(SessionType.IBGP).build();
+        spb.setRemoteAs(1L).setSessionType(SessionType.IBGP).build();
     BgpSessionProperties ebgpSessionProps =
-        spb.setHeadAs(2L).setSessionType(SessionType.EBGP_SINGLEHOP).build();
+        spb.setRemoteAs(2L).setSessionType(SessionType.EBGP_SINGLEHOP).build();
 
     // Create eigrp routes to redistribute
     EigrpInternalRoute.Builder internalRb =

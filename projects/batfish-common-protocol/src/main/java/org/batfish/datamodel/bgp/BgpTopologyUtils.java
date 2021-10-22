@@ -393,7 +393,9 @@ public final class BgpTopologyUtils {
             remotePeer.getConfederationAsn(),
             remotePeer.getRemoteAsns());
     assert asPair != null;
-    BgpSessionProperties edgeToCandidate =
+    graph.putEdgeValue(
+        id1,
+        id2,
         BgpSessionProperties.from(
             p1,
             p1LocalIp,
@@ -401,8 +403,10 @@ public final class BgpTopologyUtils {
             false,
             asPair.getLocalAs(),
             asPair.getRemoteAs(),
-            asPair.getConfedSessionType());
-    BgpSessionProperties edgeFromCandidate =
+            asPair.getConfedSessionType()));
+    graph.putEdgeValue(
+        id2,
+        id1,
         BgpSessionProperties.from(
             p1,
             p1LocalIp,
@@ -410,9 +414,7 @@ public final class BgpTopologyUtils {
             true,
             asPair.getLocalAs(),
             asPair.getRemoteAs(),
-            asPair.getConfedSessionType());
-    graph.putEdgeValue(id1, id2, edgeToCandidate);
-    graph.putEdgeValue(id2, id1, edgeFromCandidate);
+            asPair.getConfedSessionType()));
   }
 
   /**

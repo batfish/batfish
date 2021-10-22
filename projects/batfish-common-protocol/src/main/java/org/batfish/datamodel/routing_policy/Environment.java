@@ -6,6 +6,7 @@ import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.BiFunction;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -19,6 +20,7 @@ import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.PrefixSpace;
@@ -76,7 +78,12 @@ public class Environment {
   private final Map<String, AsPathAccessList> _asPathAccessLists;
   private final @Nonnull Map<String, AsPathExpr> _asPathExprs;
   private final @Nonnull Map<String, AsPathMatchExpr> _asPathMatchExprs;
-  @Nullable private final BgpSessionProperties _bgpSessionProperties;
+  /**
+   * If present, BGP properties are for this node. Aka, local properties are TAIL and remote
+   * properties are HEAD.
+   */
+  private final @Nullable BgpSessionProperties _bgpSessionProperties;
+
   private boolean _buffered;
   private boolean _callExprContext;
   private boolean _callStatementContext;
@@ -86,7 +93,7 @@ public class Environment {
   private final Map<String, CommunitySet> _communitySets;
   private boolean _defaultAction;
   private String _defaultPolicy;
-  private final Direction _direction;
+  private final @Nonnull Direction _direction;
   @Nullable private final EigrpProcess _eigrpProcess;
   private boolean _error;
   private BgpRoute.Builder<?, ?> _intermediateBgpAttributes;
@@ -98,7 +105,7 @@ public class Environment {
   @Nullable
   private final BiFunction<RibExpr, PrefixSpace, Boolean> _ribIntersectsPrefixSpaceEvaluator;
 
-  private AbstractRoute _originalRoute;
+  private final AbstractRoute _originalRoute;
   @Nullable private final AbstractRoute6 _originalRoute6;
   private final AbstractRouteBuilder<?, ?> _outputRoute;
   private final Map<String, RoutingPolicy> _routingPolicies;
@@ -113,8 +120,8 @@ public class Environment {
 
   private Environment(
       Map<String, AsPathAccessList> asPathAccessLists,
-      Map<String, AsPathExpr> asPathExprs,
-      Map<String, AsPathMatchExpr> asPathMatchExprs,
+      @Nonnull Map<String, AsPathExpr> asPathExprs,
+      @Nonnull Map<String, AsPathMatchExpr> asPathMatchExprs,
       @Nullable BgpSessionProperties bgpSessionProperties,
       boolean buffered,
       boolean callExprContext,
@@ -125,7 +132,7 @@ public class Environment {
       Map<String, CommunitySet> communitySets,
       boolean defaultAction,
       String defaultPolicy,
-      Direction direction,
+      @Nonnull Direction direction,
       @Nullable EigrpProcess eigrpProcess,
       boolean error,
       BgpRoute.Builder<?, ?> intermediateBgpAttributes,
@@ -237,7 +244,7 @@ public class Environment {
     return _defaultPolicy;
   }
 
-  public Direction getDirection() {
+  public @Nonnull Direction getDirection() {
     return _direction;
   }
 
@@ -264,6 +271,38 @@ public class Environment {
 
   public boolean getLocalDefaultAction() {
     return _localDefaultAction;
+  }
+
+  /**
+   * Returns the BGP local AS for the current environment. Returns {@link Optional#empty()} if there
+   * are no {@link BgpSessionProperties}.
+   */
+  public Optional<Long> getLocalAs() {
+    return Optional.ofNullable(_bgpSessionProperties).map(BgpSessionProperties::getLocalAs);
+  }
+
+  /**
+   * Returns the BGP local IP for the current environment. Returns {@link Optional#empty()} if there
+   * are no {@link BgpSessionProperties}.
+   */
+  public Optional<Ip> getLocalIp() {
+    return Optional.ofNullable(_bgpSessionProperties).map(BgpSessionProperties::getLocalIp);
+  }
+
+  /**
+   * Returns the BGP remote AS for the current environment. Returns {@link Optional#empty()} if
+   * there are no {@link BgpSessionProperties}.
+   */
+  public Optional<Long> getRemoteAs() {
+    return Optional.ofNullable(_bgpSessionProperties).map(BgpSessionProperties::getRemoteAs);
+  }
+
+  /**
+   * Returns the BGP remote IP for the current environment. Returns {@link Optional#empty()} if
+   * there are no {@link BgpSessionProperties}.
+   */
+  public Optional<Ip> getRemoteIp() {
+    return Optional.ofNullable(_bgpSessionProperties).map(BgpSessionProperties::getRemoteIp);
   }
 
   /** Whether the output route's tag has been explicitly set in the current routing policy */
@@ -310,7 +349,7 @@ public class Environment {
     return _routeFilterLists;
   }
 
-  public String getRouteSourceVrf() {
+  public @Nullable String getRouteSourceVrf() {
     return _routeSourceVrf;
   }
 
@@ -385,7 +424,7 @@ public class Environment {
     private Map<String, CommunitySet> _communitySets;
     private boolean _defaultAction;
     private String _defaultPolicy;
-    private Direction _direction;
+    private @Nonnull Direction _direction = Direction.OUT;
     @Nullable private EigrpProcess _eigrpProcess;
     private boolean _error;
     private BgpRoute.Builder<?, ?> _intermediateBgpAttributes;
@@ -421,6 +460,10 @@ public class Environment {
       return this;
     }
 
+    /**
+     * If populated, must be session properties for this node. Aka, local properties should be TAIL,
+     * and remote properties should be HEAD.
+     */
     public Builder setBgpSessionProperties(@Nullable BgpSessionProperties bgpSessionProperties) {
       _bgpSessionProperties = bgpSessionProperties;
       return this;
@@ -472,7 +515,7 @@ public class Environment {
       return this;
     }
 
-    public Builder setDirection(Direction direction) {
+    public Builder setDirection(@Nonnull Direction direction) {
       _direction = direction;
       return this;
     }

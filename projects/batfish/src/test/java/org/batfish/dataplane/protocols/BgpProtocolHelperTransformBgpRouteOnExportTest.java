@@ -49,8 +49,8 @@ import org.junit.Test;
 public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
 
   private final NetworkFactory _nf = new NetworkFactory();
-  private BgpActivePeerConfig _headNeighbor;
-  private BgpPeerConfig _tailNeighbor;
+  private BgpActivePeerConfig _fromNeighbor;
+  private BgpPeerConfig _toNeighbor;
   private BgpSessionProperties _sessionProperties;
   private BgpProcess _fromBgpProcess;
   private BgpProcess _toBgpProcess;
@@ -97,20 +97,20 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
         _nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
     Configuration c2 =
         _nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
-    _headNeighbor =
+    _fromNeighbor =
         _nf.bgpNeighborBuilder()
             .setLocalAs(AS1)
             .setRemoteAs(ibgp ? AS1 : AS2)
             .setLocalIp(SOURCE_IP)
             .build();
-    _tailNeighbor =
+    _toNeighbor =
         _nf.bgpNeighborBuilder()
             .setLocalAs(ibgp ? AS1 : AS2)
             .setRemoteAs(AS1)
             .setLocalIp(DEST_IP)
             .build();
-    // Flip so the session props since we're exporting from head -> tail.
-    _sessionProperties = BgpSessionProperties.from(_headNeighbor, _tailNeighbor, true);
+    // These session props are used for export, so do not reverse direction.
+    _sessionProperties = BgpSessionProperties.from(_fromNeighbor, _toNeighbor, false);
     Vrf fromVrf = _nf.vrfBuilder().setOwner(c1).build();
     fromVrf.setBgpProcess(BgpProcess.testBgpProcess(SOURCE_IP));
     _fromBgpProcess = fromVrf.getBgpProcess();
@@ -126,22 +126,22 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
   private Bgpv4Route.Builder runTransformBgpRoutePreExport(AbstractRoute route) {
     if (route instanceof GeneratedRoute) {
       return BgpProtocolHelper.transformBgpRoutePreExport(
-          _headNeighbor,
-          _tailNeighbor,
+          _fromNeighbor,
+          _toNeighbor,
           _sessionProperties,
           _fromBgpProcess,
           _toBgpProcess,
           convertGeneratedRouteToBgp(
                   (GeneratedRoute) route,
                   _fromBgpProcess.getRouterId(),
-                  NextHopIp.of(Objects.requireNonNull(_headNeighbor.getLocalIp())),
+                  NextHopIp.of(Objects.requireNonNull(_fromNeighbor.getLocalIp())),
                   false)
               .build(),
           Type.IPV4_UNICAST);
     } else if (route instanceof Bgpv4Route) {
       return BgpProtocolHelper.transformBgpRoutePreExport(
-          _headNeighbor,
-          _tailNeighbor,
+          _fromNeighbor,
+          _toNeighbor,
           _sessionProperties,
           _fromBgpProcess,
           _toBgpProcess,
@@ -151,15 +151,15 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
       RoutingProtocol protocol =
           _sessionProperties.isEbgp() ? RoutingProtocol.BGP : RoutingProtocol.IBGP;
       return BgpProtocolHelper.transformBgpRoutePreExport(
-          _headNeighbor,
-          _tailNeighbor,
+          _fromNeighbor,
+          _toNeighbor,
           _sessionProperties,
           _fromBgpProcess,
           _toBgpProcess,
           convertNonBgpRouteToBgpRoute(
                   route,
                   _fromBgpProcess.getRouterId(),
-                  _sessionProperties.getTailIp(),
+                  _sessionProperties.getLocalIp(),
                   protocol.getDefaultAdministrativeCost(ConfigurationFormat.CISCO_IOS),
                   protocol)
               .build(),
@@ -176,7 +176,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
         routeBuilder,
         _sessionProperties.isEbgp(),
         ConfedSessionType.NO_CONFED,
-        _headNeighbor.getLocalAs(),
+        _fromNeighbor.getLocalAs(),
         Ip.parse("1.1.1.1"),
         Ip.parse("1.1.1.1"));
   }
@@ -239,7 +239,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
       assertThat(transformedBgpRoute, hasCommunities());
 
       // Now set sendCommunity and make sure communities appear in transformed routes.
-      _headNeighbor =
+      _fromNeighbor =
           _nf.bgpNeighborBuilder()
               .setIpv4UnicastAddressFamily(
                   Ipv4UnicastAddressFamily.builder()
@@ -247,8 +247,8 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
                           AddressFamilyCapabilities.builder().setSendCommunity(true).build())
                       .build())
               .setLocalAs(AS1)
-              .setLocalIp(_headNeighbor.getLocalIp())
-              .setRemoteAsns(_headNeighbor.getRemoteAsns())
+              .setLocalIp(_fromNeighbor.getLocalIp())
+              .setRemoteAsns(_fromNeighbor.getRemoteAsns())
               .build();
       transformedAggregateRoute = runTransformBgpRoutePreExport(aggRoute);
       transformedBgpRoute = runTransformBgpRoutePreExport(bgpv4Route);
@@ -317,10 +317,10 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
       // eBGP within confederation
       _sessionProperties =
           BgpSessionProperties.builder()
-              .setTailIp(_tailNeighbor.getLocalIp())
-              .setTailAs(_tailNeighbor.getLocalAs())
-              .setHeadAs(_headNeighbor.getLocalAs())
-              .setHeadIp(_headNeighbor.getLocalIp())
+              .setLocalIp(_toNeighbor.getLocalIp())
+              .setLocalAs(_toNeighbor.getLocalAs())
+              .setRemoteAs(_fromNeighbor.getLocalAs())
+              .setRemoteIp(_fromNeighbor.getLocalIp())
               .setConfedSessionType(ConfedSessionType.WITHIN_CONFED)
               .build();
       Bgpv4Route.Builder transformedAggregateRoute =
@@ -449,7 +449,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
                     .setTag(tag)
                     .build(),
                 _fromBgpProcess.getRouterId(),
-                _sessionProperties.getTailIp(),
+                _sessionProperties.getLocalIp(),
                 170,
                 RoutingProtocol.BGP)
             .getTag(),
@@ -469,7 +469,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
                     .setMetric(metric)
                     .build(),
                 _fromBgpProcess.getRouterId(),
-                _sessionProperties.getTailIp(),
+                _sessionProperties.getLocalIp(),
                 170,
                 RoutingProtocol.BGP)
             .getMetric(),

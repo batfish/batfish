@@ -90,10 +90,10 @@ public class AutoAsTest {
     // In the absence of an AS path, evaluates to remote AS. TODO Untested.
     BgpSessionProperties sessionProps =
         BgpSessionProperties.builder()
-            .setHeadAs(11111L)
-            .setTailAs(22222L)
-            .setHeadIp(Ip.parse("1.1.1.1"))
-            .setTailIp(Ip.parse("2.2.2.2"))
+            .setRemoteAs(11111L)
+            .setLocalAs(22222L)
+            .setRemoteIp(Ip.parse("1.1.1.1"))
+            .setLocalIp(Ip.parse("2.2.2.2"))
             .build();
     Environment env =
         Environment.builder(C)
@@ -118,29 +118,23 @@ public class AutoAsTest {
   public void testEvaluateDirectionOut() {
     BgpSessionProperties sessionProps =
         BgpSessionProperties.builder()
-            .setHeadAs(11111L)
-            .setTailAs(22222L)
-            .setHeadIp(Ip.parse("1.1.1.1"))
-            .setTailIp(Ip.parse("2.2.2.2"))
+            .setRemoteAs(11111L)
+            .setLocalAs(22222L)
+            .setRemoteIp(Ip.parse("1.1.1.1"))
+            .setLocalIp(Ip.parse("2.2.2.2"))
             .build();
     Environment env =
         Environment.builder(C)
             .setDirection(Direction.OUT)
             .setBgpSessionProperties(sessionProps)
             .build();
-    assertThat(INSTANCE.evaluate(env), equalTo(11111L));
+    assertThat(INSTANCE.evaluate(env), equalTo(22222L));
   }
 
   @Test
   public void testEvaluateDirectionOut_noBgpSessionProps() {
-    Environment env = Environment.builder(C).setDirection(Direction.OUT).build();
+    Environment env = Environment.builder(C).build();
     _thrown.expectMessage("Expected BGP session properties");
     INSTANCE.evaluate(env);
-  }
-
-  @Test
-  public void testEvaluate_noDirection() {
-    _thrown.expect(AssertionError.class);
-    INSTANCE.evaluate(Environment.builder(C).build());
   }
 }

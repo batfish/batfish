@@ -193,8 +193,8 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
       Optional<BgpSessionProperties> sessionProps =
           configuredTopology.edgeValue(activeId, remoteId);
       if (sessionProps.isPresent()) {
-        remoteAs = Long.toString(sessionProps.get().getHeadAs());
-        localAs = sessionProps.get().getTailAs();
+        remoteAs = Long.toString(sessionProps.get().getRemoteAs());
+        localAs = sessionProps.get().getLocalAs();
         addressFamilies = sessionProps.get().getAddressFamilies();
       }
     }
@@ -261,13 +261,13 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
                   assert activeRemote != null;
                   return rb.put(COL_CONFIGURED_STATUS, DYNAMIC_MATCH)
                       .put(COL_ADDRESS_FAMILIES, sessionProps.getAddressFamilies())
-                      .put(COL_LOCAL_IP, sessionProps.getTailIp())
-                      .put(COL_LOCAL_AS, sessionProps.getTailAs())
-                      .put(COL_REMOTE_AS, Long.toString(sessionProps.getHeadAs()))
+                      .put(COL_LOCAL_IP, sessionProps.getLocalIp())
+                      .put(COL_LOCAL_AS, sessionProps.getLocalAs())
+                      .put(COL_REMOTE_AS, Long.toString(sessionProps.getRemoteAs()))
                       .put(COL_REMOTE_NODE, new Node(remoteId.getHostname()))
                       .put(
                           COL_REMOTE_IP,
-                          new SelfDescribingObject(Schema.IP, sessionProps.getHeadIp()))
+                          new SelfDescribingObject(Schema.IP, sessionProps.getRemoteIp()))
                       .put(COL_SESSION_TYPE, getSessionType(activeRemote))
                       .build();
                 })
@@ -297,8 +297,8 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
       remoteInterface = NodeInterfacePair.of(remoteId.getHostname(), remoteId.getPeerInterface());
       Optional<BgpSessionProperties> sessionProps = configuredTopology.edgeValue(unnumId, remoteId);
       if (sessionProps.isPresent()) {
-        remoteAs = Long.toString(sessionProps.get().getHeadAs());
-        localAs = sessionProps.get().getTailAs();
+        remoteAs = Long.toString(sessionProps.get().getRemoteAs());
+        localAs = sessionProps.get().getLocalAs();
         addressFamilies = sessionProps.get().getAddressFamilies();
       }
     }

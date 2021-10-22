@@ -2,8 +2,8 @@ package org.batfish.datamodel.routing_policy.expr;
 
 import static com.google.common.base.Preconditions.checkState;
 
+import java.util.Optional;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.routing_policy.Environment;
 
 /** The local AS number of a BGP session. */
@@ -21,10 +21,9 @@ public final class LocalAs extends AsExpr {
 
   @Override
   public long evaluate(Environment environment) {
-    BgpSessionProperties sessionProps = environment.getBgpSessionProperties();
-    checkState(sessionProps != null, "Expected BGP session properties");
-    // NB: see javadoc for linked function
-    return sessionProps.getHeadAs();
+    Optional<Long> localAs = environment.getLocalAs();
+    checkState(localAs.isPresent(), "Expected BGP session properties");
+    return localAs.get();
   }
 
   @Override
