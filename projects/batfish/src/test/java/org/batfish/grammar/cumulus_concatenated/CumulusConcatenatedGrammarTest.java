@@ -13,7 +13,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSpeed;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.routing_policy.Common.SUMMARY_ONLY_SUPPRESSION_POLICY_NAME;
 import static org.batfish.datamodel.routing_policy.Environment.Direction.OUT;
-import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
+import static org.batfish.main.BatfishTestUtils.DUMMY_SNAPSHOT_1;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_LOOPBACK_MTU;
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_PORT_MTU;
@@ -124,7 +124,7 @@ public class CumulusConcatenatedGrammarTest {
     CumulusConcatenatedControlPlaneExtractor extractor =
         new CumulusConcatenatedControlPlaneExtractor(
             src, new Warnings(), "", settings, null, false, new SilentSyntaxCollection());
-    extractor.processParseTree(TEST_SNAPSHOT, tree);
+    extractor.processParseTree(DUMMY_SNAPSHOT_1, tree);
     return SerializationUtils.clone(
         (CumulusConcatenatedConfiguration) extractor.getVendorConfiguration());
   }
@@ -163,7 +163,7 @@ public class CumulusConcatenatedGrammarTest {
             new SilentSyntaxCollection());
     ParserRuleContext tree =
         Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
-    extractor.processParseTree(TEST_SNAPSHOT, tree);
+    extractor.processParseTree(DUMMY_SNAPSHOT_1, tree);
     CumulusConcatenatedConfiguration config =
         (CumulusConcatenatedConfiguration) extractor.getVendorConfiguration();
     config.setFilename(TESTCONFIGS_PREFIX + filename);

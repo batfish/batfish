@@ -73,7 +73,7 @@ import static org.batfish.datamodel.routing_policy.Common.SUMMARY_ONLY_SUPPRESSI
 import static org.batfish.datamodel.transformation.Transformation.when;
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
-import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
+import static org.batfish.main.BatfishTestUtils.DUMMY_SNAPSHOT_1;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.arista.AristaConfiguration.DEFAULT_LOCAL_BGP_WEIGHT;
 import static org.batfish.representation.arista.AristaConfiguration.aclLineStructureName;
@@ -289,7 +289,7 @@ public class AristaGrammarTest {
         new AristaControlPlaneExtractor(src, parser, ARISTA, w, new SilentSyntaxCollection());
     ParserRuleContext tree =
         Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
-    extractor.processParseTree(TEST_SNAPSHOT, tree);
+    extractor.processParseTree(DUMMY_SNAPSHOT_1, tree);
     AristaConfiguration vendorConfiguration =
         (AristaConfiguration) extractor.getVendorConfiguration();
     vendorConfiguration.setFilename(TESTCONFIGS_PREFIX + hostname);

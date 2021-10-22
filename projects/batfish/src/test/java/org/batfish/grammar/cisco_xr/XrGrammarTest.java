@@ -36,7 +36,7 @@ import static org.batfish.datamodel.routing_policy.expr.IntComparator.EQ;
 import static org.batfish.datamodel.routing_policy.expr.IntComparator.GE;
 import static org.batfish.datamodel.routing_policy.expr.IntComparator.LE;
 import static org.batfish.grammar.cisco_xr.CiscoXrControlPlaneExtractor.DEFAULT_STATIC_ROUTE_DISTANCE;
-import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
+import static org.batfish.main.BatfishTestUtils.DUMMY_SNAPSHOT_1;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.DEFAULT_LOCAL_BGP_WEIGHT;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.MAX_ADMINISTRATIVE_COST;
@@ -368,7 +368,7 @@ public final class XrGrammarTest {
     ParserRuleContext tree =
         Batfish.parse(
             ciscoXrParser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
-    extractor.processParseTree(TEST_SNAPSHOT, tree);
+    extractor.processParseTree(DUMMY_SNAPSHOT_1, tree);
     CiscoXrConfiguration vendorConfiguration =
         (CiscoXrConfiguration) extractor.getVendorConfiguration();
     vendorConfiguration.setFilename(TESTCONFIGS_PREFIX + hostname);

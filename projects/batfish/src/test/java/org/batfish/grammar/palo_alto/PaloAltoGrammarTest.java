@@ -59,7 +59,7 @@ import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasName;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.grammar.VendorConfigurationFormatDetector.BATFISH_FLATTENED_PALO_ALTO_HEADER;
-import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
+import static org.batfish.main.BatfishTestUtils.DUMMY_SNAPSHOT_1;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.DEFAULT_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.NULL_VRF_NAME;
@@ -314,7 +314,7 @@ public final class PaloAltoGrammarTest {
     Warnings parseWarnings = new Warnings();
     PaloAltoControlPlaneExtractor extractor =
         new PaloAltoControlPlaneExtractor(src, parser, parseWarnings, new SilentSyntaxCollection());
-    extractor.processParseTree(TEST_SNAPSHOT, tree);
+    extractor.processParseTree(DUMMY_SNAPSHOT_1, tree);
     PaloAltoConfiguration pac = (PaloAltoConfiguration) extractor.getVendorConfiguration();
     pac.setVendor(ConfigurationFormat.PALO_ALTO);
     ConvertConfigurationAnswerElement answerElement = new ConvertConfigurationAnswerElement();
@@ -342,7 +342,7 @@ public final class PaloAltoGrammarTest {
     PaloAltoControlPlaneExtractor extractor =
         new PaloAltoControlPlaneExtractor(fileText, paParser, w, new SilentSyntaxCollection());
     ParserRuleContext tree = Batfish.parse(paParser, logger, settings);
-    extractor.processParseTree(TEST_SNAPSHOT, tree);
+    extractor.processParseTree(DUMMY_SNAPSHOT_1, tree);
     PaloAltoConfiguration pac = (PaloAltoConfiguration) extractor.getVendorConfiguration();
     pac.setVendor(ConfigurationFormat.PALO_ALTO);
     ConvertConfigurationAnswerElement answerElement = new ConvertConfigurationAnswerElement();
@@ -693,7 +693,7 @@ public final class PaloAltoGrammarTest {
 
     Batfish batfish2 = getBatfishForConfigurationNames(hostname2);
     ConvertConfigurationAnswerElement ccae2 =
-        batfish2.loadConvertConfigurationAnswerElementOrReparse(batfish1.getSnapshot());
+        batfish2.loadConvertConfigurationAnswerElementOrReparse(batfish2.getSnapshot());
     // Confirm reference count is correct for used structure
     assertThat(ccae2, hasNumReferrers(filename2, PaloAltoStructureType.ADDRESS_OBJECT, name_1, 2));
     assertThat(ccae2, hasNumReferrers(filename2, PaloAltoStructureType.ADDRESS_OBJECT, name_5, 1));

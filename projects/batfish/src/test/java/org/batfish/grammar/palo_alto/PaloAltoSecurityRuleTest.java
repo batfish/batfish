@@ -4,7 +4,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.datamodel.matchers.TraceTreeMatchers.isTraceTree;
-import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
+import static org.batfish.main.BatfishTestUtils.DUMMY_SNAPSHOT_1;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.main.BatfishTestUtils.getBatfish;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeObjectName;
@@ -102,7 +102,7 @@ public class PaloAltoSecurityRuleTest {
     PaloAltoControlPlaneExtractor extractor =
         new PaloAltoControlPlaneExtractor(
             src, parser, new Warnings(), new SilentSyntaxCollection());
-    extractor.processParseTree(TEST_SNAPSHOT, tree);
+    extractor.processParseTree(DUMMY_SNAPSHOT_1, tree);
     PaloAltoConfiguration pac = (PaloAltoConfiguration) extractor.getVendorConfiguration();
     pac.setVendor(ConfigurationFormat.PALO_ALTO);
     ConvertConfigurationAnswerElement answerElement = new ConvertConfigurationAnswerElement();
