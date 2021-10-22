@@ -48,10 +48,10 @@ public class AsnValueTest {
             .setDirection(Direction.IN)
             .setBgpSessionProperties(
                 BgpSessionProperties.builder()
-                    .setHeadIp(Ip.ZERO)
-                    .setHeadAs(3)
-                    .setTailIp(Ip.ZERO)
-                    .setTailAs(4)
+                    .setRemoteIp(Ip.ZERO)
+                    .setRemoteAs(3)
+                    .setLocalIp(Ip.ZERO)
+                    .setLocalAs(4)
                     .build())
             .build();
     assertThat(AsnValue.of(LocalAs.instance()).evaluate(e), equalTo(4L));

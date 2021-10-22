@@ -3211,10 +3211,10 @@ public class AristaGrammarTest {
     Ip sessionPropsHeadIp = Ip.parse("1.1.1.1");
     BgpSessionProperties.Builder sessionProps =
         BgpSessionProperties.builder()
-            .setHeadAs(1L)
-            .setTailAs(1L)
-            .setHeadIp(sessionPropsHeadIp)
-            .setTailIp(Ip.parse("2.2.2.2"));
+            .setRemoteAs(1L)
+            .setLocalAs(1L)
+            .setRemoteIp(sessionPropsHeadIp)
+            .setLocalIp(Ip.parse("2.2.2.2"));
     BgpSessionProperties session = sessionProps.setSessionType(SessionType.IBGP).build();
 
     Prefix allowedIn = Prefix.parse("10.1.2.0/24");
@@ -3297,10 +3297,10 @@ public class AristaGrammarTest {
     Ip tailIp = Ip.parse("1.1.1.2");
     BgpSessionProperties session =
         BgpSessionProperties.builder()
-            .setHeadAs(1)
-            .setTailAs(2)
-            .setHeadIp(headIp)
-            .setTailIp(tailIp)
+            .setRemoteAs(1)
+            .setLocalAs(2)
+            .setRemoteIp(headIp)
+            .setLocalIp(tailIp)
             .setSessionType(SessionType.EBGP_SINGLEHOP)
             .build();
     {

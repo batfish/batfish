@@ -45,10 +45,10 @@ public class LocalAsTest {
         Environment.builder(c)
             .setBgpSessionProperties(
                 BgpSessionProperties.builder()
-                    .setHeadIp(Ip.ZERO)
-                    .setHeadAs(3)
-                    .setTailIp(Ip.ZERO)
-                    .setTailAs(4)
+                    .setRemoteIp(Ip.ZERO)
+                    .setRemoteAs(3)
+                    .setLocalIp(Ip.ZERO)
+                    .setLocalAs(4)
                     .build())
             .build();
     assertThat(LocalAs.instance().evaluate(e), equalTo(4L));

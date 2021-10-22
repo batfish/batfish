@@ -106,7 +106,7 @@ public final class BgpProtocolHelper {
     if (localSessionProperties.isEbgp()
         && !allowAsPathOut(
             route.getAsPath(),
-            localSessionProperties.getHeadAs(),
+            localSessionProperties.getRemoteAs(),
             af.getAddressFamilyCapabilities().getAllowRemoteAsOut())) {
       return null;
     }

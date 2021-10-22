@@ -767,13 +767,13 @@ public final class CiscoNxosGrammarTest {
 
     BgpSessionProperties.Builder sessionProps =
         BgpSessionProperties.builder()
-            .setHeadAs(1L)
-            .setTailAs(1L)
-            .setHeadIp(Ip.parse("1.1.1.1"))
-            .setTailIp(Ip.parse("2.2.2.2"));
+            .setRemoteAs(1L)
+            .setLocalAs(1L)
+            .setRemoteIp(Ip.parse("1.1.1.1"))
+            .setLocalIp(Ip.parse("2.2.2.2"));
     BgpSessionProperties ibgpSession = sessionProps.setSessionType(SessionType.IBGP).build();
     BgpSessionProperties ebgpSession =
-        sessionProps.setTailAs(2L).setSessionType(SessionType.EBGP_SINGLEHOP).build();
+        sessionProps.setRemoteAs(2L).setSessionType(SessionType.EBGP_SINGLEHOP).build();
 
     // No operation for IBGP
     boolean shouldExportToIbgp =
@@ -890,11 +890,11 @@ public final class CiscoNxosGrammarTest {
     Ip bgpPeerId = Ip.parse("2.2.2.2");
     Ip nextHopIp = Ip.parse("3.3.3.3"); // not actually in config, just made up
     BgpSessionProperties.Builder spb =
-        BgpSessionProperties.builder().setTailAs(1L).setTailIp(bgpPeerId).setHeadIp(nextHopIp);
+        BgpSessionProperties.builder().setLocalAs(1L).setLocalIp(bgpPeerId).setRemoteIp(nextHopIp);
     BgpSessionProperties ibgpSessionProps =
-        spb.setHeadAs(1L).setSessionType(SessionType.IBGP).build();
+        spb.setRemoteAs(1L).setSessionType(SessionType.IBGP).build();
     BgpSessionProperties ebgpSessionProps =
-        spb.setHeadAs(2L).setSessionType(SessionType.EBGP_SINGLEHOP).build();
+        spb.setRemoteAs(2L).setSessionType(SessionType.EBGP_SINGLEHOP).build();
 
     // Create eigrp routes to redistribute
     EigrpInternalRoute.Builder internalRb =
@@ -1024,10 +1024,10 @@ public final class CiscoNxosGrammarTest {
     Ip nextHopIp = Ip.parse("192.168.100.100"); // not actually in config, just made up
     BgpSessionProperties bgpSessionProps =
         BgpSessionProperties.builder()
-            .setTailAs(1L)
-            .setTailIp(bgpPeerId)
-            .setHeadIp(nextHopIp)
-            .setHeadAs(2L)
+            .setLocalAs(1L)
+            .setLocalIp(bgpPeerId)
+            .setRemoteIp(nextHopIp)
+            .setRemoteAs(2L)
             .setSessionType(SessionType.IBGP)
             .build();
 

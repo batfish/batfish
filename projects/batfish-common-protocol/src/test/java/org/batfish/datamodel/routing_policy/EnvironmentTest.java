@@ -36,10 +36,10 @@ public final class EnvironmentTest {
             .build();
     BgpSessionProperties props =
         BgpSessionProperties.builder()
-            .setHeadAs(1)
-            .setTailAs(2)
-            .setHeadIp(Ip.ZERO)
-            .setTailIp(Ip.MAX)
+            .setRemoteAs(1)
+            .setLocalAs(2)
+            .setRemoteIp(Ip.ZERO)
+            .setLocalIp(Ip.MAX)
             .build();
     Environment environment =
         Environment.builder(c).setBgpSessionProperties(props).setDirection(Direction.IN).build();

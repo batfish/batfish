@@ -278,10 +278,7 @@ public class Environment {
    * are no {@link BgpSessionProperties}.
    */
   public Optional<Long> getLocalAs() {
-    if (_bgpSessionProperties == null) {
-      return Optional.empty();
-    }
-    return Optional.of(_bgpSessionProperties.getTailAs());
+    return Optional.ofNullable(_bgpSessionProperties).map(BgpSessionProperties::getLocalAs);
   }
 
   /**
@@ -289,10 +286,7 @@ public class Environment {
    * are no {@link BgpSessionProperties}.
    */
   public Optional<Ip> getLocalIp() {
-    if (_bgpSessionProperties == null) {
-      return Optional.empty();
-    }
-    return Optional.of(_bgpSessionProperties.getTailIp());
+    return Optional.ofNullable(_bgpSessionProperties).map(BgpSessionProperties::getLocalIp);
   }
 
   /**
@@ -300,10 +294,7 @@ public class Environment {
    * there are no {@link BgpSessionProperties}.
    */
   public Optional<Long> getRemoteAs() {
-    if (_bgpSessionProperties == null) {
-      return Optional.empty();
-    }
-    return Optional.of(_bgpSessionProperties.getHeadAs());
+    return Optional.ofNullable(_bgpSessionProperties).map(BgpSessionProperties::getRemoteAs);
   }
 
   /**
@@ -311,10 +302,7 @@ public class Environment {
    * there are no {@link BgpSessionProperties}.
    */
   public Optional<Ip> getRemoteIp() {
-    if (_bgpSessionProperties == null) {
-      return Optional.empty();
-    }
-    return Optional.of(_bgpSessionProperties.getHeadIp());
+    return Optional.ofNullable(_bgpSessionProperties).map(BgpSessionProperties::getRemoteIp);
   }
 
   /** Whether the output route's tag has been explicitly set in the current routing policy */

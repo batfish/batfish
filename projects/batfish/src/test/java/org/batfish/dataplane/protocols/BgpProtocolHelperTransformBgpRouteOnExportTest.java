@@ -159,7 +159,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
           convertNonBgpRouteToBgpRoute(
                   route,
                   _fromBgpProcess.getRouterId(),
-                  _sessionProperties.getTailIp(),
+                  _sessionProperties.getLocalIp(),
                   protocol.getDefaultAdministrativeCost(ConfigurationFormat.CISCO_IOS),
                   protocol)
               .build(),
@@ -317,10 +317,10 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
       // eBGP within confederation
       _sessionProperties =
           BgpSessionProperties.builder()
-              .setTailIp(_toNeighbor.getLocalIp())
-              .setTailAs(_toNeighbor.getLocalAs())
-              .setHeadAs(_fromNeighbor.getLocalAs())
-              .setHeadIp(_fromNeighbor.getLocalIp())
+              .setLocalIp(_toNeighbor.getLocalIp())
+              .setLocalAs(_toNeighbor.getLocalAs())
+              .setRemoteAs(_fromNeighbor.getLocalAs())
+              .setRemoteIp(_fromNeighbor.getLocalIp())
               .setConfedSessionType(ConfedSessionType.WITHIN_CONFED)
               .build();
       Bgpv4Route.Builder transformedAggregateRoute =
@@ -449,7 +449,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
                     .setTag(tag)
                     .build(),
                 _fromBgpProcess.getRouterId(),
-                _sessionProperties.getTailIp(),
+                _sessionProperties.getLocalIp(),
                 170,
                 RoutingProtocol.BGP)
             .getTag(),
@@ -469,7 +469,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
                     .setMetric(metric)
                     .build(),
                 _fromBgpProcess.getRouterId(),
-                _sessionProperties.getTailIp(),
+                _sessionProperties.getLocalIp(),
                 170,
                 RoutingProtocol.BGP)
             .getMetric(),

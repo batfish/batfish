@@ -611,10 +611,10 @@ public final class F5BigipImishGrammarTest {
 
     // processBgpRoute tests in the out direction, so tail is local and head is remote.
     BgpSessionProperties.Builder sessionProps =
-        BgpSessionProperties.builder().setHeadAs(65501).setTailAs(65501).setTailIp(localIp);
-    BgpSessionProperties toPeer1 = sessionProps.setHeadIp(peer1Ip).build();
-    BgpSessionProperties toPeer2 = sessionProps.setHeadIp(peer2Ip).build();
-    BgpSessionProperties toPeer3 = sessionProps.setHeadIp(peer3Ip).build();
+        BgpSessionProperties.builder().setRemoteAs(65501).setLocalAs(65501).setLocalIp(localIp);
+    BgpSessionProperties toPeer1 = sessionProps.setRemoteIp(peer1Ip).build();
+    BgpSessionProperties toPeer2 = sessionProps.setRemoteIp(peer2Ip).build();
+    BgpSessionProperties toPeer3 = sessionProps.setRemoteIp(peer3Ip).build();
 
     // 192.0.2.1 with next-hop-self should use next-hop-ip of interface
     assertThat(processBgpRoute(rp1, toPeer1), hasNextHopIp(equalTo(localIp)));

@@ -30,10 +30,10 @@ public class BgpPeerAddressNextHopTest {
   public void testEvaluate() {
     BgpSessionProperties sessionProps =
         BgpSessionProperties.builder()
-            .setHeadAs(11111L)
-            .setTailAs(22222L)
-            .setHeadIp(Ip.parse("1.1.1.1"))
-            .setTailIp(Ip.parse("2.2.2.2"))
+            .setRemoteAs(11111L)
+            .setLocalAs(22222L)
+            .setRemoteIp(Ip.parse("1.1.1.1"))
+            .setLocalIp(Ip.parse("2.2.2.2"))
             .build();
     Environment env =
         Environment.builder(C)
