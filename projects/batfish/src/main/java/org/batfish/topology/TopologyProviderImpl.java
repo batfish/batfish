@@ -2,9 +2,8 @@ package org.batfish.topology;
 
 import static org.batfish.common.topology.TopologyUtil.computeLayer2Topology;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.common.collect.ImmutableSet;
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -48,34 +47,33 @@ public final class TopologyProviderImpl implements TopologyProvider {
   }
 
   @Override
-  public IpOwners getIpOwners(NetworkSnapshot snapshot) {
-    return _ipOwners.getUnchecked(snapshot);
+  public @Nonnull IpOwners getIpOwners(NetworkSnapshot snapshot) {
+    return IP_OWNERS.get(snapshot, this::computeIpOwners);
   }
 
   @Override
-  @Nonnull
-  public IpsecTopology getInitialIpsecTopology(NetworkSnapshot networkSnapshot) {
-    return _initialIpsecTopologies.getUnchecked(networkSnapshot);
+  public @Nonnull IpsecTopology getInitialIpsecTopology(NetworkSnapshot networkSnapshot) {
+    return INITIAL_IPSEC_TOPOLOGIES.get(networkSnapshot, this::computeInitialIpsecTopology);
   }
 
   @Override
-  public Topology getInitialLayer3Topology(NetworkSnapshot networkSnapshot) {
-    return _initialLayer3Topologies.getUnchecked(networkSnapshot);
+  public @Nonnull Topology getInitialLayer3Topology(NetworkSnapshot networkSnapshot) {
+    return INITIAL_LAYER3_TOPOLOGIES.get(networkSnapshot, this::computeInitialLayer3Topology);
   }
 
   @Override
   public @Nonnull L3Adjacencies getInitialL3Adjacencies(NetworkSnapshot networkSnapshot) {
-    return _initialL3Adjacencies.getUnchecked(networkSnapshot);
+    return INITIAL_L3_ADJACENCIES.get(networkSnapshot, this::computeInitialL3Adjacencies);
   }
 
   @Override
-  public OspfTopology getInitialOspfTopology(NetworkSnapshot networkSnapshot) {
-    return _initialOspfTopologies.getUnchecked(networkSnapshot);
+  public @Nonnull OspfTopology getInitialOspfTopology(NetworkSnapshot networkSnapshot) {
+    return INITIAL_OSPF_TOPOLOGIES.get(networkSnapshot, this::computeInitialOspfTopology);
   }
 
   @Override
-  public Layer1Topologies getLayer1Topologies(NetworkSnapshot networkSnapshot) {
-    return _layer1Topologies.getUnchecked(networkSnapshot);
+  public @Nonnull Layer1Topologies getLayer1Topologies(NetworkSnapshot networkSnapshot) {
+    return LAYER1_TOPOLOGIES.get(networkSnapshot, this::createLayer1Topologies);
   }
 
   @Override
@@ -84,18 +82,20 @@ public final class TopologyProviderImpl implements TopologyProvider {
   }
 
   @Override
-  public Optional<Layer1Topology> getRawLayer1PhysicalTopology(NetworkSnapshot networkSnapshot) {
-    return _rawLayer1PhysicalTopologies.getUnchecked(networkSnapshot);
+  public @Nonnull Optional<Layer1Topology> getRawLayer1PhysicalTopology(
+      NetworkSnapshot networkSnapshot) {
+    return RAW_LAYER1_PHYSICAL_TOPOLOGIES.get(
+        networkSnapshot, this::computeRawLayer1PhysicalTopology);
   }
 
   @Override
-  public Topology getRawLayer3Topology(NetworkSnapshot networkSnapshot) {
-    return _rawLayer3Topologies.getUnchecked(networkSnapshot);
+  public @Nonnull Topology getRawLayer3Topology(NetworkSnapshot networkSnapshot) {
+    return RAW_LAYER3_TOPOLOGIES.get(networkSnapshot, this::computeRawLayer3Topology);
   }
 
   @Override
-  public VxlanTopology getInitialVxlanTopology(NetworkSnapshot snapshot) {
-    return _initialVxlanTopologies.getUnchecked(snapshot);
+  public @Nonnull VxlanTopology getInitialVxlanTopology(NetworkSnapshot snapshot) {
+    return INITIAL_VXLAN_TOPOLOGIES.get(snapshot, this::computeVxlanTopology);
   }
 
   @Override
@@ -134,10 +134,9 @@ public final class TopologyProviderImpl implements TopologyProvider {
     }
   }
 
-  @Nonnull
   @Override
-  public TunnelTopology getInitialTunnelTopology(NetworkSnapshot snapshot) {
-    return _initialTunnelTopologies.getUnchecked(snapshot);
+  public @Nonnull TunnelTopology getInitialTunnelTopology(NetworkSnapshot snapshot) {
+    return INITIAL_TUNNEL_TOPOLOGIES.get(snapshot, this::computeInitialTunnelTopology);
   }
 
   ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -157,55 +156,34 @@ public final class TopologyProviderImpl implements TopologyProvider {
   // ease developer iteration on BDP: if the dataplane is re-generated (presumably, via a call to
   // generate_dataplane), the backend will not cache dataplane-derived topologies.
 
-  private final LoadingCache<NetworkSnapshot, IpOwners> _ipOwners =
-      CacheBuilder.newBuilder()
-          .maximumSize(MAX_CACHED_SNAPSHOTS)
-          .build(CacheLoader.from(this::computeIpOwners));
+  private static final Cache<NetworkSnapshot, IpOwners> IP_OWNERS =
+      Caffeine.newBuilder().maximumSize(MAX_CACHED_SNAPSHOTS).build();
 
-  private final LoadingCache<NetworkSnapshot, Layer1Topologies> _layer1Topologies =
-      CacheBuilder.newBuilder()
-          .maximumSize(MAX_CACHED_SNAPSHOTS)
-          .build(CacheLoader.from(this::createLayer1Topologies));
-  private final LoadingCache<NetworkSnapshot, Optional<Layer1Topology>>
-      _rawLayer1PhysicalTopologies =
-          CacheBuilder.newBuilder()
-              .maximumSize(MAX_CACHED_SNAPSHOTS)
-              .build(CacheLoader.from(this::computeRawLayer1PhysicalTopology));
+  private static final Cache<NetworkSnapshot, Layer1Topologies> LAYER1_TOPOLOGIES =
+      Caffeine.newBuilder().maximumSize(MAX_CACHED_SNAPSHOTS).build();
+  private static final Cache<NetworkSnapshot, Optional<Layer1Topology>>
+      RAW_LAYER1_PHYSICAL_TOPOLOGIES =
+          Caffeine.newBuilder().maximumSize(MAX_CACHED_SNAPSHOTS).build();
 
-  private final LoadingCache<NetworkSnapshot, L3Adjacencies> _initialL3Adjacencies =
-      CacheBuilder.newBuilder()
-          .maximumSize(MAX_CACHED_SNAPSHOTS)
-          .softValues()
-          .build(CacheLoader.from(this::computeInitialL3Adjacencies));
+  private static final Cache<NetworkSnapshot, L3Adjacencies> INITIAL_L3_ADJACENCIES =
+      Caffeine.newBuilder().maximumSize(MAX_CACHED_SNAPSHOTS).softValues().build();
 
-  private final LoadingCache<NetworkSnapshot, Topology> _rawLayer3Topologies =
-      CacheBuilder.newBuilder()
-          .maximumSize(MAX_CACHED_SNAPSHOTS)
-          .build(CacheLoader.from(this::computeRawLayer3Topology));
+  private static final Cache<NetworkSnapshot, Topology> RAW_LAYER3_TOPOLOGIES =
+      Caffeine.newBuilder().maximumSize(MAX_CACHED_SNAPSHOTS).build();
 
-  private final LoadingCache<NetworkSnapshot, Topology> _initialLayer3Topologies =
-      CacheBuilder.newBuilder()
-          .maximumSize(MAX_CACHED_SNAPSHOTS)
-          .build(CacheLoader.from(this::computeInitialLayer3Topology));
+  private static final Cache<NetworkSnapshot, Topology> INITIAL_LAYER3_TOPOLOGIES =
+      Caffeine.newBuilder().maximumSize(MAX_CACHED_SNAPSHOTS).build();
 
-  private final LoadingCache<NetworkSnapshot, OspfTopology> _initialOspfTopologies =
-      CacheBuilder.newBuilder()
-          .maximumSize(MAX_CACHED_SNAPSHOTS)
-          .build(CacheLoader.from(this::computeInitialOspfTopology));
+  private static final Cache<NetworkSnapshot, OspfTopology> INITIAL_OSPF_TOPOLOGIES =
+      Caffeine.newBuilder().maximumSize(MAX_CACHED_SNAPSHOTS).build();
 
-  private final LoadingCache<NetworkSnapshot, IpsecTopology> _initialIpsecTopologies =
-      CacheBuilder.newBuilder()
-          .maximumSize(MAX_CACHED_SNAPSHOTS)
-          .build(CacheLoader.from(this::computeInitialIpsecTopology));
-  private final LoadingCache<NetworkSnapshot, TunnelTopology> _initialTunnelTopologies =
-      CacheBuilder.newBuilder()
-          .maximumSize(MAX_CACHED_SNAPSHOTS)
-          .build(CacheLoader.from(this::computeInitialTunnelTopology));
+  private static final Cache<NetworkSnapshot, IpsecTopology> INITIAL_IPSEC_TOPOLOGIES =
+      Caffeine.newBuilder().maximumSize(MAX_CACHED_SNAPSHOTS).build();
+  private static final Cache<NetworkSnapshot, TunnelTopology> INITIAL_TUNNEL_TOPOLOGIES =
+      Caffeine.newBuilder().maximumSize(MAX_CACHED_SNAPSHOTS).build();
 
-  private final LoadingCache<NetworkSnapshot, VxlanTopology> _initialVxlanTopologies =
-      CacheBuilder.newBuilder()
-          .maximumSize(MAX_CACHED_SNAPSHOTS)
-          .build(CacheLoader.from(this::computeVxlanTopology));
+  private static final Cache<NetworkSnapshot, VxlanTopology> INITIAL_VXLAN_TOPOLOGIES =
+      Caffeine.newBuilder().maximumSize(MAX_CACHED_SNAPSHOTS).build();
 
   private @Nonnull Map<String, Configuration> getConfigurations(NetworkSnapshot snapshot) {
     return _batfish
