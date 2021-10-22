@@ -16,6 +16,8 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.batfish.bddreachability.IpsRoutedOutInterfacesFactory.IpsRoutedOutInterfaces;
 import org.batfish.bddreachability.transition.TransformationToTransition;
 import org.batfish.bddreachability.transition.Transition;
@@ -47,6 +49,8 @@ import org.batfish.datamodel.packet_policy.TrueExpr;
  */
 @ParametersAreNonnullByDefault
 class PacketPolicyToBdd {
+  private static final Logger LOGGER = LogManager.getLogger(PacketPolicyToBdd.class);
+
   @Nonnull private final BoolExprToBdd _boolExprToBdd;
   @Nonnull private Transition _toDrop;
   @Nonnull private final Map<FibLookup, Transition> _fibLookups;
@@ -231,6 +235,7 @@ class PacketPolicyToBdd {
     @Override
     public Void visitFibLookupOverrideLookupIp(FibLookupOverrideLookupIp fibLookup) {
       // TODO: support for FibLookupOverrideLookupIp
+      LOGGER.warn("FibLookupOverrideLookupIp is not supported in reachability");
       return null;
     }
   }
