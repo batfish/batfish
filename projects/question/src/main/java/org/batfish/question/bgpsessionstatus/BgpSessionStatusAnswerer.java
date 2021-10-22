@@ -248,7 +248,7 @@ public class BgpSessionStatusAnswerer extends Answerer {
       BgpPeerConfig activePeer) {
     return topology
         .edgeValue(local, remote)
-        .map(BgpSessionProperties::getTailAs)
+        .map(BgpSessionProperties::getLocalAs)
         .orElse(activePeer.getLocalAs());
   }
 
@@ -271,7 +271,7 @@ public class BgpSessionStatusAnswerer extends Answerer {
       BgpPeerConfig activePeer) {
     return topology
         .edgeValue(local, remote)
-        .map(session -> Long.toString(session.getHeadAs()))
+        .map(session -> Long.toString(session.getRemoteAs()))
         .orElse(activePeer.getRemoteAsns().toString());
   }
 
@@ -335,11 +335,13 @@ public class BgpSessionStatusAnswerer extends Answerer {
                   establishedRemotes.contains(remoteId) ? ESTABLISHED : NOT_ESTABLISHED;
               return rb.put(COL_ESTABLISHED_STATUS, status)
                   .put(COL_ADDRESS_FAMILIES, sessionProps.getAddressFamilies())
-                  .put(COL_LOCAL_IP, sessionProps.getTailIp())
-                  .put(COL_LOCAL_AS, sessionProps.getTailAs())
-                  .put(COL_REMOTE_AS, Long.toString(sessionProps.getHeadAs()))
+                  .put(COL_LOCAL_IP, sessionProps.getLocalIp())
+                  .put(COL_LOCAL_AS, sessionProps.getLocalAs())
+                  .put(COL_REMOTE_AS, Long.toString(sessionProps.getRemoteAs()))
                   .put(COL_REMOTE_NODE, new Node(remoteId.getHostname()))
-                  .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, sessionProps.getHeadIp()))
+                  .put(
+                      COL_REMOTE_IP,
+                      new SelfDescribingObject(Schema.IP, sessionProps.getRemoteIp()))
                   .put(COL_SESSION_TYPE, sessionProps.getSessionType())
                   .build();
             })

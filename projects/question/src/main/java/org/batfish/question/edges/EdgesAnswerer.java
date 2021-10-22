@@ -234,13 +234,13 @@ public class EdgesAnswerer extends Answerer {
         rows.add(
             Row.builder(columnMap)
                 .put(COL_NODE, new Node(hostname))
-                .put(COL_IP, unnumbered ? null : sessionProperties.getTailIp())
+                .put(COL_IP, unnumbered ? null : sessionProperties.getLocalIp())
                 .put(COL_INTERFACE, bgpPeerConfigId.getPeerInterface())
-                .put(COL_AS_NUMBER, sessionProperties.getTailAs())
+                .put(COL_AS_NUMBER, sessionProperties.getLocalAs())
                 .put(COL_REMOTE_NODE, new Node(remoteHostname))
-                .put(COL_REMOTE_IP, unnumbered ? null : sessionProperties.getHeadIp())
+                .put(COL_REMOTE_IP, unnumbered ? null : sessionProperties.getRemoteIp())
                 .put(COL_REMOTE_INTERFACE, remoteBgpPeerConfigId.getPeerInterface())
-                .put(COL_REMOTE_AS_NUMBER, sessionProperties.getHeadAs())
+                .put(COL_REMOTE_AS_NUMBER, sessionProperties.getRemoteAs())
                 .build());
       }
     }

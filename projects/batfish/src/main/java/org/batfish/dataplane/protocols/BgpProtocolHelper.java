@@ -48,8 +48,8 @@ public final class BgpProtocolHelper {
    *
    * @param localNeighbor {@link BgpPeerConfig} exporting {@code route}
    * @param remoteNeighbor {@link BgpPeerConfig} to which to export {@code route}
-   * @param sessionProperties {@link BgpSessionProperties} representing the <em>incoming</em> edge:
-   *     i.e. the edge from {@code remoteNeighbor} to {@code localNeighbor}
+   * @param localSessionProperties {@link BgpSessionProperties} representing the <em>outgoing</em>
+   *     edge: i.e. the edge from {@code localNeighbor} to {@code remoteNeighbor}
    * @param afType {@link AddressFamily.Type} the address family for which to look up the settings
    */
   @Nullable
@@ -57,7 +57,7 @@ public final class BgpProtocolHelper {
       B transformBgpRoutePreExport(
           BgpPeerConfig localNeighbor,
           BgpPeerConfig remoteNeighbor,
-          BgpSessionProperties sessionProperties,
+          BgpSessionProperties localSessionProperties,
           BgpProcess localBgpProcess,
           BgpProcess remoteBgpProcess,
           BgpRoute<B, R> route,
@@ -70,7 +70,7 @@ public final class BgpProtocolHelper {
 
     RoutingProtocol routeProtocol = route.getProtocol();
     RoutingProtocol outgoingProtocol =
-        sessionProperties.isEbgp() ? RoutingProtocol.BGP : RoutingProtocol.IBGP;
+        localSessionProperties.isEbgp() ? RoutingProtocol.BGP : RoutingProtocol.IBGP;
     builder.setProtocol(outgoingProtocol);
     builder.setSrcProtocol(routeProtocol);
 
@@ -82,7 +82,7 @@ public final class BgpProtocolHelper {
     builder.setTag(null);
 
     // Set originatorIP
-    if (sessionProperties.isEbgp() || !routeProtocol.equals(RoutingProtocol.IBGP)) {
+    if (localSessionProperties.isEbgp() || !routeProtocol.equals(RoutingProtocol.IBGP)) {
       // eBGP session and not iBGP route: override the originator
       builder.setOriginatorIp(localBgpProcess.getRouterId());
     }
@@ -92,7 +92,7 @@ public final class BgpProtocolHelper {
     assert toNeighborAf
         != null; // invariant of proper queue setup and route exchange for this AF type
     builder.setReceivedFromRouteReflectorClient(
-        !sessionProperties.isEbgp() && toNeighborAf.getRouteReflectorClient());
+        !localSessionProperties.isEbgp() && toNeighborAf.getRouteReflectorClient());
 
     AddressFamily af = localNeighbor.getAddressFamily(afType);
     assert af != null;
@@ -103,17 +103,17 @@ public final class BgpProtocolHelper {
     }
 
     // For eBGP, do not export if AS path contains the peer's AS in a disallowed position
-    if (sessionProperties.isEbgp()
+    if (localSessionProperties.isEbgp()
         && !allowAsPathOut(
             route.getAsPath(),
-            sessionProperties.getTailAs(),
+            localSessionProperties.getRemoteAs(),
             af.getAddressFamilyCapabilities().getAllowRemoteAsOut())) {
       return null;
     }
     // Also do not export if route has NO_EXPORT community and this is a true ebgp session
     if (route.getCommunities().getCommunities().contains(StandardCommunity.NO_EXPORT)
-        && sessionProperties.isEbgp()
-        && sessionProperties.getConfedSessionType() != ConfedSessionType.WITHIN_CONFED) {
+        && localSessionProperties.isEbgp()
+        && localSessionProperties.getConfedSessionType() != ConfedSessionType.WITHIN_CONFED) {
       return null;
     }
 
@@ -133,14 +133,14 @@ public final class BgpProtocolHelper {
      *  iBGP speaker should not send out routes to iBGP neighbor whose router-id is
      *  same as originator id of advertisement
      */
-    if (!sessionProperties.isEbgp()
+    if (!localSessionProperties.isEbgp()
         && remoteBgpProcess.getRouterId().equals(route.getOriginatorIp())) {
       return null;
     }
 
     builder.setClusterList(ImmutableSet.of());
     boolean routeOriginatedLocally = Ip.ZERO.equals(route.getReceivedFromIp());
-    if (routeProtocol.equals(RoutingProtocol.IBGP) && !sessionProperties.isEbgp()) {
+    if (routeProtocol.equals(RoutingProtocol.IBGP) && !localSessionProperties.isEbgp()) {
       /*
        * The remote route is iBGP. The session is iBGP. We consider whether to reflect, and
        * modify the outgoing route as appropriate.
@@ -182,13 +182,13 @@ public final class BgpProtocolHelper {
 
     // Outgoing metric (MED) is preserved only if advertising to IBGP peer, within a confederation,
     // or for locally originated routes
-    if (!sessionProperties.advertiseUnchangedMed() && !routeOriginatedLocally) {
+    if (!localSessionProperties.advertiseUnchangedMed() && !routeOriginatedLocally) {
       builder.setMetric(0);
     }
 
     // Local preference: only transitive for iBGP or within a confederation
     builder.setLocalPreference(
-        sessionProperties.advertiseUnchangedLocalPref()
+        localSessionProperties.advertiseUnchangedLocalPref()
             ? route.getLocalPreference()
             : DEFAULT_LOCAL_PREFERENCE);
 

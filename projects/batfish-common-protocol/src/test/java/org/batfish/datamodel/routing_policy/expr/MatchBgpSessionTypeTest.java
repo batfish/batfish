@@ -49,10 +49,10 @@ public class MatchBgpSessionTypeTest {
       env.setBgpSessionProperties(
           BgpSessionProperties.builder()
               .setSessionType(type)
-              .setHeadAs(1234)
-              .setHeadIp(Ip.parse("1.2.3.4"))
-              .setTailAs(2345)
-              .setTailIp(Ip.parse("2.3.4.5"))
+              .setRemoteAs(1234)
+              .setRemoteIp(Ip.parse("1.2.3.4"))
+              .setLocalAs(2345)
+              .setLocalIp(Ip.parse("2.3.4.5"))
               .build());
     }
     Result result = match.evaluate(env.build());

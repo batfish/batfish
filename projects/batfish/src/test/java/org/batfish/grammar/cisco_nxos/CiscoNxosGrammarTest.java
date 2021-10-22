@@ -765,16 +765,15 @@ public final class CiscoNxosGrammarTest {
     Bgpv4Route.Builder outputRouteBuilder =
         Bgpv4Route.testBuilder().setNextHopIp(UNSET_ROUTE_NEXT_HOP_IP);
 
-    Ip sessionPropsHeadIp = Ip.parse("1.1.1.1");
     BgpSessionProperties.Builder sessionProps =
         BgpSessionProperties.builder()
-            .setHeadAs(1L)
-            .setTailAs(1L)
-            .setHeadIp(sessionPropsHeadIp)
-            .setTailIp(Ip.parse("2.2.2.2"));
+            .setRemoteAs(1L)
+            .setLocalAs(1L)
+            .setRemoteIp(Ip.parse("1.1.1.1"))
+            .setLocalIp(Ip.parse("2.2.2.2"));
     BgpSessionProperties ibgpSession = sessionProps.setSessionType(SessionType.IBGP).build();
     BgpSessionProperties ebgpSession =
-        sessionProps.setTailAs(2L).setSessionType(SessionType.EBGP_SINGLEHOP).build();
+        sessionProps.setRemoteAs(2L).setSessionType(SessionType.EBGP_SINGLEHOP).build();
 
     // No operation for IBGP
     boolean shouldExportToIbgp =
@@ -790,7 +789,8 @@ public final class CiscoNxosGrammarTest {
     assertTrue(shouldExportToEbgp);
     assertThat(outputRouteBuilder.getNextHopIp(), equalTo(originalNhip));
 
-    // Original route has unset next hop IP: sets output route nhip to head IP of session props
+    // Original route has unset next hop IP: leaves unset (and expects pipeline downstream to
+    // handle)
     outputRouteBuilder.setNextHopIp(UNSET_ROUTE_NEXT_HOP_IP);
     Bgpv4Route noNhipRoute =
         originalRoute.toBuilder().setNextHop(NextHopDiscard.instance()).build();
@@ -798,7 +798,7 @@ public final class CiscoNxosGrammarTest {
         nhipUnchangedPolicy.processBgpRoute(
             noNhipRoute, outputRouteBuilder, ebgpSession, Direction.OUT, null);
     assertTrue(shouldExportToEbgpUnsetNextHop);
-    assertThat(outputRouteBuilder.getNextHopIp(), equalTo(sessionPropsHeadIp));
+    assertThat(outputRouteBuilder.getNextHopIp(), equalTo(UNSET_ROUTE_NEXT_HOP_IP));
   }
 
   @Test
@@ -890,11 +890,11 @@ public final class CiscoNxosGrammarTest {
     Ip bgpPeerId = Ip.parse("2.2.2.2");
     Ip nextHopIp = Ip.parse("3.3.3.3"); // not actually in config, just made up
     BgpSessionProperties.Builder spb =
-        BgpSessionProperties.builder().setTailAs(1L).setTailIp(bgpPeerId).setHeadIp(nextHopIp);
+        BgpSessionProperties.builder().setLocalAs(1L).setLocalIp(bgpPeerId).setRemoteIp(nextHopIp);
     BgpSessionProperties ibgpSessionProps =
-        spb.setHeadAs(1L).setSessionType(SessionType.IBGP).build();
+        spb.setRemoteAs(1L).setSessionType(SessionType.IBGP).build();
     BgpSessionProperties ebgpSessionProps =
-        spb.setHeadAs(2L).setSessionType(SessionType.EBGP_SINGLEHOP).build();
+        spb.setRemoteAs(2L).setSessionType(SessionType.EBGP_SINGLEHOP).build();
 
     // Create eigrp routes to redistribute
     EigrpInternalRoute.Builder internalRb =
@@ -1024,10 +1024,10 @@ public final class CiscoNxosGrammarTest {
     Ip nextHopIp = Ip.parse("192.168.100.100"); // not actually in config, just made up
     BgpSessionProperties bgpSessionProps =
         BgpSessionProperties.builder()
-            .setTailAs(1L)
-            .setTailIp(bgpPeerId)
-            .setHeadIp(nextHopIp)
-            .setHeadAs(2L)
+            .setLocalAs(1L)
+            .setLocalIp(bgpPeerId)
+            .setRemoteIp(nextHopIp)
+            .setRemoteAs(2L)
             .setSessionType(SessionType.IBGP)
             .build();
 
@@ -9253,7 +9253,7 @@ public final class CiscoNxosGrammarTest {
             .setPeerAddress(fromConfig.getLocalIp())
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
-    BgpSessionProperties session = BgpSessionProperties.from(neighborConfig, fromConfig, false);
+    BgpSessionProperties session = BgpSessionProperties.from(fromConfig, neighborConfig, false);
     rp.processBgpRoute(inputRoute, outputRoute, session, Direction.OUT, null);
     assertThat(outputRoute.getNextHopIp(), equalTo(expectedTransformedNextHopIp));
   }

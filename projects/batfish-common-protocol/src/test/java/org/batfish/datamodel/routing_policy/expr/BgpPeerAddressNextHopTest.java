@@ -10,6 +10,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.routing_policy.Environment;
+import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -27,16 +28,19 @@ public class BgpPeerAddressNextHopTest {
 
   @Test
   public void testEvaluate() {
-    Ip tailIp = Ip.parse("2.2.2.2");
     BgpSessionProperties sessionProps =
         BgpSessionProperties.builder()
-            .setHeadAs(11111L)
-            .setTailAs(22222L)
-            .setHeadIp(Ip.parse("1.1.1.1"))
-            .setTailIp(tailIp)
+            .setRemoteAs(11111L)
+            .setLocalAs(22222L)
+            .setRemoteIp(Ip.parse("1.1.1.1"))
+            .setLocalIp(Ip.parse("2.2.2.2"))
             .build();
-    Environment env = Environment.builder(C).setBgpSessionProperties(sessionProps).build();
-    assertThat(INSTANCE.evaluate(env), equalTo(NextHopIp.of(tailIp)));
+    Environment env =
+        Environment.builder(C)
+            .setBgpSessionProperties(sessionProps)
+            .setDirection(Direction.IN)
+            .build();
+    assertThat(INSTANCE.evaluate(env), equalTo(NextHopIp.of(Ip.parse("1.1.1.1"))));
   }
 
   @Test
