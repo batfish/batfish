@@ -8,7 +8,9 @@ import com.google.common.collect.Iterables;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.IdentityHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
@@ -363,10 +365,21 @@ public final class Transitions {
   }
 
   private static Stream<Transition> flattenOr(Transition transition) {
-    if (transition instanceof Or) {
-      return ((Or) transition).getTransitions().stream().flatMap(Transitions::flattenOr);
+    Deque<Transition> in = new LinkedList<>();
+    in.add(transition);
+
+    List<Transition> out = new ArrayList<>();
+
+    while (!in.isEmpty()) {
+      Transition t = in.poll();
+      if (t instanceof Or) {
+        in.addAll(((Or) t).getTransitions());
+      } else {
+        out.add(t);
+      }
     }
-    return Stream.of(transition);
+
+    return out.stream();
   }
 
   public static Transition or(Transition... transitions) {
