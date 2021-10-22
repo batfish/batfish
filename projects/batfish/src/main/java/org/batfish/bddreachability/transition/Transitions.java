@@ -289,12 +289,9 @@ public final class Transitions {
         merged = tryMergeDisjunctSet(mergeableDisjuncts);
       }
       LOGGER.info("Reduced to {} disjuncts", mergeableDisjuncts.size());
+      unmergeableDisjuncts.addAll(mergeableDisjuncts);
     }
 
-    if (unmergeableDisjuncts.isEmpty()) {
-      return mergeableDisjuncts;
-    }
-    unmergeableDisjuncts.addAll(mergeableDisjuncts);
     return unmergeableDisjuncts;
   }
 
