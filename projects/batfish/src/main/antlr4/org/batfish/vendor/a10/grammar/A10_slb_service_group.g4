@@ -15,6 +15,7 @@ sssg_definition
    | sssgd_member
    | sssgd_method
    | sssgd_min_active_member
+   | sssgd_persist_scoring
    | sssgd_stats_data_disable
    | sssgd_stats_data_enable
 ;
@@ -41,6 +42,8 @@ sssgd_member_priority: PRIORITY service_group_member_priority;
 sssgd_method: METHOD service_group_method NEWLINE;
 
 sssgd_min_active_member: MIN_ACTIVE_MEMBER minimum_active_member NEWLINE;
+
+sssgd_persist_scoring: PERSIST_SCORING (GLOBAL | ENABLE | DISABLE) NEWLINE;
 
 sssgd_stats_data_disable: STATS_DATA_DISABLE NEWLINE;
 
