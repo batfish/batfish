@@ -5,14 +5,18 @@ import static com.google.common.base.Preconditions.checkState;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.batfish.bddreachability.BDDOutgoingOriginalFlowFilterManager;
 import org.batfish.bddreachability.LastHopOutgoingInterfaceManager;
 import org.batfish.common.bdd.BDDFiniteDomain;
@@ -22,6 +26,8 @@ import org.batfish.common.bdd.BDDSourceManager;
 /** Smart constructors of {@link Transition}. */
 public final class Transitions {
   private Transitions() {}
+
+  private static final Logger LOGGER = LogManager.getLogger(Transitions.class);
 
   public static final Transition IDENTITY = Identity.INSTANCE;
 
@@ -257,16 +263,32 @@ public final class Transitions {
     if (origDisjuncts.size() < 2) {
       return origDisjuncts;
     }
-
-    Set<Transition> disjuncts = new HashSet<>(origDisjuncts);
-
-    // keep merge until we can't merge any more
-    boolean merged = tryMergeDisjunctSet(disjuncts);
-    while (merged) {
-      merged = tryMergeDisjunctSet(disjuncts);
+    LOGGER.debug("Merging {} disjuncts", origDisjuncts.size());
+    Set<Transition> mergeableDisjuncts = null; // initialize lazily
+    List<Transition> unmergeableDisjuncts = new ArrayList<>();
+    for (Transition origDisjunct : origDisjuncts) {
+      if (isMergableDisjunct(origDisjunct)) {
+        if (mergeableDisjuncts == null) {
+          mergeableDisjuncts = Collections.newSetFromMap(new IdentityHashMap<>());
+        }
+        mergeableDisjuncts.add(origDisjunct);
+      } else {
+        unmergeableDisjuncts.add(origDisjunct);
+      }
     }
 
-    return disjuncts;
+    if (mergeableDisjuncts != null) {
+      // keep merging until we can't merge any more
+      LOGGER.debug("Merging {} mergeable disjuncts", mergeableDisjuncts.size());
+      boolean merged = tryMergeDisjunctSet(mergeableDisjuncts);
+      while (merged) {
+        merged = tryMergeDisjunctSet(mergeableDisjuncts);
+      }
+      LOGGER.debug("Reduced to {} disjuncts", mergeableDisjuncts.size());
+      unmergeableDisjuncts.addAll(mergeableDisjuncts);
+    }
+
+    return unmergeableDisjuncts;
   }
 
   private static boolean tryMergeDisjunctSet(Set<Transition> disjuncts) {
@@ -289,6 +311,11 @@ public final class Transitions {
       }
     }
     return false;
+  }
+
+  /** Keep in sync with tryMergeDisjuncts */
+  private static boolean isMergableDisjunct(Transition t) {
+    return t == IDENTITY || t instanceof Constraint || t instanceof EraseAndSet;
   }
 
   @VisibleForTesting
