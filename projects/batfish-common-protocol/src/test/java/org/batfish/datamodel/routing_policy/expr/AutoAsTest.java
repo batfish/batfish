@@ -101,7 +101,7 @@ public class AutoAsTest {
             .setBgpSessionProperties(sessionProps)
             .setOriginalRoute(BGP_ROUTE)
             .build();
-    assertThat(INSTANCE.evaluate(env), equalTo(22222L));
+    assertThat(INSTANCE.evaluate(env), equalTo(11111L));
   }
 
   @Test

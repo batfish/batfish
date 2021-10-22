@@ -54,7 +54,7 @@ public class AsnValueTest {
                     .setTailAs(4)
                     .build())
             .build();
-    assertThat(AsnValue.of(LocalAs.instance()).evaluate(e), equalTo(3L));
-    assertThat(AsnValue.of(RemoteAs.instance()).evaluate(e), equalTo(4L));
+    assertThat(AsnValue.of(LocalAs.instance()).evaluate(e), equalTo(4L));
+    assertThat(AsnValue.of(RemoteAs.instance()).evaluate(e), equalTo(3L));
   }
 }

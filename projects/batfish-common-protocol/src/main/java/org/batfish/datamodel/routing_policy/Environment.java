@@ -78,7 +78,12 @@ public class Environment {
   private final Map<String, AsPathAccessList> _asPathAccessLists;
   private final @Nonnull Map<String, AsPathExpr> _asPathExprs;
   private final @Nonnull Map<String, AsPathMatchExpr> _asPathMatchExprs;
-  @Nullable private final BgpSessionProperties _bgpSessionProperties;
+  /**
+   * If present, BGP properties are for this node. Aka, local properties are TAIL and remote
+   * properties are HEAD.
+   */
+  private final @Nullable BgpSessionProperties _bgpSessionProperties;
+
   private boolean _buffered;
   private boolean _callExprContext;
   private boolean _callStatementContext;
@@ -269,57 +274,45 @@ public class Environment {
   }
 
   /**
-   * Returns the BGP local AS for the current environment and direction. Returns {@link
-   * Optional#empty()} if there are no {@link BgpSessionProperties}.
+   * Returns the BGP local AS for the current environment. Returns {@link Optional#empty()} if there
+   * are no {@link BgpSessionProperties}.
    */
   public Optional<Long> getLocalAs() {
     if (_bgpSessionProperties == null) {
       return Optional.empty();
     }
-    if (_direction == Direction.IN) {
-      return Optional.of(_bgpSessionProperties.getHeadAs());
-    }
     return Optional.of(_bgpSessionProperties.getTailAs());
   }
 
   /**
-   * Returns the BGP local IP for the current environment and direction. Returns {@link
-   * Optional#empty()} if there are no {@link BgpSessionProperties}.
+   * Returns the BGP local IP for the current environment. Returns {@link Optional#empty()} if there
+   * are no {@link BgpSessionProperties}.
    */
   public Optional<Ip> getLocalIp() {
     if (_bgpSessionProperties == null) {
       return Optional.empty();
     }
-    if (_direction == Direction.IN) {
-      return Optional.of(_bgpSessionProperties.getHeadIp());
-    }
     return Optional.of(_bgpSessionProperties.getTailIp());
   }
 
   /**
-   * Returns the BGP remote AS for the current environment and direction. Returns {@link
-   * Optional#empty()} if there are no {@link BgpSessionProperties}.
+   * Returns the BGP remote AS for the current environment. Returns {@link Optional#empty()} if
+   * there are no {@link BgpSessionProperties}.
    */
   public Optional<Long> getRemoteAs() {
     if (_bgpSessionProperties == null) {
       return Optional.empty();
     }
-    if (_direction == Direction.IN) {
-      return Optional.of(_bgpSessionProperties.getTailAs());
-    }
     return Optional.of(_bgpSessionProperties.getHeadAs());
   }
 
   /**
-   * Returns the BGP remote IP for the current environment and direction. Returns {@link
-   * Optional#empty()} if there are no {@link BgpSessionProperties}.
+   * Returns the BGP remote IP for the current environment. Returns {@link Optional#empty()} if
+   * there are no {@link BgpSessionProperties}.
    */
   public Optional<Ip> getRemoteIp() {
     if (_bgpSessionProperties == null) {
       return Optional.empty();
-    }
-    if (_direction == Direction.IN) {
-      return Optional.of(_bgpSessionProperties.getTailIp());
     }
     return Optional.of(_bgpSessionProperties.getHeadIp());
   }
@@ -479,6 +472,10 @@ public class Environment {
       return this;
     }
 
+    /**
+     * If populated, must be session properties for this node. Aka, local properties should be TAIL,
+     * and remote properties should be HEAD.
+     */
     public Builder setBgpSessionProperties(@Nullable BgpSessionProperties bgpSessionProperties) {
       _bgpSessionProperties = bgpSessionProperties;
       return this;

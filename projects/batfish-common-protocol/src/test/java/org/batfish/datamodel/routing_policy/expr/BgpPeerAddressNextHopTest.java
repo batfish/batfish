@@ -40,7 +40,7 @@ public class BgpPeerAddressNextHopTest {
             .setBgpSessionProperties(sessionProps)
             .setDirection(Direction.IN)
             .build();
-    assertThat(INSTANCE.evaluate(env), equalTo(NextHopIp.of(Ip.parse("2.2.2.2"))));
+    assertThat(INSTANCE.evaluate(env), equalTo(NextHopIp.of(Ip.parse("1.1.1.1"))));
   }
 
   @Test

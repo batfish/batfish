@@ -804,7 +804,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     // Verify that "ourConfigId" really is ours.
     assert ourConfigId.getHostname().equals(_hostname);
 
-    BgpSessionProperties remoteSessionProperties = getBgpSessionProperties(bgpTopology, edgeId);
+    BgpSessionProperties ourSessionProperties =
+        getBgpSessionProperties(bgpTopology, edgeId.reverse());
     BgpPeerConfig ourBgpConfig = requireNonNull(nc.getBgpPeerConfig(edgeId.head()));
     assert ourBgpConfig.getIpv4UnicastAddressFamily() != null;
     // sessionProperties represents the incoming edge, so its tailIp is the remote peer's IP
@@ -812,7 +813,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         ourBgpConfig.getAppliedRibGroup() != null
             && !ourBgpConfig.getAppliedRibGroup().getImportRibs().isEmpty();
 
-    Bgpv4Rib targetRib = remoteSessionProperties.isEbgp() ? _ebgpv4Rib : _ibgpv4Rib;
+    Bgpv4Rib targetRib = ourSessionProperties.isEbgp() ? _ebgpv4Rib : _ibgpv4Rib;
     Builder<AnnotatedRoute<AbstractRoute>> perNeighborDeltaForRibGroups = RibDelta.builder();
 
     BgpRoutingProcess remoteProcess = getNeighborBgpProcess(remoteConfigId, nodes);
@@ -822,7 +823,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             .iterator();
 
     // Process all routes from neighbor
-    Ip remoteIp = remoteSessionProperties.getTailIp();
+    Ip remoteIp = ourSessionProperties.getHeadIp();
     while (exportedRoutes.hasNext()) {
       // consume exported routes
       RouteAdvertisement<Bgpv4Route> remoteRouteAdvert = exportedRoutes.next();
@@ -831,14 +832,14 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       Bgpv4Route.Builder transformedIncomingRouteBuilder =
           transformBgpRouteOnImport(
               remoteRoute,
-              remoteSessionProperties.getHeadAs(),
+              ourSessionProperties.getTailAs(),
               ourBgpConfig
                   .getIpv4UnicastAddressFamily()
                   .getAddressFamilyCapabilities()
                   .getAllowLocalAsIn(),
-              remoteSessionProperties.isEbgp(),
+              ourSessionProperties.isEbgp(),
               _process,
-              remoteSessionProperties.getTailIp(),
+              remoteIp,
               ourConfigId.getPeerInterface());
       if (transformedIncomingRouteBuilder == null) {
         // Route could not be imported for core protocol reasons
@@ -863,7 +864,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
               importPolicy.processBgpRoute(
                   remoteRoute,
                   transformedIncomingRouteBuilder,
-                  remoteSessionProperties,
+                  ourSessionProperties,
                   IN,
                   _ribExprEvaluator);
         }
@@ -1375,9 +1376,10 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     BgpPeerConfig ourBgpConfig = nc.getBgpPeerConfig(ourConfigId);
     assert ourBgpConfig != null; // because the edge exists
     assert ourBgpConfig.getEvpnAddressFamily() != null;
-    // sessionProperties represents the incoming edge, so its tailIp is the remote peer's IP
-    BgpSessionProperties sessionProperties = getSessionProperties(_topology, edge);
-    EvpnRib<R> targetRib = getRib(clazz, sessionProperties.isEbgp() ? RibType.EBGP : RibType.IBGP);
+    // Reverse the edge so that these are "our" session properties - tail is this node.
+    BgpSessionProperties ourSessionProperties = getSessionProperties(_topology, edge.reverse());
+    EvpnRib<R> targetRib =
+        getRib(clazz, ourSessionProperties.isEbgp() ? RibType.EBGP : RibType.IBGP);
     RibDelta.Builder<R> toAdvertise = RibDelta.builder();
     RibDelta.Builder<R> toMerge = RibDelta.builder();
     while (!queue.isEmpty()) {
@@ -1386,14 +1388,14 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       B transformedBuilder =
           transformBgpRouteOnImport(
               route,
-              sessionProperties.getHeadAs(),
+              ourSessionProperties.getTailAs(),
               ourBgpConfig
                   .getEvpnAddressFamily()
                   .getAddressFamilyCapabilities()
                   .getAllowLocalAsIn(),
-              sessionProperties.isEbgp(),
+              ourSessionProperties.isEbgp(),
               _process,
-              sessionProperties.getTailIp(),
+              ourSessionProperties.getHeadIp(),
               ourConfigId.getPeerInterface());
       if (transformedBuilder == null) {
         continue;
@@ -1407,7 +1409,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         if (importPolicy != null) {
           acceptIncoming =
               importPolicy.processBgpRoute(
-                  route, transformedBuilder, sessionProperties, IN, _ribExprEvaluator);
+                  route, transformedBuilder, ourSessionProperties, IN, _ribExprEvaluator);
         }
       }
       if (!acceptIncoming) {
@@ -1452,11 +1454,11 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     }
 
     BgpDelta<R> advertiseDelta =
-        sessionProperties.isEbgp()
+        ourSessionProperties.isEbgp()
             ? new BgpDelta<>(toAdvertise.build(), RibDelta.empty())
             : new BgpDelta<>(RibDelta.empty(), toAdvertise.build());
     BgpDelta<R> mergeDelta =
-        sessionProperties.isEbgp()
+        ourSessionProperties.isEbgp()
             ? new BgpDelta<>(toMerge.build(), RibDelta.empty())
             : new BgpDelta<>(RibDelta.empty(), toMerge.build());
     return new DeltaPair<>(advertiseDelta, mergeDelta);
@@ -1840,17 +1842,17 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       RoutingPolicy ipv4ImportPolicy,
       RibExprEvaluator ribExprEvaluator) {
     // concoct a minimal session properties object: helps with route map constructs like
-    // next-hop peer-address
-    BgpSessionProperties bgpSessionProperties =
+    // next-hop peer-address. note that "tail" is "this node" for routing policy.
+    BgpSessionProperties ourSessionProperties =
         (neighbor.getLocalAs() != null
                 && !neighbor.getRemoteAsns().isEmpty()
                 && neighbor.getLocalIp() != null
                 && neighbor.getPeerAddress() != null)
             ? BgpSessionProperties.builder()
-                .setHeadAs(neighbor.getLocalAs())
-                .setTailAs(neighbor.getRemoteAsns().least())
-                .setHeadIp(neighbor.getLocalIp())
-                .setTailIp(neighbor.getPeerAddress())
+                .setTailAs(neighbor.getLocalAs())
+                .setHeadAs(neighbor.getRemoteAsns().least())
+                .setTailIp(neighbor.getLocalIp())
+                .setHeadIp(neighbor.getPeerAddress())
                 .setAddressFamilies(
                     ImmutableSet.of(Type.IPV4_UNICAST)) // the import policy is IPV4 itself
                 .build()
@@ -1858,7 +1860,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
     // TODO Figure out whether transformedOutgoingRoute ought to have an annotation
     return ipv4ImportPolicy.processBgpRoute(
-        inputRoute, outputRouteBuilder, bgpSessionProperties, IN, ribExprEvaluator);
+        inputRoute, outputRouteBuilder, ourSessionProperties, IN, ribExprEvaluator);
   }
 
   /**

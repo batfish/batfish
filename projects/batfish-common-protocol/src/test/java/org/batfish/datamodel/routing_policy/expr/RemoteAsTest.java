@@ -53,6 +53,6 @@ public class RemoteAsTest {
                     .setTailAs(4)
                     .build())
             .build();
-    assertThat(RemoteAs.instance().evaluate(e), equalTo(4L));
+    assertThat(RemoteAs.instance().evaluate(e), equalTo(3L));
   }
 }
