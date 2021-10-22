@@ -5,14 +5,18 @@ import static com.google.common.base.Preconditions.checkState;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.batfish.bddreachability.BDDOutgoingOriginalFlowFilterManager;
 import org.batfish.bddreachability.LastHopOutgoingInterfaceManager;
 import org.batfish.common.bdd.BDDFiniteDomain;
@@ -252,21 +256,39 @@ public final class Transitions {
         "Don't call or() with no Transitions -- just use Zero instead.");
   }
 
+  private static final Logger LOGGER = LogManager.getLogger(Transitions.class);
+
   @VisibleForTesting
   static Collection<Transition> mergeDisjuncts(List<Transition> origDisjuncts) {
     if (origDisjuncts.size() < 2) {
       return origDisjuncts;
     }
 
-    Set<Transition> disjuncts = new HashSet<>(origDisjuncts);
+    Set<Transition> mergeableDisjuncts = Collections.newSetFromMap(new IdentityHashMap<>());
+    List<Transition> unmergeableDisjuncts = new ArrayList<>();
 
-    // keep merge until we can't merge any more
-    boolean merged = tryMergeDisjunctSet(disjuncts);
-    while (merged) {
-      merged = tryMergeDisjunctSet(disjuncts);
+    for (Transition origDisjunct : origDisjuncts) {
+      if (isMergableDisjunct(origDisjunct)) {
+        mergeableDisjuncts.add(origDisjunct);
+      } else {
+        unmergeableDisjuncts.add(origDisjunct);
+      }
     }
 
-    return disjuncts;
+    if (!mergeableDisjuncts.isEmpty()) {
+      // keep merging until we can't merge any more
+      LOGGER.info("Merging {} disjuncts", mergeableDisjuncts.size());
+      boolean merged = tryMergeDisjunctSet(mergeableDisjuncts);
+      while (merged) {
+        merged = tryMergeDisjunctSet(mergeableDisjuncts);
+      }
+    }
+
+    if (unmergeableDisjuncts.isEmpty()) {
+      return mergeableDisjuncts;
+    }
+    unmergeableDisjuncts.addAll(mergeableDisjuncts);
+    return unmergeableDisjuncts;
   }
 
   private static boolean tryMergeDisjunctSet(Set<Transition> disjuncts) {
@@ -289,6 +311,11 @@ public final class Transitions {
       }
     }
     return false;
+  }
+
+  /** Keep in sync with tryMergeDisjuncts */
+  private static boolean isMergableDisjunct(Transition t) {
+    return t == IDENTITY || t instanceof Constraint || t instanceof EraseAndSet;
   }
 
   @VisibleForTesting
@@ -324,9 +351,31 @@ public final class Transitions {
     return null;
   }
 
+  public static Transition orUnoptimized(Transition... transitions) {
+    return new Or(transitions);
+  }
+
+  public static Transition optimizeOr(Transition transition) {
+    if (!(transition instanceof Or)) {
+      return transition;
+    }
+    return or(((Or) transition).getTransitions().stream().flatMap(Transitions::flattenOr));
+  }
+
+  private static Stream<Transition> flattenOr(Transition transition) {
+    if (transition instanceof Or) {
+      return ((Or) transition).getTransitions().stream().flatMap(Transitions::flattenOr);
+    }
+    return Stream.of(transition);
+  }
+
   public static Transition or(Transition... transitions) {
+    return or(Stream.of(transitions));
+  }
+
+  public static Transition or(Stream<Transition> transitions) {
     Stream<Transition> flatUniqueTransitions =
-        Stream.of(transitions)
+        transitions
             .flatMap(t -> t instanceof Or ? ((Or) t).getTransitions().stream() : Stream.of(t))
             .distinct();
     List<Transition> nonZeroTransitions =

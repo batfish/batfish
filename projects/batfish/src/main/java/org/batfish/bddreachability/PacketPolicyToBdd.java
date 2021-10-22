@@ -4,7 +4,9 @@ import static org.batfish.bddreachability.transition.Transitions.IDENTITY;
 import static org.batfish.bddreachability.transition.Transitions.ZERO;
 import static org.batfish.bddreachability.transition.Transitions.compose;
 import static org.batfish.bddreachability.transition.Transitions.constraint;
-import static org.batfish.bddreachability.transition.Transitions.or;
+import static org.batfish.bddreachability.transition.Transitions.optimizeOr;
+import static org.batfish.bddreachability.transition.Transitions.orUnoptimized;
+import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -87,7 +89,7 @@ class PacketPolicyToBdd {
   /** Return the set of packets that is dropped by a policy */
   @Nonnull
   public Transition getToDrop() {
-    return _toDrop;
+    return optimizeOr(_toDrop);
   }
 
   /**
@@ -96,7 +98,8 @@ class PacketPolicyToBdd {
    */
   @Nonnull
   public Map<FibLookup, Transition> getFibLookups() {
-    return _fibLookups;
+    // optimize the Or (if there is one)
+    return toImmutableMap(_fibLookups, Map.Entry::getKey, entry -> optimizeOr(entry.getValue()));
   }
 
   /**
@@ -130,7 +133,7 @@ class PacketPolicyToBdd {
       Transition fallThroughTrueBranch = _pathTransition;
       // If fell through, constrain packets with complement of match condition and move on
       _pathTransition =
-          or(fallThroughTrueBranch, compose(reachIf, constraint(matchConstraint.not())));
+          orUnoptimized(fallThroughTrueBranch, compose(reachIf, constraint(matchConstraint.not())));
       return null;
     }
 
@@ -211,7 +214,7 @@ class PacketPolicyToBdd {
 
     @Override
     public Void visitDrop(Drop drop) {
-      _toDrop = or(_toDrop, _transition);
+      _toDrop = orUnoptimized(_toDrop, _transition);
       return null;
     }
 
@@ -220,7 +223,7 @@ class PacketPolicyToBdd {
       _fibLookups.compute(
           fibLookup,
           (k, oldTransition) ->
-              oldTransition == null ? _transition : or(oldTransition, _transition));
+              oldTransition == null ? _transition : orUnoptimized(oldTransition, _transition));
       return null;
     }
 
