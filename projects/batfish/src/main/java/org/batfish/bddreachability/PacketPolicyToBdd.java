@@ -5,6 +5,7 @@ import static org.batfish.bddreachability.transition.Transitions.ZERO;
 import static org.batfish.bddreachability.transition.Transitions.compose;
 import static org.batfish.bddreachability.transition.Transitions.constraint;
 import static org.batfish.bddreachability.transition.Transitions.optimizeOr;
+import static org.batfish.bddreachability.transition.Transitions.or;
 import static org.batfish.bddreachability.transition.Transitions.orUnoptimized;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 
@@ -133,7 +134,7 @@ class PacketPolicyToBdd {
       Transition fallThroughTrueBranch = _pathTransition;
       // If fell through, constrain packets with complement of match condition and move on
       _pathTransition =
-          orUnoptimized(fallThroughTrueBranch, compose(reachIf, constraint(matchConstraint.not())));
+          or(fallThroughTrueBranch, compose(reachIf, constraint(matchConstraint.not())));
       return null;
     }
 

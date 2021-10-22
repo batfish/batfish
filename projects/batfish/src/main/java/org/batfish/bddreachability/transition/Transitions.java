@@ -267,11 +267,14 @@ public final class Transitions {
     }
     LOGGER.info("Merging {} disjuncts", origDisjuncts.size());
 
-    Set<Transition> mergeableDisjuncts = Collections.newSetFromMap(new IdentityHashMap<>());
+    Set<Transition> mergeableDisjuncts = null; // initialize lazily
     List<Transition> unmergeableDisjuncts = new ArrayList<>();
 
     for (Transition origDisjunct : origDisjuncts) {
       if (isMergableDisjunct(origDisjunct)) {
+        if (mergeableDisjuncts == null) {
+          mergeableDisjuncts = Collections.newSetFromMap(new IdentityHashMap<>());
+        }
         mergeableDisjuncts.add(origDisjunct);
       } else {
         unmergeableDisjuncts.add(origDisjunct);
