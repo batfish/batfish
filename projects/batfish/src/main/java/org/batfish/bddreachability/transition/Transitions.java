@@ -284,6 +284,7 @@ public final class Transitions {
       while (merged) {
         merged = tryMergeDisjunctSet(mergeableDisjuncts);
       }
+      LOGGER.info("Reduced to {} disjuncts", mergeableDisjuncts.size());
     }
 
     if (unmergeableDisjuncts.isEmpty()) {
