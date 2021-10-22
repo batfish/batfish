@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -76,6 +77,10 @@ public class A10Conversion {
   public static final int SNAT_PORT_POOL_END = NamedPort.EPHEMERAL_HIGHEST.number();
   static final boolean DEFAULT_VRRP_A_PREEMPT = true;
   @VisibleForTesting public static final int DEFAULT_VRRP_A_PRIORITY = 150;
+
+  // TODO: confirm on ACOSv2 device
+  @VisibleForTesting public static final int DEFAULT_HA_PRIORITY = 150;
+
   @VisibleForTesting public static final long KERNEL_ROUTE_TAG_NAT_POOL = 1L;
   @VisibleForTesting public static final long KERNEL_ROUTE_TAG_VIRTUAL_SERVER_FLAGGED = 2L;
   @VisibleForTesting public static final long KERNEL_ROUTE_TAG_VIRTUAL_SERVER_UNFLAGGED = 3L;
@@ -84,6 +89,10 @@ public class A10Conversion {
   @VisibleForTesting static final int DEFAULT_IBGP_ADMIN_COST = 200;
   @VisibleForTesting static final int DEFAULT_LOCAL_ADMIN_COST = 200;
   @VisibleForTesting static final int DEFAULT_LOCAL_BGP_WEIGHT = 32768;
+
+  // TODO: confirm on ACOSv2 device
+  @VisibleForTesting static final int DEFAULT_HA_GROUP = 0;
+
   /** Set of {@link VirtualServerPort.Type}s that use {@code tcp} protocol */
   static final Set<VirtualServerPort.Type> VIRTUAL_TCP_PORT_TYPES =
       ImmutableSet.of(
@@ -224,7 +233,9 @@ public class A10Conversion {
   }
 
   static boolean isVirtualServerEnabled(VirtualServer virtualServer) {
-    return firstNonNull(virtualServer.getEnable(), true);
+    return firstNonNull(virtualServer.getEnable(), true)
+        && virtualServer.getPorts().values().stream()
+            .anyMatch(A10Conversion::isVirtualServerPortEnabled);
   }
 
   static boolean isVirtualServerPortEnabled(VirtualServerPort port) {
@@ -251,6 +262,19 @@ public class A10Conversion {
     return natPools.stream()
         .filter(pool -> vrid == getNatPoolVrid(pool))
         .flatMap(pool -> enumerateIps(pool.getStart(), pool.getEnd()));
+  }
+
+  /**
+   * Get all the IPs (not the subnets) of all {@code ip nat pool}s assigned to the given ha-group.
+   */
+  static @Nonnull Stream<Ip> getNatPoolIpsByHaGroup(Collection<NatPool> natPools, int haGroup) {
+    return natPools.stream()
+        .filter(pool -> haGroup == getNatPoolHaGroup(pool))
+        .flatMap(pool -> enumerateIps(pool.getStart(), pool.getEnd()));
+  }
+
+  private static int getNatPoolHaGroup(NatPool natPool) {
+    return firstNonNull(natPool.getHaGroupId(), DEFAULT_HA_GROUP);
   }
 
   /** Get all the IPs (not the subnets) of all {@code ip nat pool}s. */
@@ -297,6 +321,22 @@ public class A10Conversion {
         .map(VirtualServerTargetVirtualAddressExtractor::extractIp);
   }
 
+  /**
+   * Get all the IPs (not the subnets) of all enabled {@code slb virtual-server}s assigned to the
+   * given ha-group.
+   */
+  static @Nonnull Stream<Ip> getVirtualServerIpsByHaGroup(
+      Collection<VirtualServer> virtualServers, int haGroup) {
+    return virtualServers.stream()
+        .filter(A10Conversion::isVirtualServerEnabled)
+        .filter(vs -> haGroup == getVirtualServerHaGroup(vs))
+        .map(VirtualServerTargetVirtualAddressExtractor::extractIp);
+  }
+
+  private static int getVirtualServerHaGroup(VirtualServer virtualServer) {
+    return firstNonNull(virtualServer.getHaGroup(), DEFAULT_HA_GROUP);
+  }
+
   /** Get all the IPs (not the subnets) of all enabled {@code slb virtual-server}s. */
   static @Nonnull Stream<Ip> getVirtualServerIpsForAllVrids(
       Collection<VirtualServer> virtualServers) {
@@ -310,9 +350,6 @@ public class A10Conversion {
       Collection<VirtualServer> virtualServers) {
     return virtualServers.stream()
         .filter(A10Conversion::isVirtualServerEnabled)
-        .filter(
-            vs ->
-                vs.getPorts().values().stream().anyMatch(A10Conversion::isVirtualServerPortEnabled))
         .map(A10Conversion::toKernelRoute);
   }
 
@@ -329,6 +366,11 @@ public class A10Conversion {
         .setRequiredOwnedIp(requiredOwnedIp)
         .setTag(tag)
         .build();
+  }
+
+  /** Convert ACOSv2 {@code floating-ip}s to {@link KernelRoute}s */
+  static @Nonnull Stream<KernelRoute> getFloatingIpKernelRoutes(Set<Ip> floatingIps) {
+    return floatingIps.stream().map(A10Conversion::toKernelRoute);
   }
 
   static @Nonnull Stream<KernelRoute> getFloatingIpKernelRoutes(VrrpA vrrpA) {
@@ -348,6 +390,16 @@ public class A10Conversion {
       return Stream.of();
     }
     return vrrpA.getVrids().get(vrid).getFloatingIps().stream();
+  }
+
+  static @Nonnull Stream<Ip> getFloatingIpsByHaGroup(Map<Ip, FloatingIp> floatingIps, int haGroup) {
+    return floatingIps.entrySet().stream()
+        .filter(e -> getFloatingIpHaGroup(e.getValue()) == haGroup)
+        .map(Entry::getKey);
+  }
+
+  private static int getFloatingIpHaGroup(FloatingIp floatingIp) {
+    return firstNonNull(floatingIp.getHaGroup(), DEFAULT_HA_GROUP);
   }
 
   static @Nonnull Stream<Ip> getFloatingIpsForAllVrids(VrrpA vrrpA) {
@@ -419,6 +471,26 @@ public class A10Conversion {
     }
   }
 
+  /**
+   * Create a {@link VrrpGroup.Builder} from the configuration for a particular {@code ha group}
+   * from the ha configuration and a set of virtual addresses.
+   */
+  static @Nonnull VrrpGroup.Builder toVrrpGroupBuilder(
+      int haGroupId, Ha ha, Iterable<Ip> virtualAddresses) {
+    return VrrpGroup.builder()
+        .setPreempt(getHaPreemptionEnable(ha))
+        .setPriority(getHaGroupPriority(ha.getGroups().get(haGroupId)))
+        .setVirtualAddresses(virtualAddresses);
+  }
+
+  private static int getHaGroupPriority(HaGroup haGroup) {
+    return firstNonNull(haGroup.getPriority(), DEFAULT_HA_PRIORITY);
+  }
+
+  static boolean getHaPreemptionEnable(Ha ha) {
+    return firstNonNull(ha.getPreemptionEnable(), Boolean.TRUE);
+  }
+
   private static boolean getVrrpAVridPreempt(VrrpAVrid vridConfig) {
     return !firstNonNull(vridConfig.getPreemptModeDisable(), false);
   }
@@ -448,7 +520,7 @@ public class A10Conversion {
    * Returns a boolean indicating if the specified VI interface should have VRRP-A configuration
    * associated with it.
    */
-  static boolean vrrpAAppliesToInterface(org.batfish.datamodel.Interface iface) {
+  static boolean vrrpAppliesToInterface(org.batfish.datamodel.Interface iface) {
     if (iface.getInterfaceType() == InterfaceType.LOOPBACK) {
       return false;
     }

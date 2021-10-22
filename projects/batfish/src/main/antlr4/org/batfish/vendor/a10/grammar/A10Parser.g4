@@ -2,6 +2,8 @@ parser grammar A10Parser;
 
 import
   A10_common,
+  A10_floating_ip,
+  A10_ha,
   A10_health_monitor,
   A10_interface,
   A10_ip_nat,
@@ -25,9 +27,11 @@ a10_configuration: NEWLINE? statement+ EOF;
 
 statement
 :
-   s_health_monitor
+   s_floating_ip
+   | s_health_monitor
    | s_hostname
    | s_interface
+   | s_ha
    | s_ip
    | s_lacp_trunk
    | s_no
@@ -43,7 +47,7 @@ s_ip: IP si;
 
 si: si_nat | si_route;
 
-s_no: NO sn_ip;
+s_no: NO (sn_ha | sn_ip);
 
 sn_ip: IP sni;
 

@@ -10,11 +10,14 @@ import static org.batfish.vendor.a10.representation.A10Conversion.createBgpProce
 import static org.batfish.vendor.a10.representation.A10Conversion.getEnabledVrids;
 import static org.batfish.vendor.a10.representation.A10Conversion.getFloatingIpKernelRoutes;
 import static org.batfish.vendor.a10.representation.A10Conversion.getFloatingIps;
+import static org.batfish.vendor.a10.representation.A10Conversion.getFloatingIpsByHaGroup;
 import static org.batfish.vendor.a10.representation.A10Conversion.getFloatingIpsForAllVrids;
 import static org.batfish.vendor.a10.representation.A10Conversion.getNatPoolIps;
+import static org.batfish.vendor.a10.representation.A10Conversion.getNatPoolIpsByHaGroup;
 import static org.batfish.vendor.a10.representation.A10Conversion.getNatPoolIpsForAllVrids;
 import static org.batfish.vendor.a10.representation.A10Conversion.getNatPoolKernelRoutes;
 import static org.batfish.vendor.a10.representation.A10Conversion.getVirtualServerIps;
+import static org.batfish.vendor.a10.representation.A10Conversion.getVirtualServerIpsByHaGroup;
 import static org.batfish.vendor.a10.representation.A10Conversion.getVirtualServerIpsForAllVrids;
 import static org.batfish.vendor.a10.representation.A10Conversion.getVirtualServerKernelRoutes;
 import static org.batfish.vendor.a10.representation.A10Conversion.isVrrpAEnabled;
@@ -76,6 +79,7 @@ import org.batfish.vendor.VendorConfiguration;
 public final class A10Configuration extends VendorConfiguration {
 
   public A10Configuration() {
+    _floatingIps = new HashMap<>();
     _healthMonitors = new HashMap<>();
     _interfacesEthernet = new HashMap<>();
     _interfacesLoopback = new HashMap<>();
@@ -101,6 +105,23 @@ public final class A10Configuration extends VendorConfiguration {
       _bgpProcess = new BgpProcess(number);
     }
     return _bgpProcess;
+  }
+
+  /** ACOSv2 {@code floating-ip}s. */
+  public @Nonnull Map<Ip, FloatingIp> getV2FloatingIps() {
+    return _floatingIps;
+  }
+
+  /** ACOSv2 {@code ha} configuration. */
+  public @Nullable Ha getHa() {
+    return _ha;
+  }
+
+  public @Nonnull Ha getOrCreateHa() {
+    if (_ha == null) {
+      _ha = new Ha();
+    }
+    return _ha;
   }
 
   @Nonnull
@@ -322,6 +343,7 @@ public final class A10Configuration extends VendorConfiguration {
     // Must be done after interface conversion
     convertVirtualServers();
     convertVrrpA();
+    convertHa();
     createKernelRoutes();
     convertBgp();
 
@@ -337,8 +359,8 @@ public final class A10Configuration extends VendorConfiguration {
   }
 
   /**
-   * Create {@link org.batfish.datamodel.KernelRoute}s from {@code ip nat pool} networks and {@code
-   * slb virtual-server}s.
+   * Create {@link org.batfish.datamodel.KernelRoute}s from {@code ip nat pool} networks, {@code slb
+   * virtual-server}s, ACOSv5 {@code vrrp-a vrid floating-ip}s, and ACOSv2 {@code floating-ip}s.
    */
   private void createKernelRoutes() {
     _c.getDefaultVrf()
@@ -346,7 +368,8 @@ public final class A10Configuration extends VendorConfiguration {
             Streams.concat(
                     getNatPoolKernelRoutes(_natPools.values()),
                     getVirtualServerKernelRoutes(_virtualServers.values()),
-                    _vrrpA != null ? getFloatingIpKernelRoutes(_vrrpA) : Stream.of())
+                    _vrrpA != null ? getFloatingIpKernelRoutes(_vrrpA) : Stream.of(),
+                    getFloatingIpKernelRoutes(_floatingIps.keySet()))
                 .collect(ImmutableSortedSet.toImmutableSortedSet(naturalOrder())));
   }
 
@@ -355,10 +378,10 @@ public final class A10Configuration extends VendorConfiguration {
     // been part of vrrp-a.
     // If vrrp-a is enabled, then the device should own all addresses for VRIDs that are enabled.
     // TODO: handle floating-ips
-    if (!isVrrpAEnabled(_vrrpA)) {
-      convertVrrpADisabled();
-    } else {
+    if (isVrrpAEnabled(_vrrpA)) {
       convertVrrpAEnabled();
+    } else if (_ha == null) {
+      convertVrrpADisabled();
     }
   }
 
@@ -390,7 +413,7 @@ public final class A10Configuration extends VendorConfiguration {
                     virtualAddress -> virtualAddress,
                     unused -> connectedRouteMetadata));
     _c.getAllInterfaces().values().stream()
-        .filter(A10Conversion::vrrpAAppliesToInterface)
+        .filter(A10Conversion::vrrpAppliesToInterface)
         .forEach(
             iface -> {
               iface.setAllAddresses(
@@ -409,7 +432,7 @@ public final class A10Configuration extends VendorConfiguration {
 
   /**
    * Process vrrp-a vrids in the case vrrp-a is enabled. Causes the device to own all virtual
-   * addresses for each vrid for which it is VRRP master.
+   * addresses for each vrid for which it is converted VRRP master.
    */
   private void convertVrrpAEnabled() {
     // Overview:
@@ -450,7 +473,61 @@ public final class A10Configuration extends VendorConfiguration {
                     vrid, toVrrpGroupBuilder(_vrrpA.getVrids().get(vrid), virtualAddresses)));
     // Create and assign the final VRRP groups on each interface with a concrete IPv4 address.
     _c.getAllInterfaces().values().stream()
-        .filter(A10Conversion::vrrpAAppliesToInterface)
+        .filter(A10Conversion::vrrpAppliesToInterface)
+        .forEach(i -> i.setVrrpGroups(toVrrpGroups(i, vrrpGroupBuildersBuilder.build())));
+  }
+
+  /** Convert ha configuration for ACOSv2. */
+  private void convertHa() {
+    // TODO: Support virtual-addresses in case ha is disabled on ACOSv2.
+    //       May need different behavior than convertVrrpADisabled(), which happens now in that
+    //       case.
+    if (_ha != null) {
+      convertHaEnabled();
+    }
+  }
+
+  /**
+   * Process ha groups in the case ha is enabled. Causes the device to own all virtual addresses for
+   * each ha-group for which it is converted VRRP master.
+   */
+  private void convertHaEnabled() {
+    // Overview:
+    // - Add a VrrpGroup for each enabled ha-group on all L3 interfaces with a primary
+    //   ConcreteInterfaceAddress.
+    // - Each created VrrpGroup contains all the virtual addresses the device should own when it is
+    //   master for the corresponding vrid (using ha group id as vrid).
+    assert _ha != null;
+    // ha group id -> virtual addresses
+    ImmutableSetMultimap.Builder<Integer, Ip> virtualAddressesByEnabledHaGroupBuilder =
+        ImmutableSetMultimap.builder();
+    // VRID 0 always exists, but may be disabled. Other VRIDs exist only if they are declared, and
+    // cannot be disabled independently.
+    // Grab the virtual addresses for each VRID from NAT pools and virtual-servers
+    _ha.getGroups()
+        .forEach(
+            (haGroupId, haGroup) -> {
+              Streams.concat(
+                      getNatPoolIpsByHaGroup(_natPools.values(), haGroupId),
+                      getVirtualServerIpsByHaGroup(_virtualServers.values(), haGroupId),
+                      getFloatingIpsByHaGroup(_floatingIps, haGroupId))
+                  .forEach(ip -> virtualAddressesByEnabledHaGroupBuilder.put(haGroupId, ip));
+            });
+    SetMultimap<Integer, Ip> virtualAddressesByEnabledHaGroup =
+        virtualAddressesByEnabledHaGroupBuilder.build();
+    // Create VrrpGroup builders for each ha group. We cannot make final VrrpGroups because we are
+    // missing source address, which varies per interface.
+    ImmutableMap.Builder<Integer, VrrpGroup.Builder> vrrpGroupBuildersBuilder =
+        ImmutableMap.builder();
+    virtualAddressesByEnabledHaGroup
+        .asMap()
+        .forEach(
+            (haGroupId, virtualAddresses) ->
+                vrrpGroupBuildersBuilder.put(
+                    haGroupId, toVrrpGroupBuilder(haGroupId, _ha, virtualAddresses)));
+    // Create and assign the final VRRP groups on each interface with a concrete IPv4 address.
+    _c.getAllInterfaces().values().stream()
+        .filter(A10Conversion::vrrpAppliesToInterface)
         .forEach(i -> i.setVrrpGroups(toVrrpGroups(i, vrrpGroupBuildersBuilder.build())));
   }
 
@@ -736,6 +813,7 @@ public final class A10Configuration extends VendorConfiguration {
    * <p>This should only be called once, at the end of parsing and extraction.
    */
   public void finalizeStructures() {
+    _floatingIps = ImmutableMap.copyOf(_floatingIps);
     _healthMonitors = ImmutableMap.copyOf(_healthMonitors);
     _interfacesEthernet = ImmutableMap.copyOf(_interfacesEthernet);
     _interfacesLoopback = ImmutableMap.copyOf(_interfacesLoopback);
@@ -754,6 +832,8 @@ public final class A10Configuration extends VendorConfiguration {
 
   @Nullable private BgpProcess _bgpProcess;
   private Configuration _c;
+  private @Nonnull Map<Ip, FloatingIp> _floatingIps;
+  private @Nullable Ha _ha;
   @Nonnull private Map<String, HealthMonitor> _healthMonitors;
   private String _hostname;
   @Nonnull private Map<Integer, Interface> _interfacesEthernet;

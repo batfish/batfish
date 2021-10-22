@@ -41,7 +41,7 @@ import static org.batfish.vendor.a10.representation.A10Conversion.toMatchConditi
 import static org.batfish.vendor.a10.representation.A10Conversion.toProtocol;
 import static org.batfish.vendor.a10.representation.A10Conversion.toVrrpGroupBuilder;
 import static org.batfish.vendor.a10.representation.A10Conversion.toVrrpGroups;
-import static org.batfish.vendor.a10.representation.A10Conversion.vrrpAAppliesToInterface;
+import static org.batfish.vendor.a10.representation.A10Conversion.vrrpAppliesToInterface;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -327,24 +327,24 @@ public class A10ConversionTest {
         org.batfish.datamodel.Interface.builder().setName("placeholder");
     // No concrete address
     assertFalse(
-        vrrpAAppliesToInterface(
+        vrrpAppliesToInterface(
             ifaceBuilder.setType(InterfaceType.PHYSICAL).setAddress(null).build()));
     // Loopback interface
     assertFalse(
-        vrrpAAppliesToInterface(
+        vrrpAppliesToInterface(
             ifaceBuilder
                 .setType(InterfaceType.LOOPBACK)
                 .setAddress(ConcreteInterfaceAddress.parse("10.10.10.10/32"))
                 .build()));
 
     assertTrue(
-        vrrpAAppliesToInterface(
+        vrrpAppliesToInterface(
             ifaceBuilder
                 .setType(InterfaceType.PHYSICAL)
                 .setAddress(ConcreteInterfaceAddress.parse("10.10.10.10/32"))
                 .build()));
     assertTrue(
-        vrrpAAppliesToInterface(
+        vrrpAppliesToInterface(
             ifaceBuilder
                 .setType(InterfaceType.AGGREGATED)
                 .setAddress(ConcreteInterfaceAddress.parse("10.10.10.10/24"))

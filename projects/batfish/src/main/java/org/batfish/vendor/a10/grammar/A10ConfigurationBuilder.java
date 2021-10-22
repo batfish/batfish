@@ -12,6 +12,7 @@ import static org.batfish.vendor.a10.representation.A10StructureType.SERVICE_GRO
 import static org.batfish.vendor.a10.representation.A10StructureType.VIRTUAL_SERVER;
 import static org.batfish.vendor.a10.representation.A10StructureType.VRRP_A_FAIL_OVER_POLICY_TEMPLATE;
 import static org.batfish.vendor.a10.representation.A10StructureType.VRRP_A_VRID;
+import static org.batfish.vendor.a10.representation.A10StructureUsage.HA_INTERFACE;
 import static org.batfish.vendor.a10.representation.A10StructureUsage.IP_NAT_POOL_VRID;
 import static org.batfish.vendor.a10.representation.A10StructureUsage.SERVER_HEALTH_CHECK;
 import static org.batfish.vendor.a10.representation.A10StructureUsage.SERVER_PORT_HEALTH_CHECK;
@@ -59,9 +60,21 @@ import org.batfish.vendor.a10.grammar.A10Parser.A10_configurationContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Ethernet_numberContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Ethernet_or_trunk_referenceContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Fail_over_policy_template_nameContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Fip_optionContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Ha_groupContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Ha_idContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Ha_id_numberContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Ha_interfaceContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Ha_preemption_enableContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Ha_priority_numberContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Ha_set_id_numberContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Hago_priorityContext;
 import org.batfish.vendor.a10.grammar.A10Parser.HostnameContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Non_default_vridContext;
+import org.batfish.vendor.a10.grammar.A10Parser.S_floating_ipContext;
 import org.batfish.vendor.a10.grammar.A10Parser.S_hostnameContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Snha_preemption_enableContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Ssvs_ha_groupContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Trunk_numberContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Uint8Context;
 import org.batfish.vendor.a10.grammar.A10Parser.VridContext;
@@ -92,6 +105,9 @@ import org.batfish.vendor.a10.representation.BgpNeighborIdAddress;
 import org.batfish.vendor.a10.representation.BgpNeighborUpdateSource;
 import org.batfish.vendor.a10.representation.BgpNeighborUpdateSourceAddress;
 import org.batfish.vendor.a10.representation.BgpProcess;
+import org.batfish.vendor.a10.representation.FloatingIp;
+import org.batfish.vendor.a10.representation.Ha;
+import org.batfish.vendor.a10.representation.HaGroup;
 import org.batfish.vendor.a10.representation.Interface;
 import org.batfish.vendor.a10.representation.Interface.Type;
 import org.batfish.vendor.a10.representation.InterfaceLldp;
@@ -1438,6 +1454,93 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   }
 
   @Override
+  public void enterHa_group(Ha_groupContext ctx) {
+    // TODO: reorganize once option value enforcement is implemented
+    Optional<Integer> maybeId = toInteger(ctx, ctx.id);
+    if (!maybeId.isPresent()) {
+      _currentHaGroup = new HaGroup();
+      // already warned
+      return;
+    }
+    _currentHaGroup = _c.getOrCreateHa().getOrCreateHaGroup(maybeId.get());
+  }
+
+  @Override
+  public void exitHa_group(Ha_groupContext ctx) {
+    _currentHaGroup = null;
+  }
+
+  @Override
+  public void exitHago_priority(Hago_priorityContext ctx) {
+    _currentHaGroup.setPriority(toInteger(ctx.priority));
+  }
+
+  private int toInteger(Ha_priority_numberContext ctx) {
+    // TODO: enforce range
+    return toInteger(ctx.uint8());
+  }
+
+  @Override
+  public void exitHa_id(Ha_idContext ctx) {
+    Ha ha = _c.getOrCreateHa();
+    ha.setId(toInteger(ctx.id));
+    ha.setSetId(toInteger(ctx.set_id));
+  }
+
+  private int toInteger(Ha_set_id_numberContext ctx) {
+    // TODO: enforce range
+    return toInteger(ctx.uint8());
+  }
+
+  private int toInteger(Ha_id_numberContext ctx) {
+    // TODO: enforce range
+    return toInteger(ctx.uint8());
+  }
+
+  @Override
+  public void exitHa_interface(Ha_interfaceContext ctx) {
+    Optional<InterfaceReference> maybeRef = toInterfaceReference(ctx, ctx.ref);
+    if (!maybeRef.isPresent()) {
+      return;
+    }
+    InterfaceReference ref = maybeRef.get();
+    _c.getOrCreateHa();
+    _c.referenceStructure(INTERFACE, getInterfaceName(ref), HA_INTERFACE, ctx.getStart().getLine());
+  }
+
+  @Override
+  public void exitHa_preemption_enable(Ha_preemption_enableContext ctx) {
+    _c.getOrCreateHa().setPreemptionEnable(true);
+  }
+
+  @Override
+  public void exitSnha_preemption_enable(Snha_preemption_enableContext ctx) {
+    _c.getOrCreateHa().setPreemptionEnable(false);
+  }
+
+  @Override
+  public void exitS_floating_ip(S_floating_ipContext ctx) {
+    Integer haGroupId = null;
+    for (Fip_optionContext optionCtx : ctx.fip_option()) {
+      assert optionCtx.fipo_ha_group() != null;
+      Optional<Integer> maybeHaGroupId = toInteger(ctx, optionCtx.fipo_ha_group().id);
+      if (!maybeHaGroupId.isPresent()) {
+        // already warned
+        return;
+      }
+      haGroupId = maybeHaGroupId.get();
+    }
+    FloatingIp floatingIp = new FloatingIp();
+    floatingIp.setHaGroup(haGroupId);
+    _c.getV2FloatingIps().put(toIp(ctx.ip), floatingIp);
+  }
+
+  @Override
+  public void exitSsvs_ha_group(Ssvs_ha_groupContext ctx) {
+    toInteger(ctx, ctx.id).ifPresent(_currentVirtualServer::setHaGroup);
+  }
+
+  @Override
   public void exitStd_name(A10Parser.Std_nameContext ctx) {
     toString(ctx, ctx.name).ifPresent(n -> _currentTrunk.setName(n));
   }
@@ -2415,6 +2518,8 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   private BgpProcess _currentBgpProcess;
 
   private BgpNeighbor _currentBgpNeighbor;
+
+  private HaGroup _currentHaGroup;
 
   private Interface _currentInterface;
 

@@ -123,6 +123,9 @@ import org.batfish.vendor.a10.representation.BgpNeighbor;
 import org.batfish.vendor.a10.representation.BgpNeighborIdAddress;
 import org.batfish.vendor.a10.representation.BgpNeighborUpdateSourceAddress;
 import org.batfish.vendor.a10.representation.BgpProcess;
+import org.batfish.vendor.a10.representation.FloatingIp;
+import org.batfish.vendor.a10.representation.Ha;
+import org.batfish.vendor.a10.representation.HaGroup;
 import org.batfish.vendor.a10.representation.Interface;
 import org.batfish.vendor.a10.representation.Interface.Type;
 import org.batfish.vendor.a10.representation.InterfaceLldp;
@@ -1954,6 +1957,100 @@ public class A10GrammarTest {
                 .setNetwork(Prefix.strict("10.0.9.2/32"))
                 .setRequiredOwnedIp(Ip.parse("10.0.9.2"))
                 .setTag(KERNEL_ROUTE_TAG_FLOATING_IP)
+                .build()));
+  }
+
+  @Test
+  public void testHaAcos2Extraction() {
+    A10Configuration vc = parseVendorConfig("ha_acos2");
+
+    Ha ha = vc.getHa();
+    assertNotNull(ha);
+    assertThat(ha.getId(), equalTo(1));
+    assertThat(ha.getSetId(), equalTo(2));
+    assertThat(ha.getPreemptionEnable(), equalTo(Boolean.FALSE));
+
+    assertThat(ha.getGroups(), hasKeys(1));
+    HaGroup haGroup = ha.getGroups().get(1);
+    assertThat(haGroup.getPriority(), equalTo(200));
+
+    assertThat(vc.getV2FloatingIps(), hasKeys(Ip.parse("10.0.2.1")));
+    FloatingIp floatingIp = vc.getV2FloatingIps().get(Ip.parse("10.0.2.1"));
+    assertThat(floatingIp.getHaGroup(), equalTo(1));
+
+    assertThat(vc.getNatPools(), hasKeys("pool1"));
+    NatPool natPool = vc.getNatPools().get("pool1");
+    assertThat(natPool.getHaGroupId(), equalTo(1));
+
+    assertThat(vc.getVirtualServers(), hasKeys("vs1"));
+    VirtualServer vs = vc.getVirtualServers().get("vs1");
+    assertThat(vs.getHaGroup(), equalTo(1));
+  }
+
+  @Test
+  public void testHaAcos2Conversion() {
+    String hostname = "ha_acos2";
+    Configuration c = parseConfig(hostname);
+
+    String i1Name = getInterfaceName(Type.ETHERNET, 1);
+    String i2Name = getInterfaceName(Type.ETHERNET, 2);
+    String i3Name = getInterfaceName(Type.ETHERNET, 3);
+    int haGroup = 1;
+
+    // Test VRRP conversion
+    assertThat(c.getAllInterfaces(), hasKeys(i1Name, i2Name, i3Name));
+    {
+      org.batfish.datamodel.Interface i = c.getAllInterfaces().get(i1Name);
+      ConcreteInterfaceAddress i1Address = ConcreteInterfaceAddress.parse("10.0.5.1/24");
+      assertThat(
+          i.getVrrpGroups(),
+          equalTo(
+              ImmutableSortedMap.of(
+                  haGroup,
+                  VrrpGroup.builder()
+                      .setPreempt(false)
+                      .setPriority(200)
+                      .setVirtualAddresses(
+                          ImmutableSet.of(
+                              Ip.parse("10.0.2.1"),
+                              Ip.parse("10.0.3.1"),
+                              Ip.parse("10.0.3.2"),
+                              Ip.parse("10.0.4.1")))
+                      .setSourceAddress(i1Address)
+                      .build())));
+      // Should not contain virtual addresses
+      assertThat(i.getAllAddresses(), contains(i1Address));
+      // Should not contain address metadata for virtual addresses
+      assertThat(i.getAddressMetadata(), hasKeys(i1Address));
+    }
+    {
+      org.batfish.datamodel.Interface i = c.getAllInterfaces().get(i2Name);
+      assertThat(i.getVrrpGroups(), anEmptyMap());
+      // Should not contain virtual addresses
+      assertThat(i.getAllAddresses(), empty());
+      // Should not contain address metadata
+      assertThat(i.getAddressMetadata(), anEmptyMap());
+    }
+    // TODO: something with ethernet 3 / vlan 4094?
+
+    // Test KernelRoute conversion
+    assertThat(
+        c.getDefaultVrf().getKernelRoutes(),
+        containsInAnyOrder(
+            KernelRoute.builder()
+                .setNetwork(Prefix.strict("10.0.2.1/32"))
+                .setRequiredOwnedIp(Ip.parse("10.0.2.1"))
+                .setTag(KERNEL_ROUTE_TAG_FLOATING_IP)
+                .build(),
+            KernelRoute.builder()
+                .setNetwork(Prefix.strict("10.0.3.0/24"))
+                .setRequiredOwnedIp(Ip.parse("10.0.3.1"))
+                .setTag(KERNEL_ROUTE_TAG_NAT_POOL)
+                .build(),
+            KernelRoute.builder()
+                .setNetwork(Prefix.strict("10.0.4.1/32"))
+                .setRequiredOwnedIp(Ip.parse("10.0.4.1"))
+                .setTag(KERNEL_ROUTE_TAG_VIRTUAL_SERVER_UNFLAGGED)
                 .build()));
   }
 }
