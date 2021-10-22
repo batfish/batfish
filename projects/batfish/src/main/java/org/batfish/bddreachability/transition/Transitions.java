@@ -281,7 +281,7 @@ public final class Transitions {
       }
     }
 
-    if (!mergeableDisjuncts.isEmpty()) {
+    if (mergeableDisjuncts != null) {
       // keep merging until we can't merge any more
       LOGGER.info("Merging {} mergeable disjuncts", mergeableDisjuncts.size());
       boolean merged = tryMergeDisjunctSet(mergeableDisjuncts);
