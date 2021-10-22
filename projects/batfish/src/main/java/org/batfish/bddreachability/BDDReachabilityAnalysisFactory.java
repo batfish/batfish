@@ -56,9 +56,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
-import org.batfish.common.bdd.HeaderSpaceToBDD;
 import org.batfish.common.bdd.IpAccessListToBdd;
-import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.bdd.MemoizedIpAccessListToBdd;
 import org.batfish.datamodel.Configuration;
@@ -169,6 +167,7 @@ public final class BDDReachabilityAnalysisFactory {
   @VisibleForTesting final @Nonnull BDDFibGenerator _bddFibGenerator;
 
   private final Map<String, BDDSourceManager> _bddSourceManagers;
+  private final Map<String, IpAccessListToBdd> _aclToBdds = new HashMap<>();
   private final Map<String, BDDOutgoingOriginalFlowFilterManager>
       _bddOutgoingOriginalFlowFilterManagers;
 
@@ -285,7 +284,7 @@ public final class BDDReachabilityAnalysisFactory {
       _dstIpSpaceToBDD = _bddPacket.getDstIpSpaceToBDD();
       _srcIpSpaceToBDD = _bddPacket.getSrcIpSpaceToBDD();
 
-      _aclPermitBDDs = computeAclBDDs(_bddPacket, _bddSourceManagers, configs);
+      _aclPermitBDDs = computeAclBDDs(this::ipAccessListToBdd, configs);
       _aclDenyBDDs = computeAclDenyBDDs(_aclPermitBDDs);
 
       _bddIncomingTransformations = computeBDDIncomingTransformations();
@@ -378,9 +377,7 @@ public final class BDDReachabilityAnalysisFactory {
    * NATs. This is simpler than trying to precompute which ACLs we actually need.
    */
   private static Map<String, Map<String, Supplier<BDD>>> computeAclBDDs(
-      BDDPacket bddPacket,
-      Map<String, BDDSourceManager> bddSourceManagers,
-      Map<String, Configuration> configs) {
+      Function<Configuration, IpAccessListToBdd> aclToBdds, Map<String, Configuration> configs) {
     Span span =
         GlobalTracer.get().buildSpan("BDDReachabilityAnalysisFactory.computeAclBDDs").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
@@ -390,8 +387,7 @@ public final class BDDReachabilityAnalysisFactory {
           Entry::getKey,
           nodeEntry -> {
             Configuration config = nodeEntry.getValue();
-            IpAccessListToBdd aclToBdd =
-                ipAccessListToBdd(bddPacket, bddSourceManagers.get(config.getHostname()), config);
+            IpAccessListToBdd aclToBdd = aclToBdds.apply(config);
             return toImmutableMap(
                 config.getIpAccessLists(),
                 Entry::getKey,
@@ -407,13 +403,14 @@ public final class BDDReachabilityAnalysisFactory {
   }
 
   IpAccessListToBdd ipAccessListToBdd(Configuration config) {
-    return ipAccessListToBdd(_bddPacket, _bddSourceManagers.get(config.getHostname()), config);
-  }
-
-  private static IpAccessListToBdd ipAccessListToBdd(
-      BDDPacket bddPacket, BDDSourceManager srcMgr, Configuration config) {
-    return new IpAccessListToBddImpl(
-        bddPacket, srcMgr, config.getIpAccessLists(), config.getIpSpaces());
+    return _aclToBdds.computeIfAbsent(
+        config.getHostname(),
+        hostname ->
+            new MemoizedIpAccessListToBdd(
+                _bddPacket,
+                _bddSourceManagers.get(hostname),
+                config.getIpAccessLists(),
+                config.getIpSpaces()));
   }
 
   private static Map<String, Map<String, Supplier<BDD>>> computeAclDenyBDDs(
@@ -435,16 +432,6 @@ public final class BDDReachabilityAnalysisFactory {
     }
   }
 
-  private TransformationToTransition initTransformationToTransformation(Configuration node) {
-    return new TransformationToTransition(
-        _bddPacket,
-        new IpAccessListToBddImpl(
-            _bddPacket,
-            _bddSourceManagers.get(node.getHostname()),
-            new HeaderSpaceToBDD(_bddPacket, node.getIpSpaces()),
-            node.getIpAccessLists()));
-  }
-
   private Map<String, Map<String, Transition>> computeBDDIncomingTransformations() {
     Span span =
         GlobalTracer.get()
@@ -457,7 +444,8 @@ public final class BDDReachabilityAnalysisFactory {
           Entry::getKey, /* node */
           nodeEntry -> {
             Configuration node = nodeEntry.getValue();
-            TransformationToTransition toTransition = initTransformationToTransformation(node);
+            TransformationToTransition toTransition =
+                new TransformationToTransition(_bddPacket, ipAccessListToBdd(node));
             return toImmutableMap(
                 node.getActiveInterfaces(),
                 Entry::getKey, /* iface */
@@ -481,7 +469,8 @@ public final class BDDReachabilityAnalysisFactory {
           Entry::getKey, /* node */
           nodeEntry -> {
             Configuration node = nodeEntry.getValue();
-            TransformationToTransition toTransition = initTransformationToTransformation(node);
+            TransformationToTransition toTransition =
+                new TransformationToTransition(_bddPacket, ipAccessListToBdd(node));
             return toImmutableMap(
                 nodeEntry.getValue().getActiveInterfaces(),
                 Entry::getKey, /* iface */
