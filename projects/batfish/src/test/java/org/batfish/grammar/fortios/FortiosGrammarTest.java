@@ -23,7 +23,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedRefer
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
-import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
+import static org.batfish.main.BatfishTestUtils.DUMMY_SNAPSHOT_1;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.fortios.FortiosConfiguration.computeVrfName;
 import static org.batfish.representation.fortios.FortiosPolicyConversions.computeOutgoingFilterName;
@@ -3051,7 +3051,7 @@ public final class FortiosGrammarTest {
         new FortiosControlPlaneExtractor(src, parser, new Warnings(), new SilentSyntaxCollection());
     ParserRuleContext tree =
         Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
-    extractor.processParseTree(TEST_SNAPSHOT, tree);
+    extractor.processParseTree(DUMMY_SNAPSHOT_1, tree);
     FortiosConfiguration vendorConfiguration =
         (FortiosConfiguration) extractor.getVendorConfiguration();
     vendorConfiguration.setFilename(TESTCONFIGS_PREFIX + hostname);

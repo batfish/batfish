@@ -50,7 +50,7 @@ import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasUdpPort;
 import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasVni;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
-import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
+import static org.batfish.main.BatfishTestUtils.DUMMY_SNAPSHOT_1;
 import static org.batfish.representation.cumulus_nclu.CumulusNcluConfiguration.CUMULUS_CLAG_DOMAIN_ID;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
@@ -208,7 +208,7 @@ public final class CumulusNcluGrammarTest {
             src, parser, new Warnings(), new SilentSyntaxCollection());
     ParserRuleContext tree =
         Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
-    extractor.processParseTree(TEST_SNAPSHOT, tree);
+    extractor.processParseTree(DUMMY_SNAPSHOT_1, tree);
     assertThat(
         String.format("Ensure '%s' was successfully parsed", hostname),
         extractor.getVendorConfiguration(),

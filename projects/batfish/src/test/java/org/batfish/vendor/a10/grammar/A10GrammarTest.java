@@ -33,7 +33,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.matchers.StaticRouteMatchers.hasRecursive;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
-import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
+import static org.batfish.main.BatfishTestUtils.DUMMY_SNAPSHOT_1;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.main.BatfishTestUtils.getBatfish;
 import static org.batfish.vendor.a10.representation.A10Configuration.getInterfaceName;
@@ -168,7 +168,7 @@ public class A10GrammarTest {
         new A10ControlPlaneExtractor(src, parser, parseWarnings, new SilentSyntaxCollection());
     ParserRuleContext tree =
         Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
-    extractor.processParseTree(TEST_SNAPSHOT, tree);
+    extractor.processParseTree(DUMMY_SNAPSHOT_1, tree);
     A10Configuration vendorConfiguration = (A10Configuration) extractor.getVendorConfiguration();
     vendorConfiguration.setFilename(TESTCONFIGS_PREFIX + hostname);
     // crash if not serializable

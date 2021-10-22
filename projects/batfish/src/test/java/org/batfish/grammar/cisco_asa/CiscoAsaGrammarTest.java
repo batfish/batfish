@@ -70,7 +70,7 @@ import static org.batfish.datamodel.transformation.TransformationStep.shiftSourc
 import static org.batfish.datamodel.vendor_family.VendorFamilyMatchers.hasCisco;
 import static org.batfish.datamodel.vendor_family.cisco.CiscoFamilyMatchers.hasAaa;
 import static org.batfish.grammar.cisco_asa.AsaControlPlaneExtractor.SERIAL_LINE;
-import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
+import static org.batfish.main.BatfishTestUtils.DUMMY_SNAPSHOT_1;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.cisco_asa.AsaConfiguration.DENY_SAME_SECURITY_TRAFFIC_INTER_TRACE_ELEMENT;
 import static org.batfish.representation.cisco_asa.AsaConfiguration.DENY_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT;
@@ -266,7 +266,7 @@ public final class CiscoAsaGrammarTest {
         new AsaControlPlaneExtractor(src, asaParser, new Warnings(), new SilentSyntaxCollection());
     ParserRuleContext tree =
         Batfish.parse(asaParser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
-    extractor.processParseTree(TEST_SNAPSHOT, tree);
+    extractor.processParseTree(DUMMY_SNAPSHOT_1, tree);
     AsaConfiguration vendorConfiguration = (AsaConfiguration) extractor.getVendorConfiguration();
     vendorConfiguration.setFilename(TESTCONFIGS_PREFIX + hostname);
     return SerializationUtils.clone(vendorConfiguration);
