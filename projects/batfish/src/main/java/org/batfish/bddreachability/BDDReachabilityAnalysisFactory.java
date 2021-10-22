@@ -49,6 +49,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.batfish.bddreachability.IpsRoutedOutInterfacesFactory.IpsRoutedOutInterfaces;
 import org.batfish.bddreachability.transition.TransformationToTransition;
 import org.batfish.bddreachability.transition.Transition;
@@ -56,9 +58,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
-import org.batfish.common.bdd.HeaderSpaceToBDD;
 import org.batfish.common.bdd.IpAccessListToBdd;
-import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.bdd.MemoizedIpAccessListToBdd;
 import org.batfish.datamodel.Configuration;
@@ -412,7 +412,7 @@ public final class BDDReachabilityAnalysisFactory {
 
   private static IpAccessListToBdd ipAccessListToBdd(
       BDDPacket bddPacket, BDDSourceManager srcMgr, Configuration config) {
-    return new IpAccessListToBddImpl(
+    return new MemoizedIpAccessListToBdd(
         bddPacket, srcMgr, config.getIpAccessLists(), config.getIpSpaces());
   }
 
@@ -438,12 +438,15 @@ public final class BDDReachabilityAnalysisFactory {
   private TransformationToTransition initTransformationToTransformation(Configuration node) {
     return new TransformationToTransition(
         _bddPacket,
-        new IpAccessListToBddImpl(
+        // TODO reuse these
+        new MemoizedIpAccessListToBdd(
             _bddPacket,
             _bddSourceManagers.get(node.getHostname()),
-            new HeaderSpaceToBDD(_bddPacket, node.getIpSpaces()),
-            node.getIpAccessLists()));
+            node.getIpAccessLists(),
+            node.getIpSpaces()));
   }
+
+  private static final Logger LOGGER = LogManager.getLogger(BDDReachabilityAnalysisFactory.class);
 
   private Map<String, Map<String, Transition>> computeBDDIncomingTransformations() {
     Span span =
@@ -457,6 +460,9 @@ public final class BDDReachabilityAnalysisFactory {
           Entry::getKey, /* node */
           nodeEntry -> {
             Configuration node = nodeEntry.getValue();
+            LOGGER.info(
+                "converting incoming transformations to Transitions on node {}",
+                node.getHostname());
             TransformationToTransition toTransition = initTransformationToTransformation(node);
             return toImmutableMap(
                 node.getActiveInterfaces(),

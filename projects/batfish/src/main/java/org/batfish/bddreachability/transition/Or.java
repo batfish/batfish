@@ -61,7 +61,8 @@ public final class Or implements Transition {
 
   @Override
   public int hashCode() {
-    return _transitions.hashCode();
+    throw new IllegalStateException("don't hash Or!");
+    //    return _transitions.hashCode();
   }
 
   @Override

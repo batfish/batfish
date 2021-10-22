@@ -265,6 +265,7 @@ public final class Transitions {
     if (origDisjuncts.size() < 2) {
       return origDisjuncts;
     }
+    LOGGER.info("Merging {} disjuncts", origDisjuncts.size());
 
     Set<Transition> mergeableDisjuncts = Collections.newSetFromMap(new IdentityHashMap<>());
     List<Transition> unmergeableDisjuncts = new ArrayList<>();
@@ -279,7 +280,7 @@ public final class Transitions {
 
     if (!mergeableDisjuncts.isEmpty()) {
       // keep merging until we can't merge any more
-      LOGGER.info("Merging {} disjuncts", mergeableDisjuncts.size());
+      LOGGER.info("Merging {} mergeable disjuncts", mergeableDisjuncts.size());
       boolean merged = tryMergeDisjunctSet(mergeableDisjuncts);
       while (merged) {
         merged = tryMergeDisjunctSet(mergeableDisjuncts);
