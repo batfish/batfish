@@ -934,15 +934,11 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     // Confirm edge directionality.
     assert ourConfigId.getHostname().equals(_hostname);
     BgpPeerConfig ourConfig = networkConfigurations.getBgpPeerConfig(edge.tail());
+    assert ourConfig != null;
     BgpPeerConfig remoteConfig = networkConfigurations.getBgpPeerConfig(edge.head());
+    assert remoteConfig != null;
 
-    // Note: Edge needs to be our -> remote, so that the properties it has like advertise-external
-    // correspond to the local device.
     BgpSessionProperties ourSession = BgpRoutingProcess.getBgpSessionProperties(bgpTopology, edge);
-    // Verify session properties
-    assert Objects.equals(ourSession.getLocalAs(), ourConfig.getLocalAs());
-
-    BgpRoutingProcess remoteBgpRoutingProcess = getNeighborBgpProcess(remoteConfigId, allNodes);
 
     // If exporting from main RIB, queue mainRib updates that were not introduced by BGP process
     // (i.e., IGP routes). Also, do not double-export main RIB routes: filter out bgp routes.
@@ -1055,8 +1051,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
      * Export neighbor-specific generated routes.
      * These skip peer export policy, so do not merge them into bgpRoutesToExport
      */
-    assert ourConfig != null;
-    assert remoteConfig != null;
+    BgpRoutingProcess remoteBgpRoutingProcess = getNeighborBgpProcess(remoteConfigId, allNodes);
     Stream<RouteAdvertisement<Bgpv4Route>> neighborGeneratedRoutes =
         ourConfig.getGeneratedRoutes().stream()
             .map(
