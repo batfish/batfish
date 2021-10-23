@@ -85,8 +85,9 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration {
   public static final @Nonnull LinkLocalAddress LINK_LOCAL_ADDRESS =
       LinkLocalAddress.of(BGP_UNNUMBERED_IP);
 
+  public static final Pattern BOND_INTERFACE_PATTERN = Pattern.compile("^(bond[0-9]+)");
   public static final Pattern PHYSICAL_INTERFACE_PATTERN =
-      Pattern.compile("^(swp[0-9]+(s[0-9])?)|(eth[0-9]+)$");
+      Pattern.compile("^(swp[0-9]+(s[0-9])?)|(eth[0-9]+)");
   public static final Pattern VLAN_INTERFACE_PATTERN = Pattern.compile("^vlan([0-9]+)$");
   public static final Pattern VXLAN_INTERFACE_PATTERN = Pattern.compile("^vxlan([0-9]+)$");
   public static final Pattern SUBINTERFACE_PATTERN = Pattern.compile("^(.*)\\.([0-9]+)$");
@@ -496,10 +497,10 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration {
   }
 
   private void ensureInterfacesHaveTypes(Configuration c) {
-    c.getAllInterfaces().values().forEach(i -> ensureInterfaceHasType(c, i));
+    c.getAllInterfaces().values().forEach(this::ensureInterfaceHasType);
   }
 
-  private void ensureInterfaceHasType(Configuration c, Interface i) {
+  private void ensureInterfaceHasType(Interface i) {
     if (i.getInterfaceType() != InterfaceType.UNKNOWN) {
       // Already done.
       return;
@@ -511,40 +512,24 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration {
     }
 
     if (PHYSICAL_INTERFACE_PATTERN.matcher(i.getName()).matches()) {
-      // Physical, but could be a bond or a physical interface, and could be a subinterface.
+      // Physical interface or subinterface.
       Matcher parentMatcher = SUBINTERFACE_PATTERN.matcher(i.getName());
       if (parentMatcher.matches()) {
-        // A subinterface, get the parent
-        String parentName = parentMatcher.group(1);
-        Interface parentIface = c.getAllInterfaces().get(parentName);
-        if (parentIface == null) {
-          _w.redFlag(
-              String.format(
-                  "%s is a subinterface of non-existent interface %s", i.getName(), parentName));
-          // Leave as UNKNOWN.
-          return;
-        }
-        // Make sure the parent has been typed first.
-        ensureInterfaceHasType(c, parentIface);
-        if (parentIface.getInterfaceType() == InterfaceType.PHYSICAL) {
-          i.setInterfaceType(InterfaceType.LOGICAL);
-        } else if (parentIface.getInterfaceType() == InterfaceType.AGGREGATED) {
-          i.setInterfaceType(InterfaceType.AGGREGATE_CHILD);
-        } else {
-          _w.redFlag(
-              String.format(
-                  "%s is a subinterface of %s (type %s) which cannot have subinterfaces",
-                  i.getName(), parentName, parentIface.getInterfaceType()));
-          // Leave as UNKNOWN.
-        }
+        i.setInterfaceType(InterfaceType.LOGICAL);
         return;
       }
-      // Not a subinterface
-      if (i.getChannelGroupMembers().isEmpty()) {
-        i.setInterfaceType(InterfaceType.PHYSICAL);
-      } else {
-        i.setInterfaceType(InterfaceType.AGGREGATED);
+      i.setInterfaceType(InterfaceType.PHYSICAL);
+      return;
+    }
+
+    if (BOND_INTERFACE_PATTERN.matcher(i.getName()).matches()) {
+      // Aggregate interface or subinterface.
+      Matcher parentMatcher = SUBINTERFACE_PATTERN.matcher(i.getName());
+      if (parentMatcher.matches()) {
+        i.setInterfaceType(InterfaceType.AGGREGATE_CHILD);
+        return;
       }
+      i.setInterfaceType(InterfaceType.AGGREGATED);
       return;
     }
 
