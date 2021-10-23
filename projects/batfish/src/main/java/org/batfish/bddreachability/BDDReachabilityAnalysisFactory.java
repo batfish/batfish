@@ -284,7 +284,7 @@ public final class BDDReachabilityAnalysisFactory {
       _dstIpSpaceToBDD = _bddPacket.getDstIpSpaceToBDD();
       _srcIpSpaceToBDD = _bddPacket.getSrcIpSpaceToBDD();
 
-      _aclPermitBDDs = computeAclBDDs(this::ipAccessListToBdd, configs);
+      _aclPermitBDDs = computeAclBDDs(this::ipAccessListToBddForNode, configs);
       _aclDenyBDDs = computeAclDenyBDDs(_aclPermitBDDs);
 
       _bddIncomingTransformations = computeBDDIncomingTransformations();
@@ -402,7 +402,8 @@ public final class BDDReachabilityAnalysisFactory {
     return _aclPermitBDDs;
   }
 
-  IpAccessListToBdd ipAccessListToBdd(Configuration config) {
+  /** Return an {@link IpAccessListToBdd} for the input {@link Configuration}. */
+  IpAccessListToBdd ipAccessListToBddForNode(Configuration config) {
     return _aclToBdds.computeIfAbsent(
         config.getHostname(),
         hostname ->
@@ -445,7 +446,7 @@ public final class BDDReachabilityAnalysisFactory {
           nodeEntry -> {
             Configuration node = nodeEntry.getValue();
             TransformationToTransition toTransition =
-                new TransformationToTransition(_bddPacket, ipAccessListToBdd(node));
+                new TransformationToTransition(_bddPacket, ipAccessListToBddForNode(node));
             return toImmutableMap(
                 node.getActiveInterfaces(),
                 Entry::getKey, /* iface */
@@ -470,7 +471,7 @@ public final class BDDReachabilityAnalysisFactory {
           nodeEntry -> {
             Configuration node = nodeEntry.getValue();
             TransformationToTransition toTransition =
-                new TransformationToTransition(_bddPacket, ipAccessListToBdd(node));
+                new TransformationToTransition(_bddPacket, ipAccessListToBddForNode(node));
             return toImmutableMap(
                 nodeEntry.getValue().getActiveInterfaces(),
                 Entry::getKey, /* iface */
@@ -540,7 +541,7 @@ public final class BDDReachabilityAnalysisFactory {
                                                 .getValue()
                                                 .getPacketPolicies()
                                                 .get(iface.getPacketPolicyName()),
-                                            ipAccessListToBdd(configEntry.getValue()),
+                                            ipAccessListToBddForNode(configEntry.getValue()),
                                             ipsRoutedOutInterfaces)));
                       })
                   .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue)));
