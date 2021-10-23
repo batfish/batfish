@@ -51,7 +51,10 @@ public class Layer2NtcTest {
         getLayer3Edges("batfish").getEdges(), containsInAnyOrder(forward, forward.reverse()));
   }
 
-  /** When the self-loop is missing from l1 topology, the L3 edge does not come up. */
+  /**
+   * When the self-loop is missing from l1 topology (the interfaces are connected through a missing
+   * device instead), the L3 edge does not come up.
+   */
   @Test
   public void testLayer3ConnectivityMissingLoop() throws IOException {
     assertThat(getLayer3Edges("batfish-missing-loop").getEdges(), empty());
