@@ -2912,10 +2912,12 @@ public final class FlatJuniperGrammarTest {
     assertThat(c, hasInterface("ge-0/3/0.1", hasSwitchPortMode(SwitchportMode.TRUNK)));
     assertThat(c, hasInterface("ge-0/3/0.1", hasAllowedVlans(IntegerSpace.of(6))));
 
-    // Expecting interface with encapsulation VLAN set to 1
+    // Expecting interface with encapsulation VLAN set to .0:1000 .1:1
+    assertThat(c, hasInterface("ge-0/4/0.0", hasEncapsulationVlan(1000)));
     assertThat(c, hasInterface("ge-0/4/0.1", hasEncapsulationVlan(1)));
-    // Setting vlan-id on unit 0 is not allowed
-    assertThat(c, hasInterface("ge-0/4/0.0", hasEncapsulationVlan(nullValue())));
+
+    // Without vlan-tagging enabled, encapsulation vlan is ignored
+    assertThat(c, hasInterface("ge-0/5/0.7", hasEncapsulationVlan(nullValue())));
   }
 
   @Test

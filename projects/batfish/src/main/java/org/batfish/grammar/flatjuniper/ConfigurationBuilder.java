@@ -288,10 +288,12 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Hib_system_serviceConte
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_descriptionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_disableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_enableContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_flexible_vlan_taggingContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_mtuContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_native_vlan_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_unitContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_vlan_idContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_vlan_taggingContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Icmp_codeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Icmp_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.If_ethernet_switchingContext;
@@ -713,6 +715,7 @@ import org.batfish.representation.juniper.IkePolicy;
 import org.batfish.representation.juniper.IkeProposal;
 import org.batfish.representation.juniper.Interface;
 import org.batfish.representation.juniper.Interface.OspfInterfaceType;
+import org.batfish.representation.juniper.Interface.VlanTaggingMode;
 import org.batfish.representation.juniper.InterfaceOspfNeighbor;
 import org.batfish.representation.juniper.InterfaceRange;
 import org.batfish.representation.juniper.InterfaceRangeMember;
@@ -4344,6 +4347,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitI_flexible_vlan_tagging(I_flexible_vlan_taggingContext ctx) {
+    if (!_currentInterfaceOrRange.isPhysicalLike()) {
+      warn(ctx, "VLAN tagging cannot be configured on " + _currentInterfaceOrRange.getName());
+      return;
+    }
+    _currentInterfaceOrRange.setVlanTagging(VlanTaggingMode.FLEXIBLE_VLAN_TAGGING);
+  }
+
+  @Override
   public void exitI_mtu(I_mtuContext ctx) {
     int size = toInt(ctx.size);
     _currentInterfaceOrRange.setMtu(size);
@@ -4361,7 +4373,31 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitI_vlan_id(I_vlan_idContext ctx) {
+    if (!_currentInterfaceOrRange.isUnit()) {
+      warn(ctx, "Expecting vlan-id to be configured on a unit");
+      return;
+    }
+    if (!_currentInterfaceOrRange.getParent().isPhysicalLike()) {
+      warn(ctx, "Expecting vlan-id to be configured on a unit of a physical interface");
+      return;
+    }
+    if (_currentInterfaceOrRange.getParent().getVlanTagging() == VlanTaggingMode.NONE) {
+      warn(
+          ctx,
+          "Configuring vlan-id requires enabling vlan-tagging (or flexible-vlan-tagging) on the"
+              + " parent physical interface");
+      return;
+    }
     _currentInterfaceOrRange.setVlanId(toInt(ctx.dec()));
+  }
+
+  @Override
+  public void exitI_vlan_tagging(I_vlan_taggingContext ctx) {
+    if (!_currentInterfaceOrRange.isPhysicalLike()) {
+      warn(ctx, "VLAN tagging cannot be configured on " + _currentInterfaceOrRange.getName());
+      return;
+    }
+    _currentInterfaceOrRange.setVlanTagging(VlanTaggingMode.VLAN_TAGGING);
   }
 
   @Override

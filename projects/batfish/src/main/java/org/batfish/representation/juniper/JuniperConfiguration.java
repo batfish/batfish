@@ -1876,12 +1876,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     } else {
       newIface.setSwitchportMode(SwitchportMode.NONE);
       newIface.setSwitchport(false);
-    }
-    if (iface.getVlanId() != null) {
-      if (iface.getName().endsWith(".0")) {
-        _w.redFlag(
-            String.format("Setting vlan-id on unit 0 of %s is not allowed", iface.getName()));
-      } else {
+      if (iface.getVlanId() != null) {
         newIface.setEncapsulationVlan(iface.getVlanId());
       }
     }

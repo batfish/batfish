@@ -8,8 +8,10 @@ set interfaces ge-0/3/0 unit 0 family ethernet-switching port-mode trunk
 set interfaces ge-0/3/0 unit 0 family ethernet-switching vlan members 1-5
 set interfaces ge-0/3/0 unit 1 family ethernet-switching interface-mode trunk
 set interfaces ge-0/3/0 unit 1 family ethernet-switching vlan members 6
+set interfaces ge-0/4/0 vlan-tagging
 set interfaces ge-0/4/0 unit 0 vlan-id 1000
 set interfaces ge-0/4/0 unit 1 vlan-id 1
+set interfaces ge-0/5/0 unit 7 vlan-id 7
 set interfaces vlan unit 103 family inet address 192.168.3.35/24
 
 set vlans VLAN_TEST vlan-id 101
