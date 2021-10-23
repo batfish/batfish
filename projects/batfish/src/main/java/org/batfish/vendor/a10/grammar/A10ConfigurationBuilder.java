@@ -78,6 +78,7 @@ import org.batfish.vendor.a10.grammar.A10Parser.Vrrpac_set_idContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Vrrpaf_gatewayContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Vrrpaf_gateway_weightContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Vrrpapg_peerContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Vrrpavi_floating_ipContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Vrrpavi_preempt_mode_disableContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Vrrpavi_preempt_mode_thresholdContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Vrrpavib_fail_over_policy_templateContext;
@@ -1378,6 +1379,11 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   @Override
   public void exitVrrpa_vrid_id(Vrrpa_vrid_idContext ctx) {
     _currentVrid = null;
+  }
+
+  @Override
+  public void exitVrrpavi_floating_ip(Vrrpavi_floating_ipContext ctx) {
+    _currentVrid.addFloatingIp(toIp(ctx.ip));
   }
 
   @Override

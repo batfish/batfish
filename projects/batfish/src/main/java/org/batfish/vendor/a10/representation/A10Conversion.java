@@ -331,6 +331,31 @@ public class A10Conversion {
         .build();
   }
 
+  static @Nonnull Stream<KernelRoute> getFloatingIpKernelRoutes(VrrpA vrrpA) {
+    return getFloatingIpsForAllVrids(vrrpA).map(A10Conversion::toKernelRoute);
+  }
+
+  static @Nonnull KernelRoute toKernelRoute(Ip floatingIp) {
+    return KernelRoute.builder()
+        .setNetwork(Prefix.create(floatingIp, Prefix.MAX_PREFIX_LENGTH))
+        .setTag(KERNEL_ROUTE_TAG_FLOATING_IP)
+        .setRequiredOwnedIp(floatingIp)
+        .build();
+  }
+
+  static @Nonnull Stream<Ip> getFloatingIps(VrrpA vrrpA, int vrid) {
+    if (vrid == 0 && !vrrpA.getVrids().containsKey(0)) {
+      return Stream.of();
+    }
+    return vrrpA.getVrids().get(vrid).getFloatingIps().stream();
+  }
+
+  static @Nonnull Stream<Ip> getFloatingIpsForAllVrids(VrrpA vrrpA) {
+    return vrrpA.getVrids().values().stream()
+        .map(VrrpAVrid::getFloatingIps)
+        .flatMap(Collection::stream);
+  }
+
   private static boolean getRedistributionFlagged(VirtualServer virtualServer) {
     return firstNonNull(virtualServer.getRedistributionFlagged(), Boolean.FALSE);
   }
