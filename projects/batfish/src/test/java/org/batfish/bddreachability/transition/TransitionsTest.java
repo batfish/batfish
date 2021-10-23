@@ -12,6 +12,7 @@ import static org.batfish.bddreachability.transition.Transitions.mergeDisjuncts;
 import static org.batfish.bddreachability.transition.Transitions.or;
 import static org.batfish.bddreachability.transition.Transitions.tryMergeDisjuncts;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.nullValue;
@@ -405,8 +406,7 @@ public class TransitionsTest {
             ImmutableList.of(
                 constraint(v0), constraint(v1),
                 constraint(v2), constraint(v3)));
-    Collection<Transition> expected = ImmutableSet.of(constraint(BDDOps.orNull(v0, v1, v2, v3)));
-    assertEquals(expected, actual);
+    assertThat(actual, containsInAnyOrder(constraint(BDDOps.orNull(v0, v1, v2, v3))));
   }
 
   @Test
@@ -424,9 +424,9 @@ public class TransitionsTest {
 
                 // EraseAndSets with v1 get merged
                 eraseAndSet(v1, v0), eraseAndSet(v1, v1)));
-    Collection<Transition> expected =
-        ImmutableSet.of(
-            constraint(v0.or(v1)), eraseAndSet(v0, v0.or(v1)), eraseAndSet(v1, v0.or(v1)));
-    assertEquals(expected, actual);
+    assertThat(
+        actual,
+        containsInAnyOrder(
+            constraint(v0.or(v1)), eraseAndSet(v0, v0.or(v1)), eraseAndSet(v1, v0.or(v1))));
   }
 }
