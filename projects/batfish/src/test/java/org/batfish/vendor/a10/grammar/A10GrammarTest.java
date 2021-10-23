@@ -38,6 +38,7 @@ import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.main.BatfishTestUtils.getBatfish;
 import static org.batfish.vendor.a10.representation.A10Configuration.getInterfaceName;
 import static org.batfish.vendor.a10.representation.A10Conversion.DEFAULT_VRRP_A_PRIORITY;
+import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_FLOATING_IP;
 import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_NAT_POOL;
 import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_VIRTUAL_SERVER_FLAGGED;
 import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_VIRTUAL_SERVER_UNFLAGGED;
@@ -1365,7 +1366,10 @@ public class A10GrammarTest {
                       .setPriority(DEFAULT_VRRP_A_PRIORITY)
                       .setVirtualAddresses(
                           ImmutableSet.of(
-                              Ip.parse("1.0.0.1"), Ip.parse("1.0.0.2"), Ip.parse("2.0.0.1")))
+                              Ip.parse("1.0.0.1"),
+                              Ip.parse("1.0.0.2"),
+                              Ip.parse("2.0.0.1"),
+                              Ip.parse("3.0.0.1")))
                       .setSourceAddress(i1Address)
                       .build())));
       // Should not contain virtual addresses
@@ -1405,18 +1409,21 @@ public class A10GrammarTest {
               i1Address,
               ConcreteInterfaceAddress.parse("1.0.0.1/32"),
               ConcreteInterfaceAddress.parse("1.0.0.2/32"),
-              ConcreteInterfaceAddress.parse("2.0.0.1/32")));
+              ConcreteInterfaceAddress.parse("2.0.0.1/32"),
+              ConcreteInterfaceAddress.parse("3.0.0.1/32")));
       assertThat(
           i.getAddressMetadata(),
           hasKeys(
               i1Address,
               ConcreteInterfaceAddress.parse("1.0.0.1/32"),
               ConcreteInterfaceAddress.parse("1.0.0.2/32"),
-              ConcreteInterfaceAddress.parse("2.0.0.1/32")));
+              ConcreteInterfaceAddress.parse("2.0.0.1/32"),
+              ConcreteInterfaceAddress.parse("3.0.0.1/32")));
       ImmutableSet.of(
               ConcreteInterfaceAddress.parse("1.0.0.1/32"),
               ConcreteInterfaceAddress.parse("1.0.0.2/32"),
-              ConcreteInterfaceAddress.parse("2.0.0.1/32"))
+              ConcreteInterfaceAddress.parse("2.0.0.1/32"),
+              ConcreteInterfaceAddress.parse("3.0.0.1/32"))
           .forEach(
               virtualAddress ->
                   assertThat(
@@ -1937,6 +1944,16 @@ public class A10GrammarTest {
                 .setNetwork(Prefix.strict("10.0.6.1/32"))
                 .setRequiredOwnedIp(Ip.parse("10.0.6.1"))
                 .setTag(KERNEL_ROUTE_TAG_VIRTUAL_SERVER_FLAGGED)
+                .build(),
+            KernelRoute.builder()
+                .setNetwork(Prefix.strict("10.0.9.1/32"))
+                .setRequiredOwnedIp(Ip.parse("10.0.9.1"))
+                .setTag(KERNEL_ROUTE_TAG_FLOATING_IP)
+                .build(),
+            KernelRoute.builder()
+                .setNetwork(Prefix.strict("10.0.9.2/32"))
+                .setRequiredOwnedIp(Ip.parse("10.0.9.2"))
+                .setTag(KERNEL_ROUTE_TAG_FLOATING_IP)
                 .build()));
   }
 }

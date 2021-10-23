@@ -8,6 +8,9 @@ import static org.batfish.vendor.a10.representation.A10Conversion.VIRTUAL_TCP_PO
 import static org.batfish.vendor.a10.representation.A10Conversion.VIRTUAL_UDP_PORT_TYPES;
 import static org.batfish.vendor.a10.representation.A10Conversion.createBgpProcess;
 import static org.batfish.vendor.a10.representation.A10Conversion.getEnabledVrids;
+import static org.batfish.vendor.a10.representation.A10Conversion.getFloatingIpKernelRoutes;
+import static org.batfish.vendor.a10.representation.A10Conversion.getFloatingIps;
+import static org.batfish.vendor.a10.representation.A10Conversion.getFloatingIpsForAllVrids;
 import static org.batfish.vendor.a10.representation.A10Conversion.getNatPoolIps;
 import static org.batfish.vendor.a10.representation.A10Conversion.getNatPoolIpsForAllVrids;
 import static org.batfish.vendor.a10.representation.A10Conversion.getNatPoolKernelRoutes;
@@ -32,6 +35,7 @@ import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.SetMultimap;
+import com.google.common.collect.Streams;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -339,9 +343,10 @@ public final class A10Configuration extends VendorConfiguration {
   private void createKernelRoutes() {
     _c.getDefaultVrf()
         .setKernelRoutes(
-            Stream.concat(
+            Streams.concat(
                     getNatPoolKernelRoutes(_natPools.values()),
-                    getVirtualServerKernelRoutes(_virtualServers.values()))
+                    getVirtualServerKernelRoutes(_virtualServers.values()),
+                    _vrrpA != null ? getFloatingIpKernelRoutes(_vrrpA) : Stream.of())
                 .collect(ImmutableSortedSet.toImmutableSortedSet(naturalOrder())));
   }
 
@@ -366,9 +371,10 @@ public final class A10Configuration extends VendorConfiguration {
     // - Add all virtual addresses to every inteface with a concrete IPv4 address.
     // - Set address metadata so no connected nor local routes are generated for virtual addresses.
     Set<ConcreteInterfaceAddress> virtualAddresses =
-        Stream.concat(
+        Streams.concat(
                 getNatPoolIpsForAllVrids(_natPools.values()),
-                getVirtualServerIpsForAllVrids(_virtualServers.values()))
+                getVirtualServerIpsForAllVrids(_virtualServers.values()),
+                _vrrpA != null ? getFloatingIpsForAllVrids(_vrrpA) : Stream.of())
             .map(ip -> ConcreteInterfaceAddress.create(ip, Prefix.MAX_PREFIX_LENGTH))
             .collect(ImmutableSet.toImmutableSet());
     ConnectedRouteMetadata connectedRouteMetadata =
@@ -421,9 +427,10 @@ public final class A10Configuration extends VendorConfiguration {
     getEnabledVrids(_vrrpA)
         .forEach(
             vrid -> {
-              Stream.concat(
+              Streams.concat(
                       getNatPoolIps(_natPools.values(), vrid),
-                      getVirtualServerIps(_virtualServers.values(), vrid))
+                      getVirtualServerIps(_virtualServers.values(), vrid),
+                      getFloatingIps(_vrrpA, vrid))
                   .forEach(ip -> virtualAddressesByEnabledVridBuilder.put(vrid, ip));
             });
     SetMultimap<Integer, Ip> virtualAddressesByEnabledVrid =

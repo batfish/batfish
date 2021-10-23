@@ -1,7 +1,16 @@
 !BATFISH_FORMAT: a10_acos
 hostname kernel_routes
 !
+vrrp-a common
+  device-id 1
+  set-id 1
+  enable
 !
+vrrp-a vrid 0
+  floating-ip 10.0.9.1
+  floating-ip 10.0.9.2
+!
+
 interface ethernet 1
   ip address 10.0.0.10 255.255.255.0
   enable
