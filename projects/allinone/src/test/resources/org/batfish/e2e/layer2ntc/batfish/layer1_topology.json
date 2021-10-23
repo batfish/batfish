@@ -1,44 +1,44 @@
 {
-    "edges": [
-        {
-            "node1": {
-                "hostname": "rtr-1",
-                "interfaceName": "xe-0/0/0"
-            },
-            "node2": {
-                "hostname": "sw-1",
-                "interfaceName": "xe-0/0/0"
-            }
-        },
-        {
-            "node1": {
-                "hostname": "rtr-isp-1",
-                "interfaceName": "xe-0/0/1"
-            },
-            "node2": {
-                "hostname": "sw-1",
-                "interfaceName": "xe-0/0/1"
-            }
-        },
-        {
-            "node1": {
-                "hostname": "sw-1",
-                "interfaceName": "xe-0/0/3"
-            },
-            "node2": {
-                "hostname": "fw-1",
-                "interfaceName": "xe-0/0/3"
-            }
-        },
-        {
-            "node1": {
-                "hostname": "fw-1",
-                "interfaceName": "xe-0/0/10"
-            },
-            "node2": {
-                "hostname": "fw-1",
-                "interfaceName": "xe-0/0/20"
-            }
-        }
-    ]
+  "edges": [
+    {
+      "node1": {
+        "hostname": "rtr-1",
+        "interfaceName": "xe-0/0/0"
+      },
+      "node2": {
+        "hostname": "sw-1",
+        "interfaceName": "xe-0/0/0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "rtr-isp-1",
+        "interfaceName": "xe-0/0/1"
+      },
+      "node2": {
+        "hostname": "sw-1",
+        "interfaceName": "xe-0/0/1"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "sw-1",
+        "interfaceName": "xe-0/0/3"
+      },
+      "node2": {
+        "hostname": "fw-1",
+        "interfaceName": "xe-0/0/3"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "fw-1",
+        "interfaceName": "xe-0/0/10"
+      },
+      "node2": {
+        "hostname": "fw-1",
+        "interfaceName": "xe-0/0/20"
+      }
+    }
+  ]
 }

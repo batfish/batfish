@@ -29,6 +29,26 @@
         "hostname": "fw-1",
         "interfaceName": "xe-0/0/3"
       }
+    },
+    {
+      "node1": {
+        "hostname": "fw-1",
+        "interfaceName": "xe-0/0/10"
+      },
+      "node2": {
+        "hostname": "missing-device",
+        "interfaceName": "some-int10"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "fw-1",
+        "interfaceName": "xe-0/0/20"
+      },
+      "node2": {
+        "hostname": "missing-device",
+        "interfaceName": "some-int20"
+      }
     }
   ]
 }

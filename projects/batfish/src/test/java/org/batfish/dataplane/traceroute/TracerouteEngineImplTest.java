@@ -89,6 +89,7 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
@@ -191,7 +192,7 @@ public class TracerouteEngineImplTest {
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     Configuration config = cb.build();
     Vrf.Builder vb = nf.vrfBuilder().setOwner(config);
-    Interface.Builder ib = nf.interfaceBuilder().setOwner(config);
+    Interface.Builder ib = nf.interfaceBuilder().setType(InterfaceType.PHYSICAL).setOwner(config);
 
     Vrf vrf1 = vb.build();
     Vrf vrf2 = vb.build();
@@ -267,7 +268,7 @@ public class TracerouteEngineImplTest {
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     Vrf.Builder vb = nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
-    Interface.Builder ib = nf.interfaceBuilder().setProxyArp(true);
+    Interface.Builder ib = nf.interfaceBuilder().setType(InterfaceType.PHYSICAL).setProxyArp(true);
 
     Configuration source = cb.build();
     Vrf vSource = vb.setOwner(source).build();
@@ -457,7 +458,13 @@ public class TracerouteEngineImplTest {
     ConcreteInterfaceAddress c1Addr = ConcreteInterfaceAddress.parse("1.0.0.0/31");
     ConcreteInterfaceAddress c2Addr = ConcreteInterfaceAddress.parse("1.0.0.1/31");
     Interface i1 =
-        nf.interfaceBuilder().setActive(true).setOwner(c1).setVrf(v1).setAddress(c1Addr).build();
+        nf.interfaceBuilder()
+            .setType(InterfaceType.PHYSICAL)
+            .setActive(true)
+            .setOwner(c1)
+            .setVrf(v1)
+            .setAddress(c1Addr)
+            .build();
     Prefix loopPrefix = Prefix.parse("2.0.0.0/32");
     v1.setStaticRoutes(
         ImmutableSortedSet.of(
@@ -470,7 +477,13 @@ public class TracerouteEngineImplTest {
     Configuration c2 = cb.build();
     Vrf v2 = nf.vrfBuilder().setOwner(c2).build();
     Interface i2 =
-        nf.interfaceBuilder().setActive(true).setOwner(c2).setVrf(v2).setAddress(c2Addr).build();
+        nf.interfaceBuilder()
+            .setType(InterfaceType.PHYSICAL)
+            .setActive(true)
+            .setOwner(c2)
+            .setVrf(v2)
+            .setAddress(c2Addr)
+            .build();
     Prefix natPoolIp = Prefix.parse("5.5.5.5/32");
     i2.setIncomingFilter(
         nf.aclBuilder()
@@ -583,9 +596,21 @@ public class TracerouteEngineImplTest {
     ConcreteInterfaceAddress i1Addr = ConcreteInterfaceAddress.parse("1.0.0.1/31");
     ConcreteInterfaceAddress i2Addr = ConcreteInterfaceAddress.parse("2.0.0.1/31");
     Interface i1 =
-        nf.interfaceBuilder().setActive(true).setOwner(c1).setVrf(v1).setAddress(i1Addr).build();
+        nf.interfaceBuilder()
+            .setType(InterfaceType.PHYSICAL)
+            .setActive(true)
+            .setOwner(c1)
+            .setVrf(v1)
+            .setAddress(i1Addr)
+            .build();
     Interface i2 =
-        nf.interfaceBuilder().setActive(true).setOwner(c1).setVrf(v1).setAddress(i2Addr).build();
+        nf.interfaceBuilder()
+            .setType(InterfaceType.PHYSICAL)
+            .setActive(true)
+            .setOwner(c1)
+            .setVrf(v1)
+            .setAddress(i2Addr)
+            .build();
     v1.setStaticRoutes(
         ImmutableSortedSet.of(
             StaticRoute.testBuilder()
@@ -705,7 +730,13 @@ public class TracerouteEngineImplTest {
     ConcreteInterfaceAddress i1Addr = ConcreteInterfaceAddress.parse("1.0.0.1/31");
     ConcreteInterfaceAddress i2Addr = ConcreteInterfaceAddress.parse("2.0.0.1/31");
     Interface i1 =
-        nf.interfaceBuilder().setActive(true).setOwner(c1).setVrf(v1).setAddress(i1Addr).build();
+        nf.interfaceBuilder()
+            .setType(InterfaceType.PHYSICAL)
+            .setActive(true)
+            .setOwner(c1)
+            .setVrf(v1)
+            .setAddress(i1Addr)
+            .build();
     Interface i2 =
         nf.interfaceBuilder().setActive(true).setOwner(c1).setVrf(v1).setAddress(i2Addr).build();
     v1.setStaticRoutes(
@@ -780,7 +811,12 @@ public class TracerouteEngineImplTest {
     Ip ip33 = Ip.parse("3.0.0.3");
     Ip ip41 = Ip.parse("4.0.0.2");
     Prefix prefix2 = Prefix.parse("2.0.0.0/24");
-    Interface.Builder ib = nf.interfaceBuilder().setOwner(c).setVrf(vrf).setActive(true);
+    Interface.Builder ib =
+        nf.interfaceBuilder()
+            .setType(InterfaceType.PHYSICAL)
+            .setOwner(c)
+            .setVrf(vrf)
+            .setActive(true);
     Interface inInterface =
         ib.setAddress(ConcreteInterfaceAddress.parse("1.0.0.1/24"))
             .setIncomingTransformation(
@@ -964,9 +1000,21 @@ public class TracerouteEngineImplTest {
     ConcreteInterfaceAddress i1Addr = ConcreteInterfaceAddress.parse("1.0.0.1/31");
     ConcreteInterfaceAddress i2Addr = ConcreteInterfaceAddress.parse("2.0.0.1/31");
     Interface i1 =
-        nf.interfaceBuilder().setActive(true).setOwner(c1).setVrf(v1).setAddress(i1Addr).build();
+        nf.interfaceBuilder()
+            .setType(InterfaceType.PHYSICAL)
+            .setActive(true)
+            .setOwner(c1)
+            .setVrf(v1)
+            .setAddress(i1Addr)
+            .build();
     Interface i2 =
-        nf.interfaceBuilder().setActive(true).setOwner(c1).setVrf(v1).setAddress(i2Addr).build();
+        nf.interfaceBuilder()
+            .setType(InterfaceType.PHYSICAL)
+            .setActive(true)
+            .setOwner(c1)
+            .setVrf(v1)
+            .setAddress(i2Addr)
+            .build();
     v1.setStaticRoutes(
         ImmutableSortedSet.of(
             StaticRoute.testBuilder()
@@ -1057,9 +1105,21 @@ public class TracerouteEngineImplTest {
     ConcreteInterfaceAddress i1Addr = ConcreteInterfaceAddress.parse("1.0.0.1/31");
     ConcreteInterfaceAddress i2Addr = ConcreteInterfaceAddress.parse("2.0.0.1/31");
     Interface i1 =
-        nf.interfaceBuilder().setActive(true).setOwner(c1).setVrf(v1).setAddress(i1Addr).build();
+        nf.interfaceBuilder()
+            .setType(InterfaceType.PHYSICAL)
+            .setActive(true)
+            .setOwner(c1)
+            .setVrf(v1)
+            .setAddress(i1Addr)
+            .build();
     Interface i2 =
-        nf.interfaceBuilder().setActive(true).setOwner(c1).setVrf(v1).setAddress(i2Addr).build();
+        nf.interfaceBuilder()
+            .setType(InterfaceType.PHYSICAL)
+            .setActive(true)
+            .setOwner(c1)
+            .setVrf(v1)
+            .setAddress(i2Addr)
+            .build();
     v1.setStaticRoutes(
         ImmutableSortedSet.of(
             StaticRoute.testBuilder()
@@ -1154,7 +1214,7 @@ public class TracerouteEngineImplTest {
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     Configuration c1 = cb.build();
     Vrf.Builder vb = nf.vrfBuilder().setOwner(c1);
-    Interface.Builder ib = nf.interfaceBuilder().setOwner(c1);
+    Interface.Builder ib = nf.interfaceBuilder().setType(InterfaceType.PHYSICAL).setOwner(c1);
 
     Vrf vrf1 = vb.build();
     Vrf vrf2 = vb.build();
@@ -1342,7 +1402,12 @@ public class TracerouteEngineImplTest {
             .setSrcIp(parse("10.0.1.2"))
             .setSrcPort(NamedPort.EPHEMERAL_LOWEST.number())
             .build();
-    Interface.Builder ib = nf.interfaceBuilder().setActive(true).setOwner(c).setVrf(vrf);
+    Interface.Builder ib =
+        nf.interfaceBuilder()
+            .setType(InterfaceType.PHYSICAL)
+            .setActive(true)
+            .setOwner(c)
+            .setVrf(vrf);
     ib.setName(i1Name).setAddresses(ConcreteInterfaceAddress.parse("10.0.1.1/24")).build();
     ib.setName("i2")
         .setAddresses(ConcreteInterfaceAddress.parse("10.0.2.1/24"))
@@ -1402,7 +1467,8 @@ public class TracerouteEngineImplTest {
             .setSrcIp(parse("10.0.1.2"))
             .setSrcPort(NamedPort.EPHEMERAL_LOWEST.number())
             .build();
-    Interface.Builder ib = nf.interfaceBuilder().setActive(true).setOwner(c);
+    Interface.Builder ib =
+        nf.interfaceBuilder().setType(InterfaceType.PHYSICAL).setActive(true).setOwner(c);
     ib.setName(i1Name)
         .setVrf(vrf1)
         .setAddresses(ConcreteInterfaceAddress.parse("10.0.1.1/24"))
@@ -1492,6 +1558,7 @@ public class TracerouteEngineImplTest {
             .build();
 
     nf.interfaceBuilder()
+        .setType(InterfaceType.PHYSICAL)
         .setOwner(c1)
         .setVrf(vrf1)
         .setAddress(ConcreteInterfaceAddress.create(Ip.parse("1.0.1.2"), 31))
@@ -1500,6 +1567,7 @@ public class TracerouteEngineImplTest {
         .build();
 
     nf.interfaceBuilder()
+        .setType(InterfaceType.PHYSICAL)
         .setOwner(c2)
         .setVrf(vrf2)
         .setAddress(ConcreteInterfaceAddress.create(Ip.parse("1.0.1.3"), 31))
@@ -1592,7 +1660,8 @@ public class TracerouteEngineImplTest {
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     Configuration c1 = cb.build();
     Vrf vrf1 = nf.vrfBuilder().setOwner(c1).build();
-    Interface.Builder ib = nf.interfaceBuilder().setOwner(c1).setVrf(vrf1);
+    Interface.Builder ib =
+        nf.interfaceBuilder().setType(InterfaceType.PHYSICAL).setOwner(c1).setVrf(vrf1);
 
     String i1Name = "iface1";
     ib.setName(i1Name).setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24")).build();
@@ -1813,6 +1882,7 @@ public class TracerouteEngineImplTest {
 
     String c1i1Name = "c1i1";
     nf.interfaceBuilder()
+        .setType(InterfaceType.PHYSICAL)
         .setName(c1i1Name)
         .setOwner(c1)
         .setVrf(vrf1)
@@ -1829,7 +1899,8 @@ public class TracerouteEngineImplTest {
 
     Configuration c2 = cb.build();
     Vrf vrf2 = nf.vrfBuilder().setOwner(c2).build();
-    Interface.Builder ib = nf.interfaceBuilder().setOwner(c2).setVrf(vrf2);
+    Interface.Builder ib =
+        nf.interfaceBuilder().setType(InterfaceType.PHYSICAL).setOwner(c2).setVrf(vrf2);
 
     String c2i1Name = "c2i1";
     ib.setName(c2i1Name).setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24")).build();
@@ -1964,7 +2035,8 @@ public class TracerouteEngineImplTest {
 
     Configuration c2 = cb.build();
     Vrf vrf2 = nf.vrfBuilder().setOwner(c2).build();
-    Interface.Builder ib = nf.interfaceBuilder().setOwner(c2).setVrf(vrf2);
+    Interface.Builder ib =
+        nf.interfaceBuilder().setType(InterfaceType.PHYSICAL).setOwner(c2).setVrf(vrf2);
 
     String c2i1Name = "c2i1";
     ConcreteInterfaceAddress c2i1Addr = ConcreteInterfaceAddress.parse("1.1.2.2/24");
@@ -2412,7 +2484,7 @@ public class TracerouteEngineImplTest {
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     Vrf.Builder vb = nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
-    Interface.Builder ib = nf.interfaceBuilder();
+    Interface.Builder ib = nf.interfaceBuilder().setType(InterfaceType.PHYSICAL);
 
     // c1
     Configuration c1 = cb.build();
@@ -2510,6 +2582,7 @@ public class TracerouteEngineImplTest {
     Vrf vrf1 = nf.vrfBuilder().setOwner(c1).build();
 
     nf.interfaceBuilder()
+        .setType(InterfaceType.PHYSICAL)
         .setName("c1_out")
         .setOwner(c1)
         .setVrf(vrf1)
@@ -2518,6 +2591,7 @@ public class TracerouteEngineImplTest {
 
     String c1ToFw = "c1_to_fw";
     nf.interfaceBuilder()
+        .setType(InterfaceType.PHYSICAL)
         .setName(c1ToFw)
         .setOwner(c1)
         .setVrf(vrf1)
@@ -2539,6 +2613,7 @@ public class TracerouteEngineImplTest {
 
     String fwToC1Name = "fw_to_c1";
     nf.interfaceBuilder()
+        .setType(InterfaceType.PHYSICAL)
         .setName(fwToC1Name)
         .setOwner(fw)
         .setVrf(fwVrf)
@@ -2548,6 +2623,7 @@ public class TracerouteEngineImplTest {
     // set up another interface with session
     String fwOutName = "fwOut";
     nf.interfaceBuilder()
+        .setType(InterfaceType.PHYSICAL)
         .setName(fwOutName)
         .setOwner(fw)
         .setVrf(fwVrf)
@@ -2632,6 +2708,7 @@ public class TracerouteEngineImplTest {
     Vrf vrf1 = nf.vrfBuilder().setOwner(c1).build();
 
     nf.interfaceBuilder()
+        .setType(InterfaceType.PHYSICAL)
         .setName("c1_out")
         .setOwner(c1)
         .setVrf(vrf1)
@@ -2640,6 +2717,7 @@ public class TracerouteEngineImplTest {
 
     String c1ToFw = "c1_to_fw";
     nf.interfaceBuilder()
+        .setType(InterfaceType.PHYSICAL)
         .setName(c1ToFw)
         .setOwner(c1)
         .setVrf(vrf1)
@@ -2661,6 +2739,7 @@ public class TracerouteEngineImplTest {
 
     String fwToC1Name = "fw_to_c1";
     nf.interfaceBuilder()
+        .setType(InterfaceType.PHYSICAL)
         .setName(fwToC1Name)
         .setOwner(fw)
         .setVrf(fwVrf)
@@ -2670,6 +2749,7 @@ public class TracerouteEngineImplTest {
     // set up another interface with session
     String fwOutName = "fwOut";
     nf.interfaceBuilder()
+        .setType(InterfaceType.PHYSICAL)
         .setName(fwOutName)
         .setOwner(fw)
         .setVrf(fwVrf)
@@ -2682,6 +2762,7 @@ public class TracerouteEngineImplTest {
     // set up a dummy interface to cause arp failure for return flow
     String fwDummyName = "fwDummy";
     nf.interfaceBuilder()
+        .setType(InterfaceType.PHYSICAL)
         .setName(fwDummyName)
         .setOwner(fw)
         .setVrf(fwVrf)
@@ -2704,6 +2785,7 @@ public class TracerouteEngineImplTest {
         cb.setConfigurationFormat(ConfigurationFormat.CISCO_IOS).setHostname("dummy").build();
     Vrf dummyVrf = nf.vrfBuilder().setOwner(dummy).build();
     nf.interfaceBuilder()
+        .setType(InterfaceType.PHYSICAL)
         .setName("dummy_interface")
         .setOwner(dummy)
         .setVrf(dummyVrf)

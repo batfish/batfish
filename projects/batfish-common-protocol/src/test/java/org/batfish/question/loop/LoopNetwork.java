@@ -13,6 +13,7 @@ import org.batfish.datamodel.Configuration.Builder;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
@@ -32,7 +33,13 @@ public class LoopNetwork {
     ConcreteInterfaceAddress c1Addr = ConcreteInterfaceAddress.parse("1.0.0.0/31");
     ConcreteInterfaceAddress c2Addr = ConcreteInterfaceAddress.parse("1.0.0.1/31");
     Interface i1 =
-        nf.interfaceBuilder().setActive(true).setOwner(c1).setVrf(v1).setAddress(c1Addr).build();
+        nf.interfaceBuilder()
+            .setActive(true)
+            .setOwner(c1)
+            .setVrf(v1)
+            .setAddress(c1Addr)
+            .setType(InterfaceType.PHYSICAL)
+            .build();
     Prefix loopPrefix = Prefix.parse("2.0.0.0/32");
     v1.setStaticRoutes(
         ImmutableSortedSet.of(
@@ -45,7 +52,13 @@ public class LoopNetwork {
     Configuration c2 = cb.build();
     Vrf v2 = nf.vrfBuilder().setOwner(c2).build();
     Interface i2 =
-        nf.interfaceBuilder().setActive(true).setOwner(c2).setVrf(v2).setAddress(c2Addr).build();
+        nf.interfaceBuilder()
+            .setActive(true)
+            .setOwner(c2)
+            .setVrf(v2)
+            .setAddress(c2Addr)
+            .setType(InterfaceType.PHYSICAL)
+            .build();
     Prefix natPoolIp = Prefix.parse("5.5.5.5/32");
 
     if (!includeLoop) {
