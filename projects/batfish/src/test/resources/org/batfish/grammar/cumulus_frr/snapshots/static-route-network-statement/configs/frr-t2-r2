@@ -1,5 +1,5 @@
 # This file describes the network interfaces
-interface bond65
+interface eth65
  ip address 88.0.0.3/31
  ip address 88.0.0.35/31
 # ports.conf --

@@ -2569,6 +2569,7 @@ public class CumulusFrrGrammarTest {
                 .setConfigurationFiles(SNAPSHOTS_PREFIX + snapshotName, configurationNames)
                 .build(),
             _folder);
+    Map<String, Configuration> configs = batfish.loadConfigurations(batfish.getSnapshot());
 
     NetworkSnapshot snapshot = batfish.getSnapshot();
     batfish.computeDataPlane(snapshot);

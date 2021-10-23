@@ -1,7 +1,7 @@
 # This file describes the network interfaces
 # ports.conf --
 frr version
-interface bond1
+interface eth0
  ip address 88.0.0.32/31
  ip address 88.0.0.34/31
 
