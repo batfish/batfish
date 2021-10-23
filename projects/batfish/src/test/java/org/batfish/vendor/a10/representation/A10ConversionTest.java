@@ -249,11 +249,13 @@ public class A10ConversionTest {
     Ip vs1EnabledIp = Ip.parse("10.0.1.1");
     Ip vs1DisabledIp = Ip.parse("10.0.3.1");
     VirtualServer vs0 = new VirtualServer("vs0", new VirtualServerTargetAddress(vs0Ip));
+    vs0.getOrCreatePort(22, VirtualServerPort.Type.TCP, null);
     VirtualServer vs1Enabled =
         new VirtualServer("vs1Enabled", new VirtualServerTargetAddress(vs1EnabledIp));
+    vs1Enabled.getOrCreatePort(22, VirtualServerPort.Type.TCP, null);
     vs1Enabled.setVrid(1);
     VirtualServer vs1Disabled =
-        new VirtualServer("vs1Disbled", new VirtualServerTargetAddress(vs1DisabledIp));
+        new VirtualServer("vs1Disabled", new VirtualServerTargetAddress(vs1DisabledIp));
     vs1Disabled.setVrid(1);
     vs1Disabled.setEnable(false);
     List<VirtualServer> virtualServers = ImmutableList.of(vs0, vs1Enabled, vs1Disabled);
