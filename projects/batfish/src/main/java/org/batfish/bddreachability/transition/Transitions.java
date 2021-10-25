@@ -17,8 +17,6 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.batfish.bddreachability.BDDOutgoingOriginalFlowFilterManager;
 import org.batfish.bddreachability.LastHopOutgoingInterfaceManager;
 import org.batfish.common.bdd.BDDFiniteDomain;
@@ -28,8 +26,6 @@ import org.batfish.common.bdd.BDDSourceManager;
 /** Smart constructors of {@link Transition}. */
 public final class Transitions {
   private Transitions() {}
-
-  private static final Logger LOGGER = LogManager.getLogger(Transitions.class);
 
   public static final Transition IDENTITY = Identity.INSTANCE;
 
