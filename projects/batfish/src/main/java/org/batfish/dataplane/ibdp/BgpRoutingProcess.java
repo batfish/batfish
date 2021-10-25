@@ -162,19 +162,12 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   @Nonnull final Bgpv4Rib _ebgpv4Rib;
   /** RIB containing paths obtained with iBGP, for IPv4 unicast */
   @Nonnull final Bgpv4Rib _ibgpv4Rib;
-  /**
-   * RIB containing locally originated BGP routes. TODO Remove when _exportFromBgpRib is set to true
-   * for all vendors for which it should be
-   */
-  @Nonnull final Bgpv4Rib _localBgpv4Rib;
 
   // outgoing RIB deltas for the current round (i.e., deltas generated in the previous round)
   @Nonnull private RibDelta<Bgpv4Route> _ebgpv4DeltaPrev = RibDelta.empty();
   @Nonnull private RibDelta<Bgpv4Route> _ebgpv4DeltaPrevBestPath = RibDelta.empty();
   @Nonnull private RibDelta<Bgpv4Route> _bgpv4DeltaPrev = RibDelta.empty();
   @Nonnull private RibDelta<Bgpv4Route> _bgpv4DeltaPrevBestPath = RibDelta.empty();
-  // currently used for VRF-leaking only.
-  @Nonnull private RibDelta<Bgpv4Route> _localDeltaPrev = RibDelta.empty();
 
   // copy of RIBs from prev round, for new links in the current round.
   private @Nonnull Set<Bgpv4Route> _ebgpv4Prev;
@@ -199,12 +192,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    * again (chain leaking).
    */
   @Nonnull private final Set<Bgpv4Route> _importedFromOtherVrfs = new HashSet<>(0);
-  /**
-   * Keep track of redistributed routes that we have merged into our local RIB.
-   *
-   * <p>Currently used for VRF leaking only.
-   */
-  @Nonnull private RibDelta.Builder<Bgpv4Route> _localDeltaBuilder = RibDelta.builder();
 
   /** eBGP RIB for EVPN type 3 routes */
   @Nonnull private EvpnRib<EvpnType3Route> _ebgpType3EvpnRib;
@@ -315,8 +302,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             _process.getMultipathEbgp() || _process.getMultipathIbgp() ? null : 1,
             multiPathMatchMode,
             clusterListAsIbgpCost);
-    _localBgpv4Rib =
-        new Bgpv4Rib(_mainRib, bestPathTieBreaker, null, multiPathMatchMode, clusterListAsIbgpCost);
 
     _mainRibDelta = RibDelta.empty();
 
@@ -555,15 +540,14 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
   @Override
   public void redistribute(RibDelta<AnnotatedRoute<AbstractRoute>> mainRibDelta) {
-    // Legacy redistribution model. (Unnecessary if redistribution is done from BGP RIB.)
+    // A redistribution policy must be defined iff exporting from BGP RIB
+    assert !_exportFromBgpRib ^ _process.getRedistributionPolicy() != null;
+
     if (!_exportFromBgpRib) {
+      // Export from main RIB; no local routes in BGP RIB (Juniper-like redistribution)
       assert _mainRibDelta.isEmpty();
       _mainRibDelta = mainRibDelta;
-    }
-
-    // newer redistribution model:
-    assert !_exportFromBgpRib || _process.getRedistributionPolicy() != null;
-    if (_process.getRedistributionPolicy() != null) {
+    } else {
       // Place redistributed routes into our RIB
       Optional<RoutingPolicy> policy = _policies.get(_process.getRedistributionPolicy());
       if (!policy.isPresent()) {
@@ -572,24 +556,25 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             _process.getRedistributionPolicy());
         return;
       }
-      RibDelta.Builder<Bgpv4Route> deltaBuilder =
-          _exportFromBgpRib ? _bgpv4DeltaBuilder : _localDeltaBuilder;
       mainRibDelta
           .getActions()
-          .map(a -> redistributeRouteToLocalRib(a, policy.get()))
-          .forEach(deltaBuilder::from);
+          .map(a -> redistributeRouteToBgpRib(a, policy.get()))
+          .forEach(_bgpv4DeltaBuilder::from);
       if (LOGGER.isDebugEnabled()) {
         LOGGER.debug(
             "Redistributed into local BGP RIB node {}, VRF {}: {}",
             _hostname,
             _vrfName,
-            deltaBuilder.build());
+            _bgpv4DeltaBuilder.build());
       }
     }
   }
 
-  /** Convert a main RIB route to a BGP route and run them through the provided policy */
-  private RibDelta<Bgpv4Route> redistributeRouteToLocalRib(
+  /**
+   * Convert the advertised main RIB route to a BGP route and run it through the provided policy. If
+   * it passes, apply the advertisement to the BGP RIB (i.e. merge or withdraw the route).
+   */
+  private RibDelta<Bgpv4Route> redistributeRouteToBgpRib(
       RouteAdvertisement<? extends AnnotatedRoute<AbstractRoute>> routeAdv, RoutingPolicy policy) {
     AbstractRouteDecorator route = routeAdv.getRoute();
     if (route.getAbstractRoute() instanceof BgpRoute<?, ?>) {
@@ -611,11 +596,10 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       return RibDelta.empty();
     }
     Bgpv4Route builtBgpRoute = bgpBuilder.build();
-    Bgpv4Rib localRib = _exportFromBgpRib ? _bgpv4Rib : _localBgpv4Rib;
     if (routeAdv.isWithdrawn()) {
-      return localRib.removeRouteGetDelta(builtBgpRoute);
+      return _bgpv4Rib.removeRouteGetDelta(builtBgpRoute);
     } else {
-      return localRib.mergeRouteGetDelta(builtBgpRoute);
+      return _bgpv4Rib.mergeRouteGetDelta(builtBgpRoute);
     }
   }
 
@@ -632,10 +616,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         || !_bgpv4DeltaPrev.isEmpty()
         || !_bgpv4DeltaPrevBestPath.isEmpty()
         || !_mainRibDelta.isEmpty()
-        || !_localDeltaPrev.isEmpty()
         // Delta builders
         || !_bgpv4DeltaBuilder.isEmpty()
-        || !_localDeltaBuilder.isEmpty()
         || !_evpnDeltaBuilder.isEmpty()
         // Initialization state
         || !_evpnInitializationDelta.isEmpty();
@@ -2058,9 +2040,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     // sessions.
     _bgpv4DeltaPrev = _bgpv4DeltaBuilder.build();
     _ebgpv4DeltaPrev = _ebgpv4DeltaBuilder.build();
-    // Take a snapshot of local deltas to determine which routes to leak on routers that do not
-    // export from BGP RIB.
-    _localDeltaPrev = _localDeltaBuilder.build();
     // Take a snapshot of best paths from the end of last round so we can tell what WITHDRAWs
     // can be sent to neighbors: those that correspond to prior valid best paths.
     _bgpv4DeltaPrevBestPath = getDeltaPrevBestPath(_bgpv4DeltaPrev, _bgpv4Rib, _bgpv4PrevBestPath);
@@ -2070,7 +2049,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     // Delete all the internal state for this round that is no longer needed
     _bgpv4DeltaBuilder = RibDelta.builder();
     _ebgpv4DeltaBuilder = RibDelta.builder();
-    _localDeltaBuilder = RibDelta.builder();
   }
 
   /** Get BGP RIB previous best path delta from the rib and the previous best path routes. */
@@ -2163,9 +2141,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    * locally-generated and received routes.
    */
   Stream<RouteAdvertisement<Bgpv4Route>> getRoutesToLeak() {
-    return Stream.concat(
-        _localDeltaPrev.getActions(),
-        _bgpv4DeltaPrev.getActions().filter(r -> !_importedFromOtherVrfs.contains(r.getRoute())));
+    return _bgpv4DeltaPrev.getActions().filter(r -> !_importedFromOtherVrfs.contains(r.getRoute()));
   }
 
   /**
@@ -2193,11 +2169,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   /** Return a set of all bgpv4 bestpath routes */
   public Set<Bgpv4Route> getBestPathRoutes() {
     return _bgpv4Rib.getBestPathRoutes();
-  }
-
-  @VisibleForTesting
-  Set<Bgpv4Route> getV4LocalRoutes() {
-    return _localBgpv4Rib.getTypedRoutes();
   }
 
   @Nonnull

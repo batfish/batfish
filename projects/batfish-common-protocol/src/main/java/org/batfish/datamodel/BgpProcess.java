@@ -472,12 +472,11 @@ public class BgpProcess implements Serializable {
   }
 
   /**
-   * Name of the redistribution policy for this process. If {@code null}, indicates that no
-   * redistribution should be performed.
+   * Name of the redistribution policy for this process. This policy is expected to be set only on
+   * vendors that export BGP from their BGP RIBs (Cisco-like behavior).
    *
-   * <p><b>NOTE:</b> We are in a transition period where this property is used <b>only</b> to enable
-   * VRF leaking (primarily on Cisco IOS devices). This policy does not have any effect (yet) on the
-   * routes advertised to BGP neighbors.
+   * <p>If {@code null}, indicates that redistributed routes should not be added to the BGP RIB. In
+   * this case, any redistribution should be implemented directly in export policies.
    */
   @JsonProperty(PROP_REDISTRIBUTION_POLICY)
   @Nullable
