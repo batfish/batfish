@@ -19,6 +19,8 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -383,7 +385,7 @@ public final class IpOwners {
           assert vrid != null;
           Set<Interface> candidates = ipSpaceByCandidate.keySet();
 
-          Set<Set<Interface>> candidatePartitions =
+          List<List<Interface>> candidatePartitions =
               partitionVrrpCandidates(candidates, l3Adjacencies);
 
           candidatePartitions.forEach(
@@ -416,9 +418,9 @@ public final class IpOwners {
    * broadcast domain. This disambiguates VRRP groups that have the same IP and group ID
    */
   @VisibleForTesting
-  static Set<Set<Interface>> partitionVrrpCandidates(
+  static List<List<Interface>> partitionVrrpCandidates(
       Set<Interface> candidates, L3Adjacencies l3Adjacencies) {
-    Map<NodeInterfacePair, Set<Interface>> partitions = new HashMap<>();
+    Map<NodeInterfacePair, List<Interface>> partitions = new HashMap<>();
     for (Interface c : candidates) {
       boolean foundRepresentative = false;
       NodeInterfacePair cni = NodeInterfacePair.of(c);
@@ -430,11 +432,11 @@ public final class IpOwners {
         }
       }
       if (!foundRepresentative) {
-        partitions.put(cni, new HashSet<>());
+        partitions.put(cni, new LinkedList<>());
         partitions.get(cni).add(c);
       }
     }
-    return ImmutableSet.copyOf(partitions.values());
+    return ImmutableList.copyOf(partitions.values());
   }
 
   /**

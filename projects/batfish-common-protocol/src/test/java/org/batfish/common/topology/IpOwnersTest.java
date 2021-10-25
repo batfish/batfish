@@ -1,5 +1,6 @@
 package org.batfish.common.topology;
 
+import static java.util.Collections.newSetFromMap;
 import static org.batfish.common.topology.IpOwners.computeHsrpPriority;
 import static org.batfish.common.topology.IpOwners.computeInterfaceHostSubnetIps;
 import static org.batfish.common.topology.IpOwners.computeInterfaceOwners;
@@ -16,6 +17,8 @@ import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
@@ -29,6 +32,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Table;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -557,39 +561,57 @@ public class IpOwnersTest {
             .setHostname("c")
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
             .build();
+    Configuration c2 =
+        Configuration.builder()
+            .setHostname("c2")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
     Interface i1 = Interface.builder().setName("i1").setOwner(c).build();
-    Interface i2 = Interface.builder().setName("i2").setOwner(c).build();
+    // using same name on purpose
+    Interface i2 = Interface.builder().setName("i1").setOwner(c2).build();
 
     // common case of two interfaces in the same broadcast domain
+    Set<Interface> sameDomain = newSetFromMap(new IdentityHashMap<>());
+    sameDomain.add(i1);
+    sameDomain.add(i2);
     assertThat(
         partitionVrrpCandidates(
-            ImmutableSet.of(i1, i2),
+            sameDomain,
             new MockL3Adjacencies(
                 ImmutableMap.of(NodeInterfacePair.of(i1), NodeInterfacePair.of(i2)))),
-        equalTo(ImmutableSet.of(ImmutableSet.of(i1, i2))));
+        contains(containsInAnyOrder(i1, i2)));
 
     Interface i3 = Interface.builder().setName("i3").setOwner(c).build();
     Interface i4 = Interface.builder().setName("i4").setOwner(c).build();
 
     // two groups of two
+    Set<Interface> twoGroupsOfTwo = newSetFromMap(new IdentityHashMap<>());
+    twoGroupsOfTwo.add(i1);
+    twoGroupsOfTwo.add(i2);
+    twoGroupsOfTwo.add(i3);
+    twoGroupsOfTwo.add(i4);
     assertThat(
         partitionVrrpCandidates(
-            ImmutableSet.of(i1, i2, i3, i4),
+            twoGroupsOfTwo,
             new MockL3Adjacencies(
                 ImmutableMap.of(
                     NodeInterfacePair.of(i1),
                     NodeInterfacePair.of(i2),
                     NodeInterfacePair.of(i3),
                     NodeInterfacePair.of(i4)))),
-        equalTo(ImmutableSet.of(ImmutableSet.of(i1, i2), ImmutableSet.of(i3, i4))));
+        containsInAnyOrder(containsInAnyOrder(i1, i2), containsInAnyOrder(i3, i4)));
 
     // one interface flying solo
+    Set<Interface> oneSolo = newSetFromMap(new IdentityHashMap<>());
+    oneSolo.add(i1);
+    oneSolo.add(i2);
+    oneSolo.add(i3);
     assertThat(
         partitionVrrpCandidates(
-            ImmutableSet.of(i1, i2, i3),
+            oneSolo,
             new MockL3Adjacencies(
                 ImmutableMap.of(NodeInterfacePair.of(i1), NodeInterfacePair.of(i2)))),
-        equalTo(ImmutableSet.of(ImmutableSet.of(i1, i2), ImmutableSet.of(i3))));
+        containsInAnyOrder(containsInAnyOrder(i1, i2), containsInAnyOrder(i3)));
   }
 
   @Test
