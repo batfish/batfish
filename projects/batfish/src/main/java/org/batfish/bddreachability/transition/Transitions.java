@@ -257,18 +257,17 @@ public final class Transitions {
   }
 
   public static Transition or(Transition... transitions) {
-    Iterator<Transition> flatUniqueTransitions =
+    Iterator<Transition> flatTransitions =
         Stream.of(transitions)
             .flatMap(t -> t instanceof Or ? ((Or) t).getTransitions().stream() : Stream.of(t))
-            .distinct()
             .iterator();
     boolean foundIdentity = false;
     List<Transition> disjuncts = new ArrayList<>();
     List<Constraint> constraints = null;
     List<EraseAndSet> eraseAndSets = null;
 
-    while (flatUniqueTransitions.hasNext()) {
-      Transition t = flatUniqueTransitions.next();
+    while (flatTransitions.hasNext()) {
+      Transition t = flatTransitions.next();
 
       if (t == IDENTITY) {
         foundIdentity = true;
