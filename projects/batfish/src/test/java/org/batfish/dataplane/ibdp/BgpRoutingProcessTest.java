@@ -525,12 +525,12 @@ public class BgpRoutingProcessTest {
         RibDelta.adding(
             new AnnotatedRoute<>(
                 StaticRoute.testBuilder().setNetwork(Prefix.ZERO).build(), _vrf.getName())));
-    assertThat(_routingProcess.getV4LocalRoutes(), empty());
+    assertThat(_routingProcess.getV4Routes(), empty());
   }
 
   /**
-   * Check that redistribution affects the local RIB if the redistribution policy is defined and
-   * allows the route.
+   * Check that redistribution affects the RIB if the redistribution policy is defined and allows
+   * the route.
    */
   @Test
   public void testRedistributionWithPolicy() {
@@ -545,6 +545,8 @@ public class BgpRoutingProcessTest {
                     ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
                     ImmutableList.of(Statements.ExitReject.toStaticStatement())))
             .build();
+    // If BGP has a redistribution policy, config must export from BGP RIB
+    _c.setExportBgpFromBgpRib(true);
     _bgpProcess.setRedistributionPolicy(policy.getName());
     // re-init routing process after modifying configuration.
     _routingProcess =
@@ -558,7 +560,7 @@ public class BgpRoutingProcessTest {
         RibDelta.adding(
             new AnnotatedRoute<>(
                 StaticRoute.testBuilder().setNetwork(prefix).build(), _vrf.getName())));
-    assertThat(_routingProcess.getV4LocalRoutes(), empty());
+    assertThat(_routingProcess.getV4Routes(), empty());
 
     // Fake up end of round before other test
     _routingProcess.endOfRound();
@@ -573,7 +575,7 @@ public class BgpRoutingProcessTest {
                     .build(),
                 _vrf.getName())));
     assertThat(
-        _routingProcess.getV4LocalRoutes(),
+        _routingProcess.getV4Routes(),
         contains(
             isBgpv4RouteThat(
                 allOf(
