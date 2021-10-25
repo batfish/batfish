@@ -250,7 +250,7 @@ public final class BidirectionalReachabilityAnalysis {
             Entry::getKey,
             entry ->
                 new TransformationToTransition(
-                    _bddPacket, _factory.ipAccessListToBdd(entry.getValue())));
+                    _bddPacket, _factory.ipAccessListToBddForNode(entry.getValue())));
 
     BDDReverseFlowTransformationFactory reverseFlowTransformationFactory =
         new BDDReverseFlowTransformationFactoryImpl(_configs, transformationToTransitions);
