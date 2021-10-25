@@ -14,6 +14,7 @@ ssvs_definition
 :
    ssvs_disable
    | ssvs_enable
+   | ssvs_ha_group
    | ssvs_redistribution_flagged
    | ssvs_port
    | ssvs_stats_data_disable
@@ -25,6 +26,8 @@ ssvs_definition
 ssvs_disable: DISABLE NEWLINE;
 
 ssvs_enable: ENABLE NEWLINE;
+
+ssvs_ha_group: HA_GROUP id = ha_group_id NEWLINE;
 
 ssvs_redistribution_flagged: REDISTRIBUTION_FLAGGED NEWLINE;
 

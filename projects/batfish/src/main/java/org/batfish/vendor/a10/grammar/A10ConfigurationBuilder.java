@@ -12,6 +12,7 @@ import static org.batfish.vendor.a10.representation.A10StructureType.SERVICE_GRO
 import static org.batfish.vendor.a10.representation.A10StructureType.VIRTUAL_SERVER;
 import static org.batfish.vendor.a10.representation.A10StructureType.VRRP_A_FAIL_OVER_POLICY_TEMPLATE;
 import static org.batfish.vendor.a10.representation.A10StructureType.VRRP_A_VRID;
+import static org.batfish.vendor.a10.representation.A10StructureUsage.HA_INTERFACE;
 import static org.batfish.vendor.a10.representation.A10StructureUsage.IP_NAT_POOL_VRID;
 import static org.batfish.vendor.a10.representation.A10StructureUsage.SERVER_HEALTH_CHECK;
 import static org.batfish.vendor.a10.representation.A10StructureUsage.SERVER_PORT_HEALTH_CHECK;
@@ -59,9 +60,20 @@ import org.batfish.vendor.a10.grammar.A10Parser.A10_configurationContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Ethernet_numberContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Ethernet_or_trunk_referenceContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Fail_over_policy_template_nameContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Fip_optionContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Ha_groupContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Ha_idContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Ha_id_numberContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Ha_interfaceContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Ha_preemption_enableContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Ha_priority_numberContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Ha_set_id_numberContext;
 import org.batfish.vendor.a10.grammar.A10Parser.HostnameContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Non_default_vridContext;
+import org.batfish.vendor.a10.grammar.A10Parser.S_floating_ipContext;
 import org.batfish.vendor.a10.grammar.A10Parser.S_hostnameContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Snha_preemption_enableContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Ssvs_ha_groupContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Trunk_numberContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Uint8Context;
 import org.batfish.vendor.a10.grammar.A10Parser.VridContext;
@@ -92,6 +104,8 @@ import org.batfish.vendor.a10.representation.BgpNeighborIdAddress;
 import org.batfish.vendor.a10.representation.BgpNeighborUpdateSource;
 import org.batfish.vendor.a10.representation.BgpNeighborUpdateSourceAddress;
 import org.batfish.vendor.a10.representation.BgpProcess;
+import org.batfish.vendor.a10.representation.FloatingIp;
+import org.batfish.vendor.a10.representation.Ha;
 import org.batfish.vendor.a10.representation.Interface;
 import org.batfish.vendor.a10.representation.Interface.Type;
 import org.batfish.vendor.a10.representation.InterfaceLldp;
@@ -1438,6 +1452,88 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   }
 
   @Override
+  public void exitHa_group(Ha_groupContext ctx) {
+    Optional<Integer> maybeId = toInteger(ctx, ctx.id);
+    Optional<Integer> maybePriority = toInteger(ctx, ctx.priority);
+    if (!maybeId.isPresent() || !maybePriority.isPresent()) {
+      // already warned
+      return;
+    }
+    _c.getOrCreateHa().getOrCreateHaGroup(maybeId.get()).setPriority(maybePriority.get());
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Ha_priority_numberContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx.uint8(), HA_PRIORITY_RANGE, "ha priority");
+  }
+
+  @Override
+  public void exitHa_id(Ha_idContext ctx) {
+    Optional<Integer> maybeId = toInteger(ctx, ctx.id);
+    Optional<Integer> maybeSetId = toInteger(ctx, ctx.set_id);
+    if (!maybeId.isPresent() || !maybeSetId.isPresent()) {
+      // already warned
+      return;
+    }
+    Ha ha = _c.getOrCreateHa();
+    ha.setId(maybeId.get());
+    ha.setSetId(maybeSetId.get());
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Ha_set_id_numberContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx.uint8(), HA_SET_ID_RANGE, "ha set-id");
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Ha_id_numberContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx.uint8(), HA_ID_RANGE, "ha id");
+  }
+
+  @Override
+  public void exitHa_interface(Ha_interfaceContext ctx) {
+    Optional<InterfaceReference> maybeRef = toInterfaceReference(ctx, ctx.ref);
+    if (!maybeRef.isPresent()) {
+      return;
+    }
+    InterfaceReference ref = maybeRef.get();
+    _c.getOrCreateHa();
+    _c.referenceStructure(INTERFACE, getInterfaceName(ref), HA_INTERFACE, ctx.getStart().getLine());
+  }
+
+  @Override
+  public void exitHa_preemption_enable(Ha_preemption_enableContext ctx) {
+    _c.getOrCreateHa().setPreemptionEnable(true);
+  }
+
+  @Override
+  public void exitSnha_preemption_enable(Snha_preemption_enableContext ctx) {
+    _c.getOrCreateHa().setPreemptionEnable(false);
+  }
+
+  @Override
+  public void exitS_floating_ip(S_floating_ipContext ctx) {
+    Integer haGroupId = null;
+    for (Fip_optionContext optionCtx : ctx.fip_option()) {
+      assert optionCtx.fipo_ha_group() != null;
+      Optional<Integer> maybeHaGroupId = toInteger(ctx, optionCtx.fipo_ha_group().id);
+      if (!maybeHaGroupId.isPresent()) {
+        // already warned
+        return;
+      }
+      haGroupId = maybeHaGroupId.get();
+    }
+    FloatingIp floatingIp = new FloatingIp();
+    floatingIp.setHaGroup(haGroupId);
+    _c.getV2FloatingIps().put(toIp(ctx.ip), floatingIp);
+  }
+
+  @Override
+  public void exitSsvs_ha_group(Ssvs_ha_groupContext ctx) {
+    toInteger(ctx, ctx.id).ifPresent(_currentVirtualServer::setHaGroup);
+  }
+
+  @Override
   public void exitStd_name(A10Parser.Std_nameContext ctx) {
     toString(ctx, ctx.name).ifPresent(n -> _currentTrunk.setName(n));
   }
@@ -2360,6 +2456,9 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   private static final IntegerSpace FAIL_OVER_POLICY_TEMPLATE_NAME_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 63));
   private static final IntegerSpace HA_GROUP_ID_RANGE = IntegerSpace.of(Range.closed(1, 31));
+  private static final IntegerSpace HA_ID_RANGE = IntegerSpace.of(Range.closed(1, 2));
+  private static final IntegerSpace HA_PRIORITY_RANGE = IntegerSpace.of(Range.closed(1, 255));
+  private static final IntegerSpace HA_SET_ID_RANGE = IntegerSpace.of(Range.closed(1, 7));
   private static final IntegerSpace HEALTH_CHECK_NAME_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 63));
   private static final IntegerSpace INTERFACE_MTU_RANGE = IntegerSpace.of(Range.closed(434, 1500));

@@ -160,10 +160,15 @@ vrrpavib_fail_over_policy_template
   FAIL_OVER_POLICY_TEMPLATE name = fail_over_policy_template_name NEWLINE
 ;
 
-vrrpa_vrid_lead: VRID_LEAD name = vrid_lead_name NEWLINE;
+vrrpa_vrid_lead: VRID_LEAD name = vrid_lead_name NEWLINE vrrpavl*;
 
 vrid_lead_name
 :
   // 1-63 chars
   word
 ;
+
+vrrpavl: vrrpavl_partition;
+
+vrrpavl_partition: PARTITION name = partition_name VRID (DEFAULT | vrid) NEWLINE;
+

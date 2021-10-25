@@ -27,6 +27,8 @@ interface_name_str: word;
 
 nat_pool_name: word;
 
+partition_name: word;
+
 route_description: word;
 
 service_group_name: word;

@@ -15,6 +15,14 @@ public final class VirtualServer implements Serializable {
     return _enable;
   }
 
+  public @Nullable Integer getHaGroup() {
+    return _haGroup;
+  }
+
+  public void setHaGroup(@Nullable Integer haGroup) {
+    _haGroup = haGroup;
+  }
+
   @Nonnull
   public String getName() {
     return _name;
@@ -76,6 +84,7 @@ public final class VirtualServer implements Serializable {
   }
 
   @Nullable private Boolean _enable;
+  private @Nullable Integer _haGroup;
   @Nonnull private final String _name;
   @Nonnull private final Map<VirtualServerPort.PortAndType, VirtualServerPort> _ports;
   @Nullable private Boolean _redistributionFlagged;
