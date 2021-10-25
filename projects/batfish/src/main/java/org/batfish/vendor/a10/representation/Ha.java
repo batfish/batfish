@@ -5,12 +5,21 @@ import java.io.Serializable;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.Ip;
 
 /** ACOSv2 {@code ha} (high-availability) configuration. */
 public final class Ha implements Serializable {
 
   public Ha() {
     _groups = ImmutableMap.of();
+  }
+
+  public @Nullable Ip getConnMirror() {
+    return _connMirror;
+  }
+
+  public void setConnMirror(@Nullable Ip connMirror) {
+    _connMirror = connMirror;
   }
 
   public @Nonnull Map<Integer, HaGroup> getGroups() {
@@ -55,6 +64,7 @@ public final class Ha implements Serializable {
     _setId = setId;
   }
 
+  private @Nullable Ip _connMirror;
   private @Nonnull Map<Integer, HaGroup> _groups;
   private @Nullable Integer _id;
   private @Nullable Boolean _preemptionEnable;

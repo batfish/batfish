@@ -1969,6 +1969,7 @@ public class A10GrammarTest {
     assertThat(ha.getId(), equalTo(1));
     assertThat(ha.getSetId(), equalTo(2));
     assertThat(ha.getPreemptionEnable(), equalTo(Boolean.FALSE));
+    assertThat(ha.getConnMirror(), equalTo(Ip.parse("10.0.1.1")));
 
     assertThat(ha.getGroups(), hasKeys(1));
     HaGroup haGroup = ha.getGroups().get(1);
