@@ -2040,8 +2040,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     // sessions.
     _bgpv4DeltaPrev = _bgpv4DeltaBuilder.build();
     _ebgpv4DeltaPrev = _ebgpv4DeltaBuilder.build();
-    // Take a snapshot of local deltas to determine which routes to leak on routers that do not
-    // export from BGP RIB.
     // Take a snapshot of best paths from the end of last round so we can tell what WITHDRAWs
     // can be sent to neighbors: those that correspond to prior valid best paths.
     _bgpv4DeltaPrevBestPath = getDeltaPrevBestPath(_bgpv4DeltaPrev, _bgpv4Rib, _bgpv4PrevBestPath);
