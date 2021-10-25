@@ -8,7 +8,6 @@ import static org.batfish.bddreachability.transition.Transitions.compose;
 import static org.batfish.bddreachability.transition.Transitions.constraint;
 import static org.batfish.bddreachability.transition.Transitions.eraseAndSet;
 import static org.batfish.bddreachability.transition.Transitions.mergeComposed;
-import static org.batfish.bddreachability.transition.Transitions.mergeDisjuncts;
 import static org.batfish.bddreachability.transition.Transitions.or;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -23,7 +22,6 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
-import java.util.Collection;
 import java.util.List;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDFiniteDomain;
@@ -395,36 +393,32 @@ public class TransitionsTest {
   }
 
   @Test
-  public void testMergeDisjunctsTo1() {
+  public void testOrConstraints() {
     BDD v0 = var(0);
     BDD v1 = var(1);
     BDD v2 = var(2);
     BDD v3 = var(3);
-    Collection<Transition> actual =
-        mergeDisjuncts(
-            ImmutableList.of(
-                constraint(v0), constraint(v1),
-                constraint(v2), constraint(v3)));
-    assertThat(actual, containsInAnyOrder(constraint(BDDOps.orNull(v0, v1, v2, v3))));
+    Transition actual = or(constraint(v0), constraint(v1), constraint(v2), constraint(v3));
+    assertThat(actual, equalTo(constraint(BDDOps.orNull(v0, v1, v2, v3))));
   }
 
   @Test
-  public void testMergeDisjuncts() {
+  public void testOr() {
     BDD v0 = var(0);
     BDD v1 = var(1);
-    Collection<Transition> actual =
-        mergeDisjuncts(
-            ImmutableList.of(
-                // constraints get merged
-                constraint(v0), constraint(v1),
+    Transition actual =
+        or(
+            // constraints get merged
+            constraint(v0), constraint(v1),
 
-                // EraseAndSets with v0 get merged
-                eraseAndSet(v0, v0), eraseAndSet(v0, v1),
+            // EraseAndSets with v0 get merged
+            eraseAndSet(v0, v0), eraseAndSet(v0, v1),
 
-                // EraseAndSets with v1 get merged
-                eraseAndSet(v1, v0), eraseAndSet(v1, v1)));
+            // EraseAndSets with v1 get merged
+            eraseAndSet(v1, v0), eraseAndSet(v1, v1));
+    assertThat(actual, instanceOf(Or.class));
     assertThat(
-        actual,
+        ((Or) actual).getTransitions(),
         containsInAnyOrder(
             constraint(v0.or(v1)), eraseAndSet(v0, v0.or(v1)), eraseAndSet(v1, v0.or(v1))));
   }
