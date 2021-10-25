@@ -10,7 +10,6 @@ import static org.batfish.bddreachability.transition.Transitions.eraseAndSet;
 import static org.batfish.bddreachability.transition.Transitions.mergeComposed;
 import static org.batfish.bddreachability.transition.Transitions.mergeDisjuncts;
 import static org.batfish.bddreachability.transition.Transitions.or;
-import static org.batfish.bddreachability.transition.Transitions.tryMergeDisjuncts;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
@@ -360,39 +359,39 @@ public class TransitionsTest {
   }
 
   @Test
-  public void testTryMergeDisjuncts_Identity_Constraint() {
-    assertEquals(IDENTITY, tryMergeDisjuncts(IDENTITY, constraint(var(0))));
+  public void testOr_Identity_Constraint() {
+    assertEquals(IDENTITY, or(IDENTITY, constraint(var(0))));
   }
 
   @Test
-  public void testTryMergeDisjuncts_Constraint_Identity() {
-    assertEquals(IDENTITY, tryMergeDisjuncts(constraint(var(0)), IDENTITY));
+  public void testOr_Constraint_Identity() {
+    assertEquals(IDENTITY, or(constraint(var(0)), IDENTITY));
   }
 
   @Test
-  public void testTryMergeDisjuncts_Constraint_Constraint() {
+  public void testOr_Constraint_Constraint() {
     BDD v0 = var(0);
     BDD v1 = var(1);
-    assertEquals(constraint(v0.or(v1)), tryMergeDisjuncts(constraint(v0), constraint(v1)));
+    assertEquals(constraint(v0.or(v1)), or(constraint(v0), constraint(v1)));
   }
 
   @Test
-  public void testTryMergeDisjuncts_EraseAndSet_EraseAndSet_SameVars() {
+  public void testOr_EraseAndSet_EraseAndSet_SameVars() {
     BDD v0 = var(0);
     BDD v1 = var(1);
     BDD vars = v0.and(v1);
     EraseAndSet t1 = new EraseAndSet(vars, v0);
     EraseAndSet t2 = new EraseAndSet(vars, v1);
-    assertEquals(new EraseAndSet(vars, v0.or(v1)), tryMergeDisjuncts(t1, t2));
+    assertEquals(new EraseAndSet(vars, v0.or(v1)), or(t1, t2));
   }
 
   @Test
-  public void testTryMergeDisjuncts_EraseAndSet_EraseAndSet_DiffVars() {
+  public void testOr_EraseAndSet_EraseAndSet_DiffVars() {
     BDD v0 = var(0);
     BDD v1 = var(1);
     EraseAndSet t1 = new EraseAndSet(v0, v0);
     EraseAndSet t2 = new EraseAndSet(v1, v1);
-    assertNull(tryMergeDisjuncts(t1, t2));
+    assertEquals(new Or(ImmutableList.of(t1, t2)), or(t1, t2));
   }
 
   @Test

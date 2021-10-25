@@ -332,39 +332,6 @@ public final class Transitions {
     return result;
   }
 
-  @VisibleForTesting
-  static Transition tryMergeDisjuncts(Transition t1, Transition t2) {
-    if (t1 == IDENTITY && t2 instanceof Constraint) {
-      return t1;
-    }
-    if (t1 instanceof Constraint && t2 == IDENTITY) {
-      return t2;
-    }
-    if (t1 instanceof Constraint && t2 instanceof Constraint) {
-      Constraint c1 = (Constraint) t1;
-      Constraint c2 = (Constraint) t2;
-      return constraint(c1.getConstraint().or(c2.getConstraint()));
-    }
-    if (t1 instanceof EraseAndSet && t2 instanceof EraseAndSet) {
-      EraseAndSet eas1 = (EraseAndSet) t1;
-      EraseAndSet eas2 = (EraseAndSet) t2;
-
-      BDD vars1 = eas1.getEraseVars();
-      BDD vars2 = eas2.getEraseVars();
-
-      BDD val1 = eas1.getSetValue();
-      BDD val2 = eas2.getSetValue();
-
-      if (vars1.equals(vars2)) {
-        return eraseAndSet(vars1, val1.or(val2));
-      }
-
-      // fall through
-    }
-    // couldn't merge
-    return null;
-  }
-
   public static Transition or(Transition... transitions) {
     Stream<Transition> flatUniqueTransitions =
         Stream.of(transitions)
