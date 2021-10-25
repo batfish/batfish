@@ -311,13 +311,13 @@ public final class Transitions {
     return new Or(disjuncts);
   }
 
-  private static Constraint orConstraints(List<Constraint> constraints) {
+  private static Transition orConstraints(List<Constraint> constraints) {
     checkArgument(!constraints.isEmpty(), "orConstraints: constraints must be non-empty");
     if (constraints.size() == 1) {
       return constraints.get(0);
     } else {
       BDDFactory bddFactory = constraints.get(0).getConstraint().getFactory();
-      return new Constraint(
+      return constraint(
           bddFactory.orAll(
               constraints.stream().map(Constraint::getConstraint).collect(Collectors.toList())));
     }
