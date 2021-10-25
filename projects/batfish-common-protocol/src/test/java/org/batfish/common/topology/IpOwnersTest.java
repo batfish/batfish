@@ -561,9 +561,14 @@ public class IpOwnersTest {
             .setHostname("c")
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
             .build();
+    Configuration c2 =
+        Configuration.builder()
+            .setHostname("c2")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
     Interface i1 = Interface.builder().setName("i1").setOwner(c).build();
     // using same name on purpose
-    Interface i2 = Interface.builder().setName("i1").setOwner(c).build();
+    Interface i2 = Interface.builder().setName("i1").setOwner(c2).build();
 
     // common case of two interfaces in the same broadcast domain
     Set<Interface> sameDomain = newSetFromMap(new IdentityHashMap<>());
