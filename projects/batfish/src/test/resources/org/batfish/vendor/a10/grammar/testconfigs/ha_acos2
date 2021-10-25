@@ -28,7 +28,7 @@ ha id 1 set-id 2
 ha arp-retry 4
 ha group 1 priority 200
 ha check gateway 10.0.0.1
-ha conn-mirror ip 10.0.1.1
+ha conn-mirror ip 10.0.5.2
 ha interface ethernet 3 both vlan 4094
 ha interface ethernet 3 router-interface no-heartbeat
 no ha preemption-enable

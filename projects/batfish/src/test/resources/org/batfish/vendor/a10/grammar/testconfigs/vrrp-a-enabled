@@ -12,6 +12,10 @@ vrrp-a vrid 1
   floating-ip 3.0.0.1
 !
 
+vrrp-a peer-group
+  peer 10.0.1.2
+!
+
 interface ethernet 1
   mtu 1500
   enable

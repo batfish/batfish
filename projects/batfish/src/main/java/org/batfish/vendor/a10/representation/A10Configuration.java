@@ -20,6 +20,7 @@ import static org.batfish.vendor.a10.representation.A10Conversion.getVirtualServ
 import static org.batfish.vendor.a10.representation.A10Conversion.getVirtualServerIpsByHaGroup;
 import static org.batfish.vendor.a10.representation.A10Conversion.getVirtualServerIpsForAllVrids;
 import static org.batfish.vendor.a10.representation.A10Conversion.getVirtualServerKernelRoutes;
+import static org.batfish.vendor.a10.representation.A10Conversion.haAppliesToInterface;
 import static org.batfish.vendor.a10.representation.A10Conversion.isVrrpAEnabled;
 import static org.batfish.vendor.a10.representation.A10Conversion.orElseChain;
 import static org.batfish.vendor.a10.representation.A10Conversion.toDstTransformationSteps;
@@ -27,6 +28,7 @@ import static org.batfish.vendor.a10.representation.A10Conversion.toMatchConditi
 import static org.batfish.vendor.a10.representation.A10Conversion.toSnatTransformationStep;
 import static org.batfish.vendor.a10.representation.A10Conversion.toVrrpGroupBuilder;
 import static org.batfish.vendor.a10.representation.A10Conversion.toVrrpGroups;
+import static org.batfish.vendor.a10.representation.A10Conversion.vrrpAEnabledAppliesToInterface;
 import static org.batfish.vendor.a10.representation.Interface.DEFAULT_MTU;
 import static org.batfish.vendor.a10.representation.StaticRoute.DEFAULT_STATIC_ROUTE_DISTANCE;
 
@@ -413,7 +415,7 @@ public final class A10Configuration extends VendorConfiguration {
                     virtualAddress -> virtualAddress,
                     unused -> connectedRouteMetadata));
     _c.getAllInterfaces().values().stream()
-        .filter(A10Conversion::vrrpAppliesToInterface)
+        .filter(A10Conversion::vrrpADisabledAppliesToInterface)
         .forEach(
             iface -> {
               iface.setAllAddresses(
@@ -436,11 +438,19 @@ public final class A10Configuration extends VendorConfiguration {
    */
   private void convertVrrpAEnabled() {
     // Overview:
+    // - Add a VrrpGroup for each enabled vrid on each L3 interface owning a subnet containing
+    //   any vrrp-a peer-group ip
+    //   - abort if no peer-group ips are set
     // - Add a VrrpGroup for each enabled vrid on all L3 interfaces with a primary
     //   ConcreteInterfaceAddress.
     // - Each created VrrpGroup contains all the virtual addresses the device should own when it is
     //   master for the corresponding vrid.
     assert _vrrpA != null;
+    Set<Ip> peerIps = _vrrpA.getPeerGroup();
+    if (peerIps.isEmpty()) {
+      _w.redFlag("Batfish does not support vrrp-a without at least one peer-group peer-ip");
+      return;
+    }
     // vrid -> virtual addresses
     ImmutableSetMultimap.Builder<Integer, Ip> virtualAddressesByEnabledVridBuilder =
         ImmutableSetMultimap.builder();
@@ -473,7 +483,7 @@ public final class A10Configuration extends VendorConfiguration {
                     vrid, toVrrpGroupBuilder(_vrrpA.getVrids().get(vrid), virtualAddresses)));
     // Create and assign the final VRRP groups on each interface with a concrete IPv4 address.
     _c.getAllInterfaces().values().stream()
-        .filter(A10Conversion::vrrpAppliesToInterface)
+        .filter(i -> vrrpAEnabledAppliesToInterface(i, peerIps))
         .forEach(i -> i.setVrrpGroups(toVrrpGroups(i, vrrpGroupBuildersBuilder.build())));
   }
 
@@ -493,11 +503,17 @@ public final class A10Configuration extends VendorConfiguration {
    */
   private void convertHaEnabled() {
     // Overview:
-    // - Add a VrrpGroup for each enabled ha-group on all L3 interfaces with a primary
-    //   ConcreteInterfaceAddress.
+    // - Add a VrrpGroup for each enabled ha-group on the L3 interface owning subnet containing
+    //   conn-mirror ip
+    //   - abort if no conn-mirror ip is set
     // - Each created VrrpGroup contains all the virtual addresses the device should own when it is
     //   master for the corresponding vrid (using ha group id as vrid).
     assert _ha != null;
+    Ip connMirror = _ha.getConnMirror();
+    if (connMirror == null) {
+      _w.redFlag("Batfish does not support ha without explicit conn-mirror");
+      return;
+    }
     // ha group id -> virtual addresses
     ImmutableSetMultimap.Builder<Integer, Ip> virtualAddressesByEnabledHaGroupBuilder =
         ImmutableSetMultimap.builder();
@@ -527,7 +543,7 @@ public final class A10Configuration extends VendorConfiguration {
                     haGroupId, toVrrpGroupBuilder(haGroupId, _ha, virtualAddresses)));
     // Create and assign the final VRRP groups on each interface with a concrete IPv4 address.
     _c.getAllInterfaces().values().stream()
-        .filter(A10Conversion::vrrpAppliesToInterface)
+        .filter(i -> haAppliesToInterface(i, connMirror))
         .forEach(i -> i.setVrrpGroups(toVrrpGroups(i, vrrpGroupBuildersBuilder.build())));
   }
 

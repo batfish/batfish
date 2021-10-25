@@ -34,6 +34,7 @@ import static org.batfish.vendor.a10.representation.A10Conversion.createAndAttac
 import static org.batfish.vendor.a10.representation.A10Conversion.createBgpProcess;
 import static org.batfish.vendor.a10.representation.A10Conversion.getNatPoolIps;
 import static org.batfish.vendor.a10.representation.A10Conversion.getVirtualServerIps;
+import static org.batfish.vendor.a10.representation.A10Conversion.haAppliesToInterface;
 import static org.batfish.vendor.a10.representation.A10Conversion.toDstTransformationSteps;
 import static org.batfish.vendor.a10.representation.A10Conversion.toIntegerSpace;
 import static org.batfish.vendor.a10.representation.A10Conversion.toKernelRoute;
@@ -41,7 +42,8 @@ import static org.batfish.vendor.a10.representation.A10Conversion.toMatchConditi
 import static org.batfish.vendor.a10.representation.A10Conversion.toProtocol;
 import static org.batfish.vendor.a10.representation.A10Conversion.toVrrpGroupBuilder;
 import static org.batfish.vendor.a10.representation.A10Conversion.toVrrpGroups;
-import static org.batfish.vendor.a10.representation.A10Conversion.vrrpAppliesToInterface;
+import static org.batfish.vendor.a10.representation.A10Conversion.vrrpADisabledAppliesToInterface;
+import static org.batfish.vendor.a10.representation.A10Conversion.vrrpAEnabledAppliesToInterface;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -58,6 +60,7 @@ import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.BddTestbed;
@@ -324,33 +327,103 @@ public class A10ConversionTest {
   }
 
   @Test
-  public void testVrrpAAppliesToInterface() {
+  public void testVrrpADisabledAppliesToInterface() {
     org.batfish.datamodel.Interface.Builder ifaceBuilder =
         org.batfish.datamodel.Interface.builder().setName("placeholder");
     // No concrete address
     assertFalse(
-        vrrpAppliesToInterface(
+        vrrpADisabledAppliesToInterface(
             ifaceBuilder.setType(InterfaceType.PHYSICAL).setAddress(null).build()));
     // Loopback interface
     assertFalse(
-        vrrpAppliesToInterface(
+        vrrpADisabledAppliesToInterface(
             ifaceBuilder
                 .setType(InterfaceType.LOOPBACK)
                 .setAddress(ConcreteInterfaceAddress.parse("10.10.10.10/32"))
                 .build()));
 
     assertTrue(
-        vrrpAppliesToInterface(
+        vrrpADisabledAppliesToInterface(
             ifaceBuilder
                 .setType(InterfaceType.PHYSICAL)
                 .setAddress(ConcreteInterfaceAddress.parse("10.10.10.10/32"))
                 .build()));
     assertTrue(
-        vrrpAppliesToInterface(
+        vrrpADisabledAppliesToInterface(
             ifaceBuilder
                 .setType(InterfaceType.AGGREGATED)
                 .setAddress(ConcreteInterfaceAddress.parse("10.10.10.10/24"))
                 .build()));
+  }
+
+  @Test
+  public void testVrrpAEnabledAppliesToInterface() {
+    org.batfish.datamodel.Interface.Builder ifaceBuilder =
+        org.batfish.datamodel.Interface.builder().setName("placeholder");
+    Set<Ip> peerIps = ImmutableSet.of(Ip.parse("10.10.10.11"));
+    // No concrete address
+    assertFalse(
+        vrrpAEnabledAppliesToInterface(
+            ifaceBuilder.setType(InterfaceType.PHYSICAL).setAddress(null).build(), peerIps));
+    // Loopback interface
+    assertFalse(
+        vrrpAEnabledAppliesToInterface(
+            ifaceBuilder
+                .setType(InterfaceType.LOOPBACK)
+                .setAddress(ConcreteInterfaceAddress.parse("10.10.10.10/24"))
+                .build(),
+            peerIps));
+    // subnet does not contain a peerIp
+    assertFalse(
+        vrrpAEnabledAppliesToInterface(
+            ifaceBuilder
+                .setType(InterfaceType.AGGREGATED)
+                .setAddress(ConcreteInterfaceAddress.parse("10.10.10.10/32"))
+                .build(),
+            peerIps));
+
+    assertTrue(
+        vrrpAEnabledAppliesToInterface(
+            ifaceBuilder
+                .setType(InterfaceType.PHYSICAL)
+                .setAddress(ConcreteInterfaceAddress.parse("10.10.10.10/24"))
+                .build(),
+            peerIps));
+  }
+
+  @Test
+  public void testHaAppliesToInterface() {
+    org.batfish.datamodel.Interface.Builder ifaceBuilder =
+        org.batfish.datamodel.Interface.builder().setName("placeholder");
+    Ip connMirror = Ip.parse("10.10.10.11");
+    // No concrete address
+    assertFalse(
+        haAppliesToInterface(
+            ifaceBuilder.setType(InterfaceType.PHYSICAL).setAddress(null).build(), connMirror));
+    // Loopback interface
+    assertFalse(
+        haAppliesToInterface(
+            ifaceBuilder
+                .setType(InterfaceType.LOOPBACK)
+                .setAddress(ConcreteInterfaceAddress.parse("10.10.10.10/24"))
+                .build(),
+            connMirror));
+    // subnet does not contain a peerIp
+    assertFalse(
+        haAppliesToInterface(
+            ifaceBuilder
+                .setType(InterfaceType.AGGREGATED)
+                .setAddress(ConcreteInterfaceAddress.parse("10.10.10.10/32"))
+                .build(),
+            connMirror));
+
+    assertTrue(
+        haAppliesToInterface(
+            ifaceBuilder
+                .setType(InterfaceType.PHYSICAL)
+                .setAddress(ConcreteInterfaceAddress.parse("10.10.10.10/24"))
+                .build(),
+            connMirror));
   }
 
   @Test
