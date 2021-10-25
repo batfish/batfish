@@ -8,22 +8,24 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AbstractRouteDecorator;
-import org.batfish.dataplane.rib.AbstractRib;
+import org.batfish.datamodel.BgpRoute;
+import org.batfish.dataplane.rib.BgpRib;
 import org.batfish.dataplane.rib.RibDelta;
 
+/** Keeps track of BGP routes that depend on routes in the main RIB */
 @ParametersAreNonnullByDefault
-public final class RouteDependencyTracker<
-    R extends AbstractRouteDecorator, D extends AbstractRouteDecorator> {
+public final class BgpRouteDependencyTracker<
+    R extends BgpRoute<?, ?>, D extends AbstractRouteDecorator> {
 
   /** Map of routes to the set of routes they depend on */
-  @Nonnull private Map<D, Set<R>> _routeDependents;
+  @Nonnull private final Map<D, Set<R>> _routeDependents;
 
-  RouteDependencyTracker() {
+  BgpRouteDependencyTracker() {
     _routeDependents = new IdentityHashMap<>();
   }
 
   /**
-   * Add a dependency between two routes (e.g., an aggregate route can depend on one or more
+   * Add a dependency between two routes (e.g., a BGP aggregate route can depend on one or more
    * contributing routes)
    *
    * @param route the dependant route
@@ -44,7 +46,7 @@ public final class RouteDependencyTracker<
    * @return a {@link RibDelta} containing all removed dependencies
    */
   @Nonnull
-  RibDelta<R> deleteRoute(D route, AbstractRib<R> rib) {
+  RibDelta<R> deleteRoute(D route, BgpRib<R> rib) {
     Set<R> dependents = _routeDependents.get(route);
     if (dependents == null) {
       // Nothing to process

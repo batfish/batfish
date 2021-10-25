@@ -140,7 +140,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
   /** Route dependency tracker for BGP IPv4 aggregate routes */
   @Nonnull
-  RouteDependencyTracker<Bgpv4Route, AbstractRoute> _bgpAggDeps = new RouteDependencyTracker<>();
+  BgpRouteDependencyTracker<Bgpv4Route, AbstractRoute> _bgpAggDeps =
+      new BgpRouteDependencyTracker<>();
   /** All BGP neighbor that speaks IPv4 unicast address family that we know of */
   @Nonnull ImmutableSortedSet<EdgeId> _bgpv4Edges;
   /**
