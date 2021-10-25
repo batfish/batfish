@@ -292,6 +292,7 @@ public final class A10Configuration extends VendorConfiguration {
     _c.setDeviceModel(DeviceModel.A10);
     _c.setDefaultCrossZoneAction(LineAction.DENY);
     _c.setDefaultInboundAction(LineAction.PERMIT);
+    _c.setExportBgpFromBgpRib(true);
 
     // Generated default VRF
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
