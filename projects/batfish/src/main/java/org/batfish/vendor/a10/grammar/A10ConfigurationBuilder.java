@@ -68,7 +68,6 @@ import org.batfish.vendor.a10.grammar.A10Parser.Ha_interfaceContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Ha_preemption_enableContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Ha_priority_numberContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Ha_set_id_numberContext;
-import org.batfish.vendor.a10.grammar.A10Parser.Hago_priorityContext;
 import org.batfish.vendor.a10.grammar.A10Parser.HostnameContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Non_default_vridContext;
 import org.batfish.vendor.a10.grammar.A10Parser.S_floating_ipContext;
@@ -107,7 +106,6 @@ import org.batfish.vendor.a10.representation.BgpNeighborUpdateSourceAddress;
 import org.batfish.vendor.a10.representation.BgpProcess;
 import org.batfish.vendor.a10.representation.FloatingIp;
 import org.batfish.vendor.a10.representation.Ha;
-import org.batfish.vendor.a10.representation.HaGroup;
 import org.batfish.vendor.a10.representation.Interface;
 import org.batfish.vendor.a10.representation.Interface.Type;
 import org.batfish.vendor.a10.representation.InterfaceLldp;
@@ -1454,47 +1452,42 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   }
 
   @Override
-  public void enterHa_group(Ha_groupContext ctx) {
-    // TODO: reorganize once option value enforcement is implemented
+  public void exitHa_group(Ha_groupContext ctx) {
     Optional<Integer> maybeId = toInteger(ctx, ctx.id);
-    if (!maybeId.isPresent()) {
-      _currentHaGroup = new HaGroup();
+    Optional<Integer> maybePriority = toInteger(ctx, ctx.priority);
+    if (!maybeId.isPresent() || !maybePriority.isPresent()) {
       // already warned
       return;
     }
-    _currentHaGroup = _c.getOrCreateHa().getOrCreateHaGroup(maybeId.get());
+    _c.getOrCreateHa().getOrCreateHaGroup(maybeId.get()).setPriority(maybePriority.get());
   }
 
-  @Override
-  public void exitHa_group(Ha_groupContext ctx) {
-    _currentHaGroup = null;
-  }
-
-  @Override
-  public void exitHago_priority(Hago_priorityContext ctx) {
-    _currentHaGroup.setPriority(toInteger(ctx.priority));
-  }
-
-  private int toInteger(Ha_priority_numberContext ctx) {
-    // TODO: enforce range
-    return toInteger(ctx.uint8());
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Ha_priority_numberContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx.uint8(), HA_PRIORITY_RANGE, "ha priority");
   }
 
   @Override
   public void exitHa_id(Ha_idContext ctx) {
+    Optional<Integer> maybeId = toInteger(ctx, ctx.id);
+    Optional<Integer> maybeSetId = toInteger(ctx, ctx.set_id);
+    if (!maybeId.isPresent() || !maybeSetId.isPresent()) {
+      // already warned
+      return;
+    }
     Ha ha = _c.getOrCreateHa();
-    ha.setId(toInteger(ctx.id));
-    ha.setSetId(toInteger(ctx.set_id));
+    ha.setId(maybeId.get());
+    ha.setSetId(maybeSetId.get());
   }
 
-  private int toInteger(Ha_set_id_numberContext ctx) {
-    // TODO: enforce range
-    return toInteger(ctx.uint8());
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Ha_set_id_numberContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx.uint8(), HA_SET_ID_RANGE, "ha set-id");
   }
 
-  private int toInteger(Ha_id_numberContext ctx) {
-    // TODO: enforce range
-    return toInteger(ctx.uint8());
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Ha_id_numberContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx.uint8(), HA_ID_RANGE, "ha id");
   }
 
   @Override
@@ -2463,6 +2456,9 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   private static final IntegerSpace FAIL_OVER_POLICY_TEMPLATE_NAME_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 63));
   private static final IntegerSpace HA_GROUP_ID_RANGE = IntegerSpace.of(Range.closed(1, 31));
+  private static final IntegerSpace HA_ID_RANGE = IntegerSpace.of(Range.closed(1, 2));
+  private static final IntegerSpace HA_PRIORITY_RANGE = IntegerSpace.of(Range.closed(1, 255));
+  private static final IntegerSpace HA_SET_ID_RANGE = IntegerSpace.of(Range.closed(1, 7));
   private static final IntegerSpace HEALTH_CHECK_NAME_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 63));
   private static final IntegerSpace INTERFACE_MTU_RANGE = IntegerSpace.of(Range.closed(434, 1500));
@@ -2518,8 +2514,6 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   private BgpProcess _currentBgpProcess;
 
   private BgpNeighbor _currentBgpNeighbor;
-
-  private HaGroup _currentHaGroup;
 
   private Interface _currentInterface;
 

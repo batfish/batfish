@@ -10,42 +10,51 @@ s_ha
 :
   HA
   (
-    ha_group
+    ha_arp_retry
+    | ha_check
+    | ha_conn_mirror
+    | ha_group
     | ha_id
     | ha_interface
-    | ha_null
     | ha_preemption_enable
+    | ha_restart_time
+    | ha_time_interval
+    | ha_timeout_retry_count
   )
 ;
 
-ha_group: GROUP id = ha_group_id ha_group_option* NEWLINE;
+ha_arp_retry: ARP_RETRY null_rest_of_line;
 
-ha_group_option: hago_priority;
+ha_check: CHECK null_rest_of_line;
+
+ha_conn_mirror: CONN_MIRROR null_rest_of_line;
+
+ha_group: GROUP id = ha_group_id PRIORITY priority = ha_priority_number NEWLINE;
 
 ha_id: ID id = ha_id_number SET_ID set_id = ha_set_id_number NEWLINE;
 
-// TODO: check range on ACOSv2 device
+// 1-2
 ha_id_number: uint8;
 
-// TODO: check range on ACOSv2 device
+// 1-7
 ha_set_id_number: uint8;
 
-hago_priority: PRIORITY priority = ha_priority_number;
-
-// TODO: check range on ACOSv2 device
+// 1-255
 ha_priority_number: uint8;
 
-ha_interface: INTERFACE ref = ethernet_or_trunk_reference ha_interface_option* NEWLINE;
-
-ha_interface_option
+ha_interface
 :
-  BOTH
-  | ROUTER_INTERFACE
-  | NO_HEARTBEAT
-  | haio_vlan
+  INTERFACE ref = ethernet_or_trunk_reference
+  (
+    BOTH
+    | ROUTER_INTERFACE
+    | SERVER_INTERFACE
+  )?
+  (
+    NO_HEARTBEAT
+    | VLAN vlan_number
+  )? NEWLINE
 ;
-
-haio_vlan: VLAN vlan_number;
 
 ha_preemption_enable: PREEMPTION_ENABLE NEWLINE;
 
@@ -53,14 +62,8 @@ sn_ha: HA snha_preemption_enable;
 
 snha_preemption_enable: PREEMPTION_ENABLE NEWLINE;
 
-ha_null
-:
-  (
-    ARP_RETRY
-    | CHECK
-    | CONN_MIRROR
-    | RESTART_TIME
-    | TIME_INTERVAL
-    | TIMEOUT_RETRY_COUNT
-  ) null_rest_of_line
-;
+ha_restart_time: RESTART_TIME null_rest_of_line;
+
+ha_time_interval: TIME_INTERVAL null_rest_of_line;
+
+ha_timeout_retry_count: TIMEOUT_RETRY_COUNT null_rest_of_line;

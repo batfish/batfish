@@ -488,7 +488,7 @@ public class A10Conversion {
   }
 
   static boolean getHaPreemptionEnable(Ha ha) {
-    return firstNonNull(ha.getPreemptionEnable(), Boolean.TRUE);
+    return firstNonNull(ha.getPreemptionEnable(), Boolean.FALSE);
   }
 
   private static boolean getVrrpAVridPreempt(VrrpAVrid vridConfig) {

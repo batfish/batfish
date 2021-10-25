@@ -234,8 +234,6 @@ RX: 'rx';
 SCALEOUT_DEVICE_ID: 'scaleout-device-id';
 SCAN_TIME: 'scan-time';
 SEND_COMMUNITY: 'send-community';
-SESSION_SYNC: 'session-sync';
-SET_ID: 'set-id';
 SERVER
 :
   'server'
@@ -245,9 +243,12 @@ SERVER
     }
   }
 ;
+SERVER_INTERFACE: 'server-interface';
 SERVER_SSL: 'server-ssl';
 SERVICE_GROUP: 'service-group' -> pushMode(M_Word);
 SERVICE_LEAST_CONNECTION: 'service-least-connection';
+SESSION_SYNC: 'session-sync';
+SET_ID: 'set-id';
 SHORT: 'short';
 SIP: 'sip';
 SLB: 'slb';

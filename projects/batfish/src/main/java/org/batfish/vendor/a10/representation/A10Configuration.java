@@ -377,7 +377,6 @@ public final class A10Configuration extends VendorConfiguration {
     // If vrrp-a is disabled, then the device should act as if it owns all addresses that would have
     // been part of vrrp-a.
     // If vrrp-a is enabled, then the device should own all addresses for VRIDs that are enabled.
-    // TODO: handle floating-ips
     if (isVrrpAEnabled(_vrrpA)) {
       convertVrrpAEnabled();
     } else if (_ha == null) {
