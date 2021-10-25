@@ -8,10 +8,9 @@ import static org.batfish.bddreachability.transition.Transitions.compose;
 import static org.batfish.bddreachability.transition.Transitions.constraint;
 import static org.batfish.bddreachability.transition.Transitions.eraseAndSet;
 import static org.batfish.bddreachability.transition.Transitions.mergeComposed;
-import static org.batfish.bddreachability.transition.Transitions.mergeDisjuncts;
 import static org.batfish.bddreachability.transition.Transitions.or;
-import static org.batfish.bddreachability.transition.Transitions.tryMergeDisjuncts;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.nullValue;
@@ -23,7 +22,6 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
-import java.util.Collection;
 import java.util.List;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDFiniteDomain;
@@ -359,74 +357,69 @@ public class TransitionsTest {
   }
 
   @Test
-  public void testTryMergeDisjuncts_Identity_Constraint() {
-    assertEquals(IDENTITY, tryMergeDisjuncts(IDENTITY, constraint(var(0))));
+  public void testOr_Identity_Constraint() {
+    assertEquals(IDENTITY, or(IDENTITY, constraint(var(0))));
   }
 
   @Test
-  public void testTryMergeDisjuncts_Constraint_Identity() {
-    assertEquals(IDENTITY, tryMergeDisjuncts(constraint(var(0)), IDENTITY));
+  public void testOr_Constraint_Identity() {
+    assertEquals(IDENTITY, or(constraint(var(0)), IDENTITY));
   }
 
   @Test
-  public void testTryMergeDisjuncts_Constraint_Constraint() {
+  public void testOr_Constraint_Constraint() {
     BDD v0 = var(0);
     BDD v1 = var(1);
-    assertEquals(constraint(v0.or(v1)), tryMergeDisjuncts(constraint(v0), constraint(v1)));
+    assertEquals(constraint(v0.or(v1)), or(constraint(v0), constraint(v1)));
   }
 
   @Test
-  public void testTryMergeDisjuncts_EraseAndSet_EraseAndSet_SameVars() {
+  public void testOr_EraseAndSet_EraseAndSet_SameVars() {
     BDD v0 = var(0);
     BDD v1 = var(1);
     BDD vars = v0.and(v1);
     EraseAndSet t1 = new EraseAndSet(vars, v0);
     EraseAndSet t2 = new EraseAndSet(vars, v1);
-    assertEquals(new EraseAndSet(vars, v0.or(v1)), tryMergeDisjuncts(t1, t2));
+    assertEquals(new EraseAndSet(vars, v0.or(v1)), or(t1, t2));
   }
 
   @Test
-  public void testTryMergeDisjuncts_EraseAndSet_EraseAndSet_DiffVars() {
+  public void testOr_EraseAndSet_EraseAndSet_DiffVars() {
     BDD v0 = var(0);
     BDD v1 = var(1);
     EraseAndSet t1 = new EraseAndSet(v0, v0);
     EraseAndSet t2 = new EraseAndSet(v1, v1);
-    assertNull(tryMergeDisjuncts(t1, t2));
+    assertEquals(new Or(ImmutableList.of(t1, t2)), or(t1, t2));
   }
 
   @Test
-  public void testMergeDisjunctsTo1() {
+  public void testOrConstraints() {
     BDD v0 = var(0);
     BDD v1 = var(1);
     BDD v2 = var(2);
     BDD v3 = var(3);
-    Collection<Transition> actual =
-        mergeDisjuncts(
-            ImmutableList.of(
-                constraint(v0), constraint(v1),
-                constraint(v2), constraint(v3)));
-    Collection<Transition> expected = ImmutableSet.of(constraint(BDDOps.orNull(v0, v1, v2, v3)));
-    assertEquals(expected, actual);
+    Transition actual = or(constraint(v0), constraint(v1), constraint(v2), constraint(v3));
+    assertThat(actual, equalTo(constraint(BDDOps.orNull(v0, v1, v2, v3))));
   }
 
   @Test
-  public void testMergeDisjuncts() {
+  public void testOr() {
     BDD v0 = var(0);
     BDD v1 = var(1);
-    Collection<Transition> actual =
-        mergeDisjuncts(
-            ImmutableList.of(
-                // constraints get merged
-                constraint(v0), constraint(v1),
+    Transition actual =
+        or(
+            // constraints get merged
+            constraint(v0), constraint(v1),
 
-                // EraseAndSets with v0 get merged
-                eraseAndSet(v0, v0), eraseAndSet(v0, v1),
+            // EraseAndSets with v0 get merged
+            eraseAndSet(v0, v0), eraseAndSet(v0, v1),
 
-                // EraseAndSets with v1 get merged
-                eraseAndSet(v1, v0), eraseAndSet(v1, v1)));
-    Collection<Transition> expected =
-        ImmutableSet.of(
-            constraint(v0.or(v1)), eraseAndSet(v0, v0.or(v1)), eraseAndSet(v1, v0.or(v1)));
-    assertEquals(expected, actual);
+            // EraseAndSets with v1 get merged
+            eraseAndSet(v1, v0), eraseAndSet(v1, v1));
+    assertThat(actual, instanceOf(Or.class));
+    assertThat(
+        ((Or) actual).getTransitions(),
+        containsInAnyOrder(
+            constraint(v0.or(v1)), eraseAndSet(v0, v0.or(v1)), eraseAndSet(v1, v0.or(v1))));
   }
 }
