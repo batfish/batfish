@@ -344,6 +344,9 @@ public final class Transitions {
               BDD eraseVars = entry.getKey();
               List<BDD> setValues = entry.getValue();
               BDDFactory factory = eraseVars.getFactory();
+              // Skipping the eraseAndSet factory method: if the input EraseAndSets are well-formed
+              // (i.e. created by eraseAndSet, then the output will be too. So this is equivalent
+              // and has the type we need here.
               return new EraseAndSet(eraseVars, factory.orAll(setValues));
             })
         .collect(Collectors.toList());
