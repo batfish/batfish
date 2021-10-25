@@ -1,6 +1,7 @@
 package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.MoreObjects.toStringHelper;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -126,6 +127,16 @@ public final class VrrpGroup implements Serializable {
   @Override
   public int hashCode() {
     return Objects.hash(_preempt, _priority, _sourceAddress, _virtualAddresses);
+  }
+
+  @Override
+  public String toString() {
+    return toStringHelper(this)
+        .add(PROP_PREEMPT, _preempt)
+        .add(PROP_PRIORITY, _priority)
+        .add(PROP_SOURCE_ADDRESS, _sourceAddress)
+        .add(PROP_VIRTUAL_ADDRESSES, _virtualAddresses)
+        .toString();
   }
 
   @JsonProperty(PROP_PREEMPT)

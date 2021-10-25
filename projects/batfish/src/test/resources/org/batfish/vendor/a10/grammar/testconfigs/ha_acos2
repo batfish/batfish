@@ -1,0 +1,48 @@
+!BATFISH_FORMAT: a10_acos
+!version 2.7.2, build 123 (Aug-5-2021,01:23)
+hostname ha_acos2
+!
+
+! TODO: find defaults and ranges
+
+!!! Interface configuration
+vlan 4094
+ tagged ethernet 3
+!
+
+interface ethernet 1
+  ip address 10.0.5.1 255.255.255.0
+!
+
+interface ethernet 2
+!
+
+interface ethernet 3
+!
+
+!!! ha configuration
+
+! Probably needs to be first
+ha id 1 set-id 2
+
+ha arp-retry 4
+ha group 1 priority 200
+ha check gateway 10.0.0.1
+ha conn-mirror ip 10.0.1.1
+ha interface ethernet 3 both vlan 4094
+ha interface ethernet 3 router-interface no-heartbeat
+no ha preemption-enable
+ha restart-time 20
+ha time-interval 2
+ha timeout-retry-count 5
+
+!!! Other configuration referencing ha
+
+floating-ip 10.0.2.1 ha-group 1
+
+ip nat pool pool1 10.0.3.1 10.0.3.2 netmask /24  ha-group-id 1
+
+slb virtual-server vs1 10.0.4.1
+   ha-group 1
+   port 22 tcp
+!

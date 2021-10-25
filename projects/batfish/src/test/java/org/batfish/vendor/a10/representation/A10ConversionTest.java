@@ -41,7 +41,7 @@ import static org.batfish.vendor.a10.representation.A10Conversion.toMatchConditi
 import static org.batfish.vendor.a10.representation.A10Conversion.toProtocol;
 import static org.batfish.vendor.a10.representation.A10Conversion.toVrrpGroupBuilder;
 import static org.batfish.vendor.a10.representation.A10Conversion.toVrrpGroups;
-import static org.batfish.vendor.a10.representation.A10Conversion.vrrpAAppliesToInterface;
+import static org.batfish.vendor.a10.representation.A10Conversion.vrrpAppliesToInterface;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -249,11 +249,13 @@ public class A10ConversionTest {
     Ip vs1EnabledIp = Ip.parse("10.0.1.1");
     Ip vs1DisabledIp = Ip.parse("10.0.3.1");
     VirtualServer vs0 = new VirtualServer("vs0", new VirtualServerTargetAddress(vs0Ip));
+    vs0.getOrCreatePort(22, VirtualServerPort.Type.TCP, null);
     VirtualServer vs1Enabled =
         new VirtualServer("vs1Enabled", new VirtualServerTargetAddress(vs1EnabledIp));
+    vs1Enabled.getOrCreatePort(22, VirtualServerPort.Type.TCP, null);
     vs1Enabled.setVrid(1);
     VirtualServer vs1Disabled =
-        new VirtualServer("vs1Disbled", new VirtualServerTargetAddress(vs1DisabledIp));
+        new VirtualServer("vs1Disabled", new VirtualServerTargetAddress(vs1DisabledIp));
     vs1Disabled.setVrid(1);
     vs1Disabled.setEnable(false);
     List<VirtualServer> virtualServers = ImmutableList.of(vs0, vs1Enabled, vs1Disabled);
@@ -327,24 +329,24 @@ public class A10ConversionTest {
         org.batfish.datamodel.Interface.builder().setName("placeholder");
     // No concrete address
     assertFalse(
-        vrrpAAppliesToInterface(
+        vrrpAppliesToInterface(
             ifaceBuilder.setType(InterfaceType.PHYSICAL).setAddress(null).build()));
     // Loopback interface
     assertFalse(
-        vrrpAAppliesToInterface(
+        vrrpAppliesToInterface(
             ifaceBuilder
                 .setType(InterfaceType.LOOPBACK)
                 .setAddress(ConcreteInterfaceAddress.parse("10.10.10.10/32"))
                 .build()));
 
     assertTrue(
-        vrrpAAppliesToInterface(
+        vrrpAppliesToInterface(
             ifaceBuilder
                 .setType(InterfaceType.PHYSICAL)
                 .setAddress(ConcreteInterfaceAddress.parse("10.10.10.10/32"))
                 .build()));
     assertTrue(
-        vrrpAAppliesToInterface(
+        vrrpAppliesToInterface(
             ifaceBuilder
                 .setType(InterfaceType.AGGREGATED)
                 .setAddress(ConcreteInterfaceAddress.parse("10.10.10.10/24"))
