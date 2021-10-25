@@ -61,6 +61,7 @@ import org.batfish.vendor.a10.grammar.A10Parser.Ethernet_numberContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Ethernet_or_trunk_referenceContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Fail_over_policy_template_nameContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Fip_optionContext;
+import org.batfish.vendor.a10.grammar.A10Parser.Ha_conn_mirrorContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Ha_groupContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Ha_idContext;
 import org.batfish.vendor.a10.grammar.A10Parser.Ha_id_numberContext;
@@ -1449,6 +1450,11 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   public void exitVrrpa_vrid_lead(Vrrpa_vrid_leadContext ctx) {
     toStringWithLengthInSpace(ctx, ctx.name.word(), VRID_LEAD_NAME_LENGTH_RANGE, "vrrp-a vrid-lead")
         .ifPresent(_c.getOrCreateVrrpA()::setVridLead);
+  }
+
+  @Override
+  public void exitHa_conn_mirror(Ha_conn_mirrorContext ctx) {
+    _c.getOrCreateHa().setConnMirror(toIp(ctx.ip));
   }
 
   @Override

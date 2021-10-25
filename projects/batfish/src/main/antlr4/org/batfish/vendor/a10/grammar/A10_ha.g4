@@ -27,7 +27,7 @@ ha_arp_retry: ARP_RETRY null_rest_of_line;
 
 ha_check: CHECK null_rest_of_line;
 
-ha_conn_mirror: CONN_MIRROR null_rest_of_line;
+ha_conn_mirror: CONN_MIRROR IP ip = ip_address NEWLINE;
 
 ha_group: GROUP id = ha_group_id PRIORITY priority = ha_priority_number NEWLINE;
 
