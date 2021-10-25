@@ -7,14 +7,14 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.IdentityHashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.Stack;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
+import net.sf.javabdd.BDDFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.batfish.bddreachability.BDDOutgoingOriginalFlowFilterManager;
@@ -264,58 +264,72 @@ public final class Transitions {
       return origDisjuncts;
     }
     LOGGER.debug("Merging {} disjuncts", origDisjuncts.size());
-    Set<Transition> mergeableDisjuncts = null; // initialize lazily
-    List<Transition> unmergeableDisjuncts = new ArrayList<>();
+    boolean foundIdentity = false;
+    List<Transition> result = new ArrayList<>();
+    List<Constraint> constraints = null;
+    List<EraseAndSet> eraseAndSets = null;
     for (Transition origDisjunct : origDisjuncts) {
-      if (isMergableDisjunct(origDisjunct)) {
-        if (mergeableDisjuncts == null) {
-          mergeableDisjuncts = Collections.newSetFromMap(new IdentityHashMap<>());
+      if (origDisjunct == IDENTITY) {
+        foundIdentity = true;
+      } else if (origDisjunct instanceof Constraint) {
+        if (constraints == null) {
+          constraints = new ArrayList<>();
         }
-        mergeableDisjuncts.add(origDisjunct);
+        constraints.add((Constraint) origDisjunct);
+      } else if (origDisjunct instanceof EraseAndSet) {
+        if (eraseAndSets == null) {
+          eraseAndSets = new ArrayList<>();
+        }
+        eraseAndSets.add((EraseAndSet) origDisjunct);
       } else {
-        unmergeableDisjuncts.add(origDisjunct);
+        result.add(origDisjunct);
       }
     }
 
-    if (mergeableDisjuncts != null) {
-      // keep merging until we can't merge any more
-      LOGGER.debug("Merging {} mergeable disjuncts", mergeableDisjuncts.size());
-      boolean merged = tryMergeDisjunctSet(mergeableDisjuncts);
-      while (merged) {
-        merged = tryMergeDisjunctSet(mergeableDisjuncts);
+    // only add a constraint if we didn't find IDENTITY
+    if (foundIdentity) {
+      result.add(IDENTITY);
+    } else if (constraints != null) {
+      if (constraints.size() == 1) {
+        result.add(constraints.get(0));
+      } else {
+        result.add(
+            new Constraint(
+                constraints
+                    .get(0)
+                    .getConstraint()
+                    .getFactory()
+                    .orAll(
+                        constraints.stream()
+                            .map(Constraint::getConstraint)
+                            .collect(Collectors.toList()))));
       }
-      LOGGER.debug("Reduced to {} disjuncts", mergeableDisjuncts.size());
-      unmergeableDisjuncts.addAll(mergeableDisjuncts);
     }
 
-    return unmergeableDisjuncts;
-  }
-
-  private static boolean tryMergeDisjunctSet(Set<Transition> disjuncts) {
-    if (disjuncts.size() < 2) {
-      return false;
-    }
-
-    for (Transition t1 : disjuncts) {
-      for (Transition t2 : disjuncts) {
-        if (t1 == t2) {
-          continue;
+    if (eraseAndSets != null) {
+      if (eraseAndSets.size() == 1) {
+        result.add(eraseAndSets.get(0));
+      } else {
+        BDDFactory factory = eraseAndSets.get(0).getEraseVars().getFactory();
+        Map<BDD, BDD> eraseVarsToSetValue =
+            eraseAndSets.stream()
+                .collect(
+                    Collectors.groupingBy(
+                        EraseAndSet::getEraseVars,
+                        Collectors.mapping(
+                            EraseAndSet::getSetValue,
+                            Collectors.collectingAndThen(Collectors.toList(), factory::orAll))));
+        if (eraseVarsToSetValue.size() == eraseAndSets.size()) {
+          // no two EraseAndSets had the same eraseVars
+          result.addAll(eraseAndSets);
+        } else {
+          eraseVarsToSetValue.forEach(
+              (eraseVars, setValue) -> result.add(eraseAndSet(eraseVars, setValue)));
         }
-        @Nullable Transition merged = tryMergeDisjuncts(t1, t2);
-        if (merged != null) {
-          disjuncts.remove(t1);
-          disjuncts.remove(t2);
-          disjuncts.add(merged);
-          return true;
-        }
       }
     }
-    return false;
-  }
 
-  /** Keep in sync with tryMergeDisjuncts */
-  private static boolean isMergableDisjunct(Transition t) {
-    return t == IDENTITY || t instanceof Constraint || t instanceof EraseAndSet;
+    return result;
   }
 
   @VisibleForTesting
