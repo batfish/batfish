@@ -1,18 +1,22 @@
 package org.batfish.bddreachability.transition;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.Stack;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
+import net.sf.javabdd.BDDFactory;
 import org.batfish.bddreachability.BDDOutgoingOriginalFlowFilterManager;
 import org.batfish.bddreachability.LastHopOutgoingInterfaceManager;
 import org.batfish.common.bdd.BDDFiniteDomain;
@@ -252,95 +256,100 @@ public final class Transitions {
         "Don't call or() with no Transitions -- just use Zero instead.");
   }
 
-  @VisibleForTesting
-  static Collection<Transition> mergeDisjuncts(List<Transition> origDisjuncts) {
-    if (origDisjuncts.size() < 2) {
-      return origDisjuncts;
-    }
-
-    Set<Transition> disjuncts = new HashSet<>(origDisjuncts);
-
-    // keep merge until we can't merge any more
-    boolean merged = tryMergeDisjunctSet(disjuncts);
-    while (merged) {
-      merged = tryMergeDisjunctSet(disjuncts);
-    }
-
-    return disjuncts;
-  }
-
-  private static boolean tryMergeDisjunctSet(Set<Transition> disjuncts) {
-    if (disjuncts.size() < 2) {
-      return false;
-    }
-
-    for (Transition t1 : disjuncts) {
-      for (Transition t2 : disjuncts) {
-        if (t1 == t2) {
-          continue;
-        }
-        @Nullable Transition merged = tryMergeDisjuncts(t1, t2);
-        if (merged != null) {
-          disjuncts.remove(t1);
-          disjuncts.remove(t2);
-          disjuncts.add(merged);
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
-  @VisibleForTesting
-  static Transition tryMergeDisjuncts(Transition t1, Transition t2) {
-    if (t1 == IDENTITY && t2 instanceof Constraint) {
-      return t1;
-    }
-    if (t1 instanceof Constraint && t2 == IDENTITY) {
-      return t2;
-    }
-    if (t1 instanceof Constraint && t2 instanceof Constraint) {
-      Constraint c1 = (Constraint) t1;
-      Constraint c2 = (Constraint) t2;
-      return constraint(c1.getConstraint().or(c2.getConstraint()));
-    }
-    if (t1 instanceof EraseAndSet && t2 instanceof EraseAndSet) {
-      EraseAndSet eas1 = (EraseAndSet) t1;
-      EraseAndSet eas2 = (EraseAndSet) t2;
-
-      BDD vars1 = eas1.getEraseVars();
-      BDD vars2 = eas2.getEraseVars();
-
-      BDD val1 = eas1.getSetValue();
-      BDD val2 = eas2.getSetValue();
-
-      if (vars1.equals(vars2)) {
-        return eraseAndSet(vars1, val1.or(val2));
-      }
-
-      // fall through
-    }
-    // couldn't merge
-    return null;
-  }
-
   public static Transition or(Transition... transitions) {
-    Stream<Transition> flatUniqueTransitions =
+    Iterator<Transition> flatUniqueTransitions =
         Stream.of(transitions)
             .flatMap(t -> t instanceof Or ? ((Or) t).getTransitions().stream() : Stream.of(t))
-            .distinct();
-    List<Transition> nonZeroTransitions =
-        flatUniqueTransitions
-            .filter(transition -> transition != ZERO)
-            .collect(ImmutableList.toImmutableList());
-    if (nonZeroTransitions.isEmpty()) {
+            .distinct()
+            .iterator();
+    boolean foundIdentity = false;
+    List<Transition> disjuncts = new ArrayList<>();
+    List<Constraint> constraints = null;
+    List<EraseAndSet> eraseAndSets = null;
+
+    while (flatUniqueTransitions.hasNext()) {
+      Transition t = flatUniqueTransitions.next();
+
+      if (t == IDENTITY) {
+        foundIdentity = true;
+      } else if (t instanceof Constraint) {
+        // constraints are redundant if identity is found, so ignore
+        if (!foundIdentity) {
+          if (constraints == null) {
+            constraints = new ArrayList<>();
+          }
+          constraints.add((Constraint) t);
+        }
+      } else if (t instanceof EraseAndSet) {
+        if (eraseAndSets == null) {
+          eraseAndSets = new ArrayList<>();
+        }
+        eraseAndSets.add((EraseAndSet) t);
+      } else if (t != ZERO) { // ignore ZERO
+        // unmergable
+        disjuncts.add(t);
+      }
+    }
+
+    // only add a constraint if we didn't find identity
+    if (foundIdentity) {
+      disjuncts.add(IDENTITY);
+    } else if (constraints != null) {
+      disjuncts.add(orConstraints(constraints));
+    }
+
+    if (eraseAndSets != null) {
+      disjuncts.addAll(orEraseAndSets(eraseAndSets));
+    }
+
+    if (disjuncts.isEmpty()) {
       return ZERO;
     }
-    Collection<Transition> mergedTransitions = mergeDisjuncts(nonZeroTransitions);
-    if (mergedTransitions.size() == 1) {
-      return Iterables.getOnlyElement(mergedTransitions);
+    if (disjuncts.size() == 1) {
+      return Iterables.getOnlyElement(disjuncts);
     }
-    return new Or(mergedTransitions);
+    return new Or(disjuncts);
+  }
+
+  private static Transition orConstraints(List<Constraint> constraints) {
+    checkArgument(!constraints.isEmpty(), "orConstraints: constraints must be non-empty");
+    if (constraints.size() == 1) {
+      return constraints.get(0);
+    } else {
+      BDDFactory bddFactory = constraints.get(0).getConstraint().getFactory();
+      return constraint(
+          bddFactory.orAll(
+              constraints.stream().map(Constraint::getConstraint).collect(Collectors.toList())));
+    }
+  }
+
+  private static Collection<EraseAndSet> orEraseAndSets(List<EraseAndSet> eraseAndSets) {
+    checkArgument(!eraseAndSets.isEmpty(), "orEraseAndSets: eraseAndSets must be non-empty");
+    if (eraseAndSets.size() == 1) {
+      return eraseAndSets;
+    }
+    Map<BDD, List<BDD>> eraseVarsToSetValue =
+        eraseAndSets.stream()
+            .collect(
+                Collectors.groupingBy(
+                    EraseAndSet::getEraseVars,
+                    Collectors.mapping(EraseAndSet::getSetValue, Collectors.toList())));
+    if (eraseVarsToSetValue.size() == eraseAndSets.size()) {
+      // no two EraseAndSets had the same eraseVars
+      return eraseAndSets;
+    }
+    return eraseVarsToSetValue.entrySet().stream()
+        .map(
+            entry -> {
+              BDD eraseVars = entry.getKey();
+              List<BDD> setValues = entry.getValue();
+              BDDFactory factory = eraseVars.getFactory();
+              // Skipping the eraseAndSet factory method: if the input EraseAndSets are well-formed
+              // (i.e. created by eraseAndSet, then the output will be too. So this is equivalent
+              // and has the type we need here.
+              return new EraseAndSet(eraseVars, factory.orAll(setValues));
+            })
+        .collect(Collectors.toList());
   }
 
   public static Transition addLastHopConstraint(
