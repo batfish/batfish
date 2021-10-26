@@ -331,7 +331,8 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
      */
     private @Nonnull Stream<AnnotatedRoute<AbstractRoute>> getAffectedRoutes(Prefix prefix) {
       Set<Ip> affectedNextHopIps = _ribResolutionTrie.getAffectedNextHopIps(prefix);
-      return affectedNextHopIps.stream().flatMap(nhip -> _routesByNextHopIp.get(nhip).stream());
+      return affectedNextHopIps.stream()
+          .flatMap(nhip -> ImmutableSet.copyOf(_routesByNextHopIp.get(nhip)).stream());
     }
   }
 

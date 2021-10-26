@@ -2,6 +2,7 @@ package org.batfish.dataplane.rib;
 
 import static org.batfish.datamodel.ResolutionRestriction.alwaysTrue;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.SetMultimap;
 import java.util.HashMap;
@@ -63,7 +64,7 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
 
     @Nonnull
     Set<Bgpv4Route> getRoutesWithNhip(Ip nhip) {
-      return _bgpRoutesByNhip.get(nhip);
+      return ImmutableSet.copyOf(_bgpRoutesByNhip.get(nhip));
     }
 
     void updateMainRibPrefixes(RibDelta<AnnotatedRoute<AbstractRoute>> mainRibDelta) {
@@ -130,7 +131,7 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
     return super.removeRouteGetDelta(route);
   }
 
-  public RibDelta<Bgpv4Route> updateActiveRoutes(
+  public MultipathRibDelta<Bgpv4Route> updateActiveRoutes(
       RibDelta<AnnotatedRoute<AbstractRoute>> mainRibDelta) {
     // Should only be null in tests, and those tests shouldn't be using this function
     assert _mainRib != null;
@@ -139,18 +140,23 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
     _resolvabilityEnforcer.updateMainRibPrefixes(mainRibDelta);
 
     // (De)activate BGP routes based on updated main RIB
-    RibDelta.Builder<Bgpv4Route> delta = RibDelta.builder();
+    RibDelta.Builder<Bgpv4Route> bestPathDelta = RibDelta.builder();
+    RibDelta.Builder<Bgpv4Route> multipathDelta = RibDelta.builder();
     _resolvabilityEnforcer
         .getAffectedNextHopIps(mainRibDelta.getPrefixes())
-        .flatMap(
+        .forEach(
             nhip -> {
               boolean resolvable = isResolvable(nhip);
-              return _resolvabilityEnforcer.getRoutesWithNhip(nhip).stream()
-                  .map(
-                      r -> resolvable ? super.mergeRouteGetDelta(r) : super.removeRouteGetDelta(r));
-            })
-        .forEach(delta::from);
-    return delta.build();
+              for (Bgpv4Route affectedRoute : _resolvabilityEnforcer.getRoutesWithNhip(nhip)) {
+                MultipathRibDelta<Bgpv4Route> delta =
+                    resolvable
+                        ? super.multipathMergeRouteGetDelta(affectedRoute)
+                        : super.multipathRemoveRouteGetDelta(affectedRoute);
+                bestPathDelta.from(delta.getBestPathDelta());
+                multipathDelta.from(delta.getMultipathDelta());
+              }
+            });
+    return new MultipathRibDelta<>(bestPathDelta.build(), multipathDelta.build());
   }
 
   /**

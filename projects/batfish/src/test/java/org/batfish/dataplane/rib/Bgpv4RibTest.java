@@ -952,7 +952,9 @@ public class Bgpv4RibTest {
       // Add resolving route to main RIB and update BGP. Dependent route should be activated
       RibDelta<AnnotatedRoute<AbstractRoute>> mainRibDelta =
           mainRib.mergeRouteGetDelta(resolvingRoute);
-      assertThat(bgpRib.updateActiveRoutes(mainRibDelta), equalTo(RibDelta.adding(dependentRoute)));
+      assertThat(
+          bgpRib.updateActiveRoutes(mainRibDelta).getMultipathDelta(),
+          equalTo(RibDelta.adding(dependentRoute)));
       assertThat(bgpRib.getTypedRoutes(), contains(dependentRoute));
     }
     {
@@ -970,7 +972,7 @@ public class Bgpv4RibTest {
       RibDelta<AnnotatedRoute<AbstractRoute>> mainRibDelta =
           mainRib.removeRouteGetDelta(resolvingRoute);
       assertThat(
-          bgpRib.updateActiveRoutes(mainRibDelta),
+          bgpRib.updateActiveRoutes(mainRibDelta).getMultipathDelta(),
           equalTo(RibDelta.of(RouteAdvertisement.withdrawing(dependentRoute))));
       assertThat(bgpRib.getTypedRoutes(), empty());
     }
