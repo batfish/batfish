@@ -156,10 +156,13 @@ vrrt_nexthop
 :
   NEXTHOP
   (
-    vrrtn_ip
+    vrrtn_discard
+    | vrrtn_ip
     | vrrtn_next_vr
   )
 ;
+
+vrrtn_discard: DISCARD;
 
 vrrtn_ip
 :

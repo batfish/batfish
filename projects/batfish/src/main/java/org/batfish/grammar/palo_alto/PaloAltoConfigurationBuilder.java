@@ -375,6 +375,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Vrrt_admin_distContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Vrrt_destinationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Vrrt_interfaceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Vrrt_metricContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vrrtn_discardContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Vrrtn_ipContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Vrrtn_next_vrContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Yes_or_noContext;
@@ -2374,6 +2375,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   @Override
   public void exitVrrt_metric(Vrrt_metricContext ctx) {
     _currentStaticRoute.setMetric(Integer.parseInt(getText(ctx.metric)));
+  }
+
+  @Override
+  public void exitVrrtn_discard(Vrrtn_discardContext ctx) {
+    _currentStaticRoute.setNextHopDiscard();
   }
 
   @Override
