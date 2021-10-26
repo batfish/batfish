@@ -743,12 +743,12 @@ public final class A10Configuration extends VendorConfiguration {
    * _ifaceNameToIface} map.
    */
   private boolean vlanSettingsDifferent(Collection<String> names) {
-    org.batfish.datamodel.Interface.Builder baseIface =
-        org.batfish.datamodel.Interface.builder().setName("");
     Stream<org.batfish.datamodel.Interface> distinctVlanSettings =
         names.stream()
             .map(
                 name -> {
+                  org.batfish.datamodel.Interface.Builder baseIface =
+                      org.batfish.datamodel.Interface.builder().setName("");
                   setVlanSettings(_ifaceNametoIface.get(name), baseIface);
                   return baseIface.build();
                 })

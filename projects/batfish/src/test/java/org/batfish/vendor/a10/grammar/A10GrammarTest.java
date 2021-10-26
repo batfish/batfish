@@ -507,7 +507,7 @@ public class A10GrammarTest {
             allOf(
                 hasInterfaceType(InterfaceType.AGGREGATED),
                 hasSwitchPortMode(SwitchportMode.TRUNK),
-                hasAllowedVlans(IntegerSpace.of(2)),
+                hasAllowedVlans(IntegerSpace.of(Range.closed(2, 3))),
                 hasNativeVlan(equalTo(3)))));
     assertThat(
         c,
@@ -526,7 +526,7 @@ public class A10GrammarTest {
             allOf(
                 hasInterfaceType(InterfaceType.AGGREGATED),
                 hasSwitchPortMode(SwitchportMode.TRUNK),
-                hasAllowedVlans(IntegerSpace.EMPTY),
+                hasAllowedVlans(IntegerSpace.of(5)),
                 hasNativeVlan(equalTo(5)))));
   }
 
@@ -544,7 +544,7 @@ public class A10GrammarTest {
             allOf(
                 hasInterfaceType(InterfaceType.AGGREGATED),
                 hasSwitchPortMode(SwitchportMode.TRUNK),
-                hasAllowedVlans(IntegerSpace.of(2)),
+                hasAllowedVlans(IntegerSpace.of(Range.closed(2, 3))),
                 hasNativeVlan(equalTo(3)))));
 
     // Trunk2's members have different VLAN settings, which are ignored
