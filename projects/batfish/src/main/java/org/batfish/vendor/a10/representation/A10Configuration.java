@@ -70,6 +70,9 @@ import org.batfish.datamodel.transformation.ApplyAny;
 import org.batfish.datamodel.transformation.Noop;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
+import org.batfish.referencelibrary.GeneratedRefBookUtils;
+import org.batfish.referencelibrary.GeneratedRefBookUtils.BookType;
+import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.vendor.VendorConfiguration;
 
 /** Datamodel class representing an A10 device configuration. */
@@ -326,7 +329,28 @@ public final class A10Configuration extends VendorConfiguration {
     convertBgp();
 
     markStructures();
+
+    // add a reference book for virtual addresses
+    generateReferenceBook();
+
     return ImmutableList.of(_c);
+  }
+
+  private void generateReferenceBook() {
+    String virtualAddressesBookname =
+        GeneratedRefBookUtils.getName(_hostname, BookType.VirtualAddresses);
+    _c.getGeneratedReferenceBooks()
+        .put(
+            virtualAddressesBookname,
+            ReferenceBook.builder(virtualAddressesBookname)
+                .setAddressGroups(
+                    _virtualServers.values().stream()
+                        .map(
+                            vServer ->
+                                new VirtualServerTargetToAddressGroup(vServer.getName())
+                                    .visit(vServer.getTarget()))
+                        .collect(ImmutableList.toImmutableList()))
+                .build());
   }
 
   private void convertBgp() {
