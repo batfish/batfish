@@ -215,7 +215,6 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
     // This route replaced the old best path route; best path delta should reflect this
     RibDelta<R> bestPathDelta =
         RibDelta.<R>builder()
-            // TODO Any reason not to use REPLACE in this context? Makes more sense than WITHDRAW
             .remove(currentBestPathRoute, RouteAdvertisement.Reason.REPLACE)
             .add(route)
             .build();

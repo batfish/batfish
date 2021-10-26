@@ -29,7 +29,6 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -751,49 +750,26 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    */
   void processBgpV4UnicastMessages(
       BgpTopology bgpTopology, NetworkConfigurations nc, Map<String, Node> nodes) {
-    // Keep track of changes to the RIBs using delta builders, keyed by RIB type
-    Map<Bgpv4Rib, RibDelta.Builder<Bgpv4Route>> ribDeltaBuilders = new IdentityHashMap<>();
-    Map<Bgpv4Rib, RibDelta.Builder<Bgpv4Route>> bestPathRibDeltaBuilders = new IdentityHashMap<>();
-    ribDeltaBuilders.put(_ebgpv4Rib, RibDelta.builder());
-    ribDeltaBuilders.put(_ibgpv4Rib, RibDelta.builder());
-    bestPathRibDeltaBuilders.put(_ebgpv4Rib, RibDelta.builder());
-    bestPathRibDeltaBuilders.put(_ibgpv4Rib, RibDelta.builder());
-
     // If there are any, process external advertisements. This will only be true once, the first
     // time any BGP routes are pulled.
     if (_externalAdvertisements != null) {
-      _externalAdvertisements.forEach(
-          a -> processExternalBgpAdvertisement(a, ribDeltaBuilders, bestPathRibDeltaBuilders));
+      _externalAdvertisements.forEach(this::processExternalBgpAdvertisement);
       _externalAdvertisements = null;
     }
 
     // Process updates from each neighbor
     for (EdgeId edgeId : _bgpv4Edges) {
-      pullV4UnicastMessages(
-          bgpTopology,
-          nc,
-          nodes,
-          ribDeltaBuilders,
-          bestPathRibDeltaBuilders,
-          edgeId,
-          _unicastEdgesWentUp.contains(edgeId));
+      pullV4UnicastMessages(bgpTopology, nc, nodes, edgeId, _unicastEdgesWentUp.contains(edgeId));
     }
 
     initBgpAggregateRoutes();
 
-    unstage(ribDeltaBuilders, bestPathRibDeltaBuilders);
+    unstage();
   }
 
-  /** Finalize deltas and update main RIB. */
-  private void unstage(
-      Map<Bgpv4Rib, Builder<Bgpv4Route>> ribDeltaBuilders,
-      Map<Bgpv4Rib, Builder<Bgpv4Route>> bestPathRibDeltaBuilders) {
-    // TODO: Since we are now merging directly into _bgpv4Rib, we should probably stop generating
-    //       and passing staging deltas altogether. The instance-level delta builders can be used
-    //       directly.
-    _ebgpv4DeltaBuilder.from(ribDeltaBuilders.get(_ebgpv4Rib).build());
-    _ebgpv4DeltaBestPathBuilder.from(bestPathRibDeltaBuilders.get(_ebgpv4Rib).build());
-    // Finally, prepare the delta we will feed into the main RIB
+  /** Update main RIB. */
+  private void unstage() {
+    // Prepare the delta we will feed into the main RIB
     RibDelta<Bgpv4Route> bgpv4RibDelta = _bgpv4DeltaBuilder.build();
     LOGGER.trace(
         "{}: Unstaged BGP routes, current bgpv4Delta: {}", _c.getHostname(), bgpv4RibDelta);
@@ -805,8 +781,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       BgpTopology bgpTopology,
       NetworkConfigurations nc,
       Map<String, Node> nodes,
-      Map<Bgpv4Rib, Builder<Bgpv4Route>> ribDeltas,
-      Map<Bgpv4Rib, Builder<Bgpv4Route>> bestPathRibDeltas,
       EdgeId edgeId,
       boolean isNewSession) {
 
@@ -825,9 +799,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         ourBgpConfig.getAppliedRibGroup() != null
             && !ourBgpConfig.getAppliedRibGroup().getImportRibs().isEmpty();
 
-    Bgpv4Rib targetRib = ourSessionProperties.isEbgp() ? _ebgpv4Rib : _ibgpv4Rib;
-    RibDelta.Builder<Bgpv4Route> targetRibDelta = ribDeltas.get(targetRib);
-    RibDelta.Builder<Bgpv4Route> targetBestPathRibDelta = bestPathRibDeltas.get(targetRib);
     Builder<AnnotatedRoute<AbstractRoute>> perNeighborDeltaForRibGroups = RibDelta.builder();
 
     BgpRoutingProcess remoteProcess = getNeighborBgpProcess(remoteConfigId, nodes);
@@ -905,7 +876,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
       if (remoteRouteAdvert.isWithdrawn()) {
         // Remove from target and overall RIBs and update deltas
-        processRemove(targetRib, transformedIncomingRoute, targetRibDelta, targetBestPathRibDelta);
+        processRemoveInEbgpOrIbgpRib(transformedIncomingRoute, ourSessionProperties.isEbgp());
         processRemove(
             _bgpv4Rib, transformedIncomingRoute, _bgpv4DeltaBuilder, _bgpv4DeltaBestPathBuilder);
         if (useRibGroups) {
@@ -913,7 +884,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         }
       } else {
         // Merge into target and overall RIBs and update deltas
-        processMerge(targetRib, transformedIncomingRoute, targetRibDelta, targetBestPathRibDelta);
+        processMergeInEbgpOrIbgpRib(transformedIncomingRoute, ourSessionProperties.isEbgp());
         processMerge(
             _bgpv4Rib, transformedIncomingRoute, _bgpv4DeltaBuilder, _bgpv4DeltaBestPathBuilder);
         if (useRibGroups) {
@@ -1736,10 +1707,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   }
 
   @VisibleForTesting
-  void processExternalBgpAdvertisement(
-      BgpAdvertisement advert,
-      Map<Bgpv4Rib, RibDelta.Builder<Bgpv4Route>> ribDeltas,
-      Map<Bgpv4Rib, RibDelta.Builder<Bgpv4Route>> bestPathRibDeltas) {
+  void processExternalBgpAdvertisement(BgpAdvertisement advert) {
     Ip srcIp = advert.getSrcIp();
     // TODO: support passive and unnumbered bgp connections
     BgpActivePeerConfig neighbor = _process.getActiveNeighbors().get(srcIp);
@@ -1748,10 +1716,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     // Build a route based on the type of this advertisement
     BgpAdvertisementType type = advert.getType();
     boolean ebgp = type.isEbgp();
-
-    Bgpv4Rib targetRib = ebgp ? _ebgpv4Rib : _ibgpv4Rib;
-    RibDelta.Builder<Bgpv4Route> targetRibDelta = ribDeltas.get(targetRib);
-    RibDelta.Builder<Bgpv4Route> targetRibBestPathDelta = bestPathRibDeltas.get(targetRib);
     RoutingProtocol targetProtocol = ebgp ? RoutingProtocol.BGP : RoutingProtocol.IBGP;
 
     // Route advertisement does not contain its admin distance.
@@ -1780,7 +1744,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
               // TODO: possibly support setting tag
               .setWeight(advert.getWeight())
               .build();
-      processMerge(targetRib, route, targetRibDelta, targetRibBestPathDelta);
+      processMergeInEbgpOrIbgpRib(route, ebgp);
       processMerge(_bgpv4Rib, route, _bgpv4DeltaBuilder, _bgpv4DeltaBestPathBuilder);
     } else {
       // Since the route was logged after sending, it is from a pre-import-chain view of the route.
@@ -1845,11 +1809,29 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       }
       if (acceptIncoming) {
         Bgpv4Route transformedIncomingRoute = transformedIncomingRouteBuilder.build();
-        processMerge(targetRib, transformedIncomingRoute, targetRibDelta, targetRibBestPathDelta);
+        processMergeInEbgpOrIbgpRib(transformedIncomingRoute, ebgp);
         processMerge(
             _bgpv4Rib, transformedIncomingRoute, _bgpv4DeltaBuilder, _bgpv4DeltaBestPathBuilder);
       }
     }
+  }
+
+  private RibDelta<Bgpv4Route> processMergeInEbgpOrIbgpRib(Bgpv4Route route, boolean ebgp) {
+    return processMergeOrRemoveInEbgpOrIbgpRib(route, ebgp, true);
+  }
+
+  private RibDelta<Bgpv4Route> processRemoveInEbgpOrIbgpRib(Bgpv4Route route, boolean ebgp) {
+    return processMergeOrRemoveInEbgpOrIbgpRib(route, ebgp, false);
+  }
+
+  private RibDelta<Bgpv4Route> processMergeOrRemoveInEbgpOrIbgpRib(
+      Bgpv4Route route, boolean ebgp, boolean merge) {
+    if (ebgp) {
+      return processMergeOrRemove(
+          _ebgpv4Rib, route, _ebgpv4DeltaBuilder, _ebgpv4DeltaBestPathBuilder, merge);
+    }
+    // No need to track deltas for IBGP
+    return merge ? _ibgpv4Rib.mergeRouteGetDelta(route) : _ibgpv4Rib.removeRouteGetDelta(route);
   }
 
   /**
@@ -2039,13 +2021,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       @Nullable String importPolicyName,
       String importFromVrf,
       BgpLeakConfig bgpConfig) {
-    // Keep track of changes to the RIBs using delta builders, keyed by RIB type
-    Map<Bgpv4Rib, RibDelta.Builder<Bgpv4Route>> ribDeltaBuilders = new IdentityHashMap<>();
-    Map<Bgpv4Rib, RibDelta.Builder<Bgpv4Route>> bestPathRibDeltaBuilders = new IdentityHashMap<>();
-    ribDeltaBuilders.put(_ebgpv4Rib, RibDelta.builder());
-    ribDeltaBuilders.put(_ibgpv4Rib, RibDelta.builder());
-    bestPathRibDeltaBuilders.put(_ebgpv4Rib, RibDelta.builder());
-    bestPathRibDeltaBuilders.put(_ibgpv4Rib, RibDelta.builder());
     @Nullable
     RoutingPolicy policy =
         Optional.ofNullable(importPolicyName).flatMap(_policies::get).orElse(null);
@@ -2079,22 +2054,15 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             accept = policy.processBgpRoute(route, builder, null, IN, _ribExprEvaluator);
           }
           if (accept) {
-            Bgpv4Rib targetRib =
-                getRib(
-                    Bgpv4Route.class,
-                    route.getProtocol() == RoutingProtocol.IBGP ? RibType.IBGP : RibType.EBGP);
-            RibDelta.Builder<Bgpv4Route> targetRibDelta = ribDeltaBuilders.get(targetRib);
-            RibDelta.Builder<Bgpv4Route> targetBestPathDelta =
-                bestPathRibDeltaBuilders.get(targetRib);
             Bgpv4Route transformedRoute = builder.build();
             if (ra.isWithdrawn()) {
-              processRemove(targetRib, transformedRoute, targetRibDelta, targetBestPathDelta);
+              processRemoveInEbgpOrIbgpRib(route, route.getProtocol() != RoutingProtocol.IBGP);
               processRemove(
                   _bgpv4Rib, transformedRoute, _bgpv4DeltaBuilder, _bgpv4DeltaBestPathBuilder);
               _importedFromOtherVrfs.remove(transformedRoute);
             } else {
               RibDelta<Bgpv4Route> d =
-                  processMerge(targetRib, transformedRoute, targetRibDelta, targetBestPathDelta);
+                  processMergeInEbgpOrIbgpRib(route, route.getProtocol() != RoutingProtocol.IBGP);
               LOGGER.debug("Node {}, VRF {}, route {} leaked", _hostname, _vrfName, d);
               processMerge(
                   _bgpv4Rib, transformedRoute, _bgpv4DeltaBuilder, _bgpv4DeltaBestPathBuilder);
@@ -2108,7 +2076,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                 route);
           }
         });
-    unstage(ribDeltaBuilders, bestPathRibDeltaBuilders);
+    unstage();
   }
 
   public void endOfRound() {
