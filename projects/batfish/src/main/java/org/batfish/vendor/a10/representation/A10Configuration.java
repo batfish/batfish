@@ -336,6 +336,7 @@ public final class A10Configuration extends VendorConfiguration {
     return ImmutableList.of(_c);
   }
 
+  /** Creates and puts a {@link ReferenceBook} for virtual servers defined in the configuration */
   private void generateReferenceBook() {
     String virtualAddressesBookname =
         GeneratedRefBookUtils.getName(_hostname, BookType.VirtualAddresses);
