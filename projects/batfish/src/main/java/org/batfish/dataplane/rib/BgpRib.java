@@ -175,6 +175,70 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
     return delta;
   }
 
+  /** Represents the result of a route being added or removed in a potentially multipath BGP RIB. */
+  public static class MultipathRibDelta<T extends BgpRoute<?, ?>> {
+    @Nonnull private final RibDelta<T> _bestPathDelta;
+    @Nonnull private final RibDelta<T> _multipathDelta;
+
+    public MultipathRibDelta(RibDelta<T> bestPathDelta, RibDelta<T> multipathDelta) {
+      _bestPathDelta = bestPathDelta;
+      _multipathDelta = multipathDelta;
+    }
+
+    public @Nonnull RibDelta<T> getBestPathDelta() {
+      return _bestPathDelta;
+    }
+
+    public @Nonnull RibDelta<T> getMultipathDelta() {
+      return _multipathDelta;
+    }
+  }
+
+  /** Returns a {@link MultipathRibDelta} reflecting the merge of the given {@code route} */
+  public @Nonnull MultipathRibDelta<R> multipathMergeRouteGetDelta(R route) {
+    if (!isMultipath()) {
+      RibDelta<R> multipathDelta = mergeRouteGetDelta(route);
+      return new MultipathRibDelta<>(multipathDelta, multipathDelta);
+    }
+    R currentBestPathRoute = _bestPaths.get(route.getNetwork());
+    RibDelta<R> multipathDelta = mergeRouteGetDelta(route);
+    if (currentBestPathRoute == null) {
+      // Since there was previously no best path, both deltas should be equal
+      return new MultipathRibDelta<>(multipathDelta, multipathDelta);
+    }
+    // Check if best path changed
+    R newBestPathRoute = _bestPaths.get(route.getNetwork());
+    if (currentBestPathRoute.equals(newBestPathRoute)) {
+      // The best path route did not change, so best path delta should be empty
+      return new MultipathRibDelta<>(RibDelta.empty(), multipathDelta);
+    }
+    // This route replaced the old best path route; best path delta should reflect this
+    RibDelta<R> bestPathDelta =
+        RibDelta.<R>builder()
+            .remove(currentBestPathRoute, RouteAdvertisement.Reason.REPLACE)
+            .add(route)
+            .build();
+    return new MultipathRibDelta<>(bestPathDelta, multipathDelta);
+  }
+
+  /** Returns a {@link MultipathRibDelta} reflecting the removal of the given {@code route} */
+  public @Nonnull MultipathRibDelta<R> multipathRemoveRouteGetDelta(R route) {
+    if (!isMultipath()) {
+      RibDelta<R> multipathDelta = removeRouteGetDelta(route);
+      return new MultipathRibDelta<>(multipathDelta, multipathDelta);
+    }
+    if (!route.equals(_bestPaths.get(route.getNetwork()))) {
+      // Since this route is not the best path, the best path delta should be empty
+      return new MultipathRibDelta<>(RibDelta.empty(), removeRouteGetDelta(route));
+    }
+    // This route is the best path. If there is a new best path, add it to best path delta.
+    RibDelta<R> multipathDelta = removeRouteGetDelta(route);
+    RibDelta.Builder<R> bestPathDeltaBuilder =
+        RibDelta.<R>builder().remove(route, RouteAdvertisement.Reason.WITHDRAW);
+    Optional.ofNullable(_bestPaths.get(route.getNetwork())).ifPresent(bestPathDeltaBuilder::add);
+    return new MultipathRibDelta<>(bestPathDeltaBuilder.build(), multipathDelta);
+  }
+
   @Override
   @Nonnull
   public final Set<R> getTypedRoutes() {
