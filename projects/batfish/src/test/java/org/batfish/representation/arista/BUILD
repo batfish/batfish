@@ -12,6 +12,7 @@ junit_tests(
     ]),
     deps = [
         "//projects/batfish-common-protocol:common",
+        "//projects/batfish-common-protocol:common_testlib",
         "//projects/batfish/src/main/java/org/batfish/representation/arista",
         "@maven//:com_google_guava_guava",
         "@maven//:com_google_guava_guava_testlib",

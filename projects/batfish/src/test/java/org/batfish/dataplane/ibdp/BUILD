@@ -12,6 +12,7 @@ java_library(
     deps = [
         "//projects/batfish",
         "//projects/batfish-common-protocol:common",
+        "//projects/batfish-common-protocol:common_testlib",
         "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/matchers",
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:junit_junit",
@@ -39,6 +40,7 @@ junit_tests(
         "//projects/batfish",
         "//projects/batfish:batfish_testlib",
         "//projects/batfish-common-protocol:common",
+        "//projects/batfish-common-protocol:common_testlib",
         "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/matchers",
         "//projects/batfish/src/test/java/org/batfish/dataplane/matchers",
         "@maven//:com_google_code_findbugs_jsr305",

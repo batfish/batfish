@@ -364,7 +364,7 @@ public class IspModelingUtilsTest {
 
   @Test
   public void testCreateIspNode() {
-    Configuration ispConfiguration = createIspNode(_ispModel, new NetworkFactory(), _logger).get();
+    Configuration ispConfiguration = createIspNode(_ispModel, _logger).get();
 
     assertThat(
         ispConfiguration,
@@ -376,9 +376,9 @@ public class IspModelingUtilsTest {
 
   @Test
   public void testConnectIspToSnapshot() {
-    Configuration ispConfiguration = createIspNode(_ispModel, new NetworkFactory(), _logger).get();
+    Configuration ispConfiguration = createIspNode(_ispModel, _logger).get();
 
-    Set<Layer1Edge> layer1Edges = connectIspToSnapshot(_ispModel, ispConfiguration, _nf, _logger);
+    Set<Layer1Edge> layer1Edges = connectIspToSnapshot(_ispModel, ispConfiguration, _logger);
 
     assertThat(
         ispConfiguration,
@@ -447,8 +447,8 @@ public class IspModelingUtilsTest {
                     IspBgpUnnumberedPeer.create(remotePeerConfig, ispIfaceName)))
             .build();
 
-    Configuration ispConfiguration = createIspNode(ispModel, new NetworkFactory(), _logger).get();
-    Set<Layer1Edge> layer1Edges = connectIspToSnapshot(ispModel, ispConfiguration, _nf, _logger);
+    Configuration ispConfiguration = createIspNode(ispModel, _logger).get();
+    Set<Layer1Edge> layer1Edges = connectIspToSnapshot(ispModel, ispConfiguration, _logger);
 
     assertThat(
         ispConfiguration,
@@ -500,7 +500,7 @@ public class IspModelingUtilsTest {
   public void testCreateIspNode_invalid() {
     IspModel ispInfo = IspModel.builder().setAsn(_ispAsn).build();
     BatfishLogger logger = new BatfishLogger("debug", false);
-    Optional<Configuration> ispConfiguration = createIspNode(ispInfo, new NetworkFactory(), logger);
+    Optional<Configuration> ispConfiguration = createIspNode(ispInfo, logger);
 
     assertFalse(ispConfiguration.isPresent());
 
@@ -513,13 +513,13 @@ public class IspModelingUtilsTest {
   @Test
   public void testConnectIspToInternet() {
     BatfishLogger logger = new BatfishLogger("output", false);
-    Configuration ispConfiguration = createIspNode(_ispModel, _nf, logger).get();
-    connectIspToSnapshot(_ispModel, ispConfiguration, _nf, logger);
+    Configuration ispConfiguration = createIspNode(_ispModel, logger).get();
+    connectIspToSnapshot(_ispModel, ispConfiguration, logger);
 
-    Configuration internet = createInternetNode(_nf);
+    Configuration internet = createInternetNode();
 
     Set<Layer1Edge> layer1Edges =
-        connectIspToInternet(_ispAsn, _ispModel, ispConfiguration, internet, _nf);
+        connectIspToInternet(_ispAsn, _ispModel, ispConfiguration, internet);
     assertThat(
         ispConfiguration,
         allOf(
@@ -635,10 +635,10 @@ public class IspModelingUtilsTest {
             .build();
 
     Configuration ispConfiguration =
-        createIspNode(ispModel, _nf, new BatfishLogger("debug", false)).get();
-    Configuration internet = createInternetNode(_nf);
+        createIspNode(ispModel, new BatfishLogger("debug", false)).get();
+    Configuration internet = createInternetNode();
 
-    connectIspToInternet(_ispAsn, ispModel, ispConfiguration, internet, _nf);
+    connectIspToInternet(_ispAsn, ispModel, ispConfiguration, internet);
 
     assertThat(
         ispConfiguration.getDefaultVrf().getStaticRoutes(),
@@ -670,12 +670,12 @@ public class IspModelingUtilsTest {
             .setAsn(23)
             .setSnapshotConnections(_ispModel.getSnapshotConnections())
             .build();
-    Configuration isp1 = createIspNode(_ispModel, _nf, _logger).get();
-    Configuration isp2 = createIspNode(ispModel2, _nf, _logger).get();
+    Configuration isp1 = createIspNode(_ispModel, _logger).get();
+    Configuration isp2 = createIspNode(ispModel2, _logger).get();
 
     Set<Layer1Edge> layerEdges =
         connectPeerIsps(
-            new IspPeering(_ispAsn, ispModel2.getAsn()), _ispModel, ispModel2, isp1, isp2, _nf);
+            new IspPeering(_ispAsn, ispModel2.getAsn()), _ispModel, ispModel2, isp1, isp2);
 
     assertTrue(isp1.getAllInterfaces().containsKey(ispPeeringInterfaceName(isp2.getHostname())));
     assertTrue(isp2.getAllInterfaces().containsKey(ispPeeringInterfaceName(isp1.getHostname())));
@@ -1165,7 +1165,7 @@ public class IspModelingUtilsTest {
 
   @Test
   public void testCreateInternetNode() {
-    Configuration internet = createInternetNode(_nf);
+    Configuration internet = createInternetNode();
     InterfaceAddress interfaceAddress =
         ConcreteInterfaceAddress.create(
             IspModelingUtils.INTERNET_OUT_ADDRESS,
