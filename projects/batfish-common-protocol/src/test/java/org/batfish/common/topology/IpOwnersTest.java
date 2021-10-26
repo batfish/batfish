@@ -206,23 +206,64 @@ public class IpOwnersTest {
 
   @Test
   public void testExtractHsrp() {
-    Table<Ip, Integer, Set<Interface>> groups = HashBasedTable.create();
-    Interface i =
-        Interface.builder()
-            .setName("name")
-            .setAddress(ConcreteInterfaceAddress.parse("1.2.3.4/24"))
-            .build();
-    extractHsrp(groups, i);
-    assertTrue(groups.isEmpty());
-
-    Ip ip1 = Ip.parse("1.1.1.1");
-    Ip ip2 = Ip.parse("2.2.2.2");
-    i.setHsrpGroups(
-        ImmutableMap.of(
-            1, HsrpGroup.builder().setIps(ImmutableSet.of(ip1, ip2)).setGroupNumber(1).build()));
-    extractHsrp(groups, i);
-    assertThat(groups.get(ip1, 1), equalTo(ImmutableSet.of(i)));
-    assertThat(groups.get(ip2, 1), equalTo(ImmutableSet.of(i)));
+    {
+      Table<Ip, Integer, Set<Interface>> groups = HashBasedTable.create();
+      Interface i =
+          Interface.builder()
+              .setName("name")
+              .setAddress(ConcreteInterfaceAddress.parse("1.2.3.4/24"))
+              .build();
+      extractHsrp(groups, i);
+      assertTrue(groups.isEmpty());
+    }
+    {
+      Table<Ip, Integer, Set<Interface>> groups = HashBasedTable.create();
+      Interface i =
+          Interface.builder()
+              .setName("name")
+              .setAddress(ConcreteInterfaceAddress.parse("1.2.3.4/24"))
+              .build();
+      Ip ip1 = Ip.parse("1.1.1.1");
+      Ip ip2 = Ip.parse("2.2.2.2");
+      i.setHsrpGroups(
+          ImmutableMap.of(
+              1, HsrpGroup.builder().setIps(ImmutableSet.of(ip1, ip2)).setGroupNumber(1).build()));
+      extractHsrp(groups, i);
+      assertThat(groups.get(ip1, 1), equalTo(ImmutableSet.of(i)));
+      assertThat(groups.get(ip2, 1), equalTo(ImmutableSet.of(i)));
+    }
+    {
+      Table<Ip, Integer, Set<Interface>> groups = HashBasedTable.create();
+      Interface i =
+          Interface.builder()
+              .setName("name")
+              .setAddress(ConcreteInterfaceAddress.parse("1.2.3.4/24"))
+              .setActive(false)
+              .build();
+      Ip ip1 = Ip.parse("1.1.1.1");
+      i.setHsrpGroups(
+          ImmutableMap.of(
+              1, HsrpGroup.builder().setIps(ImmutableSet.of(ip1)).setGroupNumber(1).build()));
+      extractHsrp(groups, i);
+      // No HRSP groups since interface is inactive
+      assertTrue(groups.isEmpty());
+    }
+    {
+      Table<Ip, Integer, Set<Interface>> groups = HashBasedTable.create();
+      Interface i =
+          Interface.builder()
+              .setName("name")
+              .setAddress(ConcreteInterfaceAddress.parse("1.2.3.4/24"))
+              .setBlacklisted(true)
+              .build();
+      Ip ip1 = Ip.parse("1.1.1.1");
+      i.setHsrpGroups(
+          ImmutableMap.of(
+              1, HsrpGroup.builder().setIps(ImmutableSet.of(ip1)).setGroupNumber(1).build()));
+      extractHsrp(groups, i);
+      // No HRSP groups since interface is inactive
+      assertTrue(groups.isEmpty());
+    }
   }
 
   @Test
@@ -471,6 +512,46 @@ public class IpOwnersTest {
 
       // Cannot check equality the obvious way with an IdentityHashMap
       assertThat(groups.get(1), allOf(aMapWithSize(1), hasEntry(i, ImmutableSet.of(ip1))));
+    }
+    {
+      // inactive
+      Map<Integer, Map<Interface, Set<Ip>>> groups = new HashMap<>();
+      Ip ip1 = Ip.parse("1.1.1.1");
+      Interface i =
+          Interface.builder()
+              .setName("name")
+              .setAddress(sourceAddress)
+              .setVrrpGroups(
+                  ImmutableSortedMap.of(
+                      1,
+                      VrrpGroup.builder()
+                          .setSourceAddress(sourceAddress)
+                          .setVirtualAddresses(ip1)
+                          .build()))
+              .setActive(false)
+              .build();
+      extractVrrp(groups, i);
+      assertTrue(groups.isEmpty());
+    }
+    {
+      // blacklisted
+      Map<Integer, Map<Interface, Set<Ip>>> groups = new HashMap<>();
+      Ip ip1 = Ip.parse("1.1.1.1");
+      Interface i =
+          Interface.builder()
+              .setName("name")
+              .setAddress(sourceAddress)
+              .setVrrpGroups(
+                  ImmutableSortedMap.of(
+                      1,
+                      VrrpGroup.builder()
+                          .setSourceAddress(sourceAddress)
+                          .setVirtualAddresses(ip1)
+                          .build()))
+              .setBlacklisted(true)
+              .build();
+      extractVrrp(groups, i);
+      assertTrue(groups.isEmpty());
     }
   }
 

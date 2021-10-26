@@ -258,6 +258,10 @@ public final class IpOwners {
   /** extract HSRP info from a given interface and add it to the {@code hsrpGroups} table */
   @VisibleForTesting
   static void extractHsrp(Table<Ip, Integer, Set<Interface>> hsrpGroups, Interface i) {
+    // Inactive interfaces could never win a HSRP election
+    if (!i.getActive() || i.getBlacklisted()) {
+      return;
+    }
     // collect hsrp info
     i.getHsrpGroups()
         .values()
@@ -342,6 +346,10 @@ public final class IpOwners {
   /** extract VRRP info from a given interface and add it to the {@code vrrpGroups} table */
   @VisibleForTesting
   static void extractVrrp(Map<Integer, Map<Interface, Set<Ip>>> vrrpGroups, Interface i) {
+    // Inactive interfaces could never win a VRRP election
+    if (!i.getActive() || i.getBlacklisted()) {
+      return;
+    }
     i.getVrrpGroups()
         .forEach(
             (vrid, vrrpGroup) -> {
