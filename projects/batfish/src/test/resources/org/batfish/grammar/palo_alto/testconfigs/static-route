@@ -12,3 +12,5 @@ set network virtual-router vr2 routing-table ip static-route ROUTE4 destination 
 set network virtual-router vr2 routing-table ip static-route ROUTE4 nexthop next-vr vr2
 set network virtual-router vr2 routing-table ip static-route ROUTE5 destination 2.0.0.0/8
 set network virtual-router vr2 routing-table ip static-route ROUTE5 nexthop ip-address 2.2.2.2/32
+set network virtual-router vr2 routing-table ip static-route ROUTE6 destination 6.0.0.0/8
+set network virtual-router vr2 routing-table ip static-route ROUTE6 nexthop discard

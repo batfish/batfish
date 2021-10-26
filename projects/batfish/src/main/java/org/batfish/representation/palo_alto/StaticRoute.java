@@ -14,17 +14,12 @@ public class StaticRoute implements Serializable {
   private static final int DEFAULT_METRIC = 10;
 
   private int _adminDistance;
-
   private Prefix _destination;
-
   private int _metric;
-
   private final String _name;
-
-  private String _nextHopInterface;
-
-  private Ip _nextHopIp;
-
+  private boolean _nextHopDiscard;
+  private @Nullable String _nextHopInterface;
+  private @Nullable Ip _nextHopIp;
   private @Nullable String _nextVr;
 
   public StaticRoute(String name) {
@@ -49,11 +44,11 @@ public class StaticRoute implements Serializable {
     return _name;
   }
 
-  public String getNextHopInterface() {
+  public @Nullable String getNextHopInterface() {
     return _nextHopInterface;
   }
 
-  public Ip getNextHopIp() {
+  public @Nullable Ip getNextHopIp() {
     return _nextHopIp;
   }
 
@@ -73,15 +68,39 @@ public class StaticRoute implements Serializable {
     _metric = metric;
   }
 
+  public boolean getNextHopDiscard() {
+    return _nextHopDiscard;
+  }
+
+  public void setNextHopDiscard() {
+    _nextHopDiscard = true;
+    // TODO: will this clear or warn?
+    _nextHopInterface = null;
+    _nextHopIp = null;
+    _nextVr = null;
+  }
+
   public void setNextHopInterface(String nextHopInterface) {
     _nextHopInterface = nextHopInterface;
+    // keep nexthop ip-address
+    // TODO: will this clear or warn?
+    _nextHopDiscard = false;
+    _nextVr = null;
   }
 
   public void setNextHopIp(Ip nextHopIp) {
     _nextHopIp = nextHopIp;
+    // keep nexthop interface
+    // TODO: will this clear or warn?
+    _nextHopDiscard = false;
+    _nextVr = null;
   }
 
   public void setNextVr(@Nullable String nextVr) {
     _nextVr = nextVr;
+    // TODO: will this clear or warn?
+    _nextHopDiscard = false;
+    _nextHopIp = null;
+    _nextHopInterface = null;
   }
 }

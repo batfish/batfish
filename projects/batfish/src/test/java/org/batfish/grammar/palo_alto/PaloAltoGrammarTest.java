@@ -208,6 +208,7 @@ import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.StubType;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopVrf;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -2625,6 +2626,15 @@ public final class PaloAltoGrammarTest {
                     allOf(
                         hasPrefix(Prefix.strict("10.0.0.0/8")),
                         hasNextHop(NextHopVrf.of(vrName)))))));
+    assertThat(
+        c,
+        hasVrf(
+            vr2Name,
+            hasStaticRoutes(
+                hasItem(
+                    allOf(
+                        hasPrefix(Prefix.strict("6.0.0.0/8")),
+                        hasNextHop(NextHopDiscard.instance()))))));
     // static-route with undefined next-vr should not be converted
     assertThat(c, hasVrf(vr2Name, hasStaticRoutes(not(hasItem(hasPrefix(Prefix.ZERO))))));
     // static-route with next-vr same as its own virtual-router should not be converted
