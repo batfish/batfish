@@ -50,7 +50,6 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
-import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
@@ -211,7 +210,7 @@ public final class IspModelingUtils {
 
     Set<IspPeering> ispPeerings = combineIspPeerings(ispConfigurations, ispModels, warnings);
 
-    return createInternetAndIspNodes(ispModels, ispPeerings, new NetworkFactory(), logger);
+    return createInternetAndIspNodes(ispModels, ispPeerings, logger);
   }
 
   /**
@@ -686,21 +685,18 @@ public final class IspModelingUtils {
   }
 
   private static ModeledNodes createInternetAndIspNodes(
-      Map<Long, IspModel> asnToIspModel,
-      Set<IspPeering> ispPeerings,
-      NetworkFactory nf,
-      BatfishLogger logger) {
+      Map<Long, IspModel> asnToIspModel, Set<IspPeering> ispPeerings, BatfishLogger logger) {
     ModeledNodes modeledNodes = new ModeledNodes();
 
     asnToIspModel
         .values()
         .forEach(
             ispModel ->
-                createIspNode(ispModel, nf, logger)
+                createIspNode(ispModel, logger)
                     .ifPresent(
                         ispConfiguration -> {
                           Set<Layer1Edge> layer1Edges =
-                              connectIspToSnapshot(ispModel, ispConfiguration, nf, logger);
+                              connectIspToSnapshot(ispModel, ispConfiguration, logger);
 
                           modeledNodes.addConfiguration(ispConfiguration);
                           layer1Edges.forEach(modeledNodes::addLayer1Edge);
@@ -715,7 +711,7 @@ public final class IspModelingUtils {
         asnToIspModel.values().stream().anyMatch(model -> model.getRole() == Role.TRANSIT);
 
     if (needInternet) {
-      Configuration internet = createInternetNode(nf);
+      Configuration internet = createInternetNode();
       modeledNodes.addConfiguration(internet);
 
       modeledNodes.getConfigurations().values().stream()
@@ -725,7 +721,7 @@ public final class IspModelingUtils {
                 long ispAsn = getAsnOfIspNode(c);
                 if (asnToIspModel.get(ispAsn).getRole() == Role.TRANSIT) {
                   Set<Layer1Edge> layer1Edges =
-                      connectIspToInternet(ispAsn, asnToIspModel.get(ispAsn), c, internet, nf);
+                      connectIspToInternet(ispAsn, asnToIspModel.get(ispAsn), c, internet);
                   layer1Edges.forEach(modeledNodes::addLayer1Edge);
                 }
               });
@@ -744,7 +740,7 @@ public final class IspModelingUtils {
           }
           Set<Layer1Edge> layer1Edges =
               connectPeerIsps(
-                  ispPeering, ispModel1, ispModel2, ispConfiguration1, ispConfiguration2, nf);
+                  ispPeering, ispModel1, ispModel2, ispConfiguration1, ispConfiguration2);
           layer1Edges.forEach(modeledNodes::addLayer1Edge);
         });
 
@@ -757,13 +753,12 @@ public final class IspModelingUtils {
       IspModel ispModel1,
       IspModel ispModel2,
       Configuration ispConfiguration1,
-      Configuration ispConfiguration2,
-      NetworkFactory nf) {
+      Configuration ispConfiguration2) {
 
     Interface iface1 =
-        createIspPeeringInterface(ispConfiguration1, ispConfiguration2.getHostname(), nf);
+        createIspPeeringInterface(ispConfiguration1, ispConfiguration2.getHostname());
     Interface iface2 =
-        createIspPeeringInterface(ispConfiguration2, ispConfiguration1.getHostname(), nf);
+        createIspPeeringInterface(ispConfiguration2, ispConfiguration1.getHostname());
 
     createIspPeeringBgpPeer(
         ispConfiguration1, ispModel1, iface1.getName(), ispPeering.getAsn1(), ispPeering.getAsn2());
@@ -807,8 +802,8 @@ public final class IspModelingUtils {
   }
 
   private static Interface createIspPeeringInterface(
-      Configuration ispConfiguration, String otherHostname, NetworkFactory nf) {
-    return nf.interfaceBuilder()
+      Configuration ispConfiguration, String otherHostname) {
+    return Interface.builder()
         .setOwner(ispConfiguration)
         .setName(ispPeeringInterfaceName(otherHostname))
         .setVrf(ispConfiguration.getDefaultVrf())
@@ -819,9 +814,9 @@ public final class IspModelingUtils {
 
   /** Creates the modeled Internet node and inserts it into {@code modeledNodes} */
   @VisibleForTesting
-  static Configuration createInternetNode(NetworkFactory nf) {
+  static Configuration createInternetNode() {
     Configuration internetConfiguration =
-        nf.configurationBuilder()
+        Configuration.builder()
             .setHostname(INTERNET_HOST_NAME)
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
             .setDeviceModel(DeviceModel.BATFISH_INTERNET)
@@ -892,8 +887,7 @@ public final class IspModelingUtils {
       long ispAsn,
       IspModel ispModel,
       Configuration ispConfiguration,
-      Configuration internetConfiguration,
-      NetworkFactory nf) {
+      Configuration internetConfiguration) {
 
     // add a static route for each additional prefix announced to the internet
     ispConfiguration
@@ -930,7 +924,7 @@ public final class IspModelingUtils {
       ispConfiguration.getIpAccessLists().put(fromInternet.getName(), fromInternet);
     }
     // Create Internet-facing interface and apply filters.
-    nf.interfaceBuilder()
+    Interface.builder()
         .setOwner(ispConfiguration)
         .setVrf(ispConfiguration.getDefaultVrf())
         .setName(ISP_TO_INTERNET_INTERFACE_NAME)
@@ -941,7 +935,7 @@ public final class IspModelingUtils {
         .build();
 
     Interface internetIface =
-        nf.interfaceBuilder()
+        Interface.builder()
             .setOwner(internetConfiguration)
             .setName(internetToIspInterfaceName(ispConfiguration.getHostname()))
             .setVrf(internetConfiguration.getDefaultVrf())
@@ -983,15 +977,14 @@ public final class IspModelingUtils {
    * inserts the node into {@code modeledNodes}. Returns empty if no node is created.
    */
   @VisibleForTesting
-  static Optional<Configuration> createIspNode(
-      IspModel ispModel, NetworkFactory nf, BatfishLogger logger) {
+  static Optional<Configuration> createIspNode(IspModel ispModel, BatfishLogger logger) {
     if (ispModel.getSnapshotConnections().isEmpty()) {
       logger.warnf("ISP information for ASN '%s' is not correct", ispModel.getAsn());
       return Optional.empty();
     }
 
     Configuration ispConfiguration =
-        nf.configurationBuilder()
+        Configuration.builder()
             .setHostname(ispModel.getHostname())
             .setHumanName(ispModel.getName())
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
@@ -1031,7 +1024,7 @@ public final class IspModelingUtils {
    */
   @VisibleForTesting
   static Set<Layer1Edge> connectIspToSnapshot(
-      IspModel ispModel, Configuration ispConfiguration, NetworkFactory nf, BatfishLogger logger) {
+      IspModel ispModel, Configuration ispConfiguration, BatfishLogger logger) {
 
     // Get the network-facing traffic filtering policy for this ISP.
     IspTrafficFilteringPolicy fp =
@@ -1056,7 +1049,7 @@ public final class IspModelingUtils {
                   .forEach(
                       iface -> {
                         Interface ispInterface =
-                            nf.interfaceBuilder()
+                            Interface.builder()
                                 .setOwner(ispConfiguration)
                                 .setName(iface.getName())
                                 .setVrf(ispConfiguration.getDefaultVrf())

@@ -84,8 +84,9 @@ public class NetworkFactory {
         + "~";
   }
 
+  /** Generates an interface with a generated name and {@link InterfaceType#PHYSICAL} type. */
   public Interface.Builder interfaceBuilder() {
-    return Interface.builder(() -> generateName(Interface.class));
+    return Interface.builder(() -> generateName(Interface.class)).setType(InterfaceType.PHYSICAL);
   }
 
   public OspfArea.Builder ospfAreaBuilder() {
