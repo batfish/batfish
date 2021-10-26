@@ -2,6 +2,7 @@ package org.batfish.dataplane.rib;
 
 import static org.batfish.datamodel.ResolutionRestriction.alwaysTrue;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.SetMultimap;
 import java.util.HashMap;
@@ -63,7 +64,7 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
 
     @Nonnull
     Set<Bgpv4Route> getRoutesWithNhip(Ip nhip) {
-      return _bgpRoutesByNhip.get(nhip);
+      return ImmutableSet.copyOf(_bgpRoutesByNhip.get(nhip));
     }
 
     void updateMainRibPrefixes(RibDelta<AnnotatedRoute<AbstractRoute>> mainRibDelta) {
