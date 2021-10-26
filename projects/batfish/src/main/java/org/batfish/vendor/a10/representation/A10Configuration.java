@@ -74,7 +74,12 @@ import org.batfish.datamodel.transformation.ApplyAny;
 import org.batfish.datamodel.transformation.Noop;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
+import org.batfish.referencelibrary.AddressGroup;
+import org.batfish.referencelibrary.GeneratedRefBookUtils;
+import org.batfish.referencelibrary.GeneratedRefBookUtils.BookType;
+import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.vendor.VendorConfiguration;
+import org.batfish.vendor.a10.representation.A10Conversion.VirtualServerTargetVirtualAddressExtractor;
 
 /** Datamodel class representing an A10 device configuration. */
 public final class A10Configuration extends VendorConfiguration {
@@ -350,7 +355,33 @@ public final class A10Configuration extends VendorConfiguration {
     convertBgp();
 
     markStructures();
+
+    // add a reference book for virtual addresses
+    generateReferenceBook();
+
     return ImmutableList.of(_c);
+  }
+
+  /** Creates and puts a {@link ReferenceBook} for virtual servers defined in the configuration */
+  private void generateReferenceBook() {
+    String virtualAddressesBookname =
+        GeneratedRefBookUtils.getName(_hostname, BookType.VirtualAddresses);
+    _c.getGeneratedReferenceBooks()
+        .put(
+            virtualAddressesBookname,
+            ReferenceBook.builder(virtualAddressesBookname)
+                .setAddressGroups(
+                    _virtualServers.values().stream()
+                        .map(
+                            vServer ->
+                                new AddressGroup(
+                                    ImmutableSortedSet.of(
+                                        VirtualServerTargetVirtualAddressExtractor.INSTANCE
+                                            .visit(vServer.getTarget())
+                                            .toString()),
+                                    vServer.getName()))
+                        .collect(ImmutableList.toImmutableList()))
+                .build());
   }
 
   private void convertBgp() {
