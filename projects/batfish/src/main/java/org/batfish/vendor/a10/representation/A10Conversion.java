@@ -517,14 +517,45 @@ public class A10Conversion {
   }
 
   /**
-   * Returns a boolean indicating if the specified VI interface should have VRRP-A configuration
-   * associated with it.
+   * Returns a boolean indicating if the specified VI interface should have VRRP configuration
+   * associated with it when vrrp-a is enabled.
    */
-  static boolean vrrpAppliesToInterface(org.batfish.datamodel.Interface iface) {
+  static boolean vrrpAEnabledAppliesToInterface(
+      org.batfish.datamodel.Interface iface, Set<Ip> peerIps) {
+    if (iface.getInterfaceType() == InterfaceType.LOOPBACK) {
+      return false;
+    }
+    return iface.getAllAddresses().stream()
+        .filter(ConcreteInterfaceAddress.class::isInstance)
+        .map(ConcreteInterfaceAddress.class::cast)
+        .map(ConcreteInterfaceAddress::getPrefix)
+        .anyMatch(prefix -> peerIps.stream().anyMatch(prefix::containsIp));
+  }
+
+  /**
+   * Returns a boolean indicating if the specified VI interface should have VRRP configuration
+   * associated with it when vrrp-a is disabled.
+   */
+  static boolean vrrpADisabledAppliesToInterface(org.batfish.datamodel.Interface iface) {
     if (iface.getInterfaceType() == InterfaceType.LOOPBACK) {
       return false;
     }
     return iface.getConcreteAddress() != null;
+  }
+
+  /**
+   * Returns a boolean indicating if the specified VI interface should have VRRP configuration
+   * associated with it when ha is enabled.
+   */
+  static boolean haAppliesToInterface(org.batfish.datamodel.Interface iface, Ip connMirrorIp) {
+    if (iface.getInterfaceType() == InterfaceType.LOOPBACK) {
+      return false;
+    }
+    return iface.getAllAddresses().stream()
+        .filter(ConcreteInterfaceAddress.class::isInstance)
+        .map(ConcreteInterfaceAddress.class::cast)
+        .map(ConcreteInterfaceAddress::getPrefix)
+        .anyMatch(prefix -> prefix.containsIp(connMirrorIp));
   }
 
   /** Convert the BGP process and associated routing policies, and attach them to the config. */
