@@ -10,6 +10,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.dataplane.rib.BgpRib;
+import org.batfish.dataplane.rib.BgpRib.MultipathRibDelta;
 import org.batfish.dataplane.rib.RibDelta;
 
 /** Keeps track of BGP routes that depend on routes in the main RIB */
@@ -43,22 +44,25 @@ public final class BgpRouteDependencyTracker<
    *
    * @param route route whose dependencies we should remove
    * @param rib the RIB containing the dependencies
-   * @return a {@link RibDelta} containing all removed dependencies
+   * @return a {@link MultipathRibDelta} containing all removed dependencies
    */
   @Nonnull
-  RibDelta<R> deleteRoute(D route, BgpRib<R> rib) {
+  MultipathRibDelta<R> deleteRoute(D route, BgpRib<R> rib) {
     Set<R> dependents = _routeDependents.get(route);
     if (dependents == null) {
       // Nothing to process
-      return RibDelta.empty();
+      return new MultipathRibDelta<>(RibDelta.empty(), RibDelta.empty());
     }
-    RibDelta.Builder<R> b = RibDelta.builder();
+    RibDelta.Builder<R> bestPathDelta = RibDelta.builder();
+    RibDelta.Builder<R> multipathDelta = RibDelta.builder();
     for (R depRoute : dependents) {
-      b.from(rib.removeRouteGetDelta(depRoute));
+      MultipathRibDelta<R> delta = rib.multipathRemoveRouteGetDelta(depRoute);
+      bestPathDelta.from(delta.getBestPathDelta());
+      multipathDelta.from(delta.getMultipathDelta());
     }
     // Now the route is gone and will have no dependents
     _routeDependents.remove(route);
 
-    return b.build();
+    return new MultipathRibDelta<>(bestPathDelta.build(), multipathDelta.build());
   }
 }
