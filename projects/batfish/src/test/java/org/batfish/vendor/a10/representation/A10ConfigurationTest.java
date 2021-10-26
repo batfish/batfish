@@ -11,9 +11,11 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
+import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.GeneratedRefBookUtils;
 import org.batfish.referencelibrary.GeneratedRefBookUtils.BookType;
 import org.batfish.referencelibrary.ReferenceBook;
@@ -82,8 +84,8 @@ public class A10ConfigurationTest {
                 ReferenceBook.builder(bookName)
                     .setAddressGroups(
                         ImmutableList.of(
-                            new VirtualServerTargetToAddressGroup("vs1").visit(target1),
-                            new VirtualServerTargetToAddressGroup("vs2").visit(target2)))
+                            new AddressGroup(ImmutableSortedSet.of("1.1.1.1"), "vs1"),
+                            new AddressGroup(ImmutableSortedSet.of("2.2.2.2"), "vs2")))
                     .build())));
   }
 }

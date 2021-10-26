@@ -361,10 +361,10 @@ public class A10Conversion {
   }
 
   /** Extracts the virtual {@link Ip} of a {@link VirtualServerTarget} that the device may own. */
-  private static final class VirtualServerTargetVirtualAddressExtractor
+  static final class VirtualServerTargetVirtualAddressExtractor
       implements VirtualServerTargetVisitor<Ip> {
     // TODO: this may need to return a set of IPs; or a prefix or an IP.
-    private static final VirtualServerTargetVirtualAddressExtractor INSTANCE =
+    static final VirtualServerTargetVirtualAddressExtractor INSTANCE =
         new VirtualServerTargetVirtualAddressExtractor();
 
     private static @Nonnull Ip extractIp(VirtualServer virtualServer) {
