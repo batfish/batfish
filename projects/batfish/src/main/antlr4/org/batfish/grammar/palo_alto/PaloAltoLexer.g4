@@ -181,6 +181,8 @@ DISABLE: 'disable';
 
 DISABLED: 'disabled';
 
+DISCARD: 'discard';
+
 DISPLAY_NAME: 'display-name';
 
 DNS: 'dns';
