@@ -16,6 +16,7 @@ junit_tests(
     deps = [
         "//projects/batfish",
         "//projects/batfish-common-protocol:common",
+        "//projects/batfish-common-protocol:common_testlib",
         "//projects/bdd",
         "@maven//:com_google_guava_guava",
         "@maven//:junit_junit",

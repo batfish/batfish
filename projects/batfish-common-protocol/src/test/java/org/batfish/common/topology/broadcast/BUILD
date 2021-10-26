@@ -12,6 +12,7 @@ junit_tests(
     ]),
     deps = [
         "//projects/batfish-common-protocol:common",
+        "//projects/batfish-common-protocol:common_testlib",
         "@maven//:com_fasterxml_jackson_core_jackson_core",
         "@maven//:com_fasterxml_jackson_core_jackson_databind",
         "@maven//:com_google_code_findbugs_jsr305",
