@@ -464,7 +464,7 @@ public class A10GrammarTest {
             allOf(
                 hasInterfaceType(InterfaceType.PHYSICAL),
                 hasSwitchPortMode(SwitchportMode.TRUNK),
-                hasAllowedVlans(IntegerSpace.of(2)),
+                hasAllowedVlans(IntegerSpace.of(Range.closed(2, 3))),
                 hasNativeVlan(equalTo(3)))));
     assertThat(
         c,
@@ -482,7 +482,7 @@ public class A10GrammarTest {
             allOf(
                 hasInterfaceType(InterfaceType.PHYSICAL),
                 hasSwitchPortMode(SwitchportMode.TRUNK),
-                hasAllowedVlans(IntegerSpace.EMPTY),
+                hasAllowedVlans(IntegerSpace.of(3)),
                 hasNativeVlan(equalTo(3)))));
     assertThat(
         c,

@@ -65,7 +65,6 @@ import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.VrrpGroup;
@@ -765,22 +764,22 @@ public final class A10Configuration extends VendorConfiguration {
     viIface.setSwitchportMode(SwitchportMode.NONE);
     List<Vlan> taggedVlans = getTaggedVlans(iface);
     Optional<Vlan> untaggedVlan = getUntaggedVlan(iface);
+    IntegerSpace.Builder allVlans = IntegerSpace.builder();
     if (untaggedVlan.isPresent()) {
       viIface.setSwitchportMode(SwitchportMode.TRUNK);
       viIface.setSwitchport(true);
       viIface.setNativeVlan(untaggedVlan.get().getNumber());
+      allVlans.including(untaggedVlan.get().getNumber());
     }
     if (!taggedVlans.isEmpty()) {
       viIface.setSwitchportMode(SwitchportMode.TRUNK);
       viIface.setSwitchport(true);
-      viIface.setAllowedVlans(
-          IntegerSpace.unionOfSubRanges(
-              taggedVlans.stream()
-                  .map(v -> new SubRange(v.getNumber()))
-                  .collect(ImmutableList.toImmutableList())));
+      taggedVlans.forEach(vlan -> allVlans.including(vlan.getNumber()));
     }
+    viIface.setAllowedVlans(allVlans.build());
     if (iface.getType() == Interface.Type.VE) {
-      viIface.setVlan(iface.getNumber());
+      int vlanNumber = iface.getNumber();
+      viIface.setVlan(vlanNumber);
     }
   }
 
