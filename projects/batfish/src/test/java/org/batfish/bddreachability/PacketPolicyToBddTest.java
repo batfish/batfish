@@ -1,13 +1,12 @@
 package org.batfish.bddreachability;
 
-import static org.batfish.bddreachability.TransitionMatchers.mapsForward;
-import static org.batfish.bddreachability.transition.Transitions.IDENTITY;
+import static org.batfish.bddreachability.EdgeMatchers.edge;
 import static org.batfish.bddreachability.transition.Transitions.ZERO;
+import static org.batfish.bddreachability.transition.Transitions.constraint;
+import static org.batfish.bddreachability.transition.Transitions.eraseAndSet;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.aMapWithSize;
-import static org.hamcrest.Matchers.anEmptyMap;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -15,11 +14,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.Collections;
+import java.util.List;
 import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.IpsRoutedOutInterfacesFactory.IpsRoutedOutInterfaces;
 import org.batfish.bddreachability.PacketPolicyToBdd.BoolExprToBdd;
-import org.batfish.bddreachability.transition.TransformationToTransition;
-import org.batfish.bddreachability.transition.Transition;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBdd;
@@ -49,7 +47,8 @@ import org.batfish.datamodel.packet_policy.Return;
 import org.batfish.datamodel.packet_policy.TrueExpr;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
-import org.hamcrest.Matcher;
+import org.batfish.symbolic.state.PacketPolicyAction;
+import org.batfish.symbolic.state.PacketPolicyStatement;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -60,50 +59,55 @@ public final class PacketPolicyToBddTest {
 
   private BDDPacket _bddPacket;
   private IpAccessListToBdd _ipAccessListToBdd;
-  private BDD _one;
-  private BDD _zero;
 
-  private Matcher<Transition> mapsOne(BDD expected) {
-    return mapsForward(_one, expected);
+  private final String _hostname = "hostname";
+  private final String _policyName = "policy";
+
+  private PacketPolicyStatement statement(int id) {
+    return new PacketPolicyStatement(_hostname, _policyName, id);
+  }
+
+  private PacketPolicyAction fibLookupState(String vrfName) {
+    return new PacketPolicyAction(
+        _hostname, _policyName, new FibLookup(new LiteralVrfName(vrfName)));
   }
 
   @Before
   public void setUp() {
     _bddPacket = new BDDPacket();
-    _one = _bddPacket.getFactory().one();
-    _zero = _bddPacket.getFactory().zero();
     _ipAccessListToBdd =
         new IpAccessListToBddImpl(
             _bddPacket, BDDSourceManager.empty(_bddPacket), ImmutableMap.of(), ImmutableMap.of());
   }
 
+  private final PacketPolicyAction _dropState =
+      new PacketPolicyAction(_hostname, _policyName, Drop.instance());
+
   @Test
   public void testDefaultAction() {
-    PacketPolicyToBdd evaluator =
+    List<Edge> edges =
         PacketPolicyToBdd.evaluate(
-            new PacketPolicy("name", ImmutableList.of(), new Return(Drop.instance())),
+            _hostname,
+            new PacketPolicy(_policyName, ImmutableList.of(), new Return(Drop.instance())),
             _ipAccessListToBdd,
             EMPTY_IPS_ROUTED_OUT_INTERFACES);
     // Everything is dropped
-    assertEquals(evaluator.getToDrop(), IDENTITY);
-    assertThat(evaluator.getFibLookups(), anEmptyMap());
+    assertThat(edges, contains(edge(statement(0), _dropState)));
   }
 
   @Test
   public void testReturn() {
-    PacketPolicyToBdd evaluator =
+    List<Edge> edges =
         PacketPolicyToBdd.evaluate(
+            _hostname,
             new PacketPolicy(
-                "name",
+                _policyName,
                 ImmutableList.of(new Return(new FibLookup(new LiteralVrfName("vrf")))),
                 new Return(Drop.instance())),
             _ipAccessListToBdd,
             EMPTY_IPS_ROUTED_OUT_INTERFACES);
     // Everything is looked up in "vrf"
-    assertEquals(ZERO, evaluator.getToDrop());
-    assertThat(evaluator.getFibLookups(), aMapWithSize(1));
-    assertThat(
-        evaluator.getFibLookups(), hasEntry(new FibLookup(new LiteralVrfName("vrf")), IDENTITY));
+    assertThat(edges, contains(edge(statement(0), fibLookupState("vrf"))));
   }
 
   @Test
@@ -124,10 +128,11 @@ public final class PacketPolicyToBddTest {
                 new MatchHeaderSpace(
                     HeaderSpace.builder().setDstIps(UniverseIpSpace.INSTANCE).build())),
             ImmutableList.of(innerIf, new Return(new FibLookup(new LiteralVrfName(vrf2)))));
-    PacketPolicyToBdd evaluator =
+    List<Edge> edges =
         PacketPolicyToBdd.evaluate(
+            _hostname,
             new PacketPolicy(
-                "name",
+                _policyName,
                 ImmutableList.of(outerIf, new Return(new FibLookup(new LiteralVrfName(vrf3)))),
                 new Return(Drop.instance())),
             _ipAccessListToBdd,
@@ -135,42 +140,47 @@ public final class PacketPolicyToBddTest {
 
     BDD dstIpBdd = new IpSpaceToBDD(_bddPacket.getDstIp()).toBDD(dstIps);
 
-    // Nothing to Drop
-    assertEquals(ZERO, evaluator.getToDrop());
-    assertThat(evaluator.getFibLookups(), aMapWithSize(3));
-    // Inner if captures 10.0.0.0/8, vrf 1
     assertThat(
-        evaluator.getFibLookups(),
-        hasEntry(equalTo(new FibLookup(new LiteralVrfName(vrf1))), mapsOne(dstIpBdd)));
-    // Outer if captures everything else, vrf 2
-    assertThat(
-        evaluator.getFibLookups(),
-        hasEntry(equalTo(new FibLookup(new LiteralVrfName(vrf2))), mapsOne(dstIpBdd.not())));
-    // Last statement captures no packets, but is visited in the evaluation
-    assertThat(
-        evaluator.getFibLookups(),
-        hasEntry(equalTo(new FibLookup(new LiteralVrfName(vrf3))), mapsOne(_zero)));
+        edges,
+        containsInAnyOrder(
+            // outer if
+            edge(statement(0), statement(1)),
+            // inner if then branch
+            edge(statement(1), statement(2), constraint(dstIpBdd)),
+            // return vrf1
+            edge(statement(2), fibLookupState(vrf1)),
+            // inner if fall-through
+            edge(statement(1), statement(3), constraint(dstIpBdd.not())),
+            // return vrf2
+            edge(statement(3), fibLookupState(vrf2)),
+            // outer if fall-through
+            edge(statement(0), statement(4), ZERO),
+            // return vrf3
+            edge(statement(4), fibLookupState(vrf3))));
   }
+  // TODO test edge to default action is generated iff fall-through
 
   @Test
   public void testApplyTransformation() {
     FibLookup fl = new FibLookup(new LiteralVrfName("vrf"));
-    Ip ip = Ip.parse("8.8.8.8.");
+    Ip ip = Ip.parse("8.8.8.8");
     Transformation transformation =
         Transformation.always().apply(TransformationStep.assignSourceIp(ip, ip)).build();
-    PacketPolicyToBdd evaluator =
+    List<Edge> edges =
         PacketPolicyToBdd.evaluate(
+            _hostname,
             new PacketPolicy(
-                "name",
+                _policyName,
                 ImmutableList.of(new ApplyTransformation(transformation), new Return(fl)),
                 new Return(Drop.instance())),
             _ipAccessListToBdd,
             EMPTY_IPS_ROUTED_OUT_INTERFACES);
+    BDD ipBdd = _bddPacket.getSrcIpSpaceToBDD().toBDD(ip);
     assertThat(
-        evaluator.getFibLookups().get(fl),
-        equalTo(
-            new TransformationToTransition(_ipAccessListToBdd.getBDDPacket(), _ipAccessListToBdd)
-                .toTransition(transformation)));
+        edges,
+        containsInAnyOrder(
+            edge(statement(0), statement(1), eraseAndSet(_bddPacket.getSrcIp(), ipBdd)),
+            edge(statement(1), fibLookupState("vrf"))));
   }
 
   @Test
@@ -250,10 +260,11 @@ public final class PacketPolicyToBddTest {
   public void testConjunction() {
     FibLookup fl = new FibLookup(new LiteralVrfName("vrf"));
     {
-      PacketPolicyToBdd evaluator =
+      List<Edge> edges =
           PacketPolicyToBdd.evaluate(
+              _hostname,
               new PacketPolicy(
-                  "name",
+                  _policyName,
                   ImmutableList.of(
                       new If(
                           Conjunction.of(TrueExpr.instance()),
@@ -261,14 +272,21 @@ public final class PacketPolicyToBddTest {
                   new Return(Drop.instance())),
               _ipAccessListToBdd,
               EMPTY_IPS_ROUTED_OUT_INTERFACES);
-      assertThat(evaluator.getFibLookups().get(fl), mapsOne(_one));
+      assertThat(
+          edges,
+          contains(
+              edge(statement(0), statement(1)),
+              edge(statement(1), fibLookupState("vrf")),
+              edge(statement(0), statement(2), ZERO),
+              edge(statement(2), _dropState)));
     }
 
     {
-      PacketPolicyToBdd evaluator =
+      List<Edge> edges =
           PacketPolicyToBdd.evaluate(
+              _hostname,
               new PacketPolicy(
-                  "name",
+                  _policyName,
                   ImmutableList.of(
                       new If(
                           Conjunction.of(TrueExpr.instance(), FalseExpr.instance()),
@@ -276,7 +294,13 @@ public final class PacketPolicyToBddTest {
                   new Return(Drop.instance())),
               _ipAccessListToBdd,
               EMPTY_IPS_ROUTED_OUT_INTERFACES);
-      assertThat(evaluator.getToDrop(), mapsOne(_one));
+      assertThat(
+          edges,
+          contains(
+              edge(statement(0), statement(1), ZERO),
+              edge(statement(1), fibLookupState("vrf")),
+              edge(statement(0), statement(2)),
+              edge(statement(2), _dropState)));
     }
   }
 }

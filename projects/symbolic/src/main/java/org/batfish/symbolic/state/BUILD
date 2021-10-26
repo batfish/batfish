@@ -9,6 +9,7 @@ java_library(
         "*.java",
     ]),
     deps = [
+        "//projects/batfish-common-protocol:common",
         "@maven//:com_google_code_findbugs_jsr305",
     ],
 )

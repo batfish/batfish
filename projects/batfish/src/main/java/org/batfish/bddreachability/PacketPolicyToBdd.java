@@ -1,42 +1,34 @@
 package org.batfish.bddreachability;
 
-import static org.batfish.bddreachability.transition.Transitions.IDENTITY;
-import static org.batfish.bddreachability.transition.Transitions.ZERO;
-import static org.batfish.bddreachability.transition.Transitions.compose;
-import static org.batfish.bddreachability.transition.Transitions.constraint;
-import static org.batfish.bddreachability.transition.Transitions.or;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.IpsRoutedOutInterfacesFactory.IpsRoutedOutInterfaces;
 import org.batfish.bddreachability.transition.TransformationToTransition;
 import org.batfish.bddreachability.transition.Transition;
-import org.batfish.bddreachability.transition.Zero;
 import org.batfish.common.bdd.BDDOps;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.datamodel.packet_policy.Action;
-import org.batfish.datamodel.packet_policy.ActionVisitor;
 import org.batfish.datamodel.packet_policy.ApplyTransformation;
 import org.batfish.datamodel.packet_policy.BoolExprVisitor;
 import org.batfish.datamodel.packet_policy.Conjunction;
-import org.batfish.datamodel.packet_policy.Drop;
 import org.batfish.datamodel.packet_policy.FalseExpr;
-import org.batfish.datamodel.packet_policy.FibLookup;
 import org.batfish.datamodel.packet_policy.FibLookupOutgoingInterfaceIsOneOf;
-import org.batfish.datamodel.packet_policy.FibLookupOverrideLookupIp;
 import org.batfish.datamodel.packet_policy.If;
 import org.batfish.datamodel.packet_policy.PacketMatchExpr;
 import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.packet_policy.Return;
+import org.batfish.datamodel.packet_policy.Statement;
 import org.batfish.datamodel.packet_policy.StatementVisitor;
 import org.batfish.datamodel.packet_policy.TrueExpr;
+import org.batfish.symbolic.state.PacketPolicyAction;
+import org.batfish.symbolic.state.PacketPolicyStatement;
 
 /**
  * Provides the ability to convert a {@link PacketPolicy} into sets of BDDs corresponding to a
@@ -44,110 +36,131 @@ import org.batfish.datamodel.packet_policy.TrueExpr;
  */
 @ParametersAreNonnullByDefault
 class PacketPolicyToBdd {
+  @Nonnull private final PacketPolicy _policy;
   @Nonnull private final BoolExprToBdd _boolExprToBdd;
-  @Nonnull private Transition _toDrop;
-  @Nonnull private final Map<FibLookup, Transition> _fibLookups;
   @Nonnull private final TransformationToTransition _transformationToTransition;
+  private final String _hostname;
+  private final List<Edge> _edges;
+  private PacketPolicyStatement _currentStatement;
 
   /**
    * Process a given {@link PacketPolicy} and return the {@link PacketPolicyToBdd} that expresses
-   * the conversion. Examine the result of the conversion using methods such as {@link #getToDrop()}
-   * and {@link #getFibLookups()}
+   * the conversion. Examine the result of the conversion using methods such as
    */
-  public static PacketPolicyToBdd evaluate(
+  public static List<Edge> evaluate(
+      String hostname,
       PacketPolicy policy,
       IpAccessListToBdd ipAccessListToBdd,
       IpsRoutedOutInterfaces ipsRoutedOutInterfaces) {
-    PacketPolicyToBdd evaluator = new PacketPolicyToBdd(ipAccessListToBdd, ipsRoutedOutInterfaces);
+    PacketPolicyToBdd evaluator =
+        new PacketPolicyToBdd(hostname, policy, ipAccessListToBdd, ipsRoutedOutInterfaces);
     evaluator.process(policy);
-    return evaluator;
+    return evaluator._edges;
   }
 
   private PacketPolicyToBdd(
-      IpAccessListToBdd ipAccessListToBdd, IpsRoutedOutInterfaces ipsRoutedOutInterfaces) {
+      String hostname,
+      PacketPolicy policy,
+      IpAccessListToBdd ipAccessListToBdd,
+      IpsRoutedOutInterfaces ipsRoutedOutInterfaces) {
+    _hostname = hostname;
+    _policy = policy;
+    _currentStatement = new PacketPolicyStatement(_hostname, _policy.getName(), 0);
     _boolExprToBdd = new BoolExprToBdd(ipAccessListToBdd, ipsRoutedOutInterfaces);
-    _toDrop = Zero.INSTANCE;
-    _fibLookups = new HashMap<>(0);
     _transformationToTransition =
         new TransformationToTransition(ipAccessListToBdd.getBDDPacket(), ipAccessListToBdd);
+    _edges = new ArrayList<>();
   }
 
   /** Process a given {@link PacketPolicy} */
   private void process(PacketPolicy p) {
     StatementToBdd stmtConverter = new StatementToBdd(_boolExprToBdd);
-    p.getStatements().forEach(stmtConverter::visit);
+
+    boolean fallThrough = stmtConverter.visitStatements(p.getStatements());
 
     /* Handle the default action. Default action applies to the remaining packets,
      * which can be expressed as the complement of the union of packets we have already accounted
      * for.
      */
-    new Collector(stmtConverter._pathTransition).visit(p.getDefaultAction().getAction());
+    if (fallThrough) {
+      // add edge to default action
+      _edges.add(
+          new Edge(
+              currentStatement(),
+              new PacketPolicyAction(_hostname, p.getName(), p.getDefaultAction().getAction())));
+    }
   }
 
-  /** Return the set of packets that is dropped by a policy */
-  @Nonnull
-  public Transition getToDrop() {
-    return _toDrop;
+  private PacketPolicyStatement currentStatement() {
+    return _currentStatement;
   }
 
-  /**
-   * Return the sets of packets that must be processed by destination-based forwarding pipeline
-   * (expressed as a {@link FibLookup} action).
-   */
-  @Nonnull
-  public Map<FibLookup, Transition> getFibLookups() {
-    return _fibLookups;
+  private PacketPolicyStatement nextStatement() {
+    _currentStatement =
+        new PacketPolicyStatement(_hostname, _policy.getName(), _currentStatement.getId() + 1);
+    return _currentStatement;
   }
 
   /**
    * Walks all the statements in the packet policy, statefully building up BDDs based on boolean
-   * expressions that are encountered. When a {@link Return} is encountered, calls into a {@link
-   * Collector}
+   * expressions that are encountered. When a {@link Return} is encountered, calls into a
    */
-  private final class StatementToBdd implements StatementVisitor<Void> {
+  private class StatementToBdd implements StatementVisitor<Boolean> {
     private final BoolExprToBdd _boolExprToBdd;
-
-    /**
-     * Transformations and constraints the {@link PacketPolicy} applies to an input BDD along the
-     * path from the root of the {@link PacketPolicy} AST to the current node being visited.
-     */
-    private Transition _pathTransition;
 
     private StatementToBdd(BoolExprToBdd boolExprToBdd) {
       _boolExprToBdd = boolExprToBdd;
-      _pathTransition = IDENTITY;
+    }
+
+    public boolean visitStatements(List<Statement> statements) {
+      for (Statement statement : statements) {
+        if (!visit(statement)) {
+          // does not fall through, so exit immediately
+          return false;
+        }
+      }
+      return true; // fall-through
     }
 
     @Override
-    public Void visitIf(If ifStmt) {
-      // Save existing constraint
-      Transition reachIf = _pathTransition;
-      // Convert IF guard
+    public Boolean visitIf(If ifStmt) {
+      PacketPolicyStatement ifSt = currentStatement();
+      PacketPolicyStatement thenSt = nextStatement();
+
       BDD matchConstraint = _boolExprToBdd.visit(ifStmt.getMatchCondition());
-      _pathTransition = compose(reachIf, constraint(matchConstraint));
-      // Process true statements
-      ifStmt.getTrueStatements().forEach(this::visit);
-      Transition fallThroughTrueBranch = _pathTransition;
-      // If fell through, constrain packets with complement of match condition and move on
-      _pathTransition =
-          or(fallThroughTrueBranch, compose(reachIf, constraint(matchConstraint.not())));
-      return null;
+      _edges.add(new Edge(ifSt, thenSt, matchConstraint));
+
+      boolean fallThrough = visitStatements(ifStmt.getTrueStatements());
+
+      PacketPolicyStatement fallThroughSt = currentStatement();
+      PacketPolicyStatement nextSt = nextStatement();
+      _edges.add(new Edge(ifSt, nextSt, matchConstraint.not()));
+
+      if (fallThrough) {
+        new Edge(fallThroughSt, nextSt);
+      }
+
+      // nextSt falls through to next statement if there is one
+      return true;
     }
 
     @Override
-    public Void visitReturn(Return returnStmt) {
-      new Collector(_pathTransition).visit(returnStmt.getAction());
-      _pathTransition = ZERO;
-      return null;
+    public Boolean visitReturn(Return returnStmt) {
+      _edges.add(
+          new Edge(
+              currentStatement(),
+              new PacketPolicyAction(_hostname, _policy.getName(), returnStmt.getAction())));
+      return false; // does not fall through
     }
 
     @Override
-    public Void visitApplyTransformation(ApplyTransformation transformation) {
-      _pathTransition =
-          compose(
-              _pathTransition,
-              _transformationToTransition.toTransition(transformation.getTransformation()));
-      return null;
+    public Boolean visitApplyTransformation(ApplyTransformation transformation) {
+      PacketPolicyStatement preTransformation = currentStatement();
+      PacketPolicyStatement postTransformation = nextStatement();
+      Transition transition =
+          _transformationToTransition.toTransition(transformation.getTransformation());
+      _edges.add(new Edge(preTransformation, postTransformation, transition));
+      return true; // fall through
     }
   }
 
@@ -195,39 +208,6 @@ class PacketPolicyToBdd {
       return expr.getConjuncts().stream()
           .map(this::visit)
           .reduce(_ipAccessListToBdd.getBDDPacket().getFactory().one(), BDD::and);
-    }
-  }
-
-  /**
-   * Updates set of packets associated with a particular action (i.e., {@link #_toDrop} and {@link
-   * #_fibLookups})
-   */
-  private final class Collector implements ActionVisitor<Void> {
-    private final Transition _transition;
-
-    private Collector(Transition transition) {
-      _transition = transition;
-    }
-
-    @Override
-    public Void visitDrop(Drop drop) {
-      _toDrop = or(_toDrop, _transition);
-      return null;
-    }
-
-    @Override
-    public Void visitFibLookup(FibLookup fibLookup) {
-      _fibLookups.compute(
-          fibLookup,
-          (k, oldTransition) ->
-              oldTransition == null ? _transition : or(oldTransition, _transition));
-      return null;
-    }
-
-    @Override
-    public Void visitFibLookupOverrideLookupIp(FibLookupOverrideLookupIp fibLookup) {
-      // TODO: support for FibLookupOverrideLookupIp
-      return null;
     }
   }
 }

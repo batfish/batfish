@@ -2,6 +2,7 @@ package org.batfish.bddreachability.transition;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.google.common.annotations.VisibleForTesting;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.BDDOutgoingOriginalFlowFilterManager;
@@ -26,6 +27,11 @@ public final class AddOutgoingOriginalFlowFiltersConstraint implements Transitio
         "AddOutgoingOriginalFlowFiltersConstraint for a trivial"
             + " BDDOutgoingOriginalFlowFilterManager. Use Identity instead");
     _mgr = mgr;
+  }
+
+  @VisibleForTesting
+  public BDDOutgoingOriginalFlowFilterManager getManager() {
+    return _mgr;
   }
 
   @Override
