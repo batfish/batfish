@@ -1453,7 +1453,11 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
   private @Nonnull org.batfish.datamodel.Interface toInterface(Interface iface) {
     org.batfish.datamodel.Interface newIface =
-        org.batfish.datamodel.Interface.builder().setName(iface.getName()).setOwner(_c).build();
+        org.batfish.datamodel.Interface.builder()
+            .setName(iface.getName())
+            .setOwner(_c)
+            .setType(InterfaceType.PHYSICAL)
+            .build();
     Double speed = iface.getSpeed();
     newIface.setActive(!Boolean.TRUE.equals(iface.getDisabled()));
     newIface.setSpeed(speed);

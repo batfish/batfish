@@ -16,6 +16,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Vrf;
 
@@ -144,6 +145,7 @@ public class HostInterface implements Serializable {
     Interface.Builder iface =
         Interface.builder()
             .setName(name)
+            .setType(InterfaceType.PHYSICAL)
             .setOwner(configuration)
             .setAddresses(_address, _otherAddresses)
             .setBandwidth(_bandwidth)
