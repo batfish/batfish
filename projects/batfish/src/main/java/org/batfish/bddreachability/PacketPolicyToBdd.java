@@ -107,9 +107,11 @@ class PacketPolicyToBdd {
    */
   private class StatementToBdd implements StatementVisitor<Boolean> {
     private final BoolExprToBdd _boolExprToBdd;
+    private BDD _pathConstraint;
 
     private StatementToBdd(BoolExprToBdd boolExprToBdd) {
       _boolExprToBdd = boolExprToBdd;
+      _pathConstraint = _boolExprToBdd._ipAccessListToBdd.getBDDPacket().getFactory().one();
     }
 
     public boolean visitStatements(List<Statement> statements) {
@@ -128,16 +130,26 @@ class PacketPolicyToBdd {
       PacketPolicyStatement thenSt = nextStatement();
 
       BDD matchConstraint = _boolExprToBdd.visit(ifStmt.getMatchCondition());
-      _edges.add(new Edge(ifSt, thenSt, matchConstraint));
+      _edges.add(new Edge(ifSt, thenSt, _pathConstraint.and(matchConstraint)));
 
+      BDD elsePathConstraint = _pathConstraint.diffWith(matchConstraint);
+
+      // initialize pathConstraint for then branch
+      _pathConstraint = _pathConstraint.getFactory().one();
       boolean fallThrough = visitStatements(ifStmt.getTrueStatements());
 
       PacketPolicyStatement fallThroughSt = currentStatement();
-      PacketPolicyStatement nextSt = nextStatement();
-      _edges.add(new Edge(ifSt, nextSt, matchConstraint.not()));
 
       if (fallThrough) {
+        // allocate a new statement
+        PacketPolicyStatement nextSt = nextStatement();
+        _edges.add(new Edge(ifSt, nextSt, elsePathConstraint));
         _edges.add(new Edge(fallThroughSt, nextSt));
+        _pathConstraint = _pathConstraint.getFactory().one();
+      } else {
+        // don't allocate a new statement
+        _currentStatement = ifSt;
+        _pathConstraint = elsePathConstraint;
       }
 
       // nextSt falls through to next statement if there is one
@@ -149,12 +161,19 @@ class PacketPolicyToBdd {
       _edges.add(
           new Edge(
               currentStatement(),
-              new PacketPolicyAction(_hostname, _policy.getName(), returnStmt.getAction())));
+              new PacketPolicyAction(_hostname, _policy.getName(), returnStmt.getAction()),
+              _pathConstraint));
       return false; // does not fall through
     }
 
     @Override
     public Boolean visitApplyTransformation(ApplyTransformation transformation) {
+      if (!_pathConstraint.isOne()) {
+        // allocate a new statement and apply the path constraint. TODO is this right? will the
+        // optimizer
+        // just remove it?
+        _edges.add(new Edge(currentStatement(), nextStatement(), _pathConstraint));
+      }
       PacketPolicyStatement preTransformation = currentStatement();
       PacketPolicyStatement postTransformation = nextStatement();
       Transition transition =
