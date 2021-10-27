@@ -620,6 +620,7 @@ class FlowTracer {
             owner.getIpSpaces(),
             _tracerouteContext.getFibs(_currentNode.getName()));
     _currentFlow = result.getFinalFlow();
+    _steps.addAll(result.getTraceSteps());
 
     new ActionVisitor<Void>() {
 
