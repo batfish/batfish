@@ -25,16 +25,21 @@ import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.bdd.IpSpaceToBDD;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ConnectedRoute;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.FibEntry;
 import org.batfish.datamodel.FibForward;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MockFib;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.packet_policy.ApplyFilter;
 import org.batfish.datamodel.packet_policy.ApplyTransformation;
 import org.batfish.datamodel.packet_policy.Conjunction;
 import org.batfish.datamodel.packet_policy.Drop;
@@ -150,6 +155,37 @@ public final class PacketPolicyToBddTest {
     assertThat(
         evaluator.getFibLookups(),
         hasEntry(equalTo(new FibLookup(new LiteralVrfName(vrf3))), mapsOne(_zero)));
+  }
+
+  @Test
+  public void testApplyFilter() {
+    // Set up an ACL that permits traffic to 1.1.1.0/24
+    Prefix permittedPrefix = Prefix.parse("1.1.1.0/24");
+    AclLine line =
+        new ExprAclLine(
+            LineAction.PERMIT,
+            new MatchHeaderSpace(
+                HeaderSpace.builder().setDstIps(permittedPrefix.toIpSpace()).build()),
+            "foo");
+    IpAccessList acl = IpAccessList.builder().setName("acl").setLines(line).build();
+    IpAccessListToBdd ipAccessListToBdd =
+        new IpAccessListToBddImpl(
+            _bddPacket,
+            BDDSourceManager.empty(_bddPacket),
+            ImmutableMap.of(acl.getName(), acl),
+            ImmutableMap.of());
+
+    // Evaluate a PacketPolicy that uses an ApplyFilter for the above ACL
+    FibLookup fl = new FibLookup(new LiteralVrfName("vrf"));
+    PacketPolicy policy =
+        new PacketPolicy("name", ImmutableList.of(new ApplyFilter(acl.getName())), new Return(fl));
+    PacketPolicyToBdd evaluator =
+        PacketPolicyToBdd.evaluate(policy, ipAccessListToBdd, EMPTY_IPS_ROUTED_OUT_INTERFACES);
+
+    // Traffic not destined for 1.1.1.0/24 should be dropped
+    BDD permitted = _bddPacket.getDstIpSpaceToBDD().toBDD(permittedPrefix);
+    assertThat(evaluator.getFibLookups().get(fl), mapsOne(permitted));
+    assertThat(evaluator.getToDrop(), mapsOne(permitted.not()));
   }
 
   @Test
