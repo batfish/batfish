@@ -186,6 +186,7 @@ import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
 import org.batfish.representation.juniper.FwTerm.Field;
 import org.batfish.representation.juniper.Interface.OspfInterfaceType;
+import org.batfish.representation.juniper.Interface.VlanTaggingMode;
 import org.batfish.representation.juniper.Zone.AddressBookType;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.vendor.VendorStructureId;
@@ -1877,7 +1878,15 @@ public final class JuniperConfiguration extends VendorConfiguration {
       newIface.setSwitchportMode(SwitchportMode.NONE);
       newIface.setSwitchport(false);
       if (iface.getVlanId() != null) {
-        newIface.setEncapsulationVlan(iface.getVlanId());
+        if (iface.getParent().getVlanTagging() == VlanTaggingMode.NONE) {
+          _w.redFlag(
+              String.format(
+                  "%s: VLAN-ID can only be specified on tagged ethernet interfaces, but %s is not"
+                      + " configured with vlan-tagging or flexible-vlan-tagging",
+                  iface.getName(), iface.getParent().getName()));
+        } else {
+          newIface.setEncapsulationVlan(iface.getVlanId());
+        }
       }
     }
     newIface.setBandwidth(iface.getBandwidth());

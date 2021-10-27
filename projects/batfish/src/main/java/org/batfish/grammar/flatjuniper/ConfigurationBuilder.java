@@ -4381,13 +4381,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       warn(ctx, "Expecting vlan-id to be configured on a unit of a physical interface");
       return;
     }
-    if (_currentInterfaceOrRange.getParent().getVlanTagging() == VlanTaggingMode.NONE) {
-      warn(
-          ctx,
-          "Configuring vlan-id requires enabling vlan-tagging (or flexible-vlan-tagging) on the"
-              + " parent physical interface");
-      return;
-    }
     _currentInterfaceOrRange.setVlanId(toInt(ctx.dec()));
   }
 

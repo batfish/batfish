@@ -40,6 +40,8 @@ public class Interface implements Serializable {
     LOOPBACK_UNIT,
     /** Management, such as em0. */
     MANAGEMENT,
+    /** A unit on a management interface, such as em0.0. */
+    MANAGEMENT_UNIT,
     /** A physical port, such as xe-0/0/0. */
     PHYSICAL,
     /** A unit on a physical port, such as xe-0/0/0.7. */
@@ -63,6 +65,7 @@ public class Interface implements Serializable {
    */
   public boolean isPhysicalLike() {
     return _type == InterfaceType.PHYSICAL
+        || _type == InterfaceType.MANAGEMENT
         || _type == InterfaceType.AGGREGATED
         || _type == InterfaceType.REDUNDANT;
   }
@@ -72,6 +75,7 @@ public class Interface implements Serializable {
     return _type == InterfaceType.PHYSICAL_UNIT
         || _type == InterfaceType.IRB_UNIT
         || _type == InterfaceType.LOOPBACK_UNIT
+        || _type == InterfaceType.MANAGEMENT_UNIT
         || _type == InterfaceType.AGGREGATED_UNIT
         || _type == InterfaceType.REDUNDANT_UNIT;
   }
@@ -121,7 +125,7 @@ public class Interface implements Serializable {
     } else if (name.startsWith("lo")) {
       return name.contains(".") ? InterfaceType.LOOPBACK_UNIT : InterfaceType.LOOPBACK;
     } else if (name.startsWith("em") || name.startsWith("fxp")) {
-      return InterfaceType.MANAGEMENT;
+      return name.contains(".") ? InterfaceType.MANAGEMENT_UNIT : InterfaceType.MANAGEMENT;
     } else if (name.startsWith("ae")) {
       return name.contains(".") ? InterfaceType.AGGREGATED_UNIT : InterfaceType.AGGREGATED;
     } else if (name.startsWith("reth")) {
