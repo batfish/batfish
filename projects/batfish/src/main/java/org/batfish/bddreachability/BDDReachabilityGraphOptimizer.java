@@ -281,6 +281,7 @@ public class BDDReachabilityGraphOptimizer {
             .addAll(outStates)
             .build();
       } else if (inTransition instanceof Constraint
+          && outStates.size() < 100
           && outStates.stream()
               .map(next -> _edges.get(candidate, next))
               // TODO: weaken the constraint on out-edges to include other transition types
@@ -317,6 +318,7 @@ public class BDDReachabilityGraphOptimizer {
       StateExpr next = Iterables.getOnlyElement(outStates);
       Transition outTransition = _edges.get(candidate, next);
       if (outTransition instanceof Constraint
+          && inStates.size() < 100
           && inStates.stream()
               .map(prev -> _edges.get(prev, candidate))
               // TODO: weaken the constraint on in-edges to include other transition types
