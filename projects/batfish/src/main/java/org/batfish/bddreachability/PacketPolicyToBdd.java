@@ -137,7 +137,7 @@ class PacketPolicyToBdd {
       _edges.add(new Edge(ifSt, nextSt, matchConstraint.not()));
 
       if (fallThrough) {
-        new Edge(fallThroughSt, nextSt);
+        _edges.add(new Edge(fallThroughSt, nextSt));
       }
 
       // nextSt falls through to next statement if there is one
