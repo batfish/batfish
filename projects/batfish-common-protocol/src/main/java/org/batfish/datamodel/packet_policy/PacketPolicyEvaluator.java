@@ -148,7 +148,7 @@ public final class PacketPolicyEvaluator {
       _traceSteps.add(
           new FilterStep(
               new FilterStep.FilterStepDetail(acl.getName(), filterType, _srcInterface, flow),
-              denied ? StepAction.DENIED : StepAction.ACCEPTED));
+              denied ? StepAction.DENIED : StepAction.PERMITTED));
 
       return denied ? Drop.instance() : null;
     }
