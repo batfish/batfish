@@ -87,7 +87,8 @@ class PacketPolicyToBdd {
       _edges.add(
           new Edge(
               currentStatement(),
-              new PacketPolicyAction(_hostname, p.getName(), p.getDefaultAction().getAction())));
+              new PacketPolicyAction(_hostname, p.getName(), p.getDefaultAction().getAction()),
+              stmtConverter._pathConstraint));
     }
   }
 
@@ -138,13 +139,12 @@ class PacketPolicyToBdd {
       _pathConstraint = _pathConstraint.getFactory().one();
       boolean fallThrough = visitStatements(ifStmt.getTrueStatements());
 
-      PacketPolicyStatement fallThroughSt = currentStatement();
-
       if (fallThrough) {
         // allocate a new statement
+        PacketPolicyStatement fallThroughSt = currentStatement();
         PacketPolicyStatement nextSt = nextStatement();
         _edges.add(new Edge(ifSt, nextSt, elsePathConstraint));
-        _edges.add(new Edge(fallThroughSt, nextSt));
+        _edges.add(new Edge(fallThroughSt, nextSt, _pathConstraint));
         _pathConstraint = _pathConstraint.getFactory().one();
       } else {
         // don't allocate a new statement
