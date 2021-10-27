@@ -19,9 +19,9 @@ import org.batfish.datamodel.visitors.FibActionVisitor;
  * Evaluates a {@link PacketPolicy} against a given {@link Flow}.
  *
  * <p>To evaluate an entire policy, see {@link #evaluate(Flow, String, String, PacketPolicy, Map,
- * Map, Map)} which will return a {@link FlowResult}.
+ * Map, Map)} which will return a {@link PacketPolicyResult}.
  */
-public final class FlowEvaluator {
+public final class PacketPolicyEvaluator {
 
   private final @Nonnull Map<String, IpAccessList> _availableAcls;
   private final @Nonnull Map<String, IpSpace> _namedIpSpaces;
@@ -136,7 +136,7 @@ public final class FlowEvaluator {
     }
   }
 
-  private FlowEvaluator(
+  private PacketPolicyEvaluator(
       Flow originalFlow,
       String srcInterface,
       String srcInterfaceVrf,
@@ -156,17 +156,17 @@ public final class FlowEvaluator {
     return _currentFlow.build();
   }
 
-  private FlowResult evaluate(PacketPolicy policy) {
+  private PacketPolicyResult evaluate(PacketPolicy policy) {
     Action action =
         policy.getStatements().stream()
             .map(_stmtEvaluator::visit)
             .filter(Objects::nonNull)
             .findFirst()
             .orElse(policy.getDefaultAction().getAction());
-    return new FlowResult(getTransformedFlow(), action);
+    return new PacketPolicyResult(getTransformedFlow(), action);
   }
 
-  public static FlowResult evaluate(
+  public static PacketPolicyResult evaluate(
       Flow f,
       String srcInterface,
       String srcInterfaceVrf,
@@ -174,16 +174,20 @@ public final class FlowEvaluator {
       Map<String, IpAccessList> availableAcls,
       Map<String, IpSpace> namedIpSpaces,
       Map<String, Fib> fibs) {
-    return new FlowEvaluator(f, srcInterface, srcInterfaceVrf, availableAcls, namedIpSpaces, fibs)
+    return new PacketPolicyEvaluator(
+            f, srcInterface, srcInterfaceVrf, availableAcls, namedIpSpaces, fibs)
         .evaluate(policy);
   }
 
-  /** Combination of final (possibly transformed) {@link Flow} and the action taken */
-  public static final class FlowResult {
+  /**
+   * Combination of final (possibly transformed) {@link Flow} and the action taken by the evaluated
+   * {@link PacketPolicy}
+   */
+  public static final class PacketPolicyResult {
     private final Flow _finalFlow;
     private final Action _action;
 
-    FlowResult(Flow finalFlow, Action action) {
+    PacketPolicyResult(Flow finalFlow, Action action) {
       _finalFlow = finalFlow;
       _action = action;
     }
@@ -204,7 +208,7 @@ public final class FlowEvaluator {
       if (o == null || getClass() != o.getClass()) {
         return false;
       }
-      FlowResult that = (FlowResult) o;
+      PacketPolicyResult that = (PacketPolicyResult) o;
       return Objects.equals(getFinalFlow(), that.getFinalFlow())
           && Objects.equals(getAction(), that.getAction());
     }
