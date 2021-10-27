@@ -262,9 +262,9 @@ import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.packet_policy.FibLookup;
 import org.batfish.datamodel.packet_policy.FibLookupOverrideLookupIp;
-import org.batfish.datamodel.packet_policy.FlowEvaluator;
 import org.batfish.datamodel.packet_policy.IngressInterfaceVrf;
 import org.batfish.datamodel.packet_policy.PacketPolicy;
+import org.batfish.datamodel.packet_policy.PacketPolicyEvaluator;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
@@ -2325,7 +2325,7 @@ public final class CiscoNxosGrammarTest {
     FibLookup regularFibLookup = new FibLookup(IngressInterfaceVrf.instance());
     // Accepted flow sent to 2.2.2.2
     assertThat(
-        FlowEvaluator.evaluate(
+        PacketPolicyEvaluator.evaluate(
                 acceptedFlow,
                 "eth0",
                 DEFAULT_VRF_NAME,
@@ -2344,7 +2344,7 @@ public final class CiscoNxosGrammarTest {
 
     // Rejected flow delegated to regular FIB lookup
     assertThat(
-        FlowEvaluator.evaluate(
+        PacketPolicyEvaluator.evaluate(
                 rejectedFlow,
                 "eth0",
                 DEFAULT_VRF_NAME,
