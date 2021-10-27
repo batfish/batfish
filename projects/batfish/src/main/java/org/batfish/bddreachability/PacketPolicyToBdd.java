@@ -130,9 +130,15 @@ class PacketPolicyToBdd {
       PacketPolicyStatement thenSt = nextStatement();
 
       BDD matchConstraint = _boolExprToBdd.visit(ifStmt.getMatchCondition());
-      _edges.add(new Edge(ifSt, thenSt, _pathConstraint.and(matchConstraint)));
+      _edges.add(
+          new Edge(
+              ifSt,
+              thenSt,
+              matchConstraint.isOne()
+                  ? _pathConstraint.id()
+                  : _pathConstraint.and(matchConstraint)));
 
-      BDD elsePathConstraint = _pathConstraint.diffWith(matchConstraint);
+      BDD elsePathConstraint = _pathConstraint.diffWith(matchConstraint.id());
 
       // initialize pathConstraint for then branch
       _pathConstraint = _pathConstraint.getFactory().one();
