@@ -103,16 +103,18 @@ public class BDDReachabilityGraphOptimizer {
                 + "spliced: %s, "
                 + "spliced and dropped: %s, "
                 + "self loops removed: %s, "
-                + "constraint in-edges removed: %s,"
-                + "out-edges dropped after composing with removed constraint in-edges: %s,"
-                + "constraint out-edges removed: %s,"
-                + "in-edges dropped after composing with removed constraint out-edges: %s,"
+                + "identity in-edges removed: %s ,"
+                + "constraint in-edges removed: %s, "
+                + "out-edges dropped after composing with removed constraint in-edges: %s, "
+                + "constraint out-edges removed: %s, "
+                + "in-edges dropped after composing with removed constraint out-edges: %s, "
                 + "finalEdges: %s",
             _origEdges,
             _rootsPruned,
             _leavesPruned,
             _nodesSpliced,
             _splicedAndDropped,
+            _identityIn,
             _constraintIn,
             _constraintInDropped,
             _constraintOut,
