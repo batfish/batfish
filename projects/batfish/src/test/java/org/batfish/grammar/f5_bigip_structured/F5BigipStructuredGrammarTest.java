@@ -4,6 +4,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.Interface.DependencyType.AGGREGATE;
 import static org.batfish.datamodel.InterfaceType.AGGREGATED;
+import static org.batfish.datamodel.InterfaceType.PHYSICAL;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasAdministrativeCost;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasMetric;
@@ -197,6 +198,7 @@ import org.batfish.datamodel.FlowDiff;
 import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
@@ -3631,6 +3633,7 @@ public final class F5BigipStructuredGrammarTest {
     assertThat(c, hasInterface(portName, hasSwitchPortMode(SwitchportMode.TRUNK)));
     assertThat(c, hasInterface(portName, hasAllowedVlans(IntegerSpace.of(123))));
     assertThat(c, hasInterface(portName, hasNativeVlan(nullValue())));
+    assertThat(c, hasInterface(portName, hasInterfaceType(PHYSICAL)));
 
     // trunk interface
     assertThat(c, hasInterface(trunkName, isActive()));
@@ -3638,11 +3641,13 @@ public final class F5BigipStructuredGrammarTest {
     assertThat(c, hasInterface(trunkName, hasSwitchPortMode(SwitchportMode.TRUNK)));
     assertThat(c, hasInterface(trunkName, hasAllowedVlans(IntegerSpace.of(123))));
     assertThat(c, hasInterface(trunkName, hasNativeVlan(nullValue())));
+    assertThat(c, hasInterface(trunkName, hasInterfaceType(AGGREGATED)));
 
     // vlan interface
     assertThat(c, hasInterface(vlanName, isActive()));
     assertThat(c, hasInterface(vlanName, hasVlan(123)));
     assertThat(c, hasInterface(vlanName, hasAddress("10.0.0.1/24")));
+    assertThat(c, hasInterface(vlanName, hasInterfaceType(InterfaceType.VLAN)));
   }
 
   @Test
