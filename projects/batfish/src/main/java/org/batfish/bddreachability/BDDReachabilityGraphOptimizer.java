@@ -268,7 +268,11 @@ public class BDDReachabilityGraphOptimizer {
           Transition oldTransition = _edges.put(prev, next, outTransition);
           if (oldTransition != null) {
             _edges.put(prev, next, or(oldTransition, outTransition));
+          } else {
+            _postStates.put(prev, next);
+            _preStates.put(next, prev);
           }
+          _preStates.remove(next, candidate);
         }
         _postStates.removeAll(candidate);
         _preStates.removeAll(candidate);
@@ -295,7 +299,11 @@ public class BDDReachabilityGraphOptimizer {
           Transition oldTransition = _edges.put(prev, next, composed);
           if (oldTransition != null) {
             _edges.put(prev, next, or(oldTransition, composed));
+          } else {
+            _postStates.put(prev, next);
+            _preStates.put(next, prev);
           }
+          _preStates.remove(next, candidate);
         }
         _postStates.removeAll(candidate);
         _preStates.removeAll(candidate);
@@ -326,7 +334,11 @@ public class BDDReachabilityGraphOptimizer {
           Transition oldTransition = _edges.put(prev, next, composed);
           if (oldTransition != null) {
             _edges.put(prev, next, or(oldTransition, composed));
+          } else {
+            _postStates.put(prev, next);
+            _preStates.put(next, prev);
           }
+          _postStates.remove(prev, candidate);
         }
         _postStates.removeAll(candidate);
         _preStates.removeAll(candidate);
