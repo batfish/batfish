@@ -10,12 +10,18 @@ import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.FibForward;
 import org.batfish.datamodel.FibNextVrf;
 import org.batfish.datamodel.FibNullRoute;
+import org.batfish.datamodel.FilterResult;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.acl.Evaluator;
+import org.batfish.datamodel.flow.FilterStep;
+import org.batfish.datamodel.flow.FilterStep.FilterType;
 import org.batfish.datamodel.flow.Step;
+import org.batfish.datamodel.flow.StepAction;
 import org.batfish.datamodel.transformation.TransformationEvaluator;
+import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.datamodel.visitors.FibActionVisitor;
 
 /**
@@ -124,6 +130,27 @@ public final class PacketPolicyEvaluator {
     @Override
     public Action visitReturn(Return returnStmt) {
       return returnStmt.getAction();
+    }
+
+    @Override
+    public Action visitApplyFilter(ApplyFilter applyFilter) {
+      IpAccessList acl = _availableAcls.get(applyFilter.getFilter());
+      Flow flow = _currentFlow.build();
+      FilterResult filterResult = acl.filter(flow, _srcInterface, _availableAcls, _namedIpSpaces);
+      boolean denied = filterResult.getAction() == LineAction.DENY;
+
+      // Create filter step
+      // TODO What if policy applies an ACL between transformations? Does that happen?
+      FilterType filterType =
+          _traceSteps.build().stream().anyMatch(TransformationStep.class::isInstance)
+              ? FilterType.POST_TRANSFORMATION_INGRESS_FILTER
+              : FilterType.INGRESS_FILTER;
+      _traceSteps.add(
+          new FilterStep(
+              new FilterStep.FilterStepDetail(acl.getName(), filterType, _srcInterface, flow),
+              denied ? StepAction.DENIED : StepAction.ACCEPTED));
+
+      return denied ? Drop.instance() : null;
     }
 
     @Override
