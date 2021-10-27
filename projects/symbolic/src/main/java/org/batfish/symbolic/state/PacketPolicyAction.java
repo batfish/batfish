@@ -31,7 +31,9 @@ public final class PacketPolicyAction implements StateExpr {
     }
 
     PacketPolicyAction that = (PacketPolicyAction) o;
-    return _hostname.equals(that._hostname) && _action.equals(that._action);
+    return _hostname.equals(that._hostname)
+        && _policyName.equals(that._policyName)
+        && _action.equals(that._action);
   }
 
   @Override
@@ -44,5 +46,11 @@ public final class PacketPolicyAction implements StateExpr {
 
   public Action getAction() {
     return _action;
+  }
+
+  @Override
+  public String toString() {
+    return String.format(
+        "%s{%s,%s,%s}", PacketPolicyAction.class.getSimpleName(), _hostname, _policyName, _action);
   }
 }
