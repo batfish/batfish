@@ -1,5 +1,7 @@
 package org.batfish.datamodel.packet_policy;
 
+import com.google.common.collect.ImmutableList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -12,6 +14,7 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.acl.Evaluator;
+import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.transformation.TransformationEvaluator;
 import org.batfish.datamodel.visitors.FibActionVisitor;
 
@@ -32,13 +35,15 @@ public final class PacketPolicyEvaluator {
   /** Vrf name to FIB mapping */
   @Nonnull private final Map<String, Fib> _fibs;
 
+  @Nonnull private final ImmutableList.Builder<Step<?>> _traceSteps;
+
   // Modified state
   @Nonnull private Flow.Builder _currentFlow;
 
   // Expr and stmt visitors
-  @Nonnull private BoolExprEvaluator _boolExprEvaluator = new BoolExprEvaluator();
-  @Nonnull private StatementEvaluator _stmtEvaluator = new StatementEvaluator();
-  @Nonnull private VrfExprEvaluator _vrfExprEvaluator = new VrfExprEvaluator();
+  @Nonnull private final BoolExprEvaluator _boolExprEvaluator = new BoolExprEvaluator();
+  @Nonnull private final StatementEvaluator _stmtEvaluator = new StatementEvaluator();
+  @Nonnull private final VrfExprEvaluator _vrfExprEvaluator = new VrfExprEvaluator();
 
   private final class BoolExprEvaluator implements BoolExprVisitor<Boolean> {
 
@@ -123,15 +128,15 @@ public final class PacketPolicyEvaluator {
 
     @Override
     public Action visitApplyTransformation(ApplyTransformation transformation) {
-      _currentFlow =
+      TransformationEvaluator.TransformationResult result =
           TransformationEvaluator.eval(
               transformation.getTransformation(),
               _currentFlow.build(),
               _srcInterface,
               _availableAcls,
-              _namedIpSpaces)
-              .getOutputFlow()
-              .toBuilder();
+              _namedIpSpaces);
+      _currentFlow = result.getOutputFlow().toBuilder();
+      _traceSteps.addAll(result.getTraceSteps());
       return null;
     }
   }
@@ -149,6 +154,7 @@ public final class PacketPolicyEvaluator {
     _availableAcls = availableAcls;
     _namedIpSpaces = namedIpSpaces;
     _fibs = fibs;
+    _traceSteps = ImmutableList.builder();
   }
 
   @Nonnull
@@ -163,7 +169,7 @@ public final class PacketPolicyEvaluator {
             .filter(Objects::nonNull)
             .findFirst()
             .orElse(policy.getDefaultAction().getAction());
-    return new PacketPolicyResult(getTransformedFlow(), action);
+    return new PacketPolicyResult(getTransformedFlow(), action, _traceSteps.build());
   }
 
   public static PacketPolicyResult evaluate(
@@ -184,20 +190,26 @@ public final class PacketPolicyEvaluator {
    * {@link PacketPolicy}
    */
   public static final class PacketPolicyResult {
-    private final Flow _finalFlow;
-    private final Action _action;
+    private final @Nonnull List<Step<?>> _traceSteps;
+    private final @Nonnull Flow _finalFlow;
+    private final @Nonnull Action _action;
 
-    PacketPolicyResult(Flow finalFlow, Action action) {
+    PacketPolicyResult(Flow finalFlow, Action action, List<Step<?>> traceSteps) {
       _finalFlow = finalFlow;
       _action = action;
+      _traceSteps = ImmutableList.copyOf(traceSteps);
     }
 
-    public Flow getFinalFlow() {
+    public @Nonnull Flow getFinalFlow() {
       return _finalFlow;
     }
 
-    public Action getAction() {
+    public @Nonnull Action getAction() {
       return _action;
+    }
+
+    public @Nonnull List<Step<?>> getTraceSteps() {
+      return _traceSteps;
     }
 
     @Override
@@ -209,13 +221,14 @@ public final class PacketPolicyEvaluator {
         return false;
       }
       PacketPolicyResult that = (PacketPolicyResult) o;
-      return Objects.equals(getFinalFlow(), that.getFinalFlow())
-          && Objects.equals(getAction(), that.getAction());
+      return _finalFlow.equals(that.getFinalFlow())
+          && _action.equals(that.getAction())
+          && _traceSteps.equals(that.getTraceSteps());
     }
 
     @Override
     public int hashCode() {
-      return Objects.hash(getFinalFlow(), getAction());
+      return Objects.hash(_finalFlow, _action, _traceSteps);
     }
   }
 
