@@ -136,8 +136,7 @@ public final class TracerouteUtils {
         .build();
   }
 
-  @VisibleForTesting
-  static FilterStep createFilterStep(
+  public static FilterStep createFilterStep(
       Flow currentFlow,
       @Nullable String inInterfaceName,
       IpAccessList filter,
