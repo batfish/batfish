@@ -96,9 +96,9 @@ import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.packet_policy.Action;
 import org.batfish.datamodel.packet_policy.Drop;
 import org.batfish.datamodel.packet_policy.FibLookup;
-import org.batfish.datamodel.packet_policy.FlowEvaluator;
 import org.batfish.datamodel.packet_policy.IngressInterfaceVrf;
 import org.batfish.datamodel.packet_policy.PacketPolicy;
+import org.batfish.datamodel.packet_policy.PacketPolicyEvaluator;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
@@ -1520,8 +1520,8 @@ public class CheckPointGatewayGrammarTest {
     Action fibLookup = new FibLookup(IngressInterfaceVrf.instance());
     BiFunction<Flow, Flow, Void> testFunction =
         (testFlow, expectedFlow) -> {
-          FlowEvaluator.FlowResult eth0PolicyResult =
-              FlowEvaluator.evaluate(
+          PacketPolicyEvaluator.PacketPolicyResult eth0PolicyResult =
+              PacketPolicyEvaluator.evaluate(
                   testFlow,
                   eth0.getName(),
                   eth0.getVrfName(),
@@ -1529,8 +1529,8 @@ public class CheckPointGatewayGrammarTest {
                   c.getIpAccessLists(),
                   c.getIpSpaces(),
                   fibs);
-          FlowEvaluator.FlowResult eth1PolicyResult =
-              FlowEvaluator.evaluate(
+          PacketPolicyEvaluator.PacketPolicyResult eth1PolicyResult =
+              PacketPolicyEvaluator.evaluate(
                   testFlow,
                   eth1.getName(),
                   eth1.getVrfName(),
@@ -1823,8 +1823,8 @@ public class CheckPointGatewayGrammarTest {
     // Function to test that a given flow is transformed to the expected result flow
     TriFunction<Flow, Flow, Action, Void> testFunction =
         (testFlow, expectedFlow, expectedAction) -> {
-          FlowEvaluator.FlowResult eth0PolicyResult =
-              FlowEvaluator.evaluate(
+          PacketPolicyEvaluator.PacketPolicyResult eth0PolicyResult =
+              PacketPolicyEvaluator.evaluate(
                   testFlow,
                   eth0.getName(),
                   eth0.getVrfName(),
@@ -1832,8 +1832,8 @@ public class CheckPointGatewayGrammarTest {
                   c.getIpAccessLists(),
                   c.getIpSpaces(),
                   fibs);
-          FlowEvaluator.FlowResult eth1PolicyResult =
-              FlowEvaluator.evaluate(
+          PacketPolicyEvaluator.PacketPolicyResult eth1PolicyResult =
+              PacketPolicyEvaluator.evaluate(
                   testFlow,
                   eth1.getName(),
                   eth1.getVrfName(),
