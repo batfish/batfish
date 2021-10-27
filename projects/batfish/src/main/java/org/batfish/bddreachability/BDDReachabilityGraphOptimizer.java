@@ -3,6 +3,7 @@ package org.batfish.bddreachability;
 import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.bddreachability.transition.Transitions.IDENTITY;
 import static org.batfish.bddreachability.transition.Transitions.ZERO;
+import static org.batfish.bddreachability.transition.Transitions.compose;
 import static org.batfish.bddreachability.transition.Transitions.mergeComposed;
 import static org.batfish.bddreachability.transition.Transitions.or;
 
@@ -49,6 +50,7 @@ public class BDDReachabilityGraphOptimizer {
     BDDReachabilityGraphOptimizer opt =
         new BDDReachabilityGraphOptimizer(edges, statesToKeep, keepSelfLoops);
     opt.optimize();
+    opt.printStats();
     return opt._edges.cellSet().stream()
         .map(cell -> new Edge(cell.getRowKey(), cell.getColumnKey(), cell.getValue()))
         .collect(ImmutableList.toImmutableList());
@@ -68,6 +70,11 @@ public class BDDReachabilityGraphOptimizer {
   private int _leavesPruned = 0;
   private int _nodesSpliced = 0;
   private int _splicedAndDropped = 0;
+  private int _identityIn = 0;
+  private int _constraintIn = 0;
+  private int _constraintInDropped = 0;
+  private int _constraintOut = 0;
+  private int _constraintOutDropped = 0;
   private int _selfLoops = 0;
 
   private BDDReachabilityGraphOptimizer(
@@ -96,12 +103,20 @@ public class BDDReachabilityGraphOptimizer {
                 + "spliced: %s, "
                 + "spliced and dropped: %s, "
                 + "self loops removed: %s, "
+                + "constraint in-edges removed: %s,"
+                + "out-edges dropped after composing with removed constraint in-edges: %s,"
+                + "constraint out-edges removed: %s,"
+                + "in-edges dropped after composing with removed constraint out-edges: %s,"
                 + "finalEdges: %s",
             _origEdges,
             _rootsPruned,
             _leavesPruned,
             _nodesSpliced,
             _splicedAndDropped,
+            _constraintIn,
+            _constraintInDropped,
+            _constraintOut,
+            _constraintOutDropped,
             _selfLoops,
             _edges.size()));
   }
@@ -239,6 +254,86 @@ public class BDDReachabilityGraphOptimizer {
 
     Collection<StateExpr> inStates = _preStates.get(candidate);
     Collection<StateExpr> outStates = _postStates.get(candidate);
+    if (inStates.size() == 1) {
+      StateExpr prev = Iterables.getOnlyElement(inStates);
+      Transition inTransition = _edges.get(prev, candidate);
+      if (inTransition == IDENTITY) {
+        _identityIn++;
+        // move outEdges from candidate to prev
+        for (StateExpr next : outStates) {
+          Transition outTransition = _edges.remove(candidate, next);
+          assert outTransition != null : "missing transition to outState";
+          Transition oldTransition = _edges.put(prev, next, outTransition);
+          if (oldTransition != null) {
+            _edges.put(prev, next, or(oldTransition, outTransition));
+          }
+        }
+        _postStates.removeAll(candidate);
+        _preStates.removeAll(candidate);
+        return ImmutableList.<StateExpr>builderWithExpectedSize(outStates.size() + 1)
+            .add(prev)
+            .addAll(outStates)
+            .build();
+      } else if (inTransition instanceof Constraint
+          && outStates.stream()
+              .map(next -> _edges.get(candidate, next))
+              // TODO: weaken the constraint on out-edges to include other transition types
+              .allMatch(
+                  outTransition ->
+                      outTransition == IDENTITY || outTransition instanceof Constraint)) {
+        // forward-propagate the inTransition constraint, then in-edge will become identity
+        _constraintIn++;
+        for (StateExpr next : outStates) {
+          Transition composed = compose(inTransition, _edges.remove(candidate, next));
+          if (composed == ZERO) {
+            // drop this edge
+            _constraintInDropped++;
+            continue;
+          }
+          Transition oldTransition = _edges.put(prev, next, composed);
+          if (oldTransition != null) {
+            _edges.put(prev, next, or(oldTransition, composed));
+          }
+        }
+        _postStates.removeAll(candidate);
+        _preStates.removeAll(candidate);
+        return ImmutableList.<StateExpr>builderWithExpectedSize(outStates.size() + 1)
+            .add(prev)
+            .addAll(outStates)
+            .build();
+      }
+    }
+    if (outStates.size() == 1) {
+      StateExpr next = Iterables.getOnlyElement(outStates);
+      Transition outTransition = _edges.get(candidate, next);
+      if (outTransition instanceof Constraint
+          && inStates.stream()
+              .map(prev -> _edges.get(prev, candidate))
+              // TODO: weaken the constraint on in-edges to include other transition types
+              .allMatch(
+                  inTransition -> inTransition == IDENTITY || inTransition instanceof Constraint)) {
+        // forward-propagate the inTransition constraint, then in-edge will become identity
+        _constraintOut++;
+        for (StateExpr prev : inStates) {
+          Transition composed = compose(_edges.remove(prev, candidate), outTransition);
+          if (composed == ZERO) {
+            // drop this edge
+            _constraintOutDropped++;
+            continue;
+          }
+          Transition oldTransition = _edges.put(prev, next, composed);
+          if (oldTransition != null) {
+            _edges.put(prev, next, or(oldTransition, composed));
+          }
+        }
+        _postStates.removeAll(candidate);
+        _preStates.removeAll(candidate);
+        return ImmutableList.<StateExpr>builderWithExpectedSize(inStates.size() + 1)
+            .add(next)
+            .addAll(inStates)
+            .build();
+      }
+    }
     if (inStates.size() > 1 || outStates.size() > 1) {
       // For now, only consider merging edges when we can merge all the way through.
       return ImmutableSet.of();
