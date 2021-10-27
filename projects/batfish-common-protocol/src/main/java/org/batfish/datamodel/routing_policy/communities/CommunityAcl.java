@@ -4,10 +4,13 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.LineAction;
 
 /**
  * An access-control list for matching individual {@link
@@ -15,6 +18,20 @@ import javax.annotation.Nullable;
  */
 public final class CommunityAcl extends CommunityMatchExpr {
 
+  public static CommunityMatchExpr acl(List<CommunityAclLine> lines) {
+    if (lines.size() == 1) {
+      CommunityAclLine line = lines.get(0);
+      if (line.getAction() == LineAction.PERMIT) {
+        return line.getCommunityMatchExpr();
+      } else {
+        // Only deny line, same as matching any of nothing.
+        return CommunityMatchAny.matchAny(ImmutableSet.of());
+      }
+    }
+    return new CommunityAcl(lines);
+  }
+
+  @VisibleForTesting
   public CommunityAcl(List<CommunityAclLine> lines) {
     _lines = ImmutableList.copyOf(lines);
   }

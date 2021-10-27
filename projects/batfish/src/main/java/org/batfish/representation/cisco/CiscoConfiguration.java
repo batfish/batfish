@@ -3742,7 +3742,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private static CommunitySetMatchExpr toCommunitySetMatchExpr(
       ExpandedCommunityList ipCommunityListExpanded) {
-    return new CommunitySetAcl(
+    return CommunitySetAcl.acl(
         ipCommunityListExpanded.getLines().stream()
             .map(CiscoConversions::toCommunitySetAclLine)
             .collect(ImmutableList.toImmutableList()));
@@ -3750,7 +3750,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private static CommunitySetMatchExpr toCommunitySetMatchExpr(
       StandardCommunityList ipCommunityListStandard) {
-    return new CommunitySetAcl(
+    return CommunitySetAcl.acl(
         ipCommunityListStandard.getLines().stream()
             .map(CiscoConfiguration::toCommunitySetAclLine)
             .collect(ImmutableList.toImmutableList()));
@@ -3760,7 +3760,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       StandardCommunityListLine line) {
     return new CommunitySetAclLine(
         line.getAction(),
-        new CommunitySetMatchAll(
+        CommunitySetMatchAll.matchAll(
             line.getCommunities().stream()
                 .map(community -> new HasCommunity(new CommunityIs(community)))
                 .collect(ImmutableSet.toImmutableSet())));
@@ -3768,7 +3768,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private static @Nonnull CommunityMatchExpr toCommunityMatchExpr(
       ExpandedCommunityList ipCommunityListExpanded) {
-    return new CommunityAcl(
+    return CommunityAcl.acl(
         ipCommunityListExpanded.getLines().stream()
             .map(CiscoConfiguration::toCommunityAclLine)
             .collect(ImmutableList.toImmutableList()));
