@@ -25,6 +25,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.TrueExpr;
+import org.batfish.datamodel.flow.InboundStep;
 import org.batfish.datamodel.packet_policy.PacketPolicyEvaluator.PacketPolicyResult;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
@@ -112,12 +113,24 @@ public final class PacketPolicyEvaluatorTest {
   public void testFlowResultEquality() {
     new EqualsTester()
         .addEqualityGroup(
-            new PacketPolicyResult(_flow, Drop.instance()),
-            new PacketPolicyResult(_flow, Drop.instance()))
+            new PacketPolicyResult(_flow, Drop.instance(), ImmutableList.of()),
+            new PacketPolicyResult(_flow, Drop.instance(), ImmutableList.of()))
         .addEqualityGroup(
             new PacketPolicyResult(
-                _flow.toBuilder().setIngressNode("differentNode").build(), Drop.instance()))
-        .addEqualityGroup(new PacketPolicyResult(_flow, new FibLookup(new LiteralVrfName("avrf"))))
+                _flow.toBuilder().setIngressNode("differentNode").build(),
+                Drop.instance(),
+                ImmutableList.of()))
+        .addEqualityGroup(
+            new PacketPolicyResult(
+                _flow, new FibLookup(new LiteralVrfName("avrf")), ImmutableList.of()))
+        .addEqualityGroup(
+            new PacketPolicyResult(
+                _flow,
+                Drop.instance(),
+                ImmutableList.of(
+                    InboundStep.builder()
+                        .setDetail(new InboundStep.InboundStepDetail("iface"))
+                        .build())))
         .addEqualityGroup(new Object())
         .testEquals();
   }
