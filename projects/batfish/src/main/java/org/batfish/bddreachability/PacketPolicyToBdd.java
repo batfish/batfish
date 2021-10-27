@@ -163,6 +163,7 @@ class PacketPolicyToBdd {
               currentStatement(),
               new PacketPolicyAction(_hostname, _policy.getName(), returnStmt.getAction()),
               _pathConstraint));
+      _pathConstraint = _pathConstraint.getFactory().one();
       return false; // does not fall through
     }
 
@@ -173,6 +174,7 @@ class PacketPolicyToBdd {
         // optimizer
         // just remove it?
         _edges.add(new Edge(currentStatement(), nextStatement(), _pathConstraint));
+        _pathConstraint = _pathConstraint.getFactory().one();
       }
       PacketPolicyStatement preTransformation = currentStatement();
       PacketPolicyStatement postTransformation = nextStatement();
