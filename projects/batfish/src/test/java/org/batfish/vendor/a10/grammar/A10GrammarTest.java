@@ -13,6 +13,7 @@ import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasN
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasActiveNeighbor;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
@@ -35,6 +36,7 @@ import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.matchers.StaticRouteMatchers.hasRecursive;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.main.BatfishTestUtils.DUMMY_SNAPSHOT_1;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.main.BatfishTestUtils.getBatfish;
@@ -296,6 +298,21 @@ public class A10GrammarTest {
     assertThat(ccae, hasNumReferrers(filename, HEALTH_MONITOR, "HM_SERVER_PORT", 1));
     assertThat(ccae, hasNumReferrers(filename, HEALTH_MONITOR, "HM_SERVICE_GROUP", 1));
     assertThat(ccae, hasNumReferrers(filename, HEALTH_MONITOR, "HM_UNUSED", 0));
+  }
+
+  @Test
+  public void testStaticRouteAcos2Conversion() {
+    String hostname = "static_route_acos2";
+    Configuration c = parseConfig(hostname);
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasStaticRoutes(
+                contains(
+                    allOf(
+                        hasPrefix(Prefix.ZERO),
+                        hasAdministrativeCost(5),
+                        hasNextHop(NextHopIp.of(Ip.parse("1.1.1.1"))))))));
   }
 
   @Test

@@ -17,7 +17,9 @@ static_route_definition
    (
       static_route_description static_route_distance?
       | static_route_distance static_route_description?
-   )? NEWLINE
+      // acos2
+      | static_route_distance? CPU_PROCESS?
+   ) NEWLINE
 ;
 
 static_route_description: DESCRIPTION route_description;
