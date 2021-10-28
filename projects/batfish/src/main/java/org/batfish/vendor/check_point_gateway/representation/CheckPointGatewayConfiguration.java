@@ -65,7 +65,6 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.packet_policy.ApplyFilter;
 import org.batfish.datamodel.packet_policy.ApplyTransformation;
 import org.batfish.datamodel.packet_policy.FibLookup;
 import org.batfish.datamodel.packet_policy.If;
@@ -107,6 +106,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
 
   public static final String VRF_NAME = "default";
   public static final String INTERFACE_ACL_NAME = "~INTERFACE_ACL~";
+  private static final String NO_INGRESS_ACL = "~NO_INGRESS_ACL~";
 
   public CheckPointGatewayConfiguration() {
     _bondingGroups = new HashMap<>();
@@ -366,7 +366,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
         new If(new PacketMatchExpr(matchDst(ownedByFirewall)), ImmutableList.of(returnFibLookup)));
 
     // Otherwise, apply transformation statements.
-    generalStatements.addAll((transformationStatements));
+    generalStatements.addAll(transformationStatements);
 
     // Now for each interface, apply a packet policy that encompasses the incoming filter and
     // transformations. Add an outgoing transformation to translate any HIDE_BEHIND_GATEWAY src IPs
@@ -375,20 +375,23 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
         .values()
         .forEach(
             iface -> {
-              ImmutableList.Builder<Statement> ifacePolicyStatements = ImmutableList.builder();
-              // Incoming filter is ignored when packet policy is present, so apply it explicitly
-              if (iface.getIncomingFilter() != null) {
-                ifacePolicyStatements.add(new ApplyFilter(iface.getIncomingFilter().getName()));
-                iface.setIncomingFilter(null);
+              String ingressAclName =
+                  firstNonNull(iface.getIncomingFilter().getName(), NO_INGRESS_ACL);
+              String policyName = packetPolicyName(ingressAclName);
+              iface.setIncomingFilter(null);
+              iface.setPacketPolicy(policyName);
+
+              if (_c.getPacketPolicies().containsKey(policyName)) {
+                return;
               }
+
+              ImmutableList.Builder<Statement> ifacePolicyStatements = ImmutableList.builder();
               ifacePolicyStatements.addAll(generalStatements);
-              String packetPolicyName = packetPolicyName(iface.getName());
               _c.getPacketPolicies()
                   .put(
-                      packetPolicyName,
-                      new PacketPolicy(
-                          packetPolicyName, ifacePolicyStatements.build(), returnFibLookup));
-              iface.setPacketPolicy(packetPolicyName);
+                      policyName,
+                      new PacketPolicy(policyName, ifacePolicyStatements.build(), returnFibLookup));
+              iface.setPacketPolicy(policyName);
               // Build outgoing transformation to correctly translate HIDE_BEHIND_GATEWAY src
               if (iface.getConcreteAddress() != null) {
                 Transformation outgoing =
@@ -401,8 +404,8 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
             });
   }
 
-  private static String packetPolicyName(String ifaceName) {
-    return String.format("~PACKET_POLICY_%s~", ifaceName);
+  private static String packetPolicyName(String ingressAclName) {
+    return String.format("~PACKET_POLICY_%s~", ingressAclName);
   }
 
   /**
