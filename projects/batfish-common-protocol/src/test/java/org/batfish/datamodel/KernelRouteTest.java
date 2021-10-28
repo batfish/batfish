@@ -19,6 +19,7 @@ public final class KernelRouteTest {
         .addEqualityGroup(builder.setNetwork(Prefix.ZERO).build())
         .addEqualityGroup((builder.setTag(5L).build()))
         .addEqualityGroup((builder.setRequiredOwnedIp(Ip.ZERO).build()))
+        .addEqualityGroup(builder.setNonForwarding(false).build())
         .testEquals();
   }
 
@@ -29,6 +30,7 @@ public final class KernelRouteTest {
             .setNetwork(Prefix.ZERO)
             .setTag(5L)
             .setRequiredOwnedIp(Ip.ZERO)
+            // skip setNonForwarding since its value is not jackson-serialized
             .build();
     assertEquals(route, BatfishObjectMapper.clone(route, KernelRoute.class));
   }
@@ -40,6 +42,7 @@ public final class KernelRouteTest {
             .setNetwork(Prefix.ZERO)
             .setTag(5L)
             .setRequiredOwnedIp(Ip.ZERO)
+            .setNonForwarding(false)
             .build();
     assertEquals(route, SerializationUtils.clone(route));
   }

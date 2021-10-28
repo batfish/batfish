@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Comparator.naturalOrder;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.FirewallSessionInterfaceInfo.Action.POST_NAT_FIB_LOOKUP;
+import static org.batfish.datamodel.Prefix.MAX_PREFIX_LENGTH;
 import static org.batfish.vendor.a10.representation.A10Conversion.VIRTUAL_TCP_PORT_TYPES;
 import static org.batfish.vendor.a10.representation.A10Conversion.VIRTUAL_UDP_PORT_TYPES;
 import static org.batfish.vendor.a10.representation.A10Conversion.createBgpProcess;
@@ -12,10 +13,12 @@ import static org.batfish.vendor.a10.representation.A10Conversion.getFloatingIpK
 import static org.batfish.vendor.a10.representation.A10Conversion.getFloatingIps;
 import static org.batfish.vendor.a10.representation.A10Conversion.getFloatingIpsByHaGroup;
 import static org.batfish.vendor.a10.representation.A10Conversion.getFloatingIpsForAllVrids;
+import static org.batfish.vendor.a10.representation.A10Conversion.getInterfaceEnabledEffective;
 import static org.batfish.vendor.a10.representation.A10Conversion.getNatPoolIps;
 import static org.batfish.vendor.a10.representation.A10Conversion.getNatPoolIpsByHaGroup;
 import static org.batfish.vendor.a10.representation.A10Conversion.getNatPoolIpsForAllVrids;
 import static org.batfish.vendor.a10.representation.A10Conversion.getNatPoolKernelRoutes;
+import static org.batfish.vendor.a10.representation.A10Conversion.getRealInterfaceAddressKernelRoutes;
 import static org.batfish.vendor.a10.representation.A10Conversion.getVirtualServerIps;
 import static org.batfish.vendor.a10.representation.A10Conversion.getVirtualServerIpsByHaGroup;
 import static org.batfish.vendor.a10.representation.A10Conversion.getVirtualServerIpsForAllVrids;
@@ -80,6 +83,7 @@ import org.batfish.referencelibrary.GeneratedRefBookUtils.BookType;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.vendor.a10.representation.A10Conversion.VirtualServerTargetVirtualAddressExtractor;
+import org.batfish.vendor.a10.representation.Interface.Type;
 
 /** Datamodel class representing an A10 device configuration. */
 public final class A10Configuration extends VendorConfiguration {
@@ -219,25 +223,6 @@ public final class A10Configuration extends VendorConfiguration {
   @Override
   public void setVendor(ConfigurationFormat format) {
     _vendor = format;
-  }
-
-  @VisibleForTesting
-  public static boolean getInterfaceEnabledEffective(Interface iface) {
-    Boolean enabled = iface.getEnabled();
-    if (enabled != null) {
-      return enabled;
-    }
-    switch (iface.getType()) {
-      case ETHERNET:
-        return false;
-      case LOOPBACK:
-      case TRUNK:
-      case VE:
-        return true;
-      default:
-        assert false;
-        return true;
-    }
   }
 
   @VisibleForTesting
@@ -402,7 +387,13 @@ public final class A10Configuration extends VendorConfiguration {
                     getNatPoolKernelRoutes(_natPools.values()),
                     getVirtualServerKernelRoutes(_virtualServers.values()),
                     _vrrpA != null ? getFloatingIpKernelRoutes(_vrrpA) : Stream.of(),
-                    getFloatingIpKernelRoutes(_floatingIps.keySet()))
+                    getFloatingIpKernelRoutes(_floatingIps.keySet()),
+                    getRealInterfaceAddressKernelRoutes(
+                        Streams.concat(
+                            _interfacesEthernet.values().stream(),
+                            _interfacesTrunk.values().stream(),
+                            _interfacesVe.values().stream(),
+                            _interfacesLoopback.values().stream())))
                 .collect(ImmutableSortedSet.toImmutableSortedSet(naturalOrder())));
   }
 
@@ -430,7 +421,7 @@ public final class A10Configuration extends VendorConfiguration {
                 getNatPoolIpsForAllVrids(_natPools.values()),
                 getVirtualServerIpsForAllVrids(_virtualServers.values()),
                 _vrrpA != null ? getFloatingIpsForAllVrids(_vrrpA) : Stream.of())
-            .map(ip -> ConcreteInterfaceAddress.create(ip, Prefix.MAX_PREFIX_LENGTH))
+            .map(ip -> ConcreteInterfaceAddress.create(ip, MAX_PREFIX_LENGTH))
             .collect(ImmutableSet.toImmutableSet());
     ConnectedRouteMetadata connectedRouteMetadata =
         ConnectedRouteMetadata.builder()
@@ -684,6 +675,9 @@ public final class A10Configuration extends VendorConfiguration {
           ConnectedRouteMetadata.builder().setGenerateLocalRoute(false).build();
       newIface.setAddress(address);
       newIface.setAddressMetadata(ImmutableMap.of(address, meta));
+      if (iface.getType() != Type.LOOPBACK) {
+        newIface.setProxyArp(true);
+      }
     }
 
     // VLANs

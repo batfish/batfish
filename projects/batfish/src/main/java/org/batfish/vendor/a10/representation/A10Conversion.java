@@ -6,6 +6,7 @@ import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PAT
 import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
+import static org.batfish.datamodel.Prefix.MAX_PREFIX_LENGTH;
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationPort;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
@@ -81,7 +82,9 @@ public class A10Conversion {
   // TODO: confirm on ACOSv2 device
   @VisibleForTesting public static final int DEFAULT_HA_PRIORITY = 150;
 
+  @VisibleForTesting public static final long KERNEL_ROUTE_TAG_INTERFACE_PROXY_ARP_IP = 6L;
   @VisibleForTesting public static final long KERNEL_ROUTE_TAG_NAT_POOL = 1L;
+  @VisibleForTesting public static final long KERNEL_ROUTE_TAG_NAT_POOL_PROXY_ARP_IP = 5L;
   @VisibleForTesting public static final long KERNEL_ROUTE_TAG_VIRTUAL_SERVER_FLAGGED = 2L;
   @VisibleForTesting public static final long KERNEL_ROUTE_TAG_VIRTUAL_SERVER_UNFLAGGED = 3L;
   @VisibleForTesting public static final long KERNEL_ROUTE_TAG_FLOATING_IP = 4L;
@@ -284,11 +287,80 @@ public class A10Conversion {
 
   /** Get all of the the kernel routes generated for all {@code ip nat pool}s. */
   static @Nonnull Stream<KernelRoute> getNatPoolKernelRoutes(Collection<NatPool> natPools) {
-    return natPools.stream().map(A10Conversion::toKernelRoute);
+    return natPools.stream()
+        .flatMap(
+            natPool ->
+                Stream.concat(
+                    toForwardingKernelRoutes(natPool),
+                    Stream.of(toNonForwardingKernelRoute(natPool))));
+  }
+
+  /**
+   * Create forwarding discard kernel routes for each IP in the range of an {@code ip nat pool}.
+   * Used only for proxy-arp, not redistribution.
+   */
+  @VisibleForTesting
+  static @Nonnull Stream<KernelRoute> toForwardingKernelRoutes(NatPool natPool) {
+    return enumerateIps(natPool.getStart(), natPool.getEnd())
+        .map(
+            ip ->
+                KernelRoute.builder()
+                    .setNetwork(Prefix.create(ip, MAX_PREFIX_LENGTH))
+                    .setRequiredOwnedIp(ip)
+                    .setTag(KERNEL_ROUTE_TAG_NAT_POOL_PROXY_ARP_IP)
+                    .setNonForwarding(false)
+                    .build());
   }
 
   @VisibleForTesting
-  static @Nonnull KernelRoute toKernelRoute(NatPool natPool) {
+  public static boolean getInterfaceEnabledEffective(Interface iface) {
+    Boolean enabled = iface.getEnabled();
+    if (enabled != null) {
+      return enabled;
+    }
+    switch (iface.getType()) {
+      case ETHERNET:
+        return false;
+      case LOOPBACK:
+      case TRUNK:
+      case VE:
+        return true;
+      default:
+        assert false;
+        return true;
+    }
+  }
+
+  @Nonnull
+  static Stream<KernelRoute> getRealInterfaceAddressKernelRoutes(Stream<Interface> interfaces) {
+    return interfaces
+        .filter(A10Conversion::getInterfaceEnabledEffective)
+        .filter(i -> i.getIpAddress() != null)
+        .map(A10Conversion::toKernelRoute);
+  }
+
+  /**
+   * Create kernel route for the address of an L3 interface. This is needed for proxy-arp because
+   * interface addresses do not generate local routes on A10 devices.
+   */
+  @VisibleForTesting
+  static @Nonnull KernelRoute toKernelRoute(Interface iface) {
+    ConcreteInterfaceAddress address = iface.getIpAddress();
+    assert address != null;
+    Ip ip = address.getIp();
+    return KernelRoute.builder()
+        .setNonForwarding(false)
+        .setTag(KERNEL_ROUTE_TAG_INTERFACE_PROXY_ARP_IP)
+        .setNetwork(Prefix.create(ip, MAX_PREFIX_LENGTH))
+        .build();
+  }
+
+  /**
+   * Create non-forwarding kernel route foran {@code ip nat pool} network. Used only for
+   * redistribution, not proxy-arp..
+   */
+  @VisibleForTesting
+  static @Nonnull KernelRoute toNonForwardingKernelRoute(NatPool natPool) {
     Ip requiredOwnedIp = natPool.getStart();
     Prefix network = Prefix.create(requiredOwnedIp, natPool.getNetmask());
     return KernelRoute.builder()
@@ -365,6 +437,7 @@ public class A10Conversion {
         .setNetwork(network)
         .setRequiredOwnedIp(requiredOwnedIp)
         .setTag(tag)
+        .setNonForwarding(false)
         .build();
   }
 
@@ -379,9 +452,10 @@ public class A10Conversion {
 
   static @Nonnull KernelRoute toKernelRoute(Ip floatingIp) {
     return KernelRoute.builder()
-        .setNetwork(Prefix.create(floatingIp, Prefix.MAX_PREFIX_LENGTH))
+        .setNetwork(Prefix.create(floatingIp, MAX_PREFIX_LENGTH))
         .setTag(KERNEL_ROUTE_TAG_FLOATING_IP)
         .setRequiredOwnedIp(floatingIp)
+        .setNonForwarding(false)
         .build();
   }
 
@@ -444,7 +518,7 @@ public class A10Conversion {
 
     @Override
     public Prefix visitAddress(VirtualServerTargetAddress address) {
-      return Prefix.create(address.getAddress(), Prefix.MAX_PREFIX_LENGTH);
+      return Prefix.create(address.getAddress(), MAX_PREFIX_LENGTH);
     }
   }
 
