@@ -65,9 +65,8 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.acl.DeniedByAcl;
+import org.batfish.datamodel.packet_policy.ApplyFilter;
 import org.batfish.datamodel.packet_policy.ApplyTransformation;
-import org.batfish.datamodel.packet_policy.Drop;
 import org.batfish.datamodel.packet_policy.FibLookup;
 import org.batfish.datamodel.packet_policy.If;
 import org.batfish.datamodel.packet_policy.IngressInterfaceVrf;
@@ -379,10 +378,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
               ImmutableList.Builder<Statement> ifacePolicyStatements = ImmutableList.builder();
               // Incoming filter is ignored when packet policy is present, so apply it explicitly
               if (iface.getIncomingFilter() != null) {
-                ifacePolicyStatements.add(
-                    new If(
-                        new PacketMatchExpr(new DeniedByAcl(iface.getIncomingFilter().getName())),
-                        ImmutableList.of(new Return(Drop.instance()))));
+                ifacePolicyStatements.add(new ApplyFilter(iface.getIncomingFilter().getName()));
                 iface.setIncomingFilter(null);
               }
               ifacePolicyStatements.addAll(generalStatements);
