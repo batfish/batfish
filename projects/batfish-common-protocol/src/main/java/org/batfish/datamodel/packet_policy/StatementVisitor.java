@@ -9,6 +9,8 @@ public interface StatementVisitor<T> {
     return step.accept(this);
   }
 
+  T visitApplyFilter(ApplyFilter applyFilter);
+
   T visitApplyTransformation(ApplyTransformation transformation);
 
   T visitIf(If ifStmt);

@@ -21,8 +21,10 @@ import org.batfish.common.bdd.BDDOps;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpSpaceToBDD;
+import org.batfish.datamodel.acl.DeniedByAcl;
 import org.batfish.datamodel.packet_policy.Action;
 import org.batfish.datamodel.packet_policy.ActionVisitor;
+import org.batfish.datamodel.packet_policy.ApplyFilter;
 import org.batfish.datamodel.packet_policy.ApplyTransformation;
 import org.batfish.datamodel.packet_policy.BoolExprVisitor;
 import org.batfish.datamodel.packet_policy.Conjunction;
@@ -139,6 +141,15 @@ class PacketPolicyToBdd {
       new Collector(_pathTransition).visit(returnStmt.getAction());
       _pathTransition = ZERO;
       return null;
+    }
+
+    @Override
+    public Void visitApplyFilter(ApplyFilter applyFilter) {
+      // Fundamentally, ApplyFilter behaves the same as this If
+      return visitIf(
+          new If(
+              new PacketMatchExpr(new DeniedByAcl(applyFilter.getFilter())),
+              ImmutableList.of(new Return(Drop.instance()))));
     }
 
     @Override

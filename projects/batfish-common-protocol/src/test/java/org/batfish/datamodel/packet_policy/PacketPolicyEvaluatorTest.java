@@ -1,7 +1,9 @@
 package org.batfish.datamodel.packet_policy;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableMap;
@@ -9,6 +11,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
 import java.util.Collections;
 import java.util.Map;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Fib;
@@ -20,12 +23,16 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpaceReference;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MockFib;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.FalseExpr;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.TrueExpr;
+import org.batfish.datamodel.flow.FilterStep;
 import org.batfish.datamodel.flow.InboundStep;
+import org.batfish.datamodel.flow.StepAction;
 import org.batfish.datamodel.packet_policy.PacketPolicyEvaluator.PacketPolicyResult;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
@@ -255,6 +262,67 @@ public final class PacketPolicyEvaluatorTest {
             ImmutableMap.of());
     assertThat(r.getAction(), equalTo(_defaultAction.getAction()));
     assertThat(r.getFinalFlow(), equalTo(_flow));
+  }
+
+  @Test
+  public void testEvaluateApplyFilter() {
+    // Set up an ACL that permits traffic to 1.1.1.0/24
+    Prefix permittedPrefix = Prefix.parse("1.1.1.0/24");
+    AclLine line =
+        new ExprAclLine(
+            LineAction.PERMIT,
+            new MatchHeaderSpace(
+                HeaderSpace.builder().setDstIps(permittedPrefix.toIpSpace()).build()),
+            "foo");
+    IpAccessList acl = IpAccessList.builder().setName("acl").setLines(line).build();
+
+    // Create a PacketPolicy that uses an ApplyFilter for the above ACL
+    FibLookup fl = new FibLookup(new LiteralVrfName("vrf"));
+    PacketPolicy policy =
+        new PacketPolicy("name", ImmutableList.of(new ApplyFilter(acl.getName())), new Return(fl));
+
+    String srcIface = checkNotNull(_flow.getIngressInterface());
+    {
+      // Flow that does not match the ACL
+      PacketPolicyResult r =
+          PacketPolicyEvaluator.evaluate(
+              _flow, // destined to 2.2.2.2
+              srcIface,
+              "vrf",
+              policy,
+              ImmutableMap.of(acl.getName(), acl),
+              ImmutableMap.of(),
+              ImmutableMap.of());
+      assertThat(r.getAction(), equalTo(Drop.instance()));
+      assertThat(
+          r.getTraceSteps(),
+          contains(
+              new FilterStep(
+                  new FilterStep.FilterStepDetail(
+                      acl.getName(), FilterStep.FilterType.INGRESS_FILTER, srcIface, _flow),
+                  StepAction.DENIED)));
+    }
+    {
+      // Flow that does match the ACL
+      Flow flow = _flow.toBuilder().setDstIp(Ip.parse("1.1.1.100")).build();
+      PacketPolicyResult r =
+          PacketPolicyEvaluator.evaluate(
+              flow,
+              srcIface,
+              "vrf",
+              policy,
+              ImmutableMap.of(acl.getName(), acl),
+              ImmutableMap.of(),
+              ImmutableMap.of());
+      assertThat(r.getAction(), equalTo(fl));
+      assertThat(
+          r.getTraceSteps(),
+          contains(
+              new FilterStep(
+                  new FilterStep.FilterStepDetail(
+                      acl.getName(), FilterStep.FilterType.INGRESS_FILTER, srcIface, flow),
+                  StepAction.PERMITTED)));
+    }
   }
 
   @Test
