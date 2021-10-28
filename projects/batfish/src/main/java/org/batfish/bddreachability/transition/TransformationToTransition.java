@@ -4,6 +4,7 @@ import static org.batfish.bddreachability.BDDReachabilityUtils.computePortTransf
 import static org.batfish.bddreachability.transition.Transitions.IDENTITY;
 import static org.batfish.bddreachability.transition.Transitions.branch;
 import static org.batfish.bddreachability.transition.Transitions.compose;
+import static org.batfish.bddreachability.transition.Transitions.eraseAndSet;
 import static org.batfish.bddreachability.transition.Transitions.reverse;
 import static org.batfish.datamodel.transformation.ReturnFlowTransformation.returnFlowTransformation;
 
@@ -52,8 +53,7 @@ public class TransformationToTransition {
     _stepToTransition = new TransformationStepToTransition();
   }
 
-  private static EraseAndSet assignIpFromPool(BDDInteger var, RangeSet<Ip> ranges) {
-    BDD erase = Arrays.stream(var.getBitvec()).reduce(var.getFactory().one(), BDD::and);
+  private static Transition assignIpFromPool(BDDInteger var, RangeSet<Ip> ranges) {
     BDD setValue =
         ranges.asRanges().stream()
             .map(
@@ -63,13 +63,12 @@ public class TransformationToTransition {
                   return var.range(range.lowerEndpoint().asLong(), range.upperEndpoint().asLong());
                 })
             .reduce(var.getFactory().zero(), BDD::or);
-    return new EraseAndSet(erase, setValue);
+    return eraseAndSet(var, setValue);
   }
 
   private Transition assignPortFromPool(BDDInteger var, int poolStart, int poolEnd) {
-    BDD erase = Arrays.stream(var.getBitvec()).reduce(var.getFactory().one(), BDD::and);
     BDD setValue = var.range(poolStart, poolEnd);
-    EraseAndSet eraseAndSet = new EraseAndSet(erase, setValue);
+    Transition eraseAndSet = eraseAndSet(var, setValue);
     // AssignPortFromPool is a noop on protocols that don't have ports
     return branch(_ipProtocolsWithPortsBdd, eraseAndSet, IDENTITY);
   }
@@ -174,7 +173,7 @@ public class TransformationToTransition {
     Transition trueBranch =
         transformation.getAndThen() == null
             ? steps
-            : Transitions.compose(steps, toTransition(transformation.getAndThen()));
+            : compose(steps, toTransition(transformation.getAndThen()));
     Transition falseBranch =
         transformation.getOrElse() == null
             ? Identity.INSTANCE
@@ -183,7 +182,7 @@ public class TransformationToTransition {
   }
 
   private Transition computeSteps(List<TransformationStep> transformationSteps) {
-    return Transitions.compose(
+    return compose(
         transformationSteps.stream().map(_stepToTransition::visit).toArray(Transition[]::new));
   }
 }
