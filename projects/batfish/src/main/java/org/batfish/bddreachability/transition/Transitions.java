@@ -72,7 +72,7 @@ public final class Transitions {
       BDD falseBdd = ((Constraint) els).getConstraint();
       return constraint(guard.ite(trueBdd, falseBdd));
     }
-    return new Branch(guard, thn, els);
+    return or(compose(constraint(guard), thn), compose(constraint(guard.not()), els));
   }
 
   public static Transition compose(Transition... transitions) {
