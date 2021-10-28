@@ -11,10 +11,25 @@ vrrp-a vrid 0
   floating-ip 10.0.9.2
 !
 
+vrrp-a peer-group
+  peer 192.168.255.2
+!
+
 interface ethernet 1
   ip address 10.0.0.10 255.255.255.0
   enable
 !
+
+interface ethernet 2
+  ip address 10.100.0.1 255.255.255.0
+  enable
+!
+
+interface ethernet 3
+  ip address 192.168.255.1 /30
+  enable
+!
+
 !
 ip nat pool POOL1 10.10.10.10 10.10.10.10 netmask /32
 ! overlaps with interface subnet, but not interface address
