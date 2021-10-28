@@ -272,10 +272,8 @@ public class L3AdjacencyComputer {
             parentNip);
         return;
       } else if (i.getEncapsulationVlan() == null) {
-        LOGGER.warn(
-            "Not connecting L3 interface {} to parent {}: no encapsulation VLAN set",
-            nip,
-            parentNip);
+        LOGGER.debug("L3 interface {} connected to physical interface {} untagged", nip, parentNip);
+        Edges.connectL3Untagged(iface, parentIface);
         return;
       }
       LOGGER.debug(
