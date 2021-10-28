@@ -18,7 +18,6 @@ import static org.batfish.vendor.a10.representation.A10Conversion.getNatPoolIps;
 import static org.batfish.vendor.a10.representation.A10Conversion.getNatPoolIpsByHaGroup;
 import static org.batfish.vendor.a10.representation.A10Conversion.getNatPoolIpsForAllVrids;
 import static org.batfish.vendor.a10.representation.A10Conversion.getNatPoolKernelRoutes;
-import static org.batfish.vendor.a10.representation.A10Conversion.getRealInterfaceAddressKernelRoutes;
 import static org.batfish.vendor.a10.representation.A10Conversion.getVirtualServerIps;
 import static org.batfish.vendor.a10.representation.A10Conversion.getVirtualServerIpsByHaGroup;
 import static org.batfish.vendor.a10.representation.A10Conversion.getVirtualServerIpsForAllVrids;
@@ -387,13 +386,7 @@ public final class A10Configuration extends VendorConfiguration {
                     getNatPoolKernelRoutes(_natPools.values()),
                     getVirtualServerKernelRoutes(_virtualServers.values()),
                     _vrrpA != null ? getFloatingIpKernelRoutes(_vrrpA) : Stream.of(),
-                    getFloatingIpKernelRoutes(_floatingIps.keySet()),
-                    getRealInterfaceAddressKernelRoutes(
-                        Streams.concat(
-                            _interfacesEthernet.values().stream(),
-                            _interfacesTrunk.values().stream(),
-                            _interfacesVe.values().stream(),
-                            _interfacesLoopback.values().stream())))
+                    getFloatingIpKernelRoutes(_floatingIps.keySet()))
                 .collect(ImmutableSortedSet.toImmutableSortedSet(naturalOrder())));
   }
 
