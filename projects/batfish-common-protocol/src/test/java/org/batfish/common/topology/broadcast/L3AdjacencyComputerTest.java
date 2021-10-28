@@ -518,7 +518,7 @@ public class L3AdjacencyComputerTest {
       assertThat(domain.getL3InterfacesForTest(), anEmptyMap());
     }
     {
-      // Subif is missing encapsulation vlan
+      // Subif handles untagged frames
       subif.setEncapsulationVlan(null);
       L3Interface iface = new L3Interface(NodeInterfacePair.of(subif));
       PhysicalInterface physicalInterface = new PhysicalInterface(NodeInterfacePair.of(physical));
@@ -529,9 +529,9 @@ public class L3AdjacencyComputerTest {
           c.getAllInterfaces(),
           ImmutableMap.of(physicalInterface.getIface(), physicalInterface),
           ImmutableMap.of(domain.getHostname(), domain));
-      assertThat(iface.getSendToInterfaceForTesting(), nullValue());
+      assertThat(iface.getSendToInterfaceForTesting(), sameInstance(physicalInterface));
       assertThat(iface.getSendToSwitchForTesting(), nullValue());
-      assertThat(physicalInterface.getL3InterfacesForTest(), anEmptyMap());
+      assertThat(physicalInterface.getL3InterfacesForTest().keySet(), contains(iface));
       assertThat(physicalInterface.getSwitchForTest(), nullValue());
       assertThat(domain.getPhysicalInterfacesForTest(), anEmptyMap());
       assertThat(domain.getL3InterfacesForTest(), anEmptyMap());
