@@ -11,13 +11,13 @@ import com.google.common.collect.ImmutableSet.Builder;
 import com.google.common.graph.Traverser;
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -168,16 +168,15 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
     }
 
     /** Returns the list of non-null children for this node */
-    @Nonnull
-    List<Node<T>> getChildren() {
+    private @Nonnull Stream<Node<T>> getChildren() {
       if (_left == null && _right == null) {
-        return ImmutableList.of();
+        return Stream.of();
       } else if (_left == null) {
-        return ImmutableList.of(_right);
+        return Stream.of(_right);
       } else if (_right == null) {
-        return ImmutableList.of(_left);
+        return Stream.of(_left);
       } else {
-        return ImmutableList.of(_left, _right);
+        return Stream.of(_left, _right);
       }
     }
 
@@ -343,10 +342,7 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
       return;
     }
     Traverser.<Node<T>>forTree(
-            node ->
-                node.getChildren().stream()
-                    .filter(visitNode)
-                    .collect(ImmutableList.toImmutableList()))
+            node -> node.getChildren().filter(visitNode).collect(ImmutableList.toImmutableList()))
         .depthFirstPostOrder(_root)
         .forEach(consumer);
   }
