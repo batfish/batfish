@@ -6,7 +6,6 @@ import static org.batfish.datamodel.BgpTieBreaker.ROUTER_ID;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
-import static org.batfish.datamodel.Prefix.MAX_PREFIX_LENGTH;
 import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasSendCommunity;
 import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasSendExtendedCommunity;
 import static org.batfish.datamodel.matchers.AddressFamilyMatchers.hasAddressFamilyCapabilites;
@@ -27,7 +26,6 @@ import static org.batfish.vendor.a10.representation.A10Conversion.DEFAULT_LOCAL_
 import static org.batfish.vendor.a10.representation.A10Conversion.DEFAULT_VRRP_A_PREEMPT;
 import static org.batfish.vendor.a10.representation.A10Conversion.DEFAULT_VRRP_A_PRIORITY;
 import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_FLOATING_IP;
-import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_INTERFACE_PROXY_ARP_IP;
 import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_NAT_POOL;
 import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_VIRTUAL_SERVER_FLAGGED;
 import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_VIRTUAL_SERVER_UNFLAGGED;
@@ -88,7 +86,6 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.transformation.ApplyAll;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.vendor.a10.representation.BgpNeighbor.SendCommunity;
-import org.batfish.vendor.a10.representation.Interface.Type;
 import org.junit.Test;
 
 /** Tests of {@link A10Conversion}. */
@@ -501,22 +498,6 @@ public class A10ConversionTest {
                 .setNetwork(Prefix.strict("10.0.0.1/32"))
                 .setRequiredOwnedIp(floatingIp)
                 .setTag(KERNEL_ROUTE_TAG_FLOATING_IP)
-                .setNonForwarding(false)
-                .build()));
-  }
-
-  @Test
-  public void testToKernelRouteInterface() {
-    Interface iface = new Interface(Type.ETHERNET, 1);
-    Ip ip = Ip.parse("10.0.0.1");
-    iface.setIpAddress(ConcreteInterfaceAddress.create(ip, 24));
-
-    assertThat(
-        toKernelRoute(iface),
-        equalTo(
-            KernelRoute.builder()
-                .setNetwork(Prefix.create(ip, MAX_PREFIX_LENGTH))
-                .setTag(KERNEL_ROUTE_TAG_INTERFACE_PROXY_ARP_IP)
                 .setNonForwarding(false)
                 .build()));
   }

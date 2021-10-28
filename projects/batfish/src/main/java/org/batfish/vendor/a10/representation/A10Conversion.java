@@ -82,7 +82,6 @@ public class A10Conversion {
   // TODO: confirm on ACOSv2 device
   @VisibleForTesting public static final int DEFAULT_HA_PRIORITY = 150;
 
-  @VisibleForTesting public static final long KERNEL_ROUTE_TAG_INTERFACE_PROXY_ARP_IP = 6L;
   @VisibleForTesting public static final long KERNEL_ROUTE_TAG_NAT_POOL = 1L;
   @VisibleForTesting public static final long KERNEL_ROUTE_TAG_NAT_POOL_PROXY_ARP_IP = 5L;
   @VisibleForTesting public static final long KERNEL_ROUTE_TAG_VIRTUAL_SERVER_FLAGGED = 2L;
@@ -329,30 +328,6 @@ public class A10Conversion {
         assert false;
         return true;
     }
-  }
-
-  @Nonnull
-  static Stream<KernelRoute> getRealInterfaceAddressKernelRoutes(Stream<Interface> interfaces) {
-    return interfaces
-        .filter(A10Conversion::getInterfaceEnabledEffective)
-        .filter(i -> i.getIpAddress() != null)
-        .map(A10Conversion::toKernelRoute);
-  }
-
-  /**
-   * Create kernel route for the address of an L3 interface. This is needed for proxy-arp because
-   * interface addresses do not generate local routes on A10 devices.
-   */
-  @VisibleForTesting
-  static @Nonnull KernelRoute toKernelRoute(Interface iface) {
-    ConcreteInterfaceAddress address = iface.getIpAddress();
-    assert address != null;
-    Ip ip = address.getIp();
-    return KernelRoute.builder()
-        .setNonForwarding(false)
-        .setTag(KERNEL_ROUTE_TAG_INTERFACE_PROXY_ARP_IP)
-        .setNetwork(Prefix.create(ip, MAX_PREFIX_LENGTH))
-        .build();
   }
 
   /**
