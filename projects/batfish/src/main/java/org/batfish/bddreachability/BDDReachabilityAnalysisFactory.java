@@ -880,7 +880,7 @@ public final class BDDReachabilityAnalysisFactory {
               Transition addOutgoingOriginalFlowFiltersConstraint =
                   addOutgoingOriginalFlowFiltersConstraint(
                       _bddOutgoingOriginalFlowFilterManagers.get(nodeName));
-
+              Set<String> convertedPolicies = new HashSet<>();
               return config
                   .activeInterfaces()
                   .filter(iface -> iface.getPacketPolicyName() != null)
@@ -889,6 +889,16 @@ public final class BDDReachabilityAnalysisFactory {
                         String vrfName = iface.getVrfName();
                         String ifaceName = iface.getName();
                         String policyName = iface.getPacketPolicyName();
+
+                        if (convertedPolicies.contains(policyName)) {
+                          return Stream.of(
+                              new Edge(
+                                  new PreInInterface(nodeName, ifaceName),
+                                  new PacketPolicyStatement(nodeName, policyName, 0),
+                                  addOutgoingOriginalFlowFiltersConstraint));
+                        }
+
+                        convertedPolicies.add(policyName);
 
                         List<Edge> edges =
                             PacketPolicyToBdd.evaluate(
