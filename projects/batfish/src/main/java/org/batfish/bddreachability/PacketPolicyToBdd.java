@@ -184,6 +184,7 @@ class PacketPolicyToBdd {
               new PacketPolicyAction(_hostname, _policy.getName(), Drop.instance()),
               permitBdd.not()));
       _edges.add(new Edge(currentStatement(), nextStatement(), permitBdd));
+      return true;
     }
 
     @Override
