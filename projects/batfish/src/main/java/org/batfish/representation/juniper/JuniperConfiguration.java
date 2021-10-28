@@ -186,6 +186,7 @@ import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
 import org.batfish.representation.juniper.FwTerm.Field;
 import org.batfish.representation.juniper.Interface.OspfInterfaceType;
+import org.batfish.representation.juniper.Interface.VlanTaggingMode;
 import org.batfish.representation.juniper.Zone.AddressBookType;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.vendor.VendorStructureId;
@@ -881,12 +882,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
    */
   private static @Nonnull CommunityMatchExpr toCommunityMatchExpr(NamedCommunity namedCommunity) {
     CommunityMatchExpr match =
-        new CommunityMatchAny(
+        CommunityMatchAny.matchAny(
             namedCommunity.getMembers().stream()
                 .map(member -> member.accept(CommunityMemberToCommunityMatchExpr.INSTANCE))
                 .collect(ImmutableSet.toImmutableSet()));
     if (namedCommunity.getInvertMatch()) {
-      return new CommunityNot(match);
+      return CommunityNot.not(match);
     }
     return match;
   }
@@ -899,13 +900,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
   private static @Nonnull CommunitySetMatchExpr toCommunitySetMatchExpr(
       NamedCommunity namedCommunity) {
     CommunitySetMatchExpr match =
-        new CommunitySetMatchAll(
+        CommunitySetMatchAll.matchAll(
             namedCommunity.getMembers().stream()
                 .map(member -> member.accept(CommunityMemberToCommunityMatchExpr.INSTANCE))
                 .map(HasCommunity::new)
                 .collect(ImmutableSet.toImmutableSet()));
     if (namedCommunity.getInvertMatch()) {
-      return new CommunitySetNot(match);
+      return CommunitySetNot.not(match);
     }
     return match;
   }
@@ -1876,13 +1877,16 @@ public final class JuniperConfiguration extends VendorConfiguration {
     } else {
       newIface.setSwitchportMode(SwitchportMode.NONE);
       newIface.setSwitchport(false);
-    }
-    if (iface.getVlanId() != null) {
-      if (iface.getName().endsWith(".0")) {
-        _w.redFlag(
-            String.format("Setting vlan-id on unit 0 of %s is not allowed", iface.getName()));
-      } else {
-        newIface.setEncapsulationVlan(iface.getVlanId());
+      if (iface.getVlanId() != null) {
+        if (iface.getParent().getVlanTagging() == VlanTaggingMode.NONE) {
+          _w.redFlag(
+              String.format(
+                  "%s: VLAN-ID can only be specified on tagged ethernet interfaces, but %s is not"
+                      + " configured with vlan-tagging or flexible-vlan-tagging",
+                  iface.getName(), iface.getParent().getName()));
+        } else {
+          newIface.setEncapsulationVlan(iface.getVlanId());
+        }
       }
     }
     newIface.setBandwidth(iface.getBandwidth());

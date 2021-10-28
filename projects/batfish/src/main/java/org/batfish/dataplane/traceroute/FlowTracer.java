@@ -119,9 +119,9 @@ import org.batfish.datamodel.packet_policy.ActionVisitor;
 import org.batfish.datamodel.packet_policy.Drop;
 import org.batfish.datamodel.packet_policy.FibLookup;
 import org.batfish.datamodel.packet_policy.FibLookupOverrideLookupIp;
-import org.batfish.datamodel.packet_policy.FlowEvaluator;
-import org.batfish.datamodel.packet_policy.FlowEvaluator.FlowResult;
 import org.batfish.datamodel.packet_policy.PacketPolicy;
+import org.batfish.datamodel.packet_policy.PacketPolicyEvaluator;
+import org.batfish.datamodel.packet_policy.PacketPolicyEvaluator.PacketPolicyResult;
 import org.batfish.datamodel.packet_policy.VrfExprNameExtractor;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.transformation.Transformation;
@@ -610,8 +610,8 @@ class FlowTracer {
 
     // Policy is present. If this point is reached, processPBR will return true.
     Configuration owner = incomingInterface.getOwner();
-    FlowResult result =
-        FlowEvaluator.evaluate(
+    PacketPolicyResult result =
+        PacketPolicyEvaluator.evaluate(
             _currentFlow,
             incomingInterface.getName(),
             incomingInterface.getVrfName(),
@@ -620,6 +620,7 @@ class FlowTracer {
             owner.getIpSpaces(),
             _tracerouteContext.getFibs(_currentNode.getName()));
     _currentFlow = result.getFinalFlow();
+    _steps.addAll(result.getTraceSteps());
 
     new ActionVisitor<Void>() {
 

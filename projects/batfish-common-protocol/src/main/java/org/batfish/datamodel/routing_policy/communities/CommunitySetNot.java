@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -13,6 +14,14 @@ import javax.annotation.Nullable;
  */
 public final class CommunitySetNot extends CommunitySetMatchExpr {
 
+  public static CommunitySetMatchExpr not(CommunitySetMatchExpr expr) {
+    if (expr instanceof CommunitySetNot) {
+      return ((CommunitySetNot) expr)._expr;
+    }
+    return new CommunitySetNot(expr);
+  }
+
+  @VisibleForTesting
   public CommunitySetNot(CommunitySetMatchExpr expr) {
     _expr = expr;
   }

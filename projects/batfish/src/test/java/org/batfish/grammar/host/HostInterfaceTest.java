@@ -1,9 +1,11 @@
 package org.batfish.grammar.host;
 
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEncapsulationVlan;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInterfaceType;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isProxyArp;
 import static org.batfish.datamodel.transformation.Transformation.always;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
@@ -18,6 +20,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.representation.host.HostInterface;
@@ -69,7 +72,7 @@ public class HostInterfaceTest {
     Interface i = hi.toInterface(_c, new Warnings());
 
     /* Check defaults */
-    assertThat(i, isProxyArp(equalTo(false)));
+    assertThat(i, allOf(hasInterfaceType(InterfaceType.PHYSICAL), isProxyArp(equalTo(false))));
   }
 
   @Test

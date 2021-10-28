@@ -210,10 +210,10 @@ import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.packet_policy.Drop;
 import org.batfish.datamodel.packet_policy.FibLookup;
 import org.batfish.datamodel.packet_policy.FibLookupOverrideLookupIp;
-import org.batfish.datamodel.packet_policy.FlowEvaluator;
 import org.batfish.datamodel.packet_policy.IngressInterfaceVrf;
 import org.batfish.datamodel.packet_policy.LiteralVrfName;
 import org.batfish.datamodel.packet_policy.PacketPolicy;
+import org.batfish.datamodel.packet_policy.PacketPolicyEvaluator;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
@@ -3622,7 +3622,7 @@ public final class XrGrammarTest {
 
     // Permitted by non-ABF line
     assertThat(
-        FlowEvaluator.evaluate(
+        PacketPolicyEvaluator.evaluate(
                 permittedNoAbf,
                 gigE0,
                 DEFAULT_VRF_NAME,
@@ -3635,7 +3635,7 @@ public final class XrGrammarTest {
 
     // Permitted by ABF line (nexthop specified but not vrf)
     assertThat(
-        FlowEvaluator.evaluate(
+        PacketPolicyEvaluator.evaluate(
                 permittedAbfNoVrf,
                 gigE0,
                 DEFAULT_VRF_NAME,
@@ -3656,7 +3656,7 @@ public final class XrGrammarTest {
 
     // Permitted by ABF line (nexthop AND vrf specified)
     assertThat(
-        FlowEvaluator.evaluate(
+        PacketPolicyEvaluator.evaluate(
                 permittedAbfWithVrf,
                 gigE0,
                 DEFAULT_VRF_NAME,
@@ -3675,7 +3675,7 @@ public final class XrGrammarTest {
 
     // Denied by explicit deny line
     assertThat(
-        FlowEvaluator.evaluate(
+        PacketPolicyEvaluator.evaluate(
                 denied,
                 gigE0,
                 DEFAULT_VRF_NAME,
@@ -3687,7 +3687,7 @@ public final class XrGrammarTest {
         equalTo(Drop.instance()));
     // Similar to denied flow, but not matching source IP or dest port
     assertThat(
-        FlowEvaluator.evaluate(
+        PacketPolicyEvaluator.evaluate(
                 denied.toBuilder().setSrcIp(Ip.parse("10.0.0.2")).build(),
                 gigE0,
                 DEFAULT_VRF_NAME,
@@ -3698,7 +3698,7 @@ public final class XrGrammarTest {
             .getAction(),
         equalTo(regularFibLookup));
     assertThat(
-        FlowEvaluator.evaluate(
+        PacketPolicyEvaluator.evaluate(
                 denied.toBuilder().setDstPort(23).build(),
                 gigE0,
                 DEFAULT_VRF_NAME,

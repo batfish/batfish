@@ -13,6 +13,7 @@ import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasN
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasActiveNeighbor;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
@@ -30,16 +31,21 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasNativeVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.isProxyArp;
+import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.matchers.StaticRouteMatchers.hasRecursive;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.main.BatfishTestUtils.DUMMY_SNAPSHOT_1;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.main.BatfishTestUtils.getBatfish;
 import static org.batfish.vendor.a10.representation.A10Configuration.getInterfaceName;
 import static org.batfish.vendor.a10.representation.A10Conversion.DEFAULT_VRRP_A_PRIORITY;
 import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_FLOATING_IP;
+import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_INTERFACE_PROXY_ARP_IP;
 import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_NAT_POOL;
+import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_NAT_POOL_PROXY_ARP_IP;
 import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_VIRTUAL_SERVER_FLAGGED;
 import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_VIRTUAL_SERVER_UNFLAGGED;
 import static org.batfish.vendor.a10.representation.A10Conversion.SNAT_PORT_POOL_START;
@@ -98,10 +104,12 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.KernelRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SwitchportMode;
@@ -290,6 +298,21 @@ public class A10GrammarTest {
     assertThat(ccae, hasNumReferrers(filename, HEALTH_MONITOR, "HM_SERVER_PORT", 1));
     assertThat(ccae, hasNumReferrers(filename, HEALTH_MONITOR, "HM_SERVICE_GROUP", 1));
     assertThat(ccae, hasNumReferrers(filename, HEALTH_MONITOR, "HM_UNUSED", 0));
+  }
+
+  @Test
+  public void testStaticRouteAcos2Conversion() {
+    String hostname = "static_route_acos2";
+    Configuration c = parseConfig(hostname);
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasStaticRoutes(
+                contains(
+                    allOf(
+                        hasPrefix(Prefix.ZERO),
+                        hasAdministrativeCost(5),
+                        hasNextHop(NextHopIp.of(Ip.parse("1.1.1.1"))))))));
   }
 
   @Test
@@ -773,7 +796,8 @@ public class A10GrammarTest {
                 isActive(),
                 hasDescription("this is a comp\"licat'ed name"),
                 hasHumanName("Ethernet 1"),
-                hasMtu(1234))));
+                hasMtu(1234),
+                isProxyArp())));
 
     assertThat(
         c,
@@ -786,7 +810,8 @@ public class A10GrammarTest {
                 isActive(false),
                 hasDescription("baz"),
                 hasHumanName("Ethernet 9"),
-                hasMtu(DEFAULT_MTU))));
+                hasMtu(DEFAULT_MTU),
+                isProxyArp())));
 
     assertThat(
         c,
@@ -797,7 +822,8 @@ public class A10GrammarTest {
                 hasSwitchPortMode(SwitchportMode.NONE),
                 hasAllAddresses(contains(ConcreteInterfaceAddress.parse("192.168.0.1/32"))),
                 hasDescription(nullValue()),
-                hasHumanName("Loopback 0"))));
+                hasHumanName("Loopback 0"),
+                isProxyArp(equalTo(false)))));
 
     assertThat(
         c,
@@ -808,7 +834,8 @@ public class A10GrammarTest {
                 hasSwitchPortMode(SwitchportMode.NONE),
                 hasAllAddresses(empty()),
                 hasDescription(nullValue()),
-                hasHumanName("Loopback 10"))));
+                hasHumanName("Loopback 10"),
+                isProxyArp(equalTo(false)))));
   }
 
   @Test
@@ -1934,30 +1961,93 @@ public class A10GrammarTest {
                 .setTag(KERNEL_ROUTE_TAG_NAT_POOL)
                 .build(),
             KernelRoute.builder()
+                .setNetwork(Prefix.strict("10.10.10.10/32"))
+                .setRequiredOwnedIp(Ip.parse("10.10.10.10"))
+                .setNonForwarding(false)
+                .setTag(KERNEL_ROUTE_TAG_NAT_POOL_PROXY_ARP_IP)
+                .build(),
+            KernelRoute.builder()
                 .setNetwork(Prefix.strict("10.0.0.0/24"))
                 .setRequiredOwnedIp(Ip.parse("10.0.0.11"))
                 .setTag(KERNEL_ROUTE_TAG_NAT_POOL)
                 .build(),
             KernelRoute.builder()
+                .setNetwork(Prefix.strict("10.0.0.11/32"))
+                .setRequiredOwnedIp(Ip.parse("10.0.0.11"))
+                .setNonForwarding(false)
+                .setTag(KERNEL_ROUTE_TAG_NAT_POOL_PROXY_ARP_IP)
+                .build(),
+            KernelRoute.builder()
                 .setNetwork(Prefix.strict("10.0.5.1/32"))
                 .setRequiredOwnedIp(Ip.parse("10.0.5.1"))
+                .setNonForwarding(false)
                 .setTag(KERNEL_ROUTE_TAG_VIRTUAL_SERVER_UNFLAGGED)
                 .build(),
             KernelRoute.builder()
                 .setNetwork(Prefix.strict("10.0.6.1/32"))
                 .setRequiredOwnedIp(Ip.parse("10.0.6.1"))
+                .setNonForwarding(false)
                 .setTag(KERNEL_ROUTE_TAG_VIRTUAL_SERVER_FLAGGED)
                 .build(),
             KernelRoute.builder()
                 .setNetwork(Prefix.strict("10.0.9.1/32"))
                 .setRequiredOwnedIp(Ip.parse("10.0.9.1"))
+                .setNonForwarding(false)
                 .setTag(KERNEL_ROUTE_TAG_FLOATING_IP)
                 .build(),
             KernelRoute.builder()
                 .setNetwork(Prefix.strict("10.0.9.2/32"))
                 .setRequiredOwnedIp(Ip.parse("10.0.9.2"))
+                .setNonForwarding(false)
                 .setTag(KERNEL_ROUTE_TAG_FLOATING_IP)
+                .build(),
+            KernelRoute.builder()
+                .setNetwork(Prefix.strict("10.0.0.10/32"))
+                .setTag(KERNEL_ROUTE_TAG_INTERFACE_PROXY_ARP_IP)
+                .setNonForwarding(false)
+                .build(),
+            KernelRoute.builder()
+                .setNetwork(Prefix.strict("10.100.0.1/32"))
+                .setTag(KERNEL_ROUTE_TAG_INTERFACE_PROXY_ARP_IP)
+                .setNonForwarding(false)
+                .build(),
+            KernelRoute.builder()
+                .setNetwork(Prefix.strict("192.168.255.1/32"))
+                .setTag(KERNEL_ROUTE_TAG_INTERFACE_PROXY_ARP_IP)
+                .setNonForwarding(false)
                 .build()));
+  }
+
+  @Test
+  public void testKernelRoutesProxyArp() throws IOException {
+    String hostname = "kernel_routes";
+    Configuration c = parseConfig(hostname);
+
+    Batfish batfish = getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _folder);
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+    ForwardingAnalysis fa = batfish.loadDataPlane(snapshot).getForwardingAnalysis();
+
+    IpSpace e1Replies = fa.getArpReplies().get(hostname).get(getInterfaceName(Type.ETHERNET, 1));
+    IpSpace e2Replies = fa.getArpReplies().get(hostname).get(getInterfaceName(Type.ETHERNET, 2));
+
+    Ip e1Address = Ip.parse("10.0.0.10");
+    Ip e2Address = Ip.parse("10.100.0.1");
+    Ip floatingIp = Ip.parse("10.0.9.1");
+    Ip natPoolIp = Ip.parse("10.0.0.11");
+    Ip vsIp = Ip.parse("10.0.5.1");
+
+    assertThat(e1Replies, containsIp(e1Address));
+    assertThat(e1Replies, containsIp(e2Address));
+    assertThat(e1Replies, containsIp(floatingIp));
+    assertThat(e1Replies, containsIp(natPoolIp));
+    assertThat(e1Replies, containsIp(vsIp));
+
+    assertThat(e2Replies, containsIp(e1Address));
+    assertThat(e2Replies, containsIp(e2Address));
+    assertThat(e2Replies, containsIp(floatingIp));
+    assertThat(e2Replies, containsIp(natPoolIp));
+    assertThat(e2Replies, containsIp(vsIp));
   }
 
   @Test
@@ -2042,6 +2132,7 @@ public class A10GrammarTest {
                 .setNetwork(Prefix.strict("10.0.2.1/32"))
                 .setRequiredOwnedIp(Ip.parse("10.0.2.1"))
                 .setTag(KERNEL_ROUTE_TAG_FLOATING_IP)
+                .setNonForwarding(false)
                 .build(),
             KernelRoute.builder()
                 .setNetwork(Prefix.strict("10.0.3.0/24"))
@@ -2052,6 +2143,19 @@ public class A10GrammarTest {
                 .setNetwork(Prefix.strict("10.0.4.1/32"))
                 .setRequiredOwnedIp(Ip.parse("10.0.4.1"))
                 .setTag(KERNEL_ROUTE_TAG_VIRTUAL_SERVER_UNFLAGGED)
+                .setNonForwarding(false)
+                .build(),
+            KernelRoute.builder()
+                .setNetwork(Prefix.strict("10.0.3.1/32"))
+                .setRequiredOwnedIp(Ip.parse("10.0.3.1"))
+                .setTag(KERNEL_ROUTE_TAG_NAT_POOL_PROXY_ARP_IP)
+                .setNonForwarding(false)
+                .build(),
+            KernelRoute.builder()
+                .setNetwork(Prefix.strict("10.0.3.2/32"))
+                .setRequiredOwnedIp(Ip.parse("10.0.3.2"))
+                .setTag(KERNEL_ROUTE_TAG_NAT_POOL_PROXY_ARP_IP)
+                .setNonForwarding(false)
                 .build()));
   }
 }

@@ -8,105 +8,57 @@
         "name" : "as1border1",
         "communityMatchExprs" : {
           "as1_community" : {
-            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityAcl",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "communityMatchExpr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
-                  "communityRendering" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
-                  },
-                  "regex" : "(,|\\{|\\}|^|$| )1:"
-                }
-              }
-            ]
+            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
+            "communityRendering" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
+            },
+            "regex" : "(,|\\{|\\}|^|$| )1:"
           },
           "as2_community" : {
-            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityAcl",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "communityMatchExpr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
-                  "communityRendering" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
-                  },
-                  "regex" : "(,|\\{|\\}|^|$| )2:"
-                }
-              }
-            ]
+            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
+            "communityRendering" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
+            },
+            "regex" : "(,|\\{|\\}|^|$| )2:"
           },
           "as3_community" : {
-            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityAcl",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "communityMatchExpr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
-                  "communityRendering" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
-                  },
-                  "regex" : "(,|\\{|\\}|^|$| )3:"
-                }
-              }
-            ]
+            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
+            "communityRendering" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
+            },
+            "regex" : "(,|\\{|\\}|^|$| )3:"
           }
         },
         "communitySetMatchExprs" : {
           "as1_community" : {
-            "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetAcl",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "communitySetMatchExpr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
-                  "expr" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
-                    "communityRendering" : {
-                      "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
-                    },
-                    "regex" : "(,|\\{|\\}|^|$| )1:"
-                  }
-                }
-              }
-            ]
+            "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
+            "expr" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
+              "communityRendering" : {
+                "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
+              },
+              "regex" : "(,|\\{|\\}|^|$| )1:"
+            }
           },
           "as2_community" : {
-            "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetAcl",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "communitySetMatchExpr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
-                  "expr" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
-                    "communityRendering" : {
-                      "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
-                    },
-                    "regex" : "(,|\\{|\\}|^|$| )2:"
-                  }
-                }
-              }
-            ]
+            "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
+            "expr" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
+              "communityRendering" : {
+                "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
+              },
+              "regex" : "(,|\\{|\\}|^|$| )2:"
+            }
           },
           "as3_community" : {
-            "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetAcl",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "communitySetMatchExpr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
-                  "expr" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
-                    "communityRendering" : {
-                      "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
-                    },
-                    "regex" : "(,|\\{|\\}|^|$| )3:"
-                  }
-                }
-              }
-            ]
+            "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
+            "expr" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
+              "communityRendering" : {
+                "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
+              },
+              "regex" : "(,|\\{|\\}|^|$| )3:"
+            }
           }
         },
         "defaultCrossZoneAction" : "PERMIT",
@@ -1660,138 +1612,74 @@
         "name" : "as1border2",
         "communityMatchExprs" : {
           "as1_community" : {
-            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityAcl",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "communityMatchExpr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
-                  "communityRendering" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
-                  },
-                  "regex" : "(,|\\{|\\}|^|$| )1:"
-                }
-              }
-            ]
+            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
+            "communityRendering" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
+            },
+            "regex" : "(,|\\{|\\}|^|$| )1:"
           },
           "as2_community" : {
-            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityAcl",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "communityMatchExpr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
-                  "communityRendering" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
-                  },
-                  "regex" : "(,|\\{|\\}|^|$| )2:"
-                }
-              }
-            ]
+            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
+            "communityRendering" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
+            },
+            "regex" : "(,|\\{|\\}|^|$| )2:"
           },
           "as3_community" : {
-            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityAcl",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "communityMatchExpr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
-                  "communityRendering" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
-                  },
-                  "regex" : "(,|\\{|\\}|^|$| )3:"
-                }
-              }
-            ]
+            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
+            "communityRendering" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
+            },
+            "regex" : "(,|\\{|\\}|^|$| )3:"
           },
           "as4_community" : {
-            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityAcl",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "communityMatchExpr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
-                  "communityRendering" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
-                  },
-                  "regex" : "(,|\\{|\\}|^|$| )4:"
-                }
-              }
-            ]
+            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
+            "communityRendering" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
+            },
+            "regex" : "(,|\\{|\\}|^|$| )4:"
           }
         },
         "communitySetMatchExprs" : {
           "as1_community" : {
-            "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetAcl",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "communitySetMatchExpr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
-                  "expr" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
-                    "communityRendering" : {
-                      "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
-                    },
-                    "regex" : "(,|\\{|\\}|^|$| )1:"
-                  }
-                }
-              }
-            ]
+            "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
+            "expr" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
+              "communityRendering" : {
+                "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
+              },
+              "regex" : "(,|\\{|\\}|^|$| )1:"
+            }
           },
           "as2_community" : {
-            "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetAcl",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "communitySetMatchExpr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
-                  "expr" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
-                    "communityRendering" : {
-                      "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
-                    },
-                    "regex" : "(,|\\{|\\}|^|$| )2:"
-                  }
-                }
-              }
-            ]
+            "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
+            "expr" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
+              "communityRendering" : {
+                "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
+              },
+              "regex" : "(,|\\{|\\}|^|$| )2:"
+            }
           },
           "as3_community" : {
-            "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetAcl",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "communitySetMatchExpr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
-                  "expr" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
-                    "communityRendering" : {
-                      "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
-                    },
-                    "regex" : "(,|\\{|\\}|^|$| )3:"
-                  }
-                }
-              }
-            ]
+            "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
+            "expr" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
+              "communityRendering" : {
+                "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
+              },
+              "regex" : "(,|\\{|\\}|^|$| )3:"
+            }
           },
           "as4_community" : {
-            "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetAcl",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "communitySetMatchExpr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
-                  "expr" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
-                    "communityRendering" : {
-                      "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
-                    },
-                    "regex" : "(,|\\{|\\}|^|$| )4:"
-                  }
-                }
-              }
-            ]
+            "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
+            "expr" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
+              "communityRendering" : {
+                "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
+              },
+              "regex" : "(,|\\{|\\}|^|$| )4:"
+            }
           }
         },
         "defaultCrossZoneAction" : "PERMIT",
@@ -3840,105 +3728,57 @@
         "name" : "as2border1",
         "communityMatchExprs" : {
           "as1_community" : {
-            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityAcl",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "communityMatchExpr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
-                  "communityRendering" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
-                  },
-                  "regex" : "(,|\\{|\\}|^|$| )1:"
-                }
-              }
-            ]
+            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
+            "communityRendering" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
+            },
+            "regex" : "(,|\\{|\\}|^|$| )1:"
           },
           "as2_community" : {
-            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityAcl",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "communityMatchExpr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
-                  "communityRendering" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
-                  },
-                  "regex" : "(,|\\{|\\}|^|$| )2:"
-                }
-              }
-            ]
+            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
+            "communityRendering" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
+            },
+            "regex" : "(,|\\{|\\}|^|$| )2:"
           },
           "as3_community" : {
-            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityAcl",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "communityMatchExpr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
-                  "communityRendering" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
-                  },
-                  "regex" : "(,|\\{|\\}|^|$| )3:"
-                }
-              }
-            ]
+            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
+            "communityRendering" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
+            },
+            "regex" : "(,|\\{|\\}|^|$| )3:"
           }
         },
         "communitySetMatchExprs" : {
           "as1_community" : {
-            "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetAcl",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "communitySetMatchExpr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
-                  "expr" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
-                    "communityRendering" : {
-                      "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
-                    },
-                    "regex" : "(,|\\{|\\}|^|$| )1:"
-                  }
-                }
-              }
-            ]
+            "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
+            "expr" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
+              "communityRendering" : {
+                "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
+              },
+              "regex" : "(,|\\{|\\}|^|$| )1:"
+            }
           },
           "as2_community" : {
-            "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetAcl",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "communitySetMatchExpr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
-                  "expr" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
-                    "communityRendering" : {
-                      "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
-                    },
-                    "regex" : "(,|\\{|\\}|^|$| )2:"
-                  }
-                }
-              }
-            ]
+            "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
+            "expr" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
+              "communityRendering" : {
+                "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
+              },
+              "regex" : "(,|\\{|\\}|^|$| )2:"
+            }
           },
           "as3_community" : {
-            "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetAcl",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "communitySetMatchExpr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
-                  "expr" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
-                    "communityRendering" : {
-                      "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
-                    },
-                    "regex" : "(,|\\{|\\}|^|$| )3:"
-                  }
-                }
-              }
-            ]
+            "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
+            "expr" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
+              "communityRendering" : {
+                "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
+              },
+              "regex" : "(,|\\{|\\}|^|$| )3:"
+            }
           }
         },
         "defaultCrossZoneAction" : "PERMIT",
@@ -5605,105 +5445,57 @@
         "name" : "as2border2",
         "communityMatchExprs" : {
           "as1_community" : {
-            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityAcl",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "communityMatchExpr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
-                  "communityRendering" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
-                  },
-                  "regex" : "(,|\\{|\\}|^|$| )1:"
-                }
-              }
-            ]
+            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
+            "communityRendering" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
+            },
+            "regex" : "(,|\\{|\\}|^|$| )1:"
           },
           "as2_community" : {
-            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityAcl",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "communityMatchExpr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
-                  "communityRendering" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
-                  },
-                  "regex" : "(,|\\{|\\}|^|$| )2:"
-                }
-              }
-            ]
+            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
+            "communityRendering" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
+            },
+            "regex" : "(,|\\{|\\}|^|$| )2:"
           },
           "as3_community" : {
-            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityAcl",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "communityMatchExpr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
-                  "communityRendering" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
-                  },
-                  "regex" : "(,|\\{|\\}|^|$| )3:"
-                }
-              }
-            ]
+            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
+            "communityRendering" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
+            },
+            "regex" : "(,|\\{|\\}|^|$| )3:"
           }
         },
         "communitySetMatchExprs" : {
           "as1_community" : {
-            "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetAcl",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "communitySetMatchExpr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
-                  "expr" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
-                    "communityRendering" : {
-                      "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
-                    },
-                    "regex" : "(,|\\{|\\}|^|$| )1:"
-                  }
-                }
-              }
-            ]
+            "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
+            "expr" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
+              "communityRendering" : {
+                "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
+              },
+              "regex" : "(,|\\{|\\}|^|$| )1:"
+            }
           },
           "as2_community" : {
-            "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetAcl",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "communitySetMatchExpr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
-                  "expr" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
-                    "communityRendering" : {
-                      "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
-                    },
-                    "regex" : "(,|\\{|\\}|^|$| )2:"
-                  }
-                }
-              }
-            ]
+            "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
+            "expr" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
+              "communityRendering" : {
+                "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
+              },
+              "regex" : "(,|\\{|\\}|^|$| )2:"
+            }
           },
           "as3_community" : {
-            "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetAcl",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "communitySetMatchExpr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
-                  "expr" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
-                    "communityRendering" : {
-                      "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
-                    },
-                    "regex" : "(,|\\{|\\}|^|$| )3:"
-                  }
-                }
-              }
-            ]
+            "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
+            "expr" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
+              "communityRendering" : {
+                "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
+              },
+              "regex" : "(,|\\{|\\}|^|$| )3:"
+            }
           }
         },
         "defaultCrossZoneAction" : "PERMIT",
@@ -8699,39 +8491,23 @@
         "name" : "as2dept1",
         "communityMatchExprs" : {
           "as2_community" : {
-            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityAcl",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "communityMatchExpr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
-                  "communityRendering" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
-                  },
-                  "regex" : "(,|\\{|\\}|^|$| )2:"
-                }
-              }
-            ]
+            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
+            "communityRendering" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
+            },
+            "regex" : "(,|\\{|\\}|^|$| )2:"
           }
         },
         "communitySetMatchExprs" : {
           "as2_community" : {
-            "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetAcl",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "communitySetMatchExpr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
-                  "expr" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
-                    "communityRendering" : {
-                      "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
-                    },
-                    "regex" : "(,|\\{|\\}|^|$| )2:"
-                  }
-                }
-              }
-            ]
+            "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
+            "expr" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
+              "communityRendering" : {
+                "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
+              },
+              "regex" : "(,|\\{|\\}|^|$| )2:"
+            }
           }
         },
         "defaultCrossZoneAction" : "PERMIT",
@@ -9993,39 +9769,23 @@
         "name" : "as2dist1",
         "communityMatchExprs" : {
           "dept_community" : {
-            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityAcl",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "communityMatchExpr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
-                  "communityRendering" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
-                  },
-                  "regex" : "(,|\\{|\\}|^|$| )65001:"
-                }
-              }
-            ]
+            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
+            "communityRendering" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
+            },
+            "regex" : "(,|\\{|\\}|^|$| )65001:"
           }
         },
         "communitySetMatchExprs" : {
           "dept_community" : {
-            "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetAcl",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "communitySetMatchExpr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
-                  "expr" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
-                    "communityRendering" : {
-                      "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
-                    },
-                    "regex" : "(,|\\{|\\}|^|$| )65001:"
-                  }
-                }
-              }
-            ]
+            "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
+            "expr" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
+              "communityRendering" : {
+                "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
+              },
+              "regex" : "(,|\\{|\\}|^|$| )65001:"
+            }
           }
         },
         "defaultCrossZoneAction" : "PERMIT",
@@ -11025,39 +10785,23 @@
         "name" : "as2dist2",
         "communityMatchExprs" : {
           "dept_community" : {
-            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityAcl",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "communityMatchExpr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
-                  "communityRendering" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
-                  },
-                  "regex" : "(,|\\{|\\}|^|$| )65001:"
-                }
-              }
-            ]
+            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
+            "communityRendering" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
+            },
+            "regex" : "(,|\\{|\\}|^|$| )65001:"
           }
         },
         "communitySetMatchExprs" : {
           "dept_community" : {
-            "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetAcl",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "communitySetMatchExpr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
-                  "expr" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
-                    "communityRendering" : {
-                      "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
-                    },
-                    "regex" : "(,|\\{|\\}|^|$| )65001:"
-                  }
-                }
-              }
-            ]
+            "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
+            "expr" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
+              "communityRendering" : {
+                "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
+              },
+              "regex" : "(,|\\{|\\}|^|$| )65001:"
+            }
           }
         },
         "defaultCrossZoneAction" : "PERMIT",
@@ -12057,105 +11801,57 @@
         "name" : "as3border1",
         "communityMatchExprs" : {
           "as1_community" : {
-            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityAcl",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "communityMatchExpr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
-                  "communityRendering" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
-                  },
-                  "regex" : "(,|\\{|\\}|^|$| )1:"
-                }
-              }
-            ]
+            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
+            "communityRendering" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
+            },
+            "regex" : "(,|\\{|\\}|^|$| )1:"
           },
           "as2_community" : {
-            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityAcl",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "communityMatchExpr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
-                  "communityRendering" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
-                  },
-                  "regex" : "(,|\\{|\\}|^|$| )2:"
-                }
-              }
-            ]
+            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
+            "communityRendering" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
+            },
+            "regex" : "(,|\\{|\\}|^|$| )2:"
           },
           "as3_community" : {
-            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityAcl",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "communityMatchExpr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
-                  "communityRendering" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
-                  },
-                  "regex" : "(,|\\{|\\}|^|$| )3:"
-                }
-              }
-            ]
+            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
+            "communityRendering" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
+            },
+            "regex" : "(,|\\{|\\}|^|$| )3:"
           }
         },
         "communitySetMatchExprs" : {
           "as1_community" : {
-            "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetAcl",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "communitySetMatchExpr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
-                  "expr" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
-                    "communityRendering" : {
-                      "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
-                    },
-                    "regex" : "(,|\\{|\\}|^|$| )1:"
-                  }
-                }
-              }
-            ]
+            "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
+            "expr" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
+              "communityRendering" : {
+                "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
+              },
+              "regex" : "(,|\\{|\\}|^|$| )1:"
+            }
           },
           "as2_community" : {
-            "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetAcl",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "communitySetMatchExpr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
-                  "expr" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
-                    "communityRendering" : {
-                      "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
-                    },
-                    "regex" : "(,|\\{|\\}|^|$| )2:"
-                  }
-                }
-              }
-            ]
+            "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
+            "expr" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
+              "communityRendering" : {
+                "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
+              },
+              "regex" : "(,|\\{|\\}|^|$| )2:"
+            }
           },
           "as3_community" : {
-            "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetAcl",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "communitySetMatchExpr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
-                  "expr" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
-                    "communityRendering" : {
-                      "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
-                    },
-                    "regex" : "(,|\\{|\\}|^|$| )3:"
-                  }
-                }
-              }
-            ]
+            "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
+            "expr" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
+              "communityRendering" : {
+                "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
+              },
+              "regex" : "(,|\\{|\\}|^|$| )3:"
+            }
           }
         },
         "defaultCrossZoneAction" : "PERMIT",
@@ -13621,105 +13317,57 @@
         "name" : "as3border2",
         "communityMatchExprs" : {
           "as1_community" : {
-            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityAcl",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "communityMatchExpr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
-                  "communityRendering" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
-                  },
-                  "regex" : "(,|\\{|\\}|^|$| )1:"
-                }
-              }
-            ]
+            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
+            "communityRendering" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
+            },
+            "regex" : "(,|\\{|\\}|^|$| )1:"
           },
           "as2_community" : {
-            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityAcl",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "communityMatchExpr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
-                  "communityRendering" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
-                  },
-                  "regex" : "(,|\\{|\\}|^|$| )2:"
-                }
-              }
-            ]
+            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
+            "communityRendering" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
+            },
+            "regex" : "(,|\\{|\\}|^|$| )2:"
           },
           "as3_community" : {
-            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityAcl",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "communityMatchExpr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
-                  "communityRendering" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
-                  },
-                  "regex" : "(,|\\{|\\}|^|$| )3:"
-                }
-              }
-            ]
+            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
+            "communityRendering" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
+            },
+            "regex" : "(,|\\{|\\}|^|$| )3:"
           }
         },
         "communitySetMatchExprs" : {
           "as1_community" : {
-            "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetAcl",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "communitySetMatchExpr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
-                  "expr" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
-                    "communityRendering" : {
-                      "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
-                    },
-                    "regex" : "(,|\\{|\\}|^|$| )1:"
-                  }
-                }
-              }
-            ]
+            "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
+            "expr" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
+              "communityRendering" : {
+                "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
+              },
+              "regex" : "(,|\\{|\\}|^|$| )1:"
+            }
           },
           "as2_community" : {
-            "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetAcl",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "communitySetMatchExpr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
-                  "expr" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
-                    "communityRendering" : {
-                      "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
-                    },
-                    "regex" : "(,|\\{|\\}|^|$| )2:"
-                  }
-                }
-              }
-            ]
+            "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
+            "expr" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
+              "communityRendering" : {
+                "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
+              },
+              "regex" : "(,|\\{|\\}|^|$| )2:"
+            }
           },
           "as3_community" : {
-            "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetAcl",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "communitySetMatchExpr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
-                  "expr" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
-                    "communityRendering" : {
-                      "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
-                    },
-                    "regex" : "(,|\\{|\\}|^|$| )3:"
-                  }
-                }
-              }
-            ]
+            "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
+            "expr" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
+              "communityRendering" : {
+                "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
+              },
+              "regex" : "(,|\\{|\\}|^|$| )3:"
+            }
           }
         },
         "defaultCrossZoneAction" : "PERMIT",

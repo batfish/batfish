@@ -14,10 +14,13 @@ import org.batfish.common.bdd.BDDOps;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpSpaceToBDD;
+import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.packet_policy.Action;
+import org.batfish.datamodel.packet_policy.ApplyFilter;
 import org.batfish.datamodel.packet_policy.ApplyTransformation;
 import org.batfish.datamodel.packet_policy.BoolExprVisitor;
 import org.batfish.datamodel.packet_policy.Conjunction;
+import org.batfish.datamodel.packet_policy.Drop;
 import org.batfish.datamodel.packet_policy.FalseExpr;
 import org.batfish.datamodel.packet_policy.FibLookupOutgoingInterfaceIsOneOf;
 import org.batfish.datamodel.packet_policy.If;
@@ -165,6 +168,22 @@ class PacketPolicyToBdd {
               _pathConstraint));
       _pathConstraint = _pathConstraint.getFactory().one();
       return false; // does not fall through
+    }
+
+    @Override
+    public Boolean visitApplyFilter(ApplyFilter applyFilter) {
+      if (!_pathConstraint.isOne()) {
+        _edges.add(new Edge(currentStatement(), nextStatement(), _pathConstraint));
+        _pathConstraint = _pathConstraint.getFactory().one();
+      }
+      BDD permitBdd =
+          _boolExprToBdd._ipAccessListToBdd.toBdd(new PermittedByAcl(applyFilter.getFilter()));
+      _edges.add(
+          new Edge(
+              currentStatement(),
+              new PacketPolicyAction(_hostname, _policy.getName(), Drop.instance()),
+              permitBdd.not()));
+      _edges.add(new Edge(currentStatement(), nextStatement(), permitBdd));
     }
 
     @Override

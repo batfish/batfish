@@ -22,6 +22,79 @@ import org.batfish.datamodel.SubRange;
 
 public class Interface implements Serializable {
 
+  /**
+   * A vendor-specific type for an interface.
+   *
+   * <p>NB: if you update this, update functions like {@link #isPhysicalLike}, {@link #isUnit}, etc.
+   */
+  public enum InterfaceType {
+    /** An aggregated interface, such as ae0. */
+    AGGREGATED,
+    /** A unit on an aggregated interface, such as ae0.7. */
+    AGGREGATED_UNIT,
+    /** One domain in the integrated routing and bridging such as irb.7. */
+    IRB_UNIT,
+    /** Loopback, such as lo0. */
+    LOOPBACK,
+    /** A unit on a loopback, such as lo0.7. */
+    LOOPBACK_UNIT,
+    /** Management, such as em0. */
+    MANAGEMENT,
+    /** A unit on a management interface, such as em0.0. */
+    MANAGEMENT_UNIT,
+    /** A physical port, such as xe-0/0/0. */
+    PHYSICAL,
+    /** A unit on a physical port, such as xe-0/0/0.7. */
+    PHYSICAL_UNIT,
+    /** A redundant ethernet interface, such as reth0. */
+    REDUNDANT,
+    /** A unit on a redundant ethernet interface, such as reth0.7. */
+    REDUNDANT_UNIT,
+
+    //// Batfish-internal types below.
+
+    /** The Global Master Interface, used for inheriting. */
+    MASTER,
+    /** An unknown interface type; mostly unsupported. */
+    UNKNOWN,
+  }
+
+  /**
+   * Returns true if this interface is configured like a physical interface. The main use of this
+   * function is for features that can be configured on a group of bundled interfaces.
+   */
+  public boolean isPhysicalLike() {
+    return _type == InterfaceType.PHYSICAL
+        || _type == InterfaceType.MANAGEMENT
+        || _type == InterfaceType.AGGREGATED
+        || _type == InterfaceType.REDUNDANT;
+  }
+
+  /** Returns true if this interface is a unit. */
+  public boolean isUnit() {
+    return _type == InterfaceType.PHYSICAL_UNIT
+        || _type == InterfaceType.IRB_UNIT
+        || _type == InterfaceType.LOOPBACK_UNIT
+        || _type == InterfaceType.MANAGEMENT_UNIT
+        || _type == InterfaceType.AGGREGATED_UNIT
+        || _type == InterfaceType.REDUNDANT_UNIT;
+  }
+
+  public enum VlanTaggingMode {
+    /** By default, physical interfaces do not handle tagged frames. */
+    NONE,
+    /**
+     * support dot1q encapsulation.
+     * https://www.juniper.net/documentation/us/en/software/junos/multicast-l2/topics/ref/statement/vlan-tagging-edit-interfaces.html
+     */
+    VLAN_TAGGING,
+    /**
+     * support dot1q encapsulation and q-in-q encapsulation.
+     * https://www.juniper.net/documentation/us/en/software/junos/multicast-l2/topics/ref/statement/flexible-vlan-tagging-edit-interfaces.html
+     */
+    FLEXIBLE_VLAN_TAGGING,
+  }
+
   public static double getDefaultBandwidthByName(String name) {
     if (name.startsWith("xe")) {
       return 1E10;
@@ -39,6 +112,28 @@ public class Interface implements Serializable {
     } else {
       return 1E12;
     }
+  }
+
+  public static InterfaceType getInterfaceTypeByName(String name) {
+    if (name.startsWith("et")
+        || name.startsWith("fe")
+        || name.startsWith("ge")
+        || name.startsWith("xe")) {
+      return name.contains(".") ? InterfaceType.PHYSICAL_UNIT : InterfaceType.PHYSICAL;
+    } else if (name.startsWith("irb.")) {
+      return InterfaceType.IRB_UNIT;
+    } else if (name.startsWith("lo")) {
+      return name.contains(".") ? InterfaceType.LOOPBACK_UNIT : InterfaceType.LOOPBACK;
+    } else if (name.startsWith("em") || name.startsWith("fxp")) {
+      return name.contains(".") ? InterfaceType.MANAGEMENT_UNIT : InterfaceType.MANAGEMENT;
+    } else if (name.startsWith("ae")) {
+      return name.contains(".") ? InterfaceType.AGGREGATED_UNIT : InterfaceType.AGGREGATED;
+    } else if (name.startsWith("reth")) {
+      return name.contains(".") ? InterfaceType.REDUNDANT_UNIT : InterfaceType.REDUNDANT;
+    } else if (name.equals(RoutingInstance.MASTER_INTERFACE_NAME)) {
+      return InterfaceType.MASTER;
+    }
+    return InterfaceType.UNKNOWN;
   }
 
   public @Nonnull Set<InterfaceOspfNeighbor> getOspfNeighbors() {
@@ -105,9 +200,11 @@ public class Interface implements Serializable {
   private ConcreteInterfaceAddress _primaryAddress;
   @Nullable private String _redundantParentInterface;
   private String _routingInstance;
+  private final @Nonnull InterfaceType _type;
   private final SortedMap<String, Interface> _units;
   private final SortedMap<Integer, VrrpGroup> _vrrpGroups;
   @Nullable private Integer _vlanId;
+  private @Nonnull VlanTaggingMode _vlanTagging;
   private Integer _tcpMss;
 
   public Interface(String name) {
@@ -122,7 +219,9 @@ public class Interface implements Serializable {
     _allowedVlans = new LinkedList<>();
     _allowedVlanNames = new LinkedList<>();
     _ospfCost = null;
+    _type = getInterfaceTypeByName(name);
     _units = new TreeMap<>();
+    _vlanTagging = VlanTaggingMode.NONE;
     _vrrpGroups = new TreeMap<>();
   }
 
@@ -293,6 +392,14 @@ public class Interface implements Serializable {
 
   public void setVlanId(@Nullable Integer vlanId) {
     _vlanId = vlanId;
+  }
+
+  public @Nonnull VlanTaggingMode getVlanTagging() {
+    return _vlanTagging;
+  }
+
+  public void setVlanTagging(@Nonnull VlanTaggingMode vlanTagging) {
+    _vlanTagging = vlanTagging;
   }
 
   public SortedMap<Integer, VrrpGroup> getVrrpGroups() {

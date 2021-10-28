@@ -45,6 +45,7 @@ CONN_MIRROR: 'conn-mirror';
 CONNECTED: 'connected';
 CONNECTION_REUSE: 'connection-reuse';
 COOKIE: 'cookie';
+CPU_PROCESS: 'cpu-process';
 DATABASE
 :
   'database'

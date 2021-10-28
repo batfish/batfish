@@ -323,7 +323,7 @@ public class CiscoXrConversions {
    */
   public static @Nonnull CommunityMatchExpr toCommunityMatchExpr(
       XrCommunitySet communitySet, Configuration c) {
-    return new CommunityMatchAny(
+    return CommunityMatchAny.matchAny(
         communitySet.getElements().stream()
             .map(elem -> elem.accept(CommunitySetElemToCommunityMatchExpr.INSTANCE, c))
             .collect(ImmutableSet.toImmutableSet()));
@@ -350,7 +350,7 @@ public class CiscoXrConversions {
     @Override
     public CommunityMatchExpr visitCommunitySetHighLowRangeExprs(
         XrCommunitySetHighLowRangeExprs highLowRangeExprs, Configuration arg) {
-      return new CommunityMatchAll(
+      return CommunityMatchAll.matchAll(
           ImmutableList.of(
               new StandardCommunityHighMatch(
                   highLowRangeExprs
@@ -380,7 +380,7 @@ public class CiscoXrConversions {
     @Override
     public CommunityMatchExpr visitWildcardCommunitySetElem(
         XrWildcardCommunitySetElem xrWildcardCommunitySetElem) {
-      return new CommunityMatchAll(ImmutableList.of());
+      return CommunityMatchAll.matchAll(ImmutableList.of());
     }
 
     private static final CommunitySetElemToCommunityMatchExpr INSTANCE =
@@ -393,7 +393,7 @@ public class CiscoXrConversions {
    */
   static @Nonnull CommunityMatchExpr toCommunityMatchExpr(
       ExtcommunitySetRt extcommunitySetRt, Configuration c) {
-    return new CommunityMatchAny(
+    return CommunityMatchAny.matchAny(
         extcommunitySetRt.getElements().stream()
             .map(elem -> elem.accept(ExtcommunitySetRtElemToCommunityMatchExpr.INSTANCE, c))
             .collect(ImmutableSet.toImmutableSet()));
@@ -408,7 +408,7 @@ public class CiscoXrConversions {
     @Override
     public CommunityMatchExpr visitExtcommunitySetRtElemAsDotColon(
         ExtcommunitySetRtElemAsDotColon extcommunitySetRtElemAsDotColon, Configuration arg) {
-      return new CommunityMatchAll(
+      return CommunityMatchAll.matchAll(
           ImmutableList.of(
               RouteTargetExtendedCommunities.instance(),
               new ExtendedCommunityGlobalAdministratorHighMatch(
@@ -428,7 +428,7 @@ public class CiscoXrConversions {
     @Override
     public CommunityMatchExpr visitExtcommunitySetRtElemAsColon(
         ExtcommunitySetRtElemAsColon extcommunitySetRtElemAsColon, Configuration arg) {
-      return new CommunityMatchAll(
+      return CommunityMatchAll.matchAll(
           ImmutableList.of(
               RouteTargetExtendedCommunities.instance(),
               new ExtendedCommunityGlobalAdministratorMatch(
@@ -690,7 +690,7 @@ public class CiscoXrConversions {
    */
   public static @Nonnull CommunitySetMatchExpr convertMatchesAnyToCommunitySetMatchExpr(
       XrCommunitySet communitySet, Configuration c) {
-    return new CommunitySetMatchAny(
+    return CommunitySetMatchAny.matchAny(
         communitySet.getElements().stream()
             .map(elem -> elem.accept(CommunitySetElemToCommunitySetMatchExpr.INSTANCE, c))
             .collect(ImmutableSet.toImmutableSet()));
@@ -702,7 +702,7 @@ public class CiscoXrConversions {
    */
   public static @Nonnull CommunitySetMatchExpr convertMatchesEveryToCommunitySetMatchExpr(
       XrCommunitySet communitySet, Configuration c) {
-    return new CommunitySetMatchAll(
+    return CommunitySetMatchAll.matchAll(
         communitySet.getElements().stream()
             .map(elem -> elem.accept(CommunitySetElemToCommunitySetMatchExpr.INSTANCE, c))
             .collect(ImmutableSet.toImmutableSet()));
@@ -740,7 +740,7 @@ public class CiscoXrConversions {
     @Override
     public CommunitySetMatchExpr visitWildcardCommunitySetElem(
         XrWildcardCommunitySetElem xrWildcardCommunitySetElem) {
-      return new HasCommunity(new CommunityMatchAll(ImmutableList.of()));
+      return new HasCommunity(CommunityMatchAll.matchAll(ImmutableList.of()));
     }
   }
 
@@ -751,7 +751,7 @@ public class CiscoXrConversions {
    */
   public static @Nonnull CommunitySetMatchExpr convertMatchesAnyToCommunitySetMatchExpr(
       ExtcommunitySetRt extcommunitySetRt, Configuration c) {
-    return new CommunitySetMatchAny(
+    return CommunitySetMatchAny.matchAny(
         extcommunitySetRt.getElements().stream()
             .map(elem -> elem.accept(ExtcommunitySetRtElemToCommunitySetMatchExpr.INSTANCE, c))
             .collect(ImmutableSet.toImmutableSet()));
@@ -764,7 +764,7 @@ public class CiscoXrConversions {
    */
   public static @Nonnull CommunitySetMatchExpr convertMatchesEveryToCommunitySetMatchExpr(
       ExtcommunitySetRt extcommunitySetRt, Configuration c) {
-    return new CommunitySetMatchAll(
+    return CommunitySetMatchAll.matchAll(
         extcommunitySetRt.getElements().stream()
             .map(elem -> elem.accept(ExtcommunitySetRtElemToCommunitySetMatchExpr.INSTANCE, c))
             .collect(ImmutableSet.toImmutableSet()));
@@ -2258,7 +2258,7 @@ public class CiscoXrConversions {
           new If(
               new MatchCommunities(
                   InputCommunities.instance(),
-                  new CommunitySetMatchAny(
+                  CommunitySetMatchAny.matchAny(
                       routeTargetImport.stream()
                           .map(CommunityIs::new)
                           .map(HasCommunity::new)

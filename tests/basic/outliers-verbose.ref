@@ -59,21 +59,13 @@
         "hypothesis" : "sameDefinition",
         "name" : "as2_community",
         "structDefinition" : {
-          "lines" : [
-            {
-              "action" : "PERMIT",
-              "communitySetMatchExpr" : {
-                "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
-                "expr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
-                  "communityRendering" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
-                  },
-                  "regex" : "(,|\\{|\\}|^|$| )2:"
-                }
-              }
-            }
-          ]
+          "expr" : {
+            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
+            "communityRendering" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
+            },
+            "regex" : "(,|\\{|\\}|^|$| )2:"
+          }
         },
         "structType" : "CommunitySetMatchExpr"
       },
@@ -89,21 +81,13 @@
         "hypothesis" : "sameDefinition",
         "name" : "as1_community",
         "structDefinition" : {
-          "lines" : [
-            {
-              "action" : "PERMIT",
-              "communitySetMatchExpr" : {
-                "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
-                "expr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
-                  "communityRendering" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
-                  },
-                  "regex" : "(,|\\{|\\}|^|$| )1:"
-                }
-              }
-            }
-          ]
+          "expr" : {
+            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
+            "communityRendering" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
+            },
+            "regex" : "(,|\\{|\\}|^|$| )1:"
+          }
         },
         "structType" : "CommunitySetMatchExpr"
       },
@@ -119,21 +103,13 @@
         "hypothesis" : "sameDefinition",
         "name" : "as3_community",
         "structDefinition" : {
-          "lines" : [
-            {
-              "action" : "PERMIT",
-              "communitySetMatchExpr" : {
-                "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
-                "expr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
-                  "communityRendering" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
-                  },
-                  "regex" : "(,|\\{|\\}|^|$| )3:"
-                }
-              }
-            }
-          ]
+          "expr" : {
+            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
+            "communityRendering" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
+            },
+            "regex" : "(,|\\{|\\}|^|$| )3:"
+          }
         },
         "structType" : "CommunitySetMatchExpr"
       },
@@ -178,21 +154,13 @@
         "hypothesis" : "sameDefinition",
         "name" : "dept_community",
         "structDefinition" : {
-          "lines" : [
-            {
-              "action" : "PERMIT",
-              "communitySetMatchExpr" : {
-                "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
-                "expr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
-                  "communityRendering" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
-                  },
-                  "regex" : "(,|\\{|\\}|^|$| )65001:"
-                }
-              }
-            }
-          ]
+          "expr" : {
+            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
+            "communityRendering" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
+            },
+            "regex" : "(,|\\{|\\}|^|$| )65001:"
+          }
         },
         "structType" : "CommunitySetMatchExpr"
       },
@@ -750,21 +718,13 @@
         "hypothesis" : "sameDefinition",
         "name" : "as4_community",
         "structDefinition" : {
-          "lines" : [
-            {
-              "action" : "PERMIT",
-              "communitySetMatchExpr" : {
-                "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
-                "expr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
-                  "communityRendering" : {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
-                  },
-                  "regex" : "(,|\\{|\\}|^|$| )4:"
-                }
-              }
-            }
-          ]
+          "expr" : {
+            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex",
+            "communityRendering" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering"
+            },
+            "regex" : "(,|\\{|\\}|^|$| )4:"
+          }
         },
         "structType" : "CommunitySetMatchExpr"
       },
