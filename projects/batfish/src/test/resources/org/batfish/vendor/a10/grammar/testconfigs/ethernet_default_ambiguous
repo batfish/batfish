@@ -1,0 +1,10 @@
+!BATFISH_FORMAT: a10_acos
+hostname ethernet_default_ambiguous
+!
+interface ethernet 1
+  ip address 10.0.5.1 255.255.255.0
+!
+! Other interface types are not used to determine ethernet defaults
+interface loopback 0
+  enable
+!

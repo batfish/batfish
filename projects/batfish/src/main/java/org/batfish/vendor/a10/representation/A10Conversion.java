@@ -312,33 +312,6 @@ public class A10Conversion {
                     .build());
   }
 
-  @VisibleForTesting
-  public static boolean getInterfaceEnabledEffective(Interface iface) {
-    Boolean enabled = iface.getEnabled();
-    if (enabled != null) {
-      return enabled;
-    }
-    switch (iface.getType()) {
-      case ETHERNET:
-        return false;
-      case LOOPBACK:
-      case TRUNK:
-      case VE:
-        return true;
-      default:
-        assert false;
-        return true;
-    }
-  }
-
-  @Nonnull
-  static Stream<KernelRoute> getRealInterfaceAddressKernelRoutes(Stream<Interface> interfaces) {
-    return interfaces
-        .filter(A10Conversion::getInterfaceEnabledEffective)
-        .filter(i -> i.getIpAddress() != null)
-        .map(A10Conversion::toKernelRoute);
-  }
-
   /**
    * Create kernel route for the address of an L3 interface. This is needed for proxy-arp because
    * interface addresses do not generate local routes on A10 devices.

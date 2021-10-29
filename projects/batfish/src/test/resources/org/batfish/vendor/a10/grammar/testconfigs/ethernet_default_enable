@@ -1,0 +1,12 @@
+!BATFISH_FORMAT: a10_acos
+!version 2.7.2, build 123 (Aug-5-2021,01:23)
+hostname ethernet_default_enable
+!
+interface ethernet 1
+  ip address 10.0.5.1 255.255.255.0
+!
+interface ethernet 2
+  disable
+!
+interface loopback 0
+!

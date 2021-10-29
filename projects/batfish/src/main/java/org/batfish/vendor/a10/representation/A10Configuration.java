@@ -13,12 +13,10 @@ import static org.batfish.vendor.a10.representation.A10Conversion.getFloatingIpK
 import static org.batfish.vendor.a10.representation.A10Conversion.getFloatingIps;
 import static org.batfish.vendor.a10.representation.A10Conversion.getFloatingIpsByHaGroup;
 import static org.batfish.vendor.a10.representation.A10Conversion.getFloatingIpsForAllVrids;
-import static org.batfish.vendor.a10.representation.A10Conversion.getInterfaceEnabledEffective;
 import static org.batfish.vendor.a10.representation.A10Conversion.getNatPoolIps;
 import static org.batfish.vendor.a10.representation.A10Conversion.getNatPoolIpsByHaGroup;
 import static org.batfish.vendor.a10.representation.A10Conversion.getNatPoolIpsForAllVrids;
 import static org.batfish.vendor.a10.representation.A10Conversion.getNatPoolKernelRoutes;
-import static org.batfish.vendor.a10.representation.A10Conversion.getRealInterfaceAddressKernelRoutes;
 import static org.batfish.vendor.a10.representation.A10Conversion.getVirtualServerIps;
 import static org.batfish.vendor.a10.representation.A10Conversion.getVirtualServerIpsByHaGroup;
 import static org.batfish.vendor.a10.representation.A10Conversion.getVirtualServerIpsForAllVrids;
@@ -66,6 +64,7 @@ import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.KernelRoute;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SwitchportMode;
@@ -568,6 +567,32 @@ public final class A10Configuration extends VendorConfiguration {
         .forEach(i -> i.setVrrpGroups(toVrrpGroups(i, vrrpGroupBuildersBuilder.build())));
   }
 
+  @Nonnull
+  Stream<KernelRoute> getRealInterfaceAddressKernelRoutes(Stream<Interface> interfaces) {
+    return interfaces
+        .filter(this::getInterfaceEnabledEffective)
+        .filter(i -> i.getIpAddress() != null)
+        .map(A10Conversion::toKernelRoute);
+  }
+
+  public boolean getInterfaceEnabledEffective(Interface iface) {
+    Boolean enabled = iface.getEnabled();
+    if (enabled != null) {
+      return enabled;
+    }
+    switch (iface.getType()) {
+      case ETHERNET:
+        return isEthernetDefaultEnable();
+      case LOOPBACK:
+      case TRUNK:
+      case VE:
+        return true;
+      default:
+        assert false;
+        return true;
+    }
+  }
+
   /**
    * Convert virtual-servers to load-balancing VI constructs and attach resulting transformations to
    * interfaces. Modifies VI interfaces and must be called after those are created.
@@ -847,6 +872,18 @@ public final class A10Configuration extends VendorConfiguration {
   }
 
   /**
+   * Returns default ethernet interface enabled status. Determined by heuristics during
+   * parsing/preprocessing.
+   */
+  public boolean isEthernetDefaultEnable() {
+    return _ethernetDefaultEnable;
+  }
+
+  public void setEthernetDefaultEnable(boolean ethernetDefaultEnable) {
+    _ethernetDefaultEnable = ethernetDefaultEnable;
+  }
+
+  /**
    * Finalize configuration after it is finished being built. Does things like making structures
    * immutable.
    *
@@ -869,6 +906,8 @@ public final class A10Configuration extends VendorConfiguration {
 
   /** Map of interface names to interface. Used for converting aggregate interfaces. */
   @Nullable private transient Map<String, Interface> _ifaceNametoIface;
+
+  private boolean _ethernetDefaultEnable;
 
   @Nullable private BgpProcess _bgpProcess;
   private Configuration _c;
