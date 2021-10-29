@@ -17,6 +17,8 @@ import org.batfish.symbolic.state.NodeInterfaceNeighborUnreachable;
 import org.batfish.symbolic.state.OriginateInterface;
 import org.batfish.symbolic.state.OriginateInterfaceLink;
 import org.batfish.symbolic.state.OriginateVrf;
+import org.batfish.symbolic.state.PacketPolicyAction;
+import org.batfish.symbolic.state.PacketPolicyStatement;
 import org.batfish.symbolic.state.PbrFibLookup;
 import org.batfish.symbolic.state.PostInInterface;
 import org.batfish.symbolic.state.PostInInterfacePostNat;
@@ -175,6 +177,17 @@ public final class OriginationStateExprToLocation implements StateExprVisitor<Op
 
   @Override
   public Optional<Location> visitPbrFibLookup(PbrFibLookup pbrFibLookup) {
+    return Optional.empty();
+  }
+
+  @Override
+  public Optional<Location> visitPacketPolicyStatement(
+      PacketPolicyStatement packetPolicyStatement) {
+    return Optional.empty();
+  }
+
+  @Override
+  public Optional<Location> visitPacketPolicyAction(PacketPolicyAction packetPolicyAction) {
     return Optional.empty();
   }
 

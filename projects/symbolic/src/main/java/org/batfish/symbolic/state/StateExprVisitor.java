@@ -52,6 +52,10 @@ public interface StateExprVisitor<R> {
 
   R visitPbrFibLookup(PbrFibLookup pbrFibLookup);
 
+  R visitPacketPolicyStatement(PacketPolicyStatement packetPolicyStatement);
+
+  R visitPacketPolicyAction(PacketPolicyAction packetPolicyAction);
+
   R visitPostInInterface(PostInInterface postInInterface);
 
   R visitPostInInterfacePostNat(PostInInterfacePostNat postInInterfacePostNat);
