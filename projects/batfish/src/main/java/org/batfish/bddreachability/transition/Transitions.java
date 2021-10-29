@@ -4,7 +4,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -76,53 +75,66 @@ public final class Transitions {
   }
 
   public static Transition compose(Transition... transitions) {
-    if (Stream.of(transitions).anyMatch(t -> t == ZERO)) {
-      return ZERO;
+    Stack<Transition> mergedTransitions = new Stack<>();
+    for (Transition transition : transitions) {
+      if (transition == ZERO) {
+        return ZERO;
+      } else if (transition == IDENTITY) {
+        continue;
+      } else if (transition instanceof Composite) {
+        List<Transition> composedTransitions = ((Composite) transition).getTransitions();
+        // invariant: composedTransitions can't be merged any further, don't contain ZERO or
+        // IDENTITY
+        if (mergedTransitions.empty()) {
+          mergedTransitions.addAll(composedTransitions);
+        } else {
+          // left-to-right, try to merge into the top of the stack
+          int i = 0;
+          while (i < composedTransitions.size()) {
+            Transition left = mergedTransitions.pop();
+            Transition right = composedTransitions.get(i++);
+            @Nullable Transition merged = mergeComposed(left, right);
+            if (merged == null) {
+              // failed to merge. stop trying to merge and push the rest
+              mergedTransitions.push(left);
+              mergedTransitions.push(right);
+              break;
+            } else if (merged == ZERO) {
+              return ZERO;
+            } else if (merged != IDENTITY) {
+              mergedTransitions.push(merged);
+            }
+          }
+          // push the rest
+          while (i < composedTransitions.size()) {
+            mergedTransitions.push(composedTransitions.get(i++));
+          }
+        }
+      } else {
+        if (mergedTransitions.empty()) {
+          mergedTransitions.push(transition);
+        } else {
+          Transition left = mergedTransitions.pop();
+          @Nullable Transition merged = mergeComposed(left, transition);
+          if (merged == null) {
+            // failed to merge.
+            mergedTransitions.push(left);
+            mergedTransitions.push(transition);
+          } else if (merged == ZERO) {
+            return ZERO;
+          } else if (merged != IDENTITY) {
+            mergedTransitions.push(merged);
+          }
+        }
+      }
     }
-    Stream<Transition> flatTransitions =
-        Stream.of(transitions)
-            .flatMap(
-                t ->
-                    t instanceof Composite
-                        ? ((Composite) t).getTransitions().stream()
-                        : Stream.of(t));
-    List<Transition> nonIdentityTransitions =
-        flatTransitions
-            .filter(transition -> transition != IDENTITY)
-            .collect(ImmutableList.toImmutableList());
-    if (nonIdentityTransitions.isEmpty()) {
+    if (mergedTransitions.isEmpty()) {
       return IDENTITY;
     }
-    List<Transition> mergedTransitions = mergeCompositeTransitions(nonIdentityTransitions);
     if (mergedTransitions.size() == 1) {
       return mergedTransitions.get(0);
     }
     return new Composite(mergedTransitions);
-  }
-
-  static List<Transition> mergeCompositeTransitions(List<Transition> transitions) {
-    if (transitions.size() < 2) {
-      return transitions;
-    }
-
-    Stack<Transition> stack = new Stack<>();
-    for (Transition transition : transitions) {
-      stack.push(transition);
-
-      while (stack.size() > 1) {
-        Transition second = stack.pop();
-        Transition first = stack.pop();
-        @Nullable Transition merged = mergeComposed(first, second);
-        if (merged == null) {
-          stack.push(first);
-          stack.push(second);
-          break;
-        } else {
-          stack.push(merged);
-        }
-      }
-    }
-    return stack;
   }
 
   /**
