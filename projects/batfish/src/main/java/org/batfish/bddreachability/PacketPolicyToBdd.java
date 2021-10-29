@@ -5,8 +5,9 @@ import static org.batfish.bddreachability.transition.Transitions.constraint;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import java.util.ArrayList;
+import com.google.common.collect.ImmutableSet;
 import java.util.List;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
@@ -47,14 +48,33 @@ class PacketPolicyToBdd {
   @Nonnull private final BoolExprToBdd _boolExprToBdd;
   @Nonnull private final TransformationToTransition _transformationToTransition;
   private final String _hostname;
-  private final List<Edge> _edges;
+  private final ImmutableList.Builder<Edge> _edges;
+  private final ImmutableSet.Builder<PacketPolicyAction> _actions;
   private PacketPolicyStatement _currentStatement;
+
+  public static final class BddPacketPolicy {
+    private final List<Edge> _edges;
+    private final Set<PacketPolicyAction> _actions;
+
+    public BddPacketPolicy(List<Edge> edges, Set<PacketPolicyAction> actions) {
+      _edges = edges;
+      _actions = actions;
+    }
+
+    public List<Edge> getEdges() {
+      return _edges;
+    }
+
+    public Set<PacketPolicyAction> getActions() {
+      return _actions;
+    }
+  }
 
   /**
    * Process a given {@link PacketPolicy} and return the {@link PacketPolicyToBdd} that expresses
    * the conversion. Examine the result of the conversion using methods such as
    */
-  public static List<Edge> evaluate(
+  public static BddPacketPolicy evaluate(
       String hostname,
       PacketPolicy policy,
       IpAccessListToBdd ipAccessListToBdd,
@@ -62,7 +82,7 @@ class PacketPolicyToBdd {
     PacketPolicyToBdd evaluator =
         new PacketPolicyToBdd(hostname, policy, ipAccessListToBdd, ipsRoutedOutInterfaces);
     evaluator.process(policy);
-    return evaluator._edges;
+    return new BddPacketPolicy(evaluator._edges.build(), evaluator._actions.build());
   }
 
   private PacketPolicyToBdd(
@@ -76,7 +96,8 @@ class PacketPolicyToBdd {
     _boolExprToBdd = new BoolExprToBdd(ipAccessListToBdd, ipsRoutedOutInterfaces);
     _transformationToTransition =
         new TransformationToTransition(ipAccessListToBdd.getBDDPacket(), ipAccessListToBdd);
-    _edges = new ArrayList<>();
+    _edges = ImmutableList.builder();
+    _actions = ImmutableSet.builder();
   }
 
   /** Process a given {@link PacketPolicy} */
@@ -118,6 +139,9 @@ class PacketPolicyToBdd {
       return;
     }
     _edges.add(new Edge(source, target, transition));
+    if (target instanceof PacketPolicyAction) {
+      _actions.add((PacketPolicyAction) target);
+    }
   }
 
   /**

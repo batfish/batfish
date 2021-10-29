@@ -890,17 +890,19 @@ public final class BDDReachabilityAnalysisFactory {
                         String ifaceName = iface.getName();
                         String policyName = iface.getPacketPolicyName();
 
-                        if (convertedPolicies.contains(policyName)) {
-                          return Stream.of(
-                              new Edge(
-                                  new PreInInterface(nodeName, ifaceName),
-                                  new PacketPolicyStatement(nodeName, policyName, 0),
-                                  addOutgoingOriginalFlowFiltersConstraint));
+                        Edge enterPolicyEdge =
+                            new Edge(
+                                new PreInInterface(nodeName, ifaceName),
+                                new PacketPolicyStatement(nodeName, policyName, 0),
+                                addOutgoingOriginalFlowFiltersConstraint);
+
+                        if (convertedPolicies.add(policyName)) {
+                          // the policy edges have been generated already
+                          // only need to generate this edge into the policy.
+                          return Stream.of(enterPolicyEdge);
                         }
 
-                        convertedPolicies.add(policyName);
-
-                        List<Edge> edges =
+                        PacketPolicyToBdd.BddPacketPolicy bddPacketPolicy =
                             PacketPolicyToBdd.evaluate(
                                 nodeName,
                                 config.getPacketPolicies().get(policyName),
@@ -911,85 +913,17 @@ public final class BDDReachabilityAnalysisFactory {
                                         _ipsRoutesOutInterfacesFactory.getIpsRoutedOutInterfaces(
                                             nodeName, vrfName)));
 
-                        VrfExprNameExtractor lookupVrfExtractor = new VrfExprNameExtractor(iface);
+                        PacketPolicyActionToEdges actionToEdges =
+                            new PacketPolicyActionToEdges(nodeName, policyName, vrfName);
                         return Streams.concat(
                             // enter PacketPolicy start state
-                            Stream.of(
-                                new Edge(
-                                    new PreInInterface(nodeName, ifaceName),
-                                    new PacketPolicyStatement(nodeName, policyName, 0),
-                                    addOutgoingOriginalFlowFiltersConstraint)),
+                            Stream.of(enterPolicyEdge),
                             // all the internal packet policy edges
-                            edges.stream(),
+                            bddPacketPolicy.getEdges().stream(),
                             // stitch action states back into the main graph
-                            edges.stream()
-                                .map(Edge::getPostState)
-                                .filter(PacketPolicyAction.class::isInstance)
-                                .map(PacketPolicyAction.class::cast)
-                                .distinct()
-                                .flatMap(
-                                    actionState ->
-                                        new ActionVisitor<Stream<Edge>>() {
-                                          @Override
-                                          public Stream<Edge> visitDrop(Drop drop) {
-                                            return Stream.of(
-                                                new Edge(
-                                                    actionState,
-                                                    new NodeDropAclIn(nodeName),
-                                                    removeNodeSpecificConstraints(
-                                                        nodeName,
-                                                        _lastHopMgr,
-                                                        _bddOutgoingOriginalFlowFilterManagers.get(
-                                                            nodeName),
-                                                        _bddSourceManagers.get(nodeName))));
-                                          }
-
-                                          @Override
-                                          public Stream<Edge> visitFibLookup(FibLookup fibLookup) {
-                                            // from FibLookup we branch to InterfaceAccept, NoRoute,
-                                            // PreOutVrf
-                                            Stream<Edge> interfaceAcceptEdges =
-                                                _ifaceAcceptBDDs
-                                                    .get(nodeName)
-                                                    .get(vrfName)
-                                                    .entrySet()
-                                                    .stream()
-                                                    .map(
-                                                        ifaceAcceptBddEntry ->
-                                                            new Edge(
-                                                                actionState,
-                                                                new InterfaceAccept(
-                                                                    nodeName,
-                                                                    ifaceAcceptBddEntry.getKey()),
-                                                                ifaceAcceptBddEntry.getValue()));
-                                            BDD acceptedBdd =
-                                                _vrfAcceptBDDs.get(nodeName).get(vrfName);
-                                            String lookupVrf =
-                                                lookupVrfExtractor.visit(fibLookup.getVrfExpr());
-                                            BDD routableBDD =
-                                                _routableBDDs.get(nodeName).get(lookupVrf);
-                                            Edge noRouteEdge =
-                                                new Edge(
-                                                    actionState,
-                                                    new NodeDropNoRoute(nodeName),
-                                                    acceptedBdd.nor(routableBDD));
-                                            Edge preOutVrfEdge =
-                                                new Edge(
-                                                    actionState,
-                                                    new PreOutVrf(nodeName, lookupVrf),
-                                                    routableBDD.diff(acceptedBdd));
-                                            return Stream.concat(
-                                                interfaceAcceptEdges,
-                                                Stream.of(noRouteEdge, preOutVrfEdge));
-                                          }
-
-                                          @Override
-                                          public Stream<Edge> visitFibLookupOverrideLookupIp(
-                                              FibLookupOverrideLookupIp fibLookup) {
-                                            // Currently unsupported
-                                            return Stream.of();
-                                          }
-                                        }.visit(actionState.getAction())));
+                            bddPacketPolicy.getActions().stream()
+                                .map(PacketPolicyAction::getAction)
+                                .flatMap(actionToEdges::visit));
                       });
             });
   }
@@ -2020,5 +1954,61 @@ public final class BDDReachabilityAnalysisFactory {
 
   private @Nonnull Stream<Interface> getInterfaces() {
     return _configs.values().stream().flatMap(Configuration::activeInterfaces);
+  }
+
+  private class PacketPolicyActionToEdges implements ActionVisitor<Stream<Edge>> {
+    private final String _nodeName;
+    private final String _policyName;
+    private final String _ingressVrfName;
+    private final VrfExprNameExtractor _vrfExprNameExtractor;
+
+    public PacketPolicyActionToEdges(String nodeName, String policyName, String ingressVrfName) {
+      _nodeName = nodeName;
+      _policyName = policyName;
+      _ingressVrfName = ingressVrfName;
+      _vrfExprNameExtractor = new VrfExprNameExtractor(ingressVrfName);
+    }
+
+    @Override
+    public Stream<Edge> visitDrop(Drop drop) {
+      return Stream.of(
+          new Edge(
+              new PacketPolicyAction(_nodeName, _policyName, drop),
+              new NodeDropAclIn(_nodeName),
+              removeNodeSpecificConstraints(
+                  _nodeName,
+                  _lastHopMgr,
+                  _bddOutgoingOriginalFlowFilterManagers.get(_nodeName),
+                  _bddSourceManagers.get(_nodeName))));
+    }
+
+    @Override
+    public Stream<Edge> visitFibLookup(FibLookup fibLookup) {
+      // from FibLookup we branch to InterfaceAccept, NoRoute,
+      // PreOutVrf
+      Stream<Edge> interfaceAcceptEdges =
+          _ifaceAcceptBDDs.get(_nodeName).get(_ingressVrfName).entrySet().stream()
+              .map(
+                  ifaceAcceptBddEntry ->
+                      new Edge(
+                          new PacketPolicyAction(_nodeName, _policyName, fibLookup),
+                          new InterfaceAccept(_nodeName, ifaceAcceptBddEntry.getKey()),
+                          ifaceAcceptBddEntry.getValue()));
+      BDD acceptedBdd = _vrfAcceptBDDs.get(_nodeName).get(_ingressVrfName);
+      String lookupVrf = _vrfExprNameExtractor.visit(fibLookup.getVrfExpr());
+      BDD routableBDD = _routableBDDs.get(_nodeName).get(lookupVrf);
+      StateExpr actionState = new PacketPolicyAction(_nodeName, _policyName, fibLookup);
+      Edge noRouteEdge =
+          new Edge(actionState, new NodeDropNoRoute(_nodeName), acceptedBdd.nor(routableBDD));
+      Edge preOutVrfEdge =
+          new Edge(actionState, new PreOutVrf(_nodeName, lookupVrf), routableBDD.diff(acceptedBdd));
+      return Stream.concat(interfaceAcceptEdges, Stream.of(noRouteEdge, preOutVrfEdge));
+    }
+
+    @Override
+    public Stream<Edge> visitFibLookupOverrideLookupIp(FibLookupOverrideLookupIp fibLookup) {
+      // Currently unsupported
+      return Stream.of();
+    }
   }
 }
