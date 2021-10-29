@@ -21,8 +21,6 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
-import java.util.List;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDFiniteDomain;
 import org.batfish.common.bdd.BDDOps;
@@ -76,10 +74,30 @@ public class TransitionsTest {
     Transition t1 = constraint(var(0));
     Transition t2 = constraint(var(1));
     Transition t3 = constraint(var(2));
-    Transition t4 = constraint(var(3));
-    Transition c1 = new Composite(t1, t2);
-    Transition c2 = new Composite(t3, t4);
-    assertThat(compose(c1, c2), equalTo(compose(t1, t2, t3, t4)));
+    Transition eraseAndSet = eraseAndSet(var(0), var(0));
+    Transition or = or(t2, eraseAndSet);
+    assertThat(or, instanceOf(Or.class));
+    Transition c1 = compose(t1, or);
+    assertThat(c1, instanceOf(Composite.class));
+    Transition c2 = compose(t3, or);
+    assertThat(c2, instanceOf(Composite.class));
+    Transition c1c2 = compose(c1, c2);
+    assertThat(c1c2, instanceOf(Composite.class));
+    assertThat(((Composite) c1c2).getTransitions(), contains(t1, or, t3, or));
+  }
+
+  /** Compose simplifies to zero. */
+  @Test
+  public void composeToZero() {
+    BDD v0 = var(0);
+    BDD v1 = var(1);
+    assertEquals(
+        ZERO,
+        compose(
+            constraint(v0.imp(v1)),
+            constraint(v0.not().imp(v1.not())),
+            constraint(v0.imp(v1.not())),
+            constraint(v0.not().imp(v1))));
   }
 
   // Or with ZERO is a no-op
@@ -327,24 +345,20 @@ public class TransitionsTest {
     assertNull(mergeComposed(remove, add));
   }
 
-  private static List<Transition> mergeCompositeTransitions(Transition... transitions) {
-    return Transitions.mergeCompositeTransitions(Lists.newArrayList(transitions));
-  }
-
   @Test
-  public void testMergeCompositeTransitions1() {
+  public void testCompose1() {
     BDD v0 = var(0);
     BDD v1 = var(1);
     BDD v2 = var(2);
     Transition t0 = constraint(v0);
     Transition t1 = constraint(v1);
     Transition t2 = constraint(v2);
-    List<Transition> actual = mergeCompositeTransitions(t0, t1, t2);
-    assertThat(actual, contains(constraint(v0.and(v1).and(v2))));
+    Transition actual = compose(t0, t1, t2);
+    assertThat(actual, equalTo(constraint(v0.and(v1).and(v2))));
   }
 
   @Test
-  public void testMergeCompositeTransitions2() {
+  public void testCompose2() {
     BDD v1 = var(1);
     BDD v2 = var(2);
     BDD v3 = var(3);
@@ -352,8 +366,10 @@ public class TransitionsTest {
     Transition t1 = eraseAndSet(v1, v1);
     Transition t2 = constraint(v2);
     Transition t3 = constraint(v3);
-    List<Transition> actual = mergeCompositeTransitions(t0, t1, t2, t3);
-    assertThat(actual, contains(t0, eraseAndSet(v1, v1.and(v2).and(v3))));
+    Transition actual = compose(t0, t1, t2, t3);
+    assertThat(actual, instanceOf(Composite.class));
+    assertThat(
+        ((Composite) actual).getTransitions(), contains(t0, eraseAndSet(v1, v1.and(v2).and(v3))));
   }
 
   @Test

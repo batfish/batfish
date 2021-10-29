@@ -79,6 +79,25 @@ final class IncrementalBdpEngine {
   }
 
   /**
+   * Returns the {@link PartialDataplane} corresponding to the given topology and nodes. FIBs,
+   * ForwardingAnalysis, and other internals are recomputed based on the updated state in the {@code
+   * nodes} and {@code vrs}.
+   */
+  private PartialDataplane nextDataplane(
+      TopologyContext currentTopologyContext,
+      SortedMap<String, Node> nodes,
+      List<VirtualRouter> vrs) {
+    LOGGER.info("Updating dataplane");
+    computeFibs(vrs);
+
+    return PartialDataplane.builder()
+        .setNodes(nodes)
+        .setLayer3Topology(currentTopologyContext.getLayer3Topology())
+        .setL3Adjacencies(currentTopologyContext.getL3Adjacencies())
+        .build();
+  }
+
+  /**
    * Performs the iterative step in dataplane computations as topology changes.
    *
    * <p>The {@code currentTopologyContext} contains the connectivity learned so far in the network,
@@ -92,28 +111,17 @@ final class IncrementalBdpEngine {
    */
   private TopologyContext nextTopologyContext(
       TopologyContext currentTopologyContext,
-      SortedMap<String, Node> nodes,
-      List<VirtualRouter> vrs,
+      PartialDataplane currentDataplane,
       TopologyContext initialTopologyContext,
       NetworkConfigurations networkConfigurations,
       Map<Ip, Map<String, Set<String>>> ipVrfOwners) {
-    // Force re-init of partial dataplane. Re-inits forwarding analysis, etc.
-    computeFibs(vrs);
-
     // Update topologies
     LOGGER.info("Updating dynamic topologies");
-
-    PartialDataplane partialDataplane =
-        PartialDataplane.builder()
-            .setNodes(nodes)
-            .setLayer3Topology(currentTopologyContext.getLayer3Topology())
-            .setL3Adjacencies(currentTopologyContext.getL3Adjacencies())
-            .build();
 
     Map<String, Configuration> configurations = networkConfigurations.getMap();
     TracerouteEngine trEngCurrentL3Topology =
         new TracerouteEngineImpl(
-            partialDataplane, currentTopologyContext.getLayer3Topology(), configurations);
+            currentDataplane, currentTopologyContext.getLayer3Topology(), configurations);
 
     // IPsec
     LOGGER.info("Updating IPsec topology");
@@ -127,7 +135,7 @@ final class IncrementalBdpEngine {
     LOGGER.info("Updating VXLAN topology");
     VxlanTopology newVxlanTopology =
         prunedVxlanTopology(
-            computeVxlanTopology(partialDataplane.getLayer2Vnis()),
+            computeVxlanTopology(currentDataplane.getLayer2Vnis()),
             configurations,
             trEngCurrentL3Topology);
 
@@ -154,7 +162,7 @@ final class IncrementalBdpEngine {
             false,
             true,
             trEngCurrentL3Topology,
-            partialDataplane.getFibs(),
+            currentDataplane.getFibs(),
             currentTopologyContext.getL3Adjacencies());
 
     // Update L3 adjacencies if necessary.
@@ -267,11 +275,12 @@ final class IncrementalBdpEngine {
               .setTunnelTopology(TunnelTopology.EMPTY)
               .setVxlanTopology(VxlanTopology.EMPTY)
               .build();
+      PartialDataplane currentDataplane = nextDataplane(priorTopologyContext, nodes, vrs);
+
       TopologyContext currentTopologyContext =
           nextTopologyContext(
               priorTopologyContext,
-              nodes,
-              vrs,
+              currentDataplane,
               initialTopologyContext,
               networkConfigurations,
               ipVrfOwners);
@@ -293,11 +302,11 @@ final class IncrementalBdpEngine {
             throw new BdpOscillationException("Network has no stable solution");
           }
 
+          currentDataplane = nextDataplane(currentTopologyContext, nodes, vrs);
           TopologyContext nextTopologyContext =
               nextTopologyContext(
                   currentTopologyContext,
-                  nodes,
-                  vrs,
+                  currentDataplane,
                   initialTopologyContext,
                   networkConfigurations,
                   ipVrfOwners);
@@ -324,8 +333,7 @@ final class IncrementalBdpEngine {
       IncrementalDataPlane finalDataplane =
           IncrementalDataPlane.builder()
               .setNodes(nodes)
-              .setLayer3Topology(currentTopologyContext.getLayer3Topology())
-              .setL3Adjacencies(currentTopologyContext.getL3Adjacencies())
+              .setPartialDataplane(currentDataplane)
               .build();
       return new IbdpResult(answerElement, finalDataplane, currentTopologyContext, nodes);
     } finally {

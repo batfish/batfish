@@ -43,7 +43,6 @@ import static org.batfish.main.BatfishTestUtils.getBatfish;
 import static org.batfish.vendor.a10.representation.A10Configuration.getInterfaceName;
 import static org.batfish.vendor.a10.representation.A10Conversion.DEFAULT_VRRP_A_PRIORITY;
 import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_FLOATING_IP;
-import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_INTERFACE_PROXY_ARP_IP;
 import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_NAT_POOL;
 import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_NAT_POOL_PROXY_ARP_IP;
 import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_VIRTUAL_SERVER_FLAGGED;
@@ -2034,21 +2033,6 @@ public class A10GrammarTest {
                 .setRequiredOwnedIp(Ip.parse("10.0.9.2"))
                 .setNonForwarding(false)
                 .setTag(KERNEL_ROUTE_TAG_FLOATING_IP)
-                .build(),
-            KernelRoute.builder()
-                .setNetwork(Prefix.strict("10.0.0.10/32"))
-                .setTag(KERNEL_ROUTE_TAG_INTERFACE_PROXY_ARP_IP)
-                .setNonForwarding(false)
-                .build(),
-            KernelRoute.builder()
-                .setNetwork(Prefix.strict("10.100.0.1/32"))
-                .setTag(KERNEL_ROUTE_TAG_INTERFACE_PROXY_ARP_IP)
-                .setNonForwarding(false)
-                .build(),
-            KernelRoute.builder()
-                .setNetwork(Prefix.strict("192.168.255.1/32"))
-                .setTag(KERNEL_ROUTE_TAG_INTERFACE_PROXY_ARP_IP)
-                .setNonForwarding(false)
                 .build()));
   }
 

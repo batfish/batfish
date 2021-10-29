@@ -64,7 +64,6 @@ import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.KernelRoute;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SwitchportMode;
@@ -386,13 +385,7 @@ public final class A10Configuration extends VendorConfiguration {
                     getNatPoolKernelRoutes(_natPools.values()),
                     getVirtualServerKernelRoutes(_virtualServers.values()),
                     _vrrpA != null ? getFloatingIpKernelRoutes(_vrrpA) : Stream.of(),
-                    getFloatingIpKernelRoutes(_floatingIps.keySet()),
-                    getRealInterfaceAddressKernelRoutes(
-                        Streams.concat(
-                            _interfacesEthernet.values().stream(),
-                            _interfacesTrunk.values().stream(),
-                            _interfacesVe.values().stream(),
-                            _interfacesLoopback.values().stream())))
+                    getFloatingIpKernelRoutes(_floatingIps.keySet()))
                 .collect(ImmutableSortedSet.toImmutableSortedSet(naturalOrder())));
   }
 
@@ -565,14 +558,6 @@ public final class A10Configuration extends VendorConfiguration {
     _c.getAllInterfaces().values().stream()
         .filter(i -> haAppliesToInterface(i, connMirror))
         .forEach(i -> i.setVrrpGroups(toVrrpGroups(i, vrrpGroupBuildersBuilder.build())));
-  }
-
-  @Nonnull
-  Stream<KernelRoute> getRealInterfaceAddressKernelRoutes(Stream<Interface> interfaces) {
-    return interfaces
-        .filter(this::getInterfaceEnabledEffective)
-        .filter(i -> i.getIpAddress() != null)
-        .map(A10Conversion::toKernelRoute);
   }
 
   public boolean getInterfaceEnabledEffective(Interface iface) {
