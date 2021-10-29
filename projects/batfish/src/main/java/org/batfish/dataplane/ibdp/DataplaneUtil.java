@@ -9,6 +9,8 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
+import com.google.common.collect.Table.Cell;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -70,69 +72,66 @@ public final class DataplaneUtil {
   }
 
   @Nonnull
-  static Table<String, String, Set<Bgpv4Route>> computeBgpRoutes(Map<String, Node> nodes) {
-    ImmutableTable.Builder<String, String, Set<Bgpv4Route>> table = ImmutableTable.builder();
+  static Table<String, String, Set<Bgpv4Route>> computeBgpRoutes(List<VirtualRouter> vrs) {
+    return vrs.parallelStream()
+        .filter(vr -> vr._bgpRoutingProcess != null)
+        .collect(
+            ImmutableTable.toImmutableTable(
+                vr -> vr.getConfiguration().getHostname(),
+                VirtualRouter::getName,
+                VirtualRouter::getBgpRoutes));
+  }
 
-    nodes.forEach(
-        (hostname, node) ->
-            node.getVirtualRouters()
-                .forEach(
-                    vr -> {
-                      table.put(hostname, vr.getName(), vr.getBgpRoutes());
-                    }));
-    return table.build();
+  static @Nonnull Table<String, String, Set<Bgpv4Route>> computeBgpBackupRoutes(
+      Map<String, Node> nodes, Table<String, String, Set<Bgpv4Route>> bgpRoutes) {
+    return bgpRoutes.cellSet().parallelStream()
+        .collect(
+            ImmutableTable.toImmutableTable(
+                Cell::getRowKey,
+                Cell::getColumnKey,
+                cell ->
+                    // TODO: Instead of subtracting RIB best routes from RIB backup routes, RIB
+                    // backup routes should not store best routes to begin with.
+                    ImmutableSet.copyOf(
+                        Sets.difference(
+                            nodes
+                                .get(cell.getRowKey())
+                                .getVirtualRouter(cell.getColumnKey())
+                                .get()
+                                .getBgpBackupRoutes(),
+                            cell.getValue()))));
   }
 
   @Nonnull
-  static Table<String, String, Set<Bgpv4Route>> computeBgpBackupRoutes(Map<String, Node> nodes) {
-    ImmutableTable.Builder<String, String, Set<Bgpv4Route>> table = ImmutableTable.builder();
-    // TODO: Instead of subtracting RIB best routes from RIB backup routes, RIB backup routes should
-    //       not store best routes to begin with.
-    nodes.forEach(
-        (hostname, node) ->
-            node.getVirtualRouters()
-                .forEach(
-                    vr -> {
-                      table.put(
-                          hostname,
-                          vr.getName(),
-                          ImmutableSet.copyOf(
-                              Sets.difference(vr.getBgpBackupRoutes(), vr.getBgpRoutes())));
-                    }));
-    return table.build();
-  }
-
-  @Nonnull
-  static Table<String, String, Set<EvpnRoute<?, ?>>> computeEvpnRoutes(Map<String, Node> nodes) {
-    ImmutableTable.Builder<String, String, Set<EvpnRoute<?, ?>>> table = ImmutableTable.builder();
-    nodes.forEach(
-        (hostname, node) ->
-            node.getVirtualRouters()
-                .forEach(
-                    vr -> {
-                      table.put(hostname, vr.getName(), vr.getEvpnRoutes());
-                    }));
-    return table.build();
+  static Table<String, String, Set<EvpnRoute<?, ?>>> computeEvpnRoutes(List<VirtualRouter> vrs) {
+    return vrs.parallelStream()
+        .filter(vr -> vr._bgpRoutingProcess != null)
+        .collect(
+            ImmutableTable.toImmutableTable(
+                vr -> vr.getConfiguration().getHostname(),
+                VirtualRouter::getName,
+                VirtualRouter::getEvpnRoutes));
   }
 
   @Nonnull
   static Table<String, String, Set<EvpnRoute<?, ?>>> computeEvpnBackupRoutes(
-      Map<String, Node> nodes) {
-    ImmutableTable.Builder<String, String, Set<EvpnRoute<?, ?>>> table = ImmutableTable.builder();
-    // TODO: Instead of subtracting RIB best routes from RIB backup routes, RIB backup routes should
-    //       not store best routes to begin with.
-    nodes.forEach(
-        (hostname, node) ->
-            node.getVirtualRouters()
-                .forEach(
-                    vr -> {
-                      table.put(
-                          hostname,
-                          vr.getName(),
-                          ImmutableSet.copyOf(
-                              Sets.difference(vr.getEvpnBackupRoutes(), vr.getEvpnRoutes())));
-                    }));
-    return table.build();
+      Map<String, Node> nodes, Table<String, String, Set<EvpnRoute<?, ?>>> evpnRoutes) {
+    return evpnRoutes.cellSet().parallelStream()
+        .collect(
+            ImmutableTable.toImmutableTable(
+                Cell::getRowKey,
+                Cell::getColumnKey,
+                cell ->
+                    // TODO: Instead of subtracting RIB best routes from RIB backup routes, RIB
+                    // backup routes should not store best routes to begin with.
+                    ImmutableSet.copyOf(
+                        Sets.difference(
+                            nodes
+                                .get(cell.getRowKey())
+                                .getVirtualRouter(cell.getColumnKey())
+                                .get()
+                                .getEvpnBackupRoutes(),
+                            cell.getValue()))));
   }
 
   @Nonnull

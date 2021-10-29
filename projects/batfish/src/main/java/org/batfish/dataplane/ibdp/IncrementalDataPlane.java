@@ -2,10 +2,12 @@ package org.batfish.dataplane.ibdp;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
+import static org.batfish.common.util.StreamUtil.toListInRandomOrder;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Table;
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -137,10 +139,13 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
     _forwardingAnalysis = dataplane.getForwardingAnalysis();
 
     Map<String, Node> nodes = builder._nodes;
-    _bgpRoutes = DataplaneUtil.computeBgpRoutes(nodes);
-    _bgpBackupRoutes = DataplaneUtil.computeBgpBackupRoutes(nodes);
-    _evpnRoutes = DataplaneUtil.computeEvpnRoutes(nodes);
-    _evpnBackupRoutes = DataplaneUtil.computeEvpnBackupRoutes(nodes);
+    List<VirtualRouter> vrs =
+        toListInRandomOrder(nodes.values().stream().flatMap(n -> n.getVirtualRouters().stream()));
+    ;
+    _bgpRoutes = DataplaneUtil.computeBgpRoutes(vrs);
+    _bgpBackupRoutes = DataplaneUtil.computeBgpBackupRoutes(nodes, _bgpRoutes);
+    _evpnRoutes = DataplaneUtil.computeEvpnRoutes(vrs);
+    _evpnBackupRoutes = DataplaneUtil.computeEvpnBackupRoutes(nodes, _evpnRoutes);
     _ribs = DataplaneUtil.computeRibs(nodes);
     _prefixTracerSummary = computePrefixTracingInfo(nodes);
     _vniSettings = DataplaneUtil.computeVniSettings(nodes);
