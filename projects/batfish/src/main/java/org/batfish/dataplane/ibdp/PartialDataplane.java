@@ -76,14 +76,25 @@ public final class PartialDataplane implements DataPlane {
   }
 
   @Override
-  public SortedMap<String, SortedMap<String, Map<Prefix, Map<String, Set<String>>>>>
+  public @Nonnull SortedMap<String, SortedMap<String, Map<Prefix, Map<String, Set<String>>>>>
       getPrefixTracingInfoSummary() {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> getRibs() {
+  public @Nonnull SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>>
+      getRibs() {
     throw new UnsupportedOperationException();
+  }
+
+  // For invariant checking only.
+
+  public @Nonnull Topology getLayer3Topology() {
+    return _layer3Topology;
+  }
+
+  public @Nonnull L3Adjacencies getL3Adjacencies() {
+    return _l3Adjacencies;
   }
 
   //////////
@@ -127,6 +138,8 @@ public final class PartialDataplane implements DataPlane {
   @Nonnull private final Map<String, Map<String, Fib>> _fibs;
   @Nonnull private final ForwardingAnalysis _forwardingAnalysis;
   @Nonnull private final Table<String, String, Set<Layer2Vni>> _vniSettings;
+  @Nonnull private final Topology _layer3Topology;
+  @Nonnull private final L3Adjacencies _l3Adjacencies;
 
   private PartialDataplane(Builder builder) {
     checkArgument(builder._nodes != null, "Dataplane must have nodes to be constructed");
@@ -139,5 +152,7 @@ public final class PartialDataplane implements DataPlane {
     _forwardingAnalysis =
         computeForwardingAnalysis(_fibs, configs, builder._layer3Topology, builder._l3Adjacencies);
     _vniSettings = DataplaneUtil.computeVniSettings(nodes);
+    _l3Adjacencies = builder._l3Adjacencies;
+    _layer3Topology = builder._layer3Topology;
   }
 }
