@@ -15,6 +15,8 @@ import java.util.SortedMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.Bgpv4Route;
@@ -29,14 +31,15 @@ import org.batfish.datamodel.vxlan.Layer2Vni;
 /** Dataplane computation result of incremental dataplane engine */
 @ParametersAreNonnullByDefault
 public final class IncrementalDataPlane implements Serializable, DataPlane {
+  private static final Logger LOGGER = LogManager.getLogger(IncrementalDataPlane.class);
 
   @Override
-  public Map<String, Map<String, Fib>> getFibs() {
+  public @Nonnull Map<String, Map<String, Fib>> getFibs() {
     return _fibs;
   }
 
   @Override
-  public ForwardingAnalysis getForwardingAnalysis() {
+  public @Nonnull ForwardingAnalysis getForwardingAnalysis() {
     return _forwardingAnalysis;
   }
 
@@ -71,13 +74,14 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
   }
 
   @Override
-  public SortedMap<String, SortedMap<String, Map<Prefix, Map<String, Set<String>>>>>
+  public @Nonnull SortedMap<String, SortedMap<String, Map<Prefix, Map<String, Set<String>>>>>
       getPrefixTracingInfoSummary() {
     return _prefixTracerSummary;
   }
 
   @Override
-  public SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> getRibs() {
+  public @Nonnull SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>>
+      getRibs() {
     return _ribs;
   }
 
@@ -141,10 +145,15 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
     Map<String, Node> nodes = builder._nodes;
     List<VirtualRouter> vrs =
         toListInRandomOrder(nodes.values().stream().flatMap(n -> n.getVirtualRouters().stream()));
+    LOGGER.info("Computing BGP routes");
     _bgpRoutes = DataplaneUtil.computeBgpRoutes(vrs);
+    LOGGER.info("Computing BGP backup routes");
     _bgpBackupRoutes = DataplaneUtil.computeBgpBackupRoutes(nodes, _bgpRoutes);
+    LOGGER.info("Computing EVPN routes");
     _evpnRoutes = DataplaneUtil.computeEvpnRoutes(vrs);
+    LOGGER.info("Computing EVPN BGP backup routes");
     _evpnBackupRoutes = DataplaneUtil.computeEvpnBackupRoutes(nodes, _evpnRoutes);
+    LOGGER.info("Computing main RIBs");
     _ribs = DataplaneUtil.computeRibs(nodes);
     _prefixTracerSummary = computePrefixTracingInfo(nodes);
     _vniSettings = DataplaneUtil.computeVniSettings(nodes);
