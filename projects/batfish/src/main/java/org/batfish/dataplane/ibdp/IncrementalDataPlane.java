@@ -141,7 +141,6 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
     Map<String, Node> nodes = builder._nodes;
     List<VirtualRouter> vrs =
         toListInRandomOrder(nodes.values().stream().flatMap(n -> n.getVirtualRouters().stream()));
-    ;
     _bgpRoutes = DataplaneUtil.computeBgpRoutes(vrs);
     _bgpBackupRoutes = DataplaneUtil.computeBgpBackupRoutes(nodes, _bgpRoutes);
     _evpnRoutes = DataplaneUtil.computeEvpnRoutes(vrs);

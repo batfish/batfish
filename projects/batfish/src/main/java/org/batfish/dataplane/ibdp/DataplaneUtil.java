@@ -33,12 +33,12 @@ import org.batfish.datamodel.vxlan.Layer2Vni;
 /** Utility functions to convert dataplane {@link Node} into other structures */
 public final class DataplaneUtil {
 
-  static Map<String, Configuration> computeConfigurations(Map<String, Node> nodes) {
+  static @Nonnull Map<String, Configuration> computeConfigurations(Map<String, Node> nodes) {
     return nodes.entrySet().stream()
         .collect(ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getConfiguration()));
   }
 
-  static Map<String, Map<String, Fib>> computeFibs(Map<String, Node> nodes) {
+  static @Nonnull Map<String, Map<String, Fib>> computeFibs(Map<String, Node> nodes) {
     return toImmutableMap(
         nodes,
         Entry::getKey,
@@ -49,7 +49,7 @@ public final class DataplaneUtil {
                 VirtualRouter::getFib));
   }
 
-  static ForwardingAnalysis computeForwardingAnalysis(
+  static @Nonnull ForwardingAnalysis computeForwardingAnalysis(
       Map<String, Map<String, Fib>> fibs,
       Map<String, Configuration> configs,
       Topology layer3Topology,
@@ -59,7 +59,7 @@ public final class DataplaneUtil {
         configs, fibs, layer3Topology, computeLocationInfo(ipOwners, configs), ipOwners);
   }
 
-  static SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>>
+  static @Nonnull SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>>
       computeRibs(Map<String, Node> nodes) {
     return toImmutableSortedMap(
         nodes,
@@ -71,8 +71,7 @@ public final class DataplaneUtil {
                 VirtualRouter::getMainRib));
   }
 
-  @Nonnull
-  static Table<String, String, Set<Bgpv4Route>> computeBgpRoutes(List<VirtualRouter> vrs) {
+  static @Nonnull Table<String, String, Set<Bgpv4Route>> computeBgpRoutes(List<VirtualRouter> vrs) {
     return vrs.parallelStream()
         .filter(vr -> vr._bgpRoutingProcess != null)
         .collect(
@@ -102,8 +101,8 @@ public final class DataplaneUtil {
                             cell.getValue()))));
   }
 
-  @Nonnull
-  static Table<String, String, Set<EvpnRoute<?, ?>>> computeEvpnRoutes(List<VirtualRouter> vrs) {
+  static @Nonnull Table<String, String, Set<EvpnRoute<?, ?>>> computeEvpnRoutes(
+      List<VirtualRouter> vrs) {
     return vrs.parallelStream()
         .filter(vr -> vr._bgpRoutingProcess != null)
         .collect(
@@ -113,8 +112,7 @@ public final class DataplaneUtil {
                 VirtualRouter::getEvpnRoutes));
   }
 
-  @Nonnull
-  static Table<String, String, Set<EvpnRoute<?, ?>>> computeEvpnBackupRoutes(
+  static @Nonnull Table<String, String, Set<EvpnRoute<?, ?>>> computeEvpnBackupRoutes(
       Map<String, Node> nodes, Table<String, String, Set<EvpnRoute<?, ?>>> evpnRoutes) {
     return evpnRoutes.cellSet().parallelStream()
         .collect(
@@ -134,8 +132,8 @@ public final class DataplaneUtil {
                             cell.getValue()))));
   }
 
-  @Nonnull
-  static Table<String, String, Set<Layer2Vni>> computeVniSettings(Map<String, Node> nodes) {
+  static @Nonnull Table<String, String, Set<Layer2Vni>> computeVniSettings(
+      Map<String, Node> nodes) {
     ImmutableTable.Builder<String, String, Set<Layer2Vni>> result = ImmutableTable.builder();
     for (Node node : nodes.values()) {
       for (VirtualRouter vr : node.getVirtualRouters()) {
