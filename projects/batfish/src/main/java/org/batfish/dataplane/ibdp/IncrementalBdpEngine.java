@@ -78,13 +78,16 @@ final class IncrementalBdpEngine {
     _settings = settings;
   }
 
+  /**
+   * Returns the {@link PartialDataplane} corresponding to the given topology and nodes. FIBs,
+   * ForwardingAnalysis, and other internals are recomputed based on the updated state in the {@code
+   * nodes} and {@code vrs}.
+   */
   private PartialDataplane nextDataplane(
       TopologyContext currentTopologyContext,
       SortedMap<String, Node> nodes,
       List<VirtualRouter> vrs) {
     LOGGER.info("Updating dataplane");
-
-    // Force re-init of partial dataplane. Re-inits forwarding analysis, etc.
     computeFibs(vrs);
 
     return PartialDataplane.builder()

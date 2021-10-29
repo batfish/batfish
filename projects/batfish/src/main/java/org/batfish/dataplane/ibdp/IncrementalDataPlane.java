@@ -136,7 +136,6 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
     _fibs = dataplane.getFibs();
     _forwardingAnalysis = dataplane.getForwardingAnalysis();
 
-    // Order of initialization matters:
     Map<String, Node> nodes = builder._nodes;
     _bgpRoutes = DataplaneUtil.computeBgpRoutes(nodes);
     _bgpBackupRoutes = DataplaneUtil.computeBgpBackupRoutes(nodes);
