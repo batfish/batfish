@@ -32,6 +32,7 @@ import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_T
 import static org.batfish.vendor.a10.representation.A10Conversion.computeUpdateSource;
 import static org.batfish.vendor.a10.representation.A10Conversion.createAndAttachBgpNeighbor;
 import static org.batfish.vendor.a10.representation.A10Conversion.createBgpProcess;
+import static org.batfish.vendor.a10.representation.A10Conversion.getInterfaceEnabledEffective;
 import static org.batfish.vendor.a10.representation.A10Conversion.getNatPoolIps;
 import static org.batfish.vendor.a10.representation.A10Conversion.getVirtualServerIps;
 import static org.batfish.vendor.a10.representation.A10Conversion.haAppliesToInterface;
@@ -768,5 +769,28 @@ public class A10ConversionTest {
           warnings,
           hasRedFlag(hasText("BGP neighbor 10.0.0.2: could not determine update source")));
     }
+  }
+
+  @Test
+  public void testGetInterfaceEnabledEffective() {
+    Interface ethNullEnabled = new Interface(Interface.Type.ETHERNET, 1);
+    Interface loopNullEnabled = new Interface(Interface.Type.LOOPBACK, 1);
+
+    // Defaults
+    // Ethernet default is determined by ACOS major version number
+    assertTrue(getInterfaceEnabledEffective(ethNullEnabled, null));
+    assertTrue(getInterfaceEnabledEffective(ethNullEnabled, 2));
+    assertFalse(getInterfaceEnabledEffective(ethNullEnabled, 4));
+    // Loopback is enabled by default, regardless of version number
+    assertTrue(getInterfaceEnabledEffective(loopNullEnabled, null));
+    assertTrue(getInterfaceEnabledEffective(loopNullEnabled, 2));
+    assertTrue(getInterfaceEnabledEffective(loopNullEnabled, 4));
+
+    // Explicit enabled value set
+    Interface eth = new Interface(Interface.Type.ETHERNET, 1);
+    eth.setEnabled(true);
+    assertTrue(getInterfaceEnabledEffective(eth, null));
+    eth.setEnabled(false);
+    assertFalse(getInterfaceEnabledEffective(eth, null));
   }
 }

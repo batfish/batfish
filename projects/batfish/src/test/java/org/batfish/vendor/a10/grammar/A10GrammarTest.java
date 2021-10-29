@@ -218,37 +218,25 @@ public class A10GrammarTest {
     return iBatfish.loadConfigurations(iBatfish.getSnapshot());
   }
 
-  /** Test interface enable/disable defaults. */
   @Test
-  public void testInterfaceEnableDefaults() {
+  public void testExtractVersion() {
     {
       // Corresponds to ACOS v2
-      String hostname = "ethernet_default_enable";
+      String hostname = "acos_v2";
       A10Configuration c = parseVendorConfig(hostname);
-      // Ethernet should default to enable
-      assertTrue(c.isEthernetDefaultEnable());
-      assertTrue(c.getInterfaceEnabledEffective(c.getInterfacesEthernet().get(1)));
-      // Non-ethernet should default to enable
-      assertTrue(c.getInterfaceEnabledEffective(c.getInterfacesLoopback().get(0)));
+      assertThat(c.getMajorVersionNumber(), equalTo(2));
     }
     {
       // Corresponds to ACOS v4/v5
-      String hostname = "ethernet_default_disable";
+      String hostname = "acos_v5";
       A10Configuration c = parseVendorConfig(hostname);
-      // Ethernet should default to disable
-      assertFalse(c.isEthernetDefaultEnable());
-      assertFalse(c.getInterfaceEnabledEffective(c.getInterfacesEthernet().get(2)));
-      // Non-ethernet should default to enable
-      assertTrue(c.getInterfaceEnabledEffective(c.getInterfacesLoopback().get(0)));
+      assertThat(c.getMajorVersionNumber(), equalTo(5));
     }
     {
-      // Ambiguous default, corresponds to a config where all ifaces have default status
-      String hostname = "ethernet_default_ambiguous";
+      // Ambiguous version
+      String hostname = "acos_v_ambiguous";
       A10Configuration c = parseVendorConfig(hostname);
-      // Should err on the side of enabling too many interfaces
-      // Ethernet should default to enable
-      assertTrue(c.isEthernetDefaultEnable());
-      assertTrue(c.getInterfaceEnabledEffective(c.getInterfacesEthernet().get(1)));
+      assertNull(c.getMajorVersionNumber());
     }
   }
 

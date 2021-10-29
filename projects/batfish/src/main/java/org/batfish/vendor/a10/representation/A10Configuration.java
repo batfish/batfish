@@ -13,6 +13,7 @@ import static org.batfish.vendor.a10.representation.A10Conversion.getFloatingIpK
 import static org.batfish.vendor.a10.representation.A10Conversion.getFloatingIps;
 import static org.batfish.vendor.a10.representation.A10Conversion.getFloatingIpsByHaGroup;
 import static org.batfish.vendor.a10.representation.A10Conversion.getFloatingIpsForAllVrids;
+import static org.batfish.vendor.a10.representation.A10Conversion.getInterfaceEnabledEffective;
 import static org.batfish.vendor.a10.representation.A10Conversion.getNatPoolIps;
 import static org.batfish.vendor.a10.representation.A10Conversion.getNatPoolIpsByHaGroup;
 import static org.batfish.vendor.a10.representation.A10Conversion.getNatPoolIpsForAllVrids;
@@ -560,24 +561,6 @@ public final class A10Configuration extends VendorConfiguration {
         .forEach(i -> i.setVrrpGroups(toVrrpGroups(i, vrrpGroupBuildersBuilder.build())));
   }
 
-  public boolean getInterfaceEnabledEffective(Interface iface) {
-    Boolean enabled = iface.getEnabled();
-    if (enabled != null) {
-      return enabled;
-    }
-    switch (iface.getType()) {
-      case ETHERNET:
-        return isEthernetDefaultEnable();
-      case LOOPBACK:
-      case TRUNK:
-      case VE:
-        return true;
-      default:
-        assert false;
-        return true;
-    }
-  }
-
   /**
    * Convert virtual-servers to load-balancing VI constructs and attach resulting transformations to
    * interfaces. Modifies VI interfaces and must be called after those are created.
@@ -668,7 +651,7 @@ public final class A10Configuration extends VendorConfiguration {
     String name = getInterfaceName(iface);
     org.batfish.datamodel.Interface.Builder newIface =
         org.batfish.datamodel.Interface.builder()
-            .setActive(getInterfaceEnabledEffective(iface))
+            .setActive(getInterfaceEnabledEffective(iface, _majorVersionNumber))
             .setMtu(getInterfaceMtuEffective(iface))
             .setType(getInterfaceType(iface))
             .setName(name)
@@ -857,15 +840,16 @@ public final class A10Configuration extends VendorConfiguration {
   }
 
   /**
-   * Returns default ethernet interface enabled status. Determined by heuristics during
-   * parsing/preprocessing.
+   * Returns the major version number determined for this configuration. Returns {@code null} if no
+   * version number could be determined.
    */
-  public boolean isEthernetDefaultEnable() {
-    return _ethernetDefaultEnable;
+  @Nullable
+  public Integer getMajorVersionNumber() {
+    return _majorVersionNumber;
   }
 
-  public void setEthernetDefaultEnable(boolean ethernetDefaultEnable) {
-    _ethernetDefaultEnable = ethernetDefaultEnable;
+  public void setMajorVersionNumber(@Nullable Integer majorVersionNumber) {
+    _majorVersionNumber = majorVersionNumber;
   }
 
   /**
@@ -892,8 +876,6 @@ public final class A10Configuration extends VendorConfiguration {
   /** Map of interface names to interface. Used for converting aggregate interfaces. */
   @Nullable private transient Map<String, Interface> _ifaceNametoIface;
 
-  private boolean _ethernetDefaultEnable;
-
   @Nullable private BgpProcess _bgpProcess;
   private Configuration _c;
   private @Nonnull Map<Ip, FloatingIp> _floatingIps;
@@ -904,6 +886,7 @@ public final class A10Configuration extends VendorConfiguration {
   @Nonnull private Map<Integer, Interface> _interfacesLoopback;
   @Nonnull private Map<Integer, TrunkInterface> _interfacesTrunk;
   @Nonnull private Map<Integer, Interface> _interfacesVe;
+  @Nullable private Integer _majorVersionNumber;
   @Nonnull private Map<String, NatPool> _natPools;
   @Nonnull private Map<String, Server> _servers;
   @Nonnull private Map<String, ServiceGroup> _serviceGroups;

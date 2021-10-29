@@ -1,5 +1,7 @@
 package org.batfish.vendor.a10.grammar;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import org.batfish.vendor.a10.representation.A10Configuration;
 
@@ -12,54 +14,30 @@ public final class A10Preprocessor extends A10ParserBaseListener {
 
   @Override
   public void exitA10_configuration(A10Parser.A10_configurationContext ctx) {
-    _c.setEthernetDefaultEnable(inferEthernetDefaultEnable());
+    _c.setMajorVersionNumber(getAcosMajorVersionNumber());
   }
 
-  @Override
-  public void enterSid_ethernet(A10Parser.Sid_ethernetContext ctx) {
-    _currentInterfaceEthernet = true;
-  }
-
-  @Override
-  public void exitSid_ethernet(A10Parser.Sid_ethernetContext ctx) {
-    _currentInterfaceEthernet = false;
-  }
-
-  @Override
-  public void exitSid_enable(A10Parser.Sid_enableContext ctx) {
-    if (_currentInterfaceEthernet) {
-      _ethernetEnableCount++;
+  /** Infer ACOS version from the configuration text. */
+  private Integer getAcosMajorVersionNumber() {
+    Matcher matcher = ACOS_VERSION_PATTERN.matcher(_text);
+    if (!matcher.find()) {
+      return null;
     }
+    return Integer.parseUnsignedInt(matcher.group(1));
   }
 
-  @Override
-  public void exitSid_disable(A10Parser.Sid_disableContext ctx) {
-    if (_currentInterfaceEthernet) {
-      _ethernetDisableCount++;
-    }
-  }
-
-  /**
-   * Infer ethernet interface default enable status. Returns {@code false} if ethernet interfaces
-   * appear to default to disable, otherwise returns {@code true}.
-   */
-  private boolean inferEthernetDefaultEnable() {
-    // If there are explicit enables and no explicit disables, then assume the default is disable
-    return !(_ethernetEnableCount > 0 && _ethernetDisableCount == 0);
-  }
-
-  public A10Preprocessor(A10Configuration configuration) {
+  public A10Preprocessor(String text, A10Configuration configuration) {
+    _text = text;
     _c = configuration;
   }
 
-  /** Number of ethernet interfaces that are explicitly 'disable' */
-  private int _ethernetDisableCount;
-
-  /** Number of ethernet interfaces that are explicitly 'enable' */
-  private int _ethernetEnableCount;
-
-  /** Indicates if the current interface is an ethernet interface */
-  private boolean _currentInterfaceEthernet;
+  /**
+   * Pattern matching ACOS version strings, in leading comments in config dumps. Extracts the major
+   * version number in match group 1.
+   */
+  private static Pattern ACOS_VERSION_PATTERN = Pattern.compile("version (\\d+).\\d+.\\d+");
 
   @Nonnull private A10Configuration _c;
+
+  @Nonnull private String _text;
 }

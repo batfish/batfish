@@ -37,7 +37,7 @@ public class A10ControlPlaneExtractor extends A10ParserBaseListener
   public void processParseTree(NetworkSnapshot snapshot, ParserRuleContext tree) {
     ParseTreeWalker walker = new BatfishParseTreeWalker(_parser);
     // extract preprocessing info/metadata from configuration
-    walker.walk(new A10Preprocessor(_configuration), tree);
+    walker.walk(new A10Preprocessor(_text, _configuration), tree);
     // build the configuration
     walker.walk(
         new A10ConfigurationBuilder(_parser, _text, _w, _configuration, _silentSyntax), tree);
