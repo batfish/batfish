@@ -71,8 +71,8 @@ class PacketPolicyToBdd {
   }
 
   /**
-   * Process a given {@link PacketPolicy} and return the {@link PacketPolicyToBdd} that expresses
-   * the conversion. Examine the result of the conversion using methods such as
+   * Process a given {@link PacketPolicy} and return the {@link BddPacketPolicy} that expresses the
+   * conversion.
    */
   public static BddPacketPolicy evaluate(
       String hostname,
@@ -110,13 +110,13 @@ class PacketPolicyToBdd {
      * which can be expressed as the complement of the union of packets we have already accounted
      * for.
      */
-    if (!stmtConverter._pathConstraint.isZero()) {
+    if (!stmtConverter._nextEdgeConstraint.isZero()) {
       // add edge to default action
       _edges.add(
           new Edge(
               currentStatement(),
               new PacketPolicyAction(_hostname, p.getName(), p.getDefaultAction().getAction()),
-              stmtConverter._pathConstraint));
+              stmtConverter._nextEdgeConstraint));
     }
   }
 
@@ -150,17 +150,24 @@ class PacketPolicyToBdd {
    */
   private class StatementToBdd implements StatementVisitor<Void> {
     private final BoolExprToBdd _boolExprToBdd;
-    private BDD _pathConstraint;
+
+    /* The constraint of the (not yet created) edge leading out of currentStatement() the next statement of the policy.
+     * We update this constraint instead of creating new states/edges when possible. It's not possible if the policy
+     * returns, or if multiple statements lead into the next statement (i.e. due to fallthrough from the then branch of
+     * an if statement), or after transformation statements (because in transformations are not expressible as a
+     * constraint).
+     */
+    private BDD _nextEdgeConstraint;
 
     private StatementToBdd(BoolExprToBdd boolExprToBdd) {
       _boolExprToBdd = boolExprToBdd;
-      _pathConstraint = _boolExprToBdd._ipAccessListToBdd.getBDDPacket().getFactory().one();
+      _nextEdgeConstraint = _boolExprToBdd._ipAccessListToBdd.getBDDPacket().getFactory().one();
     }
 
     public void visitStatements(List<Statement> statements) {
       for (Statement statement : statements) {
         visit(statement);
-        if (_pathConstraint.isZero()) {
+        if (_nextEdgeConstraint.isZero()) {
           // does not fall through, so exit immediately
           return;
         }
@@ -171,37 +178,37 @@ class PacketPolicyToBdd {
     public Void visit(Statement stmt) {
       // if this happens, we're generating dead parts of the graph. No need to crash in prod, so
       // using assert.
-      assert !_pathConstraint.isZero() : "Should not convert unreachable statements to BDD";
+      assert !_nextEdgeConstraint.isZero() : "Should not convert unreachable statements to BDD";
       return stmt.accept(this);
     }
 
     @Override
     public Void visitIf(If ifStmt) {
       BDD matchConstraint = _boolExprToBdd.visit(ifStmt.getMatchCondition());
-      BDD thenConstraint = _pathConstraint.and(matchConstraint);
-      BDD elseConstraint = _pathConstraint.diff(matchConstraint);
+      BDD thenConstraint = _nextEdgeConstraint.and(matchConstraint);
+      BDD elseConstraint = _nextEdgeConstraint.diff(matchConstraint);
 
       if (thenConstraint.isZero()) {
-        _pathConstraint = elseConstraint;
+        _nextEdgeConstraint = elseConstraint;
         return null;
       }
 
       PacketPolicyStatement inSt = currentStatement();
 
       // initialize pathConstraint for then branch
-      _pathConstraint = thenConstraint;
+      _nextEdgeConstraint = thenConstraint;
       visitStatements(ifStmt.getTrueStatements());
 
-      if (!_pathConstraint.isZero()) {
+      if (!_nextEdgeConstraint.isZero()) {
         // the then branch falls through
         // allocate a new statement node to fan into
         PacketPolicyStatement fallThroughSt = currentStatement();
         PacketPolicyStatement nextSt = nextStatement();
         addEdge(inSt, nextSt, elseConstraint);
-        addEdge(fallThroughSt, nextSt, _pathConstraint);
-        _pathConstraint = _pathConstraint.getFactory().one();
+        addEdge(fallThroughSt, nextSt, _nextEdgeConstraint);
+        _nextEdgeConstraint = _nextEdgeConstraint.getFactory().one();
       } else {
-        _pathConstraint = elseConstraint;
+        _nextEdgeConstraint = elseConstraint;
       }
       return null;
     }
@@ -211,9 +218,9 @@ class PacketPolicyToBdd {
       addEdge(
           currentStatement(),
           new PacketPolicyAction(_hostname, _policy.getName(), returnStmt.getAction()),
-          _pathConstraint);
+          _nextEdgeConstraint);
       // does not fall through
-      _pathConstraint = _pathConstraint.getFactory().zero();
+      _nextEdgeConstraint = _nextEdgeConstraint.getFactory().zero();
       return null;
     }
 
@@ -224,17 +231,17 @@ class PacketPolicyToBdd {
       addEdge(
           currentStatement(),
           new PacketPolicyAction(_hostname, _policy.getName(), Drop.instance()),
-          _pathConstraint.diff(permitBdd));
-      _pathConstraint = _pathConstraint.and(permitBdd);
+          _nextEdgeConstraint.diff(permitBdd));
+      _nextEdgeConstraint = _nextEdgeConstraint.and(permitBdd);
       return null;
     }
 
     @Override
     public Void visitApplyTransformation(ApplyTransformation transformation) {
-      if (!_pathConstraint.isOne()) {
+      if (!_nextEdgeConstraint.isOne()) {
         // allocate a new statement and apply the path constraint.
-        addEdge(currentStatement(), nextStatement(), _pathConstraint);
-        _pathConstraint = _pathConstraint.getFactory().one();
+        addEdge(currentStatement(), nextStatement(), _nextEdgeConstraint);
+        _nextEdgeConstraint = _nextEdgeConstraint.getFactory().one();
       }
       PacketPolicyStatement preTransformation = currentStatement();
       PacketPolicyStatement postTransformation = nextStatement();
