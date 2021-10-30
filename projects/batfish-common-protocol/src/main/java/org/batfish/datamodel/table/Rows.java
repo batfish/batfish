@@ -2,25 +2,26 @@ package org.batfish.datamodel.table;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMultiset;
+import com.google.common.collect.LinkedHashMultiset;
 import com.google.common.collect.Multiset;
-import com.google.common.collect.TreeMultiset;
 import java.io.Serializable;
 import java.util.Iterator;
-import java.util.Objects;
+import javax.annotation.Nonnull;
 
 /** Represents data rows insider {@link TableAnswerElement} */
 public class Rows implements Serializable {
 
-  private Multiset<Row> _data;
+  private final Multiset<Row> _data;
 
   public Rows() {
-    this(null);
+    _data = LinkedHashMultiset.create();
   }
 
-  @JsonCreator
-  public Rows(Multiset<Row> data) {
-    _data = data == null ? TreeMultiset.create() : data;
+  @VisibleForTesting
+  public Rows(@Nonnull Multiset<Row> rows) {
+    _data = ImmutableMultiset.copyOf(rows);
   }
 
   public Rows add(Row row) {
@@ -45,7 +46,6 @@ public class Rows implements Serializable {
    *
    * @return An ImmutableMultiset
    */
-  @JsonValue
   public Multiset<Row> getData() {
     return ImmutableMultiset.copyOf(_data);
   }
@@ -65,6 +65,17 @@ public class Rows implements Serializable {
 
   @Override
   public String toString() {
-    return Objects.toString(_data);
+    return _data.toString();
+  }
+
+  // Jackson serializes a Multiset as a list of items.
+  @JsonCreator
+  private Rows(Iterable<Row> data) {
+    _data = ImmutableMultiset.copyOf(data);
+  }
+
+  @JsonValue
+  private Iterable<Row> asJsonValue() {
+    return _data;
   }
 }
