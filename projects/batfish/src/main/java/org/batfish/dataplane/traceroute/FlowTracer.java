@@ -625,7 +625,8 @@ class FlowTracer {
     new ActionVisitor<Void>() {
 
       /** Helper visitor to figure out in which VRF we need to do the FIB lookup */
-      private VrfExprNameExtractor _vrfExprVisitor = new VrfExprNameExtractor(incomingInterface);
+      private VrfExprNameExtractor _vrfExprVisitor =
+          new VrfExprNameExtractor(incomingInterface.getVrfName());
 
       @Override
       public Void visitDrop(@Nonnull Drop drop) {

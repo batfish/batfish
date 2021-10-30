@@ -93,10 +93,11 @@ public final class PacketPolicyToBddTest {
   public void testDefaultAction() {
     List<Edge> edges =
         PacketPolicyToBdd.evaluate(
-            _hostname,
-            new PacketPolicy(_policyName, ImmutableList.of(), new Return(Drop.instance())),
-            _ipAccessListToBdd,
-            EMPTY_IPS_ROUTED_OUT_INTERFACES);
+                _hostname,
+                new PacketPolicy(_policyName, ImmutableList.of(), new Return(Drop.instance())),
+                _ipAccessListToBdd,
+                EMPTY_IPS_ROUTED_OUT_INTERFACES)
+            .getEdges();
     // Everything is dropped
     assertThat(edges, contains(edge(statement(0), _dropState)));
   }
@@ -105,13 +106,14 @@ public final class PacketPolicyToBddTest {
   public void testReturn() {
     List<Edge> edges =
         PacketPolicyToBdd.evaluate(
-            _hostname,
-            new PacketPolicy(
-                _policyName,
-                ImmutableList.of(new Return(new FibLookup(new LiteralVrfName("vrf")))),
-                new Return(Drop.instance())),
-            _ipAccessListToBdd,
-            EMPTY_IPS_ROUTED_OUT_INTERFACES);
+                _hostname,
+                new PacketPolicy(
+                    _policyName,
+                    ImmutableList.of(new Return(new FibLookup(new LiteralVrfName("vrf")))),
+                    new Return(Drop.instance())),
+                _ipAccessListToBdd,
+                EMPTY_IPS_ROUTED_OUT_INTERFACES)
+            .getEdges();
     // Everything is looked up in "vrf"
     assertThat(edges, contains(edge(statement(0), fibLookupState("vrf"))));
   }
@@ -136,13 +138,14 @@ public final class PacketPolicyToBddTest {
             ImmutableList.of(innerIf, new Return(new FibLookup(new LiteralVrfName(vrf2)))));
     List<Edge> edges =
         PacketPolicyToBdd.evaluate(
-            _hostname,
-            new PacketPolicy(
-                _policyName,
-                ImmutableList.of(outerIf, new Return(new FibLookup(new LiteralVrfName(vrf3)))),
-                new Return(Drop.instance())),
-            _ipAccessListToBdd,
-            EMPTY_IPS_ROUTED_OUT_INTERFACES);
+                _hostname,
+                new PacketPolicy(
+                    _policyName,
+                    ImmutableList.of(outerIf, new Return(new FibLookup(new LiteralVrfName(vrf3)))),
+                    new Return(Drop.instance())),
+                _ipAccessListToBdd,
+                EMPTY_IPS_ROUTED_OUT_INTERFACES)
+            .getEdges();
 
     BDD dstIpBdd = new IpSpaceToBDD(_bddPacket.getDstIp()).toBDD(dstIps);
 
@@ -161,19 +164,20 @@ public final class PacketPolicyToBddTest {
     String vrf = "vrf";
     List<Edge> edges =
         PacketPolicyToBdd.evaluate(
-            _hostname,
-            new PacketPolicy(
-                _policyName,
-                ImmutableList.of(
-                    new If(
-                        new PacketMatchExpr(AclLineMatchExprs.matchDst(ip1)),
-                        ImmutableList.of(new ApplyTransformation(noop))),
-                    new If(
-                        new PacketMatchExpr(AclLineMatchExprs.matchDst(ip2)),
-                        ImmutableList.of(new Return(new FibLookup(new LiteralVrfName(vrf)))))),
-                new Return(Drop.instance())),
-            _ipAccessListToBdd,
-            EMPTY_IPS_ROUTED_OUT_INTERFACES);
+                _hostname,
+                new PacketPolicy(
+                    _policyName,
+                    ImmutableList.of(
+                        new If(
+                            new PacketMatchExpr(AclLineMatchExprs.matchDst(ip1)),
+                            ImmutableList.of(new ApplyTransformation(noop))),
+                        new If(
+                            new PacketMatchExpr(AclLineMatchExprs.matchDst(ip2)),
+                            ImmutableList.of(new Return(new FibLookup(new LiteralVrfName(vrf)))))),
+                    new Return(Drop.instance())),
+                _ipAccessListToBdd,
+                EMPTY_IPS_ROUTED_OUT_INTERFACES)
+            .getEdges();
 
     BDD ip1Bdd = new IpSpaceToBDD(_bddPacket.getDstIp()).toBDD(ip1);
     BDD ip2Bdd = new IpSpaceToBDD(_bddPacket.getDstIp()).toBDD(ip2);
@@ -215,15 +219,21 @@ public final class PacketPolicyToBddTest {
     // Evaluate a PacketPolicy that uses an ApplyFilter for the above ACL
     FibLookup fl = new FibLookup(new LiteralVrfName("vrf"));
     PacketPolicy policy =
-        new PacketPolicy("name", ImmutableList.of(new ApplyFilter(acl.getName())), new Return(fl));
+        new PacketPolicy(
+            _policyName, ImmutableList.of(new ApplyFilter(acl.getName())), new Return(fl));
     List<Edge> edges =
         PacketPolicyToBdd.evaluate(
-            _hostname, policy, ipAccessListToBdd, EMPTY_IPS_ROUTED_OUT_INTERFACES);
+                _hostname, policy, ipAccessListToBdd, EMPTY_IPS_ROUTED_OUT_INTERFACES)
+            .getEdges();
 
     // Traffic not destined for 1.1.1.0/24 should be dropped
     BDD permitted = _bddPacket.getDstIpSpaceToBDD().toBDD(permittedPrefix);
-    //    assertThat(evaluator.getFibLookups().get(fl), mapsOne(permitted));
-    //    assertThat(evaluator.getToDrop(), mapsOne(permitted.not()));
+    assertThat(
+        edges,
+        containsInAnyOrder(
+            edge(statement(0), _dropState, constraint(permitted.not())),
+            edge(statement(0), statement(1), constraint(permitted)),
+            edge(statement(1), fibLookupState("vrf"))));
   }
 
   @Test
@@ -234,13 +244,14 @@ public final class PacketPolicyToBddTest {
         always().apply(TransformationStep.assignSourceIp(ip, ip)).build();
     List<Edge> edges =
         PacketPolicyToBdd.evaluate(
-            _hostname,
-            new PacketPolicy(
-                _policyName,
-                ImmutableList.of(new ApplyTransformation(transformation), new Return(fl)),
-                new Return(Drop.instance())),
-            _ipAccessListToBdd,
-            EMPTY_IPS_ROUTED_OUT_INTERFACES);
+                _hostname,
+                new PacketPolicy(
+                    _policyName,
+                    ImmutableList.of(new ApplyTransformation(transformation), new Return(fl)),
+                    new Return(Drop.instance())),
+                _ipAccessListToBdd,
+                EMPTY_IPS_ROUTED_OUT_INTERFACES)
+            .getEdges();
     BDD ipBdd = _bddPacket.getSrcIpSpaceToBDD().toBDD(ip);
     assertThat(
         edges,
@@ -328,32 +339,34 @@ public final class PacketPolicyToBddTest {
     {
       List<Edge> edges =
           PacketPolicyToBdd.evaluate(
-              _hostname,
-              new PacketPolicy(
-                  _policyName,
-                  ImmutableList.of(
-                      new If(
-                          Conjunction.of(TrueExpr.instance()),
-                          Collections.singletonList(new Return(fl)))),
-                  new Return(Drop.instance())),
-              _ipAccessListToBdd,
-              EMPTY_IPS_ROUTED_OUT_INTERFACES);
+                  _hostname,
+                  new PacketPolicy(
+                      _policyName,
+                      ImmutableList.of(
+                          new If(
+                              Conjunction.of(TrueExpr.instance()),
+                              Collections.singletonList(new Return(fl)))),
+                      new Return(Drop.instance())),
+                  _ipAccessListToBdd,
+                  EMPTY_IPS_ROUTED_OUT_INTERFACES)
+              .getEdges();
       assertThat(edges, contains(edge(statement(0), fibLookupState("vrf"))));
     }
 
     {
       List<Edge> edges =
           PacketPolicyToBdd.evaluate(
-              _hostname,
-              new PacketPolicy(
-                  _policyName,
-                  ImmutableList.of(
-                      new If(
-                          Conjunction.of(TrueExpr.instance(), FalseExpr.instance()),
-                          Collections.singletonList(new Return(fl)))),
-                  new Return(Drop.instance())),
-              _ipAccessListToBdd,
-              EMPTY_IPS_ROUTED_OUT_INTERFACES);
+                  _hostname,
+                  new PacketPolicy(
+                      _policyName,
+                      ImmutableList.of(
+                          new If(
+                              Conjunction.of(TrueExpr.instance(), FalseExpr.instance()),
+                              Collections.singletonList(new Return(fl)))),
+                      new Return(Drop.instance())),
+                  _ipAccessListToBdd,
+                  EMPTY_IPS_ROUTED_OUT_INTERFACES)
+              .getEdges();
       assertThat(edges, contains(edge(statement(0), _dropState)));
     }
   }
