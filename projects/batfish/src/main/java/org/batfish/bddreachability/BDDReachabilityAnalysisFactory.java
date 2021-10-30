@@ -877,6 +877,7 @@ public final class BDDReachabilityAnalysisFactory {
             config -> {
               String nodeName = config.getHostname();
               Map<String, IpsRoutedOutInterfaces> ipsRoutedOutInterfaces = new HashMap<>();
+              IpAccessListToBdd ipAccessListToBdd = ipAccessListToBddForNode(config);
               Transition addOutgoingOriginalFlowFiltersConstraint =
                   addOutgoingOriginalFlowFiltersConstraint(
                       _bddOutgoingOriginalFlowFilterManagers.get(nodeName));
@@ -906,7 +907,7 @@ public final class BDDReachabilityAnalysisFactory {
                             PacketPolicyToBdd.evaluate(
                                 nodeName,
                                 config.getPacketPolicies().get(policyName),
-                                ipAccessListToBddForNode(config),
+                                ipAccessListToBdd,
                                 ipsRoutedOutInterfaces.computeIfAbsent(
                                     vrfName,
                                     (key) ->
