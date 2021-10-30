@@ -65420,50 +65420,6 @@
             "type" : "PHYSICAL",
             "vrf" : "vrf-igw-fac5839d"
           },
-          "subnet-62f14104" : {
-            "name" : "subnet-62f14104",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To subnet-62f14104",
-            "mtu" : 1500,
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          },
-          "subnet-62f14104-vrf-igw-fac5839d" : {
-            "name" : "subnet-62f14104-vrf-igw-fac5839d",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To subnet-62f14104-vrf-igw-fac5839d",
-            "mtu" : 1500,
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "vrf-igw-fac5839d"
-          },
           "subnet-8d0cbdeb" : {
             "name" : "subnet-8d0cbdeb",
             "active" : true,
@@ -65496,6 +65452,50 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To subnet-8d0cbdeb-vrf-igw-fac5839d",
+            "mtu" : 1500,
+            "prefix" : "link-local:169.254.0.1",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "vrf-igw-fac5839d"
+          },
+          "subnet-62f14104" : {
+            "name" : "subnet-62f14104",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "description" : "To subnet-62f14104",
+            "mtu" : 1500,
+            "prefix" : "link-local:169.254.0.1",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "subnet-62f14104-vrf-igw-fac5839d" : {
+            "name" : "subnet-62f14104-vrf-igw-fac5839d",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "description" : "To subnet-62f14104-vrf-igw-fac5839d",
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -65713,50 +65713,6 @@
             "type" : "PHYSICAL",
             "vrf" : "vrf-igw-9b93ddfc"
           },
-          "subnet-30398256" : {
-            "name" : "subnet-30398256",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To subnet-30398256",
-            "mtu" : 1500,
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          },
-          "subnet-30398256-vrf-igw-9b93ddfc" : {
-            "name" : "subnet-30398256-vrf-igw-9b93ddfc",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To subnet-30398256-vrf-igw-9b93ddfc",
-            "mtu" : 1500,
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "vrf-igw-9b93ddfc"
-          },
           "subnet-7044ff16" : {
             "name" : "subnet-7044ff16",
             "active" : true,
@@ -65789,6 +65745,50 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To subnet-7044ff16-vrf-igw-9b93ddfc",
+            "mtu" : 1500,
+            "prefix" : "link-local:169.254.0.1",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "vrf-igw-9b93ddfc"
+          },
+          "subnet-30398256" : {
+            "name" : "subnet-30398256",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "description" : "To subnet-30398256",
+            "mtu" : 1500,
+            "prefix" : "link-local:169.254.0.1",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "subnet-30398256-vrf-igw-9b93ddfc" : {
+            "name" : "subnet-30398256-vrf-igw-9b93ddfc",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "description" : "To subnet-30398256-vrf-igw-9b93ddfc",
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,

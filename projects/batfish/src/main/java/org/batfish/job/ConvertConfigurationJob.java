@@ -27,6 +27,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.runtime.SnapshotRuntimeData;
+import org.batfish.common.util.InterfaceNameComparator;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.AclIpSpace;
@@ -80,10 +81,10 @@ import org.batfish.vendor.VendorConfiguration;
 
 public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResult> {
 
-  private Object _configObject;
+  private final Object _configObject;
   @Nonnull private final ConversionContext _conversionContext;
   @Nonnull private final SnapshotRuntimeData _runtimeData;
-  private String _name;
+  private final String _name;
 
   public ConvertConfigurationJob(
       Settings settings,
@@ -109,6 +110,23 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
    */
   private static <T> ImmutableMap<String, T> verifyAndToImmutableMap(
       @Nullable Map<String, T> map, Function<T, String> keyFn, Warnings w) {
+    return verifyAndToImmutableMap(map, keyFn, w, Comparator.naturalOrder());
+  }
+
+  /**
+   * Sanity checks the given map from name-of-thing to thing-with-name for name consistency. If the
+   * names are not consistent, warns and does not convert them.
+   *
+   * <p>The created maps are sorted by key in ascending order using the given comparator.
+   *
+   * <p>Hopefully this will only happen during new parser development, and will help authors of
+   * those new parsers get it right.
+   */
+  private static <T> ImmutableMap<String, T> verifyAndToImmutableMap(
+      @Nullable Map<String, T> map,
+      Function<T, String> keyFn,
+      Warnings w,
+      Comparator<String> comparator) {
     if (map == null || map.isEmpty()) {
       return ImmutableMap.of();
     }
@@ -125,7 +143,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
                       e.getKey(), e.getValue(), key));
               return false;
             })
-        .sorted(Comparator.comparing(Entry::getKey)) /* ImmutableMap is insert ordered. */
+        .sorted(Entry.comparingByKey(comparator)) /* ImmutableMap is insert ordered. */
         .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
   }
 
@@ -138,7 +156,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
       return ImmutableMap.of();
     }
     return map.entrySet().stream()
-        .sorted(Comparator.comparing(Entry::getKey)) /* ImmutableMap is insert ordered. */
+        .sorted(Entry.comparingByKey()) /* ImmutableMap is insert ordered. */
         .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
   }
 
@@ -412,7 +430,9 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     c.setIkePhase1Keys(toImmutableMap(c.getIkePhase1Keys()));
     c.setIkePhase1Policies(toImmutableMap(c.getIkePhase1Policies()));
     c.setIkePhase1Proposals(toImmutableMap(c.getIkePhase1Proposals()));
-    c.setInterfaces(verifyAndToImmutableMap(c.getAllInterfaces(), Interface::getName, w));
+    c.setInterfaces(
+        verifyAndToImmutableMap(
+            c.getAllInterfaces(), Interface::getName, w, InterfaceNameComparator.instance()));
     c.setIp6AccessLists(verifyAndToImmutableMap(c.getIp6AccessLists(), Ip6AccessList::getName, w));
     c.setIpAccessLists(verifyAndToImmutableMap(c.getIpAccessLists(), IpAccessList::getName, w));
     c.setIpsecPeerConfigs(toImmutableMap(c.getIpsecPeerConfigs()));
