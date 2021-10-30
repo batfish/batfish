@@ -4,9 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,7 +26,6 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
@@ -48,7 +45,7 @@ import org.batfish.datamodel.questions.Exclusion;
  * key is the column name and the value (currently) is JsonNode.
  */
 @ParametersAreNonnullByDefault
-public class Row implements Comparable<Row>, Serializable {
+public class Row implements Serializable {
 
   public abstract static class RowBuilder {
 
@@ -185,25 +182,6 @@ public class Row implements Comparable<Row>, Serializable {
   /** Returns a {@link TypedRowBuilder} object for Row */
   public static TypedRowBuilder builder(Map<String, ColumnMetadata> columns) {
     return new TypedRowBuilder(columns);
-  }
-
-  /**
-   * Compares two Rows. The current implementation ignores primary keys of the table and compares
-   * everything, mainly to provide consistent ordering of answers. This will need to change when we
-   * start using the primary keys for something.
-   *
-   * @param o The other Row to compare against.
-   * @return The result of the comparison
-   */
-  @Override
-  public int compareTo(Row o) {
-    try {
-      String myStr = getAsString();
-      String oStr = o.getAsString();
-      return myStr.compareTo(oStr);
-    } catch (JsonProcessingException e) {
-      throw new BatfishException("Exception in row comparison", e);
-    }
   }
 
   @Override
@@ -395,17 +373,5 @@ public class Row implements Comparable<Row>, Serializable {
 
   public boolean hasNonNull(String column) {
     return _data.hasNonNull(column);
-  }
-
-  private volatile String _asString;
-
-  @JsonIgnore
-  private String getAsString() throws JsonProcessingException {
-    String asString = _asString;
-    if (asString == null) {
-      asString = BatfishObjectMapper.writeString(_data);
-      _asString = asString;
-    }
-    return asString;
   }
 }
