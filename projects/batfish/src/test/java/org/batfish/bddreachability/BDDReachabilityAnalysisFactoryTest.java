@@ -4,6 +4,7 @@ import static org.batfish.bddreachability.EdgeMatchers.edge;
 import static org.batfish.bddreachability.EdgeMatchers.hasTransition;
 import static org.batfish.bddreachability.TransitionMatchers.mapsBackward;
 import static org.batfish.bddreachability.TransitionMatchers.mapsForward;
+import static org.batfish.bddreachability.transition.Transitions.IDENTITY;
 import static org.batfish.bddreachability.transition.Transitions.addOriginatingFromDeviceConstraint;
 import static org.batfish.bddreachability.transition.Transitions.compose;
 import static org.batfish.bddreachability.transition.Transitions.constraint;
@@ -1993,10 +1994,12 @@ public final class BDDReachabilityAnalysisFactoryTest {
             // enter the packet policy
             edge(
                 new PreInInterface(n1.getHostname(), i1.getName()),
-                new PacketPolicyStatement(n1.getHostname(), "pbr", 0)),
+                new PacketPolicyStatement(n1.getHostname(), "pbr", 0),
+                IDENTITY),
             edge(
                 new PacketPolicyStatement(n1.getHostname(), "pbr", 0),
-                new PacketPolicyAction(n1.getHostname(), "pbr", Drop.instance()))));
+                new PacketPolicyAction(n1.getHostname(), "pbr", Drop.instance()),
+                IDENTITY)));
   }
 
   @Test

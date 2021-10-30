@@ -1,6 +1,7 @@
 package org.batfish.bddreachability;
 
 import static org.batfish.bddreachability.EdgeMatchers.edge;
+import static org.batfish.bddreachability.transition.Transitions.IDENTITY;
 import static org.batfish.bddreachability.transition.Transitions.constraint;
 import static org.batfish.bddreachability.transition.Transitions.eraseAndSet;
 import static org.batfish.datamodel.transformation.Transformation.always;
@@ -99,7 +100,7 @@ public final class PacketPolicyToBddTest {
                 EMPTY_IPS_ROUTED_OUT_INTERFACES)
             .getEdges();
     // Everything is dropped
-    assertThat(edges, contains(edge(statement(0), _dropState)));
+    assertThat(edges, contains(edge(statement(0), _dropState, IDENTITY)));
   }
 
   @Test
@@ -115,7 +116,7 @@ public final class PacketPolicyToBddTest {
                 EMPTY_IPS_ROUTED_OUT_INTERFACES)
             .getEdges();
     // Everything is looked up in "vrf"
-    assertThat(edges, contains(edge(statement(0), fibLookupState("vrf"))));
+    assertThat(edges, contains(edge(statement(0), fibLookupState("vrf"), IDENTITY)));
   }
 
   @Test
@@ -188,11 +189,11 @@ public final class PacketPolicyToBddTest {
             // if ip1
             edge(statement(0), statement(1), constraint(ip1Bdd)),
             // noop transformation (not optimized because should never happen in practice)
-            edge(statement(1), statement(2)),
+            edge(statement(1), statement(2), IDENTITY),
             // else
             edge(statement(0), statement(3), constraint(ip1Bdd.not())),
             // if ip1 fall through
-            edge(statement(2), statement(3)),
+            edge(statement(2), statement(3), IDENTITY),
             // if ip2
             edge(statement(3), fibLookupState(vrf), constraint(ip2Bdd)),
             edge(statement(3), _dropState, constraint(ip2Bdd.not()))));
@@ -256,7 +257,7 @@ public final class PacketPolicyToBddTest {
         edges,
         containsInAnyOrder(
             edge(statement(0), statement(1), eraseAndSet(_bddPacket.getSrcIp(), ipBdd)),
-            edge(statement(1), fibLookupState("vrf"))));
+            edge(statement(1), fibLookupState("vrf"), IDENTITY)));
   }
 
   @Test
@@ -349,7 +350,7 @@ public final class PacketPolicyToBddTest {
                   _ipAccessListToBdd,
                   EMPTY_IPS_ROUTED_OUT_INTERFACES)
               .getEdges();
-      assertThat(edges, contains(edge(statement(0), fibLookupState("vrf"))));
+      assertThat(edges, contains(edge(statement(0), fibLookupState("vrf"), IDENTITY)));
     }
 
     {
@@ -366,7 +367,7 @@ public final class PacketPolicyToBddTest {
                   _ipAccessListToBdd,
                   EMPTY_IPS_ROUTED_OUT_INTERFACES)
               .getEdges();
-      assertThat(edges, contains(edge(statement(0), _dropState)));
+      assertThat(edges, contains(edge(statement(0), _dropState, IDENTITY)));
     }
   }
 }
