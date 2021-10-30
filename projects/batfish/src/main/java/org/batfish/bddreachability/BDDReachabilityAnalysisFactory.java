@@ -896,7 +896,7 @@ public final class BDDReachabilityAnalysisFactory {
                                 new PacketPolicyStatement(nodeName, policyName, 0),
                                 addOutgoingOriginalFlowFiltersConstraint);
 
-                        if (convertedPolicies.add(policyName)) {
+                        if (!convertedPolicies.add(policyName)) {
                           // the policy edges have been generated already
                           // only need to generate this edge into the policy.
                           return Stream.of(enterPolicyEdge);

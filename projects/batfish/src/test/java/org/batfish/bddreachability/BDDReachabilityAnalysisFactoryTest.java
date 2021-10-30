@@ -1996,10 +1996,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
                 new PacketPolicyStatement(n1.getHostname(), "pbr", 0)),
             edge(
                 new PacketPolicyStatement(n1.getHostname(), "pbr", 0),
-                new PacketPolicyAction(n1.getHostname(), "pbr", Drop.instance())),
-            edge(
-                new PacketPolicyAction(n1.getHostname(), "pbr", Drop.instance()),
-                new NodeDropAclIn(n1.getHostname()))));
+                new PacketPolicyAction(n1.getHostname(), "pbr", Drop.instance()))));
   }
 
   @Test

@@ -219,17 +219,13 @@ class PacketPolicyToBdd {
 
     @Override
     public Void visitApplyFilter(ApplyFilter applyFilter) {
-      if (!_pathConstraint.isOne()) {
-        addEdge(currentStatement(), nextStatement(), _pathConstraint);
-        _pathConstraint = _pathConstraint.getFactory().one();
-      }
       BDD permitBdd =
           _boolExprToBdd._ipAccessListToBdd.toBdd(new PermittedByAcl(applyFilter.getFilter()));
       addEdge(
           currentStatement(),
           new PacketPolicyAction(_hostname, _policy.getName(), Drop.instance()),
-          permitBdd.not());
-      addEdge(currentStatement(), nextStatement(), permitBdd);
+          _pathConstraint.diff(permitBdd));
+      _pathConstraint = _pathConstraint.and(permitBdd);
       return null;
     }
 

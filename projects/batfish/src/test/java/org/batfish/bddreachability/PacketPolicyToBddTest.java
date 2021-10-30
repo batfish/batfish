@@ -232,8 +232,7 @@ public final class PacketPolicyToBddTest {
         edges,
         containsInAnyOrder(
             edge(statement(0), _dropState, constraint(permitted.not())),
-            edge(statement(0), statement(1), constraint(permitted)),
-            edge(statement(1), fibLookupState("vrf"))));
+            edge(statement(0), fibLookupState("vrf"), constraint(permitted))));
   }
 
   @Test
