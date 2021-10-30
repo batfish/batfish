@@ -14,10 +14,11 @@ import static org.batfish.question.routes.RoutesAnswererUtil.groupBgpRoutes;
 import static org.batfish.question.routes.RoutesAnswererUtil.groupRoutes;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multiset;
+import com.google.common.collect.TreeMultiset;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -26,6 +27,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Answerer;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.common.util.InterfaceNameComparator;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
@@ -109,7 +111,7 @@ public class RoutesAnswerer extends Answerer {
 
     switch (question.getRib()) {
       case BGP:
-        rows = HashMultiset.create();
+        rows = TreeMultiset.create(BGP_COMPARATOR);
         if (bgpBackup) {
           rows.addAll(
               getBgpRibRoutes(
@@ -134,7 +136,7 @@ public class RoutesAnswerer extends Answerer {
         }
         break;
       case EVPN:
-        rows = HashMultiset.create();
+        rows = TreeMultiset.create(BGP_COMPARATOR);
         if (bgpBackup) {
           rows.addAll(
               getEvpnRoutes(
@@ -159,10 +161,13 @@ public class RoutesAnswerer extends Answerer {
         }
         break;
       case MAIN:
-      default:
-        rows =
+        rows = TreeMultiset.create(MAIN_RIB_COMPARATOR);
+        rows.addAll(
             getMainRibRoutes(
-                dp.getRibs(), matchingNodes, network, protocolSpec, vrfRegex, ipOwners);
+                dp.getRibs(), matchingNodes, network, protocolSpec, vrfRegex, ipOwners));
+        break;
+      default:
+        throw new UnsupportedOperationException("RIB type " + question.getRib());
     }
 
     answer.postProcessAnswer(_question, rows);
@@ -240,6 +245,20 @@ public class RoutesAnswerer extends Answerer {
     diffAnswer.postProcessAnswer(_question, rows);
     return diffAnswer;
   }
+
+  private static final Comparator<Row> MAIN_RIB_COMPARATOR =
+      Comparator.<Row, String>comparing(row -> row.getNode(COL_NODE).getName())
+          .thenComparing(row -> row.getString(COL_VRF_NAME))
+          .thenComparing(row -> row.getPrefix(COL_NETWORK))
+          .thenComparing(row -> row.getIp(COL_NEXT_HOP_IP))
+          .thenComparing(
+              row -> row.getString(COL_NEXT_HOP_INTERFACE), InterfaceNameComparator.instance());
+
+  private static final Comparator<Row> BGP_COMPARATOR =
+      Comparator.<Row, String>comparing(row -> row.getNode(COL_NODE).getName())
+          .thenComparing(row -> row.getString(COL_VRF_NAME))
+          .thenComparing(row -> row.getPrefix(COL_NETWORK))
+          .thenComparing(row -> row.getIp(COL_NEXT_HOP_IP));
 
   /** Generate the table metadata based on the {@code rib} we are pulling */
   @VisibleForTesting
