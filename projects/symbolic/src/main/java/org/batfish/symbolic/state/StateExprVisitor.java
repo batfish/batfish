@@ -50,8 +50,6 @@ public interface StateExprVisitor<R> {
 
   R visitOriginateVrf(OriginateVrf originateVrf);
 
-  R visitPbrFibLookup(PbrFibLookup pbrFibLookup);
-
   R visitPacketPolicyStatement(PacketPolicyStatement packetPolicyStatement);
 
   R visitPacketPolicyAction(PacketPolicyAction packetPolicyAction);
