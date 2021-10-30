@@ -12,6 +12,7 @@ import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.util.InterfaceNameComparator;
 import org.batfish.datamodel.Interface;
 
 /** Combination of node name and interface name */
@@ -89,6 +90,8 @@ public final class NodeInterfacePair implements Serializable, Comparable<NodeInt
   @Override
   public int compareTo(NodeInterfacePair other) {
     int hostCmp = _hostname.compareTo(other._hostname);
-    return hostCmp != 0 ? hostCmp : _interfaceName.compareTo(other._interfaceName);
+    return hostCmp != 0
+        ? hostCmp
+        : InterfaceNameComparator.instance().compare(_interfaceName, other._interfaceName);
   }
 }
