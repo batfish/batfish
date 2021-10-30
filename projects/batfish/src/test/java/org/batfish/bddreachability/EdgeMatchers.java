@@ -23,6 +23,7 @@ public final class EdgeMatchers {
         new HasPostState(equalTo(postState)),
         new HasTransition(equalTo(transition)));
   }
+
   /**
    * Matches {@link Edge#getPreState}, {@link Edge#getPostState}, and {@link Edge#getTransition}.
    */
