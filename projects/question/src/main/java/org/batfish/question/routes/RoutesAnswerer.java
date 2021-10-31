@@ -250,7 +250,8 @@ public class RoutesAnswerer extends Answerer {
       Comparator.<Row, String>comparing(row -> row.getNode(COL_NODE).getName())
           .thenComparing(row -> row.getString(COL_VRF_NAME))
           .thenComparing(row -> row.getPrefix(COL_NETWORK))
-          .thenComparing(row -> row.getIp(COL_NEXT_HOP_IP))
+          .thenComparing(
+              row -> row.getIp(COL_NEXT_HOP_IP), Comparator.nullsFirst(Comparator.naturalOrder()))
           .thenComparing(
               row -> row.getString(COL_NEXT_HOP_INTERFACE), InterfaceNameComparator.instance());
 
@@ -258,7 +259,8 @@ public class RoutesAnswerer extends Answerer {
       Comparator.<Row, String>comparing(row -> row.getNode(COL_NODE).getName())
           .thenComparing(row -> row.getString(COL_VRF_NAME))
           .thenComparing(row -> row.getPrefix(COL_NETWORK))
-          .thenComparing(row -> row.getIp(COL_NEXT_HOP_IP));
+          .thenComparing(
+              row -> row.getIp(COL_NEXT_HOP_IP), Comparator.nullsFirst(Comparator.naturalOrder()));
 
   /** Generate the table metadata based on the {@code rib} we are pulling */
   @VisibleForTesting
