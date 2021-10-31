@@ -17,7 +17,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multiset;
-import com.google.common.collect.TreeMultiset;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -107,11 +107,10 @@ public class RoutesAnswerer extends Answerer {
         _batfish.getTopologyProvider().getIpOwners(snapshot).getNodeOwners(true);
     boolean bgpMultipathBest = expandedBgpRouteStatuses.contains(BEST);
     boolean bgpBackup = expandedBgpRouteStatuses.contains(BACKUP);
-    Multiset<Row> rows;
+    List<Row> rows = new ArrayList<>();
 
     switch (question.getRib()) {
       case BGP:
-        rows = TreeMultiset.create(BGP_COMPARATOR);
         if (bgpBackup) {
           rows.addAll(
               getBgpRibRoutes(
@@ -134,9 +133,9 @@ public class RoutesAnswerer extends Answerer {
                   vrfRegex,
                   ImmutableSet.of(BEST)));
         }
+        rows.sort(BGP_COMPARATOR);
         break;
       case EVPN:
-        rows = TreeMultiset.create(BGP_COMPARATOR);
         if (bgpBackup) {
           rows.addAll(
               getEvpnRoutes(
@@ -159,12 +158,13 @@ public class RoutesAnswerer extends Answerer {
                   vrfRegex,
                   ImmutableSet.of(BEST)));
         }
+        rows.sort(BGP_COMPARATOR);
         break;
       case MAIN:
-        rows = TreeMultiset.create(MAIN_RIB_COMPARATOR);
         rows.addAll(
             getMainRibRoutes(
                 dp.getRibs(), matchingNodes, network, protocolSpec, vrfRegex, ipOwners));
+        rows.sort(MAIN_RIB_COMPARATOR);
         break;
       default:
         throw new UnsupportedOperationException("RIB type " + question.getRib());
