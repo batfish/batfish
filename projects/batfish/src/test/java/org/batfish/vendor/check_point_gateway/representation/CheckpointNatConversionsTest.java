@@ -36,6 +36,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -207,6 +208,7 @@ public final class CheckpointNatConversionsTest {
       // Valid
       Warnings warnings = new Warnings(true, true, true);
       assertTrue(checkValidManualHide(addressSpace, ORIG, ORIG, ANY, warnings));
+      assertThat(warnings.getRedFlagWarnings(), emptyIterable());
     }
   }
 
@@ -234,7 +236,7 @@ public final class CheckpointNatConversionsTest {
           manualHideTransformationSteps(natRule, OBJECTS, warnings), equalTo(Optional.empty()));
     }
     {
-      // Ipv4 translated-source and translated-destination
+      // Ipv4 host translated-source and translated-destination
       NatRule natRule =
           new NatRule(
               false,
@@ -260,7 +262,7 @@ public final class CheckpointNatConversionsTest {
                       assignSourcePort(NAT_PORT_FIRST, NAT_PORT_LAST)))));
     }
     {
-      // Ipv6 translated-source
+      // Ipv6 host translated-source
       NatRule natRule =
           new NatRule(
               false,
