@@ -166,75 +166,185 @@ public final class CheckpointNatConversionsTest {
     Uid uid = Uid.of("1");
     TypedManagementObject addressSpace = new Host(Ip.ZERO, NAT_SETTINGS_TEST_INSTANCE, "foo", uid);
     TypedManagementObject service = new ServiceTcp("foo", "1", uid);
-    Warnings warnings = new Warnings();
-
-    assertFalse(checkValidManualHide(service, ORIG, ORIG, warnings));
-    assertFalse(checkValidManualHide(addressSpace, addressSpace, ORIG, warnings));
-    assertFalse(checkValidManualHide(addressSpace, ORIG, service, warnings));
-    assertTrue(checkValidManualHide(addressSpace, ORIG, ORIG, warnings));
+    {
+      // Invalid source type
+      Warnings warnings = new Warnings(true, true, true);
+      assertFalse(checkValidManualHide(service, ORIG, ORIG, ANY, warnings));
+      assertThat(
+          warnings.getRedFlagWarnings(),
+          contains(hasText(containsString("translated-source foo has invalid type ServiceTcp"))));
+    }
+    {
+      // Invalid destination type
+      Warnings warnings = new Warnings(true, true, true);
+      assertFalse(checkValidManualHide(addressSpace, service, ORIG, ANY, warnings));
+      assertThat(
+          warnings.getRedFlagWarnings(),
+          contains(
+              hasText(containsString("translated-destination foo has invalid type ServiceTcp"))));
+    }
+    {
+      // Translated and original destination types don't match
+      Warnings warnings = new Warnings(true, true, true);
+      assertFalse(checkValidManualHide(addressSpace, addressSpace, ORIG, ANY, warnings));
+      assertThat(
+          warnings.getRedFlagWarnings(),
+          contains(
+              hasText(
+                  containsString(
+                      "translated-destination foo type Host does not match original-destination"
+                          + " type"))));
+    }
+    {
+      // Invalid service type
+      Warnings warnings = new Warnings(true, true, true);
+      assertFalse(checkValidManualHide(addressSpace, ORIG, service, ANY, warnings));
+      assertThat(
+          warnings.getRedFlagWarnings(),
+          contains(hasText(containsString("translated-service foo has invalid type ServiceTcp"))));
+    }
+    {
+      // Valid
+      Warnings warnings = new Warnings(true, true, true);
+      assertTrue(checkValidManualHide(addressSpace, ORIG, ORIG, ANY, warnings));
+    }
   }
 
   @Test
   public void testManualHideTransformationSteps() {
     Warnings warnings = new Warnings();
     {
+      // Invalid translated-types
+      NatRule natRule =
+          new NatRule(
+              false,
+              "",
+              true,
+              ImmutableList.of(),
+              NatMethod.HIDE,
+              ANY_UID,
+              ANY_UID,
+              ANY_UID,
+              1,
+              PT_UID,
+              PT_UID,
+              PT_UID,
+              Uid.of("9999"));
       assertThat(
-          manualHideTransformationSteps(POLICY_TARGETS, POLICY_TARGETS, POLICY_TARGETS, warnings),
-          equalTo(Optional.empty()));
+          manualHideTransformationSteps(natRule, OBJECTS, warnings), equalTo(Optional.empty()));
     }
     {
-      // src: ipv4 host
-      Uid hostUid = Uid.of("1");
-      Ip hostIp = Ip.parse("1.1.1.1");
-      String hostname = "host";
-      Host host = new Host(hostIp, NAT_SETTINGS_TEST_INSTANCE, hostname, hostUid);
+      // Ipv4 translated-source and translated-destination
+      NatRule natRule =
+          new NatRule(
+              false,
+              "",
+              true,
+              ImmutableList.of(),
+              NatMethod.HIDE,
+              HOST2_IPV4_UID,
+              ANY_UID,
+              ANY_UID,
+              1,
+              HOST2_IPV4_UID,
+              ORIG_UID,
+              HOST_IPV4_UID,
+              Uid.of("9999"));
       assertThat(
-          manualHideTransformationSteps(host, ORIG, ORIG, warnings),
+          manualHideTransformationSteps(natRule, OBJECTS, warnings),
           equalTo(
               Optional.of(
                   ImmutableList.of(
-                      assignSourceIp(hostIp), assignSourcePort(NAT_PORT_FIRST, NAT_PORT_LAST)))));
-    }
-    {
-      // src: ipv6 host
-      Uid hostUid = Uid.of("1");
-      String hostname = "host";
-      Host host = new Host(null, NAT_SETTINGS_TEST_INSTANCE, hostname, hostUid);
-      assertThat(
-          manualHideTransformationSteps(host, ORIG, ORIG, warnings), equalTo(Optional.empty()));
-    }
-    {
-      // src: ipv4 address range
-      Uid addressRangeUid = Uid.of("1");
-      Ip firstIp = Ip.parse("1.1.1.1");
-      Ip lastIp = Ip.parse("1.1.1.10");
-      String name = "range1";
-      AddressRange addressRange =
-          new AddressRange(
-              firstIp, lastIp, null, null, NAT_SETTINGS_TEST_INSTANCE, name, addressRangeUid);
-      assertThat(
-          manualHideTransformationSteps(addressRange, ORIG, ORIG, warnings),
-          equalTo(
-              Optional.of(
-                  ImmutableList.of(
-                      assignSourceIp(firstIp, lastIp),
+                      assignSourceIp(HOST_IPV4.getIpv4Address()),
+                      assignDestinationIp(HOST2_IPV4.getIpv4Address()),
                       assignSourcePort(NAT_PORT_FIRST, NAT_PORT_LAST)))));
     }
     {
-      // src: ipv6 address range
-      Uid addressRangeUid = Uid.of("1");
-      String name = "range1";
-      AddressRange addressRange =
-          new AddressRange(
-              null, null, Ip6.ZERO, Ip6.ZERO, NAT_SETTINGS_TEST_INSTANCE, name, addressRangeUid);
+      // Ipv6 translated-source
+      NatRule natRule =
+          new NatRule(
+              false,
+              "",
+              true,
+              ImmutableList.of(),
+              NatMethod.HIDE,
+              ANY_UID,
+              ANY_UID,
+              ANY_UID,
+              1,
+              ORIG_UID,
+              ORIG_UID,
+              HOST_IPV6_UID,
+              Uid.of("9999"));
       assertThat(
-          manualHideTransformationSteps(addressRange, ORIG, ORIG, warnings),
-          equalTo(Optional.empty()));
+          manualHideTransformationSteps(natRule, OBJECTS, warnings), equalTo(Optional.empty()));
     }
     {
-      // src: original
+      // Address range (ipv4) translated-source
+      NatRule natRule =
+          new NatRule(
+              false,
+              "",
+              true,
+              ImmutableList.of(),
+              NatMethod.HIDE,
+              ANY_UID,
+              ANY_UID,
+              ANY_UID,
+              1,
+              ORIG_UID,
+              ORIG_UID,
+              ADDR_RANGE_IPV4_UID,
+              Uid.of("9999"));
       assertThat(
-          manualHideTransformationSteps(ORIG, ORIG, ORIG, warnings), equalTo(Optional.empty()));
+          manualHideTransformationSteps(natRule, OBJECTS, warnings),
+          equalTo(
+              Optional.of(
+                  ImmutableList.of(
+                      assignSourceIp(
+                          ADDR_RANGE_IPV4.getIpv4AddressFirst(),
+                          ADDR_RANGE_IPV4.getIpv4AddressLast()),
+                      assignSourcePort(NAT_PORT_FIRST, NAT_PORT_LAST)))));
+    }
+    {
+      // Address range (ipv6) translated-source
+      NatRule natRule =
+          new NatRule(
+              false,
+              "",
+              true,
+              ImmutableList.of(),
+              NatMethod.HIDE,
+              ANY_UID,
+              ANY_UID,
+              ANY_UID,
+              1,
+              ORIG_UID,
+              ORIG_UID,
+              ADDR_RANGE_IPV6_UID,
+              Uid.of("9999"));
+      assertThat(
+          manualHideTransformationSteps(natRule, OBJECTS, warnings), equalTo(Optional.empty()));
+    }
+    {
+      // Original translated-source
+      NatRule natRule =
+          new NatRule(
+              false,
+              "",
+              true,
+              ImmutableList.of(),
+              NatMethod.HIDE,
+              ANY_UID,
+              ANY_UID,
+              ANY_UID,
+              1,
+              ORIG_UID,
+              ORIG_UID,
+              ORIG_UID,
+              Uid.of("9999"));
+      assertThat(
+          manualHideTransformationSteps(natRule, OBJECTS, warnings), equalTo(Optional.empty()));
     }
   }
 
@@ -989,4 +1099,45 @@ public final class CheckpointNatConversionsTest {
   private static final CpmiAnyObject ANY = new CpmiAnyObject(ANY_UID);
   private static final Uid ORIG_UID = Uid.of("1004");
   private static final Original ORIG = new Original(ORIG_UID);
+  private static final Uid HOST_IPV4_UID = Uid.of("1005");
+  private static final Host HOST_IPV4 =
+      new Host(Ip.parse("1.1.1.1"), NAT_SETTINGS_TEST_INSTANCE, "hostv4", HOST_IPV4_UID);
+  private static final Uid HOST2_IPV4_UID = Uid.of("1006");
+  private static final Host HOST2_IPV4 =
+      new Host(Ip.parse("2.2.2.2"), NAT_SETTINGS_TEST_INSTANCE, "host2v4", HOST2_IPV4_UID);
+  private static final Uid HOST_IPV6_UID = Uid.of("1007");
+  private static final Host HOST_IPV6 =
+      new Host(null, NAT_SETTINGS_TEST_INSTANCE, "hostv6", HOST_IPV6_UID);
+  private static final Uid ADDR_RANGE_IPV4_UID = Uid.of("1008");
+  private static final AddressRange ADDR_RANGE_IPV4 =
+      new AddressRange(
+          Ip.parse("1.1.1.1"),
+          Ip.parse("1.1.1.10"),
+          null,
+          null,
+          NAT_SETTINGS_TEST_INSTANCE,
+          "rangev4",
+          ADDR_RANGE_IPV4_UID);
+  private static final Uid ADDR_RANGE_IPV6_UID = Uid.of("1009");
+  private static final AddressRange ADDR_RANGE_IPV6 =
+      new AddressRange(
+          null,
+          null,
+          Ip6.ZERO,
+          Ip6.ZERO,
+          NAT_SETTINGS_TEST_INSTANCE,
+          "rangev6",
+          ADDR_RANGE_IPV6_UID);
+
+  private static final Map<Uid, NamedManagementObject> OBJECTS =
+      ImmutableMap.<Uid, NamedManagementObject>builder()
+          .put(PT_UID, POLICY_TARGETS)
+          .put(ANY_UID, ANY)
+          .put(ORIG_UID, ORIG)
+          .put(HOST_IPV4_UID, HOST_IPV4)
+          .put(HOST2_IPV4_UID, HOST2_IPV4)
+          .put(HOST_IPV6_UID, HOST_IPV6)
+          .put(ADDR_RANGE_IPV4_UID, ADDR_RANGE_IPV4)
+          .put(ADDR_RANGE_IPV6_UID, ADDR_RANGE_IPV6)
+          .build();
 }
