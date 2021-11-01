@@ -35,7 +35,7 @@ public final class A10Preprocessor extends A10ParserBaseListener {
    * Pattern matching ACOS version strings, in leading comments in config dumps. Extracts the major
    * version number in match group 1.
    */
-  private static Pattern ACOS_VERSION_PATTERN = Pattern.compile("version (\\d+).\\d+.\\d+");
+  private static Pattern ACOS_VERSION_PATTERN = Pattern.compile("!.*version (\\d+).\\d+.\\d+");
 
   @Nonnull private A10Configuration _c;
 
