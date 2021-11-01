@@ -56961,6 +56961,19 @@
             "    (set_line_tail*",
             "      (statement*",
             "        (s_common*",
+            "          (s_routing_instances*",
+            "            ROUTING_INSTANCES:'routing-instances'",
+            "            (ri_named_routing_instance",
+            "              name = (variable*",
+            "                text = VARIABLE:'MGMT')",
+            "              (ri_common*",
+            "                (apply*)))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
             "          (s_system*",
             "            SYSTEM:'system'",
             "            (sy_ntp*",
@@ -57043,6 +57056,24 @@
             "                  VERSION_STRING:'1'  <== mode:M_Version)",
             "                (syn_server_prefer*",
             "                  PREFER:'prefer')))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
+            "          (s_system*",
+            "            SYSTEM:'system'",
+            "            (sy_ntp*",
+            "              NTP:'ntp'",
+            "              (syn_server",
+            "                SERVER:'server'",
+            "                hostname = (variable*",
+            "                  text = IP_ADDRESS:'2.3.4.9')",
+            "                (syn_server_routing_instance",
+            "                  ROUTING_INSTANCE:'routing-instance'",
+            "                  name = (variable*",
+            "                    text = VARIABLE:'MGMT'))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -74885,7 +74916,14 @@
             }
           }
         },
-        "configs/juniper_ntp" : { },
+        "configs/juniper_ntp" : {
+          "routing-instance" : {
+            "MGMT" : {
+              "definitionLines" : "6",
+              "numReferrers" : 2
+            }
+          }
+        },
         "configs/juniper_ospf" : { },
         "configs/juniper_ospf_disable" : {
           "interface" : {
@@ -81710,6 +81748,18 @@
               ],
               "nat source rule-set rule then pool" : [
                 21
+              ]
+            }
+          }
+        },
+        "configs/juniper_ntp" : {
+          "routing-instance" : {
+            "MGMT" : {
+              "ntp server routing-instance" : [
+                12
+              ],
+              "routing-instance" : [
+                6
               ]
             }
           }

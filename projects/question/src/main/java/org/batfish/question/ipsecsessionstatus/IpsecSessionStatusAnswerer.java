@@ -8,9 +8,9 @@ import static org.batfish.datamodel.questions.IpsecSessionStatus.IPSEC_SESSION_E
 import static org.batfish.datamodel.questions.IpsecSessionStatus.MISSING_END_POINT;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.LinkedHashMultiset;
 import com.google.common.collect.Multiset;
 import com.google.common.graph.ValueGraph;
 import java.util.List;
@@ -91,7 +91,6 @@ class IpsecSessionStatusAnswerer extends Answerer {
         ipsecSessionInfos.stream()
             .filter(ipsecSessionInfo -> statuses.contains(ipsecSessionInfo.getIpsecSessionStatus()))
             .map(IpsecSessionStatusAnswerer::toRow)
-            .sorted()
             .collect(ImmutableList.toImmutableList()));
     return answerElement;
   }
@@ -102,7 +101,7 @@ class IpsecSessionStatusAnswerer extends Answerer {
       ValueGraph<IpsecPeerConfigId, IpsecSession> ipsecTopology,
       Set<String> initiatorNodes,
       Set<String> responderNodes) {
-    Multiset<IpsecSessionInfo> ipsecSessionInfos = HashMultiset.create();
+    Multiset<IpsecSessionInfo> ipsecSessionInfos = LinkedHashMultiset.create();
 
     for (IpsecPeerConfigId node : ipsecTopology.nodes()) {
       IpsecPeerConfig ipsecPeerConfig = networkConfigurations.getIpsecPeerConfig(node);
