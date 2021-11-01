@@ -29,10 +29,6 @@ public class Rows implements Serializable {
     return this;
   }
 
-  public boolean contains(Row row) {
-    return _data.contains(row);
-  }
-
   @Override
   public boolean equals(Object o) {
     if (!(o instanceof Rows)) {
