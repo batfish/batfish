@@ -378,6 +378,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Vrrt_metricContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Vrrtn_discardContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Vrrtn_ipContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Vrrtn_next_vrContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vrrtpm_enableContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Yes_or_noContext;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.representation.palo_alto.AddressGroup;
@@ -2393,6 +2394,14 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
     String name = getText(ctx.name);
     _currentStaticRoute.setNextVr(name);
     referenceStructure(VIRTUAL_ROUTER, name, STATIC_ROUTE_NEXT_VR, getLine(ctx.name.start));
+  }
+
+  @Override
+  public void exitVrrtpm_enable(Vrrtpm_enableContext ctx) {
+    boolean enabled = toBoolean(ctx.yn);
+    if (enabled) {
+      warn(ctx, "Static route path monitoring is not implemented");
+    }
   }
 
   @Override
