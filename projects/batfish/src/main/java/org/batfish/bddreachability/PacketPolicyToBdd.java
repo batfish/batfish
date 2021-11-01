@@ -54,7 +54,7 @@ class PacketPolicyToBdd {
   private final ImmutableSet.Builder<PacketPolicyAction> _actions;
 
   /**
-   * A subgraph (forming a DAG) for a particular {@link PacketPolicy} on a particular nnode/VRF. The
+   * A subgraph (forming a DAG) for a particular {@link PacketPolicy} on a particular node/VRF. The
    * subgraph is rooted at the {@link PacketPolicyStatement} with id 0, and has one or more {@link
    * PacketPolicyAction} leaves. Every {@link PacketPolicyAction} must be a leaf (i.e. have no
    * out-edges). There can be any number of {@link PacketPolicyStatement} states between the root
