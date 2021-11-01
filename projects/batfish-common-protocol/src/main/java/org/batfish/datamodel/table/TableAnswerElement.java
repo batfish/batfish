@@ -29,7 +29,6 @@ public final class TableAnswerElement extends AnswerElement {
   private List<ExcludedRows> _excludedRows;
   private Set<String> _columnNames;
   private Rows _rows;
-  private List<Row> _rowsList;
   private TableMetadata _tableMetadata;
 
   @JsonCreator
@@ -40,7 +39,6 @@ public final class TableAnswerElement extends AnswerElement {
             .map(ColumnMetadata::getName)
             .collect(ImmutableSet.toImmutableSet());
     _rows = new Rows();
-    _rowsList = new LinkedList<>();
     _excludedRows = new LinkedList<>();
   }
 
@@ -56,7 +54,6 @@ public final class TableAnswerElement extends AnswerElement {
         row.getColumnNames(),
         _columnNames);
     _rows.add(row);
-    _rowsList.add(row);
     return this;
   }
 
@@ -151,7 +148,7 @@ public final class TableAnswerElement extends AnswerElement {
 
   @JsonProperty(PROP_ROWS)
   public List<Row> getRowsList() {
-    return ImmutableList.copyOf(_rowsList);
+    return ImmutableList.copyOf(_rows.iterator());
   }
 
   /**
@@ -184,12 +181,8 @@ public final class TableAnswerElement extends AnswerElement {
   @JsonProperty(PROP_ROWS)
   private void setRowsList(List<Row> rows) {
     _rows = new Rows();
-    if (rows == null) {
-      _rowsList = new LinkedList<>();
-
-    } else {
-      _rowsList = rows;
+    if (rows != null) {
+      rows.forEach(_rows::add);
     }
-    _rowsList.forEach(_rows::add);
   }
 }
