@@ -68,15 +68,16 @@ public final class PacketPolicyToBddTest {
   private IpAccessListToBdd _ipAccessListToBdd;
 
   private final String _hostname = "hostname";
+  private final String _ingressVrf = "ingressVrf";
   private final String _policyName = "policy";
 
   private PacketPolicyStatement statement(int id) {
-    return new PacketPolicyStatement(_hostname, _policyName, id);
+    return new PacketPolicyStatement(_hostname, _ingressVrf, _policyName, id);
   }
 
   private PacketPolicyAction fibLookupState(String vrfName) {
     return new PacketPolicyAction(
-        _hostname, _policyName, new FibLookup(new LiteralVrfName(vrfName)));
+        _hostname, _ingressVrf, _policyName, new FibLookup(new LiteralVrfName(vrfName)));
   }
 
   @Before
@@ -88,13 +89,14 @@ public final class PacketPolicyToBddTest {
   }
 
   private final PacketPolicyAction _dropState =
-      new PacketPolicyAction(_hostname, _policyName, Drop.instance());
+      new PacketPolicyAction(_hostname, _ingressVrf, _policyName, Drop.instance());
 
   @Test
   public void testDefaultAction() {
     List<Edge> edges =
         PacketPolicyToBdd.evaluate(
                 _hostname,
+                _ingressVrf,
                 new PacketPolicy(_policyName, ImmutableList.of(), new Return(Drop.instance())),
                 _ipAccessListToBdd,
                 EMPTY_IPS_ROUTED_OUT_INTERFACES)
@@ -108,6 +110,7 @@ public final class PacketPolicyToBddTest {
     List<Edge> edges =
         PacketPolicyToBdd.evaluate(
                 _hostname,
+                _ingressVrf,
                 new PacketPolicy(
                     _policyName,
                     ImmutableList.of(new Return(new FibLookup(new LiteralVrfName("vrf")))),
@@ -140,6 +143,7 @@ public final class PacketPolicyToBddTest {
     List<Edge> edges =
         PacketPolicyToBdd.evaluate(
                 _hostname,
+                _ingressVrf,
                 new PacketPolicy(
                     _policyName,
                     ImmutableList.of(outerIf, new Return(new FibLookup(new LiteralVrfName(vrf3)))),
@@ -166,6 +170,7 @@ public final class PacketPolicyToBddTest {
     List<Edge> edges =
         PacketPolicyToBdd.evaluate(
                 _hostname,
+                _ingressVrf,
                 new PacketPolicy(
                     _policyName,
                     ImmutableList.of(
@@ -224,7 +229,7 @@ public final class PacketPolicyToBddTest {
             _policyName, ImmutableList.of(new ApplyFilter(acl.getName())), new Return(fl));
     List<Edge> edges =
         PacketPolicyToBdd.evaluate(
-                _hostname, policy, ipAccessListToBdd, EMPTY_IPS_ROUTED_OUT_INTERFACES)
+                _hostname, _ingressVrf, policy, ipAccessListToBdd, EMPTY_IPS_ROUTED_OUT_INTERFACES)
             .getEdges();
 
     // Traffic not destined for 1.1.1.0/24 should be dropped
@@ -245,6 +250,7 @@ public final class PacketPolicyToBddTest {
     List<Edge> edges =
         PacketPolicyToBdd.evaluate(
                 _hostname,
+                _ingressVrf,
                 new PacketPolicy(
                     _policyName,
                     ImmutableList.of(new ApplyTransformation(transformation), new Return(fl)),
@@ -340,6 +346,7 @@ public final class PacketPolicyToBddTest {
       List<Edge> edges =
           PacketPolicyToBdd.evaluate(
                   _hostname,
+                  _ingressVrf,
                   new PacketPolicy(
                       _policyName,
                       ImmutableList.of(
@@ -357,6 +364,7 @@ public final class PacketPolicyToBddTest {
       List<Edge> edges =
           PacketPolicyToBdd.evaluate(
                   _hostname,
+                  _ingressVrf,
                   new PacketPolicy(
                       _policyName,
                       ImmutableList.of(

@@ -48,6 +48,7 @@ class PacketPolicyToBdd {
   @Nonnull private final BoolExprToBdd _boolExprToBdd;
   @Nonnull private final TransformationToTransition _transformationToTransition;
   private final String _hostname;
+  private final String _vrf;
   private final ImmutableList.Builder<Edge> _edges;
   private final ImmutableSet.Builder<PacketPolicyAction> _actions;
   private PacketPolicyStatement _currentStatement;
@@ -76,23 +77,26 @@ class PacketPolicyToBdd {
    */
   public static BddPacketPolicy evaluate(
       String hostname,
+      String vrf,
       PacketPolicy policy,
       IpAccessListToBdd ipAccessListToBdd,
       IpsRoutedOutInterfaces ipsRoutedOutInterfaces) {
     PacketPolicyToBdd evaluator =
-        new PacketPolicyToBdd(hostname, policy, ipAccessListToBdd, ipsRoutedOutInterfaces);
+        new PacketPolicyToBdd(hostname, vrf, policy, ipAccessListToBdd, ipsRoutedOutInterfaces);
     evaluator.process(policy);
     return new BddPacketPolicy(evaluator._edges.build(), evaluator._actions.build());
   }
 
   private PacketPolicyToBdd(
       String hostname,
+      String vrf,
       PacketPolicy policy,
       IpAccessListToBdd ipAccessListToBdd,
       IpsRoutedOutInterfaces ipsRoutedOutInterfaces) {
     _hostname = hostname;
     _policy = policy;
-    _currentStatement = new PacketPolicyStatement(_hostname, _policy.getName(), 0);
+    _vrf = vrf;
+    _currentStatement = new PacketPolicyStatement(_hostname, _vrf, _policy.getName(), 0);
     _boolExprToBdd = new BoolExprToBdd(ipAccessListToBdd, ipsRoutedOutInterfaces);
     _transformationToTransition =
         new TransformationToTransition(ipAccessListToBdd.getBDDPacket(), ipAccessListToBdd);
@@ -115,7 +119,8 @@ class PacketPolicyToBdd {
       _edges.add(
           new Edge(
               currentStatement(),
-              new PacketPolicyAction(_hostname, p.getName(), p.getDefaultAction().getAction()),
+              new PacketPolicyAction(
+                  _hostname, _vrf, p.getName(), p.getDefaultAction().getAction()),
               stmtConverter._nextEdgeConstraint));
     }
   }
@@ -126,7 +131,8 @@ class PacketPolicyToBdd {
 
   private PacketPolicyStatement nextStatement() {
     _currentStatement =
-        new PacketPolicyStatement(_hostname, _policy.getName(), _currentStatement.getId() + 1);
+        new PacketPolicyStatement(
+            _hostname, _vrf, _policy.getName(), _currentStatement.getId() + 1);
     return _currentStatement;
   }
 
@@ -217,7 +223,7 @@ class PacketPolicyToBdd {
     public Void visitReturn(Return returnStmt) {
       addEdge(
           currentStatement(),
-          new PacketPolicyAction(_hostname, _policy.getName(), returnStmt.getAction()),
+          new PacketPolicyAction(_hostname, _vrf, _policy.getName(), returnStmt.getAction()),
           _nextEdgeConstraint);
       // does not fall through
       _nextEdgeConstraint = _nextEdgeConstraint.getFactory().zero();
@@ -230,7 +236,7 @@ class PacketPolicyToBdd {
           _boolExprToBdd._ipAccessListToBdd.toBdd(new PermittedByAcl(applyFilter.getFilter()));
       addEdge(
           currentStatement(),
-          new PacketPolicyAction(_hostname, _policy.getName(), Drop.instance()),
+          new PacketPolicyAction(_hostname, _vrf, _policy.getName(), Drop.instance()),
           _nextEdgeConstraint.diff(permitBdd));
       _nextEdgeConstraint = _nextEdgeConstraint.and(permitBdd);
       return null;

@@ -24,9 +24,11 @@ import static org.batfish.datamodel.transformation.TransformationUtil.visitTrans
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.BoundType;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Streams;
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -881,7 +883,7 @@ public final class BDDReachabilityAnalysisFactory {
               Transition addOutgoingOriginalFlowFiltersConstraint =
                   addOutgoingOriginalFlowFiltersConstraint(
                       _bddOutgoingOriginalFlowFilterManagers.get(nodeName));
-              Set<String> convertedPolicies = new HashSet<>();
+              Multimap<String, String> convertedPolicies = HashMultimap.create();
               return config
                   .activeInterfaces()
                   .filter(iface -> iface.getPacketPolicyName() != null)
@@ -894,10 +896,10 @@ public final class BDDReachabilityAnalysisFactory {
                         Edge enterPolicyEdge =
                             new Edge(
                                 new PreInInterface(nodeName, ifaceName),
-                                new PacketPolicyStatement(nodeName, policyName, 0),
+                                new PacketPolicyStatement(nodeName, vrfName, policyName, 0),
                                 addOutgoingOriginalFlowFiltersConstraint);
 
-                        if (!convertedPolicies.add(policyName)) {
+                        if (!convertedPolicies.put(vrfName, policyName)) {
                           // the policy edges have been generated already
                           // only need to generate this edge into the policy.
                           return Stream.of(enterPolicyEdge);
@@ -906,6 +908,7 @@ public final class BDDReachabilityAnalysisFactory {
                         PacketPolicyToBdd.BddPacketPolicy bddPacketPolicy =
                             PacketPolicyToBdd.evaluate(
                                 nodeName,
+                                vrfName,
                                 config.getPacketPolicies().get(policyName),
                                 ipAccessListToBdd,
                                 ipsRoutedOutInterfaces.computeIfAbsent(
@@ -1974,7 +1977,7 @@ public final class BDDReachabilityAnalysisFactory {
     public Stream<Edge> visitDrop(Drop drop) {
       return Stream.of(
           new Edge(
-              new PacketPolicyAction(_nodeName, _policyName, drop),
+              new PacketPolicyAction(_nodeName, _ingressVrfName, _policyName, drop),
               new NodeDropAclIn(_nodeName),
               removeNodeSpecificConstraints(
                   _nodeName,
@@ -1987,18 +1990,19 @@ public final class BDDReachabilityAnalysisFactory {
     public Stream<Edge> visitFibLookup(FibLookup fibLookup) {
       // from FibLookup we branch to InterfaceAccept, NoRoute,
       // PreOutVrf
+      StateExpr actionState =
+          new PacketPolicyAction(_nodeName, _ingressVrfName, _policyName, fibLookup);
       Stream<Edge> interfaceAcceptEdges =
           _ifaceAcceptBDDs.get(_nodeName).get(_ingressVrfName).entrySet().stream()
               .map(
                   ifaceAcceptBddEntry ->
                       new Edge(
-                          new PacketPolicyAction(_nodeName, _policyName, fibLookup),
+                          actionState,
                           new InterfaceAccept(_nodeName, ifaceAcceptBddEntry.getKey()),
                           ifaceAcceptBddEntry.getValue()));
       BDD acceptedBdd = _vrfAcceptBDDs.get(_nodeName).get(_ingressVrfName);
       String lookupVrf = _vrfExprNameExtractor.visit(fibLookup.getVrfExpr());
       BDD routableBDD = _routableBDDs.get(_nodeName).get(lookupVrf);
-      StateExpr actionState = new PacketPolicyAction(_nodeName, _policyName, fibLookup);
       Edge noRouteEdge =
           new Edge(actionState, new NodeDropNoRoute(_nodeName), acceptedBdd.nor(routableBDD));
       Edge preOutVrfEdge =

@@ -1409,13 +1409,13 @@ public final class BDDReachabilityAnalysisFactoryTest {
     // Check state edge presence (note, INGRESS_IFACE is in vrf1, not INGRESS_VRF)
     PacketPolicyAction fibLookup =
         new PacketPolicyAction(
-            hostname, "packetPolicyName", new FibLookup(new LiteralVrfName("vrf2")));
+            hostname, "vrf1", "packetPolicyName", new FibLookup(new LiteralVrfName("vrf2")));
     PreOutVrf preOutVrf2 = new PreOutVrf(hostname, "vrf2");
     assertThat(
         analysis.getForwardEdgeMap(),
         hasEntry(
             equalTo(new PreInInterface(hostname, INGRESS_IFACE)),
-            hasKey(equalTo(new PacketPolicyStatement(hostname, "packetPolicyName", 0)))));
+            hasKey(equalTo(new PacketPolicyStatement(hostname, "vrf1", "packetPolicyName", 0)))));
     assertThat(
         analysis.getForwardEdgeMap(), hasEntry(equalTo(fibLookup), hasKey(equalTo(preOutVrf2))));
     assertThat(
@@ -1462,7 +1462,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     // Check state edge presence (note, INGRESS_IFACE is in vrf1, not INGRESS_VRF)
     PacketPolicyAction fibLookup =
         new PacketPolicyAction(
-            hostname, "packetPolicyName", new FibLookup(new LiteralVrfName("vrf2")));
+            hostname, "vrf1", "packetPolicyName", new FibLookup(new LiteralVrfName("vrf2")));
     PreOutVrf preOutVrf2 = new PreOutVrf(hostname, "vrf2");
     NodeDropNoRoute nodeDropNoRoute = new NodeDropNoRoute(hostname);
     IpSpaceToBDD ipSpaceToBDD = new IpSpaceToBDD(_pkt.getDstIp());
@@ -1474,7 +1474,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
         analysis.getForwardEdgeMap(),
         hasEntry(
             equalTo(new PreInInterface(hostname, INGRESS_IFACE)),
-            hasKey(equalTo(new PacketPolicyStatement(hostname, "packetPolicyName", 0)))));
+            hasKey(equalTo(new PacketPolicyStatement(hostname, "vrf1", "packetPolicyName", 0)))));
     assertThat(
         analysis.getForwardEdgeMap(),
         hasEntry(
@@ -1994,11 +1994,11 @@ public final class BDDReachabilityAnalysisFactoryTest {
             // enter the packet policy
             edge(
                 new PreInInterface(n1.getHostname(), i1.getName()),
-                new PacketPolicyStatement(n1.getHostname(), "pbr", 0),
+                new PacketPolicyStatement(n1.getHostname(), vrf.getName(), "pbr", 0),
                 IDENTITY),
             edge(
-                new PacketPolicyStatement(n1.getHostname(), "pbr", 0),
-                new PacketPolicyAction(n1.getHostname(), "pbr", Drop.instance()),
+                new PacketPolicyStatement(n1.getHostname(), vrf.getName(), "pbr", 0),
+                new PacketPolicyAction(n1.getHostname(), vrf.getName(), "pbr", Drop.instance()),
                 IDENTITY)));
   }
 
@@ -2272,7 +2272,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     assertFalse(permittedOutI1.isOne());
 
     StateExpr preInInterface = new PreInInterface(c1, INGRESS_IFACE);
-    StateExpr startState = new PacketPolicyStatement(c1, "packetPolicyName", 0);
+    StateExpr startState = new PacketPolicyStatement(c1, "vrf1", "packetPolicyName", 0);
 
     Transition transition =
         Iterables.getOnlyElement(

@@ -5,13 +5,18 @@ import org.batfish.datamodel.packet_policy.Action;
 
 public final class PacketPolicyAction implements StateExpr {
   private final String _hostname;
+  private final String _vrf;
   private final String _policyName;
 
   private final Action _action;
 
   public PacketPolicyAction(
-      @Nonnull String hostname, @Nonnull String policyName, @Nonnull Action action) {
+      @Nonnull String hostname,
+      @Nonnull String vrf,
+      @Nonnull String policyName,
+      @Nonnull Action action) {
     _hostname = hostname;
+    _vrf = vrf;
     _policyName = policyName;
     _action = action;
   }
@@ -32,14 +37,16 @@ public final class PacketPolicyAction implements StateExpr {
 
     PacketPolicyAction that = (PacketPolicyAction) o;
     return _hostname.equals(that._hostname)
+        && _vrf.equals(that._vrf)
         && _policyName.equals(that._policyName)
         && _action.equals(that._action);
   }
 
   @Override
   public int hashCode() {
-    return 31 * 31 * 31 * PacketPolicyAction.class.hashCode()
-        + 31 * 31 * _hostname.hashCode()
+    return 31 * 31 * 31 * 31 * PacketPolicyAction.class.hashCode()
+        + 31 * 31 * 31 * _hostname.hashCode()
+        + 31 * 31 * _vrf.hashCode()
         + 31 * _policyName.hashCode()
         + _action.hashCode();
   }
