@@ -117,8 +117,6 @@ public final class BgpProtocolHelper {
       return null;
     }
 
-    assert route.getCommunities() == builder.getCommunities();
-
     /*
      *  iBGP speaker should not send out routes to iBGP neighbor whose router-id is
      *  same as originator id of advertisement
