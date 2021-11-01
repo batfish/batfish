@@ -125,16 +125,24 @@ vr_routing_table
     ROUTING_TABLE IP STATIC_ROUTE name = variable
     (
         vrrt_admin_dist
+        | vrrt_bfd
         | vrrt_destination
         | vrrt_interface
         | vrrt_metric
         | vrrt_nexthop
+        | vrrt_path_monitor
+        | vrrt_route_table
     )
 ;
 
 vrrt_admin_dist
 :
     ADMIN_DIST distance = protocol_ad
+;
+
+vrrt_bfd
+:
+    BFD PROFILE name = variable
 ;
 
 vrrt_destination
@@ -173,3 +181,25 @@ vrrtn_next_vr
 :
   NEXT_VR name = variable
 ;
+
+vrrt_path_monitor
+:
+  PATH_MONITOR
+  (
+    vrrtpm_enable
+    | vrrtpm_failure_condition
+    | vrrtpm_hold_time
+  )
+;
+
+path_monitor_hold_time_min:
+ // 0-1440, default 2
+ uint16
+;
+
+vrrtpm_enable: ENABLE yn = yes_or_no;
+vrrtpm_failure_condition: FAILURE_CONDITION (ANY | ALL);
+vrrtpm_hold_time: HOLD_TIME min = path_monitor_hold_time_min;
+
+// TODO: more route tables
+vrrt_route_table: ROUTE_TABLE UNICAST;
