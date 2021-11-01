@@ -87,6 +87,7 @@ syn_server
        syn_server_key
        | syn_server_version
        | syn_server_prefer
+       | syn_server_routing_instance
    )*
 ;
 
@@ -103,6 +104,11 @@ syn_server_key
 syn_server_prefer
 :
     PREFER
+;
+
+syn_server_routing_instance
+:
+    ROUTING_INSTANCE name = variable
 ;
 
 syn_server_version
