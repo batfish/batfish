@@ -190,6 +190,8 @@ public class BgpProtocolHelperTest {
     Builder builder = _baseBgpRouteBuilder.setTag(MAX_TAG);
     transformBgpRoutePostExport(builder, true, ConfedSessionType.NO_CONFED, 1, DEST_IP, Ip.ZERO);
     assertThat("Tag is cleared", builder.getTag(), equalTo(UNSET_ROUTE_TAG));
+
+    builder.setTag(MAX_TAG);
     transformBgpRoutePostExport(builder, false, ConfedSessionType.NO_CONFED, 1, DEST_IP, Ip.ZERO);
     assertThat("Tag is cleared", builder.getTag(), equalTo(UNSET_ROUTE_TAG));
   }

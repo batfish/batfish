@@ -410,9 +410,10 @@ public final class BgpProtocolHelper {
                   .add(asSetToPrepend)
                   .addAll(routeAsPath.getAsSets())
                   .build()));
-      // Tags are non-transitive
-      routeBuilder.setTag(null);
     }
+
+    // Tags are non-transitive
+    routeBuilder.setTag(null);
 
     // Skip setting our own next hop if it has already been set by the routing policy
     if (routeBuilder.getNextHopIp().equals(UNSET_ROUTE_NEXT_HOP_IP)) {
