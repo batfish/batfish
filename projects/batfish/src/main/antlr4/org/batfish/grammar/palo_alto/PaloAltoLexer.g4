@@ -21,6 +21,8 @@ ACCEPT_SUMMARY: 'accept-summary';
 
 ACTION: 'action';
 
+ACTIVE_ACTIVE_DEVICE_BINDING: 'active-active-device-binding';
+
 ADDRESS: 'address';
 
 ADDRESS_GROUP: 'address-group';

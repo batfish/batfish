@@ -66477,6 +66477,30 @@
             "                    (srn_definition",
             "                      name = (variable*",
             "                        VARIABLE:'RULE_1')",
+            "                      (srn_active_active_device_binding",
+            "                        ACTIVE_ACTIVE_DEVICE_BINDING:'active-active-device-binding'",
+            "                        bind = (active_active_device_binding_val*",
+            "                          (uint8*",
+            "                            UINT8:'0'))))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (s_policy*",
+            "        POLICY:'policy'",
+            "        (s_policy_panorama",
+            "          PANORAMA:'panorama'",
+            "          (ss_common*",
+            "            (s_post_rulebase",
+            "              POST_RULEBASE:'post-rulebase'",
+            "              (rulebase_inner*",
+            "                (sr_nat*",
+            "                  NAT:'nat'",
+            "                  (sr_nat_rules*",
+            "                    RULES:'rules'",
+            "                    (srn_definition",
+            "                      name = (variable*",
+            "                        VARIABLE:'RULE_1')",
             "                      (srn_destination_translation",
             "                        DESTINATION_TRANSLATION:'destination-translation'",
             "                        (srndt_translated_address",
@@ -71376,6 +71400,16 @@
             }
           ]
         },
+        "configs/palo_alto/nat" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "Batfish currently models this as active-active-device-binding both",
+              "Line" : 19,
+              "Parser_Context" : "[srn_active_active_device_binding srn_definition sr_nat_rules sr_nat rulebase_inner s_post_rulebase ss_common s_policy_panorama s_policy set_line_tail set_line palo_alto_configuration]",
+              "Text" : "active-active-device-binding 0"
+            }
+          ]
+        },
         "configs/route_policy_param" : {
           "Parse warnings" : [
             {
@@ -75926,31 +75960,31 @@
         "configs/palo_alto/nat" : {
           "nat rule" : {
             "MISSING_DESTINATION~panorama" : {
-              "definitionLines" : "57-60",
+              "definitionLines" : "58-61",
               "numReferrers" : 0
             },
             "MISSING_FROM~panorama" : {
-              "definitionLines" : "50-51",
+              "definitionLines" : "51-52",
               "numReferrers" : 0
             },
             "MISSING_SOURCE~panorama" : {
-              "definitionLines" : "53-55",
+              "definitionLines" : "54-56",
               "numReferrers" : 0
             },
             "MISSING_TO~panorama" : {
-              "definitionLines" : "49",
+              "definitionLines" : "50",
               "numReferrers" : 0
             },
             "RULE_1~panorama" : {
-              "definitionLines" : "18-20,22-24,27-30",
+              "definitionLines" : "18-21,23-25,28-31",
               "numReferrers" : 0
             },
             "RULE_2~panorama" : {
-              "definitionLines" : "32-36",
+              "definitionLines" : "33-37",
               "numReferrers" : 0
             },
             "RULE_3~panorama" : {
-              "definitionLines" : "38-42,45-47",
+              "definitionLines" : "39-43,46-48",
               "numReferrers" : 0
             }
           }
@@ -83133,91 +83167,91 @@
           "address-like" : {
             "ADDR1~panorama" : {
               "rulebase nat rules source-translation" : [
-                42
+                43
               ]
             },
             "DST_1~panorama" : {
               "rulebase nat rules destination" : [
-                47
+                48
               ]
             },
             "DST_2~panorama" : {
               "rulebase nat rules destination" : [
-                47
+                48
               ]
             },
             "DST_NAME~panorama" : {
               "rulebase nat rules destination" : [
-                36
+                37
               ]
             },
             "SRC_1~panorama" : {
               "rulebase nat rules source" : [
-                46
+                47
               ]
             },
             "SRC_2~panorama" : {
               "rulebase nat rules source" : [
-                46
+                47
               ]
             },
             "SRC_NAME~panorama" : {
               "rulebase nat rules source" : [
-                35,
-                60
+                36,
+                61
               ]
             }
           },
           "address-like or none" : {
             "1.1.1.0/24~panorama" : {
               "rulebase nat rules destination-translation" : [
-                20
+                21
               ]
             },
             "1.1.1.1~panorama" : {
               "rulebase nat rules source-translation" : [
-                42
+                43
               ]
             },
             "2.2.2.0/24~panorama" : {
               "rulebase nat rules source-translation" : [
-                24,
-                42
+                25,
+                43
               ]
             },
             "3.3.3.3-4.4.4.4~panorama" : {
               "rulebase nat rules source-translation" : [
-                42
+                43
               ]
             },
             "any~panorama" : {
               "rulebase nat rules destination" : [
-                30
+                31
               ],
               "rulebase nat rules source" : [
-                29
+                30
               ]
             }
           },
           "nat rule" : {
             "MISSING_DESTINATION~panorama" : {
               "rulebase nat rules" : [
-                57
+                58
               ]
             },
             "MISSING_FROM~panorama" : {
               "rulebase nat rules" : [
-                50
+                51
               ]
             },
             "MISSING_SOURCE~panorama" : {
               "rulebase nat rules" : [
-                53
+                54
               ]
             },
             "MISSING_TO~panorama" : {
               "rulebase nat rules" : [
-                49
+                50
               ]
             },
             "RULE_1~panorama" : {
@@ -83227,41 +83261,41 @@
             },
             "RULE_2~panorama" : {
               "rulebase nat rules" : [
-                32
+                33
               ]
             },
             "RULE_3~panorama" : {
               "rulebase nat rules" : [
-                38
+                39
               ]
             }
           },
           "zone" : {
             "FROM_1~panorama" : {
               "rulebase nat rules from" : [
-                45
+                46
               ]
             },
             "FROM_2~panorama" : {
               "rulebase nat rules from" : [
-                45
+                46
               ]
             },
             "FROM_ZONE~panorama" : {
               "rulebase nat rules from" : [
-                34,
-                55,
-                59
+                35,
+                56,
+                60
               ]
             },
             "TO_ZONE~panorama" : {
               "rulebase nat rules to" : [
-                27,
-                33,
-                39,
-                51,
-                54,
-                58
+                28,
+                34,
+                40,
+                52,
+                55,
+                59
               ]
             }
           }
@@ -85859,29 +85893,29 @@
           "zone" : {
             "FROM_1~panorama" : {
               "rulebase nat rules from" : [
-                45
+                46
               ]
             },
             "FROM_2~panorama" : {
               "rulebase nat rules from" : [
-                45
+                46
               ]
             },
             "FROM_ZONE~panorama" : {
               "rulebase nat rules from" : [
-                34,
-                55,
-                59
+                35,
+                56,
+                60
               ]
             },
             "TO_ZONE~panorama" : {
               "rulebase nat rules to" : [
-                27,
-                33,
-                39,
-                51,
-                54,
-                58
+                28,
+                34,
+                40,
+                52,
+                55,
+                59
               ]
             }
           }

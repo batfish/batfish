@@ -297,6 +297,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Srao_toContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Src_or_dst_list_itemContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srespr_devicesContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sresprd_hostnameContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_active_active_device_bindingContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_destinationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_destination_translationContext;
@@ -2544,6 +2545,13 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
         String uniqueName = computeObjectName(_currentVsys, zoneName);
         referenceStructure(ZONE, uniqueName, APPLICATION_OVERRIDE_RULE_TO_ZONE, getLine(var.start));
       }
+    }
+  }
+
+  @Override
+  public void exitSrn_active_active_device_binding(Srn_active_active_device_bindingContext ctx) {
+    if (ctx.bind.BOTH() == null) {
+      warn(ctx, "Batfish currently models this as active-active-device-binding both");
     }
   }
 

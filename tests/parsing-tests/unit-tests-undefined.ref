@@ -4085,7 +4085,7 @@
         "Lines" : {
           "filename" : "configs/palo_alto/nat",
           "lines" : [
-            45
+            46
           ]
         }
       },
@@ -4097,7 +4097,7 @@
         "Lines" : {
           "filename" : "configs/palo_alto/nat",
           "lines" : [
-            45
+            46
           ]
         }
       },
@@ -4109,9 +4109,9 @@
         "Lines" : {
           "filename" : "configs/palo_alto/nat",
           "lines" : [
-            34,
-            55,
-            59
+            35,
+            56,
+            60
           ]
         }
       },
@@ -4123,12 +4123,12 @@
         "Lines" : {
           "filename" : "configs/palo_alto/nat",
           "lines" : [
-            27,
-            33,
-            39,
-            51,
-            54,
-            58
+            28,
+            34,
+            40,
+            52,
+            55,
+            59
           ]
         }
       },
