@@ -1,7 +1,7 @@
 package org.batfish.question.interfaceproperties;
 
-import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multiset;
 import java.util.List;
@@ -136,7 +136,7 @@ public class InterfacePropertiesAnswerer extends Answerer {
       InterfaceSpecifier interfaceSpecifier,
       boolean excludeShutInterfaces,
       Map<String, ColumnMetadata> columns) {
-    Multiset<Row> rows = HashMultiset.create();
+    ImmutableMultiset.Builder<Row> rows = ImmutableMultiset.builder();
     Map<String, Configuration> configs = ctxt.getConfigs();
 
     for (String nodeName : nodeSpecifier.resolve(ctxt)) {
@@ -174,6 +174,6 @@ public class InterfacePropertiesAnswerer extends Answerer {
       }
     }
 
-    return rows;
+    return rows.build();
   }
 }

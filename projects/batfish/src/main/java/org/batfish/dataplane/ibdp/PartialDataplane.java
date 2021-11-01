@@ -87,16 +87,6 @@ public final class PartialDataplane implements DataPlane {
     throw new UnsupportedOperationException();
   }
 
-  // For invariant checking only.
-
-  public @Nonnull Topology getLayer3Topology() {
-    return _layer3Topology;
-  }
-
-  public @Nonnull L3Adjacencies getL3Adjacencies() {
-    return _l3Adjacencies;
-  }
-
   //////////
   // Builder
   //////////

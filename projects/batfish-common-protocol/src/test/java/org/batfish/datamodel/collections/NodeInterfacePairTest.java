@@ -29,7 +29,9 @@ public class NodeInterfacePairTest {
   public void testCompareTo() {
     List<NodeInterfacePair> ordered =
         ImmutableList.of(
-            NodeInterfacePair.of("a", "a"),
+            NodeInterfacePair.of("a", "a1"),
+            NodeInterfacePair.of("a", "a2"),
+            NodeInterfacePair.of("a", "a10"),
             NodeInterfacePair.of("a", "b"),
             NodeInterfacePair.of("b", "a"),
             NodeInterfacePair.of("b", "b"));
