@@ -11,6 +11,7 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
+import net.sf.javabdd.BDDFactory;
 import org.batfish.bddreachability.IpsRoutedOutInterfacesFactory.IpsRoutedOutInterfaces;
 import org.batfish.bddreachability.transition.TransformationToTransition;
 import org.batfish.bddreachability.transition.Transition;
@@ -51,8 +52,14 @@ class PacketPolicyToBdd {
   private final String _vrf;
   private final ImmutableList.Builder<Edge> _edges;
   private final ImmutableSet.Builder<PacketPolicyAction> _actions;
-  private PacketPolicyStatement _currentStatement;
 
+  /**
+   * A subgraph (forming a DAG) for a particular {@link PacketPolicy} on a particular nnode/VRF. The
+   * subgraph is rooted at the {@link PacketPolicyStatement} with id 0, and has one or more {@link
+   * PacketPolicyAction} leaves. Every {@link PacketPolicyAction} must be a leaf (i.e. have no
+   * out-edges). There can be any number of {@link PacketPolicyStatement} states between the root
+   * and a leaf.
+   */
   public static final class BddPacketPolicy {
     private final List<Edge> _edges;
     private final Set<PacketPolicyAction> _actions;
@@ -96,7 +103,6 @@ class PacketPolicyToBdd {
     _hostname = hostname;
     _policy = policy;
     _vrf = vrf;
-    _currentStatement = new PacketPolicyStatement(_hostname, _vrf, _policy.getName(), 0);
     _boolExprToBdd = new BoolExprToBdd(ipAccessListToBdd, ipsRoutedOutInterfaces);
     _transformationToTransition =
         new TransformationToTransition(ipAccessListToBdd.getBDDPacket(), ipAccessListToBdd);
@@ -118,22 +124,11 @@ class PacketPolicyToBdd {
       // add edge to default action
       _edges.add(
           new Edge(
-              currentStatement(),
+              stmtConverter.currentStatement(),
               new PacketPolicyAction(
                   _hostname, _vrf, p.getName(), p.getDefaultAction().getAction()),
               stmtConverter._nextEdgeConstraint));
     }
-  }
-
-  private PacketPolicyStatement currentStatement() {
-    return _currentStatement;
-  }
-
-  private PacketPolicyStatement nextStatement() {
-    _currentStatement =
-        new PacketPolicyStatement(
-            _hostname, _vrf, _policy.getName(), _currentStatement.getId() + 1);
-    return _currentStatement;
   }
 
   private void addEdge(StateExpr source, StateExpr target, BDD bdd) {
@@ -156,6 +151,8 @@ class PacketPolicyToBdd {
    */
   private class StatementToBdd implements StatementVisitor<Void> {
     private final BoolExprToBdd _boolExprToBdd;
+    private int _statementCounter = 0;
+    private PacketPolicyStatement _currentStatement;
 
     /* The constraint of the (not yet created) edge leading out of currentStatement() the next statement of the policy.
      * We update this constraint instead of creating new states/edges when possible. It's not possible if the policy
@@ -165,9 +162,17 @@ class PacketPolicyToBdd {
      */
     private BDD _nextEdgeConstraint;
 
+    private BDD _one;
+    private BDD _zero;
+
     private StatementToBdd(BoolExprToBdd boolExprToBdd) {
       _boolExprToBdd = boolExprToBdd;
-      _nextEdgeConstraint = _boolExprToBdd._ipAccessListToBdd.getBDDPacket().getFactory().one();
+      _currentStatement =
+          new PacketPolicyStatement(_hostname, _vrf, _policy.getName(), _statementCounter++);
+      BDDFactory factory = _boolExprToBdd._ipAccessListToBdd.getBDDPacket().getFactory();
+      _one = factory.one();
+      _zero = factory.zero();
+      _nextEdgeConstraint = _one;
     }
 
     public void visitStatements(List<Statement> statements) {
@@ -178,6 +183,16 @@ class PacketPolicyToBdd {
           return;
         }
       }
+    }
+
+    private PacketPolicyStatement currentStatement() {
+      return _currentStatement;
+    }
+
+    private PacketPolicyStatement nextStatement() {
+      _currentStatement =
+          new PacketPolicyStatement(_hostname, _vrf, _policy.getName(), _statementCounter++);
+      return _currentStatement;
     }
 
     @Override
@@ -199,22 +214,29 @@ class PacketPolicyToBdd {
         return null;
       }
 
-      PacketPolicyStatement inSt = currentStatement();
+      PacketPolicyStatement ifSt = currentStatement();
 
       // initialize pathConstraint for then branch
       _nextEdgeConstraint = thenConstraint;
       visitStatements(ifStmt.getTrueStatements());
+      BDD fallThroughConstraint = _nextEdgeConstraint;
 
-      if (!_nextEdgeConstraint.isZero()) {
+      if (!elseConstraint.isZero() && !fallThroughConstraint.isZero()) {
         // the then branch falls through
         // allocate a new statement node to fan into
         PacketPolicyStatement fallThroughSt = currentStatement();
         PacketPolicyStatement nextSt = nextStatement();
-        addEdge(inSt, nextSt, elseConstraint);
-        addEdge(fallThroughSt, nextSt, _nextEdgeConstraint);
-        _nextEdgeConstraint = _nextEdgeConstraint.getFactory().one();
-      } else {
+        addEdge(ifSt, nextSt, elseConstraint);
+        addEdge(fallThroughSt, nextSt, fallThroughConstraint);
+        _nextEdgeConstraint = _one;
+      } else if (!elseConstraint.isZero()) {
+        _currentStatement = ifSt;
         _nextEdgeConstraint = elseConstraint;
+      } else if (!fallThroughConstraint.isZero()) {
+        _nextEdgeConstraint = fallThroughConstraint;
+      } else {
+        // both branches are zero
+        _nextEdgeConstraint = _zero;
       }
       return null;
     }

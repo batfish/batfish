@@ -4,6 +4,7 @@ import static org.batfish.bddreachability.EdgeMatchers.edge;
 import static org.batfish.bddreachability.transition.Transitions.IDENTITY;
 import static org.batfish.bddreachability.transition.Transitions.constraint;
 import static org.batfish.bddreachability.transition.Transitions.eraseAndSet;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 import static org.batfish.datamodel.transformation.Transformation.always;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -202,6 +203,100 @@ public final class PacketPolicyToBddTest {
             // if ip2
             edge(statement(3), fibLookupState(vrf), constraint(ip2Bdd)),
             edge(statement(3), _dropState, constraint(ip2Bdd.not()))));
+  }
+
+  @Test
+  public void testNoFallThrough() {
+    Transformation noop = always().build();
+    Ip ip1 = Ip.parse("1.1.1.1");
+    String vrf = "vrf";
+    List<Edge> edges =
+        PacketPolicyToBdd.evaluate(
+                _hostname,
+                _ingressVrf,
+                new PacketPolicy(
+                    _policyName,
+                    ImmutableList.of(
+                        new If(
+                            new PacketMatchExpr(AclLineMatchExprs.matchDst(ip1)),
+                            ImmutableList.of(
+                                new ApplyTransformation(noop),
+                                new Return(new FibLookup(new LiteralVrfName(vrf)))))),
+                    new Return(Drop.instance())),
+                _ipAccessListToBdd,
+                EMPTY_IPS_ROUTED_OUT_INTERFACES)
+            .getEdges();
+
+    BDD ip1Bdd = new IpSpaceToBDD(_bddPacket.getDstIp()).toBDD(ip1);
+
+    assertThat(
+        edges,
+        containsInAnyOrder(
+            // if ip1
+            edge(statement(0), statement(1), constraint(ip1Bdd)),
+            // noop transformation (not optimized because should never happen in practice)
+            edge(statement(1), statement(2), IDENTITY),
+            // return
+            edge(statement(2), fibLookupState(vrf), IDENTITY),
+            // else
+            edge(statement(0), _dropState, constraint(ip1Bdd.not()))));
+  }
+
+  @Test
+  public void testIfTrue_fallThrough() {
+    Transformation noop = always().build();
+    List<Edge> edges =
+        PacketPolicyToBdd.evaluate(
+                _hostname,
+                _ingressVrf,
+                new PacketPolicy(
+                    _policyName,
+                    ImmutableList.of(
+                        new If(
+                            new PacketMatchExpr(TRUE),
+                            ImmutableList.of(new ApplyTransformation(noop)))),
+                    new Return(Drop.instance())),
+                _ipAccessListToBdd,
+                EMPTY_IPS_ROUTED_OUT_INTERFACES)
+            .getEdges();
+
+    assertThat(
+        edges,
+        containsInAnyOrder(
+            // if TRUE, then noop
+            edge(statement(0), statement(1), IDENTITY),
+            // fall through to default action
+            edge(statement(1), _dropState, IDENTITY)));
+  }
+
+  @Test
+  public void testIfTrue_noFallThrough() {
+    Transformation noop = always().build();
+    String vrf = "vrf";
+    List<Edge> edges =
+        PacketPolicyToBdd.evaluate(
+                _hostname,
+                _ingressVrf,
+                new PacketPolicy(
+                    _policyName,
+                    ImmutableList.of(
+                        new If(
+                            new PacketMatchExpr(TRUE),
+                            ImmutableList.of(
+                                new ApplyTransformation(noop),
+                                new Return(new FibLookup(new LiteralVrfName(vrf)))))),
+                    new Return(Drop.instance())),
+                _ipAccessListToBdd,
+                EMPTY_IPS_ROUTED_OUT_INTERFACES)
+            .getEdges();
+
+    assertThat(
+        edges,
+        containsInAnyOrder(
+            // if TRUE, then noop
+            edge(statement(0), statement(1), IDENTITY),
+            // return
+            edge(statement(1), fibLookupState(vrf), IDENTITY)));
   }
 
   @Test
