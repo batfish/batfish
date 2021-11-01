@@ -2,15 +2,14 @@ package org.batfish.datamodel.packet_policy;
 
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.Interface;
 
 /** {@link VrfExprVisitor} that provides the name of the specified VRF. */
 @ParametersAreNonnullByDefault
 public class VrfExprNameExtractor implements VrfExprVisitor<String> {
-  @Nonnull private final Interface _ingressIface;
+  @Nonnull private final String _ingressIfaceVrf;
 
-  public VrfExprNameExtractor(Interface ingressIface) {
-    _ingressIface = ingressIface;
+  public VrfExprNameExtractor(String ingressIfaceVrf) {
+    _ingressIfaceVrf = ingressIfaceVrf;
   }
 
   @Override
@@ -20,6 +19,6 @@ public class VrfExprNameExtractor implements VrfExprVisitor<String> {
 
   @Override
   public String visitIngressInterfaceVrf(IngressInterfaceVrf expr) {
-    return _ingressIface.getVrfName();
+    return _ingressIfaceVrf;
   }
 }
