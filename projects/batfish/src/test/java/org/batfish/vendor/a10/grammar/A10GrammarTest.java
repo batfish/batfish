@@ -218,6 +218,28 @@ public class A10GrammarTest {
     return iBatfish.loadConfigurations(iBatfish.getSnapshot());
   }
 
+  @Test
+  public void testExtractVersion() {
+    {
+      // Corresponds to ACOS v2
+      String hostname = "acos_v2";
+      A10Configuration c = parseVendorConfig(hostname);
+      assertThat(c.getMajorVersionNumber(), equalTo(2));
+    }
+    {
+      // Corresponds to ACOS v4/v5
+      String hostname = "acos_v5";
+      A10Configuration c = parseVendorConfig(hostname);
+      assertThat(c.getMajorVersionNumber(), equalTo(5));
+    }
+    {
+      // Ambiguous version
+      String hostname = "acos_v_ambiguous";
+      A10Configuration c = parseVendorConfig(hostname);
+      assertNull(c.getMajorVersionNumber());
+    }
+  }
+
   /**
    * Config with blank lines before, in the middle, and at the end should be correctly recognized
    * and parsed.
