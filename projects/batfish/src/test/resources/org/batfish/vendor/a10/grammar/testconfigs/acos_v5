@@ -1,0 +1,12 @@
+!BATFISH_FORMAT: a10_acos
+!64-bit Advanced Core OS (ACOS) version 5.2.0, build 155 (Aug-10-2020,14:34)
+hostname acos_v5
+!
+interface ethernet 1
+  ip address 10.0.5.1 255.255.255.0
+  enable
+!
+interface ethernet 2
+!
+interface loopback 0
+!
