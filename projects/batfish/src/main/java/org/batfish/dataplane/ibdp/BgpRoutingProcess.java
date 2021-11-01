@@ -1579,10 +1579,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     // Apply final post-policy transformations before sending advertisement to neighbor
     BgpProtocolHelper.transformBgpRoutePostExport(
         transformedOutgoingRouteBuilder,
-        ourSessionProperties.isEbgp(),
-        ourSessionProperties.getConfedSessionType(),
-        ourSessionProperties.getLocalAs(),
-        ourSessionProperties.getLocalIp(),
+        ourSessionProperties,
+        addressFamily,
         exportCandidate.getNextHopIp());
     // Successfully exported route
     R transformedOutgoingRoute = transformedOutgoingRouteBuilder.build();
@@ -1619,13 +1617,12 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       @Nonnull BgpPeerConfigId remoteConfigId,
       @Nonnull BgpPeerConfig ourConfig,
       @Nonnull BgpSessionProperties ourSessionProperties) {
-    String exportPolicyName =
-        Optional.ofNullable(ourConfig.getIpv4UnicastAddressFamily())
-            .map(AddressFamily::getExportPolicy)
-            .orElse(null);
-    if (exportPolicyName == null) {
+    @Nullable AddressFamily v4Family = ourConfig.getIpv4UnicastAddressFamily();
+    if (v4Family == null) {
       return null;
     }
+    String exportPolicyName = v4Family.getExportPolicy();
+    assert exportPolicyName != null; // Conversion guarantee
     RoutingPolicy exportPolicy = _policies.getOrThrow(exportPolicyName);
     RoutingProtocol protocol =
         ourSessionProperties.isEbgp() ? RoutingProtocol.BGP : RoutingProtocol.IBGP;
@@ -1673,10 +1670,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     // Apply final post-policy transformations before sending advertisement to neighbor
     BgpProtocolHelper.transformBgpRoutePostExport(
         transformedOutgoingRouteBuilder,
-        ourSessionProperties.isEbgp(),
-        ourSessionProperties.getConfedSessionType(),
-        ourSessionProperties.getLocalAs(),
-        ourSessionProperties.getLocalIp(),
+        ourSessionProperties,
+        v4Family,
         Route.UNSET_ROUTE_NEXT_HOP_IP);
 
     // Successfully exported route
