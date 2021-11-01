@@ -552,10 +552,14 @@ public final class CheckpointNatConversionsTest {
     Uid hostUid2 = Uid.of("2");
     Uid addrRangeUid = Uid.of("3");
     Uid serviceUid = Uid.of("4");
+    Uid networkUid1 = Uid.of("5");
+    Uid networkUid2 = Uid.of("6");
     String hostName1 = "host1";
     String hostName2 = "host2";
     String addrRangeName = "addrRange";
     String serviceName = "service";
+    String networkName1 = "network1";
+    String networkName2 = "network2";
 
     TypedManagementObject addrRange =
         new AddressRange(
@@ -571,6 +575,20 @@ public final class CheckpointNatConversionsTest {
         new Host(Ip.parse("1.1.1.1"), NAT_SETTINGS_TEST_INSTANCE, hostName1, hostUid1);
     TypedManagementObject host2 =
         new Host(Ip.parse("2.2.2.2"), NAT_SETTINGS_TEST_INSTANCE, hostName2, hostUid2);
+    TypedManagementObject network1 =
+        new Network(
+            networkName1,
+            NAT_SETTINGS_TEST_INSTANCE,
+            Ip.parse("1.1.1.1"),
+            Ip.parse("255.255.255.0"),
+            networkUid1);
+    TypedManagementObject network2 =
+        new Network(
+            networkName2,
+            NAT_SETTINGS_TEST_INSTANCE,
+            Ip.parse("2.2.2.2"),
+            Ip.parse("255.255.255.0"),
+            networkUid2);
     ImmutableMap<Uid, TypedManagementObject> objects =
         ImmutableMap.<Uid, TypedManagementObject>builder()
             .put(hostUid1, host1)
@@ -579,6 +597,8 @@ public final class CheckpointNatConversionsTest {
             .put(serviceUid, service)
             .put(ANY_UID, ANY)
             .put(ORIG_UID, ORIG)
+            .put(networkUid1, network1)
+            .put(networkUid2, network2)
             .build();
     Warnings warnings = new Warnings(true, true, true);
 
@@ -674,12 +694,29 @@ public final class CheckpointNatConversionsTest {
             ORIG_UID,
             hostUid2,
             UID);
+
+    NatRule natRuleNetworks =
+        new NatRule(
+            false,
+            "",
+            true,
+            ImmutableList.of(),
+            NatMethod.STATIC,
+            ANY_UID,
+            ANY_UID,
+            hostUid1,
+            1,
+            networkUid1,
+            ORIG_UID,
+            networkUid2,
+            UID);
     assertFalse(checkValidManualStatic(natRuleService, objects, warnings));
     assertFalse(checkValidManualStatic(natRuleSrcSpaceToHost, objects, warnings));
     assertFalse(checkValidManualStatic(natRuleSrcToSpace, objects, warnings));
     assertFalse(checkValidManualStatic(natRuleDstSpaceToHost, objects, warnings));
     assertFalse(checkValidManualStatic(natRuleDstToSpace, objects, warnings));
     assertTrue(checkValidManualStatic(natRule, objects, warnings));
+    assertTrue(checkValidManualStatic(natRuleNetworks, objects, warnings));
 
     assertThat(
         warnings,
