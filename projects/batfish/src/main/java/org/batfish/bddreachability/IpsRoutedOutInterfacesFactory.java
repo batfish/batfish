@@ -13,8 +13,12 @@ import net.sf.javabdd.BDD;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Fib;
+import org.batfish.datamodel.FibForward;
+import org.batfish.datamodel.FibNextVrf;
+import org.batfish.datamodel.FibNullRoute;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.visitors.FibActionVisitor;
 
 /**
  * Generates {@link IpsRoutedOutInterfaces} objects for a {@link Fib} (identified by node/vrf
@@ -54,10 +58,32 @@ public final class IpsRoutedOutInterfacesFactory {
     return new IpsRoutedOutInterfaces(_fibs.get(node).get(vrf));
   }
 
+  private static class FibEntryResolvesToInterface implements FibActionVisitor<Boolean> {
+    public static final FibEntryResolvesToInterface INSTANCE = new FibEntryResolvesToInterface();
+
+    @Override
+    public Boolean visitFibForward(FibForward fibForward) {
+      return true;
+    }
+
+    @Override
+    public Boolean visitFibNextVrf(FibNextVrf fibNextVrf) {
+      return false;
+    }
+
+    @Override
+    public Boolean visitFibNullRoute(FibNullRoute fibNullRoute) {
+      return false;
+    }
+
+    private FibEntryResolvesToInterface() {}
+  }
+
   @VisibleForTesting
   static Map<String, IpSpace> computeIpsRoutedOutInterfacesMap(Fib fib) {
     Map<Prefix, IpSpace> matchingIps = fib.getMatchingIps();
     return fib.allEntries().stream()
+        .filter(fibEntry -> fibEntry.getAction().accept(FibEntryResolvesToInterface.INSTANCE))
         .collect(
             groupingBy(
                 fibEntry -> fibEntry.getResolvedToRoute().getNextHopInterface(),
