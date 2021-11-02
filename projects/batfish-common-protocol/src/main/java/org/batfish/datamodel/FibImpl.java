@@ -3,7 +3,6 @@ package org.batfish.datamodel;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableCollection;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
@@ -170,7 +169,7 @@ public final class FibImpl implements Fib {
               return new FibNextVrf(nextHopVrf.getVrfName());
             }
           }.visit(route.getNextHop());
-      entriesBuilder.add(new FibEntry(fibAction, ImmutableList.copyOf(stack)));
+      entriesBuilder.add(new FibEntry(fibAction, stack));
       return;
     }
     stack.push(route);

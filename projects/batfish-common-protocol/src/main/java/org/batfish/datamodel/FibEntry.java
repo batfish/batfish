@@ -2,6 +2,7 @@ package org.batfish.datamodel;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
 import java.util.List;
 import javax.annotation.Nonnull;
@@ -25,7 +26,10 @@ public final class FibEntry implements Serializable {
     checkArgument(
         !resolutionSteps.isEmpty(), "FIB resolution steps must contain at least one route");
     _action = action;
-    _resolutionSteps = resolutionSteps;
+    // TODO: currently only keeping the top level route. Until there is another use case for
+    //       resolution steps, the rest are not used.
+    // _resolutionSteps = ImmutableList.copyOf(resolutionSteps);
+    _resolutionSteps = ImmutableList.of(resolutionSteps.get(0));
   }
 
   /** The action to take when this entry is matched. */
@@ -33,9 +37,14 @@ public final class FibEntry implements Serializable {
     return _action;
   }
 
-  /** A chain of routes that explains how the top route was resolved */
-  @Nonnull
-  public List<AbstractRoute> getResolutionSteps() {
+  /**
+   * A chain of routes that explains how the top route was resolved.
+   *
+   * <p>TODO: this is not used anywhere, and it is more efficient not to store all routes. If
+   * needed, fix constructor and change visibility.
+   */
+  @SuppressWarnings("unused")
+  private @Nonnull List<AbstractRoute> getResolutionSteps() {
     return _resolutionSteps;
   }
 
