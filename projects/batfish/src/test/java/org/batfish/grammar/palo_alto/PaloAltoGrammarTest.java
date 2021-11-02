@@ -3857,7 +3857,6 @@ public final class PaloAltoGrammarTest {
   public void testHighAvailability() {
     String hostname = "high-availability";
     PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
-    Vsys vsys = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
     assertNotNull(c.getHighAvailability());
     assertThat(c.getHighAvailability().getDeviceId(), equalTo(1));
   }
