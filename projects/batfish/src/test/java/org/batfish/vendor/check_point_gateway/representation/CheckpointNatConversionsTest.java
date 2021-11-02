@@ -966,6 +966,39 @@ public final class CheckpointNatConversionsTest {
           equalTo(Optional.of(ImmutableList.of(assignDestinationIp(hostIp2)))));
     }
     {
+      // dst: network -> network
+      NatRule natRule =
+          new NatRule(
+              false,
+              "",
+              true,
+              ImmutableList.of(),
+              NatMethod.STATIC,
+              networkUid1,
+              ANY_UID,
+              ANY_UID,
+              1,
+              networkUid2,
+              ORIG_UID,
+              ORIG_UID,
+              UID);
+      ImmutableMap<Uid, NamedManagementObject> objects =
+          ImmutableMap.<Uid, NamedManagementObject>builder()
+              .put(networkUid1, network1)
+              .put(networkUid2, network2)
+              .put(ANY_UID, ANY)
+              .put(ORIG_UID, ORIG)
+              .build();
+
+      assertThat(
+          manualStaticTransformationSteps(natRule, objects, warnings),
+          equalTo(
+              Optional.of(
+                  ImmutableList.of(
+                      assignDestinationIp(
+                          networkPrefix2.getStartIp(), networkPrefix2.getEndIp())))));
+    }
+    {
       // src and dst translation
       NatRule natRule =
           new NatRule(
