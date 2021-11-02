@@ -545,7 +545,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     if (oldRedistributionPolicy != null) {
       _w.addWarning(
           ctx,
-          ctx.getStart().getText(),
+          getFullText(ctx),
           _parser,
           String.format(
               "overwriting BgpRedistributionPolicy for vrf %s, protocol %s",
@@ -781,16 +781,13 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     } else if (ctx.name != null) {
       name = ctx.name.getText();
     } else {
-      throw new BatfishException("neightbor name or address");
+      throw new BatfishException("neighbor name or address");
     }
 
     BgpNeighbor bgpNeighbor = _currentBgpVrf.getNeighbors().get(name);
     if (bgpNeighbor == null) {
       _w.addWarning(
-          ctx,
-          ctx.getStart().getText(),
-          _parser,
-          String.format("neighbor %s does not exist", name));
+          ctx, getFullText(ctx), _parser, String.format("neighbor %s does not exist", name));
     } else {
       _currentBgpNeighborIpv4UnicastAddressFamily = bgpNeighbor.getIpv4UnicastAddressFamily();
       if (_currentBgpNeighborIpv4UnicastAddressFamily == null) {
@@ -821,10 +818,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     BgpNeighbor bgpNeighbor = _currentBgpVrf.getNeighbors().get(name);
     if (bgpNeighbor == null) {
       _w.addWarning(
-          ctx,
-          ctx.getStart().getText(),
-          _parser,
-          String.format("neighbor %s does not exist", name));
+          ctx, getFullText(ctx), _parser, String.format("neighbor %s does not exist", name));
     } else {
       _currentBgpNeighborIpv4UnicastAddressFamily = bgpNeighbor.getIpv4UnicastAddressFamily();
       if (_currentBgpNeighborIpv4UnicastAddressFamily == null) {
@@ -1037,7 +1031,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     if (oldRedistributionPolicy != null) {
       _w.addWarning(
           ctx,
-          ctx.getStart().getText(),
+          getFullText(ctx),
           _parser,
           String.format(
               "overwriting BgpRedistributionPolicy for vrf %s, protocol %s",
@@ -1326,6 +1320,9 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitSbafin_route_map(Sbafin_route_mapContext ctx) {
+    if (_currentBgpNeighborIpv4UnicastAddressFamily == null) {
+      return;
+    }
     String name = ctx.name.getText();
     CumulusStructureUsage usage;
     if (ctx.IN() != null) {

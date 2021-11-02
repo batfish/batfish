@@ -9,17 +9,20 @@ options {
 s_bgp
 :
   ROUTER BGP autonomous_system (VRF vrf_name)? NEWLINE
-  (
-    sb_address_family
-  | sb_always_compare_med
-  | sb_bgp
-  | sb_neighbor
-  | sb_network
-  | sb_no
-  | sb_redistribute
-  | sb_timers
-  | sbafi_neighbor
-  )*
+  bgp_inner*
+;
+
+bgp_inner
+:
+  sb_address_family
+| sb_always_compare_med
+| sb_bgp
+| sb_neighbor
+| sb_network
+| sb_no
+| sb_redistribute
+| sb_timers
+| sbafi_neighbor
 ;
 
 sb_bgp
@@ -58,7 +61,6 @@ sbnob_default
   (
      sbnobd_ipv4_unicast
   )
-  NEWLINE
 ;
 
 sbb_confederation
@@ -106,7 +108,7 @@ sbb_cluster_id
 
 sb_neighbor
 :
-  NEIGHBOR (sbn_ip | sbn_ip6 | sbn_name) NEWLINE
+  NEIGHBOR (sbn_ip | sbn_ip6 | sbn_name)
 ;
 
 sb_address_family
@@ -125,26 +127,32 @@ sbaf
 sbaf_ipv4_unicast
 :
   IPV4 UNICAST NEWLINE
-  (
-    sbafi_aggregate_address
-    | sbafi_import
-    // Skeptical that max-paths belongs here.
-    // Adding for now to prevent jumping out of parser context.
-    | sbafi_maximum_paths
-    | sbafi_network
-    | sbafi_neighbor
-    | sbafi_no
-    | sbafi_redistribute
-  )*
+  sbafi_inner*
+;
+
+sbafi_inner
+:
+  sbafi_aggregate_address
+| sbafi_import
+// Skeptical that max-paths belongs here.
+// Adding for now to prevent jumping out of parser context.
+| sbafi_maximum_paths
+| sbafi_network
+| sbafi_neighbor
+| sbafi_no
+| sbafi_redistribute
 ;
 
 sbaf_ipv6_unicast
 :
   IPV6 UNICAST NEWLINE
-  (
-    sbafi6_import
-    |  sbafi6_null_tail
-  )*
+  sbafi6_inner*
+;
+
+sbafi6_inner
+:
+  sbafi6_import
+| sbafi6_null_tail
 ;
 
 sbafi6_import
@@ -166,12 +174,15 @@ sbafi6_null_tail
 sbaf_l2vpn_evpn
 :
   L2VPN EVPN NEWLINE
-  (
-       sbafl_advertise
-     | sbafl_advertise_all_vni
-     | sbafl_advertise_default_gw
-     | sbafl_neighbor
-  )*
+  sbafl_inner*
+;
+
+sbafl_inner
+:
+  sbafl_advertise
+| sbafl_advertise_all_vni
+| sbafl_advertise_default_gw
+| sbafl_neighbor
 ;
 
 sbafl_neighbor
@@ -308,72 +319,72 @@ sbn_interface
 
 sbn_peer_group_decl
 :
-  PEER_GROUP
+  PEER_GROUP NEWLINE
 ;
 
 sbn_property
 :
  sbnp_advertisement_interval
+| sbnp_bfd
 | sbnp_description
 | sbnp_ebgp_multihop
-| sbnp_peer_group
-| sbnp_bfd
-| sbnp_password
-| sbnp_remote_as
-| sbnp_update_source
 | sbnp_local_as
+| sbnp_password
+| sbnp_peer_group
+| sbnp_remote_as
 | sbnp_timers
+| sbnp_update_source
 ;
 
 sbnp_advertisement_interval
 :
-   ADVERTISEMENT_INTERVAL uint32
+   ADVERTISEMENT_INTERVAL uint32 NEWLINE
 ;
 
 
 sbnp_bfd
 :
-  BFD word*
+  BFD word* NEWLINE
 ;
 
 sbnp_description
 :
-  DESCRIPTION REMARK_TEXT
+  DESCRIPTION REMARK_TEXT NEWLINE
 ;
 
 sbnp_ebgp_multihop
 :
-  EBGP_MULTIHOP (num = uint32)?
-;
-
-sbnp_password
-:
-  PASSWORD REMARK_TEXT
-;
-
-sbnp_peer_group
-:
-  PEER_GROUP name = word
-;
-
-sbnp_remote_as
-:
-  REMOTE_AS (autonomous_system | EXTERNAL | INTERNAL)
-;
-
-sbnp_update_source
-:
-  UPDATE_SOURCE (ip = IP_ADDRESS | name = word)
+  EBGP_MULTIHOP (num = uint32)? NEWLINE
 ;
 
 sbnp_local_as
 :
-  LOCAL_AS asn = autonomous_system (NO_PREPEND REPLACE_AS?)?
+  LOCAL_AS asn = autonomous_system (NO_PREPEND REPLACE_AS?)? NEWLINE
+;
+
+sbnp_password
+:
+  PASSWORD REMARK_TEXT NEWLINE
+;
+
+sbnp_peer_group
+:
+  PEER_GROUP name = word NEWLINE
+;
+
+sbnp_remote_as
+:
+  REMOTE_AS (autonomous_system | EXTERNAL | INTERNAL) NEWLINE
 ;
 
 sbnp_timers
 :
-  TIMERS CONNECT uint32
+  TIMERS CONNECT uint32 NEWLINE
+;
+
+sbnp_update_source
+:
+  UPDATE_SOURCE (ip = IP_ADDRESS | name = word) NEWLINE
 ;
 
 sb_network
@@ -394,7 +405,6 @@ sbafi_neighbor
   | sbafin_soft_reconfiguration
   | sbafin_route_map
   )
-  NEWLINE
 ;
 
 sbafi_no
@@ -417,57 +427,47 @@ sbafinon_activate
 
 sbafin_activate
 :
-  ACTIVATE
+  ACTIVATE NEWLINE
 ;
 
 sbafin_allowas_in
 :
-  ALLOWAS_IN count = UINT8
+  ALLOWAS_IN count = UINT8 NEWLINE
 ;
 
 sbafin_default_originate
 :
-  DEFAULT_ORIGINATE
+  DEFAULT_ORIGINATE NEWLINE
 ;
 
 sbafin_next_hop_self
 :
-  NEXT_HOP_SELF (FORCE | ALL)?
+  NEXT_HOP_SELF (FORCE | ALL)? NEWLINE
 ;
 
 sbafin_route_reflector_client
 :
-  ROUTE_REFLECTOR_CLIENT
+  ROUTE_REFLECTOR_CLIENT NEWLINE
 ;
 
 sbafin_send_community
 :
-  SEND_COMMUNITY EXTENDED?
+  SEND_COMMUNITY EXTENDED? NEWLINE
 ;
 
 sbafin_soft_reconfiguration
 :
-  SOFT_RECONFIGURATION INBOUND
+  SOFT_RECONFIGURATION INBOUND NEWLINE
 ;
 
 sbafin_route_map
 :
-  ROUTE_MAP name=word (IN | OUT)
-;
-
-sbn_bfd
-:
-  BFD word*
-;
-
-sbn_password
-:
-  PASSWORD REMARK_TEXT
+  ROUTE_MAP name=word (IN | OUT) NEWLINE
 ;
 
 sbnobd_ipv4_unicast
 :
-    IPV4_UNICAST
+    IPV4_UNICAST NEWLINE
 ;
 
 sb_timers
