@@ -66480,8 +66480,7 @@
             "                      (srn_active_active_device_binding",
             "                        ACTIVE_ACTIVE_DEVICE_BINDING:'active-active-device-binding'",
             "                        bind = (active_active_device_binding_val*",
-            "                          (uint8*",
-            "                            UINT8:'0'))))))))))))",
+            "                          PRIMARY:'primary')))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -71406,7 +71405,7 @@
               "Comment" : "Batfish currently models this as active-active-device-binding both",
               "Line" : 19,
               "Parser_Context" : "[srn_active_active_device_binding srn_definition sr_nat_rules sr_nat rulebase_inner s_post_rulebase ss_common s_policy_panorama s_policy set_line_tail set_line palo_alto_configuration]",
-              "Text" : "active-active-device-binding 0"
+              "Text" : "active-active-device-binding primary"
             }
           ]
         },

@@ -26,4 +26,4 @@ set rulebase nat rules NATRULE1 destination [ 10.0.1.1 10.0.2.11-10.0.2.1 ]
 set rulebase nat rules NATRULE1 source-translation dynamic-ip-and-port translated-address 192.168.1.101-192.168.1.1
 set rulebase nat rules NATRULE1 service service-http
 # Unsupported active-active-device-binding mode
-set rulebase nat rules NATRULE1 active-active-device-binding 1
+set rulebase nat rules NATRULE1 active-active-device-binding primary

@@ -157,6 +157,7 @@ import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpSpaceToBDD;
+import org.batfish.common.matchers.ParseWarningMatchers;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.runtime.SnapshotRuntimeData;
 import org.batfish.config.Settings;
@@ -2380,6 +2381,18 @@ public final class PaloAltoGrammarTest {
             String.format(
                 "Could not convert RuleEndpoint range to IpSpace: %s",
                 new RuleEndpoint(IP_RANGE, "11.11.11.13-11.11.11.12"))));
+  }
+
+  @Test
+  public void testRulebaseParseWarning() {
+    PaloAltoConfiguration c = parsePaloAltoConfig("rulebase-warning");
+    List<ParseWarning> parseWarnings = c.getWarnings().getParseWarnings();
+    assertThat(
+        parseWarnings,
+        containsInAnyOrder(
+            allOf(
+                ParseWarningMatchers.hasText("active-active-device-binding primary"),
+                hasComment("Batfish currently models this as active-active-device-binding both"))));
   }
 
   @Test

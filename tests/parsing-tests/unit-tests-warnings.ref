@@ -1312,7 +1312,7 @@
       {
         "Filename" : "configs/palo_alto/nat",
         "Line" : 19,
-        "Text" : "active-active-device-binding 0",
+        "Text" : "active-active-device-binding primary",
         "Parser_Context" : "[srn_active_active_device_binding srn_definition sr_nat_rules sr_nat rulebase_inner s_post_rulebase ss_common s_policy_panorama s_policy set_line_tail set_line palo_alto_configuration]",
         "Comment" : "Batfish currently models this as active-active-device-binding both"
       },
