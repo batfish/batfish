@@ -40,7 +40,6 @@ import static org.batfish.vendor.a10.representation.A10Conversion.toDstTransform
 import static org.batfish.vendor.a10.representation.A10Conversion.toIntegerSpace;
 import static org.batfish.vendor.a10.representation.A10Conversion.toKernelRoute;
 import static org.batfish.vendor.a10.representation.A10Conversion.toMatchCondition;
-import static org.batfish.vendor.a10.representation.A10Conversion.toNonForwardingKernelRoute;
 import static org.batfish.vendor.a10.representation.A10Conversion.toProtocol;
 import static org.batfish.vendor.a10.representation.A10Conversion.toVrrpGroupBuilder;
 import static org.batfish.vendor.a10.representation.A10Conversion.toVrrpGroups;
@@ -441,7 +440,6 @@ public class A10ConversionTest {
                   .setNetwork(Prefix.strict("10.0.0.1/32"))
                   .setRequiredOwnedIp(target)
                   .setTag(KERNEL_ROUTE_TAG_VIRTUAL_SERVER_UNFLAGGED)
-                  .setNonForwarding(false)
                   .build()));
     }
     {
@@ -455,7 +453,6 @@ public class A10ConversionTest {
                   .setNetwork(Prefix.strict("10.0.0.1/32"))
                   .setRequiredOwnedIp(target)
                   .setTag(KERNEL_ROUTE_TAG_VIRTUAL_SERVER_FLAGGED)
-                  .setNonForwarding(false)
                   .build()));
     }
   }
@@ -465,7 +462,7 @@ public class A10ConversionTest {
     Ip start = Ip.parse("10.0.0.1");
     NatPool pool = new NatPool("pool1", start, Ip.parse("10.0.0.5"), 24);
     assertThat(
-        toNonForwardingKernelRoute(pool),
+        A10Conversion.toKernelRoute(pool),
         equalTo(
             KernelRoute.builder()
                 .setNetwork(Prefix.strict("10.0.0.0/24"))
@@ -479,7 +476,7 @@ public class A10ConversionTest {
     Ip start = Ip.parse("10.0.0.1");
     NatPool pool = new NatPool("pool1", start, Ip.parse("10.0.0.5"), 24);
     assertThat(
-        toNonForwardingKernelRoute(pool),
+        A10Conversion.toKernelRoute(pool),
         equalTo(
             KernelRoute.builder()
                 .setNetwork(Prefix.strict("10.0.0.0/24"))
@@ -498,7 +495,6 @@ public class A10ConversionTest {
                 .setNetwork(Prefix.strict("10.0.0.1/32"))
                 .setRequiredOwnedIp(floatingIp)
                 .setTag(KERNEL_ROUTE_TAG_FLOATING_IP)
-                .setNonForwarding(false)
                 .build()));
   }
 
