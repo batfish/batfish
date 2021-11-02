@@ -2,7 +2,6 @@ package org.batfish.datamodel;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import com.google.common.collect.Iterables;
 import java.io.Serializable;
 import java.util.List;
 import javax.annotation.Nonnull;
@@ -44,11 +43,6 @@ public final class FibEntry implements Serializable {
   @Nonnull
   public AbstractRoute getTopLevelRoute() {
     return _resolutionSteps.get(0);
-  }
-
-  /** Return the final resolved route */
-  public AbstractRoute getResolvedToRoute() {
-    return Iterables.getLast(_resolutionSteps);
   }
 
   @Override

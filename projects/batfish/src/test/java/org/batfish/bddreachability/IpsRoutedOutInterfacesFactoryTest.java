@@ -16,10 +16,15 @@ import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.FibEntry;
 import org.batfish.datamodel.FibForward;
+import org.batfish.datamodel.FibNextVrf;
+import org.batfish.datamodel.FibNullRoute;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.MockFib;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.route.nh.NextHopVrf;
 import org.junit.Test;
 
 public class IpsRoutedOutInterfacesFactoryTest {
@@ -37,10 +42,32 @@ public class IpsRoutedOutInterfacesFactoryTest {
     ConnectedRoute route2 = new ConnectedRoute(prefix2, iface2);
     BDD prefix1Bdd = _dst.toBDD(prefix1);
     BDD prefix2Bdd = _dst.toBDD(prefix2);
+    StaticRoute nullRoute =
+        StaticRoute.testBuilder()
+            .setNetwork(Prefix.ZERO)
+            .setNextHop(NextHopDiscard.instance())
+            .build();
+    StaticRoute nextVrfRoute =
+        StaticRoute.testBuilder().setNetwork(Prefix.ZERO).setNextHop(NextHopVrf.of("vrf")).build();
 
     // empty fib
     {
       Fib fib = MockFib.builder().build();
+      assertEquals(
+          ImmutableMap.of(), IpsRoutedOutInterfacesFactory.computeIpsRoutedOutInterfacesMap(fib));
+    }
+
+    // empty fib with irrelevant routes
+    {
+      Fib fib =
+          MockFib.builder()
+              .setFibEntries(
+                  ImmutableMap.of(
+                      Ip.ZERO,
+                      ImmutableSet.of(
+                          new FibEntry(FibNullRoute.INSTANCE, ImmutableList.of(nullRoute)),
+                          new FibEntry(new FibNextVrf("vrf"), ImmutableList.of(nextVrfRoute)))))
+              .build();
       assertEquals(
           ImmutableMap.of(), IpsRoutedOutInterfacesFactory.computeIpsRoutedOutInterfacesMap(fib));
     }
