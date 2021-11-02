@@ -98,9 +98,9 @@ public class BDDReachabilityGraphOptimizer {
                 + "leaves pruned: %s, "
                 + "spliced: %s, "
                 + "spliced and dropped: %s, "
+                + "single identity in edges removed: %s, "
+                + "single identity out edges removed: %s, "
                 + "self loops removed: %s, "
-                + "single identity in edges removed: %s ,"
-                + "single identity out edges removed: %s ,"
                 + "finalEdges: %s",
             _origEdges,
             _rootsPruned,
@@ -232,6 +232,22 @@ public class BDDReachabilityGraphOptimizer {
       StateExpr candidate, Collection<StateExpr> inStates, Collection<StateExpr> outStates) {
     checkArgument(inStates.size() == 1 && outStates.size() > 1);
     StateExpr prev = Iterables.getOnlyElement(inStates);
+
+    if (prev.equals(candidate)) {
+      // In-edge is a self-loop, candidate is unreachable. Remove even if we are preserving
+      // self-loops.
+      _edges.remove(candidate, candidate);
+      for (StateExpr next : outStates) {
+        _edges.remove(candidate, next);
+        _preStates.remove(next, candidate);
+      }
+      _preStates.removeAll(candidate);
+      _postStates.removeAll(candidate);
+      return outStates;
+    }
+
+    // Note: since !prev.equals(candidate), outStates does not contain candidate
+
     Transition inTransition = _edges.get(prev, candidate);
     if (inTransition == IDENTITY) {
       _identityIn++;
@@ -265,6 +281,14 @@ public class BDDReachabilityGraphOptimizer {
       StateExpr candidate, Collection<StateExpr> inStates, Collection<StateExpr> outStates) {
     checkArgument(inStates.size() > 1 && outStates.size() == 1);
     StateExpr next = Iterables.getOnlyElement(outStates);
+
+    if (next.equals(candidate)) {
+      // out-edge is a self-loop. handled elsewhere
+      return ImmutableList.of();
+    }
+
+    // Note: since !next.equals(candidate), inStates does not contain candidate
+
     Transition outTransition = _edges.get(candidate, next);
     if (outTransition == IDENTITY) {
       _identityOut++;
