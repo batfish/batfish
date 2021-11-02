@@ -44,7 +44,6 @@ import static org.batfish.vendor.a10.representation.A10Configuration.getInterfac
 import static org.batfish.vendor.a10.representation.A10Conversion.DEFAULT_VRRP_A_PRIORITY;
 import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_FLOATING_IP;
 import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_NAT_POOL;
-import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_NAT_POOL_PROXY_ARP_IP;
 import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_VIRTUAL_SERVER_FLAGGED;
 import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_VIRTUAL_SERVER_UNFLAGGED;
 import static org.batfish.vendor.a10.representation.A10Conversion.SNAT_PORT_POOL_START;
@@ -1982,44 +1981,28 @@ public class A10GrammarTest {
                 .setTag(KERNEL_ROUTE_TAG_NAT_POOL)
                 .build(),
             KernelRoute.builder()
-                .setNetwork(Prefix.strict("10.10.10.10/32"))
-                .setRequiredOwnedIp(Ip.parse("10.10.10.10"))
-                .setNonForwarding(false)
-                .setTag(KERNEL_ROUTE_TAG_NAT_POOL_PROXY_ARP_IP)
-                .build(),
-            KernelRoute.builder()
                 .setNetwork(Prefix.strict("10.0.0.0/24"))
                 .setRequiredOwnedIp(Ip.parse("10.0.0.11"))
                 .setTag(KERNEL_ROUTE_TAG_NAT_POOL)
                 .build(),
             KernelRoute.builder()
-                .setNetwork(Prefix.strict("10.0.0.11/32"))
-                .setRequiredOwnedIp(Ip.parse("10.0.0.11"))
-                .setNonForwarding(false)
-                .setTag(KERNEL_ROUTE_TAG_NAT_POOL_PROXY_ARP_IP)
-                .build(),
-            KernelRoute.builder()
                 .setNetwork(Prefix.strict("10.0.5.1/32"))
                 .setRequiredOwnedIp(Ip.parse("10.0.5.1"))
-                .setNonForwarding(false)
                 .setTag(KERNEL_ROUTE_TAG_VIRTUAL_SERVER_UNFLAGGED)
                 .build(),
             KernelRoute.builder()
                 .setNetwork(Prefix.strict("10.0.6.1/32"))
                 .setRequiredOwnedIp(Ip.parse("10.0.6.1"))
-                .setNonForwarding(false)
                 .setTag(KERNEL_ROUTE_TAG_VIRTUAL_SERVER_FLAGGED)
                 .build(),
             KernelRoute.builder()
                 .setNetwork(Prefix.strict("10.0.9.1/32"))
                 .setRequiredOwnedIp(Ip.parse("10.0.9.1"))
-                .setNonForwarding(false)
                 .setTag(KERNEL_ROUTE_TAG_FLOATING_IP)
                 .build(),
             KernelRoute.builder()
                 .setNetwork(Prefix.strict("10.0.9.2/32"))
                 .setRequiredOwnedIp(Ip.parse("10.0.9.2"))
-                .setNonForwarding(false)
                 .setTag(KERNEL_ROUTE_TAG_FLOATING_IP)
                 .build()));
   }
@@ -2138,7 +2121,6 @@ public class A10GrammarTest {
                 .setNetwork(Prefix.strict("10.0.2.1/32"))
                 .setRequiredOwnedIp(Ip.parse("10.0.2.1"))
                 .setTag(KERNEL_ROUTE_TAG_FLOATING_IP)
-                .setNonForwarding(false)
                 .build(),
             KernelRoute.builder()
                 .setNetwork(Prefix.strict("10.0.3.0/24"))
@@ -2149,19 +2131,6 @@ public class A10GrammarTest {
                 .setNetwork(Prefix.strict("10.0.4.1/32"))
                 .setRequiredOwnedIp(Ip.parse("10.0.4.1"))
                 .setTag(KERNEL_ROUTE_TAG_VIRTUAL_SERVER_UNFLAGGED)
-                .setNonForwarding(false)
-                .build(),
-            KernelRoute.builder()
-                .setNetwork(Prefix.strict("10.0.3.1/32"))
-                .setRequiredOwnedIp(Ip.parse("10.0.3.1"))
-                .setTag(KERNEL_ROUTE_TAG_NAT_POOL_PROXY_ARP_IP)
-                .setNonForwarding(false)
-                .build(),
-            KernelRoute.builder()
-                .setNetwork(Prefix.strict("10.0.3.2/32"))
-                .setRequiredOwnedIp(Ip.parse("10.0.3.2"))
-                .setTag(KERNEL_ROUTE_TAG_NAT_POOL_PROXY_ARP_IP)
-                .setNonForwarding(false)
                 .build()));
   }
 }
