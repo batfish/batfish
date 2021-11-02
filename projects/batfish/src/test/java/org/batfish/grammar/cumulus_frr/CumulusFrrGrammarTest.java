@@ -2,6 +2,7 @@ package org.batfish.grammar.cumulus_frr;
 
 import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasText;
+import static org.batfish.common.matchers.WarningsMatchers.hasParseWarning;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpv4RouteThat;
@@ -465,21 +466,21 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testBgpAdressFamilyL2vpnEvpnAdvertiseAllVni() {
+  public void testBgpAddressFamilyL2vpnEvpnAdvertiseAllVni() {
     parseLines(
         "router bgp 1", "address-family l2vpn evpn", "advertise-all-vni", "exit-address-family");
     assertTrue(_frr.getBgpProcess().getDefaultVrf().getL2VpnEvpn().getAdvertiseAllVni());
   }
 
   @Test
-  public void testBgpAdressFamilyL2vpnEvpnAdvertiseDefaultGw() {
+  public void testBgpAddressFamilyL2vpnEvpnAdvertiseDefaultGw() {
     parseLines(
         "router bgp 1", "address-family l2vpn evpn", "advertise-default-gw", "exit-address-family");
     assertTrue(_frr.getBgpProcess().getDefaultVrf().getL2VpnEvpn().getAdvertiseDefaultGw());
   }
 
   @Test
-  public void testBgpAdressFamilyL2vpnEvpnAdvertiseIpv4Unicast() {
+  public void testBgpAddressFamilyL2vpnEvpnAdvertiseIpv4Unicast() {
     parseLines(
         "router bgp 1",
         "address-family l2vpn evpn",
@@ -489,7 +490,7 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testBgpAdressFamilyL2vpnEvpnAdvertiseIpv4UnicastRouteMap() {
+  public void testBgpAddressFamilyL2vpnEvpnAdvertiseIpv4UnicastRouteMap() {
     parseLines(
         "router bgp 1",
         "address-family l2vpn evpn",
@@ -507,7 +508,7 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testBgpAdressFamilyL2vpnEvpnAdvertiseIpv6Unicast() {
+  public void testBgpAddressFamilyL2vpnEvpnAdvertiseIpv6Unicast() {
     parseLines(
         "router bgp 1",
         "address-family l2vpn evpn",
@@ -524,7 +525,7 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testBgpAdressFamilyL2vpnEvpnNeighborActivate() {
+  public void testBgpAddressFamilyL2vpnEvpnNeighborActivate() {
     parseLines(
         "router bgp 1",
         "neighbor n interface description a",
@@ -539,7 +540,7 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testBgpAdressFamilyL2vpnEvpnNeighborRouteMap() {
+  public void testBgpAddressFamilyL2vpnEvpnNeighborRouteMap() {
     parseLines(
         "router bgp 1",
         " neighbor n interface description a",
@@ -565,7 +566,7 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testBgpAdressFamilyL2vpnEvpnNeighborRouteReflectorClient() {
+  public void testBgpAddressFamilyL2vpnEvpnNeighborRouteReflectorClient() {
     parseLines(
         "router bgp 1",
         "neighbor n interface description a",
@@ -577,7 +578,7 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testBgpAdressFamilyL2vpnEvpnMultipleDefinitions() {
+  public void testBgpAddressFamilyL2vpnEvpnMultipleDefinitions() {
     parseLines(
         "router bgp 1",
         " neighbor n interface description a",
@@ -1727,6 +1728,20 @@ public class CumulusFrrGrammarTest {
     assertThat(
         _config.getBgpProcess().getDefaultVrf().getNetworks(),
         equalTo(ImmutableMap.of(network, new BgpNetwork(network, "FOO"))));
+  }
+
+  /** FRR does not crash if undeclared peer-group has a route-map configured. */
+  @Test
+  public void testIp4vUnicastRoutemap_error() {
+    parseLines(
+        "router bgp 10000",
+        "address-family ipv4 unicast",
+        "neighbor N route-map R in",
+        "exit-address-family");
+    assertThat(
+        _warnings,
+        hasParseWarning(
+            allOf(hasComment("neighbor N does not exist"), hasText("neighbor N route-map R in"))));
   }
 
   @Test
