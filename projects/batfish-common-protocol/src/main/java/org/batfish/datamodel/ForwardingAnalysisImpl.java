@@ -381,10 +381,10 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
    * <br>
    * 1) PERMIT IPs belonging to the interface.<br>
    * 2) PERMIT any statically configured arp IPs.<br>
-   * 3) (Proxy-ARP) DENY any IP for which there is a longest-prefix match entry in the FIB that goes
+   * 3) (Proxy-ARP) PERMIT any other owned IPs of the VRF of the interface.<br>
+   * 4) (Proxy-ARP) DENY any IP for which there is a longest-prefix match entry in the FIB that goes
    * through the interface.<br>
-   * 4) (Proxy-ARP) PERMIT any other IP routable via the VRF of the interface.<br>
-   * 5) (Proxy-ARP) PERMIT any other owned IPs of the VRF of the interface.
+   * 5) (Proxy-ARP) PERMIT any other IP routable via the VRF of the interface.
    */
   @VisibleForTesting
   static @Nonnull Map<String, Map<String, IpSpace>> computeArpReplies(
