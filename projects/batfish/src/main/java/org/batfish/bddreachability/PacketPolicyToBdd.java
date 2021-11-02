@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
@@ -67,6 +68,14 @@ class PacketPolicyToBdd {
     public BddPacketPolicy(List<Edge> edges, Set<PacketPolicyAction> actions) {
       _edges = edges;
       _actions = actions;
+      // Sanity check edges and actions.
+      assert edges.stream()
+              .map(Edge::getPostState)
+              .filter(s -> s instanceof PacketPolicyAction)
+              .map(s -> (PacketPolicyAction) s)
+              .collect(Collectors.toSet())
+              .equals(actions)
+          : "actions and edges are not consistent";
     }
 
     public List<Edge> getEdges() {
@@ -122,12 +131,10 @@ class PacketPolicyToBdd {
      */
     if (!stmtConverter._nextEdgeConstraint.isZero()) {
       // add edge to default action
-      _edges.add(
-          new Edge(
-              stmtConverter.currentStatement(),
-              new PacketPolicyAction(
-                  _hostname, _vrf, p.getName(), p.getDefaultAction().getAction()),
-              stmtConverter._nextEdgeConstraint));
+      addEdge(
+          stmtConverter.currentStatement(),
+          new PacketPolicyAction(_hostname, _vrf, p.getName(), p.getDefaultAction().getAction()),
+          stmtConverter._nextEdgeConstraint);
     }
   }
 
