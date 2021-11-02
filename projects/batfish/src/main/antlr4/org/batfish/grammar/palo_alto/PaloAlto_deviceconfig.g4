@@ -38,11 +38,14 @@ sd_high_availability
 
 sdha_group
 :
-    GROUP id = ha_group_id
+    GROUP
     (
-      sdhag_mode
+      sdhag_group_id
+      | sdhag_mode
     )
 ;
+
+sdhag_group_id: GROUP_ID id = ha_group_id;
 
 sdhag_mode
 :

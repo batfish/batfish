@@ -1,0 +1,161 @@
+policy {
+  panorama {
+  }
+}
+config {
+  devices {
+    localhost.localdomain {
+      network {
+        interface {
+          ethernet {
+            ethernet1/1 {
+              layer3 {
+                units {
+                  ethernet1/1.1 {
+                    ip {
+                      10.1.0.3/16;
+                    }
+                  }
+                }
+              }
+            }
+            ethernet1/2 {
+              layer3 {
+                units {
+                  ethernet1/2.1 {
+                    ip {
+                      10.2.1.3/24;
+                    }
+                  }
+                  ethernet1/2.2 {
+                    ip {
+                      10.2.0.3/16;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        virtual-router {
+          vr1 {
+            interface [ ethernet1/1.1 ethernet1/2.1 ethernet1/2.2];
+          }
+        }
+      }
+      deviceconfig {
+        system {
+          hostname source-nat-high-availability;
+        }
+        high-availability {
+          group {
+            mode {
+              active-active {
+                device-id 1;
+              }
+             }
+          }
+        }
+      }
+      vsys {
+        vsys1 {
+          address {
+            SOURCE_ADDR_0 {
+              ip-netmask 10.1.0.1/32;
+            }
+            SOURCE_ADDR_1 {
+              ip-netmask 10.1.1.1/32;
+            }
+            SOURCE_ADDR_BOTH {
+              ip-netmask 10.1.2.1/32;
+            }
+            SOURCE_ADDR_NONE {
+              ip-netmask 10.1.3.1/32;
+            }
+            SERVER_NEW_ADDR {
+              ip-netmask 10.2.99.1/32;
+            }
+          }
+          rulebase {
+            nat {
+              rules {
+                SOURCE_NAT_0 {
+                  active-active-device-binding 0;
+                  source-translation {
+                    dynamic-ip-and-port {
+                      translated-address SERVER_NEW_ADDR;
+                    }
+                  }
+                  to OUTSIDE;
+                  from INSIDE;
+                  source SOURCE_ADDR_0;
+                  destination any;
+                }
+                SOURCE_NAT_1 {
+                  active-active-device-binding 1;
+                  source-translation {
+                    dynamic-ip-and-port {
+                      translated-address SERVER_NEW_ADDR;
+                    }
+                  }
+                  to OUTSIDE;
+                  from INSIDE;
+                  source SOURCE_ADDR_1;
+                  destination any;
+                }
+                SOURCE_NAT_BOTH {
+                  active-active-device-binding both;
+                  source-translation {
+                    dynamic-ip-and-port {
+                      translated-address SERVER_NEW_ADDR;
+                    }
+                  }
+                  to OUTSIDE;
+                  from INSIDE;
+                  source SOURCE_ADDR_BOTH;
+                  destination any;
+                }
+                SOURCE_NAT_NONE {
+                  source-translation {
+                    dynamic-ip-and-port {
+                      translated-address SERVER_NEW_ADDR;
+                    }
+                  }
+                  to OUTSIDE;
+                  from INSIDE;
+                  source SOURCE_ADDR_NONE;
+                  destination any;
+                }
+              }
+            }
+            security {
+              rules {
+                PERMIT_ALL {
+                  to any;
+                  from any;
+                  source any;
+                  destination any;
+                  application any;
+                  service any;
+                  action allow;
+                }
+              }
+            }
+          }
+          zone {
+            INSIDE {
+              network {
+                layer3 [ ethernet1/1.1];
+              }
+            }
+            OUTSIDE {
+              network {
+                layer3 [ ethernet1/2.1 ethernet1/2.2];
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -130,6 +130,8 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -3836,6 +3838,41 @@ public final class PaloAltoGrammarTest {
             .get("RULE1")
             .getTags(),
         contains("TAG"));
+  }
+
+  @Test
+  public void testHighAvailability() {
+    String hostname = "high-availability";
+    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
+    Vsys vsys = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
+    assertNotNull(c.getHighAvailability());
+    assertThat(c.getHighAvailability().getDeviceId(), equalTo(1));
+  }
+
+  @Test
+  public void testNatHighAvailability() {
+    String hostname = "nat-high-availability";
+    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
+    assertNotNull(c.getHighAvailability());
+    assertThat(c.getHighAvailability().getDeviceId(), equalTo(1));
+
+    Vsys vsys = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
+    Map<String, NatRule> rules = vsys.getRulebase().getNatRules();
+    assertThat(
+        rules.keySet(), contains("RULE_0", "RULE_1", "RULE_BOTH", "RULE_PRIMARY", "RULE_NONE"));
+    assertThat(
+        rules.get("RULE_0").getActiveActiveDeviceBinding(),
+        equalTo(NatRule.ActiveActiveDeviceBinding.ZERO));
+    assertThat(
+        rules.get("RULE_1").getActiveActiveDeviceBinding(),
+        equalTo(NatRule.ActiveActiveDeviceBinding.ONE));
+    assertThat(
+        rules.get("RULE_BOTH").getActiveActiveDeviceBinding(),
+        equalTo(NatRule.ActiveActiveDeviceBinding.BOTH));
+    assertThat(
+        rules.get("RULE_PRIMARY").getActiveActiveDeviceBinding(),
+        equalTo(NatRule.ActiveActiveDeviceBinding.PRIMARY));
+    assertNull(rules.get("RULE_NONE").getActiveActiveDeviceBinding());
   }
 
   @Test

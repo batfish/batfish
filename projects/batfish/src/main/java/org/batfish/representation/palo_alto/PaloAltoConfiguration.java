@@ -200,6 +200,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
   private String _domain;
 
+  @Nullable private HighAvailability _highAvailability;
+
   private String _hostname;
   private String _rawHostname;
 
@@ -456,7 +458,12 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
   /** Generate PacketPolicy name using the given zone's name and vsys name */
   public static String computePacketPolicyName(Zone zone) {
-    return String.format("~%s~%s~PACKET_POLICY~", zone.getVsys().getName(), zone.getName());
+    return computePacketPolicyName(zone.getVsys().getName(), zone.getName());
+  }
+
+  /** Generate PacketPolicy name using the given zone's name and vsys name */
+  public static String computePacketPolicyName(String vsys, String zone) {
+    return String.format("~%s~%s~PACKET_POLICY~", vsys, zone);
   }
 
   /**
@@ -493,6 +500,13 @@ public class PaloAltoConfiguration extends VendorConfiguration {
    * should not necessarily be converted to VI -- there may be other reasons not to convert.
    */
   private boolean checkNatRuleValid(NatRule rule, boolean fileWarnings) {
+    // Check if rule is applicable for this device id (for high-availability devices)
+    NatRule.ActiveActiveDeviceBinding binding = rule.getActiveActiveDeviceBinding();
+    Integer id = getOrCreateHighAvailability().getDeviceId();
+    if (id != null && (binding == null || !deviceBindingAndIdCompatible(binding, id))) {
+      return false;
+    }
+
     String missingItem = null;
     if (rule.getTo() == null) {
       missingItem = "to zone";
@@ -509,6 +523,23 @@ public class PaloAltoConfiguration extends VendorConfiguration {
               "NAT rule %s ignored because it has no %s configured", rule.getName(), missingItem));
     }
     return missingItem == null;
+  }
+
+  /**
+   * Returns {@code true} if the specified device binding and id are compatible, i.e. the
+   * high-availability device-binding applies to the specified device id.
+   */
+  @VisibleForTesting
+  static boolean deviceBindingAndIdCompatible(
+      NatRule.ActiveActiveDeviceBinding binding, Integer id) {
+    if (binding == NatRule.ActiveActiveDeviceBinding.ZERO) {
+      return id == 0;
+    } else if (binding == NatRule.ActiveActiveDeviceBinding.ONE) {
+      return id == 1;
+    }
+    // Either BOTH or PRIMARY
+    // Just assume PRIMARY is applicable, already warned in extraction
+    return true;
   }
 
   /**
@@ -3329,5 +3360,18 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
   public void setShared(@Nullable Vsys shared) {
     _shared = shared;
+  }
+
+  @Nullable
+  public HighAvailability getHighAvailability() {
+    return _highAvailability;
+  }
+
+  @Nonnull
+  public HighAvailability getOrCreateHighAvailability() {
+    if (_highAvailability == null) {
+      _highAvailability = new HighAvailability();
+    }
+    return _highAvailability;
   }
 }

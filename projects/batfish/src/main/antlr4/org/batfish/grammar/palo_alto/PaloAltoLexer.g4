@@ -283,6 +283,8 @@ GROUP19: 'group19';
 
 GROUP20: 'group20';
 
+GROUP_ID: 'group-id';
+
 HALF: 'half';
 
 HA: 'ha';
