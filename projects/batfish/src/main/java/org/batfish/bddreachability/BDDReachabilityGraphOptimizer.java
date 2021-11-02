@@ -1,9 +1,9 @@
 package org.batfish.bddreachability;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.bddreachability.transition.Transitions.IDENTITY;
 import static org.batfish.bddreachability.transition.Transitions.ZERO;
+import static org.batfish.bddreachability.transition.Transitions.compose;
 import static org.batfish.bddreachability.transition.Transitions.mergeComposed;
 import static org.batfish.bddreachability.transition.Transitions.or;
 
@@ -71,6 +71,8 @@ public class BDDReachabilityGraphOptimizer {
   private int _nodesSpliced = 0;
   private int _splicedAndDropped = 0;
   private int _identityIn = 0;
+  private int _constraintIn = 0;
+  private int _constraintOut = 0;
   private int _identityOut = 0;
   private int _selfLoops = 0;
 
@@ -101,6 +103,8 @@ public class BDDReachabilityGraphOptimizer {
                 + "spliced and dropped: %s, "
                 + "single identity in edges removed: %s, "
                 + "single identity out edges removed: %s, "
+                + "single constraint in edges removed: %s, "
+                + "single constraint out edges removed: %s, "
                 + "self loops removed: %s, "
                 + "finalEdges: %s",
             _origEdges,
@@ -110,6 +114,8 @@ public class BDDReachabilityGraphOptimizer {
             _splicedAndDropped,
             _identityIn,
             _identityOut,
+            _constraintIn,
+            _constraintOut,
             _selfLoops,
             _edges.size()));
   }
@@ -230,11 +236,8 @@ public class BDDReachabilityGraphOptimizer {
 
   /** Try to remove a node with a single in-edge and multiple out-edges. */
   private Collection<StateExpr> tryToRemoveNode_OneToMany(
-      StateExpr candidate, Collection<StateExpr> inStates, Collection<StateExpr> outStates) {
-    checkArgument(inStates.size() == 1 && outStates.size() > 1);
-    StateExpr prev = Iterables.getOnlyElement(inStates);
-
-    if (prev.equals(candidate)) {
+      StateExpr candidate, StateExpr inState, Collection<StateExpr> outStates) {
+    if (inState.equals(candidate)) {
       // In-edge is a self-loop, candidate is unreachable. Remove even if we are preserving
       // self-loops.
       _edges.remove(candidate, candidate);
@@ -249,73 +252,107 @@ public class BDDReachabilityGraphOptimizer {
 
     // Note: since !prev.equals(candidate), outStates does not contain candidate
 
-    Transition inTransition = _edges.get(prev, candidate);
+    Transition inTransition = _edges.get(inState, candidate);
     if (inTransition == IDENTITY) {
       _identityIn++;
-      _edges.remove(prev, candidate);
-      _postStates.remove(prev, candidate);
-      // move outEdges from candidate to prev
-      for (StateExpr next : outStates) {
-        Transition outTransition = _edges.remove(candidate, next);
-        assert outTransition != null : "missing transition to outState";
-        Transition oldTransition = _edges.put(prev, next, outTransition);
-        if (oldTransition != null) {
-          _edges.put(prev, next, or(oldTransition, outTransition));
-        } else {
-          _postStates.put(prev, next);
-          _preStates.put(next, prev);
-        }
-        _preStates.remove(next, candidate);
+      return removeNode_OneToMany(candidate, inState, outStates);
+    } else if (inTransition instanceof Constraint
+        && _postStates.get(inState).size() + outStates.size() < 100) {
+      // forward-propagate constraint to out-edges and move them onto inState, as long as the edges
+      // compose cleanly and inState won't get too many out-edges
+      if (outStates.stream()
+          .map(outState -> _edges.get(candidate, outState))
+          .allMatch(t -> t == IDENTITY || t instanceof Constraint)) {
+        _constraintIn++;
+        return removeNode_OneToMany(candidate, inState, outStates);
       }
-      _postStates.removeAll(candidate);
-      _preStates.removeAll(candidate);
-      return ImmutableList.<StateExpr>builderWithExpectedSize(outStates.size() + 1)
-          .add(prev)
-          .addAll(outStates)
-          .build();
     }
     return ImmutableList.of();
   }
 
+  private Collection<StateExpr> removeNode_OneToMany(
+      StateExpr toRemove, StateExpr inState, Collection<StateExpr> outStates) {
+    Transition inTransition = _edges.remove(inState, toRemove);
+    _postStates.remove(inState, toRemove);
+    // move outEdges from candidate to prev
+    for (StateExpr next : outStates) {
+      Transition outTransition = _edges.remove(toRemove, next);
+      assert outTransition != null : "missing transition to outState";
+      Transition newTransition = compose(inTransition, outTransition);
+      if (newTransition == ZERO) {
+        _preStates.remove(next, toRemove);
+        continue;
+      }
+      Transition oldTransition = _edges.put(inState, next, newTransition);
+      if (oldTransition != null) {
+        _edges.put(inState, next, or(oldTransition, newTransition));
+      } else {
+        _postStates.put(inState, next);
+        _preStates.put(next, inState);
+      }
+      _preStates.remove(next, toRemove);
+    }
+    _postStates.removeAll(toRemove);
+    _preStates.removeAll(toRemove);
+    return ImmutableList.<StateExpr>builderWithExpectedSize(outStates.size() + 1)
+        .add(inState)
+        .addAll(outStates)
+        .build();
+  }
+
   /** Try to remove a node with multiple in-edges and a single out-edge. */
   private Collection<StateExpr> tryToRemoveNode_ManyToOne(
-      StateExpr candidate, Collection<StateExpr> inStates, Collection<StateExpr> outStates) {
-    checkArgument(inStates.size() > 1 && outStates.size() == 1);
-    StateExpr next = Iterables.getOnlyElement(outStates);
-
-    if (next.equals(candidate)) {
+      StateExpr candidate, Collection<StateExpr> inStates, StateExpr outState) {
+    if (outState.equals(candidate)) {
       // out-edge is a self-loop. handled elsewhere
       return ImmutableList.of();
     }
 
     // Note: since !next.equals(candidate), inStates does not contain candidate
 
-    Transition outTransition = _edges.get(candidate, next);
+    Transition outTransition = _edges.get(candidate, outState);
     if (outTransition == IDENTITY) {
       _identityOut++;
-      _edges.remove(candidate, next);
-      _preStates.remove(next, candidate);
-      // move inEdges from candidate to next
-      for (StateExpr prev : inStates) {
-        Transition inTransition = _edges.remove(prev, candidate);
-        assert inTransition != null : "missing transition from prev";
-        Transition oldTransition = _edges.put(prev, next, inTransition);
-        if (oldTransition != null) {
-          _edges.put(prev, next, or(oldTransition, inTransition));
-        } else {
-          _postStates.put(prev, next);
-          _preStates.put(next, prev);
-        }
-        _postStates.remove(prev, candidate);
+      return removeNode_ManyToOne(candidate, inStates, outState);
+    } else if (outTransition instanceof Constraint
+        && _postStates.get(outState).size() + inStates.size() < 100) {
+      // backward-propagate constraint to in-edges and move them onto outState, as long as the edges
+      // compose cleanly and outState won't get too many in-edges
+      if (inStates.stream()
+          .map(inState -> _edges.get(inState, candidate))
+          .allMatch(t -> t == IDENTITY || t instanceof Constraint)) {
+        _constraintOut++;
+        return removeNode_ManyToOne(candidate, inStates, outState);
       }
-      _postStates.removeAll(candidate);
-      _preStates.removeAll(candidate);
-      return ImmutableList.<StateExpr>builderWithExpectedSize(outStates.size() + 1)
-          .add(next)
-          .addAll(inStates)
-          .build();
     }
     return ImmutableList.of();
+  }
+
+  private Collection<StateExpr> removeNode_ManyToOne(
+      StateExpr toRemove, Collection<StateExpr> inStates, StateExpr outState) {
+    Transition outTransition = _edges.remove(toRemove, outState);
+    assert outTransition != null : "missing transition to outState";
+    _preStates.remove(outState, toRemove);
+    // move inEdges from toRemove to outState
+    for (StateExpr inState : inStates) {
+      Transition inTransition = _edges.remove(inState, toRemove);
+      assert inTransition != null : "missing transition from inState";
+      Transition newTransition = compose(inTransition, outTransition);
+      Transition oldTransition = _edges.put(inState, outState, newTransition);
+      if (oldTransition != null) {
+        _edges.put(inState, outState, or(oldTransition, newTransition));
+      } else {
+        _postStates.put(inState, outState);
+        _preStates.put(outState, inState);
+      }
+      _postStates.remove(inState, toRemove);
+    }
+    _postStates.removeAll(toRemove);
+    _preStates.removeAll(toRemove);
+    return ImmutableList.<StateExpr>builderWithExpectedSize(inStates.size() + 1)
+        .add(outState)
+        .addAll(inStates)
+        .build();
   }
 
   /**
@@ -339,9 +376,9 @@ public class BDDReachabilityGraphOptimizer {
     Collection<StateExpr> outStates = _postStates.get(candidate);
     if (inStates.size() > 1 || outStates.size() > 1) {
       if (inStates.size() == 1) {
-        return tryToRemoveNode_OneToMany(candidate, inStates, outStates);
+        return tryToRemoveNode_OneToMany(candidate, Iterables.getOnlyElement(inStates), outStates);
       } else if (outStates.size() == 1) {
-        return tryToRemoveNode_ManyToOne(candidate, inStates, outStates);
+        return tryToRemoveNode_ManyToOne(candidate, inStates, Iterables.getOnlyElement(outStates));
       } else {
         return ImmutableSet.of();
       }

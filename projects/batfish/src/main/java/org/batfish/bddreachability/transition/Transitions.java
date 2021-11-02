@@ -55,6 +55,15 @@ public final class Transitions {
   }
 
   public static Transition compose(Transition... transitions) {
+    if (transitions.length == 2) {
+      if (transitions[0] == IDENTITY) {
+        return transitions[1];
+      }
+      if (transitions[1] == IDENTITY) {
+        return transitions[0];
+      }
+    }
+
     Stack<Transition> mergedTransitions = new Stack<>();
     for (Transition transition : transitions) {
       if (transition == ZERO) {
