@@ -2395,7 +2395,7 @@ public final class PaloAltoGrammarTest {
                 hasComment("Batfish currently models this as active-active-device-binding both")),
             hasComment("Expected active-active-device-binding in range 0-1, but got '2'")));
 
-    // Make sure the active-active-device-binding isn't overwritten by an invalid number
+    // Make sure the active-active-device-binding isn't set to an invalid number
     Map<String, NatRule> natRules =
         c.getVirtualSystems().get(DEFAULT_VSYS_NAME).getRulebase().getNatRules();
     assertThat(natRules, hasKey("NATRULE2"));
