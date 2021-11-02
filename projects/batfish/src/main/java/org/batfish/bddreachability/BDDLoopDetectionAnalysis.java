@@ -144,38 +144,37 @@ public class BDDLoopDetectionAnalysis {
       while (!dirty.isEmpty()) {
         Set<StateExpr> newDirty = new HashSet<>();
 
-        dirty.forEach(
-            preState -> {
-              Map<StateExpr, Transition> preStateOutEdges = _forwardEdgeTable.row(preState);
-              if (preStateOutEdges == null) {
-                // preState has no out-edges
-                return;
-              }
+        for (StateExpr preState : dirty) {
+          Map<StateExpr, Transition> preStateOutEdges = _forwardEdgeTable.row(preState);
+          if (preStateOutEdges == null) {
+            // preState has no out-edges
+            continue;
+          }
 
-              BDD preStateBDD = reachable.get(preState);
-              preStateOutEdges.forEach(
-                  (postState, transition) -> {
-                    BDD result = transition.transitForward(preStateBDD);
-                    if (result.isZero()) {
-                      return;
-                    }
+          BDD preStateBDD = reachable.get(preState);
+          for (Entry<StateExpr, Transition> entry : preStateOutEdges.entrySet()) {
+            StateExpr postState = entry.getKey();
+            Transition transition = entry.getValue();
+            BDD result = transition.transitForward(preStateBDD);
+            if (result.isZero()) {
+              continue;
+            }
 
-                    // update postState BDD reverse-reachable from leaf
-                    BDD oldReach = reachable.getOrDefault(postState, zero);
-                    BDD newReach = oldReach == null ? result : oldReach.or(result);
-                    if (oldReach == null || !oldReach.equals(newReach)) {
-                      reachable.put(postState, newReach);
-                      newDirty.add(postState);
-                    }
-                  });
-            });
+            if (postState.equals(stateExpr) && result.andSat(bdd)) {
+              return true;
+            }
 
-        dirty = newDirty;
-        if (dirty.contains(stateExpr)) {
-          if (reachable.get(stateExpr).andSat(bdd)) {
-            return true;
+            // update postState BDD reverse-reachable from leaf
+            BDD oldReach = reachable.getOrDefault(postState, zero);
+            BDD newReach = oldReach == null ? result : oldReach.or(result);
+            if (oldReach == null || !oldReach.equals(newReach)) {
+              reachable.put(postState, newReach);
+              newDirty.add(postState);
+            }
           }
         }
+
+        dirty = newDirty;
       }
       return false;
     } finally {
