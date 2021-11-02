@@ -226,13 +226,10 @@ public class BDDReachabilityGraphOptimizerTest {
     Edge edge4 = new Edge(state(4), state(1), constraint(3));
     assertThat(
         optimize(
-            ImmutableSet.of(edge1, edge2, edge3, edge4),
-            ImmutableSet.of(state(4), state(2)),
-            false),
+            ImmutableSet.of(edge1, edge2, edge3, edge4), ImmutableSet.of(state(4), state(2)), true),
         containsInAnyOrder(
-            new Edge(state(4), state(1), constraint(3)),
-            new Edge(state(1), state(2), constraint(0)),
-            new Edge(state(2), state(1), constraint(bdd(1).and(bdd(2))))));
+            new Edge(state(4), state(2), constraint(bdd(0).and(bdd(3)))),
+            new Edge(state(2), state(2), constraint(bdd(0).and(bdd(1)).and(bdd(2))))));
   }
 
   @Test
@@ -309,5 +306,47 @@ public class BDDReachabilityGraphOptimizerTest {
         optimize(ImmutableSet.of(edge1, edge2, edge3), ImmutableSet.of(state(1), state(2)), true);
     // remove nothing
     assertThat(optimize, containsInAnyOrder(edge1, edge2, edge3));
+  }
+
+  @Test
+  public void removeConstraintIn() {
+    Edge edge1 = new Edge(state(1), state(3), constraint(0));
+    Edge edge2 = new Edge(state(2), state(3), constraint(1));
+    Edge edge3 = new Edge(state(3), state(4), constraint(2));
+    Edge edge4 = new Edge(state(3), state(5), constraint(3)); // state(5) will be removed
+    Edge edge5 = new Edge(state(5), state(6), constraint(4));
+    Edge edge6 = new Edge(state(5), state(7), constraint(5));
+    assertThat(
+        optimize(
+            ImmutableSet.of(edge1, edge2, edge3, edge4, edge5, edge6),
+            ImmutableSet.of(state(1), state(2), state(4), state(6), state(7)),
+            false),
+        containsInAnyOrder(
+            edge1,
+            edge2,
+            edge3,
+            new Edge(state(3), state(6), constraint(bdd(3).and(bdd(4)))),
+            new Edge(state(3), state(7), constraint(bdd(3).and(bdd(5))))));
+  }
+
+  @Test
+  public void removeConstraintOut() {
+    Edge edge1 = new Edge(state(1), state(3), constraint(0));
+    Edge edge2 = new Edge(state(2), state(3), constraint(1));
+    Edge edge3 = new Edge(state(3), state(5), constraint(2)); // state(3) will be removed
+    Edge edge4 = new Edge(state(4), state(5), constraint(3));
+    Edge edge5 = new Edge(state(5), state(6), constraint(4));
+    Edge edge6 = new Edge(state(5), state(7), constraint(5));
+    assertThat(
+        optimize(
+            ImmutableSet.of(edge1, edge2, edge3, edge4, edge5, edge6),
+            ImmutableSet.of(state(1), state(2), state(4), state(6), state(7)),
+            false),
+        containsInAnyOrder(
+            new Edge(state(1), state(5), constraint(bdd(0).and(bdd(2)))),
+            new Edge(state(2), state(5), constraint(bdd(1).and(bdd(2)))),
+            edge4,
+            edge5,
+            edge6));
   }
 }
