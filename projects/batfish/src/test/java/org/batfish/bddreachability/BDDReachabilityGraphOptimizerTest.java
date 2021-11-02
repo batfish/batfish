@@ -269,6 +269,17 @@ public class BDDReachabilityGraphOptimizerTest {
   }
 
   @Test
+  public void removeIdentityIn_keepSelfLoops() {
+    Edge edge1 = new Edge(state(1), state(1), IDENTITY);
+    Edge edge2 = new Edge(state(1), state(2), constraint(0));
+    Edge edge3 = new Edge(state(1), state(3), constraint(1));
+    Collection<Edge> optimize =
+        optimize(ImmutableSet.of(edge1, edge2, edge3), ImmutableSet.of(state(2), state(3)), true);
+    // we remove 1 because it's unreachable, then 2 and 3 have no in-edges.
+    assertThat(optimize, empty());
+  }
+
+  @Test
   public void removeIdentityOut() {
     Edge edge1 = new Edge(state(1), state(3), constraint(0));
     Edge edge2 = new Edge(state(2), state(3), constraint(1));
@@ -287,5 +298,16 @@ public class BDDReachabilityGraphOptimizerTest {
             edge4,
             edge5,
             edge6));
+  }
+
+  @Test
+  public void removeIdentityOut_keepSelfLoops() {
+    Edge edge1 = new Edge(state(1), state(3), constraint(1));
+    Edge edge2 = new Edge(state(2), state(3), constraint(2));
+    Edge edge3 = new Edge(state(3), state(3), IDENTITY);
+    Collection<Edge> optimize =
+        optimize(ImmutableSet.of(edge1, edge2, edge3), ImmutableSet.of(state(1), state(2)), true);
+    // remove nothing
+    assertThat(optimize, containsInAnyOrder(edge1, edge2, edge3));
   }
 }
