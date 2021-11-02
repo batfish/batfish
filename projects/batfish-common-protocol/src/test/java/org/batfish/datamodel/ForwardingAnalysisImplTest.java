@@ -479,7 +479,7 @@ public class ForwardingAnalysisImplTest {
     Interface iAddress = _ib.setAddress(address).build();
     Map<String, Interface> activeInterfaces =
         ImmutableMap.of(iNoAddresses.getName(), iNoAddresses, iAddress.getName(), iAddress);
-    // Note there is no key for iNoAddress
+    // Note there is no key for iNoAddresses
     Map<String, Set<Ip>> interfaceOwnedIps =
         ImmutableMap.of(iAddress.getName(), ImmutableSet.of(P1.getFirstHostIp()));
     Map<String, IpSpace> ownedIpsByVrf = computeOwnedIpsByVrf(activeInterfaces, interfaceOwnedIps);
