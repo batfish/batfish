@@ -46,32 +46,12 @@ public final class Transitions {
     if (thn.equals(els)) {
       return thn;
     }
-    if (thn instanceof Branch) {
-      Branch thnBranch = (Branch) thn;
-      if (els.equals(thnBranch.getFalseBranch())) {
-        return branch(guard.and(thnBranch.getGuard()), thnBranch.getTrueBranch(), els);
-      }
-      if (els.equals(thnBranch.getTrueBranch())) {
-        return branch(guard.imp(thnBranch.getGuard()), els, thnBranch.getFalseBranch());
-      }
-      // fall through
-    }
-    if (els instanceof Branch) {
-      Branch elsBranch = (Branch) els;
-      if (thn.equals(elsBranch.getTrueBranch())) {
-        return branch(guard.or(elsBranch.getGuard()), thn, elsBranch.getFalseBranch());
-      }
-      if (thn.equals(elsBranch.getFalseBranch())) {
-        return branch(elsBranch.getGuard().diff(guard), elsBranch.getTrueBranch(), thn);
-      }
-      // fall through
-    }
     if (thn instanceof Constraint && els instanceof Constraint) {
       BDD trueBdd = ((Constraint) thn).getConstraint();
       BDD falseBdd = ((Constraint) els).getConstraint();
       return constraint(guard.ite(trueBdd, falseBdd));
     }
-    return new Branch(guard, thn, els);
+    return or(compose(constraint(guard), thn), compose(constraint(guard.not()), els));
   }
 
   public static Transition compose(Transition... transitions) {
@@ -160,20 +140,6 @@ public final class Transitions {
       BDD bdd1 = ((Constraint) t1).getConstraint();
       BDD bdd2 = ((Constraint) t2).getConstraint();
       return constraint(bdd1.and(bdd2));
-    }
-    if (t1 instanceof Constraint && t2 instanceof Branch) {
-      BDD constraintBdd = ((Constraint) t1).getConstraint();
-      Branch branch = (Branch) t2;
-      BDD guard = ((Branch) t2).getGuard();
-      if (!constraintBdd.andSat(guard)) {
-        // True branch can never be taken. Also, t1 subsumes guard.not(), so we can elide it.
-        return compose(t1, branch.getFalseBranch());
-      }
-      if (!constraintBdd.diffSat(guard)) {
-        // False branch can never be taken. Also, t1 subsumes guard, so we can elide it.
-        return compose(t1, branch.getTrueBranch());
-      }
-      // fall through
     }
     if (t1 instanceof Constraint && t2 instanceof EraseAndSet) {
       BDD constraintBdd = ((Constraint) t1).getConstraint();
