@@ -168,15 +168,18 @@ public class CheckpointNatConversions {
    * HIDE NAT rule.
    */
   static @Nonnull Optional<List<TransformationStep>> manualHideTransformationSteps(
-      NamedManagementObject src,
-      NamedManagementObject dst,
-      NamedManagementObject service,
+      org.batfish.vendor.check_point_management.NatRule natRule,
+      Map<Uid, ? extends NamedManagementObject> objects,
       Warnings warnings) {
+    NamedManagementObject src = objects.get(natRule.getTranslatedSource());
+    NamedManagementObject dst = objects.get(natRule.getTranslatedDestination());
+    NamedManagementObject service = objects.get(natRule.getTranslatedService());
     ImmutableList.Builder<TransformationStep> steps = ImmutableList.builder();
     if (!checkValidManualHide(src, dst, service, warnings)) {
       return Optional.empty();
     }
     steps.addAll(getSourceTransformationSteps((NatTranslatedSource) src));
+    steps.addAll(getDestinationTransformationSteps((NatTranslatedDestination) dst));
     steps.add(assignSourcePort(NAT_PORT_FIRST, NAT_PORT_LAST));
     return Optional.of(steps.build());
   }
@@ -219,24 +222,24 @@ public class CheckpointNatConversions {
           String.format(
               "Manual Hide NAT rule translated-source %s has invalid type %s and will be"
                   + " ignored",
-              src.getName(), src.getClass()));
+              src.getName(), src.getClass().getSimpleName()));
       return false;
     } else if (!CHECK_IPV4_TRANSLATED_SOURCE.visit((NatTranslatedSource) src)) {
       // unsupported for foreseeable future, so don't bother warning
       return false;
-    } else if (!(dst instanceof Original)) {
+    } else if (!(dst instanceof Original || dst instanceof Host)) {
       warnings.redFlag(
           String.format(
               "Manual Hide NAT rule translated-destination %s has invalid type %s and will be"
                   + " ignored",
-              dst.getName(), dst.getClass()));
+              dst.getName(), dst.getClass().getSimpleName()));
       return false;
     } else if (!(service instanceof Original)) {
       warnings.redFlag(
           String.format(
               "Manual Hide NAT rule translated-service %s has invalid type %s and will be"
                   + " ignored",
-              service.getName(), service.getClass()));
+              service.getName(), service.getClass().getSimpleName()));
       return false;
     }
     return true;
@@ -371,12 +374,7 @@ public class CheckpointNatConversions {
       Warnings warnings) {
     Optional<List<TransformationStep>> maybeSteps;
     if (natRule.getMethod() == NatMethod.HIDE) {
-      maybeSteps =
-          manualHideTransformationSteps(
-              objects.get(natRule.getTranslatedSource()),
-              objects.get(natRule.getTranslatedDestination()),
-              objects.get(natRule.getTranslatedService()),
-              warnings);
+      maybeSteps = manualHideTransformationSteps(natRule, objects, warnings);
     } else {
       assert natRule.getMethod() == NatMethod.STATIC;
       maybeSteps = manualStaticTransformationSteps(natRule, objects, warnings);
