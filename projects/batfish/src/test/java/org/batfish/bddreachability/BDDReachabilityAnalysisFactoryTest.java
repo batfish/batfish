@@ -1999,6 +1999,10 @@ public final class BDDReachabilityAnalysisFactoryTest {
             edge(
                 new PacketPolicyStatement(n1.getHostname(), vrf.getName(), "pbr", 0),
                 new PacketPolicyAction(n1.getHostname(), vrf.getName(), "pbr", Drop.instance()),
+                IDENTITY),
+            edge(
+                new PacketPolicyAction(n1.getHostname(), vrf.getName(), "pbr", Drop.instance()),
+                new NodeDropAclIn(n1.getHostname()),
                 IDENTITY)));
   }
 

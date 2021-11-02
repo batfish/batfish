@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.List;
 import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.IpsRoutedOutInterfacesFactory.IpsRoutedOutInterfaces;
+import org.batfish.bddreachability.PacketPolicyToBdd.BddPacketPolicy;
 import org.batfish.bddreachability.PacketPolicyToBdd.BoolExprToBdd;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
@@ -94,33 +95,35 @@ public final class PacketPolicyToBddTest {
 
   @Test
   public void testDefaultAction() {
-    List<Edge> edges =
+    BddPacketPolicy converted =
         PacketPolicyToBdd.evaluate(
-                _hostname,
-                _ingressVrf,
-                new PacketPolicy(_policyName, ImmutableList.of(), new Return(Drop.instance())),
-                _ipAccessListToBdd,
-                EMPTY_IPS_ROUTED_OUT_INTERFACES)
-            .getEdges();
+            _hostname,
+            _ingressVrf,
+            new PacketPolicy(_policyName, ImmutableList.of(), new Return(Drop.instance())),
+            _ipAccessListToBdd,
+            EMPTY_IPS_ROUTED_OUT_INTERFACES);
     // Everything is dropped
-    assertThat(edges, contains(edge(statement(0), _dropState, IDENTITY)));
+    assertThat(converted.getEdges(), contains(edge(statement(0), _dropState, IDENTITY)));
+    // Default action is tracked
+    assertThat(converted.getActions(), contains(_dropState));
   }
 
   @Test
   public void testReturn() {
-    List<Edge> edges =
+    BddPacketPolicy converted =
         PacketPolicyToBdd.evaluate(
-                _hostname,
-                _ingressVrf,
-                new PacketPolicy(
-                    _policyName,
-                    ImmutableList.of(new Return(new FibLookup(new LiteralVrfName("vrf")))),
-                    new Return(Drop.instance())),
-                _ipAccessListToBdd,
-                EMPTY_IPS_ROUTED_OUT_INTERFACES)
-            .getEdges();
+            _hostname,
+            _ingressVrf,
+            new PacketPolicy(
+                _policyName,
+                ImmutableList.of(new Return(new FibLookup(new LiteralVrfName("vrf")))),
+                new Return(Drop.instance())),
+            _ipAccessListToBdd,
+            EMPTY_IPS_ROUTED_OUT_INTERFACES);
     // Everything is looked up in "vrf"
-    assertThat(edges, contains(edge(statement(0), fibLookupState("vrf"), IDENTITY)));
+    assertThat(converted.getEdges(), contains(edge(statement(0), fibLookupState("vrf"), IDENTITY)));
+    // Unreachable default is not tracked.
+    assertThat(converted.getActions(), contains(fibLookupState("vrf")));
   }
 
   @Test
@@ -141,25 +144,26 @@ public final class PacketPolicyToBddTest {
                 new MatchHeaderSpace(
                     HeaderSpace.builder().setDstIps(UniverseIpSpace.INSTANCE).build())),
             ImmutableList.of(innerIf, new Return(new FibLookup(new LiteralVrfName(vrf2)))));
-    List<Edge> edges =
+    BddPacketPolicy converted =
         PacketPolicyToBdd.evaluate(
-                _hostname,
-                _ingressVrf,
-                new PacketPolicy(
-                    _policyName,
-                    ImmutableList.of(outerIf, new Return(new FibLookup(new LiteralVrfName(vrf3)))),
-                    new Return(Drop.instance())),
-                _ipAccessListToBdd,
-                EMPTY_IPS_ROUTED_OUT_INTERFACES)
-            .getEdges();
+            _hostname,
+            _ingressVrf,
+            new PacketPolicy(
+                _policyName,
+                ImmutableList.of(outerIf, new Return(new FibLookup(new LiteralVrfName(vrf3)))),
+                new Return(Drop.instance())),
+            _ipAccessListToBdd,
+            EMPTY_IPS_ROUTED_OUT_INTERFACES);
 
     BDD dstIpBdd = new IpSpaceToBDD(_bddPacket.getDstIp()).toBDD(dstIps);
 
     assertThat(
-        edges,
+        converted.getEdges(),
         containsInAnyOrder(
             edge(statement(0), fibLookupState(vrf1), constraint(dstIpBdd)),
             edge(statement(0), fibLookupState(vrf2), constraint(dstIpBdd.not()))));
+    assertThat(
+        converted.getActions(), containsInAnyOrder(fibLookupState(vrf1), fibLookupState(vrf2)));
   }
 
   @Test
@@ -273,30 +277,31 @@ public final class PacketPolicyToBddTest {
   public void testIfTrue_noFallThrough() {
     Transformation noop = always().build();
     String vrf = "vrf";
-    List<Edge> edges =
+    BddPacketPolicy converted =
         PacketPolicyToBdd.evaluate(
-                _hostname,
-                _ingressVrf,
-                new PacketPolicy(
-                    _policyName,
-                    ImmutableList.of(
-                        new If(
-                            new PacketMatchExpr(TRUE),
-                            ImmutableList.of(
-                                new ApplyTransformation(noop),
-                                new Return(new FibLookup(new LiteralVrfName(vrf)))))),
-                    new Return(Drop.instance())),
-                _ipAccessListToBdd,
-                EMPTY_IPS_ROUTED_OUT_INTERFACES)
-            .getEdges();
+            _hostname,
+            _ingressVrf,
+            new PacketPolicy(
+                _policyName,
+                ImmutableList.of(
+                    new If(
+                        new PacketMatchExpr(TRUE),
+                        ImmutableList.of(
+                            new ApplyTransformation(noop),
+                            new Return(new FibLookup(new LiteralVrfName(vrf)))))),
+                new Return(Drop.instance())),
+            _ipAccessListToBdd,
+            EMPTY_IPS_ROUTED_OUT_INTERFACES);
 
     assertThat(
-        edges,
+        converted.getEdges(),
         containsInAnyOrder(
             // if TRUE, then noop
             edge(statement(0), statement(1), IDENTITY),
             // return
             edge(statement(1), fibLookupState(vrf), IDENTITY)));
+    // Unreachable drop is not tracked.
+    assertThat(converted.getActions(), contains(fibLookupState(vrf)));
   }
 
   @Test
