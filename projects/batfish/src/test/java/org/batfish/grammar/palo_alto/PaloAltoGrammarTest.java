@@ -130,6 +130,8 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -155,6 +157,7 @@ import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpSpaceToBDD;
+import org.batfish.common.matchers.ParseWarningMatchers;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.runtime.SnapshotRuntimeData;
 import org.batfish.config.Settings;
@@ -2381,6 +2384,25 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testRulebaseParseWarning() {
+    PaloAltoConfiguration c = parsePaloAltoConfig("rulebase-warning");
+    List<ParseWarning> parseWarnings = c.getWarnings().getParseWarnings();
+    assertThat(
+        parseWarnings,
+        containsInAnyOrder(
+            allOf(
+                ParseWarningMatchers.hasText("active-active-device-binding primary"),
+                hasComment("Batfish currently models this as active-active-device-binding both")),
+            hasComment("Expected active-active-device-binding in range 0-1, but got '2'")));
+
+    // Make sure the active-active-device-binding isn't set to an invalid number
+    Map<String, NatRule> natRules =
+        c.getVirtualSystems().get(DEFAULT_VSYS_NAME).getRulebase().getNatRules();
+    assertThat(natRules, hasKey("NATRULE2"));
+    assertNull(natRules.get("NATRULE2").getActiveActiveDeviceBinding());
+  }
+
+  @Test
   public void testRulebaseWarning() throws IOException {
     String hostname = "rulebase-warning";
 
@@ -3836,6 +3858,40 @@ public final class PaloAltoGrammarTest {
             .get("RULE1")
             .getTags(),
         contains("TAG"));
+  }
+
+  @Test
+  public void testHighAvailability() {
+    String hostname = "high-availability";
+    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
+    assertNotNull(c.getHighAvailability());
+    assertThat(c.getHighAvailability().getDeviceId(), equalTo(1));
+  }
+
+  @Test
+  public void testNatHighAvailability() {
+    String hostname = "nat-high-availability";
+    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
+    assertNotNull(c.getHighAvailability());
+    assertThat(c.getHighAvailability().getDeviceId(), equalTo(1));
+
+    Vsys vsys = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
+    Map<String, NatRule> rules = vsys.getRulebase().getNatRules();
+    assertThat(
+        rules.keySet(), contains("RULE_0", "RULE_1", "RULE_BOTH", "RULE_PRIMARY", "RULE_NONE"));
+    assertThat(
+        rules.get("RULE_0").getActiveActiveDeviceBinding(),
+        equalTo(NatRule.ActiveActiveDeviceBinding.ZERO));
+    assertThat(
+        rules.get("RULE_1").getActiveActiveDeviceBinding(),
+        equalTo(NatRule.ActiveActiveDeviceBinding.ONE));
+    assertThat(
+        rules.get("RULE_BOTH").getActiveActiveDeviceBinding(),
+        equalTo(NatRule.ActiveActiveDeviceBinding.BOTH));
+    assertThat(
+        rules.get("RULE_PRIMARY").getActiveActiveDeviceBinding(),
+        equalTo(NatRule.ActiveActiveDeviceBinding.PRIMARY));
+    assertNull(rules.get("RULE_NONE").getActiveActiveDeviceBinding());
   }
 
   @Test

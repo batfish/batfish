@@ -12,6 +12,7 @@ import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejectsByDefault;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.checkIntrazoneValidityAndWarn;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeObjectName;
+import static org.batfish.representation.palo_alto.PaloAltoConfiguration.deviceBindingAndIdCompatible;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.generateCrossZoneCalls;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.generateCrossZoneCallsFromExternal;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.generateCrossZoneCallsFromLayer3;
@@ -703,5 +704,22 @@ public final class PaloAltoConfigurationTest {
     rule.getTo().add("C");
     assertFalse(checkIntrazoneValidityAndWarn(rule, w));
     assertThat(w, hasRedFlag(hasText(containsString("Skipping invalid intrazone security rule"))));
+  }
+
+  @Test
+  public void testDeviceBindingAndIdCompatible() {
+    // Both applies to any device id
+    assertTrue(deviceBindingAndIdCompatible(NatRule.ActiveActiveDeviceBinding.BOTH, 0));
+    assertTrue(deviceBindingAndIdCompatible(NatRule.ActiveActiveDeviceBinding.BOTH, 1));
+
+    // Zero only applies to 0
+    assertTrue(deviceBindingAndIdCompatible(NatRule.ActiveActiveDeviceBinding.ZERO, 0));
+    assertFalse(deviceBindingAndIdCompatible(NatRule.ActiveActiveDeviceBinding.ZERO, 1));
+
+    // One only applies to 1
+    assertFalse(deviceBindingAndIdCompatible(NatRule.ActiveActiveDeviceBinding.ONE, 0));
+    assertTrue(deviceBindingAndIdCompatible(NatRule.ActiveActiveDeviceBinding.ONE, 1));
+
+    // TODO test PRIMARY once that is better supported
   }
 }

@@ -1,0 +1,58 @@
+set deviceconfig system hostname nat-high-availability
+!
+set deviceconfig high-availability group group-id 1
+set deviceconfig high-availability group mode active-active device-id 1
+!
+
+! TODO matching and not-matching device-ids
+
+set network interface ethernet ethernet1/1 layer3 ip 192.168.1.1/24
+set network interface ethernet ethernet1/2 layer3 ip 10.0.2.1/24
+set zone INSIDE network layer3 ethernet1/1
+set zone OUTSIDE network layer3 ethernet1/2
+set network virtual-router default interface [ ethernet1/1 ethernet1/2 ]
+
+set service SERVICE_0 protocol tcp port 1234
+set service SERVICE_1 protocol tcp port 2345
+set service SERVICE_BOTH protocol tcp port 3456
+set service SERVICE_PRIMARY protocol tcp port 4567
+set service SERVICE_NONE protocol tcp port 5678
+
+# Device-binding 0 - not applicable
+set rulebase nat rules RULE_0 to OUTSIDE
+set rulebase nat rules RULE_0 from INSIDE
+set rulebase nat rules RULE_0 source any
+set rulebase nat rules RULE_0 destination any
+set rulebase nat rules RULE_0 service SERVICE_0
+set rulebase nat rules RULE_0 active-active-device-binding 0
+
+# Device-binding 1 - applicable
+set rulebase nat rules RULE_1 to OUTSIDE
+set rulebase nat rules RULE_1 from INSIDE
+set rulebase nat rules RULE_1 source any
+set rulebase nat rules RULE_1 destination any
+set rulebase nat rules RULE_1 service SERVICE_1
+set rulebase nat rules RULE_1 active-active-device-binding 1
+
+# Device-binding BOTH - applicable
+set rulebase nat rules RULE_BOTH to OUTSIDE
+set rulebase nat rules RULE_BOTH from INSIDE
+set rulebase nat rules RULE_BOTH source any
+set rulebase nat rules RULE_BOTH destination any
+set rulebase nat rules RULE_BOTH service SERVICE_BOTH
+set rulebase nat rules RULE_BOTH active-active-device-binding both
+
+# Device-binding PRIMARY - not handled
+set rulebase nat rules RULE_PRIMARY to OUTSIDE
+set rulebase nat rules RULE_PRIMARY from INSIDE
+set rulebase nat rules RULE_PRIMARY source any
+set rulebase nat rules RULE_PRIMARY destination any
+set rulebase nat rules RULE_PRIMARY service SERVICE_PRIMARY
+set rulebase nat rules RULE_PRIMARY active-active-device-binding primary
+
+# Device-binding missing, TODO warn?
+set rulebase nat rules RULE_NONE to OUTSIDE
+set rulebase nat rules RULE_NONE from INSIDE
+set rulebase nat rules RULE_NONE source any
+set rulebase nat rules RULE_NONE destination any
+set rulebase nat rules RULE_NONE service SERVICE_NONE
