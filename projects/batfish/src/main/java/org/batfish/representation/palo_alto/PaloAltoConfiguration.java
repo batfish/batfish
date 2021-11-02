@@ -458,12 +458,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
   /** Generate PacketPolicy name using the given zone's name and vsys name */
   public static String computePacketPolicyName(Zone zone) {
-    return computePacketPolicyName(zone.getVsys().getName(), zone.getName());
-  }
-
-  /** Generate PacketPolicy name using the given zone's name and vsys name */
-  public static String computePacketPolicyName(String vsys, String zone) {
-    return String.format("~%s~%s~PACKET_POLICY~", vsys, zone);
+    return String.format("~%s~%s~PACKET_POLICY~", zone.getVsys().getName(), zone.getName());
   }
 
   /**
@@ -500,7 +495,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
    * should not necessarily be converted to VI -- there may be other reasons not to convert.
    */
   private boolean checkNatRuleValid(NatRule rule, boolean fileWarnings) {
-    // Check if rule is applicable for this device id (for high-availability devices)
+    // Check if rule is applicable for this device (for high-availability devices)
     NatRule.ActiveActiveDeviceBinding binding = rule.getActiveActiveDeviceBinding();
     Integer id = getOrCreateHighAvailability().getDeviceId();
     if (id != null && (binding == null || !deviceBindingAndIdCompatible(binding, id))) {
