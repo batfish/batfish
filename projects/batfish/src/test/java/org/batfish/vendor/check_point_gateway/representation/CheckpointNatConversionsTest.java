@@ -170,7 +170,7 @@ public final class CheckpointNatConversionsTest {
     {
       // Invalid source type
       Warnings warnings = new Warnings(true, true, true);
-      assertFalse(checkValidManualHide(service, ORIG, ORIG, ANY, warnings));
+      assertFalse(checkValidManualHide(service, ORIG, ORIG, warnings));
       assertThat(
           warnings.getRedFlagWarnings(),
           contains(hasText(containsString("translated-source foo has invalid type ServiceTcp"))));
@@ -178,28 +178,16 @@ public final class CheckpointNatConversionsTest {
     {
       // Invalid destination type
       Warnings warnings = new Warnings(true, true, true);
-      assertFalse(checkValidManualHide(addressSpace, service, ORIG, ANY, warnings));
+      assertFalse(checkValidManualHide(addressSpace, service, ORIG, warnings));
       assertThat(
           warnings.getRedFlagWarnings(),
           contains(
               hasText(containsString("translated-destination foo has invalid type ServiceTcp"))));
     }
     {
-      // Translated and original destination types don't match
-      Warnings warnings = new Warnings(true, true, true);
-      assertFalse(checkValidManualHide(addressSpace, addressSpace, ORIG, ANY, warnings));
-      assertThat(
-          warnings.getRedFlagWarnings(),
-          contains(
-              hasText(
-                  containsString(
-                      "translated-destination foo type Host does not match original-destination"
-                          + " type"))));
-    }
-    {
       // Invalid service type
       Warnings warnings = new Warnings(true, true, true);
-      assertFalse(checkValidManualHide(addressSpace, ORIG, service, ANY, warnings));
+      assertFalse(checkValidManualHide(addressSpace, ORIG, service, warnings));
       assertThat(
           warnings.getRedFlagWarnings(),
           contains(hasText(containsString("translated-service foo has invalid type ServiceTcp"))));
@@ -207,7 +195,7 @@ public final class CheckpointNatConversionsTest {
     {
       // Valid
       Warnings warnings = new Warnings(true, true, true);
-      assertTrue(checkValidManualHide(addressSpace, ORIG, ORIG, ANY, warnings));
+      assertTrue(checkValidManualHide(addressSpace, ORIG, ORIG, warnings));
       assertThat(warnings.getRedFlagWarnings(), emptyIterable());
     }
   }

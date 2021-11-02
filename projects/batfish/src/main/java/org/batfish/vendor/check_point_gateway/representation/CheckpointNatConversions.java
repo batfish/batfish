@@ -173,10 +173,9 @@ public class CheckpointNatConversions {
       Warnings warnings) {
     NamedManagementObject src = objects.get(natRule.getTranslatedSource());
     NamedManagementObject dst = objects.get(natRule.getTranslatedDestination());
-    NamedManagementObject origDst = objects.get(natRule.getOriginalDestination());
     NamedManagementObject service = objects.get(natRule.getTranslatedService());
     ImmutableList.Builder<TransformationStep> steps = ImmutableList.builder();
-    if (!checkValidManualHide(src, dst, service, origDst, warnings)) {
+    if (!checkValidManualHide(src, dst, service, warnings)) {
       return Optional.empty();
     }
     steps.addAll(getSourceTransformationSteps((NatTranslatedSource) src));
@@ -217,7 +216,6 @@ public class CheckpointNatConversions {
       NamedManagementObject src,
       NamedManagementObject dst,
       NamedManagementObject service,
-      NamedManagementObject origDst,
       Warnings warnings) {
     if (src instanceof Original || !(src instanceof NatTranslatedSource)) {
       warnings.redFlag(
@@ -229,22 +227,13 @@ public class CheckpointNatConversions {
     } else if (!CHECK_IPV4_TRANSLATED_SOURCE.visit((NatTranslatedSource) src)) {
       // unsupported for foreseeable future, so don't bother warning
       return false;
-    } else if (!(dst instanceof Original)) {
-      if (!(dst instanceof Host)) {
-        warnings.redFlag(
-            String.format(
-                "Manual Hide NAT rule translated-destination %s has invalid type %s and will be"
-                    + " ignored",
-                dst.getName(), dst.getClass().getSimpleName()));
-        return false;
-      } else if (!dst.getClass().equals(origDst.getClass())) {
-        warnings.redFlag(
-            String.format(
-                "Manual Hide NAT rule translated-destination %s type %s does not match"
-                    + " original-destination type %s and will be ignored",
-                dst.getName(), dst.getClass().getSimpleName(), origDst.getClass().getSimpleName()));
-        return false;
-      }
+    } else if (!(dst instanceof Original || dst instanceof Host)) {
+      warnings.redFlag(
+          String.format(
+              "Manual Hide NAT rule translated-destination %s has invalid type %s and will be"
+                  + " ignored",
+              dst.getName(), dst.getClass().getSimpleName()));
+      return false;
     } else if (!(service instanceof Original)) {
       warnings.redFlag(
           String.format(
