@@ -2691,6 +2691,13 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testStaticRouteMiscParsing() {
+    Configuration c = parseConfig("static-route-misc");
+    // don't warn, and do install the route
+    assertThat(c.getVrfs().get("somename"), hasStaticRoutes(contains(hasPrefix(Prefix.ZERO))));
+  }
+
+  @Test
   public void testService() {
     String hostname = "service";
     Configuration c = parseConfig(hostname);

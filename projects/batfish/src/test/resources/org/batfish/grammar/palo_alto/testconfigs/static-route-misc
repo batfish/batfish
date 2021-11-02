@@ -1,0 +1,11 @@
+set deviceconfig system hostname static-route-misc
+#
+set network virtual-router somename routing-table ip static-route ROUTE1 path-monitor enable no
+set network virtual-router somename routing-table ip static-route ROUTE1 path-monitor failure-condition any
+set network virtual-router somename routing-table ip static-route ROUTE1 path-monitor hold-time 2
+set network virtual-router somename routing-table ip static-route ROUTE1 nexthop discard
+set network virtual-router somename routing-table ip static-route ROUTE1 bfd profile None
+set network virtual-router somename routing-table ip static-route ROUTE1 metric 10
+set network virtual-router somename routing-table ip static-route ROUTE1 destination 0.0.0.0/0
+set network virtual-router somename routing-table ip static-route ROUTE1 route-table unicast
+#

@@ -311,25 +311,6 @@ public class A10Conversion {
                     .build());
   }
 
-  @VisibleForTesting
-  public static boolean getInterfaceEnabledEffective(Interface iface) {
-    Boolean enabled = iface.getEnabled();
-    if (enabled != null) {
-      return enabled;
-    }
-    switch (iface.getType()) {
-      case ETHERNET:
-        return false;
-      case LOOPBACK:
-      case TRUNK:
-      case VE:
-        return true;
-      default:
-        assert false;
-        return true;
-    }
-  }
-
   /**
    * Create non-forwarding kernel route foran {@code ip nat pool} network. Used only for
    * redistribution, not proxy-arp..
@@ -816,5 +797,29 @@ public class A10Conversion {
     }
     warnings.redFlag(String.format("BGP neighbor %s: could not determine update source", remoteIp));
     return null;
+  }
+
+  /**
+   * Returns {@code true} if the specified interface is effectively enabled. Resolves default values
+   * using the supplied {@code acosMajorVersion}, since defaults are version-dependent.
+   */
+  public static boolean getInterfaceEnabledEffective(
+      Interface iface, @Nullable Integer acosMajorVersion) {
+    Boolean enabled = iface.getEnabled();
+    if (enabled != null) {
+      return enabled;
+    }
+    switch (iface.getType()) {
+      case ETHERNET:
+        // Err on the side of enabling too many interfaces, if version num is unknown
+        return acosMajorVersion == null || acosMajorVersion <= 2;
+      case LOOPBACK:
+      case TRUNK:
+      case VE:
+        return true;
+      default:
+        assert false;
+        return true;
+    }
   }
 }

@@ -61,6 +61,8 @@ AGGREGATE_MED: 'aggregate-med';
 
 ALGORITHM: 'algorithm';
 
+ALL: 'all';
+
 ALLOW: 'allow';
 
 ALWAYS_COMPARE_MED: 'always-compare-med';
@@ -236,6 +238,8 @@ EXTERNAL_LIST: 'external-list';
 ETHERNET: 'ethernet';
 
 FACILITY: 'facility';
+
+FAILURE_CONDITION: 'failure-condition';
 
 FILTER: 'filter';
 
@@ -483,6 +487,8 @@ PASSIVE: 'passive';
 
 PASSWORD: 'password';
 
+PATH_MONITOR: 'path-monitor';
+
 PEER: 'peer';
 
 PEER_ADDRESS: 'peer-address';
@@ -506,6 +512,8 @@ PRIMARY: 'primary';
 PRIMARY_NTP_SERVER: 'primary-ntp-server';
 
 PRIORITY: 'priority';
+
+PROFILE: 'profile';
 
 PROFILE_GROUP: 'profile-group';
 

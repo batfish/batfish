@@ -777,16 +777,20 @@ public class A10ConversionTest {
     Interface loopNullEnabled = new Interface(Interface.Type.LOOPBACK, 1);
 
     // Defaults
-    // Ethernet is disabled by default
-    assertFalse(getInterfaceEnabledEffective(ethNullEnabled));
-    // Loopback is enabled by default
-    assertTrue(getInterfaceEnabledEffective(loopNullEnabled));
+    // Ethernet default is determined by ACOS major version number
+    assertTrue(getInterfaceEnabledEffective(ethNullEnabled, null));
+    assertTrue(getInterfaceEnabledEffective(ethNullEnabled, 2));
+    assertFalse(getInterfaceEnabledEffective(ethNullEnabled, 4));
+    // Loopback is enabled by default, regardless of version number
+    assertTrue(getInterfaceEnabledEffective(loopNullEnabled, null));
+    assertTrue(getInterfaceEnabledEffective(loopNullEnabled, 2));
+    assertTrue(getInterfaceEnabledEffective(loopNullEnabled, 4));
 
     // Explicit enabled value set
     Interface eth = new Interface(Interface.Type.ETHERNET, 1);
     eth.setEnabled(true);
-    assertTrue(getInterfaceEnabledEffective(eth));
+    assertTrue(getInterfaceEnabledEffective(eth, null));
     eth.setEnabled(false);
-    assertFalse(getInterfaceEnabledEffective(eth));
+    assertFalse(getInterfaceEnabledEffective(eth, null));
   }
 }

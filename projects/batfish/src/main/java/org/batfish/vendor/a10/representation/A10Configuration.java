@@ -651,7 +651,7 @@ public final class A10Configuration extends VendorConfiguration {
     String name = getInterfaceName(iface);
     org.batfish.datamodel.Interface.Builder newIface =
         org.batfish.datamodel.Interface.builder()
-            .setActive(getInterfaceEnabledEffective(iface))
+            .setActive(getInterfaceEnabledEffective(iface, _majorVersionNumber))
             .setMtu(getInterfaceMtuEffective(iface))
             .setType(getInterfaceType(iface))
             .setName(name)
@@ -840,6 +840,19 @@ public final class A10Configuration extends VendorConfiguration {
   }
 
   /**
+   * Returns the major version number determined for this configuration. Returns {@code null} if no
+   * version number could be determined.
+   */
+  @Nullable
+  public Integer getMajorVersionNumber() {
+    return _majorVersionNumber;
+  }
+
+  public void setMajorVersionNumber(@Nullable Integer majorVersionNumber) {
+    _majorVersionNumber = majorVersionNumber;
+  }
+
+  /**
    * Finalize configuration after it is finished being built. Does things like making structures
    * immutable.
    *
@@ -873,6 +886,7 @@ public final class A10Configuration extends VendorConfiguration {
   @Nonnull private Map<Integer, Interface> _interfacesLoopback;
   @Nonnull private Map<Integer, TrunkInterface> _interfacesTrunk;
   @Nonnull private Map<Integer, Interface> _interfacesVe;
+  @Nullable private Integer _majorVersionNumber;
   @Nonnull private Map<String, NatPool> _natPools;
   @Nonnull private Map<String, Server> _servers;
   @Nonnull private Map<String, ServiceGroup> _serviceGroups;
