@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.batfish.bddreachability.transition.AddLastHopConstraint;
 import org.batfish.bddreachability.transition.AddNoLastHopConstraint;
+import org.batfish.bddreachability.transition.AddOutgoingOriginalFlowFiltersConstraint;
 import org.batfish.bddreachability.transition.AddSourceConstraint;
 import org.batfish.bddreachability.transition.Constraint;
 import org.batfish.bddreachability.transition.Transition;
@@ -410,7 +411,8 @@ public class BDDReachabilityGraphOptimizer {
     if (t instanceof Constraint
         || t instanceof AddSourceConstraint
         || t instanceof AddLastHopConstraint
-        || t instanceof AddNoLastHopConstraint) {
+        || t instanceof AddNoLastHopConstraint
+        || t instanceof AddOutgoingOriginalFlowFiltersConstraint) {
       return true;
     }
     return false;
