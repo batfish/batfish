@@ -27,3 +27,10 @@ set rulebase nat rules NATRULE1 source-translation dynamic-ip-and-port translate
 set rulebase nat rules NATRULE1 service service-http
 # Unsupported active-active-device-binding mode
 set rulebase nat rules NATRULE1 active-active-device-binding primary
+
+set rulebase nat rules NATRULE2 to z1
+set rulebase nat rules NATRULE2 from any
+set rulebase nat rules NATRULE2 source any
+set rulebase nat rules NATRULE2 destination 10.0.1.1
+# Device id outside of allowed range [0,1]
+set rulebase nat rules NATRULE2 active-active-device-binding 2
