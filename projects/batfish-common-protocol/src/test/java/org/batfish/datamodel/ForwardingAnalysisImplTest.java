@@ -475,7 +475,7 @@ public class ForwardingAnalysisImplTest {
     Interface iNoAddresses = _ib.build();
     ConcreteInterfaceAddress address =
         ConcreteInterfaceAddress.create(P1.getFirstHostIp(), P1.getPrefixLength());
-    // address not read, just set for clariy
+    // address not read, just set for clarity
     Interface iAddress = _ib.setAddress(address).build();
     Map<String, Interface> activeInterfaces =
         ImmutableMap.of(iNoAddresses.getName(), iNoAddresses, iAddress.getName(), iAddress);
