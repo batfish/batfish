@@ -68,6 +68,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
+import org.batfish.bddreachability.transition.AddOutgoingOriginalFlowFiltersConstraint;
 import org.batfish.bddreachability.transition.Transition;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.HeaderSpaceToBDD;
@@ -137,7 +138,8 @@ import org.batfish.symbolic.state.NodeInterfaceNeighborUnreachable;
 import org.batfish.symbolic.state.OriginateInterface;
 import org.batfish.symbolic.state.OriginateInterfaceLink;
 import org.batfish.symbolic.state.OriginateVrf;
-import org.batfish.symbolic.state.PbrFibLookup;
+import org.batfish.symbolic.state.PacketPolicyAction;
+import org.batfish.symbolic.state.PacketPolicyStatement;
 import org.batfish.symbolic.state.PostInInterface;
 import org.batfish.symbolic.state.PostInVrf;
 import org.batfish.symbolic.state.PreInInterface;
@@ -1405,14 +1407,17 @@ public final class BDDReachabilityAnalysisFactoryTest {
             ImmutableSet.of(EXITS_NETWORK));
 
     // Check state edge presence (note, INGRESS_IFACE is in vrf1, not INGRESS_VRF)
-    PbrFibLookup pbrFibLookup = new PbrFibLookup(hostname, "vrf1", "vrf2");
+    PacketPolicyAction fibLookup =
+        new PacketPolicyAction(
+            hostname, "vrf1", "packetPolicyName", new FibLookup(new LiteralVrfName("vrf2")));
     PreOutVrf preOutVrf2 = new PreOutVrf(hostname, "vrf2");
     assertThat(
         analysis.getForwardEdgeMap(),
         hasEntry(
-            equalTo(new PreInInterface(hostname, INGRESS_IFACE)), hasKey(equalTo(pbrFibLookup))));
+            equalTo(new PreInInterface(hostname, INGRESS_IFACE)),
+            hasKey(equalTo(new PacketPolicyStatement(hostname, "vrf1", "packetPolicyName", 0)))));
     assertThat(
-        analysis.getForwardEdgeMap(), hasEntry(equalTo(pbrFibLookup), hasKey(equalTo(preOutVrf2))));
+        analysis.getForwardEdgeMap(), hasEntry(equalTo(fibLookup), hasKey(equalTo(preOutVrf2))));
     assertThat(
         analysis.getForwardEdgeMap(),
         hasEntry(
@@ -1455,7 +1460,9 @@ public final class BDDReachabilityAnalysisFactoryTest {
             ImmutableSet.of(ACCEPTED));
 
     // Check state edge presence (note, INGRESS_IFACE is in vrf1, not INGRESS_VRF)
-    PbrFibLookup pbrFibLookup = new PbrFibLookup(hostname, "vrf1", "vrf2");
+    PacketPolicyAction fibLookup =
+        new PacketPolicyAction(
+            hostname, "vrf1", "packetPolicyName", new FibLookup(new LiteralVrfName("vrf2")));
     PreOutVrf preOutVrf2 = new PreOutVrf(hostname, "vrf2");
     NodeDropNoRoute nodeDropNoRoute = new NodeDropNoRoute(hostname);
     IpSpaceToBDD ipSpaceToBDD = new IpSpaceToBDD(_pkt.getDstIp());
@@ -1466,17 +1473,18 @@ public final class BDDReachabilityAnalysisFactoryTest {
     assertThat(
         analysis.getForwardEdgeMap(),
         hasEntry(
-            equalTo(new PreInInterface(hostname, INGRESS_IFACE)), hasKey(equalTo(pbrFibLookup))));
+            equalTo(new PreInInterface(hostname, INGRESS_IFACE)),
+            hasKey(equalTo(new PacketPolicyStatement(hostname, "vrf1", "packetPolicyName", 0)))));
     assertThat(
         analysis.getForwardEdgeMap(),
         hasEntry(
-            equalTo(pbrFibLookup),
+            equalTo(fibLookup),
             // edge to preOutVrf2 should be limited to traffic routable in vrf2
             hasEntry(equalTo(preOutVrf2), mapsForward(_one, routableFromLookupVrf))));
     assertThat(
         analysis.getForwardEdgeMap(),
         hasEntry(
-            equalTo(pbrFibLookup),
+            equalTo(fibLookup),
             hasEntry(
                 equalTo(nodeDropNoRoute),
                 // edge to nodeDropNoRoute should have traffic not accepted in vrf1 and not routable
@@ -1977,15 +1985,25 @@ public final class BDDReachabilityAnalysisFactoryTest {
             .build();
     SortedMap<String, Configuration> configs = ImmutableSortedMap.of(n1.getHostname(), n1);
     BDDReachabilityAnalysisFactory factory = makeBddReachabilityAnalysisFactory(configs);
-    Edge edge =
-        Iterables.getOnlyElement(
-            factory.generateRules_PreInInterface_NodeDropAclIn().collect(Collectors.toList()));
+    List<Edge> edges =
+        factory.generateRules_PreInInterface_PacketPolicy().collect(Collectors.toList());
+
     assertThat(
-        edge,
-        edge(
-            new PreInInterface(n1.getHostname(), i1.getName()),
-            new NodeDropAclIn(n1.getHostname()),
-            equalTo(IDENTITY)));
+        edges,
+        containsInAnyOrder(
+            // enter the packet policy
+            edge(
+                new PreInInterface(n1.getHostname(), i1.getName()),
+                new PacketPolicyStatement(n1.getHostname(), vrf.getName(), "pbr", 0),
+                IDENTITY),
+            edge(
+                new PacketPolicyStatement(n1.getHostname(), vrf.getName(), "pbr", 0),
+                new PacketPolicyAction(n1.getHostname(), vrf.getName(), "pbr", Drop.instance()),
+                IDENTITY),
+            edge(
+                new PacketPolicyAction(n1.getHostname(), vrf.getName(), "pbr", Drop.instance()),
+                new NodeDropAclIn(n1.getHostname()),
+                IDENTITY)));
   }
 
   @Test
@@ -2231,7 +2249,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
   }
 
   @Test
-  public void testAddOutgoingOriginalFlowFiltersConstraint_PbrFibLookup() throws IOException {
+  public void testAddOutgoingOriginalFlowFiltersConstraint_PacketPolicy() throws IOException {
     /*
     Test that the correct outgoingOriginalFlowFiltersConstraint is placed on flows that match a
     packet policy. In this case, the config has INGRESS_IFACE with a packet policy and interface i1
@@ -2247,7 +2265,6 @@ public final class BDDReachabilityAnalysisFactoryTest {
     IpAccessList filter =
         nf.aclBuilder().setOwner(c).setLines(accepting(matchSrc(srcIp1)), REJECT_ALL).build();
     c.getAllInterfaces().get(i1).setOutgoingOriginalFlowFilter(filter);
-    BDD permittedByFilter = _pkt.getSrcIp().value(srcIp1.asLong());
 
     BDDReachabilityAnalysisFactory factory = makeBddReachabilityAnalysisFactory(configs);
     BDDOutgoingOriginalFlowFilterManager originalFlowsMgr =
@@ -2258,25 +2275,24 @@ public final class BDDReachabilityAnalysisFactoryTest {
     assertFalse(originalFlowFiltersConstraint.isOne());
     assertFalse(permittedOutI1.isOne());
 
-    // Flows will also be constrained to those not dropped by the packet policy
-    Prefix pbrPrefix = Prefix.parse("8.8.8.0/24");
-    BDD notDroppedByPbr = new IpSpaceToBDD(_pkt.getDstIp()).toBDD(pbrPrefix);
-
-    List<Edge> edges =
-        factory
-            .generateRules_PreInInterface_PbrFibLookup()
-            .collect(ImmutableList.toImmutableList());
-
     StateExpr preInInterface = new PreInInterface(c1, INGRESS_IFACE);
-    StateExpr pbrFibLookup = new PbrFibLookup(c1, "vrf1", "vrf2"); // (see makePBRNetwork for names)
+    StateExpr startState = new PacketPolicyStatement(c1, "vrf1", "packetPolicyName", 0);
+
+    Transition transition =
+        Iterables.getOnlyElement(
+                factory
+                    .generateRules_PreInInterface_PacketPolicy()
+                    .filter(
+                        e ->
+                            e.getPreState().equals(preInInterface)
+                                && e.getPostState().equals(startState))
+                    .collect(ImmutableList.toImmutableList()))
+            .getTransition();
+
+    assertThat(transition, instanceOf(AddOutgoingOriginalFlowFiltersConstraint.class));
+
     assertThat(
-        edges,
-        contains(
-            edge(
-                preInInterface,
-                pbrFibLookup,
-                allOf(
-                    mapsForward(_one, originalFlowFiltersConstraint.and(notDroppedByPbr)),
-                    mapsBackward(permittedOutI1, permittedByFilter.and(notDroppedByPbr))))));
+        ((AddOutgoingOriginalFlowFiltersConstraint) transition).getManager(),
+        equalTo(originalFlowsMgr));
   }
 }

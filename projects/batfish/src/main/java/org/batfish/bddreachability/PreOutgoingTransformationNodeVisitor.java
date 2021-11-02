@@ -14,7 +14,8 @@ import org.batfish.symbolic.state.NodeInterfaceNeighborUnreachable;
 import org.batfish.symbolic.state.OriginateInterface;
 import org.batfish.symbolic.state.OriginateInterfaceLink;
 import org.batfish.symbolic.state.OriginateVrf;
-import org.batfish.symbolic.state.PbrFibLookup;
+import org.batfish.symbolic.state.PacketPolicyAction;
+import org.batfish.symbolic.state.PacketPolicyStatement;
 import org.batfish.symbolic.state.PostInInterface;
 import org.batfish.symbolic.state.PostInInterfacePostNat;
 import org.batfish.symbolic.state.PostInVrf;
@@ -164,7 +165,12 @@ public class PreOutgoingTransformationNodeVisitor implements StateExprVisitor<No
   }
 
   @Override
-  public NodeInterfacePair visitPbrFibLookup(PbrFibLookup pbrFibLookup) {
+  public NodeInterfacePair visitPacketPolicyStatement(PacketPolicyStatement packetPolicyStatement) {
+    return null;
+  }
+
+  @Override
+  public NodeInterfacePair visitPacketPolicyAction(PacketPolicyAction packetPolicyAction) {
     return null;
   }
 

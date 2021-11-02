@@ -15,6 +15,16 @@ public final class EdgeMatchers {
   /**
    * Matches {@link Edge#getPreState}, {@link Edge#getPostState}, and {@link Edge#getTransition}.
    */
+  public static Matcher<Edge> edge(StateExpr preState, StateExpr postState, Transition transition) {
+    return allOf(
+        new HasPreState(equalTo(preState)),
+        new HasPostState(equalTo(postState)),
+        new HasTransition(equalTo(transition)));
+  }
+
+  /**
+   * Matches {@link Edge#getPreState}, {@link Edge#getPostState}, and {@link Edge#getTransition}.
+   */
   public static Matcher<Edge> edge(
       StateExpr preState, StateExpr postState, Matcher<Transition> transitionMatcher) {
     return allOf(
