@@ -17,6 +17,7 @@ import static org.batfish.datamodel.ForwardingAnalysisImpl.computeMatchingIps;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeNeighborUnreachable;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeNextVrfIps;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeNullRoutedIps;
+import static org.batfish.datamodel.ForwardingAnalysisImpl.computeOwnedIpsByVrf;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeRoutesWhereDstIpCanBeArpIp;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeRoutesWithDestIpEdge;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeRoutesWithNextHopIpArpFalseForInterface;
@@ -27,6 +28,7 @@ import static org.batfish.datamodel.ForwardingAnalysisImpl.union;
 import static org.batfish.datamodel.matchers.AclIpSpaceMatchers.hasLines;
 import static org.batfish.datamodel.matchers.AclIpSpaceMatchers.isAclIpSpaceThat;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
+import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.specifier.LocationInfoUtils.computeLocationInfo;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
@@ -198,6 +200,21 @@ public class ForwardingAnalysisImplTest {
             .setAddress(ConcreteInterfaceAddress.create(P1.getFirstHostIp(), P1.getPrefixLength()))
             .setProxyArp(true)
             .build();
+    Ip nonRoutedOwnedIp = Ip.parse("5.5.5.5");
+    ConcreteInterfaceAddress nonRoutedOwnedAddress =
+        ConcreteInterfaceAddress.create(nonRoutedOwnedIp, Prefix.MAX_PREFIX_LENGTH);
+    Interface i1B =
+        _ib.setVrf(vrf1)
+            .setAddresses(nonRoutedOwnedAddress)
+            .setAddressMetadata(
+                ImmutableMap.of(
+                    nonRoutedOwnedAddress,
+                    ConnectedRouteMetadata.builder()
+                        .setGenerateConnectedRoute(false)
+                        .setGenerateLocalRoute(false)
+                        .build()))
+            .setProxyArp(false)
+            .build();
     Interface i2 =
         _ib.setVrf(vrf2)
             .setAddress(ConcreteInterfaceAddress.create(P2.getFirstHostIp(), P2.getPrefixLength()))
@@ -214,14 +231,24 @@ public class ForwardingAnalysisImplTest {
         IpWildcardSetIpSpace.builder().including(IpWildcard.create(P2)).build();
     IpSpace ipsRoutedOutI3 = EmptyIpSpace.INSTANCE;
     Map<String, Interface> interfaces =
-        ImmutableMap.of(i1.getName(), i1, i2.getName(), i2, i3.getName(), i3, i4.getName(), i4);
+        ImmutableMap.of(
+            i1.getName(),
+            i1,
+            i1B.getName(),
+            i1B,
+            i2.getName(),
+            i2,
+            i3.getName(),
+            i3,
+            i4.getName(),
+            i4);
     Map<String, IpSpace> routableIpsByVrf =
         ImmutableMap.of(
             vrf1.getName(), UniverseIpSpace.INSTANCE, vrf2.getName(), UniverseIpSpace.INSTANCE);
     Map<String, Map<String, IpSpace>> ipsRoutedOutInterfaces =
         ImmutableMap.of(
             vrf1.getName(),
-            ImmutableMap.of(i1.getName(), ipsRoutedOutI1),
+            ImmutableMap.of(i1.getName(), ipsRoutedOutI1, i1B.getName(), EmptyIpSpace.INSTANCE),
             vrf2.getName(),
             ImmutableMap.of(i2.getName(), ipsRoutedOutI2, i3.getName(), ipsRoutedOutI3));
 
@@ -233,17 +260,24 @@ public class ForwardingAnalysisImplTest {
     Map<String, Configuration> configs = ImmutableMap.of(config.getHostname(), config);
     Map<String, Map<String, Set<Ip>>> interfaceOwnedIps =
         new IpOwners(configs, GlobalBroadcastNoPointToPoint.instance()).getInterfaceOwners(false);
+    Map<String, IpSpace> ownedIpsByVrf =
+        computeOwnedIpsByVrf(
+            config.getActiveInterfaces(), interfaceOwnedIps.get(config.getHostname()));
     Map<String, IpSpace> result =
         ForwardingAnalysisImpl.computeArpRepliesByInterface(
-            interfaces, routableIpsByVrf, ipsRoutedOutInterfaces, interfaceOwnedIps);
+            interfaces, routableIpsByVrf, ipsRoutedOutInterfaces, interfaceOwnedIps, ownedIpsByVrf);
 
-    /* Proxy-arp: Match interface IP, reject what's routed through i1, accept everything else*/
+    /* Proxy-arp: Match interface IP, owned IP of other interface in vrf, reject what's routed
+    through i1, accept everything else */
     assertThat(result, hasEntry(equalTo(i1.getName()), containsIp(P1.getFirstHostIp())));
     assertThat(result, hasEntry(equalTo(i1.getName()), not(containsIp(P1.getLastHostIp()))));
     assertThat(result, hasEntry(equalTo(i1.getName()), not(containsIp(P3.getFirstHostIp()))));
     assertThat(result, hasEntry(equalTo(i1.getName()), containsIp(P2.getStartIp())));
     assertThat(result, hasEntry(equalTo(i1.getName()), containsIp(Ip.parse("10.10.10.1"))));
+    assertThat(result, hasEntry(equalTo(i1.getName()), containsIp(nonRoutedOwnedIp)));
     /* No proxy-arp: just match interface ip and additional arp ip */
+    assertThat(result, hasEntry(equalTo(i1B.getName()), containsIp(nonRoutedOwnedIp)));
+    assertThat(result, hasEntry(equalTo(i1B.getName()), not(containsIp(P1.getFirstHostIp()))));
     assertThat(result, hasEntry(equalTo(i2.getName()), containsIp(P2.getFirstHostIp())));
     assertThat(result, hasEntry(equalTo(i2.getName()), not(containsIp(P2.getLastHostIp()))));
     assertThat(result, hasEntry(equalTo(i2.getName()), not(containsIp(P3.getFirstHostIp()))));
@@ -253,6 +287,7 @@ public class ForwardingAnalysisImplTest {
     assertThat(result, hasEntry(equalTo(i3.getName()), equalTo(EmptyIpSpace.INSTANCE)));
     /* Link-local address is present, honor additional ARP IPs  */
     assertThat(result, hasEntry(equalTo(i4.getName()), containsIp(Ip.parse("10.10.10.4"))));
+    /* Proxy-arp: Match owned IPs by other interface in VRF not covered by route */
   }
 
   @Test
@@ -294,12 +329,13 @@ public class ForwardingAnalysisImplTest {
 
     Map<String, Map<String, Set<Ip>>> interfaceOwnedIps =
         new IpOwners(configs, GlobalBroadcastNoPointToPoint.instance()).getInterfaceOwners(false);
-
     IpSpace p1IpSpace = IpWildcard.create(P1).toIpSpace();
     IpSpace i1ArpReplies =
-        computeInterfaceArpReplies(i1, UniverseIpSpace.INSTANCE, p1IpSpace, interfaceOwnedIps);
+        computeInterfaceArpReplies(
+            i1, UniverseIpSpace.INSTANCE, p1IpSpace, interfaceOwnedIps, EmptyIpSpace.INSTANCE);
     IpSpace i2ArpReplies =
-        computeInterfaceArpReplies(i2, UniverseIpSpace.INSTANCE, p1IpSpace, interfaceOwnedIps);
+        computeInterfaceArpReplies(
+            i2, UniverseIpSpace.INSTANCE, p1IpSpace, interfaceOwnedIps, EmptyIpSpace.INSTANCE);
 
     assertThat(i1ArpReplies, not(containsIp(Ip.parse("1.1.1.1"))));
     assertThat(i2ArpReplies, containsIp(Ip.parse("1.1.1.1")));
@@ -433,6 +469,26 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
+  public void testComputeOwnedIpsByVrf() {
+    Configuration config = _cb.build();
+    _ib.setOwner(config);
+    Interface iNoAddresses = _ib.build();
+    ConcreteInterfaceAddress address =
+        ConcreteInterfaceAddress.create(P1.getFirstHostIp(), P1.getPrefixLength());
+    // address not read, just set for clariy
+    Interface iAddress = _ib.setAddress(address).build();
+    Map<String, Interface> activeInterfaces =
+        ImmutableMap.of(iNoAddresses.getName(), iNoAddresses, iAddress.getName(), iAddress);
+    // Note there is no key for iNoAddress
+    Map<String, Set<Ip>> interfaceOwnedIps =
+        ImmutableMap.of(iAddress.getName(), ImmutableSet.of(P1.getFirstHostIp()));
+    Map<String, IpSpace> ownedIpsByVrf = computeOwnedIpsByVrf(activeInterfaces, interfaceOwnedIps);
+
+    assertThat(ownedIpsByVrf, hasKeys(iAddress.getVrfName()));
+    assertThat(ownedIpsByVrf.get(iAddress.getVrfName()), containsIp(P1.getFirstHostIp()));
+  }
+
+  @Test
   public void testComputeInterfaceArpReplies() {
     Configuration config = _cb.build();
     _ib.setOwner(config);
@@ -452,12 +508,23 @@ public class ForwardingAnalysisImplTest {
                 ImmutableMap.of(config.getHostname(), config),
                 GlobalBroadcastNoPointToPoint.instance())
             .getInterfaceOwners(false);
+    Map<String, IpSpace> ownedIpsByVrf =
+        computeOwnedIpsByVrf(
+            config.getActiveInterfaces(), interfaceOwnedIps.get(config.getHostname()));
     IpSpace noProxyArpResult =
         computeInterfaceArpReplies(
-            iNoProxyArp, routableIpsForThisVrf, ipsRoutedThroughInterface, interfaceOwnedIps);
+            iNoProxyArp,
+            routableIpsForThisVrf,
+            ipsRoutedThroughInterface,
+            interfaceOwnedIps,
+            ownedIpsByVrf.get(iNoProxyArp.getVrfName()));
     IpSpace proxyArpResult =
         computeInterfaceArpReplies(
-            iProxyArp, routableIpsForThisVrf, ipsRoutedThroughInterface, interfaceOwnedIps);
+            iProxyArp,
+            routableIpsForThisVrf,
+            ipsRoutedThroughInterface,
+            interfaceOwnedIps,
+            ownedIpsByVrf.get(iProxyArp.getVrfName()));
 
     /* No proxy-ARP */
     /* Accept IPs belonging to interface */

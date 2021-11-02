@@ -17,6 +17,7 @@ import io.opentracing.util.GlobalTracer;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -379,16 +380,21 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
    * the node would send out an ARP reply on that interface: <br>
    * <br>
    * 1) PERMIT IPs belonging to the interface.<br>
-   * 2) (Proxy-ARP) DENY any IP for which there is a longest-prefix match entry in the FIB that goes
+   * 2) PERMIT any statically configured arp IPs.<br>
+   * 3) (Proxy-ARP) DENY any IP for which there is a longest-prefix match entry in the FIB that goes
    * through the interface.<br>
-   * 3) (Proxy-ARP) PERMIT any other IP routable via the VRF of the interface.<br>
-   * 4) (Proxy-ARP) PERMIT any statically configured arp IPs.
+   * 4) (Proxy-ARP) PERMIT any other IP routable via the VRF of the interface.<br>
+   * 5) (Proxy-ARP) PERMIT any other owned IPs of the VRF of the interface.
    */
   @VisibleForTesting
-  static Map<String, Map<String, IpSpace>> computeArpReplies(
+  static @Nonnull Map<String, Map<String, IpSpace>> computeArpReplies(
+      // node -> configuration
       Map<String, Configuration> configurations,
+      // node -> vrf -> interface -> ipsRoutedOutInterface
       Map<String, Map<String, Map<String, IpSpace>>> ipsRoutedOutInterfaces,
+      // node -> interface -> ownedIps
       Map<String, Map<String, Set<Ip>>> interfaceOwnedIps,
+      // node -> vrf -> routable IPs
       Map<String, Map<String, IpSpace>> routableIps) {
     Span span = GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeArpReplies").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
@@ -398,39 +404,78 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
           Entry::getKey,
           nodeEntry -> {
             String hostname = nodeEntry.getKey();
+            Configuration c = nodeEntry.getValue();
+            // vrf -> ownedIps
+            Map<String, IpSpace> ownedIpsByVrf =
+                computeOwnedIpsByVrf(
+                    c.getActiveInterfaces(),
+                    interfaceOwnedIps.getOrDefault(hostname, ImmutableMap.of()));
             return computeArpRepliesByInterface(
-                nodeEntry.getValue().getActiveInterfaces(),
+                c.getActiveInterfaces(),
                 routableIps.get(hostname),
                 ipsRoutedOutInterfaces.get(hostname),
-                interfaceOwnedIps);
+                interfaceOwnedIps,
+                ownedIpsByVrf);
           });
     } finally {
       span.finish();
     }
   }
 
+  /**
+   * Returns a mapping from VRF name to the union of all IPs owned by all interfaces in that VRF.
+   */
   @VisibleForTesting
-  static Map<String, IpSpace> computeArpRepliesByInterface(
+  static @Nonnull Map<String, IpSpace> computeOwnedIpsByVrf(
+      // interface name -> interface
+      Map<String, Interface> activeInterfaces,
+      // interface -> owned IPs
+      Map<String, Set<Ip>> interfaceOwnedIps) {
+    Map<String, Set<Ip>> ipsByVrf = new HashMap<>();
+    activeInterfaces.forEach(
+        (ifaceName, iface) -> {
+          ipsByVrf
+              .computeIfAbsent(iface.getVrfName(), v -> new HashSet<>())
+              .addAll(interfaceOwnedIps.getOrDefault(ifaceName, ImmutableSet.of()));
+        });
+    return ipsByVrf.entrySet().stream()
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Entry::getKey /* vrfName */,
+                ipsByVrfEntry -> ipSetToIpSpace(ipsByVrfEntry.getValue() /* ipsOwnedByVrf */)));
+  }
+
+  @VisibleForTesting
+  static @Nonnull Map<String, IpSpace> computeArpRepliesByInterface(
+      // interface name -> interface
       Map<String, Interface> interfaces,
+      // vrf -> routable IPs
       Map<String, IpSpace> routableIpsByVrf,
+      // vrf -> interface -> ipsRoutedOutInterface
       Map<String, Map<String, IpSpace>> ipsRoutedOutInterfaces,
-      Map<String, Map<String, Set<Ip>>> interfaceOwnedIps) {
+      // node -> interface -> ownedIps
+      Map<String, Map<String, Set<Ip>>> interfaceOwnedIps,
+      // vrf -> ownedIps
+      Map<String, IpSpace> ownedIpsByVrf) {
     return toImmutableMap(
         interfaces,
         Entry::getKey,
-        ifaceEntry ->
-            computeInterfaceArpReplies(
-                ifaceEntry.getValue(),
-                /* We believe at this time that an interface would send an ARP reply only based
-                 * on the routes in it's own VRF.
-                 * This type of routing separation is the point of VRFs, and cross-VRF introspection
-                 * for the purposes of ARP replies is unlikely to happen by default.
-                 */
-                routableIpsByVrf.get(ifaceEntry.getValue().getVrfName()),
-                ipsRoutedOutInterfaces
-                    .get(ifaceEntry.getValue().getVrfName())
-                    .getOrDefault(ifaceEntry.getKey(), EmptyIpSpace.INSTANCE),
-                interfaceOwnedIps));
+        ifaceEntry -> {
+          String ifaceName = ifaceEntry.getKey();
+          Interface iface = ifaceEntry.getValue();
+          String vrfName = ifaceEntry.getValue().getVrfName();
+          return computeInterfaceArpReplies(
+              iface,
+              /* We believe at this time that an interface would send an ARP reply only based
+               * on the routes in it's own VRF.
+               * This type of routing separation is the point of VRFs, and cross-VRF introspection
+               * for the purposes of ARP replies is unlikely to happen by default.
+               */
+              routableIpsByVrf.get(vrfName),
+              ipsRoutedOutInterfaces.get(vrfName).getOrDefault(ifaceName, EmptyIpSpace.INSTANCE),
+              interfaceOwnedIps,
+              ownedIpsByVrf.get(vrfName));
+        });
   }
 
   @VisibleForTesting
@@ -473,11 +518,12 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
   }
 
   @VisibleForTesting
-  static IpSpace computeInterfaceArpReplies(
+  static @Nonnull IpSpace computeInterfaceArpReplies(
       @Nonnull Interface iface,
       @Nonnull IpSpace routableIpsForThisVrf,
       @Nonnull IpSpace ipsRoutedThroughInterface,
-      @Nonnull Map<String, Map<String, Set<Ip>>> interfaceOwnedIps) {
+      @Nonnull Map<String, Map<String, Set<Ip>>> interfaceOwnedIps,
+      @Nonnull IpSpace vrfOwnedIps) {
     IpSpace ipsAssignedToThisInterface =
         computeIpsAssignedToThisInterfaceForArpReplies(iface, interfaceOwnedIps);
     if (ipsAssignedToThisInterface == EmptyIpSpace.INSTANCE) {
@@ -497,6 +543,11 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
 
       /* Accept all other routable IPs */
       interfaceArpReplies.thenPermitting(routableIpsForThisVrf);
+
+      /* Accept all vrf-owned IPs */
+      // TODO: There may be room for optimization, since this generally overlaps with both IPs owned
+      //       by this interface as well as IPs routable for this VRF.
+      interfaceArpReplies.thenPermitting(vrfOwnedIps);
     }
 
     return interfaceArpReplies.build();
@@ -525,11 +576,18 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
     Set<Ip> linkLocalIps =
         linkLocalAddresses.stream().map(LinkLocalAddress::getIp).collect(Collectors.toSet());
     Set<Ip> allIps = Sets.union(concreteIps, linkLocalIps);
-    if (allIps.size() == 1) {
-      return allIps.iterator().next().toIpSpace();
+    return ipSetToIpSpace(allIps);
+  }
+
+  private static @Nonnull IpSpace ipSetToIpSpace(Set<Ip> ips) {
+    if (ips.isEmpty()) {
+      return EmptyIpSpace.INSTANCE;
+    }
+    if (ips.size() == 1) {
+      return ips.iterator().next().toIpSpace();
     }
     Set<IpWildcard> wildcards =
-        allIps.stream().map(IpWildcard::create).collect(ImmutableSet.toImmutableSet());
+        ips.stream().map(IpWildcard::create).collect(ImmutableSet.toImmutableSet());
     return IpWildcardSetIpSpace.create(ImmutableSet.of(), wildcards);
   }
 
