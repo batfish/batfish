@@ -538,16 +538,16 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
     interfaceArpReplies.thenPermitting(iface.getAdditionalArpIps());
 
     if (iface.getProxyArp()) {
+      /* Accept all vrf-owned IPs */
+      // TODO: There may be room for optimization, since this generally overlaps with both IPs owned
+      //       by this interface as well as IPs routable for this VRF.
+      interfaceArpReplies.thenPermitting(vrfOwnedIps);
+
       /* Reject IPs routed through this interface */
       interfaceArpReplies.thenRejecting(ipsRoutedThroughInterface);
 
       /* Accept all other routable IPs */
       interfaceArpReplies.thenPermitting(routableIpsForThisVrf);
-
-      /* Accept all vrf-owned IPs */
-      // TODO: There may be room for optimization, since this generally overlaps with both IPs owned
-      //       by this interface as well as IPs routable for this VRF.
-      interfaceArpReplies.thenPermitting(vrfOwnedIps);
     }
 
     return interfaceArpReplies.build();

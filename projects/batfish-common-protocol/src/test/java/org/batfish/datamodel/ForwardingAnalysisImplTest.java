@@ -200,7 +200,7 @@ public class ForwardingAnalysisImplTest {
             .setAddress(ConcreteInterfaceAddress.create(P1.getFirstHostIp(), P1.getPrefixLength()))
             .setProxyArp(true)
             .build();
-    Ip nonRoutedOwnedIp = Ip.parse("5.5.5.5");
+    Ip nonRoutedOwnedIp = Ip.parse("1.0.0.2"); // In P1, neither first nor last host IP.
     ConcreteInterfaceAddress nonRoutedOwnedAddress =
         ConcreteInterfaceAddress.create(nonRoutedOwnedIp, Prefix.MAX_PREFIX_LENGTH);
     Interface i1B =
