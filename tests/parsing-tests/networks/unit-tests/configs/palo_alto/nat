@@ -16,6 +16,7 @@ policy {
       nat {
         rules {
           RULE_1 {
+            active-active-device-binding primary;
             destination-translation {
               translated-address 1.1.1.0/24;
             }

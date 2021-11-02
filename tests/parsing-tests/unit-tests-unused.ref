@@ -3371,10 +3371,10 @@
         "Source_Lines" : {
           "filename" : "configs/palo_alto/nat",
           "lines" : [
-            57,
             58,
             59,
-            60
+            60,
+            61
           ]
         }
       },
@@ -3384,8 +3384,8 @@
         "Source_Lines" : {
           "filename" : "configs/palo_alto/nat",
           "lines" : [
-            50,
-            51
+            51,
+            52
           ]
         }
       },
@@ -3395,9 +3395,9 @@
         "Source_Lines" : {
           "filename" : "configs/palo_alto/nat",
           "lines" : [
-            53,
             54,
-            55
+            55,
+            56
           ]
         }
       },
@@ -3407,7 +3407,7 @@
         "Source_Lines" : {
           "filename" : "configs/palo_alto/nat",
           "lines" : [
-            49
+            50
           ]
         }
       },
@@ -3420,13 +3420,14 @@
             18,
             19,
             20,
-            22,
+            21,
             23,
             24,
-            27,
+            25,
             28,
             29,
-            30
+            30,
+            31
           ]
         }
       },
@@ -3436,11 +3437,11 @@
         "Source_Lines" : {
           "filename" : "configs/palo_alto/nat",
           "lines" : [
-            32,
             33,
             34,
             35,
-            36
+            36,
+            37
           ]
         }
       },
@@ -3450,14 +3451,14 @@
         "Source_Lines" : {
           "filename" : "configs/palo_alto/nat",
           "lines" : [
-            38,
             39,
             40,
             41,
             42,
-            45,
+            43,
             46,
-            47
+            47,
+            48
           ]
         }
       },

@@ -11,6 +11,16 @@ import javax.annotation.Nullable;
 /** PAN NAT rule configuration */
 public final class NatRule implements Serializable {
 
+  public enum ActiveActiveDeviceBinding {
+    BOTH,
+    PRIMARY,
+    ONE,
+    ZERO
+  }
+
+  // For HA systems, determines which system the rule is installed on
+  @Nullable private ActiveActiveDeviceBinding _activeActiveDeviceBinding;
+
   // Name of the rule
   @Nonnull private final String _name;
 
@@ -37,6 +47,16 @@ public final class NatRule implements Serializable {
     _source = new LinkedList<>();
     _destination = new LinkedList<>();
     _disabled = false;
+  }
+
+  @Nullable
+  public ActiveActiveDeviceBinding getActiveActiveDeviceBinding() {
+    return _activeActiveDeviceBinding;
+  }
+
+  public void setActiveActiveDeviceBinding(
+      @Nullable ActiveActiveDeviceBinding activeActiveDeviceBinding) {
+    _activeActiveDeviceBinding = activeActiveDeviceBinding;
   }
 
   @Nonnull

@@ -20,7 +20,8 @@ srn_definition
 :
     name = variable
     (
-        srn_destination_translation
+        srn_active_active_device_binding
+        | srn_destination_translation
         | srn_source_translation
         | srn_to
         | srn_from
@@ -29,6 +30,18 @@ srn_definition
         | srn_service
         | srn_disabled
     )?
+;
+
+active_active_device_binding_val
+:
+    uint8 // 0 or 1
+    | BOTH
+    | PRIMARY
+;
+
+srn_active_active_device_binding
+:
+    ACTIVE_ACTIVE_DEVICE_BINDING bind = active_active_device_binding_val
 ;
 
 srn_destination_translation

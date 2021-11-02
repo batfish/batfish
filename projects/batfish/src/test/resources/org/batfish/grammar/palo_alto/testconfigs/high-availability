@@ -1,0 +1,32 @@
+set deviceconfig system hostname high-availability
+#
+set deviceconfig high-availability group group-id 1
+set deviceconfig high-availability group mode active-active device-id 1
+# set deviceconfig high-availability group mode active-active session-owner-selection first-packet session-setup first-packet
+# set deviceconfig high-availability group mode active-active tentative-hold-time 10
+# set deviceconfig high-availability group description "My Group Description"
+# set deviceconfig high-availability group peer-ip 192.168.0.1
+# set deviceconfig high-availability group state-synchronization ha2-keep-alive enabled yes
+# set deviceconfig high-availability group election-option heartbeat-backup no
+# set deviceconfig high-availability group election-option preemptive no
+# set deviceconfig high-availability group election-option timers aggressive
+# set deviceconfig high-availability group election-option device-priority 200
+# set deviceconfig high-availability group peer-ip-backup 192.168.10.1
+# set deviceconfig high-availability group monitoring link-monitoring link-group GROUP1 interface [ ethernet1/23 ethernet1/24 ]
+# set deviceconfig high-availability group monitoring link-monitoring link-group GROUP1 failure-condition all
+# set deviceconfig high-availability group monitoring link-monitoring link-group GROUP2 interface [ ethernet1/21 ethernet1/22 ]
+# set deviceconfig high-availability group monitoring link-monitoring link-group GROUP2 failure-condition all
+# set deviceconfig high-availability group monitoring link-monitoring enabled no
+# set deviceconfig high-availability group monitoring path-monitoring enabled no
+# set deviceconfig high-availability group configuration-synchronization enabled yes
+# set deviceconfig high-availability interface ha1 ip-address 192.168.0.2
+# set deviceconfig high-availability interface ha1 netmask 255.255.255.0
+# set deviceconfig high-availability interface ha1-backup port ha1-b
+# set deviceconfig high-availability interface ha1-backup ip-address 192.168.10.2
+# set deviceconfig high-availability interface ha1-backup netmask 255.255.255.0
+# set deviceconfig high-availability interface ha2 ip-address 192.168.20.2
+# set deviceconfig high-availability interface ha2 netmask 255.255.255.0
+# set deviceconfig high-availability interface ha2-backup
+# set deviceconfig high-availability interface ha3
+# set deviceconfig high-availability enabled yes
+#

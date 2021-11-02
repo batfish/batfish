@@ -21,6 +21,10 @@ ACCEPT_SUMMARY: 'accept-summary';
 
 ACTION: 'action';
 
+ACTIVE_ACTIVE: 'active-active';
+
+ACTIVE_ACTIVE_DEVICE_BINDING: 'active-active-device-binding';
+
 ADDRESS: 'address';
 
 ADDRESS_GROUP: 'address-group';
@@ -175,6 +179,8 @@ DEVICES: 'devices';
 
 DEVICE_GROUP: 'device-group';
 
+DEVICE_ID: 'device-id';
+
 DEVICECONFIG: 'deviceconfig';
 
 DH_GROUP: 'dh-group';
@@ -263,6 +269,8 @@ GR_DELAY: 'gr-delay';
 
 GRACEFUL_RESTART: 'graceful-restart';
 
+GROUP: 'group';
+
 GROUP1: 'group1';
 
 GROUP2: 'group2';
@@ -275,6 +283,8 @@ GROUP19: 'group19';
 
 GROUP20: 'group20';
 
+GROUP_ID: 'group-id';
+
 HALF: 'half';
 
 HA: 'ha';
@@ -286,6 +296,8 @@ HASH: 'hash';
 HELLO_INTERVAL: 'hello-interval';
 
 HELPER_ENABLE: 'helper-enable';
+
+HIGH_AVAILABILITY: 'high-availability';
 
 HIP_PROFILES: 'hip-profiles';
 
@@ -410,6 +422,8 @@ MEMBERS: 'members';
 METRIC: 'metric';
 
 MGT_CONFIG: 'mgt-config';
+
+MODE: 'mode';
 
 MOVE: 'move';
 

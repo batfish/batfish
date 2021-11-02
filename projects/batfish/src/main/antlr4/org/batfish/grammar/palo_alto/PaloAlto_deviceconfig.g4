@@ -6,14 +6,64 @@ options {
     tokenVocab = PaloAltoLexer;
 }
 
+active_active_device_id
+:
+  // 0 or 1
+  uint8
+;
+
+ha_group_id
+:
+  // 1-63
+  uint8
+;
+
 s_deviceconfig
 :
     DEVICECONFIG
     (
-        sd_null
+        sd_high_availability
+        | sd_null
         | sd_system
     )
 ;
+
+sd_high_availability
+:
+    HIGH_AVAILABILITY
+    (
+      sdha_group
+    )
+;
+
+sdha_group
+:
+    GROUP
+    (
+      sdhag_group_id
+      | sdhag_mode
+    )
+;
+
+sdhag_group_id: GROUP_ID id = ha_group_id;
+
+sdhag_mode
+:
+    MODE
+    (
+      sdhagm_active_active
+    )
+;
+
+sdhagm_active_active
+:
+    ACTIVE_ACTIVE
+    (
+      sdhagmaa_device_id
+    )
+;
+
+sdhagmaa_device_id: DEVICE_ID id = active_active_device_id;
 
 sd_null
 :

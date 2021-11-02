@@ -207,6 +207,54 @@ public class PaloAltoNatTest {
   }
 
   @Test
+  public void testSourceNatHighAvaiability() throws IOException {
+    /* Test source NAT for traffic from inside zone to outside zone with a variety of high-availability device-bindings
+     */
+    Configuration c = parseConfig("source-nat-high-availability");
+    String inside1Name = "ethernet1/1.1";
+    Batfish batfish = getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _folder);
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+
+    Flow flowSrc0 =
+        Flow.builder()
+            .setIngressNode(c.getHostname())
+            .setIngressInterface(inside1Name)
+            .setSrcIp(Ip.parse("10.1.0.1")) // SOURCE_ADDR_0
+            .setDstIp(Ip.parse("10.2.0.1"))
+            // Arbitrary ports
+            .setSrcPort(111)
+            .setDstPort(222)
+            .setIpProtocol(IpProtocol.TCP)
+            .build();
+    Flow flowSrc1 = flowSrc0.toBuilder().setSrcIp(Ip.parse("10.1.1.1")).build(); // SOURCE_ADDR_1
+    Flow flowSrcBoth =
+        flowSrc0.toBuilder().setSrcIp(Ip.parse("10.1.2.1")).build(); // SOURCE_ADDR_BOTH
+    Flow flowSrcNone =
+        flowSrc0.toBuilder().setSrcIp(Ip.parse("10.1.3.1")).build(); // SOURCE_ADDR_NONE
+
+    SortedMap<Flow, List<Trace>> traces =
+        batfish
+            .getTracerouteEngine(snapshot)
+            .computeTraces(ImmutableSet.of(flowSrc0, flowSrc1, flowSrcBoth, flowSrcNone), false);
+
+    Ip newSrcIp = Ip.parse("10.2.99.1"); // SERVER_NEW_ADDR
+    int newSrcPort = NamedPort.EPHEMERAL_LOWEST.number();
+    // Device binding 1 and "both" applies to this device
+    assertEquals(
+        getTransformedFlow(Iterables.getOnlyElement(traces.get(flowSrc1))),
+        flowSrc1.toBuilder().setSrcIp(newSrcIp).setSrcPort(newSrcPort).build());
+    assertEquals(
+        getTransformedFlow(Iterables.getOnlyElement(traces.get(flowSrcBoth))),
+        flowSrcBoth.toBuilder().setSrcIp(newSrcIp).setSrcPort(newSrcPort).build());
+
+    // Device binding 0 and un-bound rules do not apply to this device
+    assertEquals(getTransformedFlow(Iterables.getOnlyElement(traces.get(flowSrc0))), flowSrc0);
+    assertEquals(
+        getTransformedFlow(Iterables.getOnlyElement(traces.get(flowSrcNone))), flowSrcNone);
+  }
+
+  @Test
   public void testPanoramaSourceNatOrder() throws IOException {
     /*
     Setup: Three NAT rules

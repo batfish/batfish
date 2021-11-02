@@ -297,6 +297,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Srao_toContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Src_or_dst_list_itemContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srespr_devicesContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sresprd_hostnameContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_active_active_device_bindingContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_destinationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_destination_translationContext;
@@ -403,6 +404,7 @@ import org.batfish.representation.palo_alto.DynamicIpAndPort;
 import org.batfish.representation.palo_alto.EbgpPeerGroupType;
 import org.batfish.representation.palo_alto.EbgpPeerGroupType.ExportNexthopMode;
 import org.batfish.representation.palo_alto.EbgpPeerGroupType.ImportNexthopMode;
+import org.batfish.representation.palo_alto.HighAvailability;
 import org.batfish.representation.palo_alto.Interface;
 import org.batfish.representation.palo_alto.InterfaceAddress;
 import org.batfish.representation.palo_alto.IpPrefix;
@@ -492,6 +494,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   private String _currentDeviceGroupVsys;
   private String _currentDeviceName;
   private String _currentExternalListName;
+  private HighAvailability _currentHighAvailability;
   private Interface _currentInterface;
   private ApplicationOverrideRule _currentApplicationOverrideRule;
   private NatRule _currentNatRule;
@@ -2545,6 +2548,70 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
         referenceStructure(ZONE, uniqueName, APPLICATION_OVERRIDE_RULE_TO_ZONE, getLine(var.start));
       }
     }
+  }
+
+  @Override
+  public void enterSd_high_availability(PaloAltoParser.Sd_high_availabilityContext ctx) {
+    _currentHighAvailability = _currentConfiguration.getOrCreateHighAvailability();
+  }
+
+  @Override
+  public void exitSd_high_availability(PaloAltoParser.Sd_high_availabilityContext ctx) {
+    _currentHighAvailability = null;
+  }
+
+  @Override
+  public void exitSdhagmaa_device_id(PaloAltoParser.Sdhagmaa_device_idContext ctx) {
+    toInteger(ctx, ctx.active_active_device_id()).ifPresent(_currentHighAvailability::setDeviceId);
+  }
+
+  @Override
+  public void exitSrn_active_active_device_binding(Srn_active_active_device_bindingContext ctx) {
+    toActiveActiveDeviceBinding(ctx, ctx.bind)
+        .ifPresent(_currentNatRule::setActiveActiveDeviceBinding);
+  }
+
+  @Nonnull
+  private Optional<NatRule.ActiveActiveDeviceBinding> toActiveActiveDeviceBinding(
+      ParserRuleContext ctx, PaloAltoParser.Active_active_device_binding_valContext deviceBinding) {
+    if (deviceBinding.PRIMARY() != null) {
+      warn(ctx, "Batfish currently models this as active-active-device-binding both");
+      return Optional.of(NatRule.ActiveActiveDeviceBinding.PRIMARY);
+    } else if (deviceBinding.BOTH() != null) {
+      return Optional.of(NatRule.ActiveActiveDeviceBinding.BOTH);
+    } else {
+      assert deviceBinding.uint8() != null;
+      Optional<Integer> maybeId = toInteger(ctx, deviceBinding);
+      return maybeId.map(
+          id -> {
+            if (id == 0) {
+              return NatRule.ActiveActiveDeviceBinding.ZERO;
+            }
+            assert id == 1;
+            return NatRule.ActiveActiveDeviceBinding.ONE;
+          });
+    }
+  }
+
+  private static final IntegerSpace HA_ACTIVE_ACTIVE_DEVICE_ID_SPACE =
+      IntegerSpace.of(Range.closed(0, 1));
+
+  private Optional<Integer> toInteger(
+      ParserRuleContext ctx, PaloAltoParser.Active_active_device_idContext deviceId) {
+    return toIntegerInSpace(
+        ctx,
+        deviceId,
+        HA_ACTIVE_ACTIVE_DEVICE_ID_SPACE,
+        "high-availability active-active device-id");
+  }
+
+  private static final IntegerSpace ACTIVE_ACTIVE_DEVICE_BINDING_SPACE =
+      IntegerSpace.of(Range.closed(0, 1));
+
+  private Optional<Integer> toInteger(
+      ParserRuleContext ctx, PaloAltoParser.Active_active_device_binding_valContext deviceBinding) {
+    return toIntegerInSpace(
+        ctx, deviceBinding, ACTIVE_ACTIVE_DEVICE_BINDING_SPACE, "active-active-device-binding");
   }
 
   @Override
