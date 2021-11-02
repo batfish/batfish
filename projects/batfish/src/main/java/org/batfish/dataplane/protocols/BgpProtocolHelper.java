@@ -117,18 +117,6 @@ public final class BgpProtocolHelper {
       return null;
     }
 
-    // Set transformed route's communities
-    if (af.getAddressFamilyCapabilities().getSendCommunity()
-        && af.getAddressFamilyCapabilities().getSendExtendedCommunity()) {
-      builder.setCommunities(route.getCommunities());
-    } else if (af.getAddressFamilyCapabilities().getSendCommunity()) {
-      builder.setCommunities(route.getStandardCommunities());
-    } else if (af.getAddressFamilyCapabilities().getSendExtendedCommunity()) {
-      builder.setCommunities(route.getExtendedCommunities());
-    } else {
-      builder.setCommunities(CommunitySet.empty());
-    }
-
     /*
      *  iBGP speaker should not send out routes to iBGP neighbor whose router-id is
      *  same as originator id of advertisement
@@ -377,16 +365,48 @@ public final class BgpProtocolHelper {
    * applied to the route, route was accepted, but before route is sent "onto the wire".
    *
    * @param routeBuilder Builder for the output (exported) route
-   * @param isEbgp true for ebgp sessions
-   * @param confedSessionType type of confederation session, if any
-   * @param localAs local AS
-   * @param localIp IP of the neighbor which is exporting the route
+   * @param ourSessionProperties properties for the sender's session
+   * @param af sender's address family configuration
    * @param originalRouteNhip Next hop IP of the original route
    */
   public static <R extends BgpRoute<B, R>, B extends BgpRoute.Builder<B, R>>
       void transformBgpRoutePostExport(
           B routeBuilder,
+          BgpSessionProperties ourSessionProperties,
+          AddressFamily af,
+          Ip originalRouteNhip) {
+    transformBgpRoutePostExport(
+        routeBuilder,
+        ourSessionProperties.isEbgp(),
+        af.getAddressFamilyCapabilities().getSendCommunity(),
+        af.getAddressFamilyCapabilities().getSendExtendedCommunity(),
+        ourSessionProperties.getConfedSessionType(),
+        ourSessionProperties.getLocalAs(),
+        ourSessionProperties.getLocalIp(),
+        originalRouteNhip);
+  }
+
+  /**
+   * Perform BGP export transformations on a given route <em>after</em> export policy has been *
+   * applied to the route, route was accepted, but before route is sent "onto the wire".
+   *
+   * @param routeBuilder Builder for the output (exported) route
+   * @param isEbgp true for ebgp sessions
+   * @param sendStandardCommunities whether to send standard communities to the neighbor
+   * @param sendExtendedCommunities whether to send extended communities to the neighbor
+   * @param confedSessionType type of confederation session, if any
+   * @param localAs local AS
+   * @param localIp IP of the neighbor which is exporting the route
+   * @param confedSessionType sender's address family configuration
+   * @param originalRouteNhip Next hop IP of the original route
+   */
+  @VisibleForTesting
+  static <R extends BgpRoute<B, R>, B extends BgpRoute.Builder<B, R>>
+      void transformBgpRoutePostExport(
+          B routeBuilder,
           boolean isEbgp,
+          boolean sendStandardCommunities,
+          boolean sendExtendedCommunities,
           ConfedSessionType confedSessionType,
           long localAs,
           Ip localIp,
@@ -414,6 +434,18 @@ public final class BgpProtocolHelper {
 
     // Tags are non-transitive
     routeBuilder.setTag(null);
+
+    // Only send communities that are supported
+    if (!sendStandardCommunities) {
+      // No standard: Extended or nothing.
+      routeBuilder.setCommunities(
+          sendExtendedCommunities
+              ? routeBuilder.getCommunities().getExtendedCommunities()
+              : ImmutableSet.of());
+    } else if (!sendExtendedCommunities) {
+      // Standard, not extended.
+      routeBuilder.setCommunities(routeBuilder.getCommunities().getStandardCommunities());
+    } // else preserve all communities as-is.
 
     // Skip setting our own next hop if it has already been set by the routing policy
     if (routeBuilder.getNextHopIp().equals(UNSET_ROUTE_NEXT_HOP_IP)) {

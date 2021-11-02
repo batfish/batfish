@@ -175,6 +175,14 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
     transformBgpRoutePostExport(
         routeBuilder,
         _sessionProperties.isEbgp(),
+        _fromNeighbor
+            .getIpv4UnicastAddressFamily()
+            .getAddressFamilyCapabilities()
+            .getSendCommunity(),
+        _fromNeighbor
+            .getIpv4UnicastAddressFamily()
+            .getAddressFamilyCapabilities()
+            .getSendExtendedCommunity(),
         ConfedSessionType.NO_CONFED,
         _fromNeighbor.getLocalAs(),
         Ip.parse("1.1.1.1"),
@@ -229,14 +237,12 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
     for (boolean isIbgp : ImmutableList.of(false, true)) {
       setUpPeers(isIbgp);
       CommunitySet communities = CommunitySet.of(StandardCommunity.of(10L));
-      GeneratedRoute aggRoute = _baseAggRouteBuilder.setCommunities(communities).build();
       Bgpv4Route bgpv4Route = _baseBgpRouteBuilder.setCommunities(communities).build();
 
-      // By default, _fromNeighbor doesn't have sendCommunity set; should see no communities
-      Bgpv4Route.Builder transformedAggregateRoute = runTransformBgpRoutePreExport(aggRoute);
-      Bgpv4Route.Builder transformedBgpRoute = runTransformBgpRoutePreExport(bgpv4Route);
-      assertThat(transformedAggregateRoute, hasCommunities());
-      assertThat(transformedBgpRoute, hasCommunities());
+      // By default, _fromNeighbor doesn't have sendCommunity set. They will appear int he
+      Bgpv4Route.Builder beingExported = bgpv4Route.toBuilder();
+      runTransformBgpRoutePostExport(beingExported);
+      assertThat(beingExported, hasCommunities());
 
       // Now set sendCommunity and make sure communities appear in transformed routes.
       _fromNeighbor =
@@ -250,10 +256,9 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
               .setLocalIp(_fromNeighbor.getLocalIp())
               .setRemoteAsns(_fromNeighbor.getRemoteAsns())
               .build();
-      transformedAggregateRoute = runTransformBgpRoutePreExport(aggRoute);
-      transformedBgpRoute = runTransformBgpRoutePreExport(bgpv4Route);
-      assertThat(transformedAggregateRoute, hasCommunities(communities));
-      assertThat(transformedBgpRoute, hasCommunities(communities));
+      beingExported = bgpv4Route.toBuilder();
+      runTransformBgpRoutePostExport(beingExported);
+      assertThat(beingExported, hasCommunities(communities));
     }
   }
 
@@ -490,7 +495,14 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
   public void testAggregateProtocolIsCleared() {
     Builder routeBuilder = Bgpv4Route.testBuilder().setProtocol(RoutingProtocol.AGGREGATE);
     transformBgpRoutePostExport(
-        routeBuilder, true, ConfedSessionType.NO_CONFED, 1, Ip.parse("1.1.1.1"), Ip.ZERO);
+        routeBuilder,
+        true,
+        false,
+        false,
+        ConfedSessionType.NO_CONFED,
+        1,
+        Ip.parse("1.1.1.1"),
+        Ip.ZERO);
     assertThat(
         "Protocol overriden to BGP", routeBuilder.getProtocol(), equalTo(RoutingProtocol.BGP));
   }
