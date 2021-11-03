@@ -83,7 +83,6 @@ public class A10Conversion {
   @VisibleForTesting public static final int DEFAULT_HA_PRIORITY = 150;
 
   @VisibleForTesting public static final long KERNEL_ROUTE_TAG_NAT_POOL = 1L;
-  @VisibleForTesting public static final long KERNEL_ROUTE_TAG_NAT_POOL_PROXY_ARP_IP = 5L;
   @VisibleForTesting public static final long KERNEL_ROUTE_TAG_VIRTUAL_SERVER_FLAGGED = 2L;
   @VisibleForTesting public static final long KERNEL_ROUTE_TAG_VIRTUAL_SERVER_UNFLAGGED = 3L;
   @VisibleForTesting public static final long KERNEL_ROUTE_TAG_FLOATING_IP = 4L;
@@ -286,37 +285,12 @@ public class A10Conversion {
 
   /** Get all of the the kernel routes generated for all {@code ip nat pool}s. */
   static @Nonnull Stream<KernelRoute> getNatPoolKernelRoutes(Collection<NatPool> natPools) {
-    return natPools.stream()
-        .flatMap(
-            natPool ->
-                Stream.concat(
-                    toForwardingKernelRoutes(natPool),
-                    Stream.of(toNonForwardingKernelRoute(natPool))));
+    return natPools.stream().map(A10Conversion::toKernelRoute);
   }
 
-  /**
-   * Create forwarding discard kernel routes for each IP in the range of an {@code ip nat pool}.
-   * Used only for proxy-arp, not redistribution.
-   */
+  /** Create kernel route for an {@code ip nat pool} network. */
   @VisibleForTesting
-  static @Nonnull Stream<KernelRoute> toForwardingKernelRoutes(NatPool natPool) {
-    return enumerateIps(natPool.getStart(), natPool.getEnd())
-        .map(
-            ip ->
-                KernelRoute.builder()
-                    .setNetwork(Prefix.create(ip, MAX_PREFIX_LENGTH))
-                    .setRequiredOwnedIp(ip)
-                    .setTag(KERNEL_ROUTE_TAG_NAT_POOL_PROXY_ARP_IP)
-                    .setNonForwarding(false)
-                    .build());
-  }
-
-  /**
-   * Create non-forwarding kernel route foran {@code ip nat pool} network. Used only for
-   * redistribution, not proxy-arp..
-   */
-  @VisibleForTesting
-  static @Nonnull KernelRoute toNonForwardingKernelRoute(NatPool natPool) {
+  static @Nonnull KernelRoute toKernelRoute(NatPool natPool) {
     Ip requiredOwnedIp = natPool.getStart();
     Prefix network = Prefix.create(requiredOwnedIp, natPool.getNetmask());
     return KernelRoute.builder()
@@ -393,7 +367,6 @@ public class A10Conversion {
         .setNetwork(network)
         .setRequiredOwnedIp(requiredOwnedIp)
         .setTag(tag)
-        .setNonForwarding(false)
         .build();
   }
 
@@ -411,7 +384,6 @@ public class A10Conversion {
         .setNetwork(Prefix.create(floatingIp, MAX_PREFIX_LENGTH))
         .setTag(KERNEL_ROUTE_TAG_FLOATING_IP)
         .setRequiredOwnedIp(floatingIp)
-        .setNonForwarding(false)
         .build();
   }
 
