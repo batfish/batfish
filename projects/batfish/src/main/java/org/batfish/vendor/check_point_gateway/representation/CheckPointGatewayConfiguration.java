@@ -164,15 +164,17 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
             .map(cmc -> (CheckpointManagementConfiguration) cmc);
     Optional<Entry<ManagementDomain, GatewayOrServer>> domainAndGateway =
         mgmtConfig.flatMap(this::findGatewayAndDomain);
+    Optional<Cluster> cluster = domainAndGateway.flatMap(e -> getCluster(e.getValue(), e.getKey()));
+
     Optional<ManagementPackage> mgmtPackage =
-        domainAndGateway.flatMap(e -> findAccessPackage(e.getKey(), e.getValue()));
+        domainAndGateway.flatMap(e -> findAccessPackage(e.getKey(), e.getValue(), cluster));
     Map<Uid, NamedManagementObject> mgmtObjects =
         mgmtPackage
             .map(pakij -> getAllObjects(pakij, domainAndGateway.get().getKey()))
             .orElse(ImmutableMap.of());
 
     // Initial management data conversion
-    domainAndGateway.ifPresent(e -> convertCluster(e.getValue(), e.getKey()));
+    cluster.ifPresent(this::convertCluster);
     mgmtPackage.ifPresent(pakij -> convertPackage(pakij, mgmtObjects, domainAndGateway.get()));
 
     // Gateways don't have VRFs, so put everything in a generated default VRF
@@ -195,10 +197,10 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     return ImmutableList.of(_c);
   }
 
-  /** Populates cluster virtual IP metadata if this gateway is a member of a cluster. */
-  private void convertCluster(GatewayOrServer gateway, ManagementDomain domain) {
+  /** Gets the {@link Cluster} for the specified gateway. */
+  private Optional<Cluster> getCluster(GatewayOrServer gateway, ManagementDomain domain) {
     if (!(gateway instanceof ClusterMember)) {
-      return;
+      return Optional.empty();
     }
     Class<? extends Cluster> clusterClass = ((ClusterMember) gateway).getClusterClass();
     String gatewayName = gateway.getName();
@@ -222,8 +224,13 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
           String.format(
               "Could not find matching cluster of type %s for this gateway of type %s",
               clusterClass.getSimpleName(), gateway.getClass().getSimpleName()));
-      return;
+      return Optional.empty();
     }
+    return Optional.of(cluster);
+  }
+
+  /** Populates cluster virtual IP metadata if this gateway is a member of a cluster. */
+  private void convertCluster(Cluster cluster) {
     _clusterInterfaces =
         cluster.getInterfaces().stream()
             .collect(
@@ -611,12 +618,20 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     return statements.build();
   }
 
+  /**
+   * Get the {@link ManagementPackage} for this gateway. Prefers the package from the containing
+   * {@link Cluster} if applicable.
+   */
   private @Nonnull Optional<ManagementPackage> findAccessPackage(
-      ManagementDomain domain, GatewayOrServer gateway) {
-    String accessPackageName = gateway.getPolicy().getAccessPolicyName();
+      ManagementDomain domain, GatewayOrServer gateway, Optional<Cluster> cluster) {
+    String accessPackageName =
+        cluster.isPresent()
+            ? cluster.get().getPolicy().getAccessPolicyName()
+            : gateway.getPolicy().getAccessPolicyName();
     if (accessPackageName == null) {
       return Optional.empty();
     }
+
     // TODO: can be more efficient if we also store map: packageName -> package in ManagementDomain
     Optional<ManagementPackage> maybePackage =
         domain.getPackages().values().stream()

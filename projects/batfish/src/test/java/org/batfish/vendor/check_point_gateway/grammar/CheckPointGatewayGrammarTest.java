@@ -1210,6 +1210,80 @@ public class CheckPointGatewayGrammarTest {
     assertThat(c, hasInterface("eth3", hasIncomingFilter(rejects(denied, "eth1", c))));
   }
 
+  /**
+   * Test that access rules are correctly associated with cluster members when attached *only* to
+   * their cluster.
+   */
+  @Test
+  public void testAccessRulesForClusterMember() throws IOException {
+    String memberName = "access_rules_cluster_member";
+    String clusterName = "access_rules_cluster";
+    Uid cpmiAnyUid = Uid.of("99999");
+    CpmiAnyObject any = new CpmiAnyObject(cpmiAnyUid);
+    Uid acceptUid = Uid.of("31");
+    Uid policyTargetsUid = Uid.of("33");
+
+    ImmutableMap<Uid, NamedManagementObject> objs =
+        ImmutableMap.<Uid, NamedManagementObject>builder()
+            .put(cpmiAnyUid, any)
+            .put(acceptUid, new RulebaseAction("Accept", acceptUid, "Accept"))
+            .put(policyTargetsUid, new PolicyTargets(policyTargetsUid))
+            .build();
+    ImmutableList<AccessRuleOrSection> rulebase =
+        ImmutableList.of(
+            AccessRule.testBuilder(cpmiAnyUid)
+                .setAction(acceptUid)
+                .setInstallOn(ImmutableList.of(policyTargetsUid))
+                .setUid(Uid.of("100"))
+                .setName("rule1")
+                .build());
+
+    AccessLayer accessLayer = new AccessLayer(objs, rulebase, Uid.of("uid-al"), "accessLayerFoo");
+    ImmutableMap<Uid, ManagementPackage> packages =
+        ImmutableMap.of(
+            Uid.of("2"),
+            new ManagementPackage(
+                ImmutableList.of(accessLayer),
+                null,
+                new Package(
+                    new Domain("d", Uid.of("0")),
+                    AllInstallationTargets.instance(),
+                    "p1",
+                    true,
+                    false,
+                    Uid.of("2"))));
+
+    // TODO simplify policy
+    ImmutableMap<Uid, GatewayOrServer> gateways =
+        ImmutableMap.of(
+            Uid.of("1"),
+            new CpmiClusterMember(
+                Ip.parse("10.0.0.1"),
+                memberName,
+                ImmutableList.of(
+                    new org.batfish.vendor.check_point_management.Interface(
+                        "eth1", new InterfaceTopology(false), Ip.parse("10.0.1.1"), 24)),
+                new GatewayOrServerPolicy(null, null),
+                Uid.of("1")),
+            Uid.of("2"),
+            new CpmiGatewayCluster(
+                ImmutableList.of(memberName),
+                Ip.parse("10.0.2.1"),
+                clusterName,
+                ImmutableList.of(
+                    new org.batfish.vendor.check_point_management.Interface(
+                        "eth1", new InterfaceTopology(false), Ip.parse("10.0.2.1"), 24)),
+                new GatewayOrServerPolicy("p1", null),
+                Uid.of("2")));
+
+    CheckpointManagementConfiguration mgmt =
+        toCheckpointMgmtConfig(gateways, packages, ImmutableList.of());
+    Map<String, Configuration> configs = parseTextConfigs(mgmt, "access_rules");
+    Configuration c = configs.get("access_rules");
+
+    assertThat(c.getIpAccessLists(), hasKey(aclName(accessLayer)));
+  }
+
   @Test
   public void testObjectConversionWarnings() throws IOException {
     Uid unknownUid = Uid.of("10");
