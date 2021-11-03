@@ -629,6 +629,10 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
             ? cluster.get().getPolicy().getAccessPolicyName()
             : gateway.getPolicy().getAccessPolicyName();
     if (accessPackageName == null) {
+      _w.redFlag(
+          String.format(
+              "No access package found for gateway '%s', so no access rules will be added",
+              gateway.getName()));
       return Optional.empty();
     }
 
