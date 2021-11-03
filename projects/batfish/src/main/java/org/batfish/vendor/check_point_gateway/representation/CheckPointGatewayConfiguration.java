@@ -613,8 +613,10 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
 
   private @Nonnull Optional<ManagementPackage> findAccessPackage(
       ManagementDomain domain, GatewayOrServer gateway) {
+    _w.redFlag(String.format("Checking domain '%s'", domain.getName()));
     String accessPackageName = gateway.getPolicy().getAccessPolicyName();
     if (accessPackageName == null) {
+      _w.redFlag(String.format("No access package for '%s'", gateway.getName()));
       return Optional.empty();
     }
     // TODO: can be more efficient if we also store map: packageName -> package in ManagementDomain
@@ -628,6 +630,10 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
               "Gateway or server '%s' access-policy-name refers to non-existent package '%s'",
               gateway.getName(), accessPackageName));
     }
+    _w.redFlag(
+        String.format(
+            "Found access package '%s' ('%s') for '%s'",
+            maybePackage.get().getPackage().getName(), accessPackageName, gateway.getName()));
     return maybePackage;
   }
 
