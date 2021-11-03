@@ -52,7 +52,6 @@ public class RoutesAnswerer extends Answerer {
   static final String COL_NODE = "Node";
   static final String COL_VRF_NAME = "VRF";
   static final String COL_NETWORK = "Network";
-  static final String COL_NEXT_HOP = "Next_Hop";
   static final String COL_NEXT_HOP_INTERFACE = "Next_Hop_Interface";
   static final String COL_NEXT_HOP_IP = "Next_Hop_IP";
   static final String COL_PROTOCOL = "Protocol";
@@ -161,9 +160,7 @@ public class RoutesAnswerer extends Answerer {
         rows.sort(BGP_COMPARATOR);
         break;
       case MAIN:
-        rows.addAll(
-            getMainRibRoutes(
-                dp.getRibs(), matchingNodes, network, protocolSpec, vrfRegex, ipOwners));
+        rows.addAll(getMainRibRoutes(dp.getRibs(), matchingNodes, network, protocolSpec, vrfRegex));
         rows.sort(MAIN_RIB_COMPARATOR);
         break;
       default:
@@ -428,13 +425,6 @@ public class RoutesAnswerer extends Answerer {
         columnBuilder
             .add(
                 new ColumnMetadata(
-                    COL_NEXT_HOP,
-                    Schema.STRING,
-                    "Inferred hostname of the next hop",
-                    Boolean.FALSE,
-                    Boolean.TRUE))
-            .add(
-                new ColumnMetadata(
                     COL_NEXT_HOP_IP, Schema.IP, "Route's Next Hop IP", Boolean.FALSE, Boolean.TRUE))
             .add(
                 new ColumnMetadata(
@@ -638,20 +628,6 @@ public class RoutesAnswerer extends Answerer {
         break;
       case MAIN:
       default:
-        columnBuilder.add(
-            new ColumnMetadata(
-                COL_BASE_PREFIX + COL_NEXT_HOP,
-                Schema.STRING,
-                "Route's Next Hop's Hostname",
-                Boolean.FALSE,
-                Boolean.TRUE));
-        columnBuilder.add(
-            new ColumnMetadata(
-                COL_DELTA_PREFIX + COL_NEXT_HOP,
-                Schema.STRING,
-                "Route's Next Hop's Hostname",
-                Boolean.FALSE,
-                Boolean.TRUE));
         columnBuilder.add(
             new ColumnMetadata(
                 COL_BASE_PREFIX + COL_NEXT_HOP_IP,

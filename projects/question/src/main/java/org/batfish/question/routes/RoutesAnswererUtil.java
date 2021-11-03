@@ -11,7 +11,6 @@ import static org.batfish.question.routes.RoutesAnswerer.COL_COMMUNITIES;
 import static org.batfish.question.routes.RoutesAnswerer.COL_LOCAL_PREF;
 import static org.batfish.question.routes.RoutesAnswerer.COL_METRIC;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NETWORK;
-import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP_INTERFACE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP_IP;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NODE;
@@ -142,7 +141,6 @@ public class RoutesAnswererUtil {
    * @param network {@link Prefix} of the network used to filter the routes
    * @param protocolSpec {@link RoutingProtocolSpecifier} used to filter the routes
    * @param vrfRegex Regex used to filter the VRF of routes
-   * @param ipOwners {@link Map} of {@link Ip} to {@link Set} of owner nodes
    * @return {@link Multiset} of {@link Row}s representing the routes
    */
   static <T extends AbstractRouteDecorator> Multiset<Row> getMainRibRoutes(
@@ -150,8 +148,7 @@ public class RoutesAnswererUtil {
       Set<String> matchingNodes,
       @Nullable Prefix network,
       RoutingProtocolSpecifier protocolSpec,
-      String vrfRegex,
-      @Nullable Map<Ip, Set<String>> ipOwners) {
+      String vrfRegex) {
     Multiset<Row> rows = HashMultiset.create();
     Pattern compiledVrfRegex = Pattern.compile(vrfRegex);
     Map<String, ColumnMetadata> columnMetadataMap =
@@ -170,8 +167,7 @@ public class RoutesAnswererUtil {
                         .forEach(
                             route ->
                                 rows.add(
-                                    abstractRouteToRow(
-                                        node, vrfName, route, columnMetadataMap, ipOwners)));
+                                    abstractRouteToRow(node, vrfName, route, columnMetadataMap)));
                   }
                 });
           }
@@ -282,8 +278,7 @@ public class RoutesAnswererUtil {
       String hostName,
       String vrfName,
       AbstractRoute abstractRoute,
-      Map<String, ColumnMetadata> columnMetadataMap,
-      @Nullable Map<Ip, Set<String>> ipOwners) {
+      Map<String, ColumnMetadata> columnMetadataMap) {
     // If the route's next hop IP is for internal use, do not show it in the row
     Ip nextHopIp =
         INTERNAL_USE_IPS.contains(abstractRoute.getNextHopIp())
@@ -295,7 +290,6 @@ public class RoutesAnswererUtil {
         .put(COL_NETWORK, abstractRoute.getNetwork())
         .put(COL_NEXT_HOP_IP, nextHopIp)
         .put(COL_NEXT_HOP_INTERFACE, abstractRoute.getNextHopInterface())
-        .put(COL_NEXT_HOP, computeNextHopNode(abstractRoute.getNextHopIp(), ipOwners))
         .put(COL_PROTOCOL, abstractRoute.getProtocol())
         .put(
             COL_TAG,
@@ -578,9 +572,6 @@ public class RoutesAnswererUtil {
       RowBuilder rowBuilder, @Nullable RouteRowAttribute routeRowAttribute, boolean base) {
     rowBuilder
         .put(
-            (base ? COL_BASE_PREFIX : COL_DELTA_PREFIX) + COL_NEXT_HOP,
-            routeRowAttribute != null ? routeRowAttribute.getNextHop() : null)
-        .put(
             (base ? COL_BASE_PREFIX : COL_DELTA_PREFIX) + COL_NEXT_HOP_INTERFACE,
             routeRowAttribute != null ? routeRowAttribute.getNextHopInterface() : null)
         .put(
@@ -688,7 +679,7 @@ public class RoutesAnswererUtil {
     Pattern compiledVrfRegex = Pattern.compile(vrfRegex);
 
     Map<BgpRouteStatus, Table<String, String, Set<Bgpv4Route>>> routesByStatus =
-        new EnumMap<BgpRouteStatus, Table<String, String, Set<Bgpv4Route>>>(BgpRouteStatus.class);
+        new EnumMap<>(BgpRouteStatus.class);
     if (bgpBestRoutes != null) {
       routesByStatus.put(BgpRouteStatus.BEST, bgpBestRoutes);
     }

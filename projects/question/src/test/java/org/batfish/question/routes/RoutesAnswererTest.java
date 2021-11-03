@@ -12,7 +12,6 @@ import static org.batfish.question.routes.RoutesAnswerer.COL_COMMUNITIES;
 import static org.batfish.question.routes.RoutesAnswerer.COL_LOCAL_PREF;
 import static org.batfish.question.routes.RoutesAnswerer.COL_METRIC;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NETWORK;
-import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP_INTERFACE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP_IP;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NODE;
@@ -96,8 +95,7 @@ public class RoutesAnswererTest {
             ImmutableSet.of("n1"),
             null,
             RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
-            ".*",
-            null);
+            ".*");
 
     assertThat(actual.entrySet(), hasSize(0));
   }
@@ -128,8 +126,7 @@ public class RoutesAnswererTest {
             ImmutableSet.of("n1"),
             Prefix.create(Ip.parse("2.2.2.0"), 24),
             RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
-            ".*",
-            null);
+            ".*");
 
     assertThat(actual, hasSize(1));
     assertThat(
@@ -157,8 +154,7 @@ public class RoutesAnswererTest {
             ImmutableSet.of("differentNode"),
             null,
             RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
-            ".*",
-            null);
+            ".*");
 
     assertThat(actual, hasSize(0));
   }
@@ -181,7 +177,7 @@ public class RoutesAnswererTest {
 
     Multiset<Row> actual =
         getMainRibRoutes(
-            ribs, ImmutableSet.of("n1"), null, new RoutingProtocolSpecifier("static"), ".*", null);
+            ribs, ImmutableSet.of("n1"), null, new RoutingProtocolSpecifier("static"), ".*");
 
     assertThat(actual, hasSize(1));
     assertThat(
@@ -217,8 +213,7 @@ public class RoutesAnswererTest {
             ImmutableSet.of("n1"),
             null,
             RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
-            "^not.*",
-            null);
+            "^not.*");
 
     assertThat(actual, hasSize(1));
     assertThat(
@@ -237,7 +232,6 @@ public class RoutesAnswererTest {
             COL_NODE,
             COL_VRF_NAME,
             COL_NETWORK,
-            COL_NEXT_HOP,
             COL_NEXT_HOP_IP,
             COL_NEXT_HOP_INTERFACE,
             COL_PROTOCOL,
@@ -253,7 +247,6 @@ public class RoutesAnswererTest {
             Schema.NODE,
             Schema.STRING,
             Schema.PREFIX,
-            Schema.STRING,
             Schema.IP,
             Schema.STRING,
             Schema.STRING,
@@ -339,8 +332,6 @@ public class RoutesAnswererTest {
             COL_VRF_NAME,
             COL_NETWORK,
             COL_ROUTE_ENTRY_PRESENCE,
-            COL_BASE_PREFIX + COL_NEXT_HOP,
-            COL_DELTA_PREFIX + COL_NEXT_HOP,
             COL_BASE_PREFIX + COL_NEXT_HOP_IP,
             COL_DELTA_PREFIX + COL_NEXT_HOP_IP,
             COL_BASE_PREFIX + COL_PROTOCOL,
@@ -362,8 +353,6 @@ public class RoutesAnswererTest {
             Schema.NODE,
             Schema.STRING,
             Schema.PREFIX,
-            Schema.STRING,
-            Schema.STRING,
             Schema.STRING,
             Schema.IP,
             Schema.IP,

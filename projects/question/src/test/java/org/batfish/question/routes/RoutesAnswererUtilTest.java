@@ -11,7 +11,6 @@ import static org.batfish.question.routes.RoutesAnswerer.COL_COMMUNITIES;
 import static org.batfish.question.routes.RoutesAnswerer.COL_LOCAL_PREF;
 import static org.batfish.question.routes.RoutesAnswerer.COL_METRIC;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NETWORK;
-import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP_INTERFACE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP_IP;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NODE;
@@ -200,8 +199,7 @@ public class RoutesAnswererUtilTest {
             ImmutableSet.of("n1"),
             null,
             RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
-            ".*",
-            null);
+            ".*");
     assertThat(
         actual,
         contains(
@@ -211,7 +209,6 @@ public class RoutesAnswererUtilTest {
                 hasColumn(COL_NETWORK, Prefix.parse("1.1.1.0/24"), Schema.PREFIX),
                 hasColumn(COL_NEXT_HOP_IP, Ip.parse("1.1.1.2"), Schema.IP),
                 hasColumn(COL_NEXT_HOP_INTERFACE, "e0", Schema.STRING),
-                hasColumn(COL_NEXT_HOP, nullValue(), Schema.STRING),
                 hasColumn(COL_PROTOCOL, "ospfE2", Schema.STRING),
                 hasColumn(COL_TAG, equalTo(2L << 35), Schema.LONG),
                 hasColumn(COL_ADMIN_DISTANCE, equalTo(10), Schema.INTEGER),
@@ -905,7 +902,6 @@ public class RoutesAnswererUtilTest {
         equalTo(
             Row.builder()
                 .put(COL_BASE_PREFIX + COL_NEXT_HOP_INTERFACE, "nhIface1")
-                .put(COL_BASE_PREFIX + COL_NEXT_HOP, "nh1")
                 .put(COL_BASE_PREFIX + COL_METRIC, 1L)
                 .put(COL_BASE_PREFIX + COL_ADMIN_DISTANCE, 1)
                 .put(COL_BASE_PREFIX + COL_TAG, 1L)
