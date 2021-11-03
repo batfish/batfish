@@ -615,6 +615,10 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
       ManagementDomain domain, GatewayOrServer gateway) {
     String accessPackageName = gateway.getPolicy().getAccessPolicyName();
     if (accessPackageName == null) {
+      _w.redFlag(
+          String.format(
+              "No access package found for gateway '%s', so no access rules will be added",
+              gateway.getName()));
       return Optional.empty();
     }
     // TODO: can be more efficient if we also store map: packageName -> package in ManagementDomain
