@@ -4,8 +4,10 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -18,6 +20,7 @@ import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.bddreachability.BDDOutgoingOriginalFlowFilterManager;
 import org.batfish.bddreachability.LastHopOutgoingInterfaceManager;
+import org.batfish.bddreachability.transition.GuardEraseAndSet.ValueBeforeAndAfter;
 import org.batfish.common.bdd.BDDFiniteDomain;
 import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.BDDSourceManager;
@@ -159,6 +162,14 @@ public final class Transitions {
           constraint(constraintBdd.and(finiteDomain.getIsValidConstraint())),
           eraseAndSet(finiteDomain.getVar(), constraintBdd.getFactory().one()));
     }
+    if (t1 instanceof Constraint && t2 instanceof EraseAndSet) {
+      BDD constraintBdd = ((Constraint) t1).getConstraint();
+      EraseAndSet eas = (EraseAndSet) t2;
+      BDD vars = eas.getEraseVars();
+      BDD value = eas.getSetValue();
+      return new GuardEraseAndSet(
+          vars, ImmutableList.of(new ValueBeforeAndAfter(constraintBdd, value)));
+    }
     if (t1 instanceof EraseAndSet && t2 instanceof Constraint) {
       EraseAndSet eas = (EraseAndSet) t1;
       BDD vars = eas.getEraseVars();
@@ -235,14 +246,22 @@ public final class Transitions {
   }
 
   public static Transition or(Transition... transitions) {
+    if (transitions.length == 1) {
+      return transitions[0];
+    }
+    return or(Arrays.stream(transitions));
+  }
+
+  public static Transition or(Stream<Transition> transitions) {
     Iterator<Transition> flatTransitions =
-        Stream.of(transitions)
+        transitions
             .flatMap(t -> t instanceof Or ? ((Or) t).getTransitions().stream() : Stream.of(t))
             .iterator();
     boolean foundIdentity = false;
     List<Transition> disjuncts = new ArrayList<>();
     List<Constraint> constraints = null;
     List<EraseAndSet> eraseAndSets = null;
+    List<GuardEraseAndSet> guardEraseAndSets = null;
 
     while (flatTransitions.hasNext()) {
       Transition t = flatTransitions.next();
@@ -262,6 +281,11 @@ public final class Transitions {
           eraseAndSets = new ArrayList<>();
         }
         eraseAndSets.add((EraseAndSet) t);
+      } else if (t instanceof GuardEraseAndSet) {
+        if (guardEraseAndSets == null) {
+          guardEraseAndSets = new ArrayList<>();
+        }
+        guardEraseAndSets.add((GuardEraseAndSet) t);
       } else if (t != ZERO) { // ignore ZERO
         // unmergable
         disjuncts.add(t);
@@ -274,11 +298,12 @@ public final class Transitions {
     } else if (constraints != null) {
       disjuncts.add(orConstraints(constraints));
     }
-
     if (eraseAndSets != null) {
       disjuncts.addAll(orEraseAndSets(eraseAndSets));
     }
-
+    if (guardEraseAndSets != null) {
+      disjuncts.addAll(orGuardEraseAndSets(guardEraseAndSets));
+    }
     if (disjuncts.isEmpty()) {
       return ZERO;
     }
@@ -298,6 +323,34 @@ public final class Transitions {
           bddFactory.orAll(
               constraints.stream().map(Constraint::getConstraint).collect(Collectors.toList())));
     }
+  }
+
+  private static Collection<GuardEraseAndSet> orGuardEraseAndSets(
+      List<GuardEraseAndSet> guardEraseAndSets) {
+    checkArgument(
+        !guardEraseAndSets.isEmpty(), "orGuardEraseAndSets: guardEraseAndSets must be non-empty");
+    if (guardEraseAndSets.size() == 1) {
+      return guardEraseAndSets;
+    }
+    Map<BDD, List<GuardEraseAndSet>> groupedByVars =
+        guardEraseAndSets.stream()
+            .collect(Collectors.groupingBy(GuardEraseAndSet::getVars, Collectors.toList()));
+    if (groupedByVars.size() == guardEraseAndSets.size()) {
+      // no two EraseAndSets had the same eraseVars
+      return guardEraseAndSets;
+    }
+    return groupedByVars.entrySet().stream()
+        .map(
+            entry -> {
+              BDD vars = entry.getKey();
+              List<ValueBeforeAndAfter> valuesBeforeAndAfter =
+                  entry.getValue().stream()
+                      .map(GuardEraseAndSet::getValuesBeforeAndAfter)
+                      .flatMap(List::stream)
+                      .collect(ImmutableList.toImmutableList());
+              return new GuardEraseAndSet(vars, valuesBeforeAndAfter);
+            })
+        .collect(Collectors.toList());
   }
 
   private static Collection<EraseAndSet> orEraseAndSets(List<EraseAndSet> eraseAndSets) {
