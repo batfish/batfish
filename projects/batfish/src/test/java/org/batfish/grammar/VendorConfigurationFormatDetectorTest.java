@@ -32,19 +32,6 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class VendorConfigurationFormatDetectorTest {
   @Test
-  public void testNewlines() {
-    List<String> lines =
-        ImmutableList.of("#", "# Configuration of host_name-ch01-01", "# Language version: 13.4v1");
-
-    // Should be able to detect config format regardless of the type of line separator
-    List<String> lineSeparators = ImmutableList.of("\n", "\r\n");
-    for (String lineSeparator : lineSeparators) {
-      String line = String.join(lineSeparator, lines);
-      assertThat(identifyConfigurationFormat(line), equalTo(CHECK_POINT_GATEWAY));
-    }
-  }
-
-  @Test
   public void testA10() {
     String fileText =
         "!\n" + "!version 3.4.5-A6-B78, build 90 (Aug-5-2021,01:23)\n" + "hostname foo\n";
@@ -117,6 +104,19 @@ public class VendorConfigurationFormatDetectorTest {
             + "set installer policy check-for-updates-period 3\n"
             + "set hostname check_point\n";
     assertThat(identifyConfigurationFormat(fileText), equalTo(CHECK_POINT_GATEWAY));
+  }
+
+  @Test
+  public void testCheckPointNewlines() {
+    List<String> lines =
+        ImmutableList.of("#", "# Configuration of host_name-ch01-01", "# Language version: 13.4v1");
+
+    // Should be able to detect config format regardless of the type of line separator
+    List<String> lineSeparators = ImmutableList.of("\n", "\r\n");
+    for (String lineSeparator : lineSeparators) {
+      String line = String.join(lineSeparator, lines);
+      assertThat(identifyConfigurationFormat(line), equalTo(CHECK_POINT_GATEWAY));
+    }
   }
 
   @Test
