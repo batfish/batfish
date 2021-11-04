@@ -15,8 +15,7 @@ public final class EraseAndSet implements Transition {
   EraseAndSet(BDD eraseVars, BDD setValue) {
     checkArgument(!setValue.isZero(), "Value is zero BDD. Use ZERO instead");
     checkArgument(
-        (!eraseVars.isOne() && !eraseVars.isZero()),
-        "No variables to erase. Use Constraint instead");
+        !eraseVars.isOne() && !eraseVars.isZero(), "No variables to erase. Use Constraint instead");
     _eraseVars = eraseVars;
     _setValue = setValue;
   }

@@ -5,6 +5,7 @@ import static org.batfish.bddreachability.transition.Transitions.IDENTITY;
 import static org.batfish.bddreachability.transition.Transitions.constraint;
 import static org.batfish.bddreachability.transition.Transitions.eraseAndSet;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.transformation.Transformation.always;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -39,7 +40,6 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MockFib;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.UniverseIpSpace;
-import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.packet_policy.ApplyFilter;
 import org.batfish.datamodel.packet_policy.ApplyTransformation;
@@ -180,10 +180,10 @@ public final class PacketPolicyToBddTest {
                     _policyName,
                     ImmutableList.of(
                         new If(
-                            new PacketMatchExpr(AclLineMatchExprs.matchDst(ip1)),
+                            new PacketMatchExpr(matchDst(ip1)),
                             ImmutableList.of(new ApplyTransformation(noop))),
                         new If(
-                            new PacketMatchExpr(AclLineMatchExprs.matchDst(ip2)),
+                            new PacketMatchExpr(matchDst(ip2)),
                             ImmutableList.of(new Return(new FibLookup(new LiteralVrfName(vrf)))))),
                     new Return(Drop.instance())),
                 _ipAccessListToBdd,
@@ -222,7 +222,7 @@ public final class PacketPolicyToBddTest {
                     _policyName,
                     ImmutableList.of(
                         new If(
-                            new PacketMatchExpr(AclLineMatchExprs.matchDst(ip1)),
+                            new PacketMatchExpr(matchDst(ip1)),
                             ImmutableList.of(
                                 new ApplyTransformation(noop),
                                 new Return(new FibLookup(new LiteralVrfName(vrf)))))),
@@ -477,5 +477,54 @@ public final class PacketPolicyToBddTest {
               .getEdges();
       assertThat(edges, contains(edge(statement(0), _dropState, IDENTITY)));
     }
+  }
+
+  @Test
+  public void testTransformationChain() {
+    Ip ip1 = Ip.parse("1.1.1.1");
+    Ip ip2 = Ip.parse("2.2.2.2");
+    Ip ip3 = Ip.parse("3.3.3.3");
+    Ip ip4 = Ip.parse("4.4.4.4");
+    ApplyTransformation t1 =
+        new ApplyTransformation(
+            always()
+                .apply(
+                    TransformationStep.assignDestinationIp(ip1, ip1),
+                    TransformationStep.assignSourcePort(1),
+                    TransformationStep.assignSourceIp(ip1, ip1))
+                .build());
+    ApplyTransformation t2 =
+        new ApplyTransformation(
+            always()
+                .apply(
+                    TransformationStep.assignDestinationIp(ip2, ip2),
+                    TransformationStep.assignSourcePort(2),
+                    TransformationStep.assignSourceIp(ip2, ip2))
+                .build());
+    ApplyTransformation t3 =
+        new ApplyTransformation(
+            always()
+                .apply(
+                    TransformationStep.assignDestinationIp(ip3, ip3),
+                    TransformationStep.assignSourcePort(3),
+                    TransformationStep.assignSourceIp(ip3, ip3))
+                .build());
+    ApplyTransformation t4 =
+        new ApplyTransformation(
+            always().apply(TransformationStep.assignSourceIp(ip4, ip4)).build());
+    Return ret = new Return(new FibLookup(new LiteralVrfName("vrf")));
+    PacketPolicy policy =
+        new PacketPolicy(
+            _policyName,
+            ImmutableList.of(
+                new If(new PacketMatchExpr(matchDst(ip1)), ImmutableList.of(t2, ret)),
+                new If(new PacketMatchExpr(matchDst(ip2)), ImmutableList.of(t3, ret)),
+                new If(new PacketMatchExpr(matchDst(ip3)), ImmutableList.of(t1, ret))),
+            new Return(Drop.instance()));
+    PacketPolicyToBdd.BddPacketPolicy result =
+        PacketPolicyToBdd.evaluate(
+            _hostname, _ingressVrf, policy, _ipAccessListToBdd, EMPTY_IPS_ROUTED_OUT_INTERFACES);
+
+    return;
   }
 }

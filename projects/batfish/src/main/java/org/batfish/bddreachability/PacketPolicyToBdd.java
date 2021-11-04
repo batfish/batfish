@@ -1,11 +1,17 @@
 package org.batfish.bddreachability;
 
+import static org.batfish.bddreachability.transition.Transitions.IDENTITY;
 import static org.batfish.bddreachability.transition.Transitions.ZERO;
+import static org.batfish.bddreachability.transition.Transitions.compose;
 import static org.batfish.bddreachability.transition.Transitions.constraint;
+import static org.batfish.bddreachability.transition.Transitions.mergeComposed;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Table;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -16,6 +22,7 @@ import net.sf.javabdd.BDDFactory;
 import org.batfish.bddreachability.IpsRoutedOutInterfacesFactory.IpsRoutedOutInterfaces;
 import org.batfish.bddreachability.transition.TransformationToTransition;
 import org.batfish.bddreachability.transition.Transition;
+import org.batfish.bddreachability.transition.Transitions;
 import org.batfish.common.bdd.BDDOps;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpAccessListToBdd;
@@ -51,7 +58,7 @@ class PacketPolicyToBdd {
   @Nonnull private final TransformationToTransition _transformationToTransition;
   private final String _hostname;
   private final String _vrf;
-  private final ImmutableList.Builder<Edge> _edges;
+  private final Table<StateExpr, StateExpr, ArrayList<Transition>> _transitions;
   private final ImmutableSet.Builder<PacketPolicyAction> _actions;
 
   /**
@@ -100,7 +107,7 @@ class PacketPolicyToBdd {
     PacketPolicyToBdd evaluator =
         new PacketPolicyToBdd(hostname, vrf, policy, ipAccessListToBdd, ipsRoutedOutInterfaces);
     evaluator.process(policy);
-    return new BddPacketPolicy(evaluator._edges.build(), evaluator._actions.build());
+    return new BddPacketPolicy(evaluator.getEdges(), evaluator._actions.build());
   }
 
   private PacketPolicyToBdd(
@@ -115,7 +122,7 @@ class PacketPolicyToBdd {
     _boolExprToBdd = new BoolExprToBdd(ipAccessListToBdd, ipsRoutedOutInterfaces);
     _transformationToTransition =
         new TransformationToTransition(ipAccessListToBdd.getBDDPacket(), ipAccessListToBdd);
-    _edges = ImmutableList.builder();
+    _transitions = HashBasedTable.create();
     _actions = ImmutableSet.builder();
   }
 
@@ -129,27 +136,39 @@ class PacketPolicyToBdd {
      * which can be expressed as the complement of the union of packets we have already accounted
      * for.
      */
-    if (!stmtConverter._nextEdgeConstraint.isZero()) {
+    if (stmtConverter._currentStatementOutTransition != ZERO) {
       // add edge to default action
       addEdge(
           stmtConverter.currentStatement(),
           new PacketPolicyAction(_hostname, _vrf, p.getName(), p.getDefaultAction().getAction()),
-          stmtConverter._nextEdgeConstraint);
+          stmtConverter._currentStatementOutTransition);
     }
-  }
-
-  private void addEdge(StateExpr source, StateExpr target, BDD bdd) {
-    addEdge(source, target, constraint(bdd));
   }
 
   private void addEdge(StateExpr source, StateExpr target, Transition transition) {
     if (transition == ZERO) {
       return;
     }
-    _edges.add(new Edge(source, target, transition));
+    ArrayList<Transition> transitions = _transitions.get(source, target);
+    if (transitions == null) {
+      transitions = new ArrayList<>();
+      _transitions.put(source, target, transitions);
+    }
+    transitions.add(transition);
     if (target instanceof PacketPolicyAction) {
       _actions.add((PacketPolicyAction) target);
     }
+  }
+
+  private List<Edge> getEdges() {
+    return _transitions.cellSet().stream()
+        .map(
+            cell ->
+                new Edge(
+                    cell.getRowKey(),
+                    cell.getColumnKey(),
+                    Transitions.or(cell.getValue().stream())))
+        .collect(Collectors.toList());
   }
 
   /**
@@ -161,13 +180,13 @@ class PacketPolicyToBdd {
     private int _statementCounter = 0;
     private PacketPolicyStatement _currentStatement;
 
-    /* The constraint of the (not yet created) edge leading out of currentStatement() the next statement of the policy.
+    /* The transition of the (not yet created) edge leading out of currentStatement() the next statement of the policy.
      * We update this constraint instead of creating new states/edges when possible. It's not possible if the policy
      * returns, or if multiple statements lead into the next statement (i.e. due to fallthrough from the then branch of
      * an if statement), or after transformation statements (because in transformations are not expressible as a
      * constraint).
      */
-    private BDD _nextEdgeConstraint;
+    private Transition _currentStatementOutTransition;
 
     private BDD _one;
     private BDD _zero;
@@ -179,13 +198,13 @@ class PacketPolicyToBdd {
       BDDFactory factory = _boolExprToBdd._ipAccessListToBdd.getBDDPacket().getFactory();
       _one = factory.one();
       _zero = factory.zero();
-      _nextEdgeConstraint = _one;
+      _currentStatementOutTransition = IDENTITY;
     }
 
     public void visitStatements(List<Statement> statements) {
       for (Statement statement : statements) {
         visit(statement);
-        if (_nextEdgeConstraint.isZero()) {
+        if (_currentStatementOutTransition == ZERO) {
           // does not fall through, so exit immediately
           return;
         }
@@ -206,44 +225,54 @@ class PacketPolicyToBdd {
     public Void visit(Statement stmt) {
       // if this happens, we're generating dead parts of the graph. No need to crash in prod, so
       // using assert.
-      assert !_nextEdgeConstraint.isZero() : "Should not convert unreachable statements to BDD";
+      assert _currentStatementOutTransition != ZERO
+          : "Should not convert unreachable statements to BDD";
       return stmt.accept(this);
     }
 
     @Override
     public Void visitIf(If ifStmt) {
       BDD matchConstraint = _boolExprToBdd.visit(ifStmt.getMatchCondition());
-      BDD thenConstraint = _nextEdgeConstraint.and(matchConstraint);
-      BDD elseConstraint = _nextEdgeConstraint.diff(matchConstraint);
+      // invariant: _currentStatementOutTransition always composes cleanly with a constraint
+      Transition thenTrans =
+          Transitions.mergeComposed(_currentStatementOutTransition, constraint(matchConstraint));
+      Transition elseTrans =
+          Transitions.mergeComposed(
+              _currentStatementOutTransition,
+              // TODO could add a negatedConstraint edge
+              constraint(matchConstraint.not()));
 
-      if (thenConstraint.isZero()) {
-        _nextEdgeConstraint = elseConstraint;
+      assert thenTrans != null;
+      assert elseTrans != null;
+
+      if (thenTrans == ZERO) {
+        _currentStatementOutTransition = elseTrans;
         return null;
       }
 
       PacketPolicyStatement ifSt = currentStatement();
 
       // initialize pathConstraint for then branch
-      _nextEdgeConstraint = thenConstraint;
+      _currentStatementOutTransition = thenTrans;
       visitStatements(ifStmt.getTrueStatements());
-      BDD fallThroughConstraint = _nextEdgeConstraint;
+      Transition thenFallThroughTrans = _currentStatementOutTransition;
 
-      if (!elseConstraint.isZero() && !fallThroughConstraint.isZero()) {
+      if (elseTrans != ZERO && thenFallThroughTrans != ZERO) {
         // the then branch falls through
         // allocate a new statement node to fan into
-        PacketPolicyStatement fallThroughSt = currentStatement();
+        PacketPolicyStatement thenFallThroughSt = currentStatement();
         PacketPolicyStatement nextSt = nextStatement();
-        addEdge(ifSt, nextSt, elseConstraint);
-        addEdge(fallThroughSt, nextSt, fallThroughConstraint);
-        _nextEdgeConstraint = _one;
-      } else if (!elseConstraint.isZero()) {
+        addEdge(ifSt, nextSt, elseTrans);
+        addEdge(thenFallThroughSt, nextSt, thenFallThroughTrans);
+        _currentStatementOutTransition = IDENTITY;
+      } else if (elseTrans != ZERO) {
         _currentStatement = ifSt;
-        _nextEdgeConstraint = elseConstraint;
-      } else if (!fallThroughConstraint.isZero()) {
-        _nextEdgeConstraint = fallThroughConstraint;
+        _currentStatementOutTransition = elseTrans;
+      } else if (thenFallThroughTrans != ZERO) {
+        _currentStatementOutTransition = thenFallThroughTrans;
       } else {
         // both branches are zero
-        _nextEdgeConstraint = _zero;
+        _currentStatementOutTransition = ZERO;
       }
       return null;
     }
@@ -253,9 +282,9 @@ class PacketPolicyToBdd {
       addEdge(
           currentStatement(),
           new PacketPolicyAction(_hostname, _vrf, _policy.getName(), returnStmt.getAction()),
-          _nextEdgeConstraint);
+          _currentStatementOutTransition);
       // does not fall through
-      _nextEdgeConstraint = _nextEdgeConstraint.getFactory().zero();
+      _currentStatementOutTransition = ZERO;
       return null;
     }
 
@@ -266,23 +295,17 @@ class PacketPolicyToBdd {
       addEdge(
           currentStatement(),
           new PacketPolicyAction(_hostname, _vrf, _policy.getName(), Drop.instance()),
-          _nextEdgeConstraint.diff(permitBdd));
-      _nextEdgeConstraint = _nextEdgeConstraint.and(permitBdd);
+          mergeComposed(_currentStatementOutTransition, constraint(permitBdd.not())));
+      _currentStatementOutTransition =
+          mergeComposed(_currentStatementOutTransition, constraint(permitBdd));
       return null;
     }
 
     @Override
     public Void visitApplyTransformation(ApplyTransformation transformation) {
-      if (!_nextEdgeConstraint.isOne()) {
-        // allocate a new statement and apply the path constraint.
-        addEdge(currentStatement(), nextStatement(), _nextEdgeConstraint);
-        _nextEdgeConstraint = _nextEdgeConstraint.getFactory().one();
-      }
-      PacketPolicyStatement preTransformation = currentStatement();
-      PacketPolicyStatement postTransformation = nextStatement();
       Transition transition =
           _transformationToTransition.toTransition(transformation.getTransformation());
-      addEdge(preTransformation, postTransformation, transition);
+      _currentStatementOutTransition = compose(_currentStatementOutTransition, transition);
       return null;
     }
   }

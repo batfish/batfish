@@ -67,10 +67,10 @@ public class TransformationToTransition {
   }
 
   private Transition assignPortFromPool(BDDInteger var, int poolStart, int poolEnd) {
-    BDD setValue = var.range(poolStart, poolEnd);
-    Transition eraseAndSet = eraseAndSet(var, setValue);
     // AssignPortFromPool is a noop on protocols that don't have ports
-    return branch(_ipProtocolsWithPortsBdd, eraseAndSet, IDENTITY);
+    // if the input BDD is nonsense (has ports for a non-port protocol), this will clear them.
+    BDD setValue = _ipProtocolsWithPortsBdd.imp(var.range(poolStart, poolEnd));
+    return eraseAndSet(var, setValue);
   }
 
   private class TransformationStepToTransition implements TransformationStepVisitor<Transition> {
