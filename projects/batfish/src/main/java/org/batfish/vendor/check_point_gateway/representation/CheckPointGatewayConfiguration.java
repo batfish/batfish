@@ -229,7 +229,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     return Optional.of(cluster);
   }
 
-  /** Populates cluster virtual IP metadata if this gateway is a member of a cluster. */
+  /** Populates cluster virtual IP metadata for this gateway. */
   private void convertCluster(Cluster cluster) {
     _clusterInterfaces =
         cluster.getInterfaces().stream()
@@ -619,8 +619,8 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
   }
 
   /**
-   * Get the {@link ManagementPackage} for this gateway. Prefers the package from the containing
-   * {@link Cluster} if applicable.
+   * Get the {@link ManagementPackage} for the specified gateway. If the gateway has a cluster, use
+   * the package from the cluster.
    */
   private @Nonnull Optional<ManagementPackage> findAccessPackage(
       ManagementDomain domain, GatewayOrServer gateway, Optional<Cluster> cluster) {

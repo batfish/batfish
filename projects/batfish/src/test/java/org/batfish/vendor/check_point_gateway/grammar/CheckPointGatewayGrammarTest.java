@@ -1277,6 +1277,7 @@ public class CheckPointGatewayGrammarTest {
     Map<String, Configuration> configs = parseTextConfigs(mgmt, "access_rules");
     Configuration c = configs.get("access_rules");
 
+    // Just check for existence, extraction/conversion is tested elsewhere
     assertThat(c.getIpAccessLists(), hasKey(aclName(accessLayer)));
   }
 
