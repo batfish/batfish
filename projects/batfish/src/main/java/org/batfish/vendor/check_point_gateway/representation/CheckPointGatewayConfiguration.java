@@ -166,6 +166,16 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
         mgmtConfig.flatMap(this::findGatewayAndDomain);
     Optional<Cluster> cluster = domainAndGateway.flatMap(e -> getCluster(e.getValue(), e.getKey()));
 
+    if (!mgmtConfig.isPresent()) {
+      _w.redFlag(
+          "No CheckPoint management configuration found. This gateway will not have any management"
+              + " configuration applied, e.g. no ACLs or NAT rules.");
+    } else if (!domainAndGateway.isPresent()) {
+      _w.redFlag(
+          "No domain found for this gateway. This gateway will not have any domain configuration"
+              + " applied, e.g. no ACLs or NAT rules.");
+    }
+
     Optional<ManagementPackage> mgmtPackage =
         domainAndGateway.flatMap(e -> findAccessPackage(e.getKey(), e.getValue(), cluster));
     Map<Uid, NamedManagementObject> mgmtObjects =
