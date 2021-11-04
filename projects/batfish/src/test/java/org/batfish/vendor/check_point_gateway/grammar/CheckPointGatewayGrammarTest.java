@@ -2015,4 +2015,57 @@ public class CheckPointGatewayGrammarTest {
     assertTrue(vrrpGroup.getPreempt());
     assertThat(vrrpGroup.getPriority(), equalTo(VrrpGroup.MAX_PRIORITY - 1));
   }
+
+  /**
+   * Test that appropriate conversion warnings are added when different management data is missing.
+   */
+  @Test
+  public void testManagementConfigurationWarnings() throws IOException {
+    // Any config will do, just need to check mgmt warnings
+    String gatewayName = "access_rules";
+
+    // No management configuration
+    {
+      Batfish batfish = getBatfishForConfigurationNames(gatewayName);
+      ConvertConfigurationAnswerElement ccae =
+          batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+      assertThat(
+          ccae,
+          hasRedFlagWarning(
+              gatewayName, containsString("No CheckPoint management configuration found")));
+    }
+
+    // Management configuration but no domains
+    {
+      CheckpointManagementConfiguration mgmt =
+          new CheckpointManagementConfiguration(
+              ImmutableMap.of("s", new ManagementServer(ImmutableMap.of(), "s")));
+      Batfish batfish = getBatfishForConfigurationNames(mgmt, gatewayName);
+      ConvertConfigurationAnswerElement ccae =
+          batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+      assertThat(
+          ccae, hasRedFlagWarning(gatewayName, containsString("No domain found for this gateway")));
+    }
+
+    // Management configuration with a domain, but no access package
+    {
+      ImmutableMap<Uid, GatewayOrServer> gateways =
+          ImmutableMap.of(
+              Uid.of("1"),
+              new SimpleGateway(
+                  Ip.parse("10.0.0.1"),
+                  gatewayName,
+                  ImmutableList.of(),
+                  new GatewayOrServerPolicy(null, null),
+                  Uid.of("1")));
+      CheckpointManagementConfiguration mgmt =
+          toCheckpointMgmtConfig(gateways, ImmutableMap.of(), ImmutableList.of());
+      Batfish batfish = getBatfishForConfigurationNames(mgmt, gatewayName);
+      ConvertConfigurationAnswerElement ccae =
+          batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+      assertThat(
+          ccae,
+          hasRedFlagWarning(gatewayName, containsString("No access package found for gateway")));
+    }
+  }
 }
