@@ -1210,6 +1210,77 @@ public class CheckPointGatewayGrammarTest {
     assertThat(c, hasInterface("eth3", hasIncomingFilter(rejects(denied, "eth1", c))));
   }
 
+  /**
+   * Test that access rules are correctly associated with cluster members when attached *only* to
+   * their cluster.
+   */
+  @Test
+  public void testAccessRulesForClusterMember() throws IOException {
+    Uid cpmiAnyUid = Uid.of("99999");
+    CpmiAnyObject any = new CpmiAnyObject(cpmiAnyUid);
+    Uid acceptUid = Uid.of("10");
+    Uid policyTargetsUid = Uid.of("11");
+    Uid packageUid = Uid.of("12");
+    Uid clusterMemberUid = Uid.of("13");
+    Uid clusterUid = Uid.of("14");
+
+    ImmutableMap<Uid, NamedManagementObject> objs =
+        ImmutableMap.<Uid, NamedManagementObject>builder()
+            .put(cpmiAnyUid, any)
+            .put(acceptUid, new RulebaseAction("Accept", acceptUid, "Accept"))
+            .put(policyTargetsUid, new PolicyTargets(policyTargetsUid))
+            .build();
+    ImmutableList<AccessRuleOrSection> rulebase =
+        ImmutableList.of(
+            AccessRule.testBuilder(cpmiAnyUid)
+                .setAction(acceptUid)
+                .setInstallOn(ImmutableList.of(policyTargetsUid))
+                .setUid(Uid.of("100"))
+                .setName("rule1")
+                .build());
+
+    AccessLayer accessLayer = new AccessLayer(objs, rulebase, Uid.of("uid-al"), "accessLayerFoo");
+    ImmutableMap<Uid, ManagementPackage> packages =
+        ImmutableMap.of(
+            packageUid,
+            new ManagementPackage(
+                ImmutableList.of(accessLayer),
+                null,
+                new Package(
+                    new Domain("d", Uid.of("0")),
+                    AllInstallationTargets.instance(),
+                    "p1",
+                    true,
+                    false,
+                    packageUid)));
+
+    ImmutableMap<Uid, GatewayOrServer> gateways =
+        ImmutableMap.of(
+            clusterMemberUid,
+            new CpmiClusterMember(
+                Ip.parse("10.0.0.1"),
+                "access_rules_cluster_member",
+                ImmutableList.of(),
+                new GatewayOrServerPolicy(null, null),
+                clusterMemberUid),
+            clusterUid,
+            new CpmiGatewayCluster(
+                ImmutableList.of("access_rules_cluster_member"),
+                Ip.parse("10.0.2.1"),
+                "access_rules_cluster",
+                ImmutableList.of(),
+                new GatewayOrServerPolicy("p1", null),
+                clusterUid));
+
+    CheckpointManagementConfiguration mgmt =
+        toCheckpointMgmtConfig(gateways, packages, ImmutableList.of());
+    Map<String, Configuration> configs = parseTextConfigs(mgmt, "access_rules");
+    Configuration c = configs.get("access_rules");
+
+    // Just check for existence, extraction/conversion is tested elsewhere
+    assertThat(c.getIpAccessLists(), hasKey(aclName(accessLayer)));
+  }
+
   @Test
   public void testObjectConversionWarnings() throws IOException {
     Uid unknownUid = Uid.of("10");
