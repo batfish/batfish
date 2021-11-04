@@ -624,6 +624,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
    */
   private @Nonnull Optional<ManagementPackage> findAccessPackage(
       ManagementDomain domain, GatewayOrServer gateway, Optional<Cluster> cluster) {
+    // Use the cluster's access package, if the gateway is a cluster member
     String accessPackageName =
         cluster.isPresent()
             ? cluster.get().getPolicy().getAccessPolicyName()

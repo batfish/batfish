@@ -1216,12 +1216,13 @@ public class CheckPointGatewayGrammarTest {
    */
   @Test
   public void testAccessRulesForClusterMember() throws IOException {
-    String memberName = "access_rules_cluster_member";
-    String clusterName = "access_rules_cluster";
     Uid cpmiAnyUid = Uid.of("99999");
     CpmiAnyObject any = new CpmiAnyObject(cpmiAnyUid);
-    Uid acceptUid = Uid.of("31");
-    Uid policyTargetsUid = Uid.of("33");
+    Uid acceptUid = Uid.of("10");
+    Uid policyTargetsUid = Uid.of("11");
+    Uid packageUid = Uid.of("12");
+    Uid clusterMemberUid = Uid.of("13");
+    Uid clusterUid = Uid.of("14");
 
     ImmutableMap<Uid, NamedManagementObject> objs =
         ImmutableMap.<Uid, NamedManagementObject>builder()
@@ -1241,7 +1242,7 @@ public class CheckPointGatewayGrammarTest {
     AccessLayer accessLayer = new AccessLayer(objs, rulebase, Uid.of("uid-al"), "accessLayerFoo");
     ImmutableMap<Uid, ManagementPackage> packages =
         ImmutableMap.of(
-            Uid.of("2"),
+            packageUid,
             new ManagementPackage(
                 ImmutableList.of(accessLayer),
                 null,
@@ -1251,30 +1252,25 @@ public class CheckPointGatewayGrammarTest {
                     "p1",
                     true,
                     false,
-                    Uid.of("2"))));
+                    packageUid)));
 
-    // TODO simplify policy
     ImmutableMap<Uid, GatewayOrServer> gateways =
         ImmutableMap.of(
-            Uid.of("1"),
+            clusterMemberUid,
             new CpmiClusterMember(
                 Ip.parse("10.0.0.1"),
-                memberName,
-                ImmutableList.of(
-                    new org.batfish.vendor.check_point_management.Interface(
-                        "eth1", new InterfaceTopology(false), Ip.parse("10.0.1.1"), 24)),
+                "access_rules_cluster_member",
+                ImmutableList.of(),
                 new GatewayOrServerPolicy(null, null),
-                Uid.of("1")),
-            Uid.of("2"),
+                clusterMemberUid),
+            clusterUid,
             new CpmiGatewayCluster(
-                ImmutableList.of(memberName),
+                ImmutableList.of("access_rules_cluster_member"),
                 Ip.parse("10.0.2.1"),
-                clusterName,
-                ImmutableList.of(
-                    new org.batfish.vendor.check_point_management.Interface(
-                        "eth1", new InterfaceTopology(false), Ip.parse("10.0.2.1"), 24)),
+                "access_rules_cluster",
+                ImmutableList.of(),
                 new GatewayOrServerPolicy("p1", null),
-                Uid.of("2")));
+                clusterUid));
 
     CheckpointManagementConfiguration mgmt =
         toCheckpointMgmtConfig(gateways, packages, ImmutableList.of());
