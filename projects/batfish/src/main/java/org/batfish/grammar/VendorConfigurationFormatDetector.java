@@ -39,7 +39,7 @@ public final class VendorConfigurationFormatDetector {
   private static final Pattern BLADE_NETWORK_PATTERN = Pattern.compile("(?m)^switch-type");
   private static final Pattern CADANT_NETWORK_PATTERN = Pattern.compile("(?m)^shelfname");
   private static final Pattern CHECK_POINT_GATEWAY_PATTERN =
-      Pattern.compile("(?m)^# Configuration of [\\w-]+\n# Language version: ");
+      Pattern.compile("(?m)^# Configuration of [\\w-]+\\R+# Language version: ");
   private static final Pattern CUMULUS_CONCATENATED_PATTERN =
       Pattern.compile("(?m)^# This file describes the network interfaces");
   private static final Pattern CUMULUS_NCLU_PATTERN = Pattern.compile("(?m)^net del all$");

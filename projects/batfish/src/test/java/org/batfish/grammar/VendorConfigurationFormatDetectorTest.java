@@ -23,6 +23,7 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
+import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -103,6 +104,19 @@ public class VendorConfigurationFormatDetectorTest {
             + "set installer policy check-for-updates-period 3\n"
             + "set hostname check_point\n";
     assertThat(identifyConfigurationFormat(fileText), equalTo(CHECK_POINT_GATEWAY));
+  }
+
+  @Test
+  public void testCheckPointNewlines() {
+    List<String> lines =
+        ImmutableList.of("#", "# Configuration of host_name-ch01-01", "# Language version: 13.4v1");
+
+    // Should be able to detect config format regardless of the type of line separator
+    List<String> lineSeparators = ImmutableList.of("\n", "\r\n");
+    for (String lineSeparator : lineSeparators) {
+      String line = String.join(lineSeparator, lines);
+      assertThat(identifyConfigurationFormat(line), equalTo(CHECK_POINT_GATEWAY));
+    }
   }
 
   @Test
