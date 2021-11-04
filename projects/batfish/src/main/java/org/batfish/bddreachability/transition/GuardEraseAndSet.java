@@ -35,6 +35,13 @@ public final class GuardEraseAndSet implements Transition {
 
   @Override
   public BDD transitForward(BDD bdd) {
+    if (_valuesBeforeAndAfter.size() == 1) {
+      ValueBeforeAndAfter beforeAndAfter = _valuesBeforeAndAfter.get(0);
+      BDD valueBefore = beforeAndAfter._before;
+      BDD valueAfter = beforeAndAfter._after;
+      return bdd.applyEx(valueBefore, BDDFactory.and, _vars).and(valueAfter);
+    }
+
     List<BDD> valuesBefore = new ArrayList<>(_valuesBeforeAndAfter.size());
     List<BDD> valuesAfter = new ArrayList<>(_valuesBeforeAndAfter.size());
     for (ValueBeforeAndAfter beforeAndAfter : _valuesBeforeAndAfter) {
@@ -57,6 +64,13 @@ public final class GuardEraseAndSet implements Transition {
 
   @Override
   public BDD transitBackward(BDD bdd) {
+    if (_valuesBeforeAndAfter.size() == 1) {
+      ValueBeforeAndAfter beforeAndAfter = _valuesBeforeAndAfter.get(0);
+      BDD valueBefore = beforeAndAfter._before;
+      BDD valueAfter = beforeAndAfter._after;
+      return bdd.applyEx(valueAfter, BDDFactory.and, _vars).and(valueBefore);
+    }
+
     long t = System.currentTimeMillis();
     List<BDD> valuesBefore = new ArrayList<>(_valuesBeforeAndAfter.size());
     List<BDD> valuesAfter = new ArrayList<>(_valuesBeforeAndAfter.size());
