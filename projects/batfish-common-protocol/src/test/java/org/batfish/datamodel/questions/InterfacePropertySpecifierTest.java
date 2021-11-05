@@ -1,7 +1,10 @@
 package org.batfish.datamodel.questions;
 
 import static org.batfish.datamodel.questions.InterfacePropertySpecifier.INCOMING_FILTER_NAME;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
@@ -72,5 +75,20 @@ public class InterfacePropertySpecifierTest {
             .getGetter()
             .apply(i1),
         equalTo(acl.getName()));
+  }
+
+  @Test
+  public void testInterfaceType() {
+    assertThat(
+        InterfacePropertySpecifier.create(InterfacePropertySpecifier.INTERFACE_TYPE)
+            .getMatchingProperties(),
+        contains(InterfacePropertySpecifier.INTERFACE_TYPE));
+  }
+
+  @Test
+  public void testDefault() {
+    assertThat(
+        InterfacePropertySpecifier.create(null).getMatchingProperties(),
+        not(hasItem(InterfacePropertySpecifier.INTERFACE_TYPE)));
   }
 }
