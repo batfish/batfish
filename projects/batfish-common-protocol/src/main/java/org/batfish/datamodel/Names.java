@@ -100,6 +100,10 @@ public final class Names {
     return String.format("~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:IPv%s~", ipv4 ? "4" : "6");
   }
 
+  public static String generatedBgpIndependentNetworkPolicyName(String vrf) {
+    return String.format("~BGP_INDEPENDENT_NETWORK_POLICY:%s~", vrf);
+  }
+
   public static String generatedBgpRedistributionPolicyName(String vrf) {
     return String.format("~BGP_REDISTRIBUTION_POLICY:%s~", vrf);
   }

@@ -7,6 +7,7 @@ import static org.batfish.datamodel.BumTransportMethod.UNICAST_FLOOD_GROUP;
 import static org.batfish.datamodel.IpProtocol.UDP;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
+import static org.batfish.datamodel.Names.generatedBgpIndependentNetworkPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
@@ -629,18 +630,46 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     // Finalize common export policy
     bgpCommonExportPolicy.addStatement(Statements.ReturnTrue.toStaticStatement()).build();
 
-    // Create BGP redistribution policy to import main RIB routes into BGP RIB
-    String redistPolicyName = generatedBgpRedistributionPolicyName(vrfName);
-    RoutingPolicy.Builder redistributionPolicy =
-        RoutingPolicy.builder().setOwner(c).setName(redistPolicyName);
+    // Create BGP redistribution policies to import main RIB routes into BGP RIB
+    processBgpNetworkStatements(c, nxBgpVrf, vrfName, newBgpProcess);
+    processBgpRedistributeStatements(c, nxBgpVrf, vrfName, newBgpProcess);
+
+    // Process active neighbors first.
+    Map<Ip, BgpActivePeerConfig> activeNeighbors =
+        Conversions.getNeighbors(c, this, v, newBgpProcess, nxBgpGlobal, nxBgpVrf, _w);
+    newBgpProcess.setNeighbors(ImmutableSortedMap.copyOf(activeNeighbors));
+
+    // Process passive neighbors next
+    Map<Prefix, BgpPassivePeerConfig> passiveNeighbors =
+        Conversions.getPassiveNeighbors(c, this, v, newBgpProcess, nxBgpGlobal, nxBgpVrf, _w);
+    newBgpProcess.setPassiveNeighbors(ImmutableSortedMap.copyOf(passiveNeighbors));
+
+    v.setBgpProcess(newBgpProcess);
+  }
+
+  /**
+   * Process BGP {@code network} statements. If there are no ipv4 nor ipv6 network statements, does
+   * nothing. Otherwise, creates and attaches independent network policy to process.
+   */
+  private void processBgpNetworkStatements(
+      Configuration c, BgpVrfConfiguration nxBgpVrf, String vrfName, BgpProcess newBgpProcess) {
+    BgpVrfIpv4AddressFamilyConfiguration ipv4af = nxBgpVrf.getIpv4UnicastAddressFamily();
+    BgpVrfIpv6AddressFamilyConfiguration ipv6af = nxBgpVrf.getIpv6UnicastAddressFamily();
+    if ((ipv4af == null || ipv4af.getNetworks().isEmpty())
+        && (ipv6af == null || ipv6af.getNetworks().isEmpty())) {
+      return;
+    }
+    // policy for 'network' statements
+    String networkPolicyName = generatedBgpIndependentNetworkPolicyName(vrfName);
+    RoutingPolicy.Builder networkPolicy =
+        RoutingPolicy.builder().setOwner(c).setName(networkPolicyName);
 
     // For NX-OS, next-hop is cleared on routes redistributed into BGP (though it may be rewritten
     // later in the policy).
-    redistributionPolicy.addStatement(new SetNextHop(DiscardNextHop.INSTANCE));
+    networkPolicy.addStatement(new SetNextHop(DiscardNextHop.INSTANCE));
     // For NX-OS, local routes have a default weight of 32768.
-    redistributionPolicy.addStatement(new SetWeight(new LiteralInt(BGP_LOCAL_WEIGHT)));
+    networkPolicy.addStatement(new SetWeight(new LiteralInt(BGP_LOCAL_WEIGHT)));
 
-    // BGP network statements take effect before redistribution.
     if (ipv4af != null) {
       Multimap<Optional<String>, Prefix> networksByRouteMap =
           ipv4af.getNetworks().stream()
@@ -669,7 +698,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                             ? new CallExpr(routeMap)
                             : BooleanExprs.TRUE);
                 newBgpProcess.addToOriginationSpace(exportSpace);
-                redistributionPolicy.addStatement(
+                networkPolicy.addStatement(
                     new If(
                         new Conjunction(exportNetworkConditions),
                         ImmutableList.of(
@@ -677,8 +706,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                             Statements.ExitAccept.toStaticStatement())));
               });
     }
-
-    BgpVrfIpv6AddressFamilyConfiguration ipv6af = nxBgpVrf.getIpv6UnicastAddressFamily();
     if (ipv6af != null) {
       ipv6af
           .getNetworks()
@@ -699,7 +726,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                         routeMap != null && _routeMaps.containsKey(routeMap)
                             ? new CallExpr(routeMap)
                             : BooleanExprs.TRUE);
-                redistributionPolicy.addStatement(
+                networkPolicy.addStatement(
                     new If(
                         new Conjunction(exportNetworkConditions),
                         ImmutableList.of(
@@ -707,6 +734,42 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                             Statements.ExitAccept.toStaticStatement())));
               });
     }
+
+    // Generate BGP_NETWORK6_NETWORKS filter.
+    if (ipv6af != null) {
+      List<Route6FilterLine> lines =
+          ipv6af.getNetworks().stream()
+              .map(Network::getNetwork)
+              .map(p6 -> new Route6FilterLine(LineAction.PERMIT, Prefix6Range.fromPrefix6(p6)))
+              .collect(ImmutableList.toImmutableList());
+      Route6FilterList localFilter6 =
+          new Route6FilterList("~BGP_NETWORK6_NETWORKS_FILTER:" + vrfName + "~", lines);
+      c.getRoute6FilterLists().put(localFilter6.getName(), localFilter6);
+    }
+
+    // Finalize 'network' policy and attach to process
+    networkPolicy.addStatement(Statements.ExitReject.toStaticStatement()).build();
+    newBgpProcess.setIndependentNetworkPolicy(networkPolicyName);
+  }
+
+  /**
+   * Process BGP {@code redistribute} statements. Creates and attaches redistribution policy to
+   * process.
+   */
+  private void processBgpRedistributeStatements(
+      Configuration c, BgpVrfConfiguration nxBgpVrf, String vrfName, BgpProcess newBgpProcess) {
+    // policy for 'redistribute' statements
+    String redistPolicyName = generatedBgpRedistributionPolicyName(vrfName);
+    RoutingPolicy.Builder redistributionPolicy =
+        RoutingPolicy.builder().setOwner(c).setName(redistPolicyName);
+
+    // For NX-OS, next-hop is cleared on routes redistributed into BGP (though it may be rewritten
+    // later in the policy).
+    redistributionPolicy.addStatement(new SetNextHop(DiscardNextHop.INSTANCE));
+    // For NX-OS, local routes have a default weight of 32768.
+    redistributionPolicy.addStatement(new SetWeight(new LiteralInt(BGP_LOCAL_WEIGHT)));
+
+    BgpVrfIpv4AddressFamilyConfiguration ipv4af = nxBgpVrf.getIpv4UnicastAddressFamily();
 
     // Only redistribute default route if `default-information originate` is set.
     @Nullable
@@ -821,33 +884,9 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
           new If(eigrp, ImmutableList.of(Statements.ExitAccept.toStaticStatement())));
     }
 
-    // Finalize redistribution policy and attach to process
+    // Finalize 'redistribute' policy and attach to process
     redistributionPolicy.addStatement(Statements.ExitReject.toStaticStatement()).build();
     newBgpProcess.setRedistributionPolicy(redistPolicyName);
-
-    // Generate BGP_NETWORK6_NETWORKS filter.
-    if (ipv6af != null) {
-      List<Route6FilterLine> lines =
-          ipv6af.getNetworks().stream()
-              .map(Network::getNetwork)
-              .map(p6 -> new Route6FilterLine(LineAction.PERMIT, Prefix6Range.fromPrefix6(p6)))
-              .collect(ImmutableList.toImmutableList());
-      Route6FilterList localFilter6 =
-          new Route6FilterList("~BGP_NETWORK6_NETWORKS_FILTER:" + vrfName + "~", lines);
-      c.getRoute6FilterLists().put(localFilter6.getName(), localFilter6);
-    }
-
-    // Process active neighbors first.
-    Map<Ip, BgpActivePeerConfig> activeNeighbors =
-        Conversions.getNeighbors(c, this, v, newBgpProcess, nxBgpGlobal, nxBgpVrf, _w);
-    newBgpProcess.setNeighbors(ImmutableSortedMap.copyOf(activeNeighbors));
-
-    // Process passive neighbors next
-    Map<Prefix, BgpPassivePeerConfig> passiveNeighbors =
-        Conversions.getPassiveNeighbors(c, this, v, newBgpProcess, nxBgpGlobal, nxBgpVrf, _w);
-    newBgpProcess.setPassiveNeighbors(ImmutableSortedMap.copyOf(passiveNeighbors));
-
-    v.setBgpProcess(newBgpProcess);
   }
 
   private static void convertHsrp(
