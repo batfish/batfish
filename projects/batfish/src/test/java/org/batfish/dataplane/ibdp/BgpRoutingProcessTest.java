@@ -3,12 +3,15 @@ package org.batfish.dataplane.ibdp;
 import static org.batfish.datamodel.BgpRoute.DEFAULT_LOCAL_PREFERENCE;
 import static org.batfish.datamodel.BumTransportMethod.UNICAST_FLOOD_GROUP;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.OriginType.IGP;
+import static org.batfish.datamodel.OriginType.INCOMPLETE;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasAdministrativeCost;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHop;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasProtocol;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.isNonRouting;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasCommunities;
+import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasOriginType;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasWeight;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpv4RouteThat;
 import static org.batfish.datamodel.vxlan.Layer2Vni.testBuilder;
@@ -35,6 +38,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
@@ -77,10 +81,12 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BgpPeerAddressNextHop;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
+import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.dataplane.rib.Rib;
@@ -583,6 +589,89 @@ public class BgpRoutingProcessTest {
                     hasPrefix(prefix),
                     hasProtocol(RoutingProtocol.BGP),
                     isNonRouting(true)))));
+  }
+
+  /**
+   * Check that redistribution installs two routes in the BGP RIB if both redistribution policy and
+   * network policy are defined and allow the route. Assume the transformed routes are distinct.
+   */
+  @Test
+  public void testRedistributionNetworkAndRedistributionPolicy() {
+    Prefix prefix = Prefix.strict("10.0.0.0/24");
+    // Policy redistributing by protocol
+    RoutingPolicy policyProtocol =
+        RoutingPolicy.builder()
+            .setOwner(_c)
+            .setName("redistribute_connected")
+            .addStatement(
+                new If(
+                    new MatchProtocol(RoutingProtocol.CONNECTED),
+                    ImmutableList.of(
+                        new SetOrigin(new LiteralOrigin(IGP, null)),
+                        Statements.ExitAccept.toStaticStatement()),
+                    ImmutableList.of(Statements.ExitReject.toStaticStatement())))
+            .build();
+    // Policy redistributing by network
+    RoutingPolicy policyNetwork =
+        RoutingPolicy.builder()
+            .setOwner(_c)
+            .setName("network_10_0_0_0_24")
+            .addStatement(
+                new If(
+                    new MatchPrefixSet(
+                        DestinationNetwork.instance(),
+                        new ExplicitPrefixSet(new PrefixSpace(PrefixRange.fromPrefix(prefix)))),
+                    ImmutableList.of(
+                        new SetOrigin(new LiteralOrigin(INCOMPLETE, null)),
+                        Statements.ExitAccept.toStaticStatement()),
+                    ImmutableList.of(Statements.ExitReject.toStaticStatement())))
+            .build();
+    // If BGP has a redistribution or network policy, config must export from BGP RIB
+    _c.setExportBgpFromBgpRib(true);
+    _bgpProcess.setRedistributionPolicy(policyProtocol.getName());
+    _bgpProcess.setIndependentNetworkPolicy(policyNetwork.getName());
+    // re-init routing process after modifying configuration.
+    _routingProcess =
+        new BgpRoutingProcess(
+            _bgpProcess, _c, DEFAULT_VRF_NAME, new Rib(), BgpTopology.EMPTY, new PrefixTracer());
+
+    AnnotatedRoute<AbstractRoute> route =
+        new AnnotatedRoute<>(
+            ConnectedRoute.builder()
+                .setNetwork(prefix)
+                .setNextHop(NextHopInterface.of("foo"))
+                .build(),
+            _vrf.getName());
+
+    _routingProcess.redistribute(RibDelta.adding(route));
+
+    assertThat(
+        _routingProcess.getV4Routes(),
+        contains(
+            isBgpv4RouteThat(
+                allOf(
+                    hasNextHop(NextHopDiscard.instance()),
+                    hasPrefix(prefix),
+                    hasProtocol(RoutingProtocol.BGP),
+                    isNonRouting(true),
+                    hasOriginType(IGP)))));
+    assertThat(
+        _routingProcess.getV4BackupRoutes(),
+        containsInAnyOrder(
+            isBgpv4RouteThat(
+                allOf(
+                    hasNextHop(NextHopDiscard.instance()),
+                    hasPrefix(prefix),
+                    hasProtocol(RoutingProtocol.BGP),
+                    isNonRouting(true),
+                    hasOriginType(IGP))),
+            isBgpv4RouteThat(
+                allOf(
+                    hasNextHop(NextHopDiscard.instance()),
+                    hasPrefix(prefix),
+                    hasProtocol(RoutingProtocol.BGP),
+                    isNonRouting(true),
+                    hasOriginType(INCOMPLETE)))));
   }
 
   @Test

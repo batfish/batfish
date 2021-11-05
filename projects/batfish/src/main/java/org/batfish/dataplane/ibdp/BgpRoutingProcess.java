@@ -562,17 +562,39 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       _mainRibDelta = mainRibDelta;
     } else {
       // Place redistributed routes into our RIB
-      Optional<RoutingPolicy> policy = _policies.get(_process.getRedistributionPolicy());
-      if (!policy.isPresent()) {
+      Optional<RoutingPolicy> redistributionPolicy =
+          _policies.get(_process.getRedistributionPolicy());
+      if (!redistributionPolicy.isPresent()) {
         LOGGER.debug(
             "Undefined BGP redistribution policy {}. Skipping redistribution",
             _process.getRedistributionPolicy());
         return;
       }
-      mainRibDelta.getActions().forEach(a -> redistributeRouteToBgpRib(a, policy.get()));
+      mainRibDelta
+          .getActions()
+          .forEach(a -> redistributeRouteToBgpRib(a, redistributionPolicy.get()));
       if (LOGGER.isDebugEnabled()) {
         LOGGER.debug(
-            "Redistributed into local BGP RIB node {}, VRF {}: {}",
+            "Redistributed via redistribution policy into local BGP RIB node {}, VRF {}: {}",
+            _hostname,
+            _vrfName,
+            _bgpv4DeltaBuilder.build());
+      }
+      // If there is an independent network policy, run that as well
+      Optional<RoutingPolicy> independentNetworkPolicy =
+          _policies.get(_process.getIndependentNetworkPolicy());
+      if (!independentNetworkPolicy.isPresent()) {
+        LOGGER.debug(
+            "Undefined BGP independent network policy {}. Skipping redistribution",
+            _process.getRedistributionPolicy());
+        return;
+      }
+      mainRibDelta
+          .getActions()
+          .forEach(a -> redistributeRouteToBgpRib(a, independentNetworkPolicy.get()));
+      if (LOGGER.isDebugEnabled()) {
+        LOGGER.debug(
+            "Redistributed via independent network policy into local BGP RIB node {}, VRF {}: {}",
             _hostname,
             _vrfName,
             _bgpv4DeltaBuilder.build());

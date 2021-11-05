@@ -46,6 +46,7 @@ public class BgpProcess implements Serializable {
     @Nullable private Integer _localAdminCost;
     @Nullable private Ip _routerId;
     @Nullable private Vrf _vrf;
+    @Nullable private String _networkPolicy;
     @Nullable private String _redistributionPolicy;
 
     public BgpProcess build() {
@@ -53,6 +54,11 @@ public class BgpProcess implements Serializable {
       checkArgument(_ebgpAdminCost != null, "Missing %s", PROP_EBGP_ADMIN_COST);
       checkArgument(_ibgpAdminCost != null, "Missing %s", PROP_IBGP_ADMIN_COST);
       checkArgument(_localAdminCost != null, "Missing %s", PROP_LOCAL_ADMIN_COST);
+      checkArgument(
+          _networkPolicy == null || _redistributionPolicy != null,
+          "Impossible to have independent %s without %s",
+          PROP_INDEPENDENT_NETWORK_POLICY,
+          PROP_REDISTRIBUTION_POLICY);
       BgpProcess bgpProcess =
           new BgpProcess(
               _routerId,
@@ -60,6 +66,7 @@ public class BgpProcess implements Serializable {
               _ibgpAdminCost,
               _localAdminCost,
               _confederation,
+              _networkPolicy,
               _redistributionPolicy);
       if (_vrf != null) {
         _vrf.setBgpProcess(bgpProcess);
@@ -106,7 +113,12 @@ public class BgpProcess implements Serializable {
       return this;
     }
 
-    public Builder setRedistributionPolicy(@Nullable String redistributionPolicy) {
+    public @Nonnull Builder setNetworkPolicy(@Nullable String networkPolicy) {
+      _networkPolicy = networkPolicy;
+      return this;
+    }
+
+    public @Nonnull Builder setRedistributionPolicy(@Nullable String redistributionPolicy) {
       _redistributionPolicy = redistributionPolicy;
       return this;
     }
@@ -139,6 +151,7 @@ public class BgpProcess implements Serializable {
   private static final String PROP_TIE_BREAKER = "tieBreaker";
   private static final String PROP_CLUSTER_LIST_AS_IBGP_COST = "clusterListAsIbgpCost";
   private static final String PROP_CLUSTER_LIST_AS_IGP_COST_DEPRECATED = "clusterListAsIgpCost";
+  private static final String PROP_INDEPENDENT_NETWORK_POLICY = "independentNetworkPolicy";
   private static final String PROP_REDISTRIBUTION_POLICY = "redistributionPolicy";
 
   @Nullable private BgpConfederation _confederation;
@@ -173,12 +186,14 @@ public class BgpProcess implements Serializable {
 
   private BgpTieBreaker _tieBreaker;
 
+  @Nullable private String _independentNetworkPolicy;
+
   @Nullable private String _redistributionPolicy;
 
   /** Constructs a BgpProcess with the given router ID and admin costs */
   public BgpProcess(
       @Nonnull Ip routerId, int ebgpAdminCost, int ibgpAdminCost, int localAdminCost) {
-    this(routerId, ebgpAdminCost, ibgpAdminCost, localAdminCost, null, null);
+    this(routerId, ebgpAdminCost, ibgpAdminCost, localAdminCost, null, null, null);
   }
 
   private BgpProcess(
@@ -187,6 +202,7 @@ public class BgpProcess implements Serializable {
       int ibgpAdminCost,
       int localAdminCost,
       @Nullable BgpConfederation confederation,
+      @Nullable String independentNetworkPolicy,
       @Nullable String redistributionPolicy) {
     _activeNeighbors = new TreeMap<>();
     _aggregates = ImmutableMap.of();
@@ -201,6 +217,7 @@ public class BgpProcess implements Serializable {
     _passiveNeighbors = new TreeMap<>();
     _routerId = routerId;
     _clusterListAsIbgpCost = false;
+    _independentNetworkPolicy = independentNetworkPolicy;
     _redistributionPolicy = redistributionPolicy;
   }
 
@@ -211,6 +228,7 @@ public class BgpProcess implements Serializable {
       @Nullable @JsonProperty(PROP_EBGP_ADMIN_COST) Integer ebgpAdminCost,
       @Nullable @JsonProperty(PROP_IBGP_ADMIN_COST) Integer ibgpAdminCost,
       @Nullable @JsonProperty(PROP_LOCAL_ADMIN_COST) Integer localAdminCost,
+      @Nullable @JsonProperty(PROP_INDEPENDENT_NETWORK_POLICY) String networkPolicy,
       @Nullable @JsonProperty(PROP_REDISTRIBUTION_POLICY) String redistributionPolicy) {
     checkArgument(routerId != null, "Missing %s", PROP_ROUTER_ID);
     checkArgument(ebgpAdminCost != null, "Missing %s", PROP_EBGP_ADMIN_COST);
@@ -223,6 +241,7 @@ public class BgpProcess implements Serializable {
         ibgpAdminCost,
         localAdminCost,
         confederation,
+        networkPolicy,
         redistributionPolicy);
   }
 
@@ -471,6 +490,27 @@ public class BgpProcess implements Serializable {
     setClusterListAsIbgpCost(clusterListAsIbgpCost);
   }
 
+  /**
+   * Name of the independent network origination policy for this process. This policy is expected to
+   * be set only on vendors that export BGP from their BGP RIBs (Cisco-like behavior).
+   *
+   * <p>If non-null, indicates that {@code network} statements may redistribute routes independently
+   * of {@code redistribute} statements, i.e. you may end up with up to two locally-originated
+   * routes per prefix. Also in this case, {@link #getRedistributionPolicy()} must be non-null.
+   *
+   * <p>If {@code null}, indicates that either no networks are redistributed via {@code network}
+   * statements, or networks are redistributed in the redistribution policy.redistributed routes
+   * should not be added to the BGP RIB.
+   */
+  @JsonProperty(PROP_INDEPENDENT_NETWORK_POLICY)
+  @Nullable
+  public String getIndependentNetworkPolicy() {
+    return _independentNetworkPolicy;
+  }
+
+  public void setIndependentNetworkPolicy(@Nullable String independentNetworkPolicy) {
+    _independentNetworkPolicy = independentNetworkPolicy;
+  }
   /**
    * Name of the redistribution policy for this process. This policy is expected to be set only on
    * vendors that export BGP from their BGP RIBs (Cisco-like behavior).
