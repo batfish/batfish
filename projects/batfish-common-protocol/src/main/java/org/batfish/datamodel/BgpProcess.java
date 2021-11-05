@@ -511,6 +511,7 @@ public class BgpProcess implements Serializable {
   public void setIndependentNetworkPolicy(@Nullable String independentNetworkPolicy) {
     _independentNetworkPolicy = independentNetworkPolicy;
   }
+
   /**
    * Name of the redistribution policy for this process. This policy is expected to be set only on
    * vendors that export BGP from their BGP RIBs (Cisco-like behavior).
