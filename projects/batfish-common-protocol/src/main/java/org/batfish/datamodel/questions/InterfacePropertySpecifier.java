@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -182,9 +183,10 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
                   InterfacePropertySpecifier::getIncomingFilterName,
                   Schema.STRING,
                   "Name of the input IPv4 filter"))
-          // Uncomment after we've fixed interface types
-          // .put(INTERFACE_TYPE, new PropertyDescriptor<>(Interface::getInterfaceType,
-          // Schema.STRING))
+          .put(
+              INTERFACE_TYPE,
+              new PropertyDescriptor<>(
+                  Interface::getInterfaceType, Schema.STRING, "Interface type"))
           .put(
               MLAG_ID,
               new PropertyDescriptor<>(
@@ -313,11 +315,14 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
    */
   @Nonnull
   public static InterfacePropertySpecifier create(@Nullable String expression) {
+    // by default, exclude interface type
+    Set<String> properties = new HashSet<>(JAVA_MAP.keySet());
+    properties.remove(INTERFACE_TYPE);
     return new InterfacePropertySpecifier(
         SpecifierFactories.getEnumSetSpecifierOrDefault(
                 expression,
                 Grammar.INTERFACE_PROPERTY_SPECIFIER,
-                new ConstantEnumSetSpecifier<>(JAVA_MAP.keySet()))
+                new ConstantEnumSetSpecifier<>(properties))
             .resolve());
   }
 
