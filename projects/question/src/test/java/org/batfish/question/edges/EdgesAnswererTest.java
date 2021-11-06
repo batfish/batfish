@@ -54,15 +54,23 @@ import com.google.common.graph.MutableNetwork;
 import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.NetworkBuilder;
 import com.google.common.graph.ValueGraphBuilder;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
+import org.batfish.common.NetworkSnapshot;
+import org.batfish.common.topology.IpOwners;
+import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Node;
+import org.batfish.common.topology.Layer1Topologies;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Edge;
+import org.batfish.common.topology.TopologyProvider;
+import org.batfish.common.topology.TunnelTopology;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpProcess;
@@ -90,6 +98,7 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.eigrp.EigrpEdge;
 import org.batfish.datamodel.eigrp.EigrpNeighborConfigId;
 import org.batfish.datamodel.eigrp.EigrpTopology;
+import org.batfish.datamodel.ipsec.IpsecTopology;
 import org.batfish.datamodel.isis.IsisEdge;
 import org.batfish.datamodel.isis.IsisLevel;
 import org.batfish.datamodel.isis.IsisNode;
@@ -98,6 +107,7 @@ import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.OspfProcess;
+import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.ospf.OspfTopologyUtils;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.table.ColumnMetadata;
@@ -797,5 +807,137 @@ public class EdgesAnswererTest {
             .map(ColumnMetadata::getSchema)
             .collect(ImmutableList.toImmutableList()),
         contains(Schema.INTERFACE, Schema.INTERFACE));
+  }
+
+  private static final class MockTopologyProvider implements TopologyProvider {
+    private Layer1Topologies _layer1Topologies = null;
+
+    @Nonnull
+    @Override
+    public BgpTopology getBgpTopology(NetworkSnapshot snapshot) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Nonnull
+    @Override
+    public IpsecTopology getInitialIpsecTopology(NetworkSnapshot networkSnapshot) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Nonnull
+    @Override
+    public Topology getInitialLayer3Topology(NetworkSnapshot networkSnapshot) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Nonnull
+    @Override
+    public L3Adjacencies getInitialL3Adjacencies(NetworkSnapshot networkSnapshot) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Nonnull
+    @Override
+    public OspfTopology getInitialOspfTopology(@Nonnull NetworkSnapshot networkSnapshot) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Nonnull
+    @Override
+    public VxlanTopology getInitialVxlanTopology(NetworkSnapshot snapshot) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Nonnull
+    @Override
+    public IpOwners getIpOwners(NetworkSnapshot snapshot) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Nonnull
+    @Override
+    public Topology getLayer3Topology(NetworkSnapshot snapshot) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Nonnull
+    @Override
+    public Layer1Topologies getLayer1Topologies(NetworkSnapshot networkSnapshot) {
+      return _layer1Topologies;
+    }
+
+    public void setLayer1Topologies(Layer1Topologies layer1Topologies) {
+      _layer1Topologies = layer1Topologies;
+    }
+
+    @Nonnull
+    @Override
+    public L3Adjacencies getL3Adjacencies(NetworkSnapshot snapshot) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Nonnull
+    @Override
+    public OspfTopology getOspfTopology(NetworkSnapshot networkSnapshot) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Nonnull
+    @Override
+    public Optional<Layer1Topology> getRawLayer1PhysicalTopology(NetworkSnapshot networkSnapshot) {
+      return Optional.empty();
+    }
+
+    @Nonnull
+    @Override
+    public Topology getRawLayer3Topology(NetworkSnapshot networkSnapshot) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Nonnull
+    @Override
+    public VxlanTopology getVxlanTopology(NetworkSnapshot snapshot) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Nonnull
+    @Override
+    public TunnelTopology getInitialTunnelTopology(NetworkSnapshot snapshot) {
+      throw new UnsupportedOperationException();
+    }
+  }
+
+  @Test
+  public void testUserProvidedL1() {
+    Layer1Topologies layer1Topologies =
+        new Layer1Topologies(
+            new Layer1Topology(new Layer1Edge("n1", "i1", "n2", "i2")),
+            Layer1Topology.EMPTY,
+            Layer1Topology.EMPTY,
+            Layer1Topology.EMPTY);
+    MockTopologyProvider topologyProvider = new MockTopologyProvider();
+    topologyProvider.setLayer1Topologies(layer1Topologies);
+
+    Collection<Row> rows =
+        EdgesAnswerer.generateRows(
+            ImmutableMap.of(),
+            null,
+            null,
+            topologyProvider,
+            ImmutableSet.of("n1", "n2"),
+            ImmutableSet.of("n1", "n2"),
+            EdgeType.USER_PROVIDED_LAYER1,
+            false);
+
+    assertThat(
+        rows,
+        contains(
+            allOf(
+                hasColumn(
+                    COL_INTERFACE, equalTo(NodeInterfacePair.of("n1", "i1")), Schema.INTERFACE),
+                hasColumn(
+                    COL_REMOTE_INTERFACE,
+                    equalTo(NodeInterfacePair.of("n2", "i2")),
+                    Schema.INTERFACE))));
   }
 }
