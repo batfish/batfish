@@ -591,7 +591,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       if (!independentNetworkPolicy.isPresent()) {
         LOGGER.debug(
             "Undefined BGP independent network policy {}. Skipping redistribution",
-            _process.getIndependentNetworkPolicy());
+            independentNetworkPolicyName);
       } else {
         mainRibDelta
             .getActions()

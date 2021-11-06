@@ -56,7 +56,7 @@ public class BgpProcess implements Serializable {
       checkArgument(_localAdminCost != null, "Missing %s", PROP_LOCAL_ADMIN_COST);
       checkArgument(
           _networkPolicy == null || _redistributionPolicy != null,
-          "Impossible to have independent %s without %s",
+          "Impossible to have %s without %s",
           PROP_INDEPENDENT_NETWORK_POLICY,
           PROP_REDISTRIBUTION_POLICY);
       BgpProcess bgpProcess =
