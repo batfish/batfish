@@ -562,20 +562,47 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       _mainRibDelta = mainRibDelta;
     } else {
       // Place redistributed routes into our RIB
-      Optional<RoutingPolicy> policy = _policies.get(_process.getRedistributionPolicy());
-      if (!policy.isPresent()) {
+      Optional<RoutingPolicy> redistributionPolicy =
+          _policies.get(_process.getRedistributionPolicy());
+      if (!redistributionPolicy.isPresent()) {
         LOGGER.debug(
             "Undefined BGP redistribution policy {}. Skipping redistribution",
             _process.getRedistributionPolicy());
+      } else {
+        mainRibDelta
+            .getActions()
+            .forEach(a -> redistributeRouteToBgpRib(a, redistributionPolicy.get()));
+        if (LOGGER.isDebugEnabled()) {
+          LOGGER.debug(
+              "Redistributed via redistribution policy into local BGP RIB node {}, VRF {}: {}",
+              _hostname,
+              _vrfName,
+              _bgpv4DeltaBuilder.build());
+        }
+      }
+
+      // If there is an independent network policy, run that as well
+      String independentNetworkPolicyName = _process.getIndependentNetworkPolicy();
+      if (independentNetworkPolicyName == null) {
         return;
       }
-      mainRibDelta.getActions().forEach(a -> redistributeRouteToBgpRib(a, policy.get()));
-      if (LOGGER.isDebugEnabled()) {
+      Optional<RoutingPolicy> independentNetworkPolicy =
+          _policies.get(independentNetworkPolicyName);
+      if (!independentNetworkPolicy.isPresent()) {
         LOGGER.debug(
-            "Redistributed into local BGP RIB node {}, VRF {}: {}",
-            _hostname,
-            _vrfName,
-            _bgpv4DeltaBuilder.build());
+            "Undefined BGP independent network policy {}. Skipping redistribution",
+            independentNetworkPolicyName);
+      } else {
+        mainRibDelta
+            .getActions()
+            .forEach(a -> redistributeRouteToBgpRib(a, independentNetworkPolicy.get()));
+        if (LOGGER.isDebugEnabled()) {
+          LOGGER.debug(
+              "Redistributed via independent network policy into local BGP RIB node {}, VRF {}: {}",
+              _hostname,
+              _vrfName,
+              _bgpv4DeltaBuilder.build());
+        }
       }
     }
   }
