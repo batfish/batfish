@@ -122,6 +122,7 @@ public class EdgesAnswerer extends Answerer {
             configurations,
             snapshot,
             topology,
+            _batfish.getTopologyProvider(),
             includeNodes,
             includeRemoteNodes,
             question.getEdgeType(),
@@ -129,15 +130,16 @@ public class EdgesAnswerer extends Answerer {
     return answer;
   }
 
-  private Collection<Row> generateRows(
+  @VisibleForTesting
+  static Collection<Row> generateRows(
       Map<String, Configuration> configurations,
       NetworkSnapshot snapshot,
       Topology topology,
+      TopologyProvider topologyProvider,
       Set<String> includeNodes,
       Set<String> includeRemoteNodes,
       EdgeType edgeType,
       boolean initial) {
-    TopologyProvider topologyProvider = _batfish.getTopologyProvider();
     switch (edgeType) {
       case BGP:
         BgpTopology bgpTopology = topologyProvider.getBgpTopology(snapshot);
@@ -176,6 +178,13 @@ public class EdgesAnswerer extends Answerer {
             .map(
                 layer1LogicalTopology ->
                     getLayer1Edges(includeNodes, includeRemoteNodes, layer1LogicalTopology))
+            .orElse(ImmutableMultiset.of());
+      case USER_PROVIDED_LAYER1:
+        return topologyProvider
+            .getUserProvidedLayer1Topology(snapshot)
+            .map(
+                userProvidedLayer1Topology ->
+                    getLayer1Edges(includeNodes, includeRemoteNodes, userProvidedLayer1Topology))
             .orElse(ImmutableMultiset.of());
       case LAYER3:
       default:

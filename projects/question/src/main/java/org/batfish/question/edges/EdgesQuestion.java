@@ -102,6 +102,7 @@ public class EdgesQuestion extends Question {
     LAYER1,
     LAYER3,
     OSPF,
+    USER_PROVIDED_LAYER1, // canonicalized user-input layer1
     VXLAN
   }
 }
