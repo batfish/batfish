@@ -80,6 +80,16 @@ public interface TopologyProvider {
   }
 
   /**
+   * Returns the user-provided {@link Layer1Topology}, potentially modified to clean up {@link
+   * Layer1Node nodes} that indicated interfaces in non-canonical form.
+   */
+  default @Nonnull Optional<Layer1Topology> getUserProvidedLayer1Topology(
+      NetworkSnapshot networkSnapshot) {
+    return Optional.of(getLayer1Topologies(networkSnapshot).getUserProvidedL1())
+        .filter(l1 -> !l1.isEmpty());
+  }
+
+  /**
    * Returns the layer-3 {@link Topology} corresponding to the converged {@link
    * org.batfish.datamodel.DataPlane}.
    */
