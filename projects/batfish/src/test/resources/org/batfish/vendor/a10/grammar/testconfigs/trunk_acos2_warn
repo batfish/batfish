@@ -5,6 +5,18 @@ hostname trunk_acos2_warn
 interface ethernet 1
  lacp timeout short
 !
+!
+interface ethernet 2
+!
+interface ethernet 3
+!
+interface ethernet 4
+!
+!
+trunk 1
+ ! `from` is greater than `to`
+ ethernet 4 ethernet 3 to 2
+!
 lacp-trunk 1
  ports-threshold 1
  ports-threshold 9
