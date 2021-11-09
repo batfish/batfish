@@ -934,7 +934,8 @@ public final class CheckpointNatConversionsTest {
           equalTo(
               Optional.of(
                   ImmutableList.of(
-                      assignSourceIp(networkPrefix2.getStartIp(), networkPrefix2.getEndIp())))));
+                      assignSourceIp(
+                          networkPrefix2.getFirstHostIp(), networkPrefix2.getLastHostIp())))));
     }
     {
       // dst: host -> host
@@ -996,7 +997,7 @@ public final class CheckpointNatConversionsTest {
               Optional.of(
                   ImmutableList.of(
                       assignDestinationIp(
-                          networkPrefix2.getStartIp(), networkPrefix2.getEndIp())))));
+                          networkPrefix2.getFirstHostIp(), networkPrefix2.getLastHostIp())))));
     }
     {
       // src and dst translation
