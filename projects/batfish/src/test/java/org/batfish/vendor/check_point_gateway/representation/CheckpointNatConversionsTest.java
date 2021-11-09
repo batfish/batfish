@@ -54,6 +54,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.transformation.Transformation;
@@ -652,10 +653,14 @@ public final class CheckpointNatConversionsTest {
     Uid hostUid2 = Uid.of("2");
     Uid addrRangeUid = Uid.of("3");
     Uid serviceUid = Uid.of("4");
+    Uid networkUid1 = Uid.of("5");
+    Uid networkUid2 = Uid.of("6");
     String hostName1 = "host1";
     String hostName2 = "host2";
     String addrRangeName = "addrRange";
     String serviceName = "service";
+    String networkName1 = "network1";
+    String networkName2 = "network2";
 
     TypedManagementObject addrRange =
         new AddressRange(
@@ -671,6 +676,20 @@ public final class CheckpointNatConversionsTest {
         new Host(Ip.parse("1.1.1.1"), NAT_SETTINGS_TEST_INSTANCE, hostName1, hostUid1);
     TypedManagementObject host2 =
         new Host(Ip.parse("2.2.2.2"), NAT_SETTINGS_TEST_INSTANCE, hostName2, hostUid2);
+    TypedManagementObject network1 =
+        new Network(
+            networkName1,
+            NAT_SETTINGS_TEST_INSTANCE,
+            Ip.parse("1.1.1.1"),
+            Ip.parse("255.255.255.0"),
+            networkUid1);
+    TypedManagementObject network2 =
+        new Network(
+            networkName2,
+            NAT_SETTINGS_TEST_INSTANCE,
+            Ip.parse("2.2.2.2"),
+            Ip.parse("255.255.255.0"),
+            networkUid2);
     ImmutableMap<Uid, TypedManagementObject> objects =
         ImmutableMap.<Uid, TypedManagementObject>builder()
             .put(hostUid1, host1)
@@ -679,6 +698,8 @@ public final class CheckpointNatConversionsTest {
             .put(serviceUid, service)
             .put(ANY_UID, ANY)
             .put(ORIG_UID, ORIG)
+            .put(networkUid1, network1)
+            .put(networkUid2, network2)
             .build();
     Warnings warnings = new Warnings(true, true, true);
 
@@ -774,12 +795,29 @@ public final class CheckpointNatConversionsTest {
             ORIG_UID,
             hostUid2,
             UID);
+
+    NatRule natRuleNetworks =
+        new NatRule(
+            false,
+            "",
+            true,
+            ImmutableList.of(),
+            NatMethod.STATIC,
+            networkUid2,
+            ANY_UID,
+            networkUid1,
+            1,
+            networkUid1,
+            ORIG_UID,
+            networkUid2,
+            UID);
     assertFalse(checkValidManualStatic(natRuleService, objects, warnings));
     assertFalse(checkValidManualStatic(natRuleSrcSpaceToHost, objects, warnings));
     assertFalse(checkValidManualStatic(natRuleSrcToSpace, objects, warnings));
     assertFalse(checkValidManualStatic(natRuleDstSpaceToHost, objects, warnings));
     assertFalse(checkValidManualStatic(natRuleDstToSpace, objects, warnings));
     assertTrue(checkValidManualStatic(natRule, objects, warnings));
+    assertTrue(checkValidManualStatic(natRuleNetworks, objects, warnings));
 
     assertThat(
         warnings,
@@ -817,6 +855,26 @@ public final class CheckpointNatConversionsTest {
     String hostname2 = "host2";
     Host host2 = new Host(hostIp2, NAT_SETTINGS_TEST_INSTANCE, hostname2, hostUid2);
 
+    Uid networkUid1 = Uid.of("1");
+    String networkName1 = "net1";
+    Network network1 =
+        new Network(
+            networkName1,
+            NAT_SETTINGS_TEST_INSTANCE,
+            Ip.parse("10.0.1.0"),
+            Ip.parse("255.255.255.0"),
+            networkUid1);
+
+    Uid networkUid2 = Uid.of("2");
+    String networkName2 = "net2";
+    Network network2 =
+        new Network(
+            networkName2,
+            NAT_SETTINGS_TEST_INSTANCE,
+            Ip.parse("10.0.2.0"),
+            Ip.parse("255.255.255.0"),
+            networkUid2);
+    Prefix networkPrefix2 = Prefix.create(network2.getSubnet4(), network2.getSubnetMask());
     {
       // src: host -> host
       NatRule natRule =
@@ -847,6 +905,39 @@ public final class CheckpointNatConversionsTest {
           equalTo(Optional.of(ImmutableList.of(assignSourceIp(hostIp2)))));
     }
     {
+      // src: network -> network
+      NatRule natRule =
+          new NatRule(
+              false,
+              "",
+              true,
+              ImmutableList.of(),
+              NatMethod.STATIC,
+              ANY_UID,
+              ANY_UID,
+              networkUid1,
+              1,
+              ORIG_UID,
+              ORIG_UID,
+              networkUid2,
+              UID);
+      ImmutableMap<Uid, NamedManagementObject> objects =
+          ImmutableMap.<Uid, NamedManagementObject>builder()
+              .put(networkUid1, network1)
+              .put(networkUid2, network2)
+              .put(ANY_UID, ANY)
+              .put(ORIG_UID, ORIG)
+              .build();
+
+      assertThat(
+          manualStaticTransformationSteps(natRule, objects, warnings),
+          equalTo(
+              Optional.of(
+                  ImmutableList.of(
+                      assignSourceIp(
+                          networkPrefix2.getFirstHostIp(), networkPrefix2.getLastHostIp())))));
+    }
+    {
       // dst: host -> host
       NatRule natRule =
           new NatRule(
@@ -874,6 +965,39 @@ public final class CheckpointNatConversionsTest {
       assertThat(
           manualStaticTransformationSteps(natRule, objects, warnings),
           equalTo(Optional.of(ImmutableList.of(assignDestinationIp(hostIp2)))));
+    }
+    {
+      // dst: network -> network
+      NatRule natRule =
+          new NatRule(
+              false,
+              "",
+              true,
+              ImmutableList.of(),
+              NatMethod.STATIC,
+              networkUid1,
+              ANY_UID,
+              ANY_UID,
+              1,
+              networkUid2,
+              ORIG_UID,
+              ORIG_UID,
+              UID);
+      ImmutableMap<Uid, NamedManagementObject> objects =
+          ImmutableMap.<Uid, NamedManagementObject>builder()
+              .put(networkUid1, network1)
+              .put(networkUid2, network2)
+              .put(ANY_UID, ANY)
+              .put(ORIG_UID, ORIG)
+              .build();
+
+      assertThat(
+          manualStaticTransformationSteps(natRule, objects, warnings),
+          equalTo(
+              Optional.of(
+                  ImmutableList.of(
+                      assignDestinationIp(
+                          networkPrefix2.getFirstHostIp(), networkPrefix2.getLastHostIp())))));
     }
     {
       // src and dst translation
