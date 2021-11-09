@@ -24,6 +24,7 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
@@ -108,6 +109,16 @@ public class CheckpointNatConversions {
     }
 
     @Override
+    public List<TransformationStep> visitNetwork(Network network) {
+      assert network.getSubnet4() != null;
+      assert network.getSubnetMask() != null;
+      Prefix prefix = Prefix.create(network.getSubnet4(), network.getSubnetMask());
+      // TODO confirm device behavior: are just host IPs used? is this a shift instead of assignIp
+      // from pool?
+      return ImmutableList.of(assignSourceIp(prefix.getFirstHostIp(), prefix.getLastHostIp()));
+    }
+
+    @Override
     public List<TransformationStep> visitOriginal(Original original) {
       return ImmutableList.of();
     }
@@ -135,6 +146,16 @@ public class CheckpointNatConversions {
       return hostV4Addtess == null
           ? ImmutableList.of()
           : ImmutableList.of(assignDestinationIp(hostV4Addtess));
+    }
+
+    @Override
+    public List<TransformationStep> visitNetwork(Network network) {
+      assert network.getSubnet4() != null;
+      assert network.getSubnetMask() != null;
+      Prefix prefix = Prefix.create(network.getSubnet4(), network.getSubnetMask());
+      // TODO confirm device behavior: are just host IPs used? is this a shift instead of assignIp
+      // from pool?
+      return ImmutableList.of(assignDestinationIp(prefix.getFirstHostIp(), prefix.getLastHostIp()));
     }
 
     @Override
@@ -202,6 +223,11 @@ public class CheckpointNatConversions {
     }
 
     @Override
+    public Boolean visitNetwork(Network network) {
+      return network.getSubnet4() != null && network.getSubnetMask() != null;
+    }
+
+    @Override
     public Boolean visitOriginal(Original original) {
       return true;
     }
@@ -252,21 +278,20 @@ public class CheckpointNatConversions {
   @VisibleForTesting
   static boolean checkValidManualStatic(
       NatRule natRule, Map<Uid, ? extends NamedManagementObject> objects, Warnings warnings) {
-    // TODO loosen these constraints, e.g. allowing transforming addresses from Network->Network
     NamedManagementObject src = objects.get(natRule.getTranslatedSource());
     NamedManagementObject dst = objects.get(natRule.getTranslatedDestination());
     NamedManagementObject service = objects.get(natRule.getTranslatedService());
     NamedManagementObject origSrc = objects.get(natRule.getOriginalSource());
     NamedManagementObject origDst = objects.get(natRule.getOriginalDestination());
 
-    if (!(src instanceof Original || src instanceof Host)) {
+    if (!(src instanceof Original || src instanceof Host || src instanceof Network)) {
       warnings.redFlag(
           String.format(
               "Manual Static NAT rule translated-source %s has unsupported type %s and will be"
                   + " ignored",
               src.getName(), src.getClass().getSimpleName()));
       return false;
-    } else if (!(dst instanceof Original || dst instanceof Host)) {
+    } else if (!(dst instanceof Original || dst instanceof Host || dst instanceof Network)) {
       warnings.redFlag(
           String.format(
               "Manual Static NAT rule translated-destination %s has unsupported type %s and will be"

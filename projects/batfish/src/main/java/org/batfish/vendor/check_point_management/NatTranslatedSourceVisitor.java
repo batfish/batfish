@@ -10,5 +10,7 @@ public interface NatTranslatedSourceVisitor<T> {
 
   T visitHost(Host host);
 
+  T visitNetwork(Network network);
+
   T visitOriginal(Original original);
 }
