@@ -12,6 +12,7 @@ import static org.batfish.datamodel.BgpRoute.DEFAULT_LOCAL_PREFERENCE;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.datamodel.Ip.ZERO;
 import static org.batfish.datamodel.IpWildcard.ipWithWildcardMask;
+import static org.batfish.datamodel.Names.generatedBgpIndependentNetworkPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
 import static org.batfish.datamodel.Route.UNSET_NEXT_HOP_INTERFACE;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
@@ -9256,5 +9257,49 @@ public final class CiscoNxosGrammarTest {
     BgpSessionProperties session = BgpSessionProperties.from(fromConfig, neighborConfig, false);
     rp.processBgpRoute(inputRoute, outputRoute, session, Direction.OUT, null);
     assertThat(outputRoute.getNextHopIp(), equalTo(expectedTransformedNextHopIp));
+  }
+
+  @Test
+  public void testNetworkAndRedistributeConversion() throws IOException {
+    String hostname = "nxos_bgp_network_and_redistribute";
+    Configuration c = parseConfig(hostname);
+    String networkPolicyName = generatedBgpIndependentNetworkPolicyName(DEFAULT_VRF_NAME);
+    String redistributePolicyName = generatedBgpRedistributionPolicyName(DEFAULT_VRF_NAME);
+
+    Prefix networkMatching = Prefix.strict("10.0.0.0/24");
+    Prefix networkNotMatching = Prefix.strict("10.0.1.0/24");
+
+    assertThat(c.getRoutingPolicies(), hasKey(networkPolicyName));
+    assertThat(
+        c.getDefaultVrf().getBgpProcess().getIndependentNetworkPolicy(),
+        equalTo(networkPolicyName));
+    assertThat(c.getRoutingPolicies(), hasKey(redistributePolicyName));
+    assertThat(
+        c.getDefaultVrf().getBgpProcess().getRedistributionPolicy(),
+        equalTo(redistributePolicyName));
+
+    org.batfish.datamodel.StaticRoute routeNetworkOnly =
+        org.batfish.datamodel.StaticRoute.builder()
+            .setNetwork(networkMatching)
+            .setNextHop(NextHopDiscard.instance())
+            .setAdmin(1)
+            .build();
+    ConnectedRoute routeRedistributeOnly = new ConnectedRoute(networkNotMatching, "foo");
+    ConnectedRoute routeRedistributeAndNetwork = new ConnectedRoute(networkMatching, "foo");
+
+    {
+      RoutingPolicy networkPolicy = c.getRoutingPolicies().get(networkPolicyName);
+
+      assertTrue(networkPolicy.processReadOnly(routeNetworkOnly));
+      assertFalse(networkPolicy.processReadOnly(routeRedistributeOnly));
+      assertTrue(networkPolicy.processReadOnly(routeRedistributeAndNetwork));
+    }
+    {
+      RoutingPolicy redistributePolicy = c.getRoutingPolicies().get(redistributePolicyName);
+
+      assertFalse(redistributePolicy.processReadOnly(routeNetworkOnly));
+      assertTrue(redistributePolicy.processReadOnly(routeRedistributeOnly));
+      assertTrue(redistributePolicy.processReadOnly(routeRedistributeAndNetwork));
+    }
   }
 }
