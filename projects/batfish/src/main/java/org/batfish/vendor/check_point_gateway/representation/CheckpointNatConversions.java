@@ -113,7 +113,9 @@ public class CheckpointNatConversions {
       assert network.getSubnet4() != null;
       assert network.getSubnetMask() != null;
       Prefix prefix = Prefix.create(network.getSubnet4(), network.getSubnetMask());
-      return ImmutableList.of(assignSourceIp(prefix.getStartIp(), prefix.getEndIp()));
+      // TODO confirm device behavior: are just host IPs used? is this a shift instead of assignIp
+      // from pool?
+      return ImmutableList.of(assignSourceIp(prefix.getFirstHostIp(), prefix.getLastHostIp()));
     }
 
     @Override
@@ -151,7 +153,9 @@ public class CheckpointNatConversions {
       assert network.getSubnet4() != null;
       assert network.getSubnetMask() != null;
       Prefix prefix = Prefix.create(network.getSubnet4(), network.getSubnetMask());
-      return ImmutableList.of(assignDestinationIp(prefix.getStartIp(), prefix.getEndIp()));
+      // TODO confirm device behavior: are just host IPs used? is this a shift instead of assignIp
+      // from pool?
+      return ImmutableList.of(assignDestinationIp(prefix.getFirstHostIp(), prefix.getLastHostIp()));
     }
 
     @Override
