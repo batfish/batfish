@@ -1,7 +1,9 @@
 package org.batfish.representation.arista;
 
 import static org.batfish.representation.arista.AristaConversions.getAsnSpace;
+import static org.batfish.representation.arista.AristaConversions.toOspfRedistributionProtocols;
 import static org.batfish.representation.arista.Conversions.toRouteFilterList;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -10,6 +12,7 @@ import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterList;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.representation.arista.eos.AristaBgpPeerFilter;
 import org.batfish.representation.arista.eos.AristaBgpPeerFilterLine;
 import org.batfish.representation.arista.eos.AristaBgpV4DynamicNeighbor;
@@ -86,5 +89,25 @@ public class AristaConversionsTest {
         equalTo(
             new VendorStructureId(
                 "file", AristaStructureType.PREFIX_LIST.getDescription(), "name")));
+  }
+
+  @Test
+  public void testToOspfRedistributionProtocols() {
+    assertThat(
+        toOspfRedistributionProtocols(RedistributionSourceProtocol.BGP_ANY),
+        containsInAnyOrder(RoutingProtocol.BGP, RoutingProtocol.AGGREGATE, RoutingProtocol.IBGP));
+    assertThat(
+        toOspfRedistributionProtocols(RedistributionSourceProtocol.CONNECTED),
+        containsInAnyOrder(RoutingProtocol.CONNECTED));
+    assertThat(
+        toOspfRedistributionProtocols(RedistributionSourceProtocol.ISIS_ANY),
+        containsInAnyOrder(
+            RoutingProtocol.ISIS_L1,
+            RoutingProtocol.ISIS_L2,
+            RoutingProtocol.ISIS_EL1,
+            RoutingProtocol.ISIS_EL2));
+    assertThat(
+        toOspfRedistributionProtocols(RedistributionSourceProtocol.STATIC),
+        containsInAnyOrder(RoutingProtocol.STATIC));
   }
 }

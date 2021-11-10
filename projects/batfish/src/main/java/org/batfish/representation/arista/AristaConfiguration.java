@@ -18,6 +18,7 @@ import static org.batfish.representation.arista.AristaConversions.toBgpAggregate
 import static org.batfish.representation.arista.AristaConversions.toCommunityMatchExpr;
 import static org.batfish.representation.arista.AristaConversions.toCommunitySet;
 import static org.batfish.representation.arista.AristaConversions.toCommunitySetMatchExpr;
+import static org.batfish.representation.arista.AristaConversions.toOspfRedistributionProtocols;
 import static org.batfish.representation.arista.Conversions.computeDistributeListPolicies;
 import static org.batfish.representation.arista.Conversions.convertCryptoMapSet;
 import static org.batfish.representation.arista.Conversions.extractSourceNatIpSpaceFromAcl;
@@ -1308,21 +1309,12 @@ public final class AristaConfiguration extends VendorConfiguration {
   }
 
   private If convertOspfRedistributionPolicy(OspfRedistributionPolicy policy, OspfProcess proc) {
-    RoutingProtocol protocol = policy.getSourceProtocol();
+    RedistributionSourceProtocol protocol = policy.getSourceProtocol();
     // All redistribution must match the specified protocol.
     Conjunction ospfExportConditions = new Conjunction();
-    if (protocol == RoutingProtocol.ISIS_ANY) {
-      ospfExportConditions
-          .getConjuncts()
-          .add(
-              new MatchProtocol(
-                  RoutingProtocol.ISIS_EL1,
-                  RoutingProtocol.ISIS_EL2,
-                  RoutingProtocol.ISIS_L1,
-                  RoutingProtocol.ISIS_L2));
-    } else {
-      ospfExportConditions.getConjuncts().add(new MatchProtocol(protocol));
-    }
+    ospfExportConditions
+        .getConjuncts()
+        .add(new MatchProtocol(toOspfRedistributionProtocols(protocol)));
 
     ImmutableList.Builder<Statement> ospfExportStatements = ImmutableList.builder();
 

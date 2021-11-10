@@ -15,7 +15,7 @@ public class OspfRedistributionPolicy extends RedistributionPolicy {
 
   private Long _tag;
 
-  public OspfRedistributionPolicy(RoutingProtocol sourceProtocol) {
+  public OspfRedistributionPolicy(RedistributionSourceProtocol sourceProtocol) {
     super(sourceProtocol, RoutingProtocol.OSPF);
   }
 
