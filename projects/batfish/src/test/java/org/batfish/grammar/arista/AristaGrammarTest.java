@@ -4602,6 +4602,7 @@ public class AristaGrammarTest {
         contains(hasComment("Undefined VRF: OTHER"), hasComment("Undefined OSPF instance: 2")));
   }
 
+  @Test
   public void testNoRouteMap() {
     String hostname = "arista_no_route_map";
     AristaConfiguration vc = parseVendorConfig(hostname);
