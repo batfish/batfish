@@ -1,0 +1,10 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname arista_no_ip_prefix_list
+!
+ip prefix-list TEST seq 10 permit 192.168.193.0/24
+!
+no ip prefix-list TEST
+!
+no ip prefix-list OTHER
+!
