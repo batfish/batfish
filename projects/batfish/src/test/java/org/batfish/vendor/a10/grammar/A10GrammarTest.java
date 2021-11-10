@@ -913,7 +913,7 @@ public class A10GrammarTest {
 
     Map<Integer, Interface> eths = c.getInterfacesEthernet();
     Map<Integer, TrunkInterface> trunks = c.getInterfacesTrunk();
-    assertThat(eths.keySet(), containsInAnyOrder(1, 2, 3, 4));
+    assertThat(eths.keySet(), containsInAnyOrder(1, 2, 3, 4, 5));
     assertThat(trunks.keySet(), containsInAnyOrder(1, 2));
 
     // LACP trunk-group
@@ -942,7 +942,8 @@ public class A10GrammarTest {
         trunkIface2.getMembers(),
         containsInAnyOrder(
             new InterfaceReference(Interface.Type.ETHERNET, 2),
-            new InterfaceReference(Interface.Type.ETHERNET, 3)));
+            new InterfaceReference(Interface.Type.ETHERNET, 3),
+            new InterfaceReference(Interface.Type.ETHERNET, 5)));
   }
 
   /** Testing ACOS v2 trunk datamodel conversion */
@@ -1012,14 +1013,17 @@ public class A10GrammarTest {
             allOf(
                 hasInterfaceType(InterfaceType.AGGREGATED),
                 hasChannelGroup(nullValue()),
-                hasChannelGroupMembers(containsInAnyOrder("Ethernet2", "Ethernet3")))));
+                hasChannelGroupMembers(
+                    containsInAnyOrder("Ethernet2", "Ethernet3", "Ethernet5")))));
     assertThat(
         c.getAllInterfaces().get("Trunk2").getDependencies(),
         containsInAnyOrder(
             new org.batfish.datamodel.Interface.Dependency(
                 "Ethernet2", org.batfish.datamodel.Interface.DependencyType.AGGREGATE),
             new org.batfish.datamodel.Interface.Dependency(
-                "Ethernet3", org.batfish.datamodel.Interface.DependencyType.AGGREGATE)));
+                "Ethernet3", org.batfish.datamodel.Interface.DependencyType.AGGREGATE),
+            new org.batfish.datamodel.Interface.Dependency(
+                "Ethernet5", org.batfish.datamodel.Interface.DependencyType.AGGREGATE)));
   }
 
   /** Testing ACOS v2 trunk conversion warnings */
@@ -1112,7 +1116,10 @@ public class A10GrammarTest {
             containsInAnyOrder(
                 hasComment("Cannot configure timeout for non-existent trunk-group"),
                 hasComment("Expected trunk ports-threshold in range 2-8, but got '1'"),
-                hasComment("Expected trunk ports-threshold in range 2-8, but got '9'"))));
+                hasComment("Expected trunk ports-threshold in range 2-8, but got '9'"),
+                hasComment(
+                    "Invalid range for trunk interface reference, 'from' must not be greater than"
+                        + " 'to'."))));
   }
 
   @Test

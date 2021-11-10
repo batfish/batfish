@@ -1790,7 +1790,45 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
       }
       ifaces.add(new InterfaceReference(Interface.Type.ETHERNET, maybeNum.get()));
     }
+    for (A10Parser.Trunk_ethernet_interface_rangeContext iface :
+        ctx.trunk_ethernet_interface_range()) {
+      Optional<SubRange> maybeNumbers = toSubRange(ctx, iface);
+      if (!maybeNumbers.isPresent()) {
+        // Already warned
+        return Optional.empty();
+      }
+      maybeNumbers
+          .get()
+          .asStream()
+          .forEach(num -> ifaces.add(new InterfaceReference(Type.ETHERNET, num)));
+    }
     return Optional.of(ifaces.build());
+  }
+
+  /**
+   * Convert interface range context to a {@link SubRange}. Returns {@link Optional#empty()} if the
+   * context is invalid, e.g. {@code from} is greater than {@code to}.
+   */
+  Optional<SubRange> toSubRange(
+      ParserRuleContext messageCtx, A10Parser.Trunk_ethernet_interface_rangeContext ctx) {
+    Optional<Integer> maybeFrom;
+    Optional<Integer> maybeTo;
+    maybeFrom = toInteger(messageCtx, ctx.num);
+    maybeTo = toInteger(messageCtx, ctx.to);
+
+    if (!maybeFrom.isPresent() || !maybeTo.isPresent()) {
+      // Already warned
+      return Optional.empty();
+    }
+    int from = maybeFrom.get();
+    int to = maybeTo.get();
+    if (from > to) {
+      warn(
+          ctx,
+          "Invalid range for trunk interface reference, 'from' must not be greater than 'to'.");
+      return Optional.empty();
+    }
+    return Optional.of(new SubRange(from, to));
   }
 
   TrunkGroup.Mode toMode(A10Parser.Trunk_modeContext ctx) {

@@ -15,6 +15,8 @@ st_definition: std_ethernet | std_name;
 
 std_name: NAME name = interface_name_str NEWLINE;
 
-std_ethernet: trunk_ethernet_interface+ NEWLINE;
+std_ethernet: (trunk_ethernet_interface | trunk_ethernet_interface_range)+ NEWLINE;
 
 trunk_ethernet_interface: ETHERNET num = ethernet_number;
+
+trunk_ethernet_interface_range: ETHERNET num = ethernet_number TO to = ethernet_number;

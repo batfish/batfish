@@ -4,7 +4,7 @@ hostname trunk_acos2
 !
 ! Default (static?) trunk definition
 trunk 2
- ethernet 2 ethernet 3
+ ethernet 5 ethernet 2 to 3
  name trunk2Name
 !
 interface ethernet 1
@@ -22,6 +22,9 @@ interface ethernet 3
 interface ethernet 4
  lacp trunk 1 mode active
  lacp timeout short
+ enable
+!
+interface ethernet 5
  enable
 !
 lacp-trunk 1
