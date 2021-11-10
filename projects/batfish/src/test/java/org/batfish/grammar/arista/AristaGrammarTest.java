@@ -4587,4 +4587,18 @@ public class AristaGrammarTest {
           containsInAnyOrder(ExtendedCommunity.target(1L, 1L), StandardCommunity.of(3, 3)));
     }
   }
+
+  @Test
+  public void testNoRouterOspf() {
+    String hostname = "arista_no_router_ospf";
+    AristaConfiguration vendorConfiguration = parseVendorConfig(hostname);
+
+    assertFalse(
+        vendorConfiguration.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcesses().containsKey("1"));
+    assertFalse(vendorConfiguration.getVrfs().get("V1").getOspfProcesses().containsKey("1"));
+
+    assertThat(
+        vendorConfiguration.getWarnings().getParseWarnings(),
+        contains(hasComment("Undefined VRF: OTHER"), hasComment("Undefined OSPF instance: 2")));
+  }
 }

@@ -781,6 +781,7 @@ import org.batfish.grammar.arista.AristaParser.S_ip_sshContext;
 import org.batfish.grammar.arista.AristaParser.S_ip_tacacs_source_interfaceContext;
 import org.batfish.grammar.arista.AristaParser.S_l2tp_classContext;
 import org.batfish.grammar.arista.AristaParser.S_loggingContext;
+import org.batfish.grammar.arista.AristaParser.S_no_router_ospfContext;
 import org.batfish.grammar.arista.AristaParser.S_ntpContext;
 import org.batfish.grammar.arista.AristaParser.S_peer_filterContext;
 import org.batfish.grammar.arista.AristaParser.S_policy_mapContext;
@@ -6701,6 +6702,25 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitS_logging(S_loggingContext ctx) {
     _no = false;
+  }
+
+  @Override
+  public void exitS_no_router_ospf(S_no_router_ospfContext ctx) {
+    String procName = ctx.name.getText();
+    String vrfName = AristaConfiguration.DEFAULT_VRF_NAME;
+    if (ctx.vrf != null) {
+      vrfName = ctx.vrf.getText();
+      if (!_configuration.getVrfs().containsKey(vrfName)) {
+        warn(ctx, "Undefined VRF: " + vrfName);
+        return;
+      }
+    }
+    Vrf vrf = _configuration.getVrfs().get(vrfName);
+    if (!vrf.getOspfProcesses().containsKey(procName)) {
+      warn(ctx, "Undefined OSPF instance: " + procName);
+      return;
+    }
+    vrf.getOspfProcesses().remove(procName);
   }
 
   @Override
