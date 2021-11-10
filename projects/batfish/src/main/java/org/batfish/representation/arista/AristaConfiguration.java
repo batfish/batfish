@@ -1335,7 +1335,8 @@ public final class AristaConfiguration extends VendorConfiguration {
         ospfExportConditions.getConjuncts().add(new MatchProtocol(RoutingProtocol.STATIC));
         break;
       default:
-        throw new IllegalArgumentException("Unknown redistribution source protocol " + protocol);
+        throw new IllegalArgumentException(
+            "Unknown/invalid redistribution source protocol for OSPF" + protocol);
     }
 
     ImmutableList.Builder<Statement> ospfExportStatements = ImmutableList.builder();

@@ -14,6 +14,7 @@ public enum RedistributionSourceProtocol {
   CONNECTED("connected"),
   BGP_ANY("bgp"),
   ISIS_ANY("isis"),
+  ISIS_L1("isisL1"),
   STATIC("static");
 
   private static final Map<String, RedistributionSourceProtocol> _map = buildMap();

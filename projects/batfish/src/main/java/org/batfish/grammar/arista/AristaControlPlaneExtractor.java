@@ -6221,7 +6221,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitRedistribute_connected_is_stanza(Redistribute_connected_is_stanzaContext ctx) {
     IsisProcess proc = currentVrf().getIsisProcess();
-    RoutingProtocol sourceProtocol = RoutingProtocol.CONNECTED;
+    RedistributionSourceProtocol sourceProtocol = RedistributionSourceProtocol.CONNECTED;
     IsisRedistributionPolicy r = new IsisRedistributionPolicy(sourceProtocol);
     proc.getRedistributionPolicies().put(sourceProtocol, r);
     if (ctx.metric != null) {
@@ -6248,7 +6248,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitRedistribute_static_is_stanza(Redistribute_static_is_stanzaContext ctx) {
     IsisProcess proc = currentVrf().getIsisProcess();
-    RoutingProtocol sourceProtocol = RoutingProtocol.STATIC;
+    RedistributionSourceProtocol sourceProtocol = RedistributionSourceProtocol.STATIC;
     IsisRedistributionPolicy r = new IsisRedistributionPolicy(sourceProtocol);
     proc.getRedistributionPolicies().put(sourceProtocol, r);
     if (ctx.metric != null) {
@@ -7153,7 +7153,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     Ip ip = toIp(ctx.ip);
     Ip mask = toIp(ctx.mask);
     Prefix prefix = Prefix.create(ip, mask);
-    RoutingProtocol sourceProtocol = RoutingProtocol.ISIS_L1;
+    RedistributionSourceProtocol sourceProtocol = RedistributionSourceProtocol.ISIS_L1;
     IsisRedistributionPolicy r = new IsisRedistributionPolicy(sourceProtocol);
     r.setSummaryPrefix(prefix);
     _currentIsisProcess.getRedistributionPolicies().put(sourceProtocol, r);
