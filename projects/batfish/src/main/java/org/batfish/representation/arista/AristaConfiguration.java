@@ -1331,6 +1331,7 @@ public final class AristaConfiguration extends VendorConfiguration {
                     RoutingProtocol.ISIS_EL2,
                     RoutingProtocol.ISIS_L1,
                     RoutingProtocol.ISIS_L2));
+        break;
       case STATIC:
         ospfExportConditions.getConjuncts().add(new MatchProtocol(RoutingProtocol.STATIC));
         break;
