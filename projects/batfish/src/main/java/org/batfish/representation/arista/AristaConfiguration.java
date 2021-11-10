@@ -18,6 +18,7 @@ import static org.batfish.representation.arista.AristaConversions.toBgpAggregate
 import static org.batfish.representation.arista.AristaConversions.toCommunityMatchExpr;
 import static org.batfish.representation.arista.AristaConversions.toCommunitySet;
 import static org.batfish.representation.arista.AristaConversions.toCommunitySetMatchExpr;
+import static org.batfish.representation.arista.AristaConversions.toOspfRedistributionProtocols;
 import static org.batfish.representation.arista.Conversions.computeDistributeListPolicies;
 import static org.batfish.representation.arista.Conversions.convertCryptoMapSet;
 import static org.batfish.representation.arista.Conversions.extractSourceNatIpSpaceFromAcl;
@@ -1311,34 +1312,9 @@ public final class AristaConfiguration extends VendorConfiguration {
     RedistributionSourceProtocol protocol = policy.getSourceProtocol();
     // All redistribution must match the specified protocol.
     Conjunction ospfExportConditions = new Conjunction();
-    switch (protocol) {
-      case BGP_ANY:
-        ospfExportConditions
-            .getConjuncts()
-            .add(
-                new MatchProtocol(
-                    RoutingProtocol.AGGREGATE, RoutingProtocol.BGP, RoutingProtocol.IBGP));
-        break;
-      case CONNECTED:
-        ospfExportConditions.getConjuncts().add(new MatchProtocol(RoutingProtocol.CONNECTED));
-        break;
-      case ISIS_ANY:
-        ospfExportConditions
-            .getConjuncts()
-            .add(
-                new MatchProtocol(
-                    RoutingProtocol.ISIS_EL1,
-                    RoutingProtocol.ISIS_EL2,
-                    RoutingProtocol.ISIS_L1,
-                    RoutingProtocol.ISIS_L2));
-        break;
-      case STATIC:
-        ospfExportConditions.getConjuncts().add(new MatchProtocol(RoutingProtocol.STATIC));
-        break;
-      default:
-        throw new IllegalArgumentException(
-            "Unknown/invalid redistribution source protocol for OSPF" + protocol);
-    }
+    ospfExportConditions
+        .getConjuncts()
+        .add(new MatchProtocol(toOspfRedistributionProtocols(protocol)));
 
     ImmutableList.Builder<Statement> ospfExportStatements = ImmutableList.builder();
 
