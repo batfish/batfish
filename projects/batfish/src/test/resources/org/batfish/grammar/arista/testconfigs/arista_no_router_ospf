@@ -1,0 +1,18 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname arista_no_router_ospf
+!
+router ospf 1
+!
+router ospf 1 vrf V1
+!
+no router ospf 1
+!
+no router ospf 1 vrf V1
+!
+! non-existing VRF
+no router ospf 1 vrf OTHER
+!
+! non-existing process
+no router ospf 2
+!

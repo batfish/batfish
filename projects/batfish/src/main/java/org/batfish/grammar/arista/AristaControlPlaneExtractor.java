@@ -781,6 +781,7 @@ import org.batfish.grammar.arista.AristaParser.S_ip_sshContext;
 import org.batfish.grammar.arista.AristaParser.S_ip_tacacs_source_interfaceContext;
 import org.batfish.grammar.arista.AristaParser.S_l2tp_classContext;
 import org.batfish.grammar.arista.AristaParser.S_loggingContext;
+import org.batfish.grammar.arista.AristaParser.S_no_router_ospfContext;
 import org.batfish.grammar.arista.AristaParser.S_ntpContext;
 import org.batfish.grammar.arista.AristaParser.S_peer_filterContext;
 import org.batfish.grammar.arista.AristaParser.S_policy_mapContext;
@@ -3968,7 +3969,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void enterS_router_ospf(S_router_ospfContext ctx) {
-    String procName = ctx.name.getText();
+    String procName = toString(ctx.name);
     if (ctx.vrf != null) {
       _currentVrf = ctx.vrf.getText();
     }
@@ -6704,6 +6705,25 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
+  public void exitS_no_router_ospf(S_no_router_ospfContext ctx) {
+    String procName = toString(ctx.name);
+    String vrfName = AristaConfiguration.DEFAULT_VRF_NAME;
+    if (ctx.vrf != null) {
+      vrfName = toString(ctx.vrf);
+      if (!_configuration.getVrfs().containsKey(vrfName)) {
+        warn(ctx, "Undefined VRF: " + vrfName);
+        return;
+      }
+    }
+    Vrf vrf = _configuration.getVrfs().get(vrfName);
+    if (!vrf.getOspfProcesses().containsKey(procName)) {
+      warn(ctx, "Undefined OSPF instance: " + procName);
+      return;
+    }
+    vrf.getOspfProcesses().remove(procName);
+  }
+
+  @Override
   public void enterS_router_multicast(S_router_multicastContext ctx) {
     warn(ctx, ctx.MULTICAST(), "Batfish does not model multicast");
   }
@@ -6884,6 +6904,11 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Nonnull
   private static String toString(Community_list_nameContext ctx) {
+    return ctx.getText();
+  }
+
+  @Nonnull
+  private String toString(VariableContext ctx) {
     return ctx.getText();
   }
 
