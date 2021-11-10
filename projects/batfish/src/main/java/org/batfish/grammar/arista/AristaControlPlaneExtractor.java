@@ -3969,7 +3969,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void enterS_router_ospf(S_router_ospfContext ctx) {
-    String procName = ctx.name.getText();
+    String procName = toString(ctx.name);
     if (ctx.vrf != null) {
       _currentVrf = ctx.vrf.getText();
     }
@@ -6706,10 +6706,10 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitS_no_router_ospf(S_no_router_ospfContext ctx) {
-    String procName = ctx.name.getText();
+    String procName = toString(ctx.name);
     String vrfName = AristaConfiguration.DEFAULT_VRF_NAME;
     if (ctx.vrf != null) {
-      vrfName = ctx.vrf.getText();
+      vrfName = toString(ctx.vrf);
       if (!_configuration.getVrfs().containsKey(vrfName)) {
         warn(ctx, "Undefined VRF: " + vrfName);
         return;
@@ -6904,6 +6904,11 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Nonnull
   private static String toString(Community_list_nameContext ctx) {
+    return ctx.getText();
+  }
+
+  @Nonnull
+  private String toString(VariableContext ctx) {
     return ctx.getText();
   }
 
