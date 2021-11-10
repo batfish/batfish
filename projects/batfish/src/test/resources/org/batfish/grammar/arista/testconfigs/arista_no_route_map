@@ -1,0 +1,11 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname arista_route_map
+!
+route-map SET_DISTANCE permit 10
+  set distance 180
+!
+no route-map SET_DISTANCE
+!
+no route-map OTHER
+!

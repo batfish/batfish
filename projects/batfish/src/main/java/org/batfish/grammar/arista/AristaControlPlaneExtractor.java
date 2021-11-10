@@ -6050,12 +6050,20 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitNo_ip_prefix_list_stanza(No_ip_prefix_list_stanzaContext ctx) {
     String prefixListName = ctx.name.getText();
+    if (!_configuration.getPrefixLists().containsKey(prefixListName)) {
+      warn(ctx, "Undefined ip prefix-list: " + prefixListName);
+      return;
+    }
     _configuration.getPrefixLists().remove(prefixListName);
   }
 
   @Override
   public void exitNo_route_map_stanza(No_route_map_stanzaContext ctx) {
     String mapName = ctx.name.getText();
+    if (!_configuration.getRouteMaps().containsKey(mapName)) {
+      warn(ctx, "Undefined route-map: " + mapName);
+      return;
+    }
     _configuration.getRouteMaps().remove(mapName);
   }
 
