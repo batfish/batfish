@@ -495,6 +495,11 @@ s_ipv6_router_ospf
    )*
 ;
 
+s_no_router_ospf
+:
+   OSPF name = variable (VRF vrf = vrf_name)? NEWLINE
+;
+
 s_router_ospf
 :
    OSPF name = variable (VRF vrf = vrf_name)? NEWLINE

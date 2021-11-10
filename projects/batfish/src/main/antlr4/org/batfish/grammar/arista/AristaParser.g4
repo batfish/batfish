@@ -2672,6 +2672,7 @@ s_no
     | no_ip
     | no_logging
     | no_mac
+    | no_router
     | no_snmp_server
     | no_vlan
     | no_vlan_internal
@@ -2692,6 +2693,12 @@ no_ip
     | no_ip_routing
   )
 ;
+
+no_router
+:
+   ROUTER s_no_router_ospf
+;
+
 
 s_no_bfd
 :
