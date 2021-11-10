@@ -4601,4 +4601,27 @@ public class AristaGrammarTest {
         vendorConfiguration.getWarnings().getParseWarnings(),
         contains(hasComment("Undefined VRF: OTHER"), hasComment("Undefined OSPF instance: 2")));
   }
+
+  @Test
+  public void testNoRouteMap() {
+    String hostname = "arista_no_route_map";
+    AristaConfiguration vc = parseVendorConfig(hostname);
+
+    assertFalse(vc.getRouteMaps().containsKey("SET_DISTANCE"));
+
+    assertThat(
+        vc.getWarnings().getParseWarnings(), contains(hasComment("Undefined route-map: OTHER")));
+  }
+
+  @Test
+  public void testNoIpPrefixList() {
+    String hostname = "arista_no_ip_prefix_list";
+    AristaConfiguration vc = parseVendorConfig(hostname);
+
+    assertFalse(vc.getPrefixLists().containsKey("TEST"));
+
+    assertThat(
+        vc.getWarnings().getParseWarnings(),
+        contains(hasComment("Undefined ip prefix-list: OTHER")));
+  }
 }
