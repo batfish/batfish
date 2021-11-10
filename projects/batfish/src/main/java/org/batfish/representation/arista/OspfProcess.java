@@ -14,7 +14,6 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfMetricType;
 
@@ -78,7 +77,7 @@ public class OspfProcess implements Serializable {
 
   private Set<String> _passiveInterfaces;
 
-  private Map<RoutingProtocol, OspfRedistributionPolicy> _redistributionPolicies;
+  private Map<RedistributionSourceProtocol, OspfRedistributionPolicy> _redistributionPolicies;
 
   private double _referenceBandwidth;
 
@@ -117,7 +116,7 @@ public class OspfProcess implements Serializable {
     _passiveInterfaces = new HashSet<>();
     _stubs = new HashMap<>();
     _wildcardNetworks = new TreeSet<>();
-    _redistributionPolicies = new EnumMap<>(RoutingProtocol.class);
+    _redistributionPolicies = new EnumMap<>(RedistributionSourceProtocol.class);
     _summaries = new TreeMap<>();
   }
 
@@ -230,7 +229,7 @@ public class OspfProcess implements Serializable {
     return _passiveInterfaces;
   }
 
-  public Map<RoutingProtocol, OspfRedistributionPolicy> getRedistributionPolicies() {
+  public Map<RedistributionSourceProtocol, OspfRedistributionPolicy> getRedistributionPolicies() {
     return _redistributionPolicies;
   }
 
