@@ -903,6 +903,7 @@ import org.batfish.representation.arista.Prefix6List;
 import org.batfish.representation.arista.Prefix6ListLine;
 import org.batfish.representation.arista.PrefixList;
 import org.batfish.representation.arista.PrefixListLine;
+import org.batfish.representation.arista.RedistributionSourceProtocol;
 import org.batfish.representation.arista.RipProcess;
 import org.batfish.representation.arista.RouteMap;
 import org.batfish.representation.arista.RouteMapClause;
@@ -6458,7 +6459,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitRo_redistribute_bgp_arista(Ro_redistribute_bgp_aristaContext ctx) {
     OspfProcess proc = _currentOspfProcess;
-    RoutingProtocol sourceProtocol = RoutingProtocol.BGP;
+    RedistributionSourceProtocol sourceProtocol = RedistributionSourceProtocol.BGP_ANY;
     OspfRedistributionPolicy r = new OspfRedistributionPolicy(sourceProtocol);
     proc.getRedistributionPolicies().put(sourceProtocol, r);
     if (ctx.map != null) {
@@ -6473,7 +6474,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitRo_redistribute_connected(Ro_redistribute_connectedContext ctx) {
     OspfProcess proc = _currentOspfProcess;
-    RoutingProtocol sourceProtocol = RoutingProtocol.CONNECTED;
+    RedistributionSourceProtocol sourceProtocol = RedistributionSourceProtocol.CONNECTED;
     OspfRedistributionPolicy r = new OspfRedistributionPolicy(sourceProtocol);
     proc.getRedistributionPolicies().put(sourceProtocol, r);
     if (ctx.metric != null) {
@@ -6507,7 +6508,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitRo_redistribute_static(Ro_redistribute_staticContext ctx) {
     OspfProcess proc = _currentOspfProcess;
-    RoutingProtocol sourceProtocol = RoutingProtocol.STATIC;
+    RedistributionSourceProtocol sourceProtocol = RedistributionSourceProtocol.STATIC;
     OspfRedistributionPolicy r = new OspfRedistributionPolicy(sourceProtocol);
     proc.getRedistributionPolicies().put(sourceProtocol, r);
     if (ctx.metric != null) {

@@ -1308,20 +1308,34 @@ public final class AristaConfiguration extends VendorConfiguration {
   }
 
   private If convertOspfRedistributionPolicy(OspfRedistributionPolicy policy, OspfProcess proc) {
-    RoutingProtocol protocol = policy.getSourceProtocol();
+    RedistributionSourceProtocol protocol = policy.getSourceProtocol();
     // All redistribution must match the specified protocol.
     Conjunction ospfExportConditions = new Conjunction();
-    if (protocol == RoutingProtocol.ISIS_ANY) {
-      ospfExportConditions
-          .getConjuncts()
-          .add(
-              new MatchProtocol(
-                  RoutingProtocol.ISIS_EL1,
-                  RoutingProtocol.ISIS_EL2,
-                  RoutingProtocol.ISIS_L1,
-                  RoutingProtocol.ISIS_L2));
-    } else {
-      ospfExportConditions.getConjuncts().add(new MatchProtocol(protocol));
+    switch (protocol) {
+      case BGP_ANY:
+        ospfExportConditions
+            .getConjuncts()
+            .add(
+                new MatchProtocol(
+                    RoutingProtocol.AGGREGATE, RoutingProtocol.BGP, RoutingProtocol.IBGP));
+        break;
+      case CONNECTED:
+        ospfExportConditions.getConjuncts().add(new MatchProtocol(RoutingProtocol.CONNECTED));
+        break;
+      case ISIS_ANY:
+        ospfExportConditions
+            .getConjuncts()
+            .add(
+                new MatchProtocol(
+                    RoutingProtocol.ISIS_EL1,
+                    RoutingProtocol.ISIS_EL2,
+                    RoutingProtocol.ISIS_L1,
+                    RoutingProtocol.ISIS_L2));
+      case STATIC:
+        ospfExportConditions.getConjuncts().add(new MatchProtocol(RoutingProtocol.STATIC));
+        break;
+      default:
+        throw new IllegalArgumentException("Unknown redistribution source protocol " + protocol);
     }
 
     ImmutableList.Builder<Statement> ospfExportStatements = ImmutableList.builder();

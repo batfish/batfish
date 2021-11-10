@@ -11,11 +11,12 @@ public abstract class RedistributionPolicy implements Serializable {
 
   protected String _routeMap;
 
-  protected final RoutingProtocol _sourceProtocol;
+  protected final RedistributionSourceProtocol _sourceProtocol;
 
   protected final Map<String, Object> _specialAttributes;
 
-  public RedistributionPolicy(RoutingProtocol sourceProtocol, RoutingProtocol destinationProtocol) {
+  public RedistributionPolicy(
+      RedistributionSourceProtocol sourceProtocol, RoutingProtocol destinationProtocol) {
     _sourceProtocol = sourceProtocol;
     _destinationProtocol = destinationProtocol;
     _specialAttributes = new TreeMap<>();
@@ -29,7 +30,7 @@ public abstract class RedistributionPolicy implements Serializable {
     return _routeMap;
   }
 
-  public RoutingProtocol getSourceProtocol() {
+  public RedistributionSourceProtocol getSourceProtocol() {
     return _sourceProtocol;
   }
 
