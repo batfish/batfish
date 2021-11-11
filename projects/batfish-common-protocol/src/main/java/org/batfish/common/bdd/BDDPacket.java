@@ -138,7 +138,7 @@ public class BDDPacket {
             + FRAGMENT_OFFSET_LENGTH
             + PACKET_LENGTH_LENGTH;
     if (_factory.varNum() < numNeeded) {
-      _factory.setVarNum(numNeeded);
+      _factory.setVarNum(numNeeded * 2);
     }
 
     _bitNames = new HashMap<>();
@@ -191,13 +191,9 @@ public class BDDPacket {
    * Helper function that builds a map from BDD variable index
    * to some more meaningful name. Helpful for debugging.
    */
-  private void addBitNames(String s, int length, int index, boolean reverse) {
+  private void addBitNames(String s, int length, int index) {
     for (int i = index; i < index + length; i++) {
-      if (reverse) {
-        _bitNames.put(i, s + (length - 1 - (i - index)));
-      } else {
-        _bitNames.put(i, s + (i - index + 1));
-      }
+      _bitNames.put(i, s + (i - index + 1));
     }
   }
 
@@ -226,12 +222,12 @@ public class BDDPacket {
    * @return The new variable.
    */
   public BDDInteger allocateBDDInteger(String name, int bits, boolean reverse) {
-    if (_factory.varNum() < _nextFreeBDDVarIdx + bits) {
-      _factory.setVarNum(_nextFreeBDDVarIdx + bits);
+    if (_factory.varNum() < _nextFreeBDDVarIdx + 2 * bits) {
+      _factory.setVarNum(_nextFreeBDDVarIdx + 2 * bits);
     }
     BDDInteger var = makeFromIndex(_factory, bits, _nextFreeBDDVarIdx, reverse);
-    addBitNames(name, bits, _nextFreeBDDVarIdx, false);
-    _nextFreeBDDVarIdx += bits;
+    addBitNames(name, bits, _nextFreeBDDVarIdx);
+    _nextFreeBDDVarIdx += 2 * bits;
     return var;
   }
 

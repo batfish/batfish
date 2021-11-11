@@ -1,14 +1,14 @@
 package org.batfish.bddreachability.transition;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.bddreachability.transition.Transitions.ZERO;
 
 import com.google.common.base.Objects;
-import com.google.common.collect.ImmutableList;
-import java.util.ArrayList;
 import java.util.List;
-import javax.annotation.Nullable;
+import java.util.stream.Collectors;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
+import net.sf.javabdd.BDDPairing;
 
 public final class GuardEraseAndSet implements Transition {
   public static final class ValueBeforeAndAfter {
@@ -21,18 +21,6 @@ public final class GuardEraseAndSet implements Transition {
           "Value constraints before/after must be satisfiable");
       _before = before;
       _after = after;
-    }
-
-    public @Nullable ValueBeforeAndAfter addConstraints(BDD addBefore, BDD addAfter) {
-      BDD before = _before.and(addBefore);
-      if (before.isZero()) {
-        return null;
-      }
-      BDD after = _after.and(addAfter);
-      if (after.isZero()) {
-        return null;
-      }
-      return new ValueBeforeAndAfter(before, after);
     }
 
     @Override
@@ -54,91 +42,100 @@ public final class GuardEraseAndSet implements Transition {
   }
 
   private final BDD _vars;
-  private final List<ValueBeforeAndAfter> _valuesBeforeAndAfter;
+  private final BDD _forwardRelation;
+  private final BDD _backwardRelation;
+  private final BDDPairing _toPrime;
+  private final BDDPairing _fromPrime;
 
   public GuardEraseAndSet(BDD vars, List<ValueBeforeAndAfter> valuesBeforeAndAfter) {
     checkArgument(!vars.isOne() && !vars.isZero(), "No variables to erase. Use Constraint instead");
     checkArgument(
         !valuesBeforeAndAfter.isEmpty(), "GuardEraseAndSet: valuesBeforeAndAfter cannot be empty");
-    assert valuesBeforeAndAfter.stream()
-            .allMatch(vba -> vba._before.exist(vars).equals(vba._after.exist(vars)))
-        : "GuardEraseAndSet: Constraints on non-erased variables must be preserved before and"
-            + " after";
     _vars = vars;
-    _valuesBeforeAndAfter = ImmutableList.copyOf(valuesBeforeAndAfter);
+    _toPrime = vars.getFactory().makePair();
+    _fromPrime = vars.getFactory().makePair();
+
+    BDD tmp = vars;
+    while (!tmp.isZero() && !tmp.isOne()) {
+      int var = tmp.var();
+      _toPrime.set(var, var + 1);
+      _fromPrime.set(var + 1, var);
+      tmp = tmp.high();
+    }
+
+    _forwardRelation =
+        _vars
+            .getFactory()
+            .orAll(
+                valuesBeforeAndAfter.stream()
+                    .map(vba -> vba._before.and(vba._after.replace(_toPrime)))
+                    .collect(Collectors.toList()));
+    _backwardRelation =
+        _vars
+            .getFactory()
+            .orAll(
+                valuesBeforeAndAfter.stream()
+                    .map(vba -> vba._before.replace(_toPrime).and(vba._after))
+                    .collect(Collectors.toList()));
+  }
+
+  public GuardEraseAndSet(
+      BDD vars,
+      BDD forwardRelation,
+      BDD backwardRelation,
+      BDDPairing toPrime,
+      BDDPairing fromPrime) {
+    _vars = vars;
+    _forwardRelation = forwardRelation;
+    _backwardRelation = backwardRelation;
+    _toPrime = toPrime;
+    _fromPrime = fromPrime;
+  }
+
+  public GuardEraseAndSet or(GuardEraseAndSet other) {
+    checkArgument(_vars.equals(other._vars));
+    return new GuardEraseAndSet(
+        _vars,
+        _forwardRelation.or(other._forwardRelation),
+        _backwardRelation.or(other._backwardRelation),
+        _toPrime,
+        _fromPrime);
+  }
+
+  public Transition constrainBefore(BDD before) {
+    BDD forwardRelation = _forwardRelation.and(before);
+    if (forwardRelation.isZero()) {
+      return ZERO;
+    }
+    return new GuardEraseAndSet(
+        _vars,
+        forwardRelation,
+        _backwardRelation.and(before.replace(_toPrime)),
+        _toPrime,
+        _fromPrime);
+  }
+
+  public GuardEraseAndSet constrainAfter(BDD after) {
+    return new GuardEraseAndSet(
+        _vars,
+        _forwardRelation.and(after.replace(_toPrime)),
+        _backwardRelation.and(after),
+        _toPrime,
+        _fromPrime);
   }
 
   BDD getVars() {
     return _vars;
   }
 
-  List<ValueBeforeAndAfter> getValuesBeforeAndAfter() {
-    return _valuesBeforeAndAfter;
-  }
-
   @Override
   public BDD transitForward(BDD bdd) {
-    if (_valuesBeforeAndAfter.size() == 1) {
-      ValueBeforeAndAfter beforeAndAfter = _valuesBeforeAndAfter.get(0);
-      BDD valueBefore = beforeAndAfter._before;
-      BDD valueAfter = beforeAndAfter._after;
-      return bdd.applyEx(valueBefore, BDDFactory.and, _vars).and(valueAfter);
-    }
-
-    List<BDD> valuesBefore = new ArrayList<>(_valuesBeforeAndAfter.size());
-    List<BDD> valuesAfter = new ArrayList<>(_valuesBeforeAndAfter.size());
-    for (ValueBeforeAndAfter beforeAndAfter : _valuesBeforeAndAfter) {
-      if (bdd.andSat(beforeAndAfter._before)) {
-        valuesBefore.add(beforeAndAfter._before);
-        valuesAfter.add(beforeAndAfter._after);
-      }
-    }
-
-    BDDFactory factory = _vars.getFactory();
-    if (valuesBefore.isEmpty()) {
-      return factory.zero();
-    }
-
-    BDD valueBefore = factory.orAll(valuesBefore);
-    BDD valueAfter = factory.orAll(valuesAfter);
-
-    return bdd.applyEx(valueBefore, BDDFactory.and, _vars).and(valueAfter);
+    return bdd.applyEx(_forwardRelation, BDDFactory.and, _vars).replace(_fromPrime);
   }
 
   @Override
   public BDD transitBackward(BDD bdd) {
-    if (_valuesBeforeAndAfter.size() == 1) {
-      ValueBeforeAndAfter beforeAndAfter = _valuesBeforeAndAfter.get(0);
-      BDD valueBefore = beforeAndAfter._before;
-      BDD valueAfter = beforeAndAfter._after;
-      return bdd.applyEx(valueAfter, BDDFactory.and, _vars).and(valueBefore);
-    }
-
-    long t = System.currentTimeMillis();
-    List<BDD> valuesBefore = new ArrayList<>(_valuesBeforeAndAfter.size());
-    List<BDD> valuesAfter = new ArrayList<>(_valuesBeforeAndAfter.size());
-    for (ValueBeforeAndAfter beforeAndAfter : _valuesBeforeAndAfter) {
-      if (bdd.andSat(beforeAndAfter._after)) {
-        valuesBefore.add(beforeAndAfter._before);
-        valuesAfter.add(beforeAndAfter._after);
-      }
-    }
-
-    BDDFactory factory = _vars.getFactory();
-    if (valuesBefore.isEmpty()) {
-      return factory.zero();
-    }
-
-    BDD valueBefore = factory.orAll(valuesBefore);
-    BDD valueAfter = factory.orAll(valuesAfter);
-
-    BDD result = bdd.applyEx(valueAfter, BDDFactory.and, _vars).and(valueBefore);
-    t = System.currentTimeMillis() - t;
-    System.err.println(
-        String.format(
-            "GuardEraseAndSet: evaluated %d of %d rules in %d ms",
-            valuesBefore.size(), _valuesBeforeAndAfter.size(), t));
-    return result;
+    return bdd.applyEx(_backwardRelation, BDDFactory.and, _vars).replace(_fromPrime);
   }
 
   @Override
@@ -150,11 +147,15 @@ public final class GuardEraseAndSet implements Transition {
       return false;
     }
     GuardEraseAndSet that = (GuardEraseAndSet) o;
-    return _vars.equals(that._vars) && _valuesBeforeAndAfter.equals(that._valuesBeforeAndAfter);
+    // backwardRelation, toPrime and fromPrime are all uniquely determined by vars and
+    // forwardRelation
+    return _vars.equals(that._vars) && _forwardRelation.equals(that._forwardRelation);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(_vars, _valuesBeforeAndAfter);
+    // backwardRelation, toPrime and fromPrime are all uniquely determined by vars and
+    // forwardRelation
+    return Objects.hashCode(_vars, _forwardRelation);
   }
 }

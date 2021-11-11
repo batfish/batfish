@@ -12,6 +12,7 @@ import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDException;
 import net.sf.javabdd.BDDFactory;
+import net.sf.javabdd.BDDPairing;
 
 public class BDDInteger {
 
@@ -23,6 +24,12 @@ public class BDDInteger {
   private boolean _hasVariablesOnly;
 
   private BDD _vars;
+  private BDD _primeVars;
+
+  // only for BDDIntegers created via makeFromIndex
+  private BDD[] _primeBitvec;
+  private BDDPairing _toPrime;
+  private BDDPairing _fromPrime;
 
   /*
    * Create an integer, but don't initialize its bit values
@@ -63,20 +70,34 @@ public class BDDInteger {
    */
   public static BDDInteger makeFromIndex(
       BDDFactory factory, int length, int start, boolean reverse) {
-    assert factory.varNum() >= start + length;
+    assert factory.varNum() >= start + length * 2;
 
     BDDInteger bdd = new BDDInteger(factory, length);
+    bdd._primeBitvec = new BDD[length];
+    bdd._toPrime = factory.makePair();
+    bdd._fromPrime = factory.makePair();
     for (int i = 0; i < length; i++) {
       int idx;
       if (reverse) {
-        idx = start + length - i - 1;
+        idx = start + 2 * (length - i - 1);
       } else {
-        idx = start + i;
+        idx = start + 2 * i;
       }
       bdd._bitvec[i] = bdd._factory.ithVar(idx);
+      bdd._primeBitvec[i] = bdd._factory.ithVar(idx + 1);
+      bdd._toPrime.set(bdd._bitvec[i].var(), bdd._primeBitvec[i].var());
+      bdd._fromPrime.set(bdd._primeBitvec[i].var(), bdd._bitvec[i].var());
     }
     bdd._hasVariablesOnly = true;
     return bdd;
+  }
+
+  public BDD toPrime(BDD bdd) {
+    return bdd.replace(_toPrime);
+  }
+
+  public BDD fromPrime(BDD bdd) {
+    return bdd.replace(_fromPrime);
   }
 
   /** Find a representative value of the represented integer that satisfies a given constraint. */
@@ -382,6 +403,10 @@ public class BDDInteger {
 
   public BDD[] getBitvec() {
     return _bitvec;
+  }
+
+  public BDD[] getPrimeBitvec() {
+    return _primeBitvec;
   }
 
   /** Returns a {@link BDD} containing all the variables of this {@link BDDInteger}. */
