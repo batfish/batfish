@@ -256,6 +256,23 @@ public class CumulusFrrGrammarTest {
     parse("router bgp 1\n address-family ipv4 unicast\n maximum-paths 4\nexit-address-family\n");
   }
 
+  @Test
+  public void testBgpAddressFamily_ipv6UnicastMaximumPaths() {
+    parse("router bgp 1\n address-family ipv6 unicast\n maximum-paths 4\nexit-address-family\n");
+  }
+
+  @Test
+  public void testBgpAddressFamily_ipv4UnicastMaximumPathsIbgp() {
+    parse(
+        "router bgp 1\n address-family ipv4 unicast\n maximum-paths ibgp 4\nexit-address-family\n");
+  }
+
+  @Test
+  public void testBgpAddressFamily_ipv6UnicastMaximumPathsIbgp() {
+    parse(
+        "router bgp 1\n address-family ipv6 unicast\n maximum-paths ibgp 4\nexit-address-family\n");
+  }
+
   /** Make sure that we warn when import statements are ignored but still do reference counting */
   @Test
   public void testBgpAddressFamilyIpv4UnicastImport() {
