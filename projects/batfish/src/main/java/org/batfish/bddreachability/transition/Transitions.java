@@ -356,16 +356,7 @@ public final class Transitions {
       return guardEraseAndSets;
     }
     return groupedByVars.entrySet().stream()
-        .map(
-            entry -> {
-              BDD vars = entry.getKey();
-              List<ValueBeforeAndAfter> valuesBeforeAndAfter =
-                  entry.getValue().stream()
-                      .map(GuardEraseAndSet::getValuesBeforeAndAfter)
-                      .flatMap(List::stream)
-                      .collect(ImmutableList.toImmutableList());
-              return new GuardEraseAndSet(vars, valuesBeforeAndAfter);
-            })
+        .map(entry -> GuardEraseAndSet.orAll(entry.getValue()))
         .collect(Collectors.toList());
   }
 
