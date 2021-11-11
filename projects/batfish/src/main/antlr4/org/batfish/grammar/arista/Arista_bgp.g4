@@ -2651,22 +2651,22 @@ eos_rbinor_aggregate
 
 eos_rbinor_attached_host
 :
-  ATTACHED_HOST NEWLINE
+  ATTACHED_HOST (ROUTE_MAP variable)? NEWLINE
 ;
 
 eos_rbinor_connected
 :
-  CONNECTED NEWLINE
+  CONNECTED (ROUTE_MAP variable)? NEWLINE
 ;
 
 eos_rbinor_dynamic
 :
-  DYNAMIC NEWLINE
+  DYNAMIC (ROUTE_MAP variable)? NEWLINE
 ;
 
 eos_rbinor_isis
 :
-  ISIS NEWLINE
+  ISIS (ROUTE_MAP variable)? NEWLINE
 ;
 
 eos_rbinor_ospf
@@ -2680,12 +2680,12 @@ eos_rbinor_ospf
 
 eos_rbinor_ospf_any
 :
-  NEWLINE
+  (ROUTE_MAP variable)? NEWLINE
 ;
 
 eos_rbinor_ospf_match
 :
-  MATCH (INTERNAL | EXTERNAL | NSSA_EXTERNAL) NEWLINE
+  MATCH (INTERNAL | EXTERNAL | NSSA_EXTERNAL) (ROUTE_MAP variable)? NEWLINE
 ;
 
 eos_rbinor_ospf3
@@ -2701,12 +2701,12 @@ eos_rbinor_ospf3
 
 eos_rbinor_ospf3_any
 :
-  NEWLINE
+  (ROUTE_MAP variable)? NEWLINE
 ;
 
 eos_rbinor_ospf3_match
 :
-  MATCH (INTERNAL | EXTERNAL | NSSA_EXTERNAL) NEWLINE
+  MATCH (INTERNAL | EXTERNAL | NSSA_EXTERNAL) (ROUTE_MAP variable)? NEWLINE
 ;
 
 eos_rbinor_ospfv3
@@ -2722,12 +2722,12 @@ eos_rbinor_ospfv3
 
 eos_rbinor_rip
 :
-  RIP NEWLINE
+  RIP (ROUTE_MAP variable)? NEWLINE
 ;
 
 eos_rbinor_static
 :
-  STATIC NEWLINE
+  STATIC (ROUTE_MAP variable)? NEWLINE
 ;
 
 eos_rbino_router_id
