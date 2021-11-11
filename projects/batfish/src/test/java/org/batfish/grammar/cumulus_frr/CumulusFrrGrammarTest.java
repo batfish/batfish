@@ -317,6 +317,21 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testBgpIPv4ListenRange() {
+    parse("router bgp 1\n bgp listen range 10.0.0.0/24 peer-group TEST\n");
+  }
+
+  @Test
+  public void testBgpIPv6ListenRange() {
+    parse("router bgp 1\n bgp listen range 2001:db8::/64 peer-group TEST\n");
+  }
+
+  @Test
+  public void testBgpListenLimit() {
+    parse("router bgp 1\n bgp listen limit 32\n");
+  }
+
+  @Test
   public void testBgpAddressFamilyIpv4UnicastNetwork() {
     parseLines(
         "router bgp 1", "address-family ipv4 unicast", "network 1.2.3.4/24", "exit-address-family");

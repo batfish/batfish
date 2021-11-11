@@ -300,6 +300,10 @@ LOG_NEIGHBOR_CHANGES: 'log-neighbor-changes';
 
 LINE: 'line';
 
+LISTEN: 'listen';
+
+LIMIT: 'limit';
+
 MAXIMUM_PATHS: 'maximum-paths';
 
 MAX_MED: 'max-med';

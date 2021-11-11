@@ -35,6 +35,8 @@ sb_bgp
     | sbb_router_id
     | sbb_cluster_id
     | sbb_max_med_administrative
+    | sbb_listen_limit
+    | sbb_listen_range
   )
 ;
 
@@ -473,4 +475,19 @@ sbnobd_ipv4_unicast
 sb_timers
 :
     TIMERS BGP uint32 uint32 NEWLINE
+;
+
+sbb_listen_limit
+:
+  LISTEN LIMIT num = uint32 NEWLINE
+;
+
+sbb_listen_range
+:
+  LISTEN RANGE
+   (
+      IP_PREFIX
+      | IPV6_PREFIX
+   ) PEER_GROUP name = word
+  NEWLINE
 ;
