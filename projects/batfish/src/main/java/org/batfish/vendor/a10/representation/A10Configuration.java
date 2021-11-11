@@ -216,7 +216,8 @@ public final class A10Configuration extends VendorConfiguration {
 
   @Override
   public void setHostname(String hostname) {
-    _hostname = hostname;
+    _hostname = hostname.toLowerCase();
+    _rawHostname = hostname;
   }
 
   @Override
@@ -299,7 +300,7 @@ public final class A10Configuration extends VendorConfiguration {
   public List<Configuration> toVendorIndependentConfigurations() throws VendorConversionException {
     String hostname = getHostname();
     _c = new Configuration(hostname, _vendor);
-    _c.setHumanName(hostname);
+    _c.setHumanName(_rawHostname);
     _c.setDeviceModel(DeviceModel.A10);
     _c.setDefaultCrossZoneAction(LineAction.DENY);
     _c.setDefaultInboundAction(LineAction.PERMIT);
@@ -882,6 +883,9 @@ public final class A10Configuration extends VendorConfiguration {
   private @Nullable Ha _ha;
   @Nonnull private Map<String, HealthMonitor> _healthMonitors;
   private String _hostname;
+  /** Hostname as it appears in the config, uncanonicalized */
+  private String _rawHostname;
+
   @Nonnull private Map<Integer, Interface> _interfacesEthernet;
   @Nonnull private Map<Integer, Interface> _interfacesLoopback;
   @Nonnull private Map<Integer, TrunkInterface> _interfacesTrunk;
