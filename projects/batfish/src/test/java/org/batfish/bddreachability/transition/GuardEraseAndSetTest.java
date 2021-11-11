@@ -22,9 +22,9 @@ public class GuardEraseAndSetTest {
 
   BDD _one = _factory.one();
 
-  BDD _v0 = _factory.ithVar(0);
-  BDD _v1 = _factory.ithVar(1);
-  BDD _v2 = _factory.ithVar(2);
+  BDD _v0 = _factory.ithVar(0); // leave space for primes!
+  BDD _v1 = _factory.ithVar(2);
+  BDD _v2 = _factory.ithVar(4);
 
   BDD _vars = _v0.and(_v1);
 

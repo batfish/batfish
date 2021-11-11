@@ -223,4 +223,12 @@ public class BDDIntegerTest {
     _exception.expect(IllegalStateException.class);
     x.satAssignmentToLong(anything);
   }
+
+  @Test
+  public void testToPrime() {
+    BDDFactory factory = BDDUtils.bddFactory(20);
+    BDDInteger x = BDDInteger.makeFromIndex(factory, 5, 3, false);
+    assertEquals(x.getPrimeBitvec()[0], x.toPrime(x.getBitvec()[0]));
+    assertEquals(x.getBitvec()[0], x.fromPrime(x.getPrimeBitvec()[0]));
+  }
 }
