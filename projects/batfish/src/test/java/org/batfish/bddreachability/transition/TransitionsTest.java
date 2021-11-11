@@ -21,6 +21,7 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import net.sf.javabdd.BDD;
+import org.batfish.bddreachability.transition.GuardEraseAndSet.ValueBeforeAndAfter;
 import org.batfish.common.bdd.BDDFiniteDomain;
 import org.batfish.common.bdd.BDDOps;
 import org.batfish.common.bdd.BDDPacket;
@@ -210,9 +211,10 @@ public class TransitionsTest {
     checkState(!mgr.hasSourceConstraint(bdd));
     Transition actual = mergeComposed(constraint, remove);
     Transition expected =
-        compose(
-            constraint(bdd.and(finiteDomain.getIsValidConstraint())),
-            eraseAndSet(finiteDomain.getVar(), _pkt.getFactory().one()));
+        new GuardEraseAndSet(
+            finiteDomain.getVar().getVars(),
+            ImmutableList.of(
+                new ValueBeforeAndAfter(bdd.and(finiteDomain.getIsValidConstraint()), bdd)));
     assertEquals(expected, actual);
   }
 
@@ -291,13 +293,16 @@ public class TransitionsTest {
     BDD v2 = var(2);
     BDD v3 = var(3);
     Transition t0 = constraint(v1);
-    Transition t1 = eraseAndSet(v1, v1);
+    Transition t1 = eraseAndSet(v1, v1.not());
     Transition t2 = constraint(v2);
     Transition t3 = constraint(v3);
     Transition actual = compose(t0, t1, t2, t3);
-    assertThat(actual, instanceOf(Composite.class));
-    assertThat(
-        ((Composite) actual).getTransitions(), contains(t0, eraseAndSet(v1, v1.and(v2).and(v3))));
+    assertEquals(
+        new GuardEraseAndSet(
+            v1,
+            ImmutableList.of(
+                new ValueBeforeAndAfter(v1.and(v2).and(v3), v1.not().and(v2.and(v3))))),
+        actual);
   }
 
   @Test
