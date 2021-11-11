@@ -224,11 +224,13 @@ public final class CumulusInterfacesConfigurationBuilder extends CumulusInterfac
 
   @Override
   public void exitI_address_virtual(I_address_virtualContext ctx) {
-    if (ctx.v4 != null) {
-      _currentIface.setAddressVirtual(
-          MacAddress.parse(ctx.MAC_ADDRESS().getText()), toConcreteInterfaceAddress(ctx.v4));
-    } else {
-      assert ctx.v6 != null;
+    List<Interface_addressContext> v4 = ctx.interface_address();
+    v4.forEach(
+        address ->
+            _currentIface.setAddressVirtual(
+                MacAddress.parse(ctx.MAC_ADDRESS().getText()),
+                toConcreteInterfaceAddress(address)));
+    if (ctx.v6 != null) {
       // ignore v6
     }
   }
