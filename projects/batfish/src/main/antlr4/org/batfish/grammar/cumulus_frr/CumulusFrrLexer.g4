@@ -346,6 +346,8 @@ OSPF: 'ospf';
 
 OUT: 'out';
 
+PASSIVE: 'passive';
+
 PASSIVE_INTERFACE
 :
   'passive-interface' -> pushMode(M_Default_Or_Word)

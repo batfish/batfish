@@ -1650,6 +1650,11 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testCumulusFrrNeightborPassive() {
+    parse("router bgp 10000\nneighbor N passive\n");
+  }
+
+  @Test
   public void testBgpNeighborEbgpMultihopPeerGroup() {
     _warnings = new Warnings(false, true, false);
     parseLines(

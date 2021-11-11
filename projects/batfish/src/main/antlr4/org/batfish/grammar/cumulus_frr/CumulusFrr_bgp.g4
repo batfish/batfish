@@ -334,6 +334,7 @@ sbn_property
 | sbnp_remote_as
 | sbnp_timers
 | sbnp_update_source
+| sbnp_passive
 ;
 
 sbnp_advertisement_interval
@@ -385,6 +386,11 @@ sbnp_timers
 sbnp_update_source
 :
   UPDATE_SOURCE (ip = IP_ADDRESS | name = word) NEWLINE
+;
+
+sbnp_passive
+:
+  PASSIVE NEWLINE
 ;
 
 sb_network
