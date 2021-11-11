@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.bddreachability.transition.Transitions.ZERO;
 
 import com.google.common.base.Objects;
+import com.google.common.collect.Iterables;
 import java.util.List;
 import java.util.stream.Collectors;
 import net.sf.javabdd.BDD;
@@ -79,7 +80,7 @@ public final class GuardEraseAndSet implements Transition {
                     .collect(Collectors.toList()));
   }
 
-  public GuardEraseAndSet(
+  private GuardEraseAndSet(
       BDD vars,
       BDD forwardRelation,
       BDD backwardRelation,
@@ -92,6 +93,14 @@ public final class GuardEraseAndSet implements Transition {
     _fromPrime = fromPrime;
   }
 
+  private BDD getForwardRelation() {
+    return _forwardRelation;
+  }
+
+  private BDD getBackwardRelation() {
+    return _backwardRelation;
+  }
+
   public GuardEraseAndSet or(GuardEraseAndSet other) {
     checkArgument(_vars.equals(other._vars));
     return new GuardEraseAndSet(
@@ -100,6 +109,29 @@ public final class GuardEraseAndSet implements Transition {
         _backwardRelation.or(other._backwardRelation),
         _toPrime,
         _fromPrime);
+  }
+
+  public static GuardEraseAndSet orAll(List<GuardEraseAndSet> gess) {
+    checkArgument(!gess.isEmpty(), "GuardEraseAndSet.orAll requires at least one object");
+    if (gess.size() == 1) {
+      return Iterables.getOnlyElement(gess);
+    }
+
+    GuardEraseAndSet ges = gess.get(0);
+    BDD vars = ges.getVars();
+    checkArgument(
+        gess.stream().map(GuardEraseAndSet::getVars).allMatch(vars::equals),
+        "GuardEraseAndSet.orAll: all instances must have the same variables");
+
+    BDDFactory factory = vars.getFactory();
+    return new GuardEraseAndSet(
+        vars,
+        factory.orAll(
+            gess.stream().map(GuardEraseAndSet::getForwardRelation).collect(Collectors.toList())),
+        factory.orAll(
+            gess.stream().map(GuardEraseAndSet::getBackwardRelation).collect(Collectors.toList())),
+        ges._toPrime,
+        ges._fromPrime);
   }
 
   public Transition constrainBefore(BDD before) {
