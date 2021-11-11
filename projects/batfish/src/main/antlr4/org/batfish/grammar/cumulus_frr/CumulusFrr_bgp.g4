@@ -156,7 +156,7 @@ sbafi6_inner
 
 sbafi6_maximum_paths
 :
-  MAXIMUM_PATHS num = uint32 NEWLINE
+  MAXIMUM_PATHS (IBGP)? num = uint32 NEWLINE
 ;
 
 sbafi6_import
@@ -233,7 +233,7 @@ sbafi_import
 
 sbafi_maximum_paths
 :
-  MAXIMUM_PATHS num = uint32 NEWLINE
+  MAXIMUM_PATHS (IBGP)? num = uint32 NEWLINE
 ;
 
 sbafi_network
