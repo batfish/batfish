@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Stack;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -166,9 +167,45 @@ public final class Transitions {
       BDD constraintBdd = ((Constraint) t1).getConstraint();
       EraseAndSet eas = (EraseAndSet) t2;
       BDD vars = eas.getEraseVars();
+      // for GuardEraseAndSet, any constraint on non-erased vars must be applied before and after
+      BDD erasedConstraint = constraintBdd.exist(vars);
       BDD value = eas.getSetValue();
+      BDD erasedValue = value.exist(vars);
       return new GuardEraseAndSet(
-          vars, ImmutableList.of(new ValueBeforeAndAfter(constraintBdd, value)));
+          vars,
+          ImmutableList.of(
+              new ValueBeforeAndAfter(
+                  constraintBdd.and(erasedValue), value.and(erasedConstraint))));
+    }
+    if (t1 instanceof Constraint && t2 instanceof GuardEraseAndSet) {
+      BDD constraintBdd = ((Constraint) t1).getConstraint();
+      GuardEraseAndSet ges = (GuardEraseAndSet) t2;
+      BDD vars = ges.getVars();
+      // for GuardEraseAndSet, any constraint on non-erased vars must be applied before and after
+      BDD erasedConstraint = constraintBdd.exist(vars);
+      List<ValueBeforeAndAfter> valuesBeforeAndAfter =
+          ges.getValuesBeforeAndAfter().stream()
+              .map(vba -> vba.addConstraints(constraintBdd, erasedConstraint))
+              .filter(Objects::nonNull)
+              .collect(ImmutableList.toImmutableList());
+      return valuesBeforeAndAfter.isEmpty()
+          ? ZERO
+          : new GuardEraseAndSet(vars, valuesBeforeAndAfter);
+    }
+    if (t1 instanceof GuardEraseAndSet && t2 instanceof Constraint) {
+      BDD constraintBdd = ((Constraint) t2).getConstraint();
+      GuardEraseAndSet ges = (GuardEraseAndSet) t1;
+      BDD vars = ges.getVars();
+      // for GuardEraseAndSet, any constraint on non-erased vars must be applied before and after
+      BDD erasedConstraint = constraintBdd.exist(vars);
+      List<ValueBeforeAndAfter> valuesBeforeAndAfter =
+          ges.getValuesBeforeAndAfter().stream()
+              .map(vba -> vba.addConstraints(erasedConstraint, constraintBdd))
+              .filter(Objects::nonNull)
+              .collect(ImmutableList.toImmutableList());
+      return valuesBeforeAndAfter.isEmpty()
+          ? ZERO
+          : new GuardEraseAndSet(vars, valuesBeforeAndAfter);
     }
     if (t1 instanceof EraseAndSet && t2 instanceof Constraint) {
       EraseAndSet eas = (EraseAndSet) t1;

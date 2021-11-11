@@ -1,8 +1,12 @@
 package org.batfish.bddreachability.transition;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
+import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 
@@ -11,9 +15,41 @@ public final class GuardEraseAndSet implements Transition {
     private final BDD _before;
     private final BDD _after;
 
-    public ValueBeforeAndAfter(BDD before, BDD after) {
+    ValueBeforeAndAfter(BDD before, BDD after) {
+      checkArgument(
+          !before.isZero() && !after.isZero(),
+          "Value constraints before/after must be satisfiable");
       _before = before;
       _after = after;
+    }
+
+    public @Nullable ValueBeforeAndAfter addConstraints(BDD addBefore, BDD addAfter) {
+      BDD before = _before.and(addBefore);
+      if (before.isZero()) {
+        return null;
+      }
+      BDD after = _after.and(addAfter);
+      if (after.isZero()) {
+        return null;
+      }
+      return new ValueBeforeAndAfter(before, after);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof ValueBeforeAndAfter)) {
+        return false;
+      }
+      ValueBeforeAndAfter that = (ValueBeforeAndAfter) o;
+      return _before.equals(that._before) && _after.equals(that._after);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hashCode(_before, _after);
     }
   }
 
@@ -21,15 +57,22 @@ public final class GuardEraseAndSet implements Transition {
   private final List<ValueBeforeAndAfter> _valuesBeforeAndAfter;
 
   public GuardEraseAndSet(BDD vars, List<ValueBeforeAndAfter> valuesBeforeAndAfter) {
+    checkArgument(!vars.isOne() && !vars.isZero(), "No variables to erase. Use Constraint instead");
+    checkArgument(
+        !valuesBeforeAndAfter.isEmpty(), "GuardEraseAndSet: valuesBeforeAndAfter cannot be empty");
+    assert valuesBeforeAndAfter.stream()
+            .allMatch(vba -> vba._before.exist(vars).equals(vba._after.exist(vars)))
+        : "GuardEraseAndSet: Constraints on non-erased variables must be preserved before and"
+            + " after";
     _vars = vars;
     _valuesBeforeAndAfter = ImmutableList.copyOf(valuesBeforeAndAfter);
   }
 
-  public BDD getVars() {
+  BDD getVars() {
     return _vars;
   }
 
-  public List<ValueBeforeAndAfter> getValuesBeforeAndAfter() {
+  List<ValueBeforeAndAfter> getValuesBeforeAndAfter() {
     return _valuesBeforeAndAfter;
   }
 
@@ -96,5 +139,22 @@ public final class GuardEraseAndSet implements Transition {
             "GuardEraseAndSet: evaluated %d of %d rules in %d ms",
             valuesBefore.size(), _valuesBeforeAndAfter.size(), t));
     return result;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof GuardEraseAndSet)) {
+      return false;
+    }
+    GuardEraseAndSet that = (GuardEraseAndSet) o;
+    return _vars.equals(that._vars) && _valuesBeforeAndAfter.equals(that._valuesBeforeAndAfter);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(_vars, _valuesBeforeAndAfter);
   }
 }
