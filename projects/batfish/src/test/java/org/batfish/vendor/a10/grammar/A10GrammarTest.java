@@ -257,8 +257,14 @@ public class A10GrammarTest {
     String hostname = "hostname";
     A10Configuration c = parseVendorConfig(hostname);
     assertThat(c, notNullValue());
-    // Confirm hostname extracted as-typed; will be lower-cased in conversion.
-    assertThat(c.getHostname(), equalTo("HOSTNAME"));
+    // Should be canonicalized, lower-cased
+    assertThat(c.getHostname(), equalTo(hostname));
+  }
+
+  @Test
+  public void testHumanName() throws IOException {
+    Configuration c = parseConfig("hostname");
+    assertThat(c.getHumanName(), equalTo("HOSTNAME"));
   }
 
   @Test
