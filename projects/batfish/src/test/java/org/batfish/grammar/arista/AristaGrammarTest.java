@@ -4624,4 +4624,16 @@ public class AristaGrammarTest {
         vc.getWarnings().getParseWarnings(),
         contains(hasComment("Undefined ip prefix-list: OTHER")));
   }
+
+  /**
+   * Checks that both "no redistribute" variants (with and without route-map) are parsed and
+   * deletion actually happens
+   */
+  @Test
+  public void testBgpNoRedistribute() {
+    String hostname = "arista_bgp_no_redistribute";
+    AristaConfiguration vc = parseVendorConfig(hostname);
+
+    assertTrue(vc.getAristaBgp().getDefaultVrf().getRedistributionPolicies().isEmpty());
+  }
 }

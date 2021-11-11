@@ -1,0 +1,74 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname arista_bgp_no_redistribute
+!
+router bgp 65321
+  redistribute attached-host
+  no redistribute attached-host
+  no redistribute attached-host route-map RM
+
+  redistribute connected  
+  no redistribute connected
+  no redistribute connected route-map RM
+    
+  redistribute dynamic
+  no redistribute dynamic
+  no redistribute dynamic route-map RM
+  
+  redistribute isis
+  no redistribute isis
+  no redistribute isis route-map RM
+  
+  redistribute ospf
+  no redistribute ospf
+  no redistribute ospf route-map RM
+  
+  redistribute ospf match internal
+  no redistribute ospf match internal
+  no redistribute ospf match internal route-map RM
+  
+  redistribute ospf match external
+  no redistribute ospf match external
+  no redistribute ospf match external route-map RM
+  
+  redistribute ospf match nssa-external
+  no redistribute ospf match nssa-external
+  no redistribute ospf match nssa-external route-map RM
+  
+  redistribute ospf3
+  no redistribute ospf3
+  no redistribute ospf3 route-map RM
+  
+  redistribute ospf3 match internal
+  no redistribute ospf3 match internal
+  no redistribute ospf3 match internal route-map RM
+  
+  redistribute ospf3 match external
+  no redistribute ospf3 match external
+  no redistribute ospf3 match external route-map RM
+  
+  redistribute ospf3 match nssa-external
+  no redistribute ospf3 match nssa-external
+  no redistribute ospf3 match nssa-external route-map RM
+
+! positive version of ospfv3 is not supported
+  no redistribute ospfv3
+  no redistribute ospfv3 route-map RM
+  
+  no redistribute ospfv3 match internal
+  no redistribute ospfv3 match internal route-map RM
+  
+  no redistribute ospfv3 match external
+  no redistribute ospfv3 match external route-map RM
+  
+  no redistribute ospfv3 match nssa-external
+  no redistribute ospfv3 match nssa-external route-map RM
+  
+  redistribute rip
+  no redistribute rip
+  no redistribute rip route-map RM
+
+  redistribute static
+  no redistribute static
+  no redistribute static route-map RM
+
