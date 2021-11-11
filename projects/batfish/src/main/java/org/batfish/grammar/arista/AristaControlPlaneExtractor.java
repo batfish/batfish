@@ -549,6 +549,7 @@ import org.batfish.grammar.arista.AristaParser.Eos_rbinon_route_to_peerContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinon_send_communityContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinon_shutdownContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinon_update_sourceContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbinor_attached_hostContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinor_connectedContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinor_isisContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinor_ospfContext;
@@ -3141,6 +3142,11 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitEos_rbinon_update_source(Eos_rbinon_update_sourceContext ctx) {
     _currentAristaBgpNeighbor.setUpdateSource(null);
+  }
+
+  @Override
+  public void exitEos_rbinor_attached_host(Eos_rbinor_attached_hostContext ctx) {
+    _currentAristaBgpVrf.removeRedistributionPolicy(AristaRedistributeType.ATTACHED_HOST);
   }
 
   @Override
