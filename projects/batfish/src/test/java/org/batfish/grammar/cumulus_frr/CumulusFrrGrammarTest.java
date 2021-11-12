@@ -1533,7 +1533,7 @@ public class CumulusFrrGrammarTest {
 
   @Test
   public void testCumulusFrrIpPrefixList() {
-    String name = "NAME";
+    String name = "PREFIX_10.0.0.0/23";
     String prefix1 = "10.0.0.1/24";
     String prefix2 = "10.0.1.2/24";
     parse(
