@@ -2,6 +2,7 @@ package org.batfish.representation.palo_alto;
 
 import javax.annotation.Nonnull;
 
+/** Datamodel class that represents a reference to an applicaiton or an applicaiton-group. */
 public class ApplicationOrApplicationGroupReference
     implements Comparable<ApplicationOrApplicationGroupReference>, Reference {
   public ApplicationOrApplicationGroupReference(String name) {

@@ -7,6 +7,9 @@ set deviceconfig system hostname panorama-rulebase-tracing
 set shared address addr1 ip-netmask 1.1.1.10
 set shared service service1 protocol tcp port 1
 set shared application-group app_group1 members dns
+#
+#
+#
 # Managed-device configuration
 #
 set device-group DG1 description "test device-group 1"

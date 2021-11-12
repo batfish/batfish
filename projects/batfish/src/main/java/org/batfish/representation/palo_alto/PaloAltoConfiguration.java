@@ -1755,8 +1755,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   /**
-   * Return the {@link Vsys} this {@link Reference} is attached to. Handles checking the starting
-   * Vsys, shared Vsys, and Panorama Vsys if applicable.
+   * Return the {@link Vsys} this {@link Reference} points to. Handles checking the starting Vsys,
+   * shared Vsys, and Panorama Vsys if applicable.
    */
   @Nonnull
   @SuppressWarnings("fallthrough")
@@ -2818,12 +2818,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   /**
-   * Copy configuration from specified source vsys to specified target vsys. Any previously made
-   * changes will be overwritten in this process. Note: this only supports copying device-group vsys
-   * configuration (objects and rules) and rules are merged by appending pre-rulebase and prepending
-   * post-rulebase.
+   * Copy object configuration from specified source vsys to specified target vsys. Any previously
+   * made changes will be overwritten in this process.
    */
-  private void applyVsys(@Nullable Vsys source, Vsys target) {
+  private void applyVsysObjects(@Nullable Vsys source, Vsys target) {
     if (source == null) {
       return;
     }
@@ -2835,7 +2833,16 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     target.getServices().putAll(source.getServices());
     target.getServiceGroups().putAll(source.getServiceGroups());
     target.getTags().putAll(source.getTags());
+  }
 
+  /**
+   * Copy rulebase configuration from specified source vsys to specified target vsys. Note: rules
+   * are merged by appending pre-rulebase and prepending post-rulebase.
+   */
+  private void applyVsysRulebase(@Nullable Vsys source, Vsys target) {
+    if (source == null) {
+      return;
+    }
     /*
      * Merge rules. Pre-rulebase rules should be appended, post-rulebase rules should be prepended.
      * Note: "regular" rulebase does not apply to panorama
@@ -2880,7 +2887,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     assert _shared == null;
     _shared = targetShared;
 
-    applyVsys(shared, targetShared);
+    // Keep shared objects in their own namespace
+    applyVsysObjects(shared, targetShared);
+    // Merge shared rules into Panorama rules, to keep conversion simpler
+    applyVsysRulebase(shared, target);
 
     List<DeviceGroup> inheritedDeviceGroups = new ArrayList<>();
     inheritedDeviceGroups.add(template);
@@ -2889,7 +2899,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     // Apply higher level parents first
     // since their config should be overwritten by lower level parents
     for (DeviceGroup parent : ImmutableList.copyOf(inheritedDeviceGroups).reverse()) {
-      applyVsys(parent.getPanorama(), target);
+      applyVsysObjects(parent.getPanorama(), target);
+      applyVsysRulebase(parent.getPanorama(), target);
     }
   }
 

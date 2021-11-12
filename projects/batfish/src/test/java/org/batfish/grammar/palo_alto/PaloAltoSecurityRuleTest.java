@@ -422,6 +422,10 @@ public class PaloAltoSecurityRuleTest {
     }
   }
 
+  /**
+   * Test that trace elements contain structure data pointing to structures in the correct
+   * namespace.
+   */
   @Test
   public void testPanoramaRulebaseTracing() throws IOException {
     String hostname = "panorama-rulebase-tracing";
@@ -447,8 +451,8 @@ public class PaloAltoSecurityRuleTest {
                 c.getIpSpaces(),
                 c.getIpSpaceMetadata());
 
-    // TODO fix shared vs panorama...
     {
+      // Shared address object and service
       List<TraceTree> traces = trace.apply(iface1, rule1Flow);
       assertThat(
           traces,
@@ -466,6 +470,7 @@ public class PaloAltoSecurityRuleTest {
                   isTraceTree(matchServiceTraceElement()))));
     }
     {
+      // Device-group address object and service
       List<TraceTree> traces = trace.apply(iface1, rule2Flow);
       assertThat(
           traces,
@@ -483,6 +488,7 @@ public class PaloAltoSecurityRuleTest {
                   isTraceTree(matchServiceTraceElement()))));
     }
     {
+      // Shared application-group
       List<TraceTree> traces = trace.apply(iface1, rule3Flow);
       assertThat(
           traces,
@@ -501,6 +507,7 @@ public class PaloAltoSecurityRuleTest {
                               "app_group1", SHARED_VSYS_NAME, filename))))));
     }
     {
+      // Device-group application-group
       List<TraceTree> traces = trace.apply(iface1, rule4Flow);
       assertThat(
           traces,
