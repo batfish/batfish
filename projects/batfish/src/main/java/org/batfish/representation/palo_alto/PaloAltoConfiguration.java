@@ -941,7 +941,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     Streams.concat(
             _sharedGateways.values().stream(),
             _virtualSystems.values().stream(),
-            // Duplicates object names from panorama namespace should overwrite shared namespace
+            // Duplicate object names from panorama namespace should overwrite those in shared
+            // namespace
             Stream.of(_shared, _panorama).filter(Objects::nonNull))
         .forEach(
             namespace -> {

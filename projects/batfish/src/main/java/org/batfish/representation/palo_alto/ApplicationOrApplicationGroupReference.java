@@ -20,6 +20,7 @@ public class ApplicationOrApplicationGroupReference
   }
 
   /** Return the name of the referenced Application or ApplicationGroup */
+  @Override
   public String getName() {
     return _name;
   }

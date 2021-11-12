@@ -21,6 +21,7 @@ public class ServiceOrServiceGroupReference
   }
 
   /** Return the name of the referenced Service or ServiceGroup */
+  @Override
   public String getName() {
     return _name;
   }
