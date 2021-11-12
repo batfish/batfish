@@ -57,6 +57,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.BumTransportMethod;
@@ -451,7 +452,12 @@ public final class CumulusConversions {
     } else if (neighbor instanceof BgpIpNeighbor) {
       BgpIpNeighbor ipNeighbor = (BgpIpNeighbor) neighbor;
       addIpv4BgpNeighbor(c, vsConfig, ipNeighbor, localAs, bgpVrf, viBgpProcess, w);
-    } else if (!(neighbor instanceof BgpPeerGroupNeighbor || neighbor instanceof BgpIpv6Neighbor)) {
+    } else if (neighbor instanceof BgpDynamicNeighbor) {
+      BgpDynamicNeighbor passiveNeighbor = (BgpDynamicNeighbor) neighbor;
+      addPassiveBgpNeighbor(c, vsConfig, passiveNeighbor, localAs, bgpVrf, viBgpProcess, w);
+    } else if (!(neighbor instanceof BgpPeerGroupNeighbor
+        || neighbor instanceof BgpIpv6Neighbor
+        || neighbor instanceof BgpDynamic6Neighbor)) {
       throw new IllegalArgumentException(
           "Unsupported BGP neighbor type: " + neighbor.getClass().getSimpleName());
     }
@@ -600,6 +606,22 @@ public final class CumulusConversions {
                     .orElse(
                         computeLocalIpForBgpNeighbor(neighbor.getPeerIp(), c, bgpVrf.getVrfName())))
             .setPeerAddress(neighbor.getPeerIp());
+    generateBgpCommonPeerConfig(
+        c, vsConfig, neighbor, localAs, bgpVrf, newProc, peerConfigBuilder, w);
+  }
+
+  private static void addPassiveBgpNeighbor(
+      Configuration c,
+      CumulusConcatenatedConfiguration vsConfig,
+      BgpDynamicNeighbor neighbor,
+      @Nullable Long localAs,
+      BgpVrf bgpVrf,
+      org.batfish.datamodel.BgpProcess newProc,
+      Warnings w) {
+    BgpPassivePeerConfig.Builder peerConfigBuilder =
+        BgpPassivePeerConfig.builder()
+            .setLocalIp(resolveLocalIpFromUpdateSource(neighbor.getBgpNeighborSource(), c, w))
+            .setPeerPrefix(neighbor.getListenRange());
     generateBgpCommonPeerConfig(
         c, vsConfig, neighbor, localAs, bgpVrf, newProc, peerConfigBuilder, w);
   }

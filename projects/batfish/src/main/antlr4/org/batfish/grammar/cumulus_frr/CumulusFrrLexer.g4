@@ -208,6 +208,8 @@ HOSTNAME
   'hostname' -> pushMode(M_Word)
 ;
 
+IBGP: 'ibgp';
+
 IDENTIFIER: 'identifier';
 
 IGP: 'igp';
@@ -300,7 +302,9 @@ LOG_NEIGHBOR_CHANGES: 'log-neighbor-changes';
 
 LINE: 'line';
 
-IBGP: 'ibgp';
+LISTEN: 'listen';
+
+LIMIT: 'limit';
 
 MAXIMUM_PATHS: 'maximum-paths';
 
