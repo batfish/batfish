@@ -3,7 +3,7 @@ package org.batfish.representation.cumulus;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Prefix6;
 
-/** BGP neighbor identified by an IPv4 peer address */
+/** Passive BGP neighbor identified by a IPv6 listen range prefix. */
 public class BgpPassive6Neighbor extends BgpNeighbor {
   private final @Nonnull Prefix6 _listenRange;
 
