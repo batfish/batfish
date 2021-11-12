@@ -81,6 +81,7 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute.Builder;
@@ -331,6 +332,21 @@ public class CumulusFrrGrammarTest {
             .get("N")
             .getIpv4UnicastAddressFamily()
             .getActivated());
+  }
+
+  @Test
+  public void testBgpIPv4ListenRange() {
+    parse("router bgp 1\n bgp listen range 10.0.0.0/24 peer-group TEST\n");
+  }
+
+  @Test
+  public void testBgpIPv6ListenRange() {
+    parse("router bgp 1\n bgp listen range 2001:db8::/64 peer-group TEST\n");
+  }
+
+  @Test
+  public void testBgpListenLimit() {
+    parse("router bgp 1\n bgp listen limit 32\n");
   }
 
   @Test
@@ -954,6 +970,47 @@ public class CumulusFrrGrammarTest {
             Prefix.parse("8.8.8.1/32"),
             Prefix.parse("10.10.10.1/32"),
             Prefix.parse("10.10.10.2/32")));
+  }
+
+  /** Test that passive neighbors can establish sessions. */
+  @Test
+  public void testBgpPassiveNeighbor() throws IOException {
+    String snapshotName = "bgp-passive";
+    List<String> configurationNames = ImmutableList.of("frr-passive", "frr-active");
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationFiles(SNAPSHOTS_PREFIX + snapshotName, configurationNames)
+                .build(),
+            _folder);
+
+    batfish.computeDataPlane(batfish.getSnapshot());
+
+    ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpGraph =
+        batfish.getTopologyProvider().getBgpTopology(batfish.getSnapshot()).getGraph();
+
+    assertThat(
+        bgpGraph.edges().stream()
+            .map(e -> e.nodeU().getRemotePeerPrefix())
+            .collect(Collectors.toSet()),
+        containsInAnyOrder(Prefix.parse("10.1.1.0/24"), Prefix.parse("10.1.1.5/32")));
+  }
+
+  @Test
+  public void testBgpListenRangeParsing() {
+    parseLines(
+        "router bgp 1",
+        "  neighbor PG peer-group",
+        "  bgp listen range 172.19.0.0/24 peer-group PG ",
+        "  bgp listen range 2001:100:1:31::2/64 peer-group PG ");
+    Map<String, BgpNeighbor> neighbors = _frr.getBgpProcess().getDefaultVrf().getNeighbors();
+    assertThat(
+        neighbors.keySet(),
+        containsInAnyOrder("PG", "172.19.0.0/24", Prefix6.parse("2001:100:1:31::2/64").toString()));
+    assertThat(neighbors.get("172.19.0.0/24").getPeerGroup(), equalTo("PG"));
+    assertThat(
+        neighbors.get(Prefix6.parse("2001:100:1:31::2/64").toString()).getPeerGroup(),
+        equalTo("PG"));
   }
 
   @Test
