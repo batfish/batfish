@@ -35,6 +35,7 @@ sb_bgp
     | sbb_router_id
     | sbb_cluster_id
     | sbb_max_med_administrative
+    | sbb_listen
   )
 ;
 
@@ -469,6 +470,31 @@ sbafin_route_map
   ROUTE_MAP name=word (IN | OUT) NEWLINE
 ;
 
+sbb_listen
+:
+  LISTEN
+  (
+    sbbl_limit
+    | sbbl_range
+  )
+;
+
+sbbl_limit
+:
+  LIMIT uint32 NEWLINE
+;
+
+sbbl_range
+:
+  RANGE
+   (
+      prefix
+      | prefix6
+   )
+   PEER_GROUP name = word
+  NEWLINE
+;
+
 sbnobd_ipv4_unicast
 :
     IPV4_UNICAST NEWLINE
@@ -478,3 +504,4 @@ sb_timers
 :
     TIMERS BGP uint32 uint32 NEWLINE
 ;
+

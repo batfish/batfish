@@ -97,6 +97,11 @@ prefix
   IP_PREFIX
 ;
 
+prefix6
+:
+  IPV6_PREFIX
+;
+
 quoted_text
 :
   QUOTED_TEXT

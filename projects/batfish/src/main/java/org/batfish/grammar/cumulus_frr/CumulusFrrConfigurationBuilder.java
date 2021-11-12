@@ -60,6 +60,7 @@ import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.expr.DecrementMetric;
@@ -94,6 +95,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ospf_areaContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ospf_area_range_costContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ospf_redist_typeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Pl_line_actionContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Prefix6Context;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.PrefixContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rm_callContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rm_descriptionContext;
@@ -165,6 +167,8 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_confederationContext
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_max_med_administrativeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_router_idContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbbb_aspath_multipath_relaxContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbbl_limitContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbbl_rangeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_interfaceContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_ip6Context;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_ipContext;
@@ -189,6 +193,8 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_routeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_vniContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Uint32Context;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
+import org.batfish.representation.cumulus.BgpDynamic6Neighbor;
+import org.batfish.representation.cumulus.BgpDynamicNeighbor;
 import org.batfish.representation.cumulus.BgpInterfaceNeighbor;
 import org.batfish.representation.cumulus.BgpIpNeighbor;
 import org.batfish.representation.cumulus.BgpIpv4UnicastAddressFamily;
@@ -351,6 +357,10 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   private static @Nonnull Prefix toPrefix(PrefixContext ctx) {
     return Prefix.parse(ctx.getText());
+  }
+
+  private static @Nonnull Prefix6 toPrefix6(Prefix6Context ctx) {
+    return Prefix6.parse(ctx.getText());
   }
 
   @Override
@@ -1196,6 +1206,32 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     } else {
       _currentBgpVrf.setMaxMedAdministrative(DEFAULT_MAX_MED);
     }
+  }
+
+  @Override
+  public void exitSbbl_range(Sbbl_rangeContext ctx) {
+    BgpNeighbor bgpNeighbor;
+    if (ctx.prefix() != null) {
+      Prefix listenRange = toPrefix(ctx.prefix());
+      bgpNeighbor =
+          _currentBgpVrf
+              .getNeighbors()
+              .computeIfAbsent(
+                  listenRange.toString(), (name) -> new BgpDynamicNeighbor(name, listenRange));
+    } else {
+      Prefix6 listenRange = toPrefix6(ctx.prefix6());
+      bgpNeighbor =
+          _currentBgpVrf
+              .getNeighbors()
+              .computeIfAbsent(
+                  listenRange.toString(), (name) -> new BgpDynamic6Neighbor(name, listenRange));
+    }
+    bgpNeighbor.setPeerGroup(ctx.name.getText());
+  }
+
+  @Override
+  public void exitSbbl_limit(Sbbl_limitContext ctx) {
+    warn(ctx, "Batfish does not limit the number sessions for dynamic BGP neighbors");
   }
 
   @Override
