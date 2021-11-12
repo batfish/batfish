@@ -7,6 +7,8 @@ import static org.batfish.datamodel.matchers.TraceTreeMatchers.isTraceTree;
 import static org.batfish.main.BatfishTestUtils.DUMMY_SNAPSHOT_1;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.main.BatfishTestUtils.getBatfish;
+import static org.batfish.representation.palo_alto.PaloAltoConfiguration.PANORAMA_VSYS_NAME;
+import static org.batfish.representation.palo_alto.PaloAltoConfiguration.SHARED_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeObjectName;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchAddressAnyTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchAddressGroupTraceElement;
@@ -417,6 +419,104 @@ public class PaloAltoSecurityRuleTest {
                   isTraceTree(matchNegatedDestinationAddressTraceElement()),
                   isTraceTree(matchApplicationAnyTraceElement()),
                   isTraceTree(matchServiceAnyTraceElement()))));
+    }
+  }
+
+  @Test
+  public void testPanoramaRulebaseTracing() throws IOException {
+    String hostname = "panorama-rulebase-tracing";
+    String filename = "configs/" + hostname;
+    Configuration c = parseTextConfigs(hostname).get("00000001");
+    String iface1 = "ethernet1/1";
+    String crossZoneFilterName =
+        zoneToZoneFilter(computeObjectName("vsys1", "z1"), computeObjectName("vsys1", "z2"));
+
+    Flow rule1Flow = createFlow("1.1.1.10", "1.1.4.10", IpProtocol.TCP, 0, 1);
+    Flow rule2Flow = createFlow("1.1.4.10", "1.1.1.10", IpProtocol.TCP, 0, 2);
+    Flow rule3Flow = createFlow("1.1.1.10", "1.1.4.10", IpProtocol.TCP, 0, 53);
+    Flow rule4Flow = createFlow("1.1.1.10", "1.1.4.10", IpProtocol.TCP, 0, 179);
+
+    IpAccessList filter = c.getIpAccessLists().get(crossZoneFilterName);
+    BiFunction<String, Flow, List<TraceTree>> trace =
+        (inIface, flow) ->
+            AclTracer.trace(
+                filter,
+                flow,
+                inIface,
+                c.getIpAccessLists(),
+                c.getIpSpaces(),
+                c.getIpSpaceMetadata());
+
+    // TODO fix shared vs panorama...
+    {
+      List<TraceTree> traces = trace.apply(iface1, rule1Flow);
+      assertThat(
+          traces,
+          contains(
+              isTraceTree(
+                  matchSecurityRuleTraceElement("RULE1", PANORAMA_VSYS_NAME, filename),
+                  isTraceTree(
+                      matchSourceAddressTraceElement(),
+                      isTraceTree(
+                          matchAddressObjectTraceElement("addr1", SHARED_VSYS_NAME, filename))),
+                  isTraceTree(
+                      matchDestinationAddressTraceElement(),
+                      isTraceTree(matchAddressAnyTraceElement())),
+                  isTraceTree(matchApplicationAnyTraceElement()),
+                  isTraceTree(matchServiceTraceElement()))));
+    }
+    {
+      List<TraceTree> traces = trace.apply(iface1, rule2Flow);
+      assertThat(
+          traces,
+          contains(
+              isTraceTree(
+                  matchSecurityRuleTraceElement("RULE2", PANORAMA_VSYS_NAME, filename),
+                  isTraceTree(
+                      matchSourceAddressTraceElement(),
+                      isTraceTree(
+                          matchAddressObjectTraceElement("addr2", PANORAMA_VSYS_NAME, filename))),
+                  isTraceTree(
+                      matchDestinationAddressTraceElement(),
+                      isTraceTree(matchAddressAnyTraceElement())),
+                  isTraceTree(matchApplicationAnyTraceElement()),
+                  isTraceTree(matchServiceTraceElement()))));
+    }
+    {
+      List<TraceTree> traces = trace.apply(iface1, rule3Flow);
+      assertThat(
+          traces,
+          contains(
+              isTraceTree(
+                  matchSecurityRuleTraceElement("RULE3", PANORAMA_VSYS_NAME, filename),
+                  isTraceTree(
+                      matchSourceAddressTraceElement(), isTraceTree(matchAddressAnyTraceElement())),
+                  isTraceTree(
+                      matchDestinationAddressTraceElement(),
+                      isTraceTree(matchAddressAnyTraceElement())),
+                  isTraceTree(
+                      matchServiceApplicationDefaultTraceElement(),
+                      isTraceTree(
+                          matchApplicationGroupTraceElement(
+                              "app_group1", SHARED_VSYS_NAME, filename))))));
+    }
+    {
+      List<TraceTree> traces = trace.apply(iface1, rule4Flow);
+      assertThat(
+          traces,
+          contains(
+              isTraceTree(
+                  matchSecurityRuleTraceElement("RULE4", PANORAMA_VSYS_NAME, filename),
+                  isTraceTree(
+                      matchSourceAddressTraceElement(), isTraceTree(matchAddressAnyTraceElement())),
+                  isTraceTree(
+                      matchDestinationAddressTraceElement(),
+                      isTraceTree(matchAddressAnyTraceElement())),
+                  isTraceTree(
+                      matchServiceApplicationDefaultTraceElement(),
+                      isTraceTree(
+                          matchApplicationGroupTraceElement(
+                              "app_group2", PANORAMA_VSYS_NAME, filename))))));
     }
   }
 

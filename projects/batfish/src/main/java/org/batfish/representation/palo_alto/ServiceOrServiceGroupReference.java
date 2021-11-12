@@ -1,13 +1,15 @@
 package org.batfish.representation.palo_alto;
 
-import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class ServiceOrServiceGroupReference
-    implements Serializable, Comparable<ServiceOrServiceGroupReference> {
+    implements Comparable<ServiceOrServiceGroupReference>, Reference {
 
-  private final String _name;
+  @Override
+  public <T, U> T accept(ReferenceVisitor<T, U> visitor, U arg) {
+    return visitor.visitServiceOrServiceGroupReference(this, arg);
+  }
 
   public ServiceOrServiceGroupReference(String name) {
     _name = name;
@@ -34,17 +36,19 @@ public class ServiceOrServiceGroupReference
     }
     switch (vsys.getNamespaceType()) {
       case LEAF:
-        if (pc.getShared() != null) {
-          return getVsysName(pc, pc.getShared());
-        }
-        // fall-through
-      case SHARED:
         if (pc.getPanorama() != null) {
           return getVsysName(pc, pc.getPanorama());
+        }
+        // fall-through
+      case PANORAMA:
+        if (pc.getShared() != null) {
+          return getVsysName(pc, pc.getShared());
         }
         // fall-through
       default:
         return null;
     }
   }
+
+  private final String _name;
 }

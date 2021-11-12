@@ -69,6 +69,7 @@ import static org.batfish.representation.palo_alto.PaloAltoConfiguration.compute
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeOutgoingFilterName;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeServiceGroupMemberAclName;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_OBJECT;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICATION_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICATION_GROUP_OR_APPLICATION;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.EXTERNAL_LIST;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.INTERFACE;
@@ -4239,5 +4240,73 @@ public final class PaloAltoGrammarTest {
     assertThat(rule.getDescription(), equalTo("longish description"));
     assertThat(rule.getTags(), contains("TAG1", "TAG2"));
     assertTrue(rule.getDisabled());
+  }
+
+  /**
+   * Test that structures in different Panorama namespaces are attached in the correct places for
+   * managed devices.
+   */
+  @Test
+  public void testPanoramaNamespace() {
+    String hostname = "panorama-namespace";
+    String firewallId = "00000001";
+    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
+    List<PaloAltoConfiguration> managedDevices = c.getManagedConfigurations();
+    // Should have a single managed device, firewall 1
+    assertThat(managedDevices, iterableWithSize(1));
+    PaloAltoConfiguration managedDevice = managedDevices.get(0);
+    assertThat(managedDevice.getHostname(), equalTo(firewallId));
+
+    Vsys panorama = managedDevice.getPanorama();
+    Vsys shared = managedDevice.getShared();
+    assertNotNull(panorama);
+    assertNotNull(shared);
+
+    // Shared Panorama objects should make it into the managed device's shared Vsys
+    assertThat(shared.getAddressObjects(), hasKey("ADDRESS1"));
+    assertThat(shared.getServices(), hasKey("SERVICE1"));
+    assertThat(shared.getApplicationGroups(), hasKey("APPGROUP1"));
+
+    // Device-group objects should make it into the managed device's Panorama Vsys
+    // Note: this may change in the future
+    assertThat(panorama.getAddressObjects(), hasKey("ADDRESS2"));
+    assertThat(panorama.getServices(), hasKey("SERVICE2"));
+    assertThat(panorama.getApplicationGroups(), hasKey("APPGROUP2"));
+  }
+
+  /**
+   * Test that definitions and references are tracked for objects in different Panorama namespaces.
+   */
+  @Test
+  public void testPanoramaNamespaceReferences() throws IOException {
+    String hostname = "panorama-namespace";
+    String filename = "configs/" + hostname;
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    String addr1Name = computeObjectName(SHARED_VSYS_NAME, "ADDRESS1");
+    String addr2Name = computeObjectName(PANORAMA_VSYS_NAME, "ADDRESS2");
+    String service1Name = computeObjectName(SHARED_VSYS_NAME, "SERVICE1");
+    String service2Name = computeObjectName(PANORAMA_VSYS_NAME, "SERVICE2");
+    String appGroup1Name = computeObjectName(SHARED_VSYS_NAME, "APPGROUP1");
+    String appGroup2Name = computeObjectName(PANORAMA_VSYS_NAME, "APPGROUP2");
+
+    // Confirm structure definitions are tracked
+    assertThat(ccae, hasDefinedStructure(filename, ADDRESS_OBJECT, addr1Name));
+    assertThat(ccae, hasDefinedStructure(filename, ADDRESS_OBJECT, addr2Name));
+    assertThat(ccae, hasDefinedStructure(filename, SERVICE, service1Name));
+    assertThat(ccae, hasDefinedStructure(filename, SERVICE, service2Name));
+    assertThat(ccae, hasDefinedStructure(filename, APPLICATION_GROUP, appGroup1Name));
+    assertThat(ccae, hasDefinedStructure(filename, APPLICATION_GROUP, appGroup2Name));
+
+    // Confirm structure references are tracked
+    assertThat(ccae, hasNumReferrers(filename, ADDRESS_OBJECT, addr1Name, 1));
+    assertThat(ccae, hasNumReferrers(filename, ADDRESS_OBJECT, addr2Name, 1));
+    assertThat(ccae, hasNumReferrers(filename, SERVICE, service1Name, 1));
+    assertThat(ccae, hasNumReferrers(filename, SERVICE, service2Name, 1));
+    assertThat(ccae, hasNumReferrers(filename, APPLICATION_GROUP, appGroup1Name, 1));
+    assertThat(ccae, hasNumReferrers(filename, APPLICATION_GROUP, appGroup2Name, 1));
   }
 }

@@ -1,0 +1,65 @@
+set deviceconfig system hostname panorama-rulebase-tracing
+#
+#
+#
+# Panorama configuration
+#
+set shared address addr1 ip-netmask 1.1.1.10
+set shared service service1 protocol tcp port 1
+set shared application-group app_group1 members dns
+# Managed-device configuration
+#
+set device-group DG1 description "test device-group 1"
+set device-group DG1 devices 00000001
+set device-group DG1 address addr2 ip-netmask 1.1.4.10
+set device-group DG1 service service2 protocol tcp port 2
+set device-group DG1 application-group app_group2 members bgp
+#
+# Network configuration required to make device 00000001 allow traffic through
+set template T1 config devices localhost.localdomain vsys vsys1 zone z1 network layer3 ethernet1/1
+set template T1 config devices localhost.localdomain vsys vsys1 zone z2 network layer3 ethernet1/4
+set template T1 config devices localhost.localdomain vsys vsys1 import network interface [ ethernet1/1 ethernet1/4 ]
+set template T1 config devices localhost.localdomain network interface ethernet ethernet1/1 layer3 ip 1.1.1.1/24
+set template T1 config devices localhost.localdomain network interface ethernet ethernet1/4 layer3 ip 1.1.4.1/24
+set template T1 config devices localhost.localdomain network virtual-router default interface [ ethernet1/1 ethernet1/4 ]
+set template-stack TS1 templates T1
+set template-stack TS1 devices 00000001
+#
+
+
+set device-group DG1 pre-rulebase security rules RULE1 from any
+set device-group DG1 pre-rulebase security rules RULE1 to any
+set device-group DG1 pre-rulebase security rules RULE1 source addr1
+set device-group DG1 pre-rulebase security rules RULE1 source-user any
+set device-group DG1 pre-rulebase security rules RULE1 destination any
+set device-group DG1 pre-rulebase security rules RULE1 service service1
+set device-group DG1 pre-rulebase security rules RULE1 application any
+set device-group DG1 pre-rulebase security rules RULE1 action deny
+
+set device-group DG1 pre-rulebase security rules RULE2 from any
+set device-group DG1 pre-rulebase security rules RULE2 to any
+set device-group DG1 pre-rulebase security rules RULE2 source addr2
+set device-group DG1 pre-rulebase security rules RULE2 source-user any
+set device-group DG1 pre-rulebase security rules RULE2 destination any
+set device-group DG1 pre-rulebase security rules RULE2 service service2
+set device-group DG1 pre-rulebase security rules RULE2 application any
+set device-group DG1 pre-rulebase security rules RULE2 action deny
+
+set device-group DG1 pre-rulebase security rules RULE3 from any
+set device-group DG1 pre-rulebase security rules RULE3 to any
+set device-group DG1 pre-rulebase security rules RULE3 source any
+set device-group DG1 pre-rulebase security rules RULE3 source-user any
+set device-group DG1 pre-rulebase security rules RULE3 destination any
+set device-group DG1 pre-rulebase security rules RULE3 service application-default
+set device-group DG1 pre-rulebase security rules RULE3 application app_group1
+set device-group DG1 pre-rulebase security rules RULE3 action allow
+
+set device-group DG1 pre-rulebase security rules RULE4 from any
+set device-group DG1 pre-rulebase security rules RULE4 to any
+set device-group DG1 pre-rulebase security rules RULE4 source any
+set device-group DG1 pre-rulebase security rules RULE4 source-user any
+set device-group DG1 pre-rulebase security rules RULE4 destination any
+set device-group DG1 pre-rulebase security rules RULE4 service application-default
+set device-group DG1 pre-rulebase security rules RULE4 application app_group2
+set device-group DG1 pre-rulebase security rules RULE4 action allow
+
