@@ -107,7 +107,7 @@ i_address_virtual
   (
     v4 = interface_address
     | v6 = interface_address6
-  ) NEWLINE
+  )+ NEWLINE
 ;
 
 i_alias

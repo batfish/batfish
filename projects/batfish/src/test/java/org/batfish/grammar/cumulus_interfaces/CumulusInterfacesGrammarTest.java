@@ -240,14 +240,19 @@ public class CumulusInterfacesGrammarTest {
 
   @Test
   public void testIfaceAddressVirtual() {
-    String input = "iface vlan1\n address-virtual 00:00:00:00:00:00 1.2.3.4/24\n";
+    String prefix1 = "10.0.0.254/24";
+    String prefix2 = "10.0.1.254/24";
+    String mac = "00:00:00:00:00:00";
+    String input = String.format("iface vlan1\n address-virtual %s %s %s\n", mac, prefix1, prefix2);
     InterfacesInterface iface = parse(input).getInterfaces().get("vlan1");
     assertThat(
         iface.getAddressVirtuals(),
         equalTo(
             ImmutableMap.of(
-                MacAddress.parse("00:00:00:00:00:00"),
-                ImmutableSet.of(ConcreteInterfaceAddress.parse("1.2.3.4/24")))));
+                MacAddress.parse(mac),
+                ImmutableSet.of(
+                    ConcreteInterfaceAddress.parse(prefix1),
+                    ConcreteInterfaceAddress.parse(prefix2)))));
   }
 
   @Test
