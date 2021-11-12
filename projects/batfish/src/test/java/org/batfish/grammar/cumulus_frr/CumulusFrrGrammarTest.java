@@ -368,8 +368,7 @@ public class CumulusFrrGrammarTest {
             .getIpv4Unicast()
             .getRedistributionPolicies()
             .get(CONNECTED);
-    assertNotNull(policy);
-    assertNull(policy.getRouteMap());
+    assertNull(policy);
   }
 
   @Test
@@ -418,8 +417,7 @@ public class CumulusFrrGrammarTest {
     parseLines("router bgp 1", "redistribute ospf");
     BgpRedistributionPolicy policy =
         _frr.getBgpProcess().getDefaultVrf().getIpv4Unicast().getRedistributionPolicies().get(OSPF);
-    assertNotNull(policy);
-    assertNull(policy.getRouteMap());
+    assertNull(policy);
   }
 
   @Test
@@ -441,8 +439,7 @@ public class CumulusFrrGrammarTest {
         "router bgp 1", "address-family ipv4 unicast", "redistribute ospf", "exit-address-family");
     BgpRedistributionPolicy policy =
         _frr.getBgpProcess().getDefaultVrf().getIpv4Unicast().getRedistributionPolicies().get(OSPF);
-    assertNotNull(policy);
-    assertNull(policy.getRouteMap());
+    assertNull(policy);
   }
 
   @Test
@@ -458,8 +455,7 @@ public class CumulusFrrGrammarTest {
             .getIpv4Unicast()
             .getRedistributionPolicies()
             .get(STATIC);
-    assertNotNull(policy);
-    assertNull(policy.getRouteMap());
+    assertNull(policy);
   }
 
   @Test

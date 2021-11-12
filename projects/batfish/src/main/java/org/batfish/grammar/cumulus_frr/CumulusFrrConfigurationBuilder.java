@@ -532,17 +532,14 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       _c.referenceStructure(ROUTE_MAP, routeMap, usage, ctx.getStart().getLine());
     }
 
-    BgpRedistributionPolicy oldRedistributionPolicy;
-
     _currentBgpVrf.getOrCreateIpv4Unicast();
 
-    oldRedistributionPolicy =
-        _currentBgpVrf
-            .getIpv4Unicast()
-            .getRedistributionPolicies()
-            .put(srcProtocol, new BgpRedistributionPolicy(srcProtocol, routeMap));
+    BgpRedistributionPolicy oldRedistributionPolicy =
+        _currentBgpVrf.getIpv4Unicast().getRedistributionPolicies().get(srcProtocol);
+    BgpRedistributionPolicy newRedistributionPolicy =
+        (routeMap != null) ? new BgpRedistributionPolicy(srcProtocol, routeMap) : null;
 
-    if (oldRedistributionPolicy != null) {
+    if (oldRedistributionPolicy != newRedistributionPolicy) {
       _w.addWarning(
           ctx,
           getFullText(ctx),
@@ -551,6 +548,11 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
               "overwriting BgpRedistributionPolicy for vrf %s, protocol %s",
               _currentBgpVrf.getVrfName(), srcProtocol));
     }
+
+    _currentBgpVrf
+        .getIpv4Unicast()
+        .getRedistributionPolicies()
+        .put(srcProtocol, newRedistributionPolicy);
   }
 
   @Override
