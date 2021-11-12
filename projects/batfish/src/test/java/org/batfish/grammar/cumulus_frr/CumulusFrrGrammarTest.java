@@ -959,7 +959,7 @@ public class CumulusFrrGrammarTest {
 
   /** Test that passive neighbors can establish sessions. */
   @Test
-  public void testBgpPassiveNeighbor() throws IOException {
+  public void testBgpDynamicNeighbor() throws IOException {
     String snapshotName = "bgp-passive";
     List<String> configurationNames = ImmutableList.of("frr-passive", "frr-active");
     Batfish batfish =
@@ -1000,7 +1000,7 @@ public class CumulusFrrGrammarTest {
     assertThat(
         _warnings.getParseWarnings(),
         contains(
-            hasComment("Batfish does not limit the number sessions for passive BGP neighbors")));
+            hasComment("Batfish does not limit the number sessions for dynamic BGP neighbors")));
   }
 
   @Test

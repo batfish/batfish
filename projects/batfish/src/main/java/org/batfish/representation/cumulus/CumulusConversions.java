@@ -452,12 +452,12 @@ public final class CumulusConversions {
     } else if (neighbor instanceof BgpIpNeighbor) {
       BgpIpNeighbor ipNeighbor = (BgpIpNeighbor) neighbor;
       addIpv4BgpNeighbor(c, vsConfig, ipNeighbor, localAs, bgpVrf, viBgpProcess, w);
-    } else if (neighbor instanceof BgpPassiveNeighbor) {
-      BgpPassiveNeighbor passiveNeighbor = (BgpPassiveNeighbor) neighbor;
+    } else if (neighbor instanceof BgpDynamicNeighbor) {
+      BgpDynamicNeighbor passiveNeighbor = (BgpDynamicNeighbor) neighbor;
       addPassiveBgpNeighbor(c, vsConfig, passiveNeighbor, localAs, bgpVrf, viBgpProcess, w);
     } else if (!(neighbor instanceof BgpPeerGroupNeighbor
         || neighbor instanceof BgpIpv6Neighbor
-        || neighbor instanceof BgpPassive6Neighbor)) {
+        || neighbor instanceof BgpDynamic6Neighbor)) {
       throw new IllegalArgumentException(
           "Unsupported BGP neighbor type: " + neighbor.getClass().getSimpleName());
     }
@@ -613,7 +613,7 @@ public final class CumulusConversions {
   private static void addPassiveBgpNeighbor(
       Configuration c,
       CumulusConcatenatedConfiguration vsConfig,
-      BgpPassiveNeighbor neighbor,
+      BgpDynamicNeighbor neighbor,
       @Nullable Long localAs,
       BgpVrf bgpVrf,
       org.batfish.datamodel.BgpProcess newProc,

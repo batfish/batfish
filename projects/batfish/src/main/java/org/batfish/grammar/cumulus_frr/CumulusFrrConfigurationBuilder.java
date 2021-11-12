@@ -193,6 +193,8 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_routeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_vniContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Uint32Context;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
+import org.batfish.representation.cumulus.BgpDynamic6Neighbor;
+import org.batfish.representation.cumulus.BgpDynamicNeighbor;
 import org.batfish.representation.cumulus.BgpInterfaceNeighbor;
 import org.batfish.representation.cumulus.BgpIpNeighbor;
 import org.batfish.representation.cumulus.BgpIpv4UnicastAddressFamily;
@@ -206,8 +208,6 @@ import org.batfish.representation.cumulus.BgpNeighborL2vpnEvpnAddressFamily;
 import org.batfish.representation.cumulus.BgpNeighborSourceAddress;
 import org.batfish.representation.cumulus.BgpNeighborSourceInterface;
 import org.batfish.representation.cumulus.BgpNetwork;
-import org.batfish.representation.cumulus.BgpPassive6Neighbor;
-import org.batfish.representation.cumulus.BgpPassiveNeighbor;
 import org.batfish.representation.cumulus.BgpPeerGroupNeighbor;
 import org.batfish.representation.cumulus.BgpProcess;
 import org.batfish.representation.cumulus.BgpRedistributionPolicy;
@@ -1217,21 +1217,21 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
           _currentBgpVrf
               .getNeighbors()
               .computeIfAbsent(
-                  listenRange.toString(), (name) -> new BgpPassiveNeighbor(name, listenRange));
+                  listenRange.toString(), (name) -> new BgpDynamicNeighbor(name, listenRange));
     } else {
       Prefix6 listenRange = toPrefix6(ctx.prefix6());
       bgpNeighbor =
           _currentBgpVrf
               .getNeighbors()
               .computeIfAbsent(
-                  listenRange.toString(), (name) -> new BgpPassive6Neighbor(name, listenRange));
+                  listenRange.toString(), (name) -> new BgpDynamic6Neighbor(name, listenRange));
     }
     bgpNeighbor.setPeerGroup(ctx.name.getText());
   }
 
   @Override
   public void exitSbbl_limit(Sbbl_limitContext ctx) {
-    warn(ctx, "Batfish does not limit the number sessions for passive BGP neighbors");
+    warn(ctx, "Batfish does not limit the number sessions for dynamic BGP neighbors");
   }
 
   @Override
