@@ -269,6 +269,7 @@ import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.Line;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LocalRoute;
+import org.batfish.datamodel.MainRibVrfLeakConfig;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfExternalType1Route;
@@ -288,7 +289,6 @@ import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.VrfLeakingConfig;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.AndMatchExpr;
@@ -5583,11 +5583,12 @@ public final class FlatJuniperGrammarTest {
      * they were referenced, ignoring second reference to VRF1, not including undefined MYSTERY_VRF.
      */
     Vrf defaultVrf = c.getVrfs().get(DEFAULT_VRF_NAME);
-    VrfLeakingConfig.Builder leakConfigBuilder =
-        VrfLeakingConfig.builder()
+    assertNotNull(defaultVrf.getVrfLeakConfig());
+    MainRibVrfLeakConfig.Builder leakConfigBuilder =
+        MainRibVrfLeakConfig.builder()
             .setImportPolicy(generateInstanceImportPolicyName(DEFAULT_VRF_NAME));
     assertThat(
-        defaultVrf.getVrfLeakConfigs(),
+        defaultVrf.getVrfLeakConfig().getMainRibVrfLeakConfigs(),
         containsInAnyOrder(
             leakConfigBuilder.setImportFromVrf("VRF3").build(),
             leakConfigBuilder.setImportFromVrf("VRF1").build(),

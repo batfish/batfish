@@ -8,13 +8,11 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Functions;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Map;
 import java.util.NavigableSet;
 import java.util.SortedMap;
@@ -44,9 +42,7 @@ public class Vrf extends ComparableStructure<String> {
     @Nullable private Configuration _owner;
     @Nullable private String _resolutionPolicy;
     @Nonnull private Map<Long, EigrpProcess> _eigrpProcesses = ImmutableMap.of();
-
-    @Nonnull
-    private ImmutableList.Builder<VrfLeakingConfig> _vrfLeakingConfigs = ImmutableList.builder();
+    @Nullable private VrfLeakConfig _vrfLeakConfig;
 
     private Builder(Supplier<String> nameGenerator) {
       _nameGenerator = nameGenerator;
@@ -60,7 +56,7 @@ public class Vrf extends ComparableStructure<String> {
         _owner.getVrfs().put(name, vrf);
       }
       vrf.setEigrpProcesses(_eigrpProcesses);
-      vrf.setVrfLeakConfigs(_vrfLeakingConfigs.build());
+      vrf.setVrfLeakConfig(_vrfLeakConfig);
       vrf.setResolutionPolicy(_resolutionPolicy);
       return vrf;
     }
@@ -85,8 +81,8 @@ public class Vrf extends ComparableStructure<String> {
       return this;
     }
 
-    public Builder addVrfLeakingConfig(@Nonnull VrfLeakingConfig c) {
-      _vrfLeakingConfigs.add(c);
+    public Builder setVrfLeakConfig(VrfLeakConfig vrfLeakConfig) {
+      _vrfLeakConfig = vrfLeakConfig;
       return this;
     }
   }
@@ -104,7 +100,7 @@ public class Vrf extends ComparableStructure<String> {
   private static final String PROP_RESOLUTION_POLICY = "resolutionPolicy";
   private static final String PROP_RIP_PROCESS = "ripProcess";
   private static final String PROP_STATIC_ROUTES = "staticRoutes";
-  private static final String PROP_VRF_LEAKING_CONFIGS = "vrfLeakingConfigs";
+  private static final String PROP_VRF_LEAK_CONFIG = "vrfLeakConfig";
 
   public static @Nonnull Builder builder() {
     return new Builder(null);
@@ -130,7 +126,7 @@ public class Vrf extends ComparableStructure<String> {
   private SortedSet<StaticRoute> _staticRoutes;
   private Map<Integer, Layer2Vni> _layer2Vnis;
   private Map<Integer, Layer3Vni> _layer3Vnis;
-  private List<VrfLeakingConfig> _vrfLeakConfigs;
+  @Nullable private VrfLeakConfig _vrfLeakConfig;
 
   public Vrf(@Nonnull String name) {
     super(name);
@@ -143,7 +139,6 @@ public class Vrf extends ComparableStructure<String> {
     _staticRoutes = new TreeSet<>();
     _layer2Vnis = ImmutableMap.of();
     _layer3Vnis = ImmutableMap.of();
-    _vrfLeakConfigs = ImmutableList.of();
   }
 
   @JsonCreator
@@ -282,20 +277,15 @@ public class Vrf extends ComparableStructure<String> {
             .build();
   }
 
-  @JsonProperty(PROP_VRF_LEAKING_CONFIGS)
-  public List<VrfLeakingConfig> getVrfLeakConfigs() {
-    return _vrfLeakConfigs;
+  @JsonProperty(PROP_VRF_LEAK_CONFIG)
+  @Nullable
+  public VrfLeakConfig getVrfLeakConfig() {
+    return _vrfLeakConfig;
   }
 
-  public void addVrfLeakingConfig(@Nonnull VrfLeakingConfig c) {
-    _vrfLeakConfigs =
-        ImmutableList.<VrfLeakingConfig>builder().addAll(_vrfLeakConfigs).add(c).build();
-  }
-
-  /** For Builder (or Jackson) use only */
-  @JsonProperty(PROP_VRF_LEAKING_CONFIGS)
-  private void setVrfLeakConfigs(@Nullable List<VrfLeakingConfig> vrfLeakConfigs) {
-    _vrfLeakConfigs = ImmutableList.copyOf(firstNonNull(vrfLeakConfigs, ImmutableList.of()));
+  @JsonProperty(PROP_VRF_LEAK_CONFIG)
+  public void setVrfLeakConfig(@Nullable VrfLeakConfig vrfLeakConfig) {
+    _vrfLeakConfig = vrfLeakConfig;
   }
 
   public void setAppliedRibGroups(Map<RoutingProtocol, RibGroup> appliedRibGroups) {
