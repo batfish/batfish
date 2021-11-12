@@ -335,21 +335,6 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testBgpIPv4ListenRange() {
-    parse("router bgp 1\n bgp listen range 10.0.0.0/24 peer-group TEST\n");
-  }
-
-  @Test
-  public void testBgpIPv6ListenRange() {
-    parse("router bgp 1\n bgp listen range 2001:db8::/64 peer-group TEST\n");
-  }
-
-  @Test
-  public void testBgpListenLimit() {
-    parse("router bgp 1\n bgp listen limit 32\n");
-  }
-
-  @Test
   public void testBgpAddressFamilyIpv4UnicastNetwork() {
     parseLines(
         "router bgp 1", "address-family ipv4 unicast", "network 1.2.3.4/24", "exit-address-family");
@@ -997,12 +982,13 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testBgpListenRangeParsing() {
+  public void testBgpListenParsing() {
     parseLines(
         "router bgp 1",
         "  neighbor PG peer-group",
-        "  bgp listen range 172.19.0.0/24 peer-group PG ",
-        "  bgp listen range 2001:100:1:31::2/64 peer-group PG ");
+        "  bgp listen range 172.19.0.0/24 peer-group PG",
+        "  bgp listen range 2001:100:1:31::2/64 peer-group PG",
+        "  bgp listen limit 42");
     Map<String, BgpNeighbor> neighbors = _frr.getBgpProcess().getDefaultVrf().getNeighbors();
     assertThat(
         neighbors.keySet(),
@@ -1011,6 +997,10 @@ public class CumulusFrrGrammarTest {
     assertThat(
         neighbors.get(Prefix6.parse("2001:100:1:31::2/64").toString()).getPeerGroup(),
         equalTo("PG"));
+    assertThat(
+        _warnings.getParseWarnings(),
+        contains(
+            hasComment("Batfish does not limit the number sessions for passive BGP neighbors")));
   }
 
   @Test

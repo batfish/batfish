@@ -167,6 +167,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_confederationContext
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_max_med_administrativeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_router_idContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbbb_aspath_multipath_relaxContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbbl_limitContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbbl_rangeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_interfaceContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_ip6Context;
@@ -1226,6 +1227,11 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
                   listenRange.toString(), (name) -> new BgpPassive6Neighbor(name, listenRange));
     }
     bgpNeighbor.setPeerGroup(ctx.name.getText());
+  }
+
+  @Override
+  public void exitSbbl_limit(Sbbl_limitContext ctx) {
+    warn(ctx, "Batfish does not limit the number sessions for passive BGP neighbors");
   }
 
   @Override
