@@ -32,12 +32,14 @@ public class CumulusFrrConfiguration implements Serializable {
   private @Nonnull Map<String, Vrf> _vrfs;
   private final @Nonnull Map<String, IpAsPathAccessList> _ipAsPathAccessLists;
   private final @Nonnull Map<String, IpPrefixList> _ipPrefixLists;
+  private final @Nonnull Map<String, Ipv6PrefixList> _ipv6PrefixLists;
   private final @Nonnull Map<String, IpCommunityList> _ipCommunityLists;
 
   public CumulusFrrConfiguration() {
     _interfaces = new HashMap<>();
     _ipAsPathAccessLists = new HashMap<>();
     _ipPrefixLists = new HashMap<>();
+    _ipv6PrefixLists = new HashMap<>();
     _ipCommunityLists = new HashMap<>();
     _ipv4Nameservers = new LinkedList<>();
     _ipv6Nameservers = new LinkedList<>();
@@ -94,6 +96,11 @@ public class CumulusFrrConfiguration implements Serializable {
   @Nonnull
   public Map<String, IpPrefixList> getIpPrefixLists() {
     return _ipPrefixLists;
+  }
+
+  @Nonnull
+  public Map<String, Ipv6PrefixList> getIpv6PrefixLists() {
+    return _ipv6PrefixLists;
   }
 
   @Nonnull

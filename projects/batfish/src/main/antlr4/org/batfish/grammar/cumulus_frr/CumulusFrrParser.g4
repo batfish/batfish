@@ -1,6 +1,6 @@
 parser grammar CumulusFrrParser;
 
-import CumulusFrr_bgp, CumulusFrr_common, CumulusFrr_interface, CumulusFrr_ip_community_list, CumulusFrr_ip_prefix_list, CumulusFrr_ospf, CumulusFrr_routemap, CumulusFrr_vrf;
+import CumulusFrr_bgp, CumulusFrr_common, CumulusFrr_interface, CumulusFrr_ip_community_list, CumulusFrr_ip_prefix_list, CumulusFrr_ipv6_prefix_list, CumulusFrr_ospf, CumulusFrr_routemap, CumulusFrr_vrf;
 
 options {
   superClass =
@@ -111,7 +111,10 @@ s_ip
 
 s_ipv6
 :
-   IPV6 null_rest_of_line
+   IPV6 (
+       ipv6_prefix_list
+     | null_rest_of_line
+   )
 ;
 
 ip_route
