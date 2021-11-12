@@ -5,6 +5,7 @@ import static java.lang.Long.parseLong;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.grammar.frr.FrrParser.Int_exprContext;
 import static org.batfish.representation.frr.CumulusStructureType.ABSTRACT_INTERFACE;
+import static org.batfish.representation.frr.CumulusStructureType.IPV6_PREFIX_LIST;
 import static org.batfish.representation.frr.CumulusStructureType.IP_AS_PATH_ACCESS_LIST;
 import static org.batfish.representation.frr.CumulusStructureType.IP_COMMUNITY_LIST;
 import static org.batfish.representation.frr.CumulusStructureType.IP_COMMUNITY_LIST_EXPANDED;
@@ -88,12 +89,14 @@ import org.batfish.grammar.frr.FrrParser.Ip_community_list_nameContext;
 import org.batfish.grammar.frr.FrrParser.Ip_prefix_lengthContext;
 import org.batfish.grammar.frr.FrrParser.Ip_prefix_listContext;
 import org.batfish.grammar.frr.FrrParser.Ip_routeContext;
+import org.batfish.grammar.frr.FrrParser.Ipv6_prefix_listContext;
 import org.batfish.grammar.frr.FrrParser.Line_actionContext;
 import org.batfish.grammar.frr.FrrParser.Literal_standard_communityContext;
 import org.batfish.grammar.frr.FrrParser.Origin_typeContext;
 import org.batfish.grammar.frr.FrrParser.Ospf_areaContext;
 import org.batfish.grammar.frr.FrrParser.Ospf_area_range_costContext;
 import org.batfish.grammar.frr.FrrParser.Ospf_redist_typeContext;
+import org.batfish.grammar.frr.FrrParser.Pl6_line_actionContext;
 import org.batfish.grammar.frr.FrrParser.Pl_line_actionContext;
 import org.batfish.grammar.frr.FrrParser.Prefix6Context;
 import org.batfish.grammar.frr.FrrParser.PrefixContext;
@@ -229,6 +232,8 @@ import org.batfish.representation.frr.IpCommunityListStandard;
 import org.batfish.representation.frr.IpCommunityListStandardLine;
 import org.batfish.representation.frr.IpPrefixList;
 import org.batfish.representation.frr.IpPrefixListLine;
+import org.batfish.representation.frr.Ipv6PrefixList;
+import org.batfish.representation.frr.Ipv6PrefixListLine;
 import org.batfish.representation.frr.OspfArea;
 import org.batfish.representation.frr.OspfAreaRange;
 import org.batfish.representation.frr.OspfNetworkArea;
@@ -284,6 +289,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   private @Nullable BgpVrf _currentBgpVrf;
   private @Nullable BgpNeighbor _currentBgpNeighbor;
   private @Nullable IpPrefixList _currentIpPrefixList;
+  private @Nullable Ipv6PrefixList _currentIpv6PrefixList;
   private @Nullable BgpNeighborIpv4UnicastAddressFamily _currentBgpNeighborIpv4UnicastAddressFamily;
   private @Nullable BgpNeighborL2vpnEvpnAddressFamily _currentBgpNeighborL2vpnEvpnAddressFamily;
   private @Nullable FrrInterface _currentInterface;
@@ -1814,6 +1820,18 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   }
 
   @Override
+  public void enterIpv6_prefix_list(Ipv6_prefix_listContext ctx) {
+    String name = ctx.name.getText();
+    _currentIpv6PrefixList = _frr.getIpv6PrefixLists().computeIfAbsent(name, Ipv6PrefixList::new);
+    _c.defineStructure(IPV6_PREFIX_LIST, name, ctx);
+  }
+
+  @Override
+  public void exitIpv6_prefix_list(Ipv6_prefix_listContext ctx) {
+    _currentIpv6PrefixList = null;
+  }
+
+  @Override
   public void exitIp_route(Ip_routeContext ctx) {
     // If an interface name is parsed, use it.
     final String next_hop_interface =
@@ -1896,6 +1914,43 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
     }
     IpPrefixListLine pll = new IpPrefixListLine(action, num, prefix, range);
     _currentIpPrefixList.getLines().put(num, pll);
+  }
+
+  @Override
+  public void exitPl6_line_action(Pl6_line_actionContext ctx) {
+    long num;
+    if (ctx.num != null) {
+      num = toLong(ctx.num);
+    } else {
+      // Round up to the next multiple of 5
+      // http://docs.frrouting.org/en/latest/filter.html#ip-prefix-list
+      Long lastNum =
+          _currentIpv6PrefixList.getLines().isEmpty()
+              ? 0L
+              : _currentIpv6PrefixList.getLines().lastKey();
+      num = nextMultipleOfFive(lastNum);
+    }
+    LineAction action = ctx.action.permit != null ? LineAction.PERMIT : LineAction.DENY;
+
+    if (ctx.ANY() != null) {
+      _currentIpv6PrefixList.addLine(
+          new Ipv6PrefixListLine(
+              action, num, Prefix6.ZERO, new SubRange(0, Prefix6.MAX_PREFIX_LENGTH)));
+      return;
+    }
+
+    Prefix6 prefix = Prefix6.parse(ctx.ip_prefix.getText());
+    int prefixLength = prefix.getPrefixLength();
+    SubRange range;
+    if (ctx.le == null && ctx.ge == null) {
+      range = SubRange.singleton(prefixLength);
+    } else {
+      int low = ctx.ge != null ? Integer.parseInt(ctx.ge.getText()) : prefixLength;
+      int high = ctx.le != null ? Integer.parseInt(ctx.le.getText()) : Prefix6.MAX_PREFIX_LENGTH;
+      range = new SubRange(low, high);
+    }
+    Ipv6PrefixListLine pll = new Ipv6PrefixListLine(action, num, prefix, range);
+    _currentIpv6PrefixList.getLines().put(num, pll);
   }
 
   @VisibleForTesting
