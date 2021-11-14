@@ -12,7 +12,7 @@ java_library(
     deps = [
         "//projects/batfish-common-protocol:common",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/cumulus_ports",
-        "//projects/batfish/src/main/java/org/batfish/representation/cumulus",
+        "//projects/batfish/src/main/java/org/batfish/representation/cumulus_concatenated",
         "@maven//:com_google_guava_guava",
         "@maven//:org_antlr_antlr4_runtime",
     ],

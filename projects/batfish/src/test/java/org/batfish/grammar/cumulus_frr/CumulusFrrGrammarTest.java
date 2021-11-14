@@ -8,20 +8,20 @@ import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasP
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpv4RouteThat;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.routing_policy.Environment.Direction.OUT;
-import static org.batfish.grammar.cumulus_frr.CumulusFrrConfigurationBuilder.nextMultipleOfFive;
-import static org.batfish.representation.cumulus.CumulusConversions.computeOspfAreaRangeFilterName;
-import static org.batfish.representation.cumulus.CumulusConversions.computeRouteMapEntryName;
-import static org.batfish.representation.cumulus.CumulusRoutingProtocol.CONNECTED;
-import static org.batfish.representation.cumulus.CumulusRoutingProtocol.OSPF;
-import static org.batfish.representation.cumulus.CumulusRoutingProtocol.STATIC;
-import static org.batfish.representation.cumulus.CumulusStructureType.IP_AS_PATH_ACCESS_LIST;
-import static org.batfish.representation.cumulus.CumulusStructureType.IP_COMMUNITY_LIST;
-import static org.batfish.representation.cumulus.CumulusStructureType.ROUTE_MAP;
-import static org.batfish.representation.cumulus.CumulusStructureType.VRF;
-import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_ADDRESS_FAMILY_IPV4_IMPORT_VRF;
-import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_ADDRESS_FAMILY_IPV6_IMPORT_VRF;
-import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_MATCH_AS_PATH;
-import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST;
+import static org.batfish.grammar.frr.FrrConfigurationBuilder.nextMultipleOfFive;
+import static org.batfish.representation.frr.FrrConversions.computeOspfAreaRangeFilterName;
+import static org.batfish.representation.frr.FrrConversions.computeRouteMapEntryName;
+import static org.batfish.representation.frr.FrrRoutingProtocol.CONNECTED;
+import static org.batfish.representation.frr.FrrRoutingProtocol.OSPF;
+import static org.batfish.representation.frr.FrrRoutingProtocol.STATIC;
+import static org.batfish.representation.frr.FrrStructureType.IP_AS_PATH_ACCESS_LIST;
+import static org.batfish.representation.frr.FrrStructureType.IP_COMMUNITY_LIST;
+import static org.batfish.representation.frr.FrrStructureType.ROUTE_MAP;
+import static org.batfish.representation.frr.FrrStructureType.VRF;
+import static org.batfish.representation.frr.FrrStructureUsage.BGP_ADDRESS_FAMILY_IPV4_IMPORT_VRF;
+import static org.batfish.representation.frr.FrrStructureUsage.BGP_ADDRESS_FAMILY_IPV6_IMPORT_VRF;
+import static org.batfish.representation.frr.FrrStructureUsage.ROUTE_MAP_MATCH_AS_PATH;
+import static org.batfish.representation.frr.FrrStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST;
 import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
@@ -95,44 +95,46 @@ import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.grammar.BatfishParseTreeWalker;
+import org.batfish.grammar.frr.FrrCombinedParser;
+import org.batfish.grammar.frr.FrrConfigurationBuilder;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.batfish.representation.cumulus.BgpInterfaceNeighbor;
-import org.batfish.representation.cumulus.BgpIpNeighbor;
-import org.batfish.representation.cumulus.BgpNeighbor;
-import org.batfish.representation.cumulus.BgpNeighbor.RemoteAs;
-import org.batfish.representation.cumulus.BgpNeighborSourceAddress;
-import org.batfish.representation.cumulus.BgpNeighborSourceInterface;
-import org.batfish.representation.cumulus.BgpNetwork;
-import org.batfish.representation.cumulus.BgpPeerGroupNeighbor;
-import org.batfish.representation.cumulus.BgpRedistributionPolicy;
-import org.batfish.representation.cumulus.BgpVrfAddressFamilyAggregateNetworkConfiguration;
-import org.batfish.representation.cumulus.CumulusConcatenatedConfiguration;
-import org.batfish.representation.cumulus.CumulusFrrConfiguration;
-import org.batfish.representation.cumulus.CumulusRoutingProtocol;
-import org.batfish.representation.cumulus.CumulusStructureType;
-import org.batfish.representation.cumulus.CumulusStructureUsage;
-import org.batfish.representation.cumulus.FrrInterface;
-import org.batfish.representation.cumulus.InterfacesInterface;
-import org.batfish.representation.cumulus.IpAsPathAccessList;
-import org.batfish.representation.cumulus.IpAsPathAccessListLine;
-import org.batfish.representation.cumulus.IpCommunityListExpanded;
-import org.batfish.representation.cumulus.IpCommunityListExpandedLine;
-import org.batfish.representation.cumulus.IpPrefixList;
-import org.batfish.representation.cumulus.IpPrefixListLine;
-import org.batfish.representation.cumulus.OspfArea;
-import org.batfish.representation.cumulus.OspfNetworkArea;
-import org.batfish.representation.cumulus.OspfNetworkType;
-import org.batfish.representation.cumulus.OspfVrf;
-import org.batfish.representation.cumulus.RedistributionPolicy;
-import org.batfish.representation.cumulus.RouteMap;
-import org.batfish.representation.cumulus.RouteMapEntry;
-import org.batfish.representation.cumulus.RouteMapMatchSourceProtocol.Protocol;
-import org.batfish.representation.cumulus.RouteMapMetricType;
-import org.batfish.representation.cumulus.StaticRoute;
-import org.batfish.representation.cumulus.Vrf;
+import org.batfish.representation.cumulus_concatenated.CumulusConcatenatedConfiguration;
+import org.batfish.representation.cumulus_concatenated.InterfacesInterface;
+import org.batfish.representation.frr.BgpInterfaceNeighbor;
+import org.batfish.representation.frr.BgpIpNeighbor;
+import org.batfish.representation.frr.BgpNeighbor;
+import org.batfish.representation.frr.BgpNeighbor.RemoteAs;
+import org.batfish.representation.frr.BgpNeighborSourceAddress;
+import org.batfish.representation.frr.BgpNeighborSourceInterface;
+import org.batfish.representation.frr.BgpNetwork;
+import org.batfish.representation.frr.BgpPeerGroupNeighbor;
+import org.batfish.representation.frr.BgpRedistributionPolicy;
+import org.batfish.representation.frr.BgpVrfAddressFamilyAggregateNetworkConfiguration;
+import org.batfish.representation.frr.FrrConfiguration;
+import org.batfish.representation.frr.FrrInterface;
+import org.batfish.representation.frr.FrrRoutingProtocol;
+import org.batfish.representation.frr.FrrStructureType;
+import org.batfish.representation.frr.FrrStructureUsage;
+import org.batfish.representation.frr.IpAsPathAccessList;
+import org.batfish.representation.frr.IpAsPathAccessListLine;
+import org.batfish.representation.frr.IpCommunityListExpanded;
+import org.batfish.representation.frr.IpCommunityListExpandedLine;
+import org.batfish.representation.frr.IpPrefixList;
+import org.batfish.representation.frr.IpPrefixListLine;
+import org.batfish.representation.frr.OspfArea;
+import org.batfish.representation.frr.OspfNetworkArea;
+import org.batfish.representation.frr.OspfNetworkType;
+import org.batfish.representation.frr.OspfVrf;
+import org.batfish.representation.frr.RedistributionPolicy;
+import org.batfish.representation.frr.RouteMap;
+import org.batfish.representation.frr.RouteMapEntry;
+import org.batfish.representation.frr.RouteMapMatchSourceProtocol.Protocol;
+import org.batfish.representation.frr.RouteMapMetricType;
+import org.batfish.representation.frr.StaticRoute;
+import org.batfish.representation.frr.Vrf;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -146,7 +148,7 @@ public class CumulusFrrGrammarTest {
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
   @Rule public ExpectedException _thrown = ExpectedException.none();
   private static CumulusConcatenatedConfiguration _config;
-  private static CumulusFrrConfiguration _frr;
+  private static FrrConfiguration _frr;
   private static ConvertConfigurationAnswerElement _ccae;
   private static Warnings _warnings;
 
@@ -164,8 +166,7 @@ public class CumulusFrrGrammarTest {
     _config.setWarnings(_warnings);
   }
 
-  private static DefinedStructureInfo getDefinedStructureInfo(
-      CumulusStructureType type, String name) {
+  private static DefinedStructureInfo getDefinedStructureInfo(FrrStructureType type, String name) {
     return _ccae
         .getDefinedStructures()
         .get(_config.getFilename())
@@ -174,7 +175,7 @@ public class CumulusFrrGrammarTest {
   }
 
   private Set<Integer> getStructureReferences(
-      CumulusStructureType type, String name, CumulusStructureUsage usage) {
+      FrrStructureType type, String name, FrrStructureUsage usage) {
     // The config keeps reference data in a private variable, and only copies into the answer
     // element when you set it.
     _config.setAnswerElement(new ConvertConfigurationAnswerElement());
@@ -213,13 +214,12 @@ public class CumulusFrrGrammarTest {
    * that is setup cleanly once per test.
    */
   private static void parseFromTextWithSettings(String src, Settings settings) {
-    CumulusFrrCombinedParser parser = new CumulusFrrCombinedParser(src, settings, 1, 0);
+    FrrCombinedParser parser = new FrrCombinedParser(src, settings, 1, 0);
     ParserRuleContext tree =
         Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     ParseTreeWalker walker = new BatfishParseTreeWalker(parser);
-    CumulusFrrConfigurationBuilder cb =
-        new CumulusFrrConfigurationBuilder(
-            _config, parser, _warnings, src, new SilentSyntaxCollection());
+    FrrConfigurationBuilder cb =
+        new FrrConfigurationBuilder(_config, parser, _warnings, src, new SilentSyntaxCollection());
     walker.walk(cb, tree);
 
     // SerializationUtils.clone will clear transient state, which we save and restore.
@@ -241,7 +241,7 @@ public class CumulusFrrGrammarTest {
     parse("router bgp 12345 vrf foo\n");
     assertThat(_frr.getBgpProcess().getVrfs().get("foo").getAutonomousSystem(), equalTo(12345L));
     assertThat(
-        getStructureReferences(CumulusStructureType.VRF, "foo", CumulusStructureUsage.BGP_VRF),
+        getStructureReferences(FrrStructureType.VRF, "foo", FrrStructureUsage.BGP_VRF),
         contains(1));
   }
 
@@ -519,9 +519,9 @@ public class CumulusFrrGrammarTest {
         contains(hasComment("Route maps in 'advertise ipv4 unicast' are not supported")));
     assertThat(
         getStructureReferences(
-            CumulusStructureType.ROUTE_MAP,
+            FrrStructureType.ROUTE_MAP,
             "RM",
-            CumulusStructureUsage.BGP_ADDRESS_FAMILY_L2VPN_ADVERTISE_IPV4_UNICAST),
+            FrrStructureUsage.BGP_ADDRESS_FAMILY_L2VPN_ADVERTISE_IPV4_UNICAST),
         contains(3));
   }
 
@@ -536,9 +536,9 @@ public class CumulusFrrGrammarTest {
     assertThat(_warnings.getParseWarnings(), empty());
     assertThat(
         getStructureReferences(
-            CumulusStructureType.ROUTE_MAP,
+            FrrStructureType.ROUTE_MAP,
             "RM",
-            CumulusStructureUsage.BGP_ADDRESS_FAMILY_L2VPN_ADVERTISE_IPV6_UNICAST),
+            FrrStructureUsage.BGP_ADDRESS_FAMILY_L2VPN_ADVERTISE_IPV6_UNICAST),
         contains(4));
   }
 
@@ -568,11 +568,11 @@ public class CumulusFrrGrammarTest {
         " exit-address-family");
     assertThat(
         getStructureReferences(
-            ROUTE_MAP, "rm", CumulusStructureUsage.BGP_L2VPN_EVPN_NEIGHBOR_ROUTE_MAP_IN),
+            ROUTE_MAP, "rm", FrrStructureUsage.BGP_L2VPN_EVPN_NEIGHBOR_ROUTE_MAP_IN),
         contains(4));
     assertThat(
         getStructureReferences(
-            ROUTE_MAP, "rm", CumulusStructureUsage.BGP_L2VPN_EVPN_NEIGHBOR_ROUTE_MAP_OUT),
+            ROUTE_MAP, "rm", FrrStructureUsage.BGP_L2VPN_EVPN_NEIGHBOR_ROUTE_MAP_OUT),
         contains(5));
     assertThat(
         _warnings.getParseWarnings(),
@@ -1078,7 +1078,7 @@ public class CumulusFrrGrammarTest {
     _frr.getVrfs().put("NAME", new Vrf("NAME"));
     parse("vrf NAME\n exit-vrf\n");
     assertThat(
-        getDefinedStructureInfo(CumulusStructureType.VRF, "NAME").getDefinitionLines().enumerate(),
+        getDefinedStructureInfo(FrrStructureType.VRF, "NAME").getDefinitionLines().enumerate(),
         contains(1, 2));
   }
 
@@ -1138,21 +1138,19 @@ public class CumulusFrrGrammarTest {
     assertThat(entry2.getAction(), equalTo(LineAction.DENY));
 
     assertThat(
-        getDefinedStructureInfo(CumulusStructureType.ROUTE_MAP, name)
-            .getDefinitionLines()
-            .enumerate(),
+        getDefinedStructureInfo(FrrStructureType.ROUTE_MAP, name).getDefinitionLines().enumerate(),
         equalTo(ImmutableSet.of(1, 2)));
     assertThat(
         getDefinedStructureInfo(
-                CumulusStructureType.ROUTE_MAP_ENTRY, computeRouteMapEntryName(name, 10))
+                FrrStructureType.ROUTE_MAP_ENTRY, computeRouteMapEntryName(name, 10))
             .getDefinitionLines()
             .enumerate(),
         equalTo(ImmutableSet.of(1)));
     assertThat(
         getStructureReferences(
-            CumulusStructureType.ROUTE_MAP_ENTRY,
+            FrrStructureType.ROUTE_MAP_ENTRY,
             computeRouteMapEntryName(name, 10),
-            CumulusStructureUsage.ROUTE_MAP_ENTRY_SELF_REFERENCE),
+            FrrStructureUsage.ROUTE_MAP_ENTRY_SELF_REFERENCE),
         contains(1));
   }
 
@@ -1189,7 +1187,7 @@ public class CumulusFrrGrammarTest {
     assertThat(entry.getCall().getRouteMapName(), equalTo("SUB-MAP"));
     assertThat(
         getStructureReferences(
-            CumulusStructureType.ROUTE_MAP, "SUB-MAP", CumulusStructureUsage.ROUTE_MAP_CALL),
+            FrrStructureType.ROUTE_MAP, "SUB-MAP", FrrStructureUsage.ROUTE_MAP_CALL),
         contains(2));
   }
 
@@ -1296,16 +1294,16 @@ public class CumulusFrrGrammarTest {
 
     Set<Integer> reference =
         getStructureReferences(
-            CumulusStructureType.IP_PREFIX_LIST,
+            FrrStructureType.IP_PREFIX_LIST,
             "PREFIX_LIST1",
-            CumulusStructureUsage.ROUTE_MAP_MATCH_IP_ADDRESS_PREFIX_LIST);
+            FrrStructureUsage.ROUTE_MAP_MATCH_IP_ADDRESS_PREFIX_LIST);
     assertThat(reference, equalTo(ImmutableSet.of(2)));
 
     reference =
         getStructureReferences(
-            CumulusStructureType.IP_PREFIX_LIST,
+            FrrStructureType.IP_PREFIX_LIST,
             "PREFIX_LIST2",
-            CumulusStructureUsage.ROUTE_MAP_MATCH_IP_ADDRESS_PREFIX_LIST);
+            FrrStructureUsage.ROUTE_MAP_MATCH_IP_ADDRESS_PREFIX_LIST);
     assertThat(reference, equalTo(ImmutableSet.of(3)));
   }
 
@@ -1417,9 +1415,7 @@ public class CumulusFrrGrammarTest {
 
     assertThat(
         getStructureReferences(
-            CumulusStructureType.ABSTRACT_INTERFACE,
-            "lo",
-            CumulusStructureUsage.ROUTE_MAP_MATCH_INTERFACE),
+            FrrStructureType.ABSTRACT_INTERFACE, "lo", FrrStructureUsage.ROUTE_MAP_MATCH_INTERFACE),
         equalTo(ImmutableSet.of(2)));
   }
 
@@ -1573,7 +1569,7 @@ public class CumulusFrrGrammarTest {
 
     // Check that the AS-path access list definition was registered
     DefinedStructureInfo definedStructureInfo =
-        getDefinedStructureInfo(CumulusStructureType.IP_AS_PATH_ACCESS_LIST, name);
+        getDefinedStructureInfo(FrrStructureType.IP_AS_PATH_ACCESS_LIST, name);
     assertThat(
         definedStructureInfo.getDefinitionLines().enumerate(), contains(1, 2, 3, 4, 5, 6, 7, 8));
   }
@@ -1826,9 +1822,9 @@ public class CumulusFrrGrammarTest {
         equalTo("R"));
     assertThat(
         getStructureReferences(
-            CumulusStructureType.ROUTE_MAP,
+            FrrStructureType.ROUTE_MAP,
             "R",
-            CumulusStructureUsage.BGP_IPV4_UNICAST_NEIGHBOR_ROUTE_MAP_IN),
+            FrrStructureUsage.BGP_IPV4_UNICAST_NEIGHBOR_ROUTE_MAP_IN),
         contains(4));
   }
 
@@ -1850,9 +1846,9 @@ public class CumulusFrrGrammarTest {
         equalTo("R"));
     assertThat(
         getStructureReferences(
-            CumulusStructureType.ROUTE_MAP,
+            FrrStructureType.ROUTE_MAP,
             "R",
-            CumulusStructureUsage.BGP_IPV4_UNICAST_NEIGHBOR_ROUTE_MAP_OUT),
+            FrrStructureUsage.BGP_IPV4_UNICAST_NEIGHBOR_ROUTE_MAP_OUT),
         contains(4));
   }
 
@@ -2199,7 +2195,7 @@ public class CumulusFrrGrammarTest {
   public void testOspfRedistributeConnected() {
     parseLines("router ospf", "redistribute connected");
     RedistributionPolicy policy =
-        _frr.getOspfProcess().getRedistributionPolicies().get(CumulusRoutingProtocol.CONNECTED);
+        _frr.getOspfProcess().getRedistributionPolicies().get(FrrRoutingProtocol.CONNECTED);
     assertNotNull(policy);
     assertNull(policy.getRouteMap());
   }
@@ -2208,7 +2204,7 @@ public class CumulusFrrGrammarTest {
   public void testOspfRedistributeConnectedRouteMap() {
     parseLines("router ospf", "redistribute connected route-map foo");
     RedistributionPolicy policy =
-        _frr.getOspfProcess().getRedistributionPolicies().get(CumulusRoutingProtocol.CONNECTED);
+        _frr.getOspfProcess().getRedistributionPolicies().get(FrrRoutingProtocol.CONNECTED);
     assertNotNull(policy);
     assertThat(policy.getRouteMap(), equalTo("foo"));
   }
@@ -2217,7 +2213,7 @@ public class CumulusFrrGrammarTest {
   public void testOspfRedistributeStatic() {
     parseLines("router ospf", "redistribute static");
     RedistributionPolicy policy =
-        _frr.getOspfProcess().getRedistributionPolicies().get(CumulusRoutingProtocol.STATIC);
+        _frr.getOspfProcess().getRedistributionPolicies().get(FrrRoutingProtocol.STATIC);
     assertNotNull(policy);
     assertNull(policy.getRouteMap());
   }
@@ -2226,7 +2222,7 @@ public class CumulusFrrGrammarTest {
   public void testOspfRedistributeStaticRouteMap() {
     parseLines("router ospf", "redistribute static route-map foo");
     RedistributionPolicy policy =
-        _frr.getOspfProcess().getRedistributionPolicies().get(CumulusRoutingProtocol.STATIC);
+        _frr.getOspfProcess().getRedistributionPolicies().get(FrrRoutingProtocol.STATIC);
     assertNotNull(policy);
     assertThat(policy.getRouteMap(), equalTo("foo"));
   }
@@ -2235,7 +2231,7 @@ public class CumulusFrrGrammarTest {
   public void testOspfRedistributeBgp() {
     parseLines("router ospf", "redistribute bgp");
     RedistributionPolicy policy =
-        _frr.getOspfProcess().getRedistributionPolicies().get(CumulusRoutingProtocol.BGP);
+        _frr.getOspfProcess().getRedistributionPolicies().get(FrrRoutingProtocol.BGP);
     assertNotNull(policy);
     assertNull(policy.getRouteMap());
   }
@@ -2244,7 +2240,7 @@ public class CumulusFrrGrammarTest {
   public void testOspfRedistributeBgpRouteMap() {
     parseLines("router ospf", "redistribute bgp route-map foo");
     RedistributionPolicy policy =
-        _frr.getOspfProcess().getRedistributionPolicies().get(CumulusRoutingProtocol.BGP);
+        _frr.getOspfProcess().getRedistributionPolicies().get(FrrRoutingProtocol.BGP);
     assertNotNull(policy);
     assertThat(policy.getRouteMap(), equalTo("foo"));
   }

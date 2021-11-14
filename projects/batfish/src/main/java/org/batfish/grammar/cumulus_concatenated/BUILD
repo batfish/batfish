@@ -15,7 +15,7 @@ java_library(
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/cumulus_frr",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/cumulus_interfaces",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/cumulus_ports",
-        "//projects/batfish/src/main/java/org/batfish/grammar/cumulus_frr",
+        "//projects/batfish/src/main/java/org/batfish/grammar/frr:cumulus_frr",
         "//projects/batfish/src/main/java/org/batfish/grammar/cumulus_interfaces",
         "//projects/batfish/src/main/java/org/batfish/grammar/cumulus_ports",
         "//projects/batfish/src/main/java/org/batfish/representation/cumulus",

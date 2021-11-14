@@ -21,8 +21,6 @@ import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.GrammarSettings;
 import org.batfish.grammar.ImplementedRules;
 import org.batfish.grammar.ParseTreePrettyPrinter;
-import org.batfish.grammar.cumulus_frr.CumulusFrrCombinedParser;
-import org.batfish.grammar.cumulus_frr.CumulusFrrConfigurationBuilder;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Cumulus_frr_configurationContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesCombinedParser;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesConfigurationBuilder;
@@ -30,8 +28,10 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Cumulus_in
 import org.batfish.grammar.cumulus_ports.CumulusPortsCombinedParser;
 import org.batfish.grammar.cumulus_ports.CumulusPortsConfigurationBuilder;
 import org.batfish.grammar.cumulus_ports.CumulusPortsParser.Cumulus_ports_configurationContext;
+import org.batfish.grammar.frr.FrrCombinedParser;
+import org.batfish.grammar.frr.FrrConfigurationBuilder;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
-import org.batfish.representation.cumulus.CumulusConcatenatedConfiguration;
+import org.batfish.representation.cumulus_concatenated.CumulusConcatenatedConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 
 public class CumulusConcatenatedControlPlaneExtractor implements ControlPlaneExtractor {
@@ -81,7 +81,7 @@ public class CumulusConcatenatedControlPlaneExtractor implements ControlPlaneExt
     return ImmutableSet.<String>builder()
         .addAll(ImplementedRules.getImplementedRules(CumulusInterfacesConfigurationBuilder.class))
         .addAll(ImplementedRules.getImplementedRules(CumulusPortsConfigurationBuilder.class))
-        .addAll(ImplementedRules.getImplementedRules(CumulusFrrConfigurationBuilder.class))
+        .addAll(ImplementedRules.getImplementedRules(FrrConfigurationBuilder.class))
         .build();
   }
 
@@ -97,13 +97,12 @@ public class CumulusConcatenatedControlPlaneExtractor implements ControlPlaneExt
   }
 
   private void parseFrrFile() {
-    CumulusFrrCombinedParser parser =
-        new CumulusFrrCombinedParser(_text, _grammarSettings, _line, _offset);
+    FrrCombinedParser parser = new FrrCombinedParser(_text, _grammarSettings, _line, _offset);
     Cumulus_frr_configurationContext ctxt = parser.parse();
     checkErrors(parser);
     ParseTreeWalker walker = new BatfishParseTreeWalker(parser);
-    CumulusFrrConfigurationBuilder cb =
-        new CumulusFrrConfigurationBuilder(_configuration, parser, _w, _text, _silentSyntax);
+    FrrConfigurationBuilder cb =
+        new FrrConfigurationBuilder(_configuration, parser, _w, _text, _silentSyntax);
     walker.walk(cb, ctxt);
     mergeParseTree(ctxt, parser);
   }

@@ -30,14 +30,14 @@ import org.batfish.grammar.GrammarSettings;
 import org.batfish.grammar.MockGrammarSettings;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Cumulus_interfaces_configurationContext;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
-import org.batfish.representation.cumulus.CumulusConcatenatedConfiguration;
-import org.batfish.representation.cumulus.CumulusInterfacesConfiguration;
-import org.batfish.representation.cumulus.CumulusStructureType;
-import org.batfish.representation.cumulus.CumulusStructureUsage;
-import org.batfish.representation.cumulus.InterfaceBridgeSettings;
-import org.batfish.representation.cumulus.InterfaceClagSettings;
-import org.batfish.representation.cumulus.InterfacesInterface;
-import org.batfish.representation.cumulus.StaticRoute;
+import org.batfish.representation.cumulus_concatenated.CumulusConcatenatedConfiguration;
+import org.batfish.representation.cumulus_concatenated.CumulusInterfacesConfiguration;
+import org.batfish.representation.cumulus_concatenated.InterfacesInterface;
+import org.batfish.representation.frr.FrrStructureType;
+import org.batfish.representation.frr.FrrStructureUsage;
+import org.batfish.representation.frr.InterfaceBridgeSettings;
+import org.batfish.representation.frr.InterfaceClagSettings;
+import org.batfish.representation.frr.StaticRoute;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -60,8 +60,7 @@ public class CumulusInterfacesGrammarTest {
     _config.setWarnings(_warnings);
   }
 
-  private static DefinedStructureInfo getDefinedStructureInfo(
-      CumulusStructureType type, String name) {
+  private static DefinedStructureInfo getDefinedStructureInfo(FrrStructureType type, String name) {
     return _ccae
         .getDefinedStructures()
         .get(FILENAME)
@@ -70,7 +69,7 @@ public class CumulusInterfacesGrammarTest {
   }
 
   private static Set<Integer> getStructureReferences(
-      CumulusStructureType type, String name, CumulusStructureUsage usage) {
+      FrrStructureType type, String name, FrrStructureUsage usage) {
     // The config keeps reference data in a private variable, and only copies into the answer
     // element when you set it.
     _config.setAnswerElement(new ConvertConfigurationAnswerElement());
@@ -120,13 +119,13 @@ public class CumulusInterfacesGrammarTest {
     CumulusInterfacesConfiguration interfaces = parse(input);
     assertThat(interfaces.getInterfaces(), hasKeys("swp1"));
     assertThat(
-        getDefinedStructureInfo(CumulusStructureType.INTERFACE, "swp1")
+        getDefinedStructureInfo(FrrStructureType.INTERFACE, "swp1")
             .getDefinitionLines()
             .enumerate(),
         contains(1));
     assertThat(
         getStructureReferences(
-            CumulusStructureType.INTERFACE, "swp1", CumulusStructureUsage.INTERFACE_SELF_REFERENCE),
+            FrrStructureType.INTERFACE, "swp1", FrrStructureUsage.INTERFACE_SELF_REFERENCE),
         contains(1));
   }
 
@@ -172,23 +171,20 @@ public class CumulusInterfacesGrammarTest {
     String input = "iface swp1\n bond-slaves i2 i3 i4\n";
     CumulusInterfacesConfiguration interfaces = parse(input);
     assertThat(
-        getStructureReferences(
-            CumulusStructureType.INTERFACE, "i2", CumulusStructureUsage.BOND_SLAVE),
+        getStructureReferences(FrrStructureType.INTERFACE, "i2", FrrStructureUsage.BOND_SLAVE),
         contains(2));
     assertThat(
-        getStructureReferences(
-            CumulusStructureType.INTERFACE, "i3", CumulusStructureUsage.BOND_SLAVE),
+        getStructureReferences(FrrStructureType.INTERFACE, "i3", FrrStructureUsage.BOND_SLAVE),
         contains(2));
     assertThat(
-        getStructureReferences(
-            CumulusStructureType.INTERFACE, "i4", CumulusStructureUsage.BOND_SLAVE),
+        getStructureReferences(FrrStructureType.INTERFACE, "i4", FrrStructureUsage.BOND_SLAVE),
         contains(2));
     assertThat(
         interfaces.getInterfaces().get("swp1").getBondSlaves(),
         containsInAnyOrder("i2", "i3", "i4"));
 
     // swp1 is inferred to be a bond
-    assertThat(_ic.getInterfaces().get("swp1").getType(), equalTo(CumulusStructureType.BOND));
+    assertThat(_ic.getInterfaces().get("swp1").getType(), equalTo(FrrStructureType.BOND));
   }
 
   @Test
@@ -196,12 +192,10 @@ public class CumulusInterfacesGrammarTest {
     String input = "iface swp1\n bond-slaves s1\n iface swp2\n bond-slaves s2\n";
     CumulusInterfacesConfiguration interfaces = parse(input);
     assertThat(
-        getStructureReferences(
-            CumulusStructureType.INTERFACE, "s1", CumulusStructureUsage.BOND_SLAVE),
+        getStructureReferences(FrrStructureType.INTERFACE, "s1", FrrStructureUsage.BOND_SLAVE),
         contains(2));
     assertThat(
-        getStructureReferences(
-            CumulusStructureType.INTERFACE, "s2", CumulusStructureUsage.BOND_SLAVE),
+        getStructureReferences(FrrStructureType.INTERFACE, "s2", FrrStructureUsage.BOND_SLAVE),
         contains(4));
     assertThat(interfaces.getInterfaces().get("swp1").getBondSlaves(), contains("s1"));
     assertThat(interfaces.getInterfaces().get("swp2").getBondSlaves(), contains("s2"));
@@ -343,7 +337,7 @@ public class CumulusInterfacesGrammarTest {
     assertThat(clag.getBackupIpVrf(), equalTo("v1"));
     assertThat(
         getStructureReferences(
-            CumulusStructureType.VRF, "v1", CumulusStructureUsage.INTERFACE_CLAG_BACKUP_IP_VRF),
+            FrrStructureType.VRF, "v1", FrrStructureUsage.INTERFACE_CLAG_BACKUP_IP_VRF),
         contains(2));
   }
 
@@ -478,11 +472,11 @@ public class CumulusInterfacesGrammarTest {
     InterfacesInterface iface = interfaces.getInterfaces().get("vlan1");
     assertThat(iface.getVlanId(), equalTo(1));
     // not marked as an interface definition
-    assertNull(getDefinedStructureInfo(CumulusStructureType.INTERFACE, "vlan1"));
-    assertNotNull(getDefinedStructureInfo(CumulusStructureType.VLAN, "vlan1"));
+    assertNull(getDefinedStructureInfo(FrrStructureType.INTERFACE, "vlan1"));
+    assertNotNull(getDefinedStructureInfo(FrrStructureType.VLAN, "vlan1"));
     assertThat(
         getStructureReferences(
-            CumulusStructureType.VLAN, "vlan1", CumulusStructureUsage.VLAN_SELF_REFERENCE),
+            FrrStructureType.VLAN, "vlan1", FrrStructureUsage.VLAN_SELF_REFERENCE),
         contains(1));
   }
 
@@ -501,7 +495,7 @@ public class CumulusInterfacesGrammarTest {
     InterfacesInterface iface = interfaces.getInterfaces().get("swp1");
     assertThat(iface.getVrf(), equalTo("v1"));
     assertThat(
-        getStructureReferences(CumulusStructureType.VRF, "v1", CumulusStructureUsage.INTERFACE_VRF),
+        getStructureReferences(FrrStructureType.VRF, "v1", FrrStructureUsage.INTERFACE_VRF),
         contains(2));
   }
 
@@ -512,11 +506,10 @@ public class CumulusInterfacesGrammarTest {
     InterfacesInterface iface = interfaces.getInterfaces().get("vrf1");
     assertThat(iface.getVrfTable(), equalTo("auto"));
     // not marked as an interface definition
-    assertNull(getDefinedStructureInfo(CumulusStructureType.INTERFACE, "vrf1"));
-    assertNotNull(getDefinedStructureInfo(CumulusStructureType.VRF, "vrf1"));
+    assertNull(getDefinedStructureInfo(FrrStructureType.INTERFACE, "vrf1"));
+    assertNotNull(getDefinedStructureInfo(FrrStructureType.VRF, "vrf1"));
     assertThat(
-        getStructureReferences(
-            CumulusStructureType.VRF, "vrf1", CumulusStructureUsage.VRF_SELF_REFERENCE),
+        getStructureReferences(FrrStructureType.VRF, "vrf1", FrrStructureUsage.VRF_SELF_REFERENCE),
         contains(1));
   }
 
@@ -553,11 +546,11 @@ public class CumulusInterfacesGrammarTest {
     InterfacesInterface iface = interfaces.getInterfaces().get("swp1");
     assertThat(iface.getVxlanId(), equalTo(123));
     // not marked as an interface definition
-    assertNull(getDefinedStructureInfo(CumulusStructureType.INTERFACE, "swp1"));
-    assertNotNull(getDefinedStructureInfo(CumulusStructureType.VXLAN, "swp1"));
+    assertNull(getDefinedStructureInfo(FrrStructureType.INTERFACE, "swp1"));
+    assertNotNull(getDefinedStructureInfo(FrrStructureType.VXLAN, "swp1"));
     assertThat(
         getStructureReferences(
-            CumulusStructureType.VXLAN, "swp1", CumulusStructureUsage.VXLAN_SELF_REFERENCE),
+            FrrStructureType.VXLAN, "swp1", FrrStructureUsage.VXLAN_SELF_REFERENCE),
         contains(1));
   }
 

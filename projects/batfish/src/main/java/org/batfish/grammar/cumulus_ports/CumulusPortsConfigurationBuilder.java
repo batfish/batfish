@@ -14,9 +14,9 @@ import org.batfish.grammar.cumulus_ports.CumulusPortsParser.BreakoutContext;
 import org.batfish.grammar.cumulus_ports.CumulusPortsParser.DisabledContext;
 import org.batfish.grammar.cumulus_ports.CumulusPortsParser.Port_definitionContext;
 import org.batfish.grammar.cumulus_ports.CumulusPortsParser.SpeedContext;
-import org.batfish.representation.cumulus.CumulusConcatenatedConfiguration;
-import org.batfish.representation.cumulus.CumulusStructureType;
-import org.batfish.representation.cumulus.CumulusStructureUsage;
+import org.batfish.representation.cumulus_concatenated.CumulusConcatenatedConfiguration;
+import org.batfish.representation.frr.FrrStructureType;
+import org.batfish.representation.frr.FrrStructureUsage;
 
 /**
  * Populates a {@link CumulusConcatenatedConfiguration} from the data in a {@link
@@ -83,9 +83,9 @@ public class CumulusPortsConfigurationBuilder extends CumulusPortsParserBaseList
       _config.getPortsConfiguration().setSpeed(subIfaceName, subIfaceSpeedMbps);
 
       _config.referenceStructure(
-          CumulusStructureType.INTERFACE,
+          FrrStructureType.INTERFACE,
           subIfaceName,
-          CumulusStructureUsage.PORT_BREAKOUT,
+          FrrStructureUsage.PORT_BREAKOUT,
           ctx.getStart().getLine());
     }
   }
@@ -97,9 +97,9 @@ public class CumulusPortsConfigurationBuilder extends CumulusPortsParserBaseList
     _config.getPortsConfiguration().setDisabled(ifaceName, true);
 
     _config.referenceStructure(
-        CumulusStructureType.INTERFACE,
+        FrrStructureType.INTERFACE,
         ifaceName,
-        CumulusStructureUsage.PORT_DISABLED,
+        FrrStructureUsage.PORT_DISABLED,
         ctx.getStart().getLine());
   }
 
@@ -114,9 +114,9 @@ public class CumulusPortsConfigurationBuilder extends CumulusPortsParserBaseList
     _config.getPortsConfiguration().setSpeed(ifaceName, speedGbps * 1000);
 
     _config.referenceStructure(
-        CumulusStructureType.INTERFACE,
+        FrrStructureType.INTERFACE,
         ifaceName,
-        CumulusStructureUsage.PORT_SPEED,
+        FrrStructureUsage.PORT_SPEED,
         ctx.getStart().getLine());
   }
 

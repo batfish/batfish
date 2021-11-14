@@ -64,13 +64,13 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_ifaceCon
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Si_inetContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Si_no_inetContext;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
-import org.batfish.representation.cumulus.CumulusConcatenatedConfiguration;
-import org.batfish.representation.cumulus.CumulusInterfacesConfiguration;
-import org.batfish.representation.cumulus.CumulusStructureType;
-import org.batfish.representation.cumulus.CumulusStructureUsage;
-import org.batfish.representation.cumulus.InterfaceClagSettings;
-import org.batfish.representation.cumulus.InterfacesInterface;
-import org.batfish.representation.cumulus.StaticRoute;
+import org.batfish.representation.cumulus_concatenated.CumulusConcatenatedConfiguration;
+import org.batfish.representation.cumulus_concatenated.CumulusInterfacesConfiguration;
+import org.batfish.representation.cumulus_concatenated.InterfacesInterface;
+import org.batfish.representation.frr.FrrStructureType;
+import org.batfish.representation.frr.FrrStructureUsage;
+import org.batfish.representation.frr.InterfaceClagSettings;
+import org.batfish.representation.frr.StaticRoute;
 
 /**
  * Populates {@link CumulusInterfacesConfiguration} from a parse tree from {@link
@@ -260,9 +260,9 @@ public final class CumulusInterfacesConfigurationBuilder extends CumulusInterfac
     interfaceNameCtxs.forEach(
         ifaceNameCtx ->
             _config.referenceStructure(
-                CumulusStructureType.INTERFACE,
+                FrrStructureType.INTERFACE,
                 ifaceNameCtx.getText(),
-                CumulusStructureUsage.BOND_SLAVE,
+                FrrStructureUsage.BOND_SLAVE,
                 ifaceNameCtx.getStart().getLine()));
     _currentIface.setBondSlaves(
         interfaceNameCtxs.stream().map(RuleContext::getText).collect(Collectors.toSet()));
@@ -279,9 +279,9 @@ public final class CumulusInterfacesConfigurationBuilder extends CumulusInterfac
     interfaceNameCtxs.forEach(
         ifaceNameCtx ->
             _config.referenceStructure(
-                CumulusStructureType.ABSTRACT_INTERFACE,
+                FrrStructureType.ABSTRACT_INTERFACE,
                 ifaceNameCtx.getText(),
-                CumulusStructureUsage.BRIDGE_PORT,
+                FrrStructureUsage.BRIDGE_PORT,
                 ifaceNameCtx.getStart().getLine()));
     _currentIface.setBridgePorts(
         interfaceNameCtxs.stream()
@@ -324,9 +324,9 @@ public final class CumulusInterfacesConfigurationBuilder extends CumulusInterfac
       String vrf = ctx.vrf_name().getText();
       clag.setBackupIpVrf(vrf);
       _config.referenceStructure(
-          CumulusStructureType.VRF,
+          FrrStructureType.VRF,
           vrf,
-          CumulusStructureUsage.INTERFACE_CLAG_BACKUP_IP_VRF,
+          FrrStructureUsage.INTERFACE_CLAG_BACKUP_IP_VRF,
           ctx.getStart().getLine());
     } else {
       clag.setBackupIpVrf(DEFAULT_VRF_NAME);
@@ -375,11 +375,11 @@ public final class CumulusInterfacesConfigurationBuilder extends CumulusInterfac
   @Override
   public void exitI_vlan_id(I_vlan_idContext ctx) {
     String vlanId = ctx.number().getText();
-    _config.defineStructure(CumulusStructureType.VLAN, vlanId, ctx);
+    _config.defineStructure(FrrStructureType.VLAN, vlanId, ctx);
     _config.referenceStructure(
-        CumulusStructureType.VLAN,
+        FrrStructureType.VLAN,
         vlanId,
-        CumulusStructureUsage.VLAN_SELF_REFERENCE,
+        FrrStructureUsage.VLAN_SELF_REFERENCE,
         ctx.getStart().getLine());
     _currentIface.setVlanId(Integer.parseInt(vlanId));
   }
@@ -395,9 +395,9 @@ public final class CumulusInterfacesConfigurationBuilder extends CumulusInterfac
     String vrf = ctx.vrf_name().getText();
     _currentIface.setVrf(vrf);
     _config.referenceStructure(
-        CumulusStructureType.VRF,
+        FrrStructureType.VRF,
         vrf,
-        CumulusStructureUsage.INTERFACE_VRF,
+        FrrStructureUsage.INTERFACE_VRF,
         ctx.vrf_name().getStart().getLine());
   }
 
