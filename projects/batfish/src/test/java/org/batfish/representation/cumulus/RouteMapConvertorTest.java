@@ -41,7 +41,8 @@ public class RouteMapConvertorTest {
 
   //  private static final String FILENAME = "";
   private static final String HOSTNAME = "host";
-  private static CumulusConcatenatedConfiguration VC;
+  private static final String FILENAME = "frr.conf";
+  private static FrrConfiguration VC;
   private static Warnings W;
   private static Configuration C;
   private static RouteMap ROUTEMAP;
@@ -82,10 +83,10 @@ public class RouteMapConvertorTest {
   @Before
   public void setup() {
     W = new Warnings();
-    VC = new CumulusConcatenatedConfiguration();
-    VC.setHostname(HOSTNAME);
-    VC.setWarnings(W);
-    VC.setFilename("file");
+    VC = new FrrConfiguration();
+    //    VC.setHostname(HOSTNAME);
+    //    VC.setWarnings(W);
+    //    VC.setFilename("file");
     C = new Configuration(HOSTNAME, ConfigurationFormat.CUMULUS_CONCATENATED);
     initRouteMap();
     _originalRouteBuilder =
@@ -103,7 +104,7 @@ public class RouteMapConvertorTest {
     // match entry1 then continue to next (i.e., entry2)
     ENTRY1.setContinue(new RouteMapContinue(null));
     ENTRY2.setMatchTag(new RouteMapMatchTag(1));
-    RouteMapConvertor convertor = new RouteMapConvertor(C, VC, ROUTEMAP, W);
+    RouteMapConvertor convertor = new RouteMapConvertor(C, VC, ROUTEMAP, FILENAME, W);
     RoutingPolicy policy = convertor.toRouteMap();
 
     Builder outputBuilder = Bgpv4Route.testBuilder();
@@ -122,7 +123,7 @@ public class RouteMapConvertorTest {
   @Test
   public void testToRouteMap_MatchContinue() {
     // match entry1 then continue to entry3
-    RouteMapConvertor convertor = new RouteMapConvertor(C, VC, ROUTEMAP, W);
+    RouteMapConvertor convertor = new RouteMapConvertor(C, VC, ROUTEMAP, FILENAME, W);
     RoutingPolicy policy = convertor.toRouteMap();
 
     Builder outputBuilder = Bgpv4Route.testBuilder();
@@ -140,7 +141,7 @@ public class RouteMapConvertorTest {
   @Test
   public void testToRouteMap_NotMatchContinue() {
     // match entry2
-    RouteMapConvertor convertor = new RouteMapConvertor(C, VC, ROUTEMAP, W);
+    RouteMapConvertor convertor = new RouteMapConvertor(C, VC, ROUTEMAP, FILENAME, W);
     RoutingPolicy policy = convertor.toRouteMap();
 
     Builder outputBuilder = Bgpv4Route.testBuilder();
@@ -156,7 +157,7 @@ public class RouteMapConvertorTest {
 
   @Test
   public void testToStatement_ContinueEntry() {
-    RouteMapConvertor convertor = new RouteMapConvertor(C, VC, ROUTEMAP, W);
+    RouteMapConvertor convertor = new RouteMapConvertor(C, VC, ROUTEMAP, FILENAME, W);
     Statement statement = convertor.toStatement(ENTRY1);
 
     Conjunction match =
@@ -178,14 +179,14 @@ public class RouteMapConvertorTest {
                                 ImmutableList.of(Statements.ReturnFalse.toStaticStatement()))),
                         ENTRY1.getNumber(),
                         ROUTEMAP.getName(),
-                        VC.getFilename())),
+                        FILENAME)),
                 // false branch
                 ImmutableList.of())));
   }
 
   @Test
   public void testToStatement_FalseToNewPolicyEntry() {
-    RouteMapConvertor convertor = new RouteMapConvertor(C, VC, ROUTEMAP, W);
+    RouteMapConvertor convertor = new RouteMapConvertor(C, VC, ROUTEMAP, FILENAME, W);
     Statement statement = convertor.toStatement(ENTRY2);
 
     Conjunction match =
@@ -207,7 +208,7 @@ public class RouteMapConvertorTest {
                                 ImmutableList.of(Statements.ExitReject.toStaticStatement()))),
                         ENTRY2.getNumber(),
                         ROUTEMAP.getName(),
-                        VC.getFilename())),
+                        FILENAME)),
 
                 // false branch
                 ImmutableList.of(
@@ -219,7 +220,7 @@ public class RouteMapConvertorTest {
 
   @Test
   public void testToStatement_TargetEntry() {
-    RouteMapConvertor convertor = new RouteMapConvertor(C, VC, ROUTEMAP, W);
+    RouteMapConvertor convertor = new RouteMapConvertor(C, VC, ROUTEMAP, FILENAME, W);
     Statement statement = convertor.toStatement(ENTRY3);
 
     Conjunction match =
@@ -241,7 +242,7 @@ public class RouteMapConvertorTest {
                                 ImmutableList.of(Statements.ExitAccept.toStaticStatement()))),
                         ENTRY3.getNumber(),
                         ROUTEMAP.getName(),
-                        VC.getFilename())),
+                        FILENAME)),
                 // false branch
                 ImmutableList.of())));
   }
@@ -252,7 +253,7 @@ public class RouteMapConvertorTest {
     RouteMapEntry rme = new RouteMapEntry(10, LineAction.PERMIT);
     rme.setSetLocalPreference(new RouteMapSetLocalPreference(200L));
     rm.getEntries().put(10, rme);
-    RoutingPolicy policy = new RouteMapConvertor(C, VC, rm, W).toRouteMap();
+    RoutingPolicy policy = new RouteMapConvertor(C, VC, rm, FILENAME, W).toRouteMap();
 
     Builder outputBuilder = Bgpv4Route.testBuilder();
     Environment.Builder env = Environment.builder(C);
@@ -267,7 +268,7 @@ public class RouteMapConvertorTest {
     RouteMapEntry rme = new RouteMapEntry(10, LineAction.PERMIT);
     rme.setSetTag(new RouteMapSetTag(999));
     rm.getEntries().put(10, rme);
-    RoutingPolicy policy = new RouteMapConvertor(C, VC, rm, W).toRouteMap();
+    RoutingPolicy policy = new RouteMapConvertor(C, VC, rm, FILENAME, W).toRouteMap();
 
     Builder outputBuilder = Bgpv4Route.testBuilder();
     Environment.Builder env = Environment.builder(C);
@@ -288,7 +289,7 @@ public class RouteMapConvertorTest {
     rme.setSetTag(new RouteMapSetTag(7777L));
     rme.setCall(new RouteMapCall(subMapName));
     rm.getEntries().put(10, rme);
-    RoutingPolicy policy = new RouteMapConvertor(C, VC, rm, W).toRouteMap();
+    RoutingPolicy policy = new RouteMapConvertor(C, VC, rm, FILENAME, W).toRouteMap();
 
     Builder outputBuilder = Bgpv4Route.testBuilder();
     C.getRoutingPolicies()
@@ -323,7 +324,7 @@ public class RouteMapConvertorTest {
     RouteMapEntry rme = new RouteMapEntry(10, LineAction.PERMIT);
     rme.setCall(new RouteMapCall(subMapName));
     rm.getEntries().put(10, rme);
-    RoutingPolicy policy = new RouteMapConvertor(C, VC, rm, W).toRouteMap();
+    RoutingPolicy policy = new RouteMapConvertor(C, VC, rm, FILENAME, W).toRouteMap();
 
     C.getRoutingPolicies()
         .put(
@@ -352,7 +353,7 @@ public class RouteMapConvertorTest {
     RouteMapEntry rme = new RouteMapEntry(10, LineAction.PERMIT);
     rme.setCall(new RouteMapCall(subMapName));
     rm.getEntries().put(10, rme);
-    RoutingPolicy policy = new RouteMapConvertor(C, VC, rm, W).toRouteMap();
+    RoutingPolicy policy = new RouteMapConvertor(C, VC, rm, FILENAME, W).toRouteMap();
 
     Builder outputBuilder = Bgpv4Route.testBuilder();
     Environment.Builder env = Environment.builder(C);

@@ -19,5 +19,5 @@ public interface RouteMapMatch extends Serializable {
    * statement.
    */
   @Nonnull
-  BooleanExpr toBooleanExpr(Configuration c, CumulusConcatenatedConfiguration vc, Warnings w);
+  BooleanExpr toBooleanExpr(Configuration c, FrrConfiguration vc, Warnings w);
 }

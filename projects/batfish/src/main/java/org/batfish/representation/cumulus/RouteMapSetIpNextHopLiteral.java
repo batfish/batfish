@@ -24,8 +24,7 @@ public final class RouteMapSetIpNextHopLiteral implements RouteMapSet {
 
   @Nonnull
   @Override
-  public Stream<Statement> toStatements(
-      Configuration c, CumulusConcatenatedConfiguration vc, Warnings w) {
+  public Stream<Statement> toStatements(Configuration c, FrrConfiguration vc, Warnings w) {
     return Stream.of(new SetNextHop(new IpNextHop(ImmutableList.of(_nextHop))));
   }
 }

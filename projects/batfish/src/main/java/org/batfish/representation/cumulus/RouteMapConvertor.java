@@ -32,8 +32,9 @@ import org.batfish.vendor.VendorStructureId;
 
 class RouteMapConvertor {
   private Configuration _c;
-  private CumulusConcatenatedConfiguration _vc;
+  private FrrConfiguration _vc;
   private RouteMap _routeMap;
+  private String _filename;
   private Warnings _w;
 
   private Map<Integer, Integer> _nextSeqMap;
@@ -51,9 +52,10 @@ class RouteMapConvertor {
           ImmutableList.of(Statements.ExitReject.toStaticStatement()));
 
   RouteMapConvertor(
-      Configuration c, CumulusConcatenatedConfiguration vc, RouteMap routeMap, Warnings w) {
+      Configuration c, FrrConfiguration vc, RouteMap routeMap, String filename, Warnings w) {
     _c = c;
     _vc = vc;
+    _filename = filename;
     _w = w;
     _routeMap = routeMap;
     _nextSeqMap = computeNoMatchNextBySeq(routeMap);
@@ -163,7 +165,7 @@ class RouteMapConvertor {
         new Conjunction(matchConjuncts),
         ImmutableList.of(
             toTraceableStatement(
-                trueStatements, entry.getNumber(), _routeMap.getName(), _vc.getFilename())),
+                trueStatements, entry.getNumber(), _routeMap.getName(), _filename)),
         noMatchStatements);
   }
 

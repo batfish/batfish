@@ -23,7 +23,7 @@ public class RouteMapMatchIpAddressPrefixLenTest {
   @Test
   public void testToBooleanExpr() {
     RouteMapMatchIpAddressPrefixLen match = new RouteMapMatchIpAddressPrefixLen(7);
-    CumulusConcatenatedConfiguration config = new CumulusConcatenatedConfiguration();
+    FrrConfiguration config = new FrrConfiguration();
     Configuration c = Configuration.builder().setHostname("c").build();
     BooleanExpr expr = match.toBooleanExpr(c, config, new Warnings());
     for (Prefix p :
