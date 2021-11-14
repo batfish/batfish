@@ -17,6 +17,7 @@ import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.bgp.VniConfig.importRtPatternForAnyAs;
 import static org.batfish.datamodel.routing_policy.Common.generateSuppressionPolicy;
 import static org.batfish.datamodel.routing_policy.Common.initDenyAllBgpRedistributionPolicy;
+import static org.batfish.datamodel.routing_policy.statement.Statements.RemovePrivateAs;
 import static org.batfish.representation.cumulus.BgpProcess.BGP_UNNUMBERED_IP;
 import static org.batfish.representation.cumulus.CumulusConcatenatedConfiguration.CUMULUS_CLAG_DOMAIN_ID;
 import static org.batfish.representation.cumulus.CumulusConcatenatedConfiguration.LOOPBACK_INTERFACE_NAME;
@@ -136,6 +137,7 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.Layer3Vni;
 import org.batfish.datamodel.vxlan.Vni;
+import org.batfish.representation.cumulus.BgpNeighborIpv4UnicastAddressFamily.RemovePrivateAsMode;
 import org.batfish.vendor.VendorStructureId;
 
 /** Utilities that convert Cumulus-specific representations to vendor-independent model. */
@@ -666,6 +668,15 @@ public final class CumulusConversions {
               ImmutableList.of()));
 
       peerExportPolicy.addStatement(REJECT_DEFAULT_ROUTE);
+    }
+
+    // remove private as if set
+    // TODO(handle different types of RemovePrivateAs)
+    if (neighbor.getIpv4UnicastAddressFamily() != null
+        && neighbor.getIpv4UnicastAddressFamily().getRemovePrivateAsMode() != null
+        && neighbor.getIpv4UnicastAddressFamily().getRemovePrivateAsMode()
+            != RemovePrivateAsMode.NONE) {
+      peerExportPolicy.addStatement(RemovePrivateAs.toStaticStatement());
     }
 
     BooleanExpr peerExportConditions = computePeerExportConditions(neighbor, bgpVrf);

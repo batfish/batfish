@@ -396,6 +396,8 @@ REDISTRIBUTE: 'redistribute';
 
 REMOTE_AS: 'remote-as';
 
+REMOVE_PRIVATE_AS: 'remove-private-AS';
+
 REPLACE_AS: 'replace-as';
 
 RIP: 'rip';
