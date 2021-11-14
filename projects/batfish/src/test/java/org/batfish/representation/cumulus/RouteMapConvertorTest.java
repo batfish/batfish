@@ -84,9 +84,6 @@ public class RouteMapConvertorTest {
   public void setup() {
     W = new Warnings();
     VC = new FrrConfiguration();
-    //    VC.setHostname(HOSTNAME);
-    //    VC.setWarnings(W);
-    //    VC.setFilename("file");
     C = new Configuration(HOSTNAME, ConfigurationFormat.CUMULUS_CONCATENATED);
     initRouteMap();
     _originalRouteBuilder =
