@@ -32,6 +32,7 @@ public enum CiscoStructureType implements StructureType {
   INSPECT_POLICY_MAP("policy-map type inspect"),
   INTERFACE("interface"),
   IP_ACCESS_LIST("ipv4/6 acl"),
+  IP_PORT_OBJECT_GROUP("object-group ip port"),
   IPSEC_PROFILE("crypto ipsec profile"),
   IPSEC_TRANSFORM_SET("crypto ipsec transform-set"),
   IPV4_ACCESS_LIST("ipv4 acl"),
