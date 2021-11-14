@@ -417,6 +417,7 @@ import org.batfish.representation.cisco.EigrpProcess;
 import org.batfish.representation.cisco.ExpandedCommunityList;
 import org.batfish.representation.cisco.ExpandedCommunityListLine;
 import org.batfish.representation.cisco.OspfNetworkType;
+import org.batfish.representation.cisco.PortObjectGroup;
 import org.batfish.representation.cisco.PrefixList;
 import org.batfish.representation.cisco.PrefixListLine;
 import org.batfish.representation.cisco.RouteMap;
@@ -1923,8 +1924,8 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosObjectGroupPort() throws IOException {
-    String hostname = "ios-object-group-ip-port";
+  public void testIosAclPortGroup() throws IOException {
+    String hostname = "ios-acl-portgroup";
     String filename = "configs/" + hostname;
     Configuration c = parseConfig(hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -1959,6 +1960,16 @@ public final class CiscoGrammarTest {
 
     /* The undefined acl reject in flows because the earlier (empty) definition wins */
     assertThat(c, hasIpAccessList("aclDuplicate", rejects(inFlowSrc, null, c)));
+  }
+
+  @Test
+  public void testObjectGroupIpPortExtraction() {
+    String hostname = "ios-object-group-ip-port";
+    CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
+
+    assertTrue(vc.getObjectGroups().containsKey("ogip"));
+    PortObjectGroup group = (PortObjectGroup) vc.getObjectGroups().get("ogip");
+    assertThat(group.getLines().size(), equalTo(5));
   }
 
   @Test
