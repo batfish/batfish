@@ -452,6 +452,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Map<String, ObjectGroup> _objectGroups;
 
+  private final Map<String, PortObjectGroup> _portObjectGroups;
+
   private final Map<String, Prefix6List> _prefix6Lists;
 
   private final Map<String, PrefixList> _prefixLists;
@@ -524,6 +526,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _objectGroups = new TreeMap<>();
     _prefixLists = new TreeMap<>();
     _prefix6Lists = new TreeMap<>();
+    _portObjectGroups = new TreeMap<>();
     _protocolObjectGroups = new TreeMap<>();
     _routeMaps = new TreeMap<>();
     _securityZonePairs = new TreeMap<>();
@@ -2554,8 +2557,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                     toIpAccessList(serviceObject, _serviceObjects, _serviceObjectGroups)));
 
     // convert standard/extended ipv6 access lists to ipv6 access lists or
-    // route6 filter
-    // lists
+    // route6 filter lists
     for (StandardIpv6AccessList saList : _standardIpv6AccessLists.values()) {
       if (isAclUsedForRoutingv6(saList.getName())) {
         Route6FilterList rfList = CiscoConversions.toRoute6FilterList(saList);
@@ -3148,6 +3150,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.TWICE_NAT_REAL_DESTINATION_NETWORK_OBJECT_GROUP,
         CiscoStructureUsage.TWICE_NAT_REAL_SOURCE_NETWORK_OBJECT_GROUP);
     markConcreteStructure(
+        CiscoStructureType.IP_PORT_OBJECT_GROUP,
+        CiscoStructureUsage.EXTENDED_ACCESS_LIST_PORTGROUP);
+    markConcreteStructure(
         CiscoStructureType.PROTOCOL_OBJECT_GROUP,
         CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OBJECT_GROUP,
         CiscoStructureUsage.PROTOCOL_OBJECT_GROUP_GROUP_OBJECT);
@@ -3686,6 +3691,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public Map<String, ObjectGroup> getObjectGroups() {
     return _objectGroups;
+  }
+
+  public Map<String, PortObjectGroup> getPortObjectGroups() {
+    return _portObjectGroups;
   }
 
   public Map<String, ProtocolObjectGroup> getProtocolObjectGroups() {

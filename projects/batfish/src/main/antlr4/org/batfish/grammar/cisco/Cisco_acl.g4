@@ -88,6 +88,17 @@ bandwidth_irs_stanza
    BANDWIDTH null_rest_of_line
 ;
 
+eacl_port_specifier
+:
+   port_specifier_literal
+   | eacl_portgroup
+;
+
+eacl_portgroup
+:
+   PORTGROUP name = variable
+;
+
 etype
 :
    ANY
@@ -204,8 +215,8 @@ extended_access_list_null_tail
    )?
    (
       (
-         access_list_action protocol access_list_ip_range port_specifier?
-         access_list_ip_range port_specifier? REFLECT
+         access_list_action protocol access_list_ip_range port_specifier_literal?
+         access_list_ip_range port_specifier_literal? REFLECT
       )
       | DYNAMIC
       | EVALUATE
@@ -285,10 +296,10 @@ extended_access_list_tail
       )
    ) srcipr = access_list_ip_range
    (
-      alps_src = port_specifier
+      alps_src = eacl_port_specifier
    )? dstipr = access_list_ip_range
    (
-      alps_dst = port_specifier
+      alps_dst = eacl_port_specifier
    )? features += extended_access_list_additional_feature*
    (
       NEXTHOP1 IPV4 nexthop1 = IP_ADDRESS
@@ -329,10 +340,10 @@ extended_ipv6_access_list_tail
       )? num = dec
    )? ala = access_list_action prot = protocol srcipr = access_list_ip6_range
    (
-      alps_src = port_specifier
+      alps_src = port_specifier_literal
    )? dstipr = access_list_ip6_range
    (
-      alps_dst = port_specifier
+      alps_dst = port_specifier_literal
    )? features += extended_access_list_additional_feature*
    (
       NEXTHOP1 IPV6 nexthop1 = IPV6_ADDRESS
