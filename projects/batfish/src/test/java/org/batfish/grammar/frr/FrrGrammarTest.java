@@ -8,6 +8,7 @@ import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasP
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpv4RouteThat;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.routing_policy.Environment.Direction.OUT;
+import static org.batfish.grammar.frr.FrrConfigurationBuilder.nextMultipleOfFive;
 import static org.batfish.representation.cumulus.CumulusConversions.computeOspfAreaRangeFilterName;
 import static org.batfish.representation.cumulus.CumulusConversions.computeRouteMapEntryName;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.CONNECTED;
@@ -2393,12 +2394,12 @@ public class FrrGrammarTest {
 
   @Test
   public void testNextMultipleOfFive() {
-    assertThat(FrrConfigurationBuilder.nextMultipleOfFive(null), equalTo(5L));
-    assertThat(FrrConfigurationBuilder.nextMultipleOfFive(0L), equalTo(5L));
-    assertThat(FrrConfigurationBuilder.nextMultipleOfFive(1L), equalTo(5L));
-    assertThat(FrrConfigurationBuilder.nextMultipleOfFive(4L), equalTo(5L));
-    assertThat(FrrConfigurationBuilder.nextMultipleOfFive(5L), equalTo(10L));
-    assertThat(FrrConfigurationBuilder.nextMultipleOfFive(6L), equalTo(10L));
+    assertThat(nextMultipleOfFive(null), equalTo(5L));
+    assertThat(nextMultipleOfFive(0L), equalTo(5L));
+    assertThat(nextMultipleOfFive(1L), equalTo(5L));
+    assertThat(nextMultipleOfFive(4L), equalTo(5L));
+    assertThat(nextMultipleOfFive(5L), equalTo(10L));
+    assertThat(nextMultipleOfFive(6L), equalTo(10L));
   }
 
   @Test
