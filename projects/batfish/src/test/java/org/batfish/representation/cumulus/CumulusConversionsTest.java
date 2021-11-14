@@ -797,7 +797,7 @@ public final class CumulusConversionsTest {
     vxlan2.setVxlanId(2);
     vxlan2.createOrGetBridgeSettings().setAccess(2);
 
-    CumulusFrrConfiguration frrConfiguration = new CumulusFrrConfiguration();
+    FrrConfiguration frrConfiguration = new FrrConfiguration();
     frrConfiguration.setBgpProcess(new BgpProcess());
 
     CumulusConcatenatedConfiguration vsConfig =

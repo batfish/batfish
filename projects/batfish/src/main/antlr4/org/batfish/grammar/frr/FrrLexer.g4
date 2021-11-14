@@ -1,7 +1,7 @@
-lexer grammar CumulusFrrLexer;
+lexer grammar FrrLexer;
 
 options {
-  superClass = 'org.batfish.grammar.cumulus_frr.parsing.CumulusFrrBaseLexer';
+  superClass = 'org.batfish.grammar.frr.parsing.FrrBaseLexer';
 }
 
 tokens {

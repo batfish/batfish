@@ -1,9 +1,9 @@
-parser grammar CumulusFrr_routemap;
+parser grammar Frr_routemap;
 
-import CumulusFrr_common;
+import Frr_common;
 
 options {
-  tokenVocab = CumulusFrrLexer;
+  tokenVocab = FrrLexer;
 }
 
 int_expr
