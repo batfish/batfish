@@ -1,5 +1,5 @@
 !
-hostname ios-object-group-ip-port
+hostname ios-acl-portgroup
 !
 !
 object-group ip port ogipBase
