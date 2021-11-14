@@ -1,9 +1,9 @@
-parser grammar CumulusFrr_ospf;
+parser grammar Frr_ospf;
 
-import CumulusFrr_common;
+import Frr_common;
 
 options {
-  tokenVocab = CumulusFrrLexer;
+  tokenVocab = FrrLexer;
 }
 
 ospf_area_range_cost

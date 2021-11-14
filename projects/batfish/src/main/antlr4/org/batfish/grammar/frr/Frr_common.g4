@@ -1,7 +1,7 @@
-parser grammar CumulusFrr_common;
+parser grammar Frr_common;
 
 options {
-  tokenVocab = CumulusFrrLexer;
+  tokenVocab = FrrLexer;
 }
 
 autonomous_system

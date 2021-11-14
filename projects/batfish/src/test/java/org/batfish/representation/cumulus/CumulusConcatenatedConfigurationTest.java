@@ -147,7 +147,7 @@ public class CumulusConcatenatedConfigurationTest {
   public void testInitializeAllInterfaces_frrInterfaces() {
     Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
     FrrInterface iface1 = new FrrInterface("frr", "vrf1");
-    CumulusFrrConfiguration frrConfiguration = new CumulusFrrConfiguration();
+    FrrConfiguration frrConfiguration = new FrrConfiguration();
     frrConfiguration.getInterfaces().put(iface1.getName(), iface1);
     CumulusConcatenatedConfiguration.builder()
         .setHostname("c")
@@ -257,7 +257,7 @@ public class CumulusConcatenatedConfigurationTest {
   @Test
   public void testToVIConfigIntfShut() {
     InterfacesInterface vsIface = new InterfacesInterface("swp1");
-    CumulusFrrConfiguration frrConfiguration = new CumulusFrrConfiguration();
+    FrrConfiguration frrConfiguration = new FrrConfiguration();
 
     CumulusConcatenatedConfiguration vsConfig =
         CumulusConcatenatedConfiguration.builder()
@@ -293,7 +293,7 @@ public class CumulusConcatenatedConfigurationTest {
   @Test
   public void testToVIConfigIntfNoShut() {
     InterfacesInterface vsIface = new InterfacesInterface("swp1");
-    CumulusFrrConfiguration frrConfiguration = new CumulusFrrConfiguration();
+    FrrConfiguration frrConfiguration = new FrrConfiguration();
 
     CumulusConcatenatedConfiguration vsConfig =
         CumulusConcatenatedConfiguration.builder()
@@ -331,7 +331,7 @@ public class CumulusConcatenatedConfigurationTest {
         .createOrGetInterface("swp4")
         .addAddress(ConcreteInterfaceAddress.parse("4.4.4.4/31"));
 
-    CumulusFrrConfiguration frrConfiguration = new CumulusFrrConfiguration();
+    FrrConfiguration frrConfiguration = new FrrConfiguration();
     frrConfiguration.getInterfaces().put("swp1", new FrrInterface("swp1"));
     frrConfiguration.getInterfaces().put("swp2", new FrrInterface("swp2"));
     frrConfiguration.getInterfaces().put("swp3", new FrrInterface("swp3"));

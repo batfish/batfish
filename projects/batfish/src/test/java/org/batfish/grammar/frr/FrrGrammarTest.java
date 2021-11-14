@@ -1,4 +1,4 @@
-package org.batfish.grammar.cumulus_frr;
+package org.batfish.grammar.frr;
 
 import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasText;
@@ -8,7 +8,7 @@ import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasP
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpv4RouteThat;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.routing_policy.Environment.Direction.OUT;
-import static org.batfish.grammar.cumulus_frr.CumulusFrrConfigurationBuilder.nextMultipleOfFive;
+import static org.batfish.grammar.frr.FrrConfigurationBuilder.nextMultipleOfFive;
 import static org.batfish.representation.cumulus.CumulusConversions.computeOspfAreaRangeFilterName;
 import static org.batfish.representation.cumulus.CumulusConversions.computeRouteMapEntryName;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.CONNECTED;
@@ -110,10 +110,10 @@ import org.batfish.representation.cumulus.BgpPeerGroupNeighbor;
 import org.batfish.representation.cumulus.BgpRedistributionPolicy;
 import org.batfish.representation.cumulus.BgpVrfAddressFamilyAggregateNetworkConfiguration;
 import org.batfish.representation.cumulus.CumulusConcatenatedConfiguration;
-import org.batfish.representation.cumulus.CumulusFrrConfiguration;
 import org.batfish.representation.cumulus.CumulusRoutingProtocol;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
+import org.batfish.representation.cumulus.FrrConfiguration;
 import org.batfish.representation.cumulus.FrrInterface;
 import org.batfish.representation.cumulus.InterfacesInterface;
 import org.batfish.representation.cumulus.IpAsPathAccessList;
@@ -139,18 +139,18 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
-/** Tests for {@link CumulusFrrParser}. */
-public class CumulusFrrGrammarTest {
+/** Tests for {@link FrrParser}. */
+public class FrrGrammarTest {
   private static final String FILENAME = "";
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
   @Rule public ExpectedException _thrown = ExpectedException.none();
   private static CumulusConcatenatedConfiguration _config;
-  private static CumulusFrrConfiguration _frr;
+  private static FrrConfiguration _frr;
   private static ConvertConfigurationAnswerElement _ccae;
   private static Warnings _warnings;
 
-  private static final String SNAPSHOTS_PREFIX = "org/batfish/grammar/cumulus_frr/snapshots/";
+  private static final String SNAPSHOTS_PREFIX = "org/batfish/grammar/frr/snapshots/";
 
   @Before
   public void setup() {
@@ -213,13 +213,12 @@ public class CumulusFrrGrammarTest {
    * that is setup cleanly once per test.
    */
   private static void parseFromTextWithSettings(String src, Settings settings) {
-    CumulusFrrCombinedParser parser = new CumulusFrrCombinedParser(src, settings, 1, 0);
+    FrrCombinedParser parser = new FrrCombinedParser(src, settings, 1, 0);
     ParserRuleContext tree =
         Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     ParseTreeWalker walker = new BatfishParseTreeWalker(parser);
-    CumulusFrrConfigurationBuilder cb =
-        new CumulusFrrConfigurationBuilder(
-            _config, parser, _warnings, src, new SilentSyntaxCollection());
+    FrrConfigurationBuilder cb =
+        new FrrConfigurationBuilder(_config, parser, _warnings, src, new SilentSyntaxCollection());
     walker.walk(cb, tree);
 
     // SerializationUtils.clone will clear transient state, which we save and restore.
@@ -1074,7 +1073,7 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testCumulusFrrVrf() {
+  public void testFrrVrf() {
     _frr.getVrfs().put("NAME", new Vrf("NAME"));
     parse("vrf NAME\n exit-vrf\n");
     assertThat(
@@ -1083,7 +1082,7 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testCumulusFrrVrfVni() {
+  public void testFrrVrfVni() {
     Vrf vrf = new Vrf("NAME");
     _frr.getVrfs().put("NAME", vrf);
     parse("vrf NAME\n vni 170000\n exit-vrf\n");
@@ -1091,7 +1090,7 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testCumulusFrrVrfIpRoutes() {
+  public void testFrrVrfIpRoutes() {
     Vrf vrf = new Vrf("NAME");
     _frr.getVrfs().put("NAME", vrf);
     parse("vrf NAME\n ip route 1.0.0.0/8 10.0.2.1\n ip route 0.0.0.0/0 10.0.0.1\n exit-vrf\n");
@@ -1104,7 +1103,7 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testCumulusFrrVrfIpRoutes_blackhole() {
+  public void testFrrVrfIpRoutes_blackhole() {
     Vrf vrf = new Vrf("NAME");
     _frr.getVrfs().put("NAME", vrf);
     parse("vrf NAME\n ip route 1.0.0.0/8 blackhole\n exit-vrf\n");
@@ -1115,7 +1114,7 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testCumulusFrrVrf_noExit() {
+  public void testFrrVrf_noExit() {
     Vrf vrf = new Vrf("NAME");
     _frr.getVrfs().put("NAME", vrf);
     parse("vrf NAME\n vni 170000\n");
@@ -1123,7 +1122,7 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testCumulusFrrRouteMap() {
+  public void testFrrRouteMap() {
     String name = "ROUTE-MAP-NAME";
     parse(String.format("route-map %s permit 10\nroute-map %s deny 20\n", name, name));
     assertThat(_frr.getRouteMaps().keySet(), equalTo(ImmutableSet.of(name)));
@@ -1157,7 +1156,7 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testCumulusFrrVrfRouteMapDescription() {
+  public void testFrrVrfRouteMapDescription() {
     String name = "ROUTE-MAP-NAME";
     String description = "PERmit Xxx Yy_+!@#$%^&*()";
 
@@ -1180,7 +1179,7 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testCumulusFrrVrfRouteMapMatchCallExtraction() {
+  public void testFrrVrfRouteMapMatchCallExtraction() {
     String name = "ROUTE-MAP-NAME";
 
     parse(String.format("route-map %s permit 10\ncall SUB-MAP\n", name));
@@ -1194,7 +1193,7 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testCumulusFrrVrfRouteMapOnMatchNext() {
+  public void testFrrVrfRouteMapOnMatchNext() {
     String name = "ROUTE-MAP-NAME";
     parse(String.format("route-map %s permit 10\non-match next\n", name));
     RouteMapEntry entry = _frr.getRouteMaps().get(name).getEntries().get(10);
@@ -1203,7 +1202,7 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testCumulusFrrVrfRouteMapOnMatchGoto() {
+  public void testFrrVrfRouteMapOnMatchGoto() {
     String name = "ROUTE-MAP-NAME";
     parse(String.format("route-map %s permit 10\non-match goto 20\n", name));
     RouteMapEntry entry = _frr.getRouteMaps().get(name).getEntries().get(10);
@@ -1212,7 +1211,7 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testCumulusFrrVrfRouteMapMatchAsPath() {
+  public void testFrrVrfRouteMapMatchAsPath() {
     String routeMapName = "ROUTE-MAP-NAME";
     String asPathName1 = "AS-PATH-1";
     String asPathName2 = "AS-PATH-2";
@@ -1236,7 +1235,7 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testCumulusFrrVrfRouteMapMatchCommunity() {
+  public void testFrrVrfRouteMapMatchCommunity() {
     String name = "ROUTE-MAP-NAME";
 
     parse(String.format("route-map %s permit 10\nmatch community CN1 CN2\n", name));
@@ -1253,7 +1252,7 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testCumulusFrrVrfRouteMapMatchCommunity_multiline() {
+  public void testFrrVrfRouteMapMatchCommunity_multiline() {
     parseLines("route-map RM permit 10", "match community CN1", "match community CN2");
 
     RouteMapEntry entry = _frr.getRouteMaps().get("RM").getEntries().get(10);
@@ -1268,7 +1267,7 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testCumulusFrrVrfRouteMapMatchPrefixLen() {
+  public void testFrrVrfRouteMapMatchPrefixLen() {
     String name = "ROUTE-MAP-NAME";
     String match1 = "match ip address prefix-len 7";
     String match2 = "match ip address prefix-len 8";
@@ -1282,7 +1281,7 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testCumulusFrrVrfRouteMapMatchPrefixList() {
+  public void testFrrVrfRouteMapMatchPrefixList() {
     String name = "ROUTE-MAP-NAME";
     String match1 = "match ip address prefix-list PREFIX_LIST1";
     String match2 = "match ip address prefix-list PREFIX_LIST2";
@@ -1310,7 +1309,7 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testCumulusFrrVrfRouteMapMatchSourceProtocol() {
+  public void testFrrVrfRouteMapMatchSourceProtocol() {
     String name = "ROUTE-MAP-NAME";
     StringBuilder sb = new StringBuilder();
     List<String> protocols =
@@ -1335,7 +1334,7 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testCumulusFrrVrfRouteMapSetAsPath() {
+  public void testFrrVrfRouteMapSetAsPath() {
     String name = "ROUTE-MAP-NAME";
     parse(String.format("route-map %s permit 10\nset as-path prepend 11111 22222 33333\n", name));
     RouteMapEntry entry = _frr.getRouteMaps().get(name).getEntries().get(10);
@@ -1343,7 +1342,7 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testCumulusFrrVrfRouteMapSetExcludeAsPath() {
+  public void testFrrVrfRouteMapSetExcludeAsPath() {
     String name = "ROUTE-MAP-NAME";
     parse(String.format("route-map %s permit 10\nset as-path exclude 11111 22222 33333\n", name));
     RouteMapEntry entry = _frr.getRouteMaps().get(name).getEntries().get(10);
@@ -1351,7 +1350,7 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testCumulusFrrVrfRouteMapSetMetric() {
+  public void testFrrVrfRouteMapSetMetric() {
     String name = "ROUTE-MAP-NAME";
 
     parse(String.format("route-map %s permit 10\nset metric 30\n", name));
@@ -1361,7 +1360,7 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testCumulusFrrRouteMapSetMetricType() {
+  public void testFrrRouteMapSetMetricType() {
     String name = "ROUTE-MAP-NAME";
 
     parse(
@@ -1380,7 +1379,7 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testCumulusFrrVrfRouteMapSetWeight() {
+  public void testFrrVrfRouteMapSetWeight() {
     String name = "ROUTE-MAP-NAME";
 
     parse(String.format("route-map %s permit 10\nset weight 30\n", name));
@@ -1390,7 +1389,7 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testCumulusFrrIpCommunityListExpanded() {
+  public void testFrrIpCommunityListExpanded() {
     String name = "NAME";
 
     parse(String.format("ip community-list expanded %s permit 10000:10 20000:20\n", name));
@@ -1407,7 +1406,7 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testCumulusFrrVrfRouteMapMatchInterface() {
+  public void testFrrVrfRouteMapMatchInterface() {
     String name = "ROUTE-MAP-NAME";
 
     parse(String.format("route-map %s permit 10\nmatch interface lo\n", name));
@@ -1424,7 +1423,7 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testCumulusFrrRouteMapMatchTagExtraction() {
+  public void testFrrRouteMapMatchTagExtraction() {
     String name = "ROUTE-MAP-NAME";
 
     parse(String.format("route-map %s permit 10\nmatch tag 65555\n", name));
@@ -1435,7 +1434,7 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testCumulusFrrRouteMapMatchTagConversion() {
+  public void testFrrRouteMapMatchTagConversion() {
     String name = "ROUTE-MAP-NAME";
 
     parse(String.format("route-map %s permit 10\nmatch tag 65555\n", name));
@@ -1462,7 +1461,7 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testCumulusFrrRouteMapSetLocalPref() {
+  public void testFrrRouteMapSetLocalPref() {
     String name = "ROUTE-MAP-NAME";
 
     parse(String.format("route-map %s permit 10\nset local-preference 200\n", name));
@@ -1473,7 +1472,7 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testCumulusFrrRouteMapSetTagPref() {
+  public void testFrrRouteMapSetTagPref() {
     String name = "ROUTE-MAP-NAME";
 
     parse(String.format("route-map %s permit 10\nset tag 999\n", name));
@@ -1484,7 +1483,7 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testCumulusFrrVrfRouteMapSetIpNextHop() {
+  public void testFrrVrfRouteMapSetIpNextHop() {
     String name = "ROUTE-MAP-NAME";
     String clause1 = "set ip next-hop 10.0.0.1";
 
@@ -1495,7 +1494,7 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testCumulusFrrVrfRouteMapSetCommunity() {
+  public void testFrrVrfRouteMapSetCommunity() {
     String name = "ROUTE-MAP-NAME";
 
     parse(
@@ -1518,7 +1517,7 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testCumulusFrrIpAsPathAccessList() {
+  public void testFrrIpAsPathAccessList() {
     String name = "NAME";
     String as1 = "^11111$";
     String as2 = "_1_";
@@ -1579,7 +1578,7 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testCumulusFrrIpPrefixList() {
+  public void testFrrIpPrefixList() {
     String name = "PREFIX_10.0.0.0/23";
     String prefix1 = "10.0.0.1/24";
     String prefix2 = "10.0.1.2/24";
@@ -1608,7 +1607,7 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testCumulusFrrIpPrefixListNoSeqOnFirstEntry() {
+  public void testFrrIpPrefixListNoSeqOnFirstEntry() {
     String name = "NAME";
     String prefix1 = "10.0.0.1/24";
     parse(String.format("ip prefix-list %s permit %s\n", name, prefix1));
@@ -1622,7 +1621,7 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testCumulusFrrIpPrefixListNoSeqOnLaterEntry() {
+  public void testFrrIpPrefixListNoSeqOnLaterEntry() {
     String name = "NAME";
     String prefix1 = "10.0.0.1/24";
     String prefix2 = "10.0.1.2/24";
@@ -1646,7 +1645,7 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testCumulusFrrIpPrefixListAny() {
+  public void testFrrIpPrefixListAny() {
     String name = "NAME";
     parse(String.format("ip prefix-list %s seq 5 permit any\n", name));
     assertThat(_frr.getIpPrefixLists().keySet(), equalTo(ImmutableSet.of(name)));
@@ -1658,14 +1657,14 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testCumulusFrrIpPrefixListDescription() {
+  public void testFrrIpPrefixListDescription() {
     String name = "NAME";
     // Don't crash
     parse(String.format("ip prefix-list %s description FOO\n", name));
   }
 
   @Test
-  public void testCumulusFrrAgentx() {
+  public void testFrrAgentx() {
     parse("agentx\n");
   }
 
@@ -1675,7 +1674,7 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testCumulusFrrSyslog() {
+  public void testFrrSyslog() {
     parse("log syslog\n");
     parse("log syslog alerts\n");
     parse("log syslog critical\n");
@@ -1692,24 +1691,24 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testCumulusFrrUsername() {
+  public void testFrrUsername() {
     parse("username cumulus nopassword\n");
   }
 
   @Test
-  public void testCumulusFrrVersion() {
+  public void testFrrVersion() {
     parse("frr version\n");
     parse("frr version sV4@%)!@#$%^&**()_+|\n");
   }
 
   @Test
-  public void testCumulusFrrBgpNeighborBfd() {
+  public void testFrrBgpNeighborBfd() {
     parse("router bgp 10000 vrf VRF\nneighbor N bfd 1 10 20\n");
     parse("router bgp 10000 vrf VRF\nneighbor N bfd\n");
   }
 
   @Test
-  public void testCumulusFrrNeightborPassword() {
+  public void testFrrNeightborPassword() {
     parse("router bgp 10000\nneighbor N password sV4@%)!@#$%^&**()_+|\n");
   }
 

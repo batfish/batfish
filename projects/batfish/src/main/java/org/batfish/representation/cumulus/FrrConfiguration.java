@@ -19,7 +19,7 @@ import org.batfish.datamodel.Ip6;
 import org.batfish.vendor.VendorConfiguration;
 
 /** A {@link VendorConfiguration} specifically for {@code /etc/frr/frr.conf}. */
-public class CumulusFrrConfiguration implements Serializable {
+public class FrrConfiguration implements Serializable {
 
   private @Nullable BgpProcess _bgpProcess;
   private @Nullable OspfProcess _ospfProcess;
@@ -34,7 +34,7 @@ public class CumulusFrrConfiguration implements Serializable {
   private final @Nonnull Map<String, IpPrefixList> _ipPrefixLists;
   private final @Nonnull Map<String, IpCommunityList> _ipCommunityLists;
 
-  public CumulusFrrConfiguration() {
+  public FrrConfiguration() {
     _interfaces = new HashMap<>();
     _ipAsPathAccessLists = new HashMap<>();
     _ipPrefixLists = new HashMap<>();

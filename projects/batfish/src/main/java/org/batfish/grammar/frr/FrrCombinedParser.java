@@ -1,22 +1,21 @@
-package org.batfish.grammar.cumulus_frr;
+package org.batfish.grammar.frr;
 
 import org.batfish.grammar.BatfishANTLRErrorStrategy;
 import org.batfish.grammar.BatfishANTLRErrorStrategy.BatfishANTLRErrorStrategyFactory;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BatfishLexerRecoveryStrategy;
 import org.batfish.grammar.GrammarSettings;
-import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Cumulus_frr_configurationContext;
+import org.batfish.grammar.frr.FrrParser.Frr_configurationContext;
 
-public class CumulusFrrCombinedParser
-    extends BatfishCombinedParser<CumulusFrrParser, CumulusFrrLexer> {
+public class FrrCombinedParser extends BatfishCombinedParser<FrrParser, FrrLexer> {
 
   private static final BatfishANTLRErrorStrategyFactory NEWLINE_BASED_RECOVERY =
-      new BatfishANTLRErrorStrategy.BatfishANTLRErrorStrategyFactory(CumulusFrrLexer.NEWLINE, "\n");
+      new BatfishANTLRErrorStrategy.BatfishANTLRErrorStrategyFactory(FrrLexer.NEWLINE, "\n");
 
-  public CumulusFrrCombinedParser(String input, GrammarSettings settings, int line, int offset) {
+  public FrrCombinedParser(String input, GrammarSettings settings, int line, int offset) {
     super(
-        CumulusFrrParser.class,
-        CumulusFrrLexer.class,
+        FrrParser.class,
+        FrrLexer.class,
         input,
         settings,
         NEWLINE_BASED_RECOVERY,
@@ -26,7 +25,7 @@ public class CumulusFrrCombinedParser
   }
 
   @Override
-  public Cumulus_frr_configurationContext parse() {
-    return _parser.cumulus_frr_configuration();
+  public Frr_configurationContext parse() {
+    return _parser.frr_configuration();
   }
 }

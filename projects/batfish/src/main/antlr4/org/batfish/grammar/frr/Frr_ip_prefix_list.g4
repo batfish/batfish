@@ -1,9 +1,9 @@
-parser grammar CumulusFrr_ip_prefix_list;
+parser grammar Frr_ip_prefix_list;
 
-import CumulusFrr_common;
+import Frr_common;
 
 options {
-  tokenVocab = CumulusFrrLexer;
+  tokenVocab = FrrLexer;
 }
 
 ip_prefix_list
