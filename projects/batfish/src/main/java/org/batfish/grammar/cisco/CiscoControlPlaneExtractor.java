@@ -48,6 +48,7 @@ import static org.batfish.representation.cisco.CiscoStructureType.IPV6_ACCESS_LI
 import static org.batfish.representation.cisco.CiscoStructureType.IPV6_ACCESS_LIST_EXTENDED;
 import static org.batfish.representation.cisco.CiscoStructureType.IPV6_ACCESS_LIST_STANDARD;
 import static org.batfish.representation.cisco.CiscoStructureType.IP_ACCESS_LIST;
+import static org.batfish.representation.cisco.CiscoStructureType.IP_PORT_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.ISAKMP_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureType.ISAKMP_PROFILE;
 import static org.batfish.representation.cisco.CiscoStructureType.KEYRING;
@@ -154,6 +155,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_REDISTR
 import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_STUB_LEAK_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_PORTGROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT;
@@ -537,6 +539,7 @@ import org.batfish.grammar.cisco.CiscoParser.Dscp_typeContext;
 import org.batfish.grammar.cisco.CiscoParser.Dt_depi_classContext;
 import org.batfish.grammar.cisco.CiscoParser.Dt_l2tp_classContext;
 import org.batfish.grammar.cisco.CiscoParser.Dt_protect_tunnelContext;
+import org.batfish.grammar.cisco.CiscoParser.Eacl_port_specifierContext;
 import org.batfish.grammar.cisco.CiscoParser.Ebgp_multihop_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Ec_ga_la_literalContext;
 import org.batfish.grammar.cisco.CiscoParser.Ecgalal_asdot_colonContext;
@@ -735,6 +738,8 @@ import org.batfish.grammar.cisco.CiscoParser.Oggit_group_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Oggn_group_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Oggp_group_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Oggs_group_objectContext;
+import org.batfish.grammar.cisco.CiscoParser.Ogi_portContext;
+import org.batfish.grammar.cisco.CiscoParser.Ogip_lineContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogit_group_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogit_icmp_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogn_group_objectContext;
@@ -782,7 +787,7 @@ import org.batfish.grammar.cisco.CiscoParser.Pm_iosict_inspectContext;
 import org.batfish.grammar.cisco.CiscoParser.Pm_iosict_passContext;
 import org.batfish.grammar.cisco.CiscoParser.Pmc_service_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.PortContext;
-import org.batfish.grammar.cisco.CiscoParser.Port_specifierContext;
+import org.batfish.grammar.cisco.CiscoParser.Port_specifier_literalContext;
 import org.batfish.grammar.cisco.CiscoParser.Prefix_list_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.ProtocolContext;
 import org.batfish.grammar.cisco.CiscoParser.RangeContext;
@@ -1073,6 +1078,7 @@ import org.batfish.representation.cisco.IsakmpProfile;
 import org.batfish.representation.cisco.IsisProcess;
 import org.batfish.representation.cisco.IsisRedistributionPolicy;
 import org.batfish.representation.cisco.Keyring;
+import org.batfish.representation.cisco.LiteralPortSpec;
 import org.batfish.representation.cisco.MacAccessList;
 import org.batfish.representation.cisco.MasterBgpPeerGroup;
 import org.batfish.representation.cisco.MatchSemantics;
@@ -1089,6 +1095,10 @@ import org.batfish.representation.cisco.OspfProcess;
 import org.batfish.representation.cisco.OspfRedistributionPolicy;
 import org.batfish.representation.cisco.OspfWildcardNetwork;
 import org.batfish.representation.cisco.PolicyMapClassAction;
+import org.batfish.representation.cisco.PortObjectGroup;
+import org.batfish.representation.cisco.PortObjectGroupLine;
+import org.batfish.representation.cisco.PortObjectGroupPortSpec;
+import org.batfish.representation.cisco.PortSpec;
 import org.batfish.representation.cisco.Prefix6List;
 import org.batfish.representation.cisco.Prefix6ListLine;
 import org.batfish.representation.cisco.PrefixList;
@@ -1463,6 +1473,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private NetworkObjectGroup _currentNetworkObjectGroup;
 
   private String _currentNetworkObjectName;
+
+  private PortObjectGroup _currentPortObjectGroup;
 
   private IcmpTypeObjectGroup _currentIcmpTypeObjectGroup;
 
@@ -2680,6 +2692,26 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void enterOgi_port(Ogi_portContext ctx) {
+    String name = ctx.name.getText();
+    // If there is a conflict, create a dummy object group
+    if (_configuration.getObjectGroups().get(name) != null) {
+      _currentPortObjectGroup = new PortObjectGroup(name);
+      warnObjectGroupRedefinition(ctx.name);
+    } else {
+      _currentPortObjectGroup =
+          _configuration.getPortObjectGroups().computeIfAbsent(name, PortObjectGroup::new);
+      _configuration.getObjectGroups().put(name, _currentPortObjectGroup);
+      _configuration.defineStructure(IP_PORT_OBJECT_GROUP, name, ctx);
+    }
+  }
+
+  @Override
+  public void exitOgi_port(Ogi_portContext ctx) {
+    _currentPortObjectGroup = null;
+  }
+
+  @Override
   public void enterOg_network(Og_networkContext ctx) {
     String name = ctx.name.getText();
     // If there is a conflict, create a dummy object group
@@ -2740,6 +2772,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitOg_protocol(Og_protocolContext ctx) {
     _currentProtocolObjectGroup = null;
+  }
+
+  @Override
+  public void exitOgip_line(Ogip_lineContext ctx) {
+    _currentPortObjectGroup
+        .getLines()
+        .add(new PortObjectGroupLine(toPortRanges(ctx.port_specifier_literal())));
   }
 
   @Override
@@ -4414,10 +4453,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       Extended_access_list_tailContext ctx) {
     if (ctx.prot != null) {
       @Nullable IpProtocol protocol = toIpProtocol(ctx.prot);
-      List<SubRange> srcPortRanges =
-          ctx.alps_src != null ? toPortRanges(ctx.alps_src) : Collections.emptyList();
-      List<SubRange> dstPortRanges =
-          ctx.alps_dst != null ? toPortRanges(ctx.alps_dst) : Collections.emptyList();
+      PortSpec srcPorts = ctx.alps_src != null ? toPortSpec(ctx.alps_src) : null;
+      PortSpec dstPorts = ctx.alps_dst != null ? toPortSpec(ctx.alps_dst) : null;
       Integer icmpType = null;
       Integer icmpCode = null;
       List<TcpFlagsMatchConditions> tcpFlags = new ArrayList<>();
@@ -4606,12 +4643,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
       return SimpleExtendedAccessListServiceSpecifier.builder()
           .setDscps(dscps)
-          .setDstPortRanges(dstPortRanges)
+          .setDstPorts(dstPorts)
           .setEcns(ecns)
           .setIcmpCode(icmpCode)
           .setIcmpType(icmpType)
           .setProtocol(protocol)
-          .setSrcPortRanges(srcPortRanges)
+          .setSrcPorts(srcPorts)
           .setTcpFlags(tcpFlags)
           .build();
     } else if (ctx.ogs != null) {
@@ -10242,7 +10279,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     return originExpr;
   }
 
-  private List<SubRange> toPortRanges(Port_specifierContext ps) {
+  private List<SubRange> toPortRanges(Port_specifier_literalContext ps) {
     Builder builder = IntegerSpace.builder();
     if (ps.EQ() != null) {
       ps.args.forEach(p -> builder.including(getPortNumber(p)));
@@ -10265,6 +10302,20 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     return builder.build().getSubRanges().stream()
         .sorted() // for output/ref determinism
         .collect(ImmutableList.toImmutableList());
+  }
+
+  private PortSpec toPortSpec(Eacl_port_specifierContext ctx) {
+    if (ctx.port_specifier_literal() != null) {
+      return new LiteralPortSpec(toPortRanges(ctx.port_specifier_literal()));
+    }
+    if (ctx.eacl_portgroup() != null) {
+      String portgroupName = ctx.eacl_portgroup().name.getText();
+      _configuration.referenceStructure(
+          IP_PORT_OBJECT_GROUP, portgroupName, EXTENDED_ACCESS_LIST_PORTGROUP, ctx.start.getLine());
+      return new PortObjectGroupPortSpec(portgroupName);
+    }
+    warn(ctx, "Unhandled port specifier");
+    return null;
   }
 
   private <T, U extends T> T convProblem(

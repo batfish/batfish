@@ -4221,6 +4221,8 @@ PORT: 'port';
 
 PORTFAST: 'portfast';
 
+PORTGROUP: 'portgroup';
+
 PORTS: 'ports';
 
 PORT_CHANNEL: 'port-channel';
