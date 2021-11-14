@@ -139,15 +139,15 @@
             </configuration>
           </execution>
           <execution>
-            <id>antlr4-cumulus-frr</id>
+            <id>antlr4-frr</id>
             <goals>
               <goal>antlr4</goal>
             </goals>
             <configuration>
-              <includes>**/CumulusFrrLexer.g4,**/CumulusFrrParser.g4</includes>
-              <libDirectory>${basedir}/src/main/antlr4/org/batfish/grammar/cumulus_frr
+              <includes>**/FrrLexer.g4,**/FrrParser.g4</includes>
+              <libDirectory>${basedir}/src/main/antlr4/org/batfish/grammar/frr
               </libDirectory>
-              <statusDirectory>${project.build.directory}/maven-status/cumulus-frr
+              <statusDirectory>${project.build.directory}/maven-status/frr
               </statusDirectory>
             </configuration>
           </execution>
@@ -316,7 +316,7 @@
             <configuration>
               <includes>**/*.g4</includes>
               <excludes>
-                **/arista/*.g4,**/cisco/*.g4,**/cisco_asa/*.g4,**/cisco_nxos/*.g4,**/cisco_xr/*.g4,**/cumulus_concatenated/*.g4,**/cumulus_frr/*.g4,**/cumulus_interfaces/*.g4,**/cumulus_nclu/*.g4,**/cumulus_ports/*.g4,**/flatjuniper/*.g4,**/fortios/*.g4,**/f5_bigip_imish/*.g4,**/f5_bigip_structured/*.g4,**/flatvyos/*.g4,**/mrv/*.g4,**/palo_alto/*.g4,**/check_point_gateway/**/*.g4,**/a10/**/*.g4
+                **/arista/*.g4,**/cisco/*.g4,**/cisco_asa/*.g4,**/cisco_nxos/*.g4,**/cisco_xr/*.g4,**/cumulus_concatenated/*.g4,**/frr/*.g4,**/cumulus_interfaces/*.g4,**/cumulus_nclu/*.g4,**/cumulus_ports/*.g4,**/flatjuniper/*.g4,**/fortios/*.g4,**/f5_bigip_imish/*.g4,**/f5_bigip_structured/*.g4,**/flatvyos/*.g4,**/mrv/*.g4,**/palo_alto/*.g4,**/check_point_gateway/**/*.g4,**/a10/**/*.g4
               </excludes>
             </configuration>
           </execution>
