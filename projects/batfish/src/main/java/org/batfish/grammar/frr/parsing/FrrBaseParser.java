@@ -1,4 +1,4 @@
-package org.batfish.grammar.cumulus_frr.parsing;
+package org.batfish.grammar.frr.parsing;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -10,8 +10,8 @@ import org.batfish.grammar.BatfishParser;
  * Cumulus frr.conf file parser base class providing additional functionality on top of {@link
  * BatfishParser}.
  */
-public abstract class CumulusFrrBaseParser extends BatfishParser {
-  public CumulusFrrBaseParser(TokenStream input) {
+public abstract class FrrBaseParser extends BatfishParser {
+  public FrrBaseParser(TokenStream input) {
     super(input);
   }
 

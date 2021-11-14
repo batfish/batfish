@@ -3,10 +3,10 @@ load("@rules_java//java:defs.bzl", "java_library")
 package(default_visibility = ["//visibility:public"])
 
 java_library(
-    name = "cumulus_frr_base",
+    name = "frr_base",
     srcs = [
-        ":CumulusFrrBaseLexer.java",
-        ":CumulusFrrBaseParser.java",
+        "FrrBaseLexer.java",
+        "FrrBaseParser.java",
     ],
     deps = [
         "//projects/batfish-common-protocol:parser_common",

@@ -1,9 +1,9 @@
-parser grammar CumulusFrr_vrf;
+parser grammar Frr_vrf;
 
-import CumulusFrr_common;
+import Frr_common;
 
 options {
-  tokenVocab = CumulusFrrLexer;
+  tokenVocab = FrrLexer;
 }
 
 s_vrf

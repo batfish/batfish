@@ -96,7 +96,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration {
 
   @Nonnull private final CumulusInterfacesConfiguration _interfacesConfiguration;
 
-  @Nonnull private final CumulusFrrConfiguration _frrConfiguration;
+  @Nonnull private final FrrConfiguration _frrConfiguration;
 
   @Nonnull private final CumulusPortsConfiguration _portsConfiguration;
 
@@ -105,13 +105,13 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration {
   public CumulusConcatenatedConfiguration() {
     this(
         new CumulusInterfacesConfiguration(),
-        new CumulusFrrConfiguration(),
+        new FrrConfiguration(),
         new CumulusPortsConfiguration());
   }
 
   private CumulusConcatenatedConfiguration(
       CumulusInterfacesConfiguration interfaces,
-      CumulusFrrConfiguration frr,
+      FrrConfiguration frr,
       CumulusPortsConfiguration ports) {
     _interfacesConfiguration = interfaces;
     _frrConfiguration = frr;
@@ -810,7 +810,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration {
   }
 
   @Nonnull
-  public CumulusFrrConfiguration getFrrConfiguration() {
+  public FrrConfiguration getFrrConfiguration() {
     return _frrConfiguration;
   }
 
@@ -877,7 +877,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration {
     private String _hostname;
     private @Nullable SnapshotRuntimeData _snapshotRuntimeData;
     private CumulusInterfacesConfiguration _interfacesConfiguration;
-    private CumulusFrrConfiguration _frrConfiguration;
+    private FrrConfiguration _frrConfiguration;
     private CumulusPortsConfiguration _portsConfiguration;
 
     private Builder() {}
@@ -902,13 +902,13 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration {
 
     Builder setBgpProcess(BgpProcess bgpProcess) {
       if (_frrConfiguration == null) {
-        setFrrConfiguration(new CumulusFrrConfiguration());
+        setFrrConfiguration(new FrrConfiguration());
       }
       _frrConfiguration.setBgpProcess(bgpProcess);
       return this;
     }
 
-    Builder setFrrConfiguration(CumulusFrrConfiguration frrConfiguration) {
+    Builder setFrrConfiguration(FrrConfiguration frrConfiguration) {
       _frrConfiguration = frrConfiguration;
       return this;
     }
@@ -933,7 +933,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration {
       CumulusConcatenatedConfiguration cumulusConcatenatedConfiguration =
           new CumulusConcatenatedConfiguration(
               firstNonNull(_interfacesConfiguration, new CumulusInterfacesConfiguration()),
-              firstNonNull(_frrConfiguration, new CumulusFrrConfiguration()),
+              firstNonNull(_frrConfiguration, new FrrConfiguration()),
               firstNonNull(_portsConfiguration, new CumulusPortsConfiguration()));
       cumulusConcatenatedConfiguration.setHostname(_hostname);
       if (_snapshotRuntimeData != null) {

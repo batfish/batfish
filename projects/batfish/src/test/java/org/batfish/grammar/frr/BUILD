@@ -10,14 +10,14 @@ junit_tests(
     srcs = glob([
         "**/*Test.java",
     ]),
-    resources = ["//projects/batfish/src/test/resources/org/batfish/grammar/cumulus_frr/snapshots"],
+    resources = ["//projects/batfish/src/test/resources/org/batfish/grammar/frr/snapshots"],
     deps = [
         "//projects/batfish",
         "//projects/batfish:batfish_testlib",
         "//projects/batfish-common-protocol:common",
         "//projects/batfish-common-protocol/src/test/java/org/batfish/common/matchers",
         "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/matchers",
-        "//projects/batfish/src/main/java/org/batfish/grammar/cumulus_frr",
+        "//projects/batfish/src/main/java/org/batfish/grammar/frr:frr",
         "//projects/batfish/src/main/java/org/batfish/representation/cumulus",
         "@maven//:com_google_guava_guava",
         "@maven//:junit_junit",
