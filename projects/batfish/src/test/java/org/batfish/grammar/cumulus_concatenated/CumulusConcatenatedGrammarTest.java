@@ -1069,7 +1069,11 @@ public class CumulusConcatenatedGrammarTest {
     String hostname = "frr-aggregate-address";
     CumulusConcatenatedConfiguration vc = parseVendorConfig(hostname);
     Map<Prefix, BgpVrfAddressFamilyAggregateNetworkConfiguration> aggs =
-        vc.getBgpProcess().getDefaultVrf().getIpv4Unicast().getAggregateNetworks();
+        vc.getFrrConfiguration()
+            .getBgpProcess()
+            .getDefaultVrf()
+            .getIpv4Unicast()
+            .getAggregateNetworks();
     assertThat(aggs, aMapWithSize(9));
     assertThat(
         aggs,

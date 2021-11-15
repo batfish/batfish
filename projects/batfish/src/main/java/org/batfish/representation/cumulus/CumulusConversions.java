@@ -307,20 +307,22 @@ public final class CumulusConversions {
   }
 
   static void convertBgpProcess(
-      Configuration c, CumulusConcatenatedConfiguration vsConfig, Warnings w) {
-    BgpProcess bgpProcess = vsConfig.getBgpProcess();
+      Configuration c, OutOfBandConfiguration oobConfig, FrrConfiguration frrConfig, Warnings w) {
+    BgpProcess bgpProcess = frrConfig.getBgpProcess();
     if (bgpProcess == null) {
       return;
     }
     // First pass: only core processes
     c.getDefaultVrf()
-        .setBgpProcess(toBgpProcess(c, vsConfig, DEFAULT_VRF_NAME, bgpProcess.getDefaultVrf()));
+        .setBgpProcess(toBgpProcess(c, frrConfig, DEFAULT_VRF_NAME, bgpProcess.getDefaultVrf()));
     // We make one VI process per VRF because our current datamodel requires it
     bgpProcess
         .getVrfs()
         .forEach(
             (vrfName, bgpVrf) ->
-                c.getVrfs().get(vrfName).setBgpProcess(toBgpProcess(c, vsConfig, vrfName, bgpVrf)));
+                c.getVrfs()
+                    .get(vrfName)
+                    .setBgpProcess(toBgpProcess(c, frrConfig, vrfName, bgpVrf)));
 
     // Create dud processes for other VRFs that use VNIs, so we can have proper RIBs
     c.getVrfs()
@@ -352,7 +354,8 @@ public final class CumulusConversions {
               bgpVrf
                   .getNeighbors()
                   .values()
-                  .forEach(neighbor -> addBgpNeighbor(c, vsConfig, bgpVrf, neighbor, w));
+                  .forEach(
+                      neighbor -> addBgpNeighbor(c, oobConfig, frrConfig, bgpVrf, neighbor, w));
             });
   }
 
@@ -362,8 +365,8 @@ public final class CumulusConversions {
    */
   @Nullable
   static org.batfish.datamodel.BgpProcess toBgpProcess(
-      Configuration c, CumulusConcatenatedConfiguration vsConfig, String vrfName, BgpVrf bgpVrf) {
-    BgpProcess bgpProcess = vsConfig.getBgpProcess();
+      Configuration c, FrrConfiguration frrConfig, String vrfName, BgpVrf bgpVrf) {
+    BgpProcess bgpProcess = frrConfig.getBgpProcess();
     Ip routerId = bgpVrf.getRouterId();
     if (routerId == null) {
       routerId = inferRouterId(c);
@@ -410,7 +413,7 @@ public final class CumulusConversions {
 
     generateBgpCommonExportPolicy(c, vrfName, bgpVrf);
     newProc.setRedistributionPolicy(
-        generateBgpRedistributionPolicy(c, vrfName, bgpVrf, vsConfig.getRouteMaps()));
+        generateBgpRedistributionPolicy(c, vrfName, bgpVrf, frrConfig.getRouteMaps()));
 
     return newProc;
   }
@@ -418,7 +421,8 @@ public final class CumulusConversions {
   @VisibleForTesting
   static void addBgpNeighbor(
       Configuration c,
-      CumulusConcatenatedConfiguration vsConfig,
+      OutOfBandConfiguration oobConfig,
+      FrrConfiguration frrConfig,
       BgpVrf bgpVrf,
       BgpNeighbor neighbor,
       Warnings w) {
@@ -448,13 +452,15 @@ public final class CumulusConversions {
 
     if (neighbor instanceof BgpInterfaceNeighbor) {
       BgpInterfaceNeighbor interfaceNeighbor = (BgpInterfaceNeighbor) neighbor;
-      addInterfaceBgpNeighbor(c, vsConfig, interfaceNeighbor, localAs, bgpVrf, viBgpProcess, w);
+      addInterfaceBgpNeighbor(
+          c, oobConfig, frrConfig, interfaceNeighbor, localAs, bgpVrf, viBgpProcess, w);
     } else if (neighbor instanceof BgpIpNeighbor) {
       BgpIpNeighbor ipNeighbor = (BgpIpNeighbor) neighbor;
-      addIpv4BgpNeighbor(c, vsConfig, ipNeighbor, localAs, bgpVrf, viBgpProcess, w);
+      addIpv4BgpNeighbor(c, oobConfig, frrConfig, ipNeighbor, localAs, bgpVrf, viBgpProcess, w);
     } else if (neighbor instanceof BgpDynamicNeighbor) {
       BgpDynamicNeighbor passiveNeighbor = (BgpDynamicNeighbor) neighbor;
-      addPassiveBgpNeighbor(c, vsConfig, passiveNeighbor, localAs, bgpVrf, viBgpProcess, w);
+      addPassiveBgpNeighbor(
+          c, oobConfig, frrConfig, passiveNeighbor, localAs, bgpVrf, viBgpProcess, w);
     } else if (!(neighbor instanceof BgpPeerGroupNeighbor
         || neighbor instanceof BgpIpv6Neighbor
         || neighbor instanceof BgpDynamic6Neighbor)) {
@@ -465,7 +471,8 @@ public final class CumulusConversions {
 
   private static void addInterfaceBgpNeighbor(
       Configuration c,
-      CumulusConcatenatedConfiguration vsConfig,
+      OutOfBandConfiguration oobConfig,
+      FrrConfiguration frrConfig,
       BgpInterfaceNeighbor neighbor,
       @Nullable Long localAs,
       BgpVrf bgpVrf,
@@ -503,13 +510,14 @@ public final class CumulusConversions {
               .setPeerInterface(neighbor.getName());
     }
     generateBgpCommonPeerConfig(
-        c, vsConfig, neighbor, localAs, bgpVrf, newProc, peerConfigBuilder, w);
+        c, oobConfig, frrConfig, neighbor, localAs, bgpVrf, newProc, peerConfigBuilder, w);
   }
 
   @VisibleForTesting
   static void generateBgpCommonPeerConfig(
       Configuration c,
-      CumulusConcatenatedConfiguration vsConfig,
+      OutOfBandConfiguration oobConfig,
+      FrrConfiguration frrConfig,
       BgpNeighbor neighbor,
       @Nullable Long localAs,
       BgpVrf bgpVrf,
@@ -543,7 +551,15 @@ public final class CumulusConversions {
                 importRoutingPolicy))
         .setEvpnAddressFamily(
             toEvpnAddressFamily(
-                c, vsConfig, neighbor, localAs, bgpVrf, newProc, exportRoutingPolicy, w))
+                c,
+                oobConfig,
+                frrConfig,
+                neighbor,
+                localAs,
+                bgpVrf,
+                newProc,
+                exportRoutingPolicy,
+                w))
         .build();
   }
 
@@ -592,7 +608,8 @@ public final class CumulusConversions {
 
   private static void addIpv4BgpNeighbor(
       Configuration c,
-      CumulusConcatenatedConfiguration vsConfig,
+      OutOfBandConfiguration oobConfig,
+      FrrConfiguration frrConfig,
       BgpIpNeighbor neighbor,
       @Nullable Long localAs,
       BgpVrf bgpVrf,
@@ -607,12 +624,13 @@ public final class CumulusConversions {
                         computeLocalIpForBgpNeighbor(neighbor.getPeerIp(), c, bgpVrf.getVrfName())))
             .setPeerAddress(neighbor.getPeerIp());
     generateBgpCommonPeerConfig(
-        c, vsConfig, neighbor, localAs, bgpVrf, newProc, peerConfigBuilder, w);
+        c, oobConfig, frrConfig, neighbor, localAs, bgpVrf, newProc, peerConfigBuilder, w);
   }
 
   private static void addPassiveBgpNeighbor(
       Configuration c,
-      CumulusConcatenatedConfiguration vsConfig,
+      OutOfBandConfiguration oobConfig,
+      FrrConfiguration frrConfig,
       BgpDynamicNeighbor neighbor,
       @Nullable Long localAs,
       BgpVrf bgpVrf,
@@ -623,7 +641,7 @@ public final class CumulusConversions {
             .setLocalIp(resolveLocalIpFromUpdateSource(neighbor.getBgpNeighborSource(), c, w))
             .setPeerPrefix(neighbor.getListenRange());
     generateBgpCommonPeerConfig(
-        c, vsConfig, neighbor, localAs, bgpVrf, newProc, peerConfigBuilder, w);
+        c, oobConfig, frrConfig, neighbor, localAs, bgpVrf, newProc, peerConfigBuilder, w);
   }
 
   @Nonnull
@@ -993,7 +1011,8 @@ public final class CumulusConversions {
   @Nullable
   private static EvpnAddressFamily toEvpnAddressFamily(
       Configuration c,
-      CumulusConcatenatedConfiguration vsConfig,
+      OutOfBandConfiguration oobConfig,
+      FrrConfiguration frrConfig,
       BgpNeighbor neighbor,
       @Nullable Long localAs,
       BgpVrf bgpVrf,
@@ -1016,7 +1035,7 @@ public final class CumulusConversions {
         // Keep indices in deterministic order
         ImmutableList.sortedCopyOf(
             Comparator.nullsLast(Comparator.naturalOrder()),
-            vsConfig.getVxlans().values().stream()
+            oobConfig.getVxlans().values().stream()
                 .map(Vxlan::getId)
                 .collect(ImmutableSet.toImmutableSet())),
         (index, vni) -> {
@@ -1050,7 +1069,7 @@ public final class CumulusConversions {
                                     .build());
                           }));
     }
-    BgpProcess bgpProcess = vsConfig.getBgpProcess();
+    BgpProcess bgpProcess = frrConfig.getBgpProcess();
     // Advertise the L3 VNI per vrf if one is configured
     assert bgpProcess != null; // Since we are in neighbor conversion, this must be true
     // Iterate over ALL vrfs, because even if the vrf doesn't appear in bgp process config, we
@@ -1060,7 +1079,7 @@ public final class CumulusConversions {
         .forEach(
             innerVrf -> {
               String innerVrfName = innerVrf.getName();
-              Vrf vsVrf = vsConfig.getVrf(innerVrfName);
+              Vrf vsVrf = frrConfig.getVrfs().get(innerVrfName);
               if (vsVrf == null) {
                 return;
               }
