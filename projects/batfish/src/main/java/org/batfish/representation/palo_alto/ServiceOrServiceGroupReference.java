@@ -3,7 +3,7 @@ package org.batfish.representation.palo_alto;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class ServiceOrServiceGroupReference
+public final class ServiceOrServiceGroupReference
     implements Comparable<ServiceOrServiceGroupReference>, Reference {
 
   @Override
@@ -16,12 +16,29 @@ public class ServiceOrServiceGroupReference
   }
 
   @Override
-  public int compareTo(@Nonnull ServiceOrServiceGroupReference o) {
+  public int compareTo(ServiceOrServiceGroupReference o) {
     return _name.compareTo(o._name);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof ServiceOrServiceGroupReference)) {
+      return false;
+    }
+    return _name.equals(((ServiceOrServiceGroupReference) o).getName());
+  }
+
+  @Override
+  public int hashCode() {
+    return _name.hashCode();
   }
 
   /** Return the name of the referenced Service or ServiceGroup */
   @Override
+  @Nonnull
   public String getName() {
     return _name;
   }
@@ -51,5 +68,5 @@ public class ServiceOrServiceGroupReference
     }
   }
 
-  private final String _name;
+  @Nonnull private final String _name;
 }

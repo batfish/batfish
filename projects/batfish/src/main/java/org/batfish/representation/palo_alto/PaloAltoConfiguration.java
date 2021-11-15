@@ -1655,16 +1655,14 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       }
 
       Application a = containingVsys.getApplications().get(name);
-      if (a != null) {
-        return Optional.of(
-            aclLineMatchExprForApplication(
-                a,
-                appOverrideAclsMap,
-                matchApplicationObjectTraceElement(name, vsysName, _filename),
-                applicationDefaultService));
-      }
       // If the reference is contained by a vsys, should match an application or group above
-      assert false;
+      assert a != null;
+      return Optional.of(
+          aclLineMatchExprForApplication(
+              a,
+              appOverrideAclsMap,
+              matchApplicationObjectTraceElement(name, vsysName, _filename),
+              applicationDefaultService));
     }
 
     Optional<Application> builtIn = ApplicationBuiltIn.getBuiltInApplication(name);
@@ -1776,7 +1774,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
           return getVsysForReference(ref, _shared);
         }
         // fall-through
+      case SHARED:
       default:
+        assert vsys.getNamespaceType() == NamespaceType.SHARED;
         return Optional.empty();
     }
   }
@@ -2881,17 +2881,15 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     // https://github.com/batfish/batfish/issues/5910
 
     // Create the target vsyses (shouldn't already exist)
-    Vsys target = new Vsys(PANORAMA_VSYS_NAME, NamespaceType.PANORAMA);
     assert _panorama == null;
-    _panorama = target;
-    Vsys targetShared = new Vsys(SHARED_VSYS_NAME, NamespaceType.SHARED);
     assert _shared == null;
-    _shared = targetShared;
+    _panorama = new Vsys(PANORAMA_VSYS_NAME, NamespaceType.PANORAMA);
+    _shared = new Vsys(SHARED_VSYS_NAME, NamespaceType.SHARED);
 
     // Keep shared objects in their own namespace
-    applyVsysObjects(shared, targetShared);
+    applyVsysObjects(shared, _shared);
     // Merge shared rules into Panorama rules, to keep conversion simpler
-    applyVsysRulebase(shared, target);
+    applyVsysRulebase(shared, _panorama);
 
     List<DeviceGroup> inheritedDeviceGroups = new ArrayList<>();
     inheritedDeviceGroups.add(template);
@@ -2900,8 +2898,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     // Apply higher level parents first
     // since their config should be overwritten by lower level parents
     for (DeviceGroup parent : ImmutableList.copyOf(inheritedDeviceGroups).reverse()) {
-      applyVsysObjects(parent.getPanorama(), target);
-      applyVsysRulebase(parent.getPanorama(), target);
+      applyVsysObjects(parent.getPanorama(), _panorama);
+      applyVsysRulebase(parent.getPanorama(), _panorama);
     }
   }
 
