@@ -37,7 +37,7 @@ public class RouteMapMatchSourceProtocolTest {
 
   private static void assertAction(Protocol p, AbstractRoute route, boolean action) {
     Configuration c = Configuration.builder().setHostname("c").build();
-    CumulusConcatenatedConfiguration config = new CumulusConcatenatedConfiguration();
+    FrrConfiguration config = new FrrConfiguration();
     RouteMapMatchSourceProtocol match = new RouteMapMatchSourceProtocol(p);
     BooleanExpr expr = match.toBooleanExpr(c, config, new Warnings());
     assertThat(

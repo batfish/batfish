@@ -29,8 +29,7 @@ public final class RouteMapMatchSourceProtocol implements RouteMapMatch {
   }
 
   @Override
-  public @Nonnull BooleanExpr toBooleanExpr(
-      Configuration c, CumulusConcatenatedConfiguration vc, Warnings w) {
+  public @Nonnull BooleanExpr toBooleanExpr(Configuration c, FrrConfiguration vc, Warnings w) {
     switch (_protocol) {
       case BGP:
         return new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP);

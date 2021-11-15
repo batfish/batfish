@@ -25,8 +25,7 @@ public final class RouteMapMatchIpAddressPrefixLen implements RouteMapMatch {
   }
 
   @Override
-  public @Nonnull BooleanExpr toBooleanExpr(
-      Configuration c, CumulusConcatenatedConfiguration vc, Warnings w) {
+  public @Nonnull BooleanExpr toBooleanExpr(Configuration c, FrrConfiguration vc, Warnings w) {
     return new MatchPrefixSet(
         DestinationNetwork.instance(),
         new ExplicitPrefixSet(

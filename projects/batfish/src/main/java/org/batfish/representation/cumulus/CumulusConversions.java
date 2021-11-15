@@ -1644,12 +1644,10 @@ public final class CumulusConversions {
         ipPrefixListLine.getLengthRange());
   }
 
-  static void convertRouteMaps(
-      Configuration c,
-      CumulusConcatenatedConfiguration vc,
-      Map<String, RouteMap> routeMaps,
-      Warnings w) {
-    routeMaps.forEach((name, routeMap) -> new RouteMapConvertor(c, vc, routeMap, w).toRouteMap());
+  static void convertRouteMaps(Configuration c, FrrConfiguration vc, String filename, Warnings w) {
+    vc.getRouteMaps()
+        .forEach(
+            (name, routeMap) -> new RouteMapConvertor(c, vc, routeMap, filename, w).toRouteMap());
   }
 
   static void convertDnsServers(Configuration c, List<Ip> ipv4Nameservers) {

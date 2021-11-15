@@ -180,7 +180,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration {
     convertIpAsPathAccessLists(c, _frrConfiguration.getIpAsPathAccessLists());
     convertIpPrefixLists(c, _frrConfiguration.getIpPrefixLists(), _filename);
     convertIpCommunityLists(c, _frrConfiguration.getIpCommunityLists());
-    convertRouteMaps(c, this, _frrConfiguration.getRouteMaps(), _w);
+    convertRouteMaps(c, _frrConfiguration, _filename, _w);
     convertDnsServers(c, _frrConfiguration.getIpv4Nameservers());
     convertClags(c, this, _w);
 
