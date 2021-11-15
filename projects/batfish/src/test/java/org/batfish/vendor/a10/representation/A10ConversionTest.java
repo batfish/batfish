@@ -6,6 +6,8 @@ import static org.batfish.datamodel.BgpTieBreaker.ROUTER_ID;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
+import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.NO_PREFERENCE;
+import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.LOWEST_NEXT_HOP_IP;
 import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasSendCommunity;
 import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasSendExtendedCommunity;
 import static org.batfish.datamodel.matchers.AddressFamilyMatchers.hasAddressFamilyCapabilites;
@@ -701,6 +703,9 @@ public class A10ConversionTest {
             .setEbgpAdminCost(1)
             .setIbgpAdminCost(2)
             .setLocalAdminCost(3)
+            .setLocalOriginationTypeTieBreaker(NO_PREFERENCE)
+            .setNetworkNextHopIpTieBreaker(LOWEST_NEXT_HOP_IP)
+            .setRedistributeNextHopIpTieBreaker(LOWEST_NEXT_HOP_IP)
             .build();
     Configuration c = testConfig();
     {

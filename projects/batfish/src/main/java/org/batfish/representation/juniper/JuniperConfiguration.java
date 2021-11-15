@@ -10,6 +10,8 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.EXCEPT_FIRST;
+import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.NO_PREFERENCE;
+import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
 import static org.batfish.datamodel.routing_policy.statement.Statements.ReturnFalse;
 import static org.batfish.datamodel.routing_policy.statement.Statements.ReturnTrue;
 import static org.batfish.representation.juniper.EthernetSwitching.DEFAULT_VLAN_MEMBER;
@@ -414,6 +416,17 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return authenticationKeyChains;
   }
 
+  private static @Nonnull org.batfish.datamodel.BgpProcess.Builder bgpProcessBuilder() {
+    return org.batfish.datamodel.BgpProcess.builder()
+        .setEbgpAdminCost(DEFAULT_BGP_ADMIN_DISTANCE)
+        .setIbgpAdminCost(DEFAULT_BGP_ADMIN_DISTANCE)
+        .setLocalAdminCost(DEFAULT_BGP_ADMIN_DISTANCE) /* local admin not relevant for JunOS. */
+        // following most likely not relevant for JunOS.
+        .setLocalOriginationTypeTieBreaker(NO_PREFERENCE)
+        .setNetworkNextHopIpTieBreaker(HIGHEST_NEXT_HOP_IP)
+        .setRedistributeNextHopIpTieBreaker(HIGHEST_NEXT_HOP_IP);
+  }
+
   @Nullable
   private BgpProcess createBgpProcess(RoutingInstance routingInstance) {
     BgpGroup mg = routingInstance.getMasterBgpGroup();
@@ -425,9 +438,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
     String vrfName = routingInstance.getName();
     int ebgpAdmin = firstNonNull(mg.getPreference(), DEFAULT_BGP_ADMIN_DISTANCE);
     int ibgpAdmin = firstNonNull(mg.getPreference(), DEFAULT_BGP_ADMIN_DISTANCE);
-    int localAdmin = DEFAULT_BGP_ADMIN_DISTANCE /* local admin not relevant for JunOS. */;
     BgpProcess proc =
-        new BgpProcess(getRouterId(routingInstance), ebgpAdmin, ibgpAdmin, localAdmin);
+        bgpProcessBuilder()
+            .setRouterId(getRouterId(routingInstance))
+            .setEbgpAdminCost(ebgpAdmin)
+            .setIbgpAdminCost(ibgpAdmin)
+            .build();
     boolean multipathEbgp = false;
     boolean multipathIbgp = false;
     boolean multipathMultipleAs = false;

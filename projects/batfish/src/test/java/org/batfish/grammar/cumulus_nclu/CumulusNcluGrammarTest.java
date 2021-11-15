@@ -109,6 +109,7 @@ import org.batfish.datamodel.MacAddress;
 import org.batfish.datamodel.Mlag;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.NamedPort;
+import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
@@ -361,6 +362,7 @@ public final class CumulusNcluGrammarTest {
               .setAdmin(localAdmin)
               .setLocalPreference(100)
               .setNextHop(NextHopDiscard.instance())
+              .setOriginMechanism(OriginMechanism.REDISTRIBUTE)
               .setOriginType(OriginType.INCOMPLETE)
               .setOriginatorIp(defaultVrfRouterId)
               .setProtocol(RoutingProtocol.BGP)

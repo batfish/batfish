@@ -216,6 +216,7 @@ import org.batfish.datamodel.LocalRoute;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.Names;
+import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfExternalRoute;
 import org.batfish.datamodel.OspfInterAreaRoute;
@@ -861,6 +862,7 @@ public final class CiscoNxosGrammarTest {
             .setAdmin(bgpAdmin)
             .setLocalPreference(100)
             .setNextHop(NextHopDiscard.instance())
+            .setOriginMechanism(OriginMechanism.REDISTRIBUTE)
             .setOriginType(OriginType.INCOMPLETE)
             .setOriginatorIp(Ip.parse("10.10.10.1"))
             .setProtocol(RoutingProtocol.BGP)
@@ -930,6 +932,7 @@ public final class CiscoNxosGrammarTest {
                   .setNextHop(NextHopDiscard.instance())
                   .setReceivedFromIp(ZERO)
                   .setOriginatorIp(bgpRouterId)
+                  .setOriginMechanism(OriginMechanism.REDISTRIBUTE)
                   .setOriginType(OriginType.INCOMPLETE)
                   .setSrcProtocol(RoutingProtocol.EIGRP)
                   .setWeight(BGP_LOCAL_WEIGHT)
@@ -962,6 +965,7 @@ public final class CiscoNxosGrammarTest {
                   .setNextHop(NextHopDiscard.instance())
                   .setReceivedFromIp(ZERO)
                   .setOriginatorIp(bgpRouterId)
+                  .setOriginMechanism(OriginMechanism.REDISTRIBUTE)
                   .setOriginType(OriginType.INCOMPLETE)
                   .setSrcProtocol(RoutingProtocol.EIGRP)
                   .setWeight(BGP_LOCAL_WEIGHT)
@@ -1005,6 +1009,7 @@ public final class CiscoNxosGrammarTest {
                   .setNextHop(NextHopDiscard.instance())
                   .setReceivedFromIp(ZERO)
                   .setOriginatorIp(bgpRouterId)
+                  .setOriginMechanism(OriginMechanism.REDISTRIBUTE)
                   .setOriginType(OriginType.INCOMPLETE)
                   .setSrcProtocol(RoutingProtocol.EIGRP_EX)
                   .setWeight(BGP_LOCAL_WEIGHT)
