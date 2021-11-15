@@ -1804,14 +1804,7 @@ public final class CumulusConversionsTest {
     BgpNeighbor neighbor = new BgpInterfaceNeighbor("iface");
     neighbor.setRemoteAs(RemoteAs.explicit(123));
 
-    addBgpNeighbor(
-        c,
-        //        CumulusConcatenatedConfiguration.builder().setHostname("c").build(),
-        _oob,
-        _frr,
-        new BgpVrf(viVrf.getName()),
-        neighbor,
-        new Warnings());
+    addBgpNeighbor(c, _oob, _frr, new BgpVrf(viVrf.getName()), neighbor, new Warnings());
 
     Ip peerIp = Ip.parse("1.1.1.0");
     assertTrue(bgpProc.getActiveNeighbors().containsKey(peerIp));
