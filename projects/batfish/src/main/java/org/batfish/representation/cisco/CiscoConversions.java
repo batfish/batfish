@@ -50,6 +50,7 @@ import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
+import org.batfish.datamodel.BgpVrfLeakConfig;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -85,8 +86,7 @@ import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
-import org.batfish.datamodel.VrfLeakingConfig;
-import org.batfish.datamodel.VrfLeakingConfig.BgpLeakConfig;
+import org.batfish.datamodel.VrfLeakConfig;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -1858,12 +1858,18 @@ public class CiscoConversions {
           if (importingVrf.getName().equals(exportingVrf)) {
             continue;
           }
-          viVrf.addVrfLeakingConfig(
-              VrfLeakingConfig.builder()
-                  .setBgpLeakConfig(bgpLeakConfig(importRt))
-                  .setImportFromVrf(exportingVrf)
-                  .setImportPolicy(routeMapOrRejectAll(ipv4uaf.getImportMap(), c))
-                  .build());
+          getOrInitVrfLeakConfig(viVrf)
+              .addBgpVrfLeakConfig(
+                  BgpVrfLeakConfig.builder()
+                      .setImportFromVrf(exportingVrf)
+                      .setImportPolicy(routeMapOrRejectAll(ipv4uaf.getImportMap(), c))
+                      // TODO: input and honor result of 'bgp distance' command argument 1 (eBGP
+                      // admin)
+                      .setAdmin(DEFAULT_EBGP_ADMIN)
+                      // TODO: this should be export RTs, not single import RT
+                      .setAttachRouteTargets(importRt)
+                      .setWeight(BGP_VRF_LEAK_IGP_WEIGHT)
+                      .build());
         }
         // Add leak config for every exporting vrf with an export map, since the map can potentially
         // alter the route-target to match the import route-target.
@@ -1872,34 +1878,37 @@ public class CiscoConversions {
             // Take care to prevent self-loops
             continue;
           }
-          viVrf.addVrfLeakingConfig(
-              VrfLeakingConfig.builder()
-                  .setBgpLeakConfig(bgpLeakConfig(importRt))
-                  .setImportFromVrf(mapExportingVrf.getName())
-                  .setImportPolicy(
-                      vrfExportImportPolicy(
-                          mapExportingVrf.getName(),
-                          routeMapOrRejectAll(
-                              mapExportingVrf.getIpv4UnicastAddressFamily().getExportMap(), c),
-                          mapExportingVrf.getIpv4UnicastAddressFamily().getRouteTargetExport(),
-                          importingVrf.getName(),
-                          routeMapOrRejectAll(ipv4uaf.getImportMap(), c),
-                          ipv4uaf.getRouteTargetImport(),
-                          c))
-                  .build());
+          getOrInitVrfLeakConfig(viVrf)
+              .addBgpVrfLeakConfig(
+                  BgpVrfLeakConfig.builder()
+                      .setImportFromVrf(mapExportingVrf.getName())
+                      .setImportPolicy(
+                          vrfExportImportPolicy(
+                              mapExportingVrf.getName(),
+                              routeMapOrRejectAll(
+                                  mapExportingVrf.getIpv4UnicastAddressFamily().getExportMap(), c),
+                              mapExportingVrf.getIpv4UnicastAddressFamily().getRouteTargetExport(),
+                              importingVrf.getName(),
+                              routeMapOrRejectAll(ipv4uaf.getImportMap(), c),
+                              ipv4uaf.getRouteTargetImport(),
+                              c))
+                      // TODO: input and honor result of 'bgp distance' command argument 1 (eBGP
+                      // admin)
+                      .setAdmin(DEFAULT_EBGP_ADMIN)
+                      // TODO: this should be export RTs, not single import RT
+                      .setAttachRouteTargets(importRt)
+                      .setWeight(BGP_VRF_LEAK_IGP_WEIGHT)
+                      .build());
         }
       }
     }
   }
 
-  private static BgpLeakConfig bgpLeakConfig(ExtendedCommunity importRt) {
-    // TODO: this should take export RTs, not single import RT
-    return BgpLeakConfig.builder()
-        // TODO: input and honor result of 'bgp distance' command argument 1 (eBGP admin)
-        .setAdmin(DEFAULT_EBGP_ADMIN)
-        .setAttachRouteTargets(importRt)
-        .setWeight(BGP_VRF_LEAK_IGP_WEIGHT)
-        .build();
+  private static @Nonnull VrfLeakConfig getOrInitVrfLeakConfig(org.batfish.datamodel.Vrf vrf) {
+    if (vrf.getVrfLeakConfig() == null) {
+      vrf.setVrfLeakConfig(new VrfLeakConfig(true));
+    }
+    return vrf.getVrfLeakConfig();
   }
 
   @VisibleForTesting public static final int BGP_VRF_LEAK_IGP_WEIGHT = 32768;

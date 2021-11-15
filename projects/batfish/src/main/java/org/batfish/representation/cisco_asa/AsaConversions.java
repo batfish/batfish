@@ -49,6 +49,7 @@ import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
+import org.batfish.datamodel.BgpVrfLeakConfig;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -84,8 +85,7 @@ import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
-import org.batfish.datamodel.VrfLeakingConfig;
-import org.batfish.datamodel.VrfLeakingConfig.BgpLeakConfig;
+import org.batfish.datamodel.VrfLeakConfig;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -1875,13 +1875,16 @@ public class AsaConversions {
           if (importingVrf.getName().equals(exportingVrf)) {
             continue;
           }
-          viVrf.addVrfLeakingConfig(
-              VrfLeakingConfig.builder()
-                  // TODO: VRF leaking even allowed? If so, write admin and weight.
-                  .setBgpLeakConfig(BgpLeakConfig.builder().setAttachRouteTargets(importRt).build())
-                  .setImportFromVrf(exportingVrf)
-                  .setImportPolicy(routeMapOrRejectAll(ipv4uaf.getImportMap(), c))
-                  .build());
+          getOrInitVrfLeakConfig(viVrf)
+              .addBgpVrfLeakConfig(
+                  BgpVrfLeakConfig.builder()
+                      // TODO: VRF leaking even allowed? If so, write valid admin and weight.
+                      .setAttachRouteTargets(importRt)
+                      .setAdmin(0)
+                      .setWeight(0)
+                      .setImportFromVrf(exportingVrf)
+                      .setImportPolicy(routeMapOrRejectAll(ipv4uaf.getImportMap(), c))
+                      .build());
         }
         // Add leak config for every exporting vrf with an export map, since the map can potentially
         // alter the route-target to match the import route-target.
@@ -1890,25 +1893,35 @@ public class AsaConversions {
             // Take care to prevent self-loops
             continue;
           }
-          viVrf.addVrfLeakingConfig(
-              VrfLeakingConfig.builder()
-                  // TODO: VRF leaking even allowed? If so, write admin and weight.
-                  .setBgpLeakConfig(BgpLeakConfig.builder().setAttachRouteTargets(importRt).build())
-                  .setImportFromVrf(mapExportingVrf.getName())
-                  .setImportPolicy(
-                      vrfExportImportPolicy(
-                          mapExportingVrf.getName(),
-                          routeMapOrRejectAll(
-                              mapExportingVrf.getIpv4UnicastAddressFamily().getExportMap(), c),
-                          mapExportingVrf.getIpv4UnicastAddressFamily().getRouteTargetExport(),
-                          importingVrf.getName(),
-                          routeMapOrRejectAll(ipv4uaf.getImportMap(), c),
-                          ipv4uaf.getRouteTargetImport(),
-                          c))
-                  .build());
+          getOrInitVrfLeakConfig(viVrf)
+              .addBgpVrfLeakConfig(
+                  BgpVrfLeakConfig.builder()
+                      // TODO: VRF leaking even allowed? If so, write admin and weight.
+                      .setAttachRouteTargets(importRt)
+                      .setAdmin(0)
+                      .setWeight(0)
+                      .setImportFromVrf(mapExportingVrf.getName())
+                      .setImportPolicy(
+                          vrfExportImportPolicy(
+                              mapExportingVrf.getName(),
+                              routeMapOrRejectAll(
+                                  mapExportingVrf.getIpv4UnicastAddressFamily().getExportMap(), c),
+                              mapExportingVrf.getIpv4UnicastAddressFamily().getRouteTargetExport(),
+                              importingVrf.getName(),
+                              routeMapOrRejectAll(ipv4uaf.getImportMap(), c),
+                              ipv4uaf.getRouteTargetImport(),
+                              c))
+                      .build());
         }
       }
     }
+  }
+
+  private static @Nonnull VrfLeakConfig getOrInitVrfLeakConfig(org.batfish.datamodel.Vrf vrf) {
+    if (vrf.getVrfLeakConfig() == null) {
+      vrf.setVrfLeakConfig(new VrfLeakConfig(true));
+    }
+    return vrf.getVrfLeakConfig();
   }
 
   /** Create a policy for exporting from one vrf to another in the presence of an export map. */

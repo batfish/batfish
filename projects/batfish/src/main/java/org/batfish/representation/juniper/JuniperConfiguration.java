@@ -97,6 +97,7 @@ import org.batfish.datamodel.IpsecStaticPeerConfig;
 import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LongSpace;
+import org.batfish.datamodel.MainRibVrfLeakConfig;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
@@ -113,7 +114,7 @@ import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.VrfLeakingConfig;
+import org.batfish.datamodel.VrfLeakConfig;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchSrcInterface;
@@ -3522,11 +3523,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
         initDefaultRejectPolicy();
         RoutingPolicy instanceImportPolicy = buildInstanceImportRoutingPolicy(ri, _c, riName);
         for (String referencedVrf : referencedVrfs) {
-          vrf.addVrfLeakingConfig(
-              VrfLeakingConfig.builder()
-                  .setImportFromVrf(referencedVrf)
-                  .setImportPolicy(instanceImportPolicy.getName())
-                  .build());
+          getOrInitVrfLeakConfig(vrf)
+              .addMainRibVrfLeakConfig(
+                  MainRibVrfLeakConfig.builder()
+                      .setImportFromVrf(referencedVrf)
+                      .setImportPolicy(instanceImportPolicy.getName())
+                      .build());
         }
         _c.getRoutingPolicies().put(instanceImportPolicy.getName(), instanceImportPolicy);
       }
@@ -3715,6 +3717,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _c.computeRoutingPolicySources(_w);
 
     return _c;
+  }
+
+  private static @Nonnull VrfLeakConfig getOrInitVrfLeakConfig(Vrf vrf) {
+    if (vrf.getVrfLeakConfig() == null) {
+      vrf.setVrfLeakConfig(new VrfLeakConfig(false));
+    }
+    return vrf.getVrfLeakConfig();
   }
 
   private void convertResolution(RoutingInstance ri) {

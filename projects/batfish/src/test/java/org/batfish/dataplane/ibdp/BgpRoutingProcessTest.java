@@ -45,6 +45,7 @@ import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpSessionProperties;
+import org.batfish.datamodel.BgpVrfLeakConfig;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.Configuration;
@@ -61,7 +62,6 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.VrfLeakingConfig.BgpLeakConfig;
 import org.batfish.datamodel.bgp.AddressFamily.Type;
 import org.batfish.datamodel.bgp.BgpAggregate;
 import org.batfish.datamodel.bgp.BgpTopology;
@@ -710,9 +710,13 @@ public class BgpRoutingProcessTest {
                     .setNetwork(deniedPrefix)
                     .setSrcProtocol(RoutingProtocol.BGP)
                     .build())),
-        policy.getName(),
-        otherVrf,
-        BgpLeakConfig.builder().setAttachRouteTargets(routeTarget).build());
+        BgpVrfLeakConfig.builder()
+            .setImportPolicy(policy.getName())
+            .setImportFromVrf(otherVrf)
+            .setAttachRouteTargets(routeTarget)
+            .setAdmin(0)
+            .setWeight(0)
+            .build());
     assertThat(
         _routingProcess
             .getBgpv4DeltaBuilder()
@@ -736,9 +740,9 @@ public class BgpRoutingProcessTest {
                     .setNetwork(allowedPrefix2)
                     .setSrcProtocol(RoutingProtocol.BGP)
                     .build())),
-        policy.getName(),
-        otherVrf,
-        BgpLeakConfig.builder()
+        BgpVrfLeakConfig.builder()
+            .setImportPolicy(policy.getName())
+            .setImportFromVrf(otherVrf)
             .setAdmin(igpLeakAdmin)
             .setAttachRouteTargets(routeTarget)
             .setWeight(igpLeakWeight)
@@ -777,9 +781,12 @@ public class BgpRoutingProcessTest {
                     .setNetwork(deniedPrefix)
                     .setSrcProtocol(RoutingProtocol.BGP)
                     .build())),
-        null, // no policy
-        otherVrf,
-        BgpLeakConfig.builder().setAttachRouteTargets(routeTarget).build());
+        BgpVrfLeakConfig.builder()
+            .setAttachRouteTargets(routeTarget)
+            .setImportFromVrf(otherVrf)
+            .setAdmin(0)
+            .setWeight(0)
+            .build());
     assertThat(
         _routingProcess
             .getBgpv4DeltaBuilder()

@@ -282,6 +282,7 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
+import org.batfish.datamodel.BgpVrfLeakConfig;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -335,8 +336,6 @@ import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.TunnelConfiguration;
 import org.batfish.datamodel.TunnelConfiguration.Builder;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.VrfLeakingConfig;
-import org.batfish.datamodel.VrfLeakingConfig.BgpLeakConfig;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
@@ -5895,18 +5894,16 @@ public final class CiscoGrammarTest {
   public void testIosVrfLeakingConversion() throws IOException {
     String hostname = "ios-vrf-leaking";
     Configuration c = parseConfig(hostname);
-    VrfLeakingConfig.Builder builder =
-        VrfLeakingConfig.builder()
-            .setBgpLeakConfig(
-                BgpLeakConfig.builder()
-                    .setAdmin(
-                        RoutingProtocol.BGP.getDefaultAdministrativeCost(
-                            ConfigurationFormat.CISCO_IOS))
-                    .setAttachRouteTargets(ExtendedCommunity.target(65003, 11))
-                    .setWeight(BGP_VRF_LEAK_IGP_WEIGHT)
-                    .build());
+    BgpVrfLeakConfig.Builder builder =
+        BgpVrfLeakConfig.builder()
+            .setAdmin(
+                RoutingProtocol.BGP.getDefaultAdministrativeCost(ConfigurationFormat.CISCO_IOS))
+            .setAttachRouteTargets(ExtendedCommunity.target(65003, 11))
+            .setWeight(BGP_VRF_LEAK_IGP_WEIGHT);
+    Vrf dstVrf = c.getVrfs().get("DST_VRF");
+    assertNotNull(dstVrf.getVrfLeakConfig());
     assertThat(
-        c.getVrfs().get("DST_VRF").getVrfLeakConfigs(),
+        dstVrf.getVrfLeakConfig().getBgpVrfLeakConfigs(),
         containsInAnyOrder(
             builder.setImportFromVrf("SRC_VRF").setImportPolicy("IMPORT_MAP").build(),
             builder
@@ -5914,8 +5911,10 @@ public final class CiscoGrammarTest {
                 .setImportPolicy(
                     computeVrfExportImportPolicyName("SRC_VRF_WITH_EXPORT_MAP", "DST_VRF"))
                 .build()));
+    Vrf notUnderRouterBgp = c.getVrfs().get("NOT_UNDER_ROUTER_BGP");
+    assertNotNull(notUnderRouterBgp.getVrfLeakConfig());
     assertThat(
-        c.getVrfs().get("NOT_UNDER_ROUTER_BGP").getVrfLeakConfigs(),
+        notUnderRouterBgp.getVrfLeakConfig().getBgpVrfLeakConfigs(),
         containsInAnyOrder(
             builder.setImportFromVrf("SRC_VRF").setImportPolicy(null).build(),
             builder
@@ -5924,8 +5923,10 @@ public final class CiscoGrammarTest {
                     computeVrfExportImportPolicyName(
                         "SRC_VRF_WITH_EXPORT_MAP", "NOT_UNDER_ROUTER_BGP"))
                 .build()));
+    Vrf dstImpossible = c.getVrfs().get("DST_IMPOSSIBLE");
+    assertNotNull(dstImpossible.getVrfLeakConfig());
     assertThat(
-        c.getVrfs().get("DST_IMPOSSIBLE").getVrfLeakConfigs(),
+        dstImpossible.getVrfLeakConfig().getBgpVrfLeakConfigs(),
         containsInAnyOrder(
             builder.setImportFromVrf("SRC_VRF").setImportPolicy("UNDEFINED~undefined").build(),
             builder
