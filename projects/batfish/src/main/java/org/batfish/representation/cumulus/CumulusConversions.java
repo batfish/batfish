@@ -1141,13 +1141,13 @@ public final class CumulusConversions {
   }
 
   static void convertOspfProcess(
-      Configuration c, CumulusConcatenatedConfiguration vsConfig, Warnings w) {
-    @Nullable OspfProcess ospfProcess = vsConfig.getOspfProcess();
+      Configuration c, OutOfBandConfiguration oobConfig, FrrConfiguration frrConfig, Warnings w) {
+    @Nullable OspfProcess ospfProcess = frrConfig.getOspfProcess();
     if (ospfProcess == null) {
       return;
     }
 
-    convertOspfVrf(c, vsConfig, ospfProcess.getDefaultVrf(), c.getDefaultVrf(), w);
+    convertOspfVrf(c, oobConfig, frrConfig, ospfProcess.getDefaultVrf(), c.getDefaultVrf(), w);
 
     ospfProcess
         .getVrfs()
@@ -1161,25 +1161,27 @@ public final class CumulusConversions {
                 return;
               }
 
-              convertOspfVrf(c, vsConfig, ospfVrf, vrf, w);
+              convertOspfVrf(c, oobConfig, frrConfig, ospfVrf, vrf, w);
             });
   }
 
   private static void convertOspfVrf(
       Configuration c,
-      CumulusConcatenatedConfiguration vsConfig,
+      OutOfBandConfiguration oobConfig,
+      FrrConfiguration frrConfig,
       OspfVrf ospfVrf,
       org.batfish.datamodel.Vrf vrf,
       Warnings w) {
     org.batfish.datamodel.ospf.OspfProcess ospfProcess =
-        toOspfProcess(c, vsConfig, ospfVrf, c.getAllInterfaces(vrf.getName()), w);
+        toOspfProcess(c, oobConfig, frrConfig, ospfVrf, c.getAllInterfaces(vrf.getName()), w);
     vrf.addOspfProcess(ospfProcess);
   }
 
   @VisibleForTesting
   static org.batfish.datamodel.ospf.OspfProcess toOspfProcess(
       Configuration c,
-      CumulusConcatenatedConfiguration vsConfig,
+      OutOfBandConfiguration oobConfig,
+      FrrConfiguration frrConfig,
       OspfVrf ospfVrf,
       Map<String, org.batfish.datamodel.Interface> vrfInterfaces,
       Warnings w) {
@@ -1199,7 +1201,7 @@ public final class CumulusConversions {
             .build();
 
     // Configure any interfaces grabbed by the network statement
-    for (OspfNetworkArea na : vsConfig.getOspfProcess().getNetworkAreas().values()) {
+    for (OspfNetworkArea na : frrConfig.getOspfProcess().getNetworkAreas().values()) {
       Prefix network = na.getPrefix();
       long area = na.getArea();
       for (Interface i : vrfInterfaces.values()) {
@@ -1210,7 +1212,7 @@ public final class CumulusConversions {
         }
 
         // Make sure it has OSPF Interface settings, creating one if not.
-        FrrInterface iface = vsConfig.getFrrConfiguration().getInterfaces().get(i.getName());
+        FrrInterface iface = frrConfig.getInterfaces().get(i.getName());
         checkState(iface != null, "Internal error: interface in VI but not in FRR");
         OspfInterface ospfInterface = iface.getOrCreateOspf();
 
@@ -1221,11 +1223,11 @@ public final class CumulusConversions {
       }
     }
 
-    addOspfInterfaces(vsConfig, vrfInterfaces, proc.getProcessId(), w);
-    proc.setAreas(computeOspfAreas(c, vsConfig, ospfVrf, vrfInterfaces.keySet()));
+    addOspfInterfaces(oobConfig, frrConfig, vrfInterfaces, proc.getProcessId(), w);
+    proc.setAreas(computeOspfAreas(c, frrConfig, ospfVrf, vrfInterfaces.keySet()));
 
     // Handle Max Metric Router LSA
-    if (firstNonNull(vsConfig.getOspfProcess().getMaxMetricRouterLsa(), Boolean.FALSE)) {
+    if (firstNonNull(frrConfig.getOspfProcess().getMaxMetricRouterLsa(), Boolean.FALSE)) {
       proc.setMaxMetricTransitLinks(DEFAULT_OSPF_MAX_METRIC);
     }
 
@@ -1241,8 +1243,8 @@ public final class CumulusConversions {
     ospfExportStatements.add(new SetMetric(new LiteralLong(DEFAULT_REDISTRIBUTE_METRIC)));
 
     ospfExportStatements.addAll(
-        vsConfig.getOspfProcess().getRedistributionPolicies().values().stream()
-            .map(policy -> convertOspfRedistributionPolicy(policy, vsConfig.getRouteMaps()))
+        frrConfig.getOspfProcess().getRedistributionPolicies().values().stream()
+            .map(policy -> convertOspfRedistributionPolicy(policy, frrConfig.getRouteMaps()))
             .collect(Collectors.toList()));
 
     return proc;
@@ -1332,13 +1334,14 @@ public final class CumulusConversions {
 
   @VisibleForTesting
   static void addOspfInterfaces(
-      CumulusConcatenatedConfiguration vsConfig,
+      OutOfBandConfiguration oobConfig,
+      FrrConfiguration frrConfig,
       Map<String, org.batfish.datamodel.Interface> viIfaces,
       String processId,
       Warnings w) {
     viIfaces.forEach(
         (ifaceName, iface) -> {
-          Optional<OspfInterface> ospfOpt = vsConfig.getOspfInterface(ifaceName);
+          Optional<OspfInterface> ospfOpt = getOspfInterface(frrConfig, ifaceName);
           if (!ospfOpt.isPresent() || ospfOpt.get().getOspfArea() == null) {
             return;
           }
@@ -1354,7 +1357,7 @@ public final class CumulusConversions {
               OspfInterfaceSettings.builder()
                   .setPassive(
                       Optional.ofNullable(ospfInterface.getPassive())
-                          .orElse(vsConfig.getOspfProcess().getDefaultPassiveInterface()))
+                          .orElse(frrConfig.getOspfProcess().getDefaultPassiveInterface()))
                   .setAreaName(ospfInterface.getOspfArea())
                   .setNetworkType(toOspfNetworkType(ospfInterface.getNetwork(), w))
                   .setDeadInterval(
@@ -1365,19 +1368,20 @@ public final class CumulusConversions {
                           .orElse(DEFAULT_OSPF_HELLO_INTERVAL))
                   .setProcess(processId)
                   .setCost(ospfCost)
-                  .setOspfAddresses(getOspfAddresses(vsConfig, ifaceName))
+                  .setOspfAddresses(getOspfAddresses(oobConfig, frrConfig, ifaceName))
                   .build());
         });
   }
 
   private static @Nonnull OspfAddresses getOspfAddresses(
-      CumulusConcatenatedConfiguration vsConfig, String ifaceName) {
+      OutOfBandConfiguration oobConfig, FrrConfiguration frrConfig, String ifaceName) {
     // use ImmutableSet to preserve order and remove duplicates
     ImmutableSet.Builder<ConcreteInterfaceAddress> addressesBuilder = ImmutableSet.builder();
-    Optional.ofNullable(vsConfig.getInterfacesConfiguration().getInterfaces().get(ifaceName))
-        .map(InterfacesInterface::getAddresses)
-        .ifPresent(addressesBuilder::addAll);
-    Optional.ofNullable(vsConfig.getFrrConfiguration().getInterfaces().get(ifaceName))
+    if (oobConfig.hasInterface(ifaceName)) {
+      Optional.ofNullable(oobConfig.getInterfaceAddresses(ifaceName))
+          .ifPresent(addressesBuilder::addAll);
+    }
+    Optional.ofNullable(frrConfig.getInterfaces().get(ifaceName))
         .map(FrrInterface::getIpAddresses)
         .ifPresent(addressesBuilder::addAll);
     return OspfAddresses.of(addressesBuilder.build());
@@ -1386,19 +1390,19 @@ public final class CumulusConversions {
   @VisibleForTesting
   static SortedMap<Long, OspfArea> computeOspfAreas(
       Configuration c,
-      CumulusConcatenatedConfiguration vsConfig,
+      FrrConfiguration vsConfig,
       OspfVrf ospfVrf,
       Collection<String> vrfIfaceNames) {
     Map<Long, List<String>> areaInterfaces =
         vrfIfaceNames.stream()
             .filter(
                 iface -> {
-                  Optional<OspfInterface> ospfOpt = vsConfig.getOspfInterface(iface);
+                  Optional<OspfInterface> ospfOpt = getOspfInterface(vsConfig, iface);
                   return ospfOpt.isPresent() && ospfOpt.get().getOspfArea() != null;
                 })
             .collect(
                 groupingBy(
-                    iface -> vsConfig.getOspfInterface(iface).get().getOspfArea(),
+                    iface -> getOspfInterface(vsConfig, iface).get().getOspfArea(),
                     mapping(Function.identity(), Collectors.toList())));
 
     // Ensure that the VRF-level OSPF config has each area used.
@@ -1780,5 +1784,13 @@ public final class CumulusConversions {
 
   public static @Nonnull String computeRouteMapEntryName(String routeMapName, int sequence) {
     return String.format("%s %d", routeMapName, sequence);
+  }
+
+  private static Optional<OspfInterface> getOspfInterface(
+      FrrConfiguration frrConfiguration, String ifaceName) {
+    if (!frrConfiguration.getInterfaces().containsKey(ifaceName)) {
+      return Optional.empty();
+    }
+    return Optional.ofNullable(frrConfiguration.getInterfaces().get(ifaceName).getOspf());
   }
 }
