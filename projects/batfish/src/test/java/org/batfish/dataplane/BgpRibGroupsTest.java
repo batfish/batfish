@@ -1,5 +1,7 @@
 package org.batfish.dataplane;
 
+import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.NO_PREFERENCE;
+import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
 import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_BGP_ADMIN_DISTANCE;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
@@ -24,6 +26,7 @@ import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
@@ -152,6 +155,9 @@ public class BgpRibGroupsTest {
             .setEbgpAdminCost(DEFAULT_BGP_ADMIN_DISTANCE)
             .setIbgpAdminCost(DEFAULT_BGP_ADMIN_DISTANCE)
             .setLocalAdminCost(DEFAULT_BGP_ADMIN_DISTANCE) /* Not relevant for JunOS. */
+            .setLocalOriginationTypeTieBreaker(NO_PREFERENCE)
+            .setNetworkNextHopIpTieBreaker(HIGHEST_NEXT_HOP_IP)
+            .setRedistributeNextHopIpTieBreaker(HIGHEST_NEXT_HOP_IP)
             .build();
     RibGroup rg =
         new RibGroup(
@@ -202,6 +208,9 @@ public class BgpRibGroupsTest {
             .setEbgpAdminCost(DEFAULT_BGP_ADMIN_DISTANCE)
             .setIbgpAdminCost(DEFAULT_BGP_ADMIN_DISTANCE)
             .setLocalAdminCost(DEFAULT_BGP_ADMIN_DISTANCE) /* Not relevant for JunOS. */
+            .setLocalOriginationTypeTieBreaker(NO_PREFERENCE)
+            .setNetworkNextHopIpTieBreaker(HIGHEST_NEXT_HOP_IP)
+            .setRedistributeNextHopIpTieBreaker(HIGHEST_NEXT_HOP_IP)
             .build();
     nf.bgpNeighborBuilder()
         .setBgpProcess(bgpProc2)
@@ -236,6 +245,9 @@ public class BgpRibGroupsTest {
             .setEbgpAdminCost(DEFAULT_BGP_ADMIN_DISTANCE)
             .setIbgpAdminCost(DEFAULT_BGP_ADMIN_DISTANCE)
             .setLocalAdminCost(DEFAULT_BGP_ADMIN_DISTANCE) /* Not relevant for JunOS. */
+            .setLocalOriginationTypeTieBreaker(NO_PREFERENCE)
+            .setNetworkNextHopIpTieBreaker(HIGHEST_NEXT_HOP_IP)
+            .setRedistributeNextHopIpTieBreaker(HIGHEST_NEXT_HOP_IP)
             .build();
     nf.bgpNeighborBuilder()
         .setBgpProcess(bgpProc3)
@@ -271,6 +283,7 @@ public class BgpRibGroupsTest {
                     .setAdmin(ADMIN_OVERWRITE)
                     .setAsPath(AsPath.ofSingletonAsSets(2L))
                     .setOriginatorIp(Ip.parse("2.2.2.2"))
+                    .setOriginMechanism(OriginMechanism.REDISTRIBUTE)
                     .setOriginType(OriginType.IGP)
                     .setProtocol(RoutingProtocol.BGP)
                     .setLocalPreference(100)
@@ -294,6 +307,7 @@ public class BgpRibGroupsTest {
                             ConfigurationFormat.JUNIPER))
                     .setAsPath(AsPath.ofSingletonAsSets(3L))
                     .setOriginatorIp(Ip.parse("3.3.3.3"))
+                    .setOriginMechanism(OriginMechanism.REDISTRIBUTE)
                     .setOriginType(OriginType.IGP)
                     .setProtocol(RoutingProtocol.BGP)
                     .setLocalPreference(100)

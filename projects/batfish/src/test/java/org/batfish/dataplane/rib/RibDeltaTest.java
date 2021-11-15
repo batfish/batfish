@@ -168,7 +168,10 @@ public class RibDeltaTest {
             BgpTieBreaker.CLUSTER_LIST_LENGTH,
             null,
             MultipathEquivalentAsPathMatchMode.EXACT_PATH,
-            false);
+            false,
+            null,
+            null,
+            null);
     Bgpv4Route.Builder routeBuilder = Bgpv4Route.testBuilder();
     routeBuilder
         .setNetwork(Ip.parse("1.1.1.1").toPrefix())
@@ -222,7 +225,10 @@ public class RibDeltaTest {
             BgpTieBreaker.ROUTER_ID,
             null,
             MultipathEquivalentAsPathMatchMode.EXACT_PATH,
-            false);
+            false,
+            null,
+            null,
+            null);
     Bgpv4Route r1 =
         Bgpv4Route.testBuilder()
             .setNetwork(Ip.parse("1.1.1.1").toPrefix())

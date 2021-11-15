@@ -2,6 +2,9 @@ package org.batfish.dataplane.protocols;
 
 import static org.batfish.datamodel.BgpRoute.DEFAULT_LOCAL_PREFERENCE;
 import static org.batfish.datamodel.BgpRoute.DEFAULT_LOCAL_WEIGHT;
+import static org.batfish.datamodel.OriginMechanism.GENERATED;
+import static org.batfish.datamodel.OriginMechanism.LEARNED;
+import static org.batfish.datamodel.OriginMechanism.REDISTRIBUTE;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -67,6 +70,8 @@ public final class BgpProtocolHelper {
     B builder = route.toBuilder();
     // this will be set later during export policy transformation or after it is exported
     builder.clearNextHop();
+    // An exported route is a learned route.
+    builder.setOriginMechanism(LEARNED);
 
     RoutingProtocol routeProtocol = route.getProtocol();
     RoutingProtocol outgoingProtocol =
@@ -290,6 +295,7 @@ public final class BgpProtocolHelper {
          * but are needed initially
          */
         .setOriginatorIp(routerId)
+        .setOriginMechanism(GENERATED)
         .setOriginType(generatedRoute.getOriginType())
         .setReceivedFromIp(/* Originated locally. */ Ip.ZERO)
         .setNonRouting(nonRouting);
@@ -312,6 +318,7 @@ public final class BgpProtocolHelper {
             .setNetwork(aggregate.getNetwork())
             .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
             .setOriginatorIp(routerId)
+            .setOriginMechanism(GENERATED)
             // TODO: confirm default is IGP for all devices initializing aggregates from BGP RIB
             .setOriginType(OriginType.IGP)
             .setReceivedFromIp(/* Originated locally. */ Ip.ZERO)
@@ -331,8 +338,8 @@ public final class BgpProtocolHelper {
    * <p>Intended for converting main RIB routes into their BGP equivalents before passing {@code
    * routeDecorator} to the export policy
    *
-   * <p>The builder returned will have default local preference, incomplete origin type, and most
-   * other fields unset.
+   * <p>The builder returned will have default local preference, redistribute origin mechanism,
+   * incomplete origin type, and most other fields unset.
    */
   @Nonnull
   public static Bgpv4Route.Builder convertNonBgpRouteToBgpRoute(
@@ -350,6 +357,7 @@ public final class BgpProtocolHelper {
         .setOriginatorIp(routerId)
         .setProtocol(protocol)
         .setSrcProtocol(route.getProtocol())
+        .setOriginMechanism(REDISTRIBUTE)
         .setOriginType(OriginType.INCOMPLETE)
         // TODO: support customization of route preference
         .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)

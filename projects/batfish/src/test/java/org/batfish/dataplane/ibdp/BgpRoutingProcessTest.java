@@ -53,6 +53,7 @@ import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.EvpnType3Route;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
@@ -163,6 +164,7 @@ public class BgpRoutingProcessTest {
                 .setCommunities(ImmutableSet.of(routeTarget))
                 .setNonRouting(true)
                 .setProtocol(RoutingProtocol.BGP)
+                .setOriginMechanism(OriginMechanism.GENERATED)
                 .setOriginType(OriginType.EGP)
                 .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
                 .setVniIp(ip)
@@ -237,6 +239,7 @@ public class BgpRoutingProcessTest {
                 .setCommunities(ImmutableSet.of(ExtendedCommunity.target(65500, vni)))
                 .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
                 .setNonRouting(true)
+                .setOriginMechanism(OriginMechanism.GENERATED)
                 .setOriginType(OriginType.EGP)
                 .setProtocol(RoutingProtocol.BGP)
                 .setAdmin(20)
@@ -257,6 +260,7 @@ public class BgpRoutingProcessTest {
                 .setCommunities(ImmutableSet.of(ExtendedCommunity.target(65500, vni2)))
                 .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
                 .setNonRouting(true)
+                .setOriginMechanism(OriginMechanism.GENERATED)
                 .setOriginType(OriginType.EGP)
                 .setProtocol(RoutingProtocol.BGP)
                 .setAdmin(20)
@@ -947,6 +951,7 @@ public class BgpRoutingProcessTest {
         Bgpv4Route.builder()
             .setNetwork(Prefix.ZERO)
             .setOriginatorIp(neighborIp)
+            .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("2.2.2.2"));

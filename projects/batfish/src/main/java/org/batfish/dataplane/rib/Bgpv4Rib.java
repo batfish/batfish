@@ -1,13 +1,21 @@
 package org.batfish.dataplane.rib;
 
 import static org.batfish.datamodel.ResolutionRestriction.alwaysTrue;
+import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.SetMultimap;
+import com.google.common.collect.SortedSetMultimap;
+import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -19,8 +27,11 @@ import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.GenericRibReadOnly;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
+import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker;
+import org.batfish.datamodel.bgp.NextHopIpTieBreaker;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
@@ -86,21 +97,47 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
   }
 
   private final @Nonnull ResolvabilityEnforcer _resolvabilityEnforcer;
+  private final @Nonnull Map<OriginMechanism, SortedSetMultimap<Prefix, Bgpv4Route>> _localRoutes;
+  private final @Nonnull Map<OriginMechanism, Comparator<Bgpv4Route>> _localRouteComparators;
 
   public Bgpv4Rib(
       @Nullable GenericRibReadOnly<AnnotatedRoute<AbstractRoute>> mainRib,
       BgpTieBreaker tieBreaker,
       @Nullable Integer maxPaths,
       @Nullable MultipathEquivalentAsPathMatchMode multipathEquivalentAsPathMatchMode,
-      boolean clusterListAsIgpCost) {
+      boolean clusterListAsIgpCost,
+      LocalOriginationTypeTieBreaker localOriginationTypeTieBreaker,
+      NextHopIpTieBreaker networkNextHopIpTieBreaker,
+      NextHopIpTieBreaker redistributeNextHopIpTieBreaker) {
     super(
         mainRib,
         tieBreaker,
         maxPaths,
         multipathEquivalentAsPathMatchMode,
         true,
-        clusterListAsIgpCost);
+        clusterListAsIgpCost,
+        localOriginationTypeTieBreaker);
     _resolvabilityEnforcer = new ResolvabilityEnforcer();
+    _localRouteComparators =
+        initLocalRouteComparators(networkNextHopIpTieBreaker, redistributeNextHopIpTieBreaker);
+    _localRoutes = new EnumMap<>(OriginMechanism.class);
+  }
+
+  private static @Nonnull Map<OriginMechanism, Comparator<Bgpv4Route>> initLocalRouteComparators(
+      NextHopIpTieBreaker networkNextHopIpTieBreaker,
+      NextHopIpTieBreaker redistributeNextHopIpTieBreaker) {
+    Map<OriginMechanism, Comparator<Bgpv4Route>> map = new EnumMap<>(OriginMechanism.class);
+    map.put(OriginMechanism.NETWORK, toLocalRouteComparator(networkNextHopIpTieBreaker));
+    map.put(OriginMechanism.REDISTRIBUTE, toLocalRouteComparator(redistributeNextHopIpTieBreaker));
+    return map;
+  }
+
+  private static @Nonnull Comparator<Bgpv4Route> toLocalRouteComparator(
+      NextHopIpTieBreaker nextHopIpTieBreaker) {
+    Comparator<Ip> nhipComparator =
+        nextHopIpTieBreaker == HIGHEST_NEXT_HOP_IP ? Comparator.reverseOrder() : Ip::compareTo;
+    return Comparator.comparing(Bgpv4Route::getNextHopIp, nhipComparator)
+        .thenComparing(Bgpv4Route::getSrcProtocol);
   }
 
   @Nonnull
@@ -118,17 +155,84 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
       if (!isResolvable(route.getNextHopIp())) {
         return RibDelta.empty();
       }
+    } else if (isTrackableLocalRoute(route)) {
+      // TODO: more correct to filter main rib routes prior to converting to BGP
+      return addLocalRoute(route);
     }
     return super.mergeRouteGetDelta(route);
+  }
+
+  private boolean isBestLocalRoute(Bgpv4Route route) {
+    OriginMechanism o = route.getOriginMechanism();
+    assert _localRoutes.containsKey(o);
+    SortedSet<Bgpv4Route> routesForPrefix = _localRoutes.get(o).get(route.getNetwork());
+    assert !routesForPrefix.isEmpty();
+    return route.equals(routesForPrefix.first());
+  }
+
+  /**
+   * Add tracking for a local (non-learned) route. Then add it to the RIB, withdrawing any non-best
+   * local routes for the same origin mechanism and prefix.
+   */
+  private @Nonnull RibDelta<Bgpv4Route> addLocalRoute(Bgpv4Route route) {
+    Prefix prefix = route.getNetwork();
+    SortedSet<Bgpv4Route> routesForMechanismAndPrefix =
+        _localRoutes
+            .computeIfAbsent(
+                route.getOriginMechanism(),
+                o ->
+                    Multimaps.newSortedSetMultimap(
+                        new HashMap<>(),
+                        () ->
+                            new TreeSet<>(_localRouteComparators.get(route.getOriginMechanism()))))
+            .get(prefix);
+    Optional<Bgpv4Route> maybeOldBest =
+        routesForMechanismAndPrefix.isEmpty()
+            ? Optional.empty()
+            : Optional.of(routesForMechanismAndPrefix.first());
+    routesForMechanismAndPrefix.add(route);
+    Bgpv4Route newBest = routesForMechanismAndPrefix.first();
+    if (!route.equals(newBest)
+        || (maybeOldBest.isPresent() && maybeOldBest.get().equals(newBest))) {
+      return RibDelta.empty();
+    }
+    // route is new best, so needs to be added
+    RibDelta.Builder<Bgpv4Route> delta =
+        RibDelta.<Bgpv4Route>builder().from(super.mergeRouteGetDelta(route));
+    // if old best was present, remove it
+    maybeOldBest.ifPresent(oldBest -> delta.from(super.removeRouteGetDelta(oldBest)));
+    return delta.build();
   }
 
   @Nonnull
   @Override
   public RibDelta<Bgpv4Route> removeRouteGetDelta(Bgpv4Route route) {
+    if (isTrackableLocalRoute(route)) {
+      return removeLocalRoute(route);
+    }
     // Remove route from resolvability enforcer so it can't get reactivated.
     // No effect if the main RIB is null or if the route doesn't need resolving.
     _resolvabilityEnforcer.removeBgpRoute(route);
     return super.removeRouteGetDelta(route);
+  }
+
+  private @Nonnull RibDelta<Bgpv4Route> removeLocalRoute(Bgpv4Route route) {
+    OriginMechanism o = route.getOriginMechanism();
+    if (!_localRoutes.containsKey(o)) {
+      // no routes of this mechanism, so nothing to do
+      return RibDelta.empty();
+    }
+    SortedSet<Bgpv4Route> routesForMechanismAndPrefix = _localRoutes.get(o).get(route.getNetwork());
+    // stop tracking this route
+    routesForMechanismAndPrefix.remove(route);
+    RibDelta.Builder<Bgpv4Route> delta = RibDelta.builder();
+    if (!routesForMechanismAndPrefix.isEmpty()) {
+      // add the new best. no effect if already present.
+      delta.from(super.mergeRouteGetDelta(routesForMechanismAndPrefix.first()));
+    }
+    // remove the route. no effect if already absent.
+    delta.from(super.removeRouteGetDelta(route));
+    return delta.build();
   }
 
   public MultipathRibDelta<Bgpv4Route> updateActiveRoutes(
@@ -174,10 +278,25 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
    * route's next hop IP), if applicable.
    */
   private static boolean shouldCheckNextHopReachability(Bgpv4Route route) {
-    if (route.getProtocol() == RoutingProtocol.AGGREGATE) {
+    if (route.getProtocol() == RoutingProtocol.AGGREGATE || isTrackableLocalRoute(route)) {
       return false;
     }
     return NEXT_HOP_REACHABILITY_VISITOR.visit(route.getNextHop());
+  }
+
+  /** Whether the route should is a trackable redistributed local route. */
+  private static boolean isTrackableLocalRoute(Bgpv4Route route) {
+    switch (route.getOriginMechanism()) {
+      case NETWORK:
+      case REDISTRIBUTE:
+        return true;
+      case GENERATED:
+      case LEARNED:
+        return false;
+      default:
+        throw new IllegalArgumentException(
+            String.format("Unhandled OriginMechanism: %s", route.getOriginMechanism()));
+    }
   }
 
   private static final NextHopVisitor<Boolean> NEXT_HOP_REACHABILITY_VISITOR =

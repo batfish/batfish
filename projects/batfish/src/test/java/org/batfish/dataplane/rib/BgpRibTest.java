@@ -23,7 +23,7 @@ public class BgpRibTest {
 
   @Test
   public void testMultipathMergeAndRemove_notMultipath() {
-    Bgpv4Rib bgpRib = new Bgpv4Rib(null, BgpTieBreaker.ROUTER_ID, 1, null, false);
+    Bgpv4Rib bgpRib = new Bgpv4Rib(null, BgpTieBreaker.ROUTER_ID, 1, null, false, null, null, null);
     Bgpv4Route.Builder rb = Bgpv4Route.testBuilder().setNetwork(Prefix.ZERO);
 
     Bgpv4Route good = rb.setLocalPreference(20).build();
@@ -88,7 +88,10 @@ public class BgpRibTest {
             BgpTieBreaker.ROUTER_ID,
             null,
             MultipathEquivalentAsPathMatchMode.EXACT_PATH,
-            false);
+            false,
+            null,
+            null,
+            null);
     Bgpv4Route.Builder rb = Bgpv4Route.testBuilder().setNetwork(Prefix.ZERO);
 
     Bgpv4Route good = rb.setOriginatorIp(Ip.parse("1.1.1.40")).build();
@@ -150,7 +153,8 @@ public class BgpRibTest {
 
   @Test
   public void testBestPathComparator() {
-    BgpRib<Bgpv4Route> rib = new Bgpv4Rib(null, BgpTieBreaker.ROUTER_ID, 1, null, false);
+    BgpRib<Bgpv4Route> rib =
+        new Bgpv4Rib(null, BgpTieBreaker.ROUTER_ID, 1, null, false, null, null, null);
     Bgpv4Route.Builder rb =
         Bgpv4Route.testBuilder()
             .setNetwork(Prefix.ZERO)
@@ -189,7 +193,8 @@ public class BgpRibTest {
 
   @Test
   public void testBestPathComparator_ClusterListAsIgpCost() {
-    BgpRib<Bgpv4Route> rib = new Bgpv4Rib(null, BgpTieBreaker.ROUTER_ID, 1, null, true);
+    BgpRib<Bgpv4Route> rib =
+        new Bgpv4Rib(null, BgpTieBreaker.ROUTER_ID, 1, null, true, null, null, null);
     Bgpv4Route.Builder rb =
         Bgpv4Route.testBuilder()
             .setNetwork(Prefix.ZERO)
@@ -229,7 +234,8 @@ public class BgpRibTest {
 
   @Test
   public void testBestPathComparator_Default() {
-    BgpRib<Bgpv4Route> rib = new Bgpv4Rib(null, BgpTieBreaker.ROUTER_ID, 1, null, false);
+    BgpRib<Bgpv4Route> rib =
+        new Bgpv4Rib(null, BgpTieBreaker.ROUTER_ID, 1, null, false, null, null, null);
     Bgpv4Route.Builder rb =
         Bgpv4Route.testBuilder()
             .setNetwork(Prefix.ZERO)
