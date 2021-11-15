@@ -66,6 +66,7 @@ import org.batfish.datamodel.EvpnRoute;
 import org.batfish.datamodel.EvpnType3Route;
 import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.Prefix;
@@ -224,6 +225,7 @@ public class RoutesAnswererUtilTest {
     Bgpv4Route.Builder rb =
         Bgpv4Route.testBuilder()
             .setNetwork(prefix)
+            .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
             .setCommunities(ImmutableSortedSet.of(StandardCommunity.of(65537L)))
             .setProtocol(RoutingProtocol.BGP)
@@ -287,6 +289,7 @@ public class RoutesAnswererUtilTest {
         ImmutableSet.of(
             Bgpv4Route.builder()
                 .setNetwork(ip.toPrefix())
+                .setOriginMechanism(OriginMechanism.LEARNED)
                 .setOriginType(OriginType.IGP)
                 .setOriginatorIp(ip)
                 .setNextHop(NextHopIp.of(ip))
@@ -317,6 +320,7 @@ public class RoutesAnswererUtilTest {
         EvpnType3Route.builder()
             .setVniIp(ip)
             .setRouteDistinguisher(RouteDistinguisher.from(ip, 1))
+            .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
             .setCommunities(ImmutableSortedSet.of(StandardCommunity.of(65537L)))
             .setProtocol(RoutingProtocol.BGP)
@@ -547,6 +551,7 @@ public class RoutesAnswererUtilTest {
         Bgpv4Route.testBuilder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
             .setNextHopIp(Ip.parse("1.1.1.2"))
+            .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
             .setOriginatorIp(Ip.parse("1.1.1.2"))
             .setProtocol(RoutingProtocol.BGP)
@@ -562,6 +567,7 @@ public class RoutesAnswererUtilTest {
             .setNextHopIp(Ip.parse("1.1.1.3"))
             .setAdmin(10)
             .setMetric(20L)
+            .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
             .setOriginatorIp(Ip.parse("1.1.1.2"))
             .setProtocol(RoutingProtocol.IBGP)
