@@ -1097,7 +1097,12 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
       // TODO: remove this silent ignore from here and other places
       return;
     }
-    _currentBgpNeighborIpv4UnicastAddressFamily.setAllowAsIn(Integer.parseInt(ctx.count.getText()));
+    if (ctx.count != null) {
+      _currentBgpNeighborIpv4UnicastAddressFamily.setAllowAsIn(
+          Integer.parseInt(ctx.count.getText()));
+    } else {
+      _currentBgpNeighborIpv4UnicastAddressFamily.setAllowAsIn(3);
+    }
   }
 
   @Override

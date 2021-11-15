@@ -667,6 +667,24 @@ public class FrrGrammarTest {
   }
 
   @Test
+  public void testBgpAddressFamilyNeighborAllowAsInDefault() {
+    parseLines(
+        "router bgp 1",
+        "neighbor N interface description N",
+        "address-family ipv4 unicast",
+        "neighbor N allowas-in",
+        "exit-address-family");
+    assertThat(
+        _frr.getBgpProcess()
+            .getDefaultVrf()
+            .getNeighbors()
+            .get("N")
+            .getIpv4UnicastAddressFamily()
+            .getAllowAsIn(),
+        equalTo(3));
+  }
+
+  @Test
   public void testBgpAddressFamilyNeighborDefaultOriginate_parsing() {
     parseLines(
         "router bgp 1",
