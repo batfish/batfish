@@ -2,6 +2,7 @@ package org.batfish.grammar.cumulus_interfaces;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.representation.cumulus.FrrConfiguration.LOOPBACK_INTERFACE_NAME;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -187,7 +188,7 @@ public final class CumulusInterfacesConfigurationBuilder extends CumulusInterfac
   public void enterSi_inet(Si_inetContext ctx) {
     checkArgument(_currentIfaceName != null, "not find interface name");
     if (ctx.LOOPBACK() != null) {
-      if (!_currentIfaceName.equals(CumulusConcatenatedConfiguration.LOOPBACK_INTERFACE_NAME)) {
+      if (!_currentIfaceName.equals(LOOPBACK_INTERFACE_NAME)) {
         _w.addWarning(
             ctx, ctx.getStart().getText(), _parser, "expected loopback device to have name 'lo'");
       }
