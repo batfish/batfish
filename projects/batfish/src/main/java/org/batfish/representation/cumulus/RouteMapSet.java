@@ -20,5 +20,5 @@ public interface RouteMapSet extends Serializable {
    * set statement.
    */
   @Nonnull
-  Stream<Statement> toStatements(Configuration c, CumulusConcatenatedConfiguration vc, Warnings w);
+  Stream<Statement> toStatements(Configuration c, FrrConfiguration vc, Warnings w);
 }
