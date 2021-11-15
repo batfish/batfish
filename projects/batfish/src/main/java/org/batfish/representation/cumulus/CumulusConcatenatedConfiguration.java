@@ -78,7 +78,8 @@ import org.batfish.vendor.VendorConfiguration;
  * /etc/network/interfaces, /etc/frr/frr.conf, etc.).
  */
 @ParametersAreNonnullByDefault
-public class CumulusConcatenatedConfiguration extends VendorConfiguration {
+public class CumulusConcatenatedConfiguration extends VendorConfiguration
+    implements OutOfBandConfiguration {
 
   public static final String LOOPBACK_INTERFACE_NAME = "lo";
   @VisibleForTesting public static final String CUMULUS_CLAG_DOMAIN_ID = "~CUMULUS_CLAG_DOMAIN~";
@@ -866,6 +867,24 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration {
 
   public OspfProcess getOspfProcess() {
     return _frrConfiguration.getOspfProcess();
+  }
+
+  @Override
+  public boolean hasVrf(String vrfName) {
+    return _interfacesConfiguration.hasVrf(vrfName);
+  }
+
+  @Override
+  public boolean hasInterface(String ifaceName) {
+    return _interfacesConfiguration.getInterfaces().containsKey(ifaceName);
+  }
+
+  @Override
+  public String getInterfaceVrf(String ifaceName) {
+    checkArgument(
+        _interfacesConfiguration.getInterfaces().containsKey(ifaceName),
+        "Unknown interface " + ifaceName);
+    return _interfacesConfiguration.getInterfaces().get(ifaceName).getVrf();
   }
 
   public static Builder builder() {
