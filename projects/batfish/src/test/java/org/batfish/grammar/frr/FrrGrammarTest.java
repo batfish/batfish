@@ -1781,7 +1781,7 @@ public class FrrGrammarTest {
     Prefix network = Prefix.parse("10.0.0.0/8");
     parseLines("router bgp 10000", "network 10.0.0.0/8");
     assertThat(
-        _config.getBgpProcess().getDefaultVrf().getNetworks(),
+        _frr.getBgpProcess().getDefaultVrf().getNetworks(),
         equalTo(ImmutableMap.of(network, new BgpNetwork(network))));
   }
 
@@ -1790,7 +1790,7 @@ public class FrrGrammarTest {
     Prefix network = Prefix.parse("10.0.0.0/8");
     parseLines("router bgp 10000", "network 10.0.0.0/8 route-map FOO");
     assertThat(
-        _config.getBgpProcess().getDefaultVrf().getNetworks(),
+        _frr.getBgpProcess().getDefaultVrf().getNetworks(),
         equalTo(ImmutableMap.of(network, new BgpNetwork(network, "FOO"))));
   }
 
