@@ -3,7 +3,6 @@ package org.batfish.representation.cumulus;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
-import static org.batfish.representation.cumulus.BgpProcess.BGP_UNNUMBERED_IP;
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_LOOPBACK_BANDWIDTH;
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_LOOPBACK_MTU;
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_PORT_BANDWIDTH;
@@ -19,6 +18,8 @@ import static org.batfish.representation.cumulus.CumulusConversions.convertOspfP
 import static org.batfish.representation.cumulus.CumulusConversions.convertRouteMaps;
 import static org.batfish.representation.cumulus.CumulusConversions.convertVxlans;
 import static org.batfish.representation.cumulus.CumulusConversions.isUsedForBgpUnnumbered;
+import static org.batfish.representation.cumulus.FrrConfiguration.LINK_LOCAL_ADDRESS;
+import static org.batfish.representation.cumulus.FrrConfiguration.LOOPBACK_INTERFACE_NAME;
 import static org.batfish.representation.cumulus.InterfaceConverter.BRIDGE_NAME;
 import static org.batfish.representation.cumulus.InterfaceConverter.DEFAULT_BRIDGE_PORTS;
 import static org.batfish.representation.cumulus.InterfaceConverter.DEFAULT_BRIDGE_PVID;
@@ -64,7 +65,6 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.MacAddress;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SwitchportMode;
@@ -80,11 +80,6 @@ import org.batfish.vendor.VendorConfiguration;
 @ParametersAreNonnullByDefault
 public class CumulusConcatenatedConfiguration extends VendorConfiguration
     implements OutOfBandConfiguration {
-
-  public static final String LOOPBACK_INTERFACE_NAME = "lo";
-  @VisibleForTesting public static final String CUMULUS_CLAG_DOMAIN_ID = "~CUMULUS_CLAG_DOMAIN~";
-  public static final @Nonnull LinkLocalAddress LINK_LOCAL_ADDRESS =
-      LinkLocalAddress.of(BGP_UNNUMBERED_IP);
 
   public static final Pattern BOND_INTERFACE_PATTERN = Pattern.compile("^(bond[0-9]+)");
   public static final Pattern PHYSICAL_INTERFACE_PATTERN =
@@ -275,17 +270,16 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
             });
   }
 
-  @Nullable
-  public String getVrfForVlan(@Nullable Integer bridgeAccessVlan) {
+  @Override
+  public Optional<String> getVrfForVlan(@Nullable Integer bridgeAccessVlan) {
     if (bridgeAccessVlan == null) {
-      return null;
+      return Optional.empty();
     }
     return _interfacesConfiguration.getInterfaces().values().stream()
         .filter(InterfaceConverter::isVlan)
         .filter(v -> Objects.equals(v.getVlanId(), bridgeAccessVlan))
         .findFirst()
-        .map(InterfacesInterface::getVrf)
-        .orElse(null);
+        .map(InterfacesInterface::getVrf);
   }
 
   @VisibleForTesting
@@ -827,6 +821,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
         .collect(ImmutableMap.toImmutableMap(Vxlan::getName, vxlan -> vxlan));
   }
 
+  @Override
   @Nonnull
   public Map<String, InterfaceClagSettings> getClagSettings() {
     return _interfacesConfiguration.getInterfaces().values().stream()
