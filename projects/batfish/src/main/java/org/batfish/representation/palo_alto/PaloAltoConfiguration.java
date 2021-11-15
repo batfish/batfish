@@ -1776,7 +1776,6 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         // fall-through
       case SHARED:
       default:
-        assert vsys.getNamespaceType() == NamespaceType.SHARED;
         return Optional.empty();
     }
   }
