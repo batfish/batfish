@@ -43,6 +43,7 @@ import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpAdvertisement;
+import org.batfish.datamodel.BgpVrfLeakConfig;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -61,6 +62,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IsisRoute;
 import org.batfish.datamodel.KernelRoute;
 import org.batfish.datamodel.LocalRoute;
+import org.batfish.datamodel.MainRibVrfLeakConfig;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixSpace;
@@ -72,7 +74,7 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.VrfLeakingConfig;
+import org.batfish.datamodel.VrfLeakConfig;
 import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.dataplane.rib.RibGroup;
 import org.batfish.datamodel.dataplane.rib.RibId;
@@ -436,7 +438,11 @@ public final class VirtualRouter {
    * their main ribs to {@link #_crossVrfIncomingRoutes}.
    */
   void initCrossVrfImports() {
-    for (VrfLeakingConfig leakConfig : _vrf.getVrfLeakConfigs()) {
+    VrfLeakConfig vrfLeakConfig = _vrf.getVrfLeakConfig();
+    if (vrfLeakConfig == null || vrfLeakConfig.getLeakAsBgp()) {
+      return;
+    }
+    for (MainRibVrfLeakConfig leakConfig : vrfLeakConfig.getMainRibVrfLeakConfigs()) {
       String importFromVrf = leakConfig.getImportFromVrf();
       VirtualRouter exportingVR = _node.getVirtualRouterOrThrow(importFromVrf);
       CrossVrfEdgeId otherVrfToOurRib = new CrossVrfEdgeId(importFromVrf, RibId.DEFAULT_RIB_NAME);
@@ -1378,11 +1384,11 @@ public final class VirtualRouter {
    * routes in {@link #_crossVrfIncomingRoutes}.
    */
   void queueCrossVrfImports() {
-    for (VrfLeakingConfig leakConfig : _vrf.getVrfLeakConfigs()) {
-      if (leakConfig.leakAsBgp()) {
-        /* handled in bgpIteration() */
-        continue;
-      }
+    VrfLeakConfig vrfLeakConfig = _vrf.getVrfLeakConfig();
+    if (vrfLeakConfig == null || vrfLeakConfig.getLeakAsBgp()) {
+      return;
+    }
+    for (MainRibVrfLeakConfig leakConfig : vrfLeakConfig.getMainRibVrfLeakConfigs()) {
       String importFromVrf = leakConfig.getImportFromVrf();
       VirtualRouter exportingVR = _node.getVirtualRouterOrThrow(importFromVrf);
       CrossVrfEdgeId otherVrfToOurRib = new CrossVrfEdgeId(importFromVrf, RibId.DEFAULT_RIB_NAME);
@@ -1457,24 +1463,20 @@ public final class VirtualRouter {
 
   /** Import BGP routes from other VRFs on the same node, if configured */
   private void bgpVrfLeak() {
+    VrfLeakConfig leakConfig = _vrf.getVrfLeakConfig();
+    if (leakConfig == null || !leakConfig.getLeakAsBgp()) {
+      return;
+    }
     assert _bgpRoutingProcess != null; // invariant of being called from bgpIteration
-    for (VrfLeakingConfig vrfLeakConfig : _vrf.getVrfLeakConfigs()) {
-      if (!vrfLeakConfig.leakAsBgp()) {
-        /* Handled in queueCrossVrfImports() */
-        continue;
-      }
+    for (BgpVrfLeakConfig vrfLeakConfig : leakConfig.getBgpVrfLeakConfigs()) {
       LOGGER.debug("Leaking BGP routes from {} to {}", vrfLeakConfig.getImportFromVrf(), _name);
       Optional<BgpRoutingProcess> exportingBgpProc =
           _node
               .getVirtualRouter(vrfLeakConfig.getImportFromVrf())
               .map(VirtualRouter::getBgpRoutingProcess);
       if (exportingBgpProc.isPresent()) {
-        assert vrfLeakConfig.getBgpConfig() != null; // invariant of leakAsBgp()
         _bgpRoutingProcess.importCrossVrfV4Routes(
-            exportingBgpProc.get().getRoutesToLeak(),
-            vrfLeakConfig.getImportPolicy(),
-            vrfLeakConfig.getImportFromVrf(),
-            vrfLeakConfig.getBgpConfig());
+            exportingBgpProc.get().getRoutesToLeak(), vrfLeakConfig);
       } else {
         LOGGER.error(
             "Leaking BGP routes from VRF {} to VRF {} on node {} failed. Exporting VRF has no BGP"

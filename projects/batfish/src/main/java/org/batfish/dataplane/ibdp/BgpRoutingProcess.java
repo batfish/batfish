@@ -58,6 +58,7 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.BgpTieBreaker;
+import org.batfish.datamodel.BgpVrfLeakConfig;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.EvpnRoute;
@@ -74,7 +75,6 @@ import org.batfish.datamodel.PrefixTrieMultiMap;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.VrfLeakingConfig.BgpLeakConfig;
 import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.bgp.AddressFamily.Type;
 import org.batfish.datamodel.bgp.BgpAggregate;
@@ -2047,13 +2047,10 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   }
 
   public void importCrossVrfV4Routes(
-      Stream<RouteAdvertisement<Bgpv4Route>> routesToLeak,
-      @Nullable String importPolicyName,
-      String importFromVrf,
-      BgpLeakConfig bgpConfig) {
+      Stream<RouteAdvertisement<Bgpv4Route>> routesToLeak, BgpVrfLeakConfig bgpConfig) {
     @Nullable
     RoutingPolicy policy =
-        Optional.ofNullable(importPolicyName).flatMap(_policies::get).orElse(null);
+        Optional.ofNullable(bgpConfig.getImportPolicy()).flatMap(_policies::get).orElse(null);
     routesToLeak.forEach(
         ra -> {
           Bgpv4Route route = ra.getRoute();
@@ -2066,7 +2063,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
           Bgpv4Route.Builder builder =
               route.toBuilder()
                   .setNonRouting(false)
-                  .setNextHop(NextHopVrf.of(importFromVrf))
+                  .setNextHop(NextHopVrf.of(bgpConfig.getImportFromVrf()))
                   .addCommunities(bgpConfig.getAttachRouteTargets());
           switch (route.getSrcProtocol()) {
             case AGGREGATE: // local BGP route

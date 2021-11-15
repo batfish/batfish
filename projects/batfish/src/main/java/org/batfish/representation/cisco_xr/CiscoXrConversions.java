@@ -33,7 +33,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Multimap;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -53,6 +52,7 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.AsPathAccessListLine;
+import org.batfish.datamodel.BgpVrfLeakConfig;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.EmptyIpSpace;
@@ -85,8 +85,7 @@ import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
-import org.batfish.datamodel.VrfLeakingConfig;
-import org.batfish.datamodel.VrfLeakingConfig.BgpLeakConfig;
+import org.batfish.datamodel.VrfLeakConfig;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -2086,14 +2085,14 @@ public class CiscoXrConversions {
                 if (importingVrf == exportingVrf) {
                   return;
                 }
-                viVrf.addVrfLeakingConfig(
-                    VrfLeakingConfig.builder()
-                        .setBgpLeakConfig(
-                            bgpLeakConfig(
-                                exportingVrf.getIpv4UnicastAddressFamily().getRouteTargetExport()))
-                        .setImportFromVrf(exportingVrf.getName())
-                        .setImportPolicy(routePolicyOrDrop(ipv4uaf.getImportPolicy(), c))
-                        .build());
+                getOrInitVrfLeakConfig(viVrf)
+                    .addBgpVrfLeakConfig(
+                        bgpVrfLeakConfigBuilderWithDefaultAdminAndWeight()
+                            .setAttachRouteTargets(
+                                exportingVrf.getIpv4UnicastAddressFamily().getRouteTargetExport())
+                            .setImportFromVrf(exportingVrf.getName())
+                            .setImportPolicy(routePolicyOrDrop(ipv4uaf.getImportPolicy(), c))
+                            .build());
               });
       // Add leak config for every exporting vrf with an export route-policy, since the policy can
       // potentially alter the route-target to match the import route-target.
@@ -2102,21 +2101,23 @@ public class CiscoXrConversions {
           // Take care to prevent self-loops
           continue;
         }
-        viVrf.addVrfLeakingConfig(
-            VrfLeakingConfig.builder()
-                .setBgpLeakConfig(bgpLeakConfig()) // RT handled by policy
-                .setImportFromVrf(policyExportingVrf.getName())
-                .setImportPolicy(
-                    vrfExportImportPolicy(
-                        policyExportingVrf.getName(),
-                        routePolicyOrDrop(
-                            policyExportingVrf.getIpv4UnicastAddressFamily().getExportPolicy(), c),
-                        policyExportingVrf.getIpv4UnicastAddressFamily().getRouteTargetExport(),
-                        importingVrf.getName(),
-                        routePolicyOrDrop(ipv4uaf.getImportPolicy(), c),
-                        ipv4uaf.getRouteTargetImport(),
-                        c))
-                .build());
+        getOrInitVrfLeakConfig(viVrf)
+            .addBgpVrfLeakConfig(
+                bgpVrfLeakConfigBuilderWithDefaultAdminAndWeight()
+                    // RT handled by policy
+                    .setImportFromVrf(policyExportingVrf.getName())
+                    .setImportPolicy(
+                        vrfExportImportPolicy(
+                            policyExportingVrf.getName(),
+                            routePolicyOrDrop(
+                                policyExportingVrf.getIpv4UnicastAddressFamily().getExportPolicy(),
+                                c),
+                            policyExportingVrf.getIpv4UnicastAddressFamily().getRouteTargetExport(),
+                            importingVrf.getName(),
+                            routePolicyOrDrop(ipv4uaf.getImportPolicy(), c),
+                            ipv4uaf.getRouteTargetImport(),
+                            c))
+                    .build());
       }
     }
     org.batfish.datamodel.Vrf viDefaultVrf = c.getVrfs().get(Configuration.DEFAULT_VRF_NAME);
@@ -2124,63 +2125,65 @@ public class CiscoXrConversions {
       org.batfish.datamodel.Vrf viNonDefaultVrf = c.getVrfs().get(nonDefaultVrf.getName());
       VrfAddressFamily af = nonDefaultVrf.getIpv4UnicastAddressFamily();
       if (af.getExportToDefaultVrfPolicy() != null) {
-        viDefaultVrf.addVrfLeakingConfig(
-            VrfLeakingConfig.builder()
-                .setBgpLeakConfig(bgpLeakConfig()) // RT handled by policy
-                .setImportFromVrf(nonDefaultVrf.getName())
-                .setImportPolicy(
-                    vrfExportImportPolicy(
-                        nonDefaultVrf.getName(),
-                        routePolicyOrDrop(
-                            nonDefaultVrf
-                                .getIpv4UnicastAddressFamily()
-                                .getExportToDefaultVrfPolicy(),
-                            c),
-                        nonDefaultVrf.getIpv4UnicastAddressFamily().getRouteTargetExport(),
-                        Configuration.DEFAULT_VRF_NAME,
-                        null,
-                        null,
-                        c))
-                .build());
+        getOrInitVrfLeakConfig(viDefaultVrf)
+            .addBgpVrfLeakConfig(
+                bgpVrfLeakConfigBuilderWithDefaultAdminAndWeight()
+                    // RT handled by policy
+                    .setImportFromVrf(nonDefaultVrf.getName())
+                    .setImportPolicy(
+                        vrfExportImportPolicy(
+                            nonDefaultVrf.getName(),
+                            routePolicyOrDrop(
+                                nonDefaultVrf
+                                    .getIpv4UnicastAddressFamily()
+                                    .getExportToDefaultVrfPolicy(),
+                                c),
+                            nonDefaultVrf.getIpv4UnicastAddressFamily().getRouteTargetExport(),
+                            Configuration.DEFAULT_VRF_NAME,
+                            null,
+                            null,
+                            c))
+                    .build());
       }
       if (af.getImportFromDefaultVrfPolicy() != null) {
-        viNonDefaultVrf.addVrfLeakingConfig(
-            VrfLeakingConfig.builder()
-                .setBgpLeakConfig(bgpLeakConfig()) // RT handled by policy
-                .setImportFromVrf(Configuration.DEFAULT_VRF_NAME)
-                .setImportPolicy(
-                    vrfExportImportPolicy(
-                        Configuration.DEFAULT_VRF_NAME,
-                        routePolicyOrDrop(
+        getOrInitVrfLeakConfig(viNonDefaultVrf)
+            .addBgpVrfLeakConfig(
+                bgpVrfLeakConfigBuilderWithDefaultAdminAndWeight()
+                    // RT handled by policy
+                    .setImportFromVrf(Configuration.DEFAULT_VRF_NAME)
+                    .setImportPolicy(
+                        vrfExportImportPolicy(
+                            Configuration.DEFAULT_VRF_NAME,
+                            routePolicyOrDrop(
+                                nonDefaultVrf
+                                    .getIpv4UnicastAddressFamily()
+                                    .getImportFromDefaultVrfPolicy(),
+                                c),
                             nonDefaultVrf
                                 .getIpv4UnicastAddressFamily()
-                                .getImportFromDefaultVrfPolicy(),
-                            c),
-                        nonDefaultVrf
-                            .getIpv4UnicastAddressFamily()
-                            .getRouteTargetImport(), // auto-apply import route-target on pass
-                        nonDefaultVrf.getName(),
-                        null,
-                        null,
-                        c))
-                .build());
+                                .getRouteTargetImport(), // auto-apply import route-target on pass
+                            nonDefaultVrf.getName(),
+                            null,
+                            null,
+                            c))
+                    .build());
       }
     }
   }
 
-  @Nonnull
-  private static BgpLeakConfig bgpLeakConfig(ExtendedCommunity... attachRouteTargets) {
-    return bgpLeakConfig(Arrays.asList(attachRouteTargets));
+  private static @Nonnull VrfLeakConfig getOrInitVrfLeakConfig(org.batfish.datamodel.Vrf vrf) {
+    if (vrf.getVrfLeakConfig() == null) {
+      vrf.setVrfLeakConfig(new VrfLeakConfig(true));
+    }
+    return vrf.getVrfLeakConfig();
   }
 
   @Nonnull
-  private static BgpLeakConfig bgpLeakConfig(Iterable<ExtendedCommunity> attachRouteTargets) {
-    return BgpLeakConfig.builder()
+  private static BgpVrfLeakConfig.Builder bgpVrfLeakConfigBuilderWithDefaultAdminAndWeight() {
+    return BgpVrfLeakConfig.builder()
         // TODO: input and honor result of 'bgp distance' command argument 3 (local BGP admin)
         .setAdmin(DEFAULT_EBGP_ADMIN)
-        .setAttachRouteTargets(attachRouteTargets)
-        .setWeight(BGP_VRF_LEAK_IGP_WEIGHT)
-        .build();
+        .setWeight(BGP_VRF_LEAK_IGP_WEIGHT);
   }
 
   @VisibleForTesting public static final int BGP_VRF_LEAK_IGP_WEIGHT = 0;

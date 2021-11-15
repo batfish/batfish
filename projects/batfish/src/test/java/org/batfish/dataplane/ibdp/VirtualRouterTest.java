@@ -55,6 +55,7 @@ import org.batfish.datamodel.IsisRoute;
 import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.KernelRoute;
 import org.batfish.datamodel.LocalRoute;
+import org.batfish.datamodel.MainRibVrfLeakConfig;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfExternalType1Route;
@@ -68,7 +69,7 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.VrfLeakingConfig;
+import org.batfish.datamodel.VrfLeakConfig;
 import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.eigrp.ClassicMetric;
 import org.batfish.datamodel.eigrp.EigrpMetricValues;
@@ -808,7 +809,8 @@ public class VirtualRouterTest {
     */
     NetworkFactory nf = new NetworkFactory();
     Configuration c =
-        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+        // set format to Juniper for consistency since we will use a Juniper-style VRF leak config
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.JUNIPER).build();
 
     // Create cross-VRF import policy to accept routes from vrfWithRoutes (and reject all others)
     RoutingPolicy.builder()
@@ -827,10 +829,13 @@ public class VirtualRouterTest {
     nf.vrfBuilder()
         .setOwner(c)
         .setName(emptyVrfName)
-        .addVrfLeakingConfig(
-            VrfLeakingConfig.builder()
-                .setImportFromVrf(vrfWithRoutesName)
-                .setImportPolicy(importPolicyName)
+        .setVrfLeakConfig(
+            VrfLeakConfig.builder(false)
+                .addMainRibVrfLeakConfig(
+                    MainRibVrfLeakConfig.builder()
+                        .setImportFromVrf(vrfWithRoutesName)
+                        .setImportPolicy(importPolicyName)
+                        .build())
                 .build())
         .build();
 
