@@ -137,12 +137,17 @@ public final class CumulusConversionsTest {
   private NetworkFactory _nf;
   private Configuration _c;
   private Vrf _v;
+  private OutOfBandConfiguration _oob;
+  private FrrConfiguration _frr;
 
   @Before
   public void setup() {
     _nf = new NetworkFactory();
     _c = _nf.configurationBuilder().build();
     _v = _nf.vrfBuilder().setOwner(_c).build();
+    _oob = new CumulusConcatenatedConfiguration();
+    _frr = new FrrConfiguration();
+    _frr.setOspfProcess(new OspfProcess());
   }
 
   private Environment finalEnvironment(Statement statement, String network) {
@@ -1079,16 +1084,12 @@ public final class CumulusConversionsTest {
 
   @Test
   public void testToOspfProcess_NoRouterId() {
-    OspfVrf ospfVrf = new OspfVrf(DEFAULT_VRF_NAME);
-    CumulusConcatenatedConfiguration vsConfig = new CumulusConcatenatedConfiguration();
-    OspfProcess vsOspf = new OspfProcess();
-    vsConfig.getFrrConfiguration().setOspfProcess(vsOspf);
-
     org.batfish.datamodel.ospf.OspfProcess ospfProcess =
         toOspfProcess(
             new Configuration("dummy", ConfigurationFormat.CUMULUS_CONCATENATED),
-            vsConfig,
-            ospfVrf,
+            _oob,
+            _frr,
+            new OspfVrf(DEFAULT_VRF_NAME),
             ImmutableMap.of(),
             new Warnings());
     assertThat(ospfProcess.getRouterId(), equalTo(Ip.parse("0.0.0.0")));
@@ -1100,16 +1101,12 @@ public final class CumulusConversionsTest {
 
   @Test
   public void testToOspfProcess_InferRouterId() {
-    OspfVrf ospfVrf = new OspfVrf(DEFAULT_VRF_NAME);
-    CumulusConcatenatedConfiguration vsConfig = new CumulusConcatenatedConfiguration();
-    OspfProcess vsOspf = new OspfProcess();
-    vsConfig.getFrrConfiguration().setOspfProcess(vsOspf);
-
     org.batfish.datamodel.ospf.OspfProcess ospfProcess =
         toOspfProcess(
             getConfigurationWithLoopback(ConcreteInterfaceAddress.parse("1.1.1.1/24")),
-            vsConfig,
-            ospfVrf,
+            _oob,
+            _frr,
+            new OspfVrf(DEFAULT_VRF_NAME),
             ImmutableMap.of(),
             new Warnings());
     assertThat(ospfProcess.getRouterId(), equalTo(Ip.parse("1.1.1.1")));
@@ -1123,14 +1120,12 @@ public final class CumulusConversionsTest {
   public void testToOspfProcess_ConfigedRouterId() {
     OspfVrf ospfVrf = new OspfVrf(DEFAULT_VRF_NAME);
     ospfVrf.setRouterId(Ip.parse("1.2.3.4"));
-    CumulusConcatenatedConfiguration vsConfig = new CumulusConcatenatedConfiguration();
-    OspfProcess vsOspf = new OspfProcess();
-    vsConfig.getFrrConfiguration().setOspfProcess(vsOspf);
 
     org.batfish.datamodel.ospf.OspfProcess ospfProcess =
         toOspfProcess(
             new Configuration("dummy", ConfigurationFormat.CUMULUS_CONCATENATED),
-            vsConfig,
+            _oob,
+            _frr,
             ospfVrf,
             ImmutableMap.of(),
             new Warnings());
@@ -1151,18 +1146,14 @@ public final class CumulusConversionsTest {
             .build();
     nf.vrfBuilder().setOwner(viConfig).setName(DEFAULT_VRF_NAME).build();
 
-    // Setup VS
-    CumulusConcatenatedConfiguration vsConfig = new CumulusConcatenatedConfiguration();
     // Setup OSPF
     OspfVrf ospfVrf = new OspfVrf(DEFAULT_VRF_NAME);
     ospfVrf.setRouterId(Ip.parse("1.2.3.4"));
-    OspfProcess vsOspf = new OspfProcess();
-    vsConfig.getFrrConfiguration().setOspfProcess(vsOspf);
 
-    vsConfig.getRouteMaps().put("some-map", new RouteMap("some-map"));
+    _frr.getRouteMaps().put("some-map", new RouteMap("some-map"));
     String policyName = computeOspfExportPolicyName(ospfVrf.getVrfName());
 
-    toOspfProcess(viConfig, vsConfig, ospfVrf, ImmutableMap.of(), new Warnings());
+    toOspfProcess(viConfig, _oob, _frr, ospfVrf, ImmutableMap.of(), new Warnings());
 
     assertEquals(
         viConfig.getRoutingPolicies().get(policyName).getStatements(),
@@ -1172,17 +1163,14 @@ public final class CumulusConversionsTest {
 
   @Test
   public void testToOspfProcess_MaxMetricRouterLsa() {
-    OspfVrf ospfVrf = new OspfVrf(DEFAULT_VRF_NAME);
-    CumulusConcatenatedConfiguration vsConfig = new CumulusConcatenatedConfiguration();
-    OspfProcess vsOspf = new OspfProcess();
-    vsOspf.setMaxMetricRouterLsa(true);
-    vsConfig.getFrrConfiguration().setOspfProcess(vsOspf);
+    _frr.getOrCreateOspfProcess().setMaxMetricRouterLsa(true);
 
     org.batfish.datamodel.ospf.OspfProcess ospfProcess =
         toOspfProcess(
             new Configuration("dummy", ConfigurationFormat.CUMULUS_CONCATENATED),
-            vsConfig,
-            ospfVrf,
+            _oob,
+            _frr,
+            new OspfVrf(DEFAULT_VRF_NAME),
             ImmutableMap.of(),
             new Warnings());
     assertThat(
@@ -1200,20 +1188,15 @@ public final class CumulusConversionsTest {
             .build();
     nf.vrfBuilder().setOwner(viConfig).setName(DEFAULT_VRF_NAME).build();
 
-    // Setup VS
-    CumulusConcatenatedConfiguration vsConfig = new CumulusConcatenatedConfiguration();
-
     // Setup OSPF
     OspfVrf ospfVrf = new OspfVrf(DEFAULT_VRF_NAME);
     ospfVrf.setRouterId(Ip.parse("1.2.3.4"));
-    OspfProcess vsOspf = new OspfProcess();
-    vsConfig.getFrrConfiguration().setOspfProcess(vsOspf);
 
     RedistributionPolicy rp = new RedistributionPolicy(CumulusRoutingProtocol.BGP, "some-map");
-    vsConfig.getRouteMaps().put("some-map", new RouteMap("some-map"));
+    _frr.getRouteMaps().put("some-map", new RouteMap("some-map"));
 
     // Method under test
-    If policy = convertOspfRedistributionPolicy(rp, vsConfig.getRouteMaps());
+    If policy = convertOspfRedistributionPolicy(rp, _frr.getRouteMaps());
     List<BooleanExpr> guard = ((Conjunction) policy.getGuard()).getConjuncts();
 
     assertThat(guard, contains(new MatchProtocol(BGP, IBGP), new CallExpr("some-map")));
@@ -1311,14 +1294,7 @@ public final class CumulusConversionsTest {
 
   @Test
   public void testAddOspfInterfaces_HasArea() {
-    CumulusConcatenatedConfiguration concatenatedConfiguration =
-        new CumulusConcatenatedConfiguration();
-    concatenatedConfiguration.getFrrConfiguration().setOspfProcess(new OspfProcess());
-    concatenatedConfiguration
-        .getFrrConfiguration()
-        .getOrCreateInterface("iface")
-        .getOrCreateOspf()
-        .setOspfArea(1L);
+    _frr.getOrCreateInterface("iface").getOrCreateOspf().setOspfArea(1L);
 
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
     org.batfish.datamodel.Interface viIface =
@@ -1330,7 +1306,7 @@ public final class CumulusConversionsTest {
 
     Map<String, org.batfish.datamodel.Interface> ifaceMap =
         ImmutableMap.of(viIface.getName(), viIface);
-    addOspfInterfaces(concatenatedConfiguration, ifaceMap, "1", new Warnings());
+    addOspfInterfaces(_oob, _frr, ifaceMap, "1", new Warnings());
     assertThat(viIface.getOspfAreaName(), equalTo(1L));
   }
 
@@ -1353,10 +1329,7 @@ public final class CumulusConversionsTest {
 
   @Test
   public void testAddOspfInterfaces_HasCost() {
-    CumulusConcatenatedConfiguration config = new CumulusConcatenatedConfiguration();
-    config.getFrrConfiguration().setOspfProcess(new OspfProcess());
-    OspfInterface ospf =
-        config.getFrrConfiguration().getOrCreateInterface("iface").getOrCreateOspf();
+    OspfInterface ospf = _frr.getOrCreateInterface("iface").getOrCreateOspf();
     ospf.setOspfArea(0L);
     ospf.setCost(100);
 
@@ -1370,16 +1343,14 @@ public final class CumulusConversionsTest {
     Map<String, org.batfish.datamodel.Interface> ifaceMap =
         ImmutableMap.of(viIface.getName(), viIface);
 
-    addOspfInterfaces(config, ifaceMap, "1", new Warnings());
+    addOspfInterfaces(_oob, _frr, ifaceMap, "1", new Warnings());
     assertThat(viIface.getOspfCost(), equalTo(100));
   }
 
   /** Test that loopback cost is ignored, even if configured, and forced to 0. */
   @Test
   public void testAddOspfInterfaces_LoopbackCost() {
-    CumulusConcatenatedConfiguration config = new CumulusConcatenatedConfiguration();
-    config.getFrrConfiguration().setOspfProcess(new OspfProcess());
-    OspfInterface ospf = config.getFrrConfiguration().getOrCreateInterface("lo").getOrCreateOspf();
+    OspfInterface ospf = _frr.getOrCreateInterface("lo").getOrCreateOspf();
     ospf.setOspfArea(0L);
     ospf.setCost(100);
 
@@ -1393,15 +1364,13 @@ public final class CumulusConversionsTest {
     Map<String, org.batfish.datamodel.Interface> ifaceMap =
         ImmutableMap.of(viIface.getName(), viIface);
 
-    addOspfInterfaces(config, ifaceMap, "1", new Warnings());
+    addOspfInterfaces(_oob, _frr, ifaceMap, "1", new Warnings());
     assertThat(viIface.getOspfCost(), equalTo(0));
   }
 
   @Test
   public void testAddOspfInterfaces_NoCost() {
-    CumulusConcatenatedConfiguration config = new CumulusConcatenatedConfiguration();
-    config.getFrrConfiguration().setOspfProcess(new OspfProcess());
-    config.getFrrConfiguration().getOrCreateInterface("iface").getOrCreateOspf().setOspfArea(0L);
+    _frr.getOrCreateInterface("iface").getOrCreateOspf().setOspfArea(0L);
 
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
     org.batfish.datamodel.Interface viIface =
@@ -1413,20 +1382,13 @@ public final class CumulusConversionsTest {
     Map<String, org.batfish.datamodel.Interface> ifaceMap =
         ImmutableMap.of(viIface.getName(), viIface);
 
-    addOspfInterfaces(config, ifaceMap, "1", new Warnings());
+    addOspfInterfaces(_oob, _frr, ifaceMap, "1", new Warnings());
     assertNull(viIface.getOspfCost());
   }
 
   @Test
   public void testAddOspfInterfaces_NoNetworkType() {
-    CumulusConcatenatedConfiguration concatenatedConfiguration =
-        new CumulusConcatenatedConfiguration();
-    concatenatedConfiguration.getFrrConfiguration().setOspfProcess(new OspfProcess());
-    concatenatedConfiguration
-        .getFrrConfiguration()
-        .getOrCreateInterface("iface")
-        .getOrCreateOspf()
-        .setOspfArea(0L);
+    _frr.getOrCreateInterface("iface").getOrCreateOspf().setOspfArea(0L);
 
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
     org.batfish.datamodel.Interface viIface =
@@ -1438,7 +1400,7 @@ public final class CumulusConversionsTest {
     Map<String, org.batfish.datamodel.Interface> ifaceMap =
         ImmutableMap.of(viIface.getName(), viIface);
 
-    addOspfInterfaces(concatenatedConfiguration, ifaceMap, "1", new Warnings());
+    addOspfInterfaces(_oob, _frr, ifaceMap, "1", new Warnings());
     assertNull(viIface.getOspfNetworkType());
   }
 
@@ -1537,14 +1499,7 @@ public final class CumulusConversionsTest {
 
   @Test
   public void testAddOspfInterfaces_NoPassiveInterface() {
-    CumulusConcatenatedConfiguration concatenatedConfiguration =
-        new CumulusConcatenatedConfiguration();
-    concatenatedConfiguration.getFrrConfiguration().setOspfProcess(new OspfProcess());
-    concatenatedConfiguration
-        .getFrrConfiguration()
-        .getOrCreateInterface("iface")
-        .getOrCreateOspf()
-        .setOspfArea(0L);
+    _frr.getOrCreateInterface("iface").getOrCreateOspf().setOspfArea(0L);
 
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
     org.batfish.datamodel.Interface viIface =
@@ -1556,22 +1511,15 @@ public final class CumulusConversionsTest {
     Map<String, org.batfish.datamodel.Interface> ifaceMap =
         ImmutableMap.of(viIface.getName(), viIface);
 
-    addOspfInterfaces(concatenatedConfiguration, ifaceMap, "1", new Warnings());
+    addOspfInterfaces(_oob, _frr, ifaceMap, "1", new Warnings());
     assertFalse(viIface.getOspfPassive());
   }
 
   @Test
   public void testAddOspfInterfaces_NoPassiveInterface_DefaultPassive() {
-    CumulusConcatenatedConfiguration concatenatedConfiguration =
-        new CumulusConcatenatedConfiguration();
-    concatenatedConfiguration.getFrrConfiguration().setOspfProcess(new OspfProcess());
-    concatenatedConfiguration.getOspfProcess().setDefaultPassiveInterface(true);
+    _frr.getOspfProcess().setDefaultPassiveInterface(true);
 
-    concatenatedConfiguration
-        .getFrrConfiguration()
-        .getOrCreateInterface("iface")
-        .getOrCreateOspf()
-        .setOspfArea(0L);
+    _frr.getOrCreateInterface("iface").getOrCreateOspf().setOspfArea(0L);
 
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
     org.batfish.datamodel.Interface viIface =
@@ -1583,20 +1531,13 @@ public final class CumulusConversionsTest {
     Map<String, org.batfish.datamodel.Interface> ifaceMap =
         ImmutableMap.of(viIface.getName(), viIface);
 
-    addOspfInterfaces(concatenatedConfiguration, ifaceMap, "1", new Warnings());
+    addOspfInterfaces(_oob, _frr, ifaceMap, "1", new Warnings());
     assertTrue(viIface.getOspfPassive());
   }
 
   @Test
   public void testAddOspfInterfaces_PassiveInterface() {
-    CumulusConcatenatedConfiguration concatenatedConfiguration =
-        new CumulusConcatenatedConfiguration();
-    concatenatedConfiguration.getFrrConfiguration().setOspfProcess(new OspfProcess());
-    OspfInterface ospf =
-        concatenatedConfiguration
-            .getFrrConfiguration()
-            .getOrCreateInterface("iface")
-            .getOrCreateOspf();
+    OspfInterface ospf = _frr.getOrCreateInterface("iface").getOrCreateOspf();
     ospf.setOspfArea(0L);
     ospf.setPassive(true);
 
@@ -1610,20 +1551,13 @@ public final class CumulusConversionsTest {
     Map<String, org.batfish.datamodel.Interface> ifaceMap =
         ImmutableMap.of(viIface.getName(), viIface);
 
-    addOspfInterfaces(concatenatedConfiguration, ifaceMap, "1", new Warnings());
+    addOspfInterfaces(_oob, _frr, ifaceMap, "1", new Warnings());
     assertTrue(viIface.getOspfPassive());
   }
 
   @Test
   public void testAddOspfInterfaces_NetworkTypeP2P() {
-    CumulusConcatenatedConfiguration concatenatedConfiguration =
-        new CumulusConcatenatedConfiguration();
-    concatenatedConfiguration.getFrrConfiguration().setOspfProcess(new OspfProcess());
-    OspfInterface ospf =
-        concatenatedConfiguration
-            .getFrrConfiguration()
-            .getOrCreateInterface("iface")
-            .getOrCreateOspf();
+    OspfInterface ospf = _frr.getOrCreateInterface("iface").getOrCreateOspf();
     ospf.setOspfArea(0L);
     ospf.setNetwork(OspfNetworkType.POINT_TO_POINT);
 
@@ -1637,7 +1571,7 @@ public final class CumulusConversionsTest {
     Map<String, org.batfish.datamodel.Interface> ifaceMap =
         ImmutableMap.of(viIface.getName(), viIface);
 
-    addOspfInterfaces(concatenatedConfiguration, ifaceMap, "1", new Warnings());
+    addOspfInterfaces(_oob, _frr, ifaceMap, "1", new Warnings());
     assertThat(
         viIface.getOspfNetworkType(),
         equalTo(org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT));
@@ -1645,14 +1579,7 @@ public final class CumulusConversionsTest {
 
   @Test
   public void testAddOspfInterfaces_HelloInterval() {
-    CumulusConcatenatedConfiguration concatenatedConfiguration =
-        new CumulusConcatenatedConfiguration();
-    concatenatedConfiguration.getFrrConfiguration().setOspfProcess(new OspfProcess());
-    OspfInterface ospf =
-        concatenatedConfiguration
-            .getFrrConfiguration()
-            .getOrCreateInterface("iface")
-            .getOrCreateOspf();
+    OspfInterface ospf = _frr.getOrCreateInterface("iface").getOrCreateOspf();
     ospf.setOspfArea(0L);
 
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
@@ -1665,7 +1592,7 @@ public final class CumulusConversionsTest {
     Map<String, org.batfish.datamodel.Interface> ifaceMap =
         ImmutableMap.of(viIface.getName(), viIface);
 
-    addOspfInterfaces(concatenatedConfiguration, ifaceMap, "1", new Warnings());
+    addOspfInterfaces(_oob, _frr, ifaceMap, "1", new Warnings());
 
     // default hello interval
     assertThat(
@@ -1674,20 +1601,13 @@ public final class CumulusConversionsTest {
 
     // set hello interval
     ospf.setHelloInterval(1);
-    addOspfInterfaces(concatenatedConfiguration, ifaceMap, "1", new Warnings());
+    addOspfInterfaces(_oob, _frr, ifaceMap, "1", new Warnings());
     assertThat(viIface.getOspfSettings().getHelloInterval(), equalTo(1));
   }
 
   @Test
   public void testAddOspfInterfaces_DeadInterval() {
-    CumulusConcatenatedConfiguration concatenatedConfiguration =
-        new CumulusConcatenatedConfiguration();
-    concatenatedConfiguration.getFrrConfiguration().setOspfProcess(new OspfProcess());
-    OspfInterface ospf =
-        concatenatedConfiguration
-            .getFrrConfiguration()
-            .getOrCreateInterface("iface")
-            .getOrCreateOspf();
+    OspfInterface ospf = _frr.getOrCreateInterface("iface").getOrCreateOspf();
     ospf.setOspfArea(0L);
 
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
@@ -1700,7 +1620,7 @@ public final class CumulusConversionsTest {
     Map<String, org.batfish.datamodel.Interface> ifaceMap =
         ImmutableMap.of(viIface.getName(), viIface);
 
-    addOspfInterfaces(concatenatedConfiguration, ifaceMap, "1", new Warnings());
+    addOspfInterfaces(_oob, _frr, ifaceMap, "1", new Warnings());
 
     // default dead interval
     assertThat(
@@ -1709,20 +1629,13 @@ public final class CumulusConversionsTest {
 
     // set dead interval
     ospf.setDeadInterval(1);
-    addOspfInterfaces(concatenatedConfiguration, ifaceMap, "1", new Warnings());
+    addOspfInterfaces(_oob, _frr, ifaceMap, "1", new Warnings());
     assertThat(viIface.getOspfSettings().getDeadInterval(), equalTo(1));
   }
 
   @Test
   public void testAddOspfInterfaces_ProcessId() {
-    CumulusConcatenatedConfiguration concatenatedConfiguration =
-        new CumulusConcatenatedConfiguration();
-    concatenatedConfiguration.getFrrConfiguration().setOspfProcess(new OspfProcess());
-    OspfInterface ospf =
-        concatenatedConfiguration
-            .getFrrConfiguration()
-            .getOrCreateInterface("iface")
-            .getOrCreateOspf();
+    OspfInterface ospf = _frr.getOrCreateInterface("iface").getOrCreateOspf();
     ospf.setOspfArea(0L);
 
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
@@ -1735,7 +1648,7 @@ public final class CumulusConversionsTest {
 
     Map<String, org.batfish.datamodel.Interface> ifaceMap =
         ImmutableMap.of(viIface.getName(), viIface);
-    addOspfInterfaces(concatenatedConfiguration, ifaceMap, "1", new Warnings());
+    addOspfInterfaces(_oob, _frr, ifaceMap, "1", new Warnings());
 
     // default dead interval
     assertThat(viIface.getOspfSettings().getProcess(), equalTo("1"));
@@ -1743,9 +1656,6 @@ public final class CumulusConversionsTest {
 
   @Test
   public void testAddOspfInterfaces_NoInterface() {
-    CumulusConcatenatedConfiguration concatenatedConfiguration =
-        new CumulusConcatenatedConfiguration();
-
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
     org.batfish.datamodel.Interface viIface =
         org.batfish.datamodel.Interface.builder()
@@ -1756,26 +1666,18 @@ public final class CumulusConversionsTest {
 
     Map<String, org.batfish.datamodel.Interface> ifaceMap =
         ImmutableMap.of(viIface.getName(), viIface);
-    addOspfInterfaces(concatenatedConfiguration, ifaceMap, "1", new Warnings());
+    addOspfInterfaces(_oob, _frr, ifaceMap, "1", new Warnings());
 
     assertNull(viIface.getOspfSettings());
   }
 
   @Test
   public void testComputeOspfProcess_HasArea() {
-    CumulusConcatenatedConfiguration concatenatedConfiguration =
-        new CumulusConcatenatedConfiguration();
-    concatenatedConfiguration
-        .getFrrConfiguration()
-        .getOrCreateInterface("iface")
-        .getOrCreateOspf()
-        .setOspfArea(1L);
-    OspfVrf vsVrf =
-        concatenatedConfiguration.getFrrConfiguration().getOrCreateOspfProcess().getDefaultVrf();
+    _frr.getOrCreateInterface("iface").getOrCreateOspf().setOspfArea(1L);
+    OspfVrf vsVrf = _frr.getOspfProcess().getDefaultVrf();
     Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
 
-    SortedMap<Long, OspfArea> areas =
-        computeOspfAreas(c, concatenatedConfiguration, vsVrf, ImmutableList.of("iface"));
+    SortedMap<Long, OspfArea> areas = computeOspfAreas(c, _frr, vsVrf, ImmutableList.of("iface"));
     assertThat(
         areas,
         equalTo(
@@ -1785,28 +1687,20 @@ public final class CumulusConversionsTest {
 
   @Test
   public void testComputeOspfProcess_NoArea() {
-    CumulusConcatenatedConfiguration concatenatedConfiguration =
-        new CumulusConcatenatedConfiguration();
-    concatenatedConfiguration.getFrrConfiguration().getOrCreateInterface("iface").getOrCreateOspf();
-    OspfVrf vsVrf =
-        concatenatedConfiguration.getFrrConfiguration().getOrCreateOspfProcess().getDefaultVrf();
+    _frr.getOrCreateInterface("iface").getOrCreateOspf();
+    OspfVrf vsVrf = _frr.getOrCreateOspfProcess().getDefaultVrf();
     Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
 
-    SortedMap<Long, OspfArea> areas =
-        computeOspfAreas(c, concatenatedConfiguration, vsVrf, ImmutableList.of("iface"));
+    SortedMap<Long, OspfArea> areas = computeOspfAreas(c, _frr, vsVrf, ImmutableList.of("iface"));
     assertThat(areas, equalTo(ImmutableSortedMap.of()));
   }
 
   @Test
   public void testComputeOspfProcess_NoInterface() {
-    CumulusConcatenatedConfiguration concatenatedConfiguration =
-        new CumulusConcatenatedConfiguration();
-    OspfVrf vsVrf =
-        concatenatedConfiguration.getFrrConfiguration().getOrCreateOspfProcess().getDefaultVrf();
+    OspfVrf vsVrf = _frr.getOrCreateOspfProcess().getDefaultVrf();
     Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
 
-    SortedMap<Long, OspfArea> areas =
-        computeOspfAreas(c, concatenatedConfiguration, vsVrf, ImmutableList.of("iface"));
+    SortedMap<Long, OspfArea> areas = computeOspfAreas(c, _frr, vsVrf, ImmutableList.of("iface"));
     assertThat(areas, equalTo(ImmutableSortedMap.of()));
   }
 
