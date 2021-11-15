@@ -4,6 +4,7 @@ import static org.batfish.datamodel.AbstractRoute.PROP_METRIC;
 import static org.batfish.datamodel.BgpRoute.PROP_AS_PATH;
 import static org.batfish.datamodel.BgpRoute.PROP_COMMUNITIES;
 import static org.batfish.datamodel.BgpRoute.PROP_LOCAL_PREFERENCE;
+import static org.batfish.datamodel.OriginMechanism.LEARNED;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_NEXT_HOP_IP;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_ORIGINATOR_IP;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_ORIGIN_TYPE;
@@ -54,6 +55,7 @@ public class BgpRouteDiffTest {
     return BgpRoute.builder()
         .setNetwork(Prefix.ZERO)
         .setOriginatorIp(Ip.ZERO)
+        .setOriginMechanism(LEARNED)
         .setOriginType(OriginType.IGP)
         .setProtocol(RoutingProtocol.BGP);
   }

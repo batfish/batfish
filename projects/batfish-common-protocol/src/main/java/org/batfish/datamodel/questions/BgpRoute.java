@@ -2,6 +2,7 @@ package org.batfish.datamodel.questions;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.datamodel.OriginMechanism.LEARNED;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -15,6 +16,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
@@ -31,6 +33,7 @@ public final class BgpRoute {
   public static final String PROP_NETWORK = "network";
   public static final String PROP_NEXT_HOP_IP = "nextHopIp";
   public static final String PROP_ORIGINATOR_IP = "originatorIp";
+  public static final String PROP_ORIGIN_MECHANISM = "originMechanism";
   public static final String PROP_ORIGIN_TYPE = "originType";
   public static final String PROP_PROTOCOL = "protocol";
   public static final String PROP_SRC_PROTOCOL = "srcProtocol";
@@ -45,6 +48,7 @@ public final class BgpRoute {
   @Nonnull private final Prefix _network;
   @Nonnull private final Ip _nextHopIp;
   @Nonnull private final Ip _originatorIp;
+  @Nonnull private final OriginMechanism _originMechanism;
   @Nonnull private final OriginType _originType;
   @Nonnull private final RoutingProtocol _protocol;
   @Nullable private final RoutingProtocol _srcProtocol;
@@ -59,6 +63,7 @@ public final class BgpRoute {
       Prefix network,
       Ip nextHopIp,
       Ip originatorIp,
+      OriginMechanism originMechanism,
       OriginType originType,
       RoutingProtocol protocol,
       @Nullable RoutingProtocol srcProtocol,
@@ -71,6 +76,7 @@ public final class BgpRoute {
     _network = network;
     _nextHopIp = nextHopIp;
     _originatorIp = originatorIp;
+    _originMechanism = originMechanism;
     _originType = originType;
     _protocol = protocol;
     _srcProtocol = srcProtocol;
@@ -87,6 +93,7 @@ public final class BgpRoute {
       @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
       @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
       @Nullable @JsonProperty(PROP_ORIGINATOR_IP) Ip originatorIp,
+      @Nullable @JsonProperty(PROP_ORIGIN_MECHANISM) OriginMechanism originMechanism,
       @Nullable @JsonProperty(PROP_ORIGIN_TYPE) OriginType originType,
       @Nullable @JsonProperty(PROP_PROTOCOL) RoutingProtocol protocol,
       @Nullable @JsonProperty(PROP_SRC_PROTOCOL) RoutingProtocol srcProtocol,
@@ -106,6 +113,7 @@ public final class BgpRoute {
         network,
         firstNonNull(nextHopIp, Route.UNSET_ROUTE_NEXT_HOP_IP),
         originatorIp,
+        firstNonNull(originMechanism, LEARNED),
         originType,
         protocol,
         srcProtocol,
@@ -154,6 +162,12 @@ public final class BgpRoute {
   }
 
   @Nonnull
+  @JsonProperty(PROP_ORIGIN_MECHANISM)
+  public OriginMechanism getOriginMechanism() {
+    return _originMechanism;
+  }
+
+  @Nonnull
   @JsonProperty(PROP_ORIGIN_TYPE)
   public OriginType getOriginType() {
     return _originType;
@@ -199,6 +213,7 @@ public final class BgpRoute {
         && Objects.equals(_network, bgpRoute._network)
         && Objects.equals(_nextHopIp, bgpRoute._nextHopIp)
         && Objects.equals(_originatorIp, bgpRoute._originatorIp)
+        && _originMechanism == bgpRoute._originMechanism
         && _originType == bgpRoute._originType
         && _protocol == bgpRoute._protocol
         && _srcProtocol == bgpRoute._srcProtocol;
@@ -214,9 +229,10 @@ public final class BgpRoute {
         _network,
         _nextHopIp,
         _originatorIp,
-        _originType,
-        _protocol,
-        _srcProtocol,
+        _originMechanism.ordinal(),
+        _originType.ordinal(),
+        _protocol.ordinal(),
+        _srcProtocol != null ? _srcProtocol.ordinal() : null,
         _tag,
         _weight);
   }
@@ -235,6 +251,7 @@ public final class BgpRoute {
         .setNextHopIp(_nextHopIp)
         .setProtocol(_protocol)
         .setOriginatorIp(_originatorIp)
+        .setOriginMechanism(_originMechanism)
         .setOriginType(_originType)
         .setSrcProtocol(_srcProtocol)
         .setTag(_tag)
@@ -252,6 +269,7 @@ public final class BgpRoute {
     @Nullable private Prefix _network;
     @Nullable private Ip _nextHopIp;
     @Nullable private Ip _originatorIp;
+    @Nullable private OriginMechanism _originMechanism;
     @Nullable private OriginType _originType;
     @Nullable private RoutingProtocol _protocol;
     @Nullable private RoutingProtocol _srcProtocol;
@@ -278,6 +296,7 @@ public final class BgpRoute {
           _network,
           _nextHopIp,
           _originatorIp,
+          firstNonNull(_originMechanism, LEARNED),
           _originType,
           _protocol,
           _srcProtocol,
@@ -320,6 +339,11 @@ public final class BgpRoute {
       return this;
     }
 
+    public Builder setOriginMechanism(OriginMechanism originMechanism) {
+      _originMechanism = originMechanism;
+      return this;
+    }
+
     public Builder setOriginType(OriginType originType) {
       _originType = originType;
       return this;
@@ -357,6 +381,7 @@ public final class BgpRoute {
         .add("localPreference", _localPreference)
         .add("nextHopIp", _nextHopIp)
         .add("originatorIp", _originatorIp)
+        .add("originMechanism", _originMechanism)
         .add("originType", _originType)
         .add("protocol", _protocol)
         .add("srcProtocol", _srcProtocol)

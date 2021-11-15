@@ -2,6 +2,8 @@ package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.datamodel.OriginMechanism.NETWORK;
+import static org.batfish.datamodel.OriginMechanism.REDISTRIBUTE;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -38,6 +40,11 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
     public EvpnType3Route build() {
       checkArgument(_vniIp != null, "Missing %s", PROP_VNI_IP);
       checkArgument(_originatorIp != null, "Missing %s", PROP_ORIGINATOR_IP);
+      checkArgument(_originMechanism != null, "Missing %s", PROP_ORIGIN_MECHANISM);
+      checkArgument(
+          _srcProtocol != null || (_originMechanism != NETWORK && _originMechanism != REDISTRIBUTE),
+          "Local routes must have a source protocol");
+
       checkArgument(_originType != null, "Missing %s", PROP_ORIGIN_TYPE);
       checkArgument(_protocol != null, "Missing %s", PROP_PROTOCOL);
       checkArgument(_routeDistinguisher != null, "Missing %s", PROP_ROUTE_DISTINGUISHER);
@@ -53,6 +60,7 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
           getNonForwarding(),
           getNonRouting(),
           _originatorIp,
+          _originMechanism,
           _originType,
           _protocol,
           _receivedFromIp,
@@ -99,6 +107,7 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
       @Nullable @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface,
       @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
       @Nullable @JsonProperty(PROP_ORIGINATOR_IP) Ip originatorIp,
+      @Nullable @JsonProperty(PROP_ORIGIN_MECHANISM) OriginMechanism originMechanism,
       @Nullable @JsonProperty(PROP_ORIGIN_TYPE) OriginType originType,
       @Nullable @JsonProperty(PROP_PROTOCOL) RoutingProtocol protocol,
       @Nullable @JsonProperty(PROP_RECEIVED_FROM_IP) Ip receivedFromIp,
@@ -110,6 +119,10 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
       @Nullable @JsonProperty(PROP_VNI_IP) Ip vniIp,
       @JsonProperty(PROP_WEIGHT) int weight) {
     checkArgument(originatorIp != null, "Missing %s", PROP_ORIGINATOR_IP);
+    checkArgument(originMechanism != null, "Missing %s", PROP_ORIGIN_MECHANISM);
+    checkArgument(
+        srcProtocol != null || (originMechanism != NETWORK && originMechanism != REDISTRIBUTE),
+        "Local routes must have a source protocol");
     checkArgument(originType != null, "Missing %s", PROP_ORIGIN_TYPE);
     checkArgument(protocol != null, "Missing %s", PROP_PROTOCOL);
     checkArgument(routeDistinguisher != null, "Missing %s", PROP_ROUTE_DISTINGUISHER);
@@ -125,6 +138,7 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
         false,
         false,
         originatorIp,
+        originMechanism,
         originType,
         protocol,
         receivedFromIp,
@@ -147,6 +161,7 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
       boolean nonForwarding,
       boolean nonRouting,
       Ip originatorIp,
+      OriginMechanism originMechanism,
       OriginType originType,
       RoutingProtocol protocol,
       @Nullable Ip receivedFromIp,
@@ -167,6 +182,7 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
         originatorIp,
         clusterList,
         receivedFromRouteReflectorClient,
+        originMechanism,
         originType,
         protocol,
         receivedFromIp,
@@ -208,6 +224,7 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
         .setMetric(_med)
         .setNextHop(_nextHop)
         .setOriginatorIp(_originatorIp)
+        .setOriginMechanism(_originMechanism)
         .setOriginType(_originType)
         .setProtocol(_protocol)
         .setReceivedFromIp(_receivedFromIp)
@@ -242,6 +259,7 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
         && Objects.equals(_communities, other._communities)
         && Objects.equals(_nextHop, other._nextHop)
         && Objects.equals(_originatorIp, other._originatorIp)
+        && _originMechanism == other._originMechanism
         && _originType == other._originType
         && _protocol == other._protocol
         && Objects.equals(_receivedFromIp, other._receivedFromIp)
@@ -264,6 +282,7 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
       h = h * 31 + _network.hashCode();
       h = h * 31 + _nextHop.hashCode();
       h = h * 31 + _originatorIp.hashCode();
+      h = h * 31 + _originMechanism.ordinal();
       h = h * 31 + _originType.ordinal();
       h = h * 31 + _protocol.ordinal();
       h = h * 31 + Objects.hashCode(_receivedFromIp);

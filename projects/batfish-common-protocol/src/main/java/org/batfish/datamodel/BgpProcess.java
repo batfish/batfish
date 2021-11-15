@@ -3,6 +3,8 @@ package org.batfish.datamodel;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
+import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.NO_PREFERENCE;
+import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -28,6 +30,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.bgp.BgpAggregate;
 import org.batfish.datamodel.bgp.BgpConfederation;
+import org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker;
+import org.batfish.datamodel.bgp.NextHopIpTieBreaker;
 
 /** Represents a bgp process on a router */
 public class BgpProcess implements Serializable {
@@ -48,12 +52,25 @@ public class BgpProcess implements Serializable {
     @Nullable private Vrf _vrf;
     @Nullable private String _networkPolicy;
     @Nullable private String _redistributionPolicy;
+    @Nullable private LocalOriginationTypeTieBreaker _localOriginationTypeTieBreaker;
+    @Nullable private NextHopIpTieBreaker _networkNextHopIpTieBreaker;
+    @Nullable private NextHopIpTieBreaker _redistributeNextHopIpTieBreaker;
 
     public BgpProcess build() {
       checkArgument(_routerId != null, "Missing %s", PROP_ROUTER_ID);
       checkArgument(_ebgpAdminCost != null, "Missing %s", PROP_EBGP_ADMIN_COST);
       checkArgument(_ibgpAdminCost != null, "Missing %s", PROP_IBGP_ADMIN_COST);
       checkArgument(_localAdminCost != null, "Missing %s", PROP_LOCAL_ADMIN_COST);
+      checkArgument(
+          _localOriginationTypeTieBreaker != null,
+          "Missing %s",
+          PROP_LOCAL_ORIGINATION_TYPE_TIE_BREAKER);
+      checkArgument(
+          _networkNextHopIpTieBreaker != null, "Missing %s", PROP_NETWORK_NEXT_HOP_IP_TIE_BREAKER);
+      checkArgument(
+          _redistributeNextHopIpTieBreaker != null,
+          "Missing %s",
+          PROP_REDISTRIBUTE_NEXT_HOP_IP_TIE_BREAKER);
       checkArgument(
           _networkPolicy == null || _redistributionPolicy != null,
           "Impossible to have %s without %s",
@@ -67,7 +84,10 @@ public class BgpProcess implements Serializable {
               _localAdminCost,
               _confederation,
               _networkPolicy,
-              _redistributionPolicy);
+              _redistributionPolicy,
+              _localOriginationTypeTieBreaker,
+              _networkNextHopIpTieBreaker,
+              _redistributeNextHopIpTieBreaker);
       if (_vrf != null) {
         _vrf.setBgpProcess(bgpProcess);
       }
@@ -122,6 +142,24 @@ public class BgpProcess implements Serializable {
       _redistributionPolicy = redistributionPolicy;
       return this;
     }
+
+    public @Nonnull Builder setLocalOriginationTypeTieBreaker(
+        LocalOriginationTypeTieBreaker localOriginationTypeTieBreaker) {
+      _localOriginationTypeTieBreaker = localOriginationTypeTieBreaker;
+      return this;
+    }
+
+    public @Nonnull Builder setNetworkNextHopIpTieBreaker(
+        NextHopIpTieBreaker networkNextHopIpTieBreaker) {
+      _networkNextHopIpTieBreaker = networkNextHopIpTieBreaker;
+      return this;
+    }
+
+    public @Nonnull Builder setRedistributeNextHopIpTieBreaker(
+        @Nullable NextHopIpTieBreaker redistributeNextHopIpTieBreaker) {
+      _redistributeNextHopIpTieBreaker = redistributeNextHopIpTieBreaker;
+      return this;
+    }
   }
 
   private class ClusterIdsSupplier implements Serializable, Supplier<Set<Long>> {
@@ -153,6 +191,11 @@ public class BgpProcess implements Serializable {
   private static final String PROP_CLUSTER_LIST_AS_IGP_COST_DEPRECATED = "clusterListAsIgpCost";
   private static final String PROP_INDEPENDENT_NETWORK_POLICY = "independentNetworkPolicy";
   private static final String PROP_REDISTRIBUTION_POLICY = "redistributionPolicy";
+  private static final String PROP_LOCAL_ORIGINATION_TYPE_TIE_BREAKER =
+      "localOriginationTypeTieBreaker";
+  private static final String PROP_NETWORK_NEXT_HOP_IP_TIE_BREAKER = "networkNextHopIpTieBreaker";
+  private static final String PROP_REDISTRIBUTE_NEXT_HOP_IP_TIE_BREAKER =
+      "redistributeNextHopIpTieBreaker";
 
   @Nullable private BgpConfederation _confederation;
   private final int _ebgpAdminCost;
@@ -190,10 +233,24 @@ public class BgpProcess implements Serializable {
 
   @Nullable private String _redistributionPolicy;
 
+  private final @Nonnull LocalOriginationTypeTieBreaker _localOriginationTypeTieBreaker;
+  private final @Nonnull NextHopIpTieBreaker _networkNextHopIpTieBreaker;
+  private final @Nonnull NextHopIpTieBreaker _redistributeNextHopIpTieBreaker;
+
   /** Constructs a BgpProcess with the given router ID and admin costs */
   public BgpProcess(
       @Nonnull Ip routerId, int ebgpAdminCost, int ibgpAdminCost, int localAdminCost) {
-    this(routerId, ebgpAdminCost, ibgpAdminCost, localAdminCost, null, null, null);
+    this(
+        routerId,
+        ebgpAdminCost,
+        ibgpAdminCost,
+        localAdminCost,
+        null,
+        null,
+        null,
+        NO_PREFERENCE,
+        HIGHEST_NEXT_HOP_IP,
+        HIGHEST_NEXT_HOP_IP);
   }
 
   private BgpProcess(
@@ -203,7 +260,10 @@ public class BgpProcess implements Serializable {
       int localAdminCost,
       @Nullable BgpConfederation confederation,
       @Nullable String independentNetworkPolicy,
-      @Nullable String redistributionPolicy) {
+      @Nullable String redistributionPolicy,
+      @Nonnull LocalOriginationTypeTieBreaker localOriginationTypeTieBreaker,
+      @Nonnull NextHopIpTieBreaker networkNextHopIpTieBreaker,
+      @Nonnull NextHopIpTieBreaker redistributeNextHopIpTieBreaker) {
     _activeNeighbors = new TreeMap<>();
     _aggregates = ImmutableMap.of();
     _confederation = confederation;
@@ -219,6 +279,9 @@ public class BgpProcess implements Serializable {
     _clusterListAsIbgpCost = false;
     _independentNetworkPolicy = independentNetworkPolicy;
     _redistributionPolicy = redistributionPolicy;
+    _localOriginationTypeTieBreaker = localOriginationTypeTieBreaker;
+    _networkNextHopIpTieBreaker = networkNextHopIpTieBreaker;
+    _redistributeNextHopIpTieBreaker = redistributeNextHopIpTieBreaker;
   }
 
   @JsonCreator
@@ -229,11 +292,27 @@ public class BgpProcess implements Serializable {
       @Nullable @JsonProperty(PROP_IBGP_ADMIN_COST) Integer ibgpAdminCost,
       @Nullable @JsonProperty(PROP_LOCAL_ADMIN_COST) Integer localAdminCost,
       @Nullable @JsonProperty(PROP_INDEPENDENT_NETWORK_POLICY) String networkPolicy,
-      @Nullable @JsonProperty(PROP_REDISTRIBUTION_POLICY) String redistributionPolicy) {
+      @Nullable @JsonProperty(PROP_REDISTRIBUTION_POLICY) String redistributionPolicy,
+      @Nullable @JsonProperty(PROP_LOCAL_ORIGINATION_TYPE_TIE_BREAKER)
+          LocalOriginationTypeTieBreaker localOriginationTypeTieBreaker,
+      @Nullable @JsonProperty(PROP_NETWORK_NEXT_HOP_IP_TIE_BREAKER)
+          NextHopIpTieBreaker networkNextHopIpTieBreaker,
+      @Nullable @JsonProperty(PROP_REDISTRIBUTE_NEXT_HOP_IP_TIE_BREAKER)
+          NextHopIpTieBreaker redistributeNextHopIpTieBreaker) {
     checkArgument(routerId != null, "Missing %s", PROP_ROUTER_ID);
     checkArgument(ebgpAdminCost != null, "Missing %s", PROP_EBGP_ADMIN_COST);
     checkArgument(ibgpAdminCost != null, "Missing %s", PROP_IBGP_ADMIN_COST);
     checkArgument(localAdminCost != null, "Missing %s", PROP_LOCAL_ADMIN_COST);
+    checkArgument(
+        localOriginationTypeTieBreaker != null,
+        "Missing %s",
+        PROP_LOCAL_ORIGINATION_TYPE_TIE_BREAKER);
+    checkArgument(
+        networkNextHopIpTieBreaker != null, "Missing %s", PROP_NETWORK_NEXT_HOP_IP_TIE_BREAKER);
+    checkArgument(
+        redistributeNextHopIpTieBreaker != null,
+        "Missing %s",
+        PROP_REDISTRIBUTE_NEXT_HOP_IP_TIE_BREAKER);
     // In the absence of provided values, default to Cisco IOS values
     return new BgpProcess(
         routerId,
@@ -242,7 +321,10 @@ public class BgpProcess implements Serializable {
         localAdminCost,
         confederation,
         networkPolicy,
-        redistributionPolicy);
+        redistributionPolicy,
+        localOriginationTypeTieBreaker,
+        networkNextHopIpTieBreaker,
+        redistributeNextHopIpTieBreaker);
   }
 
   public static Builder builder() {
@@ -527,5 +609,23 @@ public class BgpProcess implements Serializable {
 
   public void setRedistributionPolicy(@Nullable String redistributionPolicy) {
     _redistributionPolicy = redistributionPolicy;
+  }
+
+  /** Tie-breaking mode for two local routes of different origin mechanisms. */
+  @JsonProperty(PROP_LOCAL_ORIGINATION_TYPE_TIE_BREAKER)
+  public @Nonnull LocalOriginationTypeTieBreaker getLocalOriginationTypeTieBreaker() {
+    return _localOriginationTypeTieBreaker;
+  }
+
+  /** Whether to prefer lowest or highest NHIP for network local routes. */
+  @JsonProperty(PROP_NETWORK_NEXT_HOP_IP_TIE_BREAKER)
+  public @Nonnull NextHopIpTieBreaker getNetworkNextHopIpTieBreaker() {
+    return _networkNextHopIpTieBreaker;
+  }
+
+  /** Whether to prefer lowest or highest NHIP for redistribute local routes. */
+  @JsonProperty(PROP_REDISTRIBUTE_NEXT_HOP_IP_TIE_BREAKER)
+  public @Nonnull NextHopIpTieBreaker getRedistributeNextHopIpTieBreaker() {
+    return _redistributeNextHopIpTieBreaker;
   }
 }
