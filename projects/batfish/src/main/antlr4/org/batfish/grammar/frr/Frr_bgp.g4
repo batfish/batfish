@@ -437,7 +437,7 @@ sbafin_activate
 
 sbafin_allowas_in
 :
-  ALLOWAS_IN count = UINT8 NEWLINE
+  ALLOWAS_IN (count = UINT8)? NEWLINE
 ;
 
 sbafin_default_originate
