@@ -820,6 +820,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
     return _portsConfiguration;
   }
 
+  @Override
   @Nonnull
   public Map<String, Vxlan> getVxlans() {
     return _interfacesConfiguration.getInterfaces().values().stream()
