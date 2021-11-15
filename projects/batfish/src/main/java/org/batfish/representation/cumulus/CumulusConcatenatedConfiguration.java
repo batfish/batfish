@@ -201,7 +201,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
 
     convertVxlans(c, this, vniToVrf, loopbackClagVxlanAnycastIp, loopbackVxlanLocalTunnelIp, _w);
 
-    convertOspfProcess(c, this, _w);
+    convertOspfProcess(c, this, _frrConfiguration, _w);
     addOspfUnnumberedLLAs(c);
     convertBgpProcess(c, this, _w);
 
@@ -836,13 +836,6 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
     return _frrConfiguration.getBgpProcess();
   }
 
-  public Optional<OspfInterface> getOspfInterface(String ifaceName) {
-    if (!_frrConfiguration.getInterfaces().containsKey(ifaceName)) {
-      return Optional.empty();
-    }
-    return Optional.ofNullable(_frrConfiguration.getInterfaces().get(ifaceName).getOspf());
-  }
-
   @Nullable
   public Vrf getVrf(String vrfName) {
     return _frrConfiguration.getVrfs().get(vrfName);
@@ -865,10 +858,6 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
                 InterfacesInterface::getName, InterfacesInterface::getClagSettings));
   }
 
-  public OspfProcess getOspfProcess() {
-    return _frrConfiguration.getOspfProcess();
-  }
-
   @Override
   public boolean hasVrf(String vrfName) {
     return _interfacesConfiguration.hasVrf(vrfName);
@@ -885,6 +874,14 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
         _interfacesConfiguration.getInterfaces().containsKey(ifaceName),
         "Unknown interface " + ifaceName);
     return _interfacesConfiguration.getInterfaces().get(ifaceName).getVrf();
+  }
+
+  @Override
+  public List<ConcreteInterfaceAddress> getInterfaceAddresses(String ifaceName) {
+    checkArgument(
+        _interfacesConfiguration.getInterfaces().containsKey(ifaceName),
+        "Unknown interface " + ifaceName);
+    return _interfacesConfiguration.getInterfaces().get(ifaceName).getAddresses();
   }
 
   public static Builder builder() {
