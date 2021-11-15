@@ -1,0 +1,155 @@
+package org.batfish.datamodel;
+
+import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
+import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Objects;
+import java.util.Set;
+import java.util.SortedSet;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import org.batfish.datamodel.bgp.RouteDistinguisher;
+import org.batfish.datamodel.bgp.community.ExtendedCommunity;
+
+/** VRF leaking config that leaks routes from a BGPv4 RIB into an EVPN RIB */
+public final class Bgpv4ToEvpnVrfLeakConfig implements Serializable {
+
+  /** Additional route-targets to attach to a leaked route, on top of any set by policy. */
+  @JsonIgnore
+  @Nonnull
+  public Set<ExtendedCommunity> getAttachRouteTargets() {
+    return _attachRouteTargets;
+  }
+
+  @JsonProperty(PROP_ATTACH_ROUTE_TARGETS)
+  @Nonnull
+  private SortedSet<ExtendedCommunity> getAttachRouteTargetsSorted() {
+    return ImmutableSortedSet.copyOf(Comparator.naturalOrder(), _attachRouteTargets);
+  }
+
+  /** Name of the source VRF from which to copy routes. The source VRF must have a BGP RIB. */
+  @Nonnull
+  @JsonProperty(PROP_IMPORT_FROM_VRF)
+  public String getImportFromVrf() {
+    return _importFromVrf;
+  }
+
+  /** Route distinguisher of the source VRF from which to copy routes. */
+  @Nonnull
+  @JsonProperty(PROP_SRC_VRF_ROUTE_DISTINGUISHER)
+  public RouteDistinguisher getSrcVrfRouteDistinguisher() {
+    return _srcVrfRouteDistinguisher;
+  }
+
+  public static Builder builder() {
+    return new Builder();
+  }
+
+  @Override
+  public boolean equals(@Nullable Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof Bgpv4ToEvpnVrfLeakConfig)) {
+      return false;
+    }
+    Bgpv4ToEvpnVrfLeakConfig that = (Bgpv4ToEvpnVrfLeakConfig) o;
+    return _attachRouteTargets.equals(that._attachRouteTargets)
+        && _importFromVrf.equals(that._importFromVrf)
+        && _srcVrfRouteDistinguisher.equals(that._srcVrfRouteDistinguisher);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_attachRouteTargets, _importFromVrf, _srcVrfRouteDistinguisher);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(Bgpv4ToEvpnVrfLeakConfig.class)
+        .omitNullValues()
+        .add(PROP_IMPORT_FROM_VRF, _importFromVrf)
+        .add(PROP_SRC_VRF_ROUTE_DISTINGUISHER, _srcVrfRouteDistinguisher)
+        .add(PROP_ATTACH_ROUTE_TARGETS, _attachRouteTargets)
+        .toString();
+  }
+
+  private Bgpv4ToEvpnVrfLeakConfig(
+      String importFromVrf,
+      RouteDistinguisher srcVrfRouteDistinguisher,
+      Set<ExtendedCommunity> attachRouteTargets) {
+    _attachRouteTargets = attachRouteTargets;
+    _importFromVrf = importFromVrf;
+    _srcVrfRouteDistinguisher = srcVrfRouteDistinguisher;
+  }
+
+  @JsonCreator
+  private static Bgpv4ToEvpnVrfLeakConfig create(
+      @Nullable @JsonProperty(PROP_ATTACH_ROUTE_TARGETS)
+          Iterable<ExtendedCommunity> attachRouteTargets,
+      @Nullable @JsonProperty(PROP_IMPORT_FROM_VRF) String importFromVrf,
+      @Nullable @JsonProperty(PROP_SRC_VRF_ROUTE_DISTINGUISHER)
+          RouteDistinguisher srcVrfRouteDistinguisher) {
+    return builder()
+        .setAttachRouteTargets(firstNonNull(attachRouteTargets, ImmutableSet.of()))
+        .setImportFromVrf(importFromVrf)
+        .setSrcVrfRouteDistinguisher(srcVrfRouteDistinguisher)
+        .build();
+  }
+
+  private static final String PROP_ATTACH_ROUTE_TARGETS = "attachRouteTargets";
+  private static final String PROP_IMPORT_FROM_VRF = "importFromVrf";
+  private static final String PROP_SRC_VRF_ROUTE_DISTINGUISHER = "srcVrfRouteDistinguisher";
+
+  @Nonnull private final Set<ExtendedCommunity> _attachRouteTargets;
+  @Nonnull private final String _importFromVrf;
+  @Nonnull private final RouteDistinguisher _srcVrfRouteDistinguisher;
+
+  public static final class Builder {
+    public Bgpv4ToEvpnVrfLeakConfig build() {
+      checkArgument(_importFromVrf != null, "Missing %s", PROP_IMPORT_FROM_VRF);
+      checkArgument(
+          _srcVrfRouteDistinguisher != null, "Missing %s", PROP_SRC_VRF_ROUTE_DISTINGUISHER);
+      return new Bgpv4ToEvpnVrfLeakConfig(
+          _importFromVrf, _srcVrfRouteDistinguisher, _attachRouteTargets);
+    }
+
+    @Nonnull
+    public Builder setAttachRouteTargets(Iterable<ExtendedCommunity> attachRouteTargets) {
+      _attachRouteTargets = ImmutableSet.copyOf(attachRouteTargets);
+      return this;
+    }
+
+    @Nonnull
+    public Builder setAttachRouteTargets(ExtendedCommunity... attachRouteTargets) {
+      return setAttachRouteTargets(Arrays.asList(attachRouteTargets));
+    }
+
+    public Builder setImportFromVrf(@Nullable String importFromVrf) {
+      _importFromVrf = importFromVrf;
+      return this;
+    }
+
+    public Builder setSrcVrfRouteDistinguisher(@Nullable RouteDistinguisher rd) {
+      _srcVrfRouteDistinguisher = rd;
+      return this;
+    }
+
+    @Nonnull private Set<ExtendedCommunity> _attachRouteTargets;
+    @Nullable private String _importFromVrf;
+    @Nullable private RouteDistinguisher _srcVrfRouteDistinguisher;
+
+    private Builder() {
+      _attachRouteTargets = ImmutableSet.of();
+    }
+  }
+}

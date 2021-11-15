@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.junit.Test;
 
 public class VrfLeakConfigTest {
@@ -17,6 +18,11 @@ public class VrfLeakConfigTest {
                   .setImportPolicy("p")
                   .setAdmin(0)
                   .setWeight(0)
+                  .build())
+          .addBgpv4ToEvpnVrfLeakConfig(
+              Bgpv4ToEvpnVrfLeakConfig.builder()
+                  .setImportFromVrf("v")
+                  .setSrcVrfRouteDistinguisher(RouteDistinguisher.from(0, 1L))
                   .build())
           .build();
   private static final VrfLeakConfig MAIN_RIB_LEAK_CONFIG =
@@ -50,16 +56,31 @@ public class VrfLeakConfigTest {
         .addEqualityGroup(bgp, bgp, bgpBuilder.build())
         .addEqualityGroup(mainRib, mainRib, mainRibBuilder.build())
         .addEqualityGroup(
-            bgpBuilder.addBgpVrfLeakConfig(
-                BgpVrfLeakConfig.builder()
-                    .setImportFromVrf("v")
-                    .setImportPolicy("p")
-                    .setAdmin(0)
-                    .setWeight(0)
-                    .build()))
+            bgpBuilder
+                .addBgpVrfLeakConfig(
+                    BgpVrfLeakConfig.builder()
+                        .setImportFromVrf("v")
+                        .setImportPolicy("p")
+                        .setAdmin(0)
+                        .setWeight(0)
+                        .build())
+                .build())
         .addEqualityGroup(
-            mainRibBuilder.addMainRibVrfLeakConfig(
-                MainRibVrfLeakConfig.builder().setImportFromVrf("v").setImportPolicy("p").build()))
+            mainRibBuilder
+                .addMainRibVrfLeakConfig(
+                    MainRibVrfLeakConfig.builder()
+                        .setImportFromVrf("v")
+                        .setImportPolicy("p")
+                        .build())
+                .build())
+        .addEqualityGroup(
+            mainRibBuilder
+                .addBgpv4ToEvpnVrfLeakConfig(
+                    Bgpv4ToEvpnVrfLeakConfig.builder()
+                        .setImportFromVrf("v")
+                        .setSrcVrfRouteDistinguisher(RouteDistinguisher.from(0, 1L))
+                        .build())
+                .build())
         .testEquals();
   }
 }

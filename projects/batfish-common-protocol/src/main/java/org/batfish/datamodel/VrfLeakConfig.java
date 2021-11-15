@@ -33,6 +33,21 @@ public class VrfLeakConfig implements Serializable {
         ImmutableList.<BgpVrfLeakConfig>builder().addAll(_bgpVrfLeakConfigs).add(c).build();
   }
 
+  /** VRF leak configs describing how routes should leak from BGPv4 RIBs to EVPN RIBs. */
+  @JsonProperty(PROP_BGPV4_TO_EVPN_VRF_LEAK_CONFIGS)
+  @Nonnull
+  public List<Bgpv4ToEvpnVrfLeakConfig> getBgpv4ToEvpnVrfLeakConfigs() {
+    return _bgpv4ToEvpnVrfLeakConfigs;
+  }
+
+  public void addBgpv4ToEvpnVrfLeakConfig(@Nonnull Bgpv4ToEvpnVrfLeakConfig c) {
+    _bgpv4ToEvpnVrfLeakConfigs =
+        ImmutableList.<Bgpv4ToEvpnVrfLeakConfig>builder()
+            .addAll(_bgpv4ToEvpnVrfLeakConfigs)
+            .add(c)
+            .build();
+  }
+
   /**
    * Whether the node containing this leak configuration leaks routes between BGP RIBs or main RIBs.
    *
@@ -82,21 +97,24 @@ public class VrfLeakConfig implements Serializable {
     VrfLeakConfig that = (VrfLeakConfig) o;
     return _leakAsBgp == that._leakAsBgp
         && _bgpVrfLeakConfigs.equals(that._bgpVrfLeakConfigs)
+        && _bgpv4ToEvpnVrfLeakConfigs.equals(that._bgpv4ToEvpnVrfLeakConfigs)
         && _mainRibVrfLeakConfigs.equals(that._mainRibVrfLeakConfigs);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_leakAsBgp, _bgpVrfLeakConfigs, _mainRibVrfLeakConfigs);
+    return Objects.hash(
+        _leakAsBgp, _bgpVrfLeakConfigs, _bgpv4ToEvpnVrfLeakConfigs, _mainRibVrfLeakConfigs);
   }
 
   public VrfLeakConfig(boolean leakAsBgp) {
-    this(leakAsBgp, ImmutableList.of(), ImmutableList.of());
+    this(leakAsBgp, ImmutableList.of(), ImmutableList.of(), ImmutableList.of());
   }
 
   private VrfLeakConfig(
       boolean leakAsBgp,
       List<BgpVrfLeakConfig> bgpVrfLeakConfigs,
+      List<Bgpv4ToEvpnVrfLeakConfig> bgpv4ToEvpnVrfLeakConfigs,
       List<MainRibVrfLeakConfig> mainRibVrfLeakConfigs) {
     if (leakAsBgp) {
       checkArgument(
@@ -109,33 +127,44 @@ public class VrfLeakConfig implements Serializable {
     }
     _leakAsBgp = leakAsBgp;
     _bgpVrfLeakConfigs = ImmutableList.copyOf(bgpVrfLeakConfigs);
+    _bgpv4ToEvpnVrfLeakConfigs = bgpv4ToEvpnVrfLeakConfigs;
     _mainRibVrfLeakConfigs = ImmutableList.copyOf(mainRibVrfLeakConfigs);
   }
 
   @JsonCreator
   private static VrfLeakConfig create(
       @Nullable @JsonProperty(PROP_BGP_VRF_LEAK_CONFIGS) List<BgpVrfLeakConfig> bgpVrfLeakConfigs,
+      @Nullable @JsonProperty(PROP_BGPV4_TO_EVPN_VRF_LEAK_CONFIGS)
+          List<Bgpv4ToEvpnVrfLeakConfig> bgpv4ToEvpnVrfLeakConfigs,
       @Nullable @JsonProperty(PROP_LEAK_AS_BGP) Boolean leakAsBgp,
       @Nullable @JsonProperty(PROP_MAIN_RIB_VRF_LEAK_CONFIGS)
           List<MainRibVrfLeakConfig> mainRibVrfLeakConfigs) {
     return new VrfLeakConfig(
         firstNonNull(leakAsBgp, false),
         firstNonNull(bgpVrfLeakConfigs, ImmutableList.of()),
+        firstNonNull(bgpv4ToEvpnVrfLeakConfigs, ImmutableList.of()),
         firstNonNull(mainRibVrfLeakConfigs, ImmutableList.of()));
   }
 
   private static final String PROP_BGP_VRF_LEAK_CONFIGS = "bgpVrfLeakConfigs";
+  private static final String PROP_BGPV4_TO_EVPN_VRF_LEAK_CONFIGS = "bgpv4ToEvpnVrfLeakConfigs";
   private static final String PROP_LEAK_AS_BGP = "leakAsBgp";
   private static final String PROP_MAIN_RIB_VRF_LEAK_CONFIGS = "mainRibVrfLeakConfigs";
 
   private final boolean _leakAsBgp;
   private @Nonnull List<BgpVrfLeakConfig> _bgpVrfLeakConfigs;
+  private @Nonnull List<Bgpv4ToEvpnVrfLeakConfig> _bgpv4ToEvpnVrfLeakConfigs;
   private @Nonnull List<MainRibVrfLeakConfig> _mainRibVrfLeakConfigs;
 
   public static final class Builder {
 
     public Builder addBgpVrfLeakConfig(@Nonnull BgpVrfLeakConfig c) {
       _bgpVrfLeakConfigs.add(c);
+      return this;
+    }
+
+    public Builder addBgpv4ToEvpnVrfLeakConfig(@Nonnull Bgpv4ToEvpnVrfLeakConfig c) {
+      _bgpv4ToEvpnVrfLeakConfigs.add(c);
       return this;
     }
 
@@ -146,7 +175,10 @@ public class VrfLeakConfig implements Serializable {
 
     public VrfLeakConfig build() {
       return new VrfLeakConfig(
-          _leakAsBgp, _bgpVrfLeakConfigs.build(), _mainRibVrfLeakConfigs.build());
+          _leakAsBgp,
+          _bgpVrfLeakConfigs.build(),
+          _bgpv4ToEvpnVrfLeakConfigs.build(),
+          _mainRibVrfLeakConfigs.build());
     }
 
     private Builder(boolean leakAsBgp) {
@@ -155,6 +187,8 @@ public class VrfLeakConfig implements Serializable {
 
     private final boolean _leakAsBgp;
     private @Nonnull ImmutableList.Builder<BgpVrfLeakConfig> _bgpVrfLeakConfigs =
+        ImmutableList.builder();
+    private @Nonnull ImmutableList.Builder<Bgpv4ToEvpnVrfLeakConfig> _bgpv4ToEvpnVrfLeakConfigs =
         ImmutableList.builder();
     private @Nonnull ImmutableList.Builder<MainRibVrfLeakConfig> _mainRibVrfLeakConfigs =
         ImmutableList.builder();
