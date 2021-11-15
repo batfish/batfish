@@ -218,7 +218,8 @@ public class FrrGrammarTest {
         Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     ParseTreeWalker walker = new BatfishParseTreeWalker(parser);
     FrrConfigurationBuilder cb =
-        new FrrConfigurationBuilder(_config, parser, _warnings, src, new SilentSyntaxCollection());
+        new FrrConfigurationBuilder(
+            _config, _config, _frr, parser, _warnings, src, new SilentSyntaxCollection());
     walker.walk(cb, tree);
 
     // SerializationUtils.clone will clear transient state, which we save and restore.
