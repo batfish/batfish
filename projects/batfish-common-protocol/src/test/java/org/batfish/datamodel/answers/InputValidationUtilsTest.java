@@ -260,4 +260,38 @@ public class InputValidationUtilsTest {
     assertEquals(
         Validity.INVALID, validateQuery("icmp", Type.SINGLE_APPLICATION_SPEC).getValidity());
   }
+
+  @Test
+  public void testNodeName() {
+    CompletionMetadata completionMetadata =
+        CompletionMetadata.builder().setNodes(ImmutableSet.of("n1")).build();
+
+    // node exists --> VALID
+    {
+      InputValidationNotes result =
+          InputValidationUtils.validate(
+              Type.NODE_NAME, "n1", completionMetadata, emptyNodeRolesData, emptyReferenceLibrary);
+      assertEquals(Validity.VALID, result.getValidity());
+    }
+
+    // check is case-insensitive
+    {
+      InputValidationNotes result =
+          InputValidationUtils.validate(
+              Type.NODE_NAME, "N1", completionMetadata, emptyNodeRolesData, emptyReferenceLibrary);
+      assertEquals(Validity.VALID, result.getValidity());
+    }
+
+    // node does not exist --> NO_MATCH
+    {
+      InputValidationNotes result =
+          InputValidationUtils.validate(
+              Type.NODE_NAME,
+              "asdf",
+              completionMetadata,
+              emptyNodeRolesData,
+              emptyReferenceLibrary);
+      assertEquals(Validity.NO_MATCH, result.getValidity());
+    }
+  }
 }
