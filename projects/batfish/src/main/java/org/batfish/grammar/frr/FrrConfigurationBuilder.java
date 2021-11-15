@@ -213,13 +213,11 @@ import org.batfish.representation.cumulus.BgpProcess;
 import org.batfish.representation.cumulus.BgpRedistributionPolicy;
 import org.batfish.representation.cumulus.BgpVrf;
 import org.batfish.representation.cumulus.BgpVrfAddressFamilyAggregateNetworkConfiguration;
-import org.batfish.representation.cumulus.CumulusConcatenatedConfiguration;
 import org.batfish.representation.cumulus.CumulusRoutingProtocol;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
 import org.batfish.representation.cumulus.FrrConfiguration;
 import org.batfish.representation.cumulus.FrrInterface;
-import org.batfish.representation.cumulus.InterfacesInterface;
 import org.batfish.representation.cumulus.IpAsPathAccessList;
 import org.batfish.representation.cumulus.IpAsPathAccessListLine;
 import org.batfish.representation.cumulus.IpCommunityList;
@@ -235,6 +233,7 @@ import org.batfish.representation.cumulus.OspfNetworkArea;
 import org.batfish.representation.cumulus.OspfNetworkType;
 import org.batfish.representation.cumulus.OspfProcess;
 import org.batfish.representation.cumulus.OspfVrf;
+import org.batfish.representation.cumulus.OutOfBandConfiguration;
 import org.batfish.representation.cumulus.RedistributionPolicy;
 import org.batfish.representation.cumulus.RouteMap;
 import org.batfish.representation.cumulus.RouteMapCall;
@@ -261,6 +260,7 @@ import org.batfish.representation.cumulus.RouteMapSetTag;
 import org.batfish.representation.cumulus.RouteMapSetWeight;
 import org.batfish.representation.cumulus.StaticRoute;
 import org.batfish.representation.cumulus.Vrf;
+import org.batfish.vendor.VendorConfiguration;
 
 public class FrrConfigurationBuilder extends FrrParserBaseListener implements SilentSyntaxListener {
   private static final IntegerSpace OSPF_AREA_RANGE_COST_SPACE =
@@ -268,7 +268,9 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   private static final IntegerSpace PREFIX_LENGTH_SPACE =
       IntegerSpace.of(Range.closed(0, Prefix.MAX_PREFIX_LENGTH));
 
-  private final CumulusConcatenatedConfiguration _c;
+  // The vendor config (e.g., cumulus) of which this FRR config is part of
+  private final VendorConfiguration _c;
+  private final OutOfBandConfiguration _oobConfiguration;
   private final FrrConfiguration _frr;
   private final FrrCombinedParser _parser;
   private final Warnings _w;
@@ -291,13 +293,16 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   private Set<String> _reverseInterfaceInitOrder;
 
   public FrrConfigurationBuilder(
-      CumulusConcatenatedConfiguration configuration,
+      VendorConfiguration configuration,
+      OutOfBandConfiguration oobConfiguration,
+      FrrConfiguration frrConfiguration,
       FrrCombinedParser parser,
       Warnings w,
       String fullText,
       SilentSyntaxCollection silentSyntax) {
     _c = configuration;
-    _frr = configuration.getFrrConfiguration();
+    _oobConfiguration = oobConfiguration;
+    _frr = frrConfiguration;
     _parser = parser;
     _w = w;
     _text = fullText;
@@ -309,10 +314,6 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   @Nonnull
   public SilentSyntaxCollection getSilentSyntax() {
     return _silentSyntax;
-  }
-
-  CumulusConcatenatedConfiguration getVendorConfiguration() {
-    return _c;
   }
 
   private @Nonnull StandardCommunity toStandardCommunity(Literal_standard_communityContext ctx) {
@@ -884,22 +885,18 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
       return;
     }
 
-    InterfacesInterface interfacesInterface =
-        _c.getInterfacesConfiguration().getInterfaces().get(name);
-
     if (ctx.VRF() != null) {
       // interface with non-default vrf
       // this is OK only if the VRF matches prior definition in the interfaces file or, if no prior
       // definition exists, the vrf is defined in FRR file
       String vrfName = ctx.vrf.getText();
-      if (interfacesInterface != null) {
-        if (!vrfName.equals(interfacesInterface.getVrf())) {
+      if (_oobConfiguration.hasInterface(name)) {
+        if (!vrfName.equals(_oobConfiguration.getInterfaceVrf(name))) {
           warn(
               ctx,
               String.format(
-                  "vrf %s of interface %s does not match previously-defined vrf %s in interfaces"
-                      + " file",
-                  vrfName, name, interfacesInterface.getVrf()));
+                  "vrf %s of interface %s does not match previously-defined vrf %s",
+                  vrfName, name, _oobConfiguration.getInterfaceVrf(name)));
           _currentInterface = new FrrInterface("dummy", "dummy");
           return;
         }
@@ -1455,7 +1452,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   @Override
   public void exitRonopi_interface_name(Ronopi_interface_nameContext ctx) {
     String ifaceName = ctx.name.getText();
-    if (!_c.getInterfacesConfiguration().getInterfaces().containsKey(ifaceName)
+    if (!_oobConfiguration.hasInterface(ifaceName)
         && !_frr.getInterfaces().containsKey(ifaceName)) {
       _w.addWarning(
           ctx, getFullText(ctx), _parser, String.format("interface %s is not defined", ifaceName));
@@ -1473,7 +1470,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   @Override
   public void exitRopi_interface_name(Ropi_interface_nameContext ctx) {
     String ifaceName = ctx.name.getText();
-    if (!_c.getInterfacesConfiguration().getInterfaces().containsKey(ifaceName)
+    if (!_oobConfiguration.hasInterface(ifaceName)
         && !_frr.getInterfaces().containsKey(ifaceName)) {
       _w.addWarning(
           ctx, getFullText(ctx), _parser, String.format("interface %s is not defined", ifaceName));
@@ -1722,7 +1719,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
             ? ctx.quoted.text != null ? ctx.quoted.text.getText() : ""
             : ctx.regex.getText();
     IpCommunityList communityList =
-        _c.getIpCommunityLists().computeIfAbsent(name, IpCommunityListExpanded::new);
+        _frr.getIpCommunityLists().computeIfAbsent(name, IpCommunityListExpanded::new);
     if (!(communityList instanceof IpCommunityListExpanded)) {
       warn(
           ctx,
@@ -1750,7 +1747,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
       return;
     }
     IpCommunityList communityList =
-        _c.getIpCommunityLists().computeIfAbsent(name, IpCommunityListStandard::new);
+        _frr.getIpCommunityLists().computeIfAbsent(name, IpCommunityListStandard::new);
     if (!(communityList instanceof IpCommunityListStandard)) {
       warn(
           ctx,
@@ -1809,8 +1806,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
       _frr.getStaticRoutes().add(route);
     } else {
       String vrfName = ctx.vrf.getText();
-      if (!_c.getInterfacesConfiguration().hasVrf(vrfName)
-          && !_frr.getVrfs().containsKey(vrfName)) {
+      if (!_oobConfiguration.hasVrf(vrfName) && !_frr.getVrfs().containsKey(vrfName)) {
         _w.redFlag(
             String.format("the static route is ignored since vrf %s is not defined", vrfName));
         return;
