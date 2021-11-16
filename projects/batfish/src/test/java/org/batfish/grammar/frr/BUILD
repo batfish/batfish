@@ -19,7 +19,6 @@ junit_tests(
         "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/matchers",
         "//projects/batfish/src/main/java/org/batfish/grammar/frr:frr",
         "//projects/batfish/src/main/java/org/batfish/representation/cumulus",
-        "//projects/batfish/src/test/java/org/batfish/representation/cumulus:testlib",
         "@maven//:com_google_guava_guava",
         "@maven//:junit_junit",
         "@maven//:org_antlr_antlr4_runtime",
