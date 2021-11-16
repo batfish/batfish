@@ -2016,8 +2016,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     } else {
       delta = rib.mergeRouteGetDelta(routeAdvertisement.getRoute());
     }
-    // TODO: remove, just keep separate ribs per type
-    importRibDelta(_evpnRib, delta);
+    // Queue up the routes to be merged into our main RIB
+    _toMainRib.from(importRibDelta(_evpnRib, delta));
     return delta;
   }
 
