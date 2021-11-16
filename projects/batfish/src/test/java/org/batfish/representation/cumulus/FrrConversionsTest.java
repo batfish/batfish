@@ -147,8 +147,8 @@ public final class FrrConversionsTest {
     _nf = new NetworkFactory();
     _c = _nf.configurationBuilder().build();
     _v = _nf.vrfBuilder().setOwner(_c).build();
-    _oob = new CumulusConcatenatedConfiguration();
-    _frr = ((CumulusConcatenatedConfiguration) _oob).getFrrConfiguration();
+    _oob = MockOutOfBandConfiguration.builder().build();
+    _frr = new FrrConfiguration();
     _frr.setOspfProcess(new OspfProcess());
     _frr.setBgpProcess(new BgpProcess());
   }
@@ -846,22 +846,17 @@ public final class FrrConversionsTest {
 
     c.setVrfs(ImmutableMap.of(vrf1.getName(), vrf1, vrf2.getName(), vrf2));
 
-    InterfacesInterface vxlan1 = new InterfacesInterface("vxlan1");
-    vxlan1.setVxlanId(1);
-    vxlan1.createOrGetBridgeSettings().setAccess(1);
+    Vxlan vxlan1 = new Vxlan("vxlan1");
+    vxlan1.setId(1);
+    vxlan1.setBridgeAccessVlan(1);
 
-    InterfacesInterface vxlan2 = new InterfacesInterface("vxlan2");
-    vxlan2.setVxlanId(2);
-    vxlan2.createOrGetBridgeSettings().setAccess(2);
+    Vxlan vxlan2 = new Vxlan("vxlan2");
+    vxlan2.setId(2);
+    vxlan2.setBridgeAccessVlan(2);
 
-    FrrConfiguration frrConfiguration = new FrrConfiguration();
-    frrConfiguration.setBgpProcess(new BgpProcess());
-
-    CumulusConcatenatedConfiguration vsConfig =
-        CumulusConcatenatedConfiguration.builder()
-            .setHostname("c")
-            .addInterfaces(ImmutableMap.of(vxlan1.getName(), vxlan1, vxlan2.getName(), vxlan2))
-            .setFrrConfiguration(frrConfiguration)
+    OutOfBandConfiguration oob =
+        MockOutOfBandConfiguration.builder()
+            .setVxlans(ImmutableMap.of(vxlan1.getName(), vxlan1, vxlan2.getName(), vxlan2))
             .build();
 
     BgpVrf bgpVrf = new BgpVrf(DEFAULT_VRF_NAME);
@@ -883,8 +878,8 @@ public final class FrrConversionsTest {
 
     generateBgpCommonPeerConfig(
         c,
-        vsConfig,
-        vsConfig.getFrrConfiguration(),
+        oob,
+        _frr,
         neighbor,
         localAs,
         bgpVrf,
@@ -913,14 +908,6 @@ public final class FrrConversionsTest {
   /** Test that L2 VPN EVPN address family route reflect is set correctly */
   @Test
   public void testGenerateBgpCommonPeerConfig_L2vpnRouteReflector() {
-    FrrConfiguration frr = new FrrConfiguration();
-    frr.setBgpProcess(new BgpProcess());
-    CumulusConcatenatedConfiguration oob =
-        CumulusConcatenatedConfiguration.builder()
-            .setHostname("c")
-            .setFrrConfiguration(frr)
-            .build();
-
     BgpVrf bgpVrf = new BgpVrf(DEFAULT_VRF_NAME);
     bgpVrf.setL2VpnEvpn(new BgpL2vpnEvpnAddressFamily());
 
@@ -937,8 +924,8 @@ public final class FrrConversionsTest {
     // we didn't set route reflector yet
     generateBgpCommonPeerConfig(
         new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED),
-        oob,
-        frr,
+        _oob,
+        _frr,
         neighbor,
         101L,
         bgpVrf,
@@ -951,8 +938,8 @@ public final class FrrConversionsTest {
     bgpNeighborL2vpnEvpnAddressFamily.setRouteReflectorClient(true);
     generateBgpCommonPeerConfig(
         new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED),
-        oob,
-        frr,
+        _oob,
+        _frr,
         neighbor,
         101L,
         bgpVrf,
@@ -1368,10 +1355,6 @@ public final class FrrConversionsTest {
 
   @Test
   public void testAddOspfInterfaces_NoArea() {
-    CumulusConcatenatedConfiguration concatenatedConfiguration =
-        new CumulusConcatenatedConfiguration();
-    concatenatedConfiguration.getFrrConfiguration().getOrCreateInterface("iface").getOrCreateOspf();
-
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
     org.batfish.datamodel.Interface viIface =
         org.batfish.datamodel.Interface.builder()
@@ -1379,7 +1362,10 @@ public final class FrrConversionsTest {
             .setVrf(vrf)
             .setType(PHYSICAL)
             .build();
+    Map<String, org.batfish.datamodel.Interface> ifaceMap =
+        ImmutableMap.of(viIface.getName(), viIface);
 
+    addOspfInterfaces(_oob, _frr, ifaceMap, "1", new Warnings());
     assertNull(viIface.getOspfAreaName());
   }
 
@@ -1963,23 +1949,25 @@ public final class FrrConversionsTest {
     Ip loopbackTunnelIp = Ip.parse("2.2.2.2");
     Ip loopbackAnycastIp = Ip.parse("3.3.3.3");
 
-    CumulusConcatenatedConfiguration vsConfig = new CumulusConcatenatedConfiguration();
-    InterfacesInterface iface =
-        vsConfig.getInterfacesConfiguration().createOrGetInterface("vxlan1001");
-    iface.setVxlanId(1001);
-    iface.setVxlanLocalTunnelIp(vxlanLocalTunnelIp);
-    iface.createOrGetBridgeSettings().setAccess(101);
+    Vxlan vxlan = new Vxlan("vxlan1001");
+    vxlan.setId(1001);
+    vxlan.setLocalTunnelip(vxlanLocalTunnelIp);
+    vxlan.setBridgeAccessVlan(101);
+    OutOfBandConfiguration oob =
+        MockOutOfBandConfiguration.builder()
+            .setVxlans(ImmutableMap.of(vxlan.getName(), vxlan))
+            .build();
 
     // vxlan's local tunnel ip should win when anycast is null
     convertVxlans(
-        c, vsConfig, ImmutableMap.of(1001, vrf.getName()), null, loopbackTunnelIp, new Warnings());
+        c, oob, ImmutableMap.of(1001, vrf.getName()), null, loopbackTunnelIp, new Warnings());
     assertThat(vrf.getLayer3Vnis().get(1001).getSourceAddress(), equalTo(vxlanLocalTunnelIp));
 
     // anycast should win if non-null
     vrf.setLayer3Vnis(ImmutableList.of()); // wipe out prior state
     convertVxlans(
         c,
-        vsConfig,
+        oob,
         ImmutableMap.of(1001, vrf.getName()),
         loopbackAnycastIp,
         loopbackTunnelIp,
@@ -1988,9 +1976,9 @@ public final class FrrConversionsTest {
 
     // loopback tunnel ip should win when nothing else is present
     vrf.setLayer3Vnis(ImmutableList.of()); // wipe out prior state
-    iface.setVxlanLocalTunnelIp(null);
+    vxlan.setLocalTunnelip(null);
     convertVxlans(
-        c, vsConfig, ImmutableMap.of(1001, vrf.getName()), null, loopbackTunnelIp, new Warnings());
+        c, oob, ImmutableMap.of(1001, vrf.getName()), null, loopbackTunnelIp, new Warnings());
     assertThat(vrf.getLayer3Vnis().get(1001).getSourceAddress(), equalTo(loopbackTunnelIp));
   }
 
