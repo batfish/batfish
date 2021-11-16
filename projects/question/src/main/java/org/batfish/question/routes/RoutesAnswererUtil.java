@@ -1,5 +1,6 @@
 package org.batfish.question.routes;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static org.batfish.datamodel.table.TableDiff.COL_BASE_PREFIX;
@@ -174,7 +175,6 @@ public class RoutesAnswererUtil {
    * Filters a {@link Table} of {@link Bgpv4Route}s to produce a {@link Multiset} of rows
    *
    * @param bgpRoutes {@link Table} of all {@link Bgpv4Route}s
-   * @param ribProtocol {@link RibProtocol}, either {@link RibProtocol#BGP}
    * @param matchingVrfsByNode {@link Multimap} of vrfs grouped by node from which {@link
    *     Bgpv4Route}s are to be selected
    * @param network {@link Prefix} of the network used to filter the routes
@@ -184,16 +184,15 @@ public class RoutesAnswererUtil {
    */
   static Multiset<Row> getBgpRibRoutes(
       Table<String, String, Set<Bgpv4Route>> bgpRoutes,
-      RibProtocol ribProtocol,
       Multimap<String, String> matchingVrfsByNode,
       @Nullable Prefix network,
       RoutingProtocolSpecifier protocolSpec,
       Set<BgpRouteStatus> statuses) {
     Multiset<Row> rows = HashMultiset.create();
-    Map<String, ColumnMetadata> columnMetadataMap = getTableMetadata(ribProtocol).toColumnMap();
+    Map<String, ColumnMetadata> columnMetadataMap = getTableMetadata(RibProtocol.BGP).toColumnMap();
     matchingVrfsByNode.forEach(
         (hostname, vrfName) ->
-            bgpRoutes.get(hostname, vrfName).stream()
+            firstNonNull(bgpRoutes.get(hostname, vrfName), ImmutableSet.<Bgpv4Route>of()).stream()
                 .filter(
                     route ->
                         (network == null || network.equals(route.getNetwork()))
@@ -207,16 +206,17 @@ public class RoutesAnswererUtil {
 
   static Multiset<Row> getEvpnRoutes(
       Table<String, String, Set<EvpnRoute<?, ?>>> evpnRoutes,
-      RibProtocol ribProtocol,
       Multimap<String, String> matchingVrfsByNode,
       @Nullable Prefix network,
       RoutingProtocolSpecifier protocolSpec,
       Set<BgpRouteStatus> statuses) {
     Multiset<Row> rows = HashMultiset.create();
-    Map<String, ColumnMetadata> columnMetadataMap = getTableMetadata(ribProtocol).toColumnMap();
+    Map<String, ColumnMetadata> columnMetadataMap =
+        getTableMetadata(RibProtocol.EVPN).toColumnMap();
     matchingVrfsByNode.forEach(
         (hostname, vrfName) ->
-            evpnRoutes.get(hostname, vrfName).stream()
+            firstNonNull(evpnRoutes.get(hostname, vrfName), ImmutableSet.<EvpnRoute<?, ?>>of())
+                .stream()
                 .filter(
                     route ->
                         (network == null || network.equals(route.getNetwork()))
