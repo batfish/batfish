@@ -203,7 +203,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
 
     convertOspfProcess(c, this, _frrConfiguration, _w);
     addOspfUnnumberedLLAs(c);
-    convertBgpProcess(c, this, _w);
+    convertBgpProcess(c, this, _frrConfiguration, _w);
 
     initVendorFamily(c);
     warnDuplicateClagIds();
@@ -820,27 +820,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
     return _portsConfiguration;
   }
 
-  public Map<String, IpCommunityList> getIpCommunityLists() {
-    return _frrConfiguration.getIpCommunityLists();
-  }
-
-  public Map<String, IpPrefixList> getIpPrefixLists() {
-    return _frrConfiguration.getIpPrefixLists();
-  }
-
-  public Map<String, RouteMap> getRouteMaps() {
-    return _frrConfiguration.getRouteMaps();
-  }
-
-  public BgpProcess getBgpProcess() {
-    return _frrConfiguration.getBgpProcess();
-  }
-
-  @Nullable
-  public Vrf getVrf(String vrfName) {
-    return _frrConfiguration.getVrfs().get(vrfName);
-  }
-
+  @Override
   @Nonnull
   public Map<String, Vxlan> getVxlans() {
     return _interfacesConfiguration.getInterfaces().values().stream()
@@ -913,14 +893,6 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
         _interfacesConfiguration = new CumulusInterfacesConfiguration();
       }
       _interfacesConfiguration.getInterfaces().putAll(interfaces);
-      return this;
-    }
-
-    Builder setBgpProcess(BgpProcess bgpProcess) {
-      if (_frrConfiguration == null) {
-        setFrrConfiguration(new FrrConfiguration());
-      }
-      _frrConfiguration.setBgpProcess(bgpProcess);
       return this;
     }
 
