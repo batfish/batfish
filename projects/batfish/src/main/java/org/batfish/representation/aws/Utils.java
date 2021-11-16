@@ -74,6 +74,7 @@ public final class Utils {
         .setEbgpAdminCost(DEFAULT_EBGP_ADMIN)
         .setIbgpAdminCost(DEFAULT_IBGP_ADMIN)
         .setLocalAdminCost(DEFAULT_LOCAL_BGP_ADMIN)
+        // arbitrary values below since does not export from BGP RIB
         .setLocalOriginationTypeTieBreaker(LocalOriginationTypeTieBreaker.NO_PREFERENCE)
         .setNetworkNextHopIpTieBreaker(HIGHEST_NEXT_HOP_IP)
         .setRedistributeNextHopIpTieBreaker(HIGHEST_NEXT_HOP_IP)

@@ -238,6 +238,7 @@ public class BgpProcess implements Serializable {
   private final @Nonnull NextHopIpTieBreaker _redistributeNextHopIpTieBreaker;
 
   /** Constructs a BgpProcess with the given router ID and admin costs */
+  @VisibleForTesting
   public BgpProcess(
       @Nonnull Ip routerId, int ebgpAdminCost, int ibgpAdminCost, int localAdminCost) {
     this(

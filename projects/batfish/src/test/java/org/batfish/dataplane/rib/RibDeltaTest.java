@@ -16,6 +16,8 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker;
+import org.batfish.datamodel.bgp.NextHopIpTieBreaker;
 import org.batfish.dataplane.rib.RibDelta.Builder;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 import org.junit.Before;
@@ -169,9 +171,9 @@ public class RibDeltaTest {
             null,
             MultipathEquivalentAsPathMatchMode.EXACT_PATH,
             false,
-            null,
-            null,
-            null);
+            LocalOriginationTypeTieBreaker.NO_PREFERENCE,
+            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
+            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP);
     Bgpv4Route.Builder routeBuilder = Bgpv4Route.testBuilder();
     routeBuilder
         .setNetwork(Ip.parse("1.1.1.1").toPrefix())
@@ -226,9 +228,9 @@ public class RibDeltaTest {
             null,
             MultipathEquivalentAsPathMatchMode.EXACT_PATH,
             false,
-            null,
-            null,
-            null);
+            LocalOriginationTypeTieBreaker.NO_PREFERENCE,
+            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
+            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP);
     Bgpv4Route r1 =
         Bgpv4Route.testBuilder()
             .setNetwork(Ip.parse("1.1.1.1").toPrefix())

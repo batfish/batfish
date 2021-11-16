@@ -14,6 +14,8 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.NEVER;
+import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.NO_PREFERENCE;
+import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
 import static org.batfish.representation.palo_alto.Conversions.computeAndSetPerPeerExportPolicy;
 import static org.batfish.representation.palo_alto.Conversions.computeAndSetPerPeerImportPolicy;
 import static org.batfish.representation.palo_alto.Conversions.getBgpCommonExportPolicy;
@@ -2503,12 +2505,17 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     }
 
     BgpProcess proc =
-        new BgpProcess(
-            bgp.getRouterId(),
-            vr.getAdminDists().getEbgp(),
-            vr.getAdminDists().getIbgp(),
+        BgpProcess.builder()
+            .setRouterId(bgp.getRouterId())
+            .setEbgpAdminCost(vr.getAdminDists().getEbgp())
             /* TODO: PAN does not let you configure local AD. Confirm IBGP AD is used */
-            vr.getAdminDists().getIbgp());
+            .setIbgpAdminCost(vr.getAdminDists().getIbgp())
+            .setLocalAdminCost(vr.getAdminDists().getIbgp())
+            // arbitrary values below
+            .setLocalOriginationTypeTieBreaker(NO_PREFERENCE)
+            .setNetworkNextHopIpTieBreaker(HIGHEST_NEXT_HOP_IP)
+            .setRedistributeNextHopIpTieBreaker(HIGHEST_NEXT_HOP_IP)
+            .build();
     // common BGP export policy (combination of all redist rules at the BgpVr level)
     RoutingPolicy commonExportPolicy = getBgpCommonExportPolicy(bgp, vr, _w, _c);
     _c.getRoutingPolicies().put(commonExportPolicy.getName(), commonExportPolicy);

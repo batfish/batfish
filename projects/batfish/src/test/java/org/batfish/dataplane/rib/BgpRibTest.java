@@ -15,6 +15,8 @@ import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker;
+import org.batfish.datamodel.bgp.NextHopIpTieBreaker;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.junit.Test;
 
@@ -23,7 +25,16 @@ public class BgpRibTest {
 
   @Test
   public void testMultipathMergeAndRemove_notMultipath() {
-    Bgpv4Rib bgpRib = new Bgpv4Rib(null, BgpTieBreaker.ROUTER_ID, 1, null, false, null, null, null);
+    Bgpv4Rib bgpRib =
+        new Bgpv4Rib(
+            null,
+            BgpTieBreaker.ROUTER_ID,
+            1,
+            null,
+            false,
+            LocalOriginationTypeTieBreaker.NO_PREFERENCE,
+            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
+            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP);
     Bgpv4Route.Builder rb = Bgpv4Route.testBuilder().setNetwork(Prefix.ZERO);
 
     Bgpv4Route good = rb.setLocalPreference(20).build();
@@ -89,9 +100,9 @@ public class BgpRibTest {
             null,
             MultipathEquivalentAsPathMatchMode.EXACT_PATH,
             false,
-            null,
-            null,
-            null);
+            LocalOriginationTypeTieBreaker.NO_PREFERENCE,
+            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
+            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP);
     Bgpv4Route.Builder rb = Bgpv4Route.testBuilder().setNetwork(Prefix.ZERO);
 
     Bgpv4Route good = rb.setOriginatorIp(Ip.parse("1.1.1.40")).build();
@@ -194,7 +205,15 @@ public class BgpRibTest {
   @Test
   public void testBestPathComparator_ClusterListAsIgpCost() {
     BgpRib<Bgpv4Route> rib =
-        new Bgpv4Rib(null, BgpTieBreaker.ROUTER_ID, 1, null, true, null, null, null);
+        new Bgpv4Rib(
+            null,
+            BgpTieBreaker.ROUTER_ID,
+            1,
+            null,
+            true,
+            LocalOriginationTypeTieBreaker.NO_PREFERENCE,
+            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
+            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP);
     Bgpv4Route.Builder rb =
         Bgpv4Route.testBuilder()
             .setNetwork(Prefix.ZERO)
@@ -235,7 +254,15 @@ public class BgpRibTest {
   @Test
   public void testBestPathComparator_Default() {
     BgpRib<Bgpv4Route> rib =
-        new Bgpv4Rib(null, BgpTieBreaker.ROUTER_ID, 1, null, false, null, null, null);
+        new Bgpv4Rib(
+            null,
+            BgpTieBreaker.ROUTER_ID,
+            1,
+            null,
+            false,
+            LocalOriginationTypeTieBreaker.NO_PREFERENCE,
+            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
+            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP);
     Bgpv4Route.Builder rb =
         Bgpv4Route.testBuilder()
             .setNetwork(Prefix.ZERO)

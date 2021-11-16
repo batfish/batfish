@@ -4,7 +4,6 @@ import static org.batfish.datamodel.BgpRoute.DEFAULT_LOCAL_PREFERENCE;
 import static org.batfish.datamodel.BgpRoute.DEFAULT_LOCAL_WEIGHT;
 import static org.batfish.datamodel.OriginMechanism.GENERATED;
 import static org.batfish.datamodel.OriginMechanism.LEARNED;
-import static org.batfish.datamodel.OriginMechanism.REDISTRIBUTE;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -357,7 +356,6 @@ public final class BgpProtocolHelper {
         .setOriginatorIp(routerId)
         .setProtocol(protocol)
         .setSrcProtocol(route.getProtocol())
-        .setOriginMechanism(REDISTRIBUTE)
         .setOriginType(OriginType.INCOMPLETE)
         // TODO: support customization of route preference
         .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)

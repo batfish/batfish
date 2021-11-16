@@ -1,5 +1,6 @@
 package org.batfish.dataplane.rib;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.ResolutionRestriction.alwaysTrue;
 import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
 
@@ -121,6 +122,9 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
     _localRouteComparators =
         initLocalRouteComparators(networkNextHopIpTieBreaker, redistributeNextHopIpTieBreaker);
     _localRoutes = new EnumMap<>(OriginMechanism.class);
+    checkArgument(localOriginationTypeTieBreaker != null, "crap");
+    checkArgument(networkNextHopIpTieBreaker != null, "crap");
+    checkArgument(redistributeNextHopIpTieBreaker != null, "crap");
   }
 
   private static @Nonnull Map<OriginMechanism, Comparator<Bgpv4Route>> initLocalRouteComparators(
@@ -155,7 +159,7 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
       if (!isResolvable(route.getNextHopIp())) {
         return RibDelta.empty();
       }
-    } else if (isTrackableLocalRoute(route)) {
+    } else if (route.isTrackableLocalRoute()) {
       // TODO: more correct to filter main rib routes prior to converting to BGP
       return addLocalRoute(route);
     }
@@ -207,7 +211,7 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
   @Nonnull
   @Override
   public RibDelta<Bgpv4Route> removeRouteGetDelta(Bgpv4Route route) {
-    if (isTrackableLocalRoute(route)) {
+    if (route.isTrackableLocalRoute()) {
       return removeLocalRoute(route);
     }
     // Remove route from resolvability enforcer so it can't get reactivated.
@@ -217,6 +221,10 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
   }
 
   private @Nonnull RibDelta<Bgpv4Route> removeLocalRoute(Bgpv4Route route) {
+    // TODO: In the case that two main RIB routes get redistributed to the same route here,
+    //       withdrawal of one will improperly cause withdrawal of the BGP route. This is actually
+    //       a problem for all iBDP redistribution (and even add-path) that needs to be addressed
+    //       carefully.
     OriginMechanism o = route.getOriginMechanism();
     if (!_localRoutes.containsKey(o)) {
       // no routes of this mechanism, so nothing to do
@@ -278,25 +286,10 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
    * route's next hop IP), if applicable.
    */
   private static boolean shouldCheckNextHopReachability(Bgpv4Route route) {
-    if (route.getProtocol() == RoutingProtocol.AGGREGATE || isTrackableLocalRoute(route)) {
+    if (route.getProtocol() == RoutingProtocol.AGGREGATE || route.isTrackableLocalRoute()) {
       return false;
     }
     return NEXT_HOP_REACHABILITY_VISITOR.visit(route.getNextHop());
-  }
-
-  /** Whether the route should is a trackable redistributed local route. */
-  private static boolean isTrackableLocalRoute(Bgpv4Route route) {
-    switch (route.getOriginMechanism()) {
-      case NETWORK:
-      case REDISTRIBUTE:
-        return true;
-      case GENERATED:
-      case LEARNED:
-        return false;
-      default:
-        throw new IllegalArgumentException(
-            String.format("Unhandled OriginMechanism: %s", route.getOriginMechanism()));
-    }
   }
 
   private static final NextHopVisitor<Boolean> NEXT_HOP_REACHABILITY_VISITOR =

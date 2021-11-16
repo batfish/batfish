@@ -1720,11 +1720,12 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                 false)
                 .toBuilder()
             : BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
-                exportCandidate,
-                getRouterId(),
-                ourSessionProperties.getLocalIp(),
-                _process.getAdminCost(protocol),
-                protocol);
+                    exportCandidate,
+                    getRouterId(),
+                    ourSessionProperties.getLocalIp(),
+                    _process.getAdminCost(protocol),
+                    protocol)
+                .setOriginMechanism(REDISTRIBUTE);
 
     // Process transformed outgoing route by the export policy
     boolean shouldExport =

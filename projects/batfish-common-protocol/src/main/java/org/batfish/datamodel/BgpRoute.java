@@ -471,4 +471,20 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   private @Nonnull CommunitySet getJsonCommunities() {
     return _communities;
   }
+
+  /** Whether the route is a trackable redistributed local route. */
+  @JsonIgnore
+  public boolean isTrackableLocalRoute() {
+    switch (_originMechanism) {
+      case NETWORK:
+      case REDISTRIBUTE:
+        return true;
+      case GENERATED:
+      case LEARNED:
+        return false;
+      default:
+        throw new IllegalArgumentException(
+            String.format("Unhandled OriginMechanism: %s", _originMechanism));
+    }
+  }
 }

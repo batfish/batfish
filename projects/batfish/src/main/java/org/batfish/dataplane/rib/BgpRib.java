@@ -1,7 +1,6 @@
 package org.batfish.dataplane.rib;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.datamodel.OriginMechanism.LEARNED;
 import static org.batfish.datamodel.OriginMechanism.NETWORK;
 import static org.batfish.datamodel.OriginMechanism.REDISTRIBUTE;
 import static org.batfish.datamodel.ResolutionRestriction.alwaysTrue;
@@ -120,8 +119,8 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
     // TODO: this step might need to go in a different position
     if (_localOriginationTypeTieBreaker != NO_PREFERENCE
         && lhs.getOriginMechanism() != rhs.getOriginMechanism()
-        && lhs.getOriginMechanism() != LEARNED
-        && rhs.getOriginMechanism() != LEARNED) {
+        && lhs.isTrackableLocalRoute()
+        && rhs.isTrackableLocalRoute()) {
       // comparing local routes with different origin mechanisms, and one mechanism is preferred
       // over the other.
       if (_localOriginationTypeTieBreaker == PREFER_NETWORK) {
@@ -133,8 +132,6 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
     }
     int multipathCompare =
         Comparator
-
-            // Prefer
             // Prefer higher Weight (cisco only)
             .comparing(R::getWeight)
             // Prefer higher LocalPref

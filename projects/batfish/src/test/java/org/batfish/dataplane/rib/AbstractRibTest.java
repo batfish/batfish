@@ -28,6 +28,8 @@ import org.batfish.datamodel.ResolutionRestriction;
 import org.batfish.datamodel.RipInternalRoute;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker;
+import org.batfish.datamodel.bgp.NextHopIpTieBreaker;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
@@ -471,9 +473,9 @@ public class AbstractRibTest {
             1,
             MultipathEquivalentAsPathMatchMode.EXACT_PATH,
             false,
-            null,
-            null,
-            null);
+            LocalOriginationTypeTieBreaker.NO_PREFERENCE,
+            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
+            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP);
     Ip originator1 = Ip.parse("1.1.1.1");
     Ip originator2 = Ip.parse("2.2.2.2");
     Bgpv4Route.Builder routeBuilder =

@@ -948,7 +948,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
   private org.batfish.datamodel.BgpProcess toBgpProcess(
       Configuration c, BgpProcess proc, String vrfName) {
     Ip bgpRouterId = getBgpRouterId(c, vrfName, proc);
-    // TODO: surely this is customizable
     org.batfish.datamodel.BgpProcess newBgpProcess =
         // TODO: customizable admin distances
         bgpProcessBuilder().setRouterId(bgpRouterId).build();
