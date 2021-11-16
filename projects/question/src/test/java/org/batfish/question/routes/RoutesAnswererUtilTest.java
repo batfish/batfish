@@ -36,6 +36,7 @@ import static org.batfish.question.routes.RoutesAnswererUtil.populateRouteAttrib
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
@@ -238,7 +239,6 @@ public class RoutesAnswererUtilTest {
     Multiset<Row> rows =
         getBgpRibRoutes(
             bgpRouteTable,
-            RibProtocol.BGP,
             ImmutableMultimap.of("node", "vrf"),
             null,
             RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
@@ -277,6 +277,18 @@ public class RoutesAnswererUtilTest {
   }
 
   @Test
+  public void testBgpRibRoutes_empty() {
+    Multiset<Row> rows =
+        getBgpRibRoutes(
+            ImmutableTable.of(), // no BGP rib for the specifed vrfs
+            ImmutableMultimap.of("node", "vrf"),
+            null,
+            RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
+            ImmutableSet.of(BEST));
+    assertThat(rows, empty());
+  }
+
+  @Test
   public void testGetBgpRoutesCommunities() {
     Ip ip = Ip.parse("1.1.1.1");
     Table<String, String, Set<Bgpv4Route>> bgpRouteTable = HashBasedTable.create();
@@ -296,7 +308,6 @@ public class RoutesAnswererUtilTest {
     Multiset<Row> rows =
         getBgpRibRoutes(
             bgpRouteTable,
-            RibProtocol.BGP,
             ImmutableMultimap.of("node", "vrf"),
             null,
             RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
@@ -328,7 +339,6 @@ public class RoutesAnswererUtilTest {
     Multiset<Row> rows =
         getEvpnRoutes(
             evpnRouteTable,
-            RibProtocol.EVPN,
             ImmutableMultimap.of("node", "vrf"),
             null,
             RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
@@ -355,6 +365,18 @@ public class RoutesAnswererUtilTest {
                 hasColumn(COL_TAG, nullValue(), Schema.INTEGER),
                 hasColumn(COL_NEXT_HOP_IP, ip, Schema.IP),
                 hasColumn(COL_NEXT_HOP_INTERFACE, "dynamic", Schema.STRING))));
+  }
+
+  @Test
+  public void testEvpnRibRoutes_empty() {
+    Multiset<Row> rows =
+        getEvpnRoutes(
+            ImmutableTable.of(), // no EVPN rib for the specifed vrfs
+            ImmutableMultimap.of("node", "vrf"),
+            null,
+            RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
+            ImmutableSet.of(BEST));
+    assertThat(rows, empty());
   }
 
   @Test
