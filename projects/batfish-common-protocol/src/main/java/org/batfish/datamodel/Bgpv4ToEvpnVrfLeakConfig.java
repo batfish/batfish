@@ -50,7 +50,7 @@ public final class Bgpv4ToEvpnVrfLeakConfig implements Serializable {
     return _srcVrfRouteDistinguisher;
   }
 
-  public static Builder builder() {
+  public static @Nonnull Builder builder() {
     return new Builder();
   }
 
@@ -115,7 +115,7 @@ public final class Bgpv4ToEvpnVrfLeakConfig implements Serializable {
   @Nonnull private final RouteDistinguisher _srcVrfRouteDistinguisher;
 
   public static final class Builder {
-    public Bgpv4ToEvpnVrfLeakConfig build() {
+    public @Nonnull Bgpv4ToEvpnVrfLeakConfig build() {
       checkArgument(_importFromVrf != null, "Missing %s", PROP_IMPORT_FROM_VRF);
       checkArgument(
           _srcVrfRouteDistinguisher != null, "Missing %s", PROP_SRC_VRF_ROUTE_DISTINGUISHER);
@@ -134,11 +134,13 @@ public final class Bgpv4ToEvpnVrfLeakConfig implements Serializable {
       return setAttachRouteTargets(Arrays.asList(attachRouteTargets));
     }
 
+    @Nonnull
     public Builder setImportFromVrf(@Nullable String importFromVrf) {
       _importFromVrf = importFromVrf;
       return this;
     }
 
+    @Nonnull
     public Builder setSrcVrfRouteDistinguisher(@Nullable RouteDistinguisher rd) {
       _srcVrfRouteDistinguisher = rd;
       return this;

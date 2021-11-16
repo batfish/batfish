@@ -531,9 +531,9 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   }
 
   private void sendOutRoutesToNewEvpnEdges(Map<String, Node> allNodes, NetworkConfigurations nc) {
-    // TODO: _localType3Routes is not enough
-    //    Ideally we need to re-send all EVPN routes we have to new neighbors
     for (EdgeId edge : _evpnEdgesWentUp) {
+      // TODO: _localType3Routes is not enough
+      //    Ideally we need to re-send all EVPN routes we have to new neighbors
       sendEvpnType3RoutesToEdge(edge.reverse(), _localType3Routes, nc, allNodes);
       sendEvpnType5RoutesToEdge(edge.reverse(), _evpnType5Advertisements.build(), nc, allNodes);
     }
@@ -673,20 +673,21 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     // Process IPv4 unicast messages
     processBgpV4UnicastMessages(_topology, nc, allNodes);
 
-    // Process EVPN messages and send out updates
+    // Process EVPN messages and send out updates. Don't add deltas to _toMainRib because all EVPN
+    // routes are nonrouting.
     DeltaPair<EvpnType3Route> type3Delta = processEvpnType3Messages(nc, allNodes);
     sendOutEvpnType3Routes(type3Delta.getAllToAdvertise(), nc, allNodes);
     RibDelta.Builder<EvpnType3Route> type3MergeDelta = RibDelta.builder();
     type3MergeDelta.from(importRibDelta(_evpnType3Rib, type3Delta._toMerge._ebgpDelta));
     type3MergeDelta.from(importRibDelta(_evpnType3Rib, type3Delta._toMerge._ibgpDelta));
-    _toMainRib.from(importRibDelta(_evpnRib, type3MergeDelta.build()));
+    importRibDelta(_evpnRib, type3MergeDelta.build());
 
     DeltaPair<EvpnType5Route> type5Delta = processEvpnType5Messages(nc, allNodes);
     sendOutEvpnType5Routes(type5Delta.getAllToAdvertise(), nc, allNodes);
     RibDelta.Builder<EvpnType5Route> type5MergeDelta = RibDelta.builder();
     type5MergeDelta.from(importRibDelta(_evpnType5Rib, type5Delta._toMerge._ebgpDelta));
     type5MergeDelta.from(importRibDelta(_evpnType5Rib, type5Delta._toMerge._ibgpDelta));
-    _toMainRib.from(importRibDelta(_evpnRib, type5MergeDelta.build()));
+    importRibDelta(_evpnRib, type5MergeDelta.build());
   }
 
   /** Initialize the EVPN RIBs based on EVPN address family config */
@@ -1371,7 +1372,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   }
 
   /** Process incoming EVPN type 5 messages, across all neighbors */
-  private DeltaPair<EvpnType5Route> processEvpnType5Messages(
+  private @Nonnull DeltaPair<EvpnType5Route> processEvpnType5Messages(
       NetworkConfigurations nc, Map<String, Node> allNodes) {
     DeltaPair<EvpnType5Route> deltaPair = DeltaPair.empty();
     for (Entry<EdgeId, Queue<RouteAdvertisement<EvpnType5Route>>> entry :
@@ -2181,7 +2182,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   }
 
   /** Convert a BGP v4 route to a EVPN type 5 route. */
-  private static EvpnType5Route toEvpnType5Route(
+  private static @Nonnull EvpnType5Route toEvpnType5Route(
       Bgpv4Route route, RouteDistinguisher rd, Set<ExtendedCommunity> rt) {
     return EvpnType5Route.builder()
         .setNetwork(route.getNetwork())

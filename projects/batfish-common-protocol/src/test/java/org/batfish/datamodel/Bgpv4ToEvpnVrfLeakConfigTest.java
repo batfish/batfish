@@ -41,7 +41,7 @@ public class Bgpv4ToEvpnVrfLeakConfigTest {
             .setSrcVrfRouteDistinguisher(RouteDistinguisher.from(0L, 1));
     Bgpv4ToEvpnVrfLeakConfig val = b.build();
     new EqualsTester()
-        .addEqualityGroup(val, val, b.build())
+        .addEqualityGroup(val, b.build())
         .addEqualityGroup(b.setImportFromVrf("vrf2").build())
         .addEqualityGroup(b.setSrcVrfRouteDistinguisher(RouteDistinguisher.from(2, 3L)).build())
         .addEqualityGroup(b.setAttachRouteTargets(ExtendedCommunity.target(1, 2)).build())

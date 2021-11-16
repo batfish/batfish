@@ -31,7 +31,7 @@ public class MainRibVrfLeakConfigTest {
     Builder b = MainRibVrfLeakConfig.builder().setImportFromVrf("vrf1").setImportPolicy("policy");
     MainRibVrfLeakConfig val = b.build();
     new EqualsTester()
-        .addEqualityGroup(val, val, b.build())
+        .addEqualityGroup(val, b.build())
         .addEqualityGroup(b.setImportFromVrf("vrf2").build())
         .addEqualityGroup(b.setImportPolicy("policy2").build())
         .testEquals();

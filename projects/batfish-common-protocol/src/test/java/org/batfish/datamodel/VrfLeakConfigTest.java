@@ -53,8 +53,8 @@ public class VrfLeakConfigTest {
     VrfLeakConfig bgp = bgpBuilder.build();
     VrfLeakConfig mainRib = mainRibBuilder.build();
     new EqualsTester()
-        .addEqualityGroup(bgp, bgp, bgpBuilder.build())
-        .addEqualityGroup(mainRib, mainRib, mainRibBuilder.build())
+        .addEqualityGroup(bgp, bgpBuilder.build())
+        .addEqualityGroup(mainRib, mainRibBuilder.build())
         .addEqualityGroup(
             bgpBuilder
                 .addBgpVrfLeakConfig(

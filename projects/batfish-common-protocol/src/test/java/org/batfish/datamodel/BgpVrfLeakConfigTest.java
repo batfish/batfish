@@ -48,7 +48,7 @@ public class BgpVrfLeakConfigTest {
             .setWeight(2);
     BgpVrfLeakConfig val = b.build();
     new EqualsTester()
-        .addEqualityGroup(val, val, b.build())
+        .addEqualityGroup(val, b.build())
         .addEqualityGroup(b.setImportFromVrf("vrf2").build())
         .addEqualityGroup(b.setImportPolicy("policy2").build())
         .addEqualityGroup(b.setAdmin(10).build())
