@@ -2856,7 +2856,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   public void exitSrs_application(Srs_applicationContext ctx) {
     for (Variable_list_itemContext var : variables(ctx.variable_list())) {
       String name = getText(var);
-      _currentSecurityRule.getApplications().add(name);
+      _currentSecurityRule.addApplication(name);
       // Use constructed object name so same-named refs across vsys are unique
       String uniqueName = computeObjectName(_currentVsys, name);
       referenceApplicationOrGroupLike(name, uniqueName, SECURITY_RULE_APPLICATION, var);
