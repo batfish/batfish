@@ -175,7 +175,6 @@ public class RoutesAnswererUtil {
    * Filters a {@link Table} of {@link Bgpv4Route}s to produce a {@link Multiset} of rows
    *
    * @param bgpRoutes {@link Table} of all {@link Bgpv4Route}s
-   * @param ribProtocol {@link RibProtocol}, either {@link RibProtocol#BGP}
    * @param matchingVrfsByNode {@link Multimap} of vrfs grouped by node from which {@link
    *     Bgpv4Route}s are to be selected
    * @param network {@link Prefix} of the network used to filter the routes
@@ -185,13 +184,12 @@ public class RoutesAnswererUtil {
    */
   static Multiset<Row> getBgpRibRoutes(
       Table<String, String, Set<Bgpv4Route>> bgpRoutes,
-      RibProtocol ribProtocol,
       Multimap<String, String> matchingVrfsByNode,
       @Nullable Prefix network,
       RoutingProtocolSpecifier protocolSpec,
       Set<BgpRouteStatus> statuses) {
     Multiset<Row> rows = HashMultiset.create();
-    Map<String, ColumnMetadata> columnMetadataMap = getTableMetadata(ribProtocol).toColumnMap();
+    Map<String, ColumnMetadata> columnMetadataMap = getTableMetadata(RibProtocol.BGP).toColumnMap();
     matchingVrfsByNode.forEach(
         (hostname, vrfName) ->
             firstNonNull(bgpRoutes.get(hostname, vrfName), ImmutableSet.<Bgpv4Route>of()).stream()

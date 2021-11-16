@@ -239,7 +239,6 @@ public class RoutesAnswererUtilTest {
     Multiset<Row> rows =
         getBgpRibRoutes(
             bgpRouteTable,
-            RibProtocol.BGP,
             ImmutableMultimap.of("node", "vrf"),
             null,
             RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
@@ -282,7 +281,6 @@ public class RoutesAnswererUtilTest {
     Multiset<Row> rows =
         getBgpRibRoutes(
             ImmutableTable.of(), // no BGP rib for the specifed vrfs
-            RibProtocol.BGP,
             ImmutableMultimap.of("node", "vrf"),
             null,
             RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
@@ -310,7 +308,6 @@ public class RoutesAnswererUtilTest {
     Multiset<Row> rows =
         getBgpRibRoutes(
             bgpRouteTable,
-            RibProtocol.BGP,
             ImmutableMultimap.of("node", "vrf"),
             null,
             RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
