@@ -34,17 +34,25 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multiset;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.IBatfishTestAdapter;
@@ -52,6 +60,7 @@ import org.batfish.common.plugin.IBatfishTestAdapter.TopologyProviderTestAdapter
 import org.batfish.common.topology.GlobalBroadcastNoPointToPoint;
 import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.common.topology.TopologyProvider;
+import org.batfish.common.util.CollectionUtil;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.AnnotatedRoute;
@@ -72,9 +81,15 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.answers.StringAnswerElement;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
+import org.batfish.datamodel.table.TableAnswerElement;
+import org.batfish.identifiers.NetworkId;
+import org.batfish.identifiers.SnapshotId;
 import org.batfish.question.routes.RoutesQuestion.RibProtocol;
+import org.batfish.specifier.Location;
+import org.batfish.specifier.LocationInfo;
 import org.batfish.specifier.MockSpecifierContext;
 import org.batfish.specifier.RoutingProtocolSpecifier;
 import org.batfish.specifier.SpecifierContext;
@@ -82,6 +97,46 @@ import org.junit.Test;
 
 /** Tests of {@link RoutesAnswerer}. */
 public class RoutesAnswererTest {
+  private static IBatfish makeBatfish(Configuration... configs) {
+    return new IBatfishTestAdapter() {
+      @Override
+      public Map<Location, LocationInfo> getLocationInfo(NetworkSnapshot snapshot) {
+        return ImmutableMap.of();
+      }
+
+      @Override
+      public SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot) {
+        return Arrays.stream(configs)
+            .collect(
+                ImmutableSortedMap.toImmutableSortedMap(
+                    Comparator.naturalOrder(), Configuration::getHostname, Function.identity()));
+      }
+
+      @Override
+      public DataPlane loadDataPlane(NetworkSnapshot snapshot) {
+        return MockDataPlane.builder()
+            .setRibs(
+                Arrays.stream(configs)
+                    .collect(
+                        toImmutableSortedMap(
+                            naturalOrder(),
+                            Configuration::getHostname,
+                            config ->
+                                CollectionUtil.toImmutableSortedMap(
+                                    config.getVrfs().values(),
+                                    Vrf::getName,
+                                    vrf ->
+                                        new MockRib<>(
+                                            vrf.getStaticRoutes().stream()
+                                                .map(
+                                                    r ->
+                                                        new AnnotatedRoute<AbstractRoute>(
+                                                            r, vrf.getName()))
+                                                .collect(Collectors.toSet()))))))
+            .build();
+      }
+    };
+  }
 
   @Test
   public void testGetMainRibRoutesWhenEmptyRib() {
@@ -92,10 +147,9 @@ public class RoutesAnswererTest {
     Multiset<Row> actual =
         getMainRibRoutes(
             ribs,
-            ImmutableSet.of("n1"),
+            ImmutableMultimap.of("n1", Configuration.DEFAULT_VRF_NAME),
             null,
-            RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
-            ".*");
+            RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER);
 
     assertThat(actual.entrySet(), hasSize(0));
   }
@@ -123,10 +177,9 @@ public class RoutesAnswererTest {
     Multiset<Row> actual =
         getMainRibRoutes(
             ribs,
-            ImmutableSet.of("n1"),
+            ImmutableMultimap.of("n1", Configuration.DEFAULT_VRF_NAME),
             Prefix.create(Ip.parse("2.2.2.0"), 24),
-            RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
-            ".*");
+            RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER);
 
     assertThat(actual, hasSize(1));
     assertThat(
@@ -134,29 +187,43 @@ public class RoutesAnswererTest {
   }
 
   @Test
-  public void testHasNodeFiltering() {
-    SortedMap<String, SortedMap<String, GenericRib<AbstractRouteDecorator>>> ribs =
-        ImmutableSortedMap.of(
-            "n1",
-            ImmutableSortedMap.of(
-                Configuration.DEFAULT_VRF_NAME,
-                new MockRib<>(
-                    ImmutableSet.of(
-                        StaticRoute.testBuilder()
-                            .setAdministrativeCost(1)
-                            .setNetwork(Prefix.parse("1.1.1.0/24"))
-                            .setNextHopInterface("Null")
-                            .build()))));
+  public void testNoMatchingNodes() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Configuration n1 = cb.setHostname("n1").build();
+    nf.vrfBuilder().setOwner(n1).setName(Configuration.DEFAULT_VRF_NAME).build();
 
-    Multiset<Row> actual =
-        getMainRibRoutes(
-            ribs,
-            ImmutableSet.of("differentNode"),
-            null,
-            RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
-            ".*");
+    IBatfish batfish = makeBatfish(n1);
 
-    assertThat(actual, hasSize(0));
+    NetworkSnapshot snapshot =
+        new NetworkSnapshot(new NetworkId("network"), new SnapshotId("snapshot"));
+    RoutesQuestion routesQuestion =
+        new RoutesQuestion(null, "differentNode", null, null, null, null);
+    StringAnswerElement answer =
+        (StringAnswerElement) new RoutesAnswerer(routesQuestion, batfish).answer(snapshot);
+    assertEquals(RoutesAnswerer.ERROR_NO_MATCHING_NODES, answer.getAnswer());
+  }
+
+  @Test
+  public void testNoMatchingVrfs() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Configuration n1 = cb.setHostname("n1").build();
+    nf.vrfBuilder().setOwner(n1).setName("v1").build();
+
+    Configuration n2 = cb.setHostname("n2").build();
+    nf.vrfBuilder().setOwner(n2).setName("v2").build();
+
+    IBatfish batfish = makeBatfish(n1, n2);
+
+    NetworkSnapshot snapshot =
+        new NetworkSnapshot(new NetworkId("network"), new SnapshotId("snapshot"));
+    RoutesQuestion routesQuestion = new RoutesQuestion(null, "n1", "v2", null, null, null);
+    StringAnswerElement answer =
+        (StringAnswerElement) new RoutesAnswerer(routesQuestion, batfish).answer(snapshot);
+    assertEquals(RoutesAnswerer.ERROR_NO_MATCHING_VRFS, answer.getAnswer());
   }
 
   @Test
@@ -177,7 +244,10 @@ public class RoutesAnswererTest {
 
     Multiset<Row> actual =
         getMainRibRoutes(
-            ribs, ImmutableSet.of("n1"), null, new RoutingProtocolSpecifier("static"), ".*");
+            ribs,
+            ImmutableMultimap.of("n1", Configuration.DEFAULT_VRF_NAME),
+            null,
+            new RoutingProtocolSpecifier("static"));
 
     assertThat(actual, hasSize(1));
     assertThat(
@@ -186,34 +256,38 @@ public class RoutesAnswererTest {
 
   @Test
   public void testHasVrfFiltering() {
-    SortedMap<String, SortedMap<String, GenericRib<AbstractRouteDecorator>>> ribs =
-        ImmutableSortedMap.of(
-            "n1",
-            ImmutableSortedMap.of(
-                Configuration.DEFAULT_VRF_NAME,
-                new MockRib<>(
-                    ImmutableSet.of(
-                        StaticRoute.testBuilder()
-                            .setAdministrativeCost(1)
-                            .setNetwork(Prefix.parse("1.1.1.0/24"))
-                            .setNextHopInterface("Null")
-                            .build())),
-                "notDefaultVrf",
-                new MockRib<>(
-                    ImmutableSet.of(
-                        StaticRoute.testBuilder()
-                            .setNetwork(Prefix.parse("2.2.2.0/24"))
-                            .setNextHopInterface("Null")
-                            .setAdministrativeCost(1)
-                            .build()))));
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c =
+        nf.configurationBuilder()
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .setHostname("n1")
+            .build();
+    Vrf defaultVrf = nf.vrfBuilder().setOwner(c).setName(Configuration.DEFAULT_VRF_NAME).build();
+    defaultVrf.setStaticRoutes(
+        ImmutableSortedSet.of(
+            StaticRoute.testBuilder()
+                .setAdministrativeCost(1)
+                .setNetwork(Prefix.parse("1.1.1.0/24"))
+                .setNextHopInterface("Null")
+                .build()));
 
-    Multiset<Row> actual =
-        getMainRibRoutes(
-            ribs,
-            ImmutableSet.of("n1"),
-            null,
-            RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
-            "^not.*");
+    Vrf notDefaultVrf = nf.vrfBuilder().setOwner(c).setName("notDefaultVrf").build();
+    notDefaultVrf.setStaticRoutes(
+        ImmutableSortedSet.of(
+            StaticRoute.testBuilder()
+                .setNetwork(Prefix.parse("2.2.2.0/24"))
+                .setNextHopInterface("Null")
+                .setAdministrativeCost(1)
+                .build()));
+
+    IBatfish batfish = makeBatfish(c);
+
+    NetworkSnapshot snapshot =
+        new NetworkSnapshot(new NetworkId("network"), new SnapshotId("snapshot"));
+    RoutesQuestion routesQuestion = new RoutesQuestion(null, null, "^not.*", null, null, null);
+    TableAnswerElement answer =
+        (TableAnswerElement) new RoutesAnswerer(routesQuestion, batfish).answer(snapshot);
+    Multiset<Row> actual = answer.getRows().getData();
 
     assertThat(actual, hasSize(1));
     assertThat(

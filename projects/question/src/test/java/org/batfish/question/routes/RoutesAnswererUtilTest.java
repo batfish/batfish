@@ -44,6 +44,7 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
@@ -196,10 +197,9 @@ public class RoutesAnswererUtilTest {
     Multiset<Row> actual =
         getMainRibRoutes(
             ribs,
-            ImmutableSet.of("n1"),
+            ImmutableMultimap.of("n1", Configuration.DEFAULT_VRF_NAME),
             null,
-            RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
-            ".*");
+            RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER);
     assertThat(
         actual,
         contains(
@@ -239,10 +239,9 @@ public class RoutesAnswererUtilTest {
         getBgpRibRoutes(
             bgpRouteTable,
             RibProtocol.BGP,
-            ImmutableSet.of("node"),
+            ImmutableMultimap.of("node", "vrf"),
             null,
             RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
-            ".*",
             ImmutableSet.of(BEST));
 
     // Both routes should have the same values for these columns
@@ -298,10 +297,9 @@ public class RoutesAnswererUtilTest {
         getBgpRibRoutes(
             bgpRouteTable,
             RibProtocol.BGP,
-            ImmutableSet.of("node"),
+            ImmutableMultimap.of("node", "vrf"),
             null,
             RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
-            ".*",
             ImmutableSet.of(BEST));
     assertThat(
         rows.iterator().next().get(COL_COMMUNITIES, Schema.list(Schema.STRING)),
@@ -331,10 +329,9 @@ public class RoutesAnswererUtilTest {
         getEvpnRoutes(
             evpnRouteTable,
             RibProtocol.EVPN,
-            ImmutableSet.of("node"),
+            ImmutableMultimap.of("node", "vrf"),
             null,
             RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
-            ".*",
             ImmutableSet.of(BEST));
 
     assertThat(
