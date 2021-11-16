@@ -17,34 +17,34 @@ import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasCommunities;
 import static org.batfish.datamodel.routing_policy.Common.SUMMARY_ONLY_SUPPRESSION_POLICY_NAME;
 import static org.batfish.datamodel.routing_policy.statement.Statements.ExitAccept;
 import static org.batfish.datamodel.routing_policy.statement.Statements.RemovePrivateAs;
-import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_MAX_MED;
-import static org.batfish.representation.cumulus.CumulusConversions.GENERATED_DEFAULT_ROUTE;
-import static org.batfish.representation.cumulus.CumulusConversions.REJECT_DEFAULT_ROUTE;
-import static org.batfish.representation.cumulus.CumulusConversions.addBgpNeighbor;
-import static org.batfish.representation.cumulus.CumulusConversions.addOspfInterfaces;
-import static org.batfish.representation.cumulus.CumulusConversions.computeBgpNeighborImportRoutingPolicy;
-import static org.batfish.representation.cumulus.CumulusConversions.computeLocalIpForBgpNeighbor;
-import static org.batfish.representation.cumulus.CumulusConversions.computeMatchSuppressedSummaryOnlyPolicyName;
-import static org.batfish.representation.cumulus.CumulusConversions.computeOspfAreas;
-import static org.batfish.representation.cumulus.CumulusConversions.computeOspfExportPolicyName;
-import static org.batfish.representation.cumulus.CumulusConversions.convertIpv4UnicastAddressFamily;
-import static org.batfish.representation.cumulus.CumulusConversions.convertOspfRedistributionPolicy;
-import static org.batfish.representation.cumulus.CumulusConversions.convertVxlans;
-import static org.batfish.representation.cumulus.CumulusConversions.generateBgpCommonPeerConfig;
-import static org.batfish.representation.cumulus.CumulusConversions.getSetMaxMedMetric;
-import static org.batfish.representation.cumulus.CumulusConversions.getSetNextHop;
-import static org.batfish.representation.cumulus.CumulusConversions.inferClusterId;
-import static org.batfish.representation.cumulus.CumulusConversions.inferPeerIp;
-import static org.batfish.representation.cumulus.CumulusConversions.inferRouterId;
-import static org.batfish.representation.cumulus.CumulusConversions.resolveLocalIpFromUpdateSource;
-import static org.batfish.representation.cumulus.CumulusConversions.suppressSummarizedPrefixes;
-import static org.batfish.representation.cumulus.CumulusConversions.toAsPathAccessList;
-import static org.batfish.representation.cumulus.CumulusConversions.toBgpProcess;
-import static org.batfish.representation.cumulus.CumulusConversions.toOspfProcess;
-import static org.batfish.representation.cumulus.CumulusConversions.toRouteFilterLine;
-import static org.batfish.representation.cumulus.CumulusConversions.toRouteFilterList;
-import static org.batfish.representation.cumulus.CumulusConversions.toRouteTarget;
 import static org.batfish.representation.cumulus.FrrConfiguration.LOOPBACK_INTERFACE_NAME;
+import static org.batfish.representation.cumulus.FrrConversions.DEFAULT_MAX_MED;
+import static org.batfish.representation.cumulus.FrrConversions.GENERATED_DEFAULT_ROUTE;
+import static org.batfish.representation.cumulus.FrrConversions.REJECT_DEFAULT_ROUTE;
+import static org.batfish.representation.cumulus.FrrConversions.addBgpNeighbor;
+import static org.batfish.representation.cumulus.FrrConversions.addOspfInterfaces;
+import static org.batfish.representation.cumulus.FrrConversions.computeBgpNeighborImportRoutingPolicy;
+import static org.batfish.representation.cumulus.FrrConversions.computeLocalIpForBgpNeighbor;
+import static org.batfish.representation.cumulus.FrrConversions.computeMatchSuppressedSummaryOnlyPolicyName;
+import static org.batfish.representation.cumulus.FrrConversions.computeOspfAreas;
+import static org.batfish.representation.cumulus.FrrConversions.computeOspfExportPolicyName;
+import static org.batfish.representation.cumulus.FrrConversions.convertIpv4UnicastAddressFamily;
+import static org.batfish.representation.cumulus.FrrConversions.convertOspfRedistributionPolicy;
+import static org.batfish.representation.cumulus.FrrConversions.convertVxlans;
+import static org.batfish.representation.cumulus.FrrConversions.generateBgpCommonPeerConfig;
+import static org.batfish.representation.cumulus.FrrConversions.getSetMaxMedMetric;
+import static org.batfish.representation.cumulus.FrrConversions.getSetNextHop;
+import static org.batfish.representation.cumulus.FrrConversions.inferClusterId;
+import static org.batfish.representation.cumulus.FrrConversions.inferPeerIp;
+import static org.batfish.representation.cumulus.FrrConversions.inferRouterId;
+import static org.batfish.representation.cumulus.FrrConversions.resolveLocalIpFromUpdateSource;
+import static org.batfish.representation.cumulus.FrrConversions.suppressSummarizedPrefixes;
+import static org.batfish.representation.cumulus.FrrConversions.toAsPathAccessList;
+import static org.batfish.representation.cumulus.FrrConversions.toBgpProcess;
+import static org.batfish.representation.cumulus.FrrConversions.toOspfProcess;
+import static org.batfish.representation.cumulus.FrrConversions.toRouteFilterLine;
+import static org.batfish.representation.cumulus.FrrConversions.toRouteFilterList;
+import static org.batfish.representation.cumulus.FrrConversions.toRouteTarget;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
@@ -134,8 +134,8 @@ import org.batfish.vendor.VendorStructureId;
 import org.junit.Before;
 import org.junit.Test;
 
-/** Test for {@link CumulusConversions}. */
-public final class CumulusConversionsTest {
+/** Test for {@link FrrConversions}. */
+public final class FrrConversionsTest {
   private NetworkFactory _nf;
   private Configuration _c;
   private Vrf _v;
@@ -1231,8 +1231,7 @@ public final class CumulusConversionsTest {
             ImmutableMap.of(),
             new Warnings());
     assertThat(
-        ospfProcess.getMaxMetricTransitLinks(),
-        equalTo(CumulusConversions.DEFAULT_OSPF_MAX_METRIC));
+        ospfProcess.getMaxMetricTransitLinks(), equalTo(FrrConversions.DEFAULT_OSPF_MAX_METRIC));
   }
 
   @Test

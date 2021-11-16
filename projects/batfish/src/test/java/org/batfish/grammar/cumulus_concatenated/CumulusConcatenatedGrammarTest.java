@@ -15,8 +15,8 @@ import static org.batfish.datamodel.routing_policy.Common.SUMMARY_ONLY_SUPPRESSI
 import static org.batfish.datamodel.routing_policy.Environment.Direction.OUT;
 import static org.batfish.main.BatfishTestUtils.DUMMY_SNAPSHOT_1;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
-import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_LOOPBACK_MTU;
-import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_PORT_MTU;
+import static org.batfish.representation.cumulus.FrrConversions.DEFAULT_LOOPBACK_MTU;
+import static org.batfish.representation.cumulus.FrrConversions.DEFAULT_PORT_MTU;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.allOf;
