@@ -14,7 +14,6 @@ import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,7 +33,7 @@ import org.batfish.datamodel.MacAddress;
 @ParametersAreNonnullByDefault
 public final class InterfacesInterface implements Serializable {
 
-  private @Nonnull final List<ConcreteInterfaceAddress> _addresses;
+  private @Nonnull List<ConcreteInterfaceAddress> _addresses;
   private @Nullable Map<MacAddress, Set<InterfaceAddress>> _addressVirtuals;
   private @Nullable InterfaceBridgeSettings _bridgeSettings;
   private @Nullable InterfaceClagSettings _clagSettings;
@@ -56,12 +55,13 @@ public final class InterfacesInterface implements Serializable {
 
   public InterfacesInterface(@Nonnull String name) {
     _name = name;
-    _addresses = new LinkedList<>();
+    _addresses = ImmutableList.of();
     _postUpIpRoutes = ImmutableList.of();
   }
 
   public void addAddress(ConcreteInterfaceAddress address) {
-    _addresses.add(address);
+    _addresses =
+        ImmutableList.<ConcreteInterfaceAddress>builder().addAll(_addresses).add(address).build();
   }
 
   @Nonnull
