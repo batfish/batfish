@@ -1,0 +1,59 @@
+! Command: show running-config
+! device: evpn-type5-arista (vEOS, EOS-4.23.0.1F)
+!
+! boot system flash:/vEOS-lab.swi
+!
+service routing protocols model multi-agent
+!
+hostname evpn-type5-arista
+!
+spanning-tree mode mstp
+!
+no aaa root
+!
+username admin privilege 15 role network-admin secret sha512 $6$69IYrwHFES7WCG5R$QTh/VhK3cnmHxCv2iUuwnM10T28LbkJNqvE9waST1YqCi2PVGVs9pl0DepELchKFKF4YwZ20LgpxEcyYDDa0l/
+!
+vlan 130
+   name vrf1
+!
+vrf instance vrf1
+!
+interface Ethernet1
+   no switchport
+   ip address 11.11.11.2/24
+!
+interface Ethernet2
+   no switchport
+   vrf vrf1
+   ip address 12.12.12.2/24
+!
+interface Loopback1
+   ip address 10.10.10.1/32
+!
+interface Vlan130
+   vrf vrf1
+   ip address virtual 10.1.30.1/24
+!
+interface Vxlan1
+   vxlan source-interface Loopback1
+   vxlan udp-port 4789
+   vxlan vrf vrf1 vni 15004
+!
+ip routing
+ip routing vrf vrf1
+!
+router bgp 65002
+   router-id 10.10.10.1
+   neighbor 11.11.11.6 maximum-routes 12000
+   !
+   address-family evpn
+      neighbor 11.11.11.6 activate
+   !
+   vrf vrf1
+      rd 192.168.255.1:15004
+      route-target export evpn 15004:15004
+      neighbor 12.12.12.5 remote-as 65003
+      neighbor 12.12.12.5 maximum-routes 12000
+      network 12.12.12.0/24
+!
+end

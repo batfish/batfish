@@ -1,6 +1,7 @@
 package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -248,5 +249,28 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
       _hashCode = h;
     }
     return h;
+  }
+
+  @Override
+  public String toString() {
+    return toStringHelper(EvpnType5Route.class)
+        .omitNullValues()
+        .add(PROP_NETWORK, _network)
+        .add(PROP_ROUTE_DISTINGUISHER, _routeDistinguisher)
+        .add("nextHop", _nextHop)
+        .add(PROP_ADMINISTRATIVE_COST, _admin)
+        .add(PROP_AS_PATH, _asPath)
+        .add(PROP_CLUSTER_LIST, _clusterList)
+        .add(PROP_COMMUNITIES, _communities)
+        .add(PROP_LOCAL_PREFERENCE, _localPreference)
+        .add(PROP_METRIC, _med)
+        .add(PROP_ORIGINATOR_IP, _originatorIp)
+        .add(PROP_PROTOCOL, _protocol)
+        .add(PROP_RECEIVED_FROM_IP, _receivedFromIp)
+        .add(PROP_RECEIVED_FROM_ROUTE_REFLECTOR_CLIENT, _receivedFromRouteReflectorClient)
+        .add(PROP_SRC_PROTOCOL, _srcProtocol)
+        .add(PROP_TAG, _tag)
+        .add(PROP_WEIGHT, _weight)
+        .toString();
   }
 }
