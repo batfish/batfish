@@ -2,6 +2,7 @@ package org.batfish.representation.cumulus;
 
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nonnull;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 
 /**
@@ -13,6 +14,7 @@ public interface OutOfBandConfiguration {
 
   String getInterfaceVrf(String ifaceName);
 
+  @Nonnull
   List<ConcreteInterfaceAddress> getInterfaceAddresses(String ifaceName);
 
   boolean hasVrf(String vrfName);

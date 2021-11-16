@@ -440,12 +440,10 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
     viIface.setDescription(iface.getDescription());
 
     InterfaceAddress primaryAdress =
-        (iface.getAddresses() == null || iface.getAddresses().isEmpty())
-            ? null
-            : iface.getAddresses().get(0);
+        iface.getAddresses().isEmpty() ? null : iface.getAddresses().get(0);
 
     ImmutableSet.Builder<InterfaceAddress> allAddresses = ImmutableSet.builder();
-    allAddresses.addAll(firstNonNull(iface.getAddresses(), ImmutableList.of()));
+    allAddresses.addAll(iface.getAddresses());
     firstNonNull(iface.getAddressVirtuals(), ImmutableMap.<MacAddress, Set<InterfaceAddress>>of())
         .values()
         .forEach(allAddresses::addAll);
@@ -549,7 +547,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
   void populateCommonInterfaceProperties(
       InterfacesInterface vsIface, org.batfish.datamodel.Interface viIface) {
     // addresses
-    if (vsIface.getAddresses() != null && !vsIface.getAddresses().isEmpty()) {
+    if (!vsIface.getAddresses().isEmpty()) {
       List<ConcreteInterfaceAddress> addresses = vsIface.getAddresses();
       ImmutableList.Builder<ConcreteInterfaceAddress> ownedAddressesBuilder =
           ImmutableList.builder();
@@ -857,7 +855,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
   }
 
   @Override
-  public List<ConcreteInterfaceAddress> getInterfaceAddresses(String ifaceName) {
+  public @Nonnull List<ConcreteInterfaceAddress> getInterfaceAddresses(String ifaceName) {
     checkArgument(
         _interfacesConfiguration.getInterfaces().containsKey(ifaceName),
         "Unknown interface " + ifaceName);
