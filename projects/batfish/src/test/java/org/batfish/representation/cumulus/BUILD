@@ -11,7 +11,6 @@ junit_tests(
         "**/*Test.java",
     ]),
     deps = [
-        ":testlib",
         "//projects/batfish-common-protocol:common",
         "//projects/batfish-common-protocol:common_testlib",
         "//projects/batfish-common-protocol/src/test/java/org/batfish/common/matchers",
@@ -25,20 +24,3 @@ junit_tests(
         "@maven//:org_hamcrest_hamcrest",
     ],
 )
-
-java_library(
-    name = "testlib",
-    testonly = True,
-    srcs = glob(
-        [
-            "MockOutOfBandConfiguration.java",
-        ],
-    ),
-    deps = [
-        "//projects/batfish-common-protocol:common",
-        "//projects/batfish/src/main/java/org/batfish/representation/cumulus",
-        "@maven//:com_google_code_findbugs_jsr305",
-        "@maven//:com_google_guava_guava",
-    ],
-)
-
