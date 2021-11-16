@@ -728,8 +728,6 @@ public final class CumulusConversionsTest {
     org.batfish.datamodel.BgpProcess newProc =
         org.batfish.datamodel.BgpProcess.testBgpProcess(Ip.parse("10.0.0.1"));
 
-    CumulusConcatenatedConfiguration vsConfig = new CumulusConcatenatedConfiguration();
-
     {
       // remove private as is not set
       Configuration viConfig =
@@ -739,7 +737,8 @@ public final class CumulusConversionsTest {
 
       generateBgpCommonPeerConfig(
           viConfig,
-          vsConfig,
+          _oob,
+          _frr,
           neighbor,
           10000L,
           new BgpVrf("vrf"),
@@ -766,7 +765,8 @@ public final class CumulusConversionsTest {
 
       generateBgpCommonPeerConfig(
           viConfig,
-          vsConfig,
+          _oob,
+          _frr,
           neighbor,
           10000L,
           new BgpVrf("vrf"),
