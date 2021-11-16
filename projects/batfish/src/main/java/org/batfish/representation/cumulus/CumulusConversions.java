@@ -1408,8 +1408,7 @@ public final class CumulusConversions {
     // use ImmutableSet to preserve order and remove duplicates
     ImmutableSet.Builder<ConcreteInterfaceAddress> addressesBuilder = ImmutableSet.builder();
     if (oobConfig.hasInterface(ifaceName)) {
-      Optional.ofNullable(oobConfig.getInterfaceAddresses(ifaceName))
-          .ifPresent(addressesBuilder::addAll);
+      addressesBuilder.addAll(oobConfig.getInterfaceAddresses(ifaceName));
     }
     Optional.ofNullable(frrConfig.getInterfaces().get(ifaceName))
         .map(FrrInterface::getIpAddresses)
