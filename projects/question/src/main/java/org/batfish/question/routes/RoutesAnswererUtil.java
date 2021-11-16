@@ -1,5 +1,6 @@
 package org.batfish.question.routes;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static org.batfish.datamodel.table.TableDiff.COL_BASE_PREFIX;
@@ -193,7 +194,7 @@ public class RoutesAnswererUtil {
     Map<String, ColumnMetadata> columnMetadataMap = getTableMetadata(ribProtocol).toColumnMap();
     matchingVrfsByNode.forEach(
         (hostname, vrfName) ->
-            bgpRoutes.get(hostname, vrfName).stream()
+            firstNonNull(bgpRoutes.get(hostname, vrfName), ImmutableSet.<Bgpv4Route>of()).stream()
                 .filter(
                     route ->
                         (network == null || network.equals(route.getNetwork()))
@@ -216,7 +217,8 @@ public class RoutesAnswererUtil {
     Map<String, ColumnMetadata> columnMetadataMap = getTableMetadata(ribProtocol).toColumnMap();
     matchingVrfsByNode.forEach(
         (hostname, vrfName) ->
-            evpnRoutes.get(hostname, vrfName).stream()
+            firstNonNull(evpnRoutes.get(hostname, vrfName), ImmutableSet.<EvpnRoute<?, ?>>of())
+                .stream()
                 .filter(
                     route ->
                         (network == null || network.equals(route.getNetwork()))
