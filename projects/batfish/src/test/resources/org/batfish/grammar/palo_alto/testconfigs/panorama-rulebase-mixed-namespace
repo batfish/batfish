@@ -1,0 +1,34 @@
+set deviceconfig system hostname panorama-rulebase-mixed-namespace
+#
+#
+#
+# Panorama configuration
+#
+set shared application-group app_group1 members [ bgp ]
+#
+#
+#
+# Managed-device configuration
+#
+set device-group DG1 description "test device-group 1"
+set device-group DG1 devices 00000001
+set device-group DG1 application-group app_group2 members [ app_group1 dns ]
+#
+# Network configuration required to make device 00000001 allow traffic through
+set template T1 config devices localhost.localdomain vsys vsys1 zone z1 network layer3 ethernet1/1
+set template T1 config devices localhost.localdomain vsys vsys1 zone z2 network layer3 ethernet1/4
+set template T1 config devices localhost.localdomain vsys vsys1 import network interface [ ethernet1/1 ethernet1/4 ]
+set template T1 config devices localhost.localdomain network interface ethernet ethernet1/1 layer3 ip 1.1.1.1/24
+set template T1 config devices localhost.localdomain network interface ethernet ethernet1/4 layer3 ip 1.1.4.1/24
+set template T1 config devices localhost.localdomain network virtual-router default interface [ ethernet1/1 ethernet1/4 ]
+set template-stack TS1 templates T1
+set template-stack TS1 devices 00000001
+#
+set device-group DG1 pre-rulebase security rules RULE1 from any
+set device-group DG1 pre-rulebase security rules RULE1 to any
+set device-group DG1 pre-rulebase security rules RULE1 source any
+set device-group DG1 pre-rulebase security rules RULE1 source-user any
+set device-group DG1 pre-rulebase security rules RULE1 destination any
+set device-group DG1 pre-rulebase security rules RULE1 service application-default
+set device-group DG1 pre-rulebase security rules RULE1 application app_group2
+set device-group DG1 pre-rulebase security rules RULE1 action allow

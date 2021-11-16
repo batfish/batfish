@@ -66,6 +66,7 @@ import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.palo_alto.PaloAltoConfiguration;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -849,5 +850,41 @@ public class PaloAltoSecurityRuleTest {
         traces.get(flowZ3toZ2MatchApp).get(0).getDisposition(), FlowDisposition.DENIED_OUT);
     assertEquals(
         traces.get(flowZ3toZ2MatchService).get(0).getDisposition(), FlowDisposition.DENIED_OUT);
+  }
+
+  /** Test that application-groups with members in different namespaces are handled correctly. */
+  @Ignore("https://github.com/batfish/batfish/issues/7698")
+  @Test
+  public void testPanoramaRulebaseMixedNamespace() throws IOException {
+    String hostname = "panorama-rulebase-mixed-namespace";
+    Configuration c = parseTextConfigs(hostname).get("00000001");
+    Batfish batfish = getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _folder);
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+
+    Flow flowDeviceApplication =
+        Flow.builder()
+            .setIngressNode("00000001")
+            .setIngressInterface("ethernet1/1")
+            .setSrcIp(Ip.parse("1.1.1.10"))
+            .setDstIp(Ip.parse("1.1.4.10"))
+            .setIpProtocol(IpProtocol.TCP)
+            .setSrcPort(4096)
+            .setDstPort(53)
+            .build();
+    Flow flowSharedApplication = flowDeviceApplication.toBuilder().setDstPort(179).build();
+    Flow flowDenied = flowDeviceApplication.toBuilder().setDstPort(1).build();
+    SortedMap<Flow, List<Trace>> traces =
+        batfish
+            .getTracerouteEngine(snapshot)
+            .computeTraces(
+                ImmutableSet.of(flowDeviceApplication, flowSharedApplication, flowDenied), false);
+
+    // Flow matching application defined in device-group namespace should be successful
+    assertTrue(traces.get(flowDeviceApplication).get(0).getDisposition().isSuccessful());
+    // Flow matching application defined in shared namespace should be successful
+    assertTrue(traces.get(flowSharedApplication).get(0).getDisposition().isSuccessful());
+    // Flow not matching any allowed application should not be successful
+    assertFalse(traces.get(flowDenied).get(0).getDisposition().isSuccessful());
   }
 }
