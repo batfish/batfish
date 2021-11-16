@@ -16,6 +16,7 @@ import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasCommunities;
 import static org.batfish.datamodel.routing_policy.Common.SUMMARY_ONLY_SUPPRESSION_POLICY_NAME;
 import static org.batfish.datamodel.routing_policy.statement.Statements.ExitAccept;
+import static org.batfish.datamodel.routing_policy.statement.Statements.RemovePrivateAs;
 import static org.batfish.representation.cumulus.CumulusConcatenatedConfiguration.LOOPBACK_INTERFACE_NAME;
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_MAX_MED;
 import static org.batfish.representation.cumulus.CumulusConversions.GENERATED_DEFAULT_ROUTE;
@@ -128,6 +129,7 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.representation.cumulus.BgpNeighbor.RemoteAs;
+import org.batfish.representation.cumulus.BgpNeighborIpv4UnicastAddressFamily.RemovePrivateAsMode;
 import org.batfish.vendor.VendorStructureId;
 import org.junit.Before;
 import org.junit.Test;
@@ -712,6 +714,74 @@ public final class CumulusConversionsTest {
             .getStatements()
             .get(1),
         equalTo(REJECT_DEFAULT_ROUTE));
+  }
+
+  @Test
+  public void testGenerateBgpCommonPeerConfig_removePrivateAs() {
+    Ip peerIp = Ip.parse("10.0.0.2");
+    BgpIpNeighbor neighbor = new BgpIpNeighbor("BgpNeighbor", peerIp);
+    neighbor.setRemoteAs(RemoteAs.internal());
+    BgpNeighborIpv4UnicastAddressFamily ipv4UnicastAddressFamily =
+        new BgpNeighborIpv4UnicastAddressFamily();
+    neighbor.setIpv4UnicastAddressFamily(ipv4UnicastAddressFamily);
+
+    org.batfish.datamodel.BgpProcess newProc =
+        org.batfish.datamodel.BgpProcess.testBgpProcess(Ip.parse("10.0.0.1"));
+
+    {
+      // remove private as is not set
+      Configuration viConfig =
+          _nf.configurationBuilder()
+              .setConfigurationFormat(ConfigurationFormat.CUMULUS_CONCATENATED)
+              .build();
+
+      generateBgpCommonPeerConfig(
+          viConfig,
+          _oob,
+          _frr,
+          neighbor,
+          10000L,
+          new BgpVrf("vrf"),
+          newProc,
+          BgpActivePeerConfig.builder().setPeerAddress(peerIp),
+          new Warnings());
+
+      assertTrue(
+          viConfig
+              .getRoutingPolicies()
+              .get(generatedBgpPeerExportPolicyName("vrf", neighbor.getName()))
+              .getStatements()
+              .stream()
+              .noneMatch(s -> s.equals(RemovePrivateAs.toStaticStatement())));
+    }
+    {
+      // remove private as is set
+      ipv4UnicastAddressFamily.setRemovePrivateAsMode(RemovePrivateAsMode.BASIC);
+
+      Configuration viConfig =
+          _nf.configurationBuilder()
+              .setConfigurationFormat(ConfigurationFormat.CUMULUS_CONCATENATED)
+              .build();
+
+      generateBgpCommonPeerConfig(
+          viConfig,
+          _oob,
+          _frr,
+          neighbor,
+          10000L,
+          new BgpVrf("vrf"),
+          newProc,
+          BgpActivePeerConfig.builder().setPeerAddress(peerIp),
+          new Warnings());
+
+      assertTrue(
+          viConfig
+              .getRoutingPolicies()
+              .get(generatedBgpPeerExportPolicyName("vrf", neighbor.getName()))
+              .getStatements()
+              .stream()
+              .anyMatch(s -> s.equals(RemovePrivateAs.toStaticStatement())));
+    }
   }
 
   @Test
