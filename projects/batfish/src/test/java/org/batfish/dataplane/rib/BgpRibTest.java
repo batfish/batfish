@@ -165,7 +165,15 @@ public class BgpRibTest {
   @Test
   public void testBestPathComparator() {
     BgpRib<Bgpv4Route> rib =
-        new Bgpv4Rib(null, BgpTieBreaker.ROUTER_ID, 1, null, false, null, null, null);
+        new Bgpv4Rib(
+            null,
+            BgpTieBreaker.ROUTER_ID,
+            1,
+            null,
+            false,
+            LocalOriginationTypeTieBreaker.NO_PREFERENCE,
+            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
+            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP);
     Bgpv4Route.Builder rb =
         Bgpv4Route.testBuilder()
             .setNetwork(Prefix.ZERO)

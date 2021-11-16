@@ -3591,7 +3591,7 @@ public final class CiscoGrammarTest {
       // Redistribute matching EIGRP route into EBGP
       Bgpv4Route.Builder rb =
           BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
-              matchEigrp, bgpRouterId, nextHopIp, ebgpAdmin, RoutingProtocol.BGP);
+              matchEigrp, bgpRouterId, nextHopIp, ebgpAdmin, RoutingProtocol.BGP, REDISTRIBUTE);
       assertTrue(
           bgpRedistPolicy.processBgpRoute(matchEigrp, rb, ebgpSessionProps, Direction.OUT, null));
       assertThat(
@@ -3616,7 +3616,7 @@ public final class CiscoGrammarTest {
       // Redistribute nonmatching EIGRP route to EBGP
       Bgpv4Route.Builder rb =
           BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
-              noMatchEigrp, bgpRouterId, nextHopIp, ebgpAdmin, RoutingProtocol.BGP);
+              noMatchEigrp, bgpRouterId, nextHopIp, ebgpAdmin, RoutingProtocol.BGP, REDISTRIBUTE);
       assertFalse(
           bgpRedistPolicy.processBgpRoute(noMatchEigrp, rb, ebgpSessionProps, Direction.OUT, null));
     }
@@ -3624,7 +3624,7 @@ public final class CiscoGrammarTest {
       // Redistribute matching EIGRP route to IBGP
       Bgpv4Route.Builder rb =
           BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
-              matchEigrp, bgpRouterId, nextHopIp, ibgpAdmin, RoutingProtocol.IBGP);
+              matchEigrp, bgpRouterId, nextHopIp, ibgpAdmin, RoutingProtocol.IBGP, REDISTRIBUTE);
       assertTrue(
           bgpRedistPolicy.processBgpRoute(matchEigrp, rb, ibgpSessionProps, Direction.OUT, null));
       assertThat(
@@ -3649,7 +3649,7 @@ public final class CiscoGrammarTest {
       // Redistribute nonmatching EIGRP route to IBGP
       Bgpv4Route.Builder rb =
           BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
-              noMatchEigrp, bgpRouterId, nextHopIp, ibgpAdmin, RoutingProtocol.IBGP);
+              noMatchEigrp, bgpRouterId, nextHopIp, ibgpAdmin, RoutingProtocol.IBGP, REDISTRIBUTE);
       assertFalse(
           bgpRedistPolicy.processBgpRoute(noMatchEigrp, rb, ibgpSessionProps, Direction.OUT, null));
     }
@@ -3668,7 +3668,7 @@ public final class CiscoGrammarTest {
               .build();
       Bgpv4Route.Builder rb =
           BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
-              matchEigrpEx, bgpRouterId, nextHopIp, ebgpAdmin, RoutingProtocol.BGP);
+              matchEigrpEx, bgpRouterId, nextHopIp, ebgpAdmin, RoutingProtocol.BGP, REDISTRIBUTE);
       assertTrue(
           bgpRedistPolicy.processBgpRoute(matchEigrpEx, rb, ebgpSessionProps, Direction.OUT, null));
       assertThat(

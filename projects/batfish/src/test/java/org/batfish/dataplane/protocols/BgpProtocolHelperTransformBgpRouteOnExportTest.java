@@ -28,6 +28,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
@@ -161,7 +162,8 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
                   _fromBgpProcess.getRouterId(),
                   _sessionProperties.getLocalIp(),
                   protocol.getDefaultAdministrativeCost(ConfigurationFormat.CISCO_IOS),
-                  protocol)
+                  protocol,
+                  OriginMechanism.REDISTRIBUTE)
               .build(),
           Type.IPV4_UNICAST);
     }
@@ -456,7 +458,8 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
                 _fromBgpProcess.getRouterId(),
                 _sessionProperties.getLocalIp(),
                 170,
-                RoutingProtocol.BGP)
+                RoutingProtocol.BGP,
+                OriginMechanism.REDISTRIBUTE)
             .getTag(),
         equalTo(tag));
   }
@@ -476,7 +479,8 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
                 _fromBgpProcess.getRouterId(),
                 _sessionProperties.getLocalIp(),
                 170,
-                RoutingProtocol.BGP)
+                RoutingProtocol.BGP,
+                OriginMechanism.REDISTRIBUTE)
             .getMetric(),
         equalTo(metric));
   }

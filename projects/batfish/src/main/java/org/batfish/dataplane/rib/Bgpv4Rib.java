@@ -1,6 +1,5 @@
 package org.batfish.dataplane.rib;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.ResolutionRestriction.alwaysTrue;
 import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
 
@@ -122,9 +121,6 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
     _localRouteComparators =
         initLocalRouteComparators(networkNextHopIpTieBreaker, redistributeNextHopIpTieBreaker);
     _localRoutes = new EnumMap<>(OriginMechanism.class);
-    checkArgument(localOriginationTypeTieBreaker != null, "crap");
-    checkArgument(networkNextHopIpTieBreaker != null, "crap");
-    checkArgument(redistributeNextHopIpTieBreaker != null, "crap");
   }
 
   private static @Nonnull Map<OriginMechanism, Comparator<Bgpv4Route>> initLocalRouteComparators(

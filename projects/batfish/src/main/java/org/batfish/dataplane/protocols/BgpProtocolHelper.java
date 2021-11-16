@@ -26,6 +26,7 @@ import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Bgpv4Route.Builder;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.AddressFamily;
@@ -346,7 +347,8 @@ public final class BgpProtocolHelper {
       Ip routerId,
       Ip nextHopIp,
       int adminDistance,
-      RoutingProtocol protocol) {
+      RoutingProtocol protocol,
+      OriginMechanism originMechanism) {
     assert protocol == RoutingProtocol.BGP || protocol == RoutingProtocol.IBGP;
     assert !(routeDecorator.getAbstractRoute() instanceof BgpRoute);
     AbstractRoute route = routeDecorator.getAbstractRoute();
@@ -356,6 +358,7 @@ public final class BgpProtocolHelper {
         .setOriginatorIp(routerId)
         .setProtocol(protocol)
         .setSrcProtocol(route.getProtocol())
+        .setOriginMechanism(originMechanism)
         .setOriginType(OriginType.INCOMPLETE)
         // TODO: support customization of route preference
         .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)

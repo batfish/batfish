@@ -675,10 +675,10 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                 getRouterId(),
                 route.getAbstractRoute().getNextHopIp(),
                 _process.getEbgpAdminCost(),
-                RoutingProtocol.BGP)
+                RoutingProtocol.BGP,
+                originMechanism)
             // Prevent from funneling to main RIB
-            .setNonRouting(true)
-            .setOriginMechanism(originMechanism);
+            .setNonRouting(true);
 
     // Hopefully, the direction should not matter here.
     boolean accept = policy.process(route, bgpBuilder, OUT, _ribExprEvaluator);
@@ -1720,12 +1720,12 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                 false)
                 .toBuilder()
             : BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
-                    exportCandidate,
-                    getRouterId(),
-                    ourSessionProperties.getLocalIp(),
-                    _process.getAdminCost(protocol),
-                    protocol)
-                .setOriginMechanism(REDISTRIBUTE);
+                exportCandidate,
+                getRouterId(),
+                ourSessionProperties.getLocalIp(),
+                _process.getAdminCost(protocol),
+                protocol,
+                REDISTRIBUTE);
 
     // Process transformed outgoing route by the export policy
     boolean shouldExport =

@@ -14,6 +14,7 @@ import static org.batfish.datamodel.Ip.ZERO;
 import static org.batfish.datamodel.IpWildcard.ipWithWildcardMask;
 import static org.batfish.datamodel.Names.generatedBgpIndependentNetworkPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
+import static org.batfish.datamodel.OriginMechanism.REDISTRIBUTE;
 import static org.batfish.datamodel.Route.UNSET_NEXT_HOP_INTERFACE;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDscp;
@@ -216,7 +217,6 @@ import org.batfish.datamodel.LocalRoute;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.Names;
-import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfExternalRoute;
 import org.batfish.datamodel.OspfInterAreaRoute;
@@ -862,7 +862,7 @@ public final class CiscoNxosGrammarTest {
             .setAdmin(bgpAdmin)
             .setLocalPreference(100)
             .setNextHop(NextHopDiscard.instance())
-            .setOriginMechanism(OriginMechanism.REDISTRIBUTE)
+            .setOriginMechanism(REDISTRIBUTE)
             .setOriginType(OriginType.INCOMPLETE)
             .setOriginatorIp(Ip.parse("10.10.10.1"))
             .setProtocol(RoutingProtocol.BGP)
@@ -917,7 +917,7 @@ public final class CiscoNxosGrammarTest {
       // Redistribute matching EIGRP route into EBGP
       Bgpv4Route.Builder rb =
           BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
-              matchEigrp, bgpRouterId, nextHopIp, ebgpAdmin, RoutingProtocol.BGP);
+              matchEigrp, bgpRouterId, nextHopIp, ebgpAdmin, RoutingProtocol.BGP, REDISTRIBUTE);
       assertTrue(
           bgpRedistPolicy.processBgpRoute(matchEigrp, rb, ebgpSessionProps, Direction.OUT, null));
       assertThat(
@@ -932,7 +932,7 @@ public final class CiscoNxosGrammarTest {
                   .setNextHop(NextHopDiscard.instance())
                   .setReceivedFromIp(ZERO)
                   .setOriginatorIp(bgpRouterId)
-                  .setOriginMechanism(OriginMechanism.REDISTRIBUTE)
+                  .setOriginMechanism(REDISTRIBUTE)
                   .setOriginType(OriginType.INCOMPLETE)
                   .setSrcProtocol(RoutingProtocol.EIGRP)
                   .setWeight(BGP_LOCAL_WEIGHT)
@@ -942,7 +942,7 @@ public final class CiscoNxosGrammarTest {
       // Redistribute nonmatching EIGRP route to EBGP
       Bgpv4Route.Builder rb =
           BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
-              noMatchEigrp, bgpRouterId, nextHopIp, ebgpAdmin, RoutingProtocol.BGP);
+              noMatchEigrp, bgpRouterId, nextHopIp, ebgpAdmin, RoutingProtocol.BGP, REDISTRIBUTE);
       assertFalse(
           bgpRedistPolicy.processBgpRoute(noMatchEigrp, rb, ebgpSessionProps, Direction.OUT, null));
     }
@@ -950,7 +950,7 @@ public final class CiscoNxosGrammarTest {
       // Redistribute matching EIGRP route to IBGP
       Bgpv4Route.Builder rb =
           BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
-              matchEigrp, bgpRouterId, nextHopIp, ibgpAdmin, RoutingProtocol.IBGP);
+              matchEigrp, bgpRouterId, nextHopIp, ibgpAdmin, RoutingProtocol.IBGP, REDISTRIBUTE);
       assertTrue(
           bgpRedistPolicy.processBgpRoute(matchEigrp, rb, ibgpSessionProps, Direction.OUT, null));
       assertThat(
@@ -965,7 +965,7 @@ public final class CiscoNxosGrammarTest {
                   .setNextHop(NextHopDiscard.instance())
                   .setReceivedFromIp(ZERO)
                   .setOriginatorIp(bgpRouterId)
-                  .setOriginMechanism(OriginMechanism.REDISTRIBUTE)
+                  .setOriginMechanism(REDISTRIBUTE)
                   .setOriginType(OriginType.INCOMPLETE)
                   .setSrcProtocol(RoutingProtocol.EIGRP)
                   .setWeight(BGP_LOCAL_WEIGHT)
@@ -975,7 +975,7 @@ public final class CiscoNxosGrammarTest {
       // Redistribute nonmatching EIGRP route to IBGP
       Bgpv4Route.Builder rb =
           BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
-              noMatchEigrp, bgpRouterId, nextHopIp, ibgpAdmin, RoutingProtocol.IBGP);
+              noMatchEigrp, bgpRouterId, nextHopIp, ibgpAdmin, RoutingProtocol.IBGP, REDISTRIBUTE);
       assertFalse(
           bgpRedistPolicy.processBgpRoute(noMatchEigrp, rb, ibgpSessionProps, Direction.OUT, null));
     }
@@ -994,7 +994,7 @@ public final class CiscoNxosGrammarTest {
               .build();
       Bgpv4Route.Builder rb =
           BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
-              matchEigrpEx, bgpRouterId, nextHopIp, ebgpAdmin, RoutingProtocol.BGP);
+              matchEigrpEx, bgpRouterId, nextHopIp, ebgpAdmin, RoutingProtocol.BGP, REDISTRIBUTE);
       assertTrue(
           bgpRedistPolicy.processBgpRoute(matchEigrpEx, rb, ebgpSessionProps, Direction.OUT, null));
       assertThat(
@@ -1009,7 +1009,7 @@ public final class CiscoNxosGrammarTest {
                   .setNextHop(NextHopDiscard.instance())
                   .setReceivedFromIp(ZERO)
                   .setOriginatorIp(bgpRouterId)
-                  .setOriginMechanism(OriginMechanism.REDISTRIBUTE)
+                  .setOriginMechanism(REDISTRIBUTE)
                   .setOriginType(OriginType.INCOMPLETE)
                   .setSrcProtocol(RoutingProtocol.EIGRP_EX)
                   .setWeight(BGP_LOCAL_WEIGHT)
