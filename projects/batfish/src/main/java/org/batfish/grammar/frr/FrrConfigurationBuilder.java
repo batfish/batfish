@@ -4,8 +4,6 @@ import static com.google.common.base.Preconditions.checkState;
 import static java.lang.Long.parseLong;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.grammar.frr.FrrParser.Int_exprContext;
-import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_MAX_MED;
-import static org.batfish.representation.cumulus.CumulusConversions.computeRouteMapEntryName;
 import static org.batfish.representation.cumulus.CumulusStructureType.ABSTRACT_INTERFACE;
 import static org.batfish.representation.cumulus.CumulusStructureType.IP_AS_PATH_ACCESS_LIST;
 import static org.batfish.representation.cumulus.CumulusStructureType.IP_COMMUNITY_LIST;
@@ -30,6 +28,8 @@ import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP
 import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_ENTRY_SELF_REFERENCE;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_SET_COMM_LIST_DELETE;
+import static org.batfish.representation.cumulus.FrrConversions.DEFAULT_MAX_MED;
+import static org.batfish.representation.cumulus.FrrConversions.computeRouteMapEntryName;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;

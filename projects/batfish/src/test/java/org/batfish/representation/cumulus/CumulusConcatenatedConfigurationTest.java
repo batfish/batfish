@@ -8,10 +8,10 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInterfaceType;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.representation.cumulus.CumulusConcatenatedConfiguration.isValidVIInterface;
 import static org.batfish.representation.cumulus.CumulusConcatenatedConfiguration.populateLoopbackProperties;
-import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_LOOPBACK_BANDWIDTH;
-import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_PORT_BANDWIDTH;
 import static org.batfish.representation.cumulus.FrrConfiguration.LINK_LOCAL_ADDRESS;
 import static org.batfish.representation.cumulus.FrrConfiguration.LOOPBACK_INTERFACE_NAME;
+import static org.batfish.representation.cumulus.FrrConversions.DEFAULT_LOOPBACK_BANDWIDTH;
+import static org.batfish.representation.cumulus.FrrConversions.DEFAULT_PORT_BANDWIDTH;
 import static org.batfish.representation.cumulus.InterfaceConverter.BRIDGE_NAME;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.allOf;
@@ -460,7 +460,7 @@ public class CumulusConcatenatedConfigurationTest {
                             .build()));
     c.getAllInterfaces().get(iface3.getName()).setActive(false);
 
-    vsConfig.initVrfStaticRoutes(c);
+    vsConfig.convertStaticRoutes(c);
 
     // should only have routes from iface0
     assertThat(

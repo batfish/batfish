@@ -3,23 +3,14 @@ package org.batfish.representation.cumulus;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
-import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_LOOPBACK_BANDWIDTH;
-import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_LOOPBACK_MTU;
-import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_PORT_BANDWIDTH;
-import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_PORT_MTU;
-import static org.batfish.representation.cumulus.CumulusConversions.SPEED_CONVERSION_FACTOR;
-import static org.batfish.representation.cumulus.CumulusConversions.convertBgpProcess;
-import static org.batfish.representation.cumulus.CumulusConversions.convertClags;
-import static org.batfish.representation.cumulus.CumulusConversions.convertDnsServers;
-import static org.batfish.representation.cumulus.CumulusConversions.convertIpAsPathAccessLists;
-import static org.batfish.representation.cumulus.CumulusConversions.convertIpCommunityLists;
-import static org.batfish.representation.cumulus.CumulusConversions.convertIpPrefixLists;
-import static org.batfish.representation.cumulus.CumulusConversions.convertOspfProcess;
-import static org.batfish.representation.cumulus.CumulusConversions.convertRouteMaps;
-import static org.batfish.representation.cumulus.CumulusConversions.convertVxlans;
-import static org.batfish.representation.cumulus.CumulusConversions.isUsedForBgpUnnumbered;
-import static org.batfish.representation.cumulus.FrrConfiguration.LINK_LOCAL_ADDRESS;
 import static org.batfish.representation.cumulus.FrrConfiguration.LOOPBACK_INTERFACE_NAME;
+import static org.batfish.representation.cumulus.FrrConversions.DEFAULT_LOOPBACK_BANDWIDTH;
+import static org.batfish.representation.cumulus.FrrConversions.DEFAULT_LOOPBACK_MTU;
+import static org.batfish.representation.cumulus.FrrConversions.DEFAULT_PORT_BANDWIDTH;
+import static org.batfish.representation.cumulus.FrrConversions.DEFAULT_PORT_MTU;
+import static org.batfish.representation.cumulus.FrrConversions.SPEED_CONVERSION_FACTOR;
+import static org.batfish.representation.cumulus.FrrConversions.convertFrr;
+import static org.batfish.representation.cumulus.FrrConversions.getOrCreateVrf;
 import static org.batfish.representation.cumulus.InterfaceConverter.BRIDGE_NAME;
 import static org.batfish.representation.cumulus.InterfaceConverter.DEFAULT_BRIDGE_PORTS;
 import static org.batfish.representation.cumulus.InterfaceConverter.DEFAULT_BRIDGE_PVID;
@@ -39,6 +30,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -55,7 +47,6 @@ import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
@@ -68,7 +59,6 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MacAddress;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SwitchportMode;
-import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.vendor_family.cumulus.CumulusFamily;
 import org.batfish.representation.cumulus.CumulusPortsConfiguration.PortSettings;
 import org.batfish.vendor.VendorConfiguration;
@@ -151,103 +141,15 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
     populateFrrInterfaceProperties(c);
     ensureInterfacesHaveTypes(c);
 
-    addBgpUnnumberedLLAs(c);
+    convertStaticRoutes(c);
 
-    // FRR does not generate local routes for connected routes.
-    c.getAllInterfaces()
-        .values()
-        .forEach(
-            i -> {
-              ImmutableSortedMap.Builder<ConcreteInterfaceAddress, ConnectedRouteMetadata>
-                  metadata = ImmutableSortedMap.naturalOrder();
-              for (InterfaceAddress a : i.getAllAddresses()) {
-                if (!(a instanceof ConcreteInterfaceAddress)) {
-                  continue;
-                }
-                ConcreteInterfaceAddress address = (ConcreteInterfaceAddress) a;
-                metadata.put(
-                    address, ConnectedRouteMetadata.builder().setGenerateLocalRoute(false).build());
-              }
-              i.setAddressMetadata(metadata.build());
-            });
-
-    initVrfStaticRoutes(c);
-
-    convertIpAsPathAccessLists(c, _frrConfiguration.getIpAsPathAccessLists());
-    convertIpPrefixLists(c, _frrConfiguration.getIpPrefixLists(), _filename);
-    convertIpCommunityLists(c, _frrConfiguration.getIpCommunityLists());
-    convertRouteMaps(c, _frrConfiguration, _filename, _w);
-    convertDnsServers(c, _frrConfiguration.getIpv4Nameservers());
-    convertClags(c, this, _w);
-
-    // Compute explicit VNI -> VRF mappings for L3 VNIs:
-    Map<Integer, String> vniToVrf =
-        _frrConfiguration.getVrfs().values().stream()
-            .filter(vrf -> vrf.getVni() != null)
-            .collect(ImmutableMap.toImmutableMap(Vrf::getVni, Vrf::getName));
-
-    @Nullable
-    InterfacesInterface vsLoopback =
-        _interfacesConfiguration.getInterfaces().get(LOOPBACK_INTERFACE_NAME);
-    @Nullable
-    Ip loopbackClagVxlanAnycastIp = vsLoopback == null ? null : vsLoopback.getClagVxlanAnycastIp();
-    @Nullable
-    Ip loopbackVxlanLocalTunnelIp = vsLoopback == null ? null : vsLoopback.getVxlanLocalTunnelIp();
-
-    convertVxlans(c, this, vniToVrf, loopbackClagVxlanAnycastIp, loopbackVxlanLocalTunnelIp, _w);
-
-    convertOspfProcess(c, this, _frrConfiguration, _w);
-    addOspfUnnumberedLLAs(c);
-    convertBgpProcess(c, this, _frrConfiguration, _w);
+    convertFrr(this, c, this, _frrConfiguration);
 
     initVendorFamily(c);
     warnDuplicateClagIds();
     markStructures();
 
     return c;
-  }
-
-  /**
-   * For interfaces that didn't get an address via either interfaces or FRR, give them a link-local
-   * address if they are being used for BGP unnumbered.
-   */
-  private void addBgpUnnumberedLLAs(Configuration c) {
-    c.getAllInterfaces()
-        .forEach(
-            (iname, iface) -> {
-              if (iface.getAllAddresses().size() == 0
-                  && isUsedForBgpUnnumbered(iface.getName(), _frrConfiguration.getBgpProcess())) {
-                iface.setAddress(LINK_LOCAL_ADDRESS);
-                iface.setAllAddresses(ImmutableSet.of(LINK_LOCAL_ADDRESS));
-              }
-            });
-  }
-
-  /**
-   * For interfaces that didn't get an address via either interfaces or FRR, give them a link-local
-   * address if they are being used for OSPF unnumbered.
-   */
-  private void addOspfUnnumberedLLAs(Configuration c) {
-    c.getAllInterfaces()
-        .forEach(
-            (iname, iface) -> {
-              if (iface.getInterfaceType() != InterfaceType.LOOPBACK
-                  && iface.getOspfEnabled()
-                  && !iface.getOspfPassive()
-                  && iface.getOspfSettings().getNetworkType() == OspfNetworkType.POINT_TO_POINT
-                  && !iface.getOspfSettings().getOspfAddresses().getAddresses().isEmpty()
-                  && iface.getAllLinkLocalAddresses().isEmpty()) {
-                if (iface.getAddress() == null) {
-                  iface.setAddress(LINK_LOCAL_ADDRESS);
-                }
-                iface.setAllAddresses(
-                    ImmutableSet.<InterfaceAddress>builderWithExpectedSize(
-                            iface.getAllAddresses().size() + 1)
-                        .addAll(iface.getAllAddresses())
-                        .add(LINK_LOCAL_ADDRESS)
-                        .build());
-              }
-            });
   }
 
   private void populatePortsInterfaceProperties(Configuration c) {
@@ -282,9 +184,9 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
         .map(InterfacesInterface::getVrf);
   }
 
+  /** Convert post-up routes from the interfaces file. */
   @VisibleForTesting
-  void initVrfStaticRoutes(Configuration c) {
-    // post-up routes from the interfaces file
+  void convertStaticRoutes(Configuration c) {
     _interfacesConfiguration.getInterfaces().values().stream()
         .filter(CumulusConcatenatedConfiguration::isValidVIInterface)
         .forEach(
@@ -294,20 +196,6 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
               }
               org.batfish.datamodel.Vrf vrf = getOrCreateVrf(c, iface.getVrf());
               iface.getPostUpIpRoutes().forEach(sr -> vrf.getStaticRoutes().add(sr.convert()));
-            });
-
-    // default vrf static routes from the frr file
-    org.batfish.datamodel.Vrf defVrf = c.getVrfs().get(DEFAULT_VRF_NAME);
-    _frrConfiguration.getStaticRoutes().forEach(sr -> defVrf.getStaticRoutes().add(sr.convert()));
-
-    // other vrf static routes from the frr file
-    _frrConfiguration
-        .getVrfs()
-        .values()
-        .forEach(
-            frrVrf -> {
-              org.batfish.datamodel.Vrf newVrf = getOrCreateVrf(c, frrVrf.getName());
-              frrVrf.getStaticRoutes().forEach(sr -> newVrf.getStaticRoutes().add(sr.convert()));
             });
   }
 
@@ -689,15 +577,6 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
         .build();
   }
 
-  @Nonnull
-  private static org.batfish.datamodel.Vrf getOrCreateVrf(
-      Configuration c, @Nullable String vrfName) {
-    if (vrfName == null) {
-      return c.getVrfs().get(DEFAULT_VRF_NAME);
-    }
-    return c.getVrfs().computeIfAbsent(vrfName, org.batfish.datamodel.Vrf::new);
-  }
-
   private void markStructures() {
     markAbstractStructure(
         CumulusStructureType.ABSTRACT_INTERFACE,
@@ -834,6 +713,22 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
   }
 
   @Override
+  public @Nullable Ip getClagVxlanAnycastIp(String ifaceName) {
+    if (!_interfacesConfiguration.getInterfaces().containsKey(ifaceName)) {
+      throw new NoSuchElementException(String.format("Interface %s does not exist", ifaceName));
+    }
+    return _interfacesConfiguration.getInterfaces().get(ifaceName).getClagVxlanAnycastIp();
+  }
+
+  @Override
+  public @Nullable Ip getVxlanLocalTunnelIp(String ifaceName) {
+    if (!_interfacesConfiguration.getInterfaces().containsKey(ifaceName)) {
+      throw new NoSuchElementException(String.format("Interface %s does not exist", ifaceName));
+    }
+    return _interfacesConfiguration.getInterfaces().get(ifaceName).getVxlanLocalTunnelIp();
+  }
+
+  @Override
   public boolean hasVrf(String vrfName) {
     return _interfacesConfiguration.hasVrf(vrfName);
   }
@@ -845,17 +740,17 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
 
   @Override
   public String getInterfaceVrf(String ifaceName) {
-    checkArgument(
-        _interfacesConfiguration.getInterfaces().containsKey(ifaceName),
-        "Unknown interface " + ifaceName);
+    if (!_interfacesConfiguration.getInterfaces().containsKey(ifaceName)) {
+      throw new NoSuchElementException(String.format("Interface %s does not exist", ifaceName));
+    }
     return _interfacesConfiguration.getInterfaces().get(ifaceName).getVrf();
   }
 
   @Override
   public List<ConcreteInterfaceAddress> getInterfaceAddresses(String ifaceName) {
-    checkArgument(
-        _interfacesConfiguration.getInterfaces().containsKey(ifaceName),
-        "Unknown interface " + ifaceName);
+    if (!_interfacesConfiguration.getInterfaces().containsKey(ifaceName)) {
+      throw new NoSuchElementException(String.format("Interface %s does not exist", ifaceName));
+    }
     return _interfacesConfiguration.getInterfaces().get(ifaceName).getAddresses();
   }
 
