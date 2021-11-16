@@ -62,7 +62,6 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.NetworkSnapshot;
-import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.common.runtime.SnapshotRuntimeData;
@@ -73,7 +72,6 @@ import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.DefinedStructureInfo;
@@ -112,23 +110,23 @@ import org.batfish.representation.cumulus.BgpNetwork;
 import org.batfish.representation.cumulus.BgpPeerGroupNeighbor;
 import org.batfish.representation.cumulus.BgpRedistributionPolicy;
 import org.batfish.representation.cumulus.BgpVrfAddressFamilyAggregateNetworkConfiguration;
+import org.batfish.representation.cumulus.CumulusConcatenatedConfiguration;
 import org.batfish.representation.cumulus.CumulusRoutingProtocol;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
 import org.batfish.representation.cumulus.FrrConfiguration;
 import org.batfish.representation.cumulus.FrrInterface;
+import org.batfish.representation.cumulus.InterfacesInterface;
 import org.batfish.representation.cumulus.IpAsPathAccessList;
 import org.batfish.representation.cumulus.IpAsPathAccessListLine;
 import org.batfish.representation.cumulus.IpCommunityListExpanded;
 import org.batfish.representation.cumulus.IpCommunityListExpandedLine;
 import org.batfish.representation.cumulus.IpPrefixList;
 import org.batfish.representation.cumulus.IpPrefixListLine;
-import org.batfish.representation.cumulus.MockOutOfBandConfiguration;
 import org.batfish.representation.cumulus.OspfArea;
 import org.batfish.representation.cumulus.OspfNetworkArea;
 import org.batfish.representation.cumulus.OspfNetworkType;
 import org.batfish.representation.cumulus.OspfVrf;
-import org.batfish.representation.cumulus.OutOfBandConfiguration;
 import org.batfish.representation.cumulus.RedistributionPolicy;
 import org.batfish.representation.cumulus.RouteMap;
 import org.batfish.representation.cumulus.RouteMapEntry;
@@ -136,7 +134,6 @@ import org.batfish.representation.cumulus.RouteMapMatchSourceProtocol.Protocol;
 import org.batfish.representation.cumulus.RouteMapMetricType;
 import org.batfish.representation.cumulus.StaticRoute;
 import org.batfish.representation.cumulus.Vrf;
-import org.batfish.vendor.VendorConfiguration;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -149,51 +146,30 @@ public class FrrGrammarTest {
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
   @Rule public ExpectedException _thrown = ExpectedException.none();
-  private VendorConfiguration _vc;
-  private OutOfBandConfiguration _oob;
-  private FrrConfiguration _frr;
-  private ConvertConfigurationAnswerElement _ccae;
-  private Warnings _warnings;
+  private static CumulusConcatenatedConfiguration _config;
+  private static FrrConfiguration _frr;
+  private static ConvertConfigurationAnswerElement _ccae;
+  private static Warnings _warnings;
 
   private static final String SNAPSHOTS_PREFIX = "org/batfish/grammar/frr/snapshots/";
 
-  private static class MockVendorConfiguration extends VendorConfiguration {
-
-    @Override
-    public String getHostname() {
-      return null;
-    }
-
-    @Override
-    public void setHostname(String hostname) {}
-
-    @Override
-    public void setVendor(ConfigurationFormat format) {}
-
-    @Override
-    public List<Configuration> toVendorIndependentConfigurations()
-        throws VendorConversionException {
-      return null;
-    }
-  }
-
   @Before
   public void setup() {
-    _vc = new MockVendorConfiguration();
-    _vc.setHostname("c");
-    _oob = MockOutOfBandConfiguration.builder().build();
-    _frr = new FrrConfiguration();
+    _config = new CumulusConcatenatedConfiguration();
+    _config.setHostname("c");
+    _frr = _config.getFrrConfiguration();
     _ccae = new ConvertConfigurationAnswerElement();
     _warnings = new Warnings(true, true, true);
-    _vc.setFilename(FILENAME);
-    _vc.setAnswerElement(_ccae);
-    _vc.setWarnings(_warnings);
+    _config.setFilename(FILENAME);
+    _config.setAnswerElement(_ccae);
+    _config.setWarnings(_warnings);
   }
 
-  private DefinedStructureInfo getDefinedStructureInfo(CumulusStructureType type, String name) {
+  private static DefinedStructureInfo getDefinedStructureInfo(
+      CumulusStructureType type, String name) {
     return _ccae
         .getDefinedStructures()
-        .get(_vc.getFilename())
+        .get(_config.getFilename())
         .getOrDefault(type.getDescription(), ImmutableSortedMap.of())
         .get(name);
   }
@@ -202,8 +178,9 @@ public class FrrGrammarTest {
       CumulusStructureType type, String name, CumulusStructureUsage usage) {
     // The config keeps reference data in a private variable, and only copies into the answer
     // element when you set it.
-    _vc.setAnswerElement(new ConvertConfigurationAnswerElement());
-    return _vc.getAnswerElement()
+    _config.setAnswerElement(new ConvertConfigurationAnswerElement());
+    return _config
+        .getAnswerElement()
         .getReferencedStructures()
         .get(FILENAME)
         .get(type.getDescription())
@@ -215,7 +192,7 @@ public class FrrGrammarTest {
    * NB: the parse function can only be used once per test, as it breaks state that is setup cleanly
    * once per test.
    */
-  private void parse(String src) {
+  private static void parse(String src) {
     Settings settings = new Settings();
     settings.setDisableUnrecognized(true);
     settings.setThrowOnLexerError(true);
@@ -228,7 +205,7 @@ public class FrrGrammarTest {
    * NB: the parseLines function can only be used once per test, as it breaks state that is setup
    * cleanly once per test.
    */
-  private void parseLines(String... lines) {
+  private static void parseLines(String... lines) {
     parse(String.join("\n", lines) + "\n");
   }
 
@@ -236,22 +213,22 @@ public class FrrGrammarTest {
    * NB: the parseFromTextWithSettings function can only be used once per test, as it breaks state
    * that is setup cleanly once per test.
    */
-  private void parseFromTextWithSettings(String src, Settings settings) {
+  private static void parseFromTextWithSettings(String src, Settings settings) {
     FrrCombinedParser parser = new FrrCombinedParser(src, settings, 1, 0);
     ParserRuleContext tree =
         Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     ParseTreeWalker walker = new BatfishParseTreeWalker(parser);
     FrrConfigurationBuilder cb =
         new FrrConfigurationBuilder(
-            _vc, _oob, _frr, parser, _warnings, src, new SilentSyntaxCollection());
+            _config, _config, _frr, parser, _warnings, src, new SilentSyntaxCollection());
     walker.walk(cb, tree);
 
     // SerializationUtils.clone will clear transient state, which we save and restore.
     // Or populate with default values for things that supplied by Batfish pre-conversion.
-    Warnings w = _vc.getWarnings();
-    _vc = SerializationUtils.clone(_vc);
-    _vc.setRuntimeData(SnapshotRuntimeData.EMPTY_SNAPSHOT_RUNTIME_DATA);
-    _vc.setWarnings(w);
+    Warnings w = _config.getWarnings();
+    _config = SerializationUtils.clone(_config);
+    _config.setRuntimeData(SnapshotRuntimeData.EMPTY_SNAPSHOT_RUNTIME_DATA);
+    _config.setWarnings(w);
   }
 
   @Test
@@ -1519,7 +1496,7 @@ public class FrrGrammarTest {
     String name = "ROUTE-MAP-NAME";
 
     parse(String.format("route-map %s permit 10\nmatch tag 65555\n", name));
-    Configuration c = _vc.toVendorIndependentConfigurations().get(0);
+    Configuration c = _config.toVendorIndependentConfigurations().get(0);
     RoutingPolicy policy = c.getRoutingPolicies().get(name);
 
     Builder routeBuilder =
@@ -1850,9 +1827,10 @@ public class FrrGrammarTest {
         "  neighbor leaf peer-group",
         "  neighbor leaf remote-as external",
         "  neighbor Ethernet8 interface peer-group leaf");
-    _vc.toVendorIndependentConfigurations();
+    _config.toVendorIndependentConfigurations();
     assertThat(
-        _vc.getWarnings().getRedFlagWarnings(), contains(hasToString(containsString("Ethernet8"))));
+        _config.getWarnings().getRedFlagWarnings(),
+        contains(hasToString(containsString("Ethernet8"))));
   }
 
   @Test
@@ -2021,11 +1999,9 @@ public class FrrGrammarTest {
   /** Interface vrf is configured in the interfaces file and is not explicitly configured in FRR */
   @Test
   public void testInterface_InterfaceDefaultVrf() {
-    _oob =
-        MockOutOfBandConfiguration.builder()
-            .setInterfaces(ImmutableSet.of("swp2"))
-            .setInterfaceVrf(ImmutableMap.of("swp2", "VRF2"))
-            .build();
+    InterfacesInterface i2 = new InterfacesInterface("swp2");
+    i2.setVrf("VRF2");
+    _config.getInterfacesConfiguration().getInterfaces().put("swp2", i2);
     parseLines("interface swp2", "description rt1010svc01 swp1s1");
     assertThat(_warnings.getParseWarnings(), hasSize(0));
     assertThat(_frr.getInterfaces().get("swp2").getAlias(), equalTo("rt1010svc01 swp1s1"));
@@ -2153,7 +2129,7 @@ public class FrrGrammarTest {
             + "router ospf\n"
             + " area 1.1.1.0 range 1.255.0.0/17 cost 10\n");
     long area1110 = Ip.parse("1.1.1.0").asLong();
-    Configuration c = _vc.toVendorIndependentConfigurations().get(0);
+    Configuration c = _config.toVendorIndependentConfigurations().get(0);
     assertThat(c.getDefaultVrf().getOspfProcesses(), aMapWithSize(1));
     OspfProcess proc = Iterables.getOnlyElement(c.getDefaultVrf().getOspfProcesses().values());
     assertThat(proc.getAreas(), hasKeys(5L, area1110));
@@ -2407,7 +2383,7 @@ public class FrrGrammarTest {
   @Test
   public void testConvertSetInterfaceIpAddress() {
     parseLines("interface eth1", "ip address 1.1.1.1/24");
-    Configuration c = _vc.toVendorIndependentConfigurations().get(0);
+    Configuration c = _config.toVendorIndependentConfigurations().get(0);
     assertThat(c.getAllInterfaces(), hasKey("eth1"));
     Interface e1 = c.getAllInterfaces().get("eth1");
     Map<ConcreteInterfaceAddress, ConnectedRouteMetadata> metadata = e1.getAddressMetadata();
