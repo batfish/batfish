@@ -405,6 +405,7 @@ sbafi_neighbor
   | sbafin_allowas_in
   | sbafin_default_originate
   | sbafin_next_hop_self
+  | sbafin_remove_private_as
   | sbafin_route_reflector_client
   | sbafin_send_community
   | sbafin_soft_reconfiguration
@@ -449,6 +450,12 @@ sbafin_next_hop_self
 :
   NEXT_HOP_SELF (FORCE | ALL)? NEWLINE
 ;
+
+sbafin_remove_private_as
+:
+  REMOVE_PRIVATE_AS (ALL REPLACE_AS?)? NEWLINE
+;
+
 
 sbafin_route_reflector_client
 :

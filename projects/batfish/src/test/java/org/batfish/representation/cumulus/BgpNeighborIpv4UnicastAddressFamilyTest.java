@@ -4,9 +4,11 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import org.batfish.representation.cumulus.BgpNeighborIpv4UnicastAddressFamily.RemovePrivateAsMode;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -23,6 +25,7 @@ public class BgpNeighborIpv4UnicastAddressFamilyTest {
     _withSettings.setActivated(true);
     _withSettings.setAllowAsIn(5);
     _withSettings.setDefaultOriginate(true);
+    _withSettings.setRemovePrivateAsMode(RemovePrivateAsMode.REPLACE_AS);
     _withSettings.setRouteReflectorClient(false);
   }
 
@@ -33,6 +36,7 @@ public class BgpNeighborIpv4UnicastAddressFamilyTest {
     assertTrue(_empty.getActivated());
     assertEquals(_empty.getAllowAsIn().intValue(), 5);
     assertTrue(_empty.getDefaultOriginate());
+    assertEquals(_empty.getRemovePrivateAsMode(), RemovePrivateAsMode.REPLACE_AS);
     assertFalse(_empty.getRouteReflectorClient());
   }
 
@@ -43,6 +47,7 @@ public class BgpNeighborIpv4UnicastAddressFamilyTest {
     assertThat(_empty.getActivated(), nullValue());
     assertThat(_empty.getAllowAsIn(), nullValue());
     assertThat(_empty.getDefaultOriginate(), nullValue());
+    assertNull(_empty.getRemovePrivateAsMode());
     assertThat(_empty.getRouteReflectorClient(), nullValue());
   }
 
@@ -53,6 +58,8 @@ public class BgpNeighborIpv4UnicastAddressFamilyTest {
     assertThat(_withSettings.getActivated(), equalTo(_withSettings.getActivated()));
     assertThat(_withSettings.getAllowAsIn(), equalTo(_withSettings.getAllowAsIn()));
     assertThat(_withSettings.getDefaultOriginate(), equalTo(_withSettings.getDefaultOriginate()));
+    assertThat(
+        _withSettings.getRemovePrivateAsMode(), equalTo(_withSettings.getRemovePrivateAsMode()));
     assertThat(
         _withSettings.getRouteReflectorClient(), equalTo(_withSettings.getRouteReflectorClient()));
   }
