@@ -34,8 +34,10 @@ import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Table;
 import java.util.ArrayList;
@@ -44,6 +46,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -137,41 +140,33 @@ public class RoutesAnswererUtil {
    * Returns a {@link Multiset} of {@link Row}s for all routes present in all RIBs
    *
    * @param ribs {@link Map} representing all RIBs of all nodes
-   * @param matchingNodes {@link Set} of hostnames of nodes whose routes are to be returned
+   * @param matchingVrfsByNode {@link Multimap} of vrfs grouped by node from which {@link
+   *     Bgpv4Route}s are to be selected
    * @param network {@link Prefix} of the network used to filter the routes
    * @param protocolSpec {@link RoutingProtocolSpecifier} used to filter the routes
-   * @param vrfRegex Regex used to filter the VRF of routes
    * @return {@link Multiset} of {@link Row}s representing the routes
    */
   static <T extends AbstractRouteDecorator> Multiset<Row> getMainRibRoutes(
       SortedMap<String, SortedMap<String, GenericRib<T>>> ribs,
-      Set<String> matchingNodes,
+      Multimap<String, String> matchingVrfsByNode,
       @Nullable Prefix network,
-      RoutingProtocolSpecifier protocolSpec,
-      String vrfRegex) {
+      RoutingProtocolSpecifier protocolSpec) {
     Multiset<Row> rows = HashMultiset.create();
-    Pattern compiledVrfRegex = Pattern.compile(vrfRegex);
     Map<String, ColumnMetadata> columnMetadataMap =
         getTableMetadata(RibProtocol.MAIN).toColumnMap();
-    ribs.forEach(
-        (node, vrfMap) -> {
-          if (matchingNodes.contains(node)) {
-            vrfMap.forEach(
-                (vrfName, rib) -> {
-                  if (compiledVrfRegex.matcher(vrfName).matches()) {
-                    rib.getRoutes().stream()
-                        .filter(
-                            route ->
-                                (network == null || network.equals(route.getNetwork()))
-                                    && protocolSpec.getProtocols().contains(route.getProtocol()))
-                        .forEach(
-                            route ->
-                                rows.add(
-                                    abstractRouteToRow(node, vrfName, route, columnMetadataMap)));
-                  }
-                });
-          }
-        });
+    matchingVrfsByNode.forEach(
+        (hostname, vrfName) ->
+            Optional.ofNullable(ribs.getOrDefault(hostname, ImmutableSortedMap.of()).get(vrfName))
+                .map(GenericRib::getRoutes)
+                .orElse(ImmutableSet.of())
+                .stream()
+                .filter(
+                    route ->
+                        (network == null || network.equals(route.getNetwork()))
+                            && protocolSpec.getProtocols().contains(route.getProtocol()))
+                .forEach(
+                    route ->
+                        rows.add(abstractRouteToRow(hostname, vrfName, route, columnMetadataMap))));
     return rows;
   }
 
@@ -180,88 +175,57 @@ public class RoutesAnswererUtil {
    *
    * @param bgpRoutes {@link Table} of all {@link Bgpv4Route}s
    * @param ribProtocol {@link RibProtocol}, either {@link RibProtocol#BGP}
-   * @param matchingNodes {@link Set} of nodes from which {@link Bgpv4Route}s are to be selected
+   * @param matchingVrfsByNode {@link Multimap} of vrfs grouped by node from which {@link
+   *     Bgpv4Route}s are to be selected
    * @param network {@link Prefix} of the network used to filter the routes
    * @param protocolSpec {@link RoutingProtocolSpecifier} used to filter the {@link Bgpv4Route}s
-   * @param vrfRegex Regex used to filter the routes based on {@link org.batfish.datamodel.Vrf}
    * @param statuses BGP route statuses that correspond to routes in {@code bgpRoutes}.
    * @return {@link Multiset} of {@link Row}s representing the routes
    */
   static Multiset<Row> getBgpRibRoutes(
       Table<String, String, Set<Bgpv4Route>> bgpRoutes,
       RibProtocol ribProtocol,
-      Set<String> matchingNodes,
+      Multimap<String, String> matchingVrfsByNode,
       @Nullable Prefix network,
       RoutingProtocolSpecifier protocolSpec,
-      String vrfRegex,
       Set<BgpRouteStatus> statuses) {
     Multiset<Row> rows = HashMultiset.create();
     Map<String, ColumnMetadata> columnMetadataMap = getTableMetadata(ribProtocol).toColumnMap();
-    Pattern compiledVrfRegex = Pattern.compile(vrfRegex);
-    matchingNodes.forEach(
-        hostname ->
-            bgpRoutes
-                .row(hostname)
+    matchingVrfsByNode.forEach(
+        (hostname, vrfName) ->
+            bgpRoutes.get(hostname, vrfName).stream()
+                .filter(
+                    route ->
+                        (network == null || network.equals(route.getNetwork()))
+                            && protocolSpec.getProtocols().contains(route.getProtocol()))
                 .forEach(
-                    (vrfName, routes) -> {
-                      if (compiledVrfRegex.matcher(vrfName).matches()) {
-                        routes.stream()
-                            .filter(
-                                route ->
-                                    (network == null || network.equals(route.getNetwork()))
-                                        && protocolSpec
-                                            .getProtocols()
-                                            .contains(route.getProtocol()))
-                            .forEach(
-                                route ->
-                                    rows.add(
-                                        bgpRouteToRow(
-                                            hostname,
-                                            vrfName,
-                                            route,
-                                            statuses,
-                                            columnMetadataMap)));
-                      }
-                    }));
+                    route ->
+                        rows.add(
+                            bgpRouteToRow(hostname, vrfName, route, statuses, columnMetadataMap))));
     return rows;
   }
 
   static Multiset<Row> getEvpnRoutes(
       Table<String, String, Set<EvpnRoute<?, ?>>> evpnRoutes,
       RibProtocol ribProtocol,
-      Set<String> matchingNodes,
+      Multimap<String, String> matchingVrfsByNode,
       @Nullable Prefix network,
       RoutingProtocolSpecifier protocolSpec,
-      String vrfRegex,
       Set<BgpRouteStatus> statuses) {
     Multiset<Row> rows = HashMultiset.create();
     Map<String, ColumnMetadata> columnMetadataMap = getTableMetadata(ribProtocol).toColumnMap();
-    Pattern compiledVrfRegex = Pattern.compile(vrfRegex);
-    matchingNodes.forEach(
-        hostname ->
-            evpnRoutes
-                .row(hostname)
+    matchingVrfsByNode.forEach(
+        (hostname, vrfName) ->
+            evpnRoutes.get(hostname, vrfName).stream()
+                .filter(
+                    route ->
+                        (network == null || network.equals(route.getNetwork()))
+                            && protocolSpec.getProtocols().contains(route.getProtocol()))
                 .forEach(
-                    (vrfName, routes) -> {
-                      if (compiledVrfRegex.matcher(vrfName).matches()) {
-                        routes.stream()
-                            .filter(
-                                route ->
-                                    (network == null || network.equals(route.getNetwork()))
-                                        && protocolSpec
-                                            .getProtocols()
-                                            .contains(route.getProtocol()))
-                            .forEach(
-                                route ->
-                                    rows.add(
-                                        evpnRouteToRow(
-                                            hostname,
-                                            vrfName,
-                                            route,
-                                            statuses,
-                                            columnMetadataMap)));
-                      }
-                    }));
+                    route ->
+                        rows.add(
+                            evpnRouteToRow(
+                                hostname, vrfName, route, statuses, columnMetadataMap))));
     return rows;
   }
 
