@@ -12,7 +12,6 @@ import static org.batfish.datamodel.routing_policy.Environment.Direction.OUT;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.toBgpv4Route;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.transformBgpRouteOnImport;
 import static org.batfish.dataplane.rib.RibDelta.importDeltaToBuilder;
-import static org.batfish.dataplane.rib.RibDelta.importRibDelta;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
@@ -94,7 +93,7 @@ import org.batfish.dataplane.protocols.BgpProtocolHelper;
 import org.batfish.dataplane.protocols.GeneratedRouteHelper;
 import org.batfish.dataplane.rib.BgpRib;
 import org.batfish.dataplane.rib.Bgpv4Rib;
-import org.batfish.dataplane.rib.EvpnRib;
+import org.batfish.dataplane.rib.EvpnMasterRib;
 import org.batfish.dataplane.rib.Rib;
 import org.batfish.dataplane.rib.RibDelta;
 import org.batfish.dataplane.rib.RibDelta.Builder;
@@ -203,20 +202,20 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   @Nonnull private final Set<Bgpv4Route> _importedFromOtherVrfs = new HashSet<>(0);
 
   /** eBGP RIB for EVPN type 3 routes */
-  @Nonnull private EvpnRib<EvpnType3Route> _ebgpType3EvpnRib;
+  @Nonnull private EvpnMasterRib<EvpnType3Route> _ebgpType3EvpnRib;
   /** iBGP RIB for EVPN type 3 routes */
-  @Nonnull private EvpnRib<EvpnType3Route> _ibgpType3EvpnRib;
+  @Nonnull private EvpnMasterRib<EvpnType3Route> _ibgpType3EvpnRib;
   /** Combined RIB for EVPN type 3 routes */
-  @Nonnull private EvpnRib<EvpnType3Route> _evpnType3Rib;
+  @Nonnull private EvpnMasterRib<EvpnType3Route> _evpnType3Rib;
   /** eBGP RIB for EVPN type 5 routes */
-  @Nonnull private EvpnRib<EvpnType5Route> _ebgpType5EvpnRib;
+  @Nonnull private EvpnMasterRib<EvpnType5Route> _ebgpType5EvpnRib;
   /** iBGP RIB for EVPN type 5 routes */
-  @Nonnull private EvpnRib<EvpnType5Route> _ibgpType5EvpnRib;
+  @Nonnull private EvpnMasterRib<EvpnType5Route> _ibgpType5EvpnRib;
   /** Combined RIB for EVPN type 5 routes */
-  @Nonnull private EvpnRib<EvpnType5Route> _evpnType5Rib;
+  @Nonnull private EvpnMasterRib<EvpnType5Route> _evpnType5Rib;
 
   /** Combined EVPN RIB for e/iBGP across all route types */
-  @Nonnull EvpnRib<EvpnRoute<?, ?>> _evpnRib;
+  @Nonnull EvpnMasterRib<EvpnRoute<?, ?>> _evpnRib;
   /** Builder for constructing {@link RibDelta} for routes in {@link #_evpnRib} */
   @Nonnull private Builder<EvpnRoute<?, ?>> _evpnDeltaBuilder = RibDelta.builder();
 
@@ -316,30 +315,22 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
     // EVPN Ribs
     _ebgpType3EvpnRib =
-        new EvpnRib<>(
-            _mainRib, bestPathTieBreaker, null, multiPathMatchMode, clusterListAsIbgpCost);
+        new EvpnMasterRib<>(bestPathTieBreaker, multiPathMatchMode, clusterListAsIbgpCost);
     _ibgpType3EvpnRib =
-        new EvpnRib<>(
-            _mainRib, bestPathTieBreaker, null, multiPathMatchMode, clusterListAsIbgpCost);
+        new EvpnMasterRib<>(bestPathTieBreaker, multiPathMatchMode, clusterListAsIbgpCost);
     _evpnType3Rib =
-        new EvpnRib<>(
-            _mainRib, bestPathTieBreaker, null, multiPathMatchMode, clusterListAsIbgpCost);
+        new EvpnMasterRib<>(bestPathTieBreaker, multiPathMatchMode, clusterListAsIbgpCost);
     /*
      TODO: type5 RIBs are currently unused. Correct implementation blocked on having local bgp
        ribs
     */
     _ebgpType5EvpnRib =
-        new EvpnRib<>(
-            _mainRib, bestPathTieBreaker, null, multiPathMatchMode, clusterListAsIbgpCost);
+        new EvpnMasterRib<>(bestPathTieBreaker, multiPathMatchMode, clusterListAsIbgpCost);
     _ibgpType5EvpnRib =
-        new EvpnRib<>(
-            _mainRib, bestPathTieBreaker, null, multiPathMatchMode, clusterListAsIbgpCost);
+        new EvpnMasterRib<>(bestPathTieBreaker, multiPathMatchMode, clusterListAsIbgpCost);
     _evpnType5Rib =
-        new EvpnRib<>(
-            _mainRib, bestPathTieBreaker, null, multiPathMatchMode, clusterListAsIbgpCost);
-    _evpnRib =
-        new EvpnRib<>(
-            _mainRib, bestPathTieBreaker, null, multiPathMatchMode, clusterListAsIbgpCost);
+        new EvpnMasterRib<>(bestPathTieBreaker, multiPathMatchMode, clusterListAsIbgpCost);
+    _evpnRib = new EvpnMasterRib<>(bestPathTieBreaker, multiPathMatchMode, clusterListAsIbgpCost);
     _evpnInitializationDelta = RibDelta.empty();
     _rtVrfMapping = computeRouteTargetToVrfMap(getAllPeerConfigs(_process));
     assert _rtVrfMapping != null; // Avoid unused warning
@@ -673,10 +664,26 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     // Process EVPN messages and send out updates
     DeltaPair<EvpnType3Route> type3Delta = processEvpnType3Messages(nc, allNodes);
     sendOutEvpnType3Routes(type3Delta._toAdvertise, nc, allNodes);
-    _toMainRib.from(
-        importRibDelta(_evpnRib, importRibDelta(_evpnType3Rib, type3Delta._toMerge._ebgpDelta)));
-    _toMainRib.from(
-        importRibDelta(_evpnRib, importRibDelta(_evpnType3Rib, type3Delta._toMerge._ibgpDelta)));
+    importRibDelta(_evpnRib, importRibDelta(_evpnType3Rib, type3Delta._toMerge._ebgpDelta));
+
+    importRibDelta(_evpnRib, importRibDelta(_evpnType3Rib, type3Delta._toMerge._ibgpDelta));
+  }
+
+  /** TODO: remove this function and directly merge/remove evpn routes like we do for v4 routes. */
+  private static @Nonnull <T extends EvpnRoute<?, ?>, U extends T> RibDelta<T> importRibDelta(
+      EvpnMasterRib<T> rib, RibDelta<U> delta) {
+    RibDelta.Builder<T> builder = RibDelta.builder();
+    delta
+        .getActions()
+        .forEach(
+            action -> {
+              if (action.isWithdrawn()) {
+                builder.from(rib.removeRouteGetDelta(action.getRoute()));
+              } else {
+                builder.from(rib.mergeRouteGetDelta(action.getRoute()));
+              }
+            });
+    return builder.build();
   }
 
   /** Initialize the EVPN RIBs based on EVPN address family config */
@@ -1375,7 +1382,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     assert ourBgpConfig.getEvpnAddressFamily() != null;
     // Reverse the edge so that these are "our" session properties - tail is this node.
     BgpSessionProperties ourSessionProperties = getSessionProperties(_topology, edge.reverse());
-    EvpnRib<R> targetRib =
+    EvpnMasterRib<R> targetRib =
         getRib(clazz, ourSessionProperties.isEbgp() ? RibType.EBGP : RibType.IBGP);
     RibDelta.Builder<R> toAdvertise = RibDelta.builder();
     RibDelta.Builder<R> toMerge = RibDelta.builder();
@@ -2003,14 +2010,14 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
           RouteAdvertisement<R> routeAdvertisement, Class<R> clazz) {
     // TODO: consider switching return value to BgpDelta to differentiate e/iBGP
     RibDelta<R> delta;
-    BgpRib<R> rib = getRib(clazz, RibType.COMBINED);
+    EvpnMasterRib<R> rib = getRib(clazz, RibType.COMBINED);
     if (routeAdvertisement.isWithdrawn()) {
       delta = rib.removeRouteGetDelta(routeAdvertisement.getRoute());
     } else {
       delta = rib.mergeRouteGetDelta(routeAdvertisement.getRoute());
     }
-    // Queue up the routes to be merged into our main RIB
-    _toMainRib.from(importRibDelta(_evpnRib, delta));
+    // TODO: remove, just keep separate ribs per type
+    importRibDelta(_evpnRib, delta);
     return delta;
   }
 
@@ -2337,20 +2344,9 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
   /** Return a RIB based on route type and {@link RibType} */
   @SuppressWarnings("unchecked")
-  private <B extends BgpRoute.Builder<B, R>, R extends BgpRoute<B, R>, T extends BgpRib<R>>
+  private <B extends BgpRoute.Builder<B, R>, R extends EvpnRoute<B, R>, T extends EvpnMasterRib<R>>
       T getRib(Class<R> clazz, RibType type) {
-    if (clazz.equals(Bgpv4Route.class)) {
-      switch (type) {
-        case EBGP:
-          return (T) _ebgpv4Rib;
-        case IBGP:
-          return (T) _ibgpv4Rib;
-        case COMBINED:
-          return (T) _bgpv4Rib;
-        default:
-          throw new IllegalArgumentException("Unsupported RIB type: " + type);
-      }
-    } else if (clazz.equals(EvpnType3Route.class)) {
+    if (clazz.equals(EvpnType3Route.class)) {
       switch (type) {
         case EBGP:
           return (T) _ebgpType3EvpnRib;
