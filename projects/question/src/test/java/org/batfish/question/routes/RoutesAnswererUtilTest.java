@@ -342,7 +342,6 @@ public class RoutesAnswererUtilTest {
     Multiset<Row> rows =
         getEvpnRoutes(
             evpnRouteTable,
-            RibProtocol.EVPN,
             ImmutableMultimap.of("node", "vrf"),
             null,
             RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
@@ -376,7 +375,6 @@ public class RoutesAnswererUtilTest {
     Multiset<Row> rows =
         getEvpnRoutes(
             ImmutableTable.of(), // no EVPN rib for the specifed vrfs
-            RibProtocol.EVPN,
             ImmutableMultimap.of("node", "vrf"),
             null,
             RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,

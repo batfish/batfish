@@ -208,13 +208,13 @@ public class RoutesAnswererUtil {
 
   static Multiset<Row> getEvpnRoutes(
       Table<String, String, Set<EvpnRoute<?, ?>>> evpnRoutes,
-      RibProtocol ribProtocol,
       Multimap<String, String> matchingVrfsByNode,
       @Nullable Prefix network,
       RoutingProtocolSpecifier protocolSpec,
       Set<BgpRouteStatus> statuses) {
     Multiset<Row> rows = HashMultiset.create();
-    Map<String, ColumnMetadata> columnMetadataMap = getTableMetadata(ribProtocol).toColumnMap();
+    Map<String, ColumnMetadata> columnMetadataMap =
+        getTableMetadata(RibProtocol.EVPN).toColumnMap();
     matchingVrfsByNode.forEach(
         (hostname, vrfName) ->
             firstNonNull(evpnRoutes.get(hostname, vrfName), ImmutableSet.<EvpnRoute<?, ?>>of())

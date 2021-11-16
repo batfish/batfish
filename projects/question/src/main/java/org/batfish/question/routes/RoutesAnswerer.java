@@ -156,7 +156,6 @@ public class RoutesAnswerer extends Answerer {
           rows.addAll(
               getEvpnRoutes(
                   dp.getEvpnBackupRoutes(),
-                  RibProtocol.EVPN,
                   matchingVrfsByNode,
                   network,
                   protocolSpec,
@@ -166,7 +165,6 @@ public class RoutesAnswerer extends Answerer {
           rows.addAll(
               getEvpnRoutes(
                   dp.getEvpnRoutes(),
-                  RibProtocol.EVPN,
                   matchingVrfsByNode,
                   network,
                   protocolSpec,
