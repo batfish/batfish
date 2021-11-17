@@ -23,6 +23,7 @@ import static org.batfish.representation.frr.FrrConversions.convertIpCommunityLi
 import static org.batfish.representation.frr.FrrConversions.convertIpPrefixLists;
 import static org.batfish.representation.frr.FrrConversions.convertOspfProcess;
 import static org.batfish.representation.frr.FrrConversions.convertRouteMaps;
+import static org.batfish.representation.frr.FrrConversions.convertStaticRoutes;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultimap;
