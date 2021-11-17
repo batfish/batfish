@@ -17,34 +17,33 @@ import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasCommunities;
 import static org.batfish.datamodel.routing_policy.Common.SUMMARY_ONLY_SUPPRESSION_POLICY_NAME;
 import static org.batfish.datamodel.routing_policy.statement.Statements.ExitAccept;
 import static org.batfish.datamodel.routing_policy.statement.Statements.RemovePrivateAs;
-import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_MAX_MED;
-import static org.batfish.representation.cumulus.CumulusConversions.GENERATED_DEFAULT_ROUTE;
-import static org.batfish.representation.cumulus.CumulusConversions.REJECT_DEFAULT_ROUTE;
-import static org.batfish.representation.cumulus.CumulusConversions.addBgpNeighbor;
-import static org.batfish.representation.cumulus.CumulusConversions.addOspfInterfaces;
-import static org.batfish.representation.cumulus.CumulusConversions.computeBgpNeighborImportRoutingPolicy;
-import static org.batfish.representation.cumulus.CumulusConversions.computeLocalIpForBgpNeighbor;
-import static org.batfish.representation.cumulus.CumulusConversions.computeMatchSuppressedSummaryOnlyPolicyName;
-import static org.batfish.representation.cumulus.CumulusConversions.computeOspfAreas;
-import static org.batfish.representation.cumulus.CumulusConversions.computeOspfExportPolicyName;
-import static org.batfish.representation.cumulus.CumulusConversions.convertIpv4UnicastAddressFamily;
-import static org.batfish.representation.cumulus.CumulusConversions.convertOspfRedistributionPolicy;
-import static org.batfish.representation.cumulus.CumulusConversions.convertVxlans;
-import static org.batfish.representation.cumulus.CumulusConversions.generateBgpCommonPeerConfig;
-import static org.batfish.representation.cumulus.CumulusConversions.getSetMaxMedMetric;
-import static org.batfish.representation.cumulus.CumulusConversions.getSetNextHop;
-import static org.batfish.representation.cumulus.CumulusConversions.inferClusterId;
-import static org.batfish.representation.cumulus.CumulusConversions.inferPeerIp;
-import static org.batfish.representation.cumulus.CumulusConversions.inferRouterId;
-import static org.batfish.representation.cumulus.CumulusConversions.resolveLocalIpFromUpdateSource;
-import static org.batfish.representation.cumulus.CumulusConversions.suppressSummarizedPrefixes;
-import static org.batfish.representation.cumulus.CumulusConversions.toAsPathAccessList;
-import static org.batfish.representation.cumulus.CumulusConversions.toBgpProcess;
-import static org.batfish.representation.cumulus.CumulusConversions.toOspfProcess;
-import static org.batfish.representation.cumulus.CumulusConversions.toRouteFilterLine;
-import static org.batfish.representation.cumulus.CumulusConversions.toRouteFilterList;
-import static org.batfish.representation.cumulus.CumulusConversions.toRouteTarget;
 import static org.batfish.representation.cumulus.FrrConfiguration.LOOPBACK_INTERFACE_NAME;
+import static org.batfish.representation.cumulus.FrrConversions.DEFAULT_MAX_MED;
+import static org.batfish.representation.cumulus.FrrConversions.GENERATED_DEFAULT_ROUTE;
+import static org.batfish.representation.cumulus.FrrConversions.REJECT_DEFAULT_ROUTE;
+import static org.batfish.representation.cumulus.FrrConversions.addBgpNeighbor;
+import static org.batfish.representation.cumulus.FrrConversions.addOspfInterfaces;
+import static org.batfish.representation.cumulus.FrrConversions.computeBgpNeighborImportRoutingPolicy;
+import static org.batfish.representation.cumulus.FrrConversions.computeLocalIpForBgpNeighbor;
+import static org.batfish.representation.cumulus.FrrConversions.computeMatchSuppressedSummaryOnlyPolicyName;
+import static org.batfish.representation.cumulus.FrrConversions.computeOspfAreas;
+import static org.batfish.representation.cumulus.FrrConversions.computeOspfExportPolicyName;
+import static org.batfish.representation.cumulus.FrrConversions.convertIpv4UnicastAddressFamily;
+import static org.batfish.representation.cumulus.FrrConversions.convertOspfRedistributionPolicy;
+import static org.batfish.representation.cumulus.FrrConversions.generateBgpCommonPeerConfig;
+import static org.batfish.representation.cumulus.FrrConversions.getSetMaxMedMetric;
+import static org.batfish.representation.cumulus.FrrConversions.getSetNextHop;
+import static org.batfish.representation.cumulus.FrrConversions.inferClusterId;
+import static org.batfish.representation.cumulus.FrrConversions.inferPeerIp;
+import static org.batfish.representation.cumulus.FrrConversions.inferRouterId;
+import static org.batfish.representation.cumulus.FrrConversions.resolveLocalIpFromUpdateSource;
+import static org.batfish.representation.cumulus.FrrConversions.suppressSummarizedPrefixes;
+import static org.batfish.representation.cumulus.FrrConversions.toAsPathAccessList;
+import static org.batfish.representation.cumulus.FrrConversions.toBgpProcess;
+import static org.batfish.representation.cumulus.FrrConversions.toOspfProcess;
+import static org.batfish.representation.cumulus.FrrConversions.toRouteFilterLine;
+import static org.batfish.representation.cumulus.FrrConversions.toRouteFilterList;
+import static org.batfish.representation.cumulus.FrrConversions.toRouteTarget;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
@@ -134,8 +133,8 @@ import org.batfish.vendor.VendorStructureId;
 import org.junit.Before;
 import org.junit.Test;
 
-/** Test for {@link CumulusConversions}. */
-public final class CumulusConversionsTest {
+/** Test for {@link FrrConversions}. */
+public final class FrrConversionsTest {
   private NetworkFactory _nf;
   private Configuration _c;
   private Vrf _v;
@@ -147,8 +146,8 @@ public final class CumulusConversionsTest {
     _nf = new NetworkFactory();
     _c = _nf.configurationBuilder().build();
     _v = _nf.vrfBuilder().setOwner(_c).build();
-    _oob = new CumulusConcatenatedConfiguration();
-    _frr = ((CumulusConcatenatedConfiguration) _oob).getFrrConfiguration();
+    _oob = MockOutOfBandConfiguration.builder().build();
+    _frr = new FrrConfiguration();
     _frr.setOspfProcess(new OspfProcess());
     _frr.setBgpProcess(new BgpProcess());
   }
@@ -846,22 +845,17 @@ public final class CumulusConversionsTest {
 
     c.setVrfs(ImmutableMap.of(vrf1.getName(), vrf1, vrf2.getName(), vrf2));
 
-    InterfacesInterface vxlan1 = new InterfacesInterface("vxlan1");
-    vxlan1.setVxlanId(1);
-    vxlan1.createOrGetBridgeSettings().setAccess(1);
+    Vxlan vxlan1 = new Vxlan("vxlan1");
+    vxlan1.setId(1);
+    vxlan1.setBridgeAccessVlan(1);
 
-    InterfacesInterface vxlan2 = new InterfacesInterface("vxlan2");
-    vxlan2.setVxlanId(2);
-    vxlan2.createOrGetBridgeSettings().setAccess(2);
+    Vxlan vxlan2 = new Vxlan("vxlan2");
+    vxlan2.setId(2);
+    vxlan2.setBridgeAccessVlan(2);
 
-    FrrConfiguration frrConfiguration = new FrrConfiguration();
-    frrConfiguration.setBgpProcess(new BgpProcess());
-
-    CumulusConcatenatedConfiguration vsConfig =
-        CumulusConcatenatedConfiguration.builder()
-            .setHostname("c")
-            .addInterfaces(ImmutableMap.of(vxlan1.getName(), vxlan1, vxlan2.getName(), vxlan2))
-            .setFrrConfiguration(frrConfiguration)
+    OutOfBandConfiguration oob =
+        MockOutOfBandConfiguration.builder()
+            .setVxlans(ImmutableMap.of(vxlan1.getName(), vxlan1, vxlan2.getName(), vxlan2))
             .build();
 
     BgpVrf bgpVrf = new BgpVrf(DEFAULT_VRF_NAME);
@@ -883,8 +877,8 @@ public final class CumulusConversionsTest {
 
     generateBgpCommonPeerConfig(
         c,
-        vsConfig,
-        vsConfig.getFrrConfiguration(),
+        oob,
+        _frr,
         neighbor,
         localAs,
         bgpVrf,
@@ -913,14 +907,6 @@ public final class CumulusConversionsTest {
   /** Test that L2 VPN EVPN address family route reflect is set correctly */
   @Test
   public void testGenerateBgpCommonPeerConfig_L2vpnRouteReflector() {
-    FrrConfiguration frr = new FrrConfiguration();
-    frr.setBgpProcess(new BgpProcess());
-    CumulusConcatenatedConfiguration oob =
-        CumulusConcatenatedConfiguration.builder()
-            .setHostname("c")
-            .setFrrConfiguration(frr)
-            .build();
-
     BgpVrf bgpVrf = new BgpVrf(DEFAULT_VRF_NAME);
     bgpVrf.setL2VpnEvpn(new BgpL2vpnEvpnAddressFamily());
 
@@ -937,8 +923,8 @@ public final class CumulusConversionsTest {
     // we didn't set route reflector yet
     generateBgpCommonPeerConfig(
         new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED),
-        oob,
-        frr,
+        _oob,
+        _frr,
         neighbor,
         101L,
         bgpVrf,
@@ -951,8 +937,8 @@ public final class CumulusConversionsTest {
     bgpNeighborL2vpnEvpnAddressFamily.setRouteReflectorClient(true);
     generateBgpCommonPeerConfig(
         new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED),
-        oob,
-        frr,
+        _oob,
+        _frr,
         neighbor,
         101L,
         bgpVrf,
@@ -1231,8 +1217,7 @@ public final class CumulusConversionsTest {
             ImmutableMap.of(),
             new Warnings());
     assertThat(
-        ospfProcess.getMaxMetricTransitLinks(),
-        equalTo(CumulusConversions.DEFAULT_OSPF_MAX_METRIC));
+        ospfProcess.getMaxMetricTransitLinks(), equalTo(FrrConversions.DEFAULT_OSPF_MAX_METRIC));
   }
 
   @Test
@@ -1369,10 +1354,6 @@ public final class CumulusConversionsTest {
 
   @Test
   public void testAddOspfInterfaces_NoArea() {
-    CumulusConcatenatedConfiguration concatenatedConfiguration =
-        new CumulusConcatenatedConfiguration();
-    concatenatedConfiguration.getFrrConfiguration().getOrCreateInterface("iface").getOrCreateOspf();
-
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
     org.batfish.datamodel.Interface viIface =
         org.batfish.datamodel.Interface.builder()
@@ -1380,7 +1361,10 @@ public final class CumulusConversionsTest {
             .setVrf(vrf)
             .setType(PHYSICAL)
             .build();
+    Map<String, org.batfish.datamodel.Interface> ifaceMap =
+        ImmutableMap.of(viIface.getName(), viIface);
 
+    addOspfInterfaces(_oob, _frr, ifaceMap, "1", new Warnings());
     assertNull(viIface.getOspfAreaName());
   }
 
@@ -1952,47 +1936,6 @@ public final class CumulusConversionsTest {
             .setType(PHYSICAL)
             .build();
     assertEquals(inferPeerIp(viIface), Optional.empty());
-  }
-
-  @Test
-  public void testConvertVxlan_localIpPrecedence() {
-    Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
-    Vrf vrf = new Vrf("vrf");
-    c.setVrfs(ImmutableMap.of(vrf.getName(), vrf));
-
-    Ip vxlanLocalTunnelIp = Ip.parse("1.1.1.1");
-    Ip loopbackTunnelIp = Ip.parse("2.2.2.2");
-    Ip loopbackAnycastIp = Ip.parse("3.3.3.3");
-
-    CumulusConcatenatedConfiguration vsConfig = new CumulusConcatenatedConfiguration();
-    InterfacesInterface iface =
-        vsConfig.getInterfacesConfiguration().createOrGetInterface("vxlan1001");
-    iface.setVxlanId(1001);
-    iface.setVxlanLocalTunnelIp(vxlanLocalTunnelIp);
-    iface.createOrGetBridgeSettings().setAccess(101);
-
-    // vxlan's local tunnel ip should win when anycast is null
-    convertVxlans(
-        c, vsConfig, ImmutableMap.of(1001, vrf.getName()), null, loopbackTunnelIp, new Warnings());
-    assertThat(vrf.getLayer3Vnis().get(1001).getSourceAddress(), equalTo(vxlanLocalTunnelIp));
-
-    // anycast should win if non-null
-    vrf.setLayer3Vnis(ImmutableList.of()); // wipe out prior state
-    convertVxlans(
-        c,
-        vsConfig,
-        ImmutableMap.of(1001, vrf.getName()),
-        loopbackAnycastIp,
-        loopbackTunnelIp,
-        new Warnings());
-    assertThat(vrf.getLayer3Vnis().get(1001).getSourceAddress(), equalTo(loopbackAnycastIp));
-
-    // loopback tunnel ip should win when nothing else is present
-    vrf.setLayer3Vnis(ImmutableList.of()); // wipe out prior state
-    iface.setVxlanLocalTunnelIp(null);
-    convertVxlans(
-        c, vsConfig, ImmutableMap.of(1001, vrf.getName()), null, loopbackTunnelIp, new Warnings());
-    assertThat(vrf.getLayer3Vnis().get(1001).getSourceAddress(), equalTo(loopbackTunnelIp));
   }
 
   @Test
