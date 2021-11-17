@@ -25,6 +25,4 @@ public interface OutOfBandConfiguration {
 
   // TODO: Simplify and unbundle what is happening in this method
   Optional<String> getVrfForVlan(Integer bridgeAccessVlan);
-
-  Map<String, InterfaceClagSettings> getClagSettings();
 }

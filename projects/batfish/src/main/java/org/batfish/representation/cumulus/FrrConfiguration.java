@@ -3,7 +3,6 @@ package org.batfish.representation.cumulus;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.representation.cumulus.BgpProcess.BGP_UNNUMBERED_IP;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
 import java.util.Collection;
@@ -25,7 +24,6 @@ import org.batfish.vendor.VendorConfiguration;
 public class FrrConfiguration implements Serializable {
 
   public static final String LOOPBACK_INTERFACE_NAME = "lo";
-  @VisibleForTesting public static final String FRR_CLAG_DOMAIN_ID = "~FRR_CLAG_DOMAIN~";
   public static final @Nonnull LinkLocalAddress LINK_LOCAL_ADDRESS =
       LinkLocalAddress.of(BGP_UNNUMBERED_IP);
 

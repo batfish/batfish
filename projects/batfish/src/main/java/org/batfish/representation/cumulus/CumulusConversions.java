@@ -20,9 +20,7 @@ import static org.batfish.datamodel.routing_policy.Common.initDenyAllBgpRedistri
 import static org.batfish.datamodel.routing_policy.statement.Statements.RemovePrivateAs;
 import static org.batfish.representation.cumulus.BgpProcess.BGP_UNNUMBERED_IP;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.VI_PROTOCOLS_MAP;
-import static org.batfish.representation.cumulus.FrrConfiguration.FRR_CLAG_DOMAIN_ID;
 import static org.batfish.representation.cumulus.FrrConfiguration.LOOPBACK_INTERFACE_NAME;
-import static org.batfish.representation.cumulus.InterfaceConverter.getSuperInterfaceName;
 import static org.batfish.representation.cumulus.OspfInterface.DEFAULT_OSPF_DEAD_INTERVAL;
 import static org.batfish.representation.cumulus.OspfInterface.DEFAULT_OSPF_HELLO_INTERVAL;
 import static org.batfish.representation.cumulus.OspfProcess.DEFAULT_OSPF_PROCESS_NAME;
@@ -70,8 +68,6 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.LinkLocalAddress;
-import org.batfish.datamodel.Mlag;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
@@ -155,8 +151,6 @@ public final class CumulusConversions {
 
   private static final Long DEFAULT_REDISTRIBUTE_METRIC = 20L;
   private static final OspfMetricType DEFAULT_REDISTRIBUTE_METRIC_TYPE = OspfMetricType.E2;
-
-  public static final Ip CLAG_LINK_LOCAL_IP = Ip.parse("169.254.40.94");
 
   public static final long DEFAULT_MAX_MED = 4294967294L;
   public static final long DEFAULT_OSPF_MAX_METRIC = 0xFFFF;
@@ -1688,44 +1682,6 @@ public final class CumulusConversions {
         ipv4Nameservers.stream()
             .map(Object::toString)
             .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())));
-  }
-
-  static void convertClags(Configuration c, OutOfBandConfiguration vsConfig, Warnings w) {
-    Map<String, InterfaceClagSettings> clagSourceInterfaces = vsConfig.getClagSettings();
-    if (clagSourceInterfaces.isEmpty()) {
-      return;
-    }
-    if (clagSourceInterfaces.size() > 1) {
-      w.redFlag(
-          String.format(
-              "CLAG configuration on multiple peering interfaces is unsupported: %s",
-              clagSourceInterfaces.keySet()));
-      return;
-    }
-    // Interface clagSourceInterface = clagSourceInterfaces.get(0);
-    Entry<String, InterfaceClagSettings> entry = clagSourceInterfaces.entrySet().iterator().next();
-    String sourceInterfaceName = entry.getKey();
-    InterfaceClagSettings clagSettings = entry.getValue();
-    Ip peerAddress = clagSettings.getPeerIp();
-    // Special case link-local addresses when no other addresses are defined
-    org.batfish.datamodel.Interface viInterface = c.getAllInterfaces().get(sourceInterfaceName);
-    if (peerAddress == null
-        && clagSettings.isPeerIpLinkLocal()
-        && viInterface.getAllAddresses().isEmpty()) {
-      LinkLocalAddress lla = LinkLocalAddress.of(CLAG_LINK_LOCAL_IP);
-      viInterface.setAddress(lla);
-      viInterface.setAllAddresses(ImmutableSet.of(lla));
-    }
-    String peerInterfaceName = getSuperInterfaceName(sourceInterfaceName);
-    c.setMlags(
-        ImmutableMap.of(
-            FRR_CLAG_DOMAIN_ID,
-            Mlag.builder()
-                .setId(FRR_CLAG_DOMAIN_ID)
-                .setLocalInterface(sourceInterfaceName)
-                .setPeerAddress(peerAddress)
-                .setPeerInterface(peerInterfaceName)
-                .build()));
   }
 
   /**

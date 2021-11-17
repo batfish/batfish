@@ -9,7 +9,6 @@ import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_PORT
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_PORT_MTU;
 import static org.batfish.representation.cumulus.CumulusConversions.SPEED_CONVERSION_FACTOR;
 import static org.batfish.representation.cumulus.CumulusConversions.convertBgpProcess;
-import static org.batfish.representation.cumulus.CumulusConversions.convertClags;
 import static org.batfish.representation.cumulus.CumulusConversions.convertDnsServers;
 import static org.batfish.representation.cumulus.CumulusConversions.convertIpAsPathAccessLists;
 import static org.batfish.representation.cumulus.CumulusConversions.convertIpCommunityLists;
@@ -65,7 +64,9 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.MacAddress;
+import org.batfish.datamodel.Mlag;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.ospf.OspfNetworkType;
@@ -87,6 +88,9 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
   public static final Pattern VLAN_INTERFACE_PATTERN = Pattern.compile("^vlan([0-9]+)$");
   public static final Pattern VXLAN_INTERFACE_PATTERN = Pattern.compile("^vxlan([0-9]+)$");
   public static final Pattern SUBINTERFACE_PATTERN = Pattern.compile("^(.*)\\.([0-9]+)$");
+
+  public static final Ip CLAG_LINK_LOCAL_IP = Ip.parse("169.254.40.94");
+  @VisibleForTesting public static final String CLAG_DOMAIN_ID = "~CLAG_DOMAIN~";
 
   @Nonnull private String _hostname;
 
@@ -687,6 +691,48 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
         .build();
   }
 
+  static void convertClags(Configuration c, CumulusConcatenatedConfiguration vsConfig, Warnings w) {
+    Map<String, InterfaceClagSettings> clagSourceInterfaces =
+        vsConfig._interfacesConfiguration.getInterfaces().values().stream()
+            .filter(iface -> iface.getClagSettings() != null)
+            .collect(
+                ImmutableMap.toImmutableMap(
+                    InterfacesInterface::getName, InterfacesInterface::getClagSettings));
+    if (clagSourceInterfaces.isEmpty()) {
+      return;
+    }
+    if (clagSourceInterfaces.size() > 1) {
+      w.redFlag(
+          String.format(
+              "CLAG configuration on multiple peering interfaces is unsupported: %s",
+              clagSourceInterfaces.keySet()));
+      return;
+    }
+    Entry<String, InterfaceClagSettings> entry = clagSourceInterfaces.entrySet().iterator().next();
+    String sourceInterfaceName = entry.getKey();
+    InterfaceClagSettings clagSettings = entry.getValue();
+    Ip peerAddress = clagSettings.getPeerIp();
+    // Special case link-local addresses when no other addresses are defined
+    org.batfish.datamodel.Interface viInterface = c.getAllInterfaces().get(sourceInterfaceName);
+    if (peerAddress == null
+        && clagSettings.isPeerIpLinkLocal()
+        && viInterface.getAllAddresses().isEmpty()) {
+      LinkLocalAddress lla = LinkLocalAddress.of(CLAG_LINK_LOCAL_IP);
+      viInterface.setAddress(lla);
+      viInterface.setAllAddresses(ImmutableSet.of(lla));
+    }
+    String peerInterfaceName = getSuperInterfaceName(sourceInterfaceName);
+    c.setMlags(
+        ImmutableMap.of(
+            CLAG_DOMAIN_ID,
+            Mlag.builder()
+                .setId(CLAG_DOMAIN_ID)
+                .setLocalInterface(sourceInterfaceName)
+                .setPeerAddress(peerAddress)
+                .setPeerInterface(peerInterfaceName)
+                .build()));
+  }
+
   @Nonnull
   private static org.batfish.datamodel.Vrf getOrCreateVrf(
       Configuration c, @Nullable String vrfName) {
@@ -819,16 +865,6 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
         .filter(InterfaceConverter::isVxlan)
         .map(InterfaceConverter::convertVxlan)
         .collect(ImmutableMap.toImmutableMap(Vxlan::getName, vxlan -> vxlan));
-  }
-
-  @Override
-  @Nonnull
-  public Map<String, InterfaceClagSettings> getClagSettings() {
-    return _interfacesConfiguration.getInterfaces().values().stream()
-        .filter(iface -> iface.getClagSettings() != null)
-        .collect(
-            ImmutableMap.toImmutableMap(
-                InterfacesInterface::getName, InterfacesInterface::getClagSettings));
   }
 
   @Override
