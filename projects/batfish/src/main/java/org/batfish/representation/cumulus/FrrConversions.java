@@ -61,7 +61,6 @@ import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
@@ -130,7 +129,6 @@ import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.representation.cumulus.BgpNeighborIpv4UnicastAddressFamily.RemovePrivateAsMode;
-import org.batfish.vendor.VendorConfiguration;
 import org.batfish.vendor.VendorStructureId;
 
 /** Utilities that convert Cumulus-specific representations to vendor-independent model. */
@@ -195,62 +193,10 @@ public final class FrrConversions {
   }
 
   /**
-   * The entry point for FRR conversions.
-   *
-   * <p>Before this function is called, all required VI interfaces must have been initialized and
-   * configured as needed. This method makes no changes to VI interface properties other than adding
-   * LLAs for BGP and OSPF. Out-of-band static routes must also have been setup.
-   *
-   * <p>This method will configure FRR static routes and aspects related to BGP and OSPF. It does
-   * not configure MLAG and VXLAN, which are left in the OutOfBand domain.
-   *
-   * @param vc The VS configuration object of which this FRR configuration is part of.
-   * @param c The partially initialized (as noted above) VI configuration object.
-   * @param oobConfig VS configuration elements (e.g., ports and interfaces) configured outside FRR.
-   * @param frrConfig The FRR configuration object.
-   */
-  public static void convertFrr(
-      VendorConfiguration vc,
-      Configuration c,
-      OutOfBandConfiguration oobConfig,
-      FrrConfiguration frrConfig) {
-
-    // FRR does not generate local routes for connected routes.
-    c.getAllInterfaces()
-        .values()
-        .forEach(
-            i -> {
-              ImmutableSortedMap.Builder<ConcreteInterfaceAddress, ConnectedRouteMetadata>
-                  metadata = ImmutableSortedMap.naturalOrder();
-              for (InterfaceAddress a : i.getAllAddresses()) {
-                if (!(a instanceof ConcreteInterfaceAddress)) {
-                  continue;
-                }
-                ConcreteInterfaceAddress address = (ConcreteInterfaceAddress) a;
-                metadata.put(
-                    address, ConnectedRouteMetadata.builder().setGenerateLocalRoute(false).build());
-              }
-              i.setAddressMetadata(metadata.build());
-            });
-
-    addBgpUnnumberedLLAs(c, frrConfig);
-    convertStaticRoutes(c, frrConfig);
-    convertIpAsPathAccessLists(c, frrConfig.getIpAsPathAccessLists());
-    convertIpPrefixLists(c, frrConfig.getIpPrefixLists(), vc.getFilename());
-    convertIpCommunityLists(c, frrConfig.getIpCommunityLists());
-    convertRouteMaps(c, frrConfig, vc.getFilename(), vc.getWarnings());
-    convertDnsServers(c, frrConfig.getIpv4Nameservers());
-
-    convertOspfProcess(c, oobConfig, frrConfig, vc.getWarnings());
-    addOspfUnnumberedLLAs(c);
-    convertBgpProcess(c, oobConfig, frrConfig, vc.getWarnings());
-  }
-
-  /**
    * For interfaces that didn't get an address via either OutOfBand or FRR, give them a link-local
    * address if they are being used for BGP unnumbered.
    */
-  private static void addBgpUnnumberedLLAs(Configuration c, FrrConfiguration frrConfiguration) {
+  static void addBgpUnnumberedLLAs(Configuration c, FrrConfiguration frrConfiguration) {
     c.getAllInterfaces()
         .forEach(
             (iname, iface) -> {
@@ -266,7 +212,7 @@ public final class FrrConversions {
    * For interfaces that didn't get an address via either OutOfBand or FRR, give them a link-local
    * address if they are being used for OSPF unnumbered.
    */
-  private static void addOspfUnnumberedLLAs(Configuration c) {
+  public static void addOspfUnnumberedLLAs(Configuration c) {
     c.getAllInterfaces()
         .forEach(
             (iname, iface) -> {
@@ -290,7 +236,7 @@ public final class FrrConversions {
             });
   }
 
-  private static void convertStaticRoutes(Configuration c, FrrConfiguration frrConfig) {
+  static void convertStaticRoutes(Configuration c, FrrConfiguration frrConfig) {
     // default vrf static routes
     org.batfish.datamodel.Vrf defVrf = c.getVrfs().get(DEFAULT_VRF_NAME);
     frrConfig.getStaticRoutes().forEach(sr -> defVrf.getStaticRoutes().add(sr.convert()));
@@ -411,7 +357,7 @@ public final class FrrConversions {
         ImmutableList.of());
   }
 
-  private static void convertBgpProcess(
+  public static void convertBgpProcess(
       Configuration c, OutOfBandConfiguration oobConfig, FrrConfiguration frrConfig, Warnings w) {
     BgpProcess bgpProcess = frrConfig.getBgpProcess();
     if (bgpProcess == null) {
@@ -1273,7 +1219,7 @@ public final class FrrConversions {
             .anyMatch(Predicate.isEqual(ifaceName));
   }
 
-  private static void convertOspfProcess(
+  public static void convertOspfProcess(
       Configuration c, OutOfBandConfiguration oobConfig, FrrConfiguration frrConfig, Warnings w) {
     @Nullable OspfProcess ospfProcess = frrConfig.getOspfProcess();
     if (ospfProcess == null) {
@@ -1614,7 +1560,7 @@ public final class FrrConversions {
     }
   }
 
-  private static void convertIpCommunityLists(
+  public static void convertIpCommunityLists(
       Configuration c, Map<String, IpCommunityList> ipCommunityLists) {
     // create CommunitySetMatchExpr for route-map match community
     ipCommunityLists.forEach(
@@ -1729,7 +1675,7 @@ public final class FrrConversions {
     return output;
   }
 
-  private static void convertIpAsPathAccessLists(
+  public static void convertIpAsPathAccessLists(
       Configuration c, Map<String, IpAsPathAccessList> ipAsPathAccessLists) {
     ipAsPathAccessLists.forEach(
         (name, asPathAccessList) ->
@@ -1748,7 +1694,7 @@ public final class FrrConversions {
     return new AsPathAccessList(name, lines);
   }
 
-  private static void convertIpPrefixLists(
+  public static void convertIpPrefixLists(
       Configuration c, Map<String, IpPrefixList> ipPrefixLists, String vendorConfigFilename) {
     ipPrefixLists.forEach(
         (name, ipPrefixList) ->
@@ -1780,14 +1726,14 @@ public final class FrrConversions {
         ipPrefixListLine.getLengthRange());
   }
 
-  private static void convertRouteMaps(
+  public static void convertRouteMaps(
       Configuration c, FrrConfiguration vc, String filename, Warnings w) {
     vc.getRouteMaps()
         .forEach(
             (name, routeMap) -> new RouteMapConvertor(c, vc, routeMap, filename, w).toRouteMap());
   }
 
-  private static void convertDnsServers(Configuration c, List<Ip> ipv4Nameservers) {
+  public static void convertDnsServers(Configuration c, List<Ip> ipv4Nameservers) {
     c.setDnsServers(
         ipv4Nameservers.stream()
             .map(Object::toString)

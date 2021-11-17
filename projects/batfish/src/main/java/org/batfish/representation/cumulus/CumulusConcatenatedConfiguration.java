@@ -9,7 +9,16 @@ import static org.batfish.representation.cumulus.FrrConversions.DEFAULT_LOOPBACK
 import static org.batfish.representation.cumulus.FrrConversions.DEFAULT_PORT_BANDWIDTH;
 import static org.batfish.representation.cumulus.FrrConversions.DEFAULT_PORT_MTU;
 import static org.batfish.representation.cumulus.FrrConversions.SPEED_CONVERSION_FACTOR;
-import static org.batfish.representation.cumulus.FrrConversions.convertFrr;
+import static org.batfish.representation.cumulus.FrrConversions.addBgpUnnumberedLLAs;
+import static org.batfish.representation.cumulus.FrrConversions.addOspfUnnumberedLLAs;
+import static org.batfish.representation.cumulus.FrrConversions.convertBgpProcess;
+import static org.batfish.representation.cumulus.FrrConversions.convertDnsServers;
+import static org.batfish.representation.cumulus.FrrConversions.convertIpAsPathAccessLists;
+import static org.batfish.representation.cumulus.FrrConversions.convertIpCommunityLists;
+import static org.batfish.representation.cumulus.FrrConversions.convertIpPrefixLists;
+import static org.batfish.representation.cumulus.FrrConversions.convertOspfProcess;
+import static org.batfish.representation.cumulus.FrrConversions.convertRouteMaps;
+import static org.batfish.representation.cumulus.FrrConversions.convertStaticRoutes;
 import static org.batfish.representation.cumulus.InterfaceConverter.BRIDGE_NAME;
 import static org.batfish.representation.cumulus.InterfaceConverter.DEFAULT_BRIDGE_PORTS;
 import static org.batfish.representation.cumulus.InterfaceConverter.DEFAULT_BRIDGE_PVID;
@@ -48,6 +57,7 @@ import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
@@ -151,15 +161,41 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
     populateFrrInterfaceProperties(c);
     ensureInterfacesHaveTypes(c);
 
-    convertStaticRoutes(c);
+    addBgpUnnumberedLLAs(c, _frrConfiguration);
 
-    convertFrr(this, c, this, _frrConfiguration);
+    // convertFrr(this, c, this, _frrConfiguration);
+
+    // FRR does not generate local routes for connected routes.
+    c.getAllInterfaces()
+        .values()
+        .forEach(
+            i -> {
+              ImmutableSortedMap.Builder<ConcreteInterfaceAddress, ConnectedRouteMetadata>
+                  metadata = ImmutableSortedMap.naturalOrder();
+              for (InterfaceAddress a : i.getAllAddresses()) {
+                if (!(a instanceof ConcreteInterfaceAddress)) {
+                  continue;
+                }
+                ConcreteInterfaceAddress address = (ConcreteInterfaceAddress) a;
+                metadata.put(
+                    address, ConnectedRouteMetadata.builder().setGenerateLocalRoute(false).build());
+              }
+              i.setAddressMetadata(metadata.build());
+            });
+
+    convertStaticRoutes(c);
+    FrrConversions.convertStaticRoutes(c, _frrConfiguration);
+    convertIpAsPathAccessLists(c, _frrConfiguration.getIpAsPathAccessLists());
+    convertIpPrefixLists(c, _frrConfiguration.getIpPrefixLists(), _filename);
+    convertIpCommunityLists(c, _frrConfiguration.getIpCommunityLists());
+    convertRouteMaps(c, _frrConfiguration, _filename, _w);
+    convertDnsServers(c, _frrConfiguration.getIpv4Nameservers());
 
     convertClags(c, this, _w);
 
     // Compute explicit VNI -> VRF mappings for L3 VNIs:
     Map<Integer, String> vniToVrf =
-        _frrConfiguration.getVrfs().values().stream()
+        this._frrConfiguration.getVrfs().values().stream()
             .filter(vrf -> vrf.getVni() != null)
             .collect(ImmutableMap.toImmutableMap(Vrf::getVni, Vrf::getName));
 
@@ -172,6 +208,10 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
         vsLoopback == null ? null : vsLoopback.getClagVxlanAnycastIp(),
         vsLoopback == null ? null : vsLoopback.getVxlanLocalTunnelIp(),
         _w);
+
+    convertOspfProcess(c, this, _frrConfiguration, _w);
+    addOspfUnnumberedLLAs(c);
+    convertBgpProcess(c, this, _frrConfiguration, _w);
 
     initVendorFamily(c);
     warnDuplicateClagIds();
