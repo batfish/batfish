@@ -70,8 +70,6 @@ public final class BgpProtocolHelper {
     B builder = route.toBuilder();
     // this will be set later during export policy transformation or after it is exported
     builder.clearNextHop();
-    // An exported route is a learned route.
-    builder.setOriginMechanism(LEARNED);
 
     RoutingProtocol routeProtocol = route.getProtocol();
     RoutingProtocol outgoingProtocol =
@@ -238,7 +236,8 @@ public final class BgpProtocolHelper {
         .setNextHop(NextHop.legacyConverter(peerInterface, route.getNextHopIp()))
         .setProtocol(targetProtocol)
         .setReceivedFromIp(peerIp)
-        .setSrcProtocol(targetProtocol);
+        .setSrcProtocol(targetProtocol)
+        .setOriginMechanism(LEARNED);
   }
 
   /**
