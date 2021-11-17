@@ -45,7 +45,6 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
       checkArgument(_routeDistinguisher != null, "Missing %s", PROP_ROUTE_DISTINGUISHER);
       checkArgument(_nextHop != null, "Missing next hop");
       return new EvpnType2Route(
-          getAdmin(),
           _asPath,
           _clusterList,
           _communities,
@@ -130,7 +129,6 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
     checkArgument(protocol != null, "Missing %s", PROP_PROTOCOL);
     checkArgument(routeDistinguisher != null, "Missing %s", PROP_ROUTE_DISTINGUISHER);
     return new EvpnType2Route(
-        admin,
         firstNonNull(asPath, AsPath.empty()),
         firstNonNull(clusterList, ImmutableSet.of()),
         firstNonNull(communities, CommunitySet.empty()),
@@ -153,7 +151,6 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
   }
 
   private EvpnType2Route(
-      int admin,
       AsPath asPath,
       Set<Long> clusterList,
       CommunitySet communities,
@@ -176,7 +173,6 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
     super(
         ip.toPrefix(),
         nextHop,
-        admin,
         asPath,
         communities,
         localPreference,
@@ -221,7 +217,6 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
   public Builder toBuilder() {
     return builder()
         .setNetwork(getNetwork())
-        .setAdmin(getAdministrativeCost())
         .setNonRouting(getNonRouting())
         .setNonForwarding(getNonForwarding())
         .setAsPath(_asPath)
@@ -254,7 +249,6 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
     EvpnType2Route other = (EvpnType2Route) o;
     return (_hashCode == other._hashCode || _hashCode == 0 || other._hashCode == 0)
         && Objects.equals(_network, other._network)
-        && _admin == other._admin
         && getNonRouting() == other.getNonRouting()
         && getNonForwarding() == other.getNonForwarding()
         && Objects.equals(_ip, other._ip)
@@ -280,8 +274,7 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
   public int hashCode() {
     int h = _hashCode;
     if (h == 0) {
-      h = _admin;
-      h = h * 31 + _asPath.hashCode();
+      h = _asPath.hashCode();
       h = h * 31 + _clusterList.hashCode();
       h = h * 31 + _communities.hashCode();
       h = h * 31 + _ip.hashCode();

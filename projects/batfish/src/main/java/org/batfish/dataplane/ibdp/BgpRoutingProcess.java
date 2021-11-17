@@ -2186,8 +2186,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       Bgpv4Route route, RouteDistinguisher rd, Set<ExtendedCommunity> rt) {
     return EvpnType5Route.builder()
         .setNetwork(route.getNetwork())
-        .setAdmin(route.getAdministrativeCost())
-        // Intentionally skip AS-path and communities -- we are generating a new route
+        .setAsPath(route.getAsPath())
+        .setCommunities(route.getCommunities())
         .addCommunities(rt) // add route targets
         .setLocalPreference(route.getLocalPreference())
         .setMetric(route.getMetric())

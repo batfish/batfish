@@ -2,6 +2,7 @@ package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -42,13 +43,18 @@ public abstract class EvpnRoute<B extends Builder<B, R>, R extends BgpRoute<B, R
     public abstract R build();
   }
 
+  /**
+   * Admin distance to use for all EVPN routes; value doesn't matter since it's the same for all
+   * EVPN routes, and they never compete against non-EVPN routes.
+   */
+  static final @VisibleForTesting int EVPN_ADMIN = 0;
+
   static final String PROP_ROUTE_DISTINGUISHER = "routeDistinguisher";
   @Nonnull protected final RouteDistinguisher _routeDistinguisher;
 
   protected EvpnRoute(
       Prefix network,
       NextHop nextHop,
-      int admin,
       AsPath asPath,
       CommunitySet communities,
       long localPreference,
@@ -68,7 +74,7 @@ public abstract class EvpnRoute<B extends Builder<B, R>, R extends BgpRoute<B, R
     super(
         network,
         nextHop,
-        admin,
+        EVPN_ADMIN,
         asPath,
         communities,
         localPreference,

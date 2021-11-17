@@ -3,18 +3,21 @@ package org.batfish.dataplane;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.instanceOf;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
+import org.batfish.datamodel.AsPath;
+import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.DataPlane;
@@ -26,8 +29,11 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
+import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
+import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.junit.Rule;
@@ -60,29 +66,36 @@ public class EvpnType5AristaTest {
     ribs.values()
         .forEach(rib -> assertThat(rib.getRoutes(), everyItem(instanceOf(ConnectedRoute.class))));
 
+    // Route-map sets attributes of vrf1's local BGP route. They should be copied to the EVPN route
+    Community rmCommunity = StandardCommunity.of(12345);
+    long rmAs = 54321;
+
     // Only vrf1 should have BGP routes; exporting EVPN should not affect default VRF's BGP RIB.
     Map<String, Set<Bgpv4Route>> bgpRoutes = dp.getBgpRoutes().row(hostname);
     assertThat(bgpRoutes.get(DEFAULT_VRF_NAME), empty());
-    assertThat(bgpRoutes.get(vrf1), contains(hasPrefix(prefix)));
+    BgpRoute vrf1BgpRoute = Iterables.getOnlyElement(bgpRoutes.get(vrf1));
+    assertThat(vrf1BgpRoute, hasPrefix(prefix));
+    assertThat(vrf1BgpRoute.getCommunities(), equalTo(CommunitySet.of(rmCommunity)));
+    assertThat(vrf1BgpRoute.getAsPath(), equalTo(AsPath.ofSingletonAsSets(rmAs)));
 
     // Only default VRF should have an EVPN route.
     Map<String, Set<EvpnRoute<?, ?>>> evpnRoutes = dp.getEvpnRoutes().row(hostname);
     assertThat(evpnRoutes.get(vrf1), empty());
+    EvpnRoute<?, ?> exportedEvpnRoute = Iterables.getOnlyElement(evpnRoutes.get(DEFAULT_VRF_NAME));
     EvpnType5Route expectedEvpnRoute =
         EvpnType5Route.builder()
             .setNetwork(prefix)
             .setRouteDistinguisher(RouteDistinguisher.from(Ip.parse("192.168.255.1"), 15004))
             .setNonRouting(true)
-            .setCommunities(ImmutableSet.of(ExtendedCommunity.target(15004, 15004)))
+            .setCommunities(ImmutableSet.of(rmCommunity, ExtendedCommunity.target(15004, 15004)))
+            .setAsPath(AsPath.ofSingletonAsSets(rmAs))
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHop(NextHopDiscard.instance())
-            // TODO Is it correct to copy these attributes from the source BGP route?
             .setSrcProtocol(RoutingProtocol.CONNECTED)
             .setReceivedFromIp(Ip.ZERO)
             .setOriginatorIp(Ip.AUTO) // TODO Is this valid, even on the original BGP route?
-            .setAdmin(200)
             .build();
-    assertThat(evpnRoutes.get(DEFAULT_VRF_NAME), contains(expectedEvpnRoute));
+    assertThat(exportedEvpnRoute, equalTo(expectedEvpnRoute));
   }
 }

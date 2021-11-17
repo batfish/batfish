@@ -42,6 +42,10 @@ interface Vxlan1
 ip routing
 ip routing vrf vrf1
 !
+route-map SET_MAP permit 10
+   set community 12345
+   set as-path prepend 54321
+!
 router bgp 65002
    router-id 10.10.10.1
    neighbor 11.11.11.6 maximum-routes 12000
@@ -54,6 +58,6 @@ router bgp 65002
       route-target export evpn 15004:15004
       neighbor 12.12.12.5 remote-as 65003
       neighbor 12.12.12.5 maximum-routes 12000
-      network 12.12.12.0/24
+      network 12.12.12.0/24 route-map SET_MAP
 !
 end

@@ -80,7 +80,6 @@ public class EvpnType2RouteTest {
             .setRouteDistinguisher(RouteDistinguisher.from(Ip.parse("1.1.1.1"), 2));
     new EqualsTester()
         .addEqualityGroup(erb.build(), erb.build())
-        .addEqualityGroup(erb.setAdmin(10).build())
         .addEqualityGroup(erb.setMacAddress(MacAddress.parse("00:11:22:33:44:55")))
         .addEqualityGroup(erb.setNonRouting(true).build())
         .addEqualityGroup(erb.setNonForwarding(true).build())

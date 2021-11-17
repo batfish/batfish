@@ -40,7 +40,7 @@ public class VrfLeakConfig implements Serializable {
     return _bgpv4ToEvpnVrfLeakConfigs;
   }
 
-  public void addBgpv4ToEvpnVrfLeakConfig(@Nonnull Bgpv4ToEvpnVrfLeakConfig c) {
+  public void addBgpv4ToEvpnVrfLeakConfig(Bgpv4ToEvpnVrfLeakConfig c) {
     _bgpv4ToEvpnVrfLeakConfigs =
         ImmutableList.<Bgpv4ToEvpnVrfLeakConfig>builder()
             .addAll(_bgpv4ToEvpnVrfLeakConfigs)
@@ -159,19 +159,19 @@ public class VrfLeakConfig implements Serializable {
   public static final class Builder {
 
     @Nonnull
-    public Builder addBgpVrfLeakConfig(@Nonnull BgpVrfLeakConfig c) {
+    public Builder addBgpVrfLeakConfig(BgpVrfLeakConfig c) {
       _bgpVrfLeakConfigs.add(c);
       return this;
     }
 
     @Nonnull
-    public Builder addBgpv4ToEvpnVrfLeakConfig(@Nonnull Bgpv4ToEvpnVrfLeakConfig c) {
+    public Builder addBgpv4ToEvpnVrfLeakConfig(Bgpv4ToEvpnVrfLeakConfig c) {
       _bgpv4ToEvpnVrfLeakConfigs.add(c);
       return this;
     }
 
     @Nonnull
-    public Builder addMainRibVrfLeakConfig(@Nonnull MainRibVrfLeakConfig c) {
+    public Builder addMainRibVrfLeakConfig(MainRibVrfLeakConfig c) {
       _mainRibVrfLeakConfigs.add(c);
       return this;
     }
