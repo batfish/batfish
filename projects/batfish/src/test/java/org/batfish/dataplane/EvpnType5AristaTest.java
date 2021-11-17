@@ -89,7 +89,8 @@ public class EvpnType5AristaTest {
             .setNonRouting(true)
             .setCommunities(ImmutableSet.of(rmCommunity, ExtendedCommunity.target(15004, 15004)))
             .setAsPath(AsPath.ofSingletonAsSets(rmAs))
-            // TODO will change to network once we correctly mark origin mechanism of the BGP route
+            // REDISTRIBUTE rather than NETWORK because Arista has a combined network statement +
+            // redistribution policy (a route can't be originated via both mechanisms)
             .setOriginMechanism(REDISTRIBUTE)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
