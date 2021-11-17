@@ -33,7 +33,7 @@ public class EvpnType5CumulusTest {
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
-  @Test(expected = AssertionError.class) // xfail this until type 5 routes aren't broken
+  @Test(expected = AssertionError.class) // xfail this until cumulus supports type 5 routes
   public void testType5RoutePresence() throws IOException {
     String snapshotName = "evpn-type5-routes";
     List<String> configurationNames =

@@ -1,6 +1,7 @@
 package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.OriginMechanism.NETWORK;
 import static org.batfish.datamodel.OriginMechanism.REDISTRIBUTE;
@@ -47,7 +48,6 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
       checkArgument(_routeDistinguisher != null, "Missing %s", PROP_ROUTE_DISTINGUISHER);
       checkArgument(_nextHop != null, "Missing next hop");
       return new EvpnType5Route(
-          getAdmin(),
           _asPath,
           _clusterList,
           _communities,
@@ -101,6 +101,7 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
       @Nullable @JsonProperty(PROP_SRC_PROTOCOL) RoutingProtocol srcProtocol,
       @JsonProperty(PROP_TAG) long tag,
       @JsonProperty(PROP_WEIGHT) int weight) {
+    checkArgument(admin == EVPN_ADMIN, "Cannot create EVPN route with non-default admin");
     checkArgument(network != null, "Missing %s", PROP_NETWORK);
     checkArgument(originatorIp != null, "Missing %s", PROP_ORIGINATOR_IP);
     checkArgument(originMechanism != null, "Missing %s", PROP_ORIGIN_MECHANISM);
@@ -111,7 +112,6 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
     checkArgument(protocol != null, "Missing %s", PROP_PROTOCOL);
     checkArgument(routeDistinguisher != null, "Missing %s", PROP_ROUTE_DISTINGUISHER);
     return new EvpnType5Route(
-        admin,
         firstNonNull(asPath, AsPath.empty()),
         firstNonNull(clusterList, ImmutableSet.of()),
         firstNonNull(communities, CommunitySet.empty()),
@@ -134,7 +134,6 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
   }
 
   private EvpnType5Route(
-      int admin,
       AsPath asPath,
       Set<Long> clusterList,
       CommunitySet communities,
@@ -157,7 +156,6 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
     super(
         network,
         nextHop,
-        admin,
         asPath,
         communities,
         localPreference,
@@ -187,7 +185,6 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
   public Builder toBuilder() {
     return builder()
         .setNetwork(getNetwork())
-        .setAdmin(getAdministrativeCost())
         .setNonRouting(getNonRouting())
         .setNonForwarding(getNonForwarding())
         .setAsPath(_asPath)
@@ -219,7 +216,6 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
     EvpnType5Route other = (EvpnType5Route) o;
     return (_hashCode == other._hashCode || _hashCode == 0 || other._hashCode == 0)
         && _network.equals(other._network)
-        && _admin == other._admin
         && getNonRouting() == other.getNonRouting()
         && getNonForwarding() == other.getNonForwarding()
         && _localPreference == other._localPreference
@@ -244,8 +240,7 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
   public int hashCode() {
     int h = _hashCode;
     if (h == 0) {
-      h = _admin;
-      h = h * 31 + _asPath.hashCode();
+      h = _asPath.hashCode();
       h = h * 31 + _clusterList.hashCode();
       h = h * 31 + _communities.hashCode();
       h = h * 31 + Long.hashCode(_localPreference);
@@ -266,5 +261,29 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
       _hashCode = h;
     }
     return h;
+  }
+
+  @Override
+  public String toString() {
+    return toStringHelper(EvpnType5Route.class)
+        .omitNullValues()
+        .add(PROP_NETWORK, _network)
+        .add(PROP_ROUTE_DISTINGUISHER, _routeDistinguisher)
+        .add("nextHop", _nextHop)
+        .add(PROP_AS_PATH, _asPath)
+        .add(PROP_CLUSTER_LIST, _clusterList)
+        .add(PROP_COMMUNITIES, _communities)
+        .add(PROP_LOCAL_PREFERENCE, _localPreference)
+        .add(PROP_METRIC, _med)
+        .add(PROP_ORIGINATOR_IP, _originatorIp)
+        .add(PROP_ORIGIN_MECHANISM, _originMechanism)
+        .add(PROP_ORIGIN_TYPE, _originType)
+        .add(PROP_PROTOCOL, _protocol)
+        .add(PROP_RECEIVED_FROM_IP, _receivedFromIp)
+        .add(PROP_RECEIVED_FROM_ROUTE_REFLECTOR_CLIENT, _receivedFromRouteReflectorClient)
+        .add(PROP_SRC_PROTOCOL, _srcProtocol)
+        .add(PROP_TAG, _tag)
+        .add(PROP_WEIGHT, _weight)
+        .toString();
   }
 }

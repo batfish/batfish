@@ -50,7 +50,6 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
       checkArgument(_routeDistinguisher != null, "Missing %s", PROP_ROUTE_DISTINGUISHER);
       checkArgument(_nextHop != null, "Missing next hop");
       return new EvpnType3Route(
-          getAdmin(),
           _asPath,
           _clusterList,
           _communities,
@@ -118,6 +117,7 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
       @JsonProperty(PROP_TAG) long tag,
       @Nullable @JsonProperty(PROP_VNI_IP) Ip vniIp,
       @JsonProperty(PROP_WEIGHT) int weight) {
+    checkArgument(admin == EVPN_ADMIN, "Cannot create EVPN route with non-default admin");
     checkArgument(originatorIp != null, "Missing %s", PROP_ORIGINATOR_IP);
     checkArgument(originMechanism != null, "Missing %s", PROP_ORIGIN_MECHANISM);
     checkArgument(
@@ -128,7 +128,6 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
     checkArgument(routeDistinguisher != null, "Missing %s", PROP_ROUTE_DISTINGUISHER);
     checkArgument(vniIp != null, "Missing %s", PROP_VNI_IP);
     return new EvpnType3Route(
-        admin,
         firstNonNull(asPath, AsPath.empty()),
         firstNonNull(clusterList, ImmutableSet.of()),
         firstNonNull(communities, CommunitySet.empty()),
@@ -151,7 +150,6 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
   }
 
   private EvpnType3Route(
-      int admin,
       AsPath asPath,
       Set<Long> clusterList,
       CommunitySet communities,
@@ -174,7 +172,6 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
     super(
         vniIp.toPrefix(),
         nextHop,
-        admin,
         asPath,
         communities,
         localPreference,
@@ -214,7 +211,6 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
   public Builder toBuilder() {
     return builder()
         .setNetwork(getNetwork())
-        .setAdmin(getAdministrativeCost())
         .setNonRouting(getNonRouting())
         .setNonForwarding(getNonForwarding())
         .setAsPath(_asPath)
@@ -247,7 +243,6 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
     EvpnType3Route other = (EvpnType3Route) o;
     return (_hashCode == other._hashCode || _hashCode == 0 || other._hashCode == 0)
         && Objects.equals(_network, other._network)
-        && _admin == other._admin
         && getNonRouting() == other.getNonRouting()
         && getNonForwarding() == other.getNonForwarding()
         && _localPreference == other._localPreference
@@ -273,8 +268,7 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
   public int hashCode() {
     int h = _hashCode;
     if (h == 0) {
-      h = _admin;
-      h = h * 31 + _asPath.hashCode();
+      h = _asPath.hashCode();
       h = h * 31 + _clusterList.hashCode();
       h = h * 31 + _communities.hashCode();
       h = h * 31 + Long.hashCode(_localPreference);
