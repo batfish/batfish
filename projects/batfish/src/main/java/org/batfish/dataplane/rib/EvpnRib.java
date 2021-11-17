@@ -2,29 +2,24 @@ package org.batfish.dataplane.rib;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.EvpnRoute;
-import org.batfish.datamodel.GenericRibReadOnly;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker;
 
-/** RIB implementation for all types of EVPN routes */
+/** Internal RIB implementation for all types of EVPN routes for a given route distinguisher. */
 @ParametersAreNonnullByDefault
-public final class EvpnRib<R extends EvpnRoute<?, ?>> extends BgpRib<R> {
+final class EvpnRib<R extends EvpnRoute<?, ?>> extends BgpRib<R> {
 
   public EvpnRib(
-      @Nullable GenericRibReadOnly<AnnotatedRoute<AbstractRoute>> mainRib,
       BgpTieBreaker tieBreaker,
-      @Nullable Integer maxPaths,
       @Nullable MultipathEquivalentAsPathMatchMode multipathEquivalentAsPathMatchMode,
       boolean clusterListAsIgpCost,
       LocalOriginationTypeTieBreaker localOriginationTypeTieBreaker) {
     super(
-        mainRib,
+        null,
         tieBreaker,
-        maxPaths,
+        1,
         multipathEquivalentAsPathMatchMode,
         true,
         clusterListAsIgpCost,
