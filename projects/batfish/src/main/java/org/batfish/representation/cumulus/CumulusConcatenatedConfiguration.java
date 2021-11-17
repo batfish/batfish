@@ -35,6 +35,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -43,6 +44,7 @@ import org.batfish.common.Warnings;
 import org.batfish.common.runtime.InterfaceRuntimeData;
 import org.batfish.common.runtime.SnapshotRuntimeData;
 import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -58,9 +60,13 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.MacAddress;
 import org.batfish.datamodel.Mlag;
+import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.vendor_family.cumulus.CumulusFamily;
+import org.batfish.datamodel.vxlan.Layer2Vni;
+import org.batfish.datamodel.vxlan.Layer3Vni;
+import org.batfish.datamodel.vxlan.Vni;
 import org.batfish.representation.cumulus.CumulusPortsConfiguration.PortSettings;
 import org.batfish.vendor.VendorConfiguration;
 
@@ -148,6 +154,24 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
     convertStaticRoutes(c);
 
     convertFrr(this, c, this, _frrConfiguration);
+
+    convertClags(c, this, _w);
+
+    // Compute explicit VNI -> VRF mappings for L3 VNIs:
+    Map<Integer, String> vniToVrf =
+        _frrConfiguration.getVrfs().values().stream()
+            .filter(vrf -> vrf.getVni() != null)
+            .collect(ImmutableMap.toImmutableMap(Vrf::getVni, Vrf::getName));
+
+    InterfacesInterface vsLoopback =
+        _interfacesConfiguration.getInterfaces().get(LOOPBACK_INTERFACE_NAME);
+    convertVxlans(
+        c,
+        this,
+        vniToVrf,
+        vsLoopback == null ? null : vsLoopback.getClagVxlanAnycastIp(),
+        vsLoopback == null ? null : vsLoopback.getVxlanLocalTunnelIp(),
+        _w);
 
     initVendorFamily(c);
     warnDuplicateClagIds();
@@ -621,6 +645,89 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
                 .build()));
   }
 
+  /**
+   * Converts {@link Vxlan} into appropriate {@link Vni} for each VRF. Requires VI Vrfs to already
+   * be properly initialized
+   */
+  static void convertVxlans(
+      Configuration c,
+      OutOfBandConfiguration oobConfig,
+      Map<Integer, String> vniToVrf,
+      @Nullable Ip loopbackClagVxlanAnycastIp,
+      @Nullable Ip loopbackVxlanLocalTunnelIp,
+      Warnings w) {
+
+    // Put all valid VXLAN VNIs into appropriate VRF
+    oobConfig
+        .getVxlans()
+        .values()
+        .forEach(
+            vxlan -> {
+              if (vxlan.getId() == null || vxlan.getBridgeAccessVlan() == null) {
+                // Not a valid VNI configuration
+                w.redFlag(
+                    String.format(
+                        "Vxlan %s is not configured properly: %s is not defined",
+                        vxlan.getName(),
+                        vxlan.getId() == null ? "vxlan id" : "bridge access vlan"));
+                return;
+              }
+              // Cumulus documents complex conditions for when clag-anycast address is a valid
+              // source:
+              // https://docs.cumulusnetworks.com/cumulus-linux/Network-Virtualization/VXLAN-Active-Active-Mode/#active-active-vtep-anycast-ip-behavior
+              // In testing, we couldn't reproduce that behavior and the address was always active.
+              // We go with that assumption here until we can reproduce the exact behavior.
+              Ip localIp =
+                  Stream.of(
+                          loopbackClagVxlanAnycastIp,
+                          vxlan.getLocalTunnelip(),
+                          loopbackVxlanLocalTunnelIp)
+                      .filter(Objects::nonNull)
+                      .findFirst()
+                      .orElse(null);
+              if (localIp == null) {
+                w.redFlag(
+                    String.format(
+                        "Local tunnel IP for vxlan %s is not configured", vxlan.getName()));
+                return;
+              }
+              @Nullable String vrfName = vniToVrf.get(vxlan.getId());
+              if (vrfName != null) {
+                // This is an L3 VNI.
+                Optional.ofNullable(c.getVrfs().get(vrfName))
+                    .ifPresent(
+                        vrf ->
+                            vrf.addLayer3Vni(
+                                Layer3Vni.builder()
+                                    .setVni(vxlan.getId())
+                                    .setSourceAddress(localIp)
+                                    .setUdpPort(NamedPort.VXLAN.number())
+                                    .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
+                                    .setSrcVrf(DEFAULT_VRF_NAME)
+                                    .build()));
+              } else {
+                // This is an L2 VNI. Find the VRF by looking up the VLAN
+                vrfName = oobConfig.getVrfForVlan(vxlan.getBridgeAccessVlan()).orElse(null);
+                if (vrfName == null) {
+                  // This is a workaround until we properly support pure-L2 VNIs (with no IRBs)
+                  vrfName = DEFAULT_VRF_NAME;
+                }
+                Optional.ofNullable(c.getVrfs().get(vrfName))
+                    .ifPresent(
+                        vrf ->
+                            vrf.addLayer2Vni(
+                                Layer2Vni.builder()
+                                    .setVni(vxlan.getId())
+                                    .setVlan(vxlan.getBridgeAccessVlan())
+                                    .setSourceAddress(localIp)
+                                    .setUdpPort(NamedPort.VXLAN.number())
+                                    .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
+                                    .setSrcVrf(DEFAULT_VRF_NAME)
+                                    .build()));
+              }
+            });
+  }
+
   @Nonnull
   private static org.batfish.datamodel.Vrf getOrCreateVrf(
       Configuration c, @Nullable String vrfName) {
@@ -753,22 +860,6 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
         .filter(InterfaceConverter::isVxlan)
         .map(InterfaceConverter::convertVxlan)
         .collect(ImmutableMap.toImmutableMap(Vxlan::getName, vxlan -> vxlan));
-  }
-
-  @Override
-  public @Nullable Ip getClagVxlanAnycastIp(String ifaceName) {
-    if (!_interfacesConfiguration.getInterfaces().containsKey(ifaceName)) {
-      throw new NoSuchElementException(String.format("Interface %s does not exist", ifaceName));
-    }
-    return _interfacesConfiguration.getInterfaces().get(ifaceName).getClagVxlanAnycastIp();
-  }
-
-  @Override
-  public @Nullable Ip getVxlanLocalTunnelIp(String ifaceName) {
-    if (!_interfacesConfiguration.getInterfaces().containsKey(ifaceName)) {
-      throw new NoSuchElementException(String.format("Interface %s does not exist", ifaceName));
-    }
-    return _interfacesConfiguration.getInterfaces().get(ifaceName).getVxlanLocalTunnelIp();
   }
 
   @Override

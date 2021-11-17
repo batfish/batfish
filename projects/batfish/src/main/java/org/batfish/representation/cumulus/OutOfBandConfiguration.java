@@ -4,9 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
-import org.batfish.datamodel.Ip;
 
 /**
  * Represents configuration outside of the FRR configuration file (e.g., in /etc/network/interfaces)
@@ -39,20 +37,4 @@ public interface OutOfBandConfiguration {
 
   // TODO: Simplify and unbundle what is happening in this method
   Optional<String> getVrfForVlan(Integer bridgeAccessVlan);
-
-  /**
-   * Return the CLAG VXLAN Anycast IP for the specified interface name.
-   *
-   * @throws java.util.NoSuchElementException if the interface does not exist.
-   */
-  @Nullable
-  Ip getClagVxlanAnycastIp(String ifaceName);
-
-  /**
-   * Return the VXLAN Local Tunnel IP for the specified interface name.
-   *
-   * @throws java.util.NoSuchElementException if the interface does not exist.
-   */
-  @Nullable
-  Ip getVxlanLocalTunnelIp(String ifaceName);
 }

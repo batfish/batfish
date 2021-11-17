@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import javax.annotation.Nonnull;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
-import org.batfish.datamodel.Ip;
 
 public class MockOutOfBandConfiguration implements OutOfBandConfiguration {
 
@@ -19,9 +19,6 @@ public class MockOutOfBandConfiguration implements OutOfBandConfiguration {
   private Set<String> _vrfs;
   private Map<String, Vxlan> _vxlans;
   private Map<Integer, String> _vlanVrfs;
-  private Map<String, InterfaceClagSettings> _clagSettings;
-  private Map<String, Ip> _clagVxlanAnycastIps;
-  private Map<String, Ip> _vxlanLocalTunnelIps;
 
   @Override
   public boolean hasInterface(String ifaceName) {
@@ -34,7 +31,7 @@ public class MockOutOfBandConfiguration implements OutOfBandConfiguration {
   }
 
   @Override
-  public List<ConcreteInterfaceAddress> getInterfaceAddresses(String ifaceName) {
+  public @Nonnull List<ConcreteInterfaceAddress> getInterfaceAddresses(String ifaceName) {
     return _interfaceAddresses.get(ifaceName);
   }
 
@@ -53,21 +50,6 @@ public class MockOutOfBandConfiguration implements OutOfBandConfiguration {
     return Optional.of(_vlanVrfs.get(bridgeAccessVlan));
   }
 
-  @Override
-  public Map<String, InterfaceClagSettings> getClagSettings() {
-    return _clagSettings;
-  }
-
-  @Override
-  public Ip getClagVxlanAnycastIp(String ifaceName) {
-    return _clagVxlanAnycastIps.get(ifaceName);
-  }
-
-  @Override
-  public Ip getVxlanLocalTunnelIp(String ifaceName) {
-    return _vxlanLocalTunnelIps.get(ifaceName);
-  }
-
   public static Builder builder() {
     return new Builder();
   }
@@ -83,9 +65,6 @@ public class MockOutOfBandConfiguration implements OutOfBandConfiguration {
     private Set<String> _vrfs;
     private Map<String, Vxlan> _vxlans;
     private Map<Integer, String> _vlanVrfs;
-    private Map<String, InterfaceClagSettings> _clagSettings;
-    private Map<String, Ip> _clagVxlanAnycastIps;
-    private Map<String, Ip> _vxlanLocalTunnelIps;
 
     private Builder() {}
 
@@ -125,37 +104,16 @@ public class MockOutOfBandConfiguration implements OutOfBandConfiguration {
       return this;
     }
 
-    public Builder setClagSettings(Map<String, InterfaceClagSettings> clagSettings) {
-      this._clagSettings = clagSettings;
-      return this;
-    }
-
-    public Builder setClagVxlanAnycastIps(Map<String, Ip> clagVxlanAnycastIps) {
-      this._clagVxlanAnycastIps = clagVxlanAnycastIps;
-      return this;
-    }
-
-    public Builder setVxlanLocalTunnelIps(Map<String, Ip> vxlanLocalTunnelIps) {
-      this._vxlanLocalTunnelIps = vxlanLocalTunnelIps;
-      return this;
-    }
-
     public MockOutOfBandConfiguration build() {
       MockOutOfBandConfiguration mockOutOfBandConfiguration = new MockOutOfBandConfiguration();
       mockOutOfBandConfiguration._vxlans = firstNonNull(this._vxlans, ImmutableMap.of());
       mockOutOfBandConfiguration._vlanVrfs = firstNonNull(this._vlanVrfs, ImmutableMap.of());
-      mockOutOfBandConfiguration._clagSettings =
-          firstNonNull(this._clagSettings, ImmutableMap.of());
       mockOutOfBandConfiguration._interfaceVrf =
           firstNonNull(this._interfaceVrf, ImmutableMap.of());
       mockOutOfBandConfiguration._interfaceAddresses =
           firstNonNull(this._interfaceAddresses, ImmutableMap.of());
       mockOutOfBandConfiguration._vrfs = firstNonNull(this._vrfs, ImmutableSet.of());
       mockOutOfBandConfiguration._interfaces = firstNonNull(this._interfaces, ImmutableSet.of());
-      mockOutOfBandConfiguration._clagVxlanAnycastIps =
-          firstNonNull(this._clagVxlanAnycastIps, ImmutableMap.of());
-      mockOutOfBandConfiguration._vxlanLocalTunnelIps =
-          firstNonNull(this._vxlanLocalTunnelIps, ImmutableMap.of());
       return mockOutOfBandConfiguration;
     }
   }
