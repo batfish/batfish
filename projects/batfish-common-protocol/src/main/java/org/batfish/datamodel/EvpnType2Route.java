@@ -123,6 +123,7 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
       @Nullable @JsonProperty(PROP_SRC_PROTOCOL) RoutingProtocol srcProtocol,
       @JsonProperty(PROP_TAG) long tag,
       @JsonProperty(PROP_WEIGHT) int weight) {
+    checkArgument(admin == EVPN_ADMIN, "Cannot create EVPN route with non-default admin");
     checkArgument(ip != null, "Missing %s", PROP_IP);
     checkArgument(originatorIp != null, "Missing %s", PROP_ORIGINATOR_IP);
     checkArgument(originType != null, "Missing %s", PROP_ORIGIN_TYPE);
