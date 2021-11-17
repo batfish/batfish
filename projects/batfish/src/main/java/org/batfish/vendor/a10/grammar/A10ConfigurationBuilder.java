@@ -239,7 +239,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     _currentAccessList =
         toString(ctx, ctx.access_list_name())
             .map(n -> _c.getOrCreateAccessList(n))
-            .orElseGet(() -> new AccessList(ctx.access_list_name().getText()));
+            .orElseGet(() -> new AccessList(ctx.access_list_name().getText())); // dummy
   }
 
   @Override
@@ -300,8 +300,6 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     assert ctx.DENY() != null;
     return AccessListRule.Action.DENY;
   }
-
-  private AccessList _currentAccessList;
 
   private Optional<SubRange> toSubRange(
       ParserRuleContext messageCtx, A10Parser.Access_list_port_rangeContext ctx) {
@@ -2657,6 +2655,8 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   private LongSpace _allNatPools = LongSpace.EMPTY;
 
   @Nonnull private A10Configuration _c;
+
+  private AccessList _currentAccessList;
 
   private BgpProcess _currentBgpProcess;
 

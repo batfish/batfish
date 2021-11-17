@@ -4,7 +4,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.SubRange;
 
-/** An access-list rule matching tcp traffic. */
+/** An access-list rule matching udp traffic. */
 public class AccessListRuleUdp implements AccessListRule {
   @Nonnull
   @Override

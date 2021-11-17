@@ -20,16 +20,6 @@ sialr_action: PERMIT | DENY;
 
 sialr_protocol: ICMP | IP | TCP | UDP;
 
-sialr_match_definition: sialr_icmp | sialr_ip | sialr_tcp | sialr_udp; 
-
-sialr_icmp: ICMP source = access_list_address destination = access_list_address;
-
-sialr_ip: IP source = access_list_address destination = access_list_address;
-
-sialr_tcp: TCP source = access_list_address destination = access_list_address dest_range = access_list_port_range;
-
-sialr_udp: UDP source = access_list_address destination = access_list_address dest_range = access_list_port_range;
-
 access_list_address: access_list_address_any | access_list_address_host;
 
 access_list_address_any: ANY;
