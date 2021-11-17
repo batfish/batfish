@@ -7,6 +7,9 @@ import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
 import static org.batfish.common.util.CollectionUtil.toOrderedHashCode;
 import static org.batfish.datamodel.BgpRoute.DEFAULT_LOCAL_PREFERENCE;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
+import static org.batfish.datamodel.OriginMechanism.GENERATED;
+import static org.batfish.datamodel.OriginMechanism.NETWORK;
+import static org.batfish.datamodel.OriginMechanism.REDISTRIBUTE;
 import static org.batfish.datamodel.routing_policy.Environment.Direction.IN;
 import static org.batfish.datamodel.routing_policy.Environment.Direction.OUT;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.toBgpv4Route;
@@ -72,6 +75,7 @@ import org.batfish.datamodel.GenericRibReadOnly;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.NetworkConfigurations;
+import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixTrieMultiMap;
@@ -308,46 +312,90 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             bestPathTieBreaker,
             _process.getMultipathEbgp() ? null : 1,
             multiPathMatchMode,
-            clusterListAsIbgpCost);
+            clusterListAsIbgpCost,
+            _process.getLocalOriginationTypeTieBreaker(),
+            _process.getNetworkNextHopIpTieBreaker(),
+            _process.getRedistributeNextHopIpTieBreaker());
     _ibgpv4Rib =
         new Bgpv4Rib(
             _mainRib,
             bestPathTieBreaker,
             _process.getMultipathIbgp() ? null : 1,
             multiPathMatchMode,
-            clusterListAsIbgpCost);
+            clusterListAsIbgpCost,
+            _process.getLocalOriginationTypeTieBreaker(),
+            _process.getNetworkNextHopIpTieBreaker(),
+            _process.getRedistributeNextHopIpTieBreaker());
     _bgpv4Rib =
         new Bgpv4Rib(
             _mainRib,
             bestPathTieBreaker,
             _process.getMultipathEbgp() || _process.getMultipathIbgp() ? null : 1,
             multiPathMatchMode,
-            clusterListAsIbgpCost);
+            clusterListAsIbgpCost,
+            _process.getLocalOriginationTypeTieBreaker(),
+            _process.getNetworkNextHopIpTieBreaker(),
+            _process.getRedistributeNextHopIpTieBreaker());
 
     _mainRibDelta = RibDelta.empty();
 
     // EVPN Ribs
     _ebgpType3EvpnRib =
         new EvpnRib<>(
-            _mainRib, bestPathTieBreaker, null, multiPathMatchMode, clusterListAsIbgpCost);
+            _mainRib,
+            bestPathTieBreaker,
+            null,
+            multiPathMatchMode,
+            clusterListAsIbgpCost,
+            _process.getLocalOriginationTypeTieBreaker());
     _ibgpType3EvpnRib =
         new EvpnRib<>(
-            _mainRib, bestPathTieBreaker, null, multiPathMatchMode, clusterListAsIbgpCost);
+            _mainRib,
+            bestPathTieBreaker,
+            null,
+            multiPathMatchMode,
+            clusterListAsIbgpCost,
+            _process.getLocalOriginationTypeTieBreaker());
     _evpnType3Rib =
         new EvpnRib<>(
-            _mainRib, bestPathTieBreaker, null, multiPathMatchMode, clusterListAsIbgpCost);
+            _mainRib,
+            bestPathTieBreaker,
+            null,
+            multiPathMatchMode,
+            clusterListAsIbgpCost,
+            _process.getLocalOriginationTypeTieBreaker());
     _ebgpType5EvpnRib =
         new EvpnRib<>(
-            _mainRib, bestPathTieBreaker, null, multiPathMatchMode, clusterListAsIbgpCost);
+            _mainRib,
+            bestPathTieBreaker,
+            null,
+            multiPathMatchMode,
+            clusterListAsIbgpCost,
+            _process.getLocalOriginationTypeTieBreaker());
     _ibgpType5EvpnRib =
         new EvpnRib<>(
-            _mainRib, bestPathTieBreaker, null, multiPathMatchMode, clusterListAsIbgpCost);
+            _mainRib,
+            bestPathTieBreaker,
+            null,
+            multiPathMatchMode,
+            clusterListAsIbgpCost,
+            _process.getLocalOriginationTypeTieBreaker());
     _evpnType5Rib =
         new EvpnRib<>(
-            _mainRib, bestPathTieBreaker, null, multiPathMatchMode, clusterListAsIbgpCost);
+            _mainRib,
+            bestPathTieBreaker,
+            null,
+            multiPathMatchMode,
+            clusterListAsIbgpCost,
+            _process.getLocalOriginationTypeTieBreaker());
     _evpnRib =
         new EvpnRib<>(
-            _mainRib, bestPathTieBreaker, null, multiPathMatchMode, clusterListAsIbgpCost);
+            _mainRib,
+            bestPathTieBreaker,
+            null,
+            multiPathMatchMode,
+            clusterListAsIbgpCost,
+            _process.getLocalOriginationTypeTieBreaker());
     _evpnInitializationDelta = RibDelta.empty();
     _rtVrfMapping = computeRouteTargetToVrfMap(getAllPeerConfigs(_process));
     _ribExprEvaluator = new RibExprEvaluator(_mainRib);
@@ -573,7 +621,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       } else {
         mainRibDelta
             .getActions()
-            .forEach(a -> redistributeRouteToBgpRib(a, redistributionPolicy.get()));
+            .forEach(a -> redistributeRouteToBgpRib(a, redistributionPolicy.get(), REDISTRIBUTE));
         if (LOGGER.isDebugEnabled()) {
           LOGGER.debug(
               "Redistributed via redistribution policy into local BGP RIB node {}, VRF {}: {}",
@@ -597,7 +645,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       } else {
         mainRibDelta
             .getActions()
-            .forEach(a -> redistributeRouteToBgpRib(a, independentNetworkPolicy.get()));
+            .forEach(a -> redistributeRouteToBgpRib(a, independentNetworkPolicy.get(), NETWORK));
         if (LOGGER.isDebugEnabled()) {
           LOGGER.debug(
               "Redistributed via independent network policy into local BGP RIB node {}, VRF {}: {}",
@@ -615,7 +663,9 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    * BGP delta builders.
    */
   private void redistributeRouteToBgpRib(
-      RouteAdvertisement<? extends AnnotatedRoute<AbstractRoute>> routeAdv, RoutingPolicy policy) {
+      RouteAdvertisement<? extends AnnotatedRoute<AbstractRoute>> routeAdv,
+      RoutingPolicy policy,
+      OriginMechanism originMechanism) {
     AbstractRouteDecorator route = routeAdv.getRoute();
     if (route.getAbstractRoute() instanceof BgpRoute<?, ?>) {
       // Do not place BGP routes back into BGP process.
@@ -627,9 +677,11 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                 getRouterId(),
                 route.getAbstractRoute().getNextHopIp(),
                 _process.getEbgpAdminCost(),
-                RoutingProtocol.BGP)
+                RoutingProtocol.BGP,
+                originMechanism)
             // Prevent from funneling to main RIB
             .setNonRouting(true);
+
     // Hopefully, the direction should not matter here.
     boolean accept = policy.process(route, bgpBuilder, OUT, _ribExprEvaluator);
     if (!accept) {
@@ -767,6 +819,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         // so that this route is not installed back in the main RIB of any of the VRFs
         .setNonRouting(true)
         .setOriginatorIp(routerId)
+        .setOriginMechanism(GENERATED)
         .setOriginType(OriginType.EGP)
         .setProtocol(RoutingProtocol.BGP)
         .setRouteDistinguisher(routeDistinguisher)
@@ -1720,7 +1773,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                 getRouterId(),
                 ourSessionProperties.getLocalIp(),
                 _process.getAdminCost(protocol),
-                protocol);
+                protocol,
+                REDISTRIBUTE);
 
     // Process transformed outgoing route by the export policy
     boolean shouldExport =

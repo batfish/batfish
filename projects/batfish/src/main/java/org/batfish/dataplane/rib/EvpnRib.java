@@ -8,6 +8,7 @@ import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.EvpnRoute;
 import org.batfish.datamodel.GenericRibReadOnly;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
+import org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker;
 
 /** RIB implementation for all types of EVPN routes */
 @ParametersAreNonnullByDefault
@@ -18,13 +19,15 @@ public final class EvpnRib<R extends EvpnRoute<?, ?>> extends BgpRib<R> {
       BgpTieBreaker tieBreaker,
       @Nullable Integer maxPaths,
       @Nullable MultipathEquivalentAsPathMatchMode multipathEquivalentAsPathMatchMode,
-      boolean clusterListAsIgpCost) {
+      boolean clusterListAsIgpCost,
+      LocalOriginationTypeTieBreaker localOriginationTypeTieBreaker) {
     super(
         mainRib,
         tieBreaker,
         maxPaths,
         multipathEquivalentAsPathMatchMode,
         true,
-        clusterListAsIgpCost);
+        clusterListAsIgpCost,
+        localOriginationTypeTieBreaker);
   }
 }

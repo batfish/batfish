@@ -6,6 +6,7 @@ import static java.util.Comparator.naturalOrder;
 import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
+import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
 import static org.batfish.specifier.Location.interfaceLinkLocation;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -61,6 +62,7 @@ import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
+import org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.isp_configuration.BgpPeerInfo;
 import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
@@ -148,6 +150,9 @@ public final class IspModelingUtils {
         .setEbgpAdminCost(20)
         .setIbgpAdminCost(200)
         .setLocalAdminCost(200)
+        .setLocalOriginationTypeTieBreaker(LocalOriginationTypeTieBreaker.NO_PREFERENCE)
+        .setNetworkNextHopIpTieBreaker(HIGHEST_NEXT_HOP_IP)
+        .setRedistributeNextHopIpTieBreaker(HIGHEST_NEXT_HOP_IP)
         .build();
   }
 

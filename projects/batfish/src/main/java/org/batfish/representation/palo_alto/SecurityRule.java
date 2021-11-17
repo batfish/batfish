@@ -1,5 +1,6 @@
 package org.batfish.representation.palo_alto;
 
+import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -48,7 +49,7 @@ public final class SecurityRule implements Serializable {
   @Nonnull private final SortedSet<ServiceOrServiceGroupReference> _service;
 
   // Applications
-  @Nonnull private final SortedSet<String> _applications;
+  @Nonnull private final SortedSet<ApplicationOrApplicationGroupReference> _applications;
 
   // Rule type
   @Nullable private RuleType _ruleType;
@@ -81,9 +82,13 @@ public final class SecurityRule implements Serializable {
     return _action;
   }
 
+  public void addApplication(String application) {
+    _applications.add(new ApplicationOrApplicationGroupReference(application));
+  }
+
   @Nonnull
-  public SortedSet<String> getApplications() {
-    return _applications;
+  public SortedSet<ApplicationOrApplicationGroupReference> getApplications() {
+    return ImmutableSortedSet.copyOf(_applications);
   }
 
   @Nullable

@@ -8,6 +8,7 @@
       "metric" : 0,
       "network" : "0.0.0.0/0",
       "nextHopIp" : "AUTO/NONE(-1l)",
+      "originMechanism" : "LEARNED",
       "originType" : "igp",
       "originatorIp" : "1.1.1.1",
       "protocol" : "bgp",
@@ -63,6 +64,7 @@
           {
             "network" : "0.0.0.0/0",
             "originatorIp" : "1.1.1.1",
+            "originMechanism" : "LEARNED",
             "originType" : "IGP",
             "protocol" : "BGP"
           }

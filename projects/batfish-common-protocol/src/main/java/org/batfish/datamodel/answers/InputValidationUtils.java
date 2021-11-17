@@ -5,6 +5,7 @@ import static org.batfish.datamodel.answers.AutoCompleteUtils.autoCompleteSource
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.CompletionMetadata;
@@ -140,6 +141,8 @@ public final class InputValidationUtils {
             completionMetadata,
             nodeRolesData,
             referenceLibrary);
+      case NODE_NAME:
+        return validateNodeName(query, completionMetadata.getNodes().keySet());
       case NODE_SPEC:
         return ParboiledInputValidator.validate(
             Grammar.NODE_SPECIFIER, query, completionMetadata, nodeRolesData, referenceLibrary);
@@ -275,6 +278,16 @@ public final class InputValidationUtils {
       return new InputValidationNotes(Validity.VALID, pfx.toString());
     } catch (Exception e) {
       return new InputValidationNotes(Validity.INVALID, e.getMessage());
+    }
+  }
+
+  @VisibleForTesting
+  static InputValidationNotes validateNodeName(String query, Set<String> snapshotHostnames) {
+    // TODO: distinguish between no-match and syntactically invalid queries
+    if (snapshotHostnames.contains(query.toLowerCase())) {
+      return new InputValidationNotes(Validity.VALID, query);
+    } else {
+      return new InputValidationNotes(Validity.NO_MATCH, "");
     }
   }
 }

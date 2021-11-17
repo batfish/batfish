@@ -1,6 +1,8 @@
 package org.batfish.representation.fortios;
 
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
+import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.NO_PREFERENCE;
+import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -11,6 +13,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import javax.annotation.Nonnull;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -207,6 +210,21 @@ public final class FortiosBgpConversions {
     return we;
   }
 
+  private static final int DEFAULT_EBGP_ADMIN_COST = 20;
+  private static final int DEFAULT_IBGP_ADMIN_COST = 200;
+  private static final int DEFAULT_LOCAL_ADMIN_COST = 200; // is this correct?
+
+  private static @Nonnull org.batfish.datamodel.BgpProcess.Builder bgpProcessBuilder() {
+    return org.batfish.datamodel.BgpProcess.builder()
+        .setEbgpAdminCost(DEFAULT_EBGP_ADMIN_COST)
+        .setIbgpAdminCost(DEFAULT_IBGP_ADMIN_COST)
+        .setLocalAdminCost(DEFAULT_LOCAL_ADMIN_COST)
+        // TODO: confirm values below
+        .setLocalOriginationTypeTieBreaker(NO_PREFERENCE)
+        .setNetworkNextHopIpTieBreaker(HIGHEST_NEXT_HOP_IP)
+        .setRedistributeNextHopIpTieBreaker(HIGHEST_NEXT_HOP_IP);
+  }
+
   private static void convertBgpProcessForVrf(
       BgpProcess bgpProcess,
       Ip routerId,
@@ -217,11 +235,7 @@ public final class FortiosBgpConversions {
       Configuration c,
       Warnings w) {
     // TODO Admin distances can be explicitly configured on the process level
-    int ebgpAdmin = RoutingProtocol.BGP.getDefaultAdministrativeCost(c.getConfigurationFormat());
-    int ibgpAdmin = RoutingProtocol.IBGP.getDefaultAdministrativeCost(c.getConfigurationFormat());
-    int localAdmin = ibgpAdmin; // TODO: is this correct?
-    org.batfish.datamodel.BgpProcess viProc =
-        new org.batfish.datamodel.BgpProcess(routerId, ebgpAdmin, ibgpAdmin, localAdmin);
+    org.batfish.datamodel.BgpProcess viProc = bgpProcessBuilder().setRouterId(routerId).build();
     viProc.setMultipathEbgp(bgpProcess.getEbgpMultipathEffective());
     viProc.setMultipathIbgp(bgpProcess.getIbgpMultipathEffective());
     originatedSpaces.forEach(viProc::addToOriginationSpace);

@@ -7,6 +7,8 @@ import static org.batfish.datamodel.matchers.TraceTreeMatchers.isTraceTree;
 import static org.batfish.main.BatfishTestUtils.DUMMY_SNAPSHOT_1;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.main.BatfishTestUtils.getBatfish;
+import static org.batfish.representation.palo_alto.PaloAltoConfiguration.PANORAMA_VSYS_NAME;
+import static org.batfish.representation.palo_alto.PaloAltoConfiguration.SHARED_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeObjectName;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchAddressAnyTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchAddressGroupTraceElement;
@@ -64,6 +66,7 @@ import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.palo_alto.PaloAltoConfiguration;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -420,6 +423,111 @@ public class PaloAltoSecurityRuleTest {
     }
   }
 
+  /**
+   * Test that trace elements contain structure data pointing to structures in the correct
+   * namespace.
+   */
+  @Test
+  public void testPanoramaRulebaseTracing() throws IOException {
+    String hostname = "panorama-rulebase-tracing";
+    String filename = "configs/" + hostname;
+    Configuration c = parseTextConfigs(hostname).get("00000001");
+    String iface1 = "ethernet1/1";
+    String crossZoneFilterName =
+        zoneToZoneFilter(computeObjectName("vsys1", "z1"), computeObjectName("vsys1", "z2"));
+
+    Flow rule1Flow = createFlow("1.1.1.10", "1.1.4.10", IpProtocol.TCP, 0, 1);
+    Flow rule2Flow = createFlow("1.1.4.10", "1.1.1.10", IpProtocol.TCP, 0, 2);
+    Flow rule3Flow = createFlow("1.1.1.10", "1.1.4.10", IpProtocol.TCP, 0, 53);
+    Flow rule4Flow = createFlow("1.1.1.10", "1.1.4.10", IpProtocol.TCP, 0, 179);
+
+    IpAccessList filter = c.getIpAccessLists().get(crossZoneFilterName);
+    BiFunction<String, Flow, List<TraceTree>> trace =
+        (inIface, flow) ->
+            AclTracer.trace(
+                filter,
+                flow,
+                inIface,
+                c.getIpAccessLists(),
+                c.getIpSpaces(),
+                c.getIpSpaceMetadata());
+
+    {
+      // Shared address object and service
+      List<TraceTree> traces = trace.apply(iface1, rule1Flow);
+      assertThat(
+          traces,
+          contains(
+              isTraceTree(
+                  matchSecurityRuleTraceElement("RULE1", PANORAMA_VSYS_NAME, filename),
+                  isTraceTree(
+                      matchSourceAddressTraceElement(),
+                      isTraceTree(
+                          matchAddressObjectTraceElement("addr1", SHARED_VSYS_NAME, filename))),
+                  isTraceTree(
+                      matchDestinationAddressTraceElement(),
+                      isTraceTree(matchAddressAnyTraceElement())),
+                  isTraceTree(matchApplicationAnyTraceElement()),
+                  isTraceTree(matchServiceTraceElement()))));
+    }
+    {
+      // Device-group address object and service
+      List<TraceTree> traces = trace.apply(iface1, rule2Flow);
+      assertThat(
+          traces,
+          contains(
+              isTraceTree(
+                  matchSecurityRuleTraceElement("RULE2", PANORAMA_VSYS_NAME, filename),
+                  isTraceTree(
+                      matchSourceAddressTraceElement(),
+                      isTraceTree(
+                          matchAddressObjectTraceElement("addr2", PANORAMA_VSYS_NAME, filename))),
+                  isTraceTree(
+                      matchDestinationAddressTraceElement(),
+                      isTraceTree(matchAddressAnyTraceElement())),
+                  isTraceTree(matchApplicationAnyTraceElement()),
+                  isTraceTree(matchServiceTraceElement()))));
+    }
+    {
+      // Shared application-group
+      List<TraceTree> traces = trace.apply(iface1, rule3Flow);
+      assertThat(
+          traces,
+          contains(
+              isTraceTree(
+                  matchSecurityRuleTraceElement("RULE3", PANORAMA_VSYS_NAME, filename),
+                  isTraceTree(
+                      matchSourceAddressTraceElement(), isTraceTree(matchAddressAnyTraceElement())),
+                  isTraceTree(
+                      matchDestinationAddressTraceElement(),
+                      isTraceTree(matchAddressAnyTraceElement())),
+                  isTraceTree(
+                      matchServiceApplicationDefaultTraceElement(),
+                      isTraceTree(
+                          matchApplicationGroupTraceElement(
+                              "app_group1", SHARED_VSYS_NAME, filename))))));
+    }
+    {
+      // Device-group application-group
+      List<TraceTree> traces = trace.apply(iface1, rule4Flow);
+      assertThat(
+          traces,
+          contains(
+              isTraceTree(
+                  matchSecurityRuleTraceElement("RULE4", PANORAMA_VSYS_NAME, filename),
+                  isTraceTree(
+                      matchSourceAddressTraceElement(), isTraceTree(matchAddressAnyTraceElement())),
+                  isTraceTree(
+                      matchDestinationAddressTraceElement(),
+                      isTraceTree(matchAddressAnyTraceElement())),
+                  isTraceTree(
+                      matchServiceApplicationDefaultTraceElement(),
+                      isTraceTree(
+                          matchApplicationGroupTraceElement(
+                              "app_group2", PANORAMA_VSYS_NAME, filename))))));
+    }
+  }
+
   @Test
   public void testSecurityRules() throws IOException {
     String hostname = "security-rules";
@@ -742,5 +850,41 @@ public class PaloAltoSecurityRuleTest {
         traces.get(flowZ3toZ2MatchApp).get(0).getDisposition(), FlowDisposition.DENIED_OUT);
     assertEquals(
         traces.get(flowZ3toZ2MatchService).get(0).getDisposition(), FlowDisposition.DENIED_OUT);
+  }
+
+  /** Test that application-groups with members in different namespaces are handled correctly. */
+  @Ignore("https://github.com/batfish/batfish/issues/7698")
+  @Test
+  public void testPanoramaRulebaseMixedNamespace() throws IOException {
+    String hostname = "panorama-rulebase-mixed-namespace";
+    Configuration c = parseTextConfigs(hostname).get("00000001");
+    Batfish batfish = getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _folder);
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+
+    Flow flowDeviceApplication =
+        Flow.builder()
+            .setIngressNode("00000001")
+            .setIngressInterface("ethernet1/1")
+            .setSrcIp(Ip.parse("1.1.1.10"))
+            .setDstIp(Ip.parse("1.1.4.10"))
+            .setIpProtocol(IpProtocol.TCP)
+            .setSrcPort(4096)
+            .setDstPort(53)
+            .build();
+    Flow flowSharedApplication = flowDeviceApplication.toBuilder().setDstPort(179).build();
+    Flow flowDenied = flowDeviceApplication.toBuilder().setDstPort(1).build();
+    SortedMap<Flow, List<Trace>> traces =
+        batfish
+            .getTracerouteEngine(snapshot)
+            .computeTraces(
+                ImmutableSet.of(flowDeviceApplication, flowSharedApplication, flowDenied), false);
+
+    // Flow matching application defined in device-group namespace should be successful
+    assertTrue(traces.get(flowDeviceApplication).get(0).getDisposition().isSuccessful());
+    // Flow matching application defined in shared namespace should be successful
+    assertTrue(traces.get(flowSharedApplication).get(0).getDisposition().isSuccessful());
+    // Flow not matching any allowed application should not be successful
+    assertFalse(traces.get(flowDenied).get(0).getDisposition().isSuccessful());
   }
 }

@@ -103,6 +103,7 @@ import org.batfish.representation.cumulus.BgpInterfaceNeighbor;
 import org.batfish.representation.cumulus.BgpIpNeighbor;
 import org.batfish.representation.cumulus.BgpNeighbor;
 import org.batfish.representation.cumulus.BgpNeighbor.RemoteAs;
+import org.batfish.representation.cumulus.BgpNeighborIpv4UnicastAddressFamily.RemovePrivateAsMode;
 import org.batfish.representation.cumulus.BgpNeighborSourceAddress;
 import org.batfish.representation.cumulus.BgpNeighborSourceInterface;
 import org.batfish.representation.cumulus.BgpNetwork;
@@ -785,6 +786,44 @@ public class FrrGrammarTest {
                     .setAdmin(20)
                     .setLocalPreference(100)
                     .build())));
+  }
+
+  @Test
+  public void testBgpAddressFamilyNeighborRemovePrivateAs() {
+    parseLines(
+        "router bgp 1",
+        "  neighbor N1 interface description N",
+        "  neighbor N2 interface description N",
+        "  neighbor N3 interface description N",
+        "  address-family ipv4 unicast",
+        "    neighbor N1 remove-private-AS",
+        "    neighbor N2 remove-private-AS all",
+        "    neighbor N3 remove-private-AS all replace-as",
+        "  exit-address-family");
+    assertThat(
+        _frr.getBgpProcess()
+            .getDefaultVrf()
+            .getNeighbors()
+            .get("N1")
+            .getIpv4UnicastAddressFamily()
+            .getRemovePrivateAsMode(),
+        equalTo(RemovePrivateAsMode.BASIC));
+    assertThat(
+        _frr.getBgpProcess()
+            .getDefaultVrf()
+            .getNeighbors()
+            .get("N2")
+            .getIpv4UnicastAddressFamily()
+            .getRemovePrivateAsMode(),
+        equalTo(RemovePrivateAsMode.ALL));
+    assertThat(
+        _frr.getBgpProcess()
+            .getDefaultVrf()
+            .getNeighbors()
+            .get("N3")
+            .getIpv4UnicastAddressFamily()
+            .getRemovePrivateAsMode(),
+        equalTo(RemovePrivateAsMode.REPLACE_AS));
   }
 
   @Test
@@ -1799,7 +1838,7 @@ public class FrrGrammarTest {
     Prefix network = Prefix.parse("10.0.0.0/8");
     parseLines("router bgp 10000", "network 10.0.0.0/8");
     assertThat(
-        _config.getBgpProcess().getDefaultVrf().getNetworks(),
+        _frr.getBgpProcess().getDefaultVrf().getNetworks(),
         equalTo(ImmutableMap.of(network, new BgpNetwork(network))));
   }
 
@@ -1808,7 +1847,7 @@ public class FrrGrammarTest {
     Prefix network = Prefix.parse("10.0.0.0/8");
     parseLines("router bgp 10000", "network 10.0.0.0/8 route-map FOO");
     assertThat(
-        _config.getBgpProcess().getDefaultVrf().getNetworks(),
+        _frr.getBgpProcess().getDefaultVrf().getNetworks(),
         equalTo(ImmutableMap.of(network, new BgpNetwork(network, "FOO"))));
   }
 

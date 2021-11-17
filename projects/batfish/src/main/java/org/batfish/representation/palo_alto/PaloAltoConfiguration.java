@@ -14,6 +14,8 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.NEVER;
+import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.NO_PREFERENCE;
+import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
 import static org.batfish.representation.palo_alto.Conversions.computeAndSetPerPeerExportPolicy;
 import static org.batfish.representation.palo_alto.Conversions.computeAndSetPerPeerImportPolicy;
 import static org.batfish.representation.palo_alto.Conversions.getBgpCommonExportPolicy;
@@ -941,7 +943,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     Streams.concat(
             _sharedGateways.values().stream(),
             _virtualSystems.values().stream(),
-            Stream.of(_panorama, _shared).filter(Objects::nonNull))
+            // Duplicate object names from panorama namespace should overwrite those in shared
+            // namespace
+            Stream.of(_shared, _panorama).filter(Objects::nonNull))
         .forEach(
             namespace -> {
               loggingServers.addAll(namespace.getSyslogServerAddresses());
@@ -1567,11 +1571,12 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     for (ServiceOrServiceGroupReference service : services) {
       String serviceName = service.getName();
 
-      // Check for matching object before using built-ins
-      String vsysName = service.getVsysName(this, vsys);
-      if (vsysName != null) {
-        // Service object found
+      Optional<Vsys> maybeContainingVsys = getVsysForReference(service, vsys);
 
+      // Check for matching object before using built-ins
+      if (maybeContainingVsys.isPresent()) {
+        // Service object found
+        String vsysName = maybeContainingVsys.get().getName();
         AclLineMatchExpr serviceMatch =
             permittedByAcl(
                 computeServiceGroupMemberAclName(vsysName, serviceName),
@@ -1618,36 +1623,42 @@ public class PaloAltoConfiguration extends VendorConfiguration {
    * If no corresponding application/group is found, then {@link Optional#empty()} is returned.
    */
   private Optional<AclLineMatchExpr> aclLineMatchExprForApplicationOrGroup(
-      String name,
+      ApplicationOrApplicationGroupReference reference,
       SecurityRule rule,
       Vsys vsys,
       Map<String, AclLineMatchExpr> appOverrideAclsMap,
       boolean applicationDefaultService) {
-    String vsysName = vsys.getName();
+    String name = reference.getName();
 
     // Assume all traffic matches some application under the "any" definition
     if (name.equals(CATCHALL_APPLICATION_NAME)) {
       return Optional.of(new TrueExpr(matchApplicationAnyTraceElement()));
     }
 
-    ApplicationGroup group = vsys.getApplicationGroups().get(name);
-    if (group != null) {
-      return Optional.of(
-          new OrMatchExpr(
-              group
-                  .getDescendantObjects(vsys.getApplications(), vsys.getApplicationGroups())
-                  .stream()
-                  // Don't add trace for children; we've already flattened intermediate app groups
-                  .map(
-                      a ->
-                          aclLineMatchExprForApplication(
-                              a, appOverrideAclsMap, null, applicationDefaultService))
-                  .collect(ImmutableList.toImmutableList()),
-              matchApplicationGroupTraceElement(name, vsysName, _filename)));
-    }
+    Optional<Vsys> maybeContainingVsys = getVsysForReference(reference, vsys);
+    if (maybeContainingVsys.isPresent()) {
+      Vsys containingVsys = maybeContainingVsys.get();
+      String vsysName = containingVsys.getName();
+      ApplicationGroup group = containingVsys.getApplicationGroups().get(name);
+      if (group != null) {
+        return Optional.of(
+            new OrMatchExpr(
+                group
+                    .getDescendantObjects(
+                        containingVsys.getApplications(), containingVsys.getApplicationGroups())
+                    .stream()
+                    // Don't add trace for children; we've already flattened intermediate app groups
+                    .map(
+                        a ->
+                            aclLineMatchExprForApplication(
+                                a, appOverrideAclsMap, null, applicationDefaultService))
+                    .collect(ImmutableList.toImmutableList()),
+                matchApplicationGroupTraceElement(name, vsysName, _filename)));
+      }
 
-    Application a = vsys.getApplications().get(name);
-    if (a != null) {
+      Application a = containingVsys.getApplications().get(name);
+      // If the reference is contained by a vsys, should match an application or group above
+      assert a != null;
       return Optional.of(
           aclLineMatchExprForApplication(
               a,
@@ -1725,6 +1736,52 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         .collect(ImmutableList.toImmutableList());
   }
 
+  private static final ReferenceInVsys REFERENCE_IN_VSYS = new ReferenceInVsys();
+
+  /** Visitor that determines if a {@link Reference} exists in the specified {@link Vsys}. */
+  public static class ReferenceInVsys implements ReferenceVisitor<Boolean, Vsys> {
+    @Override
+    public Boolean visitServiceOrServiceGroupReference(
+        ServiceOrServiceGroupReference reference, Vsys vsys) {
+      return vsys.getServices().containsKey(reference.getName())
+          || vsys.getServiceGroups().containsKey(reference.getName());
+    }
+
+    @Override
+    public Boolean visitApplicationOrApplicationGroupReference(
+        ApplicationOrApplicationGroupReference reference, Vsys vsys) {
+      return vsys.getApplications().containsKey(reference.getName())
+          || vsys.getApplicationGroups().containsKey(reference.getName());
+    }
+  }
+
+  /**
+   * Return the {@link Vsys} this {@link Reference} points to. Handles checking the starting Vsys,
+   * shared Vsys, and Panorama Vsys if applicable.
+   */
+  @Nonnull
+  @SuppressWarnings("fallthrough")
+  Optional<Vsys> getVsysForReference(Reference ref, Vsys vsys) {
+    if (REFERENCE_IN_VSYS.visit(ref, vsys)) {
+      return Optional.of(vsys);
+    }
+    switch (vsys.getNamespaceType()) {
+      case LEAF:
+        if (_panorama != null) {
+          return getVsysForReference(ref, _panorama);
+        }
+        // fall-through
+      case PANORAMA:
+        if (_shared != null) {
+          return getVsysForReference(ref, _shared);
+        }
+        // fall-through
+      case SHARED:
+      default:
+        return Optional.empty();
+    }
+  }
+
   /** Converts interface address {@code String} to {@link IpSpace} */
   @Nullable
   @SuppressWarnings("fallthrough")
@@ -1751,13 +1808,13 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     }
     switch (vsys.getNamespaceType()) {
       case LEAF:
-        if (_shared != null) {
-          return interfaceAddressToConcreteInterfaceAddress(address, _shared, w);
-        }
-        // fall-through
-      case SHARED:
         if (_panorama != null) {
           return interfaceAddressToConcreteInterfaceAddress(address, _panorama, w);
+        }
+        // fall-through
+      case PANORAMA:
+        if (_shared != null) {
+          return interfaceAddressToConcreteInterfaceAddress(address, _shared, w);
         }
         // fall-through
       default:
@@ -1793,13 +1850,13 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     }
     switch (vsys.getNamespaceType()) {
       case LEAF:
-        if (_shared != null) {
-          return ruleEndpointToIpSpace(endpoint, _shared, w);
-        }
-        // fall-through
-      case SHARED:
         if (_panorama != null) {
           return ruleEndpointToIpSpace(endpoint, _panorama, w);
+        }
+        // fall-through
+      case PANORAMA:
+        if (_shared != null) {
+          return ruleEndpointToIpSpace(endpoint, _shared, w);
         }
         // fall-through
       default:
@@ -1879,13 +1936,13 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     }
     switch (vsys.getNamespaceType()) {
       case LEAF:
-        if (_shared != null) {
-          return getRuleEndpointTraceElement(endpoint, _shared, filename);
-        }
-        // fall-through
-      case SHARED:
         if (_panorama != null) {
           return getRuleEndpointTraceElement(endpoint, _panorama, filename);
+        }
+        // fall-through
+      case PANORAMA:
+        if (_shared != null) {
+          return getRuleEndpointTraceElement(endpoint, _shared, filename);
         }
         // fall-through
       default:
@@ -1923,13 +1980,13 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     }
     switch (vsys.getNamespaceType()) {
       case LEAF:
-        if (_shared != null) {
-          return ruleEndpointToIpRangeSet(endpoint, _shared, w);
-        }
-        // fall-through
-      case SHARED:
         if (_panorama != null) {
           return ruleEndpointToIpRangeSet(endpoint, _panorama, w);
+        }
+        // fall-through
+      case PANORAMA:
+        if (_shared != null) {
+          return ruleEndpointToIpRangeSet(endpoint, _shared, w);
         }
         // fall-through
       default:
@@ -2190,9 +2247,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     }
     String serviceName = service.getName();
     // Check for matching object before using built-ins
-    String vsysName = service.getVsysName(this, vsys);
+    Optional<Vsys> maybeContainingVsys = getVsysForReference(service, vsys);
 
-    if (vsysName != null) {
+    if (maybeContainingVsys.isPresent()) {
+      String vsysName = maybeContainingVsys.get().getName();
       return Optional.of(
           new PacketMatchExpr(
               permittedByAcl(computeServiceGroupMemberAclName(vsysName, serviceName))));
@@ -2503,12 +2561,17 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     }
 
     BgpProcess proc =
-        new BgpProcess(
-            bgp.getRouterId(),
-            vr.getAdminDists().getEbgp(),
-            vr.getAdminDists().getIbgp(),
+        BgpProcess.builder()
+            .setRouterId(bgp.getRouterId())
+            .setEbgpAdminCost(vr.getAdminDists().getEbgp())
             /* TODO: PAN does not let you configure local AD. Confirm IBGP AD is used */
-            vr.getAdminDists().getIbgp());
+            .setIbgpAdminCost(vr.getAdminDists().getIbgp())
+            .setLocalAdminCost(vr.getAdminDists().getIbgp())
+            // arbitrary values below
+            .setLocalOriginationTypeTieBreaker(NO_PREFERENCE)
+            .setNetworkNextHopIpTieBreaker(HIGHEST_NEXT_HOP_IP)
+            .setRedistributeNextHopIpTieBreaker(HIGHEST_NEXT_HOP_IP)
+            .build();
     // common BGP export policy (combination of all redist rules at the BgpVr level)
     RoutingPolicy commonExportPolicy = getBgpCommonExportPolicy(bgp, vr, _w, _c);
     _c.getRoutingPolicies().put(commonExportPolicy.getName(), commonExportPolicy);
@@ -2762,12 +2825,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   /**
-   * Copy configuration from specified source vsys to specified target vsys. Any previously made
-   * changes will be overwritten in this process. Note: this only supports copying device-group vsys
-   * configuration (objects and rules) and rules are merged by appending pre-rulebase and prepending
-   * post-rulebase.
+   * Copy object configuration from specified source vsys to specified target vsys. Any previously
+   * made changes will be overwritten in this process.
    */
-  private void applyVsys(@Nullable Vsys source, Vsys target) {
+  private void applyVsysObjects(@Nullable Vsys source, Vsys target) {
     if (source == null) {
       return;
     }
@@ -2779,7 +2840,16 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     target.getServices().putAll(source.getServices());
     target.getServiceGroups().putAll(source.getServiceGroups());
     target.getTags().putAll(source.getTags());
+  }
 
+  /**
+   * Copy rulebase configuration from specified source vsys to specified target vsys. Note: rules
+   * are merged by appending pre-rulebase and prepending post-rulebase.
+   */
+  private void applyVsysRulebase(@Nullable Vsys source, Vsys target) {
+    if (source == null) {
+      return;
+    }
     /*
      * Merge rules. Pre-rulebase rules should be appended, post-rulebase rules should be prepended.
      * Note: "regular" rulebase does not apply to panorama
@@ -2816,13 +2886,16 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     // TODO support applying device-group to specific vsys
     // https://github.com/batfish/batfish/issues/5910
 
-    // Create the target vsys (it shouldn't already exist)
-    Vsys target = new Vsys(PANORAMA_VSYS_NAME, NamespaceType.PANORAMA);
+    // Create the target vsyses (shouldn't already exist)
     assert _panorama == null;
-    _panorama = target;
+    assert _shared == null;
+    _panorama = new Vsys(PANORAMA_VSYS_NAME, NamespaceType.PANORAMA);
+    _shared = new Vsys(SHARED_VSYS_NAME, NamespaceType.SHARED);
 
-    // Apply shared config first, since it is overwritten by device-groups applied after it
-    applyVsys(shared, target);
+    // Keep shared objects in their own namespace
+    applyVsysObjects(shared, _shared);
+    // Merge shared rules into Panorama rules, to keep conversion simpler
+    applyVsysRulebase(shared, _panorama);
 
     List<DeviceGroup> inheritedDeviceGroups = new ArrayList<>();
     inheritedDeviceGroups.add(template);
@@ -2831,7 +2904,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     // Apply higher level parents first
     // since their config should be overwritten by lower level parents
     for (DeviceGroup parent : ImmutableList.copyOf(inheritedDeviceGroups).reverse()) {
-      applyVsys(parent.getPanorama(), target);
+      applyVsysObjects(parent.getPanorama(), _panorama);
+      applyVsysRulebase(parent.getPanorama(), _panorama);
     }
   }
 

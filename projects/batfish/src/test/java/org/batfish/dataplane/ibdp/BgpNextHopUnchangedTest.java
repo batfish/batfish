@@ -1,6 +1,8 @@
 package org.batfish.dataplane.ibdp;
 
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.NO_PREFERENCE;
+import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
 import static org.batfish.dataplane.ibdp.TestUtils.assertRoute;
 
 import com.google.common.collect.ImmutableList;
@@ -83,7 +85,13 @@ public class BgpNextHopUnchangedTest {
 
   /** A default BGP process to start with */
   private BgpProcess.Builder _bgpProcessBuilder =
-      _nf.bgpProcessBuilder().setEbgpAdminCost(1).setIbgpAdminCost(1).setLocalAdminCost(1);
+      _nf.bgpProcessBuilder()
+          .setEbgpAdminCost(1)
+          .setIbgpAdminCost(1)
+          .setLocalAdminCost(1)
+          .setLocalOriginationTypeTieBreaker(NO_PREFERENCE)
+          .setNetworkNextHopIpTieBreaker(HIGHEST_NEXT_HOP_IP)
+          .setRedistributeNextHopIpTieBreaker(HIGHEST_NEXT_HOP_IP);
 
   /**
    * Returns a three node network where first node (r1) advertises a static route and other nodes

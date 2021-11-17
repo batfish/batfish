@@ -15,7 +15,9 @@ import static org.batfish.question.routes.RoutesAnswererUtil.groupRoutes;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -23,16 +25,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Answerer;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.InterfaceNameComparator;
+import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.answers.StringAnswerElement;
 import org.batfish.datamodel.questions.BgpRouteStatus;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
@@ -80,6 +86,9 @@ public class RoutesAnswerer extends Answerer {
   // Diff Only
   static final String COL_ROUTE_ENTRY_PRESENCE = "Entry_Presence";
 
+  static final String ERROR_NO_MATCHING_NODES = "No matching nodes found.";
+  static final String ERROR_NO_MATCHING_VRFS = "No matching VRFs found on matching nodes.";
+
   RoutesAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
   }
@@ -99,9 +108,21 @@ public class RoutesAnswerer extends Answerer {
     DataPlane dp = _batfish.loadDataPlane(snapshot);
     Set<String> matchingNodes =
         question.getNodeSpecifier().resolve(_batfish.specifierContext(snapshot));
+
+    if (matchingNodes.isEmpty()) {
+      return new StringAnswerElement(ERROR_NO_MATCHING_NODES);
+    }
+
     Prefix network = question.getNetwork();
     RoutingProtocolSpecifier protocolSpec = question.getRoutingProtocolSpecifier();
     String vrfRegex = question.getVrfs();
+
+    Multimap<String, String> matchingVrfsByNode =
+        computeMatchingVrfsByNode(_batfish.loadConfigurations(snapshot), matchingNodes, vrfRegex);
+    if (matchingVrfsByNode.isEmpty()) {
+      return new StringAnswerElement(ERROR_NO_MATCHING_VRFS);
+    }
+
     boolean bgpMultipathBest = expandedBgpRouteStatuses.contains(BEST);
     boolean bgpBackup = expandedBgpRouteStatuses.contains(BACKUP);
     List<Row> rows = new ArrayList<>();
@@ -112,22 +133,18 @@ public class RoutesAnswerer extends Answerer {
           rows.addAll(
               getBgpRibRoutes(
                   dp.getBgpBackupRoutes(),
-                  RibProtocol.BGP,
-                  matchingNodes,
+                  matchingVrfsByNode,
                   network,
                   protocolSpec,
-                  vrfRegex,
                   ImmutableSet.of(BACKUP)));
         }
         if (bgpMultipathBest) {
           rows.addAll(
               getBgpRibRoutes(
                   dp.getBgpRoutes(),
-                  RibProtocol.BGP,
-                  matchingNodes,
+                  matchingVrfsByNode,
                   network,
                   protocolSpec,
-                  vrfRegex,
                   ImmutableSet.of(BEST)));
         }
         rows.sort(BGP_COMPARATOR);
@@ -137,28 +154,24 @@ public class RoutesAnswerer extends Answerer {
           rows.addAll(
               getEvpnRoutes(
                   dp.getEvpnBackupRoutes(),
-                  RibProtocol.EVPN,
-                  matchingNodes,
+                  matchingVrfsByNode,
                   network,
                   protocolSpec,
-                  vrfRegex,
                   ImmutableSet.of(BACKUP)));
         }
         if (bgpMultipathBest) {
           rows.addAll(
               getEvpnRoutes(
                   dp.getEvpnRoutes(),
-                  RibProtocol.EVPN,
-                  matchingNodes,
+                  matchingVrfsByNode,
                   network,
                   protocolSpec,
-                  vrfRegex,
                   ImmutableSet.of(BEST)));
         }
         rows.sort(BGP_COMPARATOR);
         break;
       case MAIN:
-        rows.addAll(getMainRibRoutes(dp.getRibs(), matchingNodes, network, protocolSpec, vrfRegex));
+        rows.addAll(getMainRibRoutes(dp.getRibs(), matchingVrfsByNode, network, protocolSpec));
         rows.sort(MAIN_RIB_COMPARATOR);
         break;
       default:
@@ -713,5 +726,17 @@ public class RoutesAnswerer extends Answerer {
             Boolean.TRUE));
 
     return new TableMetadata(columnBuilder.build(), "Display diff of RIB routes");
+  }
+
+  static Multimap<String, String> computeMatchingVrfsByNode(
+      Map<String, Configuration> configs, Set<String> matchingNodes, String vrfRegex) {
+    Predicate<String> vrfPredicate = Pattern.compile(vrfRegex).asPredicate();
+    ImmutableMultimap.Builder<String, String> vrfsByNode = ImmutableMultimap.builder();
+    matchingNodes.forEach(
+        nodeName ->
+            configs.get(nodeName).getVrfs().keySet().stream()
+                .filter(vrfPredicate)
+                .forEach(vrfName -> vrfsByNode.put(nodeName, vrfName)));
+    return vrfsByNode.build();
   }
 }

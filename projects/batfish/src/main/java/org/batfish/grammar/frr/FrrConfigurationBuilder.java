@@ -150,6 +150,7 @@ import org.batfish.grammar.frr.FrrParser.Sbafin_activateContext;
 import org.batfish.grammar.frr.FrrParser.Sbafin_allowas_inContext;
 import org.batfish.grammar.frr.FrrParser.Sbafin_default_originateContext;
 import org.batfish.grammar.frr.FrrParser.Sbafin_next_hop_selfContext;
+import org.batfish.grammar.frr.FrrParser.Sbafin_remove_private_asContext;
 import org.batfish.grammar.frr.FrrParser.Sbafin_route_mapContext;
 import org.batfish.grammar.frr.FrrParser.Sbafin_route_reflector_clientContext;
 import org.batfish.grammar.frr.FrrParser.Sbafino_neighborContext;
@@ -204,6 +205,7 @@ import org.batfish.representation.cumulus.BgpL2vpnEvpnAddressFamily;
 import org.batfish.representation.cumulus.BgpNeighbor;
 import org.batfish.representation.cumulus.BgpNeighbor.RemoteAs;
 import org.batfish.representation.cumulus.BgpNeighborIpv4UnicastAddressFamily;
+import org.batfish.representation.cumulus.BgpNeighborIpv4UnicastAddressFamily.RemovePrivateAsMode;
 import org.batfish.representation.cumulus.BgpNeighborL2vpnEvpnAddressFamily;
 import org.batfish.representation.cumulus.BgpNeighborSourceAddress;
 import org.batfish.representation.cumulus.BgpNeighborSourceInterface;
@@ -1124,6 +1126,21 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
     // http://docs.frrouting.org/en/latest/bgp.html#clicmd-[no]neighborPEERnext-hop-self[all].
     if (ctx.FORCE() != null || ctx.ALL() != null) {
       _currentBgpNeighborIpv4UnicastAddressFamily.setNextHopSelfAll(true);
+    }
+  }
+
+  @Override
+  public void exitSbafin_remove_private_as(Sbafin_remove_private_asContext ctx) {
+    if (_currentBgpNeighborIpv4UnicastAddressFamily == null) {
+      return;
+    }
+    if (ctx.REPLACE_AS() != null) {
+      _currentBgpNeighborIpv4UnicastAddressFamily.setRemovePrivateAsMode(
+          RemovePrivateAsMode.REPLACE_AS);
+    } else if (ctx.ALL() != null) {
+      _currentBgpNeighborIpv4UnicastAddressFamily.setRemovePrivateAsMode(RemovePrivateAsMode.ALL);
+    } else {
+      _currentBgpNeighborIpv4UnicastAddressFamily.setRemovePrivateAsMode(RemovePrivateAsMode.BASIC);
     }
   }
 

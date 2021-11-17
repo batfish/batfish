@@ -14,14 +14,15 @@ import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerImportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
+import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.NO_PREFERENCE;
+import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
 import static org.batfish.datamodel.bgp.VniConfig.importRtPatternForAnyAs;
 import static org.batfish.datamodel.routing_policy.Common.generateSuppressionPolicy;
 import static org.batfish.datamodel.routing_policy.Common.initDenyAllBgpRedistributionPolicy;
+import static org.batfish.datamodel.routing_policy.statement.Statements.RemovePrivateAs;
 import static org.batfish.representation.cumulus.BgpProcess.BGP_UNNUMBERED_IP;
-import static org.batfish.representation.cumulus.CumulusConcatenatedConfiguration.CUMULUS_CLAG_DOMAIN_ID;
-import static org.batfish.representation.cumulus.CumulusConcatenatedConfiguration.LOOPBACK_INTERFACE_NAME;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.VI_PROTOCOLS_MAP;
-import static org.batfish.representation.cumulus.InterfaceConverter.getSuperInterfaceName;
+import static org.batfish.representation.cumulus.FrrConfiguration.LOOPBACK_INTERFACE_NAME;
 import static org.batfish.representation.cumulus.OspfInterface.DEFAULT_OSPF_DEAD_INTERVAL;
 import static org.batfish.representation.cumulus.OspfInterface.DEFAULT_OSPF_HELLO_INTERVAL;
 import static org.batfish.representation.cumulus.OspfProcess.DEFAULT_OSPF_PROCESS_NAME;
@@ -69,8 +70,6 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.LinkLocalAddress;
-import org.batfish.datamodel.Mlag;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
@@ -136,6 +135,7 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.Layer3Vni;
 import org.batfish.datamodel.vxlan.Vni;
+import org.batfish.representation.cumulus.BgpNeighborIpv4UnicastAddressFamily.RemovePrivateAsMode;
 import org.batfish.vendor.VendorStructureId;
 
 /** Utilities that convert Cumulus-specific representations to vendor-independent model. */
@@ -153,8 +153,6 @@ public final class CumulusConversions {
 
   private static final Long DEFAULT_REDISTRIBUTE_METRIC = 20L;
   private static final OspfMetricType DEFAULT_REDISTRIBUTE_METRIC_TYPE = OspfMetricType.E2;
-
-  public static final Ip CLAG_LINK_LOCAL_IP = Ip.parse("169.254.40.94");
 
   public static final long DEFAULT_MAX_MED = 4294967294L;
   public static final long DEFAULT_OSPF_MAX_METRIC = 0xFFFF;
@@ -307,20 +305,22 @@ public final class CumulusConversions {
   }
 
   static void convertBgpProcess(
-      Configuration c, CumulusConcatenatedConfiguration vsConfig, Warnings w) {
-    BgpProcess bgpProcess = vsConfig.getBgpProcess();
+      Configuration c, OutOfBandConfiguration oobConfig, FrrConfiguration frrConfig, Warnings w) {
+    BgpProcess bgpProcess = frrConfig.getBgpProcess();
     if (bgpProcess == null) {
       return;
     }
     // First pass: only core processes
     c.getDefaultVrf()
-        .setBgpProcess(toBgpProcess(c, vsConfig, DEFAULT_VRF_NAME, bgpProcess.getDefaultVrf()));
+        .setBgpProcess(toBgpProcess(c, frrConfig, DEFAULT_VRF_NAME, bgpProcess.getDefaultVrf()));
     // We make one VI process per VRF because our current datamodel requires it
     bgpProcess
         .getVrfs()
         .forEach(
             (vrfName, bgpVrf) ->
-                c.getVrfs().get(vrfName).setBgpProcess(toBgpProcess(c, vsConfig, vrfName, bgpVrf)));
+                c.getVrfs()
+                    .get(vrfName)
+                    .setBgpProcess(toBgpProcess(c, frrConfig, vrfName, bgpVrf)));
 
     // Create dud processes for other VRFs that use VNIs, so we can have proper RIBs
     c.getVrfs()
@@ -331,11 +331,8 @@ public final class CumulusConversions {
                   && vrf.getBgpProcess() == null // process does not already exist
                   && c.getDefaultVrf().getBgpProcess() != null) { // there is a default BGP proc
                 vrf.setBgpProcess(
-                    org.batfish.datamodel.BgpProcess.builder()
+                    bgpProcessBuilder()
                         .setRouterId(c.getDefaultVrf().getBgpProcess().getRouterId())
-                        .setEbgpAdminCost(DEFAULT_EBGP_ADMIN)
-                        .setIbgpAdminCost(DEFAULT_IBGP_ADMIN)
-                        .setLocalAdminCost(DEFAULT_LOCAL_ADMIN)
                         .setRedistributionPolicy(initDenyAllBgpRedistributionPolicy(c))
                         .build());
               }
@@ -352,8 +349,20 @@ public final class CumulusConversions {
               bgpVrf
                   .getNeighbors()
                   .values()
-                  .forEach(neighbor -> addBgpNeighbor(c, vsConfig, bgpVrf, neighbor, w));
+                  .forEach(
+                      neighbor -> addBgpNeighbor(c, oobConfig, frrConfig, bgpVrf, neighbor, w));
             });
+  }
+
+  @Nonnull
+  private static org.batfish.datamodel.BgpProcess.Builder bgpProcessBuilder() {
+    return org.batfish.datamodel.BgpProcess.builder()
+        .setEbgpAdminCost(DEFAULT_EBGP_ADMIN)
+        .setIbgpAdminCost(DEFAULT_IBGP_ADMIN)
+        .setLocalAdminCost(DEFAULT_LOCAL_ADMIN)
+        .setLocalOriginationTypeTieBreaker(NO_PREFERENCE)
+        .setNetworkNextHopIpTieBreaker(HIGHEST_NEXT_HOP_IP)
+        .setRedistributeNextHopIpTieBreaker(HIGHEST_NEXT_HOP_IP);
   }
 
   /**
@@ -362,18 +371,14 @@ public final class CumulusConversions {
    */
   @Nullable
   static org.batfish.datamodel.BgpProcess toBgpProcess(
-      Configuration c, CumulusConcatenatedConfiguration vsConfig, String vrfName, BgpVrf bgpVrf) {
-    BgpProcess bgpProcess = vsConfig.getBgpProcess();
+      Configuration c, FrrConfiguration frrConfig, String vrfName, BgpVrf bgpVrf) {
+    BgpProcess bgpProcess = frrConfig.getBgpProcess();
     Ip routerId = bgpVrf.getRouterId();
     if (routerId == null) {
       routerId = inferRouterId(c);
     }
-    // TODO: surely this is customizable
-    int ebgpAdmin = DEFAULT_EBGP_ADMIN;
-    int ibgpAdmin = DEFAULT_IBGP_ADMIN;
-    int localAdmin = DEFAULT_LOCAL_ADMIN;
-    org.batfish.datamodel.BgpProcess newProc =
-        new org.batfish.datamodel.BgpProcess(routerId, ebgpAdmin, ibgpAdmin, localAdmin);
+    // TODO: customizable admin costs
+    org.batfish.datamodel.BgpProcess newProc = bgpProcessBuilder().setRouterId(routerId).build();
     newProc.setMultipathEquivalentAsPathMatchMode(EXACT_PATH);
     /*
       BGP multipath enabled by default
@@ -410,7 +415,7 @@ public final class CumulusConversions {
 
     generateBgpCommonExportPolicy(c, vrfName, bgpVrf);
     newProc.setRedistributionPolicy(
-        generateBgpRedistributionPolicy(c, vrfName, bgpVrf, vsConfig.getRouteMaps()));
+        generateBgpRedistributionPolicy(c, vrfName, bgpVrf, frrConfig.getRouteMaps()));
 
     return newProc;
   }
@@ -418,7 +423,8 @@ public final class CumulusConversions {
   @VisibleForTesting
   static void addBgpNeighbor(
       Configuration c,
-      CumulusConcatenatedConfiguration vsConfig,
+      OutOfBandConfiguration oobConfig,
+      FrrConfiguration frrConfig,
       BgpVrf bgpVrf,
       BgpNeighbor neighbor,
       Warnings w) {
@@ -448,13 +454,15 @@ public final class CumulusConversions {
 
     if (neighbor instanceof BgpInterfaceNeighbor) {
       BgpInterfaceNeighbor interfaceNeighbor = (BgpInterfaceNeighbor) neighbor;
-      addInterfaceBgpNeighbor(c, vsConfig, interfaceNeighbor, localAs, bgpVrf, viBgpProcess, w);
+      addInterfaceBgpNeighbor(
+          c, oobConfig, frrConfig, interfaceNeighbor, localAs, bgpVrf, viBgpProcess, w);
     } else if (neighbor instanceof BgpIpNeighbor) {
       BgpIpNeighbor ipNeighbor = (BgpIpNeighbor) neighbor;
-      addIpv4BgpNeighbor(c, vsConfig, ipNeighbor, localAs, bgpVrf, viBgpProcess, w);
+      addIpv4BgpNeighbor(c, oobConfig, frrConfig, ipNeighbor, localAs, bgpVrf, viBgpProcess, w);
     } else if (neighbor instanceof BgpDynamicNeighbor) {
       BgpDynamicNeighbor passiveNeighbor = (BgpDynamicNeighbor) neighbor;
-      addPassiveBgpNeighbor(c, vsConfig, passiveNeighbor, localAs, bgpVrf, viBgpProcess, w);
+      addPassiveBgpNeighbor(
+          c, oobConfig, frrConfig, passiveNeighbor, localAs, bgpVrf, viBgpProcess, w);
     } else if (!(neighbor instanceof BgpPeerGroupNeighbor
         || neighbor instanceof BgpIpv6Neighbor
         || neighbor instanceof BgpDynamic6Neighbor)) {
@@ -465,7 +473,8 @@ public final class CumulusConversions {
 
   private static void addInterfaceBgpNeighbor(
       Configuration c,
-      CumulusConcatenatedConfiguration vsConfig,
+      OutOfBandConfiguration oobConfig,
+      FrrConfiguration frrConfig,
       BgpInterfaceNeighbor neighbor,
       @Nullable Long localAs,
       BgpVrf bgpVrf,
@@ -503,13 +512,14 @@ public final class CumulusConversions {
               .setPeerInterface(neighbor.getName());
     }
     generateBgpCommonPeerConfig(
-        c, vsConfig, neighbor, localAs, bgpVrf, newProc, peerConfigBuilder, w);
+        c, oobConfig, frrConfig, neighbor, localAs, bgpVrf, newProc, peerConfigBuilder, w);
   }
 
   @VisibleForTesting
   static void generateBgpCommonPeerConfig(
       Configuration c,
-      CumulusConcatenatedConfiguration vsConfig,
+      OutOfBandConfiguration oobConfig,
+      FrrConfiguration frrConfig,
       BgpNeighbor neighbor,
       @Nullable Long localAs,
       BgpVrf bgpVrf,
@@ -543,7 +553,15 @@ public final class CumulusConversions {
                 importRoutingPolicy))
         .setEvpnAddressFamily(
             toEvpnAddressFamily(
-                c, vsConfig, neighbor, localAs, bgpVrf, newProc, exportRoutingPolicy, w))
+                c,
+                oobConfig,
+                frrConfig,
+                neighbor,
+                localAs,
+                bgpVrf,
+                newProc,
+                exportRoutingPolicy,
+                w))
         .build();
   }
 
@@ -592,7 +610,8 @@ public final class CumulusConversions {
 
   private static void addIpv4BgpNeighbor(
       Configuration c,
-      CumulusConcatenatedConfiguration vsConfig,
+      OutOfBandConfiguration oobConfig,
+      FrrConfiguration frrConfig,
       BgpIpNeighbor neighbor,
       @Nullable Long localAs,
       BgpVrf bgpVrf,
@@ -607,12 +626,13 @@ public final class CumulusConversions {
                         computeLocalIpForBgpNeighbor(neighbor.getPeerIp(), c, bgpVrf.getVrfName())))
             .setPeerAddress(neighbor.getPeerIp());
     generateBgpCommonPeerConfig(
-        c, vsConfig, neighbor, localAs, bgpVrf, newProc, peerConfigBuilder, w);
+        c, oobConfig, frrConfig, neighbor, localAs, bgpVrf, newProc, peerConfigBuilder, w);
   }
 
   private static void addPassiveBgpNeighbor(
       Configuration c,
-      CumulusConcatenatedConfiguration vsConfig,
+      OutOfBandConfiguration oobConfig,
+      FrrConfiguration frrConfig,
       BgpDynamicNeighbor neighbor,
       @Nullable Long localAs,
       BgpVrf bgpVrf,
@@ -623,7 +643,7 @@ public final class CumulusConversions {
             .setLocalIp(resolveLocalIpFromUpdateSource(neighbor.getBgpNeighborSource(), c, w))
             .setPeerPrefix(neighbor.getListenRange());
     generateBgpCommonPeerConfig(
-        c, vsConfig, neighbor, localAs, bgpVrf, newProc, peerConfigBuilder, w);
+        c, oobConfig, frrConfig, neighbor, localAs, bgpVrf, newProc, peerConfigBuilder, w);
   }
 
   @Nonnull
@@ -648,6 +668,15 @@ public final class CumulusConversions {
               ImmutableList.of()));
 
       peerExportPolicy.addStatement(REJECT_DEFAULT_ROUTE);
+    }
+
+    // remove private as if set
+    // TODO(handle different types of RemovePrivateAs)
+    if (neighbor.getIpv4UnicastAddressFamily() != null
+        && neighbor.getIpv4UnicastAddressFamily().getRemovePrivateAsMode() != null
+        && neighbor.getIpv4UnicastAddressFamily().getRemovePrivateAsMode()
+            != RemovePrivateAsMode.NONE) {
+      peerExportPolicy.addStatement(RemovePrivateAs.toStaticStatement());
     }
 
     BooleanExpr peerExportConditions = computePeerExportConditions(neighbor, bgpVrf);
@@ -993,7 +1022,8 @@ public final class CumulusConversions {
   @Nullable
   private static EvpnAddressFamily toEvpnAddressFamily(
       Configuration c,
-      CumulusConcatenatedConfiguration vsConfig,
+      OutOfBandConfiguration oobConfig,
+      FrrConfiguration frrConfig,
       BgpNeighbor neighbor,
       @Nullable Long localAs,
       BgpVrf bgpVrf,
@@ -1016,7 +1046,7 @@ public final class CumulusConversions {
         // Keep indices in deterministic order
         ImmutableList.sortedCopyOf(
             Comparator.nullsLast(Comparator.naturalOrder()),
-            vsConfig.getVxlans().values().stream()
+            oobConfig.getVxlans().values().stream()
                 .map(Vxlan::getId)
                 .collect(ImmutableSet.toImmutableSet())),
         (index, vni) -> {
@@ -1050,7 +1080,7 @@ public final class CumulusConversions {
                                     .build());
                           }));
     }
-    BgpProcess bgpProcess = vsConfig.getBgpProcess();
+    BgpProcess bgpProcess = frrConfig.getBgpProcess();
     // Advertise the L3 VNI per vrf if one is configured
     assert bgpProcess != null; // Since we are in neighbor conversion, this must be true
     // Iterate over ALL vrfs, because even if the vrf doesn't appear in bgp process config, we
@@ -1060,7 +1090,7 @@ public final class CumulusConversions {
         .forEach(
             innerVrf -> {
               String innerVrfName = innerVrf.getName();
-              Vrf vsVrf = vsConfig.getVrf(innerVrfName);
+              Vrf vsVrf = frrConfig.getVrfs().get(innerVrfName);
               if (vsVrf == null) {
                 return;
               }
@@ -1378,8 +1408,7 @@ public final class CumulusConversions {
     // use ImmutableSet to preserve order and remove duplicates
     ImmutableSet.Builder<ConcreteInterfaceAddress> addressesBuilder = ImmutableSet.builder();
     if (oobConfig.hasInterface(ifaceName)) {
-      Optional.ofNullable(oobConfig.getInterfaceAddresses(ifaceName))
-          .ifPresent(addressesBuilder::addAll);
+      addressesBuilder.addAll(oobConfig.getInterfaceAddresses(ifaceName));
     }
     Optional.ofNullable(frrConfig.getInterfaces().get(ifaceName))
         .map(FrrInterface::getIpAddresses)
@@ -1661,58 +1690,20 @@ public final class CumulusConversions {
             .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())));
   }
 
-  static void convertClags(Configuration c, CumulusConcatenatedConfiguration vsConfig, Warnings w) {
-    Map<String, InterfaceClagSettings> clagSourceInterfaces = vsConfig.getClagSettings();
-    if (clagSourceInterfaces.isEmpty()) {
-      return;
-    }
-    if (clagSourceInterfaces.size() > 1) {
-      w.redFlag(
-          String.format(
-              "CLAG configuration on multiple peering interfaces is unsupported: %s",
-              clagSourceInterfaces.keySet()));
-      return;
-    }
-    // Interface clagSourceInterface = clagSourceInterfaces.get(0);
-    Entry<String, InterfaceClagSettings> entry = clagSourceInterfaces.entrySet().iterator().next();
-    String sourceInterfaceName = entry.getKey();
-    InterfaceClagSettings clagSettings = entry.getValue();
-    Ip peerAddress = clagSettings.getPeerIp();
-    // Special case link-local addresses when no other addresses are defined
-    org.batfish.datamodel.Interface viInterface = c.getAllInterfaces().get(sourceInterfaceName);
-    if (peerAddress == null
-        && clagSettings.isPeerIpLinkLocal()
-        && viInterface.getAllAddresses().isEmpty()) {
-      LinkLocalAddress lla = LinkLocalAddress.of(CLAG_LINK_LOCAL_IP);
-      viInterface.setAddress(lla);
-      viInterface.setAllAddresses(ImmutableSet.of(lla));
-    }
-    String peerInterfaceName = getSuperInterfaceName(sourceInterfaceName);
-    c.setMlags(
-        ImmutableMap.of(
-            CUMULUS_CLAG_DOMAIN_ID,
-            Mlag.builder()
-                .setId(CUMULUS_CLAG_DOMAIN_ID)
-                .setLocalInterface(sourceInterfaceName)
-                .setPeerAddress(peerAddress)
-                .setPeerInterface(peerInterfaceName)
-                .build()));
-  }
-
   /**
    * Converts {@link Vxlan} into appropriate {@link Vni} for each VRF. Requires VI Vrfs to already
    * be properly initialized
    */
   static void convertVxlans(
       Configuration c,
-      CumulusConcatenatedConfiguration vsConfig,
+      OutOfBandConfiguration oobConfig,
       Map<Integer, String> vniToVrf,
       @Nullable Ip loopbackClagVxlanAnycastIp,
       @Nullable Ip loopbackVxlanLocalTunnelIp,
       Warnings w) {
 
     // Put all valid VXLAN VNIs into appropriate VRF
-    vsConfig
+    oobConfig
         .getVxlans()
         .values()
         .forEach(
@@ -1761,7 +1752,7 @@ public final class CumulusConversions {
                                     .build()));
               } else {
                 // This is an L2 VNI. Find the VRF by looking up the VLAN
-                vrfName = vsConfig.getVrfForVlan(vxlan.getBridgeAccessVlan());
+                vrfName = oobConfig.getVrfForVlan(vxlan.getBridgeAccessVlan()).orElse(null);
                 if (vrfName == null) {
                   // This is a workaround until we properly support pure-L2 VNIs (with no IRBs)
                   vrfName = DEFAULT_VRF_NAME;

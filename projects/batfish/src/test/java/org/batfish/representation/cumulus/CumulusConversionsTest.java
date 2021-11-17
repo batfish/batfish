@@ -16,7 +16,7 @@ import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasCommunities;
 import static org.batfish.datamodel.routing_policy.Common.SUMMARY_ONLY_SUPPRESSION_POLICY_NAME;
 import static org.batfish.datamodel.routing_policy.statement.Statements.ExitAccept;
-import static org.batfish.representation.cumulus.CumulusConcatenatedConfiguration.LOOPBACK_INTERFACE_NAME;
+import static org.batfish.datamodel.routing_policy.statement.Statements.RemovePrivateAs;
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_MAX_MED;
 import static org.batfish.representation.cumulus.CumulusConversions.GENERATED_DEFAULT_ROUTE;
 import static org.batfish.representation.cumulus.CumulusConversions.REJECT_DEFAULT_ROUTE;
@@ -44,6 +44,7 @@ import static org.batfish.representation.cumulus.CumulusConversions.toOspfProces
 import static org.batfish.representation.cumulus.CumulusConversions.toRouteFilterLine;
 import static org.batfish.representation.cumulus.CumulusConversions.toRouteFilterList;
 import static org.batfish.representation.cumulus.CumulusConversions.toRouteTarget;
+import static org.batfish.representation.cumulus.FrrConfiguration.LOOPBACK_INTERFACE_NAME;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
@@ -128,6 +129,7 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.representation.cumulus.BgpNeighbor.RemoteAs;
+import org.batfish.representation.cumulus.BgpNeighborIpv4UnicastAddressFamily.RemovePrivateAsMode;
 import org.batfish.vendor.VendorStructureId;
 import org.junit.Before;
 import org.junit.Test;
@@ -146,8 +148,9 @@ public final class CumulusConversionsTest {
     _c = _nf.configurationBuilder().build();
     _v = _nf.vrfBuilder().setOwner(_c).build();
     _oob = new CumulusConcatenatedConfiguration();
-    _frr = new FrrConfiguration();
+    _frr = ((CumulusConcatenatedConfiguration) _oob).getFrrConfiguration();
     _frr.setOspfProcess(new OspfProcess());
+    _frr.setBgpProcess(new BgpProcess());
   }
 
   private Environment finalEnvironment(Statement statement, String network) {
@@ -416,9 +419,9 @@ public final class CumulusConversionsTest {
     Vrf viVrf = nf.vrfBuilder().setOwner(viConfig).setName(DEFAULT_VRF_NAME).build();
 
     // setup VS model
-    CumulusConcatenatedConfiguration vsConfig = new CumulusConcatenatedConfiguration();
+    FrrConfiguration frr = new FrrConfiguration();
     BgpProcess bgpProcess = new BgpProcess();
-    vsConfig.getFrrConfiguration().setBgpProcess(bgpProcess);
+    frr.setBgpProcess(bgpProcess);
 
     // setup BgpVrf
     BgpVrf vrf = bgpProcess.getDefaultVrf();
@@ -434,7 +437,7 @@ public final class CumulusConversionsTest {
     vrf.setIpv4Unicast(ipv4Unicast);
 
     // the method under test
-    viVrf.setBgpProcess(toBgpProcess(viConfig, vsConfig, DEFAULT_VRF_NAME, vrf));
+    viVrf.setBgpProcess(toBgpProcess(viConfig, frr, DEFAULT_VRF_NAME, vrf));
 
     // aggregate route exists with expected suppression policy (if any)
     String suppressionPolicyName = summaryOnly ? SUMMARY_ONLY_SUPPRESSION_POLICY_NAME : null;
@@ -466,20 +469,14 @@ public final class CumulusConversionsTest {
             .build();
     nf.vrfBuilder().setOwner(viConfig).setName(DEFAULT_VRF_NAME).build();
 
-    // setup VS model
-    CumulusConcatenatedConfiguration vsConfig = new CumulusConcatenatedConfiguration();
-    BgpProcess bgpProcess = new BgpProcess();
-    vsConfig.getFrrConfiguration().setBgpProcess(bgpProcess);
-
     // setup BgpVrf
     Prefix prefix = Prefix.parse("1.2.3.0/24");
-    BgpVrf vrf = bgpProcess.getDefaultVrf();
+    BgpVrf vrf = _frr.getBgpProcess().getDefaultVrf();
     vrf.setRouterId(Ip.parse("1.1.1.1"));
     vrf.addNetwork(new BgpNetwork(prefix));
 
     // the method under test
-    org.batfish.datamodel.BgpProcess viBgp =
-        toBgpProcess(viConfig, vsConfig, DEFAULT_VRF_NAME, vrf);
+    org.batfish.datamodel.BgpProcess viBgp = toBgpProcess(viConfig, _frr, DEFAULT_VRF_NAME, vrf);
 
     // generation policy exists
     assertTrue(viBgp.getOriginationSpace().containsPrefix(prefix));
@@ -514,21 +511,18 @@ public final class CumulusConversionsTest {
                 new SetCommunities(new LiteralCommunitySet(CommunitySet.of(community))),
                 ExitAccept.toStaticStatement()))
         .build();
-    // setup VS model
-    CumulusConcatenatedConfiguration vsConfig = new CumulusConcatenatedConfiguration();
-    BgpProcess bgpProcess = new BgpProcess();
-    vsConfig.getFrrConfiguration().setBgpProcess(bgpProcess);
+
     // Note that content of route map does not matter in VS land, only in VI land
-    vsConfig.getRouteMaps().put(networkRouteMapName, new RouteMap(networkRouteMapName));
+    _frr.getRouteMaps().put(networkRouteMapName, new RouteMap(networkRouteMapName));
 
     // setup BgpVrf
     Prefix prefix = Prefix.parse("1.2.3.0/24");
-    BgpVrf vrf = bgpProcess.getDefaultVrf();
+    BgpVrf vrf = _frr.getBgpProcess().getDefaultVrf();
     vrf.setRouterId(Ip.parse("1.1.1.1"));
     vrf.addNetwork(new BgpNetwork(prefix, networkRouteMapName));
 
     // the method under test. In charge of creating peer export policies.
-    toBgpProcess(viConfig, vsConfig, DEFAULT_VRF_NAME, vrf);
+    toBgpProcess(viConfig, _frr, DEFAULT_VRF_NAME, vrf);
 
     // the prefix is allowed to leave
     AbstractRoute route = new ConnectedRoute(prefix, "dummy");
@@ -555,21 +549,15 @@ public final class CumulusConversionsTest {
             .build();
     nf.vrfBuilder().setOwner(viConfig).setName(DEFAULT_VRF_NAME).build();
 
-    // setup VS model
-    CumulusConcatenatedConfiguration vsConfig = new CumulusConcatenatedConfiguration();
-    BgpProcess bgpProcess = new BgpProcess();
-    vsConfig.getFrrConfiguration().setBgpProcess(bgpProcess);
-
     // setup BgpVrf
     Prefix prefix = Prefix.parse("1.2.3.0/24");
-    BgpVrf vrf = bgpProcess.getDefaultVrf();
+    BgpVrf vrf = _frr.getBgpProcess().getDefaultVrf();
     vrf.setRouterId(Ip.parse("1.1.1.1"));
     vrf.addNetwork(new BgpNetwork(prefix));
     vrf.setDefaultIpv4Unicast(false);
 
     // the method under test
-    org.batfish.datamodel.BgpProcess viBgp =
-        toBgpProcess(viConfig, vsConfig, DEFAULT_VRF_NAME, vrf);
+    org.batfish.datamodel.BgpProcess viBgp = toBgpProcess(viConfig, _frr, DEFAULT_VRF_NAME, vrf);
 
     // generation policy exists
     assertFalse(viBgp.getOriginationSpace().containsPrefix(prefix));
@@ -598,13 +586,12 @@ public final class CumulusConversionsTest {
             .setConfigurationFormat(ConfigurationFormat.CUMULUS_CONCATENATED)
             .build();
 
-    CumulusConcatenatedConfiguration vsConfig = new CumulusConcatenatedConfiguration();
-
     BgpActivePeerConfig.Builder peerConfigBuilder =
         BgpActivePeerConfig.builder().setPeerAddress(peerIp);
     generateBgpCommonPeerConfig(
         viConfig,
-        vsConfig,
+        _oob,
+        _frr,
         neighbor,
         10000L,
         new BgpVrf("vrf"),
@@ -663,13 +650,12 @@ public final class CumulusConversionsTest {
             .setConfigurationFormat(ConfigurationFormat.CUMULUS_CONCATENATED)
             .build();
 
-    CumulusConcatenatedConfiguration vsConfig = new CumulusConcatenatedConfiguration();
-
     BgpActivePeerConfig.Builder peerConfigBuilder =
         BgpActivePeerConfig.builder().setPeerAddress(peerIp);
     generateBgpCommonPeerConfig(
         viConfig,
-        vsConfig,
+        _oob,
+        _frr,
         neighbor,
         10000L,
         new BgpVrf("vrf"),
@@ -701,13 +687,12 @@ public final class CumulusConversionsTest {
             .setConfigurationFormat(ConfigurationFormat.CUMULUS_CONCATENATED)
             .build();
 
-    CumulusConcatenatedConfiguration vsConfig = new CumulusConcatenatedConfiguration();
-
     BgpActivePeerConfig.Builder peerConfigBuilder =
         BgpActivePeerConfig.builder().setPeerAddress(peerIp);
     generateBgpCommonPeerConfig(
         viConfig,
-        vsConfig,
+        _oob,
+        _frr,
         neighbor,
         10000L,
         new BgpVrf("vrf"),
@@ -732,6 +717,74 @@ public final class CumulusConversionsTest {
   }
 
   @Test
+  public void testGenerateBgpCommonPeerConfig_removePrivateAs() {
+    Ip peerIp = Ip.parse("10.0.0.2");
+    BgpIpNeighbor neighbor = new BgpIpNeighbor("BgpNeighbor", peerIp);
+    neighbor.setRemoteAs(RemoteAs.internal());
+    BgpNeighborIpv4UnicastAddressFamily ipv4UnicastAddressFamily =
+        new BgpNeighborIpv4UnicastAddressFamily();
+    neighbor.setIpv4UnicastAddressFamily(ipv4UnicastAddressFamily);
+
+    org.batfish.datamodel.BgpProcess newProc =
+        org.batfish.datamodel.BgpProcess.testBgpProcess(Ip.parse("10.0.0.1"));
+
+    {
+      // remove private as is not set
+      Configuration viConfig =
+          _nf.configurationBuilder()
+              .setConfigurationFormat(ConfigurationFormat.CUMULUS_CONCATENATED)
+              .build();
+
+      generateBgpCommonPeerConfig(
+          viConfig,
+          _oob,
+          _frr,
+          neighbor,
+          10000L,
+          new BgpVrf("vrf"),
+          newProc,
+          BgpActivePeerConfig.builder().setPeerAddress(peerIp),
+          new Warnings());
+
+      assertTrue(
+          viConfig
+              .getRoutingPolicies()
+              .get(generatedBgpPeerExportPolicyName("vrf", neighbor.getName()))
+              .getStatements()
+              .stream()
+              .noneMatch(s -> s.equals(RemovePrivateAs.toStaticStatement())));
+    }
+    {
+      // remove private as is set
+      ipv4UnicastAddressFamily.setRemovePrivateAsMode(RemovePrivateAsMode.BASIC);
+
+      Configuration viConfig =
+          _nf.configurationBuilder()
+              .setConfigurationFormat(ConfigurationFormat.CUMULUS_CONCATENATED)
+              .build();
+
+      generateBgpCommonPeerConfig(
+          viConfig,
+          _oob,
+          _frr,
+          neighbor,
+          10000L,
+          new BgpVrf("vrf"),
+          newProc,
+          BgpActivePeerConfig.builder().setPeerAddress(peerIp),
+          new Warnings());
+
+      assertTrue(
+          viConfig
+              .getRoutingPolicies()
+              .get(generatedBgpPeerExportPolicyName("vrf", neighbor.getName()))
+              .getStatements()
+              .stream()
+              .anyMatch(s -> s.equals(RemovePrivateAs.toStaticStatement())));
+    }
+  }
+
+  @Test
   public void testGenerateBgpCommonPeerConfig_SetEbgpMultiHop() {
     // set bgp neighbor
     Ip peerIp = Ip.parse("10.0.0.2");
@@ -748,14 +801,13 @@ public final class CumulusConversionsTest {
             .configurationBuilder()
             .setConfigurationFormat(ConfigurationFormat.CUMULUS_CONCATENATED)
             .build();
-    CumulusConcatenatedConfiguration concatenatedConfiguration =
-        new CumulusConcatenatedConfiguration();
 
     BgpActivePeerConfig.Builder peerConfigBuilder =
         BgpActivePeerConfig.builder().setPeerAddress(peerIp);
     generateBgpCommonPeerConfig(
         viConfig,
-        concatenatedConfiguration,
+        _oob,
+        _frr,
         neighbor,
         10000L,
         new BgpVrf("Vrf"),
@@ -832,6 +884,7 @@ public final class CumulusConversionsTest {
     generateBgpCommonPeerConfig(
         c,
         vsConfig,
+        vsConfig.getFrrConfiguration(),
         neighbor,
         localAs,
         bgpVrf,
@@ -860,10 +913,12 @@ public final class CumulusConversionsTest {
   /** Test that L2 VPN EVPN address family route reflect is set correctly */
   @Test
   public void testGenerateBgpCommonPeerConfig_L2vpnRouteReflector() {
-    CumulusConcatenatedConfiguration vsConfig =
+    FrrConfiguration frr = new FrrConfiguration();
+    frr.setBgpProcess(new BgpProcess());
+    CumulusConcatenatedConfiguration oob =
         CumulusConcatenatedConfiguration.builder()
             .setHostname("c")
-            .setBgpProcess(new BgpProcess())
+            .setFrrConfiguration(frr)
             .build();
 
     BgpVrf bgpVrf = new BgpVrf(DEFAULT_VRF_NAME);
@@ -882,7 +937,8 @@ public final class CumulusConversionsTest {
     // we didn't set route reflector yet
     generateBgpCommonPeerConfig(
         new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED),
-        vsConfig,
+        oob,
+        frr,
         neighbor,
         101L,
         bgpVrf,
@@ -895,7 +951,8 @@ public final class CumulusConversionsTest {
     bgpNeighborL2vpnEvpnAddressFamily.setRouteReflectorClient(true);
     generateBgpCommonPeerConfig(
         new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED),
-        vsConfig,
+        oob,
+        frr,
         neighbor,
         101L,
         bgpVrf,
@@ -1419,12 +1476,7 @@ public final class CumulusConversionsTest {
     nf.vrfBuilder().setOwner(viConfig).setName(DEFAULT_VRF_NAME).build();
 
     // setup VS model
-    CumulusConcatenatedConfiguration vsConfig = new CumulusConcatenatedConfiguration();
-    BgpProcess bgpProcess = new BgpProcess();
-    OspfProcess ospfProcess = new OspfProcess();
-    vsConfig.getFrrConfiguration().setOspfProcess(ospfProcess);
-    vsConfig.getFrrConfiguration().setBgpProcess(bgpProcess);
-    vsConfig.getRouteMaps().put("redist_policy", new RouteMap("redist_policy"));
+    _frr.getRouteMaps().put("redist_policy", new RouteMap("redist_policy"));
 
     // setup routing policy - block default and allow all else.
     RoutingPolicy.builder()
@@ -1439,7 +1491,7 @@ public final class CumulusConversionsTest {
         .build();
 
     // setup BgpVrf
-    BgpVrf vrf = bgpProcess.getDefaultVrf();
+    BgpVrf vrf = _frr.getBgpProcess().getDefaultVrf();
     vrf.setRouterId(Ip.parse("1.1.1.1"));
     vrf.getRedistributionPolicies()
         .put(
@@ -1447,11 +1499,11 @@ public final class CumulusConversionsTest {
             new BgpRedistributionPolicy(CumulusRoutingProtocol.OSPF, "redist_policy"));
 
     // setup OspfVrf
-    OspfVrf ospf = ospfProcess.getDefaultVrf();
+    OspfVrf ospf = _frr.getOspfProcess().getDefaultVrf();
     ospf.setRouterId(Ip.parse("1.1.1.1"));
 
     // the method under test
-    toBgpProcess(viConfig, vsConfig, DEFAULT_VRF_NAME, vrf);
+    toBgpProcess(viConfig, _frr, DEFAULT_VRF_NAME, vrf);
 
     // Spawn test prefixes
     Prefix prefix = Prefix.parse("1.1.1.1/32");
@@ -1822,12 +1874,7 @@ public final class CumulusConversionsTest {
     BgpNeighbor neighbor = new BgpInterfaceNeighbor("iface");
     neighbor.setRemoteAs(RemoteAs.explicit(123));
 
-    addBgpNeighbor(
-        c,
-        CumulusConcatenatedConfiguration.builder().setHostname("c").build(),
-        new BgpVrf(viVrf.getName()),
-        neighbor,
-        new Warnings());
+    addBgpNeighbor(c, _oob, _frr, new BgpVrf(viVrf.getName()), neighbor, new Warnings());
 
     Ip peerIp = Ip.parse("1.1.1.0");
     assertTrue(bgpProc.getActiveNeighbors().containsKey(peerIp));
@@ -2046,13 +2093,8 @@ public final class CumulusConversionsTest {
             .build();
     nf.vrfBuilder().setOwner(viConfig).setName(DEFAULT_VRF_NAME).build();
 
-    // setup VS model
-    CumulusConcatenatedConfiguration vsConfig = new CumulusConcatenatedConfiguration();
-    BgpProcess bgpProcess = new BgpProcess();
-    vsConfig.getFrrConfiguration().setBgpProcess(bgpProcess);
-
     // setup BgpVrf and BgpNeighbor
-    BgpVrf vrf = bgpProcess.getDefaultVrf();
+    BgpVrf vrf = _frr.getBgpProcess().getDefaultVrf();
     vrf.setRouterId(Ip.parse("1.1.1.1"));
     vrf.setAutonomousSystem(20000L);
     Ip peerIp = Ip.parse("10.0.0.1");
@@ -2068,7 +2110,7 @@ public final class CumulusConversionsTest {
 
     // Method under test
     generateBgpCommonPeerConfig(
-        viConfig, vsConfig, bgpNeighbor, 10000L, vrf, newProc, peerConfigBuilder, new Warnings());
+        viConfig, _oob, _frr, bgpNeighbor, 10000L, vrf, newProc, peerConfigBuilder, new Warnings());
 
     // Test that by default, we don't set a metric
 
@@ -2086,7 +2128,7 @@ public final class CumulusConversionsTest {
     // Set max-med admin on the vrf, regenerate and test again
     vrf.setMaxMedAdministrative(DEFAULT_MAX_MED);
     generateBgpCommonPeerConfig(
-        viConfig, vsConfig, bgpNeighbor, 10000L, vrf, newProc, peerConfigBuilder, new Warnings());
+        viConfig, _oob, _frr, bgpNeighbor, 10000L, vrf, newProc, peerConfigBuilder, new Warnings());
 
     assertEquals(
         viConfig

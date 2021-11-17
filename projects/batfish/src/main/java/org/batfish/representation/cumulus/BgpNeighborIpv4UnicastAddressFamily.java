@@ -6,9 +6,18 @@ import javax.annotation.Nullable;
 
 /** IPv4 unicast BGP configuration for a neighbor (or peer group) */
 public class BgpNeighborIpv4UnicastAddressFamily implements Serializable {
+
+  public enum RemovePrivateAsMode {
+    NONE,
+    BASIC,
+    ALL,
+    REPLACE_AS,
+  }
+
   @Nullable private Boolean _activated;
   @Nullable private Integer _allowAsIn;
   @Nullable private Boolean _defaultOriginate;
+  @Nullable private RemovePrivateAsMode _removePrivateAsMode;
   @Nullable private Boolean _routeReflectorClient;
   @Nullable private Boolean _nextHopSelf;
   @Nullable private Boolean _nextHopSelfAll;
@@ -23,6 +32,14 @@ public class BgpNeighborIpv4UnicastAddressFamily implements Serializable {
 
   public void setActivated(@Nullable Boolean activated) {
     _activated = activated;
+  }
+
+  public @Nullable RemovePrivateAsMode getRemovePrivateAsMode() {
+    return _removePrivateAsMode;
+  }
+
+  public void setRemovePrivateAsMode(RemovePrivateAsMode removePrivateAsMode) {
+    _removePrivateAsMode = removePrivateAsMode;
   }
 
   /** Whether the neighbor is a route reflector client */
@@ -65,6 +82,10 @@ public class BgpNeighborIpv4UnicastAddressFamily implements Serializable {
 
     if (_defaultOriginate == null) {
       _defaultOriginate = other.getDefaultOriginate();
+    }
+
+    if (_removePrivateAsMode == null) {
+      _removePrivateAsMode = other.getRemovePrivateAsMode();
     }
 
     if (_routeReflectorClient == null) {

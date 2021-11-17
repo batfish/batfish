@@ -1,0 +1,37 @@
+set deviceconfig system hostname panorama-namespace
+#
+#
+#
+# Panorama configuration
+#
+set shared address ADDRESS1 ip-netmask 192.168.1.1
+set shared service SERVICE1 protocol tcp port 1001
+set shared application-group APPGROUP1 members ping
+#
+#
+#
+# Managed-device configuration
+#
+set device-group DG1 description "test device-group 1"
+set device-group DG1 devices 00000001
+set device-group DG1 address ADDRESS2 ip-netmask 192.168.1.2
+set device-group DG1 service SERVICE2 protocol tcp port 1002
+set device-group DG1 application-group APPGROUP2 members icmp
+set device-group DG1 pre-rulebase security rules PRE_RULE_DG to any
+set device-group DG1 pre-rulebase security rules PRE_RULE_DG from any
+set device-group DG1 pre-rulebase security rules PRE_RULE_DG source [ ADDRESS1 ADDRESS2 ]
+set device-group DG1 pre-rulebase security rules PRE_RULE_DG destination any
+set device-group DG1 pre-rulebase security rules PRE_RULE_DG application [ APPGROUP1 APPGROUP2 ]
+set device-group DG1 pre-rulebase security rules PRE_RULE_DG service [ SERVICE1 SERVICE2 ]
+set device-group DG1 pre-rulebase security rules PRE_RULE_DG action allow
+#
+# Network configuration required to make device 00000001 allow traffic through
+set template T1 config devices localhost.localdomain vsys vsys1 zone Z1 network layer3 ethernet1/1
+set template T1 config devices localhost.localdomain vsys vsys1 zone Z2 network layer3 ethernet1/2
+set template T1 config devices localhost.localdomain vsys vsys1 import network interface [ ethernet1/1 ethernet1/2 ]
+set template T1 config devices localhost.localdomain network interface ethernet ethernet1/1 layer3 ip 10.0.1.1/24
+set template T1 config devices localhost.localdomain network interface ethernet ethernet1/2 layer3 ip 10.0.2.1/24
+set template T1 config devices localhost.localdomain network virtual-router default interface [ ethernet1/1 ethernet1/2 ]
+set template-stack TS1 templates T1
+set template-stack TS1 devices 00000001
+#
