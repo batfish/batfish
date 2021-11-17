@@ -17,7 +17,6 @@ import java.util.SortedMap;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.AsPath;
-import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.DataPlane;
@@ -73,7 +72,7 @@ public class EvpnType5AristaTest {
     // Only vrf1 should have BGP routes; exporting EVPN should not affect default VRF's BGP RIB.
     Map<String, Set<Bgpv4Route>> bgpRoutes = dp.getBgpRoutes().row(hostname);
     assertThat(bgpRoutes.get(DEFAULT_VRF_NAME), empty());
-    BgpRoute vrf1BgpRoute = Iterables.getOnlyElement(bgpRoutes.get(vrf1));
+    Bgpv4Route vrf1BgpRoute = Iterables.getOnlyElement(bgpRoutes.get(vrf1));
     assertThat(vrf1BgpRoute, hasPrefix(prefix));
     assertThat(vrf1BgpRoute.getCommunities(), equalTo(CommunitySet.of(rmCommunity)));
     assertThat(vrf1BgpRoute.getAsPath(), equalTo(AsPath.ofSingletonAsSets(rmAs)));
