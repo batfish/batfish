@@ -201,6 +201,9 @@ public final class FrrConversions {
    * configured as needed. This method makes no changes to VI interface properties other than adding
    * LLAs for BGP and OSPF. Out-of-band static routes must also have been setup.
    *
+   * <p>This method will configure FRR static routes and aspects related to BGP and OSPF. It does
+   * not configure MLAG and VXLAN, which are left in the OutOfBand domain.
+   *
    * @param vc The VS configuration object of which this FRR configuration is part of.
    * @param c The partially initialized (as noted above) VI configuration object.
    * @param oobConfig VS configuration elements (e.g., ports and interfaces) configured outside FRR.

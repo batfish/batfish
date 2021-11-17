@@ -30,7 +30,6 @@ import static org.batfish.representation.cumulus.FrrConversions.computeOspfAreas
 import static org.batfish.representation.cumulus.FrrConversions.computeOspfExportPolicyName;
 import static org.batfish.representation.cumulus.FrrConversions.convertIpv4UnicastAddressFamily;
 import static org.batfish.representation.cumulus.FrrConversions.convertOspfRedistributionPolicy;
-import static org.batfish.representation.cumulus.FrrConversions.convertVxlans;
 import static org.batfish.representation.cumulus.FrrConversions.generateBgpCommonPeerConfig;
 import static org.batfish.representation.cumulus.FrrConversions.getSetMaxMedMetric;
 import static org.batfish.representation.cumulus.FrrConversions.getSetNextHop;
@@ -1937,49 +1936,6 @@ public final class FrrConversionsTest {
             .setType(PHYSICAL)
             .build();
     assertEquals(inferPeerIp(viIface), Optional.empty());
-  }
-
-  @Test
-  public void testConvertVxlan_localIpPrecedence() {
-    Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
-    Vrf vrf = new Vrf("vrf");
-    c.setVrfs(ImmutableMap.of(vrf.getName(), vrf));
-
-    Ip vxlanLocalTunnelIp = Ip.parse("1.1.1.1");
-    Ip loopbackTunnelIp = Ip.parse("2.2.2.2");
-    Ip loopbackAnycastIp = Ip.parse("3.3.3.3");
-
-    Vxlan vxlan = new Vxlan("vxlan1001");
-    vxlan.setId(1001);
-    vxlan.setLocalTunnelip(vxlanLocalTunnelIp);
-    vxlan.setBridgeAccessVlan(101);
-    OutOfBandConfiguration oob =
-        MockOutOfBandConfiguration.builder()
-            .setVxlans(ImmutableMap.of(vxlan.getName(), vxlan))
-            .build();
-
-    // vxlan's local tunnel ip should win when anycast is null
-    convertVxlans(
-        c, oob, ImmutableMap.of(1001, vrf.getName()), null, loopbackTunnelIp, new Warnings());
-    assertThat(vrf.getLayer3Vnis().get(1001).getSourceAddress(), equalTo(vxlanLocalTunnelIp));
-
-    // anycast should win if non-null
-    vrf.setLayer3Vnis(ImmutableList.of()); // wipe out prior state
-    convertVxlans(
-        c,
-        oob,
-        ImmutableMap.of(1001, vrf.getName()),
-        loopbackAnycastIp,
-        loopbackTunnelIp,
-        new Warnings());
-    assertThat(vrf.getLayer3Vnis().get(1001).getSourceAddress(), equalTo(loopbackAnycastIp));
-
-    // loopback tunnel ip should win when nothing else is present
-    vrf.setLayer3Vnis(ImmutableList.of()); // wipe out prior state
-    vxlan.setLocalTunnelip(null);
-    convertVxlans(
-        c, oob, ImmutableMap.of(1001, vrf.getName()), null, loopbackTunnelIp, new Warnings());
-    assertThat(vrf.getLayer3Vnis().get(1001).getSourceAddress(), equalTo(loopbackTunnelIp));
   }
 
   @Test

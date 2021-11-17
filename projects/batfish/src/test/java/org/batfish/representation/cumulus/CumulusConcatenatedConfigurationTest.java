@@ -6,6 +6,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasBandwidth;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInterfaceType;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
+import static org.batfish.representation.cumulus.CumulusConcatenatedConfiguration.convertVxlans;
 import static org.batfish.representation.cumulus.CumulusConcatenatedConfiguration.isValidVIInterface;
 import static org.batfish.representation.cumulus.CumulusConcatenatedConfiguration.populateLoopbackProperties;
 import static org.batfish.representation.cumulus.FrrConfiguration.LINK_LOCAL_ADDRESS;
@@ -23,6 +24,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
@@ -40,10 +42,57 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.representation.cumulus.BgpNeighbor.RemoteAs;
 import org.batfish.representation.cumulus.CumulusPortsConfiguration.PortSettings;
+import org.hamcrest.Matchers;
 import org.junit.Test;
 
 /** Test for {@link CumulusConcatenatedConfiguration}. */
 public class CumulusConcatenatedConfigurationTest {
+
+  @Test
+  public void testConvertVxlan_localIpPrecedence() {
+    Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
+    Vrf vrf = new Vrf("vrf");
+    c.setVrfs(ImmutableMap.of(vrf.getName(), vrf));
+
+    Ip vxlanLocalTunnelIp = Ip.parse("1.1.1.1");
+    Ip loopbackTunnelIp = Ip.parse("2.2.2.2");
+    Ip loopbackAnycastIp = Ip.parse("3.3.3.3");
+
+    Vxlan vxlan = new Vxlan("vxlan1001");
+    vxlan.setId(1001);
+    vxlan.setLocalTunnelip(vxlanLocalTunnelIp);
+    vxlan.setBridgeAccessVlan(101);
+    OutOfBandConfiguration oob =
+        MockOutOfBandConfiguration.builder()
+            .setVxlans(ImmutableMap.of(vxlan.getName(), vxlan))
+            .build();
+
+    // vxlan's local tunnel ip should win when anycast is null
+    convertVxlans(
+        c, oob, ImmutableMap.of(1001, vrf.getName()), null, loopbackTunnelIp, new Warnings());
+    assertThat(
+        vrf.getLayer3Vnis().get(1001).getSourceAddress(), Matchers.equalTo(vxlanLocalTunnelIp));
+
+    // anycast should win if non-null
+    vrf.setLayer3Vnis(ImmutableList.of()); // wipe out prior state
+    convertVxlans(
+        c,
+        oob,
+        ImmutableMap.of(1001, vrf.getName()),
+        loopbackAnycastIp,
+        loopbackTunnelIp,
+        new Warnings());
+    assertThat(
+        vrf.getLayer3Vnis().get(1001).getSourceAddress(), Matchers.equalTo(loopbackAnycastIp));
+
+    // loopback tunnel ip should win when nothing else is present
+    vrf.setLayer3Vnis(ImmutableList.of()); // wipe out prior state
+    vxlan.setLocalTunnelip(null);
+    convertVxlans(
+        c, oob, ImmutableMap.of(1001, vrf.getName()), null, loopbackTunnelIp, new Warnings());
+    assertThat(
+        vrf.getLayer3Vnis().get(1001).getSourceAddress(), Matchers.equalTo(loopbackTunnelIp));
+  }
 
   /** Test that loopback interface is unconditionally created */
   @Test
