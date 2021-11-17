@@ -226,10 +226,10 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   /** Combined RIB for EVPN type 5 routes */
   @Nonnull private EvpnMasterRib<EvpnType5Route> _evpnType5Rib;
 
-  /** Combined EVPN RIB for e/iBGP across all route types */
-  @Nonnull EvpnMasterRib<EvpnRoute<?, ?>> _evpnRib;
-  /** Builder for constructing {@link RibDelta} for routes in {@link #_evpnRib} */
-  @Nonnull private Builder<EvpnRoute<?, ?>> _evpnDeltaBuilder = RibDelta.builder();
+  /** Builder for constructing {@link RibDelta} for routes in {@link #_evpnType3Rib} */
+  @Nonnull private Builder<EvpnType3Route> _evpnType3DeltaBuilder = RibDelta.builder();
+  /** Builder for constructing {@link RibDelta} for routes in {@link #_evpnType5Rib} */
+  @Nonnull private Builder<EvpnType5Route> _evpnType5DeltaBuilder = RibDelta.builder();
 
   /** Keep track of EVPN type 3 routes initialized from our own VNI settings */
   @Nonnull private RibDelta<EvpnType3Route> _evpnInitializationDelta;
@@ -370,12 +370,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             clusterListAsIbgpCost,
             _process.getLocalOriginationTypeTieBreaker());
     _evpnType5Rib =
-        new EvpnMasterRib<>(
-            bestPathTieBreaker,
-            multiPathMatchMode,
-            clusterListAsIbgpCost,
-            _process.getLocalOriginationTypeTieBreaker());
-    _evpnRib =
         new EvpnMasterRib<>(
             bestPathTieBreaker,
             multiPathMatchMode,
@@ -538,7 +532,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   @Override
   public void executeIteration(Map<String, Node> allNodes) {
     // Reinitialize delta builders
-    _evpnDeltaBuilder = RibDelta.builder();
+    _evpnType3DeltaBuilder = RibDelta.builder();
+    _evpnType5DeltaBuilder = RibDelta.builder();
 
     // TODO: optimize, don't recreate the map each iteration
     NetworkConfigurations nc =
@@ -695,7 +690,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         || !_bgpv4DeltaPrevBestPath.isEmpty()
         || !_mainRibDelta.isEmpty()
         // Delta builders
-        || !_evpnDeltaBuilder.isEmpty()
+        || !_evpnType3DeltaBuilder.isEmpty()
+        || !_evpnType5DeltaBuilder.isEmpty()
         // Initialization state
         || !_evpnInitializationDelta.isEmpty();
   }
@@ -714,17 +710,13 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     // routes are nonrouting.
     DeltaPair<EvpnType3Route> type3Delta = processEvpnType3Messages(nc, allNodes);
     sendOutEvpnType3Routes(type3Delta.getAllToAdvertise(), nc, allNodes);
-    RibDelta.Builder<EvpnType3Route> type3MergeDelta = RibDelta.builder();
-    type3MergeDelta.from(importRibDelta(_evpnType3Rib, type3Delta._toMerge._ebgpDelta));
-    type3MergeDelta.from(importRibDelta(_evpnType3Rib, type3Delta._toMerge._ibgpDelta));
-    importRibDelta(_evpnRib, type3MergeDelta.build());
+    _evpnType3DeltaBuilder.from(importRibDelta(_evpnType3Rib, type3Delta._toMerge._ebgpDelta));
+    _evpnType3DeltaBuilder.from(importRibDelta(_evpnType3Rib, type3Delta._toMerge._ibgpDelta));
 
     DeltaPair<EvpnType5Route> type5Delta = processEvpnType5Messages(nc, allNodes);
     sendOutEvpnType5Routes(type5Delta.getAllToAdvertise(), nc, allNodes);
-    RibDelta.Builder<EvpnType5Route> type5MergeDelta = RibDelta.builder();
-    type5MergeDelta.from(importRibDelta(_evpnType5Rib, type5Delta._toMerge._ebgpDelta));
-    type5MergeDelta.from(importRibDelta(_evpnType5Rib, type5Delta._toMerge._ibgpDelta));
-    importRibDelta(_evpnRib, type5MergeDelta.build());
+    _evpnType5DeltaBuilder.from(importRibDelta(_evpnType5Rib, type5Delta._toMerge._ebgpDelta));
+    _evpnType5DeltaBuilder.from(importRibDelta(_evpnType5Rib, type5Delta._toMerge._ibgpDelta));
   }
 
   /** TODO: remove this function and directly merge/remove evpn routes like we do for v4 routes. */
@@ -775,7 +767,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
               if (vniVrf.getName().equals(_vrfName)) {
                 // Merge into our own RIBs
                 RibDelta<EvpnType3Route> d = _evpnType3Rib.mergeRouteGetDelta(route);
-                _evpnDeltaBuilder.from(d);
+                _evpnType3DeltaBuilder.from(d);
                 initializationBuilder.from(d);
               } else {
                 // Merge into our sibling VRF corresponding to the VNI
@@ -794,7 +786,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
               }
             });
     _evpnInitializationDelta = initializationBuilder.build();
-    _toMainRib.from(_evpnDeltaBuilder.build());
   }
 
   /**
@@ -2114,8 +2105,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     } else {
       delta = rib.mergeRouteGetDelta(routeAdvertisement.getRoute());
     }
-    // Queue up the routes to be merged into our main RIB
-    _toMainRib.from(importRibDelta(_evpnRib, delta));
     return delta;
   }
 
@@ -2138,7 +2127,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     return Stream.of(
             // RIBs
             _bgpv4Rib.getTypedRoutes(),
-            _evpnRib.getTypedRoutes(),
+            _evpnType3Rib.getTypedRoutes(),
+            _evpnType5Rib.getTypedRoutes(),
             // Outgoing RIB deltas
             _ebgpv4DeltaPrev,
             _ebgpv4DeltaPrevBestPath,
@@ -2231,9 +2221,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
     // Merge and advertise resulting EVPN routes. No point queueing them for main RIB because
     // they're nonrouting.
-    RibDelta.Builder<EvpnType5Route> mergeDelta = RibDelta.builder();
-    mergeDelta.from(importRibDelta(_evpnType5Rib, type5Delta.build()));
-    _evpnDeltaBuilder.from(importRibDelta(_evpnRib, mergeDelta.build()));
+    _evpnType5DeltaBuilder.from(importRibDelta(_evpnType5Rib, type5Delta.build()));
     sendOutEvpnType5Routes(type5Delta.build(), nc, allNodes);
   }
 
@@ -2407,12 +2395,18 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
   /** Return a set of all multipath-best evpn routes. */
   public @Nonnull Set<EvpnRoute<?, ?>> getEvpnRoutes() {
-    return _evpnRib.getTypedRoutes();
+    return ImmutableSet.<EvpnRoute<?, ?>>builder()
+        .addAll(_evpnType3Rib.getTypedRoutes())
+        .addAll(_evpnType5Rib.getTypedRoutes())
+        .build();
   }
 
   /** Return a set of all evpn backup routes. */
   public @Nonnull Set<EvpnRoute<?, ?>> getEvpnBackupRoutes() {
-    return _evpnRib.getTypedBackupRoutes();
+    return ImmutableSet.<EvpnRoute<?, ?>>builder()
+        .addAll(_evpnType3Rib.getTypedBackupRoutes())
+        .addAll(_evpnType5Rib.getTypedBackupRoutes())
+        .build();
   }
 
   /** Return a set of all bgpv4 bestpath routes */

@@ -231,7 +231,7 @@ public class BgpRoutingProcessTest {
 
     // The VRF/process that the neighbor is in
     assertThat(
-        defaultProc.getUpdatesForMainRib().getRoutesStream().collect(ImmutableSet.toImmutableSet()),
+        defaultProc.getEvpnType3Routes(),
         contains(
             EvpnType3Route.builder()
                 .setVniIp(localIp)
@@ -248,11 +248,7 @@ public class BgpRoutingProcessTest {
                 .build()));
     // Sibling VRF, for vni2
     assertThat(
-        node.getVirtualRouterOrThrow("vrf2")
-            .getBgpRoutingProcess()
-            .getUpdatesForMainRib()
-            .getRoutesStream()
-            .collect(ImmutableSet.toImmutableSet()),
+        node.getVirtualRouterOrThrow("vrf2").getBgpRoutingProcess().getEvpnType3Routes(),
         contains(
             EvpnType3Route.builder()
                 .setVniIp(localIp)
