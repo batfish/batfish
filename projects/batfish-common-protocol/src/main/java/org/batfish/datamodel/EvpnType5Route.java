@@ -276,6 +276,8 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
         .add(PROP_LOCAL_PREFERENCE, _localPreference)
         .add(PROP_METRIC, _med)
         .add(PROP_ORIGINATOR_IP, _originatorIp)
+        .add(PROP_ORIGIN_MECHANISM, _originMechanism)
+        .add(PROP_ORIGIN_TYPE, _originType)
         .add(PROP_PROTOCOL, _protocol)
         .add(PROP_RECEIVED_FROM_IP, _receivedFromIp)
         .add(PROP_RECEIVED_FROM_ROUTE_REFLECTOR_CLIENT, _receivedFromRouteReflectorClient)

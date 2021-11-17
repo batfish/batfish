@@ -2251,6 +2251,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         .setNextHopIp(route.getNextHopIp())
         .setNonRouting(true) // EVPN routes don't go in the main RIB
         .setOriginatorIp(route.getNextHopIp())
+        .setOriginMechanism(route.getOriginMechanism())
         .setOriginType(route.getOriginType())
         .setProtocol(route.getProtocol())
         .setReceivedFromIp(route.getReceivedFromIp())

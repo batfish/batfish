@@ -1,6 +1,7 @@
 package org.batfish.dataplane;
 
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.OriginMechanism.REDISTRIBUTE;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
@@ -88,6 +89,8 @@ public class EvpnType5AristaTest {
             .setNonRouting(true)
             .setCommunities(ImmutableSet.of(rmCommunity, ExtendedCommunity.target(15004, 15004)))
             .setAsPath(AsPath.ofSingletonAsSets(rmAs))
+            // TODO will change to network once we correctly mark origin mechanism of the BGP route
+            .setOriginMechanism(REDISTRIBUTE)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHop(NextHopDiscard.instance())
