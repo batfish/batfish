@@ -163,8 +163,6 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
 
     addBgpUnnumberedLLAs(c, _frrConfiguration);
 
-    // convertFrr(this, c, this, _frrConfiguration);
-
     // FRR does not generate local routes for connected routes.
     c.getAllInterfaces()
         .values()
@@ -183,8 +181,9 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
               i.setAddressMetadata(metadata.build());
             });
 
-    convertStaticRoutes(c);
-    FrrConversions.convertStaticRoutes(c, _frrConfiguration);
+    convertInterfacesStaticRoutes(c); // static routes in interfaces file
+    convertStaticRoutes(c, _frrConfiguration); // static routes in the FRR file
+
     convertIpAsPathAccessLists(c, _frrConfiguration.getIpAsPathAccessLists());
     convertIpPrefixLists(c, _frrConfiguration.getIpPrefixLists(), _filename);
     convertIpCommunityLists(c, _frrConfiguration.getIpCommunityLists());
@@ -254,7 +253,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
 
   /** Convert post-up routes from the interfaces file. */
   @VisibleForTesting
-  void convertStaticRoutes(Configuration c) {
+  void convertInterfacesStaticRoutes(Configuration c) {
     _interfacesConfiguration.getInterfaces().values().stream()
         .filter(CumulusConcatenatedConfiguration::isValidVIInterface)
         .forEach(
