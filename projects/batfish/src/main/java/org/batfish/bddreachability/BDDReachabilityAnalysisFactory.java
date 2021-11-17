@@ -51,6 +51,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.batfish.bddreachability.IpsRoutedOutInterfacesFactory.IpsRoutedOutInterfaces;
 import org.batfish.bddreachability.transition.TransformationToTransition;
 import org.batfish.bddreachability.transition.Transition;
@@ -151,6 +153,8 @@ import org.batfish.symbolic.state.VrfAccept;
  */
 @ParametersAreNonnullByDefault
 public final class BDDReachabilityAnalysisFactory {
+  private static final Logger LOGGER = LogManager.getLogger(BDDReachabilityAnalysisFactory.class);
+
   // node name --> acl name --> set of packets denied by the acl.
   private final Map<String, Map<String, Supplier<BDD>>> _aclDenyBDDs;
 
@@ -905,6 +909,7 @@ public final class BDDReachabilityAnalysisFactory {
                           return Stream.of(enterPolicyEdge);
                         }
 
+                        long t = System.currentTimeMillis();
                         PacketPolicyToBdd.BddPacketPolicy bddPacketPolicy =
                             PacketPolicyToBdd.evaluate(
                                 nodeName,
@@ -916,6 +921,13 @@ public final class BDDReachabilityAnalysisFactory {
                                     (key) ->
                                         _ipsRoutesOutInterfacesFactory.getIpsRoutedOutInterfaces(
                                             nodeName, vrfName)));
+                        t = System.currentTimeMillis() - t;
+                        LOGGER.info(
+                            "Converted policy {} on node {} vrf {} in {}ms",
+                            policyName,
+                            nodeName,
+                            vrfName,
+                            t);
 
                         PacketPolicyActionToEdges actionToEdges =
                             new PacketPolicyActionToEdges(nodeName, policyName, vrfName);

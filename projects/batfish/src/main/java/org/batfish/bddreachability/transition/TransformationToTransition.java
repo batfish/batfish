@@ -17,6 +17,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpAccessListToBdd;
@@ -165,20 +167,28 @@ public class TransformationToTransition {
         : reverse(toTransition(returnFlowTransformation(transformation)));
   }
 
+  private static final Logger LOGGER = LogManager.getLogger(TransformationToTransition.class);
+
   @Nonnull
   private Transition computeTransition(Transformation transformation) {
-    BDD guard = _ipAccessListToBdd.toBdd(transformation.getGuard());
-    Transition steps = computeSteps(transformation.getTransformationSteps());
+    long t = System.currentTimeMillis();
+    try {
+      BDD guard = _ipAccessListToBdd.toBdd(transformation.getGuard());
+      Transition steps = computeSteps(transformation.getTransformationSteps());
 
-    Transition trueBranch =
-        transformation.getAndThen() == null
-            ? steps
-            : compose(steps, toTransition(transformation.getAndThen()));
-    Transition falseBranch =
-        transformation.getOrElse() == null
-            ? Identity.INSTANCE
-            : toTransition(transformation.getOrElse());
-    return branch(guard, trueBranch, falseBranch);
+      Transition trueBranch =
+          transformation.getAndThen() == null
+              ? steps
+              : compose(steps, toTransition(transformation.getAndThen()));
+      Transition falseBranch =
+          transformation.getOrElse() == null
+              ? Identity.INSTANCE
+              : toTransition(transformation.getOrElse());
+      return branch(guard, trueBranch, falseBranch);
+    } finally {
+      t = System.currentTimeMillis() - t;
+      LOGGER.info("computed transformation in {}ms", t);
+    }
   }
 
   private Transition computeSteps(List<TransformationStep> transformationSteps) {
