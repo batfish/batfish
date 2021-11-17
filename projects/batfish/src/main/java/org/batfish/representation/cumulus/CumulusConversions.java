@@ -19,10 +19,8 @@ import static org.batfish.datamodel.routing_policy.Common.generateSuppressionPol
 import static org.batfish.datamodel.routing_policy.Common.initDenyAllBgpRedistributionPolicy;
 import static org.batfish.datamodel.routing_policy.statement.Statements.RemovePrivateAs;
 import static org.batfish.representation.cumulus.BgpProcess.BGP_UNNUMBERED_IP;
-import static org.batfish.representation.cumulus.CumulusConcatenatedConfiguration.CUMULUS_CLAG_DOMAIN_ID;
-import static org.batfish.representation.cumulus.CumulusConcatenatedConfiguration.LOOPBACK_INTERFACE_NAME;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.VI_PROTOCOLS_MAP;
-import static org.batfish.representation.cumulus.InterfaceConverter.getSuperInterfaceName;
+import static org.batfish.representation.cumulus.FrrConfiguration.LOOPBACK_INTERFACE_NAME;
 import static org.batfish.representation.cumulus.OspfInterface.DEFAULT_OSPF_DEAD_INTERVAL;
 import static org.batfish.representation.cumulus.OspfInterface.DEFAULT_OSPF_HELLO_INTERVAL;
 import static org.batfish.representation.cumulus.OspfProcess.DEFAULT_OSPF_PROCESS_NAME;
@@ -70,8 +68,6 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.LinkLocalAddress;
-import org.batfish.datamodel.Mlag;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
@@ -155,8 +151,6 @@ public final class CumulusConversions {
 
   private static final Long DEFAULT_REDISTRIBUTE_METRIC = 20L;
   private static final OspfMetricType DEFAULT_REDISTRIBUTE_METRIC_TYPE = OspfMetricType.E2;
-
-  public static final Ip CLAG_LINK_LOCAL_IP = Ip.parse("169.254.40.94");
 
   public static final long DEFAULT_MAX_MED = 4294967294L;
   public static final long DEFAULT_OSPF_MAX_METRIC = 0xFFFF;
@@ -1690,58 +1684,20 @@ public final class CumulusConversions {
             .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())));
   }
 
-  static void convertClags(Configuration c, CumulusConcatenatedConfiguration vsConfig, Warnings w) {
-    Map<String, InterfaceClagSettings> clagSourceInterfaces = vsConfig.getClagSettings();
-    if (clagSourceInterfaces.isEmpty()) {
-      return;
-    }
-    if (clagSourceInterfaces.size() > 1) {
-      w.redFlag(
-          String.format(
-              "CLAG configuration on multiple peering interfaces is unsupported: %s",
-              clagSourceInterfaces.keySet()));
-      return;
-    }
-    // Interface clagSourceInterface = clagSourceInterfaces.get(0);
-    Entry<String, InterfaceClagSettings> entry = clagSourceInterfaces.entrySet().iterator().next();
-    String sourceInterfaceName = entry.getKey();
-    InterfaceClagSettings clagSettings = entry.getValue();
-    Ip peerAddress = clagSettings.getPeerIp();
-    // Special case link-local addresses when no other addresses are defined
-    org.batfish.datamodel.Interface viInterface = c.getAllInterfaces().get(sourceInterfaceName);
-    if (peerAddress == null
-        && clagSettings.isPeerIpLinkLocal()
-        && viInterface.getAllAddresses().isEmpty()) {
-      LinkLocalAddress lla = LinkLocalAddress.of(CLAG_LINK_LOCAL_IP);
-      viInterface.setAddress(lla);
-      viInterface.setAllAddresses(ImmutableSet.of(lla));
-    }
-    String peerInterfaceName = getSuperInterfaceName(sourceInterfaceName);
-    c.setMlags(
-        ImmutableMap.of(
-            CUMULUS_CLAG_DOMAIN_ID,
-            Mlag.builder()
-                .setId(CUMULUS_CLAG_DOMAIN_ID)
-                .setLocalInterface(sourceInterfaceName)
-                .setPeerAddress(peerAddress)
-                .setPeerInterface(peerInterfaceName)
-                .build()));
-  }
-
   /**
    * Converts {@link Vxlan} into appropriate {@link Vni} for each VRF. Requires VI Vrfs to already
    * be properly initialized
    */
   static void convertVxlans(
       Configuration c,
-      CumulusConcatenatedConfiguration vsConfig,
+      OutOfBandConfiguration oobConfig,
       Map<Integer, String> vniToVrf,
       @Nullable Ip loopbackClagVxlanAnycastIp,
       @Nullable Ip loopbackVxlanLocalTunnelIp,
       Warnings w) {
 
     // Put all valid VXLAN VNIs into appropriate VRF
-    vsConfig
+    oobConfig
         .getVxlans()
         .values()
         .forEach(
@@ -1790,7 +1746,7 @@ public final class CumulusConversions {
                                     .build()));
               } else {
                 // This is an L2 VNI. Find the VRF by looking up the VLAN
-                vrfName = vsConfig.getVrfForVlan(vxlan.getBridgeAccessVlan());
+                vrfName = oobConfig.getVrfForVlan(vxlan.getBridgeAccessVlan()).orElse(null);
                 if (vrfName == null) {
                   // This is a workaround until we properly support pure-L2 VNIs (with no IRBs)
                   vrfName = DEFAULT_VRF_NAME;
