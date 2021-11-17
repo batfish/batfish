@@ -1,7 +1,7 @@
 package org.batfish.representation.cumulus;
 
-import static org.batfish.representation.cumulus.CumulusConversions.computeRouteMapEntryName;
 import static org.batfish.representation.cumulus.CumulusStructureType.ROUTE_MAP_ENTRY;
+import static org.batfish.representation.cumulus.FrrConversions.computeRouteMapEntryName;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
