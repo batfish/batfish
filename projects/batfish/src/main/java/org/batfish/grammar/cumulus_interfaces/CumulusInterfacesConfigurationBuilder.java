@@ -2,7 +2,7 @@ package org.batfish.grammar.cumulus_interfaces;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
-import static org.batfish.representation.cumulus.FrrConfiguration.LOOPBACK_INTERFACE_NAME;
+import static org.batfish.representation.frr.FrrConfiguration.LOOPBACK_INTERFACE_NAME;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -65,13 +65,13 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_ifaceCon
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Si_inetContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Si_no_inetContext;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
-import org.batfish.representation.cumulus.CumulusConcatenatedConfiguration;
-import org.batfish.representation.cumulus.CumulusInterfacesConfiguration;
-import org.batfish.representation.cumulus.CumulusStructureType;
-import org.batfish.representation.cumulus.CumulusStructureUsage;
-import org.batfish.representation.cumulus.InterfaceClagSettings;
-import org.batfish.representation.cumulus.InterfacesInterface;
-import org.batfish.representation.cumulus.StaticRoute;
+import org.batfish.representation.cumulus_concatenated.CumulusConcatenatedConfiguration;
+import org.batfish.representation.cumulus_concatenated.CumulusInterfacesConfiguration;
+import org.batfish.representation.cumulus_concatenated.InterfacesInterface;
+import org.batfish.representation.frr.CumulusStructureType;
+import org.batfish.representation.frr.CumulusStructureUsage;
+import org.batfish.representation.frr.InterfaceClagSettings;
+import org.batfish.representation.frr.StaticRoute;
 
 /**
  * Populates {@link CumulusInterfacesConfiguration} from a parse tree from {@link
