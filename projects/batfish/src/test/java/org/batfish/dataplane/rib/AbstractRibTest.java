@@ -28,6 +28,8 @@ import org.batfish.datamodel.ResolutionRestriction;
 import org.batfish.datamodel.RipInternalRoute;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker;
+import org.batfish.datamodel.bgp.NextHopIpTieBreaker;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
@@ -466,7 +468,14 @@ public class AbstractRibTest {
     // Use concrete BGP rib, BGP has easy preference knobs
     Bgpv4Rib bestPathRib =
         new Bgpv4Rib(
-            null, BgpTieBreaker.ROUTER_ID, 1, MultipathEquivalentAsPathMatchMode.EXACT_PATH, false);
+            null,
+            BgpTieBreaker.ROUTER_ID,
+            1,
+            MultipathEquivalentAsPathMatchMode.EXACT_PATH,
+            false,
+            LocalOriginationTypeTieBreaker.NO_PREFERENCE,
+            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
+            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP);
     Ip originator1 = Ip.parse("1.1.1.1");
     Ip originator2 = Ip.parse("2.2.2.2");
     Bgpv4Route.Builder routeBuilder =

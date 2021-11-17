@@ -12,6 +12,9 @@ import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
+import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.PREFER_NETWORK;
+import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
+import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.LOWEST_NEXT_HOP_IP;
 import static org.batfish.datamodel.routing_policy.Common.initDenyAllBgpRedistributionPolicy;
 import static org.batfish.datamodel.routing_policy.Common.matchDefaultRoute;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
@@ -529,20 +532,28 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
               if (viVrf.getBgpProcess() == null) {
                 // If the VI vrf has no BGP process, create a dummy one
                 viVrf.setBgpProcess(
-                    BgpProcess.builder()
+                    bgpProcessBuilder()
                         .setRouterId(
                             inferRouterId(
                                 viVrf.getName(),
                                 _c.getAllInterfaces(viVrf.getName()),
                                 _w,
                                 "BGP process"))
-                        .setEbgpAdminCost(DEFAULT_DISTANCE_EBGP)
-                        .setIbgpAdminCost(DEFAULT_DISTANCE_IBGP)
-                        .setLocalAdminCost(DEFAULT_DISTANCE_LOCAL_BGP)
                         .setRedistributionPolicy(initDenyAllBgpRedistributionPolicy(_c))
                         .build());
               }
             });
+  }
+
+  @Nonnull
+  private org.batfish.datamodel.BgpProcess.Builder bgpProcessBuilder() {
+    return BgpProcess.builder()
+        .setEbgpAdminCost(DEFAULT_DISTANCE_EBGP)
+        .setIbgpAdminCost(DEFAULT_DISTANCE_IBGP)
+        .setLocalAdminCost(DEFAULT_DISTANCE_LOCAL_BGP)
+        .setLocalOriginationTypeTieBreaker(PREFER_NETWORK)
+        .setNetworkNextHopIpTieBreaker(LOWEST_NEXT_HOP_IP)
+        .setRedistributeNextHopIpTieBreaker(HIGHEST_NEXT_HOP_IP);
   }
 
   private void convertBgpVrf(
@@ -570,8 +581,12 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
             .map(BgpVrfIpAddressFamilyConfiguration::getDistanceLocal)
             .orElse(DEFAULT_DISTANCE_LOCAL_BGP);
     org.batfish.datamodel.BgpProcess newBgpProcess =
-        new org.batfish.datamodel.BgpProcess(
-            Conversions.getBgpRouterId(nxBgpVrf, _c, v, _w), ebgpAdmin, ibgpAdmin, localAdmin);
+        bgpProcessBuilder()
+            .setRouterId(Conversions.getBgpRouterId(nxBgpVrf, _c, v, _w))
+            .setEbgpAdminCost(ebgpAdmin)
+            .setIbgpAdminCost(ibgpAdmin)
+            .setLocalAdminCost(localAdmin)
+            .build();
     newBgpProcess.setClusterListAsIbgpCost(true);
     if (nxBgpVrf.getBestpathCompareRouterId()) {
       newBgpProcess.setTieBreaker(BgpTieBreaker.ROUTER_ID);

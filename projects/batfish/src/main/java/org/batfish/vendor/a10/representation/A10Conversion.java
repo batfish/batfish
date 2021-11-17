@@ -7,6 +7,8 @@ import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
 import static org.batfish.datamodel.Prefix.MAX_PREFIX_LENGTH;
+import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.NO_PREFERENCE;
+import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.LOWEST_NEXT_HOP_IP;
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationPort;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
@@ -568,13 +570,7 @@ public class A10Conversion {
       return;
     }
     org.batfish.datamodel.BgpProcess newBgpProcess =
-        org.batfish.datamodel.BgpProcess.builder()
-            .setRouterId(routerId)
-            .setEbgpAdminCost(DEFAULT_EBGP_ADMIN_COST)
-            .setIbgpAdminCost(DEFAULT_IBGP_ADMIN_COST)
-            .setLocalAdminCost(DEFAULT_LOCAL_ADMIN_COST)
-            .setVrf(c.getDefaultVrf())
-            .build();
+        bgpProcessBuilder().setRouterId(routerId).setVrf(c.getDefaultVrf()).build();
 
     boolean multipath = firstNonNull(bgpProcess.getMaximumPaths(), 1) > 1;
     newBgpProcess.setMultipathEbgp(multipath);
@@ -671,6 +667,17 @@ public class A10Conversion {
               createAndAttachBgpNeighbor(
                   bgpNeighborId, defaultLocalAs, bgpNeighbor, newBgpProcess, c, w);
             });
+  }
+
+  @Nonnull
+  private static org.batfish.datamodel.BgpProcess.Builder bgpProcessBuilder() {
+    return org.batfish.datamodel.BgpProcess.builder()
+        .setEbgpAdminCost(DEFAULT_EBGP_ADMIN_COST)
+        .setIbgpAdminCost(DEFAULT_IBGP_ADMIN_COST)
+        .setLocalAdminCost(DEFAULT_LOCAL_ADMIN_COST)
+        .setLocalOriginationTypeTieBreaker(NO_PREFERENCE)
+        .setNetworkNextHopIpTieBreaker(LOWEST_NEXT_HOP_IP)
+        .setRedistributeNextHopIpTieBreaker(LOWEST_NEXT_HOP_IP);
   }
 
   /**

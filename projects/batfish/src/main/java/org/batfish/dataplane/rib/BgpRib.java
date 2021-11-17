@@ -1,7 +1,12 @@
 package org.batfish.dataplane.rib;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.datamodel.OriginMechanism.NETWORK;
+import static org.batfish.datamodel.OriginMechanism.REDISTRIBUTE;
 import static org.batfish.datamodel.ResolutionRestriction.alwaysTrue;
+import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.NO_PREFERENCE;
+import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.PREFER_NETWORK;
+import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.PREFER_REDISTRIBUTE;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
@@ -24,6 +29,7 @@ import org.batfish.datamodel.GenericRibReadOnly;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
@@ -63,13 +69,20 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
   /** For FRR, Cluster List Length is used as an IGP metric. */
   protected boolean _clusterListAsIgpCost;
 
+  /**
+   * Tie-breaking mode for local routes. Only relevant on devices that use an independent network
+   * policy.
+   */
+  private final @Nonnull LocalOriginationTypeTieBreaker _localOriginationTypeTieBreaker;
+
   protected BgpRib(
       @Nullable GenericRibReadOnly<AnnotatedRoute<AbstractRoute>> mainRib,
       BgpTieBreaker tieBreaker,
       @Nullable Integer maxPaths,
       @Nullable MultipathEquivalentAsPathMatchMode multipathEquivalentAsPathMatchMode,
       boolean withBackups,
-      boolean clusterListAsIgpCost) {
+      boolean clusterListAsIgpCost,
+      LocalOriginationTypeTieBreaker localOriginationTypeTieBreaker) {
     super(withBackups);
     _mainRib = mainRib;
     _tieBreaker = tieBreaker;
@@ -91,6 +104,7 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
     _bestPaths = new HashMap<>(0);
     _logicalArrivalTime = new HashMap<>(0);
     _logicalClock = 0;
+    _localOriginationTypeTieBreaker = localOriginationTypeTieBreaker;
   }
 
   /*
@@ -102,6 +116,20 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
    */
   @Override
   public int comparePreference(R lhs, R rhs) {
+    // TODO: this step might need to go in a different position
+    if (_localOriginationTypeTieBreaker != NO_PREFERENCE
+        && lhs.getOriginMechanism() != rhs.getOriginMechanism()
+        && lhs.isTrackableLocalRoute()
+        && rhs.isTrackableLocalRoute()) {
+      // comparing local routes with different origin mechanisms, and one mechanism is preferred
+      // over the other.
+      if (_localOriginationTypeTieBreaker == PREFER_NETWORK) {
+        return lhs.getOriginMechanism() == NETWORK ? 1 : -1;
+      } else {
+        assert _localOriginationTypeTieBreaker == PREFER_REDISTRIBUTE;
+        return lhs.getOriginMechanism() == REDISTRIBUTE ? 1 : -1;
+      }
+    }
     int multipathCompare =
         Comparator
             // Prefer higher Weight (cisco only)

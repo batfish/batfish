@@ -14,6 +14,7 @@ import javax.annotation.ParametersAreNullableByDefault;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.questions.BgpRouteStatus;
@@ -40,6 +41,8 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
 
   @Nullable private final String _originProtocol;
 
+  @Nullable private final OriginMechanism _originMechanism;
+
   @Nullable private final OriginType _originType;
 
   @Nullable private final Long _tag;
@@ -57,6 +60,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
       Long localPreference,
       List<String> communities,
       String originalProtocol,
+      OriginMechanism originMechanism,
       OriginType originType,
       Long tag,
       BgpRouteStatus status,
@@ -69,6 +73,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
     _localPreference = localPreference;
     _communities = firstNonNull(communities, ImmutableList.of());
     _originProtocol = originalProtocol;
+    _originMechanism = originMechanism;
     _originType = originType;
     _tag = tag;
     _status = status;
@@ -116,6 +121,11 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
   }
 
   @Nullable
+  public OriginMechanism getOriginMechanism() {
+    return _originMechanism;
+  }
+
+  @Nullable
   public OriginType getOriginType() {
     return _originType;
   }
@@ -147,6 +157,8 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
           .thenComparing(RouteRowAttribute::getAsPath, nullsLast(AsPath::compareTo))
           .thenComparing(RouteRowAttribute::getLocalPreference, nullsLast(Long::compareTo))
           .thenComparing(RouteRowAttribute::getOriginProtocol, nullsLast(String::compareTo))
+          .thenComparing(
+              RouteRowAttribute::getOriginMechanism, nullsLast(OriginMechanism::compareTo))
           .thenComparing(RouteRowAttribute::getOriginType, nullsLast(OriginType::compareTo))
           .thenComparing(RouteRowAttribute::getTag, nullsLast(Long::compareTo))
           .thenComparing(RouteRowAttribute::getStatus, nullsLast(BgpRouteStatus::compareTo))
@@ -177,6 +189,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
         && Objects.equals(_localPreference, that._localPreference)
         && Objects.equals(_communities, that._communities)
         && Objects.equals(_originProtocol, that._originProtocol)
+        && Objects.equals(_originMechanism, that._originMechanism)
         && Objects.equals(_originType, that._originType)
         && Objects.equals(_tag, that._tag)
         && Objects.equals(_status, that._status)
@@ -194,7 +207,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
         _localPreference,
         _communities,
         _originProtocol,
-        _originType,
+        _originType == null ? 0 : _originType.ordinal(),
         _tag,
         _status == null ? 0 : _status.ordinal(),
         _weight);
@@ -210,6 +223,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
     @Nullable private Long _localPreference;
     @Nullable private List<String> _communities;
     @Nullable private String _originProtocol;
+    @Nullable private OriginMechanism _originMechanism;
     @Nullable private OriginType _originType;
     @Nullable private Long _tag;
     @Nullable private BgpRouteStatus _status;
@@ -228,6 +242,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
           _localPreference,
           _communities,
           _originProtocol,
+          _originMechanism,
           _originType,
           _tag,
           _status,
@@ -271,6 +286,11 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
 
     public Builder setOriginProtocol(String originProtocol) {
       _originProtocol = originProtocol;
+      return this;
+    }
+
+    public Builder setOriginMechanism(OriginMechanism originMechanism) {
+      _originMechanism = originMechanism;
       return this;
     }
 

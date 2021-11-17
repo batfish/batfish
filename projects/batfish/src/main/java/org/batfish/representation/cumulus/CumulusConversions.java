@@ -14,6 +14,8 @@ import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerImportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
+import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.NO_PREFERENCE;
+import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
 import static org.batfish.datamodel.bgp.VniConfig.importRtPatternForAnyAs;
 import static org.batfish.datamodel.routing_policy.Common.generateSuppressionPolicy;
 import static org.batfish.datamodel.routing_policy.Common.initDenyAllBgpRedistributionPolicy;
@@ -329,11 +331,8 @@ public final class CumulusConversions {
                   && vrf.getBgpProcess() == null // process does not already exist
                   && c.getDefaultVrf().getBgpProcess() != null) { // there is a default BGP proc
                 vrf.setBgpProcess(
-                    org.batfish.datamodel.BgpProcess.builder()
+                    bgpProcessBuilder()
                         .setRouterId(c.getDefaultVrf().getBgpProcess().getRouterId())
-                        .setEbgpAdminCost(DEFAULT_EBGP_ADMIN)
-                        .setIbgpAdminCost(DEFAULT_IBGP_ADMIN)
-                        .setLocalAdminCost(DEFAULT_LOCAL_ADMIN)
                         .setRedistributionPolicy(initDenyAllBgpRedistributionPolicy(c))
                         .build());
               }
@@ -355,6 +354,17 @@ public final class CumulusConversions {
             });
   }
 
+  @Nonnull
+  private static org.batfish.datamodel.BgpProcess.Builder bgpProcessBuilder() {
+    return org.batfish.datamodel.BgpProcess.builder()
+        .setEbgpAdminCost(DEFAULT_EBGP_ADMIN)
+        .setIbgpAdminCost(DEFAULT_IBGP_ADMIN)
+        .setLocalAdminCost(DEFAULT_LOCAL_ADMIN)
+        .setLocalOriginationTypeTieBreaker(NO_PREFERENCE)
+        .setNetworkNextHopIpTieBreaker(HIGHEST_NEXT_HOP_IP)
+        .setRedistributeNextHopIpTieBreaker(HIGHEST_NEXT_HOP_IP);
+  }
+
   /**
    * Returns {@link org.batfish.datamodel.BgpProcess} for named {@code bgpVrf} if valid, or else
    * {@code null}.
@@ -367,12 +377,8 @@ public final class CumulusConversions {
     if (routerId == null) {
       routerId = inferRouterId(c);
     }
-    // TODO: surely this is customizable
-    int ebgpAdmin = DEFAULT_EBGP_ADMIN;
-    int ibgpAdmin = DEFAULT_IBGP_ADMIN;
-    int localAdmin = DEFAULT_LOCAL_ADMIN;
-    org.batfish.datamodel.BgpProcess newProc =
-        new org.batfish.datamodel.BgpProcess(routerId, ebgpAdmin, ibgpAdmin, localAdmin);
+    // TODO: customizable admin costs
+    org.batfish.datamodel.BgpProcess newProc = bgpProcessBuilder().setRouterId(routerId).build();
     newProc.setMultipathEquivalentAsPathMatchMode(EXACT_PATH);
     /*
       BGP multipath enabled by default

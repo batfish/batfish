@@ -11,6 +11,8 @@ import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENG
 import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
 import static org.batfish.datamodel.Names.generatedOspfDefaultRouteGenerationPolicyName;
 import static org.batfish.datamodel.Names.generatedOspfExportPolicyName;
+import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.NO_PREFERENCE;
+import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
 import static org.batfish.datamodel.routing_policy.Common.initDenyAllBgpRedistributionPolicy;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
 import static org.batfish.representation.arista.AristaConversions.getVrfForVlan;
@@ -802,12 +804,15 @@ public final class AristaConfiguration extends VendorConfiguration {
     String vrfName = bgpVrf.getName();
     org.batfish.datamodel.Vrf v = c.getVrfs().get(vrfName);
     org.batfish.datamodel.BgpProcess newBgpProcess =
-        new org.batfish.datamodel.BgpProcess(
-            AristaConversions.getBgpRouterId(
-                bgpVrf, v.getName(), c.getAllInterfaces(v.getName()), _w),
-            firstNonNull(bgpVrf.getEbgpAdminDistance(), DEFAULT_EBGP_ADMIN),
-            firstNonNull(bgpVrf.getIbgpAdminDistance(), DEFAULT_IBGP_ADMIN),
-            firstNonNull(bgpVrf.getLocalAdminDistance(), DEFAULT_LOCAL_BGP_ADMIN));
+        bgpProcessBuilder()
+            .setRouterId(
+                AristaConversions.getBgpRouterId(
+                    bgpVrf, v.getName(), c.getAllInterfaces(v.getName()), _w))
+            .setEbgpAdminCost(firstNonNull(bgpVrf.getEbgpAdminDistance(), DEFAULT_EBGP_ADMIN))
+            .setIbgpAdminCost(firstNonNull(bgpVrf.getIbgpAdminDistance(), DEFAULT_IBGP_ADMIN))
+            .setLocalAdminCost(
+                firstNonNull(bgpVrf.getLocalAdminDistance(), DEFAULT_LOCAL_BGP_ADMIN))
+            .build();
 
     boolean multipath = firstNonNull(bgpVrf.getMaxPaths(), 1) > 1;
     newBgpProcess.setMultipathEbgp(multipath);
@@ -2505,11 +2510,8 @@ public final class AristaConfiguration extends VendorConfiguration {
                 org.batfish.datamodel.Vrf viVrf = c.getVrfs().get(vrfName);
                 if (viVrf != null && viVrf.getBgpProcess() == null) {
                   viVrf.setBgpProcess(
-                      org.batfish.datamodel.BgpProcess.builder()
+                      bgpProcessBuilder()
                           .setRouterId(Ip.ZERO)
-                          .setEbgpAdminCost(DEFAULT_EBGP_ADMIN)
-                          .setIbgpAdminCost(DEFAULT_IBGP_ADMIN)
-                          .setLocalAdminCost(DEFAULT_LOCAL_BGP_ADMIN)
                           .setRedistributionPolicy(initDenyAllBgpRedistributionPolicy(c))
                           .build());
                 }
@@ -2528,13 +2530,7 @@ public final class AristaConfiguration extends VendorConfiguration {
                         .map(BgpPeerConfig::getEvpnAddressFamily)
                         // Default VRF has peers with EVPN enabled (so not just static vxlan)
                         .anyMatch(Objects::nonNull)) {
-                  vrf.setBgpProcess(
-                      org.batfish.datamodel.BgpProcess.builder()
-                          .setRouterId(Ip.ZERO)
-                          .setEbgpAdminCost(DEFAULT_EBGP_ADMIN)
-                          .setIbgpAdminCost(DEFAULT_IBGP_ADMIN)
-                          .setLocalAdminCost(DEFAULT_LOCAL_BGP_ADMIN)
-                          .build());
+                  vrf.setBgpProcess(bgpProcessBuilder().setRouterId(Ip.ZERO).build());
                 }
               });
     }
@@ -2662,6 +2658,17 @@ public final class AristaConfiguration extends VendorConfiguration {
     markConcreteStructure(AristaStructureType.BGP_PEER_GROUP);
 
     return ImmutableList.of(c);
+  }
+
+  @Nonnull
+  private org.batfish.datamodel.BgpProcess.Builder bgpProcessBuilder() {
+    return org.batfish.datamodel.BgpProcess.builder()
+        .setEbgpAdminCost(DEFAULT_EBGP_ADMIN)
+        .setIbgpAdminCost(DEFAULT_IBGP_ADMIN)
+        .setLocalAdminCost(DEFAULT_LOCAL_BGP_ADMIN)
+        .setLocalOriginationTypeTieBreaker(NO_PREFERENCE)
+        .setNetworkNextHopIpTieBreaker(HIGHEST_NEXT_HOP_IP)
+        .setRedistributeNextHopIpTieBreaker(HIGHEST_NEXT_HOP_IP);
   }
 
   private static Layer2Vni toL2Vni(

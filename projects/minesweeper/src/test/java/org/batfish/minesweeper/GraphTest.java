@@ -1,5 +1,7 @@
 package org.batfish.minesweeper;
 
+import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.NO_PREFERENCE;
+import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
 import static org.batfish.minesweeper.Graph.generateIbgpNeighbors;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
@@ -53,7 +55,13 @@ public class GraphTest {
     Vrf.Builder vb = _nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
     Interface.Builder ib = _nf.interfaceBuilder();
     BgpProcess.Builder bpb =
-        _nf.bgpProcessBuilder().setEbgpAdminCost(20).setIbgpAdminCost(200).setLocalAdminCost(200);
+        _nf.bgpProcessBuilder()
+            .setEbgpAdminCost(20)
+            .setIbgpAdminCost(200)
+            .setLocalAdminCost(200)
+            .setLocalOriginationTypeTieBreaker(NO_PREFERENCE)
+            .setNetworkNextHopIpTieBreaker(HIGHEST_NEXT_HOP_IP)
+            .setRedistributeNextHopIpTieBreaker(HIGHEST_NEXT_HOP_IP);
     BgpActivePeerConfig.Builder bnb = _nf.bgpNeighborBuilder().setLocalAs(1L).setRemoteAs(1L);
 
     Configuration c1 = cb.setHostname("r1").build();

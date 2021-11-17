@@ -60,6 +60,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     @Nonnull protected CommunitySet _communities;
     protected long _localPreference;
     @Nullable protected Ip _originatorIp;
+    @Nullable protected OriginMechanism _originMechanism;
     @Nullable protected OriginType _originType;
     @Nullable protected RoutingProtocol _protocol;
     @Nullable protected Ip _receivedFromIp;
@@ -125,6 +126,10 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     @Nullable
     public Ip getOriginatorIp() {
       return _originatorIp;
+    }
+
+    public @Nullable OriginMechanism getOriginMechanism() {
+      return _originMechanism;
     }
 
     @Nullable
@@ -228,6 +233,12 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     }
 
     @Nonnull
+    public B setOriginMechanism(OriginMechanism originMechanism) {
+      _originMechanism = originMechanism;
+      return getThis();
+    }
+
+    @Nonnull
     @Override
     public B setOriginType(OriginType originType) {
       _originType = originType;
@@ -272,6 +283,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   static final String PROP_CLUSTER_LIST = "clusterList";
   public static final String PROP_COMMUNITIES = "communities";
   public static final String PROP_LOCAL_PREFERENCE = "localPreference";
+  static final String PROP_ORIGIN_MECHANISM = "originMechanism";
   static final String PROP_ORIGIN_TYPE = "originType";
   static final String PROP_ORIGINATOR_IP = "originatorIp";
   static final String PROP_RECEIVED_FROM_IP = "receivedFromIp";
@@ -286,6 +298,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   protected final long _localPreference;
   protected final long _med;
   @Nonnull protected final Ip _originatorIp;
+  @Nonnull protected final OriginMechanism _originMechanism;
   @Nonnull protected final OriginType _originType;
   @Nonnull protected final RoutingProtocol _protocol;
 
@@ -313,6 +326,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
       Ip originatorIp,
       @Nullable Set<Long> clusterList,
       boolean receivedFromRouteReflectorClient,
+      OriginMechanism originMechanism,
       OriginType originType,
       RoutingProtocol protocol,
       @Nullable Ip receivedFromIp,
@@ -334,6 +348,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     _med = med;
     _nextHop = nextHop;
     _originatorIp = originatorIp;
+    _originMechanism = originMechanism;
     _originType = originType;
     _protocol = protocol;
     _receivedFromIp = receivedFromIp;
@@ -401,6 +416,12 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   }
 
   @Nonnull
+  @JsonProperty(PROP_ORIGIN_MECHANISM)
+  public OriginMechanism getOriginMechanism() {
+    return _originMechanism;
+  }
+
+  @Nonnull
   @JsonProperty(PROP_ORIGIN_TYPE)
   @Override
   public OriginType getOriginType() {
@@ -449,5 +470,21 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   @JsonProperty(PROP_COMMUNITIES)
   private @Nonnull CommunitySet getJsonCommunities() {
     return _communities;
+  }
+
+  /** Whether the route is a trackable redistributed local route. */
+  @JsonIgnore
+  public boolean isTrackableLocalRoute() {
+    switch (_originMechanism) {
+      case NETWORK:
+      case REDISTRIBUTE:
+        return true;
+      case GENERATED:
+      case LEARNED:
+        return false;
+      default:
+        throw new IllegalArgumentException(
+            String.format("Unhandled OriginMechanism: %s", _originMechanism));
+    }
   }
 }

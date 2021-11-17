@@ -31,6 +31,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
@@ -104,6 +105,7 @@ public class TestRoutePoliciesAnswererTest {
             .setNetwork(Prefix.ZERO)
             .setOriginatorIp(Ip.ZERO)
             .setNextHopIp(Ip.parse("1.1.1.1"))
+            .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .build();
@@ -141,6 +143,7 @@ public class TestRoutePoliciesAnswererTest {
             .setNetwork(Prefix.ZERO)
             .setOriginatorIp(Ip.ZERO)
             .setNextHopIp(Ip.parse("1.1.1.1"))
+            .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .build();
@@ -186,6 +189,7 @@ public class TestRoutePoliciesAnswererTest {
             .setNetwork(Prefix.ZERO)
             .setOriginatorIp(Ip.ZERO)
             .setNextHopIp(Ip.parse("1.1.1.1"))
+            .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .build();
@@ -222,6 +226,7 @@ public class TestRoutePoliciesAnswererTest {
         BgpRoute.builder()
             .setNetwork(Prefix.ZERO)
             .setOriginatorIp(Ip.ZERO)
+            .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("1.1.1.1"))
@@ -266,6 +271,7 @@ public class TestRoutePoliciesAnswererTest {
             .setNetwork(Prefix.ZERO)
             .setOriginatorIp(Ip.ZERO)
             .setNextHopIp(Ip.parse("1.1.1.1"))
+            .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setTag(34)
@@ -306,6 +312,7 @@ public class TestRoutePoliciesAnswererTest {
             .setNetwork(Prefix.ZERO)
             .setOriginatorIp(Ip.ZERO)
             .setNextHopIp(Ip.parse("1.1.1.1"))
+            .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .build();
@@ -339,6 +346,7 @@ public class TestRoutePoliciesAnswererTest {
             .setNetwork(Prefix.ZERO)
             .setOriginatorIp(Ip.ZERO)
             .setNextHopIp(Ip.parse("1.1.1.1"))
+            .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .build();
@@ -369,6 +377,7 @@ public class TestRoutePoliciesAnswererTest {
             .setNetwork(Prefix.ZERO)
             .setOriginatorIp(Ip.ZERO)
             .setNextHopIp(Ip.parse("1.1.1.1"))
+            .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .build();
@@ -417,6 +426,7 @@ public class TestRoutePoliciesAnswererTest {
         BgpRoute.builder()
             .setNetwork(Prefix.ZERO)
             .setOriginatorIp(Ip.ZERO)
+            .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
             .setNextHopIp(Ip.parse("1.1.1.1"))
             .setProtocol(RoutingProtocol.BGP)
@@ -470,6 +480,7 @@ public class TestRoutePoliciesAnswererTest {
             .setNetwork(Prefix.ZERO)
             .setOriginatorIp(Ip.ZERO)
             .setNextHopIp(Ip.parse("1.1.1.1"))
+            .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .build();
