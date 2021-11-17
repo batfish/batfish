@@ -1,5 +1,7 @@
 package org.batfish.dataplane.ibdp;
 
+import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.NO_PREFERENCE;
+import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasProtocol;
 import static org.hamcrest.Matchers.hasItem;
@@ -372,7 +374,14 @@ public class RouteReflectionTest {
     _cb = _nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     _ib = _nf.interfaceBuilder();
     _nb = _nf.bgpNeighborBuilder().setLocalAs(2L);
-    _pb = _nf.bgpProcessBuilder().setEbgpAdminCost(20).setIbgpAdminCost(200).setLocalAdminCost(200);
+    _pb =
+        _nf.bgpProcessBuilder()
+            .setEbgpAdminCost(20)
+            .setIbgpAdminCost(200)
+            .setLocalAdminCost(200)
+            .setLocalOriginationTypeTieBreaker(NO_PREFERENCE)
+            .setNetworkNextHopIpTieBreaker(HIGHEST_NEXT_HOP_IP)
+            .setRedistributeNextHopIpTieBreaker(HIGHEST_NEXT_HOP_IP);
     _vb = _nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
     If acceptIffBgp = new If();
     Disjunction guard = new Disjunction();

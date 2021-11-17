@@ -16,6 +16,8 @@ import static org.batfish.datamodel.Names.generatedOspfExportPolicyName;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
+import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.NO_PREFERENCE;
+import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
 import static org.batfish.representation.cisco_asa.AsaConversions.computeDistributeListPolicies;
 import static org.batfish.representation.cisco_asa.AsaConversions.convertCryptoMapSet;
@@ -1114,12 +1116,9 @@ public final class AsaConfiguration extends VendorConfiguration {
   private org.batfish.datamodel.BgpProcess toBgpProcess(
       Configuration c, BgpProcess proc, String vrfName) {
     Ip bgpRouterId = getBgpRouterId(c, vrfName, proc);
-    // TODO: surely this is customizable
-    int ebgpAdmin = DEFAULT_EBGP_ADMIN;
-    int ibgpAdmin = DEFAULT_IBGP_ADMIN;
-    int localAdmin = DEFAULT_LOCAL_ADMIN;
+    // TODO: customizable admin costs
     org.batfish.datamodel.BgpProcess newBgpProcess =
-        new org.batfish.datamodel.BgpProcess(bgpRouterId, ebgpAdmin, ibgpAdmin, localAdmin);
+        bgpProcessBuilder().setRouterId(bgpRouterId).build();
     newBgpProcess.setClusterListAsIbgpCost(true);
     BgpTieBreaker tieBreaker = proc.getTieBreaker();
     if (tieBreaker != null) {
@@ -3187,13 +3186,7 @@ public final class AsaConfiguration extends VendorConfiguration {
              * Despite no BGP config this vrf is leaked into. Make a dummy BGP process.
              */
             assert newVrf.getBgpProcess() == null;
-            newVrf.setBgpProcess(
-                org.batfish.datamodel.BgpProcess.builder()
-                    .setRouterId(Ip.ZERO)
-                    .setEbgpAdminCost(DEFAULT_EBGP_ADMIN)
-                    .setIbgpAdminCost(DEFAULT_IBGP_ADMIN)
-                    .setLocalAdminCost(DEFAULT_LOCAL_ADMIN)
-                    .build());
+            newVrf.setBgpProcess(bgpProcessBuilder().setRouterId(Ip.ZERO).build());
           }
         });
     /*
@@ -3506,6 +3499,18 @@ public final class AsaConfiguration extends VendorConfiguration {
         AsaStructureUsage.BGP_PEER_GROUP_REFERENCED_BEFORE_DEFINED);
 
     return ImmutableList.of(c);
+  }
+
+  @Nonnull
+  private org.batfish.datamodel.BgpProcess.Builder bgpProcessBuilder() {
+    return org.batfish.datamodel.BgpProcess.builder()
+        .setEbgpAdminCost(DEFAULT_EBGP_ADMIN)
+        .setIbgpAdminCost(DEFAULT_IBGP_ADMIN)
+        .setLocalAdminCost(DEFAULT_LOCAL_ADMIN)
+        // TODO: verify following values
+        .setLocalOriginationTypeTieBreaker(NO_PREFERENCE)
+        .setNetworkNextHopIpTieBreaker(HIGHEST_NEXT_HOP_IP)
+        .setRedistributeNextHopIpTieBreaker(HIGHEST_NEXT_HOP_IP);
   }
 
   private void createInspectClassMapAcls(Configuration c) {

@@ -583,7 +583,7 @@ public class CumulusInterfacesGrammarTest {
     CumulusInterfacesConfiguration interfaces = parse(input);
     InterfacesInterface iface = interfaces.getInterfaces().get("eth0");
     assertEquals(iface.getLinkSpeed(), Integer.valueOf(10000));
-    assertNull(iface.getAddresses());
+    assertTrue(iface.getAddresses().isEmpty());
   }
 
   @Test
@@ -592,7 +592,7 @@ public class CumulusInterfacesGrammarTest {
     CumulusInterfacesConfiguration interfaces = parse(input);
     InterfacesInterface iface = interfaces.getInterfaces().get("eth0");
     assertEquals(iface.getLinkSpeed(), Integer.valueOf(10000));
-    assertNull(iface.getAddresses());
+    assertTrue(iface.getAddresses().isEmpty());
   }
 
   @Test

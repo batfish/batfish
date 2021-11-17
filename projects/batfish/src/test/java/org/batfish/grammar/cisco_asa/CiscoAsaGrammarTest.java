@@ -168,6 +168,7 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Line;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LineType;
+import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
@@ -1008,6 +1009,7 @@ public final class CiscoAsaGrammarTest {
             .setAdmin(bgpAdmin)
             .setLocalPreference(100)
             .setNextHop(NextHopDiscard.instance())
+            .setOriginMechanism(OriginMechanism.REDISTRIBUTE)
             .setOriginType(OriginType.IGP)
             .setOriginatorIp(Ip.parse("10.10.10.1"))
             .setProtocol(RoutingProtocol.BGP)
@@ -1264,6 +1266,7 @@ public final class CiscoAsaGrammarTest {
             .setLocalPreference(100)
             .setNextHop(NextHopDiscard.instance())
             .setOriginatorIp(routerId)
+            .setOriginMechanism(OriginMechanism.REDISTRIBUTE)
             .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP)
             .setReceivedFromIp(Ip.ZERO) // indicates local origination
@@ -1280,6 +1283,7 @@ public final class CiscoAsaGrammarTest {
             .setLocalPreference(100)
             .setNextHop(NextHopDiscard.instance())
             .setOriginatorIp(routerId)
+            .setOriginMechanism(OriginMechanism.GENERATED)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.AGGREGATE)
             .setReceivedFromIp(Ip.ZERO) // indicates local origination
@@ -1354,6 +1358,7 @@ public final class CiscoAsaGrammarTest {
               .setLocalPreference(100)
               .setNextHop(NextHopDiscard.instance())
               .setOriginatorIp(Ip.parse("2.2.2.2"))
+              .setOriginMechanism(OriginMechanism.GENERATED)
               .setOriginType(OriginType.IGP)
               .setProtocol(RoutingProtocol.AGGREGATE)
               .setReceivedFromIp(Ip.ZERO) // indicates local origination

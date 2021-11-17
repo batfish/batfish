@@ -3,6 +3,7 @@ package org.batfish.grammar.cumulus_concatenated;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.Ip.ZERO;
+import static org.batfish.datamodel.OriginMechanism.REDISTRIBUTE;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasProtocol;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
@@ -270,6 +271,7 @@ public class CumulusConcatenatedGrammarTest {
             .setAdmin(bgpAdmin)
             .setLocalPreference(100)
             .setNextHop(NextHopDiscard.instance())
+            .setOriginMechanism(REDISTRIBUTE)
             .setOriginType(OriginType.INCOMPLETE)
             .setOriginatorIp(Ip.parse("10.10.10.1"))
             .setProtocol(RoutingProtocol.BGP)
@@ -1069,7 +1071,11 @@ public class CumulusConcatenatedGrammarTest {
     String hostname = "frr-aggregate-address";
     CumulusConcatenatedConfiguration vc = parseVendorConfig(hostname);
     Map<Prefix, BgpVrfAddressFamilyAggregateNetworkConfiguration> aggs =
-        vc.getBgpProcess().getDefaultVrf().getIpv4Unicast().getAggregateNetworks();
+        vc.getFrrConfiguration()
+            .getBgpProcess()
+            .getDefaultVrf()
+            .getIpv4Unicast()
+            .getAggregateNetworks();
     assertThat(aggs, aMapWithSize(9));
     assertThat(
         aggs,

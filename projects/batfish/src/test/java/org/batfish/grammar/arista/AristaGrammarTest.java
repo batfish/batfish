@@ -171,6 +171,7 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
+import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfExternalType1Route;
 import org.batfish.datamodel.OspfExternalType2Route;
@@ -660,6 +661,7 @@ public class AristaGrammarTest {
             .setLocalPreference(0)
             .setNextHop(NextHopDiscard.instance())
             .setOriginType(OriginType.INCOMPLETE)
+            .setOriginMechanism(OriginMechanism.REDISTRIBUTE)
             .setOriginatorIp(Ip.parse("10.10.10.1"))
             .setProtocol(RoutingProtocol.BGP)
             .setReceivedFromIp(ZERO) // indicates local origination
@@ -1336,6 +1338,7 @@ public class AristaGrammarTest {
             .setLocalPreference(0)
             .setNextHop(NextHopDiscard.instance())
             .setOriginatorIp(routerId)
+            .setOriginMechanism(OriginMechanism.REDISTRIBUTE)
             .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP)
             .setReceivedFromIp(Ip.ZERO) // indicates local origination
@@ -1354,6 +1357,7 @@ public class AristaGrammarTest {
             .setLocalPreference(100)
             .setNextHop(NextHopDiscard.instance())
             .setOriginatorIp(routerId)
+            .setOriginMechanism(OriginMechanism.GENERATED)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.AGGREGATE)
             .setReceivedFromIp(Ip.ZERO) // indicates local origination
@@ -1428,6 +1432,7 @@ public class AristaGrammarTest {
               .setLocalPreference(100)
               .setNextHop(NextHopDiscard.instance())
               .setOriginatorIp(Ip.parse("2.2.2.2"))
+              .setOriginMechanism(OriginMechanism.GENERATED)
               .setOriginType(OriginType.IGP)
               .setProtocol(RoutingProtocol.AGGREGATE)
               .setReceivedFromIp(Ip.ZERO) // indicates local origination

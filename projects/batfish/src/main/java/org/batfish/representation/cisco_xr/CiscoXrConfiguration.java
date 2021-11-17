@@ -11,6 +11,8 @@ import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
 import static org.batfish.datamodel.Names.generatedOspfDefaultRouteGenerationPolicyName;
 import static org.batfish.datamodel.Names.generatedOspfExportPolicyName;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
+import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.NO_PREFERENCE;
+import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.LOWEST_NEXT_HOP_IP;
 import static org.batfish.datamodel.routing_policy.Common.matchDefaultRoute;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
 import static org.batfish.datamodel.routing_policy.statement.Statements.ExitAccept;
@@ -750,15 +752,22 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     _vendor = format;
   }
 
+  private static @Nonnull org.batfish.datamodel.BgpProcess.Builder bgpProcessBuilder() {
+    return org.batfish.datamodel.BgpProcess.builder()
+        .setEbgpAdminCost(DEFAULT_EBGP_ADMIN)
+        .setIbgpAdminCost(DEFAULT_IBGP_ADMIN)
+        .setLocalAdminCost(DEFAULT_LOCAL_ADMIN)
+        .setLocalOriginationTypeTieBreaker(NO_PREFERENCE)
+        .setNetworkNextHopIpTieBreaker(LOWEST_NEXT_HOP_IP)
+        .setRedistributeNextHopIpTieBreaker(LOWEST_NEXT_HOP_IP);
+  }
+
   private org.batfish.datamodel.BgpProcess toBgpProcess(
       Configuration c, BgpProcess proc, String vrfName) {
     Ip bgpRouterId = getBgpRouterId(c, vrfName, proc);
-    // TODO: surely this is customizable
-    int ebgpAdmin = DEFAULT_EBGP_ADMIN;
-    int ibgpAdmin = DEFAULT_IBGP_ADMIN;
-    int localAdmin = DEFAULT_LOCAL_ADMIN;
+    // TODO: customizable admin costs
     org.batfish.datamodel.BgpProcess newBgpProcess =
-        new org.batfish.datamodel.BgpProcess(bgpRouterId, ebgpAdmin, ibgpAdmin, localAdmin);
+        bgpProcessBuilder().setRouterId(bgpRouterId).build();
     newBgpProcess.setClusterListAsIbgpCost(true);
     BgpTieBreaker tieBreaker = proc.getTieBreaker();
     if (tieBreaker != null) {

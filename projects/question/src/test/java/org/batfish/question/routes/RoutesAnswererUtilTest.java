@@ -36,6 +36,7 @@ import static org.batfish.question.routes.RoutesAnswererUtil.populateRouteAttrib
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
@@ -44,6 +45,7 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
@@ -66,6 +68,7 @@ import org.batfish.datamodel.EvpnRoute;
 import org.batfish.datamodel.EvpnType3Route;
 import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.Prefix;
@@ -196,10 +199,9 @@ public class RoutesAnswererUtilTest {
     Multiset<Row> actual =
         getMainRibRoutes(
             ribs,
-            ImmutableSet.of("n1"),
+            ImmutableMultimap.of("n1", Configuration.DEFAULT_VRF_NAME),
             null,
-            RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
-            ".*");
+            RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER);
     assertThat(
         actual,
         contains(
@@ -224,6 +226,7 @@ public class RoutesAnswererUtilTest {
     Bgpv4Route.Builder rb =
         Bgpv4Route.testBuilder()
             .setNetwork(prefix)
+            .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
             .setCommunities(ImmutableSortedSet.of(StandardCommunity.of(65537L)))
             .setProtocol(RoutingProtocol.BGP)
@@ -238,11 +241,9 @@ public class RoutesAnswererUtilTest {
     Multiset<Row> rows =
         getBgpRibRoutes(
             bgpRouteTable,
-            RibProtocol.BGP,
-            ImmutableSet.of("node"),
+            ImmutableMultimap.of("node", "vrf"),
             null,
             RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
-            ".*",
             ImmutableSet.of(BEST));
 
     // Both routes should have the same values for these columns
@@ -278,6 +279,18 @@ public class RoutesAnswererUtilTest {
   }
 
   @Test
+  public void testBgpRibRoutes_empty() {
+    Multiset<Row> rows =
+        getBgpRibRoutes(
+            ImmutableTable.of(), // no BGP rib for the specifed vrfs
+            ImmutableMultimap.of("node", "vrf"),
+            null,
+            RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
+            ImmutableSet.of(BEST));
+    assertThat(rows, empty());
+  }
+
+  @Test
   public void testGetBgpRoutesCommunities() {
     Ip ip = Ip.parse("1.1.1.1");
     Table<String, String, Set<Bgpv4Route>> bgpRouteTable = HashBasedTable.create();
@@ -287,6 +300,7 @@ public class RoutesAnswererUtilTest {
         ImmutableSet.of(
             Bgpv4Route.builder()
                 .setNetwork(ip.toPrefix())
+                .setOriginMechanism(OriginMechanism.LEARNED)
                 .setOriginType(OriginType.IGP)
                 .setOriginatorIp(ip)
                 .setNextHop(NextHopIp.of(ip))
@@ -297,11 +311,9 @@ public class RoutesAnswererUtilTest {
     Multiset<Row> rows =
         getBgpRibRoutes(
             bgpRouteTable,
-            RibProtocol.BGP,
-            ImmutableSet.of("node"),
+            ImmutableMultimap.of("node", "vrf"),
             null,
             RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
-            ".*",
             ImmutableSet.of(BEST));
     assertThat(
         rows.iterator().next().get(COL_COMMUNITIES, Schema.list(Schema.STRING)),
@@ -317,6 +329,7 @@ public class RoutesAnswererUtilTest {
         EvpnType3Route.builder()
             .setVniIp(ip)
             .setRouteDistinguisher(RouteDistinguisher.from(ip, 1))
+            .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
             .setCommunities(ImmutableSortedSet.of(StandardCommunity.of(65537L)))
             .setProtocol(RoutingProtocol.BGP)
@@ -330,11 +343,9 @@ public class RoutesAnswererUtilTest {
     Multiset<Row> rows =
         getEvpnRoutes(
             evpnRouteTable,
-            RibProtocol.EVPN,
-            ImmutableSet.of("node"),
+            ImmutableMultimap.of("node", "vrf"),
             null,
             RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
-            ".*",
             ImmutableSet.of(BEST));
 
     assertThat(
@@ -358,6 +369,18 @@ public class RoutesAnswererUtilTest {
                 hasColumn(COL_TAG, nullValue(), Schema.INTEGER),
                 hasColumn(COL_NEXT_HOP_IP, ip, Schema.IP),
                 hasColumn(COL_NEXT_HOP_INTERFACE, "dynamic", Schema.STRING))));
+  }
+
+  @Test
+  public void testEvpnRibRoutes_empty() {
+    Multiset<Row> rows =
+        getEvpnRoutes(
+            ImmutableTable.of(), // no EVPN rib for the specifed vrfs
+            ImmutableMultimap.of("node", "vrf"),
+            null,
+            RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
+            ImmutableSet.of(BEST));
+    assertThat(rows, empty());
   }
 
   @Test
@@ -547,6 +570,7 @@ public class RoutesAnswererUtilTest {
         Bgpv4Route.testBuilder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
             .setNextHopIp(Ip.parse("1.1.1.2"))
+            .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
             .setOriginatorIp(Ip.parse("1.1.1.2"))
             .setProtocol(RoutingProtocol.BGP)
@@ -562,6 +586,7 @@ public class RoutesAnswererUtilTest {
             .setNextHopIp(Ip.parse("1.1.1.3"))
             .setAdmin(10)
             .setMetric(20L)
+            .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
             .setOriginatorIp(Ip.parse("1.1.1.2"))
             .setProtocol(RoutingProtocol.IBGP)

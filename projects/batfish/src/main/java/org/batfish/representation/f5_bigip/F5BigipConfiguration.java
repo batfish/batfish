@@ -4,6 +4,8 @@ import static com.google.common.base.Predicates.notNull;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.NO_PREFERENCE;
+import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
 import static org.batfish.datamodel.routing_policy.Common.generateGenerationPolicy;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
 import static org.batfish.representation.f5_bigip.F5NatUtil.orElseChain;
@@ -147,6 +149,11 @@ public class F5BigipConfiguration extends VendorConfiguration {
       org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
 
   private static final double OSPF_REFERENCE_BANDWIDTH_CONVERSION_FACTOR = 1E6D; // bps per Mbps
+
+  // TODO: verify these admin distances
+  private static final int DEFAULT_EBGP_ADMIN = 20;
+  private static final int DEFAULT_IBGP_ADMIN = 200;
+  private static final int DEFAULT_LOCAL_ADMIN = 200;
 
   private static boolean appliesToVlan(Snat snat, String vlanName) {
     return !snat.getVlansEnabled()
@@ -1308,14 +1315,20 @@ public class F5BigipConfiguration extends VendorConfiguration {
     return builder.add(toStatement(entry.getAction())).build();
   }
 
+  private static @Nonnull org.batfish.datamodel.BgpProcess.Builder bgpProcessBuilder() {
+    return org.batfish.datamodel.BgpProcess.builder()
+        .setEbgpAdminCost(DEFAULT_EBGP_ADMIN)
+        .setIbgpAdminCost(DEFAULT_IBGP_ADMIN)
+        .setLocalAdminCost(DEFAULT_LOCAL_ADMIN)
+        // TODO: verify following values
+        .setLocalOriginationTypeTieBreaker(NO_PREFERENCE)
+        .setNetworkNextHopIpTieBreaker(HIGHEST_NEXT_HOP_IP)
+        .setRedistributeNextHopIpTieBreaker(HIGHEST_NEXT_HOP_IP);
+  }
+
   private @Nonnull org.batfish.datamodel.BgpProcess toBgpProcess(BgpProcess proc) {
-    // TODO: verify these admin distances
-    int ebgpAdmin = 20;
-    int ibgpAdmin = 200;
-    int localAdmin = 200;
     org.batfish.datamodel.BgpProcess newProc =
-        new org.batfish.datamodel.BgpProcess(
-            getBgpRouterId(proc), ebgpAdmin, ibgpAdmin, localAdmin);
+        bgpProcessBuilder().setRouterId(getBgpRouterId(proc)).build();
 
     // TODO: verify correct method of determining whether two AS-paths are equivalent
     newProc.setMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.EXACT_PATH);
