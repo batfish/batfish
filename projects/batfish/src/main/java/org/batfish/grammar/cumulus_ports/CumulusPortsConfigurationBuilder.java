@@ -14,9 +14,9 @@ import org.batfish.grammar.cumulus_ports.CumulusPortsParser.BreakoutContext;
 import org.batfish.grammar.cumulus_ports.CumulusPortsParser.DisabledContext;
 import org.batfish.grammar.cumulus_ports.CumulusPortsParser.Port_definitionContext;
 import org.batfish.grammar.cumulus_ports.CumulusPortsParser.SpeedContext;
-import org.batfish.representation.cumulus.CumulusConcatenatedConfiguration;
-import org.batfish.representation.cumulus.CumulusStructureType;
-import org.batfish.representation.cumulus.CumulusStructureUsage;
+import org.batfish.representation.cumulus_concatenated.CumulusConcatenatedConfiguration;
+import org.batfish.representation.frr.CumulusStructureType;
+import org.batfish.representation.frr.CumulusStructureUsage;
 
 /**
  * Populates a {@link CumulusConcatenatedConfiguration} from the data in a {@link

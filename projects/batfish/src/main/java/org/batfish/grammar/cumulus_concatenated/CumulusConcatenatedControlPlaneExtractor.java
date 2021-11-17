@@ -31,7 +31,7 @@ import org.batfish.grammar.frr.FrrCombinedParser;
 import org.batfish.grammar.frr.FrrConfigurationBuilder;
 import org.batfish.grammar.frr.FrrParser.Frr_configurationContext;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
-import org.batfish.representation.cumulus.CumulusConcatenatedConfiguration;
+import org.batfish.representation.cumulus_concatenated.CumulusConcatenatedConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 
 public class CumulusConcatenatedControlPlaneExtractor implements ControlPlaneExtractor {
