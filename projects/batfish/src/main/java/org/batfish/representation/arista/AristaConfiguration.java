@@ -96,6 +96,7 @@ import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpTieBreaker;
+import org.batfish.datamodel.Bgpv4ToEvpnVrfLeakConfig;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -139,6 +140,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.TunnelConfiguration;
+import org.batfish.datamodel.VrfLeakConfig;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.bgp.BgpConfederation;
@@ -1008,6 +1010,21 @@ public final class AristaConfiguration extends VendorConfiguration {
     redistributionPolicy.addStatement(Statements.ExitReject.toStaticStatement()).build();
     newBgpProcess.setRedistributionPolicy(redistPolicyName);
 
+    // If this VRF exports BGPv4 into other VRFs' EVPN, create VRF leak configs for receiving VRFs
+    // TODO: Also support cross-VRF EVPN to BGPv4 imports here
+    if (bgpVrf.getExportRouteTarget() != null && bgpVrf.getRouteDistinguisher() != null) {
+      Bgpv4ToEvpnVrfLeakConfig leakConfig =
+          Bgpv4ToEvpnVrfLeakConfig.builder()
+              .setImportFromVrf(vrfName)
+              .setSrcVrfRouteDistinguisher(bgpVrf.getRouteDistinguisher())
+              .setAttachRouteTargets(bgpVrf.getExportRouteTarget())
+              .build();
+      bgpGlobal.getVrfs().values().stream()
+          .filter(aristaVrf -> aristaVrf.getEvpnAf() != null)
+          .map(aristaVrf -> c.getVrfs().get(aristaVrf.getName()))
+          .forEach(viVrf -> getOrInitVrfLeakConfig(viVrf).addBgpv4ToEvpnVrfLeakConfig(leakConfig));
+    }
+
     //
     //    // Generate BGP_NETWORK6_NETWORKS filter.
     //    if (ipv6af != null) {
@@ -1033,6 +1050,13 @@ public final class AristaConfiguration extends VendorConfiguration {
     newBgpProcess.setPassiveNeighbors(ImmutableSortedMap.copyOf(passiveNeighbors));
 
     return newBgpProcess;
+  }
+
+  private static VrfLeakConfig getOrInitVrfLeakConfig(org.batfish.datamodel.Vrf vrf) {
+    if (vrf.getVrfLeakConfig() == null) {
+      vrf.setVrfLeakConfig(new VrfLeakConfig(true));
+    }
+    return vrf.getVrfLeakConfig();
   }
 
   private static final Pattern INTERFACE_WITH_SUBINTERFACE = Pattern.compile("^(.*)\\.(\\d+)$");
