@@ -9,6 +9,7 @@ import static org.junit.Assert.assertThat;
 import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.EvpnType5Route;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
@@ -28,6 +29,7 @@ public final class EvpnMasterRibTest {
             .setNetwork(Prefix.ZERO)
             .setNextHop(NextHopIp.of(Ip.parse("10.0.0.1")))
             .setProtocol(RoutingProtocol.BGP)
+            .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
             .setOriginatorIp(Ip.ZERO);
     EvpnType5Route route1 =
@@ -54,6 +56,7 @@ public final class EvpnMasterRibTest {
             .setNetwork(Prefix.ZERO)
             .setNextHop(NextHopIp.of(Ip.parse("10.0.0.1")))
             .setProtocol(RoutingProtocol.BGP)
+            .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
             .setOriginatorIp(Ip.ZERO)
             .setRouteDistinguisher(RouteDistinguisher.from(1, 1L))
