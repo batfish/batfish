@@ -181,7 +181,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
               i.setAddressMetadata(metadata.build());
             });
 
-    convertInterfacesStaticRoutes(c); // static routes in interfaces file
+    initPostUpRoutes(c); // turn post-up interface routes to static routes
     convertStaticRoutes(c, _frrConfiguration); // static routes in the FRR file
 
     convertIpAsPathAccessLists(c, _frrConfiguration.getIpAsPathAccessLists());
@@ -253,7 +253,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
 
   /** Convert post-up routes from the interfaces file. */
   @VisibleForTesting
-  void convertInterfacesStaticRoutes(Configuration c) {
+  void initPostUpRoutes(Configuration c) {
     _interfacesConfiguration.getInterfaces().values().stream()
         .filter(CumulusConcatenatedConfiguration::isValidVIInterface)
         .forEach(

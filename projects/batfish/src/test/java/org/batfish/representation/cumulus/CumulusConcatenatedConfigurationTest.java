@@ -509,7 +509,7 @@ public class CumulusConcatenatedConfigurationTest {
                             .build()));
     c.getAllInterfaces().get(iface3.getName()).setActive(false);
 
-    vsConfig.convertInterfacesStaticRoutes(c);
+    vsConfig.initPostUpRoutes(c);
 
     // should only have routes from iface0
     assertThat(
