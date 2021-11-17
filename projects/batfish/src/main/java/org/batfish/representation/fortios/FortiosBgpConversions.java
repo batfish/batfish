@@ -212,7 +212,7 @@ public final class FortiosBgpConversions {
 
   private static final int DEFAULT_EBGP_ADMIN_COST = 20;
   private static final int DEFAULT_IBGP_ADMIN_COST = 200;
-  private static final int DEFAULT_LOCAL_ADMIN_COST = 200;
+  private static final int DEFAULT_LOCAL_ADMIN_COST = 200; // is this correct?
 
   private static @Nonnull org.batfish.datamodel.BgpProcess.Builder bgpProcessBuilder() {
     return org.batfish.datamodel.BgpProcess.builder()

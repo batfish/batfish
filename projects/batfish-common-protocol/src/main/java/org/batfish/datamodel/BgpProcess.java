@@ -39,7 +39,15 @@ public class BgpProcess implements Serializable {
   /** Constructs a BgpProcess with the given router ID and default Cisco admin costs. */
   @VisibleForTesting
   public static BgpProcess testBgpProcess(@Nonnull Ip routerId) {
-    return new BgpProcess(routerId, 20, 200, 220);
+    return builder()
+        .setRouterId(routerId)
+        .setEbgpAdminCost(20)
+        .setIbgpAdminCost(200)
+        .setLocalAdminCost(220)
+        .setLocalOriginationTypeTieBreaker(NO_PREFERENCE)
+        .setNetworkNextHopIpTieBreaker(HIGHEST_NEXT_HOP_IP)
+        .setRedistributeNextHopIpTieBreaker(HIGHEST_NEXT_HOP_IP)
+        .build();
   }
 
   public static class Builder {
@@ -236,23 +244,6 @@ public class BgpProcess implements Serializable {
   private final @Nonnull LocalOriginationTypeTieBreaker _localOriginationTypeTieBreaker;
   private final @Nonnull NextHopIpTieBreaker _networkNextHopIpTieBreaker;
   private final @Nonnull NextHopIpTieBreaker _redistributeNextHopIpTieBreaker;
-
-  /** Constructs a BgpProcess with the given router ID and admin costs */
-  @VisibleForTesting
-  public BgpProcess(
-      @Nonnull Ip routerId, int ebgpAdminCost, int ibgpAdminCost, int localAdminCost) {
-    this(
-        routerId,
-        ebgpAdminCost,
-        ibgpAdminCost,
-        localAdminCost,
-        null,
-        null,
-        null,
-        NO_PREFERENCE,
-        HIGHEST_NEXT_HOP_IP,
-        HIGHEST_NEXT_HOP_IP);
-  }
 
   private BgpProcess(
       @Nonnull Ip routerId,
