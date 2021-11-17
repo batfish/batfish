@@ -195,7 +195,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
 
     // Compute explicit VNI -> VRF mappings for L3 VNIs:
     Map<Integer, String> vniToVrf =
-        this._frrConfiguration.getVrfs().values().stream()
+        _frrConfiguration.getVrfs().values().stream()
             .filter(vrf -> vrf.getVni() != null)
             .collect(ImmutableMap.toImmutableMap(Vrf::getVni, Vrf::getName));
 
