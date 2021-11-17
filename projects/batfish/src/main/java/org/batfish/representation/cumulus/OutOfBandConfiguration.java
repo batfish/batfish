@@ -2,8 +2,8 @@ package org.batfish.representation.cumulus;
 
 import java.util.List;
 import java.util.Map;
-import javax.annotation.Nonnull;
 import java.util.Optional;
+import javax.annotation.Nonnull;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 
 /**
