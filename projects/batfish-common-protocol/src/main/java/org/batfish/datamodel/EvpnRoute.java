@@ -28,6 +28,27 @@ public abstract class EvpnRoute<B extends Builder<B, R>, R extends BgpRoute<B, R
 
     @Nullable protected RouteDistinguisher _routeDistinguisher;
 
+    @Override
+    public final B setAdmin(int admin) {
+      // All EVPN routes have admin set to an arbitrary constant value because they never compete
+      // with non-EVPN routes
+      throw new IllegalArgumentException("Cannot set admin for an EvpnRoute");
+    }
+
+    @Nonnull
+    @Override
+    public final B setNonRouting(boolean nonRouting) {
+      // All EVPN routes have nonrouting set to true (they should never enter the main RIB)
+      throw new IllegalArgumentException("Cannot set nonRouting for an EvpnRoute");
+    }
+
+    @Nonnull
+    @Override
+    public final B setNonForwarding(boolean nonForwarding) {
+      // All EVPN routes have nonforwarding set to true (they should never enter the main RIB)
+      throw new IllegalArgumentException("Cannot set nonForwarding for an EvpnRoute");
+    }
+
     @Nullable
     public RouteDistinguisher getRouteDistinguisher() {
       return _routeDistinguisher;
@@ -69,8 +90,6 @@ public abstract class EvpnRoute<B extends Builder<B, R>, R extends BgpRoute<B, R
       @Nullable RoutingProtocol srcProtocol,
       long tag,
       int weight,
-      boolean nonForwarding,
-      boolean nonRouting,
       RouteDistinguisher routeDistinguisher) {
     super(
         network,
@@ -90,8 +109,8 @@ public abstract class EvpnRoute<B extends Builder<B, R>, R extends BgpRoute<B, R
         srcProtocol,
         tag,
         weight,
-        nonForwarding,
-        nonRouting);
+        true,
+        true);
     _routeDistinguisher = routeDistinguisher;
   }
 

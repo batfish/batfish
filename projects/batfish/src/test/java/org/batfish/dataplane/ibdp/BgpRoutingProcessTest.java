@@ -142,10 +142,8 @@ public class BgpRoutingProcessTest {
     Ip ip = Ip.parse("1.1.1.1");
     ExtendedCommunity routeTarget = ExtendedCommunity.target(1, 1);
     RouteDistinguisher routeDistinguisher = RouteDistinguisher.from(ip, 1);
-    int admin = 20;
     EvpnType3Route route =
         initEvpnType3Route(
-            admin,
             Layer2Vni.testBuilder()
                 .setVlan(1)
                 .setVni(10001)
@@ -159,10 +157,8 @@ public class BgpRoutingProcessTest {
         route,
         equalTo(
             EvpnType3Route.builder()
-                .setAdmin(admin)
                 .setRouteDistinguisher(routeDistinguisher)
                 .setCommunities(ImmutableSet.of(routeTarget))
-                .setNonRouting(true)
                 .setProtocol(RoutingProtocol.BGP)
                 .setOriginMechanism(OriginMechanism.GENERATED)
                 .setOriginType(OriginType.EGP)
@@ -238,11 +234,9 @@ public class BgpRoutingProcessTest {
                 .setRouteDistinguisher(RouteDistinguisher.from(_bgpProcess.getRouterId(), 2))
                 .setCommunities(ImmutableSet.of(ExtendedCommunity.target(65500, vni)))
                 .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
-                .setNonRouting(true)
                 .setOriginMechanism(OriginMechanism.GENERATED)
                 .setOriginType(OriginType.EGP)
                 .setProtocol(RoutingProtocol.BGP)
-                .setAdmin(20)
                 .setOriginatorIp(_bgpProcess.getRouterId())
                 .setNextHop(NextHopDiscard.instance())
                 .build()));
@@ -259,11 +253,9 @@ public class BgpRoutingProcessTest {
                 .setRouteDistinguisher(RouteDistinguisher.from(_bgpProcess.getRouterId(), 2))
                 .setCommunities(ImmutableSet.of(ExtendedCommunity.target(65500, vni2)))
                 .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
-                .setNonRouting(true)
                 .setOriginMechanism(OriginMechanism.GENERATED)
                 .setOriginType(OriginType.EGP)
                 .setProtocol(RoutingProtocol.BGP)
-                .setAdmin(20)
                 .setOriginatorIp(_bgpProcess.getRouterId())
                 .setNextHop(NextHopDiscard.instance())
                 .build()));

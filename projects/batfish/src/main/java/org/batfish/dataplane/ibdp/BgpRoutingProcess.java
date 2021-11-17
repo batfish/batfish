@@ -747,9 +747,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   /** Initialize the EVPN RIBs based on EVPN address family config */
   @VisibleForTesting
   void initLocalEvpnRoutes(Node n) {
-    // default admin costs
-    int ebgpAdmin = _process.getEbgpAdminCost();
-
     Builder<EvpnType3Route> initializationBuilder = RibDelta.builder();
     getAllPeerConfigs(_process)
         .map(BgpPeerConfig::getEvpnAddressFamily)
@@ -766,7 +763,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
               }
               EvpnType3Route route =
                   initEvpnType3Route(
-                      ebgpAdmin,
                       l2Vni,
                       vniConfig.getRouteTarget(),
                       vniConfig.getRouteDistinguisher(),
@@ -804,7 +800,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   @Nonnull
   @VisibleForTesting
   static EvpnType3Route initEvpnType3Route(
-      int ebgpAdmin,
       Layer2Vni vni,
       ExtendedCommunity routeTarget,
       RouteDistinguisher routeDistinguisher,
@@ -815,11 +810,9 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         vni.getVni());
     // Locally all routes start as eBGP routes in our own RIB
     return EvpnType3Route.builder()
-        .setAdmin(ebgpAdmin)
         .setCommunities(CommunitySet.of(routeTarget))
         .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
         // so that this route is not installed back in the main RIB of any of the VRFs
-        .setNonRouting(true)
         .setOriginatorIp(routerId)
         .setOriginMechanism(GENERATED)
         .setOriginType(OriginType.EGP)
@@ -1492,11 +1485,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       if (!acceptIncoming) {
         continue;
       }
-      if (clazz.equals(EvpnType3Route.class)) {
-        // Type 3 routes are special: they don't go into main RIB, they only update L2 VNI's flood
-        // list
-        transformedBuilder.setNonRouting(true);
-      }
       R transformedRoute = transformedBuilder.build();
       Set<ExtendedCommunity> routeTargets = transformedRoute.getRouteTargets();
       if (routeTargets.isEmpty()) {
@@ -1611,8 +1599,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             //   advertise-inactive
             adv ->
                 transformBgpRouteOnExport(
-                        // clear non-routing flag if set before sending it out
-                        adv.getRoute().toBuilder().setNonRouting(false).build(),
+                        adv.getRoute(),
                         ourConfigId,
                         remoteConfigId,
                         ourConfig,
@@ -2249,7 +2236,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         .setMetric(route.getMetric())
         .setNextHopInterface(route.getNextHopInterface())
         .setNextHopIp(route.getNextHopIp())
-        .setNonRouting(true) // EVPN routes don't go in the main RIB
         .setOriginatorIp(route.getNextHopIp())
         .setOriginMechanism(route.getOriginMechanism())
         .setOriginType(route.getOriginType())
