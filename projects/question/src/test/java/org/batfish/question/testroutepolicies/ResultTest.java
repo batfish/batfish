@@ -8,6 +8,7 @@ import com.google.common.testing.EqualsTester;
 import junit.framework.TestCase;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
@@ -23,6 +24,7 @@ public class ResultTest extends TestCase {
     Bgpv4Route route =
         Bgpv4Route.builder()
             .setOriginatorIp(Ip.parse("1.1.1.1"))
+            .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHop(NextHop.legacyConverter("iface", null))
@@ -31,6 +33,7 @@ public class ResultTest extends TestCase {
     Bgpv4Route routeOther =
         Bgpv4Route.builder()
             .setOriginatorIp(Ip.parse("2.2.2.2"))
+            .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHop(NextHop.legacyConverter("iface", null))

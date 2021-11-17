@@ -8,6 +8,7 @@ import com.google.common.testing.EqualsTester;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
@@ -25,6 +26,7 @@ public class BgpRouteTest {
             .setNetwork(Prefix.parse("1.1.1.0/24"))
             .setNextHopIp(Ip.parse("1.1.1.1"))
             .setOriginatorIp(Ip.parse("1.1.1.1"))
+            .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .build();
@@ -37,6 +39,7 @@ public class BgpRouteTest {
         BgpRoute.builder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
             .setOriginatorIp(Ip.parse("1.1.1.1"))
+            .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP);
     new EqualsTester()
@@ -48,6 +51,7 @@ public class BgpRouteTest {
         .addEqualityGroup(brb.setMetric(10).build())
         .addEqualityGroup(brb.setNextHopIp(Ip.parse("2.2.2.2")).build())
         .addEqualityGroup(brb.setOriginatorIp(Ip.parse("2.2.2.2")).build())
+        .addEqualityGroup(brb.setOriginMechanism(OriginMechanism.NETWORK).build())
         .addEqualityGroup(brb.setOriginType(OriginType.INCOMPLETE).build())
         .addEqualityGroup(brb.setProtocol(RoutingProtocol.IBGP).build())
         .addEqualityGroup(brb.setSrcProtocol(RoutingProtocol.STATIC).build())

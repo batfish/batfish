@@ -36,6 +36,7 @@ import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LongSpace;
+import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
@@ -238,7 +239,10 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
    */
   private static Bgpv4Route satAssignmentToInputRoute(BDD fullModel, Graph g) {
     Bgpv4Route.Builder builder =
-        Bgpv4Route.builder().setOriginatorIp(Ip.ZERO).setOriginType(OriginType.IGP);
+        Bgpv4Route.builder()
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setOriginType(OriginType.IGP);
 
     BDDRoute r = new BDDRoute(g);
 

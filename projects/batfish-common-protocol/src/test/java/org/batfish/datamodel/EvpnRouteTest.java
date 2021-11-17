@@ -22,6 +22,7 @@ public class EvpnRouteTest {
             .setNetwork(Prefix.parse("1.1.1.0/24"))
             .setNextHop(NextHopDiscard.instance())
             .setOriginatorIp(Ip.parse("1.1.1.1"))
+            .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setRouteDistinguisher(RouteDistinguisher.from(Ip.parse("1.1.1.1"), 2));

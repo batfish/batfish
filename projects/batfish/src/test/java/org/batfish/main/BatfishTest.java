@@ -71,6 +71,7 @@ import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
@@ -350,6 +351,7 @@ public class BatfishTest {
                     .setNextHopIp(Ip.parse("10.14.22.4")) // policy has next-hop peer-address
                     .setReceivedFromIp(Ip.parse("10.14.22.4"))
                     .setSrcProtocol(RoutingProtocol.BGP)
+                    .setOriginMechanism(OriginMechanism.LEARNED)
                     .setOriginType(OriginType.EGP)
                     .setLocalPreference(350L) // the value specified in the import policy
                     .setMetric(20L)
