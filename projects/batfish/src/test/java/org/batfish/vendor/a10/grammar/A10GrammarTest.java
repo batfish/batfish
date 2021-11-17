@@ -68,6 +68,7 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
@@ -110,6 +111,7 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.KernelRoute;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -125,6 +127,14 @@ import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.vendor.ConversionContext;
 import org.batfish.vendor.a10.representation.A10Configuration;
+import org.batfish.vendor.a10.representation.AccessList;
+import org.batfish.vendor.a10.representation.AccessListAddressAny;
+import org.batfish.vendor.a10.representation.AccessListAddressHost;
+import org.batfish.vendor.a10.representation.AccessListRule;
+import org.batfish.vendor.a10.representation.AccessListRuleIcmp;
+import org.batfish.vendor.a10.representation.AccessListRuleIp;
+import org.batfish.vendor.a10.representation.AccessListRuleTcp;
+import org.batfish.vendor.a10.representation.AccessListRuleUdp;
 import org.batfish.vendor.a10.representation.BgpNeighbor;
 import org.batfish.vendor.a10.representation.BgpNeighborIdAddress;
 import org.batfish.vendor.a10.representation.BgpNeighborUpdateSourceAddress;
@@ -155,6 +165,7 @@ import org.batfish.vendor.a10.representation.VrrpACommon;
 import org.batfish.vendor.a10.representation.VrrpAFailOverPolicyTemplate;
 import org.batfish.vendor.a10.representation.VrrpAVrid;
 import org.batfish.vendor.a10.representation.VrrpaVridBladeParameters;
+import org.hamcrest.CoreMatchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -2145,5 +2156,59 @@ public class A10GrammarTest {
                 .setRequiredOwnedIp(Ip.parse("10.0.4.1"))
                 .setTag(KERNEL_ROUTE_TAG_VIRTUAL_SERVER_UNFLAGGED)
                 .build()));
+  }
+
+  @Test
+  public void testAccessListExtraction() {
+    A10Configuration vc = parseVendorConfig("access_list");
+    Map<String, AccessList> acls = vc.getAccessLists();
+
+    assertThat(acls, hasKey(equalTo("ACL1")));
+    AccessList acl = acls.get("ACL1");
+    assertThat(acl.getName(), equalTo("ACL1"));
+    List<AccessListRule> rules = acl.getRules();
+
+    assertThat(rules, iterableWithSize(4));
+    assertThat(rules.get(0), CoreMatchers.instanceOf(AccessListRuleIcmp.class));
+    assertThat(rules.get(1), CoreMatchers.instanceOf(AccessListRuleTcp.class));
+    assertThat(rules.get(2), CoreMatchers.instanceOf(AccessListRuleIp.class));
+    assertThat(rules.get(3), CoreMatchers.instanceOf(AccessListRuleUdp.class));
+    AccessListRuleIcmp rule1 = (AccessListRuleIcmp) rules.get(0);
+    AccessListRuleTcp rule2 = (AccessListRuleTcp) rules.get(1);
+
+    assertThat(rule1.getAction(), equalTo(AccessListRule.Action.PERMIT));
+    assertThat(rule1.getSource(), CoreMatchers.instanceOf(AccessListAddressHost.class));
+    assertThat(
+        ((AccessListAddressHost) rule1.getSource()).getHost(), equalTo(Ip.parse("10.10.10.10")));
+    assertThat(rule1.getDestination(), CoreMatchers.instanceOf(AccessListAddressAny.class));
+
+    assertThat(rule2.getAction(), equalTo(AccessListRule.Action.DENY));
+    assertThat(rule2.getSource(), CoreMatchers.instanceOf(AccessListAddressAny.class));
+    assertThat(rule2.getDestination(), CoreMatchers.instanceOf(AccessListAddressHost.class));
+    assertThat(
+        ((AccessListAddressHost) rule2.getDestination()).getHost(),
+        equalTo(Ip.parse("10.11.11.11")));
+    assertThat(rule2.getDestinationRange(), equalTo(new SubRange(1, 100)));
+  }
+
+  @Test
+  public void testAccessListWarn() throws IOException {
+    String filename = "access_list_warn";
+    Batfish batfish = getBatfishForConfigurationNames(filename);
+    Warnings warnings =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+    assertThat(
+        warnings,
+        hasParseWarnings(
+            containsInAnyOrder(
+                hasComment(
+                    "Expected access-list name with length in range 1-16, but got"
+                        + " 'nameIsJustTooLong'"),
+                hasComment("Port range is invalid, to must not be lower than from."),
+                hasComment("Expected ip access-list range in range 1-65535, but got '0'"))));
   }
 }

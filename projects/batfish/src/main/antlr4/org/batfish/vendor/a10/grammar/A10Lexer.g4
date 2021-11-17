@@ -13,11 +13,12 @@ tokens {
 }
 
 // A10 keywords
-ACCESS_LIST: 'access-list';
+ACCESS_LIST: 'access-list' -> pushMode(M_Word);
 ACTIVATE: 'activate';
 ACTIVE: 'active';
 ADDRESS: 'address';
 AFLEX: 'aflex' -> pushMode(M_Word);
+ANY: 'any';
 ARP_RETRY: 'arp-retry';
 AUTO: 'auto';
 BFD: 'bfd';
@@ -58,6 +59,7 @@ DATABASE
 DEAD_TIMER: 'dead-timer';
 DEF_SELECTION_IF_PREF_FAILED: 'def-selection-if-pref-failed';
 DEFAULT: 'default';
+DENY: 'deny';
 DESCRIPTION: 'description' -> pushMode(M_Word);
 DESTINATION_IP: 'destination-ip';
 DEVICE_ID: 'device-id';
@@ -101,6 +103,7 @@ HALFOPEN: 'halfopen';
 HEALTH: 'health';
 HEALTH_CHECK: 'health-check' -> pushMode(M_Word);
 HEALTH_CHECK_DISABLE: 'health-check-disable';
+HOST: 'host';
 HOSTNAME: 'hostname' -> pushMode(M_Word);
 HTTP
 :
@@ -187,6 +190,7 @@ PARTITION: 'partition' -> pushMode(M_Word);
 PASSIVE: 'passive';
 PEER: 'peer';
 PEER_GROUP: 'peer-group';
+PERMIT: 'permit';
 PERSIST: 'persist';
 PERSIST_SCORING: 'persist-scoring';
 POLICY: 'policy';

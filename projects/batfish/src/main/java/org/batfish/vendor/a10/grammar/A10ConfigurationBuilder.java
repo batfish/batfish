@@ -99,6 +99,15 @@ import org.batfish.vendor.a10.grammar.A10Parser.Vrrpavib_priorityContext;
 import org.batfish.vendor.a10.grammar.A10Parser.WordContext;
 import org.batfish.vendor.a10.representation.A10Configuration;
 import org.batfish.vendor.a10.representation.A10StructureUsage;
+import org.batfish.vendor.a10.representation.AccessList;
+import org.batfish.vendor.a10.representation.AccessListAddress;
+import org.batfish.vendor.a10.representation.AccessListAddressAny;
+import org.batfish.vendor.a10.representation.AccessListAddressHost;
+import org.batfish.vendor.a10.representation.AccessListRule;
+import org.batfish.vendor.a10.representation.AccessListRuleIcmp;
+import org.batfish.vendor.a10.representation.AccessListRuleIp;
+import org.batfish.vendor.a10.representation.AccessListRuleTcp;
+import org.batfish.vendor.a10.representation.AccessListRuleUdp;
 import org.batfish.vendor.a10.representation.BgpNeighbor;
 import org.batfish.vendor.a10.representation.BgpNeighborId;
 import org.batfish.vendor.a10.representation.BgpNeighborIdAddress;
@@ -224,6 +233,100 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   public void exitS_hostname(S_hostnameContext ctx) {
     toString(ctx, ctx.hostname()).ifPresent(_c::setHostname);
   }
+
+  @Override
+  public void enterSi_access_list(A10Parser.Si_access_listContext ctx) {
+    _currentAccessList =
+        toString(ctx, ctx.access_list_name())
+            .map(n -> _c.getOrCreateAccessList(n))
+            .orElseGet(() -> new AccessList(ctx.access_list_name().getText()));
+  }
+
+  @Override
+  public void exitSi_access_list(A10Parser.Si_access_listContext ctx) {
+    _currentAccessList = null;
+  }
+
+  @Override
+  public void exitSial_rule_definition(A10Parser.Sial_rule_definitionContext ctx) {
+    toAclRule(ctx).ifPresent(_currentAccessList::addRule);
+  }
+
+  /**
+   * Convert a rule definition context into an {@link AccessListRule}. Warns and returns {@link
+   * Optional#empty()} if the definition is not valid.
+   */
+  private Optional<AccessListRule> toAclRule(A10Parser.Sial_rule_definitionContext ctx) {
+    AccessListRule.Action action = toAclAction(ctx.sialr_action());
+    AccessListAddress source = toAclAddress(ctx.source);
+    AccessListAddress destination = toAclAddress(ctx.destination);
+
+    Optional<SubRange> maybeDestRange = Optional.empty();
+    if (ctx.dest_range != null) {
+      maybeDestRange = toSubRange(ctx, ctx.dest_range);
+      if (!maybeDestRange.isPresent()) {
+        // Already warned
+        return Optional.empty();
+      }
+    }
+
+    if (ctx.sialr_protocol().ICMP() != null) {
+      return Optional.of(new AccessListRuleIcmp(action, source, destination));
+    } else if (ctx.sialr_protocol().IP() != null) {
+      return Optional.of(new AccessListRuleIp(action, source, destination));
+    } else if (ctx.sialr_protocol().TCP() != null) {
+      AccessListRuleTcp tcp = new AccessListRuleTcp(action, source, destination);
+      maybeDestRange.ifPresent(tcp::setDestinationRange);
+      return Optional.of(tcp);
+    }
+    assert ctx.sialr_protocol().UDP() != null;
+    AccessListRuleUdp udp = new AccessListRuleUdp(action, source, destination);
+    maybeDestRange.ifPresent(udp::setDestinationRange);
+    return Optional.of(udp);
+  }
+
+  private AccessListAddress toAclAddress(A10Parser.Access_list_addressContext ctx) {
+    if (ctx.access_list_address_any() != null) {
+      return AccessListAddressAny.INSTANCE;
+    }
+    assert ctx.access_list_address_host() != null;
+    return new AccessListAddressHost(toIp(ctx.access_list_address_host().address));
+  }
+
+  private AccessListRule.Action toAclAction(A10Parser.Sialr_actionContext ctx) {
+    if (ctx.PERMIT() != null) {
+      return AccessListRule.Action.PERMIT;
+    }
+    assert ctx.DENY() != null;
+    return AccessListRule.Action.DENY;
+  }
+
+  private AccessList _currentAccessList;
+
+  private Optional<SubRange> toSubRange(
+      ParserRuleContext messageCtx, A10Parser.Access_list_port_rangeContext ctx) {
+    Optional<Integer> maybeFrom = toInteger(messageCtx, ctx.from);
+    Optional<Integer> maybeTo = toInteger(messageCtx, ctx.to);
+    if (!maybeFrom.isPresent() || !maybeTo.isPresent()) {
+      // Already warned
+      return Optional.empty();
+    }
+    Integer from = maybeFrom.get();
+    Integer to = maybeTo.get();
+    if (to < from) {
+      warn(messageCtx, "Port range is invalid, to must not be lower than from.");
+      return Optional.empty();
+    }
+    return Optional.of(new SubRange(from, to));
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, A10Parser.Acl_port_numberContext ctx) {
+    return toIntegerInSpace(
+        messageCtx, ctx.uint16(), ACL_PORT_NUMBER_RANGE, "ip access-list range");
+  }
+
+  private static final IntegerSpace ACL_PORT_NUMBER_RANGE = IntegerSpace.of(Range.closed(1, 65535));
 
   @Override
   public void enterSid_ethernet(A10Parser.Sid_ethernetContext ctx) {
