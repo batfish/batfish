@@ -126,9 +126,9 @@ public class VrfLeakConfig implements Serializable {
           "BGP VRF leak configs cannot be configured unless leakAsBgp is set");
     }
     _leakAsBgp = leakAsBgp;
-    _bgpVrfLeakConfigs = ImmutableList.copyOf(bgpVrfLeakConfigs);
-    _bgpv4ToEvpnVrfLeakConfigs = ImmutableList.copyOf(bgpv4ToEvpnVrfLeakConfigs);
-    _mainRibVrfLeakConfigs = ImmutableList.copyOf(mainRibVrfLeakConfigs);
+    _bgpVrfLeakConfigs = bgpVrfLeakConfigs;
+    _bgpv4ToEvpnVrfLeakConfigs = bgpv4ToEvpnVrfLeakConfigs;
+    _mainRibVrfLeakConfigs = mainRibVrfLeakConfigs;
   }
 
   @JsonCreator
@@ -141,9 +141,13 @@ public class VrfLeakConfig implements Serializable {
           List<MainRibVrfLeakConfig> mainRibVrfLeakConfigs) {
     return new VrfLeakConfig(
         firstNonNull(leakAsBgp, false),
-        firstNonNull(bgpVrfLeakConfigs, ImmutableList.of()),
-        firstNonNull(bgpv4ToEvpnVrfLeakConfigs, ImmutableList.of()),
-        firstNonNull(mainRibVrfLeakConfigs, ImmutableList.of()));
+        bgpVrfLeakConfigs == null ? ImmutableList.of() : ImmutableList.copyOf(bgpVrfLeakConfigs),
+        bgpv4ToEvpnVrfLeakConfigs == null
+            ? ImmutableList.of()
+            : ImmutableList.copyOf(bgpv4ToEvpnVrfLeakConfigs),
+        mainRibVrfLeakConfigs == null
+            ? ImmutableList.of()
+            : ImmutableList.copyOf(mainRibVrfLeakConfigs));
   }
 
   private static final String PROP_BGP_VRF_LEAK_CONFIGS = "bgpVrfLeakConfigs";
