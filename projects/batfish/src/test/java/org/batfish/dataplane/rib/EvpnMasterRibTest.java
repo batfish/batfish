@@ -1,5 +1,6 @@
 package org.batfish.dataplane.rib;
 
+import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.NO_PREFERENCE;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
@@ -20,7 +21,8 @@ public final class EvpnMasterRibTest {
 
   @Test
   public void testRdIndependence() {
-    EvpnMasterRib<EvpnType5Route> rib = new EvpnMasterRib<>(BgpTieBreaker.ROUTER_ID, null, false);
+    EvpnMasterRib<EvpnType5Route> rib =
+        new EvpnMasterRib<>(BgpTieBreaker.ROUTER_ID, null, false, NO_PREFERENCE);
     EvpnType5Route.Builder rb =
         EvpnType5Route.builder()
             .setNetwork(Prefix.ZERO)
@@ -45,7 +47,8 @@ public final class EvpnMasterRibTest {
 
   @Test
   public void testMergeAndRemove() {
-    EvpnMasterRib<EvpnType5Route> rib = new EvpnMasterRib<>(BgpTieBreaker.ROUTER_ID, null, false);
+    EvpnMasterRib<EvpnType5Route> rib =
+        new EvpnMasterRib<>(BgpTieBreaker.ROUTER_ID, null, false, NO_PREFERENCE);
     EvpnType5Route route =
         EvpnType5Route.builder()
             .setNetwork(Prefix.ZERO)

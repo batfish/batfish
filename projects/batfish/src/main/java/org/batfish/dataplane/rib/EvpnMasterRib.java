@@ -10,6 +10,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.EvpnRoute;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
+import org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 
 /**
@@ -22,10 +23,12 @@ public final class EvpnMasterRib<R extends EvpnRoute<?, ?>> {
   public EvpnMasterRib(
       BgpTieBreaker tieBreaker,
       @Nullable MultipathEquivalentAsPathMatchMode multipathEquivalentAsPathMatchMode,
-      boolean clusterListAsIgpCost) {
+      boolean clusterListAsIgpCost,
+      LocalOriginationTypeTieBreaker localOriginationTypeTieBreaker) {
     _tieBreaker = tieBreaker;
     _multipathEquivalentAsPathMatchMode = multipathEquivalentAsPathMatchMode;
     _clusterListAsIgpCost = clusterListAsIgpCost;
+    _localOriginationTypeTieBreaker = localOriginationTypeTieBreaker;
     _ribsByRd = new HashMap<>();
   }
 
@@ -50,6 +53,7 @@ public final class EvpnMasterRib<R extends EvpnRoute<?, ?>> {
   }
 
   private final boolean _clusterListAsIgpCost;
+  private final @Nonnull LocalOriginationTypeTieBreaker _localOriginationTypeTieBreaker;
   private final @Nullable MultipathEquivalentAsPathMatchMode _multipathEquivalentAsPathMatchMode;
   private final @Nonnull Map<RouteDistinguisher, EvpnRib<R>> _ribsByRd;
   private final @Nonnull BgpTieBreaker _tieBreaker;
@@ -58,6 +62,10 @@ public final class EvpnMasterRib<R extends EvpnRoute<?, ?>> {
     return _ribsByRd.computeIfAbsent(
         rd,
         unused ->
-            new EvpnRib<>(_tieBreaker, _multipathEquivalentAsPathMatchMode, _clusterListAsIgpCost));
+            new EvpnRib<>(
+                _tieBreaker,
+                _multipathEquivalentAsPathMatchMode,
+                _clusterListAsIgpCost,
+                _localOriginationTypeTieBreaker));
   }
 }
