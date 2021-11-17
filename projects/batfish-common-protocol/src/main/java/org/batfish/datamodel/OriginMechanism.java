@@ -9,11 +9,15 @@ public enum OriginMechanism {
   GENERATED,
   /** Learned from a peer. */
   LEARNED,
-  /** Locally originated via a {@code network} statement. */
+  /**
+   * Locally originated via a {@code network} statement on a vendor with an independent network
+   * policy.
+   */
   NETWORK,
   /**
-   * Locally originated via a {@code redistribute} statement, or via export from main RIB on devices
-   * that do so.
+   * Locally originated via a {@code redistribute} statement; or via export from main RIB on devices
+   * that do so; or via a {@code network} statement on vendors with a redistribution policy but
+   * without an independent network policy.
    */
   REDISTRIBUTE;
 }
