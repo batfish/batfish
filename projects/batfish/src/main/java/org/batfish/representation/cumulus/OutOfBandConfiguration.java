@@ -2,6 +2,7 @@ package org.batfish.representation.cumulus;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 
@@ -21,4 +22,7 @@ public interface OutOfBandConfiguration {
 
   // TODO: Simplify and unbundle what is happening in this method
   Map<String, Vxlan> getVxlans();
+
+  // TODO: Simplify and unbundle what is happening in this method
+  Optional<String> getVrfForVlan(Integer bridgeAccessVlan);
 }
