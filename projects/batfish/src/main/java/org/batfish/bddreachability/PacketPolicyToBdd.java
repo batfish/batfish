@@ -12,13 +12,17 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Table;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.batfish.bddreachability.IpsRoutedOutInterfacesFactory.IpsRoutedOutInterfaces;
 import org.batfish.bddreachability.transition.TransformationToTransition;
 import org.batfish.bddreachability.transition.Transition;
@@ -126,11 +130,21 @@ class PacketPolicyToBdd {
     _actions = ImmutableSet.builder();
   }
 
+  private static final Logger LOGGER = LogManager.getLogger(PacketPolicyToBdd.class);
+
   /** Process a given {@link PacketPolicy} */
   private void process(PacketPolicy p) {
     StatementToBdd stmtConverter = new StatementToBdd(_boolExprToBdd);
 
     stmtConverter.visitStatements(p.getStatements());
+
+    Map<Integer, Long> numBranchesByNumOccurrences =
+        stmtConverter.thenBranchOccurrences.entrySet().stream()
+            .collect(Collectors.groupingBy(Map.Entry::getValue, Collectors.counting()));
+    numBranchesByNumOccurrences.forEach(
+        (numOccs, numBranches) -> {
+          LOGGER.info("{} branches had {} occurrences", numBranches, numOccs);
+        });
 
     /* Handle the default action. Default action applies to the remaining packets,
      * which can be expressed as the complement of the union of packets we have already accounted
@@ -191,6 +205,8 @@ class PacketPolicyToBdd {
     private BDD _one;
     private BDD _zero;
 
+    Map<List<Statement>, Integer> thenBranchOccurrences = new HashMap<>();
+
     private StatementToBdd(BoolExprToBdd boolExprToBdd) {
       _boolExprToBdd = boolExprToBdd;
       _currentStatement =
@@ -232,6 +248,8 @@ class PacketPolicyToBdd {
 
     @Override
     public Void visitIf(If ifStmt) {
+      thenBranchOccurrences.compute(
+          ifStmt.getTrueStatements(), (k, oldCount) -> oldCount == null ? 1 : oldCount + 1);
       BDD matchConstraint = _boolExprToBdd.visit(ifStmt.getMatchCondition());
       // invariant: _currentStatementOutTransition always composes cleanly with a constraint
       Transition thenTrans =
