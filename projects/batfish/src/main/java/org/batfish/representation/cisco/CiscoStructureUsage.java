@@ -88,6 +88,7 @@ public enum CiscoStructureUsage implements StructureUsage {
   EXTENDED_ACCESS_LIST_ICMP_TYPE_OBJECT_GROUP("extended access-list icmp-type object-group"),
   EXTENDED_ACCESS_LIST_NETWORK_OBJECT("extended access-list network object"),
   EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP("extended access-list network object-group"),
+  EXTENDED_ACCESS_LIST_PORTGROUP("extended access-list portgroup"),
   EXTENDED_ACCESS_LIST_PROTOCOL_OBJECT_GROUP("extended access-list protocol object-group"),
   EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP(
       "extended access-list protocol or service object-group"),

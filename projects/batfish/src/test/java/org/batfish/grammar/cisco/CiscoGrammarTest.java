@@ -196,6 +196,7 @@ import static org.batfish.representation.cisco.CiscoStructureType.IPV6_ACCESS_LI
 import static org.batfish.representation.cisco.CiscoStructureType.IPV6_ACCESS_LIST_EXTENDED;
 import static org.batfish.representation.cisco.CiscoStructureType.IPV6_ACCESS_LIST_STANDARD;
 import static org.batfish.representation.cisco.CiscoStructureType.IP_ACCESS_LIST;
+import static org.batfish.representation.cisco.CiscoStructureType.IP_PORT_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.KEYRING;
 import static org.batfish.representation.cisco.CiscoStructureType.MAC_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.NAMED_RSA_PUB_KEY;
@@ -418,6 +419,7 @@ import org.batfish.representation.cisco.EigrpProcess;
 import org.batfish.representation.cisco.ExpandedCommunityList;
 import org.batfish.representation.cisco.ExpandedCommunityListLine;
 import org.batfish.representation.cisco.OspfNetworkType;
+import org.batfish.representation.cisco.PortObjectGroup;
 import org.batfish.representation.cisco.PrefixList;
 import org.batfish.representation.cisco.PrefixListLine;
 import org.batfish.representation.cisco.RouteMap;
@@ -1923,6 +1925,57 @@ public final class CiscoGrammarTest {
      */
     assertThat(c, hasIpAccessList(aclUndefName, rejects(icmpFlow, null, c)));
     assertThat(c, hasIpAccessList(aclUndefName, rejects(tcpFlow, null, c)));
+  }
+
+  @Test
+  public void testIosAclPortGroup() throws IOException {
+    String hostname = "ios-acl-portgroup";
+    String filename = "configs/" + hostname;
+    Configuration c = parseConfig(hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    /* Confirm the used object groups have referrers */
+    assertThat(ccae, hasNumReferrers(filename, IP_PORT_OBJECT_GROUP, "ogipBase", 2));
+    assertThat(ccae, hasNumReferrers(filename, IP_PORT_OBJECT_GROUP, "ogipEmpty", 1));
+    /* Confirm the unused object group has no referrers */
+    assertThat(ccae, hasNumReferrers(filename, IP_PORT_OBJECT_GROUP, "ogipUnused", 0));
+    /* Confirm the undefined reference shows up as such */
+    assertThat(ccae, hasUndefinedReference(filename, IP_PORT_OBJECT_GROUP, "ogipUndefined"));
+
+    int inGroupPort = 111;
+    int outGroupPort = 42;
+    Flow.Builder fb = Flow.builder().setIngressNode("").setIpProtocol(IpProtocol.TCP);
+    Flow inFlowSrc = fb.setSrcPort(inGroupPort).setDstPort(outGroupPort).build();
+    Flow inFlowDst = fb.setSrcPort(outGroupPort).setDstPort(inGroupPort).build();
+    Flow outFlow = fb.setSrcPort(outGroupPort).setDstPort(outGroupPort).build();
+
+    /* The base acl permits inFlows and rejects outFlows */
+    assertThat(c, hasIpAccessList("aclBase", accepts(inFlowSrc, null, c)));
+    assertThat(c, hasIpAccessList("aclBase", accepts(inFlowDst, null, c)));
+    assertThat(c, hasIpAccessList("aclBase", rejects(outFlow, null, c)));
+
+    // TODO: The semantics of empty, duplicate, and undefined groups below have not been lab tested
+
+    /* The empty acl reject inFlows */
+    assertThat(c, hasIpAccessList("aclEmpty", rejects(inFlowSrc, null, c)));
+
+    /* The duplicate acl rejects inFlows because the earlier (empty) definition wins */
+    assertThat(c, hasIpAccessList("aclDuplicate", rejects(inFlowSrc, null, c)));
+
+    /* The undefined acl rejects inFlows because the earlier (empty) definition wins */
+    assertThat(c, hasIpAccessList("aclUndefined", rejects(inFlowSrc, null, c)));
+  }
+
+  @Test
+  public void testObjectGroupIpPortExtraction() {
+    String hostname = "ios-object-group-ip-port";
+    CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
+
+    assertTrue(vc.getObjectGroups().containsKey("ogip"));
+    PortObjectGroup group = (PortObjectGroup) vc.getObjectGroups().get("ogip");
+    assertThat(group.getLines().size(), equalTo(5));
   }
 
   @Test

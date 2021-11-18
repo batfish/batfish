@@ -1,0 +1,30 @@
+!
+hostname ios-acl-portgroup
+!
+!
+object-group ip port ogipBase
+  eq 111
+!
+object-group ip port ogipEmpty
+!
+object-group ip port  ogipDuplicate
+! Redefining this object group with a new object should have no effect
+object-group ip port ogipDuplicate
+  eq 111
+!
+object-group ip port ogipUnused
+!
+!
+ip access-list extended aclBase
+ permit tcp any any portgroup ogipBase
+ permit tcp any portgroup ogipBase any
+!
+ip access-list extended aclEmpty
+ permit tcp any host 172.17.111.16 portgroup ogipEmpty
+!
+ip access-list extended aclDuplicate
+ permit tcp any host 172.17.111.16 portgroup ogipDuplicate
+!
+ip access-list extended aclUndefined
+ permit tcp any host 172.17.111.16 portgroup ogipUndefined
+!

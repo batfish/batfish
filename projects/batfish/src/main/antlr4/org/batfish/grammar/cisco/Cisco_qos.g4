@@ -194,7 +194,7 @@ cmm_port
    (
       TCP
       | UDP
-   ) port_specifier NEWLINE
+   ) port_specifier_literal NEWLINE
 ;
 
 cmm_precedence
@@ -372,13 +372,37 @@ og_icmp_type
    )*
 ;
 
-og_ip_address
+og_ip
 :
-   IP ADDRESS name = variable_permissive NEWLINE
+   IP
+   (
+      ogi_address
+      | ogi_port
+   )
+;
+
+ogi_address
+:
+   ADDRESS name = variable_permissive NEWLINE
    (
       ogipa_host_info
       | ogipa_ip_addresses
    )*
+;
+
+// This object-group type is not available on all IOS versions.
+// It is available in at least IOS-XE Version 15.5(1)SY1, RELEASE SOFTWARE (fc6).
+// See https://github.com/batfish/batfish/issues/7681#issuecomment-970130335
+ogi_port
+:
+   PORT name = variable_permissive NEWLINE
+   (ogip_line)*
+
+;
+
+ogip_line
+:
+   port_specifier_literal NEWLINE
 ;
 
 og_network
@@ -550,17 +574,17 @@ ogs_service_object
 
 ogs_tcp
 :
-   TCP ps = port_specifier NEWLINE
+   TCP ps = port_specifier_literal NEWLINE
 ;
 
 ogs_udp
 :
-   UDP ps = port_specifier NEWLINE
+   UDP ps = port_specifier_literal NEWLINE
 ;
 
 ogs_port_object
 :
-   PORT_OBJECT ps = port_specifier NEWLINE
+   PORT_OBJECT ps = port_specifier_literal NEWLINE
 ;
 
 ogu_description
@@ -882,7 +906,7 @@ s_object_group
    (
       og_group
       | og_icmp_type
-      | og_ip_address
+      | og_ip
       | og_network
       | og_protocol
       | og_service

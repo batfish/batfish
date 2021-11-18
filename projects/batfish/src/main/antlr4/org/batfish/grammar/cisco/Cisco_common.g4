@@ -283,7 +283,7 @@ ospf_route_type
    )
 ;
 
-port_specifier
+port_specifier_literal
 :
    (
       EQ
@@ -614,7 +614,7 @@ service_specifier_tcp_udp
       | TCP_UDP
       | UDP
    )
-   (SOURCE src_ps = port_specifier)? (DESTINATION? dst_ps = port_specifier)?
+   (SOURCE src_ps = port_specifier_literal)? (DESTINATION? dst_ps = port_specifier_literal)?
 ;
 
 subrange
