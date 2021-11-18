@@ -8,6 +8,7 @@ import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasP
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpv4RouteThat;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.routing_policy.Environment.Direction.OUT;
+import static org.batfish.grammar.frr.FrrConfigurationBuilder.nextMultipleOfFive;
 import static org.batfish.representation.frr.CumulusRoutingProtocol.CONNECTED;
 import static org.batfish.representation.frr.CumulusRoutingProtocol.OSPF;
 import static org.batfish.representation.frr.CumulusRoutingProtocol.STATIC;
