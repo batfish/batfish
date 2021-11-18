@@ -13,7 +13,15 @@ tokens {
 }
 
 // A10 keywords
-ACCESS_LIST: 'access-list' -> pushMode(M_Word);
+ACCESS_LIST
+:
+  'access-list'
+  {
+    if (lastTokenType() == IP) {
+      pushMode(M_Word);
+    }
+  }
+;
 ACTIVATE: 'activate';
 ACTIVE: 'active';
 ADDRESS: 'address';
