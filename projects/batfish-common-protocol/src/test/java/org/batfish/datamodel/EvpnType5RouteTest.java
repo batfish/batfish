@@ -79,8 +79,6 @@ public class EvpnType5RouteTest {
     new EqualsTester()
         .addEqualityGroup(erb.build(), erb.build())
         .addEqualityGroup(erb.setNetwork(Prefix.parse("1.1.2.0/24")).build())
-        .addEqualityGroup(erb.setNonRouting(true).build())
-        .addEqualityGroup(erb.setNonForwarding(true).build())
         .addEqualityGroup(erb.setAsPath(AsPath.ofSingletonAsSets(1L, 1L)).build())
         .addEqualityGroup(erb.setClusterList(ImmutableSet.of(1L)).build())
         .addEqualityGroup(erb.setCommunities(ImmutableSet.of(StandardCommunity.of(1L))).build())

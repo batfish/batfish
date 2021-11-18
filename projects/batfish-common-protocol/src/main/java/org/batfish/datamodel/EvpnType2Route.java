@@ -59,8 +59,6 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
           _macAddress,
           getMetric(),
           _nextHop,
-          getNonForwarding(),
-          getNonRouting(),
           _originatorIp,
           _originMechanism,
           _originType,
@@ -150,8 +148,6 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
         macAddress,
         med,
         NextHop.legacyConverter(nextHopInterface, nextHopIp),
-        false,
-        false,
         originatorIp,
         originMechanism,
         originType,
@@ -173,8 +169,6 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
       @Nullable MacAddress macAddress,
       long med,
       NextHop nextHop,
-      boolean nonForwarding,
-      boolean nonRouting,
       Ip originatorIp,
       OriginMechanism originMechanism,
       OriginType originType,
@@ -202,8 +196,6 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
         srcProtocol,
         tag,
         weight,
-        nonForwarding,
-        nonRouting,
         routeDistinguisher);
     _ip = ip;
     _macAddress = macAddress;
@@ -233,8 +225,6 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
   public Builder toBuilder() {
     return builder()
         .setNetwork(getNetwork())
-        .setNonRouting(getNonRouting())
-        .setNonForwarding(getNonForwarding())
         .setAsPath(_asPath)
         .setClusterList(_clusterList)
         .setCommunities(_communities)
@@ -266,8 +256,6 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
     EvpnType2Route other = (EvpnType2Route) o;
     return (_hashCode == other._hashCode || _hashCode == 0 || other._hashCode == 0)
         && Objects.equals(_network, other._network)
-        && getNonRouting() == other.getNonRouting()
-        && getNonForwarding() == other.getNonForwarding()
         && Objects.equals(_ip, other._ip)
         && _localPreference == other._localPreference
         && Objects.equals(_macAddress, other._macAddress)

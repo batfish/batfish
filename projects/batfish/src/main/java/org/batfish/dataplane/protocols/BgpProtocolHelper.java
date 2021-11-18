@@ -24,6 +24,7 @@ import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Bgpv4Route.Builder;
+import org.batfish.datamodel.EvpnRoute;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginMechanism;
@@ -79,9 +80,12 @@ public final class BgpProtocolHelper {
 
     // Clear a bunch of non-transitive attributes
     builder.setWeight(0);
-    builder.setNonRouting(false);
-    builder.setNonForwarding(false);
-    builder.setAdmin(remoteBgpProcess.getAdminCost(outgoingProtocol));
+    if (!(route instanceof EvpnRoute<?, ?>)) {
+      // These attributes are constants for EVPN routes and cannot be set
+      builder.setNonRouting(false);
+      builder.setNonForwarding(false);
+      builder.setAdmin(remoteBgpProcess.getAdminCost(outgoingProtocol));
+    }
     builder.setTag(null);
 
     // Set originatorIP
@@ -231,8 +235,12 @@ public final class BgpProtocolHelper {
 
     RoutingProtocol targetProtocol = isEbgp ? RoutingProtocol.BGP : RoutingProtocol.IBGP;
 
-    return route.toBuilder()
-        .setAdmin(toProcess.getAdminCost(targetProtocol))
+    B importBuilder = route.toBuilder();
+    if (!(route instanceof EvpnRoute<?, ?>)) {
+      // Only set admin for non-EVPN routes (EVPN routes have a constant admin distance)
+      importBuilder.setAdmin(toProcess.getAdminCost(targetProtocol));
+    }
+    return importBuilder
         .setNextHop(NextHop.legacyConverter(peerInterface, route.getNextHopIp()))
         .setProtocol(targetProtocol)
         .setReceivedFromIp(peerIp)

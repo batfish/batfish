@@ -55,8 +55,6 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
           getMetric(),
           getNetwork(),
           _nextHop,
-          getNonForwarding(),
-          getNonRouting(),
           _originatorIp,
           _originMechanism,
           _originType,
@@ -119,8 +117,6 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
         med,
         network,
         NextHop.legacyConverter(nextHopInterface, nextHopIp),
-        false,
-        false,
         originatorIp,
         originMechanism,
         originType,
@@ -141,8 +137,6 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
       long med,
       Prefix network,
       NextHop nextHop,
-      boolean nonForwarding,
-      boolean nonRouting,
       Ip originatorIp,
       OriginMechanism originMechanism,
       OriginType originType,
@@ -170,8 +164,6 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
         srcProtocol,
         tag,
         weight,
-        nonForwarding,
-        nonRouting,
         routeDistinguisher);
   }
 
@@ -185,8 +177,6 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
   public Builder toBuilder() {
     return builder()
         .setNetwork(getNetwork())
-        .setNonRouting(getNonRouting())
-        .setNonForwarding(getNonForwarding())
         .setAsPath(_asPath)
         .setClusterList(_clusterList)
         .setCommunities(_communities)
@@ -216,8 +206,6 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
     EvpnType5Route other = (EvpnType5Route) o;
     return (_hashCode == other._hashCode || _hashCode == 0 || other._hashCode == 0)
         && _network.equals(other._network)
-        && getNonRouting() == other.getNonRouting()
-        && getNonForwarding() == other.getNonForwarding()
         && _localPreference == other._localPreference
         && _med == other._med
         && _receivedFromRouteReflectorClient == other._receivedFromRouteReflectorClient
