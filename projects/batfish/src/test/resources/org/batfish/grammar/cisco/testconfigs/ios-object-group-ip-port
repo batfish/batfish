@@ -1,0 +1,10 @@
+!
+hostname ios-object-group-ip-port
+!
+object-group ip port ogip
+  eq 1
+  gt 2
+  lt 3
+  neq 4
+  range 5 6
+!
