@@ -32,21 +32,21 @@ public abstract class EvpnRoute<B extends Builder<B, R>, R extends BgpRoute<B, R
     public final B setAdmin(int admin) {
       // All EVPN routes have admin set to an arbitrary constant value because they never compete
       // with non-EVPN routes
-      throw new IllegalArgumentException("Cannot set admin for an EvpnRoute");
+      throw new UnsupportedOperationException("Cannot set admin for an EvpnRoute");
     }
 
     @Nonnull
     @Override
     public final B setNonRouting(boolean nonRouting) {
       // All EVPN routes have nonrouting set to true (they should never enter the main RIB)
-      throw new IllegalArgumentException("Cannot set nonRouting for an EvpnRoute");
+      throw new UnsupportedOperationException("Cannot set nonRouting for an EvpnRoute");
     }
 
     @Nonnull
     @Override
     public final B setNonForwarding(boolean nonForwarding) {
       // All EVPN routes have nonforwarding set to true (they should never enter the main RIB)
-      throw new IllegalArgumentException("Cannot set nonForwarding for an EvpnRoute");
+      throw new UnsupportedOperationException("Cannot set nonForwarding for an EvpnRoute");
     }
 
     @Nullable
