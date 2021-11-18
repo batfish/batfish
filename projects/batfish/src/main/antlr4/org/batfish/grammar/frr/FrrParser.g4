@@ -1,6 +1,6 @@
 parser grammar FrrParser;
 
-import Frr_bgp, Frr_common, Frr_interface, Frr_ip_community_list, Frr_ip_prefix_list, Frr_ospf, Frr_routemap, Frr_vrf;
+import Frr_bgp, Frr_common, Frr_interface, Frr_ip_community_list, Frr_ip_prefix_list, Frr_ipv6_prefix_list, Frr_ospf, Frr_routemap, Frr_vrf;
 
 options {
   superClass =
@@ -111,7 +111,10 @@ s_ip
 
 s_ipv6
 :
-   IPV6 null_rest_of_line
+   IPV6 (
+       ipv6_prefix_list
+     | null_rest_of_line
+   )
 ;
 
 ip_route

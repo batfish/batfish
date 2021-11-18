@@ -123,6 +123,8 @@ import org.batfish.representation.frr.IpCommunityListExpanded;
 import org.batfish.representation.frr.IpCommunityListExpandedLine;
 import org.batfish.representation.frr.IpPrefixList;
 import org.batfish.representation.frr.IpPrefixListLine;
+import org.batfish.representation.frr.Ipv6PrefixList;
+import org.batfish.representation.frr.Ipv6PrefixListLine;
 import org.batfish.representation.frr.OspfArea;
 import org.batfish.representation.frr.OspfNetworkArea;
 import org.batfish.representation.frr.OspfNetworkType;
@@ -1664,6 +1666,23 @@ public class FrrGrammarTest {
     assertThat(line2.getAction(), equalTo(LineAction.DENY));
     assertThat(line2.getLengthRange(), equalTo(new SubRange(27, 30)));
     assertThat(line2.getPrefix(), equalTo(Prefix.parse("10.0.1.2/24")));
+  }
+
+  @Test
+  public void testFrrIpPrefixListIPv6() {
+    String name = "2001:db8::/32";
+    String prefix = "2001:db8:1::/48";
+    parse(String.format("ipv6 prefix-list %s seq 10 permit %s\n", name, prefix));
+
+    assertThat(_frr.getIpv6PrefixLists().keySet(), equalTo(ImmutableSet.of(name)));
+    Ipv6PrefixList prefixList = _frr.getIpv6PrefixLists().get(name);
+    assertThat(prefixList.getName(), equalTo(name));
+
+    Ipv6PrefixListLine line = prefixList.getLines().get(10L);
+    assertThat(line.getLine(), equalTo(10L));
+    assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+    assertThat(line.getLengthRange(), equalTo(SubRange.singleton(48)));
+    assertThat(line.getPrefix(), equalTo(Prefix6.parse(prefix)));
   }
 
   @Test
