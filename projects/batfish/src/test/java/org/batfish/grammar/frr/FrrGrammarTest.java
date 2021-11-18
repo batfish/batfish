@@ -1545,6 +1545,17 @@ public class FrrGrammarTest {
   }
 
   @Test
+  public void testRouteMapSetIpv6() {
+    // parsing only
+    parseLines(
+        "route-map ROUTE_MAP permit 10",
+        " set ipv6 next-hop peer-address",
+        " set ipv6 next-hop prefer-global",
+        " set ipv6 next-hop global 2001:db8:1::1",
+        " set ipv6 next-hop local 2001:db8:1::1");
+  }
+
+  @Test
   public void testFrrVrfRouteMapSetIpNextHop() {
     String name = "ROUTE-MAP-NAME";
     String clause1 = "set ip next-hop 10.0.0.1";
