@@ -10,6 +10,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Table;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -143,7 +144,8 @@ class PacketPolicyToBdd {
             .collect(Collectors.groupingBy(Map.Entry::getValue, Collectors.counting()));
     numBranchesByNumOccurrences.forEach(
         (numOccs, numBranches) -> {
-          LOGGER.info("{} nontrivial branches had {} occurrences", numBranches, numOccs);
+          LOGGER.info(
+              "{} nontrivial non-fallthrough branches had {} occurrences", numBranches, numOccs);
         });
 
     /* Handle the default action. Default action applies to the remaining packets,
@@ -248,7 +250,9 @@ class PacketPolicyToBdd {
 
     @Override
     public Void visitIf(If ifStmt) {
-      if (ifStmt.getTrueStatements().stream().anyMatch(stmt -> !(stmt instanceof Return))) {
+      if (ifStmt.getTrueStatements().stream().anyMatch(stmt -> !(stmt instanceof Return))
+          && Iterables.getLast(ifStmt.getTrueStatements()) instanceof Return) {
+        // nontrivial and non-fall-through
         thenBranchOccurrences.compute(
             ifStmt.getTrueStatements(), (k, oldCount) -> oldCount == null ? 1 : oldCount + 1);
       }
