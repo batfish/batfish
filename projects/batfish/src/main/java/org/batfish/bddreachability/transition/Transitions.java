@@ -4,7 +4,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,7 +19,6 @@ import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.bddreachability.BDDOutgoingOriginalFlowFilterManager;
 import org.batfish.bddreachability.LastHopOutgoingInterfaceManager;
-import org.batfish.bddreachability.transition.GuardEraseAndSet.ValueBeforeAndAfter;
 import org.batfish.common.bdd.BDDFiniteDomain;
 import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.BDDSourceManager;
@@ -166,15 +164,8 @@ public final class Transitions {
       BDD constraintBdd = ((Constraint) t1).getConstraint();
       EraseAndSet eas = (EraseAndSet) t2;
       BDD vars = eas.getEraseVars();
-      // for GuardEraseAndSet, any constraint on non-erased vars must be applied before and after
-      BDD erasedConstraint = constraintBdd.exist(vars);
       BDD value = eas.getSetValue();
-      BDD erasedValue = value.exist(vars);
-      return new GuardEraseAndSet(
-          vars,
-          ImmutableList.of(
-              new ValueBeforeAndAfter(
-                  constraintBdd.and(erasedValue), value.and(erasedConstraint))));
+      return new GuardEraseAndSet(vars, constraintBdd, value);
     }
     if (t1 instanceof Constraint && t2 instanceof GuardEraseAndSet) {
       BDD constraintBdd = ((Constraint) t1).getConstraint();
@@ -185,6 +176,11 @@ public final class Transitions {
       BDD constraintBdd = ((Constraint) t2).getConstraint();
       GuardEraseAndSet ges = (GuardEraseAndSet) t1;
       return ges.constrainAfter(constraintBdd);
+    }
+    if (t1 instanceof GuardEraseAndSet && t2 instanceof EraseAndSet) {
+      EraseAndSet eas = (EraseAndSet) t2;
+      GuardEraseAndSet ges = (GuardEraseAndSet) t1;
+      return ges.andThen(eas);
     }
     if (t1 instanceof EraseAndSet && t2 instanceof Constraint) {
       EraseAndSet eas = (EraseAndSet) t1;
