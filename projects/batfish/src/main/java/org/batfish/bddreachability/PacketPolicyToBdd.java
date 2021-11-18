@@ -143,7 +143,7 @@ class PacketPolicyToBdd {
             .collect(Collectors.groupingBy(Map.Entry::getValue, Collectors.counting()));
     numBranchesByNumOccurrences.forEach(
         (numOccs, numBranches) -> {
-          LOGGER.info("{} branches had {} occurrences", numBranches, numOccs);
+          LOGGER.info("{} nontrivial branches had {} occurrences", numBranches, numOccs);
         });
 
     /* Handle the default action. Default action applies to the remaining packets,
@@ -248,8 +248,10 @@ class PacketPolicyToBdd {
 
     @Override
     public Void visitIf(If ifStmt) {
-      thenBranchOccurrences.compute(
-          ifStmt.getTrueStatements(), (k, oldCount) -> oldCount == null ? 1 : oldCount + 1);
+      if (ifStmt.getTrueStatements().stream().anyMatch(stmt -> !(stmt instanceof Return))) {
+        thenBranchOccurrences.compute(
+            ifStmt.getTrueStatements(), (k, oldCount) -> oldCount == null ? 1 : oldCount + 1);
+      }
       BDD matchConstraint = _boolExprToBdd.visit(ifStmt.getMatchCondition());
       // invariant: _currentStatementOutTransition always composes cleanly with a constraint
       Transition thenTrans =
