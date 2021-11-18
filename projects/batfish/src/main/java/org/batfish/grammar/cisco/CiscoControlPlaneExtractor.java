@@ -2,6 +2,8 @@ package org.batfish.grammar.cisco;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Comparators.max;
+import static com.google.common.collect.Comparators.min;
 import static java.util.Comparator.naturalOrder;
 import static java.util.stream.Collectors.toCollection;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_ASA;
@@ -5830,26 +5832,31 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    * while excluding the network/broadcast IPs. This means that if specified first pool IP is
    * numerically less than the first host IP in the subnet, use the first host IP instead.
    * Similarly, if the specified last pool IP is greater than the last host IP in the subnet, use
-   * the last host IP instead.
+   * the last host IP instead. This can result in an empty pool, which would cause natted traffic to
+   * be dropped.
    */
   private void createNatPool(String name, Ip first, Ip last, Prefix subnet, ParserRuleContext ctx) {
-    if (!subnet.containsIp(first)) {
+    checkArgument(first.compareTo(last) <= 0, "first pool IP cannot be greater than last");
+    Ip effectiveFirst = max(first, subnet.getFirstHostIp());
+    Ip effectiveLast = min(last, subnet.getLastHostIp());
+    // intersect the range with the host IPs of the subnet. if the intersection is empty, we get an
+    // empty NAT pool.
+    // TODO we don't model empty nat pools correctly.  in reality they will cause packets to be
+    // dropped.
+    if (effectiveFirst.compareTo(effectiveLast) > 0) {
+      warn(
+          ctx,
+          String.format(
+              "Skipping empty NAT pool %s. Pool is empty after restricting to host IPs.", name));
+      return;
+    }
+    if (!effectiveFirst.equals(first)) {
       warn(ctx, String.format("Subnet of NAT pool %s does not contain first pool IP", name));
     }
-    if (!subnet.containsIp(last)) {
+    if (!effectiveLast.equals(last)) {
       warn(ctx, String.format("Subnet of NAT pool %s does not contain last pool IP", name));
     }
-
-    Ip firstHostIp = subnet.getFirstHostIp();
-    Ip lastHostIp = subnet.getLastHostIp();
-
-    _configuration
-        .getNatPools()
-        .put(
-            name,
-            new NatPool(
-                first.asLong() < firstHostIp.asLong() ? firstHostIp : first,
-                last.asLong() > lastHostIp.asLong() ? lastHostIp : last));
+    _configuration.getNatPools().put(name, new NatPool(effectiveFirst, effectiveLast));
   }
 
   @Override
