@@ -32,7 +32,7 @@ public abstract class AbstractRouteBuilder<
     return _admin;
   }
 
-  public final S setAdmin(int admin) {
+  public S setAdmin(int admin) {
     _admin = admin;
     return getThis();
   }
@@ -135,7 +135,7 @@ public abstract class AbstractRouteBuilder<
   }
 
   @Nonnull
-  public final S setNonForwarding(boolean nonForwarding) {
+  public S setNonForwarding(boolean nonForwarding) {
     _nonForwarding = nonForwarding;
     return getThis();
   }
@@ -145,7 +145,7 @@ public abstract class AbstractRouteBuilder<
   }
 
   @Nonnull
-  public final S setNonRouting(boolean nonRouting) {
+  public S setNonRouting(boolean nonRouting) {
     _nonRouting = nonRouting;
     return getThis();
   }

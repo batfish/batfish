@@ -86,7 +86,6 @@ public class EvpnType5AristaTest {
         EvpnType5Route.builder()
             .setNetwork(prefix)
             .setRouteDistinguisher(RouteDistinguisher.from(Ip.parse("192.168.255.1"), 15004))
-            .setNonRouting(true)
             .setCommunities(ImmutableSet.of(rmCommunity, ExtendedCommunity.target(15004, 15004)))
             .setAsPath(AsPath.ofSingletonAsSets(rmAs))
             // REDISTRIBUTE rather than NETWORK because Arista has a combined network statement +

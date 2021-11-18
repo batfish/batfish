@@ -56,8 +56,6 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
           _localPreference,
           getMetric(),
           _nextHop,
-          getNonForwarding(),
-          getNonRouting(),
           _originatorIp,
           _originMechanism,
           _originType,
@@ -134,8 +132,6 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
         localPreference,
         med,
         NextHop.legacyConverter(nextHopInterface, nextHopIp),
-        false,
-        false,
         originatorIp,
         originMechanism,
         originType,
@@ -156,8 +152,6 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
       long localPreference,
       long med,
       NextHop nextHop,
-      boolean nonForwarding,
-      boolean nonRouting,
       Ip originatorIp,
       OriginMechanism originMechanism,
       OriginType originType,
@@ -186,8 +180,6 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
         srcProtocol,
         tag,
         weight,
-        nonForwarding,
-        nonRouting,
         routeDistinguisher);
     _vniIp = vniIp;
   }
@@ -211,8 +203,6 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
   public Builder toBuilder() {
     return builder()
         .setNetwork(getNetwork())
-        .setNonRouting(getNonRouting())
-        .setNonForwarding(getNonForwarding())
         .setAsPath(_asPath)
         .setClusterList(_clusterList)
         .setCommunities(_communities)
@@ -243,8 +233,6 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
     EvpnType3Route other = (EvpnType3Route) o;
     return (_hashCode == other._hashCode || _hashCode == 0 || other._hashCode == 0)
         && Objects.equals(_network, other._network)
-        && getNonRouting() == other.getNonRouting()
-        && getNonForwarding() == other.getNonForwarding()
         && _localPreference == other._localPreference
         && _med == other._med
         && _receivedFromRouteReflectorClient == other._receivedFromRouteReflectorClient
