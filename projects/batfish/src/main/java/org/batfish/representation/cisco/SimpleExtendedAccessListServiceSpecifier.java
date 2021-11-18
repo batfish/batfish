@@ -25,7 +25,7 @@ public class SimpleExtendedAccessListServiceSpecifier implements AccessListServi
 
     private Set<Integer> _dscps = ImmutableSet.of();
 
-    private PortSpec _dstPorts;
+    private @Nullable PortSpec _dstPorts;
 
     private Set<Integer> _ecns = ImmutableSet.of();
 
@@ -35,7 +35,7 @@ public class SimpleExtendedAccessListServiceSpecifier implements AccessListServi
 
     private IpProtocol _protocol;
 
-    private PortSpec _srcPorts;
+    private @Nullable PortSpec _srcPorts;
 
     private List<TcpFlagsMatchConditions> _tcpFlags = ImmutableList.of();
 
@@ -48,7 +48,7 @@ public class SimpleExtendedAccessListServiceSpecifier implements AccessListServi
       return this;
     }
 
-    public Builder setDstPorts(PortSpec dstPorts) {
+    public Builder setDstPorts(@Nullable PortSpec dstPorts) {
       _dstPorts = dstPorts;
       return this;
     }
@@ -73,7 +73,7 @@ public class SimpleExtendedAccessListServiceSpecifier implements AccessListServi
       return this;
     }
 
-    public Builder setSrcPorts(PortSpec srcPorts) {
+    public Builder setSrcPorts(@Nullable PortSpec srcPorts) {
       _srcPorts = srcPorts;
       return this;
     }

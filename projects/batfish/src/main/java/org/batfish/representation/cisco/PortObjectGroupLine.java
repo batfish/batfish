@@ -7,7 +7,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.SubRange;
 
-/** Represents an individual line of {@link PortObjectGroupPortSpec} */
+/** Represents an individual line of a {@link PortObjectGroupPortSpec} */
 @ParametersAreNonnullByDefault
 public final class PortObjectGroupLine implements Serializable {
 

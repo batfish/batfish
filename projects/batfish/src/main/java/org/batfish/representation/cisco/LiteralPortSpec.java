@@ -7,12 +7,12 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.SubRange;
 
-/** A {@link PortSpec} consisting of a literal port ranges. */
+/** A {@link PortSpec} consisting of literal port ranges. */
 @ParametersAreNonnullByDefault
 public final class LiteralPortSpec implements PortSpec {
   public static LiteralPortSpec ALL_PORTS = new LiteralPortSpec(IntegerSpace.PORTS.getSubRanges());
 
-  private final List<SubRange> _ports;
+  private @Nonnull final List<SubRange> _ports;
 
   public LiteralPortSpec(Iterable<SubRange> ports) {
     _ports = ImmutableList.copyOf(ports);

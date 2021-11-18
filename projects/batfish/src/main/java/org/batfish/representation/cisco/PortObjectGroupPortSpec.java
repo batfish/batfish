@@ -3,7 +3,7 @@ package org.batfish.representation.cisco;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 
-/** Represents an 'ip port-group' */
+/** Represents an {@code ip port-group} */
 @ParametersAreNonnullByDefault
 public final class PortObjectGroupPortSpec implements PortSpec {
 

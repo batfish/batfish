@@ -390,6 +390,9 @@ ogi_address
    )*
 ;
 
+// This object-group type is not available on all IOS versions.
+// It is available in at least IOS-XE Version 15.5(1)SY1, RELEASE SOFTWARE (fc6).
+// See https://github.com/batfish/batfish/issues/7681#issuecomment-970130335
 ogi_port
 :
    PORT name = variable_permissive NEWLINE

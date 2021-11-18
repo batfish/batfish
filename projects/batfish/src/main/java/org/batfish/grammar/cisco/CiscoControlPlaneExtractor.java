@@ -10308,14 +10308,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ctx.port_specifier_literal() != null) {
       return new LiteralPortSpec(toPortRanges(ctx.port_specifier_literal()));
     }
-    if (ctx.eacl_portgroup() != null) {
-      String portgroupName = ctx.eacl_portgroup().name.getText();
-      _configuration.referenceStructure(
-          IP_PORT_OBJECT_GROUP, portgroupName, EXTENDED_ACCESS_LIST_PORTGROUP, ctx.start.getLine());
-      return new PortObjectGroupPortSpec(portgroupName);
-    }
-    warn(ctx, "Unhandled port specifier");
-    return null;
+    assert ctx.eacl_portgroup() != null;
+    String portgroupName = ctx.eacl_portgroup().name.getText();
+    _configuration.referenceStructure(
+        IP_PORT_OBJECT_GROUP, portgroupName, EXTENDED_ACCESS_LIST_PORTGROUP, ctx.start.getLine());
+    return new PortObjectGroupPortSpec(portgroupName);
   }
 
   private <T, U extends T> T convProblem(
