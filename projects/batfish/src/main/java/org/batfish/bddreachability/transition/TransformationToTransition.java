@@ -11,7 +11,7 @@ import static org.batfish.datamodel.transformation.ReturnFlowTransformation.retu
 import com.google.common.collect.BoundType;
 import com.google.common.collect.RangeSet;
 import java.util.Arrays;
-import java.util.IdentityHashMap;
+import java.util.HashMap;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -42,14 +42,14 @@ import org.batfish.datamodel.transformation.TransformationStepVisitor;
 @ParametersAreNonnullByDefault
 public class TransformationToTransition {
   private final BDDPacket _bddPacket;
-  private final IdentityHashMap<Transformation, Transition> _cache;
+  private final HashMap<Transformation, Transition> _cache;
   private final IpAccessListToBdd _ipAccessListToBdd;
   private final TransformationStepToTransition _stepToTransition;
   private final BDD _ipProtocolsWithPortsBdd;
 
   public TransformationToTransition(BDDPacket bddPacket, IpAccessListToBdd ipAccessListToBdd) {
     _bddPacket = bddPacket;
-    _cache = new IdentityHashMap<>();
+    _cache = new HashMap<>();
     _ipAccessListToBdd = ipAccessListToBdd;
     _ipProtocolsWithPortsBdd = computePortTransformationProtocolsBdd(_bddPacket.getIpProtocol());
     _stepToTransition = new TransformationStepToTransition();
