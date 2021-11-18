@@ -19,9 +19,11 @@ public final class AccessList implements Serializable {
   }
 
   public void addRule(AccessListRule rule) {
-    ImmutableList.Builder<AccessListRule> builder =
-        ImmutableList.<AccessListRule>builder().addAll(_rules);
-    _rules = builder.add(rule).build();
+    _rules =
+        ImmutableList.<AccessListRule>builderWithExpectedSize(_rules.size() + 1)
+            .addAll(_rules)
+            .add(rule)
+            .build();
   }
 
   public AccessList(String name) {

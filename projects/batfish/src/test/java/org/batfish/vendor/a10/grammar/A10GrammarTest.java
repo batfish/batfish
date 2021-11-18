@@ -165,7 +165,6 @@ import org.batfish.vendor.a10.representation.VrrpACommon;
 import org.batfish.vendor.a10.representation.VrrpAFailOverPolicyTemplate;
 import org.batfish.vendor.a10.representation.VrrpAVrid;
 import org.batfish.vendor.a10.representation.VrrpaVridBladeParameters;
-import org.hamcrest.CoreMatchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -2168,27 +2167,31 @@ public class A10GrammarTest {
     assertThat(acl.getName(), equalTo("ACL1"));
     List<AccessListRule> rules = acl.getRules();
 
-    assertThat(rules, iterableWithSize(4));
-    assertThat(rules.get(0), CoreMatchers.instanceOf(AccessListRuleIcmp.class));
-    assertThat(rules.get(1), CoreMatchers.instanceOf(AccessListRuleTcp.class));
-    assertThat(rules.get(2), CoreMatchers.instanceOf(AccessListRuleIp.class));
-    assertThat(rules.get(3), CoreMatchers.instanceOf(AccessListRuleUdp.class));
+    assertThat(rules, iterableWithSize(5));
+    assertThat(rules.get(0), instanceOf(AccessListRuleIcmp.class));
+    assertThat(rules.get(1), instanceOf(AccessListRuleTcp.class));
+    assertThat(rules.get(2), instanceOf(AccessListRuleUdp.class));
+    assertThat(rules.get(3), instanceOf(AccessListRuleIp.class));
+    assertThat(rules.get(4), instanceOf(AccessListRuleUdp.class));
     AccessListRuleIcmp rule1 = (AccessListRuleIcmp) rules.get(0);
     AccessListRuleTcp rule2 = (AccessListRuleTcp) rules.get(1);
+    AccessListRuleUdp rule3 = (AccessListRuleUdp) rules.get(2);
 
     assertThat(rule1.getAction(), equalTo(AccessListRule.Action.PERMIT));
-    assertThat(rule1.getSource(), CoreMatchers.instanceOf(AccessListAddressHost.class));
+    assertThat(rule1.getSource(), instanceOf(AccessListAddressHost.class));
     assertThat(
         ((AccessListAddressHost) rule1.getSource()).getHost(), equalTo(Ip.parse("10.10.10.10")));
-    assertThat(rule1.getDestination(), CoreMatchers.instanceOf(AccessListAddressAny.class));
+    assertThat(rule1.getDestination(), instanceOf(AccessListAddressAny.class));
 
     assertThat(rule2.getAction(), equalTo(AccessListRule.Action.DENY));
-    assertThat(rule2.getSource(), CoreMatchers.instanceOf(AccessListAddressAny.class));
-    assertThat(rule2.getDestination(), CoreMatchers.instanceOf(AccessListAddressHost.class));
+    assertThat(rule2.getSource(), instanceOf(AccessListAddressAny.class));
+    assertThat(rule2.getDestination(), instanceOf(AccessListAddressHost.class));
     assertThat(
         ((AccessListAddressHost) rule2.getDestination()).getHost(),
         equalTo(Ip.parse("10.11.11.11")));
     assertThat(rule2.getDestinationRange(), equalTo(new SubRange(1, 100)));
+
+    assertThat(rule3.getDestinationRange(), equalTo(new SubRange(2, 99)));
   }
 
   @Test
