@@ -91,6 +91,7 @@ rm_set
     | rms_comm_list
     | rms_community
     | rms_ip
+    | rms_ipv6
     | rms_local_preference
     | rms_metric
     | rms_metric_type
@@ -226,6 +227,11 @@ rms_ip
   IP rmsip_next_hop
 ;
 
+rms_ipv6
+:
+  IPV6 rmsipv6_next_hop
+;
+
 rms_tag
 :
   TAG tag = uint32 NEWLINE
@@ -242,6 +248,18 @@ rmsip_next_hop
 rmsipnh_literal
 :
   next_hop = ip_address NEWLINE
+;
+
+rmsipv6_next_hop
+:
+  NEXT_HOP
+  (
+    PEER_ADDRESS
+    | PREFER_GLOBAL
+    | GLOBAL IPV6_ADDRESS
+    | LOCAL IPV6_ADDRESS
+  )
+  NEWLINE
 ;
 
 rms_comm_list
