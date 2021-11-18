@@ -6010,8 +6010,14 @@ public final class CiscoGrammarTest {
   @Test
   public void testNatMalformedNatPool() throws IOException {
     String hostname = "ios-nat-malformed-pool";
-    // Do not crash
-    parseConfig(hostname);
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+    assertThat(
+        pvcae, hasParseWarning(filename, containsString("Skipping malformed NAT pool SNOOKER.")));
+    assertThat(
+        pvcae, hasParseWarning(filename, containsString("Skipping empty NAT pool SNOOKER2.")));
   }
 
   @Test
