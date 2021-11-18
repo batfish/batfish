@@ -201,6 +201,8 @@ FRR: 'frr';
 
 GE: 'ge';
 
+GLOBAL: 'global';
+
 GOTO: 'goto';
 
 HOSTNAME
@@ -287,6 +289,8 @@ L2VPN: 'l2vpn';
 
 LE: 'le';
 
+LOCAL: 'local';
+
 LOCAL_AS
 :
   [Ll][Oo][Cc][Aa][Ll]'-'[Aa][Ss]
@@ -364,6 +368,8 @@ PASSWORD
 
 PASSWORD_ENCRYPTION: 'password-encryption';
 
+PEER_ADDRESS: 'peer-address';
+
 PEER_GROUP
 :
   'peer-group' -> pushMode(M_PeerGroup)
@@ -374,6 +380,8 @@ PERMIT: 'permit';
 POINT_TO_POINT: 'point-to-point';
 
 PRECISION: 'precision';
+
+PREFER_GLOBAL: 'prefer-global';
 
 PREFIX_LEN: 'prefix-len';
 
