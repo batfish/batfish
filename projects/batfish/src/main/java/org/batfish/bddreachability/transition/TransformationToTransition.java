@@ -187,7 +187,9 @@ public class TransformationToTransition {
       return branch(guard, trueBranch, falseBranch);
     } finally {
       t = System.currentTimeMillis() - t;
-      LOGGER.info("computed transformation in {}ms", t);
+      if (t > 1) {
+        LOGGER.info("computed transformation in {}ms", t);
+      }
     }
   }
 
