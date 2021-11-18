@@ -5802,17 +5802,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (!subnet.containsIp(last)) {
       warn(ctx, String.format("Subnet of NAT pool %s does not contain last pool IP", name));
     }
-
-    Ip firstHostIp = subnet.getFirstHostIp();
-    Ip lastHostIp = subnet.getLastHostIp();
-
-    _configuration
-        .getNatPools()
-        .put(
-            name,
-            new NatPool(
-                first.asLong() < firstHostIp.asLong() ? firstHostIp : first,
-                last.asLong() > lastHostIp.asLong() ? lastHostIp : last));
+    _configuration.getNatPools().put(name, NatPool.create(first, last, subnet));
   }
 
   @Override
