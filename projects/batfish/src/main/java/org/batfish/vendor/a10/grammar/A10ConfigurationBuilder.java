@@ -98,6 +98,7 @@ import org.batfish.vendor.a10.grammar.A10Parser.Vrrpavib_fail_over_policy_templa
 import org.batfish.vendor.a10.grammar.A10Parser.Vrrpavib_priorityContext;
 import org.batfish.vendor.a10.grammar.A10Parser.WordContext;
 import org.batfish.vendor.a10.representation.A10Configuration;
+import org.batfish.vendor.a10.representation.A10StructureType;
 import org.batfish.vendor.a10.representation.A10StructureUsage;
 import org.batfish.vendor.a10.representation.AccessList;
 import org.batfish.vendor.a10.representation.AccessListAddress;
@@ -238,7 +239,11 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   public void enterSi_access_list(A10Parser.Si_access_listContext ctx) {
     _currentAccessList =
         toString(ctx, ctx.access_list_name())
-            .map(n -> _c.getOrCreateAccessList(n))
+            .map(
+                n -> {
+                  _c.defineStructure(A10StructureType.ACCESS_LIST, n, ctx);
+                  return _c.getOrCreateAccessList(n);
+                })
             .orElseGet(() -> new AccessList(ctx.access_list_name().getText())); // dummy
   }
 
@@ -2092,8 +2097,24 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   @Override
   public void exitSsvspd_access_list(A10Parser.Ssvspd_access_listContext ctx) {
-    // TODO verify ACL exists and add struct refs
-    toString(ctx, ctx.access_list_name()).ifPresent(_currentVirtualServerPort::setAccessList);
+    toString(ctx, ctx.access_list_name())
+        .ifPresent(
+            n -> {
+              if (!_c.getAccessLists().containsKey(n)) {
+                warn(ctx, String.format("Cannot reference non-existent ip access-list '%s'", n));
+                return;
+              }
+              if (_c.getAccessLists().get(n).getRules().isEmpty()) {
+                warn(ctx, String.format("Cannot reference empty ip access-list '%s'", n));
+                return;
+              }
+              _c.referenceStructure(
+                  A10StructureType.ACCESS_LIST,
+                  n,
+                  A10StructureUsage.VIRTUAL_SERVER_ACCESS_LIST,
+                  ctx.start.getLine());
+              _currentVirtualServerPort.setAccessList(n);
+            });
   }
 
   private @Nonnull Optional<String> toString(

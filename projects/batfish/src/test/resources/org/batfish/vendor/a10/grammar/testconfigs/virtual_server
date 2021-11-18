@@ -1,6 +1,9 @@
 !BATFISH_FORMAT: a10_acos
 hostname virtual_server
 !
+ip access-list ACL_NAME
+  permit ip any any
+!
 slb server SERVER1 10.0.0.1
   port 80 tcp
 !
@@ -31,7 +34,6 @@ slb virtual-server VS2 10.0.0.102
   stats-data-enable
   vrid 1
   port 80 tcp range 10
-    ! TODO define ACL when those are supported
     access-list name ACL_NAME
     bucket-count 100
     conn-limit 1000

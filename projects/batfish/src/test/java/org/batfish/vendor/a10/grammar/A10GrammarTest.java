@@ -47,6 +47,7 @@ import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_T
 import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_VIRTUAL_SERVER_FLAGGED;
 import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_VIRTUAL_SERVER_UNFLAGGED;
 import static org.batfish.vendor.a10.representation.A10Conversion.SNAT_PORT_POOL_START;
+import static org.batfish.vendor.a10.representation.A10StructureType.ACCESS_LIST;
 import static org.batfish.vendor.a10.representation.A10StructureType.HEALTH_MONITOR;
 import static org.batfish.vendor.a10.representation.A10StructureType.INTERFACE;
 import static org.batfish.vendor.a10.representation.A10StructureType.VRRP_A_FAIL_OVER_POLICY_TEMPLATE;
@@ -2212,6 +2213,23 @@ public class A10GrammarTest {
                     "Expected access-list name with length in range 1-16, but got"
                         + " 'nameIsJustTooLong'"),
                 hasComment("Port range is invalid, to must not be lower than from."),
-                hasComment("Expected ip access-list range in range 1-65535, but got '0'"))));
+                hasComment("Expected ip access-list range in range 1-65535, but got '0'"),
+                hasComment("Cannot reference non-existent ip access-list 'ACL_UNDEF'"),
+                hasComment("Cannot reference empty ip access-list 'ACL_EMPTY'"))));
+  }
+
+  @Test
+  public void testAccessListReferences() throws IOException {
+    String hostname = "access_list_ref";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(ccae, hasDefinedStructure(filename, ACCESS_LIST, "ACL_UNUSED"));
+    assertThat(ccae, hasDefinedStructure(filename, ACCESS_LIST, "ACL1"));
+
+    assertThat(ccae, hasNumReferrers(filename, ACCESS_LIST, "ACL_UNUSED", 0));
+    assertThat(ccae, hasNumReferrers(filename, ACCESS_LIST, "ACL1", 1));
   }
 }
