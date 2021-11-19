@@ -57,9 +57,9 @@ public class RoutesQuestion extends Question {
     EXACT,
     /* longest matching prefix; returns 0 or 1 matching prefix */
     LONGEST_PREFIX_MATCH,
-    /* all prefixes equal or longer than the input network; can return multiple prefixes */
+    /* only matches prefixes in the input network; can return multiple prefixes */
     LONGER_PREFIXES,
-    /* all prefixes equal or shorter than the input network; can return multiple prefixes */
+    /* only matches prefixes that contain the input network; can return multiple prefixes */
     SHORTER_PREFIXES
   }
 

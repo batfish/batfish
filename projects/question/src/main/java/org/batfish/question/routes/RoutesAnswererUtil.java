@@ -171,19 +171,24 @@ public class RoutesAnswererUtil {
     return rows;
   }
 
+  /**
+   * Given the prefixMatchType and network (user input), returns routes from the {@code rib} that
+   * match
+   */
   @VisibleForTesting
   static <T extends AbstractRouteDecorator> Stream<AbstractRoute> getMatchingPrefixRoutes(
-      PrefixMatchType prefixMatchType, @Nullable Prefix network, GenericRib<T> mainRib) {
+      PrefixMatchType prefixMatchType, @Nullable Prefix network, GenericRib<T> rib) {
     if (network == null) {
-      return mainRib.getRoutes().stream();
+      // everything matches if there is not user input
+      return rib.getRoutes().stream();
     }
     if (prefixMatchType == PrefixMatchType.LONGEST_PREFIX_MATCH) {
-      return mainRib
+      return rib
           .longestPrefixMatch(network.getStartIp(), network.getPrefixLength(), alwaysTrue())
           .stream()
           .map(AbstractRouteDecorator::getAbstractRoute);
     }
-    return mainRib.getRoutes().stream()
+    return rib.getRoutes().stream()
         .filter(r -> prefixMatches(prefixMatchType, network, r.getNetwork()));
   }
 
@@ -197,9 +202,11 @@ public class RoutesAnswererUtil {
         return inputNetwork.containsPrefix(routeNetwork);
       case SHORTER_PREFIXES:
         return routeNetwork.containsPrefix(inputNetwork);
-      case LONGEST_PREFIX_MATCH: // handled separately
-      default:
+      case LONGEST_PREFIX_MATCH: // handled separately in the caller
         throw new IllegalArgumentException("Illegal PrefixMatchType " + prefixMatchType);
+      default:
+        throw new UnsupportedOperationException(
+            "Unimplemented prefix match type " + prefixMatchType);
     }
   }
 

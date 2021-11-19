@@ -15,6 +15,7 @@
     "orderedVariableNames" : [
       "nodes",
       "network",
+      "prefixMatchType",
       "protocols",
       "vrfs",
       "rib"

@@ -8,6 +8,7 @@
         "orderedVariableNames": [
             "nodes",
             "network",
+            "prefixMatchType",
             "protocols",
             "vrfs",
             "rib"
@@ -38,7 +39,6 @@
             "prefixMatchType": {
                 "description": "Use this prefix matching criterion: EXACT, LONGEST_PREFIX_MATCH, LONGER_PREFIXES, SHORTER_PREFIXES",
                 "optional": true,
-                "value": "EXACT",
                 "type": "string",
                 "values": [
                     {

@@ -953,10 +953,12 @@ public class RoutesAnswererUtilTest {
     assertTrue(prefixMatches(PrefixMatchType.LONGER_PREFIXES, P24, P24));
     assertTrue(prefixMatches(PrefixMatchType.LONGER_PREFIXES, P24, P32));
     assertFalse(prefixMatches(PrefixMatchType.LONGER_PREFIXES, P24, P16));
+    assertFalse(prefixMatches(PrefixMatchType.LONGER_PREFIXES, P24, Prefix.parse("2.1.1.0/24")));
 
     assertTrue(prefixMatches(PrefixMatchType.SHORTER_PREFIXES, P24, P24));
     assertTrue(prefixMatches(PrefixMatchType.SHORTER_PREFIXES, P24, P16));
     assertFalse(prefixMatches(PrefixMatchType.SHORTER_PREFIXES, P24, P32));
+    assertFalse(prefixMatches(PrefixMatchType.SHORTER_PREFIXES, P24, Prefix.parse("2.1.1.0/24")));
   }
 
   @Test
