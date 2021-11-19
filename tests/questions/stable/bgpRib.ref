@@ -3,6 +3,7 @@
   "bgpRouteStatus" : "backup",
   "network" : "1.1.1.0/24",
   "nodes" : "n1",
+  "prefixMatchType" : "EXACT",
   "protocols" : "all",
   "rib" : "BGP",
   "vrfs" : "default",

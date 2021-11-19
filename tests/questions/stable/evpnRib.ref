@@ -2,6 +2,7 @@
   "class" : "org.batfish.question.routes.RoutesQuestion",
   "network" : "1.1.1.0/24",
   "nodes" : "n1",
+  "prefixMatchType" : "EXACT",
   "protocols" : "all",
   "rib" : "EVPN",
   "vrfs" : "default",

@@ -2,6 +2,7 @@
   "class" : "org.batfish.question.routes.RoutesQuestion",
   "network" : "1.1.1.0/24",
   "nodes" : "n1",
+  "prefixMatchType" : "LONGEST_PREFIX_MATCH",
   "protocols" : "igp",
   "rib" : "MAIN",
   "vrfs" : "default",
@@ -24,21 +25,48 @@
     ],
     "variables" : {
       "network" : {
-        "description" : "Examine routes for networks matching this prefix",
+        "description" : "Return routes for networks matching this prefix",
         "displayName" : "Network",
         "optional" : true,
         "type" : "prefix",
         "value" : "1.1.1.1/24"
       },
       "nodes" : {
-        "description" : "Examine routes on nodes matching this specifier",
+        "description" : "Return routes on nodes matching this specifier",
         "displayName" : "Nodes",
         "optional" : true,
         "type" : "nodeSpec",
         "value" : "n1"
       },
+      "prefixMatchType" : {
+        "allowedValues" : [
+          "EXACT",
+          "LONGER_PREFIXES",
+          "LONGEST_PREFIX_MATCH",
+          "SHORTER_PREFIXES"
+        ],
+        "description" : "Use this prefix matching criterion: EXACT, LONGEST_PREFIX_MATCH, LONGER_PREFIXES, SHORTER_PREFIXES",
+        "displayName" : "Prefix match type",
+        "optional" : true,
+        "type" : "string",
+        "value" : "LONGEST_PREFIX_MATCH",
+        "values" : [
+          {
+            "name" : "EXACT"
+          },
+          {
+            "name" : "LONGEST_PREFIX_MATCH"
+          },
+          {
+            "name" : "LONGER_PREFIXES"
+          },
+          {
+            "name" : "SHORTER_PREFIXES"
+          }
+        ]
+      },
       "protocols" : {
-        "description" : "Examine routes for protocols matching this specifier",
+        "description" : "Return routes for protocols matching this specifier",
         "displayName" : "Protocols",
         "optional" : true,
         "type" : "routingProtocolSpec",
@@ -68,7 +96,7 @@
         ]
       },
       "vrfs" : {
-        "description" : "Examine routes on VRFs matching this name or regex",
+        "description" : "Return routes on VRFs matching this name or regex",
         "displayName" : "VRFs",
         "optional" : true,
         "type" : "vrf",

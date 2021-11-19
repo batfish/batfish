@@ -18,25 +18,46 @@
         ],
         "variables": {
             "nodes": {
-                "description": "Examine routes on nodes matching this specifier",
+                "description": "Return routes on nodes matching this specifier",
                 "type": "nodeSpec",
                 "optional": true,
                 "displayName": "Nodes"
             },
             "vrfs": {
-                "description": "Examine routes on VRFs matching this name or regex",
+                "description": "Return routes on VRFs matching this name or regex",
                 "type": "vrf",
                 "optional": true,
                 "displayName": "VRFs"
             },
             "network": {
-                "description": "Examine routes for networks matching this prefix",
+                "description": "Return routes for networks matching this prefix",
                 "type": "prefix",
                 "optional": true,
                 "displayName": "Network"
             },
+            "prefixMatchType": {
+                "description": "Use this prefix matching criterion: EXACT, LONGEST_PREFIX_MATCH, LONGER_PREFIXES, SHORTER_PREFIXES",
+                "optional": true,
+                "value": "EXACT",
+                "type": "string",
+                "values": [
+                    {
+                        "name": "EXACT"
+                    },
+                    {
+                        "name": "LONGEST_PREFIX_MATCH"
+                    },
+                    {
+                        "name": "LONGER_PREFIXES"
+                    },
+                    {
+                        "name": "SHORTER_PREFIXES"
+                    }
+                ],
+                "displayName": "Prefix match type"
+            },
             "protocols": {
-                "description": "Examine routes for protocols matching this specifier",
+                "description": "Return routes for protocols matching this specifier",
                 "type": "routingProtocolSpec",
                 "optional": true,
                 "displayName": "Protocols"
@@ -62,6 +83,7 @@
     },
     "network": "${network}",
     "nodes": "${nodes}",
+    "prefixMatchType": "${prefixMatchType}",
     "protocols": "${protocols}",
     "rib": "${rib}",
     "vrfs": "${vrfs}"

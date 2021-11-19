@@ -61,7 +61,7 @@ test -raw tests/questions/stable/parseWarning.ref validate-template parseWarning
 test -raw tests/questions/stable/referencedStructures.ref validate-template referencedStructures nodes="n1", names="m1", types="t1"
 
 # validate routes
-test -raw tests/questions/stable/routes.ref validate-template routes network="1.1.1.1/24", nodes="n1", vrfs="default", rib="main", protocols="igp"
+test -raw tests/questions/stable/routes.ref validate-template routes network="1.1.1.1/24", prefixMatchType="LONGEST_PREFIX_MATCH", nodes="n1", vrfs="default", rib="main", protocols="igp"
 
 # test testfilters
 test  -raw tests/questions/stable/testfilters.ref validate-template testfilters headers={"srcIps": "1.1.1.1/32"}, filters=".*",  nodes=".*", startLocation="node1"

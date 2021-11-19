@@ -51,8 +51,21 @@ public class RoutesQuestion extends Question {
     }
   }
 
-  private static final String PROP_BGP_ROUTE_STATUS = "bgpRouteStatus";
+  /** How the prefix should be matched. */
+  public enum PrefixMatchType {
+    /* exactly match the input network; returns at 0 or 1 matching prefix */
+    EXACT,
+    /* longest matching prefix; returns 0 or 1 matching prefix */
+    LONGEST_PREFIX_MATCH,
+    /* all prefixes equal or longer than the input network; can return multiple prefixes */
+    LONGER_PREFIXES,
+    /* all prefixes equal or shorter than the input network; can return multiple prefixes */
+    SHORTER_PREFIXES
+  }
+
+  private static final String PROP_BGP_ROUTE_STATUS = "bgpRouteStatus"; // only for BGP RIBs
   private static final String PROP_NETWORK = "network";
+  private static final String PROP_PREFIX_MATCH_TYPE = "prefixMatchType"; // only for main RIB
   private static final String PROP_NODES = "nodes";
   private static final String PROP_PROTOCOLS = "protocols";
   private static final String PROP_RIB = "rib";
@@ -62,15 +75,17 @@ public class RoutesQuestion extends Question {
 
   private final @Nullable String _bgpRouteStatus;
 
-  @Nullable private Prefix _network;
+  private final PrefixMatchType _prefixMatchType;
 
-  @Nullable private String _nodes;
+  @Nullable private final Prefix _network;
 
-  @Nonnull private String _protocols;
+  @Nullable private final String _nodes;
 
-  @Nonnull private RibProtocol _rib;
+  @Nonnull private final String _protocols;
 
-  @Nonnull private String _vrfs;
+  @Nonnull private final RibProtocol _rib;
+
+  @Nonnull private final String _vrfs;
 
   /**
    * Create a new question.
@@ -78,6 +93,7 @@ public class RoutesQuestion extends Question {
    * @param nodes {@link NodeSpecifier} indicating which nodes' RIBs should be considered
    * @param vrfs a regex pattern indicating which VRFs should be considered
    * @param rib a specific protocol RIB to return routes from.
+   * @param prefixMatchType what type of matching to use; relevant only when a network is specified
    */
   @VisibleForTesting
   public RoutesQuestion(
@@ -86,13 +102,15 @@ public class RoutesQuestion extends Question {
       @Nullable String vrfs,
       @Nullable String protocols,
       @Nullable String bgpRouteStatus,
-      @Nullable RibProtocol rib) {
+      @Nullable RibProtocol rib,
+      @Nullable PrefixMatchType prefixMatchType) {
     _network = network;
     _nodes = nodes;
     _protocols = firstNonNull(protocols, RoutingProtocolSpecifier.ALL);
     _rib = firstNonNull(rib, MAIN);
     _vrfs = firstNonNull(vrfs, ".*");
     _bgpRouteStatus = bgpRouteStatus;
+    _prefixMatchType = firstNonNull(prefixMatchType, PrefixMatchType.EXACT);
   }
 
   @JsonCreator
@@ -102,13 +120,15 @@ public class RoutesQuestion extends Question {
       @Nullable @JsonProperty(PROP_VRFS) String vrfs,
       @Nullable @JsonProperty(PROP_PROTOCOLS) String protocols,
       @Nullable @JsonProperty(PROP_BGP_ROUTE_STATUS) String bgpRouteStatus,
-      @Nullable @JsonProperty(PROP_RIB) RibProtocol rib) {
-    return new RoutesQuestion(network, nodes, vrfs, protocols, bgpRouteStatus, rib);
+      @Nullable @JsonProperty(PROP_RIB) RibProtocol rib,
+      @Nullable @JsonProperty(PROP_PREFIX_MATCH_TYPE) PrefixMatchType prefixMatchType) {
+    return new RoutesQuestion(
+        network, nodes, vrfs, protocols, bgpRouteStatus, rib, prefixMatchType);
   }
 
   /** Create new routes question with default parameters. */
   public RoutesQuestion() {
-    this(null, null, null, null, null, null);
+    this(null, null, null, null, null, null, null);
   }
 
   @JsonProperty(PROP_BGP_ROUTE_STATUS)
@@ -119,6 +139,12 @@ public class RoutesQuestion extends Question {
   @Override
   public boolean getDataPlane() {
     return true;
+  }
+
+  @JsonProperty(PROP_PREFIX_MATCH_TYPE)
+  @Nonnull
+  public PrefixMatchType getPrefixMatchType() {
+    return _prefixMatchType;
   }
 
   @Override

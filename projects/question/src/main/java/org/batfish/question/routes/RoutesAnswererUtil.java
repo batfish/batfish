@@ -3,6 +3,7 @@ package org.batfish.question.routes;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.ImmutableList.toImmutableList;
+import static org.batfish.datamodel.ResolutionRestriction.alwaysTrue;
 import static org.batfish.datamodel.table.TableDiff.COL_BASE_PREFIX;
 import static org.batfish.datamodel.table.TableDiff.COL_DELTA_PREFIX;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ADMIN_DISTANCE;
@@ -54,6 +55,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.AbstractRoute;
@@ -72,6 +74,7 @@ import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Row.RowBuilder;
 import org.batfish.datamodel.table.TableDiff;
 import org.batfish.question.routes.DiffRoutesOutput.KeyPresenceStatus;
+import org.batfish.question.routes.RoutesQuestion.PrefixMatchType;
 import org.batfish.question.routes.RoutesQuestion.RibProtocol;
 import org.batfish.specifier.RoutingProtocolSpecifier;
 
@@ -151,24 +154,54 @@ public class RoutesAnswererUtil {
       SortedMap<String, SortedMap<String, GenericRib<T>>> ribs,
       Multimap<String, String> matchingVrfsByNode,
       @Nullable Prefix network,
-      RoutingProtocolSpecifier protocolSpec) {
+      RoutingProtocolSpecifier protocolSpec,
+      PrefixMatchType prefixMatchType) {
     Multiset<Row> rows = HashMultiset.create();
     Map<String, ColumnMetadata> columnMetadataMap =
         getTableMetadata(RibProtocol.MAIN).toColumnMap();
     matchingVrfsByNode.forEach(
         (hostname, vrfName) ->
             Optional.ofNullable(ribs.getOrDefault(hostname, ImmutableSortedMap.of()).get(vrfName))
-                .map(GenericRib::getRoutes)
-                .orElse(ImmutableSet.of())
-                .stream()
-                .filter(
-                    route ->
-                        (network == null || network.equals(route.getNetwork()))
-                            && protocolSpec.getProtocols().contains(route.getProtocol()))
+                .map(rib -> getMatchingPrefixRoutes(prefixMatchType, network, rib))
+                //                    .map(GenericRibReadOnly::getRoutes)
+                .orElse(Stream.empty())
+                .filter(route -> protocolSpec.getProtocols().contains(route.getProtocol()))
                 .forEach(
                     route ->
                         rows.add(abstractRouteToRow(hostname, vrfName, route, columnMetadataMap))));
     return rows;
+  }
+
+  @VisibleForTesting
+  static <T extends AbstractRouteDecorator> Stream<AbstractRoute> getMatchingPrefixRoutes(
+      PrefixMatchType prefixMatchType, @Nullable Prefix network, GenericRib<T> mainRib) {
+    if (network == null) {
+      return mainRib.getRoutes().stream();
+    }
+    if (prefixMatchType == PrefixMatchType.LONGEST_PREFIX_MATCH) {
+      return mainRib
+          .longestPrefixMatch(network.getStartIp(), network.getPrefixLength(), alwaysTrue())
+          .stream()
+          .map(AbstractRouteDecorator::getAbstractRoute);
+    }
+    return mainRib.getRoutes().stream()
+        .filter(r -> prefixMatches(prefixMatchType, network, r.getNetwork()));
+  }
+
+  @VisibleForTesting
+  static boolean prefixMatches(
+      PrefixMatchType prefixMatchType, Prefix inputNetwork, Prefix routeNetwork) {
+    switch (prefixMatchType) {
+      case EXACT:
+        return inputNetwork.equals(routeNetwork);
+      case LONGER_PREFIXES:
+        return inputNetwork.containsPrefix(routeNetwork);
+      case SHORTER_PREFIXES:
+        return routeNetwork.containsPrefix(inputNetwork);
+      case LONGEST_PREFIX_MATCH: // handled separately
+      default:
+        throw new IllegalArgumentException("Illegal PrefixMatchType " + prefixMatchType);
+    }
   }
 
   /**

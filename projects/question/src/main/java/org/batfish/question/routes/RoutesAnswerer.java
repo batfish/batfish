@@ -171,7 +171,13 @@ public class RoutesAnswerer extends Answerer {
         rows.sort(BGP_COMPARATOR);
         break;
       case MAIN:
-        rows.addAll(getMainRibRoutes(dp.getRibs(), matchingVrfsByNode, network, protocolSpec));
+        rows.addAll(
+            getMainRibRoutes(
+                dp.getRibs(),
+                matchingVrfsByNode,
+                network,
+                protocolSpec,
+                question.getPrefixMatchType()));
         rows.sort(MAIN_RIB_COMPARATOR);
         break;
       default:

@@ -29,10 +29,12 @@ import static org.batfish.question.routes.RoutesAnswererUtil.getBgpRibRoutes;
 import static org.batfish.question.routes.RoutesAnswererUtil.getBgpRouteRowsDiff;
 import static org.batfish.question.routes.RoutesAnswererUtil.getEvpnRoutes;
 import static org.batfish.question.routes.RoutesAnswererUtil.getMainRibRoutes;
+import static org.batfish.question.routes.RoutesAnswererUtil.getMatchingPrefixRoutes;
 import static org.batfish.question.routes.RoutesAnswererUtil.getRoutesDiff;
 import static org.batfish.question.routes.RoutesAnswererUtil.groupBgpRoutes;
 import static org.batfish.question.routes.RoutesAnswererUtil.groupRoutes;
 import static org.batfish.question.routes.RoutesAnswererUtil.populateRouteAttributes;
+import static org.batfish.question.routes.RoutesAnswererUtil.prefixMatches;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -40,7 +42,9 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableList;
@@ -60,7 +64,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.stream.Collectors;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
@@ -84,6 +90,7 @@ import org.batfish.datamodel.table.Row;
 import org.batfish.question.routes.DiffRoutesOutput.KeyPresenceStatus;
 import org.batfish.question.routes.RoutesAnswererTest.MockRib;
 import org.batfish.question.routes.RoutesAnswererUtil.RouteEntryPresenceStatus;
+import org.batfish.question.routes.RoutesQuestion.PrefixMatchType;
 import org.batfish.question.routes.RoutesQuestion.RibProtocol;
 import org.batfish.specifier.RoutingProtocolSpecifier;
 import org.hamcrest.Matcher;
@@ -201,7 +208,8 @@ public class RoutesAnswererUtilTest {
             ribs,
             ImmutableMultimap.of("n1", Configuration.DEFAULT_VRF_NAME),
             null,
-            RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER);
+            RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
+            PrefixMatchType.EXACT);
     assertThat(
         actual,
         contains(
@@ -931,5 +939,90 @@ public class RoutesAnswererUtilTest {
                 .put(COL_BASE_PREFIX + COL_ADMIN_DISTANCE, 1)
                 .put(COL_BASE_PREFIX + COL_TAG, 1L)
                 .build()));
+  }
+
+  @Test
+  public void testPrefixMatches() {
+    Prefix P24 = Prefix.parse("1.1.1.0/24");
+    Prefix P16 = Prefix.parse("1.1.0.0/16");
+    Prefix P32 = Prefix.parse("1.1.1.1/32");
+
+    assertTrue(prefixMatches(PrefixMatchType.EXACT, P24, Prefix.parse("1.1.1.0/24")));
+    assertFalse(prefixMatches(PrefixMatchType.EXACT, P24, P16));
+
+    assertTrue(prefixMatches(PrefixMatchType.LONGER_PREFIXES, P24, P24));
+    assertTrue(prefixMatches(PrefixMatchType.LONGER_PREFIXES, P24, P32));
+    assertFalse(prefixMatches(PrefixMatchType.LONGER_PREFIXES, P24, P16));
+
+    assertTrue(prefixMatches(PrefixMatchType.SHORTER_PREFIXES, P24, P24));
+    assertTrue(prefixMatches(PrefixMatchType.SHORTER_PREFIXES, P24, P16));
+    assertFalse(prefixMatches(PrefixMatchType.SHORTER_PREFIXES, P24, P32));
+  }
+
+  @Test
+  public void testGetMatchingPrefixRoutes() {
+    AbstractRoute R1 =
+        OspfExternalType2Route.builder()
+            .setNetwork(Prefix.parse("1.1.1.0/24"))
+            .setNextHop(NextHopInterface.of("e0", Ip.parse("1.1.1.2")))
+            .setAdmin(10)
+            .setMetric(2L << 34)
+            .setLsaMetric(2)
+            .setCostToAdvertiser(2)
+            .setArea(1L)
+            .setAdvertiser("n2")
+            .setOspfMetricType(OspfMetricType.E2)
+            .setTag(2L << 35)
+            .build();
+    AbstractRoute R2 =
+        OspfExternalType2Route.builder()
+            .setNetwork(Prefix.parse("1.2.1.0/24"))
+            .setNextHop(NextHopInterface.of("e0", Ip.parse("1.1.1.2")))
+            .setAdmin(10)
+            .setMetric(2L << 34)
+            .setLsaMetric(2)
+            .setCostToAdvertiser(2)
+            .setArea(1L)
+            .setAdvertiser("n2")
+            .setOspfMetricType(OspfMetricType.E2)
+            .setTag(2L << 35)
+            .build();
+    //    GenericRib<AbstractRoute> ribs = new MockRib<>(ImmutableSet.of(R1, R2));
+
+    org.batfish.datamodel.MockRib ribs =
+        org.batfish.datamodel.MockRib.builder()
+            .setRoutes(
+                ImmutableSet.of(new AnnotatedRoute<>(R1, "r1"), new AnnotatedRoute<>(R2, "r2")))
+            .setLongestPrefixMatchResults(
+                ImmutableMap.of(
+                    Ip.parse("1.1.1.1"), ImmutableSet.of(new AnnotatedRoute<>(R1, "r1"))))
+            .build();
+
+    // both routes are returned when network is null
+    assertThat(
+        getMatchingPrefixRoutes(PrefixMatchType.EXACT, null, ribs).collect(Collectors.toSet()),
+        containsInAnyOrder(R1, R2));
+
+    // match conditions other than LPM
+    assertThat(
+        getMatchingPrefixRoutes(PrefixMatchType.EXACT, Prefix.parse("1.1.1.1/24"), ribs)
+            .collect(Collectors.toSet()),
+        contains(R1));
+    assertThat(
+        getMatchingPrefixRoutes(PrefixMatchType.LONGER_PREFIXES, Prefix.parse("1.0.0.0/8"), ribs)
+            .collect(Collectors.toSet()),
+        containsInAnyOrder(R1, R2));
+
+    // LPM
+    assertThat(
+        getMatchingPrefixRoutes(
+                PrefixMatchType.LONGEST_PREFIX_MATCH, Prefix.parse("1.1.1.1/32"), ribs)
+            .collect(Collectors.toSet()),
+        contains(R1));
+    assertTrue(
+        getMatchingPrefixRoutes(
+                PrefixMatchType.LONGEST_PREFIX_MATCH, Prefix.parse("2.1.1.1/32"), ribs)
+            .collect(Collectors.toSet())
+            .isEmpty());
   }
 }
