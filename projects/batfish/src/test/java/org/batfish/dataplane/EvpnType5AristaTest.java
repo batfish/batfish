@@ -59,6 +59,7 @@ public class EvpnType5AristaTest {
     batfish.computeDataPlane(batfish.getSnapshot()); // compute and cache the dataPlane
     DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
     String vrf1 = "vrf1";
+    Ip originatorIp = Ip.parse("12.12.12.2"); // IP of BGP route originator
     Prefix prefix = Prefix.parse("12.12.12.0/24"); // prefix of the connected route in vrf1
 
     // Neither VRF should have any BGP or EVPN routes in the main RIB.
@@ -96,7 +97,7 @@ public class EvpnType5AristaTest {
             .setNextHop(NextHopDiscard.instance())
             .setSrcProtocol(RoutingProtocol.CONNECTED)
             .setReceivedFromIp(Ip.ZERO)
-            .setOriginatorIp(Ip.AUTO) // TODO Is this valid, even on the original BGP route?
+            .setOriginatorIp(originatorIp)
             .build();
     assertThat(exportedEvpnRoute, equalTo(expectedEvpnRoute));
   }
