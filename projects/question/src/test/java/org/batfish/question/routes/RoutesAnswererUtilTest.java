@@ -943,27 +943,27 @@ public class RoutesAnswererUtilTest {
 
   @Test
   public void testPrefixMatches() {
-    Prefix P24 = Prefix.parse("1.1.1.0/24");
-    Prefix P16 = Prefix.parse("1.1.0.0/16");
-    Prefix P32 = Prefix.parse("1.1.1.1/32");
+    Prefix p24 = Prefix.parse("1.1.1.0/24");
+    Prefix p16 = Prefix.parse("1.1.0.0/16");
+    Prefix p32 = Prefix.parse("1.1.1.1/32");
 
-    assertTrue(prefixMatches(PrefixMatchType.EXACT, P24, Prefix.parse("1.1.1.0/24")));
-    assertFalse(prefixMatches(PrefixMatchType.EXACT, P24, P16));
+    assertTrue(prefixMatches(PrefixMatchType.EXACT, p24, Prefix.parse("1.1.1.0/24")));
+    assertFalse(prefixMatches(PrefixMatchType.EXACT, p24, p16));
 
-    assertTrue(prefixMatches(PrefixMatchType.LONGER_PREFIXES, P24, P24));
-    assertTrue(prefixMatches(PrefixMatchType.LONGER_PREFIXES, P24, P32));
-    assertFalse(prefixMatches(PrefixMatchType.LONGER_PREFIXES, P24, P16));
-    assertFalse(prefixMatches(PrefixMatchType.LONGER_PREFIXES, P24, Prefix.parse("2.1.1.0/24")));
+    assertTrue(prefixMatches(PrefixMatchType.LONGER_PREFIXES, p24, p24));
+    assertTrue(prefixMatches(PrefixMatchType.LONGER_PREFIXES, p24, p32));
+    assertFalse(prefixMatches(PrefixMatchType.LONGER_PREFIXES, p24, p16));
+    assertFalse(prefixMatches(PrefixMatchType.LONGER_PREFIXES, p24, Prefix.parse("2.1.1.0/24")));
 
-    assertTrue(prefixMatches(PrefixMatchType.SHORTER_PREFIXES, P24, P24));
-    assertTrue(prefixMatches(PrefixMatchType.SHORTER_PREFIXES, P24, P16));
-    assertFalse(prefixMatches(PrefixMatchType.SHORTER_PREFIXES, P24, P32));
-    assertFalse(prefixMatches(PrefixMatchType.SHORTER_PREFIXES, P24, Prefix.parse("2.1.1.0/24")));
+    assertTrue(prefixMatches(PrefixMatchType.SHORTER_PREFIXES, p24, p24));
+    assertTrue(prefixMatches(PrefixMatchType.SHORTER_PREFIXES, p24, p16));
+    assertFalse(prefixMatches(PrefixMatchType.SHORTER_PREFIXES, p24, p32));
+    assertFalse(prefixMatches(PrefixMatchType.SHORTER_PREFIXES, p24, Prefix.parse("2.1.1.0/24")));
   }
 
   @Test
   public void testGetMatchingPrefixRoutes() {
-    AbstractRoute R1 =
+    AbstractRoute r1 =
         OspfExternalType2Route.builder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
             .setNextHop(NextHopInterface.of("e0", Ip.parse("1.1.1.2")))
@@ -976,7 +976,7 @@ public class RoutesAnswererUtilTest {
             .setOspfMetricType(OspfMetricType.E2)
             .setTag(2L << 35)
             .build();
-    AbstractRoute R2 =
+    AbstractRoute r2 =
         OspfExternalType2Route.builder()
             .setNetwork(Prefix.parse("1.2.1.0/24"))
             .setNextHop(NextHopInterface.of("e0", Ip.parse("1.1.1.2")))
@@ -989,38 +989,36 @@ public class RoutesAnswererUtilTest {
             .setOspfMetricType(OspfMetricType.E2)
             .setTag(2L << 35)
             .build();
-    //    GenericRib<AbstractRoute> ribs = new MockRib<>(ImmutableSet.of(R1, R2));
-
     org.batfish.datamodel.MockRib ribs =
         org.batfish.datamodel.MockRib.builder()
             .setRoutes(
-                ImmutableSet.of(new AnnotatedRoute<>(R1, "r1"), new AnnotatedRoute<>(R2, "r2")))
+                ImmutableSet.of(new AnnotatedRoute<>(r1, "r1"), new AnnotatedRoute<>(r2, "r2")))
             .setLongestPrefixMatchResults(
                 ImmutableMap.of(
-                    Ip.parse("1.1.1.1"), ImmutableSet.of(new AnnotatedRoute<>(R1, "r1"))))
+                    Ip.parse("1.1.1.1"), ImmutableSet.of(new AnnotatedRoute<>(r1, "r1"))))
             .build();
 
     // both routes are returned when network is null
     assertThat(
         getMatchingPrefixRoutes(PrefixMatchType.EXACT, null, ribs).collect(Collectors.toSet()),
-        containsInAnyOrder(R1, R2));
+        containsInAnyOrder(r1, r2));
 
     // match conditions other than LPM
     assertThat(
         getMatchingPrefixRoutes(PrefixMatchType.EXACT, Prefix.parse("1.1.1.1/24"), ribs)
             .collect(Collectors.toSet()),
-        contains(R1));
+        contains(r1));
     assertThat(
         getMatchingPrefixRoutes(PrefixMatchType.LONGER_PREFIXES, Prefix.parse("1.0.0.0/8"), ribs)
             .collect(Collectors.toSet()),
-        containsInAnyOrder(R1, R2));
+        containsInAnyOrder(r1, r2));
 
     // LPM
     assertThat(
         getMatchingPrefixRoutes(
                 PrefixMatchType.LONGEST_PREFIX_MATCH, Prefix.parse("1.1.1.1/32"), ribs)
             .collect(Collectors.toSet()),
-        contains(R1));
+        contains(r1));
     assertTrue(
         getMatchingPrefixRoutes(
                 PrefixMatchType.LONGEST_PREFIX_MATCH, Prefix.parse("2.1.1.1/32"), ribs)
