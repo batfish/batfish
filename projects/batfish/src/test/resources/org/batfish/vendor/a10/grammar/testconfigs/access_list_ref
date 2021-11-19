@@ -1,0 +1,18 @@
+!BATFISH_FORMAT: a10_acos
+hostname access_list_ref
+!
+!
+ip access-list ACL_UNUSED
+  permit ip any any
+!
+ip access-list ACL1
+  permit ip any any
+!
+!
+slb virtual-server VS1 10.0.0.101
+  enable
+  port 80 tcp range 10
+    access-list name ACL1
+  port 81 tcp
+    access-list name ACL_UNDEFINED
+!

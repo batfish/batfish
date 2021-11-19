@@ -6,6 +6,7 @@ import
   A10_ha,
   A10_health_monitor,
   A10_interface,
+  A10_ip_access_list,
   A10_ip_nat,
   A10_ip_route,
   A10_lacp_trunk,
@@ -45,7 +46,7 @@ statement
 
 s_ip: IP si;
 
-si: si_nat | si_route;
+si: si_access_list | si_nat | si_route;
 
 s_no: NO (sn_ha | sn_ip);
 
