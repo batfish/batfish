@@ -23,6 +23,7 @@ ethernet_or_trunk_reference
   ETHERNET ethnum = ethernet_number
   | TRUNK trunknum = trunk_number
 ;
+
 interface_name_str: word;
 
 nat_pool_name: word;
@@ -100,6 +101,9 @@ connection_weight: uint16;
 
 // 0-65535; 0 in this context seems to mean non-port-based protocol
 port_number: uint16;
+
+// 1-65535
+acl_port_number: uint16;
 
 // 0-254
 port_range_value: uint8;

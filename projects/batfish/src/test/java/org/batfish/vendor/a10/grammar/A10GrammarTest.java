@@ -47,6 +47,7 @@ import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_T
 import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_VIRTUAL_SERVER_FLAGGED;
 import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_VIRTUAL_SERVER_UNFLAGGED;
 import static org.batfish.vendor.a10.representation.A10Conversion.SNAT_PORT_POOL_START;
+import static org.batfish.vendor.a10.representation.A10StructureType.ACCESS_LIST;
 import static org.batfish.vendor.a10.representation.A10StructureType.HEALTH_MONITOR;
 import static org.batfish.vendor.a10.representation.A10StructureType.INTERFACE;
 import static org.batfish.vendor.a10.representation.A10StructureType.VRRP_A_FAIL_OVER_POLICY_TEMPLATE;
@@ -68,6 +69,7 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
@@ -110,6 +112,7 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.KernelRoute;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -125,6 +128,14 @@ import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.vendor.ConversionContext;
 import org.batfish.vendor.a10.representation.A10Configuration;
+import org.batfish.vendor.a10.representation.AccessList;
+import org.batfish.vendor.a10.representation.AccessListAddressAny;
+import org.batfish.vendor.a10.representation.AccessListAddressHost;
+import org.batfish.vendor.a10.representation.AccessListRule;
+import org.batfish.vendor.a10.representation.AccessListRuleIcmp;
+import org.batfish.vendor.a10.representation.AccessListRuleIp;
+import org.batfish.vendor.a10.representation.AccessListRuleTcp;
+import org.batfish.vendor.a10.representation.AccessListRuleUdp;
 import org.batfish.vendor.a10.representation.BgpNeighbor;
 import org.batfish.vendor.a10.representation.BgpNeighborIdAddress;
 import org.batfish.vendor.a10.representation.BgpNeighborUpdateSourceAddress;
@@ -2145,5 +2156,80 @@ public class A10GrammarTest {
                 .setRequiredOwnedIp(Ip.parse("10.0.4.1"))
                 .setTag(KERNEL_ROUTE_TAG_VIRTUAL_SERVER_UNFLAGGED)
                 .build()));
+  }
+
+  @Test
+  public void testAccessListExtraction() {
+    A10Configuration vc = parseVendorConfig("access_list");
+    Map<String, AccessList> acls = vc.getAccessLists();
+
+    assertThat(acls, hasKey(equalTo("ACL1")));
+    AccessList acl = acls.get("ACL1");
+    assertThat(acl.getName(), equalTo("ACL1"));
+    List<AccessListRule> rules = acl.getRules();
+
+    assertThat(rules, iterableWithSize(5));
+    assertThat(rules.get(0), instanceOf(AccessListRuleIcmp.class));
+    assertThat(rules.get(1), instanceOf(AccessListRuleTcp.class));
+    assertThat(rules.get(2), instanceOf(AccessListRuleUdp.class));
+    assertThat(rules.get(3), instanceOf(AccessListRuleIp.class));
+    assertThat(rules.get(4), instanceOf(AccessListRuleUdp.class));
+    AccessListRuleIcmp rule1 = (AccessListRuleIcmp) rules.get(0);
+    AccessListRuleTcp rule2 = (AccessListRuleTcp) rules.get(1);
+    AccessListRuleUdp rule3 = (AccessListRuleUdp) rules.get(2);
+
+    assertThat(rule1.getAction(), equalTo(AccessListRule.Action.PERMIT));
+    assertThat(rule1.getSource(), instanceOf(AccessListAddressHost.class));
+    assertThat(
+        ((AccessListAddressHost) rule1.getSource()).getHost(), equalTo(Ip.parse("10.10.10.10")));
+    assertThat(rule1.getDestination(), instanceOf(AccessListAddressAny.class));
+
+    assertThat(rule2.getAction(), equalTo(AccessListRule.Action.DENY));
+    assertThat(rule2.getSource(), instanceOf(AccessListAddressAny.class));
+    assertThat(rule2.getDestination(), instanceOf(AccessListAddressHost.class));
+    assertThat(
+        ((AccessListAddressHost) rule2.getDestination()).getHost(),
+        equalTo(Ip.parse("10.11.11.11")));
+    assertThat(rule2.getDestinationRange(), equalTo(new SubRange(1, 100)));
+
+    assertThat(rule3.getDestinationRange(), equalTo(new SubRange(2, 99)));
+  }
+
+  @Test
+  public void testAccessListWarn() throws IOException {
+    String filename = "access_list_warn";
+    Batfish batfish = getBatfishForConfigurationNames(filename);
+    Warnings warnings =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+    assertThat(
+        warnings,
+        hasParseWarnings(
+            containsInAnyOrder(
+                hasComment(
+                    "Expected access-list name with length in range 1-16, but got"
+                        + " 'nameIsJustTooLong'"),
+                hasComment("Port range is invalid, to must not be lower than from."),
+                hasComment("Expected ip access-list range in range 1-65535, but got '0'"),
+                hasComment("Cannot reference non-existent ip access-list 'ACL_UNDEF'"),
+                hasComment("Cannot reference empty ip access-list 'ACL_EMPTY'"))));
+  }
+
+  @Test
+  public void testAccessListReferences() throws IOException {
+    String hostname = "access_list_ref";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(ccae, hasDefinedStructure(filename, ACCESS_LIST, "ACL_UNUSED"));
+    assertThat(ccae, hasDefinedStructure(filename, ACCESS_LIST, "ACL1"));
+
+    assertThat(ccae, hasNumReferrers(filename, ACCESS_LIST, "ACL_UNUSED", 0));
+    assertThat(ccae, hasNumReferrers(filename, ACCESS_LIST, "ACL1", 1));
   }
 }

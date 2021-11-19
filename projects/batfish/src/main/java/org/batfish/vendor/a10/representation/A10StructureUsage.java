@@ -14,6 +14,7 @@ public enum A10StructureUsage implements StructureUsage {
   SERVICE_GROUP_MEMBER("service-group member"),
   // ACOS v2 member of a trunk
   TRUNK_INTERFACE("trunk interface"),
+  VIRTUAL_SERVER_ACCESS_LIST("virtual-server access-list name"),
   VIRTUAL_SERVER_SELF_REF("virtual-server"),
   VIRTUAL_SERVER_SERVICE_GROUP("virtual-server service-group"),
   VIRTUAL_SERVER_SOURCE_NAT_POOL("virtual-server source-nat pool"),

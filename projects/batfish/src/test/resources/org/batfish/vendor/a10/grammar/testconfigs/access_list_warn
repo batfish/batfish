@@ -1,0 +1,16 @@
+!BATFISH_FORMAT: a10_acos
+hostname access_list_warn
+!
+!
+ip access-list nameIsJustTooLong
+  deny tcp any any range 101 100
+  deny tcp any any range 0 1
+!
+ip access-list ACL_EMPTY
+!
+slb virtual-server VS1 10.0.0.101
+  enable
+  port 80 tcp
+    access-list name ACL_UNDEF
+    access-list name ACL_EMPTY
+!

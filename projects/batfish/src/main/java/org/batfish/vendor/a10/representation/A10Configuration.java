@@ -88,6 +88,7 @@ import org.batfish.vendor.a10.representation.Interface.Type;
 public final class A10Configuration extends VendorConfiguration {
 
   public A10Configuration() {
+    _accessLists = new HashMap<>();
     _floatingIps = new HashMap<>();
     _healthMonitors = new HashMap<>();
     _interfacesEthernet = new HashMap<>();
@@ -114,6 +115,19 @@ public final class A10Configuration extends VendorConfiguration {
       _bgpProcess = new BgpProcess(number);
     }
     return _bgpProcess;
+  }
+
+  @Nonnull
+  public AccessList getOrCreateAccessList(String name) {
+    if (!_accessLists.containsKey(name)) {
+      _accessLists.put(name, new AccessList(name));
+    }
+    return _accessLists.get(name);
+  }
+
+  @Nonnull
+  public Map<String, AccessList> getAccessLists() {
+    return _accessLists;
   }
 
   /** ACOSv2 {@code floating-ip}s. */
@@ -860,6 +874,7 @@ public final class A10Configuration extends VendorConfiguration {
    * <p>This should only be called once, at the end of parsing and extraction.
    */
   public void finalizeStructures() {
+    _accessLists = ImmutableMap.copyOf(_accessLists);
     _floatingIps = ImmutableMap.copyOf(_floatingIps);
     _healthMonitors = ImmutableMap.copyOf(_healthMonitors);
     _interfacesEthernet = ImmutableMap.copyOf(_interfacesEthernet);
@@ -877,6 +892,7 @@ public final class A10Configuration extends VendorConfiguration {
   /** Map of interface names to interface. Used for converting aggregate interfaces. */
   @Nullable private transient Map<String, Interface> _ifaceNametoIface;
 
+  @Nonnull private Map<String, AccessList> _accessLists;
   @Nullable private BgpProcess _bgpProcess;
   private Configuration _c;
   private @Nonnull Map<Ip, FloatingIp> _floatingIps;
