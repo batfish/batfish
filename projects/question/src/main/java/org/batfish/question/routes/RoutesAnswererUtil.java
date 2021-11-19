@@ -163,7 +163,6 @@ public class RoutesAnswererUtil {
         (hostname, vrfName) ->
             Optional.ofNullable(ribs.getOrDefault(hostname, ImmutableSortedMap.of()).get(vrfName))
                 .map(rib -> getMatchingPrefixRoutes(prefixMatchType, network, rib))
-                //                    .map(GenericRibReadOnly::getRoutes)
                 .orElse(Stream.empty())
                 .filter(route -> protocolSpec.getProtocols().contains(route.getProtocol()))
                 .forEach(
