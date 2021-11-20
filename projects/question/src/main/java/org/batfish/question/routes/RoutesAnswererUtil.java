@@ -3,6 +3,10 @@ package org.batfish.question.routes;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.ImmutableList.toImmutableList;
+import static java.util.Comparator.comparingInt;
+import static org.batfish.datamodel.ResolutionRestriction.alwaysTrue;
+import static org.batfish.datamodel.questions.BgpRouteStatus.BACKUP;
+import static org.batfish.datamodel.questions.BgpRouteStatus.BEST;
 import static org.batfish.datamodel.table.TableDiff.COL_BASE_PREFIX;
 import static org.batfish.datamodel.table.TableDiff.COL_DELTA_PREFIX;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ADMIN_DISTANCE;
@@ -54,6 +58,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.AbstractRoute;
@@ -72,6 +77,7 @@ import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Row.RowBuilder;
 import org.batfish.datamodel.table.TableDiff;
 import org.batfish.question.routes.DiffRoutesOutput.KeyPresenceStatus;
+import org.batfish.question.routes.RoutesQuestion.PrefixMatchType;
 import org.batfish.question.routes.RoutesQuestion.RibProtocol;
 import org.batfish.specifier.RoutingProtocolSpecifier;
 
@@ -145,26 +151,24 @@ public class RoutesAnswererUtil {
    *     Bgpv4Route}s are to be selected
    * @param network {@link Prefix} of the network used to filter the routes
    * @param protocolSpec {@link RoutingProtocolSpecifier} used to filter the routes
+   * @param prefixMatchType {@link PrefixMatchType} used to select which prefixes are reported
    * @return {@link Multiset} of {@link Row}s representing the routes
    */
   static <T extends AbstractRouteDecorator> Multiset<Row> getMainRibRoutes(
       SortedMap<String, SortedMap<String, GenericRib<T>>> ribs,
       Multimap<String, String> matchingVrfsByNode,
       @Nullable Prefix network,
-      RoutingProtocolSpecifier protocolSpec) {
+      RoutingProtocolSpecifier protocolSpec,
+      PrefixMatchType prefixMatchType) {
     Multiset<Row> rows = HashMultiset.create();
     Map<String, ColumnMetadata> columnMetadataMap =
         getTableMetadata(RibProtocol.MAIN).toColumnMap();
     matchingVrfsByNode.forEach(
         (hostname, vrfName) ->
             Optional.ofNullable(ribs.getOrDefault(hostname, ImmutableSortedMap.of()).get(vrfName))
-                .map(GenericRib::getRoutes)
-                .orElse(ImmutableSet.of())
-                .stream()
-                .filter(
-                    route ->
-                        (network == null || network.equals(route.getNetwork()))
-                            && protocolSpec.getProtocols().contains(route.getProtocol()))
+                .map(rib -> getMatchingPrefixRoutes(prefixMatchType, network, rib))
+                .orElse(Stream.empty())
+                .filter(route -> protocolSpec.getProtocols().contains(route.getProtocol()))
                 .forEach(
                     route ->
                         rows.add(abstractRouteToRow(hostname, vrfName, route, columnMetadataMap))));
@@ -172,61 +176,199 @@ public class RoutesAnswererUtil {
   }
 
   /**
-   * Filters a {@link Table} of {@link Bgpv4Route}s to produce a {@link Multiset} of rows
+   * Given the prefixMatchType and network (user input), returns routes from the {@code rib} that
+   * match
+   */
+  @VisibleForTesting
+  static <T extends AbstractRouteDecorator> Stream<AbstractRoute> getMatchingPrefixRoutes(
+      PrefixMatchType prefixMatchType, @Nullable Prefix network, GenericRib<T> rib) {
+    if (network == null) {
+      // everything matches if there is not user input
+      return rib.getRoutes().stream();
+    }
+    if (prefixMatchType == PrefixMatchType.LONGEST_PREFIX_MATCH) {
+      return rib
+          .longestPrefixMatch(network.getStartIp(), network.getPrefixLength(), alwaysTrue())
+          .stream()
+          .map(AbstractRouteDecorator::getAbstractRoute);
+    }
+    return rib.getRoutes().stream()
+        .filter(r -> prefixMatches(prefixMatchType, network, r.getNetwork()));
+  }
+
+  @VisibleForTesting
+  static boolean prefixMatches(
+      PrefixMatchType prefixMatchType, Prefix inputNetwork, Prefix routeNetwork) {
+    switch (prefixMatchType) {
+      case EXACT:
+        return inputNetwork.equals(routeNetwork);
+      case LONGER_PREFIXES:
+        return inputNetwork.containsPrefix(routeNetwork);
+      case SHORTER_PREFIXES:
+        return routeNetwork.containsPrefix(inputNetwork);
+      case LONGEST_PREFIX_MATCH: // handled separately in the caller
+        throw new IllegalArgumentException("Illegal PrefixMatchType " + prefixMatchType);
+      default:
+        throw new UnsupportedOperationException(
+            "Unimplemented prefix match type " + prefixMatchType);
+    }
+  }
+
+  /**
+   * Filters {@link Table} of BEST and BACKUP {@link Bgpv4Route}s to produce a {@link Multiset} of
+   * rows.
    *
-   * @param bgpRoutes {@link Table} of all {@link Bgpv4Route}s
+   * @param bgpBestRoutes {@link Table} of all best {@link Bgpv4Route}s
+   * @param bgpBackupRoutes {@link Table} of all backup {@link Bgpv4Route}s
    * @param matchingVrfsByNode {@link Multimap} of vrfs grouped by node from which {@link
    *     Bgpv4Route}s are to be selected
    * @param network {@link Prefix} of the network used to filter the routes
    * @param protocolSpec {@link RoutingProtocolSpecifier} used to filter the {@link Bgpv4Route}s
-   * @param statuses BGP route statuses that correspond to routes in {@code bgpRoutes}.
+   * @param routeStatuses BGP route statuses to report
+   * @param prefixMatchType The type of prefix matching desired
    * @return {@link Multiset} of {@link Row}s representing the routes
    */
   static Multiset<Row> getBgpRibRoutes(
-      Table<String, String, Set<Bgpv4Route>> bgpRoutes,
+      Table<String, String, Set<Bgpv4Route>> bgpBestRoutes,
+      Table<String, String, Set<Bgpv4Route>> bgpBackupRoutes,
       Multimap<String, String> matchingVrfsByNode,
       @Nullable Prefix network,
       RoutingProtocolSpecifier protocolSpec,
-      Set<BgpRouteStatus> statuses) {
+      Set<BgpRouteStatus> routeStatuses,
+      PrefixMatchType prefixMatchType) {
     Multiset<Row> rows = HashMultiset.create();
     Map<String, ColumnMetadata> columnMetadataMap = getTableMetadata(RibProtocol.BGP).toColumnMap();
     matchingVrfsByNode.forEach(
         (hostname, vrfName) ->
-            firstNonNull(bgpRoutes.get(hostname, vrfName), ImmutableSet.<Bgpv4Route>of()).stream()
-                .filter(
-                    route ->
-                        (network == null || network.equals(route.getNetwork()))
-                            && protocolSpec.getProtocols().contains(route.getProtocol()))
+            getMatchingRoutes(
+                    firstNonNull(bgpBestRoutes.get(hostname, vrfName), ImmutableSet.of()),
+                    firstNonNull(bgpBackupRoutes.get(hostname, vrfName), ImmutableSet.of()),
+                    network,
+                    routeStatuses,
+                    prefixMatchType)
                 .forEach(
-                    route ->
-                        rows.add(
-                            bgpRouteToRow(hostname, vrfName, route, statuses, columnMetadataMap))));
+                    (status, routeStream) ->
+                        routeStream
+                            .filter(r -> protocolSpec.getProtocols().contains(r.getProtocol()))
+                            .forEach(
+                                route ->
+                                    rows.add(
+                                        bgpRouteToRow(
+                                            hostname,
+                                            vrfName,
+                                            route,
+                                            ImmutableSet.of(status),
+                                            columnMetadataMap)))));
     return rows;
   }
 
+  /**
+   * Filters {@link Table} of BEST and BACKUP {@link EvpnRoute}s to produce a {@link Multiset} of
+   * rows.
+   *
+   * @param evpnBestRoutes {@link Table} of all best {@link EvpnRoute}s
+   * @param evpnBackupRoutes {@link Table} of all backup {@link EvpnRoute}s
+   * @param matchingVrfsByNode {@link Multimap} of vrfs grouped by node from which {@link
+   *     Bgpv4Route}s are to be selected
+   * @param network {@link Prefix} of the network used to filter the routes
+   * @param protocolSpec {@link RoutingProtocolSpecifier} used to filter the {@link Bgpv4Route}s
+   * @param routeStatuses BGP route statuses to report
+   * @param prefixMatchType The type of prefix matching desired
+   * @return {@link Multiset} of {@link Row}s representing the routes
+   */
   static Multiset<Row> getEvpnRoutes(
-      Table<String, String, Set<EvpnRoute<?, ?>>> evpnRoutes,
+      Table<String, String, Set<EvpnRoute<?, ?>>> evpnBestRoutes,
+      Table<String, String, Set<EvpnRoute<?, ?>>> evpnBackupRoutes,
       Multimap<String, String> matchingVrfsByNode,
       @Nullable Prefix network,
       RoutingProtocolSpecifier protocolSpec,
-      Set<BgpRouteStatus> statuses) {
+      Set<BgpRouteStatus> routeStatuses,
+      PrefixMatchType prefixMatchType) {
     Multiset<Row> rows = HashMultiset.create();
     Map<String, ColumnMetadata> columnMetadataMap =
         getTableMetadata(RibProtocol.EVPN).toColumnMap();
     matchingVrfsByNode.forEach(
         (hostname, vrfName) ->
-            firstNonNull(evpnRoutes.get(hostname, vrfName), ImmutableSet.<EvpnRoute<?, ?>>of())
-                .stream()
-                .filter(
-                    route ->
-                        (network == null || network.equals(route.getNetwork()))
-                            && protocolSpec.getProtocols().contains(route.getProtocol()))
+            getMatchingRoutes(
+                    firstNonNull(evpnBestRoutes.get(hostname, vrfName), ImmutableSet.of()),
+                    firstNonNull(evpnBackupRoutes.get(hostname, vrfName), ImmutableSet.of()),
+                    network,
+                    routeStatuses,
+                    prefixMatchType)
                 .forEach(
-                    route ->
-                        rows.add(
-                            evpnRouteToRow(
-                                hostname, vrfName, route, statuses, columnMetadataMap))));
+                    (status, routeStream) ->
+                        routeStream
+                            .filter(r -> protocolSpec.getProtocols().contains(r.getProtocol()))
+                            .forEach(
+                                route ->
+                                    rows.add(
+                                        evpnRouteToRow(
+                                            hostname,
+                                            vrfName,
+                                            route,
+                                            ImmutableSet.of(status),
+                                            columnMetadataMap)))));
     return rows;
+  }
+
+  /**
+   * Filters best and backup routes to those that match the input network, route statuses, and
+   * prefix match type.
+   *
+   * <p>If the network is null, all routes are returned.
+   *
+   * <p>It the prefix match type is LONGEST_PREFIX_MATCH, the returned prefix is decided based on
+   * LPM on the best routes table. This is done because LPM logic is meaningful only for best routes
+   * (as those are the lookup candidates) and also because backup table cannot have a longer
+   * matching prefix (for a prefix to exist in backup, there must be something better in best). A
+   * consequence of these semantics is that if the user asks only for backup routes (via
+   * routeStatus), nothing may be reported in cases where the LPM-based matching on the best table
+   * leads to prefix P1 but P1 is not present in the backup table.
+   */
+  static <T extends AbstractRouteDecorator> Map<BgpRouteStatus, Stream<T>> getMatchingRoutes(
+      Set<T> bestRoutes,
+      Set<T> backupRoutes,
+      @Nullable Prefix network,
+      Set<BgpRouteStatus> routeStatuses,
+      PrefixMatchType prefixMatchType) {
+    ImmutableMap.Builder<BgpRouteStatus, Stream<T>> routes = ImmutableMap.builder();
+    if (prefixMatchType == PrefixMatchType.LONGEST_PREFIX_MATCH && network != null) {
+      Optional<Prefix> lpmMatch = longestMatchingPrefix(network, bestRoutes);
+      if (lpmMatch.isPresent()) {
+        if (routeStatuses.contains(BEST)) {
+          routes.put(
+              BEST, getMatchingPrefixRoutes(bestRoutes, lpmMatch.get(), PrefixMatchType.EXACT));
+        }
+        if (routeStatuses.contains(BACKUP)) {
+          routes.put(
+              BACKUP, getMatchingPrefixRoutes(backupRoutes, lpmMatch.get(), PrefixMatchType.EXACT));
+        }
+      }
+      return routes.build();
+    }
+
+    if (routeStatuses.contains(BEST)) {
+      routes.put(BEST, getMatchingPrefixRoutes(bestRoutes, network, prefixMatchType));
+    }
+    if (routeStatuses.contains(BACKUP)) {
+      routes.put(BACKUP, getMatchingPrefixRoutes(backupRoutes, network, prefixMatchType));
+    }
+    return routes.build();
+  }
+
+  private static <T extends AbstractRouteDecorator> Stream<T> getMatchingPrefixRoutes(
+      Set<T> bgpRoutes, Prefix network, PrefixMatchType prefixMatchType) {
+    return bgpRoutes.stream()
+        .filter(r -> network == null || prefixMatches(prefixMatchType, network, r.getNetwork()));
+  }
+
+  @VisibleForTesting
+  static <T extends AbstractRouteDecorator> Optional<Prefix> longestMatchingPrefix(
+      Prefix network, Set<T> routes) {
+    return routes.stream()
+        .map(AbstractRouteDecorator::getNetwork)
+        .filter(prefix -> prefix.containsPrefix(network))
+        .max(comparingInt(Prefix::getPrefixLength));
   }
 
   /**
@@ -645,10 +787,10 @@ public class RoutesAnswererUtil {
     Map<BgpRouteStatus, Table<String, String, Set<Bgpv4Route>>> routesByStatus =
         new EnumMap<>(BgpRouteStatus.class);
     if (bgpBestRoutes != null) {
-      routesByStatus.put(BgpRouteStatus.BEST, bgpBestRoutes);
+      routesByStatus.put(BEST, bgpBestRoutes);
     }
     if (bgpBackupRoutes != null) {
-      routesByStatus.put(BgpRouteStatus.BACKUP, bgpBackupRoutes);
+      routesByStatus.put(BACKUP, bgpBackupRoutes);
     }
 
     matchingNodes.forEach(

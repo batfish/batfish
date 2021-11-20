@@ -52,7 +52,8 @@ public final class Bgpv4RoutesTest {
   @Test
   public void testBestRoutes() {
     RoutesQuestion question =
-        new RoutesQuestion(null, NODE1, null, null, BgpRouteStatus.BEST.name(), RibProtocol.BGP);
+        new RoutesQuestion(
+            null, NODE1, null, null, BgpRouteStatus.BEST.name(), RibProtocol.BGP, null);
     TableAnswerElement answer =
         (TableAnswerElement) new RoutesAnswerer(question, _batfish).answer(_batfish.getSnapshot());
     assertThat(
@@ -66,7 +67,8 @@ public final class Bgpv4RoutesTest {
   @Test
   public void testBackupRoutes() {
     RoutesQuestion question =
-        new RoutesQuestion(null, NODE1, null, null, BgpRouteStatus.BACKUP.name(), RibProtocol.BGP);
+        new RoutesQuestion(
+            null, NODE1, null, null, BgpRouteStatus.BACKUP.name(), RibProtocol.BGP, null);
     TableAnswerElement answer =
         (TableAnswerElement) new RoutesAnswerer(question, _batfish).answer(_batfish.getSnapshot());
     assertThat(
