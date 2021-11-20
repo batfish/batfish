@@ -218,17 +218,18 @@ public class RoutesAnswererUtil {
    * Filters {@link Table} of BEST and BACKUP {@link Bgpv4Route}s to produce a {@link Multiset} of
    * rows.
    *
-   * @param bgpRoutes {@link Table} of all {@link Bgpv4Route}s
+   * @param bgpBestRoutes {@link Table} of all best {@link Bgpv4Route}s
+   * @param bgpBackupRoutes {@link Table} of all backup {@link Bgpv4Route}s
    * @param matchingVrfsByNode {@link Multimap} of vrfs grouped by node from which {@link
    *     Bgpv4Route}s are to be selected
    * @param network {@link Prefix} of the network used to filter the routes
    * @param protocolSpec {@link RoutingProtocolSpecifier} used to filter the {@link Bgpv4Route}s
-   * @param routeStatuses BGP route statuses that correspond to routes in {@code bgpRoutes}.
-   * @param prefixMatchType
+   * @param routeStatuses BGP route statuses to report
+   * @param prefixMatchType The type of prefix matching desired
    * @return {@link Multiset} of {@link Row}s representing the routes
    */
   static Multiset<Row> getBgpRibRoutes(
-      Table<String, String, Set<Bgpv4Route>> bgpRoutes,
+      Table<String, String, Set<Bgpv4Route>> bgpBestRoutes,
       Table<String, String, Set<Bgpv4Route>> bgpBackupRoutes,
       Multimap<String, String> matchingVrfsByNode,
       @Nullable Prefix network,
@@ -240,7 +241,7 @@ public class RoutesAnswererUtil {
     matchingVrfsByNode.forEach(
         (hostname, vrfName) ->
             getMatchingRoutes(
-                    firstNonNull(bgpRoutes.get(hostname, vrfName), ImmutableSet.of()),
+                    firstNonNull(bgpBestRoutes.get(hostname, vrfName), ImmutableSet.of()),
                     firstNonNull(bgpBackupRoutes.get(hostname, vrfName), ImmutableSet.of()),
                     network,
                     routeStatuses,
@@ -261,8 +262,22 @@ public class RoutesAnswererUtil {
     return rows;
   }
 
+  /**
+   * Filters {@link Table} of BEST and BACKUP {@link EvpnRoute}s to produce a {@link Multiset} of
+   * rows.
+   *
+   * @param evpnBestRoutes {@link Table} of all best {@link EvpnRoute}s
+   * @param evpnBackupRoutes {@link Table} of all backup {@link EvpnRoute}s
+   * @param matchingVrfsByNode {@link Multimap} of vrfs grouped by node from which {@link
+   *     Bgpv4Route}s are to be selected
+   * @param network {@link Prefix} of the network used to filter the routes
+   * @param protocolSpec {@link RoutingProtocolSpecifier} used to filter the {@link Bgpv4Route}s
+   * @param routeStatuses BGP route statuses to report
+   * @param prefixMatchType The type of prefix matching desired
+   * @return {@link Multiset} of {@link Row}s representing the routes
+   */
   static Multiset<Row> getEvpnRoutes(
-      Table<String, String, Set<EvpnRoute<?, ?>>> evpnRoutes,
+      Table<String, String, Set<EvpnRoute<?, ?>>> evpnBestRoutes,
       Table<String, String, Set<EvpnRoute<?, ?>>> evpnBackupRoutes,
       Multimap<String, String> matchingVrfsByNode,
       @Nullable Prefix network,
@@ -275,7 +290,7 @@ public class RoutesAnswererUtil {
     matchingVrfsByNode.forEach(
         (hostname, vrfName) ->
             getMatchingRoutes(
-                    firstNonNull(evpnRoutes.get(hostname, vrfName), ImmutableSet.of()),
+                    firstNonNull(evpnBestRoutes.get(hostname, vrfName), ImmutableSet.of()),
                     firstNonNull(evpnBackupRoutes.get(hostname, vrfName), ImmutableSet.of()),
                     network,
                     routeStatuses,
@@ -290,7 +305,7 @@ public class RoutesAnswererUtil {
                                         evpnRouteToRow(
                                             hostname,
                                             vrfName,
-                                            (EvpnRoute<?, ?>) route,
+                                            route,
                                             ImmutableSet.of(status),
                                             columnMetadataMap)))));
     return rows;
@@ -303,7 +318,12 @@ public class RoutesAnswererUtil {
    * <p>If the network is null, all routes are returned.
    *
    * <p>It the prefix match type is LONGEST_PREFIX_MATCH, the returned prefix is decided based on
-   * LPM on the best routes table.
+   * LPM on the best routes table. This is done because LPM logic is meaningful only for best routes
+   * (as those are the lookup candidates) and also because backup table cannot have a longer
+   * matching prefix (for a prefix to exist in backup, there must be something better in best). A
+   * consequence of these semantics is that if the user asks only for backup routes (via
+   * routeStatus), nothing may be reported in cases where the LPM-based matching on the best table
+   * leads to prefix P1 but P1 is not present in the backup table.
    */
   static <T extends AbstractRouteDecorator> Map<BgpRouteStatus, Stream<T>> getMatchingRoutes(
       Set<T> bestRoutes,
@@ -331,7 +351,7 @@ public class RoutesAnswererUtil {
       routes.put(BEST, getMatchingPrefixRoutes(bestRoutes, network, prefixMatchType));
     }
     if (routeStatuses.contains(BACKUP)) {
-      routes.put(BACKUP, getMatchingPrefixRoutes(backupRoutes, network, PrefixMatchType.EXACT));
+      routes.put(BACKUP, getMatchingPrefixRoutes(backupRoutes, network, prefixMatchType));
     }
     return routes.build();
   }
@@ -770,7 +790,7 @@ public class RoutesAnswererUtil {
       routesByStatus.put(BEST, bgpBestRoutes);
     }
     if (bgpBackupRoutes != null) {
-      routesByStatus.put(BgpRouteStatus.BACKUP, bgpBackupRoutes);
+      routesByStatus.put(BACKUP, bgpBackupRoutes);
     }
 
     matchingNodes.forEach(

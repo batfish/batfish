@@ -1156,7 +1156,7 @@ public class RoutesAnswererUtilTest {
                   backupRoutes,
                   bestAndBackup,
                   ImmutableSet.of(BACKUP),
-                  PrefixMatchType.EXACT)),
+                  PrefixMatchType.LONGEST_PREFIX_MATCH)),
           equalTo(ImmutableMap.of(BACKUP, ImmutableSet.of(r3))));
     }
     {
