@@ -1200,7 +1200,7 @@ public class RoutesAnswererUtilTest {
                     Prefix.ZERO,
                     ImmutableSet.of(BEST, BACKUP),
                     PrefixMatchType.LONGER_PREFIXES)),
-            equalTo(ImmutableMap.of(BEST, ImmutableSet.of(r1, r2), BACKUP, ImmutableSet.of())));
+            equalTo(ImmutableMap.of(BEST, ImmutableSet.of(r1, r2), BACKUP, ImmutableSet.of(r3))));
       }
     }
   }
