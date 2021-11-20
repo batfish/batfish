@@ -2,7 +2,7 @@
   "class" : "org.batfish.question.routes.RoutesQuestion",
   "network" : "1.1.1.0/24",
   "nodes" : "n1",
-  "prefixMatchType" : "EXACT",
+  "prefixMatchType" : "LONGEST_PREFIX_MATCH",
   "protocols" : "all",
   "rib" : "EVPN",
   "vrfs" : "default",
@@ -15,6 +15,7 @@
     "orderedVariableNames" : [
       "nodes",
       "network",
+      "prefixMatchType",
       "vrfs"
     ],
     "tags" : [
@@ -35,6 +36,33 @@
         "optional" : true,
         "type" : "nodeSpec",
         "value" : "n1"
+      },
+      "prefixMatchType" : {
+        "allowedValues" : [
+          "EXACT",
+          "LONGER_PREFIXES",
+          "LONGEST_PREFIX_MATCH",
+          "SHORTER_PREFIXES"
+        ],
+        "description" : "Use this prefix matching criterion: EXACT, LONGEST_PREFIX_MATCH, LONGER_PREFIXES, SHORTER_PREFIXES",
+        "displayName" : "Prefix match type",
+        "optional" : true,
+        "type" : "string",
+        "value" : "LONGEST_PREFIX_MATCH",
+        "values" : [
+          {
+            "name" : "EXACT"
+          },
+          {
+            "name" : "LONGEST_PREFIX_MATCH"
+          },
+          {
+            "name" : "LONGER_PREFIXES"
+          },
+          {
+            "name" : "SHORTER_PREFIXES"
+          }
+        ]
       },
       "vrfs" : {
         "description" : "Examine routes on VRFs matching this name or regex",
