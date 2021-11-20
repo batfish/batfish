@@ -87,6 +87,7 @@ import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
+import org.batfish.question.routes.RoutesQuestion.PrefixMatchType;
 import org.batfish.question.routes.RoutesQuestion.RibProtocol;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
@@ -149,7 +150,8 @@ public class RoutesAnswererTest {
             ribs,
             ImmutableMultimap.of("n1", Configuration.DEFAULT_VRF_NAME),
             null,
-            RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER);
+            RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
+            PrefixMatchType.EXACT);
 
     assertThat(actual.entrySet(), hasSize(0));
   }
@@ -179,7 +181,8 @@ public class RoutesAnswererTest {
             ribs,
             ImmutableMultimap.of("n1", Configuration.DEFAULT_VRF_NAME),
             Prefix.create(Ip.parse("2.2.2.0"), 24),
-            RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER);
+            RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
+            PrefixMatchType.EXACT);
 
     assertThat(actual, hasSize(1));
     assertThat(
@@ -199,7 +202,7 @@ public class RoutesAnswererTest {
     NetworkSnapshot snapshot =
         new NetworkSnapshot(new NetworkId("network"), new SnapshotId("snapshot"));
     RoutesQuestion routesQuestion =
-        new RoutesQuestion(null, "differentNode", null, null, null, null);
+        new RoutesQuestion(null, "differentNode", null, null, null, null, null);
     StringAnswerElement answer =
         (StringAnswerElement) new RoutesAnswerer(routesQuestion, batfish).answer(snapshot);
     assertEquals(RoutesAnswerer.ERROR_NO_MATCHING_NODES, answer.getAnswer());
@@ -220,7 +223,7 @@ public class RoutesAnswererTest {
 
     NetworkSnapshot snapshot =
         new NetworkSnapshot(new NetworkId("network"), new SnapshotId("snapshot"));
-    RoutesQuestion routesQuestion = new RoutesQuestion(null, "n1", "v2", null, null, null);
+    RoutesQuestion routesQuestion = new RoutesQuestion(null, "n1", "v2", null, null, null, null);
     StringAnswerElement answer =
         (StringAnswerElement) new RoutesAnswerer(routesQuestion, batfish).answer(snapshot);
     assertEquals(RoutesAnswerer.ERROR_NO_MATCHING_VRFS, answer.getAnswer());
@@ -247,7 +250,8 @@ public class RoutesAnswererTest {
             ribs,
             ImmutableMultimap.of("n1", Configuration.DEFAULT_VRF_NAME),
             null,
-            new RoutingProtocolSpecifier("static"));
+            new RoutingProtocolSpecifier("static"),
+            PrefixMatchType.EXACT);
 
     assertThat(actual, hasSize(1));
     assertThat(
@@ -284,7 +288,8 @@ public class RoutesAnswererTest {
 
     NetworkSnapshot snapshot =
         new NetworkSnapshot(new NetworkId("network"), new SnapshotId("snapshot"));
-    RoutesQuestion routesQuestion = new RoutesQuestion(null, null, "^not.*", null, null, null);
+    RoutesQuestion routesQuestion =
+        new RoutesQuestion(null, null, "^not.*", null, null, null, null);
     TableAnswerElement answer =
         (TableAnswerElement) new RoutesAnswerer(routesQuestion, batfish).answer(snapshot);
     Multiset<Row> actual = answer.getRows().getData();

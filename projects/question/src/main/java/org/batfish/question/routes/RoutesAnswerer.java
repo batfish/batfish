@@ -123,55 +123,41 @@ public class RoutesAnswerer extends Answerer {
       return new StringAnswerElement(ERROR_NO_MATCHING_VRFS);
     }
 
-    boolean bgpMultipathBest = expandedBgpRouteStatuses.contains(BEST);
-    boolean bgpBackup = expandedBgpRouteStatuses.contains(BACKUP);
     List<Row> rows = new ArrayList<>();
 
     switch (question.getRib()) {
       case BGP:
-        if (bgpBackup) {
-          rows.addAll(
-              getBgpRibRoutes(
-                  dp.getBgpBackupRoutes(),
-                  matchingVrfsByNode,
-                  network,
-                  protocolSpec,
-                  ImmutableSet.of(BACKUP)));
-        }
-        if (bgpMultipathBest) {
-          rows.addAll(
-              getBgpRibRoutes(
-                  dp.getBgpRoutes(),
-                  matchingVrfsByNode,
-                  network,
-                  protocolSpec,
-                  ImmutableSet.of(BEST)));
-        }
+        rows.addAll(
+            getBgpRibRoutes(
+                dp.getBgpRoutes(),
+                dp.getBgpBackupRoutes(),
+                matchingVrfsByNode,
+                network,
+                protocolSpec,
+                expandedBgpRouteStatuses,
+                question.getPrefixMatchType()));
         rows.sort(BGP_COMPARATOR);
         break;
       case EVPN:
-        if (bgpBackup) {
-          rows.addAll(
-              getEvpnRoutes(
-                  dp.getEvpnBackupRoutes(),
-                  matchingVrfsByNode,
-                  network,
-                  protocolSpec,
-                  ImmutableSet.of(BACKUP)));
-        }
-        if (bgpMultipathBest) {
-          rows.addAll(
-              getEvpnRoutes(
-                  dp.getEvpnRoutes(),
-                  matchingVrfsByNode,
-                  network,
-                  protocolSpec,
-                  ImmutableSet.of(BEST)));
-        }
+        rows.addAll(
+            getEvpnRoutes(
+                dp.getEvpnRoutes(),
+                dp.getEvpnBackupRoutes(),
+                matchingVrfsByNode,
+                network,
+                protocolSpec,
+                ImmutableSet.of(BACKUP),
+                question.getPrefixMatchType()));
         rows.sort(BGP_COMPARATOR);
         break;
       case MAIN:
-        rows.addAll(getMainRibRoutes(dp.getRibs(), matchingVrfsByNode, network, protocolSpec));
+        rows.addAll(
+            getMainRibRoutes(
+                dp.getRibs(),
+                matchingVrfsByNode,
+                network,
+                protocolSpec,
+                question.getPrefixMatchType()));
         rows.sort(MAIN_RIB_COMPARATOR);
         break;
       default:

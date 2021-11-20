@@ -142,6 +142,9 @@ def test_instance_vars_with_values(question):
         ("neighbors", "neighborTypes"),
         ("neighbors", "style"),
         ("routes", "rib"),
+        ("routes", "prefixMatchType"),
+        ("bgpRib", "prefixMatchType"),
+        ("evpnRib", "prefixMatchType"),
     }
     instance = question["instance"]
     qname = instance["instanceName"]

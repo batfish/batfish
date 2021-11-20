@@ -29,10 +29,14 @@ import static org.batfish.question.routes.RoutesAnswererUtil.getBgpRibRoutes;
 import static org.batfish.question.routes.RoutesAnswererUtil.getBgpRouteRowsDiff;
 import static org.batfish.question.routes.RoutesAnswererUtil.getEvpnRoutes;
 import static org.batfish.question.routes.RoutesAnswererUtil.getMainRibRoutes;
+import static org.batfish.question.routes.RoutesAnswererUtil.getMatchingPrefixRoutes;
+import static org.batfish.question.routes.RoutesAnswererUtil.getMatchingRoutes;
 import static org.batfish.question.routes.RoutesAnswererUtil.getRoutesDiff;
 import static org.batfish.question.routes.RoutesAnswererUtil.groupBgpRoutes;
 import static org.batfish.question.routes.RoutesAnswererUtil.groupRoutes;
+import static org.batfish.question.routes.RoutesAnswererUtil.longestMatchingPrefix;
 import static org.batfish.question.routes.RoutesAnswererUtil.populateRouteAttributes;
+import static org.batfish.question.routes.RoutesAnswererUtil.prefixMatches;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -40,7 +44,9 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableList;
@@ -57,13 +63,18 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.EvpnRoute;
 import org.batfish.datamodel.EvpnType3Route;
 import org.batfish.datamodel.GenericRib;
@@ -78,12 +89,14 @@ import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.pojo.Node;
+import org.batfish.datamodel.questions.BgpRouteStatus;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.table.Row;
 import org.batfish.question.routes.DiffRoutesOutput.KeyPresenceStatus;
 import org.batfish.question.routes.RoutesAnswererTest.MockRib;
 import org.batfish.question.routes.RoutesAnswererUtil.RouteEntryPresenceStatus;
+import org.batfish.question.routes.RoutesQuestion.PrefixMatchType;
 import org.batfish.question.routes.RoutesQuestion.RibProtocol;
 import org.batfish.specifier.RoutingProtocolSpecifier;
 import org.hamcrest.Matcher;
@@ -201,7 +214,8 @@ public class RoutesAnswererUtilTest {
             ribs,
             ImmutableMultimap.of("n1", Configuration.DEFAULT_VRF_NAME),
             null,
-            RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER);
+            RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
+            PrefixMatchType.EXACT);
     assertThat(
         actual,
         contains(
@@ -241,10 +255,12 @@ public class RoutesAnswererUtilTest {
     Multiset<Row> rows =
         getBgpRibRoutes(
             bgpRouteTable,
+            ImmutableTable.of(),
             ImmutableMultimap.of("node", "vrf"),
             null,
             RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
-            ImmutableSet.of(BEST));
+            ImmutableSet.of(BEST),
+            PrefixMatchType.EXACT);
 
     // Both routes should have the same values for these columns
     Matcher<Row> commonMatcher =
@@ -283,10 +299,12 @@ public class RoutesAnswererUtilTest {
     Multiset<Row> rows =
         getBgpRibRoutes(
             ImmutableTable.of(), // no BGP rib for the specifed vrfs
+            ImmutableTable.of(),
             ImmutableMultimap.of("node", "vrf"),
             null,
             RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
-            ImmutableSet.of(BEST));
+            ImmutableSet.of(BEST),
+            PrefixMatchType.EXACT);
     assertThat(rows, empty());
   }
 
@@ -311,10 +329,12 @@ public class RoutesAnswererUtilTest {
     Multiset<Row> rows =
         getBgpRibRoutes(
             bgpRouteTable,
+            ImmutableTable.of(),
             ImmutableMultimap.of("node", "vrf"),
             null,
             RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
-            ImmutableSet.of(BEST));
+            ImmutableSet.of(BEST),
+            PrefixMatchType.EXACT);
     assertThat(
         rows.iterator().next().get(COL_COMMUNITIES, Schema.list(Schema.STRING)),
         equalTo(ImmutableList.of("1:1")));
@@ -343,10 +363,12 @@ public class RoutesAnswererUtilTest {
     Multiset<Row> rows =
         getEvpnRoutes(
             evpnRouteTable,
+            ImmutableTable.of(),
             ImmutableMultimap.of("node", "vrf"),
             null,
             RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
-            ImmutableSet.of(BEST));
+            ImmutableSet.of(BEST),
+            PrefixMatchType.EXACT);
 
     assertThat(
         rows,
@@ -376,10 +398,12 @@ public class RoutesAnswererUtilTest {
     Multiset<Row> rows =
         getEvpnRoutes(
             ImmutableTable.of(), // no EVPN rib for the specifed vrfs
+            ImmutableTable.of(),
             ImmutableMultimap.of("node", "vrf"),
             null,
             RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
-            ImmutableSet.of(BEST));
+            ImmutableSet.of(BEST, BACKUP),
+            PrefixMatchType.EXACT);
     assertThat(rows, empty());
   }
 
@@ -931,5 +955,274 @@ public class RoutesAnswererUtilTest {
                 .put(COL_BASE_PREFIX + COL_ADMIN_DISTANCE, 1)
                 .put(COL_BASE_PREFIX + COL_TAG, 1L)
                 .build()));
+  }
+
+  @Test
+  public void testPrefixMatches() {
+    Prefix p24 = Prefix.parse("1.1.1.0/24");
+    Prefix p16 = Prefix.parse("1.1.0.0/16");
+    Prefix p32 = Prefix.parse("1.1.1.1/32");
+
+    assertTrue(prefixMatches(PrefixMatchType.EXACT, p24, Prefix.parse("1.1.1.0/24")));
+    assertFalse(prefixMatches(PrefixMatchType.EXACT, p24, p16));
+
+    assertTrue(prefixMatches(PrefixMatchType.LONGER_PREFIXES, p24, p24));
+    assertTrue(prefixMatches(PrefixMatchType.LONGER_PREFIXES, p24, p32));
+    assertFalse(prefixMatches(PrefixMatchType.LONGER_PREFIXES, p24, p16));
+    assertFalse(prefixMatches(PrefixMatchType.LONGER_PREFIXES, p24, Prefix.parse("2.1.1.0/24")));
+
+    assertTrue(prefixMatches(PrefixMatchType.SHORTER_PREFIXES, p24, p24));
+    assertTrue(prefixMatches(PrefixMatchType.SHORTER_PREFIXES, p24, p16));
+    assertFalse(prefixMatches(PrefixMatchType.SHORTER_PREFIXES, p24, p32));
+    assertFalse(prefixMatches(PrefixMatchType.SHORTER_PREFIXES, p24, Prefix.parse("2.1.1.0/24")));
+  }
+
+  @Test
+  public void testGetMatchingPrefixRoutes_fromRib() {
+    AbstractRoute r1 = new ConnectedRoute(Prefix.parse("1.1.1.0/24"), "r1");
+    AbstractRoute r2 = new ConnectedRoute(Prefix.parse("1.2.1.0/24"), "r2");
+    org.batfish.datamodel.MockRib ribs =
+        org.batfish.datamodel.MockRib.builder()
+            .setRoutes(
+                ImmutableSet.of(new AnnotatedRoute<>(r1, "r1"), new AnnotatedRoute<>(r2, "r2")))
+            .setLongestPrefixMatchResults(
+                ImmutableMap.of(
+                    Ip.parse("1.1.1.1"), ImmutableSet.of(new AnnotatedRoute<>(r1, "r1"))))
+            .build();
+
+    // both routes are returned when network is null
+    assertThat(
+        getMatchingPrefixRoutes(PrefixMatchType.EXACT, null, ribs).collect(Collectors.toSet()),
+        containsInAnyOrder(r1, r2));
+
+    // match conditions other than LPM
+    assertThat(
+        getMatchingPrefixRoutes(PrefixMatchType.EXACT, Prefix.parse("1.1.1.1/24"), ribs)
+            .collect(Collectors.toSet()),
+        contains(r1));
+    assertThat(
+        getMatchingPrefixRoutes(PrefixMatchType.LONGER_PREFIXES, Prefix.parse("1.0.0.0/8"), ribs)
+            .collect(Collectors.toSet()),
+        containsInAnyOrder(r1, r2));
+
+    // LPM
+    assertThat(
+        getMatchingPrefixRoutes(
+                PrefixMatchType.LONGEST_PREFIX_MATCH, Prefix.parse("1.1.1.1/32"), ribs)
+            .collect(Collectors.toSet()),
+        contains(r1));
+    assertTrue(
+        getMatchingPrefixRoutes(
+                PrefixMatchType.LONGEST_PREFIX_MATCH, Prefix.parse("2.1.1.1/32"), ribs)
+            .collect(Collectors.toSet())
+            .isEmpty());
+  }
+
+  private static Map<BgpRouteStatus, Set<AbstractRoute>> closeStream(
+      Map<BgpRouteStatus, Stream<AbstractRoute>> routes) {
+    return routes.entrySet().stream()
+        .collect(
+            ImmutableMap.toImmutableMap(
+                e -> e.getKey(), e -> e.getValue().collect(ImmutableSet.toImmutableSet())));
+  }
+
+  @Test
+  public void testGetMatchingRoutes() {
+    Prefix bestAndBackup = Prefix.parse("1.1.1.0/24");
+    Prefix bestOnly = Prefix.parse("1.2.1.0/24");
+
+    AbstractRoute r1 = new ConnectedRoute(bestAndBackup, "r1");
+    AbstractRoute r2 = new ConnectedRoute(bestOnly, "r2");
+    Set<AbstractRoute> bestRoutes = ImmutableSet.of(r1, r2);
+
+    AbstractRoute r3 = new ConnectedRoute(bestAndBackup, "r3");
+    Set<AbstractRoute> backupRoutes = ImmutableSet.of(r3);
+
+    {
+      // network is null
+      assertThat(
+          closeStream(
+              getMatchingRoutes(
+                  bestRoutes,
+                  backupRoutes,
+                  null,
+                  ImmutableSet.of(BEST, BACKUP),
+                  PrefixMatchType.EXACT)),
+          equalTo(ImmutableMap.of(BEST, ImmutableSet.of(r1, r2), BACKUP, ImmutableSet.of(r3))));
+
+      // filtering by status type
+      assertThat(
+          closeStream(
+              getMatchingRoutes(
+                  bestRoutes, backupRoutes, null, ImmutableSet.of(BEST), PrefixMatchType.EXACT)),
+          equalTo(ImmutableMap.of(BEST, ImmutableSet.of(r1, r2))));
+      assertThat(
+          closeStream(
+              getMatchingRoutes(
+                  bestRoutes, backupRoutes, null, ImmutableSet.of(BACKUP), PrefixMatchType.EXACT)),
+          equalTo(ImmutableMap.of(BACKUP, ImmutableSet.of(r3))));
+    }
+
+    {
+      // network is in both best and backup routes
+      assertThat(
+          closeStream(
+              getMatchingRoutes(
+                  bestRoutes,
+                  backupRoutes,
+                  bestAndBackup,
+                  ImmutableSet.of(BEST, BACKUP),
+                  PrefixMatchType.EXACT)),
+          equalTo(ImmutableMap.of(BEST, ImmutableSet.of(r1), BACKUP, ImmutableSet.of(r3))));
+
+      assertThat(
+          closeStream(
+              getMatchingRoutes(
+                  bestRoutes,
+                  backupRoutes,
+                  bestAndBackup,
+                  ImmutableSet.of(BEST),
+                  PrefixMatchType.EXACT)),
+          equalTo(ImmutableMap.of(BEST, ImmutableSet.of(r1))));
+
+      assertThat(
+          closeStream(
+              getMatchingRoutes(
+                  bestRoutes,
+                  backupRoutes,
+                  bestAndBackup,
+                  ImmutableSet.of(BACKUP),
+                  PrefixMatchType.EXACT)),
+          equalTo(ImmutableMap.of(BACKUP, ImmutableSet.of(r3))));
+    }
+
+    {
+      // network is only in best routes
+      assertThat(
+          closeStream(
+              getMatchingRoutes(
+                  bestRoutes,
+                  backupRoutes,
+                  bestOnly,
+                  ImmutableSet.of(BEST, BACKUP),
+                  PrefixMatchType.EXACT)),
+          equalTo(ImmutableMap.of(BEST, ImmutableSet.of(r2), BACKUP, ImmutableSet.of())));
+
+      assertThat(
+          closeStream(
+              getMatchingRoutes(
+                  bestRoutes,
+                  backupRoutes,
+                  bestOnly,
+                  ImmutableSet.of(BEST),
+                  PrefixMatchType.EXACT)),
+          equalTo(ImmutableMap.of(BEST, ImmutableSet.of(r2))));
+
+      assertThat(
+          closeStream(
+              getMatchingRoutes(
+                  bestRoutes,
+                  backupRoutes,
+                  bestOnly,
+                  ImmutableSet.of(BACKUP),
+                  PrefixMatchType.EXACT)),
+          equalTo(ImmutableMap.of(BACKUP, ImmutableSet.of())));
+    }
+
+    {
+      // LPM case: both best and backup match
+      assertThat(
+          closeStream(
+              getMatchingRoutes(
+                  bestRoutes,
+                  backupRoutes,
+                  bestAndBackup,
+                  ImmutableSet.of(BEST, BACKUP),
+                  PrefixMatchType.LONGEST_PREFIX_MATCH)),
+          equalTo(ImmutableMap.of(BEST, ImmutableSet.of(r1), BACKUP, ImmutableSet.of(r3))));
+      assertThat(
+          closeStream(
+              getMatchingRoutes(
+                  bestRoutes,
+                  backupRoutes,
+                  bestAndBackup,
+                  ImmutableSet.of(BEST),
+                  PrefixMatchType.LONGEST_PREFIX_MATCH)),
+          equalTo(ImmutableMap.of(BEST, ImmutableSet.of(r1))));
+      assertThat(
+          closeStream(
+              getMatchingRoutes(
+                  bestRoutes,
+                  backupRoutes,
+                  bestAndBackup,
+                  ImmutableSet.of(BACKUP),
+                  PrefixMatchType.LONGEST_PREFIX_MATCH)),
+          equalTo(ImmutableMap.of(BACKUP, ImmutableSet.of(r3))));
+    }
+    {
+      // LPM case: prefix only in best
+      assertThat(
+          closeStream(
+              getMatchingRoutes(
+                  bestRoutes,
+                  backupRoutes,
+                  bestOnly,
+                  ImmutableSet.of(BEST, BACKUP),
+                  PrefixMatchType.LONGEST_PREFIX_MATCH)),
+          equalTo(ImmutableMap.of(BEST, ImmutableSet.of(r2), BACKUP, ImmutableSet.of())));
+      assertThat(
+          closeStream(
+              getMatchingRoutes(
+                  bestRoutes,
+                  backupRoutes,
+                  bestOnly,
+                  ImmutableSet.of(BEST),
+                  PrefixMatchType.LONGEST_PREFIX_MATCH)),
+          equalTo(ImmutableMap.of(BEST, ImmutableSet.of(r2))));
+      assertThat(
+          closeStream(
+              getMatchingRoutes(
+                  bestRoutes,
+                  backupRoutes,
+                  bestOnly,
+                  ImmutableSet.of(BACKUP),
+                  PrefixMatchType.LONGEST_PREFIX_MATCH)),
+          equalTo(ImmutableMap.of(BACKUP, ImmutableSet.of())));
+    }
+    {
+      {
+        // multi-prefix matcher
+        assertThat(
+            closeStream(
+                getMatchingRoutes(
+                    bestRoutes,
+                    backupRoutes,
+                    Prefix.ZERO,
+                    ImmutableSet.of(BEST, BACKUP),
+                    PrefixMatchType.LONGER_PREFIXES)),
+            equalTo(ImmutableMap.of(BEST, ImmutableSet.of(r1, r2), BACKUP, ImmutableSet.of(r3))));
+      }
+    }
+  }
+
+  @Test
+  public void testLongestPrefixMatch() {
+    AbstractRoute r1 = new ConnectedRoute(Prefix.parse("1.1.1.0/24"), "r1");
+    AbstractRoute r2 = new ConnectedRoute(Prefix.parse("1.2.1.0/24"), "r2");
+    Set<AbstractRoute> routes = ImmutableSet.of(r1, r2);
+
+    assertThat(
+        longestMatchingPrefix(Prefix.parse("1.1.1.0/24"), routes),
+        equalTo(Optional.of(r1.getNetwork())));
+    assertThat(
+        longestMatchingPrefix(Prefix.parse("1.1.1.1/32"), routes),
+        equalTo(Optional.of(r1.getNetwork())));
+    assertThat(
+        longestMatchingPrefix(Prefix.parse("1.2.1.0/24"), routes),
+        equalTo(Optional.of(r2.getNetwork())));
+
+    assertThat(longestMatchingPrefix(Prefix.parse("1.1.1.0/8"), routes), equalTo(Optional.empty()));
+    assertThat(
+        longestMatchingPrefix(Prefix.parse("2.1.1.0/32"), routes), equalTo(Optional.empty()));
   }
 }

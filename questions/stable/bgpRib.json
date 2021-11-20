@@ -8,6 +8,7 @@
         "orderedVariableNames": [
             "nodes",
             "network",
+            "prefixMatchType",
             "vrfs",
             "status"
         ],
@@ -34,6 +35,26 @@
                 "optional": true,
                 "displayName": "Network"
             },
+            "prefixMatchType": {
+                "description": "Use this prefix matching criterion: EXACT, LONGEST_PREFIX_MATCH, LONGER_PREFIXES, SHORTER_PREFIXES",
+                "optional": true,
+                "type": "string",
+                "values": [
+                    {
+                        "name": "EXACT"
+                    },
+                    {
+                        "name": "LONGEST_PREFIX_MATCH"
+                    },
+                    {
+                        "name": "LONGER_PREFIXES"
+                    },
+                    {
+                        "name": "SHORTER_PREFIXES"
+                    }
+                ],
+                "displayName": "Prefix match type"
+            },
             "status": {
                "description": "Examine routes whose status matches this specifier",
                "type": "bgpRouteStatusSpec",
@@ -43,6 +64,7 @@
         }
     },
     "network": "${network}",
+    "prefixMatchType": "${prefixMatchType}",
     "nodes": "${nodes}",
     "vrfs": "${vrfs}",
     "rib": "bgp",

@@ -125,7 +125,7 @@ public class MockRib implements GenericRib<AnnotatedRoute<AbstractRoute>> {
       Ip address,
       int maxPrefixLength,
       ResolutionRestriction<AnnotatedRoute<AbstractRoute>> restriction) {
-    throw new UnsupportedOperationException();
+    return _longestPrefixMatchResults.getOrDefault(address, ImmutableSet.of());
   }
 
   @Override
