@@ -48,8 +48,8 @@ import org.batfish.representation.frr.BgpProcess;
 import org.batfish.representation.frr.BgpVrf;
 import org.batfish.representation.frr.FrrConfiguration;
 import org.batfish.representation.frr.FrrInterface;
-import org.batfish.representation.frr.MockOutOfBandConfiguration;
-import org.batfish.representation.frr.OutOfBandConfiguration;
+import org.batfish.representation.frr.FrrVendorConfiguration;
+import org.batfish.representation.frr.MockFrrVendorConfiguration;
 import org.batfish.representation.frr.StaticRoute;
 import org.batfish.representation.frr.Vxlan;
 import org.hamcrest.Matchers;
@@ -72,8 +72,8 @@ public class CumulusConcatenatedConfigurationTest {
     vxlan.setId(1001);
     vxlan.setLocalTunnelip(vxlanLocalTunnelIp);
     vxlan.setBridgeAccessVlan(101);
-    OutOfBandConfiguration oob =
-        MockOutOfBandConfiguration.builder()
+    FrrVendorConfiguration oob =
+        MockFrrVendorConfiguration.builder()
             .setVxlans(ImmutableMap.of(vxlan.getName(), vxlan))
             .build();
 

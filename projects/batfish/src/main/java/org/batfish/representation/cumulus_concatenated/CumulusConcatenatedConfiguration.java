@@ -83,9 +83,9 @@ import org.batfish.representation.frr.CumulusStructureType;
 import org.batfish.representation.frr.CumulusStructureUsage;
 import org.batfish.representation.frr.FrrConfiguration;
 import org.batfish.representation.frr.FrrInterface;
+import org.batfish.representation.frr.FrrVendorConfiguration;
 import org.batfish.representation.frr.InterfaceBridgeSettings;
 import org.batfish.representation.frr.InterfaceClagSettings;
-import org.batfish.representation.frr.OutOfBandConfiguration;
 import org.batfish.representation.frr.Vrf;
 import org.batfish.representation.frr.Vxlan;
 import org.batfish.vendor.VendorConfiguration;
@@ -95,8 +95,7 @@ import org.batfish.vendor.VendorConfiguration;
  * /etc/network/interfaces, /etc/frr/frr.conf, etc.).
  */
 @ParametersAreNonnullByDefault
-public class CumulusConcatenatedConfiguration extends VendorConfiguration
-    implements OutOfBandConfiguration {
+public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
 
   public static final Pattern BOND_INTERFACE_PATTERN = Pattern.compile("^(bond[0-9]+)");
   public static final Pattern PHYSICAL_INTERFACE_PATTERN =
@@ -249,7 +248,6 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
             });
   }
 
-  @Override
   public Optional<String> getVrfForVlan(@Nullable Integer bridgeAccessVlan) {
     if (bridgeAccessVlan == null) {
       return Optional.empty();
@@ -700,15 +698,14 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
    */
   static void convertVxlans(
       Configuration c,
-      OutOfBandConfiguration oobConfig,
+      CumulusConcatenatedConfiguration vc,
       Map<Integer, String> vniToVrf,
       @Nullable Ip loopbackClagVxlanAnycastIp,
       @Nullable Ip loopbackVxlanLocalTunnelIp,
       Warnings w) {
 
     // Put all valid VXLAN VNIs into appropriate VRF
-    oobConfig
-        .getVxlans()
+    vc.getVxlans()
         .values()
         .forEach(
             vxlan -> {
@@ -756,7 +753,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
                                     .build()));
               } else {
                 // This is an L2 VNI. Find the VRF by looking up the VLAN
-                vrfName = oobConfig.getVrfForVlan(vxlan.getBridgeAccessVlan()).orElse(null);
+                vrfName = vc.getVrfForVlan(vxlan.getBridgeAccessVlan()).orElse(null);
                 if (vrfName == null) {
                   // This is a workaround until we properly support pure-L2 VNIs (with no IRBs)
                   vrfName = DEFAULT_VRF_NAME;
@@ -892,8 +889,8 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
     return _interfacesConfiguration;
   }
 
-  @Nonnull
-  public FrrConfiguration getFrrConfiguration() {
+  @Override
+  public @Nonnull FrrConfiguration getFrrConfiguration() {
     return _frrConfiguration;
   }
 

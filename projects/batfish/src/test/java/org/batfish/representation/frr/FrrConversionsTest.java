@@ -138,7 +138,7 @@ public final class FrrConversionsTest {
   private NetworkFactory _nf;
   private Configuration _c;
   private Vrf _v;
-  private OutOfBandConfiguration _oob;
+  private FrrVendorConfiguration _vc;
   private FrrConfiguration _frr;
 
   @Before
@@ -146,7 +146,7 @@ public final class FrrConversionsTest {
     _nf = new NetworkFactory();
     _c = _nf.configurationBuilder().build();
     _v = _nf.vrfBuilder().setOwner(_c).build();
-    _oob = MockOutOfBandConfiguration.builder().build();
+    _vc = MockFrrVendorConfiguration.builder().build();
     _frr = new FrrConfiguration();
     _frr.setOspfProcess(new OspfProcess());
     _frr.setBgpProcess(new BgpProcess());
@@ -589,7 +589,7 @@ public final class FrrConversionsTest {
         BgpActivePeerConfig.builder().setPeerAddress(peerIp);
     generateBgpCommonPeerConfig(
         viConfig,
-        _oob,
+        _vc,
         _frr,
         neighbor,
         10000L,
@@ -653,7 +653,7 @@ public final class FrrConversionsTest {
         BgpActivePeerConfig.builder().setPeerAddress(peerIp);
     generateBgpCommonPeerConfig(
         viConfig,
-        _oob,
+        _vc,
         _frr,
         neighbor,
         10000L,
@@ -690,7 +690,7 @@ public final class FrrConversionsTest {
         BgpActivePeerConfig.builder().setPeerAddress(peerIp);
     generateBgpCommonPeerConfig(
         viConfig,
-        _oob,
+        _vc,
         _frr,
         neighbor,
         10000L,
@@ -736,7 +736,7 @@ public final class FrrConversionsTest {
 
       generateBgpCommonPeerConfig(
           viConfig,
-          _oob,
+          _vc,
           _frr,
           neighbor,
           10000L,
@@ -764,7 +764,7 @@ public final class FrrConversionsTest {
 
       generateBgpCommonPeerConfig(
           viConfig,
-          _oob,
+          _vc,
           _frr,
           neighbor,
           10000L,
@@ -805,7 +805,7 @@ public final class FrrConversionsTest {
         BgpActivePeerConfig.builder().setPeerAddress(peerIp);
     generateBgpCommonPeerConfig(
         viConfig,
-        _oob,
+        _vc,
         _frr,
         neighbor,
         10000L,
@@ -853,8 +853,8 @@ public final class FrrConversionsTest {
     vxlan2.setId(2);
     vxlan2.setBridgeAccessVlan(2);
 
-    OutOfBandConfiguration oob =
-        MockOutOfBandConfiguration.builder()
+    FrrVendorConfiguration oob =
+        MockFrrVendorConfiguration.builder()
             .setVxlans(ImmutableMap.of(vxlan1.getName(), vxlan1, vxlan2.getName(), vxlan2))
             .build();
 
@@ -923,7 +923,7 @@ public final class FrrConversionsTest {
     // we didn't set route reflector yet
     generateBgpCommonPeerConfig(
         new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED),
-        _oob,
+        _vc,
         _frr,
         neighbor,
         101L,
@@ -937,7 +937,7 @@ public final class FrrConversionsTest {
     bgpNeighborL2vpnEvpnAddressFamily.setRouteReflectorClient(true);
     generateBgpCommonPeerConfig(
         new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED),
-        _oob,
+        _vc,
         _frr,
         neighbor,
         101L,
@@ -1130,7 +1130,7 @@ public final class FrrConversionsTest {
     org.batfish.datamodel.ospf.OspfProcess ospfProcess =
         toOspfProcess(
             new Configuration("dummy", ConfigurationFormat.CUMULUS_CONCATENATED),
-            _oob,
+            _vc,
             _frr,
             new OspfVrf(DEFAULT_VRF_NAME),
             ImmutableMap.of(),
@@ -1147,7 +1147,7 @@ public final class FrrConversionsTest {
     org.batfish.datamodel.ospf.OspfProcess ospfProcess =
         toOspfProcess(
             getConfigurationWithLoopback(ConcreteInterfaceAddress.parse("1.1.1.1/24")),
-            _oob,
+            _vc,
             _frr,
             new OspfVrf(DEFAULT_VRF_NAME),
             ImmutableMap.of(),
@@ -1167,7 +1167,7 @@ public final class FrrConversionsTest {
     org.batfish.datamodel.ospf.OspfProcess ospfProcess =
         toOspfProcess(
             new Configuration("dummy", ConfigurationFormat.CUMULUS_CONCATENATED),
-            _oob,
+            _vc,
             _frr,
             ospfVrf,
             ImmutableMap.of(),
@@ -1196,7 +1196,7 @@ public final class FrrConversionsTest {
     _frr.getRouteMaps().put("some-map", new RouteMap("some-map"));
     String policyName = computeOspfExportPolicyName(ospfVrf.getVrfName());
 
-    toOspfProcess(viConfig, _oob, _frr, ospfVrf, ImmutableMap.of(), new Warnings());
+    toOspfProcess(viConfig, _vc, _frr, ospfVrf, ImmutableMap.of(), new Warnings());
 
     assertEquals(
         viConfig.getRoutingPolicies().get(policyName).getStatements(),
@@ -1211,7 +1211,7 @@ public final class FrrConversionsTest {
     org.batfish.datamodel.ospf.OspfProcess ospfProcess =
         toOspfProcess(
             new Configuration("dummy", ConfigurationFormat.CUMULUS_CONCATENATED),
-            _oob,
+            _vc,
             _frr,
             new OspfVrf(DEFAULT_VRF_NAME),
             ImmutableMap.of(),
@@ -1348,7 +1348,7 @@ public final class FrrConversionsTest {
 
     Map<String, org.batfish.datamodel.Interface> ifaceMap =
         ImmutableMap.of(viIface.getName(), viIface);
-    addOspfInterfaces(_oob, _frr, ifaceMap, "1", new Warnings());
+    addOspfInterfaces(_vc, _frr, ifaceMap, "1", new Warnings());
     assertThat(viIface.getOspfAreaName(), equalTo(1L));
   }
 
@@ -1364,7 +1364,7 @@ public final class FrrConversionsTest {
     Map<String, org.batfish.datamodel.Interface> ifaceMap =
         ImmutableMap.of(viIface.getName(), viIface);
 
-    addOspfInterfaces(_oob, _frr, ifaceMap, "1", new Warnings());
+    addOspfInterfaces(_vc, _frr, ifaceMap, "1", new Warnings());
     assertNull(viIface.getOspfAreaName());
   }
 
@@ -1384,7 +1384,7 @@ public final class FrrConversionsTest {
     Map<String, org.batfish.datamodel.Interface> ifaceMap =
         ImmutableMap.of(viIface.getName(), viIface);
 
-    addOspfInterfaces(_oob, _frr, ifaceMap, "1", new Warnings());
+    addOspfInterfaces(_vc, _frr, ifaceMap, "1", new Warnings());
     assertThat(viIface.getOspfCost(), equalTo(100));
   }
 
@@ -1405,7 +1405,7 @@ public final class FrrConversionsTest {
     Map<String, org.batfish.datamodel.Interface> ifaceMap =
         ImmutableMap.of(viIface.getName(), viIface);
 
-    addOspfInterfaces(_oob, _frr, ifaceMap, "1", new Warnings());
+    addOspfInterfaces(_vc, _frr, ifaceMap, "1", new Warnings());
     assertThat(viIface.getOspfCost(), equalTo(0));
   }
 
@@ -1423,7 +1423,7 @@ public final class FrrConversionsTest {
     Map<String, org.batfish.datamodel.Interface> ifaceMap =
         ImmutableMap.of(viIface.getName(), viIface);
 
-    addOspfInterfaces(_oob, _frr, ifaceMap, "1", new Warnings());
+    addOspfInterfaces(_vc, _frr, ifaceMap, "1", new Warnings());
     assertNull(viIface.getOspfCost());
   }
 
@@ -1441,7 +1441,7 @@ public final class FrrConversionsTest {
     Map<String, org.batfish.datamodel.Interface> ifaceMap =
         ImmutableMap.of(viIface.getName(), viIface);
 
-    addOspfInterfaces(_oob, _frr, ifaceMap, "1", new Warnings());
+    addOspfInterfaces(_vc, _frr, ifaceMap, "1", new Warnings());
     assertNull(viIface.getOspfNetworkType());
   }
 
@@ -1547,7 +1547,7 @@ public final class FrrConversionsTest {
     Map<String, org.batfish.datamodel.Interface> ifaceMap =
         ImmutableMap.of(viIface.getName(), viIface);
 
-    addOspfInterfaces(_oob, _frr, ifaceMap, "1", new Warnings());
+    addOspfInterfaces(_vc, _frr, ifaceMap, "1", new Warnings());
     assertFalse(viIface.getOspfPassive());
   }
 
@@ -1567,7 +1567,7 @@ public final class FrrConversionsTest {
     Map<String, org.batfish.datamodel.Interface> ifaceMap =
         ImmutableMap.of(viIface.getName(), viIface);
 
-    addOspfInterfaces(_oob, _frr, ifaceMap, "1", new Warnings());
+    addOspfInterfaces(_vc, _frr, ifaceMap, "1", new Warnings());
     assertTrue(viIface.getOspfPassive());
   }
 
@@ -1587,7 +1587,7 @@ public final class FrrConversionsTest {
     Map<String, org.batfish.datamodel.Interface> ifaceMap =
         ImmutableMap.of(viIface.getName(), viIface);
 
-    addOspfInterfaces(_oob, _frr, ifaceMap, "1", new Warnings());
+    addOspfInterfaces(_vc, _frr, ifaceMap, "1", new Warnings());
     assertTrue(viIface.getOspfPassive());
   }
 
@@ -1607,7 +1607,7 @@ public final class FrrConversionsTest {
     Map<String, org.batfish.datamodel.Interface> ifaceMap =
         ImmutableMap.of(viIface.getName(), viIface);
 
-    addOspfInterfaces(_oob, _frr, ifaceMap, "1", new Warnings());
+    addOspfInterfaces(_vc, _frr, ifaceMap, "1", new Warnings());
     assertThat(
         viIface.getOspfNetworkType(),
         equalTo(org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT));
@@ -1628,7 +1628,7 @@ public final class FrrConversionsTest {
     Map<String, org.batfish.datamodel.Interface> ifaceMap =
         ImmutableMap.of(viIface.getName(), viIface);
 
-    addOspfInterfaces(_oob, _frr, ifaceMap, "1", new Warnings());
+    addOspfInterfaces(_vc, _frr, ifaceMap, "1", new Warnings());
 
     // default hello interval
     assertThat(
@@ -1637,7 +1637,7 @@ public final class FrrConversionsTest {
 
     // set hello interval
     ospf.setHelloInterval(1);
-    addOspfInterfaces(_oob, _frr, ifaceMap, "1", new Warnings());
+    addOspfInterfaces(_vc, _frr, ifaceMap, "1", new Warnings());
     assertThat(viIface.getOspfSettings().getHelloInterval(), equalTo(1));
   }
 
@@ -1656,7 +1656,7 @@ public final class FrrConversionsTest {
     Map<String, org.batfish.datamodel.Interface> ifaceMap =
         ImmutableMap.of(viIface.getName(), viIface);
 
-    addOspfInterfaces(_oob, _frr, ifaceMap, "1", new Warnings());
+    addOspfInterfaces(_vc, _frr, ifaceMap, "1", new Warnings());
 
     // default dead interval
     assertThat(
@@ -1665,7 +1665,7 @@ public final class FrrConversionsTest {
 
     // set dead interval
     ospf.setDeadInterval(1);
-    addOspfInterfaces(_oob, _frr, ifaceMap, "1", new Warnings());
+    addOspfInterfaces(_vc, _frr, ifaceMap, "1", new Warnings());
     assertThat(viIface.getOspfSettings().getDeadInterval(), equalTo(1));
   }
 
@@ -1684,7 +1684,7 @@ public final class FrrConversionsTest {
 
     Map<String, org.batfish.datamodel.Interface> ifaceMap =
         ImmutableMap.of(viIface.getName(), viIface);
-    addOspfInterfaces(_oob, _frr, ifaceMap, "1", new Warnings());
+    addOspfInterfaces(_vc, _frr, ifaceMap, "1", new Warnings());
 
     // default dead interval
     assertThat(viIface.getOspfSettings().getProcess(), equalTo("1"));
@@ -1702,7 +1702,7 @@ public final class FrrConversionsTest {
 
     Map<String, org.batfish.datamodel.Interface> ifaceMap =
         ImmutableMap.of(viIface.getName(), viIface);
-    addOspfInterfaces(_oob, _frr, ifaceMap, "1", new Warnings());
+    addOspfInterfaces(_vc, _frr, ifaceMap, "1", new Warnings());
 
     assertNull(viIface.getOspfSettings());
   }
@@ -1858,7 +1858,7 @@ public final class FrrConversionsTest {
     BgpNeighbor neighbor = new BgpInterfaceNeighbor("iface");
     neighbor.setRemoteAs(RemoteAs.explicit(123));
 
-    addBgpNeighbor(c, _oob, _frr, new BgpVrf(viVrf.getName()), neighbor, new Warnings());
+    addBgpNeighbor(c, _vc, _frr, new BgpVrf(viVrf.getName()), neighbor, new Warnings());
 
     Ip peerIp = Ip.parse("1.1.1.0");
     assertTrue(bgpProc.getActiveNeighbors().containsKey(peerIp));
@@ -2053,7 +2053,7 @@ public final class FrrConversionsTest {
 
     // Method under test
     generateBgpCommonPeerConfig(
-        viConfig, _oob, _frr, bgpNeighbor, 10000L, vrf, newProc, peerConfigBuilder, new Warnings());
+        viConfig, _vc, _frr, bgpNeighbor, 10000L, vrf, newProc, peerConfigBuilder, new Warnings());
 
     // Test that by default, we don't set a metric
 
@@ -2071,7 +2071,7 @@ public final class FrrConversionsTest {
     // Set max-med admin on the vrf, regenerate and test again
     vrf.setMaxMedAdministrative(DEFAULT_MAX_MED);
     generateBgpCommonPeerConfig(
-        viConfig, _oob, _frr, bgpNeighbor, 10000L, vrf, newProc, peerConfigBuilder, new Warnings());
+        viConfig, _vc, _frr, bgpNeighbor, 10000L, vrf, newProc, peerConfigBuilder, new Warnings());
 
     assertEquals(
         viConfig

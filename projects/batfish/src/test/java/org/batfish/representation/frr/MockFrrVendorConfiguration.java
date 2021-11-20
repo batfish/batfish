@@ -6,19 +6,26 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
+import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
 
-public class MockOutOfBandConfiguration implements OutOfBandConfiguration {
+public class MockFrrVendorConfiguration extends FrrVendorConfiguration {
 
+  private FrrConfiguration _frr;
   private Set<String> _interfaces;
   private Map<String, String> _interfaceVrf;
   private Map<String, List<ConcreteInterfaceAddress>> _interfaceAddresses;
   private Set<String> _vrfs;
   private Map<String, Vxlan> _vxlans;
-  private Map<Integer, String> _vlanVrfs;
+
+  @Override
+  public FrrConfiguration getFrrConfiguration() {
+    return _frr;
+  }
 
   @Override
   public boolean hasInterface(String ifaceName) {
@@ -45,31 +52,45 @@ public class MockOutOfBandConfiguration implements OutOfBandConfiguration {
     return _vxlans;
   }
 
-  @Override
-  public Optional<String> getVrfForVlan(Integer bridgeAccessVlan) {
-    return Optional.of(_vlanVrfs.get(bridgeAccessVlan));
-  }
-
   public static Builder builder() {
     return new Builder();
   }
 
+  @Override
+  public String getHostname() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void setHostname(String hostname) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void setVendor(ConfigurationFormat format) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public List<Configuration> toVendorIndependentConfigurations() throws VendorConversionException {
+    throw new UnsupportedOperationException();
+  }
+
   // always build via the builder
-  private MockOutOfBandConfiguration() {}
+  private MockFrrVendorConfiguration() {}
 
   public static final class Builder {
-    private Map<String, String> _superInterfaceNames;
+    private FrrConfiguration _frr;
     private Set<String> _interfaces;
     private Map<String, String> _interfaceVrf;
     private Map<String, List<ConcreteInterfaceAddress>> _interfaceAddresses;
     private Set<String> _vrfs;
     private Map<String, Vxlan> _vxlans;
-    private Map<Integer, String> _vlanVrfs;
 
     private Builder() {}
 
-    public Builder setSuperInterfaceNames(Map<String, String> superInterfaceNames) {
-      this._superInterfaceNames = superInterfaceNames;
+    public Builder setFrrConfiguration(FrrConfiguration frr) {
+      this._frr = frr;
       return this;
     }
 
@@ -99,15 +120,10 @@ public class MockOutOfBandConfiguration implements OutOfBandConfiguration {
       return this;
     }
 
-    public Builder setVlanVrfs(Map<Integer, String> vlanVrfs) {
-      this._vlanVrfs = vlanVrfs;
-      return this;
-    }
-
-    public MockOutOfBandConfiguration build() {
-      MockOutOfBandConfiguration mockOutOfBandConfiguration = new MockOutOfBandConfiguration();
+    public MockFrrVendorConfiguration build() {
+      MockFrrVendorConfiguration mockOutOfBandConfiguration = new MockFrrVendorConfiguration();
+      mockOutOfBandConfiguration._frr = firstNonNull(this._frr, new FrrConfiguration());
       mockOutOfBandConfiguration._vxlans = firstNonNull(this._vxlans, ImmutableMap.of());
-      mockOutOfBandConfiguration._vlanVrfs = firstNonNull(this._vlanVrfs, ImmutableMap.of());
       mockOutOfBandConfiguration._interfaceVrf =
           firstNonNull(this._interfaceVrf, ImmutableMap.of());
       mockOutOfBandConfiguration._interfaceAddresses =
