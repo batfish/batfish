@@ -55,6 +55,7 @@ public final class VendorConfigurationFormatDetector {
   private static final Pattern MRV_HOSTNAME_PATTERN =
       Pattern.compile("(?m)^configuration hostname .*$");
   private static final Pattern MSS_PATTERN = Pattern.compile("(?m)^set system name");
+  private static final Pattern SONIC_FRR_PATTERN = Pattern.compile("(?m)^! sonic frr.conf");
 
   private static final Pattern RANCID_BASE_PATTERN =
       Pattern.compile("(?m)^[!#]RANCID-CONTENT-TYPE: ([a-zA-Z0-9_-]+)");
@@ -221,6 +222,14 @@ public final class VendorConfigurationFormatDetector {
   private ConfigurationFormat checkCumulusNclu() {
     if (fileTextMatches(CUMULUS_NCLU_PATTERN)) {
       return ConfigurationFormat.CUMULUS_NCLU;
+    }
+    return null;
+  }
+
+  @Nullable
+  private ConfigurationFormat checkSonic() {
+    if (fileTextMatches(SONIC_FRR_PATTERN)) {
+      return ConfigurationFormat.SONIC;
     }
     return null;
   }
@@ -468,6 +477,7 @@ public final class VendorConfigurationFormatDetector {
         checkCadant(),
         checkCumulusConcatenated(),
         checkCumulusNclu(),
+        checkSonic(),
         checkF5(),
         checkCiscoXr(),
         checkFlatVyos(),

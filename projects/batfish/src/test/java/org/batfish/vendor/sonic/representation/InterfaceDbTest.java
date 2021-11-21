@@ -1,4 +1,4 @@
-package org.batfish.vendor.sonic;
+package org.batfish.vendor.sonic.representation;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
@@ -10,7 +10,7 @@ import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
-import org.batfish.vendor.sonic.InterfaceDb.Interface;
+import org.batfish.vendor.sonic.representation.InterfaceDb.Interface;
 import org.junit.Test;
 
 public class InterfaceDbTest {
@@ -37,7 +37,10 @@ public class InterfaceDbTest {
 
   @Test
   public void testJavaSerialization() {
-    InterfaceDb obj = new InterfaceDb(ImmutableMap.of());
+    InterfaceDb obj =
+        new InterfaceDb(
+            ImmutableMap.of(
+                "iface", new Interface(ConcreteInterfaceAddress.parse("172.19.93.0/31"))));
     assertEquals(obj, SerializationUtils.clone(obj));
   }
 
