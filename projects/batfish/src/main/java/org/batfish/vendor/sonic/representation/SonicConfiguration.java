@@ -26,6 +26,11 @@ public class SonicConfiguration extends VendorConfiguration implements OutOfBand
     _frr = new FrrConfiguration();
   }
 
+  @Nullable
+  public ConfigDb getConfigDb() {
+    return _configDb;
+  }
+
   public void setConfigDb(ConfigDb configDb) {
     _configDb = configDb;
   }
