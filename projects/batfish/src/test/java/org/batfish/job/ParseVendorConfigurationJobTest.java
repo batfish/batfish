@@ -16,6 +16,7 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
+import org.batfish.vendor.ParsingContext;
 import org.junit.Test;
 
 /** Tests of {@link ParseVendorConfigurationJob}. */
