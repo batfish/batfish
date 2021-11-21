@@ -27,6 +27,7 @@ import static org.batfish.main.ReachabilityParametersResolver.resolveReachabilit
 import static org.batfish.main.StreamDecoder.decodeStreamAndAppendNewline;
 import static org.batfish.specifier.LocationInfoUtils.computeLocationInfo;
 import static org.batfish.vendor.check_point_management.parsing.CheckpointManagementParser.parseCheckpointManagementData;
+import static org.batfish.vendor.sonic.representation.SonicConfigDbs.readSonicConfigDbs;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -240,8 +241,10 @@ import org.batfish.storage.StorageProvider;
 import org.batfish.symbolic.IngressLocation;
 import org.batfish.topology.TopologyProviderImpl;
 import org.batfish.vendor.ConversionContext;
+import org.batfish.vendor.ParsingContext;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.vendor.check_point_management.CheckpointManagementConfiguration;
+import org.batfish.vendor.sonic.representation.SonicConfigDbs;
 import org.batfish.version.BatfishVersion;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -1630,6 +1633,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private List<ParseVendorConfigurationJob> makeParseVendorConfigurationsJobs(
       NetworkSnapshot snapshot,
       Map<String, String> keyedFileText,
+      ParsingContext parsingContext,
       ConfigurationFormat expectedFormat) {
     List<ParseVendorConfigurationJob> jobs = new ArrayList<>(keyedFileText.size());
     for (Entry<String, String> vendorFile : keyedFileText.entrySet()) {
@@ -1645,6 +1649,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
               snapshot,
               vendorFile.getValue(),
               vendorFile.getKey(),
+              parsingContext,
               buildWarnings(_settings),
               expectedFormat,
               HashMultimap.create(),
@@ -1670,7 +1675,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.resetTimer();
     SortedMap<String, VendorConfiguration> vendorConfigurations = new TreeMap<>();
     List<ParseVendorConfigurationJob> jobs =
-        makeParseVendorConfigurationsJobs(snapshot, keyedConfigurationText, expectedFormat);
+        makeParseVendorConfigurationsJobs(
+            snapshot, keyedConfigurationText, loadParsingContext(snapshot), expectedFormat);
     BatfishJobExecutor.runJobsInExecutor(
         _settings,
         _logger,
@@ -2296,6 +2302,39 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
+  private void serializeParsingContext(
+      NetworkSnapshot snapshot, ParseVendorConfigurationAnswerElement pvcae) {
+    // Serialize Sonic configdb.json files
+    LOGGER.info("\n*** READING SONIC CONFIGDB files ***\n");
+    SonicConfigDbs sonicConfigDbs = null;
+    Span span = GlobalTracer.get().buildSpan("Parse Sonic configdb files").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
+      Map<String, String> sonicCofigDbData;
+      try (Stream<String> keys = _storage.listInputSonicConfigDbKeys(snapshot)) {
+        sonicCofigDbData = readAllInputObjects(keys, snapshot);
+      }
+      if (!sonicCofigDbData.isEmpty()) {
+        sonicConfigDbs = readSonicConfigDbs(sonicCofigDbData, pvcae);
+      }
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    } finally {
+      span.finish();
+    }
+
+    LOGGER.info("\n*** SERIALIZING PARSING CONTEXT ***\n");
+    ParsingContext parsingContext = new ParsingContext();
+    parsingContext.setSonicConfigDbs(sonicConfigDbs);
+    if (!parsingContext.isEmpty()) {
+      try {
+        _storage.storeParsingContext(parsingContext, snapshot);
+      } catch (IOException e) {
+        throw new UncheckedIOException(e);
+      }
+    }
+  }
+
   private Answer computeEnvironmentBgpTables(NetworkSnapshot snapshot) {
     Answer answer = new Answer();
     ParseEnvironmentBgpTablesAnswerElement answerElement =
@@ -2683,7 +2722,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
         }
         jobs =
             makeParseVendorConfigurationsJobs(
-                snapshot, keyedConfigText, ConfigurationFormat.UNKNOWN);
+                snapshot,
+                keyedConfigText,
+                loadParsingContext(snapshot),
+                ConfigurationFormat.UNKNOWN);
         // Java parallel streams are not self-balancing in large networks, so shuffle the jobs.
         Collections.shuffle(jobs);
       } finally {
@@ -2861,6 +2903,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
       overlayHostConfigurations.putAll(serializeHostConfigs(snapshot, answerElement));
       configsFound = true;
     }
+
+    // serialize any context needed later for parsing
+    serializeParsingContext(snapshot, answerElement);
 
     // look for network configs in the `configs/` subfolder of the upload.
     if (serializeNetworkConfigs(snapshot, answerElement, overlayHostConfigurations)) {
@@ -3257,6 +3302,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // Write answer if WorkItem was answering a question
     if (_settings.getQuestionName() != null) {
       writeJsonAnswer(answerOutput);
+    }
+  }
+
+  private ParsingContext loadParsingContext(NetworkSnapshot snapshot) {
+    try {
+      return _storage.loadParsingContext(snapshot);
+    } catch (FileNotFoundException e) {
+      // Not written when it is empty.
+      return new ParsingContext();
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
     }
   }
 

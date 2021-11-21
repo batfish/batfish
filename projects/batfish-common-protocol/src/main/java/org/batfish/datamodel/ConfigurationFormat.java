@@ -34,6 +34,7 @@ public enum ConfigurationFormat {
   MRV("mrv"),
   MRV_COMMANDS("mrv_commands"),
   MSS("mss"),
+  SONIC("sonic"),
   PALO_ALTO("paloalto"),
   PALO_ALTO_NESTED("paloalto"),
   RUCKUS_ICX("ruckus_icx"),

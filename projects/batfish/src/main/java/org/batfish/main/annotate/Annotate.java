@@ -33,6 +33,7 @@ import org.batfish.identifiers.SnapshotId;
 import org.batfish.job.ParseVendorConfigurationJob;
 import org.batfish.job.ParseVendorConfigurationResult;
 import org.batfish.main.preprocess.Preprocessor;
+import org.batfish.vendor.ParsingContext;
 
 /** Tool to annotate configurations with silent syntax and warnings */
 public final class Annotate {
@@ -108,6 +109,7 @@ public final class Annotate {
                 new NetworkSnapshot(new NetworkId("dummyNetwork"), new SnapshotId("dummySnapshot")),
                 preprocessedText,
                 inputFile.toString(),
+                new ParsingContext(),
                 warnings,
                 ConfigurationFormat.UNKNOWN,
                 ImmutableMultimap.of(),

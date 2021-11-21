@@ -61,11 +61,14 @@ import org.batfish.grammar.palo_alto.PaloAltoControlPlaneExtractor;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.representation.host.HostConfiguration;
+import org.batfish.vendor.ParsingContext;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.vendor.a10.grammar.A10CombinedParser;
 import org.batfish.vendor.a10.grammar.A10ControlPlaneExtractor;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayCombinedParser;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayControlPlaneExtractor;
+import org.batfish.vendor.sonic.grammar.SonicCombinedParser;
+import org.batfish.vendor.sonic.grammar.SonicControlPlaneExtractor;
 
 public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigurationResult> {
 
@@ -90,6 +93,8 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
 
   private String _fileText;
 
+  private final ParsingContext _parsingContext;
+
   /**
    * What type of files are expected, or {@link ConfigurationFormat#UNKNOWN} to detect dynamically.
    */
@@ -106,6 +111,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
       NetworkSnapshot snapshot,
       String fileText,
       String filename,
+      ParsingContext parsingContext,
       Warnings warnings,
       ConfigurationFormat expectedFormat,
       Multimap<String, String> duplicateHostnames,
@@ -113,6 +119,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
     super(settings);
     _fileText = fileText;
     _filename = filename;
+    _parsingContext = parsingContext;
     _ptSentences = new ParseTreeSentences();
     _silentSyntax = new SilentSyntaxCollection();
     _warnings = warnings;
@@ -305,6 +312,23 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
                     "Failed to create host config from file: '%s', with error: %s",
                     _filename, e.getMessage()),
                 e);
+          }
+
+        case SONIC:
+          {
+            SonicCombinedParser parser = new SonicCombinedParser(_fileText, _settings);
+            combinedParser = parser;
+            extractor =
+                new SonicControlPlaneExtractor(
+                    _fileText,
+                    _warnings,
+                    _filename,
+                    _parsingContext,
+                    parser.getSettings(),
+                    _settings.getPrintParseTree() ? () -> _ptSentences : null,
+                    _settings.getPrintParseTreeLineNums(),
+                    _silentSyntax);
+            break;
           }
 
         case VYOS:

@@ -1,8 +1,9 @@
-package org.batfish.vendor.sonic;
+package org.batfish.vendor.sonic.representation;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -14,7 +15,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 @ParametersAreNonnullByDefault
 public class InterfaceDb implements ConfigDbObject {
 
-  static class Interface {
+  static class Interface implements Serializable {
     private @Nullable final ConcreteInterfaceAddress _v4Address;
 
     public Interface(@Nullable ConcreteInterfaceAddress v4address) {
