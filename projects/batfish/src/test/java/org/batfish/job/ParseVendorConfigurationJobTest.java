@@ -15,6 +15,7 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
+import org.batfish.vendor.ParsingContext;
 import org.junit.Test;
 
 /** Tests of {@link ParseVendorConfigurationJob}. */
@@ -27,6 +28,7 @@ public class ParseVendorConfigurationJobTest {
             new NetworkSnapshot(new NetworkId("net"), new SnapshotId("ss")),
             readResource(resourcePath, UTF_8),
             "filename",
+            new ParsingContext(),
             new Warnings(),
             ConfigurationFormat.HOST,
             ImmutableMultimap.of(),
