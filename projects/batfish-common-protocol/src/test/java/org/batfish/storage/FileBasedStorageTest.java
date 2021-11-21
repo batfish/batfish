@@ -76,6 +76,7 @@ import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.vendor.ConversionContext;
+import org.batfish.vendor.ParsingContext;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -156,6 +157,39 @@ public final class FileBasedStorageTest {
     _thrown.expect(IOException.class);
     _thrown.expectMessage(containsString("Failed to deserialize ConversionContext"));
     _storage.loadConversionContext(new NetworkSnapshot(networkId, snapshotId));
+  }
+
+  @Test
+  public void testStoreAndLoadParsingContext() throws IOException {
+    NetworkSnapshot snapshot =
+        new NetworkSnapshot(new NetworkId("network"), new SnapshotId("snapshot"));
+
+    ParsingContext parsingContext = new ParsingContext();
+    _storage.storeParsingContext(parsingContext, snapshot);
+
+    ParsingContext loadedContext = _storage.loadParsingContext(snapshot);
+    assertThat(loadedContext, instanceOf(ParsingContext.class));
+  }
+
+  @Test
+  public void testLoadParsingContext_fileNotFound() throws IOException {
+    _thrown.expect(FileNotFoundException.class);
+    _storage.loadParsingContext(
+        new NetworkSnapshot(new NetworkId("network"), new SnapshotId("snapshot")));
+  }
+
+  @Test
+  public void testLoadParsingContext_deserializationFailure() throws IOException {
+    NetworkId networkId = new NetworkId("network");
+    SnapshotId snapshotId = new SnapshotId("snapshot");
+
+    String fooString = "foo"; // not a ConversionContext
+    Path pcPath = _storage.getParsingContextPath(networkId, snapshotId);
+    _storage.serializeObject(fooString, pcPath);
+
+    _thrown.expect(IOException.class);
+    _thrown.expectMessage(containsString("Failed to deserialize ParsingContext"));
+    _storage.loadParsingContext(new NetworkSnapshot(networkId, snapshotId));
   }
 
   @Test
