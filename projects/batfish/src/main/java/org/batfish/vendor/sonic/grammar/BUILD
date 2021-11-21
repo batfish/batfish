@@ -11,7 +11,7 @@ java_library(
     ),
     deps = [
         "//projects/batfish-common-protocol:common",
-        "//projects/batfish/src/main/antlr4/org/batfish/vendor/sonic:sonic",
+        "//projects/batfish/src/main/antlr4/org/batfish/vendor/sonic/grammar",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/frr",
         "//projects/batfish/src/main/java/org/batfish/grammar/frr:frr",
         "//projects/batfish/src/main/java/org/batfish/representation/frr:frr",
@@ -24,5 +24,5 @@ java_library(
 
 pmd_test(
     name = "pmd",
-    lib = ":sonic",
+    lib = ":grammar",
 )

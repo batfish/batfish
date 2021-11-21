@@ -3,7 +3,7 @@ load("@rules_java//java:defs.bzl", "java_library")
 package(default_visibility = ["//visibility:public"])
 
 java_library(
-    name = "sonic",
+    name = "grammar",
     srcs = [
         ":SonicLexer.java",
         ":SonicParser.java",
@@ -18,7 +18,7 @@ java_library(
 )
 
 genrule(
-    name = "sonic_generated",
+    name = "grammar_generated",
     srcs = glob([
         "*.g4",
     ]),
@@ -35,7 +35,7 @@ java -cp $(location @antlr4_tool//jar) \
     -Xexact-output-dir \
        $(location SonicLexer.g4) \
        $(location SonicParser.g4) \
-    -package org.batfish.grammar.sonic \
+    -package org.batfish.vendor.sonic.grammar \
     -encoding UTF-8 \
     -Werror \
     -o $(@D)""",
