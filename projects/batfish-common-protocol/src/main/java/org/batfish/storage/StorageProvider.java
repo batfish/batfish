@@ -46,6 +46,7 @@ import org.batfish.identifiers.SnapshotId;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
 import org.batfish.vendor.ConversionContext;
+import org.batfish.vendor.ParsingContext;
 import org.batfish.vendor.VendorConfiguration;
 
 /** Storage backend for loading and storing persistent data used by Batfish */
@@ -856,6 +857,23 @@ public interface StorageProvider {
       throws IOException;
 
   /**
+   * Loads the {@link ParsingContext} for the given {@link NetworkSnapshot}, if present.
+   *
+   * @throws FileNotFoundException if there is no serialized {@link ParsingContext}
+   * @throws IOException if there is an error deserializing
+   */
+  @Nonnull
+  ParsingContext loadParsingContext(NetworkSnapshot snapshot) throws IOException;
+
+  /**
+   * Stores the {@link ParsingContext} for the given {@link NetworkSnapshot}.
+   *
+   * @throws IOException if there is an error
+   */
+  void storeParsingContext(ParsingContext parsingContext, NetworkSnapshot snapshot)
+      throws IOException;
+
+  /**
    * Loads the answer element that is the result of parsing vendor configurations for the given
    * snapshot.
    *
@@ -926,6 +944,15 @@ public interface StorageProvider {
   @MustBeClosed
   @Nonnull
   Stream<String> listInputCheckpointManagementKeys(NetworkSnapshot snapshot) throws IOException;
+
+  /**
+   * Returns a list of snapshot input object keys corresponding to Sonic configdb files.
+   *
+   * @throws IOException if there is an error
+   */
+  @MustBeClosed
+  @Nonnull
+  Stream<String> listInputSonicConfigDbKeys(NetworkSnapshot snapshot) throws IOException;
 
   /**
    * Returns a list of snapshot input object keys corresponding to host configurations.

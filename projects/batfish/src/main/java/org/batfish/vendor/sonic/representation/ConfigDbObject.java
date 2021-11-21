@@ -1,4 +1,4 @@
-package org.batfish.vendor.sonic;
+package org.batfish.vendor.sonic.representation;
 
 import java.io.Serializable;
 

@@ -102,6 +102,7 @@ import org.batfish.identifiers.SnapshotId;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
 import org.batfish.vendor.ConversionContext;
+import org.batfish.vendor.ParsingContext;
 import org.batfish.vendor.VendorConfiguration;
 
 /** A utility class that abstracts the underlying file system storage used by Batfish. */
@@ -130,6 +131,7 @@ public class FileBasedStorage implements StorageProvider {
   private static final String RELPATH_FORK_REQUEST_FILE = "fork_request";
   private static final String RELPATH_ENV_TOPOLOGY_FILE = "env_topology";
   private static final String RELPATH_CONVERSION_CONTEXT = "conversion_context";
+  private static final String RELPATH_PARSING_CONTEXT = "parsing_context";
   private static final String RELPATH_CONVERT_ANSWER_PATH = "convert_answer";
   private static final String RELPATH_ANSWERS_DIR = "answers";
   private static final String RELPATH_ANSWER_METADATA = "answer_metadata.json";
@@ -228,6 +230,21 @@ public class FileBasedStorage implements StorageProvider {
       throw new IOException(
           String.format(
               "Failed to deserialize ConversionContext: %s", Throwables.getStackTraceAsString(e)));
+    }
+  }
+
+  @Override
+  public @Nonnull ParsingContext loadParsingContext(NetworkSnapshot snapshot) throws IOException {
+    Path pcPath = getParsingContextPath(snapshot.getNetwork(), snapshot.getSnapshot());
+    if (!Files.exists(pcPath)) {
+      throw new FileNotFoundException();
+    }
+    try {
+      return deserializeObject(pcPath, ParsingContext.class);
+    } catch (BatfishException e) {
+      throw new IOException(
+          String.format(
+              "Failed to deserialize ParsingContext: %s", Throwables.getStackTraceAsString(e)));
     }
   }
 
@@ -473,10 +490,24 @@ public class FileBasedStorage implements StorageProvider {
     serializeObject(conversionContext, ccPath);
   }
 
+  @Override
+  public void storeParsingContext(ParsingContext parsingContext, NetworkSnapshot snapshot)
+      throws IOException {
+    Path pcPath = getParsingContextPath(snapshot.getNetwork(), snapshot.getSnapshot());
+    mkdirs(pcPath.getParent());
+    serializeObject(parsingContext, pcPath);
+  }
+
   @VisibleForTesting
   @Nonnull
   Path getConversionContextPath(NetworkId network, SnapshotId snapshot) {
     return getSnapshotOutputDir(network, snapshot).resolve(RELPATH_CONVERSION_CONTEXT);
+  }
+
+  @VisibleForTesting
+  @Nonnull
+  Path getParsingContextPath(NetworkId network, SnapshotId snapshot) {
+    return getSnapshotOutputDir(network, snapshot).resolve(RELPATH_PARSING_CONTEXT);
   }
 
   private @Nonnull Path getConvertAnswerPath(NetworkId network, SnapshotId snapshot) {
@@ -1955,6 +1986,14 @@ public class FileBasedStorage implements StorageProvider {
       throws IOException {
     return listSnapshotInputObjectKeys(snapshot)
         .filter(key -> keyInDir(key, BfConsts.RELPATH_CHECKPOINT_MANAGEMENT_DIR));
+  }
+
+  @MustBeClosed
+  @Nonnull
+  @Override
+  public Stream<String> listInputSonicConfigDbKeys(NetworkSnapshot snapshot) throws IOException {
+    return listSnapshotInputObjectKeys(snapshot)
+        .filter(key -> keyInDir(key, BfConsts.RELPATH_SONIC_CONFIGDB_DIR));
   }
 
   private @Nonnull Path getParseVendorConfigurationAnswerElementPath(NetworkSnapshot snapshot) {
