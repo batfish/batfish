@@ -31,7 +31,7 @@ java_library(
     testonly = True,
     srcs = glob(
         [
-            "MockOutOfBandConfiguration.java",
+            "MockFrrVendorConfiguration.java",
         ],
     ),
     deps = [

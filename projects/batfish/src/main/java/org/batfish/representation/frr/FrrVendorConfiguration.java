@@ -2,27 +2,30 @@ package org.batfish.representation.frr;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.vendor.VendorConfiguration;
 
 /**
- * Represents configuration outside of the FRR configuration file (e.g., in /etc/network/interfaces)
+ * Abstract class for for vendors that use FRR. Individual such vendors should extend this class.
  */
-public interface OutOfBandConfiguration {
+public abstract class FrrVendorConfiguration extends VendorConfiguration {
+
+  /** Return the FRR portion of the configuration */
+  public abstract FrrConfiguration getFrrConfiguration();
 
   /** Does the config have an interface with this name? */
-  boolean hasInterface(String ifaceName);
+  public abstract boolean hasInterface(String ifaceName);
 
   /** Does the config have a VRF with this name? */
-  boolean hasVrf(String vrfName);
+  public abstract boolean hasVrf(String vrfName);
 
   /**
    * Return the VRF name for the specified interface name.
    *
    * @throws java.util.NoSuchElementException if the interface does not exist.
    */
-  String getInterfaceVrf(String ifaceName);
+  public abstract String getInterfaceVrf(String ifaceName);
 
   /**
    * Return the configured concrete addresses for the specified interface name.
@@ -30,11 +33,8 @@ public interface OutOfBandConfiguration {
    * @throws java.util.NoSuchElementException if the interface does not exist.
    */
   @Nonnull
-  List<ConcreteInterfaceAddress> getInterfaceAddresses(String ifaceName);
+  public abstract List<ConcreteInterfaceAddress> getInterfaceAddresses(String ifaceName);
 
   // TODO: Simplify and unbundle what is happening in this method
-  Map<String, Vxlan> getVxlans();
-
-  // TODO: Simplify and unbundle what is happening in this method
-  Optional<String> getVrfForVlan(Integer bridgeAccessVlan);
+  public abstract Map<String, Vxlan> getVxlans();
 }

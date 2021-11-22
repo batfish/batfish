@@ -239,14 +239,13 @@ public final class FrrConversions {
   }
 
   /** Convert the static routes in the frr.conf file */
-  public static void convertStaticRoutes(Configuration c, FrrConfiguration frrConfig) {
+  public static void convertStaticRoutes(Configuration c, FrrConfiguration frr) {
     // default vrf static routes
     org.batfish.datamodel.Vrf defVrf = c.getVrfs().get(DEFAULT_VRF_NAME);
-    frrConfig.getStaticRoutes().forEach(sr -> defVrf.getStaticRoutes().add(sr.convert()));
+    frr.getStaticRoutes().forEach(sr -> defVrf.getStaticRoutes().add(sr.convert()));
 
     // other vrf static routes
-    frrConfig
-        .getVrfs()
+    frr.getVrfs()
         .values()
         .forEach(
             frrVrf -> {
@@ -361,22 +360,20 @@ public final class FrrConversions {
   }
 
   public static void convertBgpProcess(
-      Configuration c, OutOfBandConfiguration oobConfig, FrrConfiguration frrConfig, Warnings w) {
-    BgpProcess bgpProcess = frrConfig.getBgpProcess();
+      Configuration c, FrrVendorConfiguration vc, FrrConfiguration frr, Warnings w) {
+    BgpProcess bgpProcess = frr.getBgpProcess();
     if (bgpProcess == null) {
       return;
     }
     // First pass: only core processes
     c.getDefaultVrf()
-        .setBgpProcess(toBgpProcess(c, frrConfig, DEFAULT_VRF_NAME, bgpProcess.getDefaultVrf()));
+        .setBgpProcess(toBgpProcess(c, frr, DEFAULT_VRF_NAME, bgpProcess.getDefaultVrf()));
     // We make one VI process per VRF because our current datamodel requires it
     bgpProcess
         .getVrfs()
         .forEach(
             (vrfName, bgpVrf) ->
-                c.getVrfs()
-                    .get(vrfName)
-                    .setBgpProcess(toBgpProcess(c, frrConfig, vrfName, bgpVrf)));
+                c.getVrfs().get(vrfName).setBgpProcess(toBgpProcess(c, frr, vrfName, bgpVrf)));
 
     // Create dud processes for other VRFs that use VNIs, so we can have proper RIBs
     c.getVrfs()
@@ -405,8 +402,7 @@ public final class FrrConversions {
               bgpVrf
                   .getNeighbors()
                   .values()
-                  .forEach(
-                      neighbor -> addBgpNeighbor(c, oobConfig, frrConfig, bgpVrf, neighbor, w));
+                  .forEach(neighbor -> addBgpNeighbor(c, vc, frr, bgpVrf, neighbor, w));
             });
   }
 
@@ -427,8 +423,8 @@ public final class FrrConversions {
    */
   @Nullable
   static org.batfish.datamodel.BgpProcess toBgpProcess(
-      Configuration c, FrrConfiguration frrConfig, String vrfName, BgpVrf bgpVrf) {
-    BgpProcess bgpProcess = frrConfig.getBgpProcess();
+      Configuration c, FrrConfiguration frr, String vrfName, BgpVrf bgpVrf) {
+    BgpProcess bgpProcess = frr.getBgpProcess();
     Ip routerId = bgpVrf.getRouterId();
     if (routerId == null) {
       routerId = inferRouterId(c);
@@ -471,7 +467,7 @@ public final class FrrConversions {
 
     generateBgpCommonExportPolicy(c, vrfName, bgpVrf);
     newProc.setRedistributionPolicy(
-        generateBgpRedistributionPolicy(c, vrfName, bgpVrf, frrConfig.getRouteMaps()));
+        generateBgpRedistributionPolicy(c, vrfName, bgpVrf, frr.getRouteMaps()));
 
     return newProc;
   }
@@ -479,8 +475,8 @@ public final class FrrConversions {
   @VisibleForTesting
   static void addBgpNeighbor(
       Configuration c,
-      OutOfBandConfiguration oobConfig,
-      FrrConfiguration frrConfig,
+      FrrVendorConfiguration vc,
+      FrrConfiguration frr,
       BgpVrf bgpVrf,
       BgpNeighbor neighbor,
       Warnings w) {
@@ -510,15 +506,13 @@ public final class FrrConversions {
 
     if (neighbor instanceof BgpInterfaceNeighbor) {
       BgpInterfaceNeighbor interfaceNeighbor = (BgpInterfaceNeighbor) neighbor;
-      addInterfaceBgpNeighbor(
-          c, oobConfig, frrConfig, interfaceNeighbor, localAs, bgpVrf, viBgpProcess, w);
+      addInterfaceBgpNeighbor(c, vc, frr, interfaceNeighbor, localAs, bgpVrf, viBgpProcess, w);
     } else if (neighbor instanceof BgpIpNeighbor) {
       BgpIpNeighbor ipNeighbor = (BgpIpNeighbor) neighbor;
-      addIpv4BgpNeighbor(c, oobConfig, frrConfig, ipNeighbor, localAs, bgpVrf, viBgpProcess, w);
+      addIpv4BgpNeighbor(c, vc, frr, ipNeighbor, localAs, bgpVrf, viBgpProcess, w);
     } else if (neighbor instanceof BgpDynamicNeighbor) {
       BgpDynamicNeighbor passiveNeighbor = (BgpDynamicNeighbor) neighbor;
-      addPassiveBgpNeighbor(
-          c, oobConfig, frrConfig, passiveNeighbor, localAs, bgpVrf, viBgpProcess, w);
+      addPassiveBgpNeighbor(c, vc, frr, passiveNeighbor, localAs, bgpVrf, viBgpProcess, w);
     } else if (!(neighbor instanceof BgpPeerGroupNeighbor
         || neighbor instanceof BgpIpv6Neighbor
         || neighbor instanceof BgpDynamic6Neighbor)) {
@@ -529,8 +523,8 @@ public final class FrrConversions {
 
   private static void addInterfaceBgpNeighbor(
       Configuration c,
-      OutOfBandConfiguration oobConfig,
-      FrrConfiguration frrConfig,
+      FrrVendorConfiguration vc,
+      FrrConfiguration frr,
       BgpInterfaceNeighbor neighbor,
       @Nullable Long localAs,
       BgpVrf bgpVrf,
@@ -568,14 +562,14 @@ public final class FrrConversions {
               .setPeerInterface(neighbor.getName());
     }
     generateBgpCommonPeerConfig(
-        c, oobConfig, frrConfig, neighbor, localAs, bgpVrf, newProc, peerConfigBuilder, w);
+        c, vc, frr, neighbor, localAs, bgpVrf, newProc, peerConfigBuilder, w);
   }
 
   @VisibleForTesting
   static void generateBgpCommonPeerConfig(
       Configuration c,
-      OutOfBandConfiguration oobConfig,
-      FrrConfiguration frrConfig,
+      FrrVendorConfiguration vc,
+      FrrConfiguration frr,
       BgpNeighbor neighbor,
       @Nullable Long localAs,
       BgpVrf bgpVrf,
@@ -609,15 +603,7 @@ public final class FrrConversions {
                 importRoutingPolicy))
         .setEvpnAddressFamily(
             toEvpnAddressFamily(
-                c,
-                oobConfig,
-                frrConfig,
-                neighbor,
-                localAs,
-                bgpVrf,
-                newProc,
-                exportRoutingPolicy,
-                w))
+                c, vc, frr, neighbor, localAs, bgpVrf, newProc, exportRoutingPolicy, w))
         .build();
   }
 
@@ -666,8 +652,8 @@ public final class FrrConversions {
 
   private static void addIpv4BgpNeighbor(
       Configuration c,
-      OutOfBandConfiguration oobConfig,
-      FrrConfiguration frrConfig,
+      FrrVendorConfiguration vc,
+      FrrConfiguration frr,
       BgpIpNeighbor neighbor,
       @Nullable Long localAs,
       BgpVrf bgpVrf,
@@ -682,13 +668,13 @@ public final class FrrConversions {
                         computeLocalIpForBgpNeighbor(neighbor.getPeerIp(), c, bgpVrf.getVrfName())))
             .setPeerAddress(neighbor.getPeerIp());
     generateBgpCommonPeerConfig(
-        c, oobConfig, frrConfig, neighbor, localAs, bgpVrf, newProc, peerConfigBuilder, w);
+        c, vc, frr, neighbor, localAs, bgpVrf, newProc, peerConfigBuilder, w);
   }
 
   private static void addPassiveBgpNeighbor(
       Configuration c,
-      OutOfBandConfiguration oobConfig,
-      FrrConfiguration frrConfig,
+      FrrVendorConfiguration vc,
+      FrrConfiguration frr,
       BgpDynamicNeighbor neighbor,
       @Nullable Long localAs,
       BgpVrf bgpVrf,
@@ -699,7 +685,7 @@ public final class FrrConversions {
             .setLocalIp(resolveLocalIpFromUpdateSource(neighbor.getBgpNeighborSource(), c, w))
             .setPeerPrefix(neighbor.getListenRange());
     generateBgpCommonPeerConfig(
-        c, oobConfig, frrConfig, neighbor, localAs, bgpVrf, newProc, peerConfigBuilder, w);
+        c, vc, frr, neighbor, localAs, bgpVrf, newProc, peerConfigBuilder, w);
   }
 
   @Nonnull
@@ -1078,8 +1064,8 @@ public final class FrrConversions {
   @Nullable
   private static EvpnAddressFamily toEvpnAddressFamily(
       Configuration c,
-      OutOfBandConfiguration oobConfig,
-      FrrConfiguration frrConfig,
+      FrrVendorConfiguration vc,
+      FrrConfiguration frr,
       BgpNeighbor neighbor,
       @Nullable Long localAs,
       BgpVrf bgpVrf,
@@ -1102,7 +1088,7 @@ public final class FrrConversions {
         // Keep indices in deterministic order
         ImmutableList.sortedCopyOf(
             Comparator.nullsLast(Comparator.naturalOrder()),
-            oobConfig.getVxlans().values().stream()
+            vc.getVxlans().values().stream()
                 .map(Vxlan::getId)
                 .collect(ImmutableSet.toImmutableSet())),
         (index, vni) -> {
@@ -1136,7 +1122,7 @@ public final class FrrConversions {
                                     .build());
                           }));
     }
-    BgpProcess bgpProcess = frrConfig.getBgpProcess();
+    BgpProcess bgpProcess = frr.getBgpProcess();
     // Advertise the L3 VNI per vrf if one is configured
     assert bgpProcess != null; // Since we are in neighbor conversion, this must be true
     // Iterate over ALL vrfs, because even if the vrf doesn't appear in bgp process config, we
@@ -1146,7 +1132,7 @@ public final class FrrConversions {
         .forEach(
             innerVrf -> {
               String innerVrfName = innerVrf.getName();
-              Vrf vsVrf = frrConfig.getVrfs().get(innerVrfName);
+              Vrf vsVrf = frr.getVrfs().get(innerVrfName);
               if (vsVrf == null) {
                 return;
               }
@@ -1227,13 +1213,13 @@ public final class FrrConversions {
   }
 
   public static void convertOspfProcess(
-      Configuration c, OutOfBandConfiguration oobConfig, FrrConfiguration frrConfig, Warnings w) {
-    @Nullable OspfProcess ospfProcess = frrConfig.getOspfProcess();
+      Configuration c, FrrVendorConfiguration vc, FrrConfiguration frr, Warnings w) {
+    @Nullable OspfProcess ospfProcess = frr.getOspfProcess();
     if (ospfProcess == null) {
       return;
     }
 
-    convertOspfVrf(c, oobConfig, frrConfig, ospfProcess.getDefaultVrf(), c.getDefaultVrf(), w);
+    convertOspfVrf(c, vc, frr, ospfProcess.getDefaultVrf(), c.getDefaultVrf(), w);
 
     ospfProcess
         .getVrfs()
@@ -1247,27 +1233,27 @@ public final class FrrConversions {
                 return;
               }
 
-              convertOspfVrf(c, oobConfig, frrConfig, ospfVrf, vrf, w);
+              convertOspfVrf(c, vc, frr, ospfVrf, vrf, w);
             });
   }
 
   private static void convertOspfVrf(
       Configuration c,
-      OutOfBandConfiguration oobConfig,
-      FrrConfiguration frrConfig,
+      FrrVendorConfiguration vc,
+      FrrConfiguration frr,
       OspfVrf ospfVrf,
       org.batfish.datamodel.Vrf vrf,
       Warnings w) {
     org.batfish.datamodel.ospf.OspfProcess ospfProcess =
-        toOspfProcess(c, oobConfig, frrConfig, ospfVrf, c.getAllInterfaces(vrf.getName()), w);
+        toOspfProcess(c, vc, frr, ospfVrf, c.getAllInterfaces(vrf.getName()), w);
     vrf.addOspfProcess(ospfProcess);
   }
 
   @VisibleForTesting
   static org.batfish.datamodel.ospf.OspfProcess toOspfProcess(
       Configuration c,
-      OutOfBandConfiguration oobConfig,
-      FrrConfiguration frrConfig,
+      FrrVendorConfiguration vc,
+      FrrConfiguration frr,
       OspfVrf ospfVrf,
       Map<String, org.batfish.datamodel.Interface> vrfInterfaces,
       Warnings w) {
@@ -1287,7 +1273,7 @@ public final class FrrConversions {
             .build();
 
     // Configure any interfaces grabbed by the network statement
-    for (OspfNetworkArea na : frrConfig.getOspfProcess().getNetworkAreas().values()) {
+    for (OspfNetworkArea na : frr.getOspfProcess().getNetworkAreas().values()) {
       Prefix network = na.getPrefix();
       long area = na.getArea();
       for (Interface i : vrfInterfaces.values()) {
@@ -1298,7 +1284,7 @@ public final class FrrConversions {
         }
 
         // Make sure it has OSPF Interface settings, creating one if not.
-        FrrInterface iface = frrConfig.getInterfaces().get(i.getName());
+        FrrInterface iface = frr.getInterfaces().get(i.getName());
         checkState(iface != null, "Internal error: interface in VI but not in FRR");
         OspfInterface ospfInterface = iface.getOrCreateOspf();
 
@@ -1309,11 +1295,11 @@ public final class FrrConversions {
       }
     }
 
-    addOspfInterfaces(oobConfig, frrConfig, vrfInterfaces, proc.getProcessId(), w);
-    proc.setAreas(computeOspfAreas(c, frrConfig, ospfVrf, vrfInterfaces.keySet()));
+    addOspfInterfaces(vc, frr, vrfInterfaces, proc.getProcessId(), w);
+    proc.setAreas(computeOspfAreas(c, frr, ospfVrf, vrfInterfaces.keySet()));
 
     // Handle Max Metric Router LSA
-    if (firstNonNull(frrConfig.getOspfProcess().getMaxMetricRouterLsa(), Boolean.FALSE)) {
+    if (firstNonNull(frr.getOspfProcess().getMaxMetricRouterLsa(), Boolean.FALSE)) {
       proc.setMaxMetricTransitLinks(DEFAULT_OSPF_MAX_METRIC);
     }
 
@@ -1329,8 +1315,8 @@ public final class FrrConversions {
     ospfExportStatements.add(new SetMetric(new LiteralLong(DEFAULT_REDISTRIBUTE_METRIC)));
 
     ospfExportStatements.addAll(
-        frrConfig.getOspfProcess().getRedistributionPolicies().values().stream()
-            .map(policy -> convertOspfRedistributionPolicy(policy, frrConfig.getRouteMaps()))
+        frr.getOspfProcess().getRedistributionPolicies().values().stream()
+            .map(policy -> convertOspfRedistributionPolicy(policy, frr.getRouteMaps()))
             .collect(Collectors.toList()));
 
     return proc;
@@ -1420,14 +1406,14 @@ public final class FrrConversions {
 
   @VisibleForTesting
   static void addOspfInterfaces(
-      OutOfBandConfiguration oobConfig,
-      FrrConfiguration frrConfig,
+      FrrVendorConfiguration vc,
+      FrrConfiguration frr,
       Map<String, org.batfish.datamodel.Interface> viIfaces,
       String processId,
       Warnings w) {
     viIfaces.forEach(
         (ifaceName, iface) -> {
-          Optional<OspfInterface> ospfOpt = getOspfInterface(frrConfig, ifaceName);
+          Optional<OspfInterface> ospfOpt = getOspfInterface(frr, ifaceName);
           if (!ospfOpt.isPresent() || ospfOpt.get().getOspfArea() == null) {
             return;
           }
@@ -1443,7 +1429,7 @@ public final class FrrConversions {
               OspfInterfaceSettings.builder()
                   .setPassive(
                       Optional.ofNullable(ospfInterface.getPassive())
-                          .orElse(frrConfig.getOspfProcess().getDefaultPassiveInterface()))
+                          .orElse(frr.getOspfProcess().getDefaultPassiveInterface()))
                   .setAreaName(ospfInterface.getOspfArea())
                   .setNetworkType(toOspfNetworkType(ospfInterface.getNetwork(), w))
                   .setDeadInterval(
@@ -1454,19 +1440,19 @@ public final class FrrConversions {
                           .orElse(DEFAULT_OSPF_HELLO_INTERVAL))
                   .setProcess(processId)
                   .setCost(ospfCost)
-                  .setOspfAddresses(getOspfAddresses(oobConfig, frrConfig, ifaceName))
+                  .setOspfAddresses(getOspfAddresses(vc, frr, ifaceName))
                   .build());
         });
   }
 
   private static @Nonnull OspfAddresses getOspfAddresses(
-      OutOfBandConfiguration oobConfig, FrrConfiguration frrConfig, String ifaceName) {
+      FrrVendorConfiguration vc, FrrConfiguration frr, String ifaceName) {
     // use ImmutableSet to preserve order and remove duplicates
     ImmutableSet.Builder<ConcreteInterfaceAddress> addressesBuilder = ImmutableSet.builder();
-    if (oobConfig.hasInterface(ifaceName)) {
-      addressesBuilder.addAll(oobConfig.getInterfaceAddresses(ifaceName));
+    if (vc.hasInterface(ifaceName)) {
+      addressesBuilder.addAll(vc.getInterfaceAddresses(ifaceName));
     }
-    Optional.ofNullable(frrConfig.getInterfaces().get(ifaceName))
+    Optional.ofNullable(frr.getInterfaces().get(ifaceName))
         .map(FrrInterface::getIpAddresses)
         .ifPresent(addressesBuilder::addAll);
     return OspfAddresses.of(addressesBuilder.build());

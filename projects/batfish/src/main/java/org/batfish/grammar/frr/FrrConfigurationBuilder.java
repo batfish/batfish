@@ -223,6 +223,7 @@ import org.batfish.representation.frr.CumulusStructureType;
 import org.batfish.representation.frr.CumulusStructureUsage;
 import org.batfish.representation.frr.FrrConfiguration;
 import org.batfish.representation.frr.FrrInterface;
+import org.batfish.representation.frr.FrrVendorConfiguration;
 import org.batfish.representation.frr.IpAsPathAccessList;
 import org.batfish.representation.frr.IpAsPathAccessListLine;
 import org.batfish.representation.frr.IpCommunityList;
@@ -240,7 +241,6 @@ import org.batfish.representation.frr.OspfNetworkArea;
 import org.batfish.representation.frr.OspfNetworkType;
 import org.batfish.representation.frr.OspfProcess;
 import org.batfish.representation.frr.OspfVrf;
-import org.batfish.representation.frr.OutOfBandConfiguration;
 import org.batfish.representation.frr.RedistributionPolicy;
 import org.batfish.representation.frr.RouteMap;
 import org.batfish.representation.frr.RouteMapCall;
@@ -267,7 +267,6 @@ import org.batfish.representation.frr.RouteMapSetTag;
 import org.batfish.representation.frr.RouteMapSetWeight;
 import org.batfish.representation.frr.StaticRoute;
 import org.batfish.representation.frr.Vrf;
-import org.batfish.vendor.VendorConfiguration;
 
 public class FrrConfigurationBuilder extends FrrParserBaseListener implements SilentSyntaxListener {
   private static final IntegerSpace OSPF_AREA_RANGE_COST_SPACE =
@@ -276,8 +275,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
       IntegerSpace.of(Range.closed(0, Prefix.MAX_PREFIX_LENGTH));
 
   // The vendor config (e.g., cumulus) of which this FRR config is part of
-  private final VendorConfiguration _c;
-  private final OutOfBandConfiguration _oobConfiguration;
+  private final FrrVendorConfiguration _vc;
   private final FrrConfiguration _frr;
   private final FrrCombinedParser _parser;
   private final Warnings _w;
@@ -301,16 +299,13 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   private Set<String> _reverseInterfaceInitOrder;
 
   public FrrConfigurationBuilder(
-      VendorConfiguration configuration,
-      OutOfBandConfiguration oobConfiguration,
-      FrrConfiguration frrConfiguration,
+      FrrVendorConfiguration configuration,
       FrrCombinedParser parser,
       Warnings w,
       String fullText,
       SilentSyntaxCollection silentSyntax) {
-    _c = configuration;
-    _oobConfiguration = oobConfiguration;
-    _frr = frrConfiguration;
+    _vc = configuration;
+    _frr = configuration.getFrrConfiguration();
     _parser = parser;
     _w = w;
     _text = fullText;
@@ -376,7 +371,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
     Token token = errorNode.getSymbol();
     int line = token.getLine();
     String lineText = errorNode.getText().replace("\n", "").replace("\r", "").trim();
-    _c.setUnrecognized(true);
+    _vc.setUnrecognized(true);
 
     if (token instanceof UnrecognizedLineToken) {
       UnrecognizedLineToken unrecToken = (UnrecognizedLineToken) token;
@@ -489,7 +484,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
       String vrfName = ctx.vrf_name().getText();
       _currentBgpVrf = new BgpVrf(vrfName);
       _frr.getBgpProcess().getVrfs().put(vrfName, _currentBgpVrf);
-      _c.referenceStructure(
+      _vc.referenceStructure(
           VRF, vrfName, CumulusStructureUsage.BGP_VRF, ctx.vrf_name().getStart().getLine());
     }
     _currentBgpVrf.setAutonomousSystem(parseLong(ctx.autonomous_system().getText()));
@@ -547,7 +542,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
     }
 
     if (routeMap != null) {
-      _c.referenceStructure(ROUTE_MAP, routeMap, usage, ctx.getStart().getLine());
+      _vc.referenceStructure(ROUTE_MAP, routeMap, usage, ctx.getStart().getLine());
     }
 
     BgpRedistributionPolicy oldRedistributionPolicy;
@@ -575,14 +570,14 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   public void exitSbafi_import(Sbafi_importContext ctx) {
     todo(ctx);
     if (ctx.vrf_name() != null) {
-      _c.referenceStructure(
+      _vc.referenceStructure(
           VRF,
           ctx.vrf_name().getText(),
           BGP_ADDRESS_FAMILY_IPV4_IMPORT_VRF,
           ctx.getStart().getLine());
     }
     if (ctx.route_map_name() != null) {
-      _c.referenceStructure(
+      _vc.referenceStructure(
           ROUTE_MAP,
           ctx.route_map_name().getText(),
           BGP_ADDRESS_FAMILY_IPV4_IMPORT_VRF,
@@ -593,14 +588,14 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   @Override
   public void exitSbafi6_import(Sbafi6_importContext ctx) {
     if (ctx.vrf_name() != null) {
-      _c.referenceStructure(
+      _vc.referenceStructure(
           VRF,
           ctx.vrf_name().getText(),
           BGP_ADDRESS_FAMILY_IPV6_IMPORT_VRF,
           ctx.getStart().getLine());
     }
     if (ctx.route_map_name() != null) {
-      _c.referenceStructure(
+      _vc.referenceStructure(
           ROUTE_MAP,
           ctx.route_map_name().getText(),
           BGP_ADDRESS_FAMILY_IPV6_IMPORT_VRF,
@@ -613,7 +608,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
     @Nullable String routeMap = null;
     if (ctx.rm != null) {
       routeMap = getFullText(ctx.rm);
-      _c.referenceStructure(ROUTE_MAP, routeMap, BGP_NETWORK, ctx.getStart().getLine());
+      _vc.referenceStructure(ROUTE_MAP, routeMap, BGP_NETWORK, ctx.getStart().getLine());
     }
     Prefix prefix = toPrefix(ctx.network);
     _currentBgpVrf.getIpv4Unicast().getNetworks().put(prefix, new BgpNetwork(prefix, routeMap));
@@ -639,7 +634,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
           getFullText(ctx),
           _parser,
           "Route maps in 'advertise ipv4 unicast' are not supported");
-      _c.referenceStructure(
+      _vc.referenceStructure(
           ROUTE_MAP,
           ctx.rm.getText(),
           BGP_ADDRESS_FAMILY_L2VPN_ADVERTISE_IPV4_UNICAST,
@@ -650,7 +645,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   @Override
   public void enterSbafla_ipv6_unicast(Sbafla_ipv6_unicastContext ctx) {
     if (ctx.rm != null) {
-      _c.referenceStructure(
+      _vc.referenceStructure(
           ROUTE_MAP,
           ctx.rm.getText(),
           BGP_ADDRESS_FAMILY_L2VPN_ADVERTISE_IPV6_UNICAST,
@@ -708,7 +703,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   public void exitAgg_feature_route_map(Agg_feature_route_mapContext ctx) {
     String routeMapName = toString(ctx.route_map_name());
     _currentAggregate.setRouteMap(routeMapName);
-    _c.referenceStructure(
+    _vc.referenceStructure(
         CumulusStructureType.ROUTE_MAP,
         routeMapName,
         CumulusStructureUsage.BGP_AGGREGATE_ADDRESS_ROUTE_MAP,
@@ -725,7 +720,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
     todo(ctx);
     String routeMapName = toString(ctx.route_map_name());
     _currentAggregate.setSuppressMap(routeMapName);
-    _c.referenceStructure(
+    _vc.referenceStructure(
         CumulusStructureType.ROUTE_MAP,
         routeMapName,
         CumulusStructureUsage.BGP_AGGREGATE_ADDRESS_SUPPRESS_MAP,
@@ -856,7 +851,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
     @Nullable String routeMap = null;
     if (ctx.rm != null) {
       routeMap = getFullText(ctx.rm);
-      _c.referenceStructure(ROUTE_MAP, routeMap, BGP_NETWORK, ctx.getStart().getLine());
+      _vc.referenceStructure(ROUTE_MAP, routeMap, BGP_NETWORK, ctx.getStart().getLine());
     }
     Prefix prefix = toPrefix(ctx.network);
     _currentBgpVrf.addNetwork(new BgpNetwork(prefix, routeMap));
@@ -898,13 +893,13 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
       // this is OK only if the VRF matches prior definition in the interfaces file or, if no prior
       // definition exists, the vrf is defined in FRR file
       String vrfName = ctx.vrf.getText();
-      if (_oobConfiguration.hasInterface(name)) {
-        if (!vrfName.equals(_oobConfiguration.getInterfaceVrf(name))) {
+      if (_vc.hasInterface(name)) {
+        if (!vrfName.equals(_vc.getInterfaceVrf(name))) {
           warn(
               ctx,
               String.format(
                   "vrf %s of interface %s does not match previously-defined vrf %s",
-                  vrfName, name, _oobConfiguration.getInterfaceVrf(name)));
+                  vrfName, name, _vc.getInterfaceVrf(name)));
           _currentInterface = new FrrInterface("dummy", "dummy");
           return;
         }
@@ -1032,7 +1027,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
     }
 
     if (routeMap != null) {
-      _c.referenceStructure(ROUTE_MAP, routeMap, usage, ctx.getStart().getLine());
+      _vc.referenceStructure(ROUTE_MAP, routeMap, usage, ctx.getStart().getLine());
     }
 
     OspfProcess proc = _frr.getOspfProcess();
@@ -1182,7 +1177,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
         getFullText(ctx.getParent()),
         _parser,
         "Routes maps on neighbors in address-family  'l2vpn evpn' are not supported");
-    _c.referenceStructure(ROUTE_MAP, name, usage, ctx.name.getStart().getLine());
+    _vc.referenceStructure(ROUTE_MAP, name, usage, ctx.name.getStart().getLine());
   }
 
   @Override
@@ -1372,7 +1367,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
 
     // VRFs are declared in /etc/network/interfaces file, but this is part of the definition
     _currentVrf = _frr.getOrCreateVrf(name);
-    _c.defineStructure(VRF, name, ctx);
+    _vc.defineStructure(VRF, name, ctx);
   }
 
   @Override
@@ -1396,7 +1391,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
     } else {
       throw new IllegalStateException("only support in and out in route map");
     }
-    _c.referenceStructure(ROUTE_MAP, name, usage, ctx.name.getStart().getLine());
+    _vc.referenceStructure(ROUTE_MAP, name, usage, ctx.name.getStart().getLine());
   }
 
   @Override
@@ -1438,11 +1433,11 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
             .computeIfAbsent(name, RouteMap::new)
             .getEntries()
             .computeIfAbsent(sequence, k -> new RouteMapEntry(sequence, action));
-    _c.defineStructure(ROUTE_MAP, name, ctx);
+    _vc.defineStructure(ROUTE_MAP, name, ctx);
 
     String routeMapEntryName = computeRouteMapEntryName(name, sequence);
-    _c.defineStructure(ROUTE_MAP_ENTRY, routeMapEntryName, ctx);
-    _c.referenceStructure(
+    _vc.defineStructure(ROUTE_MAP_ENTRY, routeMapEntryName, ctx);
+    _vc.referenceStructure(
         ROUTE_MAP_ENTRY,
         routeMapEntryName,
         ROUTE_MAP_ENTRY_SELF_REFERENCE,
@@ -1482,8 +1477,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   @Override
   public void exitRonopi_interface_name(Ronopi_interface_nameContext ctx) {
     String ifaceName = ctx.name.getText();
-    if (!_oobConfiguration.hasInterface(ifaceName)
-        && !_frr.getInterfaces().containsKey(ifaceName)) {
+    if (!_vc.hasInterface(ifaceName) && !_frr.getInterfaces().containsKey(ifaceName)) {
       _w.addWarning(
           ctx, getFullText(ctx), _parser, String.format("interface %s is not defined", ifaceName));
       return;
@@ -1500,8 +1494,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   @Override
   public void exitRopi_interface_name(Ropi_interface_nameContext ctx) {
     String ifaceName = ctx.name.getText();
-    if (!_oobConfiguration.hasInterface(ifaceName)
-        && !_frr.getInterfaces().containsKey(ifaceName)) {
+    if (!_vc.hasInterface(ifaceName) && !_frr.getInterfaces().containsKey(ifaceName)) {
       _w.addWarning(
           ctx, getFullText(ctx), _parser, String.format("interface %s is not defined", ifaceName));
       return;
@@ -1523,14 +1516,14 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   public void exitRm_call(Rm_callContext ctx) {
     String name = ctx.name.getText();
     _currentRouteMapEntry.setCall(new RouteMapCall(name));
-    _c.referenceStructure(ROUTE_MAP, name, ROUTE_MAP_CALL, ctx.getStart().getLine());
+    _vc.referenceStructure(ROUTE_MAP, name, ROUTE_MAP_CALL, ctx.getStart().getLine());
   }
 
   @Override
   public void exitRmm_as_path(Rmm_as_pathContext ctx) {
     String name = ctx.name.getText();
     _currentRouteMapEntry.setMatchAsPath(new RouteMapMatchAsPath(name));
-    _c.referenceStructure(
+    _vc.referenceStructure(
         IP_AS_PATH_ACCESS_LIST,
         name,
         CumulusStructureUsage.ROUTE_MAP_MATCH_AS_PATH,
@@ -1541,7 +1534,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   public void exitRmm_community(Rmm_communityContext ctx) {
     ctx.names.forEach(
         name ->
-            _c.referenceStructure(
+            _vc.referenceStructure(
                 IP_COMMUNITY_LIST, name.getText(),
                 ROUTE_MAP_MATCH_COMMUNITY_LIST, name.getStart().getLine()));
 
@@ -1562,7 +1555,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   public void exitRmm_interface(Rmm_interfaceContext ctx) {
     String name = ctx.name.getText();
     _currentRouteMapEntry.setMatchInterface(new RouteMapMatchInterface(ImmutableSet.of(name)));
-    _c.referenceStructure(
+    _vc.referenceStructure(
         ABSTRACT_INTERFACE,
         name,
         CumulusStructureUsage.ROUTE_MAP_MATCH_INTERFACE,
@@ -1590,7 +1583,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
     _currentRouteMapEntry.setMatchIpAddressPrefixList(
         new RouteMapMatchIpAddressPrefixList(prefixNameList));
 
-    _c.referenceStructure(
+    _vc.referenceStructure(
         IP_PREFIX_LIST,
         name,
         CumulusStructureUsage.ROUTE_MAP_MATCH_IP_ADDRESS_PREFIX_LIST,
@@ -1711,7 +1704,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
       return;
     }
     _currentRouteMapEntry.setSetCommListDelete(new RouteMapSetCommListDelete(name));
-    _c.referenceStructure(
+    _vc.referenceStructure(
         IP_COMMUNITY_LIST, name, ROUTE_MAP_SET_COMM_LIST_DELETE, ctx.getStart().getLine());
   }
 
@@ -1763,7 +1756,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
     communityListExpanded
         .getLines()
         .add(new IpCommunityListExpandedLine(toLineAction(ctx.action), regex));
-    _c.defineStructure(IP_COMMUNITY_LIST_EXPANDED, name, ctx);
+    _vc.defineStructure(IP_COMMUNITY_LIST_EXPANDED, name, ctx);
   }
 
   @Override
@@ -1791,7 +1784,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
     communityListStandard
         .getLines()
         .add(new IpCommunityListStandardLine(toLineAction(ctx.action), communities.get()));
-    _c.defineStructure(IP_COMMUNITY_LIST_STANDARD, name, ctx);
+    _vc.defineStructure(IP_COMMUNITY_LIST_STANDARD, name, ctx);
   }
 
   private @Nonnull Optional<Set<StandardCommunity>> toStandardCommunitySet(
@@ -1811,7 +1804,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   public void enterIp_prefix_list(Ip_prefix_listContext ctx) {
     String name = ctx.name.getText();
     _currentIpPrefixList = _frr.getIpPrefixLists().computeIfAbsent(name, IpPrefixList::new);
-    _c.defineStructure(IP_PREFIX_LIST, name, ctx);
+    _vc.defineStructure(IP_PREFIX_LIST, name, ctx);
   }
 
   @Override
@@ -1823,7 +1816,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   public void enterIpv6_prefix_list(Ipv6_prefix_listContext ctx) {
     String name = ctx.name.getText();
     _currentIpv6PrefixList = _frr.getIpv6PrefixLists().computeIfAbsent(name, Ipv6PrefixList::new);
-    _c.defineStructure(IPV6_PREFIX_LIST, name, ctx);
+    _vc.defineStructure(IPV6_PREFIX_LIST, name, ctx);
   }
 
   @Override
@@ -1848,13 +1841,13 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
       _frr.getStaticRoutes().add(route);
     } else {
       String vrfName = ctx.vrf.getText();
-      if (!_oobConfiguration.hasVrf(vrfName) && !_frr.getVrfs().containsKey(vrfName)) {
+      if (!_vc.hasVrf(vrfName) && !_frr.getVrfs().containsKey(vrfName)) {
         _w.redFlag(
             String.format("the static route is ignored since vrf %s is not defined", vrfName));
         return;
       }
       _frr.getOrCreateVrf(vrfName).getStaticRoutes().add(route);
-      _c.referenceStructure(
+      _vc.referenceStructure(
           VRF, vrfName, CumulusStructureUsage.STATIC_ROUTE_VRF, ctx.vrf.getStart().getLine());
     }
   }
@@ -1876,7 +1869,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
     _frr.getIpAsPathAccessLists()
         .computeIfAbsent(name, IpAsPathAccessList::new)
         .addLine(new IpAsPathAccessListLine(action, regex));
-    _c.defineStructure(IP_AS_PATH_ACCESS_LIST, name, ctx);
+    _vc.defineStructure(IP_AS_PATH_ACCESS_LIST, name, ctx);
   }
 
   @Override
