@@ -48,10 +48,7 @@ import org.batfish.representation.frr.BgpProcess;
 import org.batfish.representation.frr.BgpVrf;
 import org.batfish.representation.frr.FrrConfiguration;
 import org.batfish.representation.frr.FrrInterface;
-import org.batfish.representation.frr.MockOutOfBandConfiguration;
-import org.batfish.representation.frr.OutOfBandConfiguration;
 import org.batfish.representation.frr.StaticRoute;
-import org.batfish.representation.frr.Vxlan;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 
@@ -68,18 +65,23 @@ public class CumulusConcatenatedConfigurationTest {
     Ip loopbackTunnelIp = Ip.parse("2.2.2.2");
     Ip loopbackAnycastIp = Ip.parse("3.3.3.3");
 
-    Vxlan vxlan = new Vxlan("vxlan1001");
-    vxlan.setId(1001);
-    vxlan.setLocalTunnelip(vxlanLocalTunnelIp);
-    vxlan.setBridgeAccessVlan(101);
-    OutOfBandConfiguration oob =
-        MockOutOfBandConfiguration.builder()
-            .setVxlans(ImmutableMap.of(vxlan.getName(), vxlan))
+    InterfacesInterface vxlan = new InterfacesInterface("vxlan1001");
+    vxlan.setVxlanId(1001);
+    vxlan.setVxlanLocalTunnelIp(vxlanLocalTunnelIp);
+    vxlan.createOrGetBridgeSettings().setAccess(101);
+
+    CumulusInterfacesConfiguration ifaces = new CumulusInterfacesConfiguration();
+    ifaces.getInterfaces().put(vxlan.getName(), vxlan);
+
+    CumulusConcatenatedConfiguration vc =
+        CumulusConcatenatedConfiguration.builder()
+            .setHostname("c")
+            .setInterfacesConfiguration(ifaces)
             .build();
 
     // vxlan's local tunnel ip should win when anycast is null
     convertVxlans(
-        c, oob, ImmutableMap.of(1001, vrf.getName()), null, loopbackTunnelIp, new Warnings());
+        c, vc, ImmutableMap.of(1001, vrf.getName()), null, loopbackTunnelIp, new Warnings());
     assertThat(
         vrf.getLayer3Vnis().get(1001).getSourceAddress(), Matchers.equalTo(vxlanLocalTunnelIp));
 
@@ -87,7 +89,7 @@ public class CumulusConcatenatedConfigurationTest {
     vrf.setLayer3Vnis(ImmutableList.of()); // wipe out prior state
     convertVxlans(
         c,
-        oob,
+        vc,
         ImmutableMap.of(1001, vrf.getName()),
         loopbackAnycastIp,
         loopbackTunnelIp,
@@ -97,9 +99,9 @@ public class CumulusConcatenatedConfigurationTest {
 
     // loopback tunnel ip should win when nothing else is present
     vrf.setLayer3Vnis(ImmutableList.of()); // wipe out prior state
-    vxlan.setLocalTunnelip(null);
+    vxlan.setVxlanLocalTunnelIp(null);
     convertVxlans(
-        c, oob, ImmutableMap.of(1001, vrf.getName()), null, loopbackTunnelIp, new Warnings());
+        c, vc, ImmutableMap.of(1001, vrf.getName()), null, loopbackTunnelIp, new Warnings());
     assertThat(
         vrf.getLayer3Vnis().get(1001).getSourceAddress(), Matchers.equalTo(loopbackTunnelIp));
   }
