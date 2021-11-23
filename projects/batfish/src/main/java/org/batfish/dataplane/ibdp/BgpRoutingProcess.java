@@ -67,6 +67,7 @@ import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Bgpv4ToEvpnVrfLeakConfig;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.EvpnRoute;
+import org.batfish.datamodel.EvpnToBgpv4VrfLeakConfig;
 import org.batfish.datamodel.EvpnType3Route;
 import org.batfish.datamodel.EvpnType5Route;
 import org.batfish.datamodel.GeneratedRoute;
@@ -230,6 +231,10 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   @Nonnull private Builder<EvpnType3Route> _evpnType3DeltaBuilder = RibDelta.builder();
   /** Builder for constructing {@link RibDelta} for routes in {@link #_evpnType5Rib} */
   @Nonnull private Builder<EvpnType5Route> _evpnType5DeltaBuilder = RibDelta.builder();
+  /** {@link RibDelta} representing last round's changes to {@link #_evpnType3Rib} */
+  @Nonnull private RibDelta<EvpnType3Route> _evpnType3DeltaPrev = RibDelta.empty();
+  /** {@link RibDelta} representing last round's changes to {@link #_evpnType5Rib} */
+  @Nonnull private RibDelta<EvpnType5Route> _evpnType5DeltaPrev = RibDelta.empty();
 
   /** Keep track of EVPN type 3 routes initialized from our own VNI settings */
   @Nonnull private RibDelta<EvpnType3Route> _evpnInitializationDelta;
@@ -531,10 +536,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
   @Override
   public void executeIteration(Map<String, Node> allNodes) {
-    // Reinitialize delta builders
-    _evpnType3DeltaBuilder = RibDelta.builder();
-    _evpnType5DeltaBuilder = RibDelta.builder();
-
     // TODO: optimize, don't recreate the map each iteration
     NetworkConfigurations nc =
         NetworkConfigurations.of(
@@ -679,6 +680,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     assert _ebgpv4DeltaBestPathBuilder.isEmpty();
     assert _bgpv4DeltaBuilder.isEmpty();
     assert _bgpv4DeltaBestPathBuilder.isEmpty();
+    assert _evpnType3DeltaBuilder.isEmpty();
+    assert _evpnType5DeltaBuilder.isEmpty();
     return
     // Message queues
     !_evpnType3IncomingRoutes.values().stream().allMatch(Queue::isEmpty)
@@ -688,10 +691,9 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         || !_ebgpv4DeltaPrevBestPath.isEmpty()
         || !_bgpv4DeltaPrev.isEmpty()
         || !_bgpv4DeltaPrevBestPath.isEmpty()
+        || !_evpnType3DeltaPrev.isEmpty()
+        || !_evpnType5DeltaPrev.isEmpty()
         || !_mainRibDelta.isEmpty()
-        // Delta builders
-        || !_evpnType3DeltaBuilder.isEmpty()
-        || !_evpnType5DeltaBuilder.isEmpty()
         // Initialization state
         || !_evpnInitializationDelta.isEmpty();
   }
@@ -2232,7 +2234,73 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         .setReceivedFromRouteReflectorClient(route.getReceivedFromRouteReflectorClient())
         .setRouteDistinguisher(rd)
         .setSrcProtocol(route.getSrcProtocol())
+        .setWeight(route.getWeight())
         .build();
+  }
+
+  public void importCrossVrfEvpnRoutesToV4(
+      Stream<RouteAdvertisement<EvpnType5Route>> routesToLeak,
+      EvpnToBgpv4VrfLeakConfig leakConfig) {
+    // TODO: Should type 3 routes leak?
+    @Nullable
+    RoutingPolicy policy =
+        Optional.ofNullable(leakConfig.getImportPolicy()).flatMap(_policies::get).orElse(null);
+    routesToLeak.forEach(
+        ra -> {
+          EvpnType5Route route = ra.getRoute();
+          LOGGER.trace("Node {}, VRF {}, Leaking EVPN route {}", _hostname, _vrfName, route);
+
+          Bgpv4Route.Builder builder = evpnRouteToBgpv4Route(route);
+
+          // Process route through import policy, if one exists
+          boolean accept = true;
+          if (policy != null) {
+            accept = policy.processBgpRoute(route, builder, null, IN, _ribExprEvaluator);
+          }
+          if (accept) {
+            Bgpv4Route transformedRoute = builder.build();
+            if (ra.isWithdrawn()) {
+              processRemoveInEbgpOrIbgpRib(
+                  transformedRoute, route.getProtocol() != RoutingProtocol.IBGP);
+              processRemoveInBgpRib(transformedRoute);
+              _importedFromOtherVrfs.remove(transformedRoute);
+            } else {
+              RibDelta<Bgpv4Route> d =
+                  processMergeInEbgpOrIbgpRib(
+                      transformedRoute, route.getProtocol() != RoutingProtocol.IBGP);
+              LOGGER.debug("Node {}, VRF {}, route {} leaked from EVPN", _hostname, _vrfName, d);
+              processMergeInBgpRib(transformedRoute);
+              _importedFromOtherVrfs.add(transformedRoute);
+            }
+          } else {
+            LOGGER.trace(
+                "Node {}, VRF {}, route {} not leaked because policy denied",
+                _hostname,
+                _vrfName,
+                route);
+          }
+        });
+    unstage();
+  }
+
+  /** Convert an EVPN route to a BGPv4 route. */
+  private static @Nonnull Bgpv4Route.Builder evpnRouteToBgpv4Route(EvpnType5Route route) {
+    return Bgpv4Route.builder()
+        .setNetwork(route.getNetwork())
+        .setAsPath(route.getAsPath())
+        .setCommunities(route.getCommunities())
+        .setLocalPreference(route.getLocalPreference())
+        .setMetric(route.getMetric())
+        .setNextHopInterface(route.getNextHopInterface())
+        .setNextHopIp(route.getNextHopIp())
+        .setOriginatorIp(route.getNextHopIp())
+        .setOriginMechanism(route.getOriginMechanism())
+        .setOriginType(route.getOriginType())
+        .setProtocol(route.getProtocol())
+        .setReceivedFromIp(route.getReceivedFromIp())
+        .setReceivedFromRouteReflectorClient(route.getReceivedFromRouteReflectorClient())
+        .setSrcProtocol(route.getSrcProtocol())
+        .setWeight(route.getWeight());
   }
 
   public void endOfRound() {
@@ -2265,6 +2333,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     // Take a snapshot of this round's deltas to [additionally] send to add-path sessions.
     _bgpv4DeltaPrev = _bgpv4DeltaBuilder.build();
     _ebgpv4DeltaPrev = _ebgpv4DeltaBuilder.build();
+    _evpnType3DeltaPrev = _evpnType3DeltaBuilder.build();
+    _evpnType5DeltaPrev = _evpnType5DeltaBuilder.build();
     // Take a snapshot of this round's best path deltas to send to non-add-path sessions.
     _bgpv4DeltaPrevBestPath = _bgpv4DeltaBestPathBuilder.build();
     _ebgpv4DeltaPrevBestPath = _ebgpv4DeltaBestPathBuilder.build();
@@ -2274,6 +2344,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     _ebgpv4DeltaBuilder = RibDelta.builder();
     _bgpv4DeltaBestPathBuilder = RibDelta.builder();
     _ebgpv4DeltaBestPathBuilder = RibDelta.builder();
+    _evpnType3DeltaBuilder = RibDelta.builder();
+    _evpnType5DeltaBuilder = RibDelta.builder();
   }
 
   /**
@@ -2365,6 +2437,11 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    */
   Stream<RouteAdvertisement<Bgpv4Route>> getRoutesToLeak() {
     return _bgpv4DeltaPrev.getActions().filter(r -> !_importedFromOtherVrfs.contains(r.getRoute()));
+  }
+
+  /** Return a stream of EVPN route advertisements to leak to other VRFs. */
+  Stream<RouteAdvertisement<EvpnType5Route>> getEvpnRoutesToLeak() {
+    return _evpnType5DeltaPrev.getActions();
   }
 
   /**

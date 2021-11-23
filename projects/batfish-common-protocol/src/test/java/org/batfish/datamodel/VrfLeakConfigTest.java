@@ -24,6 +24,8 @@ public class VrfLeakConfigTest {
                   .setImportFromVrf("v")
                   .setSrcVrfRouteDistinguisher(RouteDistinguisher.from(0, 1L))
                   .build())
+          .addEvpnToBgpv4VrfLeakConfig(
+              EvpnToBgpv4VrfLeakConfig.builder().setImportFromVrf("v").build())
           .build();
   private static final VrfLeakConfig MAIN_RIB_LEAK_CONFIG =
       VrfLeakConfig.builder(false)
@@ -80,6 +82,11 @@ public class VrfLeakConfigTest {
                         .setImportFromVrf("v")
                         .setSrcVrfRouteDistinguisher(RouteDistinguisher.from(0, 1L))
                         .build())
+                .build())
+        .addEqualityGroup(
+            mainRibBuilder
+                .addEvpnToBgpv4VrfLeakConfig(
+                    EvpnToBgpv4VrfLeakConfig.builder().setImportFromVrf("v").build())
                 .build())
         .testEquals();
   }

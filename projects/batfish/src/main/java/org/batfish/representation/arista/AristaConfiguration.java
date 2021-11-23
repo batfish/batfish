@@ -9,6 +9,7 @@ import static org.batfish.datamodel.Interface.isRealInterfaceName;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
 import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
+import static org.batfish.datamodel.Names.generatedEvpnToBgpv4VrfLeakPolicyName;
 import static org.batfish.datamodel.Names.generatedOspfDefaultRouteGenerationPolicyName;
 import static org.batfish.datamodel.Names.generatedOspfExportPolicyName;
 import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.NO_PREFERENCE;
@@ -103,6 +104,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.DeviceModel;
+import org.batfish.datamodel.EvpnToBgpv4VrfLeakConfig;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
@@ -156,6 +158,10 @@ import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.StubType;
 import org.batfish.datamodel.routing_policy.Common;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.communities.CommunityIs;
+import org.batfish.datamodel.routing_policy.communities.HasCommunity;
+import org.batfish.datamodel.routing_policy.communities.InputCommunities;
+import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
@@ -1010,9 +1016,8 @@ public final class AristaConfiguration extends VendorConfiguration {
     redistributionPolicy.addStatement(Statements.ExitReject.toStaticStatement()).build();
     newBgpProcess.setRedistributionPolicy(redistPolicyName);
 
-    // If this VRF exports BGPv4 into other VRFs' EVPN, create VRF leak configs for receiving VRFs
-    // TODO: Also support cross-VRF EVPN to BGPv4 imports here
     if (bgpVrf.getExportRouteTarget() != null && bgpVrf.getRouteDistinguisher() != null) {
+      // This VRF exports BGPv4 into other VRFs' EVPN. Create VRF leak configs for receiving VRFs
       Bgpv4ToEvpnVrfLeakConfig leakConfig =
           Bgpv4ToEvpnVrfLeakConfig.builder()
               .setImportFromVrf(vrfName)
@@ -1023,6 +1028,32 @@ public final class AristaConfiguration extends VendorConfiguration {
           .filter(aristaVrf -> aristaVrf.getEvpnAf() != null)
           .map(aristaVrf -> c.getVrfs().get(aristaVrf.getName()))
           .forEach(viVrf -> getOrInitVrfLeakConfig(viVrf).addBgpv4ToEvpnVrfLeakConfig(leakConfig));
+    }
+    if (bgpVrf.getImportRouteTarget() != null) {
+      // This VRF imports other VRFs' EVPN into its BGPv4. Create VRF leak configs for it
+      RoutingPolicy importPolicy =
+          RoutingPolicy.builder()
+              .setOwner(c)
+              .setName(generatedEvpnToBgpv4VrfLeakPolicyName(bgpVrf.getName()))
+              .addStatement(
+                  // Only import EVPN routes that match this VRF's import route target
+                  new If(
+                      new MatchCommunities(
+                          InputCommunities.instance(),
+                          new HasCommunity(new CommunityIs(bgpVrf.getImportRouteTarget()))),
+                      ImmutableList.of(Statements.ReturnTrue.toStaticStatement())))
+              .addStatement(Statements.ReturnFalse.toStaticStatement())
+              .build();
+      bgpGlobal.getVrfs().values().stream()
+          // don't bother importing from VRFs that don't have EVPN
+          .filter(aristaVrf -> aristaVrf.getEvpnAf() != null)
+          .map(
+              aristaVrf ->
+                  EvpnToBgpv4VrfLeakConfig.builder()
+                      .setImportFromVrf(aristaVrf.getName())
+                      .setImportPolicy(importPolicy.getName())
+                      .build())
+          .forEach(leakConfig -> getOrInitVrfLeakConfig(v).addEvpnToBgpv4VrfLeakConfig(leakConfig));
     }
 
     //
