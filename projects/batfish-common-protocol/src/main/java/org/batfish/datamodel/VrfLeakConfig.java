@@ -30,7 +30,10 @@ public class VrfLeakConfig implements Serializable {
   public void addBgpVrfLeakConfig(BgpVrfLeakConfig c) {
     checkArgument(_leakAsBgp, "BGP VRF leak configs cannot be configured unless leakAsBgp is set");
     _bgpVrfLeakConfigs =
-        ImmutableList.<BgpVrfLeakConfig>builder().addAll(_bgpVrfLeakConfigs).add(c).build();
+        ImmutableList.<BgpVrfLeakConfig>builderWithExpectedSize(_bgpVrfLeakConfigs.size() + 1)
+            .addAll(_bgpVrfLeakConfigs)
+            .add(c)
+            .build();
   }
 
   /** VRF leak configs describing how routes should leak from BGPv4 RIBs to EVPN RIBs. */
@@ -42,7 +45,8 @@ public class VrfLeakConfig implements Serializable {
 
   public void addBgpv4ToEvpnVrfLeakConfig(Bgpv4ToEvpnVrfLeakConfig c) {
     _bgpv4ToEvpnVrfLeakConfigs =
-        ImmutableList.<Bgpv4ToEvpnVrfLeakConfig>builder()
+        ImmutableList.<Bgpv4ToEvpnVrfLeakConfig>builderWithExpectedSize(
+                _bgpv4ToEvpnVrfLeakConfigs.size() + 1)
             .addAll(_bgpv4ToEvpnVrfLeakConfigs)
             .add(c)
             .build();
@@ -57,7 +61,8 @@ public class VrfLeakConfig implements Serializable {
 
   public void addEvpnToBgpv4VrfLeakConfig(EvpnToBgpv4VrfLeakConfig c) {
     _evpnToBgpv4VrfLeakConfigs =
-        ImmutableList.<EvpnToBgpv4VrfLeakConfig>builder()
+        ImmutableList.<EvpnToBgpv4VrfLeakConfig>builderWithExpectedSize(
+                _evpnToBgpv4VrfLeakConfigs.size() + 1)
             .addAll(_evpnToBgpv4VrfLeakConfigs)
             .add(c)
             .build();
@@ -94,7 +99,11 @@ public class VrfLeakConfig implements Serializable {
     checkArgument(
         !_leakAsBgp, "Main RIB VRF leak configs cannot be configured when leakAsBgp is set");
     _mainRibVrfLeakConfigs =
-        ImmutableList.<MainRibVrfLeakConfig>builder().addAll(_mainRibVrfLeakConfigs).add(c).build();
+        ImmutableList.<MainRibVrfLeakConfig>builderWithExpectedSize(
+                _mainRibVrfLeakConfigs.size() + 1)
+            .addAll(_mainRibVrfLeakConfigs)
+            .add(c)
+            .build();
   }
 
   public static @Nonnull Builder builder(boolean leakAsBgp) {

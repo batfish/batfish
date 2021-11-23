@@ -15,7 +15,7 @@ public final class AnnotatedRouteMatchers {
    * Provides a matcher that matches when the supplied route matcher matches the {@link
    * AnnotatedRoute}'s route.
    */
-  public static @Nonnull <R extends AbstractRoute> HasRoute<R> hasRoute(
+  public static @Nonnull <R extends AbstractRoute> Matcher<AnnotatedRoute<R>> hasRoute(
       @Nonnull Matcher<? super R> routeMatcher) {
     return new HasRoute<R>(routeMatcher);
   }
@@ -24,7 +24,8 @@ public final class AnnotatedRouteMatchers {
    * Provides a matcher that matches when the supplied {@code expectedSourceVrf} is equal to the
    * {@link AnnotatedRoute}'s source VRF.
    */
-  public static @Nonnull HasSourceVrf hasSourceVrf(@Nonnull String expectedSourceVrf) {
+  public static @Nonnull Matcher<AnnotatedRoute<?>> hasSourceVrf(
+      @Nonnull String expectedSourceVrf) {
     return new HasSourceVrf(equalTo(expectedSourceVrf));
   }
 }

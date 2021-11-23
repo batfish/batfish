@@ -2217,6 +2217,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   /** Convert a BGP v4 route to a EVPN type 5 route. */
   private static @Nonnull EvpnType5Route toEvpnType5Route(
       Bgpv4Route route, RouteDistinguisher rd, Set<ExtendedCommunity> rt) {
+    assert !(route.getNextHop() instanceof NextHopVrf);
     return EvpnType5Route.builder()
         .setNetwork(route.getNetwork())
         .setAsPath(route.getAsPath())
@@ -2224,8 +2225,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         .addCommunities(rt) // add route targets
         .setLocalPreference(route.getLocalPreference())
         .setMetric(route.getMetric())
-        .setNextHopInterface(route.getNextHopInterface())
-        .setNextHopIp(route.getNextHopIp())
+        .setNextHop(route.getNextHop())
         .setOriginatorIp(route.getOriginatorIp())
         .setOriginMechanism(route.getOriginMechanism())
         .setOriginType(route.getOriginType())
@@ -2285,14 +2285,14 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
   /** Convert an EVPN route to a BGPv4 route. */
   private static @Nonnull Bgpv4Route.Builder evpnRouteToBgpv4Route(EvpnType5Route route) {
+    assert !(route.getNextHop() instanceof NextHopVrf);
     return Bgpv4Route.builder()
         .setNetwork(route.getNetwork())
         .setAsPath(route.getAsPath())
         .setCommunities(route.getCommunities())
         .setLocalPreference(route.getLocalPreference())
         .setMetric(route.getMetric())
-        .setNextHopInterface(route.getNextHopInterface())
-        .setNextHopIp(route.getNextHopIp())
+        .setNextHop(route.getNextHop())
         .setOriginatorIp(route.getOriginatorIp())
         .setOriginMechanism(route.getOriginMechanism())
         .setOriginType(route.getOriginType())

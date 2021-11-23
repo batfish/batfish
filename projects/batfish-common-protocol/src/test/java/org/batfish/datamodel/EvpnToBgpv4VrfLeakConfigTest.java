@@ -31,8 +31,7 @@ public class EvpnToBgpv4VrfLeakConfigTest {
     new EqualsTester()
         .addEqualityGroup(val, b.build())
         .addEqualityGroup(b.setImportFromVrf("v2").build())
-        .addEqualityGroup(b.setImportPolicy("p").build(), b.build())
-        .addEqualityGroup(b.setImportPolicy("p2").build())
+        .addEqualityGroup(b.setImportPolicy("p").build())
         .testEquals();
   }
 }
