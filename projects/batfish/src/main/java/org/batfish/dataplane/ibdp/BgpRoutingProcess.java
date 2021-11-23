@@ -2293,7 +2293,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         .setMetric(route.getMetric())
         .setNextHopInterface(route.getNextHopInterface())
         .setNextHopIp(route.getNextHopIp())
-        .setOriginatorIp(route.getNextHopIp())
+        .setOriginatorIp(route.getOriginatorIp())
         .setOriginMechanism(route.getOriginMechanism())
         .setOriginType(route.getOriginType())
         .setProtocol(route.getProtocol())
