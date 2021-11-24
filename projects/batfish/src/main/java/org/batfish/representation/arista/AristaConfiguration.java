@@ -894,7 +894,9 @@ public final class AristaConfiguration extends VendorConfiguration {
 
     // Arista sets local routes' local preference to 0
     // actually, it is unset but treated like 0 in terms of BgpRib comparisons.
+    // All local routes have origin type IGP in Arista.
     redistributionPolicy.addStatement(new SetLocalPreference(new LiteralLong(0)));
+    redistributionPolicy.addStatement(new SetOrigin(new LiteralOrigin(OriginType.IGP, null)));
     redistributionPolicy.addStatement(new SetWeight(new LiteralInt(DEFAULT_LOCAL_BGP_WEIGHT)));
 
     // Only redistribute default route if `default-information originate` is set.
@@ -1006,9 +1008,8 @@ public final class AristaConfiguration extends VendorConfiguration {
                 redistributionPolicy.addStatement(
                     new If(
                         new Conjunction(exportNetworkConditions),
-                        ImmutableList.of(
-                            new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
-                            Statements.ExitAccept.toStaticStatement())));
+                        // no need to set origin type; it was set at beginning of redist policy
+                        ImmutableList.of(Statements.ExitAccept.toStaticStatement())));
               });
     }
 

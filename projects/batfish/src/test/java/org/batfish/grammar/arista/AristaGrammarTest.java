@@ -660,7 +660,7 @@ public class AristaGrammarTest {
             .setAdmin(bgpAdmin)
             .setLocalPreference(0)
             .setNextHop(NextHopDiscard.instance())
-            .setOriginType(OriginType.INCOMPLETE)
+            .setOriginType(OriginType.IGP)
             .setOriginMechanism(OriginMechanism.REDISTRIBUTE)
             .setOriginatorIp(Ip.parse("10.10.10.1"))
             .setProtocol(RoutingProtocol.BGP)
@@ -1339,7 +1339,7 @@ public class AristaGrammarTest {
             .setNextHop(NextHopDiscard.instance())
             .setOriginatorIp(routerId)
             .setOriginMechanism(OriginMechanism.REDISTRIBUTE)
-            .setOriginType(OriginType.INCOMPLETE)
+            .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setReceivedFromIp(Ip.ZERO) // indicates local origination
             .setSrcProtocol(RoutingProtocol.STATIC)
