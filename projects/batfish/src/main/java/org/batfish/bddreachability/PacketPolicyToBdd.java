@@ -1,6 +1,5 @@
 package org.batfish.bddreachability;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static org.batfish.bddreachability.transition.Transitions.IDENTITY;
 import static org.batfish.bddreachability.transition.Transitions.ZERO;
 import static org.batfish.bddreachability.transition.Transitions.compose;
@@ -234,8 +233,8 @@ class PacketPolicyToBdd {
     }
 
     private void beforeOutTransitions(Transition before) {
-      _outTransitionsByTarget.replaceAll(
-          (succ, transition) -> checkNotNull(mergeComposed(before, transition)));
+      // TODO ensure composes cleanly
+      _outTransitionsByTarget.replaceAll((succ, transition) -> compose(before, transition));
     }
 
     @Override
