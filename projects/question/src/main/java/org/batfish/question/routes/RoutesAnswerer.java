@@ -146,7 +146,7 @@ public class RoutesAnswerer extends Answerer {
                 matchingVrfsByNode,
                 network,
                 protocolSpec,
-                ImmutableSet.of(BACKUP),
+                ImmutableSet.of(BEST, BACKUP),
                 question.getPrefixMatchType()));
         rows.sort(BGP_COMPARATOR);
         break;
