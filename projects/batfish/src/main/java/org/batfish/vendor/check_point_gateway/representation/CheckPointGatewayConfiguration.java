@@ -530,13 +530,12 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
                     rule, serviceToMatchExpr, addressSpaceToMatchExpr, objects, returnFibLookup)
                 .ifPresent(statements::add));
 
-    // Convert automatic NAT rules; short circuit if there are none.
-    if (autoHideNatObjects.isEmpty() && autoStaticNatObjects.isEmpty()) {
-      return statements.build();
+    // Convert automatic NAT rules
+    if (!autoHideNatObjects.isEmpty() || !autoStaticNatObjects.isEmpty()) {
+      statements.add(
+          getAutoRuleStatement(
+              autoStaticNatObjects, autoHideNatObjects, returnFibLookup, addressSpaceToMatchExpr));
     }
-    statements.add(
-        getAutoRuleStatement(
-            autoStaticNatObjects, autoHideNatObjects, returnFibLookup, addressSpaceToMatchExpr));
 
     // Low priority rules come after automatic rules
     manualLowPriorityRules.forEach(
