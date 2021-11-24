@@ -5,15 +5,19 @@ import static org.batfish.bddreachability.transition.Transitions.ZERO;
 import static org.batfish.bddreachability.transition.Transitions.compose;
 import static org.batfish.bddreachability.transition.Transitions.constraint;
 import static org.batfish.bddreachability.transition.Transitions.mergeComposed;
+import static org.batfish.bddreachability.transition.Transitions.or;
+import static org.parboiled.common.Preconditions.checkNotNull;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Table;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,6 +36,7 @@ import org.batfish.common.bdd.BDDOps;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpSpaceToBDD;
+import org.batfish.common.topology.broadcast.Edges;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.packet_policy.Action;
 import org.batfish.datamodel.packet_policy.ApplyFilter;
@@ -133,8 +138,21 @@ class PacketPolicyToBdd {
 
   private static final Logger LOGGER = LogManager.getLogger(PacketPolicyToBdd.class);
 
-  /** Process a given {@link PacketPolicy} */
   private void process(PacketPolicy p) {
+    BottomUpStatementToBdd stmtConverter =
+        new BottomUpStatementToBdd(
+            new PacketPolicyAction(_hostname, _vrf, p.getName(), p.getDefaultAction().getAction()));
+    stmtConverter.visitStatements(p.getStatements());
+    StateExpr src = new PacketPolicyStatement(_hostname, _vrf, _policy.getName(), 0);
+    stmtConverter._outTransitionsByTarget.forEach(
+        (tgt, trans) -> {
+          if (trans != ZERO) {
+            addEdge(src, tgt, trans);
+          }
+        });
+  }
+  /** Process a given {@link PacketPolicy} */
+  private void process2(PacketPolicy p) {
     StatementToBdd stmtConverter = new StatementToBdd(_boolExprToBdd);
 
     stmtConverter.visitStatements(p.getStatements());
@@ -184,13 +202,94 @@ class PacketPolicyToBdd {
 
   private List<Edge> getEdges() {
     return _transitions.cellSet().stream()
-        .map(
-            cell ->
-                new Edge(
-                    cell.getRowKey(),
-                    cell.getColumnKey(),
-                    Transitions.or(cell.getValue().stream())))
+        .map(cell -> new Edge(cell.getRowKey(), cell.getColumnKey(), or(cell.getValue().stream())))
         .collect(Collectors.toList());
+  }
+
+  private class BottomUpStatementToBdd implements StatementVisitor<Void> {
+    private Map<StateExpr, Transition> _outTransitionsByTarget = new HashMap<>();
+    private final List<Edges> _edges = new ArrayList<>();
+    private final Set<PacketPolicyAction> _actions = new HashSet<>();
+
+    BottomUpStatementToBdd(StateExpr fallThrough) {
+      _outTransitionsByTarget.put(fallThrough, IDENTITY);
+    }
+
+    public void visitStatements(List<Statement> statements) {
+      for (Statement statement : Lists.reverse(statements)) {
+        visit(statement);
+      }
+    }
+
+    private void addOutTransition(Transition transition, StateExpr successor) {
+      _outTransitionsByTarget.compute(
+          successor,
+          (succ, oldTransition) ->
+              oldTransition == null ? transition : or(transition, oldTransition));
+    }
+
+    private void constrainOutTransitions(BDD constraintBdd) {
+      beforeOutTransitions(constraint(constraintBdd));
+    }
+
+    private void beforeOutTransitions(Transition before) {
+      _outTransitionsByTarget.replaceAll(
+          (succ, transition) -> checkNotNull(mergeComposed(before, transition)));
+    }
+
+    @Override
+    public Void visitApplyFilter(ApplyFilter applyFilter) {
+      BDD permitBdd =
+          _boolExprToBdd._ipAccessListToBdd.toBdd(new PermittedByAcl(applyFilter.getFilter()));
+      constrainOutTransitions(permitBdd.not());
+      addOutTransition(
+          constraint(permitBdd),
+          new PacketPolicyAction(_hostname, _vrf, _policy.getName(), Drop.instance()));
+      return null;
+    }
+
+    @Override
+    public Void visitApplyTransformation(ApplyTransformation transformation) {
+      Transition transition =
+          _transformationToTransition.toTransition(transformation.getTransformation());
+      beforeOutTransitions(transition);
+      return null;
+    }
+
+    @Override
+    public Void visitIf(If ifStmt) {
+      BDD matchConstraint = _boolExprToBdd.visit(ifStmt.getMatchCondition());
+
+      // copy out transitions if there's fall through
+      Map<StateExpr, Transition> thenBranchOutTransitionsByTarget =
+          Iterables.getLast(ifStmt.getTrueStatements()) instanceof Return
+              ? new HashMap<>()
+              : new HashMap<>(_outTransitionsByTarget);
+
+      constrainOutTransitions(matchConstraint.not());
+      Map<StateExpr, Transition> elseBranchOutTransitionsByTarget = _outTransitionsByTarget;
+
+      // compute then branch
+      _outTransitionsByTarget = thenBranchOutTransitionsByTarget;
+      visitStatements(ifStmt.getTrueStatements());
+
+      // merge in else branch
+      elseBranchOutTransitionsByTarget.forEach(
+          (succ, trans) ->
+              _outTransitionsByTarget.compute(
+                  succ, (k, oldTrans) -> oldTrans == null ? trans : or(oldTrans, trans)));
+      return null;
+    }
+
+    @Override
+    public Void visitReturn(Return returnStmt) {
+      _outTransitionsByTarget
+          .clear(); // does not fall through. TODO if we are clearing nontrivial, should avoid that.
+      addOutTransition(
+          IDENTITY,
+          new PacketPolicyAction(_hostname, _vrf, _policy.getName(), returnStmt.getAction()));
+      return null;
+    }
   }
 
   /**
