@@ -144,6 +144,7 @@ class PacketPolicyToBdd {
             new PacketPolicyAction(_hostname, _vrf, p.getName(), p.getDefaultAction().getAction()));
     stmtConverter.visitStatements(p.getStatements());
     StateExpr src = new PacketPolicyStatement(_hostname, _vrf, _policy.getName(), 0);
+    LOGGER.info("bottom up computed {} out edges", stmtConverter._outTransitionsByTarget.size());
     stmtConverter._outTransitionsByTarget.forEach(
         (tgt, trans) -> {
           if (trans != ZERO) {
@@ -261,8 +262,10 @@ class PacketPolicyToBdd {
       BDD matchConstraint = _boolExprToBdd.visit(ifStmt.getMatchCondition());
 
       // copy out transitions if there's fall through
+      // if it's empty (noop), can skip. this shouldn't happen, but we don't control conversion
       Map<StateExpr, Transition> thenBranchOutTransitionsByTarget =
-          Iterables.getLast(ifStmt.getTrueStatements()) instanceof Return
+          ifStmt.getTrueStatements().isEmpty()
+                  || Iterables.getLast(ifStmt.getTrueStatements()) instanceof Return
               ? new HashMap<>()
               : new HashMap<>(_outTransitionsByTarget);
 
