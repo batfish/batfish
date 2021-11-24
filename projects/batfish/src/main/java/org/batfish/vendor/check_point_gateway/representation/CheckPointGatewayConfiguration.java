@@ -66,6 +66,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.packet_policy.ApplyFilter;
 import org.batfish.datamodel.packet_policy.ApplyTransformation;
 import org.batfish.datamodel.packet_policy.FibLookup;
@@ -540,6 +541,20 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     if (autoHideNatObjects.isEmpty() && autoStaticNatObjects.isEmpty()) {
       return statements.build();
     }
+    statements.add(
+        getAutoRuleStatement(
+            autoStaticNatObjects, autoHideNatObjects, returnFibLookup, addressSpaceToMatchExpr));
+
+    return statements.build();
+  }
+
+  /** Generate a statement handling all automatic NAT rule transformations. */
+  private @Nonnull Statement getAutoRuleStatement(
+      List<HasNatSettings> autoStaticNatObjects,
+      List<HasNatSettings> autoHideNatObjects,
+      Return returnFibLookup,
+      AddressSpaceToMatchExpr addressSpaceToMatchExpr) {
+    Warnings warnings = getWarnings();
 
     // While we have the NAT hide settings, check if any hide behind gateway, and warn if any
     // interfaces are missing an IP because this will cause the source translation to be wrong.
@@ -554,6 +569,27 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
               + " an interface with no concrete address");
     }
 
+    ImmutableList.Builder<AclLineMatchExpr> matchAnyAutoRule = ImmutableList.builder();
+    // Auto static
+    if (!autoStaticNatObjects.isEmpty()) {
+      matchAnyAutoRule.addAll(
+          autoStaticNatObjects.stream()
+              .map(natObj -> matchAutomaticStaticRule(natObj, true))
+              .collect(ImmutableList.toImmutableList()));
+      matchAnyAutoRule.addAll(
+          autoStaticNatObjects.stream()
+              .map(natObj -> matchAutomaticStaticRule(natObj, false))
+              .collect(ImmutableList.toImmutableList()));
+    }
+    // Auto hide
+    if (!autoHideNatObjects.isEmpty()) {
+      matchAnyAutoRule.addAll(
+          autoHideNatObjects.stream()
+              .map(addressSpaceToMatchExpr::convertSource)
+              .collect(ImmutableList.toImmutableList()));
+    }
+
+    ImmutableList.Builder<Statement> statements = ImmutableList.builder();
     if (!autoHideNatObjects.isEmpty()) {
       // Automatic hide rules configured on network or address-range objects will match, but not
       // translate, traffic whose src and dst are both within that network/address-range. Need to
@@ -625,7 +661,8 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
                   returnFibLookup)));
     }
 
-    return statements.build();
+    return new If(
+        new PacketMatchExpr(AclLineMatchExprs.or(matchAnyAutoRule.build())), statements.build());
   }
 
   /**
