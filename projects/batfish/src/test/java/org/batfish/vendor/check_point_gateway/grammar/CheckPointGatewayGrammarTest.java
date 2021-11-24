@@ -1344,6 +1344,8 @@ public class CheckPointGatewayGrammarTest {
     4. Automatic static 2: Source 20.20.20.21 translates to NAT IP 10.10.10.11
                          (implies dest 10.10.10.11 translates to 20.20.20.21)
     5. Automatic hide: Network 10.10.10.0/24 is hidden behind IP 30.30.30.30
+    6. Manual (low priority) hide: Source 10.10.0.0/16 is translated to 9.9.9.9
+        note: this source network overlaps with a preceding automatic rule
      */
     String hostname = "nat_rules";
     Ip manualStaticOriginalDst = Ip.parse("5.5.5.5");
@@ -1356,6 +1358,8 @@ public class CheckPointGatewayGrammarTest {
     Ip autoStatic2NatIp = Ip.parse("10.10.10.11");
     Prefix autoHideNetwork = Prefix.parse("10.10.10.0/24");
     Ip autoHideNatIp = Ip.parse("30.30.30.30");
+    Prefix manualLowPriorityHideOriginalSrc = Prefix.parse("10.10.0.0/16");
+    Ip manualLowPriorityHideTranslatedSrc = Ip.parse("9.9.9.9");
 
     AtomicInteger uidGenerator = new AtomicInteger();
     NatSettings emptyNatSettings = new NatSettings(false, null, null, null, null);
@@ -1395,6 +1399,23 @@ public class CheckPointGatewayGrammarTest {
             emptyNatSettings,
             "manualHideTranslatedHost",
             manualHideTranslatedHostUid);
+    Uid manualLowPriorityHideOriginalNetworkUid =
+        Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
+    Network manualLowPriorityHideOriginalNetwork =
+        new Network(
+            "manualLowPriorityHideOriginalNetwork",
+            emptyNatSettings,
+            manualLowPriorityHideOriginalSrc.getStartIp(),
+            manualLowPriorityHideOriginalSrc.getPrefixWildcard().inverted(),
+            manualLowPriorityHideOriginalNetworkUid);
+    Uid manualLowPriorityHideTranslatedHostUid =
+        Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
+    Host manualLowPriorityHideTranslatedHost =
+        new Host(
+            manualLowPriorityHideTranslatedSrc,
+            emptyNatSettings,
+            "manualLowPriorityHideTranslatedHost",
+            manualLowPriorityHideTranslatedHostUid);
     Uid manualStaticRuleUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
     NatRule manualStaticRule =
         new NatRule(
@@ -1427,6 +1448,22 @@ public class CheckPointGatewayGrammarTest {
             originalUid,
             manualHideTranslatedHostUid,
             manualHideRuleUid);
+    Uid manualLowPriorityHideRuleUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
+    NatRule manualLowPriorityHideRule =
+        new NatRule(
+            false,
+            "",
+            true,
+            ImmutableList.of(policyTargetsUid),
+            NatMethod.HIDE,
+            cpmiAnyUid,
+            cpmiAnyUid,
+            manualLowPriorityHideOriginalNetworkUid,
+            2,
+            originalUid,
+            originalUid,
+            manualLowPriorityHideTranslatedHostUid,
+            manualLowPriorityHideRuleUid);
 
     // Create automatic rules
     NatSettings autoStatic1NatSettings =
@@ -1513,6 +1550,8 @@ public class CheckPointGatewayGrammarTest {
             .put(manualStaticTranslatedHostUid, manualStaticTranslatedHost)
             .put(manualHideOriginalHostUid, manualHideOriginalHost)
             .put(manualHideTranslatedHostUid, manualHideTranslatedHost)
+            .put(manualLowPriorityHideOriginalNetworkUid, manualLowPriorityHideOriginalNetwork)
+            .put(manualLowPriorityHideTranslatedHostUid, manualLowPriorityHideTranslatedHost)
             .put(autoStatic1HostUid, autoStatic1Host)
             .put(autoStatic2HostUid, autoStatic2Host)
             .put(autoHideNetworkUid, autoHideNetworkObj)
@@ -1522,7 +1561,12 @@ public class CheckPointGatewayGrammarTest {
         new NatRulebase(
             natObjs,
             ImmutableList.of(
-                manualStaticRule, manualHideRule, autoStatic1Rule, autoStatic2Rule, autoHideRule),
+                manualStaticRule,
+                manualHideRule,
+                autoStatic1Rule,
+                autoStatic2Rule,
+                autoHideRule,
+                manualLowPriorityHideRule),
             rulebaseUid);
 
     // Create simple access layer to permit all traffic
@@ -1714,6 +1758,7 @@ public class CheckPointGatewayGrammarTest {
     }
     {
       // Traffic can match both an auto static dest rule and an auto hide source rule
+      // Also note: this rule partly overlaps with the low-priority manual rule exercised below
       Flow flow =
           Flow.builder()
               .setSrcIp(autoHideNetwork.getStartIp()) // Matches src translation for auto hide rule
@@ -1735,6 +1780,18 @@ public class CheckPointGatewayGrammarTest {
               .setIngressNode(hostname)
               .build();
       testFunction.apply(flow, flow);
+    }
+    {
+      // Traffic should match low priority NAT rules last
+      Flow flow =
+          Flow.builder()
+              .setSrcIp(Ip.parse("10.10.11.11"))
+              .setDstIp(Ip.parse("1.1.1.2"))
+              .setIngressNode(hostname)
+              .build();
+      testFunction.apply(
+          flow,
+          flow.toBuilder().setSrcIp(manualLowPriorityHideTranslatedHost.getIpv4Address()).build());
     }
 
     // Check session properties
