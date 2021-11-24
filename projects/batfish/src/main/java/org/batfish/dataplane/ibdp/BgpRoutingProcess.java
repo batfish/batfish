@@ -2230,10 +2230,30 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   }
 
   /** Convert an EVPN route to a BGPv4 route. */
-  private static @Nonnull Bgpv4Route.Builder evpnRouteToBgpv4Route(EvpnType5Route route) {
+  private @Nonnull Bgpv4Route.Builder evpnRouteToBgpv4Route(EvpnType5Route route) {
     assert !(route.getNextHop() instanceof NextHopVrf);
+    // TODO Can customized admin on a BGP route be preserved when it's leaked to EVPN?
+    //  Or, can EVPN routes be assigned custom admin values? If so, EvpnRoute admin needs to be
+    //  settable (but possibly not affect EVPN route comparison).
+    int admin;
+    switch (route.getProtocol()) {
+      case AGGREGATE:
+        admin = _process.getLocalAdminCost();
+        break;
+      case BGP:
+        admin = _process.getEbgpAdminCost();
+        break;
+      case IBGP:
+        admin = _process.getIbgpAdminCost();
+        break;
+      default:
+        throw new IllegalArgumentException(
+            String.format("EVPN route has unexpected protocol %s", route.getProtocol()));
+    }
+
     return Bgpv4Route.builder()
         .setNetwork(route.getNetwork())
+        .setAdmin(admin)
         .setAsPath(route.getAsPath())
         .setCommunities(route.getCommunities())
         .setLocalPreference(route.getLocalPreference())
