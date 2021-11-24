@@ -124,6 +124,10 @@ public final class Names {
     return String.format("~BGP_PEER_IMPORT_POLICY_EVPN:%s:%s~", vrf, peer);
   }
 
+  public static String generatedEvpnToBgpv4VrfLeakPolicyName(String vrf) {
+    return String.format("~EVPN_TO_BGPV4_VRF_LEAK_POLICY:%s~", vrf);
+  }
+
   public static String generatedOspfDefaultRouteGenerationPolicyName(String vrf, String proc) {
     return String.format("~OSPF_DEFAULT_ROUTE_GENERATION_POLICY:%s:%s~", vrf, proc);
   }

@@ -17,6 +17,7 @@ vlan 130
    name vrf1
 !
 vrf instance vrf1
+vrf instance vrf2
 !
 interface Ethernet1
    no switchport
@@ -26,6 +27,11 @@ interface Ethernet2
    no switchport
    vrf vrf1
    ip address 12.12.12.2/24
+!
+interface Ethernet3
+   no switchport
+   vrf vrf2
+   ip address 13.13.13.2/24
 !
 interface Loopback1
    ip address 10.10.10.1/32
@@ -41,6 +47,7 @@ interface Vxlan1
 !
 ip routing
 ip routing vrf vrf1
+ip routing vrf vrf2
 !
 route-map SET_MAP permit 10
    set community 12345
@@ -48,16 +55,14 @@ route-map SET_MAP permit 10
 !
 router bgp 65002
    router-id 10.10.10.1
-   neighbor 11.11.11.6 maximum-routes 12000
-   !
-   address-family evpn
-      neighbor 11.11.11.6 activate
    !
    vrf vrf1
       rd 192.168.255.1:15004
       route-target export evpn 15004:15004
-      neighbor 12.12.12.5 remote-as 65003
-      neighbor 12.12.12.5 maximum-routes 12000
       network 12.12.12.0/24 route-map SET_MAP
+   !
+   vrf vrf2
+      rd 192.168.255.2:15004
+      route-target import evpn 15004:15004
 !
 end

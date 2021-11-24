@@ -53,6 +53,7 @@ import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.EvpnRoute;
+import org.batfish.datamodel.EvpnToBgpv4VrfLeakConfig;
 import org.batfish.datamodel.EvpnType3Route;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.FibImpl;
@@ -1457,7 +1458,7 @@ public final class VirtualRouter {
     }
     _bgpRoutingProcess.startOfInnerRound();
     _bgpRoutingProcess.executeIteration(allNodes);
-    // If we must leak routes as BGP, do so here.
+    // If we leak to or from EVPN or leak routes as BGP, do so here.
     if (_vrf.getVrfLeakConfig() != null) {
       bgpVrfLeak();
       evpnVrfLeak(allNodes);
@@ -1493,6 +1494,26 @@ public final class VirtualRouter {
   private void evpnVrfLeak(Map<String, Node> allNodes) {
     // invariants of being called from bgpIteration
     assert _bgpRoutingProcess != null && _vrf.getVrfLeakConfig() != null;
+
+    for (EvpnToBgpv4VrfLeakConfig leakConfig :
+        _vrf.getVrfLeakConfig().getEvpnToBgpv4VrfLeakConfigs()) {
+      Optional<BgpRoutingProcess> exportingBgpProc =
+          _node
+              .getVirtualRouter(leakConfig.getImportFromVrf())
+              .map(VirtualRouter::getBgpRoutingProcess);
+      if (exportingBgpProc.isPresent()) {
+        _bgpRoutingProcess.importCrossVrfEvpnRoutesToV4(
+            exportingBgpProc.get().getEvpnRoutesToLeak(), leakConfig);
+      } else {
+        LOGGER.error(
+            "Exporting EVPN routes to BGP from VRF {} to VRF {} on node {} failed. Exporting VRF"
+                + " has no BGP process",
+            leakConfig.getImportFromVrf(),
+            _name,
+            _c.getHostname());
+      }
+    }
+
     NetworkConfigurations nc =
         NetworkConfigurations.of(
             allNodes.entrySet().stream()
