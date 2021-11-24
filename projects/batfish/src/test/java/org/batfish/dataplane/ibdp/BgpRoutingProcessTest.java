@@ -34,7 +34,6 @@ import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -70,8 +69,6 @@ import org.batfish.datamodel.bgp.BgpTopology.EdgeId;
 import org.batfish.datamodel.bgp.EvpnAddressFamily;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.Layer2VniConfig;
-import org.batfish.datamodel.bgp.Layer3VniConfig;
-import org.batfish.datamodel.bgp.Layer3VniConfig.Builder;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.VniConfig;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
@@ -255,52 +252,6 @@ public class BgpRoutingProcessTest {
                 .setOriginatorIp(_bgpProcess.getRouterId())
                 .setNextHop(NextHopDiscard.instance())
                 .build()));
-  }
-
-  @Test
-  public void testComputeRtToVrfMapping() {
-    Ip localIp = Ip.parse("2.2.2.2");
-    int vni = 10001;
-    int vni2 = 10002;
-    Builder vniConfigBuilder =
-        Layer3VniConfig.builder()
-            .setVni(vni)
-            .setVrf(_vrf.getName())
-            .setRouteDistinguisher(RouteDistinguisher.from(_bgpProcess.getRouterId(), 2))
-            .setRouteTarget(ExtendedCommunity.target(65500, vni))
-            .setAdvertiseV4Unicast(false);
-    Layer3VniConfig vniConfig1 = vniConfigBuilder.build();
-    Layer3VniConfig vniConfig2 =
-        vniConfigBuilder
-            .setVni(vni2)
-            .setVrf(_vrf2.getName())
-            .setRouteTarget(ExtendedCommunity.target(65500, vni2))
-            .build();
-    Ip peerAddress = Ip.parse("1.1.1.1");
-    BgpActivePeerConfig evpnPeer =
-        BgpActivePeerConfig.builder()
-            .setPeerAddress(peerAddress)
-            .setRemoteAs(1L)
-            .setLocalIp(localIp)
-            .setLocalAs(2L)
-            .setEvpnAddressFamily(
-                EvpnAddressFamily.builder()
-                    .setL2Vnis(ImmutableSet.of())
-                    .setL3Vnis(ImmutableSet.of(vniConfig1, vniConfig2))
-                    .setPropagateUnmatched(true)
-                    .build())
-            .build();
-    _bgpProcess.getActiveNeighbors().put(peerAddress, evpnPeer);
-
-    Map<String, String> actual = BgpRoutingProcess.computeRouteTargetToVrfMap(Stream.of(evpnPeer));
-    assertThat(
-        actual,
-        equalTo(
-            ImmutableMap.of(
-                VniConfig.importRtPatternForAnyAs(vni),
-                _vrf.getName(),
-                VniConfig.importRtPatternForAnyAs(vni2),
-                _vrf2.getName())));
   }
 
   @Test

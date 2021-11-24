@@ -30,7 +30,6 @@ import com.google.common.collect.Streams;
 import com.google.common.graph.ValueGraph;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -43,7 +42,6 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Function;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -240,12 +238,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   /* Indicates whether this BGP process has been initialized. */
   private boolean _initialized = false;
 
-  /**
-   * Mapping from extended community route target patterns to VRF name. Used for determining where
-   * to merge EVPN routes
-   */
-  @Nonnull private final Map<String, String> _rtVrfMapping;
-
   /** Changed main RIB routes to be redistributed. Unused if {@link #_exportFromBgpRib} is set. */
   @Nonnull private RibDelta<AnnotatedRoute<AbstractRoute>> _mainRibDelta;
 
@@ -376,7 +368,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             clusterListAsIbgpCost,
             _process.getLocalOriginationTypeTieBreaker());
     _evpnInitializationDelta = RibDelta.empty();
-    _rtVrfMapping = computeRouteTargetToVrfMap(getAllPeerConfigs(_process));
     _ribExprEvaluator = new RibExprEvaluator(_mainRib);
     _aggregates = new PrefixTrieMultiMap<>();
     _process.getAggregates().forEach(_aggregates::put);
@@ -386,21 +377,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     _bgpv4PrevBestPath = ImmutableSet.of();
     _ebgpv4Prev = ImmutableSet.of();
     _ebgpv4PrevBestPath = ImmutableSet.of();
-  }
-
-  /**
-   * Computes the mapping route targets to VRF names, for all layer 3 EVPN VNIs, across all bgp
-   * neighbors in our VRF.
-   */
-  @VisibleForTesting
-  static Map<String, String> computeRouteTargetToVrfMap(Stream<BgpPeerConfig> peerConfigs) {
-    HashMap<String, String> rtVrfMappingBuilder = new HashMap<>();
-    peerConfigs
-        .map(BgpPeerConfig::getEvpnAddressFamily)
-        .filter(Objects::nonNull)
-        .flatMap(af -> Stream.concat(af.getL3VNIs().stream(), af.getL2VNIs().stream()))
-        .forEach(vni -> rtVrfMappingBuilder.put(vni.getImportRouteTarget(), vni.getVrf()));
-    return ImmutableMap.copyOf(rtVrfMappingBuilder);
   }
 
   @Override
@@ -708,12 +684,12 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
     // Process EVPN messages and send out updates. Don't add deltas to _toMainRib because all EVPN
     // routes are nonrouting.
-    DeltaPair<EvpnType3Route> type3Delta = processEvpnType3Messages(nc, allNodes);
+    DeltaPair<EvpnType3Route> type3Delta = processEvpnType3Messages(nc);
     sendOutEvpnType3Routes(type3Delta.getAllToAdvertise(), nc, allNodes);
     _evpnType3DeltaBuilder.from(importRibDelta(_evpnType3Rib, type3Delta._toMerge._ebgpDelta));
     _evpnType3DeltaBuilder.from(importRibDelta(_evpnType3Rib, type3Delta._toMerge._ibgpDelta));
 
-    DeltaPair<EvpnType5Route> type5Delta = processEvpnType5Messages(nc, allNodes);
+    DeltaPair<EvpnType5Route> type5Delta = processEvpnType5Messages(nc);
     sendOutEvpnType5Routes(type5Delta.getAllToAdvertise(), nc, allNodes);
     _evpnType5DeltaBuilder.from(importRibDelta(_evpnType5Rib, type5Delta._toMerge._ebgpDelta));
     _evpnType5DeltaBuilder.from(importRibDelta(_evpnType5Rib, type5Delta._toMerge._ibgpDelta));
@@ -1396,31 +1372,27 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   }
 
   /** Process incoming EVPN type 3 messages, across all neighbors */
-  private DeltaPair<EvpnType3Route> processEvpnType3Messages(
-      NetworkConfigurations nc, Map<String, Node> allNodes) {
+  private DeltaPair<EvpnType3Route> processEvpnType3Messages(NetworkConfigurations nc) {
     DeltaPair<EvpnType3Route> deltaPair = DeltaPair.empty();
     for (Entry<EdgeId, Queue<RouteAdvertisement<EvpnType3Route>>> entry :
         _evpnType3IncomingRoutes.entrySet()) {
       EdgeId edge = entry.getKey();
       Queue<RouteAdvertisement<EvpnType3Route>> queue = entry.getValue();
       deltaPair =
-          deltaPair.union(
-              processEvpnMessagesFromNeighbor(edge, queue, nc, allNodes, EvpnType3Route.class));
+          deltaPair.union(processEvpnMessagesFromNeighbor(edge, queue, nc, EvpnType3Route.class));
     }
     return deltaPair;
   }
 
   /** Process incoming EVPN type 5 messages, across all neighbors */
-  private @Nonnull DeltaPair<EvpnType5Route> processEvpnType5Messages(
-      NetworkConfigurations nc, Map<String, Node> allNodes) {
+  private @Nonnull DeltaPair<EvpnType5Route> processEvpnType5Messages(NetworkConfigurations nc) {
     DeltaPair<EvpnType5Route> deltaPair = DeltaPair.empty();
     for (Entry<EdgeId, Queue<RouteAdvertisement<EvpnType5Route>>> entry :
         _evpnType5IncomingRoutes.entrySet()) {
       EdgeId edge = entry.getKey();
       Queue<RouteAdvertisement<EvpnType5Route>> queue = entry.getValue();
       deltaPair =
-          deltaPair.union(
-              processEvpnMessagesFromNeighbor(edge, queue, nc, allNodes, EvpnType5Route.class));
+          deltaPair.union(processEvpnMessagesFromNeighbor(edge, queue, nc, EvpnType5Route.class));
     }
     return deltaPair;
   }
@@ -1431,7 +1403,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
           EdgeId edge,
           Queue<RouteAdvertisement<R>> queue,
           NetworkConfigurations nc,
-          Map<String, Node> allNodes,
           Class<R> clazz) {
     BgpPeerConfigId ourConfigId = edge.head();
     BgpPeerConfig ourBgpConfig = nc.getBgpPeerConfig(ourConfigId);
@@ -1477,36 +1448,11 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         continue;
       }
       R transformedRoute = transformedBuilder.build();
-      Set<ExtendedCommunity> routeTargets = transformedRoute.getRouteTargets();
-      if (routeTargets.isEmpty()) {
-        // Skip if the route target is unrecognized
-        continue;
-      }
-      // TODO:
-      //  handle multiple route targets pointing to different VRFs (should merge into multiple VRFs)
-      ExtendedCommunity routeTarget = routeTargets.iterator().next();
-      Optional<String> targetVrf =
-          _rtVrfMapping.entrySet().stream()
-              .filter(e -> Pattern.compile(e.getKey()).matcher(routeTarget.matchString()).matches())
-              .map(Entry::getValue)
-              .findFirst();
-      if (targetVrf.isPresent()) {
-        if (_vrfName.equals(targetVrf.get())) {
-          // Merge into our own RIBs, and put into re-advertisement delta
-          RibDelta<R> d = targetRib.mergeRouteGetDelta(transformedRoute);
-          toAdvertise.from(d);
-          toMerge.from(d);
-        } else {
-          // Merge into other VRF's RIB and put into re-advertisement delta
-          toAdvertise.from(
-              getVrfProcess(targetVrf.get(), allNodes)
-                  .processCrossVrfEvpnRoute(
-                      routeAdvertisement.toBuilder().setRoute(transformedRoute).build(), clazz));
-        }
-      } else {
-        // Simply propagate to neighbors, nothing to do locally
-        toAdvertise.from(routeAdvertisement);
-      }
+
+      // Merge into our own RIBs, and put into re-advertisement delta
+      RibDelta<R> d = targetRib.mergeRouteGetDelta(transformedRoute);
+      toAdvertise.from(d);
+      toMerge.from(d);
     }
 
     BgpDelta<R> advertiseDelta =
