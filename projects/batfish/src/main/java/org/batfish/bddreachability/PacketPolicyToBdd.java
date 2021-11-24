@@ -1,12 +1,12 @@
 package org.batfish.bddreachability;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static org.batfish.bddreachability.transition.Transitions.IDENTITY;
 import static org.batfish.bddreachability.transition.Transitions.ZERO;
 import static org.batfish.bddreachability.transition.Transitions.compose;
 import static org.batfish.bddreachability.transition.Transitions.constraint;
 import static org.batfish.bddreachability.transition.Transitions.mergeComposed;
 import static org.batfish.bddreachability.transition.Transitions.or;
-import static org.parboiled.common.Preconditions.checkNotNull;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashBasedTable;
