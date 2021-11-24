@@ -147,6 +147,12 @@ class PacketPolicyToBdd {
           LOGGER.info(
               "{} nontrivial non-fallthrough branches had {} occurrences", numBranches, numOccs);
         });
+    stmtConverter.thenBranchOccurrences.forEach(
+        (branch, occs) -> {
+          if (occs > 1) {
+            LOGGER.info("branch with {} occurrences:\n{}", occs, branch);
+          }
+        });
 
     /* Handle the default action. Default action applies to the remaining packets,
      * which can be expressed as the complement of the union of packets we have already accounted
