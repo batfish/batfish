@@ -2247,6 +2247,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         admin = _process.getIbgpAdminCost();
         break;
       default:
+        // No other protocols should be possible for any BGP route (including EVPN routes)
         throw new IllegalArgumentException(
             String.format("EVPN route has unexpected protocol %s", route.getProtocol()));
     }
