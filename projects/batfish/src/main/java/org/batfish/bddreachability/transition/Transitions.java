@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Stack;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -166,6 +167,22 @@ public final class Transitions {
       BDD vars = eas.getEraseVars();
       BDD value = eas.getSetValue();
       return new GuardEraseAndSet(vars, constraintBdd, value);
+    }
+    if (t1 instanceof Constraint && t2 instanceof Or) {
+      Or or = (Or) t2;
+      if (or.getTransitions().size() > 10) {
+        return null;
+      }
+      List<Transition> transitions =
+          or.getTransitions().stream()
+              .map(t -> mergeComposed(t1, t))
+              .filter(Objects::nonNull)
+              .collect(Collectors.toList());
+      if (transitions.size() < or.getTransitions().size()) {
+        // couldn't merge the constraint with all disjuncts
+        return null;
+      }
+      return new Or(transitions);
     }
     if (t1 instanceof Constraint && t2 instanceof GuardEraseAndSet) {
       BDD constraintBdd = ((Constraint) t1).getConstraint();
