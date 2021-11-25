@@ -1,5 +1,7 @@
 package org.batfish.vendor.sonic.representation;
 
+import static org.batfish.vendor.sonic.representation.ConfigDbObject.Type.DEVICE_METADATA;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -22,35 +24,30 @@ import org.batfish.common.util.BatfishObjectMapper;
 @ParametersAreNonnullByDefault
 public class ConfigDb implements Serializable {
 
-  public enum ObjectType {
-    DEVICE_METADATA,
-    INTERFACE
-  }
-
   @ParametersAreNonnullByDefault
   public static class Data implements Serializable {
-    private final @Nonnull Map<ObjectType, ConfigDbObject> _objects;
+    private final @Nonnull Map<ConfigDbObject.Type, ConfigDbObject> _objects;
 
-    public Data(Map<ObjectType, ConfigDbObject> objects) {
+    public Data(Map<ConfigDbObject.Type, ConfigDbObject> objects) {
       _objects = ImmutableMap.copyOf(objects);
     }
 
     @JsonCreator
     private static Data create(Map<String, JsonNode> objects) throws JsonProcessingException {
-      Map<ObjectType, ConfigDbObject> objectMap = new HashMap<>();
+      Map<ConfigDbObject.Type, ConfigDbObject> objectMap = new HashMap<>();
       for (String key : objects.keySet()) {
         try {
-          ObjectType objectType = Enum.valueOf(ObjectType.class, key);
+          ConfigDbObject.Type objectType = Enum.valueOf(ConfigDbObject.Type.class, key);
           switch (objectType) {
             case DEVICE_METADATA:
               objectMap.put(
-                  ObjectType.DEVICE_METADATA,
+                  ConfigDbObject.Type.DEVICE_METADATA,
                   BatfishObjectMapper.ignoreUnknownMapper()
                       .treeToValue(objects.get(key), DeviceMetadata.class));
               break;
             case INTERFACE:
               objectMap.put(
-                  ObjectType.INTERFACE,
+                  ConfigDbObject.Type.INTERFACE,
                   BatfishObjectMapper.ignoreUnknownMapper()
                       .treeToValue(objects.get(key), InterfaceDb.class));
               break;
@@ -97,8 +94,8 @@ public class ConfigDb implements Serializable {
   }
 
   public Optional<String> getHostname() {
-    if (_data._objects.containsKey(ObjectType.DEVICE_METADATA)) {
-      return ((DeviceMetadata) _data._objects.get(ObjectType.DEVICE_METADATA))
+    if (_data._objects.containsKey(DEVICE_METADATA)) {
+      return ((DeviceMetadata) _data._objects.get(DEVICE_METADATA))
           .getHostname()
           .map(String::toLowerCase);
     }
@@ -113,5 +110,30 @@ public class ConfigDb implements Serializable {
   @Nonnull
   public Data getData() {
     return _data;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof ConfigDb)) {
+      return false;
+    }
+    ConfigDb configDb = (ConfigDb) o;
+    return _filename.equals(configDb._filename) && _data.equals(configDb._data);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_filename, _data);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this)
+        .add("filename", _filename)
+        .add("data", _data)
+        .toString();
   }
 }

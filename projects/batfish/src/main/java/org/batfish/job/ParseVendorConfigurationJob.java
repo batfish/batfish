@@ -777,4 +777,8 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
             .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()))
             .toString();
   }
+
+  public ParsingContext getParsingContext() {
+    return _parsingContext;
+  }
 }

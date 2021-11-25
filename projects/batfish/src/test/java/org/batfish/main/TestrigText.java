@@ -18,6 +18,7 @@ import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
 import org.batfish.vendor.ConversionContext;
+import org.batfish.vendor.ParsingContext;
 
 public class TestrigText {
 
@@ -55,8 +56,10 @@ public class TestrigText {
     private Map<String, byte[]> _iptablesFilesBytes;
     private byte[] _ispConfigBytes;
     private byte[] _layer1TopologyBytes;
+    private ParsingContext _parsingContext;
     private Map<String, byte[]> _routingTablesBytes;
     private byte[] _runtimeDataBytes;
+    private Map<String, byte[]> _sonicConfigDbBytes;
 
     public TestrigText build() {
       TestrigText testrigText = new TestrigText();
@@ -70,8 +73,10 @@ public class TestrigText {
       testrigText.setIptablesFilesBytes(_iptablesFilesBytes);
       testrigText.setIspConfigBytes(_ispConfigBytes);
       testrigText.setLayer1TopologyBytes(_layer1TopologyBytes);
+      testrigText.setParsingContext(_parsingContext);
       testrigText.setRoutingTablesBytes(_routingTablesBytes);
       testrigText.setRuntimeDataBytes(_runtimeDataBytes);
+      testrigText.setSonicConfigDbBytes(_sonicConfigDbBytes);
       return testrigText;
     }
 
@@ -193,6 +198,13 @@ public class TestrigText {
       return this;
     }
 
+    public Builder setSonicConfigDbFiles(String testrigResourcePrefix, Iterable<String> filenames) {
+      _sonicConfigDbBytes =
+          readTestrigResources(
+              testrigResourcePrefix, BfConsts.RELPATH_SONIC_CONFIGDB_DIR, filenames);
+      return this;
+    }
+
     public @Nonnull Builder setExternalBgpAnnouncements(String testrigResourcePrefix) {
       _externalBgpAnnouncementsBytes =
           readTestrigResources(
@@ -213,6 +225,15 @@ public class TestrigText {
       _conversionContext = conversionContext;
       return this;
     }
+
+    /**
+     * Sets parsing context to be used during parsing. Note that this has no effect when the
+     * snapshot input text contains information that would populate parsing context.
+     */
+    public @Nonnull Builder setParsingContext(ParsingContext parsingContext) {
+      _parsingContext = parsingContext;
+      return this;
+    }
   }
 
   public static Builder builder() {
@@ -229,8 +250,10 @@ public class TestrigText {
   private Map<String, byte[]> _iptablesFilesBytes;
   private byte[] _ispConfigBytes;
   private byte[] _layer1TopologyBytes;
+  private ParsingContext _parsingContext;
   private Map<String, byte[]> _routingTablesBytes;
   private byte[] _runtimeDataBytes;
+  private Map<String, byte[]> _sonicConfigDbBytes;
 
   public Map<String, byte[]> getAwsBytes() {
     return _awsBytes;
@@ -272,12 +295,20 @@ public class TestrigText {
     return _layer1TopologyBytes;
   }
 
+  public ParsingContext getParsingContext() {
+    return _parsingContext;
+  }
+
   public Map<String, byte[]> getRoutingTablesBytes() {
     return _routingTablesBytes;
   }
 
   public byte[] getRuntimeDataBytes() {
     return _runtimeDataBytes;
+  }
+
+  public Map<String, byte[]> getSonicConfigDbBytes() {
+    return _sonicConfigDbBytes;
   }
 
   public void setAwsBytes(Map<String, byte[]> awsBytes) {
@@ -320,11 +351,19 @@ public class TestrigText {
     _layer1TopologyBytes = layer1TopologyBytes;
   }
 
+  public void setParsingContext(ParsingContext parsingContext) {
+    _parsingContext = parsingContext;
+  }
+
   public void setRoutingTablesBytes(Map<String, byte[]> routingTablesBytes) {
     _routingTablesBytes = routingTablesBytes;
   }
 
   public void setRuntimeDataBytes(byte[] runtimeDataBytes) {
     _runtimeDataBytes = runtimeDataBytes;
+  }
+
+  public void setSonicConfigDbBytes(Map<String, byte[]> sonicConfigDbBytes) {
+    _sonicConfigDbBytes = sonicConfigDbBytes;
   }
 }

@@ -109,14 +109,7 @@ public class SonicControlPlaneExtractor implements ControlPlaneExtractor {
     checkErrors(parser);
     ParseTreeWalker walker = new BatfishParseTreeWalker(parser);
     FrrConfigurationBuilder cb =
-        new FrrConfigurationBuilder(
-            _configuration,
-            _configuration,
-            _configuration.getFrrConfiguration(),
-            parser,
-            _w,
-            _text,
-            _silentSyntax);
+        new FrrConfigurationBuilder(_configuration, parser, _w, _text, _silentSyntax);
     walker.walk(cb, ctxt);
     mergeParseTree(ctxt, parser);
   }
