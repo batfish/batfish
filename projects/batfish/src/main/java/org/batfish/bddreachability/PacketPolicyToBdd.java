@@ -27,6 +27,7 @@ import net.sf.javabdd.BDDFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.batfish.bddreachability.IpsRoutedOutInterfacesFactory.IpsRoutedOutInterfaces;
+import org.batfish.bddreachability.transition.Or;
 import org.batfish.bddreachability.transition.TransformationToTransition;
 import org.batfish.bddreachability.transition.Transition;
 import org.batfish.bddreachability.transition.Transitions;
@@ -259,6 +260,16 @@ class PacketPolicyToBdd {
             after.getClass().getSimpleName(),
             successor,
             stateExpr);
+        if (after instanceof Or) {
+          Or or = (Or) after;
+          LOGGER.info(
+              "after is Or with {} disjuncts. types={}",
+              or.getTransitions().size(),
+              or.getTransitions().stream()
+                  .map(t -> t.getClass().getSimpleName())
+                  .distinct()
+                  .collect(Collectors.toList()));
+        }
         _outTransitionsByTarget.remove(successor);
         _edges.add(new Edge(stateExpr, successor, after));
         _outTransitionsByTarget.put(stateExpr, after);
