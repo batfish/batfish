@@ -682,7 +682,8 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
                   new ApplyTransformation(always().apply(transformationStep).build()),
                   returnFibLookup)));
     }
-    // If any auto rule(s) matched, should stop processing any rules that might follow
+    // If any auto rule(s) matched, should stop processing rules (e.g. not process low-priority
+    // manual)
     statements.add(returnFibLookup);
 
     return new If(
