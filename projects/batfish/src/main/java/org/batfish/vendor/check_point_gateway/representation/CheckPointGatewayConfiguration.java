@@ -571,14 +571,10 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
 
     ImmutableList.Builder<AclLineMatchExpr> matchAnyAutoRule = ImmutableList.builder();
     // Auto static
-    matchAnyAutoRule.addAll(
-        autoStaticNatObjects.stream()
-            .map(natObj -> matchAutomaticStaticRule(natObj, true))
-            .iterator());
-    matchAnyAutoRule.addAll(
-        autoStaticNatObjects.stream()
-            .map(natObj -> matchAutomaticStaticRule(natObj, false))
-            .iterator());
+    autoStaticNatObjects.stream()
+        .forEach(natObj -> matchAnyAutoRule.add(matchAutomaticStaticRule(natObj, true)));
+    autoStaticNatObjects.stream()
+        .forEach(natObj -> matchAnyAutoRule.add(matchAutomaticStaticRule(natObj, false)));
     // Auto hide
     matchAnyAutoRule.addAll(
         autoHideNatObjects.stream().map(addressSpaceToMatchExpr::convertSource).iterator());
