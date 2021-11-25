@@ -210,7 +210,7 @@ class PacketPolicyToBdd {
     private Map<StateExpr, Transition> _outTransitionsByTarget = new HashMap<>();
     private final List<Edge> _edges = new ArrayList<>();
 
-    private int _statementCounter = 0;
+    private int _statementCounter = 1;
     private PacketPolicyStatement _currentStatement;
 
     private PacketPolicyStatement nextStatement() {
