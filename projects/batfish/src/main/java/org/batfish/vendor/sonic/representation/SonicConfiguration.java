@@ -2,7 +2,6 @@ package org.batfish.vendor.sonic.representation;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -11,12 +10,11 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.representation.frr.FrrConfiguration;
-import org.batfish.representation.frr.OutOfBandConfiguration;
+import org.batfish.representation.frr.FrrVendorConfiguration;
 import org.batfish.representation.frr.Vxlan;
-import org.batfish.vendor.VendorConfiguration;
 
 @ParametersAreNonnullByDefault
-public class SonicConfiguration extends VendorConfiguration implements OutOfBandConfiguration {
+public class SonicConfiguration extends FrrVendorConfiguration {
 
   private @Nullable String _hostname;
   private @Nullable ConfigDb _configDb;
@@ -63,11 +61,6 @@ public class SonicConfiguration extends VendorConfiguration implements OutOfBand
   @Override
   public Map<String, Vxlan> getVxlans() {
     return null;
-  }
-
-  @Override
-  public Optional<String> getVrfForVlan(Integer bridgeAccessVlan) {
-    return Optional.empty();
   }
 
   @Override

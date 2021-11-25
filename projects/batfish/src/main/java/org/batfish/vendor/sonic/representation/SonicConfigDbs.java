@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -16,11 +17,11 @@ import javax.annotation.Nonnull;
 import org.batfish.common.Warning;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
-import org.batfish.vendor.VendorSupplementalInformation;
+import org.batfish.vendor.VendorParsingContext;
 import org.batfish.vendor.sonic.representation.ConfigDb.Data;
 
 /** Represents information in Sonic configdb.json files, for all nodes */
-public class SonicConfigDbs implements VendorSupplementalInformation {
+public class SonicConfigDbs implements VendorParsingContext {
 
   /** Returns the {@link ConfigDb} object for the host. */
   public Optional<ConfigDb> getHostConfigDb(String hostname) {
@@ -86,4 +87,21 @@ public class SonicConfigDbs implements VendorSupplementalInformation {
   }
 
   private @Nonnull final Map<String, ConfigDb> _configDbs;
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof SonicConfigDbs)) {
+      return false;
+    }
+    SonicConfigDbs that = (SonicConfigDbs) o;
+    return _configDbs.equals(that._configDbs);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_configDbs);
+  }
 }
