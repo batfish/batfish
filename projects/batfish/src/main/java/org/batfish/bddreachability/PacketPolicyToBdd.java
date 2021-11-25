@@ -16,7 +16,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Table;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -35,7 +34,6 @@ import org.batfish.common.bdd.BDDOps;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpSpaceToBDD;
-import org.batfish.common.topology.broadcast.Edges;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.packet_policy.Action;
 import org.batfish.datamodel.packet_policy.ApplyFilter;
@@ -144,6 +142,8 @@ class PacketPolicyToBdd {
     stmtConverter.visitStatements(p.getStatements());
     StateExpr src = new PacketPolicyStatement(_hostname, _vrf, _policy.getName(), 0);
     LOGGER.info("bottom up computed {} out edges", stmtConverter._outTransitionsByTarget.size());
+    stmtConverter._edges.forEach(
+        e -> addEdge(e.getPreState(), e.getPostState(), e.getTransition()));
     stmtConverter._outTransitionsByTarget.forEach(
         (tgt, trans) -> {
           if (trans != ZERO) {
@@ -208,11 +208,21 @@ class PacketPolicyToBdd {
 
   private class BottomUpStatementToBdd implements StatementVisitor<Void> {
     private Map<StateExpr, Transition> _outTransitionsByTarget = new HashMap<>();
-    private final List<Edges> _edges = new ArrayList<>();
-    private final Set<PacketPolicyAction> _actions = new HashSet<>();
+    private final List<Edge> _edges = new ArrayList<>();
+
+    private int _statementCounter = 0;
+    private PacketPolicyStatement _currentStatement;
+
+    private PacketPolicyStatement nextStatement() {
+      _currentStatement =
+          new PacketPolicyStatement(_hostname, _vrf, _policy.getName(), _statementCounter++);
+      return _currentStatement;
+    }
 
     BottomUpStatementToBdd(StateExpr fallThrough) {
       _outTransitionsByTarget.put(fallThrough, IDENTITY);
+      _currentStatement =
+          new PacketPolicyStatement(_hostname, _vrf, _policy.getName(), _statementCounter++);
     }
 
     public void visitStatements(List<Statement> statements) {
@@ -234,7 +244,25 @@ class PacketPolicyToBdd {
 
     private void beforeOutTransitions(Transition before) {
       // TODO ensure composes cleanly
-      _outTransitionsByTarget.replaceAll((succ, transition) -> compose(before, transition));
+      List<StateExpr> successors = ImmutableList.copyOf(_outTransitionsByTarget.keySet());
+      for (StateExpr successor : successors) {
+        Transition after = _outTransitionsByTarget.get(successor);
+        Transition merged = mergeComposed(before, after);
+        if (merged != null) {
+          _outTransitionsByTarget.put(successor, merged);
+          continue;
+        }
+        StateExpr stateExpr = nextStatement();
+        LOGGER.info(
+            "failed to merge transitions {} and {} to {}. splicing {}",
+            before.getClass().getSimpleName(),
+            after.getClass().getSimpleName(),
+            successor,
+            stateExpr);
+        _outTransitionsByTarget.remove(successor);
+        _edges.add(new Edge(stateExpr, successor, after));
+        _outTransitionsByTarget.put(stateExpr, after);
+      }
     }
 
     @Override
