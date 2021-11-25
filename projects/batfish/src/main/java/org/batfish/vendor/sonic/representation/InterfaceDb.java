@@ -15,7 +15,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 @ParametersAreNonnullByDefault
 public class InterfaceDb implements ConfigDbObject {
 
-  static class Interface implements Serializable {
+  public static class Interface implements Serializable {
     private @Nullable final ConcreteInterfaceAddress _v4Address;
 
     public Interface(@Nullable ConcreteInterfaceAddress v4address) {

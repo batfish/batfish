@@ -2639,6 +2639,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
               .putString("Cached Parse Result", UTF_8)
               .putString(filename, UTF_8)
               .putString(filetext, UTF_8)
+              .putInt(job.getParsingContext().hashCode())
               .putBoolean(settings.getDisableUnrecognized())
               .putInt(settings.getMaxParserContextLines())
               .putInt(settings.getMaxParserContextTokens())

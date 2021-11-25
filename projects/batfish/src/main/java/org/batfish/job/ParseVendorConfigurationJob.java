@@ -661,4 +661,8 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
   public String getFileText() {
     return _fileText;
   }
+
+  public ParsingContext getParsingContext() {
+    return _parsingContext;
+  }
 }

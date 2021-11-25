@@ -1,6 +1,7 @@
 package org.batfish.vendor;
 
 import java.io.Serializable;
+import java.util.Objects;
 import javax.annotation.Nullable;
 
 /**
@@ -11,17 +12,35 @@ import javax.annotation.Nullable;
 public final class ParsingContext implements Serializable {
   public static final ParsingContext EMPTY_CONVERSION_CONTEXT = new ParsingContext();
 
-  public @Nullable VendorSupplementalInformation getSonicConfigDbs() {
+  public @Nullable VendorParsingContext getSonicConfigDbs() {
     return _sonicConfigDbs;
   }
 
-  public void setSonicConfigDbs(@Nullable VendorSupplementalInformation sonicConfigDbs) {
+  public ParsingContext setSonicConfigDbs(@Nullable VendorParsingContext sonicConfigDbs) {
     _sonicConfigDbs = sonicConfigDbs;
+    return this;
   }
 
-  private @Nullable VendorSupplementalInformation _sonicConfigDbs;
+  private @Nullable VendorParsingContext _sonicConfigDbs;
 
   public boolean isEmpty() {
     return _sonicConfigDbs == null;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof ParsingContext)) {
+      return false;
+    }
+    ParsingContext that = (ParsingContext) o;
+    return Objects.equals(_sonicConfigDbs, that._sonicConfigDbs);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_sonicConfigDbs);
   }
 }

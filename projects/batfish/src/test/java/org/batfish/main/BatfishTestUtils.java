@@ -5,6 +5,7 @@ import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_MANAGEMENT_DIR;
 import static org.batfish.common.BfConsts.RELPATH_CONFIGURATIONS_DIR;
 import static org.batfish.common.BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES;
 import static org.batfish.common.BfConsts.RELPATH_HOST_CONFIGS_DIR;
+import static org.batfish.common.BfConsts.RELPATH_SONIC_CONFIGDB_DIR;
 import static org.batfish.common.util.Resources.readResourceBytes;
 
 import com.google.common.cache.Cache;
@@ -41,6 +42,7 @@ import org.batfish.identifiers.StorageBasedIdResolver;
 import org.batfish.storage.FileBasedStorage;
 import org.batfish.storage.StorageProvider;
 import org.batfish.vendor.ConversionContext;
+import org.batfish.vendor.ParsingContext;
 import org.batfish.vendor.VendorConfiguration;
 import org.junit.rules.TemporaryFolder;
 
@@ -190,7 +192,9 @@ public class BatfishTestUtils {
     byte[] ispConfigBytes = testrigText.getIspConfigBytes();
     byte[] layer1TopologyBytes = testrigText.getLayer1TopologyBytes();
     byte[] runtimeDataBytes = testrigText.getRuntimeDataBytes();
+    Map<String, byte[]> sonicConfigDbBytes = testrigText.getSonicConfigDbBytes();
     ConversionContext conversionContext = testrigText.getConversionContext();
+    ParsingContext parsingContext = testrigText.getParsingContext();
 
     Settings settings = new Settings(new String[] {});
     configureBatfishTestSettings(settings);
@@ -247,10 +251,17 @@ public class BatfishTestUtils {
           storage,
           batfish.getSnapshot());
     }
+    writeTemporarySnapshotInputFiles(
+        sonicConfigDbBytes, RELPATH_SONIC_CONFIGDB_DIR, storage, batfish.getSnapshot());
     if (conversionContext != null) {
       // Note: only works when the snapshot input does not contain anything that would populate
       // conversion context.
       writeTemporaryConversionContext(conversionContext, storage, batfish.getSnapshot());
+    }
+    if (parsingContext != null) {
+      // Note: only works when the snapshot input does not contain anything that would populate
+      // parsing context.
+      writeTemporaryParsingContext(parsingContext, storage, batfish.getSnapshot());
     }
     registerDataPlanePlugins(batfish);
     return batfish;
@@ -381,6 +392,15 @@ public class BatfishTestUtils {
       ConversionContext conversionContext, StorageProvider storage, NetworkSnapshot snapshot) {
     try {
       storage.storeConversionContext(conversionContext, snapshot);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+  }
+
+  private static void writeTemporaryParsingContext(
+      ParsingContext parsingContext, StorageProvider storage, NetworkSnapshot snapshot) {
+    try {
+      storage.storeParsingContext(parsingContext, snapshot);
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
