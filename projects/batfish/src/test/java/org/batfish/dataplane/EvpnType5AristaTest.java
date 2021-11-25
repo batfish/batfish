@@ -4,6 +4,7 @@ import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.OriginMechanism.REDISTRIBUTE;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AnnotatedRouteMatchers.hasRoute;
+import static org.batfish.representation.arista.AristaConfiguration.DEFAULT_EBGP_ADMIN;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
@@ -93,6 +94,7 @@ public class EvpnType5AristaTest {
         Bgpv4Route.builder()
             .setNetwork(prefix)
             .setCommunities(ImmutableSet.of(rmCommunity, ExtendedCommunity.target(15004, 15004)))
+            .setAdmin(DEFAULT_EBGP_ADMIN)
             .setAsPath(AsPath.ofSingletonAsSets(rmAs))
             // REDISTRIBUTE rather than NETWORK because Arista has a combined network statement +
             // redistribution policy (a route can't be originated via both mechanisms)
