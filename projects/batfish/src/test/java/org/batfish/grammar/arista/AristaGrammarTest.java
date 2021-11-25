@@ -617,25 +617,34 @@ public class AristaGrammarTest {
   @Test
   public void testBgpRedistribution() throws IOException {
     /*
-     * Config contains two VRFs:
+     * Config contains three VRFs:
+     * - Default VRF has connected route 5.5.5.0/24 and redistributes connected into BGP unconditionally
      * - VRF1 has static route 1.1.1.1/32 and redistributes static into BGP unconditionally
      * - VRF2 has static routes 1.1.1.1/32 and 2.2.2.2/32, and redistributes static into BGP with a
      *   route-map that only permits 1.1.1.1/32
-     * - Both VRFs' BGP RIBs should contain 1.1.1.1/32 as a local route.
+     * - Both non-default VRFs' BGP RIBs should contain 1.1.1.1/32 as a local route.
      */
     String hostname = "bgp_redistribution";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     batfish.computeDataPlane(batfish.getSnapshot());
     DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
+    Prefix connectedPrefix = Prefix.parse("5.5.5.0/24");
     Prefix staticPrefix1 = Prefix.parse("1.1.1.1/32");
     Prefix staticPrefix2 = Prefix.parse("2.2.2.2/32");
 
-    // Sanity check: Both VRFs' main RIBs should contain the static route to 1.1.1.1/32,
-    // and VRF2 should also have 2.2.2.2/32
+    // Sanity check:
+    // - Default VRF main RIB only has a connected route
+    // - Both non-default VRFs' main RIBs should contain the static route to 1.1.1.1/32, and VRF2
+    //   should also have 2.2.2.2/32
+    Set<AnnotatedRoute<AbstractRoute>> defaultVrfRoutes =
+        dp.getRibs().get(hostname).get(DEFAULT_VRF_NAME).getTypedRoutes();
     Set<AnnotatedRoute<AbstractRoute>> vrf1Routes =
         dp.getRibs().get(hostname).get("VRF1").getTypedRoutes();
     Set<AnnotatedRoute<AbstractRoute>> vrf2Routes =
         dp.getRibs().get(hostname).get("VRF2").getTypedRoutes();
+    assertThat(
+        defaultVrfRoutes,
+        contains(allOf(hasPrefix(connectedPrefix), hasProtocol(RoutingProtocol.CONNECTED))));
     assertThat(
         vrf1Routes, contains(allOf(hasPrefix(staticPrefix1), hasProtocol(RoutingProtocol.STATIC))));
     assertThat(
@@ -653,28 +662,37 @@ public class AristaGrammarTest {
             .get("VRF1")
             .getBgpProcess()
             .getAdminCost(RoutingProtocol.BGP);
-    Bgpv4Route bgpRouteVrf1 =
+    Bgpv4Route bgpRouteDefaultVrf =
         Bgpv4Route.builder()
-            .setNetwork(staticPrefix1)
+            .setNetwork(connectedPrefix)
             .setNonRouting(true)
             .setAdmin(bgpAdmin)
             .setLocalPreference(0)
             .setNextHop(NextHopDiscard.instance())
             .setOriginType(OriginType.IGP)
             .setOriginMechanism(OriginMechanism.REDISTRIBUTE)
-            .setOriginatorIp(Ip.parse("10.10.10.1"))
+            .setOriginatorIp(Ip.parse("10.10.10.3"))
             .setProtocol(RoutingProtocol.BGP)
             .setReceivedFromIp(ZERO) // indicates local origination
+            .setSrcProtocol(RoutingProtocol.CONNECTED)
+            .setWeight(DEFAULT_LOCAL_BGP_WEIGHT)
+            .build();
+    Bgpv4Route bgpRouteVrf1 =
+        bgpRouteDefaultVrf.toBuilder()
+            .setNetwork(staticPrefix1)
+            .setOriginType(OriginType.INCOMPLETE)
+            .setOriginatorIp(Ip.parse("10.10.10.1"))
             .setSrcProtocol(RoutingProtocol.STATIC)
             .setTag(0) // TODO: should redistribute static preserve tag?
-            .setWeight(DEFAULT_LOCAL_BGP_WEIGHT)
             .build();
     Bgpv4Route bgpRouteVrf2 =
         bgpRouteVrf1.toBuilder().setOriginatorIp(Ip.parse("10.10.10.2")).build();
     Set<Bgpv4Route> vrf1BgpRoutes = dp.getBgpRoutes().get(hostname, "VRF1");
     Set<Bgpv4Route> vrf2BgpRoutes = dp.getBgpRoutes().get(hostname, "VRF2");
+    Set<Bgpv4Route> defaultVrfBgpRoutes = dp.getBgpRoutes().get(hostname, DEFAULT_VRF_NAME);
     assertThat(vrf1BgpRoutes, contains(bgpRouteVrf1));
     assertThat(vrf2BgpRoutes, contains(bgpRouteVrf2));
+    assertThat(defaultVrfBgpRoutes, contains(bgpRouteDefaultVrf));
   }
 
   @Test
@@ -1339,7 +1357,7 @@ public class AristaGrammarTest {
             .setNextHop(NextHopDiscard.instance())
             .setOriginatorIp(routerId)
             .setOriginMechanism(OriginMechanism.REDISTRIBUTE)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP)
             .setReceivedFromIp(Ip.ZERO) // indicates local origination
             .setSrcProtocol(RoutingProtocol.STATIC)
