@@ -1459,7 +1459,7 @@ public class CheckPointGatewayGrammarTest {
             cpmiAnyUid,
             cpmiAnyUid,
             manualLowPriorityHideOriginalNetworkUid,
-            2,
+            6,
             originalUid,
             originalUid,
             manualLowPriorityHideTranslatedHostUid,
@@ -1705,7 +1705,11 @@ public class CheckPointGatewayGrammarTest {
       // Traffic can match an auto static dest rule and no source rule
       Flow flow =
           Flow.builder()
-              .setSrcIp(Ip.parse("1.1.1.1"))
+              .setSrcIp(
+                  manualLowPriorityHideOriginalSrc
+                      .getFirstHostIp()) // Source Ip would match the low-priority manual rule, but
+              // shouldn't because processing stops after matching any
+              // auto rules
               .setDstIp(autoStatic1NatIp) // Matches dst translation for auto static 1 rule
               .setIngressNode(hostname)
               .build();
