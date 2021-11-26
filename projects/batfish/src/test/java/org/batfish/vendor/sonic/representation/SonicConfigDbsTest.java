@@ -82,19 +82,4 @@ public class SonicConfigDbsTest extends TestCase {
         Iterables.getOnlyElement(element.getWarnings().get("file5").getRedFlagWarnings()).getText(),
         equalTo("Missing hostname"));
   }
-
-  @Test
-  public void testFromJson_duplicateHostnames() {
-
-    ParseVendorConfigurationAnswerElement element = new ParseVendorConfigurationAnswerElement();
-    // both are ignored and a warning is logged
-    assertThat(
-        fromJson(ImmutableMap.of("file1", "file1", "file2", "file2"), element),
-        equalTo(new SonicConfigDbs(ImmutableMap.of())));
-    assertThat(
-        Iterables.getOnlyElement(
-                element.getWarnings().get(RELPATH_SONIC_CONFIGDB_DIR).getRedFlagWarnings())
-            .getText(),
-        equalTo("Duplicate hostname name1 in configdb files [file1, file2]"));
-  }
 }
