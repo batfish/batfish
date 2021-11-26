@@ -35,6 +35,7 @@ public class SonicConfiguration extends FrrVendorConfiguration {
     _configDb = configDb;
   }
 
+  @Override
   public FrrConfiguration getFrrConfiguration() {
     return _frr;
   }
