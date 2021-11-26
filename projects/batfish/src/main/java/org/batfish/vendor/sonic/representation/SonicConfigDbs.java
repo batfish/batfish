@@ -5,7 +5,6 @@ import static org.batfish.common.BfConsts.RELPATH_SONIC_CONFIGDB_DIR;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +31,7 @@ public class SonicConfigDbs implements VendorParsingContext {
     _configDbs = ImmutableMap.copyOf(configDbs);
   }
 
-  public static SonicConfigDbs readSonicConfigDbs(
+  public static SonicConfigDbs fromJson(
       Map<String, String> sonicCofigDbData, ParseVendorConfigurationAnswerElement pvcae) {
     // deserialize all files in parallel
     List<ConfigDb> configDbs =
@@ -46,7 +45,7 @@ public class SonicConfigDbs implements VendorParsingContext {
                             BatfishObjectMapper.mapper().readValue(e.getValue(), Data.class));
                     if (!configDb.getHostname().isPresent()) {
                       pvcae.addRedFlagWarning(
-                          e.getKey(), new Warning("Missing hostname", "SonicConfigDb"));
+                          e.getKey(), new Warning("Missing hostname", RELPATH_SONIC_CONFIGDB_DIR));
                     }
                     return configDb;
                   } catch (JsonProcessingException exception) {
@@ -61,28 +60,31 @@ public class SonicConfigDbs implements VendorParsingContext {
 
     // Detect any duplicate hostnames
     Set<String> hostnames = new HashSet<>();
-    Map<String, Set<String>> duplicateHostnames = new HashMap<>();
+    Set<String> duplicateHostnames = new HashSet<>();
     for (ConfigDb configDb : configDbs) {
       String hostname = configDb.getHostname().get(); // must be non-empty
       if (!hostnames.add(hostname)) {
-        duplicateHostnames
-            .computeIfAbsent(hostname, h -> new HashSet<>())
-            .add(configDb.getFilename());
+        duplicateHostnames.add(hostname);
       }
     }
-    for (String hostname : duplicateHostnames.keySet()) {
+    for (String hostname : duplicateHostnames) {
       pvcae.addRedFlagWarning(
           RELPATH_SONIC_CONFIGDB_DIR,
           new Warning(
               String.format(
-                  "Duplicate hostname %s in files %s", hostname, duplicateHostnames.get(hostname)),
+                  "Duplicate hostname %s in configdb files %s",
+                  hostname,
+                  configDbs.stream()
+                      .filter(c -> hostname.equals(c.getHostname().get()))
+                      .map(c -> c.getFilename())
+                      .collect(ImmutableList.toImmutableList())),
               RELPATH_SONIC_CONFIGDB_DIR));
     }
 
     // return a map of all non-duplicate hostnames
     return new SonicConfigDbs(
         configDbs.stream()
-            .filter(configDb -> !duplicateHostnames.containsKey(configDb.getHostname().get()))
+            .filter(configDb -> !duplicateHostnames.contains(configDb.getHostname().get()))
             .collect(ImmutableMap.toImmutableMap(c -> c.getHostname().get(), Function.identity())));
   }
 

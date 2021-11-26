@@ -13,6 +13,8 @@ import org.batfish.representation.frr.FrrConfiguration;
 import org.batfish.representation.frr.FrrVendorConfiguration;
 import org.batfish.representation.frr.Vxlan;
 
+// TODO: implement conversion
+
 @ParametersAreNonnullByDefault
 public class SonicConfiguration extends FrrVendorConfiguration {
 
@@ -29,7 +31,7 @@ public class SonicConfiguration extends FrrVendorConfiguration {
     return _configDb;
   }
 
-  public void setConfigDb(ConfigDb configDb) {
+  public void setConfigDb(@Nullable ConfigDb configDb) {
     _configDb = configDb;
   }
 

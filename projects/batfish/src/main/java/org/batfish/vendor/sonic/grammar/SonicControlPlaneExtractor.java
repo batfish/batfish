@@ -94,9 +94,8 @@ public class SonicControlPlaneExtractor implements ControlPlaneExtractor {
               .orElse(null);
       if (configDb == null) {
         _w.redFlag("configdb file not found for " + hostname);
-      } else {
-        _configuration.setConfigDb(configDb);
       }
+      _configuration.setConfigDb(configDb);
     }
 
     parseFrrFile();

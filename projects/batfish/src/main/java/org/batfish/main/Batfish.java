@@ -27,7 +27,6 @@ import static org.batfish.main.ReachabilityParametersResolver.resolveReachabilit
 import static org.batfish.main.StreamDecoder.decodeStreamAndAppendNewline;
 import static org.batfish.specifier.LocationInfoUtils.computeLocationInfo;
 import static org.batfish.vendor.check_point_management.parsing.CheckpointManagementParser.parseCheckpointManagementData;
-import static org.batfish.vendor.sonic.representation.SonicConfigDbs.readSonicConfigDbs;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -2314,7 +2313,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         sonicCofigDbData = readAllInputObjects(keys, snapshot);
       }
       if (!sonicCofigDbData.isEmpty()) {
-        sonicConfigDbs = readSonicConfigDbs(sonicCofigDbData, pvcae);
+        sonicConfigDbs = SonicConfigDbs.fromJson(sonicCofigDbData, pvcae);
       }
     } catch (IOException e) {
       throw new UncheckedIOException(e);

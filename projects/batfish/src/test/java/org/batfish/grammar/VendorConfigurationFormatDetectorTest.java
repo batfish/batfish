@@ -16,6 +16,7 @@ import static org.batfish.datamodel.ConfigurationFormat.JUNIPER_SWITCH;
 import static org.batfish.datamodel.ConfigurationFormat.PALO_ALTO;
 import static org.batfish.datamodel.ConfigurationFormat.PALO_ALTO_NESTED;
 import static org.batfish.datamodel.ConfigurationFormat.RUCKUS_ICX;
+import static org.batfish.datamodel.ConfigurationFormat.SONIC;
 import static org.batfish.datamodel.ConfigurationFormat.UNKNOWN;
 import static org.batfish.grammar.VendorConfigurationFormatDetector.identifyConfigurationFormat;
 import static org.hamcrest.Matchers.equalTo;
@@ -277,6 +278,12 @@ public class VendorConfigurationFormatDetectorTest {
     for (String fileText : ImmutableList.of(basic)) {
       assertThat(identifyConfigurationFormat(fileText), equalTo(RUCKUS_ICX));
     }
+  }
+
+  @Test
+  public void testSonic() {
+    String fileText = "my-name\n" + "! sonic frr.conf\n";
+    assertThat(identifyConfigurationFormat(fileText), equalTo(SONIC));
   }
 
   @Test
