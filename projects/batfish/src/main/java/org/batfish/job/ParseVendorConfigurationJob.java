@@ -727,13 +727,15 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
   /**
    * For some existing APIs, e.g., {@link
    * org.batfish.vendor.VendorConfiguration#setFilename(java.lang.String)}, a single filename is
-   * expected. This filename will be used until we can upgrade those APIs.
+   * expected. This representative filename, corresponding to the main file, will be used until we
+   * can upgrade those APIs.
    */
   private String getRepresentativeFilename(
       Map<String, String> fileTexts, ConfigurationFormat format) {
     if (fileTexts.size() == 1) {
       return Iterables.getOnlyElement(fileTexts.keySet());
     }
+    assert format != ConfigurationFormat.UNKNOWN; // avoid unused warning
     // TODO: for multi-file cases, implement format-based representative
     throw new UnsupportedOperationException();
   }
