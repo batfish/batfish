@@ -15,6 +15,7 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
+import org.batfish.job.ParseVendorConfigurationJob.VendorFile;
 import org.junit.Test;
 
 /** Tests of {@link ParseVendorConfigurationJob}. */
@@ -25,8 +26,8 @@ public class ParseVendorConfigurationJobTest {
     return new ParseVendorConfigurationJob(
             new Settings(),
             new NetworkSnapshot(new NetworkId("net"), new SnapshotId("ss")),
-            readResource(resourcePath, UTF_8),
-            "filename",
+            ImmutableList.of(new VendorFile("filename", readResource(resourcePath, UTF_8))),
+            null,
             new Warnings(),
             ConfigurationFormat.HOST,
             ImmutableMultimap.of(),
@@ -59,7 +60,11 @@ public class ParseVendorConfigurationJobTest {
     ignored.setIgnoreFilesWithStrings(ImmutableList.of("\n"));
     for (String empty : empties) {
       assertThat(
-          detectFormat(empty, settings, ConfigurationFormat.UNKNOWN),
+          detectFormat(
+              ImmutableList.of(new VendorFile("file", empty)),
+              "file",
+              settings,
+              ConfigurationFormat.UNKNOWN),
           equalTo(ConfigurationFormat.EMPTY));
     }
   }
@@ -70,10 +75,18 @@ public class ParseVendorConfigurationJobTest {
     Settings settings = new Settings();
     settings.setIgnoreFilesWithStrings(ImmutableList.of("\n"));
     assertThat(
-        detectFormat("\n", settings, ConfigurationFormat.UNKNOWN),
+        detectFormat(
+            ImmutableList.of(new VendorFile("file", "\n")),
+            "file",
+            settings,
+            ConfigurationFormat.UNKNOWN),
         equalTo(ConfigurationFormat.EMPTY));
     assertThat(
-        detectFormat("\n\n\n", settings, ConfigurationFormat.UNKNOWN),
+        detectFormat(
+            ImmutableList.of(new VendorFile("file", "\n\n\n")),
+            "file",
+            settings,
+            ConfigurationFormat.UNKNOWN),
         equalTo(ConfigurationFormat.EMPTY));
   }
 
@@ -81,7 +94,11 @@ public class ParseVendorConfigurationJobTest {
   @Test
   public void testDetectFormatEmptyBeatsFormat() {
     assertThat(
-        detectFormat("", new Settings(), ConfigurationFormat.HOST),
+        detectFormat(
+            ImmutableList.of(new VendorFile("file", "")),
+            "file",
+            new Settings(),
+            ConfigurationFormat.HOST),
         equalTo(ConfigurationFormat.EMPTY));
   }
 
@@ -92,13 +109,21 @@ public class ParseVendorConfigurationJobTest {
     Settings settings = new Settings();
     // Nothing ignored, is Cisco NX-OS.
     assertThat(
-        detectFormat(fileText, settings, ConfigurationFormat.UNKNOWN),
+        detectFormat(
+            ImmutableList.of(new VendorFile("file", fileText)),
+            "file",
+            settings,
+            ConfigurationFormat.UNKNOWN),
         equalTo(ConfigurationFormat.CISCO_NX));
 
     // "foo" ignored, file is ignored.
     settings.setIgnoreFilesWithStrings(ImmutableList.of("\n"));
     assertThat(
-        detectFormat(fileText, settings, ConfigurationFormat.UNKNOWN),
+        detectFormat(
+            ImmutableList.of(new VendorFile("file", fileText)),
+            "file",
+            settings,
+            ConfigurationFormat.UNKNOWN),
         equalTo(ConfigurationFormat.IGNORED));
   }
 }

@@ -1,14 +1,17 @@
 package org.batfish.job;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
+import com.google.common.collect.ImmutableMap;
 import java.io.Serializable;
+import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.common.ParseTreeSentences;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.answers.ParseStatus;
-import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
+import org.batfish.job.ParseVendorConfigurationJob.FileResult;
 import org.batfish.vendor.VendorConfiguration;
 
 /** An intermediate class that holds a cacheable result of parsing input configuration files. */
@@ -16,31 +19,32 @@ import org.batfish.vendor.VendorConfiguration;
 public class ParseResult implements Serializable {
 
   @Nullable private final VendorConfiguration _config;
-  @Nonnull private final ParseTreeSentences _parseTreeSentences;
   @Nullable private final Throwable _failureCause;
-  @Nonnull private final String _filename;
+  @Nonnull private final Map<String, FileResult> _fileResults;
   @Nonnull private final ConfigurationFormat _format;
+  @Nonnull private final String _representativeFilename;
   @Nonnull private final ParseStatus _status;
   @Nonnull private final Warnings _warnings;
-  @Nonnull private final SilentSyntaxCollection _silentSyntax;
 
   public ParseResult(
       @Nullable VendorConfiguration config,
       @Nullable Throwable failureCause,
-      String filename,
+      Map<String, FileResult> fileResults,
       ConfigurationFormat format,
-      ParseTreeSentences parseTreeSentences,
+      String representativeFilename,
       ParseStatus status,
-      Warnings warnings,
-      SilentSyntaxCollection silentSyntax) {
+      Warnings warnings) {
+    checkArgument(
+        fileResults.containsKey(representativeFilename),
+        "Representative filename %s is missing from results",
+        representativeFilename);
     _config = config;
     _failureCause = failureCause;
-    _filename = filename;
+    _fileResults = ImmutableMap.copyOf(fileResults);
     _format = format;
-    _parseTreeSentences = parseTreeSentences;
+    _representativeFilename = representativeFilename;
     _status = status;
     _warnings = warnings;
-    _silentSyntax = silentSyntax;
   }
 
   @Nullable
@@ -54,8 +58,8 @@ public class ParseResult implements Serializable {
   }
 
   @Nonnull
-  public String getFilename() {
-    return _filename;
+  public Map<String, FileResult> getFileResults() {
+    return _fileResults;
   }
 
   @Nonnull
@@ -64,8 +68,8 @@ public class ParseResult implements Serializable {
   }
 
   @Nonnull
-  public ParseTreeSentences getParseTreeSentences() {
-    return _parseTreeSentences;
+  public String getRepresentativeFilename() {
+    return _representativeFilename;
   }
 
   @Nonnull
@@ -76,10 +80,5 @@ public class ParseResult implements Serializable {
   @Nonnull
   public Warnings getWarnings() {
     return _warnings;
-  }
-
-  @Nonnull
-  public SilentSyntaxCollection getSilentSyntax() {
-    return _silentSyntax;
   }
 }
