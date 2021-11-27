@@ -48,6 +48,10 @@ public class ParseResult implements Serializable {
     return _failureCause;
   }
 
+  /**
+   * Get results for individual files. File-level warnings and parse trees are contained in this
+   * map. Warnings not specific to a file are in {@link #getWarnings()}
+   */
   @Nonnull
   public Map<String, FileResult> getFileResults() {
     return _fileResults;
@@ -63,6 +67,10 @@ public class ParseResult implements Serializable {
     return _status;
   }
 
+  /**
+   * Get "global" (not file-specific) warnings. File-specific warnings (e.g., parse warnings) can be
+   * accessed via {@link #getFileResults()}.
+   */
   @Nonnull
   public Warnings getWarnings() {
     return _warnings;
