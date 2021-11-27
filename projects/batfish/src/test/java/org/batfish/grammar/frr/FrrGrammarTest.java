@@ -1068,9 +1068,14 @@ public class FrrGrammarTest {
     parseLines(
         "router bgp 1",
         "  neighbor 2001:100:1:31::2 remote-as 2",
+        "  neighbor 2001:100:1:31::2 timers connect 15",
+        "  neighbor 2001:100:1:31::2 advertisement-interval 0",
+        "  neighbor 2001:100:1:31::2 local-as 65534 no-prepend replace-as",
         "  address-family ipv6 unicast",
         "    redistribute connected",
         "    import vrf Vrf_tenant1",
+        "    neighbor 2001:100:1:31::2 route-map wanguard6-any-out out",
+        "    neighbor 2001:100:1:31::2 next-hop-self",
         "    neighbor 2001:100:1:31::2 activate");
     Map<String, BgpNeighbor> neighbors = _frr.getBgpProcess().getDefaultVrf().getNeighbors();
     assertThat(neighbors.keySet(), contains("2001:100:1:31::2"));
