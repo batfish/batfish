@@ -215,7 +215,9 @@ public class ParseVendorConfigurationResult
     if (_vc == null) {
       return "<EMPTY OR UNSUPPORTED FORMAT>";
     } else if (_vc.getHostname() == null) {
-      return "<Indeterminate hostname in " + _fileResults + ">";
+      return "<Indeterminate hostname in "
+          + _fileResults.keySet().stream().sorted().collect(Collectors.joining(","))
+          + ">";
     } else {
       return "<" + _vc.getHostname() + ">";
     }
