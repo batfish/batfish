@@ -5,6 +5,7 @@ import static org.hamcrest.collection.IsMapContaining.hasEntry;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import org.batfish.common.BatfishLogger;
@@ -17,6 +18,7 @@ import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection.SilentSyntaxElem;
+import org.batfish.job.ParseVendorConfigurationJob.FileResult;
 import org.batfish.representation.cisco.CiscoConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 import org.junit.Test;
@@ -42,14 +44,13 @@ public class ParseVendorConfigurationResultTest {
         new ParseVendorConfigurationResult(
             0,
             new BatfishLoggerHistory(),
+            ImmutableMap.of(filename, new FileResult(parseTree, silentSyntax)),
             filename,
             ConfigurationFormat.CISCO_IOS,
             config,
             warnings,
-            parseTree,
             ParseStatus.PASSED,
-            HashMultimap.create(),
-            silentSyntax);
+            HashMultimap.create());
 
     SortedMap<String, VendorConfiguration> configs = new TreeMap<>();
     ParseVendorConfigurationAnswerElement answerElement =

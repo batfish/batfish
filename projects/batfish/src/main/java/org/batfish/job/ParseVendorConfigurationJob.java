@@ -13,12 +13,14 @@ import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.util.GlobalTracer;
+import java.io.Serializable;
 import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.BatfishException;
 import org.batfish.common.NetworkSnapshot;
@@ -72,6 +74,7 @@ import org.batfish.vendor.a10.grammar.A10ControlPlaneExtractor;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayCombinedParser;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayControlPlaneExtractor;
 
+@ParametersAreNonnullByDefault
 public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigurationResult> {
 
   private static final Set<ConfigurationFormat> UNIMPLEMENTED_FORMATS =
@@ -87,13 +90,14 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
           ConfigurationFormat.RUCKUS_ICX,
           ConfigurationFormat.VXWORKS);
 
-  public static class FileResult {
+  @ParametersAreNonnullByDefault
+  public static class FileResult implements Serializable {
     @Nonnull private ParseTreeSentences _parseTreeSentences;
     @Nonnull private final SilentSyntaxCollection _silentSyntax;
 
-    public FileResult() {
-      this._parseTreeSentences = new ParseTreeSentences();
-      this._silentSyntax = new SilentSyntaxCollection();
+    public FileResult(ParseTreeSentences parseTreeSentences, SilentSyntaxCollection silentSyntax) {
+      _parseTreeSentences = parseTreeSentences;
+      _silentSyntax = silentSyntax;
     }
 
     @Nonnull
@@ -143,7 +147,10 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
     _representativeFilename = representativeFilename;
     _fileResults =
         _fileTexts.keySet().stream()
-            .collect(ImmutableMap.toImmutableMap(f -> f, f -> new FileResult()));
+            .collect(
+                ImmutableMap.toImmutableMap(
+                    f -> f,
+                    f -> new FileResult(new ParseTreeSentences(), new SilentSyntaxCollection())));
     _warnings = warnings;
     _expectedFormat = expectedFormat;
     _duplicateHostnames = duplicateHostnames;
