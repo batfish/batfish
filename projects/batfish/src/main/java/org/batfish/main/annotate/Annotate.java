@@ -8,7 +8,6 @@ import static org.batfish.main.CliUtils.resolve;
 import static org.batfish.main.CliUtils.writeAllFiles;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.LinkedHashMultimap;
@@ -32,7 +31,6 @@ import org.batfish.grammar.silent_syntax.SilentSyntaxCollection.SilentSyntaxElem
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.job.ParseVendorConfigurationJob;
-import org.batfish.job.ParseVendorConfigurationJob.VendorFile;
 import org.batfish.job.ParseVendorConfigurationResult;
 import org.batfish.main.preprocess.Preprocessor;
 
@@ -108,8 +106,8 @@ public final class Annotate {
         new ParseVendorConfigurationJob(
                 settings,
                 new NetworkSnapshot(new NetworkId("dummyNetwork"), new SnapshotId("dummySnapshot")),
-                ImmutableList.of(new VendorFile(inputFile.toString(), preprocessedText)),
-                null,
+                ImmutableMap.of(inputFile.toString(), preprocessedText),
+                inputFile.toString(),
                 warnings,
                 ConfigurationFormat.UNKNOWN,
                 ImmutableMultimap.of(),
@@ -123,7 +121,7 @@ public final class Annotate {
     LOGGER.debug("Annotating: {}", inputFile);
     return annotatePreprocessedFile(
         preprocessedText,
-        parseResult.getSilentSyntax(),
+        parseResult.getFileResults().get(inputFile.toString()).getSilentSyntax(),
         warnings,
         getCommentHeader(parseResult.getConfigurationFormat()));
   }

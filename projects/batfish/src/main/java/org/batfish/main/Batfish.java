@@ -209,7 +209,6 @@ import org.batfish.job.ConvertConfigurationJob;
 import org.batfish.job.ParseEnvironmentBgpTableJob;
 import org.batfish.job.ParseResult;
 import org.batfish.job.ParseVendorConfigurationJob;
-import org.batfish.job.ParseVendorConfigurationJob.VendorFile;
 import org.batfish.job.ParseVendorConfigurationResult;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.question.ResolvedReachabilityParameters;
@@ -1644,8 +1643,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
           new ParseVendorConfigurationJob(
               _settings,
               snapshot,
-              ImmutableList.of(new VendorFile(vendorFile.getKey(), vendorFile.getValue())),
-              null,
+              ImmutableMap.of(vendorFile.getKey(), vendorFile.getValue()),
+              vendorFile.getKey(),
               buildWarnings(_settings),
               expectedFormat,
               HashMultimap.create(),
@@ -2579,7 +2578,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       ParseVendorConfigurationJob job, @Nullable SpanContext span, GrammarSettings settings) {
     Span parseNetworkConfigsSpan =
         GlobalTracer.get()
-            .buildSpan("Parse " + job.getFilenames())
+            .buildSpan("Parse " + job.getFileTexts().keySet())
             .addReference(References.FOLLOWS_FROM, span)
             .start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(parseNetworkConfigsSpan)) {
@@ -2598,8 +2597,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
               .newHasher()
               .putString("Cached Parse Result", UTF_8)
               .putString(
-                  job.getFiles().stream()
-                      .map(f -> f.getName() + f.getText())
+                  job.getFileTexts().entrySet().stream()
+                      .map(e -> e.getKey() + e.getValue())
                       .collect(Collectors.joining()),
                   UTF_8)
               .putBoolean(settings.getDisableUnrecognized())
@@ -2619,13 +2618,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
         result = SerializationUtils.deserialize(in);
         // sanity-check filenames. In the extremely unlikely event of a collision, we'll lose reuse
         // for this input.
-        cached = result.getFilenames().equals(job.getFilenames());
+        cached = result.getFileResults().keySet().equals(job.getFileTexts().keySet());
       } catch (FileNotFoundException e) {
         result = job.parse();
       } catch (Exception e) {
         _logger.warnf(
             "Error deserializing cached parse result for %s: %s",
-            job.getFilenames(), Throwables.getStackTraceAsString(e));
+            job.getFileTexts().keySet(), Throwables.getStackTraceAsString(e));
         result = job.parse();
       }
       if (!cached) {
@@ -2635,7 +2634,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         } catch (Exception e) {
           _logger.warnf(
               "Error caching parse result for %s: %s",
-              job.getFilenames(), Throwables.getStackTraceAsString(e));
+              job.getFileTexts().keySet(), Throwables.getStackTraceAsString(e));
         }
       }
       long elapsed = System.currentTimeMillis() - startTime;

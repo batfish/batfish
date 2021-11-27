@@ -1,6 +1,5 @@
 package org.batfish.job;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -15,7 +14,6 @@ import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.util.GlobalTracer;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -89,24 +87,6 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
           ConfigurationFormat.RUCKUS_ICX,
           ConfigurationFormat.VXWORKS);
 
-  public static class VendorFile {
-    private final String _name;
-    private final String _text;
-
-    public VendorFile(String name, String text) {
-      _name = name;
-      _text = text;
-    }
-
-    public String getName() {
-      return _name;
-    }
-
-    public String getText() {
-      return _text;
-    }
-  }
-
   public static class FileResult {
     @Nonnull private ParseTreeSentences _parseTreeSentences;
     @Nonnull private final SilentSyntaxCollection _silentSyntax;
@@ -130,7 +110,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
   /** Information about duplicate hostnames is collected here */
   private final Multimap<String, String> _duplicateHostnames;
 
-  private final @Nonnull List<VendorFile> _files;
+  private final @Nonnull Map<String, String> _fileTexts;
   private final @Nonnull String _representativeFilename;
 
   /**
@@ -146,24 +126,24 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
   public ParseVendorConfigurationJob(
       Settings settings,
       NetworkSnapshot snapshot,
-      List<VendorFile> files,
-      @Nullable String representativeFilename,
+      Map<String, String> fileTexts,
+      String representativeFilename,
       Warnings warnings,
       ConfigurationFormat expectedFormat,
       Multimap<String, String> duplicateHostnames,
       @Nullable SpanContext spanContext) {
     super(settings);
-    checkArgument(!files.isEmpty(), "File list cannot be empty");
+    checkArgument(!fileTexts.isEmpty(), "Set of file texts cannot be empty");
     checkArgument(
-        representativeFilename == null
-            || files.stream().anyMatch(f -> f._name.equals(representativeFilename)),
-        "Representative filename not found in files");
+        fileTexts.containsKey(representativeFilename),
+        "Representative filename %s not found in file texts",
+        representativeFilename);
 
-    _files = ImmutableList.copyOf(files);
-    _representativeFilename = firstNonNull(representativeFilename, files.get(0)._name);
+    _fileTexts = ImmutableMap.copyOf(fileTexts);
+    _representativeFilename = representativeFilename;
     _fileResults =
-        _files.stream()
-            .collect(ImmutableMap.toImmutableMap(VendorFile::getName, f -> new FileResult()));
+        _fileTexts.keySet().stream()
+            .collect(ImmutableMap.toImmutableMap(f -> f, f -> new FileResult()));
     _warnings = warnings;
     _expectedFormat = expectedFormat;
     _duplicateHostnames = duplicateHostnames;
@@ -179,7 +159,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
    */
   @VisibleForTesting
   static ConfigurationFormat detectFormat(
-      List<VendorFile> files,
+      Map<String, String> fileTexts,
       String representativeFilename,
       Settings settings,
       ConfigurationFormat format) {
@@ -187,16 +167,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
 
-      String fileText =
-          files.stream()
-              .filter(f -> f._name.equals(representativeFilename))
-              .findFirst()
-              .map(f -> f._text)
-              .orElseThrow(
-                  () ->
-                      new IllegalArgumentException(
-                          String.format(
-                              "Representative file %s does not exist", representativeFilename)));
+      String fileText = fileTexts.get(representativeFilename);
 
       if (WHITESPACE_ONLY.matcher(fileText).matches()) {
         return ConfigurationFormat.EMPTY;
@@ -234,9 +205,9 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
     try (Scope scope = GlobalTracer.get().scopeManager().activate(parseSpan)) {
       assert scope != null; // avoid unused warning
 
-      // pull out the common case of one file
-      String fileText = _files.get(0)._text;
-      String filename = _files.get(0)._name;
+      // pull out the common case
+      String filename = _representativeFilename;
+      String fileText = _fileTexts.get(_representativeFilename);
 
       switch (format) {
         case A10_ACOS:
@@ -509,7 +480,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
       _warnings.redFlag(
           String.format(
               "No hostname set in %s\n",
-              getFilenames().stream()
+              _fileTexts.keySet().stream()
                   .map(f -> f.replace("\\", "/"))
                   .collect(ImmutableList.toImmutableList())));
       String guessedHostname =
@@ -552,8 +523,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
         throw new BatfishException(
             String.format(
                 "Configuration file(s): %s contains unrecognized lines:\n%s",
-                _files.stream().map(f -> f._name).collect(ImmutableList.toImmutableList()),
-                String.join("\n", combinedParser.getErrors())));
+                _fileTexts.keySet(), String.join("\n", combinedParser.getErrors())));
       }
     } finally {
       parsingSpan.finish();
@@ -588,16 +558,15 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
   @Nonnull
   public ParseResult parse() {
     ConfigurationFormat format =
-        detectFormat(_files, _representativeFilename, _settings, _expectedFormat);
+        detectFormat(_fileTexts, _representativeFilename, _settings, _expectedFormat);
 
     // Handle specially some cases that will not produce a vendor configuration file.
     if (format == ConfigurationFormat.EMPTY) {
-      // multi-file formats are never empty
-      _warnings.redFlag(String.format("Empty file: %s\n", getFilenames()));
+      _warnings.redFlag(String.format("Empty file: %s\n", _fileTexts.keySet()));
       return new ParseResult(
           null, null, _fileResults, format, _representativeFilename, ParseStatus.EMPTY, _warnings);
     } else if (format == ConfigurationFormat.IGNORED) {
-      _warnings.redFlag(String.format("Ignored file: %s\n", getFilenames()));
+      _warnings.redFlag(String.format("Ignored file: %s\n", _fileTexts.keySet()));
       return new ParseResult(
           null,
           null,
@@ -607,7 +576,8 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
           ParseStatus.IGNORED,
           _warnings);
     } else if (format == ConfigurationFormat.UNKNOWN) {
-      _warnings.redFlag(String.format("Unable to detect format for file: %s\n", getFilenames()));
+      _warnings.redFlag(
+          String.format("Unable to detect format for file: %s\n", _fileTexts.keySet()));
       return new ParseResult(
           null,
           null,
@@ -619,7 +589,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
     } else if (UNIMPLEMENTED_FORMATS.contains(format)) {
       String unsupportedError =
           String.format(
-              "Unsupported configuration format: '%s' for file: %s\n", format, getFilenames());
+              "Unsupported configuration format: '%s' for file: %s\n", format, _fileTexts.keySet());
       if (!_settings.ignoreUnsupported()) {
         return new ParseResult(
             null,
@@ -674,7 +644,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
       return new ParseResult(
           null,
           new BatfishException(
-              String.format("Error parsing configuration file(s): %s", getFilenames()), e),
+              String.format("Error parsing configuration file(s): %s", _fileTexts.keySet()), e),
           _fileResults,
           format,
           _representativeFilename,
@@ -720,13 +690,13 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
   public ParseVendorConfigurationResult call() {
     Span span =
         GlobalTracer.get()
-            .buildSpan("ParseVendorConfigurationJob for " + getFilenames())
+            .buildSpan("ParseVendorConfigurationJob for " + _fileTexts.keySet())
             .addReference(References.FOLLOWS_FROM, _spanContext)
             .start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
 
-      _logger.infof("Processing: %s\n", getFilenames());
+      _logger.infof("Processing: %s\n", _fileTexts.keySet());
       long startTime = System.currentTimeMillis();
       ParseResult result = parse();
       return fromResult(result, System.currentTimeMillis() - startTime);
@@ -735,11 +705,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
     }
   }
 
-  public List<VendorFile> getFiles() {
-    return _files;
-  }
-
-  public List<String> getFilenames() {
-    return _files.stream().map(f -> f._name).collect(ImmutableList.toImmutableList());
+  public Map<String, String> getFileTexts() {
+    return _fileTexts;
   }
 }
