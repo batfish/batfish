@@ -1,13 +1,14 @@
 package org.batfish.job;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
-import com.ibm.icu.impl.locale.XCldrStub.ImmutableMap;
 import java.io.File;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
@@ -28,7 +29,6 @@ public class ParseVendorConfigurationResult
   private Multimap<String, String> _duplicateHostnames;
 
   private final Map<String, FileResult> _fileResults;
-  private final String _representativeFilename;
 
   private final @Nonnull ConfigurationFormat _format;
 
@@ -42,17 +42,11 @@ public class ParseVendorConfigurationResult
       long elapsedTime,
       BatfishLoggerHistory history,
       @Nonnull Map<String, FileResult> fileResults,
-      @Nonnull String representativeFilename,
       @Nonnull ConfigurationFormat format,
       @Nonnull Warnings warnings,
       @Nonnull Throwable failureCause) {
     super(elapsedTime, history, failureCause);
-    checkArgument(
-        fileResults.containsKey(representativeFilename),
-        "Representative filename %s is not present in fileResults",
-        representativeFilename);
     _fileResults = ImmutableMap.copyOf(fileResults);
-    _representativeFilename = representativeFilename;
     _format = format;
     _status = ParseStatus.FAILED;
     _warnings = warnings;
@@ -62,19 +56,13 @@ public class ParseVendorConfigurationResult
       long elapsedTime,
       BatfishLoggerHistory history,
       @Nonnull Map<String, FileResult> fileResults,
-      @Nonnull String representativeFilename,
       @Nonnull ConfigurationFormat format,
       VendorConfiguration vc,
       @Nonnull Warnings warnings,
       @Nonnull ParseStatus status,
       @Nonnull Multimap<String, String> duplicateHostnames) {
     super(elapsedTime, history);
-    checkArgument(
-        fileResults.containsKey(representativeFilename),
-        "Representative filename %s is not present in fileResults",
-        representativeFilename);
     _fileResults = fileResults;
-    _representativeFilename = representativeFilename;
     _format = format;
     _vc = vc;
     _warnings = warnings;
@@ -86,20 +74,14 @@ public class ParseVendorConfigurationResult
       long elapsedTime,
       BatfishLoggerHistory history,
       @Nonnull Map<String, FileResult> fileResults,
-      @Nonnull String representativeFilename,
       @Nonnull ConfigurationFormat format,
       @Nonnull Warnings warnings,
       @Nonnull ParseStatus status) {
     super(elapsedTime, history);
-    checkArgument(
-        fileResults.containsKey(representativeFilename),
-        "Representative filename %s is not present in fileResults",
-        representativeFilename);
     _fileResults = fileResults;
-    _representativeFilename = representativeFilename;
     _format = format;
-    _status = status;
     _warnings = warnings;
+    _status = status;
   }
 
   @Override
@@ -121,13 +103,9 @@ public class ParseVendorConfigurationResult
       BatfishLogger logger,
       ParseVendorConfigurationAnswerElement answerElement) {
     appendHistory(logger);
-    _fileResults
-        .keySet()
-        .forEach(
-            name -> {
-              answerElement.getParseStatus().put(name, _status);
-              answerElement.getFileFormats().put(name, _format);
-            });
+    String jobKey = _fileResults.keySet().stream().sorted().collect(Collectors.joining(","));
+    answerElement.getParseStatus().put(jobKey, _status);
+    answerElement.getFileFormats().put(jobKey, _format);
     if (_vc != null) {
       String hostname = _vc.getHostname();
       if (vendorConfigurations.containsKey(hostname)) {
@@ -153,10 +131,13 @@ public class ParseVendorConfigurationResult
       vendorConfigurations.put(hostname, _vc);
       answerElement.getFileMap().putAll(hostname, _fileResults.keySet());
       if (!_warnings.isEmpty()) {
-        answerElement.getWarnings().put(_representativeFilename, _warnings);
+        answerElement.getWarnings().put(jobKey, _warnings);
       }
       _fileResults.forEach(
           (name, result) -> {
+            if (!result.getWarnings().isEmpty()) {
+              answerElement.getWarnings().put(name, result.getWarnings());
+            }
             if (!result.getParseTreeSentences().isEmpty()) {
               answerElement.getParseTrees().put(name, result.getParseTreeSentences());
             }
@@ -165,17 +146,25 @@ public class ParseVendorConfigurationResult
       assert _failureCause != null; // status == FAILED, failureCause must be non-null
       answerElement
           .getErrors()
-          .put(_representativeFilename, ((BatfishException) _failureCause).getBatfishStackTrace());
-      ErrorDetails errorDetails = _warnings.getErrorDetails();
+          .put(jobKey, ((BatfishException) _failureCause).getBatfishStackTrace());
+      if (_warnings.getErrorDetails() != null) {
+        answerElement.getErrorDetails().put(jobKey, _warnings.getErrorDetails());
+      }
+      Map<String, ErrorDetails> errorDetails =
+          _fileResults.entrySet().stream()
+              .filter(e -> e.getValue().getWarnings().getErrorDetails() != null)
+              .collect(
+                  ImmutableMap.toImmutableMap(
+                      Entry::getKey, e -> e.getValue().getWarnings().getErrorDetails()));
       // Pass existing errorDetails through, if applicable (e.g. exception caught while walking
       // parse tree and details [including parser context] already populated)
-      if (errorDetails != null) {
-        answerElement.getErrorDetails().put(_representativeFilename, errorDetails);
+      if (!errorDetails.isEmpty()) {
+        answerElement.getErrorDetails().putAll(errorDetails);
       } else {
         answerElement
             .getErrorDetails()
             .put(
-                _representativeFilename,
+                jobKey,
                 new ErrorDetails(
                     Throwables.getStackTraceAsString(
                         firstNonNull(_failureCause.getCause(), _failureCause))));

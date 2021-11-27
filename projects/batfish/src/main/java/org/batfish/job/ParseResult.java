@@ -1,7 +1,5 @@
 package org.batfish.job;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import com.google.common.collect.ImmutableMap;
 import java.io.Serializable;
 import java.util.Map;
@@ -22,7 +20,6 @@ public class ParseResult implements Serializable {
   @Nullable private final Throwable _failureCause;
   @Nonnull private final Map<String, FileResult> _fileResults;
   @Nonnull private final ConfigurationFormat _format;
-  @Nonnull private final String _representativeFilename;
   @Nonnull private final ParseStatus _status;
   @Nonnull private final Warnings _warnings;
 
@@ -31,18 +28,12 @@ public class ParseResult implements Serializable {
       @Nullable Throwable failureCause,
       Map<String, FileResult> fileResults,
       ConfigurationFormat format,
-      String representativeFilename,
       ParseStatus status,
       Warnings warnings) {
-    checkArgument(
-        fileResults.containsKey(representativeFilename),
-        "Representative filename %s is missing from results",
-        representativeFilename);
     _config = config;
     _failureCause = failureCause;
     _fileResults = ImmutableMap.copyOf(fileResults);
     _format = format;
-    _representativeFilename = representativeFilename;
     _status = status;
     _warnings = warnings;
   }
@@ -65,11 +56,6 @@ public class ParseResult implements Serializable {
   @Nonnull
   public ConfigurationFormat getFormat() {
     return _format;
-  }
-
-  @Nonnull
-  public String getRepresentativeFilename() {
-    return _representativeFilename;
   }
 
   @Nonnull

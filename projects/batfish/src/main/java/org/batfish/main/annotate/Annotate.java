@@ -1,6 +1,7 @@
 package org.batfish.main.annotate;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.common.BatfishLogger.LEVEL_PEDANTIC;
 import static org.batfish.datamodel.answers.ParseStatus.FAILED;
 import static org.batfish.main.CliUtils.readAllFiles;
 import static org.batfish.main.CliUtils.relativize;
@@ -99,7 +100,6 @@ public final class Annotate {
       LOGGER.warn("Skipping {} because of preprocessing error: {}", inputText, e);
       return null;
     }
-    Warnings warnings = new Warnings(true, true, true);
     LOGGER.debug("Parsing: {}", inputFile);
     // parse the preprocessed text
     ParseVendorConfigurationResult parseResult =
@@ -107,8 +107,7 @@ public final class Annotate {
                 settings,
                 new NetworkSnapshot(new NetworkId("dummyNetwork"), new SnapshotId("dummySnapshot")),
                 ImmutableMap.of(inputFile.toString(), preprocessedText),
-                inputFile.toString(),
-                warnings,
+                LEVEL_PEDANTIC,
                 ConfigurationFormat.UNKNOWN,
                 ImmutableMultimap.of(),
                 null)
@@ -122,7 +121,7 @@ public final class Annotate {
     return annotatePreprocessedFile(
         preprocessedText,
         parseResult.getFileResults().get(inputFile.toString()).getSilentSyntax(),
-        warnings,
+        parseResult.getFileResults().get(inputFile.toString()).getWarnings(),
         getCommentHeader(parseResult.getConfigurationFormat()));
   }
 
