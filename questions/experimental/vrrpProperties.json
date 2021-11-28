@@ -7,7 +7,7 @@
     "instance": {
         "description": "Returns configuration settings of VRRP groups.",
         "instanceName": "vrrpProperties",
-        "longDescription": "Lists information VRRP groups on interfaces.",
+        "longDescription": "Lists information about VRRP groups on interfaces.",
         "orderedVariableNames": [
             "nodes",
             "interfaces",
