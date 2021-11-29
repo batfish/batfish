@@ -2,6 +2,10 @@
 !
 hostname bgp_redistribution
 !
+interface Ethernet1
+   no switchport
+   ip address 5.5.5.1/24
+!
 vrf definition VRF1
 vrf definition VRF2
 !
@@ -10,6 +14,8 @@ ip route vrf VRF2 1.1.1.1 255.255.255.255 null0
 ip route vrf VRF2 2.2.2.2 255.255.255.255 null0
 !
 router bgp 1
+  router-id 10.10.10.3
+  redistribute connected
   vrf VRF1
     router-id 10.10.10.1
     redistribute static
