@@ -897,6 +897,14 @@ public final class AristaConfiguration extends VendorConfiguration {
     redistributionPolicy.addStatement(new SetLocalPreference(new LiteralLong(0)));
     redistributionPolicy.addStatement(new SetWeight(new LiteralInt(DEFAULT_LOCAL_BGP_WEIGHT)));
 
+    // Arista sets origin type differently depending on source protocol. Redistributed connected
+    // routes have origin type IGP and redistributed static routes have origin type incomplete.
+    // TODO: Check origin type for routes redistributed from other protocols
+    redistributionPolicy.addStatement(
+        new If(
+            new MatchProtocol(RoutingProtocol.CONNECTED),
+            ImmutableList.of(new SetOrigin(new LiteralOrigin(OriginType.IGP, null)))));
+
     // Only redistribute default route if `default-information originate` is set.
     //    BooleanExpr redistributeDefaultRoute =
     //        ipv4af == null || !ipv4af.get() ? NOT_DEFAULT_ROUTE : BooleanExprs.TRUE;
@@ -1006,9 +1014,8 @@ public final class AristaConfiguration extends VendorConfiguration {
                 redistributionPolicy.addStatement(
                     new If(
                         new Conjunction(exportNetworkConditions),
-                        ImmutableList.of(
-                            new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
-                            Statements.ExitAccept.toStaticStatement())));
+                        // no need to set origin type; it was set at beginning of redist policy
+                        ImmutableList.of(Statements.ExitAccept.toStaticStatement())));
               });
     }
 
