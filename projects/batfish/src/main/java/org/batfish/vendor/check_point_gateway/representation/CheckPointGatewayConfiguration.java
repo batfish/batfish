@@ -593,23 +593,13 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
 
     ImmutableList.Builder<AclLineMatchExpr> matchAnyAutoRule = ImmutableList.builder();
     // Auto static
-    if (!autoStaticNatObjects.isEmpty()) {
-      matchAnyAutoRule.addAll(
-          autoStaticNatObjects.stream()
-              .map(natObj -> matchAutomaticStaticRule(natObj, true))
-              .collect(ImmutableList.toImmutableList()));
-      matchAnyAutoRule.addAll(
-          autoStaticNatObjects.stream()
-              .map(natObj -> matchAutomaticStaticRule(natObj, false))
-              .collect(ImmutableList.toImmutableList()));
-    }
+    autoStaticNatObjects.stream()
+        .forEach(natObj -> matchAnyAutoRule.add(matchAutomaticStaticRule(natObj, true)));
+    autoStaticNatObjects.stream()
+        .forEach(natObj -> matchAnyAutoRule.add(matchAutomaticStaticRule(natObj, false)));
     // Auto hide
-    if (!autoHideNatObjects.isEmpty()) {
-      matchAnyAutoRule.addAll(
-          autoHideNatObjects.stream()
-              .map(addressSpaceToMatchExpr::convertSource)
-              .collect(ImmutableList.toImmutableList()));
-    }
+    matchAnyAutoRule.addAll(
+        autoHideNatObjects.stream().map(addressSpaceToMatchExpr::convertSource).iterator());
 
     ImmutableList.Builder<Statement> statements = ImmutableList.builder();
     if (!autoHideNatObjects.isEmpty()) {
