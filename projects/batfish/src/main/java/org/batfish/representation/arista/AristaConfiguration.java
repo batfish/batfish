@@ -16,6 +16,7 @@ import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.NO_PREFER
 import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
 import static org.batfish.datamodel.routing_policy.Common.initDenyAllBgpRedistributionPolicy;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
+import static org.batfish.representation.arista.AristaConversions.getSourceInterfaceIp;
 import static org.batfish.representation.arista.AristaConversions.toBgpAggregate;
 import static org.batfish.representation.arista.AristaConversions.toCommunityMatchExpr;
 import static org.batfish.representation.arista.AristaConversions.toCommunitySet;
@@ -1069,15 +1070,26 @@ public final class AristaConfiguration extends VendorConfiguration {
     //      c.getRoute6FilterLists().put(localFilter6.getName(), localFilter6);
     //    }
 
+    Ip vxlanSourceInterfaceIp = getSourceInterfaceIp(_eosVxlan, _interfaces).orElse(null);
+
     // Process active neighbors first.
     Map<Ip, BgpActivePeerConfig> activeNeighbors =
-        AristaConversions.getNeighbors(c, v, newBgpProcess, bgpGlobal, bgpVrf, _eosVxlan, _w);
+        AristaConversions.getNeighbors(
+            c, v, newBgpProcess, bgpGlobal, bgpVrf, _eosVxlan, vxlanSourceInterfaceIp, _w);
     newBgpProcess.setNeighbors(ImmutableSortedMap.copyOf(activeNeighbors));
 
     // Process passive neighbors next
     Map<Prefix, BgpPassivePeerConfig> passiveNeighbors =
         AristaConversions.getPassiveNeighbors(
-            c, v, newBgpProcess, bgpGlobal, bgpVrf, _eosVxlan, _peerFilters, _w);
+            c,
+            v,
+            newBgpProcess,
+            bgpGlobal,
+            bgpVrf,
+            _eosVxlan,
+            vxlanSourceInterfaceIp,
+            _peerFilters,
+            _w);
     newBgpProcess.setPassiveNeighbors(ImmutableSortedMap.copyOf(passiveNeighbors));
 
     return newBgpProcess;
@@ -2537,20 +2549,19 @@ public final class AristaConfiguration extends VendorConfiguration {
 
     // convert Arista EOS VXLAN
     if (_eosVxlan != null) {
-      String sourceIfaceName = _eosVxlan.getSourceInterface();
-      Interface sourceIface = sourceIfaceName == null ? null : _interfaces.get(sourceIfaceName);
+      Ip sourceAddress = getSourceInterfaceIp(_eosVxlan, _interfaces).orElse(null);
 
       _eosVxlan
           .getVlanVnis()
           .forEach(
               (vlan, vni) ->
-                  c.getDefaultVrf().addLayer2Vni(toL2Vni(_eosVxlan, vni, vlan, sourceIface)));
+                  c.getDefaultVrf().addLayer2Vni(toL2Vni(_eosVxlan, vni, vlan, sourceAddress)));
       _eosVxlan
           .getVrfToVni()
           .forEach(
               (vrfName, vni) ->
                   Optional.ofNullable(c.getVrfs().get(vrfName))
-                      .ifPresent(vrf -> vrf.addLayer3Vni(toL3Vni(_eosVxlan, vni, sourceIface))));
+                      .ifPresent(vrf -> vrf.addLayer3Vni(toL3Vni(_eosVxlan, vni, sourceAddress))));
     }
 
     // For EOS, if a VRF has VNIs but no BGP process, create a dummy BGP processes in VI.
@@ -2725,12 +2736,7 @@ public final class AristaConfiguration extends VendorConfiguration {
   }
 
   private static Layer2Vni toL2Vni(
-      @Nonnull AristaEosVxlan vxlan, int vni, int vlan, @Nullable Interface sourceInterface) {
-    Ip sourceAddress =
-        sourceInterface == null
-            ? null
-            : sourceInterface.getAddress() == null ? null : sourceInterface.getAddress().getIp();
-
+      @Nonnull AristaEosVxlan vxlan, int vni, int vlan, @Nullable Ip sourceAddress) {
     // Prefer VLAN-specific or general flood address (in that order) over multicast address
     SortedSet<Ip> bumTransportIps =
         firstNonNull(vxlan.getVlanFloodAddresses().get(vlan), vxlan.getFloodAddresses());
@@ -2757,12 +2763,7 @@ public final class AristaConfiguration extends VendorConfiguration {
   }
 
   private static Layer3Vni toL3Vni(
-      @Nonnull AristaEosVxlan vxlan, @Nonnull Integer vni, @Nullable Interface sourceInterface) {
-    Ip sourceAddress =
-        sourceInterface == null
-            ? null
-            : sourceInterface.getAddress() == null ? null : sourceInterface.getAddress().getIp();
-
+      @Nonnull AristaEosVxlan vxlan, @Nonnull Integer vni, @Nullable Ip sourceAddress) {
     SortedSet<Ip> bumTransportIps = vxlan.getFloodAddresses();
 
     // default to unicast flooding unless specified otherwise

@@ -191,6 +191,7 @@ import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.BgpAggregate;
 import org.batfish.datamodel.bgp.BgpConfederation;
 import org.batfish.datamodel.bgp.BgpTopologyUtils;
+import org.batfish.datamodel.bgp.EvpnAddressFamily;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.Layer2VniConfig;
 import org.batfish.datamodel.bgp.Layer3VniConfig;
@@ -2478,12 +2479,12 @@ public class AristaGrammarTest {
     Ip[] neighborIPs = {Ip.parse("192.168.255.1"), Ip.parse("192.168.255.2")};
     for (Ip ip : neighborIPs) {
       BgpActivePeerConfig neighbor = c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(ip);
-      assertThat(neighbor.getEvpnAddressFamily(), notNullValue());
+      EvpnAddressFamily af = neighbor.getEvpnAddressFamily();
+      assertThat(af, notNullValue());
+      assertThat(af.getAddressFamilyCapabilities().getAllowRemoteAsOut(), equalTo(ALWAYS));
+      assertThat(af.getNveIp(), equalTo(Ip.parse("192.168.254.3")));
       assertThat(
-          neighbor.getEvpnAddressFamily().getAddressFamilyCapabilities().getAllowRemoteAsOut(),
-          equalTo(ALWAYS));
-      assertThat(
-          neighbor.getEvpnAddressFamily().getL2VNIs(),
+          af.getL2VNIs(),
           equalTo(
               ImmutableSet.of(
                   Layer2VniConfig.builder()
@@ -2502,7 +2503,7 @@ public class AristaGrammarTest {
                       .build())));
 
       assertThat(
-          neighbor.getEvpnAddressFamily().getL3VNIs(),
+          af.getL3VNIs(),
           equalTo(
               ImmutableSet.of(
                   Layer3VniConfig.builder()

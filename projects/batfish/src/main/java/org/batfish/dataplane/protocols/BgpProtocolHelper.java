@@ -35,6 +35,7 @@ import org.batfish.datamodel.bgp.AddressFamily.Type;
 import org.batfish.datamodel.bgp.AllowRemoteAsOutMode;
 import org.batfish.datamodel.bgp.BgpAggregate;
 import org.batfish.datamodel.bgp.BgpTopologyUtils.ConfedSessionType;
+import org.batfish.datamodel.bgp.EvpnAddressFamily;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
@@ -391,6 +392,17 @@ public final class BgpProtocolHelper {
           BgpSessionProperties ourSessionProperties,
           AddressFamily af,
           Ip originalRouteNhip) {
+    // For EVPN routes that we originated, set NHIP to NVE IP; otherwise to original NHIP
+    if (af.getType().equals(Type.EVPN)) {
+      if (originalRouteNhip.equals(UNSET_ROUTE_NEXT_HOP_IP)) {
+        EvpnAddressFamily evpnFamily = (EvpnAddressFamily) af;
+        if (evpnFamily.getNveIp() != null) {
+          routeBuilder.setNextHop(NextHopIp.of(evpnFamily.getNveIp()));
+        }
+      } else {
+        routeBuilder.setNextHop(NextHopIp.of(originalRouteNhip));
+      }
+    }
     transformBgpRoutePostExport(
         routeBuilder,
         ourSessionProperties.isEbgp(),
