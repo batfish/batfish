@@ -4,10 +4,12 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.bddreachability.transition.Transitions.ZERO;
 
 import com.google.common.base.Objects;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.Iterables;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
@@ -15,8 +17,11 @@ import net.sf.javabdd.BDDPairing;
 
 public final class GuardEraseAndSet implements Transition {
   public Transition andThen(EraseAndSet eas) {
+    // TODO better way?
+    // eas.transitForward(_forwardRelation.replace(_swap)).replace(_swap)
+    // relies on the invariant that eas is a noop on prime vars
     BDD before = _forwardRelation.project(_vars);
-    BDD after = _backwardRelation.project(_vars);
+    BDD after = _forwardRelation.project(_vars.replace(_swap));
     BDD newAfter = eas.transitForward(after);
     BDD vars = _vars.and(eas.getEraseVars());
     return new GuardEraseAndSet(vars, before, newAfter);
@@ -54,10 +59,12 @@ public final class GuardEraseAndSet implements Transition {
 
   private final BDD _vars;
   private final BDD _forwardRelation;
-  private final BDD _backwardRelation;
-  private final BDDPairings _pairings;
+  private final BDDPairing _swap;
 
-  private static final Map<BDD, BDDPairings> PAIRINGS_CACHE = new HashMap<>();
+  // computed lazily
+  private final Supplier<BDD> _backwardRelation = Suppliers.memoize(this::computeBackwardRelation);
+
+  private static final Map<BDD, BDDPairing> PAIRING_CACHE = new HashMap<>();
 
   private static final class BDDPairings {
     private final BDDPairing _toPrime;
@@ -71,22 +78,24 @@ public final class GuardEraseAndSet implements Transition {
 
   public GuardEraseAndSet(BDD vars, BDD valueBefore, BDD valueAfter) {
     _vars = vars;
-    _pairings = PAIRINGS_CACHE.computeIfAbsent(vars, GuardEraseAndSet::computePairings);
-    _forwardRelation = valueBefore.and(valueAfter.replace(_pairings._toPrime));
-    _backwardRelation = valueAfter.and(valueBefore.replace(_pairings._toPrime));
+    _swap = PAIRING_CACHE.computeIfAbsent(vars, GuardEraseAndSet::computeSwapPairing);
+    _forwardRelation = valueBefore.and(valueAfter.replace(_swap));
   }
 
-  private static BDDPairings computePairings(BDD vars) {
-    BDDPairing toPrime = vars.getFactory().makePair();
-    BDDPairing fromPrime = vars.getFactory().makePair();
+  private BDD computeBackwardRelation() {
+    return _forwardRelation.replace(_swap);
+  }
+
+  private static BDDPairing computeSwapPairing(BDD vars) {
+    BDDPairing swap = vars.getFactory().makePair();
     BDD tmp = vars;
     while (!tmp.isZero() && !tmp.isOne()) {
       int var = tmp.var();
-      toPrime.set(var, var + 1);
-      fromPrime.set(var + 1, var);
+      swap.set(var, var + 1);
+      swap.set(var + 1, var);
       tmp = tmp.high();
     }
-    return new BDDPairings(toPrime, fromPrime);
+    return swap;
   }
 
   public GuardEraseAndSet(BDD vars, List<ValueBeforeAndAfter> valuesBeforeAndAfter) {
@@ -113,29 +122,19 @@ public final class GuardEraseAndSet implements Transition {
     //                    .collect(Collectors.toList()));
   }
 
-  private GuardEraseAndSet(
-      BDD vars, BDD forwardRelation, BDD backwardRelation, BDDPairings pairings) {
+  private GuardEraseAndSet(BDD vars, BDD forwardRelation, BDDPairing swap) {
     _vars = vars;
     _forwardRelation = forwardRelation;
-    _backwardRelation = backwardRelation;
-    _pairings = pairings;
+    _swap = swap;
   }
 
   private BDD getForwardRelation() {
     return _forwardRelation;
   }
 
-  private BDD getBackwardRelation() {
-    return _backwardRelation;
-  }
-
   public GuardEraseAndSet or(GuardEraseAndSet other) {
     checkArgument(_vars.equals(other._vars));
-    return new GuardEraseAndSet(
-        _vars,
-        _forwardRelation.or(other._forwardRelation),
-        _backwardRelation.or(other._backwardRelation),
-        _pairings);
+    return new GuardEraseAndSet(_vars, _forwardRelation.or(other._forwardRelation), _swap);
   }
 
   public static GuardEraseAndSet orAll(List<GuardEraseAndSet> gess) {
@@ -155,9 +154,7 @@ public final class GuardEraseAndSet implements Transition {
         vars,
         factory.orAll(
             gess.stream().map(GuardEraseAndSet::getForwardRelation).collect(Collectors.toList())),
-        factory.orAll(
-            gess.stream().map(GuardEraseAndSet::getBackwardRelation).collect(Collectors.toList())),
-        ges._pairings);
+        ges._swap);
   }
 
   public Transition constrainBefore(BDD before) {
@@ -165,21 +162,17 @@ public final class GuardEraseAndSet implements Transition {
     if (forwardRelation.isZero()) {
       return ZERO;
     }
-    BDD beforePrime = before.replace(_pairings._toPrime);
-    BDD backwardRelation = _backwardRelation.and(beforePrime);
-    beforePrime.free();
-    return new GuardEraseAndSet(_vars, forwardRelation, backwardRelation, _pairings);
+    return new GuardEraseAndSet(_vars, forwardRelation, _swap);
   }
 
   public Transition constrainAfter(BDD after) {
-    BDD backwardRelation = _backwardRelation.and(after);
-    if (backwardRelation.isZero()) {
-      return ZERO;
-    }
-    BDD afterPrime = after.replace(_pairings._toPrime);
+    BDD afterPrime = after.replace(_swap);
     BDD forwardRelation = _forwardRelation.and(afterPrime);
     afterPrime.free();
-    return new GuardEraseAndSet(_vars, forwardRelation, backwardRelation, _pairings);
+    if (forwardRelation.isZero()) {
+      return ZERO;
+    }
+    return new GuardEraseAndSet(_vars, forwardRelation, _swap);
   }
 
   BDD getVars() {
@@ -188,12 +181,12 @@ public final class GuardEraseAndSet implements Transition {
 
   @Override
   public BDD transitForward(BDD bdd) {
-    return bdd.applyEx(_forwardRelation, BDDFactory.and, _vars).replaceWith(_pairings._fromPrime);
+    return bdd.applyEx(_forwardRelation, BDDFactory.and, _vars).replaceWith(_swap);
   }
 
   @Override
   public BDD transitBackward(BDD bdd) {
-    return bdd.applyEx(_backwardRelation, BDDFactory.and, _vars).replaceWith(_pairings._fromPrime);
+    return bdd.applyEx(_backwardRelation.get(), BDDFactory.and, _vars).replaceWith(_swap);
   }
 
   @Override
@@ -202,22 +195,18 @@ public final class GuardEraseAndSet implements Transition {
     if (forwardRelation.isZero()) {
       return ZERO;
     }
-    BDD bddPrime = before.replace(_pairings._toPrime);
-    BDD backwardRelation = _backwardRelation.diff(bddPrime);
-    bddPrime.free();
-    return new GuardEraseAndSet(_vars, forwardRelation, backwardRelation, _pairings);
+    return new GuardEraseAndSet(_vars, forwardRelation, _swap);
   }
 
   @Override
   public Transition andNotAfter(BDD after) {
-    BDD backwardRelation = _backwardRelation.diff(after);
-    if (backwardRelation.isZero()) {
-      return ZERO;
-    }
-    BDD afterPrime = after.replace(_pairings._toPrime);
+    BDD afterPrime = after.replace(_swap);
     BDD forwardRelation = _forwardRelation.diff(afterPrime);
     afterPrime.free();
-    return new GuardEraseAndSet(_vars, forwardRelation, backwardRelation, _pairings);
+    if (forwardRelation.isZero()) {
+      return ZERO;
+    }
+    return new GuardEraseAndSet(_vars, forwardRelation, _swap);
   }
 
   @Override
