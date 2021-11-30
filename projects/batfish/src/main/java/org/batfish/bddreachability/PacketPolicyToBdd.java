@@ -445,11 +445,7 @@ class PacketPolicyToBdd {
       // invariant: _currentStatementOutTransition always composes cleanly with a constraint
       Transition thenTrans =
           Transitions.mergeComposed(_currentStatementOutTransition, constraint(matchConstraint));
-      Transition elseTrans =
-          Transitions.mergeComposed(
-              _currentStatementOutTransition,
-              // TODO could add a negatedConstraint edge
-              constraint(matchConstraint.not()));
+      Transition elseTrans = _currentStatementOutTransition.andNotAfter(matchConstraint);
 
       assert thenTrans != null;
       assert elseTrans != null;
@@ -504,7 +500,7 @@ class PacketPolicyToBdd {
       addEdge(
           currentStatement(),
           new PacketPolicyAction(_hostname, _vrf, _policy.getName(), Drop.instance()),
-          mergeComposed(_currentStatementOutTransition, constraint(permitBdd.not())));
+          _currentStatementOutTransition.andNotAfter(permitBdd));
       _currentStatementOutTransition =
           mergeComposed(_currentStatementOutTransition, constraint(permitBdd));
       return null;
