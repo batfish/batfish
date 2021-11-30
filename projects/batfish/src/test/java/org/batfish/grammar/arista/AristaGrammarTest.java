@@ -2215,13 +2215,13 @@ public class AristaGrammarTest {
       assertThat(vniSettings.getBumTransportIps(), empty());
     }
     {
-      Layer2Vni vniSettings = config.getVrfs().get("VRF_1").getLayer2Vnis().get(10001);
+      Layer2Vni vniSettings = config.getDefaultVrf().getLayer2Vnis().get(10001);
       assertThat(
           vniSettings.getBumTransportMethod(), equalTo(BumTransportMethod.UNICAST_FLOOD_GROUP));
       assertThat(vniSettings.getBumTransportIps(), empty());
     }
     {
-      Layer2Vni vniSettings = config.getVrfs().get("VRF_2").getLayer2Vnis().get(10002);
+      Layer2Vni vniSettings = config.getDefaultVrf().getLayer2Vnis().get(10002);
       assertThat(
           vniSettings.getBumTransportMethod(), equalTo(BumTransportMethod.UNICAST_FLOOD_GROUP));
       assertThat(vniSettings.getBumTransportIps(), empty());
@@ -2525,13 +2525,13 @@ public class AristaGrammarTest {
   }
 
   /**
-   * Ensure that when L2 VNIs are present and no bgp VRFs are defined, we still make Bgp procesess
-   * for non-default VRF to prevent crashing the dataplane computation.
+   * Ensure that when L2 VNIs are present and no bgp VRFs are defined, we do not make a BGP process
+   * for non-default VRF.
    */
   @Test
   public void testEvpnConversionL2VnisOnly() {
     Configuration c = parseConfig("arista_evpn_l2_vni_only");
-    assertThat(c, ConfigurationMatchers.hasVrf("vrf1", hasBgpProcess(notNullValue())));
+    assertThat(c, ConfigurationMatchers.hasVrf("vrf1", hasBgpProcess(nullValue())));
     assertThat(c.getDefaultVrf().getLayer2Vnis(), hasKey(10030));
   }
 

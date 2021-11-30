@@ -176,14 +176,15 @@ public class BgpRoutingProcessTest {
         Layer2VniConfig.builder()
             .setVni(vni)
             .setVrf(DEFAULT_VRF_NAME)
-            .setRouteDistinguisher(RouteDistinguisher.from(_bgpProcess.getRouterId(), 2))
+            .setRouteDistinguisher(RouteDistinguisher.from(_bgpProcess.getRouterId(), 1))
             .setRouteTarget(ExtendedCommunity.target(65500, vni))
             .setImportRouteTarget(VniConfig.importRtPatternForAnyAs(vni));
     Layer2VniConfig vniConfig1 = vniConfigBuilder.build();
     Layer2VniConfig vniConfig2 =
         vniConfigBuilder
             .setVni(vni2)
-            .setVrf(_vrf2.getName())
+            .setVrf(DEFAULT_VRF_NAME)
+            .setRouteDistinguisher(RouteDistinguisher.from(_bgpProcess.getRouterId(), 2))
             .setRouteTarget(ExtendedCommunity.target(65500, vni2))
             .build();
     BgpActivePeerConfig evpnPeer =
@@ -207,7 +208,7 @@ public class BgpRoutingProcessTest {
             .setBumTransportMethod(UNICAST_FLOOD_GROUP)
             .setSourceAddress(localIp)
             .build());
-    _vrf2.addLayer2Vni(
+    _vrf.addLayer2Vni(
         testBuilder()
             .setVni(vni2)
             .setVlan(2)
@@ -225,10 +226,10 @@ public class BgpRoutingProcessTest {
     // The VRF/process that the neighbor is in
     assertThat(
         defaultProc.getEvpnType3Routes(),
-        contains(
+        containsInAnyOrder(
             EvpnType3Route.builder()
                 .setVniIp(localIp)
-                .setRouteDistinguisher(RouteDistinguisher.from(_bgpProcess.getRouterId(), 2))
+                .setRouteDistinguisher(RouteDistinguisher.from(_bgpProcess.getRouterId(), 1))
                 .setCommunities(ImmutableSet.of(ExtendedCommunity.target(65500, vni)))
                 .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
                 .setOriginMechanism(OriginMechanism.GENERATED)
@@ -236,11 +237,7 @@ public class BgpRoutingProcessTest {
                 .setProtocol(RoutingProtocol.BGP)
                 .setOriginatorIp(_bgpProcess.getRouterId())
                 .setNextHop(NextHopDiscard.instance())
-                .build()));
-    // Sibling VRF, for vni2
-    assertThat(
-        node.getVirtualRouterOrThrow("vrf2").getBgpRoutingProcess().getEvpnType3Routes(),
-        contains(
+                .build(),
             EvpnType3Route.builder()
                 .setVniIp(localIp)
                 .setRouteDistinguisher(RouteDistinguisher.from(_bgpProcess.getRouterId(), 2))
