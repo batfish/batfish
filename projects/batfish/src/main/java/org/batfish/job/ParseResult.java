@@ -68,8 +68,8 @@ public class ParseResult implements Serializable {
   }
 
   /**
-   * Get "global" (not file-specific) warnings. File-specific warnings (e.g., parse warnings) can be
-   * accessed via {@link #getFileResults()}.
+   * Get job-level (not file-specific) warnings. File-specific warnings (e.g., parse warnings) can
+   * be accessed via {@link #getFileResults()}.
    */
   @Nonnull
   public Warnings getWarnings() {

@@ -43,6 +43,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
+import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
 import com.google.errorprone.annotations.MustBeClosed;
 import io.opentracing.References;
@@ -2591,15 +2592,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
         return job.fromResult(result, elapsed);
       }
 
-      String id =
+      Hasher hasher =
           Hashing.murmur3_128()
               .newHasher()
               .putString("Cached Parse Result", UTF_8)
-              .putString(
-                  job.getFileTexts().entrySet().stream()
-                      .map(e -> e.getKey() + e.getValue())
-                      .collect(Collectors.joining()),
-                  UTF_8)
               .putBoolean(settings.getDisableUnrecognized())
               .putInt(settings.getMaxParserContextLines())
               .putInt(settings.getMaxParserContextTokens())
@@ -2607,9 +2603,15 @@ public class Batfish extends PluginConsumer implements IBatfish {
               .putBoolean(settings.getPrintParseTreeLineNums())
               .putBoolean(settings.getPrintParseTree())
               .putBoolean(settings.getThrowOnLexerError())
-              .putBoolean(settings.getThrowOnParserError())
-              .hash()
-              .toString();
+              .putBoolean(settings.getThrowOnParserError());
+      job.getFileTexts().keySet().stream()
+          .sorted()
+          .forEach(
+              filename -> {
+                hasher.putString(filename, UTF_8);
+                hasher.putString(job.getFileTexts().get(filename), UTF_8);
+              });
+      String id = hasher.hash().toString();
       long startTime = System.currentTimeMillis();
       boolean cached = false;
       ParseResult result;

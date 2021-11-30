@@ -1,6 +1,7 @@
 package org.batfish.job;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.batfish.job.ParseVendorConfigurationJob.jobFilenamesToString;
 
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
@@ -8,7 +9,6 @@ import com.google.common.collect.Multimap;
 import java.io.File;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
@@ -36,6 +36,7 @@ public class ParseVendorConfigurationResult
 
   private VendorConfiguration _vc;
 
+  /** Job-level (not file-level) warnings */
   @Nonnull private final Warnings _warnings;
 
   public ParseVendorConfigurationResult(
@@ -103,7 +104,7 @@ public class ParseVendorConfigurationResult
       BatfishLogger logger,
       ParseVendorConfigurationAnswerElement answerElement) {
     appendHistory(logger);
-    String jobKey = _fileResults.keySet().stream().sorted().collect(Collectors.joining(","));
+    String jobKey = jobFilenamesToString(_fileResults.keySet());
     answerElement.getParseStatus().put(jobKey, _status);
     answerElement.getFileFormats().put(jobKey, _format);
     if (_vc != null) {
@@ -172,6 +173,10 @@ public class ParseVendorConfigurationResult
     }
   }
 
+  /**
+   * Returns the parsing results for individual files in the {@link ParseVendorConfigurationJob}, as
+   * a map from the filename to {@link FileResult}.
+   */
   public Map<String, FileResult> getFileResults() {
     return _fileResults;
   }
@@ -215,8 +220,8 @@ public class ParseVendorConfigurationResult
     if (_vc == null) {
       return "<EMPTY OR UNSUPPORTED FORMAT>";
     } else if (_vc.getHostname() == null) {
-      return "<Indeterminate hostname in "
-          + _fileResults.keySet().stream().sorted().collect(Collectors.joining(","))
+      return "<Indeterminate hostname in file(s): "
+          + jobFilenamesToString(_fileResults.keySet())
           + ">";
     } else {
       return "<" + _vc.getHostname() + ">";

@@ -10,6 +10,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import io.opentracing.References;
@@ -19,10 +20,12 @@ import io.opentracing.SpanContext;
 import io.opentracing.util.GlobalTracer;
 import java.io.Serializable;
 import java.nio.file.Paths;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -34,6 +37,7 @@ import org.batfish.common.Warnings;
 import org.batfish.common.WillNotCommitException;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.Names;
 import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BatfishParseException;
@@ -95,6 +99,11 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
           ConfigurationFormat.RUCKUS_ICX,
           ConfigurationFormat.VXWORKS);
 
+  /**
+   * Represents results of parsing one (of possibly multiple) file that is part of this Job. The
+   * warnings object here will have file-specific warnings. Job-level warnings, not specific to a
+   * file, go in {@link ParseVendorConfigurationJob#_warnings}.
+   */
   @ParametersAreNonnullByDefault
   public static class FileResult implements Serializable {
     @Nonnull private ParseTreeSentences _parseTreeSentences;
@@ -136,11 +145,16 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
    */
   private final ConfigurationFormat _expectedFormat;
 
+  /**
+   * Map from fileName (relative to the snapshot base) to its {@link FileResult} object, which is
+   * populated as part of parsing.
+   */
   private @Nonnull final Map<String, FileResult> _fileResults;
+
   final NetworkSnapshot _snapshot;
   @Nullable private final SpanContext _spanContext;
 
-  // Global (non-file-specific) warnings
+  /** Job-level (non-file-specific) warnings */
   private @Nonnull final Warnings _warnings;
 
   public ParseVendorConfigurationJob(
@@ -158,7 +172,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
         _fileTexts.keySet().stream()
             .collect(
                 ImmutableMap.toImmutableMap(
-                    f -> f,
+                    Function.identity(),
                     f ->
                         new FileResult(
                             new ParseTreeSentences(),
@@ -616,20 +630,21 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
   public ParseResult parse() {
     ConfigurationFormat format = detectFormat(_fileTexts, _settings, _expectedFormat);
 
-    String jobFiles = _fileTexts.keySet().stream().sorted().collect(Collectors.joining(","));
+    String jobFiles = jobFilenamesToString(_fileTexts.keySet());
     // Handle specially some cases that will not produce a vendor configuration file.
     if (format == ConfigurationFormat.EMPTY) {
-      _warnings.redFlag(String.format("Empty file: %s\n", jobFiles));
+      _warnings.redFlag(String.format("Empty file(s): %s\n", jobFiles));
       return new ParseResult(null, null, _fileResults, format, ParseStatus.EMPTY, _warnings);
     } else if (format == ConfigurationFormat.IGNORED) {
-      _warnings.redFlag(String.format("Ignored file: %s\n", jobFiles));
+      _warnings.redFlag(String.format("Ignored file(s): %s\n", jobFiles));
       return new ParseResult(null, null, _fileResults, format, ParseStatus.IGNORED, _warnings);
     } else if (format == ConfigurationFormat.UNKNOWN) {
-      _warnings.redFlag(String.format("Unable to detect format for file: %s\n", jobFiles));
+      _warnings.redFlag(String.format("Unable to detect format for file(s): %s\n", jobFiles));
       return new ParseResult(null, null, _fileResults, format, ParseStatus.UNKNOWN, _warnings);
     } else if (UNIMPLEMENTED_FORMATS.contains(format)) {
       String unsupportedError =
-          String.format("Unsupported configuration format: '%s' for file: %s\n", format, jobFiles);
+          String.format(
+              "Unsupported configuration format '%s' for file(s): %s\n", format, jobFiles);
       if (!_settings.ignoreUnsupported()) {
         return new ParseResult(
             null,
@@ -720,6 +735,10 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
     }
   }
 
+  /**
+   * Returns a map from file name to its text content. There is one entry in the name for each file
+   * that it part of this parsing job.
+   */
   public Map<String, String> getFileTexts() {
     return _fileTexts;
   }
@@ -730,13 +749,23 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
    * expected. This representative filename, corresponding to the main file, will be used until we
    * can upgrade those APIs.
    */
+  @SuppressWarnings("unused")
   private String getRepresentativeFilename(
       Map<String, String> fileTexts, ConfigurationFormat format) {
     if (fileTexts.size() == 1) {
       return Iterables.getOnlyElement(fileTexts.keySet());
     }
-    assert format != ConfigurationFormat.UNKNOWN; // avoid unused warning
     // TODO: for multi-file cases, implement format-based representative
     throw new UnsupportedOperationException();
+  }
+
+  /** Returns a string, made up of filenames, used in warnings */
+  static String jobFilenamesToString(Collection<String> filenames) {
+    return filenames.size() == 1
+        ? filenames.iterator().next() // backward-compatible, common case of one file
+        : filenames.stream()
+            .map(Names::escapeNameIfNeeded)
+            .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()))
+            .toString();
   }
 }
