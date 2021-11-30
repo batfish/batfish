@@ -1490,7 +1490,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
               .build();
       _c.getVrfs().get(vsTenantVrfForL3Vni.getName()).addLayer3Vni(vniSettings);
     } else {
-      org.batfish.datamodel.Vrf viTenantVrfForL2Vni = getMemberVrfForVlan(vlan);
       Layer2Vni vniSettings =
           Layer2Vni.builder()
               .setBumTransportIps(bumTransportIps)
@@ -1504,10 +1503,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
               .setVlan(vlan)
               .setSrcVrf(DEFAULT_VRF_NAME)
               .build();
-      if (viTenantVrfForL2Vni == null) {
-        return;
-      }
-      viTenantVrfForL2Vni.addLayer2Vni(vniSettings);
+      _c.getDefaultVrf().addLayer2Vni(vniSettings);
     }
   }
 

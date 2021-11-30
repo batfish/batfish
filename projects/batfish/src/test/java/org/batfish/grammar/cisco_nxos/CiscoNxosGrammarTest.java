@@ -1597,7 +1597,7 @@ public final class CiscoNxosGrammarTest {
         ImmutableSortedSet.of(
             Layer2VniConfig.builder()
                 .setVni(1111)
-                .setVrf(tenantVrfName)
+                .setVrf(DEFAULT_VRF_NAME)
                 .setRouteDistinguisher(RouteDistinguisher.from(routerId, 32768))
                 .setRouteTarget(ExtendedCommunity.target(1, 1111))
                 .setImportRouteTarget(ExtendedCommunity.target(1, 1111).matchString())
