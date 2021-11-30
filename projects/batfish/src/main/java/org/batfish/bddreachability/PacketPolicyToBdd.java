@@ -30,6 +30,7 @@ import net.sf.javabdd.BDDFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.batfish.bddreachability.IpsRoutedOutInterfacesFactory.IpsRoutedOutInterfaces;
+import org.batfish.bddreachability.transition.Or;
 import org.batfish.bddreachability.transition.TransformationToTransition;
 import org.batfish.bddreachability.transition.Transition;
 import org.batfish.bddreachability.transition.Transitions;
@@ -257,6 +258,14 @@ class PacketPolicyToBdd {
             "notConstraintBeforeOutTransitions: {} transitions to successor {}",
             after.size(),
             successor);
+
+        if (after.size() > 200) {
+          Transition orAfter = or(after.stream());
+          after =
+              orAfter instanceof Or ? ((Or) orAfter).getTransitions() : ImmutableList.of(orAfter);
+          LOGGER.info("Compressed to {} transitions", after.size());
+        }
+
         List<Transition> transitions = new ArrayList<>(after.size());
         boolean mergeFailed = false;
         for (Transition t : after) {
