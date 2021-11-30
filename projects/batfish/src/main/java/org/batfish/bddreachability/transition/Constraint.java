@@ -1,6 +1,7 @@
 package org.batfish.bddreachability.transition;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.bddreachability.transition.Transitions.constraint;
 
 import com.google.common.base.MoreObjects;
 import java.util.Objects;
@@ -45,6 +46,16 @@ public final class Constraint implements Transition {
   @Override
   public BDD transitBackward(BDD bdd) {
     return _constraint.and(bdd);
+  }
+
+  @Override
+  public Transition andNotBefore(BDD bdd) {
+    return constraint(bdd.less(_constraint));
+  }
+
+  @Override
+  public Transition andNotAfter(BDD bdd) {
+    return constraint(_constraint.diff(bdd));
   }
 
   @Override

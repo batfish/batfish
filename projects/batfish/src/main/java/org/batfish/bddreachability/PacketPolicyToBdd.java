@@ -243,6 +243,42 @@ class PacketPolicyToBdd {
       beforeOutTransitions(constraint(constraintBdd));
     }
 
+    private void notConstraintBeforeOutTransitions(BDD bddNot) {
+      // TODO ensure composes cleanly
+      List<StateExpr> successors = ImmutableList.copyOf(_outTransitionsByTarget.keySet());
+      for (StateExpr successor : successors) {
+        Transition after = _outTransitionsByTarget.get(successor);
+        Transition merged = after.andNotBefore(bddNot);
+        if (merged == ZERO) {
+          _outTransitionsByTarget.remove(successor);
+          continue;
+        }
+        if (after.getClass().equals(merged.getClass())) {
+          // merged cleanly
+          _outTransitionsByTarget.put(successor, merged);
+        }
+        StateExpr stateExpr = nextStatement();
+        LOGGER.info(
+            "failed to apply not constraint before {} to {}. splicing {}",
+            after.getClass().getSimpleName(),
+            successor,
+            stateExpr);
+        if (after instanceof Or) {
+          Or or = (Or) after;
+          LOGGER.info(
+              "after is Or with {} disjuncts. types={}",
+              or.getTransitions().size(),
+              or.getTransitions().stream()
+                  .map(t -> t.getClass().getSimpleName())
+                  .distinct()
+                  .collect(Collectors.toList()));
+        }
+        _outTransitionsByTarget.remove(successor);
+        _edges.add(new Edge(stateExpr, successor, after));
+        _outTransitionsByTarget.put(stateExpr, after);
+      }
+    }
+
     private void beforeOutTransitions(Transition before) {
       // TODO ensure composes cleanly
       List<StateExpr> successors = ImmutableList.copyOf(_outTransitionsByTarget.keySet());
@@ -307,7 +343,7 @@ class PacketPolicyToBdd {
               ? new HashMap<>()
               : new HashMap<>(_outTransitionsByTarget);
 
-      constrainOutTransitions(matchConstraint.not());
+      notConstraintBeforeOutTransitions(matchConstraint);
       Map<StateExpr, Transition> elseBranchOutTransitionsByTarget = _outTransitionsByTarget;
 
       // compute then branch
