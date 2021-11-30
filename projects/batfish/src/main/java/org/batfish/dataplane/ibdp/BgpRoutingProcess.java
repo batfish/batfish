@@ -386,7 +386,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   @Override
   public void initialize(Node n) {
     _initialized = true;
-    initLocalEvpnRoutes(n);
+    initLocalEvpnRoutes();
   }
 
   /** Returns true if this process has been initialized */
@@ -715,7 +715,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
   /** Initialize the EVPN RIBs based on EVPN address family config */
   @VisibleForTesting
-  void initLocalEvpnRoutes(Node n) {
+  void initLocalEvpnRoutes() {
     Builder<EvpnType3Route> initializationBuilder = RibDelta.builder();
     getAllPeerConfigs(_process)
         .map(BgpPeerConfig::getEvpnAddressFamily)

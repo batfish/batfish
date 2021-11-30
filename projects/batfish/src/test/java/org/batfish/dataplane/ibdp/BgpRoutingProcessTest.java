@@ -158,7 +158,7 @@ public class BgpRoutingProcessTest {
                 .setCommunities(ImmutableSet.of(routeTarget))
                 .setProtocol(RoutingProtocol.BGP)
                 .setOriginMechanism(OriginMechanism.GENERATED)
-                .setOriginType(OriginType.EGP)
+                .setOriginType(OriginType.IGP)
                 .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
                 .setVniIp(ip)
                 .setOriginatorIp(ip)
@@ -221,7 +221,7 @@ public class BgpRoutingProcessTest {
         node.getVirtualRouterOrThrow(DEFAULT_VRF_NAME).getBgpRoutingProcess();
 
     // Test
-    defaultProc.initLocalEvpnRoutes(node);
+    defaultProc.initLocalEvpnRoutes();
 
     // The VRF/process that the neighbor is in
     assertThat(
@@ -233,7 +233,7 @@ public class BgpRoutingProcessTest {
                 .setCommunities(ImmutableSet.of(ExtendedCommunity.target(65500, vni)))
                 .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
                 .setOriginMechanism(OriginMechanism.GENERATED)
-                .setOriginType(OriginType.EGP)
+                .setOriginType(OriginType.IGP)
                 .setProtocol(RoutingProtocol.BGP)
                 .setOriginatorIp(_bgpProcess.getRouterId())
                 .setNextHop(NextHopDiscard.instance())
@@ -244,7 +244,7 @@ public class BgpRoutingProcessTest {
                 .setCommunities(ImmutableSet.of(ExtendedCommunity.target(65500, vni2)))
                 .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
                 .setOriginMechanism(OriginMechanism.GENERATED)
-                .setOriginType(OriginType.EGP)
+                .setOriginType(OriginType.IGP)
                 .setProtocol(RoutingProtocol.BGP)
                 .setOriginatorIp(_bgpProcess.getRouterId())
                 .setNextHop(NextHopDiscard.instance())
