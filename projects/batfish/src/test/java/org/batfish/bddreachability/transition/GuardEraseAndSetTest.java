@@ -103,4 +103,32 @@ public class GuardEraseAndSetTest {
     assertEquals(after, t.transitForward(before));
     assertEquals(before, t.transitBackward(after));
   }
+
+  @Test
+  public void testConstrainBefore() {
+    BDDPacket pkt = new BDDPacket();
+    BDDInteger srcPort = pkt.getSrcPort();
+
+    BDD guard1 = srcPort.value(1);
+    BDD set1 = srcPort.value(11);
+    BDD guard2 = srcPort.value(2);
+
+    GuardEraseAndSet ges = new GuardEraseAndSet(srcPort.getVars(), guard1, set1);
+    Transition t = ges.constrainBefore(guard2.not());
+    assertEquals(ges, t);
+  }
+
+  @Test
+  public void testConstrainAfter() {
+    BDDPacket pkt = new BDDPacket();
+    BDDInteger srcPort = pkt.getSrcPort();
+
+    BDD guard1 = srcPort.value(1);
+    BDD set1 = srcPort.value(11);
+    BDD guard2 = srcPort.value(2);
+
+    GuardEraseAndSet ges = new GuardEraseAndSet(srcPort.getVars(), guard1, set1);
+    Transition t = ges.constrainAfter(guard2.not());
+    assertEquals(ges, t);
+  }
 }

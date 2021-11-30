@@ -98,7 +98,7 @@ public class PrefixTest {
 
   @Test
   public void testToHostIpSpace() {
-    BDDInteger ipAddrBdd = BDDInteger.makeFromIndex(BDDUtils.bddFactory(32), 32, 0, true);
+    BDDInteger ipAddrBdd = BDDInteger.makeFromIndex(BDDUtils.bddFactory(64), 32, 0, true);
     IpSpaceToBDD toBDD = new IpSpaceToBDD(ipAddrBdd);
     assertThat(
         "/32 host space is preserved",

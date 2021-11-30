@@ -1,5 +1,6 @@
 package org.batfish.bddreachability;
 
+import static org.batfish.bddreachability.BDDReachabilityUtils.computePortTransformationProtocolsBdd;
 import static org.batfish.bddreachability.EdgeMatchers.edge;
 import static org.batfish.bddreachability.transition.Transitions.IDENTITY;
 import static org.batfish.bddreachability.transition.Transitions.constraint;
@@ -22,6 +23,7 @@ import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.IpsRoutedOutInterfacesFactory.IpsRoutedOutInterfaces;
 import org.batfish.bddreachability.PacketPolicyToBdd.BddPacketPolicy;
 import org.batfish.bddreachability.PacketPolicyToBdd.BoolExprToBdd;
+import org.batfish.bddreachability.transition.GuardEraseAndSet;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBdd;
@@ -190,23 +192,13 @@ public final class PacketPolicyToBddTest {
                 EMPTY_IPS_ROUTED_OUT_INTERFACES)
             .getEdges();
 
-    BDD ip1Bdd = new IpSpaceToBDD(_bddPacket.getDstIp()).toBDD(ip1);
     BDD ip2Bdd = new IpSpaceToBDD(_bddPacket.getDstIp()).toBDD(ip2);
 
     assertThat(
         edges,
         containsInAnyOrder(
-            // if ip1
-            edge(statement(0), statement(1), constraint(ip1Bdd)),
-            // noop transformation (not optimized because should never happen in practice)
-            edge(statement(1), statement(2), IDENTITY),
-            // else
-            edge(statement(0), statement(3), constraint(ip1Bdd.not())),
-            // if ip1 fall through
-            edge(statement(2), statement(3), IDENTITY),
-            // if ip2
-            edge(statement(3), fibLookupState(vrf), constraint(ip2Bdd)),
-            edge(statement(3), _dropState, constraint(ip2Bdd.not()))));
+            edge(statement(0), fibLookupState(vrf), constraint(ip2Bdd)),
+            edge(statement(0), _dropState, constraint(ip2Bdd.not()))));
   }
 
   @Test
@@ -236,12 +228,7 @@ public final class PacketPolicyToBddTest {
     assertThat(
         edges,
         containsInAnyOrder(
-            // if ip1
-            edge(statement(0), statement(1), constraint(ip1Bdd)),
-            // noop transformation (not optimized because should never happen in practice)
-            edge(statement(1), statement(2), IDENTITY),
-            // return
-            edge(statement(2), fibLookupState(vrf), IDENTITY),
+            edge(statement(0), fibLookupState(vrf), constraint(ip1Bdd)),
             // else
             edge(statement(0), _dropState, constraint(ip1Bdd.not()))));
   }
@@ -264,13 +251,7 @@ public final class PacketPolicyToBddTest {
                 EMPTY_IPS_ROUTED_OUT_INTERFACES)
             .getEdges();
 
-    assertThat(
-        edges,
-        containsInAnyOrder(
-            // if TRUE, then noop
-            edge(statement(0), statement(1), IDENTITY),
-            // fall through to default action
-            edge(statement(1), _dropState, IDENTITY)));
+    assertThat(edges, containsInAnyOrder(edge(statement(0), _dropState, IDENTITY)));
   }
 
   @Test
@@ -295,11 +276,7 @@ public final class PacketPolicyToBddTest {
 
     assertThat(
         converted.getEdges(),
-        containsInAnyOrder(
-            // if TRUE, then noop
-            edge(statement(0), statement(1), IDENTITY),
-            // return
-            edge(statement(1), fibLookupState(vrf), IDENTITY)));
+        containsInAnyOrder(edge(statement(0), fibLookupState(vrf), IDENTITY)));
     // Unreachable drop is not tracked.
     assertThat(converted.getActions(), contains(fibLookupState(vrf)));
   }
@@ -362,8 +339,7 @@ public final class PacketPolicyToBddTest {
     assertThat(
         edges,
         containsInAnyOrder(
-            edge(statement(0), statement(1), eraseAndSet(_bddPacket.getSrcIp(), ipBdd)),
-            edge(statement(1), fibLookupState("vrf"), IDENTITY)));
+            edge(statement(0), fibLookupState("vrf"), eraseAndSet(_bddPacket.getSrcIp(), ipBdd))));
   }
 
   @Test
@@ -509,9 +485,6 @@ public final class PacketPolicyToBddTest {
                     TransformationStep.assignSourcePort(3),
                     TransformationStep.assignSourceIp(ip3, ip3))
                 .build());
-    ApplyTransformation t4 =
-        new ApplyTransformation(
-            always().apply(TransformationStep.assignSourceIp(ip4, ip4)).build());
     Return ret = new Return(new FibLookup(new LiteralVrfName("vrf")));
     PacketPolicy policy =
         new PacketPolicy(
@@ -524,7 +497,34 @@ public final class PacketPolicyToBddTest {
     PacketPolicyToBdd.BddPacketPolicy result =
         PacketPolicyToBdd.evaluate(
             _hostname, _ingressVrf, policy, _ipAccessListToBdd, EMPTY_IPS_ROUTED_OUT_INTERFACES);
-
-    return;
+    BDD ip1Bdd = _bddPacket.getDstIpSpaceToBDD().toBDD(ip1);
+    BDD ip2Bdd = _bddPacket.getDstIpSpaceToBDD().toBDD(ip2);
+    BDD ip3Bdd = _bddPacket.getDstIpSpaceToBDD().toBDD(ip3);
+    BDD srcIp1Bdd = _bddPacket.getSrcIpSpaceToBDD().toBDD(ip1);
+    BDD srcIp2Bdd = _bddPacket.getSrcIpSpaceToBDD().toBDD(ip2);
+    BDD srcIp3Bdd = _bddPacket.getSrcIpSpaceToBDD().toBDD(ip3);
+    BDD protocolsWithPortsBdd = computePortTransformationProtocolsBdd(_bddPacket.getIpProtocol());
+    BDD srcPort1Bdd = protocolsWithPortsBdd.imp(_bddPacket.getSrcPort().value(1));
+    BDD srcPort2Bdd = protocolsWithPortsBdd.imp(_bddPacket.getSrcPort().value(2));
+    BDD srcPort3Bdd = protocolsWithPortsBdd.imp(_bddPacket.getSrcPort().value(3));
+    BDD vars =
+        _bddPacket
+            .getDstIp()
+            .getVars()
+            .and(_bddPacket.getSrcIp().getVars())
+            .and(_bddPacket.getSrcPort().getVars());
+    assertThat(
+        result.getEdges(),
+        containsInAnyOrder(
+            edge(statement(0), _dropState, constraint(ip1Bdd.or(ip2Bdd).or(ip3Bdd).not())),
+            edge(
+                statement(0),
+                fibLookupState("vrf"),
+                GuardEraseAndSet.orAll(
+                    ImmutableList.of(
+                        new GuardEraseAndSet(vars, ip1Bdd, ip2Bdd.and(srcIp2Bdd).and(srcPort2Bdd)),
+                        new GuardEraseAndSet(vars, ip2Bdd, ip3Bdd.and(srcIp3Bdd).and(srcPort3Bdd)),
+                        new GuardEraseAndSet(
+                            vars, ip3Bdd, ip1Bdd.and(srcIp1Bdd).and(srcPort1Bdd)))))));
   }
 }

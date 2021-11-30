@@ -214,9 +214,11 @@ public final class Transitions {
       BDD val1 = eas1.getSetValue();
       BDD val2 = eas2.getSetValue();
       if (vars1.equals(vars2)) {
-        return eas2;
+        // TODO test for when the exist is needed, and when should simplify to ZERO
+        return eraseAndSet(vars1, val1.exist(vars1).and(val2));
       } else if (vars1.exist(vars2).equals(vars1)) {
-        return eraseAndSet(vars1.and(vars2), val1.and(val2));
+        // TODO test for when the exist is needed, and when should simplify to ZERO
+        return eraseAndSet(vars1.and(vars2), val1.exist(vars2).and(val2));
       } else {
         // variables sets are different but overlap. probably would only happen as a result of
         // previous merges

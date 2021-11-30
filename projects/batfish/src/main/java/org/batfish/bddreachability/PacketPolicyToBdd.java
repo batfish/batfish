@@ -280,9 +280,9 @@ class PacketPolicyToBdd {
     public Void visitApplyFilter(ApplyFilter applyFilter) {
       BDD permitBdd =
           _boolExprToBdd._ipAccessListToBdd.toBdd(new PermittedByAcl(applyFilter.getFilter()));
-      constrainOutTransitions(permitBdd.not());
+      constrainOutTransitions(permitBdd);
       addOutTransition(
-          constraint(permitBdd),
+          constraint(permitBdd.not()),
           new PacketPolicyAction(_hostname, _vrf, _policy.getName(), Drop.instance()));
       return null;
     }
@@ -313,6 +313,7 @@ class PacketPolicyToBdd {
       // compute then branch
       _outTransitionsByTarget = thenBranchOutTransitionsByTarget;
       visitStatements(ifStmt.getTrueStatements());
+      constrainOutTransitions(matchConstraint);
 
       // merge in else branch
       elseBranchOutTransitionsByTarget.forEach(
