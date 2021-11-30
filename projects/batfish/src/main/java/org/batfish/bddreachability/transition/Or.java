@@ -6,6 +6,9 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 
 /**
@@ -29,6 +32,24 @@ public final class Or implements Transition {
 
   public List<Transition> getTransitions() {
     return _transitions;
+  }
+
+  @Nullable
+  @Override
+  public Transition andNotBefore(BDD bdd) {
+    if (_transitions.size() > 10) {
+      return null;
+    }
+    List<Transition> transitions =
+        _transitions.stream()
+            .map(t -> t.andNotBefore(bdd))
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
+    if (transitions.size() < _transitions.size()) {
+      // couldn't merge the constraint with all disjuncts
+      return null;
+    }
+    return new Or(transitions);
   }
 
   @Override
