@@ -51,14 +51,14 @@ public final class Constraint implements Transition {
   @Override
   public Transition andNotBefore(BDD bdd) {
     Transition result = constraint(bdd.less(_constraint));
-    _constraint.free();
+    //    _constraint.free();
     return result;
   }
 
   @Override
   public Transition andNotAfter(BDD bdd) {
     Transition result = constraint(_constraint.diff(bdd));
-    _constraint.free();
+    //    _constraint.free();
     return result;
   }
 
