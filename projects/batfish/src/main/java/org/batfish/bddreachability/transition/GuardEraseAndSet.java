@@ -184,12 +184,12 @@ public final class GuardEraseAndSet implements Transition {
 
   @Override
   public BDD transitForward(BDD bdd) {
-    return bdd.applyEx(_forwardRelation, BDDFactory.and, _vars).replace(_pairings._fromPrime);
+    return bdd.applyEx(_forwardRelation, BDDFactory.and, _vars).replaceWith(_pairings._fromPrime);
   }
 
   @Override
   public BDD transitBackward(BDD bdd) {
-    return bdd.applyEx(_backwardRelation, BDDFactory.and, _vars).replace(_pairings._fromPrime);
+    return bdd.applyEx(_backwardRelation, BDDFactory.and, _vars).replaceWith(_pairings._fromPrime);
   }
 
   @Override
