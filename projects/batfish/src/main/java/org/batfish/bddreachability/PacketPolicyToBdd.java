@@ -115,7 +115,7 @@ class PacketPolicyToBdd {
       IpsRoutedOutInterfaces ipsRoutedOutInterfaces) {
     PacketPolicyToBdd evaluator =
         new PacketPolicyToBdd(hostname, vrf, policy, ipAccessListToBdd, ipsRoutedOutInterfaces);
-    evaluator.process(policy);
+    evaluator.process2(policy);
     return new BddPacketPolicy(evaluator.getEdges(), evaluator._actions.build());
   }
 
