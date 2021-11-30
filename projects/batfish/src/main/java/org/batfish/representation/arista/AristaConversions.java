@@ -784,7 +784,7 @@ final class AristaConversions {
     return newNeighborBuilder.build();
   }
 
-  static Optional<Ip> getSourceInterfaceIp(
+  static @Nonnull Optional<Ip> getSourceInterfaceIp(
       @Nullable AristaEosVxlan vxlan,
       Map<String, org.batfish.representation.arista.Interface> interfaces) {
     return Optional.ofNullable(vxlan)
