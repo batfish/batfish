@@ -932,10 +932,11 @@ public final class BDDReachabilityAnalysisFactory {
                                             nodeName, vrfName)));
                         t = System.currentTimeMillis() - t;
                         LOGGER.info(
-                            "Converted policy {} on node {} vrf {} in {}ms",
+                            "Converted policy {} on node {} vrf {} to {} edges in {}ms",
                             policyName,
                             nodeName,
                             vrfName,
+                            bddPacketPolicy.getEdges().size(),
                             t);
 
                         PacketPolicyActionToEdges actionToEdges =
