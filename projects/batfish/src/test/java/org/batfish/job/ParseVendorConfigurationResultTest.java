@@ -124,6 +124,6 @@ public class ParseVendorConfigurationResultTest {
     assertThat(answerWarnings, hasEntry(filenames.get(1), fileWarnings.get(1)));
 
     // Confirm that global warnings were applied
-    assertThat(answerWarnings, hasEntry("file1,file2", globalWarnings));
+    assertThat(answerWarnings, hasEntry("[file1, file2]", globalWarnings));
   }
 }
