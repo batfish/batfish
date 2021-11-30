@@ -117,7 +117,7 @@ class PacketPolicyToBdd {
       IpsRoutedOutInterfaces ipsRoutedOutInterfaces) {
     PacketPolicyToBdd evaluator =
         new PacketPolicyToBdd(hostname, vrf, policy, ipAccessListToBdd, ipsRoutedOutInterfaces);
-    evaluator.process(policy);
+    evaluator.process2(policy);
     return new BddPacketPolicy(evaluator.getEdges(), evaluator._actions.build());
   }
 
@@ -260,10 +260,11 @@ class PacketPolicyToBdd {
             successor);
 
         if (after.size() > 200) {
+          int oldSize = after.size();
           Transition orAfter = or(after.stream());
           after =
               orAfter instanceof Or ? ((Or) orAfter).getTransitions() : ImmutableList.of(orAfter);
-          LOGGER.info("Compressed to {} transitions", after.size());
+          LOGGER.info("Compressed from {} to {} transitions", oldSize, after.size());
         }
 
         List<Transition> transitions = new ArrayList<>(after.size());
