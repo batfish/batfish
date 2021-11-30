@@ -256,6 +256,7 @@ class PacketPolicyToBdd {
         if (after.getClass().equals(merged.getClass())) {
           // merged cleanly
           _outTransitionsByTarget.put(successor, merged);
+          continue;
         }
         StateExpr stateExpr = nextStatement();
         LOGGER.info(
