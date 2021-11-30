@@ -77,6 +77,7 @@ import org.batfish.datamodel.packet_policy.ActionVisitor;
 import org.batfish.datamodel.packet_policy.Drop;
 import org.batfish.datamodel.packet_policy.FibLookup;
 import org.batfish.datamodel.packet_policy.FibLookupOverrideLookupIp;
+import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.packet_policy.VrfExprNameExtractor;
 import org.batfish.datamodel.transformation.ApplyAll;
 import org.batfish.datamodel.transformation.ApplyAny;
@@ -909,12 +910,20 @@ public final class BDDReachabilityAnalysisFactory {
                           return Stream.of(enterPolicyEdge);
                         }
 
+                        PacketPolicy policy = config.getPacketPolicies().get(policyName);
+                        LOGGER.info(
+                            "Converting policy {} on node {} vrf {} with {} statements (main"
+                                + " branch)",
+                            policyName,
+                            nodeName,
+                            vrfName,
+                            policy.getStatements().size());
                         long t = System.currentTimeMillis();
                         PacketPolicyToBdd.BddPacketPolicy bddPacketPolicy =
                             PacketPolicyToBdd.evaluate(
                                 nodeName,
                                 vrfName,
-                                config.getPacketPolicies().get(policyName),
+                                policy,
                                 ipAccessListToBdd,
                                 ipsRoutedOutInterfaces.computeIfAbsent(
                                     vrfName,
