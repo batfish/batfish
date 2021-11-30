@@ -220,11 +220,10 @@ public class ParseVendorConfigurationResult
     if (_vc == null) {
       return "<EMPTY OR UNSUPPORTED FORMAT>";
     } else if (_vc.getHostname() == null) {
-      return "<Indeterminate hostname in file(s): "
-          + jobFilenamesToString(_fileResults.keySet())
-          + ">";
+      return String.format(
+          "<Indeterminate hostname in file(s): %s>", jobFilenamesToString(_fileResults.keySet()));
     } else {
-      return "<" + _vc.getHostname() + ">";
+      return String.format("<%s>", _vc.getHostname());
     }
   }
 }

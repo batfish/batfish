@@ -736,8 +736,8 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
   }
 
   /**
-   * Returns a map from file name to its text content. There is one entry in the name for each file
-   * that it part of this parsing job.
+   * Returns a map from file name to its text content. The map has one entry for each file that is
+   * part of this parsing job.
    */
   public Map<String, String> getFileTexts() {
     return _fileTexts;
