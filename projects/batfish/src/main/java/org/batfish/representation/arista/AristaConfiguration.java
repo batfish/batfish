@@ -17,7 +17,6 @@ import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
 import static org.batfish.datamodel.routing_policy.Common.initDenyAllBgpRedistributionPolicy;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
 import static org.batfish.representation.arista.AristaConversions.getSourceInterfaceIp;
-import static org.batfish.representation.arista.AristaConversions.getVrfForVlan;
 import static org.batfish.representation.arista.AristaConversions.toBgpAggregate;
 import static org.batfish.representation.arista.AristaConversions.toCommunityMatchExpr;
 import static org.batfish.representation.arista.AristaConversions.toCommunitySet;
@@ -2555,10 +2554,8 @@ public final class AristaConfiguration extends VendorConfiguration {
       _eosVxlan
           .getVlanVnis()
           .forEach(
-              (vlan, vni) -> {
-                org.batfish.datamodel.Vrf vrf = getVrfForVlan(c, vlan).orElse(c.getDefaultVrf());
-                vrf.addLayer2Vni(toL2Vni(_eosVxlan, vni, vlan, sourceAddress));
-              });
+              (vlan, vni) ->
+                  c.getDefaultVrf().addLayer2Vni(toL2Vni(_eosVxlan, vni, vlan, sourceAddress)));
       _eosVxlan
           .getVrfToVni()
           .forEach(
