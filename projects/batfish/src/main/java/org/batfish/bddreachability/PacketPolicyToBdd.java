@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
@@ -248,12 +249,12 @@ class PacketPolicyToBdd {
       List<StateExpr> successors = ImmutableList.copyOf(_outTransitionsByTarget.keySet());
       for (StateExpr successor : successors) {
         Transition after = _outTransitionsByTarget.get(successor);
-        Transition merged = after.andNotBefore(bddNot);
+        @Nullable Transition merged = after.andNotBefore(bddNot);
         if (merged == ZERO) {
           _outTransitionsByTarget.remove(successor);
           continue;
         }
-        if (after.getClass().equals(merged.getClass())) {
+        if (merged != null) {
           // merged cleanly
           _outTransitionsByTarget.put(successor, merged);
           continue;

@@ -2,7 +2,9 @@ package org.batfish.bddreachability.transition;
 
 import static org.batfish.bddreachability.transition.Transitions.compose;
 import static org.batfish.bddreachability.transition.Transitions.constraint;
+import static org.batfish.bddreachability.transition.Transitions.mergeComposed;
 
+import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -15,9 +17,9 @@ public interface Transition {
 
   BDD transitBackward(BDD bdd);
 
-  default Transition andNotBefore(BDD bdd) {
+  default @Nullable Transition andNotBefore(BDD bdd) {
     LOGGER.info("class using default andNotBefore: {}", this.getClass().getSimpleName());
-    return compose(constraint(bdd.not()), this);
+    return mergeComposed(constraint(bdd.not()), this);
   }
 
   default Transition andNotAfter(BDD bdd) {
