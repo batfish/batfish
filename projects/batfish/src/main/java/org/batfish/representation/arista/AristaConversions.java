@@ -250,6 +250,7 @@ final class AristaConversions {
       AristaBgpProcess bgpConfig,
       AristaBgpVrf bgpVrf,
       @Nullable AristaEosVxlan vxlan,
+      @Nullable Ip vxlanSourceInterfaceIp,
       Warnings warnings) {
 
     return bgpVrf.getV4neighbors().entrySet().stream()
@@ -270,6 +271,7 @@ final class AristaConversions {
                             e.getValue(),
                             false,
                             vxlan,
+                            vxlanSourceInterfaceIp,
                             ImmutableMap.of(), // peer filters not needed for non-dynamic peers
                             warnings)));
   }
@@ -282,6 +284,7 @@ final class AristaConversions {
       AristaBgpProcess bgpConfig,
       AristaBgpVrf bgpVrf,
       @Nullable AristaEosVxlan vxlan,
+      @Nullable Ip vxlanSourceInterfaceIp,
       Map<String, AristaBgpPeerFilter> peerFilters,
       Warnings warnings) {
     return bgpVrf.getV4DynamicNeighbors().entrySet().stream()
@@ -302,6 +305,7 @@ final class AristaConversions {
                             e.getValue(),
                             true,
                             vxlan,
+                            vxlanSourceInterfaceIp,
                             peerFilters,
                             warnings)));
   }
@@ -386,6 +390,7 @@ final class AristaConversions {
       AristaBgpNeighbor neighbor,
       boolean dynamic,
       @Nullable AristaEosVxlan vxlan,
+      @Nullable Ip vxlanSourceInterfaceIp,
       Map<String, AristaBgpPeerFilter> peerFilters,
       Warnings warnings) {
     // We should be converting only concrete (active or dynamic) neighbors
@@ -640,6 +645,7 @@ final class AristaConversions {
       EvpnAddressFamily.Builder evpnFamilyBuilder = EvpnAddressFamily.builder();
 
       evpnFamilyBuilder
+          .setNveIp(vxlanSourceInterfaceIp)
           .setPropagateUnmatched(true)
           .setAddressFamilyCapabilities(
               AddressFamilyCapabilities.builder()
@@ -774,6 +780,16 @@ final class AristaConversions {
     }
 
     return newNeighborBuilder.build();
+  }
+
+  static @Nonnull Optional<Ip> getSourceInterfaceIp(
+      @Nullable AristaEosVxlan vxlan,
+      Map<String, org.batfish.representation.arista.Interface> interfaces) {
+    return Optional.ofNullable(vxlan)
+        .map(AristaEosVxlan::getSourceInterface)
+        .map(interfaces::get)
+        .map(org.batfish.representation.arista.Interface::getAddress)
+        .map(ConcreteInterfaceAddress::getIp);
   }
 
   @Nonnull
