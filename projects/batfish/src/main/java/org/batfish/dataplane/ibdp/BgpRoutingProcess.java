@@ -79,7 +79,6 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixTrieMultiMap;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
-import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.bgp.AddressFamily.Type;
 import org.batfish.datamodel.bgp.BgpAggregate;
@@ -724,9 +723,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         .flatMap(af -> af.getL2VNIs().stream())
         .forEach(
             vniConfig -> {
-              Vrf vniVrf = _c.getVrfs().get(vniConfig.getVrf());
-              assert vniVrf != null; // Invariant guaranteed by proper conversion
-              Layer2Vni l2Vni = vniVrf.getLayer2Vnis().get(vniConfig.getVni());
+              // TODO: shouldn't need to access _c
+              Layer2Vni l2Vni = _c.getVrfs().get(_vrfName).getLayer2Vnis().get(vniConfig.getVni());
               assert l2Vni != null; // Invariant guaranteed by proper conversion
               if (l2Vni.getSourceAddress() == null) {
                 return;
@@ -737,27 +735,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                       vniConfig.getRouteTarget(),
                       vniConfig.getRouteDistinguisher(),
                       _process.getRouterId());
-
-              if (vniVrf.getName().equals(_vrfName)) {
-                // Merge into our own RIBs
-                RibDelta<EvpnType3Route> d = _evpnType3Rib.mergeRouteGetDelta(route);
-                _evpnType3DeltaBuilder.from(d);
-                initializationBuilder.from(d);
-              } else {
-                // Merge into our sibling VRF corresponding to the VNI
-                BgpRoutingProcess bgpRoutingProcess =
-                    n.getVirtualRouter(vniVrf.getName())
-                        .map(VirtualRouter::getBgpRoutingProcess)
-                        .orElse(null);
-                checkArgument(
-                    bgpRoutingProcess != null,
-                    "Missing bgp process for vrf %s, node %s",
-                    vniVrf.getName(),
-                    _hostname);
-                initializationBuilder.from(
-                    bgpRoutingProcess.processCrossVrfEvpnRoute(
-                        new RouteAdvertisement<>(route), EvpnType3Route.class));
-              }
+              initializationBuilder.from(_evpnType3Rib.mergeRouteGetDelta(route));
             });
     _evpnInitializationDelta = initializationBuilder.build();
   }
@@ -2022,25 +2000,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     if (_externalAdvertisements.isEmpty()) {
       _externalAdvertisements = null;
     }
-  }
-
-  /**
-   * Process EVPN routes that were received on a session in a different VRF, but must be merged into
-   * our VRF
-   */
-  @Nonnull
-  private synchronized <B extends EvpnRoute.Builder<B, R>, R extends EvpnRoute<B, R>>
-      RibDelta<R> processCrossVrfEvpnRoute(
-          RouteAdvertisement<R> routeAdvertisement, Class<R> clazz) {
-    // TODO: consider switching return value to BgpDelta to differentiate e/iBGP
-    RibDelta<R> delta;
-    EvpnMasterRib<R> rib = getRib(clazz, RibType.COMBINED);
-    if (routeAdvertisement.isWithdrawn()) {
-      delta = rib.removeRouteGetDelta(routeAdvertisement.getRoute());
-    } else {
-      delta = rib.mergeRouteGetDelta(routeAdvertisement.getRoute());
-    }
-    return delta;
   }
 
   @Nonnull

@@ -141,7 +141,13 @@ public final class Layer2Vni implements Vni {
   @Override
   public int hashCode() {
     return Objects.hash(
-        _bumTransportMethod, _bumTransportIps, _sourceAddress, _udpPort, _vlan, _vni, _srcVrf);
+        _bumTransportMethod.ordinal(),
+        _bumTransportIps,
+        _sourceAddress,
+        _udpPort,
+        _vlan,
+        _vni,
+        _srcVrf);
   }
 
   @Override
