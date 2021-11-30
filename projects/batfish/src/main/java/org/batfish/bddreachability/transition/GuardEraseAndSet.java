@@ -150,11 +150,18 @@ public final class GuardEraseAndSet implements Transition {
         "GuardEraseAndSet.orAll: all instances must have the same variables");
 
     BDDFactory factory = vars.getFactory();
-    return new GuardEraseAndSet(
-        vars,
-        factory.orAll(
-            gess.stream().map(GuardEraseAndSet::getForwardRelation).collect(Collectors.toList())),
-        ges._swap);
+    GuardEraseAndSet result =
+        new GuardEraseAndSet(
+            vars,
+            factory.orAll(
+                gess.stream()
+                    .map(GuardEraseAndSet::getForwardRelation)
+                    .collect(Collectors.toList())),
+            ges._swap);
+    for (GuardEraseAndSet guardEraseAndSet : gess) {
+      guardEraseAndSet._forwardRelation.free();
+    }
+    return result;
   }
 
   public Transition constrainBefore(BDD before) {
