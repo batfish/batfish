@@ -202,6 +202,7 @@ public final class GuardEraseAndSet implements Transition {
     if (forwardRelation.isZero()) {
       return ZERO;
     }
+    _forwardRelation.free();
     return new GuardEraseAndSet(_vars, forwardRelation, _swap);
   }
 
