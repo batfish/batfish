@@ -13,6 +13,7 @@ import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.Ip;
 
 /** Configuration settings for EVPN address family */
 @ParametersAreNonnullByDefault
@@ -21,10 +22,12 @@ public final class EvpnAddressFamily extends AddressFamily {
   private static final String PROP_L2_VNIS = "l2Vnis";
   private static final String PROP_L3_VNIS = "l3Vnis";
   private static final String PROP_PROPAGATE_UNMATCHED = "propagateUnmatched";
+  private static final String PROP_NVE_IP = "nveIp";
 
   @Nonnull private final SortedSet<Layer2VniConfig> _l2VNIs;
   @Nonnull private final SortedSet<Layer3VniConfig> _l3VNIs;
   private final boolean _propagateUnmatched;
+  @Nullable private final Ip _nveIp;
 
   protected EvpnAddressFamily(
       // super fields
@@ -37,6 +40,7 @@ public final class EvpnAddressFamily extends AddressFamily {
       // local fields
       Set<Layer2VniConfig> l2Vnis,
       Set<Layer3VniConfig> l3Vnis,
+      @Nullable Ip nveIp,
       boolean propagateUnmatched) {
     super(
         addressFamilyCapabilities,
@@ -47,6 +51,7 @@ public final class EvpnAddressFamily extends AddressFamily {
         routeReflectorClient);
     _l2VNIs = ImmutableSortedSet.copyOf(l2Vnis);
     _l3VNIs = ImmutableSortedSet.copyOf(l3Vnis);
+    _nveIp = nveIp;
     _propagateUnmatched = propagateUnmatched;
   }
 
@@ -63,6 +68,7 @@ public final class EvpnAddressFamily extends AddressFamily {
       // local fields
       @Nullable @JsonProperty(PROP_L2_VNIS) Set<Layer2VniConfig> l2Vnis,
       @Nullable @JsonProperty(PROP_L3_VNIS) Set<Layer3VniConfig> l3Vnis,
+      @Nullable @JsonProperty(PROP_NVE_IP) Ip nveIp,
       @Nullable @JsonProperty(PROP_PROPAGATE_UNMATCHED) Boolean propagateUnmatched) {
     checkArgument(propagateUnmatched != null, "Missing %s", PROP_PROPAGATE_UNMATCHED);
     return new Builder()
@@ -74,6 +80,7 @@ public final class EvpnAddressFamily extends AddressFamily {
         .setRouteReflectorClient(firstNonNull(routeReflectorClient, Boolean.FALSE))
         .setL2Vnis(firstNonNull(l2Vnis, ImmutableSortedSet.of()))
         .setL3Vnis(firstNonNull(l3Vnis, ImmutableSortedSet.of()))
+        .setNveIp(nveIp)
         .setPropagateUnmatched(propagateUnmatched)
         .build();
   }
@@ -90,6 +97,18 @@ public final class EvpnAddressFamily extends AddressFamily {
   @JsonProperty(PROP_L3_VNIS)
   public SortedSet<Layer3VniConfig> getL3VNIs() {
     return _l3VNIs;
+  }
+
+  /**
+   * IP of the network virtualization edge. Should be used as NHIP for originated EVPN routes when
+   * sending to neighbors.
+   *
+   * <p>See: https://datatracker.ietf.org/doc/html/rfc8365#section-5.1.3
+   */
+  @Nullable
+  @JsonProperty(PROP_NVE_IP)
+  public Ip getNveIp() {
+    return _nveIp;
   }
 
   /**
@@ -151,6 +170,7 @@ public final class EvpnAddressFamily extends AddressFamily {
     @Nonnull private SortedSet<Layer2VniConfig> _l2Vnis;
     @Nonnull private SortedSet<Layer3VniConfig> _l3Vnis;
     @Nullable private Boolean _propagateUnmatched;
+    @Nullable private Ip _nveIp;
 
     private Builder() {
       _l2Vnis = ImmutableSortedSet.of();
@@ -177,6 +197,12 @@ public final class EvpnAddressFamily extends AddressFamily {
     }
 
     @Nonnull
+    public Builder setNveIp(@Nullable Ip nveIp) {
+      _nveIp = nveIp;
+      return getThis();
+    }
+
+    @Nonnull
     @Override
     public Builder getThis() {
       return this;
@@ -197,6 +223,7 @@ public final class EvpnAddressFamily extends AddressFamily {
           _routeReflectorClient,
           _l2Vnis,
           _l3Vnis,
+          _nveIp,
           _propagateUnmatched);
     }
   }
