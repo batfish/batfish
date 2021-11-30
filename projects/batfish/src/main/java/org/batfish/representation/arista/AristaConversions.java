@@ -8,6 +8,7 @@ import static org.batfish.datamodel.Names.generatedBgpPeerImportPolicyName;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.routing_policy.Common.generateSuppressionPolicy;
 import static org.batfish.datamodel.routing_policy.statement.Statements.RemovePrivateAs;
+import static org.batfish.representation.arista.AristaConfiguration.DEFAULT_VRF_NAME;
 import static org.batfish.representation.arista.AristaConfiguration.MAX_ADMINISTRATIVE_COST;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -688,10 +689,6 @@ final class AristaConversions {
           continue;
         }
         for (Integer vlan : bundle.getVlans().enumerate()) {
-          Vrf vrfForVlan = getVrfForVlan(c, vlan).orElse(null);
-          if (vrfForVlan == null) {
-            continue;
-          }
           Integer vni = vlanToVni.get(vlan);
           if (vni == null) {
             continue;
@@ -702,7 +699,8 @@ final class AristaConversions {
                   .setImportRouteTarget(bundle.getRtImport().matchString())
                   .setRouteTarget(bundle.getRtExport())
                   .setRouteDistinguisher(bundle.getRd())
-                  .setVrf(vrfForVlan.getName())
+                  // TODO: remove vrf from Layer2Vni
+                  .setVrf(DEFAULT_VRF_NAME)
                   .build());
         }
       }
