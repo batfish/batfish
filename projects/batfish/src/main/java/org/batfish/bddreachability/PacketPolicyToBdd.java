@@ -9,26 +9,27 @@ import static org.batfish.bddreachability.transition.Transitions.or;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Table;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.batfish.bddreachability.IpsRoutedOutInterfacesFactory.IpsRoutedOutInterfaces;
-import org.batfish.bddreachability.transition.Or;
 import org.batfish.bddreachability.transition.TransformationToTransition;
 import org.batfish.bddreachability.transition.Transition;
 import org.batfish.bddreachability.transition.Transitions;
@@ -115,7 +116,7 @@ class PacketPolicyToBdd {
       IpsRoutedOutInterfaces ipsRoutedOutInterfaces) {
     PacketPolicyToBdd evaluator =
         new PacketPolicyToBdd(hostname, vrf, policy, ipAccessListToBdd, ipsRoutedOutInterfaces);
-    evaluator.process2(policy);
+    evaluator.process(policy);
     return new BddPacketPolicy(evaluator.getEdges(), evaluator._actions.build());
   }
 
@@ -146,12 +147,17 @@ class PacketPolicyToBdd {
     LOGGER.info("bottom up computed {} out edges", stmtConverter._outTransitionsByTarget.size());
     stmtConverter._edges.forEach(
         e -> addEdge(e.getPreState(), e.getPostState(), e.getTransition()));
-    stmtConverter._outTransitionsByTarget.forEach(
-        (tgt, trans) -> {
-          if (trans != ZERO) {
-            addEdge(src, tgt, trans);
-          }
-        });
+    stmtConverter
+        ._outTransitionsByTarget
+        .asMap()
+        .forEach(
+            (tgt, transitions) -> {
+              LOGGER.info("combining {} transitions to {}", transitions.size(), tgt);
+              Transition trans = or(transitions.stream());
+              if (trans != ZERO) {
+                addEdge(src, tgt, trans);
+              }
+            });
   }
   /** Process a given {@link PacketPolicy} */
   private void process2(PacketPolicy p) {
@@ -209,7 +215,7 @@ class PacketPolicyToBdd {
   }
 
   private class BottomUpStatementToBdd implements StatementVisitor<Void> {
-    private Map<StateExpr, Transition> _outTransitionsByTarget = new HashMap<>();
+    private Multimap<StateExpr, Transition> _outTransitionsByTarget = HashMultimap.create();
     private final List<Edge> _edges = new ArrayList<>();
 
     private int _statementCounter = 1;
@@ -234,10 +240,7 @@ class PacketPolicyToBdd {
     }
 
     private void addOutTransition(Transition transition, StateExpr successor) {
-      _outTransitionsByTarget.compute(
-          successor,
-          (succ, oldTransition) ->
-              oldTransition == null ? transition : or(transition, oldTransition));
+      _outTransitionsByTarget.put(successor, transition);
     }
 
     private void constrainOutTransitions(BDD constraintBdd) {
@@ -248,36 +251,39 @@ class PacketPolicyToBdd {
       // TODO ensure composes cleanly
       List<StateExpr> successors = ImmutableList.copyOf(_outTransitionsByTarget.keySet());
       for (StateExpr successor : successors) {
-        Transition after = _outTransitionsByTarget.get(successor);
-        @Nullable Transition merged = after.andNotBefore(bddNot);
-        if (merged == ZERO) {
-          _outTransitionsByTarget.remove(successor);
+        Collection<Transition> after = _outTransitionsByTarget.get(successor);
+
+        LOGGER.info(
+            "notConstraintBeforeOutTransitions: {} transitions to successor {}",
+            after.size(),
+            successor);
+        List<Transition> transitions = new ArrayList<>(after.size());
+        boolean mergeFailed = false;
+        for (Transition t : after) {
+          Transition newT = t.andNotBefore(bddNot);
+          if (newT == null) {
+            mergeFailed = true;
+            break;
+          }
+          if (newT != ZERO) {
+            transitions.add(newT);
+          }
+        }
+
+        if (!mergeFailed) {
+          _outTransitionsByTarget.replaceValues(successor, transitions);
           continue;
         }
-        if (merged != null) {
-          // merged cleanly
-          _outTransitionsByTarget.put(successor, merged);
-          continue;
-        }
+
         StateExpr stateExpr = nextStatement();
         LOGGER.info(
-            "failed to apply not constraint before {} to {}. splicing {}",
-            after.getClass().getSimpleName(),
+            "failed to apply not constraint before {} transitions to {}. splicing {}",
+            after.size(),
             successor,
             stateExpr);
-        if (after instanceof Or) {
-          Or or = (Or) after;
-          LOGGER.info(
-              "after is Or with {} disjuncts. types={}",
-              or.getTransitions().size(),
-              or.getTransitions().stream()
-                  .map(t -> t.getClass().getSimpleName())
-                  .distinct()
-                  .collect(Collectors.toList()));
-        }
-        _outTransitionsByTarget.remove(successor);
-        _edges.add(new Edge(stateExpr, successor, after));
-        _outTransitionsByTarget.put(stateExpr, after);
+        _outTransitionsByTarget.removeAll(successor);
+        _edges.add(new Edge(stateExpr, successor, or(after.stream())));
+        _outTransitionsByTarget.put(stateExpr, constraint(bddNot.not()));
       }
     }
 
@@ -285,32 +291,36 @@ class PacketPolicyToBdd {
       // TODO ensure composes cleanly
       List<StateExpr> successors = ImmutableList.copyOf(_outTransitionsByTarget.keySet());
       for (StateExpr successor : successors) {
-        Transition after = _outTransitionsByTarget.get(successor);
-        Transition merged = mergeComposed(before, after);
-        if (merged != null) {
-          _outTransitionsByTarget.put(successor, merged);
+        Collection<Transition> after = _outTransitionsByTarget.get(successor);
+        LOGGER.info(
+            "beforeOutTransitions: {} transitions to successor {}", after.size(), successor);
+
+        List<Transition> transitions = new ArrayList<>(after.size());
+        boolean mergeFailed = false;
+        for (Transition t : after) {
+          Transition newT = mergeComposed(before, t);
+          if (newT == null) {
+            mergeFailed = true;
+            break;
+          }
+          if (newT != ZERO) {
+            transitions.add(newT);
+          }
+        }
+        if (!mergeFailed) {
+          _outTransitionsByTarget.replaceValues(successor, transitions);
           continue;
         }
         StateExpr stateExpr = nextStatement();
         LOGGER.info(
-            "failed to merge transitions {} and {} to {}. splicing {}",
+            "failed to merge transition {} into {} transitions to {}. splicing {}",
             before.getClass().getSimpleName(),
-            after.getClass().getSimpleName(),
+            after.size(),
             successor,
             stateExpr);
-        if (after instanceof Or) {
-          Or or = (Or) after;
-          LOGGER.info(
-              "after is Or with {} disjuncts. types={}",
-              or.getTransitions().size(),
-              or.getTransitions().stream()
-                  .map(t -> t.getClass().getSimpleName())
-                  .distinct()
-                  .collect(Collectors.toList()));
-        }
-        _outTransitionsByTarget.remove(successor);
-        _edges.add(new Edge(stateExpr, successor, after));
-        _outTransitionsByTarget.put(stateExpr, after);
+        _outTransitionsByTarget.removeAll(successor);
+        _edges.add(new Edge(stateExpr, successor, or(after.stream())));
+        _outTransitionsByTarget.put(stateExpr, before);
       }
     }
 
@@ -339,14 +349,14 @@ class PacketPolicyToBdd {
 
       // copy out transitions if there's fall through
       // if it's empty (noop), can skip. this shouldn't happen, but we don't control conversion
-      Map<StateExpr, Transition> thenBranchOutTransitionsByTarget =
+      Multimap<StateExpr, Transition> thenBranchOutTransitionsByTarget =
           ifStmt.getTrueStatements().isEmpty()
                   || Iterables.getLast(ifStmt.getTrueStatements()) instanceof Return
-              ? new HashMap<>()
-              : new HashMap<>(_outTransitionsByTarget);
+              ? HashMultimap.create()
+              : HashMultimap.create(_outTransitionsByTarget);
 
       notConstraintBeforeOutTransitions(matchConstraint);
-      Map<StateExpr, Transition> elseBranchOutTransitionsByTarget = _outTransitionsByTarget;
+      Multimap<StateExpr, Transition> elseBranchOutTransitionsByTarget = _outTransitionsByTarget;
 
       // compute then branch
       _outTransitionsByTarget = thenBranchOutTransitionsByTarget;
@@ -354,10 +364,7 @@ class PacketPolicyToBdd {
       constrainOutTransitions(matchConstraint);
 
       // merge in else branch
-      elseBranchOutTransitionsByTarget.forEach(
-          (succ, trans) ->
-              _outTransitionsByTarget.compute(
-                  succ, (k, oldTrans) -> oldTrans == null ? trans : or(oldTrans, trans)));
+      _outTransitionsByTarget.putAll(elseBranchOutTransitionsByTarget);
       return null;
     }
 
