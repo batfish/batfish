@@ -23,6 +23,7 @@ public interface Transition {
   }
 
   default Transition andNotAfter(BDD bdd) {
+    LOGGER.info("class using default andNotAfter: {}", this.getClass().getSimpleName());
     return compose(this, constraint(bdd.not()));
   }
 }
