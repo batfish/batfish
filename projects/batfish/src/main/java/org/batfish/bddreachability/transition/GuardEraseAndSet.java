@@ -165,19 +165,17 @@ public final class GuardEraseAndSet implements Transition {
     if (forwardRelation.isZero()) {
       return ZERO;
     }
-    return new GuardEraseAndSet(
-        _vars,
-        forwardRelation,
-        _backwardRelation.and(before.replace(_pairings._toPrime)),
-        _pairings);
+    BDD backwardRelation = _backwardRelation.and(before.replace(_pairings._toPrime));
+    return new GuardEraseAndSet(_vars, forwardRelation, backwardRelation, _pairings);
   }
 
-  public GuardEraseAndSet constrainAfter(BDD after) {
-    return new GuardEraseAndSet(
-        _vars,
-        _forwardRelation.and(after.replace(_pairings._toPrime)),
-        _backwardRelation.and(after),
-        _pairings);
+  public Transition constrainAfter(BDD after) {
+    BDD backwardRelation = _backwardRelation.and(after);
+    if (backwardRelation.isZero()) {
+      return ZERO;
+    }
+    BDD forwardRelation = _forwardRelation.and(after.replace(_pairings._toPrime));
+    return new GuardEraseAndSet(_vars, forwardRelation, backwardRelation, _pairings);
   }
 
   BDD getVars() {

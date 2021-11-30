@@ -70,7 +70,9 @@ public class BDDInteger {
    */
   public static BDDInteger makeFromIndex(
       BDDFactory factory, int length, int start, boolean reverse) {
-    assert factory.varNum() >= start + length * 2;
+    if (factory.varNum() < start + length * 2) {
+      factory.setVarNum(start + length * 2);
+    }
 
     BDDInteger bdd = new BDDInteger(factory, length);
     bdd._primeBitvec = new BDD[length];
