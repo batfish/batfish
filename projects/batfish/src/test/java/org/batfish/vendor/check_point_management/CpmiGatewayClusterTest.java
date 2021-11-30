@@ -47,14 +47,13 @@ public final class CpmiGatewayClusterTest {
 
   @Test
   public void testJacksonDeserialization_noOptionalFields() throws JsonProcessingException {
-    // missing members and ipv4-address
+    // missing members, ipv4-address, interfaces
     String input =
         "{"
             + "\"GARBAGE\":0,"
             + "\"type\":\"CpmiGatewayCluster\","
             + "\"uid\":\"0\","
             + "\"name\":\"foo\","
-            + "\"interfaces\": [],"
             + "\"policy\":{"
             + "\"access-policy-installed\": true,"
             + "\"access-policy-name\": \"p1\","
