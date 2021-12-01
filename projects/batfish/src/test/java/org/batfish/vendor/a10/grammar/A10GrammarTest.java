@@ -1594,7 +1594,7 @@ public class A10GrammarTest {
     ServerPort.ServerPortAndType udp81 = new ServerPort.ServerPortAndType(81, ServerPort.Type.UDP);
 
     // Using unicode dash \u2013
-    String server3Name = "SERVER\u20133";
+    String server3Name = "SERVER–3";
     assertThat(c.getServers().keySet(), containsInAnyOrder("SERVER1", "SERVER2", server3Name));
 
     {
