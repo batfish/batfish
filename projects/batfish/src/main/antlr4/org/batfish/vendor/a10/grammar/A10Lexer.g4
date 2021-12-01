@@ -481,7 +481,7 @@ F_Word: F_WordChar+;
 fragment
 F_WordChar
 :
-  [0-9A-Za-z!@#$%^&*()_=+.;:{}/<>]
+  [0-9A-Za-z!@#$%^&*()_=+.;:{}/<>\u2013]
   | '-'
 ;
 

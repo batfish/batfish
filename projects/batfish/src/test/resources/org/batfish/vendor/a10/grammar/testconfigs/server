@@ -24,7 +24,8 @@ slb server SERVER2 10.0.0.102
   port 80 tcp
     weight 999
 !
-slb server SERVER3 10.0.0.3
+! Server name has a unicode dash \u2013
+slb server SERVER–3 10.0.0.3
   disable
   health-check-disable
   stats-data-disable
