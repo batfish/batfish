@@ -1593,7 +1593,9 @@ public class A10GrammarTest {
     ServerPort.ServerPortAndType tcp80 = new ServerPort.ServerPortAndType(80, ServerPort.Type.TCP);
     ServerPort.ServerPortAndType udp81 = new ServerPort.ServerPortAndType(81, ServerPort.Type.UDP);
 
-    assertThat(c.getServers().keySet(), containsInAnyOrder("SERVER1", "SERVER2", "SERVER3"));
+    // Using unicode dash \u2013
+    String server3Name = "SERVER\u20133";
+    assertThat(c.getServers().keySet(), containsInAnyOrder("SERVER1", "SERVER2", server3Name));
 
     {
       Server server1 = c.getServers().get("SERVER1");
@@ -1635,9 +1637,9 @@ public class A10GrammarTest {
     }
 
     {
-      Server server3 = c.getServers().get("SERVER3");
+      Server server3 = c.getServers().get(server3Name);
       assertFalse(server3.getEnable());
-      assertThat(server3.getName(), equalTo("SERVER3"));
+      assertThat(server3.getName(), equalTo(server3Name));
       assertFalse(server3.getStatsDataEnable());
       Map<ServerPort.ServerPortAndType, ServerPort> server3Ports = server3.getPorts();
       assertThat(server3Ports.keySet(), contains(udp81));
