@@ -1,7 +1,6 @@
 package org.batfish.main.annotate;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.common.BatfishLogger.LEVEL_PEDANTIC;
 import static org.batfish.datamodel.answers.ParseStatus.FAILED;
 import static org.batfish.main.CliUtils.readAllFiles;
 import static org.batfish.main.CliUtils.relativize;
@@ -107,7 +106,7 @@ public final class Annotate {
                 settings,
                 new NetworkSnapshot(new NetworkId("dummyNetwork"), new SnapshotId("dummySnapshot")),
                 ImmutableMap.of(inputFile.toString(), preprocessedText),
-                LEVEL_PEDANTIC,
+                Warnings.Settings.fromLogger(settings.getLogger()),
                 ConfigurationFormat.UNKNOWN,
                 ImmutableMultimap.of(),
                 null)

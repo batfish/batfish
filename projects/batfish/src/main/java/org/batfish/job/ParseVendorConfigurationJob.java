@@ -1,9 +1,6 @@
 package org.batfish.job;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.common.BatfishLogger.LEVEL_PEDANTIC;
-import static org.batfish.common.BatfishLogger.LEVEL_REDFLAG;
-import static org.batfish.common.BatfishLogger.LEVEL_UNIMPLEMENTED;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
@@ -161,7 +158,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
       Settings settings,
       NetworkSnapshot snapshot,
       Map<String, String> fileTexts,
-      int logLevel,
+      Warnings.Settings logSettings,
       ConfigurationFormat expectedFormat,
       Multimap<String, String> duplicateHostnames,
       @Nullable SpanContext spanContext) {
@@ -177,17 +174,12 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
                         new FileResult(
                             new ParseTreeSentences(),
                             new SilentSyntaxCollection(),
-                            new Warnings(
-                                logLevel >= LEVEL_PEDANTIC,
-                                logLevel >= LEVEL_REDFLAG,
-                                logLevel >= LEVEL_UNIMPLEMENTED))));
+                            new Warnings(logSettings))));
     _expectedFormat = expectedFormat;
     _duplicateHostnames = duplicateHostnames;
     _spanContext = spanContext;
     _snapshot = snapshot;
-    _warnings =
-        new Warnings(
-            logLevel >= LEVEL_PEDANTIC, logLevel >= LEVEL_REDFLAG, logLevel >= LEVEL_UNIMPLEMENTED);
+    _warnings = new Warnings(logSettings);
   }
 
   private static final Pattern WHITESPACE_ONLY = Pattern.compile("^\\s*$");

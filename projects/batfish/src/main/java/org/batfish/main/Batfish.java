@@ -1645,7 +1645,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
               _settings,
               snapshot,
               ImmutableMap.of(vendorFile.getKey(), vendorFile.getValue()),
-              _settings.getLogger().getLogLevel(),
+              Warnings.Settings.fromLogger(_settings.getLogger()),
               expectedFormat,
               HashMultimap.create(),
               parseVendorConfigurationSpanContext);
