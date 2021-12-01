@@ -1,22 +1,24 @@
 package org.batfish.job;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.batfish.job.ParseVendorConfigurationJob.jobFilenamesToString;
 
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
 import java.io.File;
 import java.util.Map;
+import java.util.Map.Entry;
 import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BatfishLogger.BatfishLoggerHistory;
 import org.batfish.common.ErrorDetails;
-import org.batfish.common.ParseTreeSentences;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
-import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
+import org.batfish.job.ParseVendorConfigurationJob.FileResult;
 import org.batfish.vendor.VendorConfiguration;
 
 public class ParseVendorConfigurationResult
@@ -26,72 +28,61 @@ public class ParseVendorConfigurationResult
   /** Information about duplicate hostnames is collected here */
   private Multimap<String, String> _duplicateHostnames;
 
-  private final String _filename;
-  private final @Nonnull ConfigurationFormat _format;
+  private final Map<String, FileResult> _fileResults;
 
-  @Nonnull private ParseTreeSentences _parseTree;
-  @Nonnull private final SilentSyntaxCollection _silentSyntax;
+  private final @Nonnull ConfigurationFormat _format;
 
   private final ParseStatus _status;
 
   private VendorConfiguration _vc;
 
+  /** Job-level (not file-level) warnings */
   @Nonnull private final Warnings _warnings;
 
   public ParseVendorConfigurationResult(
       long elapsedTime,
       BatfishLoggerHistory history,
-      String filename,
+      @Nonnull Map<String, FileResult> fileResults,
       @Nonnull ConfigurationFormat format,
       @Nonnull Warnings warnings,
-      @Nonnull ParseTreeSentences parseTree,
-      @Nonnull Throwable failureCause,
-      @Nonnull SilentSyntaxCollection silentSyntax) {
+      @Nonnull Throwable failureCause) {
     super(elapsedTime, history, failureCause);
-    _filename = filename;
+    _fileResults = ImmutableMap.copyOf(fileResults);
     _format = format;
-    _parseTree = parseTree;
     _status = ParseStatus.FAILED;
     _warnings = warnings;
-    _silentSyntax = silentSyntax;
   }
 
   public ParseVendorConfigurationResult(
       long elapsedTime,
       BatfishLoggerHistory history,
-      String filename,
+      @Nonnull Map<String, FileResult> fileResults,
       @Nonnull ConfigurationFormat format,
       VendorConfiguration vc,
       @Nonnull Warnings warnings,
-      @Nonnull ParseTreeSentences parseTree,
       @Nonnull ParseStatus status,
-      @Nonnull Multimap<String, String> duplicateHostnames,
-      @Nonnull SilentSyntaxCollection silentSyntax) {
+      @Nonnull Multimap<String, String> duplicateHostnames) {
     super(elapsedTime, history);
-    _filename = filename;
+    _fileResults = fileResults;
     _format = format;
-    _parseTree = parseTree;
     _vc = vc;
     _warnings = warnings;
     _status = status;
     _duplicateHostnames = duplicateHostnames;
-    _silentSyntax = silentSyntax;
   }
 
   public ParseVendorConfigurationResult(
       long elapsedTime,
       BatfishLoggerHistory history,
-      String filename,
+      @Nonnull Map<String, FileResult> fileResults,
       @Nonnull ConfigurationFormat format,
       @Nonnull Warnings warnings,
       @Nonnull ParseStatus status) {
     super(elapsedTime, history);
-    _filename = filename;
+    _fileResults = fileResults;
     _format = format;
-    _parseTree = new ParseTreeSentences();
-    _status = status;
     _warnings = warnings;
-    _silentSyntax = new SilentSyntaxCollection();
+    _status = status;
   }
 
   @Override
@@ -102,7 +93,7 @@ public class ParseVendorConfigurationResult
     } else if (_vc != null) {
       terseLogLevelPrefix = _vc.getHostname() + ": ";
     } else {
-      terseLogLevelPrefix = _filename + ": ";
+      terseLogLevelPrefix = _fileResults + ": ";
     }
     logger.append(_history, terseLogLevelPrefix);
   }
@@ -113,8 +104,9 @@ public class ParseVendorConfigurationResult
       BatfishLogger logger,
       ParseVendorConfigurationAnswerElement answerElement) {
     appendHistory(logger);
-    answerElement.getParseStatus().put(_filename, _status);
-    answerElement.getFileFormats().put(_filename, _format);
+    String jobKey = jobFilenamesToString(_fileResults.keySet());
+    answerElement.getParseStatus().put(jobKey, _status);
+    answerElement.getFileFormats().put(jobKey, _format);
     if (_vc != null) {
       String hostname = _vc.getHostname();
       if (vendorConfigurations.containsKey(hostname)) {
@@ -138,28 +130,42 @@ public class ParseVendorConfigurationResult
         hostname = modifiedNewName;
       }
       vendorConfigurations.put(hostname, _vc);
-      answerElement.getFileMap().put(hostname, _filename);
+      answerElement.getFileMap().putAll(hostname, _fileResults.keySet());
       if (!_warnings.isEmpty()) {
-        answerElement.getWarnings().put(_filename, _warnings);
+        answerElement.getWarnings().put(jobKey, _warnings);
       }
-      if (!_parseTree.isEmpty()) {
-        answerElement.getParseTrees().put(_filename, _parseTree);
-      }
+      _fileResults.forEach(
+          (name, result) -> {
+            if (!result.getWarnings().isEmpty()) {
+              answerElement.getWarnings().put(name, result.getWarnings());
+            }
+            if (!result.getParseTreeSentences().isEmpty()) {
+              answerElement.getParseTrees().put(name, result.getParseTreeSentences());
+            }
+          });
     } else if (_status == ParseStatus.FAILED) {
       assert _failureCause != null; // status == FAILED, failureCause must be non-null
       answerElement
           .getErrors()
-          .put(_filename, ((BatfishException) _failureCause).getBatfishStackTrace());
-      ErrorDetails errorDetails = _warnings.getErrorDetails();
+          .put(jobKey, ((BatfishException) _failureCause).getBatfishStackTrace());
+      if (_warnings.getErrorDetails() != null) {
+        answerElement.getErrorDetails().put(jobKey, _warnings.getErrorDetails());
+      }
+      Map<String, ErrorDetails> errorDetails =
+          _fileResults.entrySet().stream()
+              .filter(e -> e.getValue().getWarnings().getErrorDetails() != null)
+              .collect(
+                  ImmutableMap.toImmutableMap(
+                      Entry::getKey, e -> e.getValue().getWarnings().getErrorDetails()));
       // Pass existing errorDetails through, if applicable (e.g. exception caught while walking
       // parse tree and details [including parser context] already populated)
-      if (errorDetails != null) {
-        answerElement.getErrorDetails().put(_filename, errorDetails);
+      if (!errorDetails.isEmpty()) {
+        answerElement.getErrorDetails().putAll(errorDetails);
       } else {
         answerElement
             .getErrorDetails()
             .put(
-                _filename,
+                jobKey,
                 new ErrorDetails(
                     Throwables.getStackTraceAsString(
                         firstNonNull(_failureCause.getCause(), _failureCause))));
@@ -167,8 +173,12 @@ public class ParseVendorConfigurationResult
     }
   }
 
-  public String getFilename() {
-    return _filename;
+  /**
+   * Returns the parsing results for individual files in the {@link ParseVendorConfigurationJob}, as
+   * a map from the filename to {@link FileResult}.
+   */
+  public Map<String, FileResult> getFileResults() {
+    return _fileResults;
   }
 
   @Override
@@ -205,19 +215,15 @@ public class ParseVendorConfigurationResult
     return _format;
   }
 
-  @Nonnull
-  public SilentSyntaxCollection getSilentSyntax() {
-    return _silentSyntax;
-  }
-
   @Override
   public String toString() {
     if (_vc == null) {
       return "<EMPTY OR UNSUPPORTED FORMAT>";
     } else if (_vc.getHostname() == null) {
-      return "<File: \"" + _filename + "\" has indeterminate hostname>";
+      return String.format(
+          "<Indeterminate hostname in file(s): %s>", jobFilenamesToString(_fileResults.keySet()));
     } else {
-      return "<" + _vc.getHostname() + ">";
+      return String.format("<%s>", _vc.getHostname());
     }
   }
 }
