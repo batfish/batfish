@@ -251,7 +251,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private static final Pattern MANAGEMENT_INTERFACES =
       Pattern.compile(
-          "(\\Amgmt)|(\\Amanagement)|(\\Afxp0)|(\\Aem0)|(\\Ame0)|(\\Avme)|(\\Awlan-ap)",
+          "(\\Amgmt)|(\\Amanagement)|(\\Afxp0)|(\\Aem0)|(\\Ame0)|(\\Avme)|(\\Awlan-ap)|(\\Aeth\\d-mgmt\\d)",
           CASE_INSENSITIVE);
 
   private static final Pattern MANAGEMENT_VRFS =
