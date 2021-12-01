@@ -55,6 +55,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.VendorConversionException;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -65,6 +66,7 @@ import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SwitchportMode;
@@ -86,6 +88,8 @@ import org.batfish.vendor.a10.representation.Interface.Type;
 
 /** Datamodel class representing an A10 device configuration. */
 public final class A10Configuration extends VendorConfiguration {
+
+  private static final String VIRTUAL_SERVERS_ACL_NAME = "~VIRTUAL_SERVERS_ACL~";
 
   public A10Configuration() {
     _accessLists = new HashMap<>();
@@ -577,8 +581,9 @@ public final class A10Configuration extends VendorConfiguration {
   }
 
   /**
-   * Convert virtual-servers to load-balancing VI constructs and attach resulting transformations to
-   * interfaces. Modifies VI interfaces and must be called after those are created.
+   * Convert virtual-servers to load-balancing VI constructs and attach resulting ACLs and
+   * transformations to interfaces. Modifies VI interfaces and must be called after those are
+   * created.
    */
   private void convertVirtualServers() {
     Optional<Transformation> xform =
@@ -587,6 +592,20 @@ public final class A10Configuration extends VendorConfiguration {
                 .filter(A10Conversion::isVirtualServerEnabled)
                 .flatMap(vs -> toSimpleTransformations(vs).stream())
                 .collect(ImmutableList.toImmutableList()));
+
+    ImmutableList<AclLine> lines =
+        _virtualServers.values().stream()
+            .filter(A10Conversion::isVirtualServerEnabled)
+            .flatMap(vs -> vs.getPorts().values().stream())
+            .filter(A10Conversion::isVirtualServerPortEnabled)
+            .map(A10Configuration::toAclLine)
+            .collect(ImmutableList.toImmutableList());
+    IpAccessList virtServerAcl =
+        IpAccessList.builder()
+            .setName(VIRTUAL_SERVERS_ACL_NAME)
+            .setOwner(_c)
+            .setLines(lines)
+            .build();
     xform.ifPresent(
         x ->
             _c.getAllInterfaces()
@@ -596,7 +615,13 @@ public final class A10Configuration extends VendorConfiguration {
                           new FirewallSessionInterfaceInfo(
                               POST_NAT_FIB_LOOKUP, ImmutableList.of(iface.getName()), null, null));
                       iface.setIncomingTransformation(x);
+                      iface.setInboundFilter(virtServerAcl);
                     }));
+  }
+
+  private static @Nonnull AclLine toAclLine(VirtualServerPort port) {
+    // TODO
+    return null;
   }
 
   /**
