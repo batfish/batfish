@@ -43,7 +43,6 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
-import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
 import com.google.errorprone.annotations.MustBeClosed;
 import io.opentracing.References;
@@ -1644,8 +1643,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
           new ParseVendorConfigurationJob(
               _settings,
               snapshot,
-              ImmutableMap.of(vendorFile.getKey(), vendorFile.getValue()),
-              _settings.getLogger().getLogLevel(),
+              vendorFile.getValue(),
+              vendorFile.getKey(),
+              buildWarnings(_settings),
               expectedFormat,
               HashMultimap.create(),
               parseVendorConfigurationSpanContext);
@@ -2576,9 +2576,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private ParseVendorConfigurationResult getOrParse(
       ParseVendorConfigurationJob job, @Nullable SpanContext span, GrammarSettings settings) {
+    String filename = job.getFilename();
+    String filetext = job.getFileText();
     Span parseNetworkConfigsSpan =
         GlobalTracer.get()
-            .buildSpan("Parse " + job.getFileTexts().keySet())
+            .buildSpan("Parse " + job.getFilename())
             .addReference(References.FOLLOWS_FROM, span)
             .start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(parseNetworkConfigsSpan)) {
@@ -2592,10 +2594,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
         return job.fromResult(result, elapsed);
       }
 
-      Hasher hasher =
+      String id =
           Hashing.murmur3_128()
               .newHasher()
               .putString("Cached Parse Result", UTF_8)
+              .putString(filename, UTF_8)
+              .putString(filetext, UTF_8)
               .putBoolean(settings.getDisableUnrecognized())
               .putInt(settings.getMaxParserContextLines())
               .putInt(settings.getMaxParserContextTokens())
@@ -2603,15 +2607,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
               .putBoolean(settings.getPrintParseTreeLineNums())
               .putBoolean(settings.getPrintParseTree())
               .putBoolean(settings.getThrowOnLexerError())
-              .putBoolean(settings.getThrowOnParserError());
-      job.getFileTexts().keySet().stream()
-          .sorted()
-          .forEach(
-              filename -> {
-                hasher.putString(filename, UTF_8);
-                hasher.putString(job.getFileTexts().get(filename), UTF_8);
-              });
-      String id = hasher.hash().toString();
+              .putBoolean(settings.getThrowOnParserError())
+              .hash()
+              .toString();
       long startTime = System.currentTimeMillis();
       boolean cached = false;
       ParseResult result;
@@ -2619,13 +2617,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
         result = SerializationUtils.deserialize(in);
         // sanity-check filenames. In the extremely unlikely event of a collision, we'll lose reuse
         // for this input.
-        cached = result.getFileResults().keySet().equals(job.getFileTexts().keySet());
+        cached = result.getFilename().equals(filename);
       } catch (FileNotFoundException e) {
         result = job.parse();
       } catch (Exception e) {
         _logger.warnf(
             "Error deserializing cached parse result for %s: %s",
-            job.getFileTexts().keySet(), Throwables.getStackTraceAsString(e));
+            filename, Throwables.getStackTraceAsString(e));
         result = job.parse();
       }
       if (!cached) {
@@ -2635,7 +2633,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         } catch (Exception e) {
           _logger.warnf(
               "Error caching parse result for %s: %s",
-              job.getFileTexts().keySet(), Throwables.getStackTraceAsString(e));
+              filename, Throwables.getStackTraceAsString(e));
         }
       }
       long elapsed = System.currentTimeMillis() - startTime;
