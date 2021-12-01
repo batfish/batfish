@@ -106,7 +106,7 @@ public final class Annotate {
                 settings,
                 new NetworkSnapshot(new NetworkId("dummyNetwork"), new SnapshotId("dummySnapshot")),
                 ImmutableMap.of(inputFile.toString(), preprocessedText),
-                Warnings.Settings.fromLogger(settings.getLogger()),
+                new Warnings.Settings(true, true, true),
                 ConfigurationFormat.UNKNOWN,
                 ImmutableMultimap.of(),
                 null)
