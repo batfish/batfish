@@ -18,7 +18,6 @@ import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
 import org.batfish.vendor.ConversionContext;
-import org.batfish.vendor.ParsingContext;
 
 public class TestrigText {
 
@@ -56,7 +55,6 @@ public class TestrigText {
     private Map<String, byte[]> _iptablesFilesBytes;
     private byte[] _ispConfigBytes;
     private byte[] _layer1TopologyBytes;
-    private ParsingContext _parsingContext;
     private Map<String, byte[]> _routingTablesBytes;
     private byte[] _runtimeDataBytes;
     private Map<String, byte[]> _sonicConfigDbBytes;
@@ -73,7 +71,6 @@ public class TestrigText {
       testrigText.setIptablesFilesBytes(_iptablesFilesBytes);
       testrigText.setIspConfigBytes(_ispConfigBytes);
       testrigText.setLayer1TopologyBytes(_layer1TopologyBytes);
-      testrigText.setParsingContext(_parsingContext);
       testrigText.setRoutingTablesBytes(_routingTablesBytes);
       testrigText.setRuntimeDataBytes(_runtimeDataBytes);
       testrigText.setSonicConfigDbBytes(_sonicConfigDbBytes);
@@ -225,15 +222,6 @@ public class TestrigText {
       _conversionContext = conversionContext;
       return this;
     }
-
-    /**
-     * Sets parsing context to be used during parsing. Note that this has no effect when the
-     * snapshot input text contains information that would populate parsing context.
-     */
-    public @Nonnull Builder setParsingContext(ParsingContext parsingContext) {
-      _parsingContext = parsingContext;
-      return this;
-    }
   }
 
   public static Builder builder() {
@@ -250,7 +238,6 @@ public class TestrigText {
   private Map<String, byte[]> _iptablesFilesBytes;
   private byte[] _ispConfigBytes;
   private byte[] _layer1TopologyBytes;
-  private ParsingContext _parsingContext;
   private Map<String, byte[]> _routingTablesBytes;
   private byte[] _runtimeDataBytes;
   private Map<String, byte[]> _sonicConfigDbBytes;
@@ -293,10 +280,6 @@ public class TestrigText {
 
   public @Nullable byte[] getLayer1TopologyBytes() {
     return _layer1TopologyBytes;
-  }
-
-  public ParsingContext getParsingContext() {
-    return _parsingContext;
   }
 
   public Map<String, byte[]> getRoutingTablesBytes() {
@@ -349,10 +332,6 @@ public class TestrigText {
 
   public void setLayer1TopologyBytes(@Nullable byte[] layer1TopologyBytes) {
     _layer1TopologyBytes = layer1TopologyBytes;
-  }
-
-  public void setParsingContext(ParsingContext parsingContext) {
-    _parsingContext = parsingContext;
   }
 
   public void setRoutingTablesBytes(Map<String, byte[]> routingTablesBytes) {

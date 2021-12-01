@@ -42,7 +42,6 @@ import org.batfish.identifiers.SnapshotId;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
 import org.batfish.vendor.ConversionContext;
-import org.batfish.vendor.ParsingContext;
 import org.batfish.vendor.VendorConfiguration;
 
 public class TestStorageProvider implements StorageProvider {
@@ -57,12 +56,6 @@ public class TestStorageProvider implements StorageProvider {
   @Override
   public ConversionContext loadConversionContext(NetworkSnapshot snapshot) {
     throw new UnsupportedOperationException("no implementation for generated method");
-  }
-
-  @Nonnull
-  @Override
-  public ParsingContext loadParsingContext(NetworkSnapshot snapshot) throws IOException {
-    return null;
   }
 
   @Override
@@ -128,10 +121,6 @@ public class TestStorageProvider implements StorageProvider {
       ConversionContext conversionContext, NetworkSnapshot snapshot) {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
-
-  @Override
-  public void storeParsingContext(ParsingContext parsingContext, NetworkSnapshot snapshot)
-      throws IOException {}
 
   @Override
   public String loadQuestion(NetworkId network, QuestionId analysis, AnalysisId question) {

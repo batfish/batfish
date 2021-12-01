@@ -42,7 +42,6 @@ import org.batfish.identifiers.StorageBasedIdResolver;
 import org.batfish.storage.FileBasedStorage;
 import org.batfish.storage.StorageProvider;
 import org.batfish.vendor.ConversionContext;
-import org.batfish.vendor.ParsingContext;
 import org.batfish.vendor.VendorConfiguration;
 import org.junit.rules.TemporaryFolder;
 
@@ -194,7 +193,6 @@ public class BatfishTestUtils {
     byte[] runtimeDataBytes = testrigText.getRuntimeDataBytes();
     Map<String, byte[]> sonicConfigDbBytes = testrigText.getSonicConfigDbBytes();
     ConversionContext conversionContext = testrigText.getConversionContext();
-    ParsingContext parsingContext = testrigText.getParsingContext();
 
     Settings settings = new Settings(new String[] {});
     configureBatfishTestSettings(settings);
@@ -257,11 +255,6 @@ public class BatfishTestUtils {
       // Note: only works when the snapshot input does not contain anything that would populate
       // conversion context.
       writeTemporaryConversionContext(conversionContext, storage, batfish.getSnapshot());
-    }
-    if (parsingContext != null) {
-      // Note: only works when the snapshot input does not contain anything that would populate
-      // parsing context.
-      writeTemporaryParsingContext(parsingContext, storage, batfish.getSnapshot());
     }
     registerDataPlanePlugins(batfish);
     return batfish;
@@ -392,15 +385,6 @@ public class BatfishTestUtils {
       ConversionContext conversionContext, StorageProvider storage, NetworkSnapshot snapshot) {
     try {
       storage.storeConversionContext(conversionContext, snapshot);
-    } catch (IOException e) {
-      throw new UncheckedIOException(e);
-    }
-  }
-
-  private static void writeTemporaryParsingContext(
-      ParsingContext parsingContext, StorageProvider storage, NetworkSnapshot snapshot) {
-    try {
-      storage.storeParsingContext(parsingContext, snapshot);
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }

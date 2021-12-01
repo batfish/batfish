@@ -413,22 +413,22 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
                 e);
           }
 
-//        case SONIC:
-//          {
-//            SonicCombinedParser parser = new SonicCombinedParser(_fileText, _settings);
-//            combinedParser = parser;
-//            extractor =
-//                new SonicControlPlaneExtractor(
-//                    _fileText,
-//                    _warnings,
-//                    _filename,
-//                    _parsingContext,
-//                    parser.getSettings(),
-//                    _settings.getPrintParseTree() ? () -> _ptSentences : null,
-//                    _settings.getPrintParseTreeLineNums(),
-//                    _silentSyntax);
-//            break;
-//          }
+          //        case SONIC:
+          //          {
+          //            SonicCombinedParser parser = new SonicCombinedParser(_fileText, _settings);
+          //            combinedParser = parser;
+          //            extractor =
+          //                new SonicControlPlaneExtractor(
+          //                    _fileText,
+          //                    _warnings,
+          //                    _filename,
+          //                    _parsingContext,
+          //                    parser.getSettings(),
+          //                    _settings.getPrintParseTree() ? () -> _ptSentences : null,
+          //                    _settings.getPrintParseTreeLineNums(),
+          //                    _silentSyntax);
+          //            break;
+          //          }
 
         case VYOS:
           _fileResults
@@ -776,9 +776,5 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
             .map(Names::escapeNameIfNeeded)
             .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()))
             .toString();
-  }
-
-  public ParsingContext getParsingContext() {
-    return _parsingContext;
   }
 }

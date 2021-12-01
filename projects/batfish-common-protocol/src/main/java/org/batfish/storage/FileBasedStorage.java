@@ -102,7 +102,6 @@ import org.batfish.identifiers.SnapshotId;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
 import org.batfish.vendor.ConversionContext;
-import org.batfish.vendor.ParsingContext;
 import org.batfish.vendor.VendorConfiguration;
 
 /** A utility class that abstracts the underlying file system storage used by Batfish. */
@@ -230,21 +229,6 @@ public class FileBasedStorage implements StorageProvider {
       throw new IOException(
           String.format(
               "Failed to deserialize ConversionContext: %s", Throwables.getStackTraceAsString(e)));
-    }
-  }
-
-  @Override
-  public @Nonnull ParsingContext loadParsingContext(NetworkSnapshot snapshot) throws IOException {
-    Path pcPath = getParsingContextPath(snapshot.getNetwork(), snapshot.getSnapshot());
-    if (!Files.exists(pcPath)) {
-      throw new FileNotFoundException();
-    }
-    try {
-      return deserializeObject(pcPath, ParsingContext.class);
-    } catch (BatfishException e) {
-      throw new IOException(
-          String.format(
-              "Failed to deserialize ParsingContext: %s", Throwables.getStackTraceAsString(e)));
     }
   }
 
@@ -490,24 +474,10 @@ public class FileBasedStorage implements StorageProvider {
     serializeObject(conversionContext, ccPath);
   }
 
-  @Override
-  public void storeParsingContext(ParsingContext parsingContext, NetworkSnapshot snapshot)
-      throws IOException {
-    Path pcPath = getParsingContextPath(snapshot.getNetwork(), snapshot.getSnapshot());
-    mkdirs(pcPath.getParent());
-    serializeObject(parsingContext, pcPath);
-  }
-
   @VisibleForTesting
   @Nonnull
   Path getConversionContextPath(NetworkId network, SnapshotId snapshot) {
     return getSnapshotOutputDir(network, snapshot).resolve(RELPATH_CONVERSION_CONTEXT);
-  }
-
-  @VisibleForTesting
-  @Nonnull
-  Path getParsingContextPath(NetworkId network, SnapshotId snapshot) {
-    return getSnapshotOutputDir(network, snapshot).resolve(RELPATH_PARSING_CONTEXT);
   }
 
   private @Nonnull Path getConvertAnswerPath(NetworkId network, SnapshotId snapshot) {

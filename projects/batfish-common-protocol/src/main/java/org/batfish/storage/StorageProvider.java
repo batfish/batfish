@@ -46,7 +46,6 @@ import org.batfish.identifiers.SnapshotId;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
 import org.batfish.vendor.ConversionContext;
-import org.batfish.vendor.ParsingContext;
 import org.batfish.vendor.VendorConfiguration;
 
 /** Storage backend for loading and storing persistent data used by Batfish */
@@ -854,23 +853,6 @@ public interface StorageProvider {
    * @throws IOException if there is an error
    */
   void storeConversionContext(ConversionContext conversionContext, NetworkSnapshot snapshot)
-      throws IOException;
-
-  /**
-   * Loads the {@link ParsingContext} for the given {@link NetworkSnapshot}, if present.
-   *
-   * @throws FileNotFoundException if there is no serialized {@link ParsingContext}
-   * @throws IOException if there is an error deserializing
-   */
-  @Nonnull
-  ParsingContext loadParsingContext(NetworkSnapshot snapshot) throws IOException;
-
-  /**
-   * Stores the {@link ParsingContext} for the given {@link NetworkSnapshot}.
-   *
-   * @throws IOException if there is an error
-   */
-  void storeParsingContext(ParsingContext parsingContext, NetworkSnapshot snapshot)
       throws IOException;
 
   /**
