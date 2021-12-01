@@ -752,24 +752,17 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
                                     .setSrcVrf(DEFAULT_VRF_NAME)
                                     .build()));
               } else {
-                // This is an L2 VNI. Find the VRF by looking up the VLAN
-                vrfName = vc.getVrfForVlan(vxlan.getBridgeAccessVlan()).orElse(null);
-                if (vrfName == null) {
-                  // This is a workaround until we properly support pure-L2 VNIs (with no IRBs)
-                  vrfName = DEFAULT_VRF_NAME;
-                }
-                Optional.ofNullable(c.getVrfs().get(vrfName))
-                    .ifPresent(
-                        vrf ->
-                            vrf.addLayer2Vni(
-                                Layer2Vni.builder()
-                                    .setVni(vxlan.getId())
-                                    .setVlan(vxlan.getBridgeAccessVlan())
-                                    .setSourceAddress(localIp)
-                                    .setUdpPort(NamedPort.VXLAN.number())
-                                    .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
-                                    .setSrcVrf(DEFAULT_VRF_NAME)
-                                    .build()));
+                // This is an L2 VNI.
+                c.getDefaultVrf()
+                    .addLayer2Vni(
+                        Layer2Vni.builder()
+                            .setVni(vxlan.getId())
+                            .setVlan(vxlan.getBridgeAccessVlan())
+                            .setSourceAddress(localIp)
+                            .setUdpPort(NamedPort.VXLAN.number())
+                            .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
+                            .setSrcVrf(DEFAULT_VRF_NAME)
+                            .build());
               }
             });
   }
