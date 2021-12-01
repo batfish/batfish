@@ -70324,7 +70324,7 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No hostname set in file: 'configs/cisco_style_acl1'\n"
+              "text" : "No hostname set in [configs/cisco_style_acl1]\n"
             }
           ]
         },
@@ -70332,7 +70332,7 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No hostname set in file: 'configs/cisco_style_acl2'\n"
+              "text" : "No hostname set in [configs/cisco_style_acl2]\n"
             }
           ]
         },
