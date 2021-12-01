@@ -311,7 +311,9 @@ public class CumulusConcatenatedGrammarTest {
     Vrf vrf2 = c.getVrfs().get("vrf2");
     Vrf vrf3 = c.getVrfs().get("vrf3");
 
-    // default vrf has an L2 VNI, vrf2 has an L3 VNI, vrf3 has neither
+    // default vrf has an L2 VNI associated with an interface in vrf 1
+    // vrf2 has an L3 VNI
+    // vrf3 has neither
     assertFalse(c.getDefaultVrf().getLayer2Vnis().isEmpty());
     assertTrue(c.getDefaultVrf().getLayer3Vnis().isEmpty());
     assertTrue(vrf1.getLayer2Vnis().isEmpty());
