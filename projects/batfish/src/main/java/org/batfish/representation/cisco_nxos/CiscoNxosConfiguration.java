@@ -649,14 +649,30 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     processBgpNetworkStatements(c, nxBgpVrf, vrfName, newBgpProcess);
     processBgpRedistributeStatements(c, nxBgpVrf, vrfName, newBgpProcess);
 
+    // Find NVE source address for EVPN routes originated on this device.
+    // TODO Support devices multiple NVEs for this context.
+    Ip nveIp =
+        _nves.values().stream()
+            .map(
+                nve ->
+                    Optional.ofNullable(nve.getSourceInterface())
+                        .map(c.getAllInterfaces()::get)
+                        .map(org.batfish.datamodel.Interface::getConcreteAddress)
+                        .map(ConcreteInterfaceAddress::getIp))
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .findFirst()
+            .orElse(null);
+
     // Process active neighbors first.
     Map<Ip, BgpActivePeerConfig> activeNeighbors =
-        Conversions.getNeighbors(c, this, v, newBgpProcess, nxBgpGlobal, nxBgpVrf, _w);
+        Conversions.getNeighbors(c, this, v, newBgpProcess, nxBgpGlobal, nxBgpVrf, nveIp, _w);
     newBgpProcess.setNeighbors(ImmutableSortedMap.copyOf(activeNeighbors));
 
     // Process passive neighbors next
     Map<Prefix, BgpPassivePeerConfig> passiveNeighbors =
-        Conversions.getPassiveNeighbors(c, this, v, newBgpProcess, nxBgpGlobal, nxBgpVrf, _w);
+        Conversions.getPassiveNeighbors(
+            c, this, v, newBgpProcess, nxBgpGlobal, nxBgpVrf, nveIp, _w);
     newBgpProcess.setPassiveNeighbors(ImmutableSortedMap.copyOf(passiveNeighbors));
 
     v.setBgpProcess(newBgpProcess);
