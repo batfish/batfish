@@ -20,10 +20,24 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.grammar.BatfishCombinedParser;
 
+@ParametersAreNonnullByDefault
 public class Warnings implements Serializable {
+
+  public static class Settings {
+    private final boolean _pedanticRecord;
+    private final boolean _unimplementedRecord;
+    private final boolean _redFlagRecord;
+
+    public Settings(boolean pedanticRecord, boolean unimplementedRecord, boolean redFlagRecord) {
+      this._pedanticRecord = pedanticRecord;
+      this._unimplementedRecord = unimplementedRecord;
+      this._redFlagRecord = redFlagRecord;
+    }
+  }
 
   public static final String TAG_PEDANTIC = "MISCELLANEOUS";
 
@@ -36,21 +50,17 @@ public class Warnings implements Serializable {
   private static final String PROP_RED_FLAGS = "Red flags";
   private static final String PROP_UNIMPLEMENTED = "Unimplemented features";
 
-  private ErrorDetails _errorDetails;
+  private final transient Settings _settings;
+
+  private @Nullable ErrorDetails _errorDetails;
 
   @Nonnull private final List<ParseWarning> _parseWarnings;
 
-  private transient boolean _pedanticRecord;
+  @Nonnull private final SortedSet<Warning> _pedanticWarnings;
 
-  private final SortedSet<Warning> _pedanticWarnings;
+  @Nonnull private final SortedSet<Warning> _redFlagWarnings;
 
-  private transient boolean _redFlagRecord;
-
-  private final SortedSet<Warning> _redFlagWarnings;
-
-  private transient boolean _unimplementedRecord;
-
-  private final SortedSet<Warning> _unimplementedWarnings;
+  @Nonnull private final SortedSet<Warning> _unimplementedWarnings;
 
   public static @Nonnull Warnings forLogger(BatfishLogger logger) {
     return new Warnings(
@@ -60,17 +70,19 @@ public class Warnings implements Serializable {
   }
 
   @JsonCreator
-  private Warnings(
+  private static Warnings create(
       @Nullable @JsonProperty(PROP_PEDANTIC) SortedSet<Warning> pedanticWarnings,
       @Nullable @JsonProperty(PROP_RED_FLAGS) SortedSet<Warning> redFlagWarnings,
       @Nullable @JsonProperty(PROP_UNIMPLEMENTED) SortedSet<Warning> unimplementedWarnings,
       @Nullable @JsonProperty(PROP_PARSE_WARNINGS) List<ParseWarning> parseWarnings,
       @Nullable @JsonProperty(PROP_ERROR_DETAILS) ErrorDetails errorDetails) {
-    _pedanticWarnings = firstNonNull(pedanticWarnings, new TreeSet<>());
-    _redFlagWarnings = firstNonNull(redFlagWarnings, new TreeSet<>());
-    _parseWarnings = firstNonNull(parseWarnings, new LinkedList<>());
-    _unimplementedWarnings = firstNonNull(unimplementedWarnings, new TreeSet<>());
-    _errorDetails = errorDetails;
+    return new Warnings(
+        new Settings(false, false, false),
+        firstNonNull(pedanticWarnings, new TreeSet<>()),
+        firstNonNull(redFlagWarnings, new TreeSet<>()),
+        firstNonNull(unimplementedWarnings, new TreeSet<>()),
+        firstNonNull(parseWarnings, new LinkedList<>()),
+        errorDetails);
   }
 
   public Warnings() {
@@ -78,10 +90,28 @@ public class Warnings implements Serializable {
   }
 
   public Warnings(boolean pedanticRecord, boolean redFlagRecord, boolean unimplementedRecord) {
-    this(null, null, null, null, null);
-    _pedanticRecord = pedanticRecord;
-    _redFlagRecord = redFlagRecord;
-    _unimplementedRecord = unimplementedRecord;
+    this(
+        new Settings(pedanticRecord, redFlagRecord, unimplementedRecord),
+        new TreeSet<>(),
+        new TreeSet<>(),
+        new TreeSet<>(),
+        new LinkedList<>(),
+        null);
+  }
+
+  private Warnings(
+      Settings settings,
+      SortedSet<Warning> pedanticWarnings,
+      SortedSet<Warning> redFlagWarnings,
+      SortedSet<Warning> unimplementedWarnings,
+      List<ParseWarning> parseWarnings,
+      @Nullable ErrorDetails errorDetails) {
+    _settings = settings;
+    _pedanticWarnings = pedanticWarnings;
+    _redFlagWarnings = redFlagWarnings;
+    _unimplementedWarnings = unimplementedWarnings;
+    _parseWarnings = parseWarnings;
+    _errorDetails = errorDetails;
   }
 
   @Nonnull
@@ -124,7 +154,7 @@ public class Warnings implements Serializable {
   }
 
   public void pedantic(String msg) {
-    if (!_pedanticRecord) {
+    if (!_settings._pedanticRecord) {
       return;
     }
     pedantic(msg, TAG_PEDANTIC);
@@ -135,7 +165,7 @@ public class Warnings implements Serializable {
   }
 
   public void redFlag(String msg) {
-    if (!_redFlagRecord) {
+    if (!_settings._redFlagRecord) {
       return;
     }
     _redFlagWarnings.add(new Warning(msg, TAG_RED_FLAG));
@@ -187,7 +217,7 @@ public class Warnings implements Serializable {
   }
 
   public void unimplemented(String msg) {
-    if (!_unimplementedRecord) {
+    if (!_settings._unimplementedRecord) {
       return;
     }
     _unimplementedWarnings.add(new Warning(msg, TAG_UNIMPLEMENTED));
