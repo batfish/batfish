@@ -586,6 +586,8 @@ public class BatfishTest {
             ConfigurationFormat.HOST,
             ignoredIface1,
             ignoredIface2,
+            "eth3-Mgmt2", // checkpoint-style management
+            "eth13-Mgmt23", // checkpoint-style management
             "mgmt0",
             "Management",
             "fxp0-0",
