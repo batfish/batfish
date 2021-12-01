@@ -29,13 +29,13 @@ public class Warnings implements Serializable {
 
   public static class Settings {
     private final boolean _pedanticRecord;
-    private final boolean _unimplementedRecord;
     private final boolean _redFlagRecord;
+    private final boolean _unimplementedRecord;
 
-    public Settings(boolean pedanticRecord, boolean unimplementedRecord, boolean redFlagRecord) {
+    public Settings(boolean pedanticRecord, boolean redFlagRecord, boolean unimplementedRecord) {
       this._pedanticRecord = pedanticRecord;
-      this._unimplementedRecord = unimplementedRecord;
       this._redFlagRecord = redFlagRecord;
+      this._unimplementedRecord = unimplementedRecord;
     }
   }
 
