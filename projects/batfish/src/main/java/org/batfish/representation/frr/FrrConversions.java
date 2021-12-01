@@ -1100,27 +1100,23 @@ public final class FrrConversions {
     Map<Integer, Integer> vniToIndex = vniToIndexBuilder.build();
 
     if (evpnConfig.getAdvertiseAllVni()) {
-      c.getVrfs()
+      c.getDefaultVrf()
+          .getLayer2Vnis()
           .values()
           .forEach(
-              vrf ->
-                  vrf.getLayer2Vnis()
-                      .values()
-                      .forEach(
-                          vxlan -> {
-                            RouteDistinguisher rd =
-                                RouteDistinguisher.from(
-                                    newProc.getRouterId(), vniToIndex.get(vxlan.getVni()));
-                            ExtendedCommunity rt = toRouteTarget(localAs, vxlan.getVni());
-                            // Advertise L2 VNIs
-                            l2Vnis.add(
-                                Layer2VniConfig.builder()
-                                    .setVni(vxlan.getVni())
-                                    .setVrf(vrf.getName())
-                                    .setRouteDistinguisher(rd)
-                                    .setRouteTarget(rt)
-                                    .build());
-                          }));
+              vxlan -> {
+                RouteDistinguisher rd =
+                    RouteDistinguisher.from(newProc.getRouterId(), vniToIndex.get(vxlan.getVni()));
+                ExtendedCommunity rt = toRouteTarget(localAs, vxlan.getVni());
+                // Advertise L2 VNIs
+                l2Vnis.add(
+                    Layer2VniConfig.builder()
+                        .setVni(vxlan.getVni())
+                        .setVrf(DEFAULT_VRF_NAME)
+                        .setRouteDistinguisher(rd)
+                        .setRouteTarget(rt)
+                        .build());
+              });
     }
     BgpProcess bgpProcess = frr.getBgpProcess();
     // Advertise the L3 VNI per vrf if one is configured
