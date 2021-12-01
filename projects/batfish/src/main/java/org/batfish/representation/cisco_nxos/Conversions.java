@@ -275,6 +275,7 @@ public final class Conversions {
       BgpProcess proc,
       BgpGlobalConfiguration bgpConfig,
       BgpVrfConfiguration bgpVrf,
+      @Nullable Ip nveIp,
       Warnings warnings) {
     return bgpVrf.getNeighbors().entrySet().stream()
         .peek(e -> e.getValue().doInherit(bgpConfig, warnings))
@@ -294,6 +295,7 @@ public final class Conversions {
                             bgpVrf,
                             e.getValue(),
                             false,
+                            nveIp,
                             warnings)));
   }
 
@@ -305,6 +307,7 @@ public final class Conversions {
       BgpProcess proc,
       BgpGlobalConfiguration bgpConfig,
       BgpVrfConfiguration bgpVrf,
+      @Nullable Ip nveIp,
       Warnings warnings) {
     return bgpVrf.getPassiveNeighbors().entrySet().stream()
         .peek(e -> e.getValue().doInherit(bgpConfig, warnings))
@@ -324,6 +327,7 @@ public final class Conversions {
                             bgpVrf,
                             e.getValue(),
                             true,
+                            nveIp,
                             warnings)));
   }
 
@@ -409,6 +413,7 @@ public final class Conversions {
       BgpVrfConfiguration vrfConfig,
       BgpVrfNeighborConfiguration neighbor,
       boolean dynamic,
+      @Nullable Ip nveIp,
       Warnings warnings) {
 
     BgpPeerConfig.Builder<?, ?> newNeighborBuilder;
@@ -509,7 +514,7 @@ public final class Conversions {
       @Nullable
       BgpVrfL2VpnEvpnAddressFamilyConfiguration vrfL2VpnAf = vrfConfig.getL2VpnEvpnAddressFamily();
       EvpnAddressFamily.Builder evpnFamilyBuilder =
-          EvpnAddressFamily.builder().setPropagateUnmatched(false);
+          EvpnAddressFamily.builder().setPropagateUnmatched(false).setNveIp(nveIp);
 
       RoutingPolicy importPolicy =
           createNeighborImportPolicy(
