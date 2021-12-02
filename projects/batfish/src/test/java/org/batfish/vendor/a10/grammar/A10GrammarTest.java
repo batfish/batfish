@@ -49,6 +49,8 @@ import static org.batfish.vendor.a10.representation.A10Conversion.SNAT_PORT_POOL
 import static org.batfish.vendor.a10.representation.A10StructureType.ACCESS_LIST;
 import static org.batfish.vendor.a10.representation.A10StructureType.HEALTH_MONITOR;
 import static org.batfish.vendor.a10.representation.A10StructureType.INTERFACE;
+import static org.batfish.vendor.a10.representation.A10StructureType.SERVER;
+import static org.batfish.vendor.a10.representation.A10StructureType.SERVICE_GROUP;
 import static org.batfish.vendor.a10.representation.A10StructureType.VRRP_A_FAIL_OVER_POLICY_TEMPLATE;
 import static org.batfish.vendor.a10.representation.A10StructureType.VRRP_A_VRID;
 import static org.batfish.vendor.a10.representation.Interface.DEFAULT_MTU;
@@ -2221,5 +2223,35 @@ public class A10GrammarTest {
 
     assertThat(ccae, hasNumReferrers(filename, ACCESS_LIST, "ACL_UNUSED", 0));
     assertThat(ccae, hasNumReferrers(filename, ACCESS_LIST, "ACL1", 1));
+  }
+
+  @Test
+  public void testServerReferences() throws IOException {
+    String hostname = "server_ref";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(ccae, hasDefinedStructure(filename, SERVER, "SERVER1"));
+    assertThat(ccae, hasDefinedStructure(filename, SERVER, "SERVER2"));
+
+    assertThat(ccae, hasNumReferrers(filename, SERVER, "SERVER1", 1));
+    assertThat(ccae, hasNumReferrers(filename, SERVER, "SERVER2", 0));
+  }
+
+  @Test
+  public void testServiceGroupReferences() throws IOException {
+    String hostname = "service_group_ref";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(ccae, hasDefinedStructure(filename, SERVICE_GROUP, "SG1"));
+    assertThat(ccae, hasDefinedStructure(filename, SERVICE_GROUP, "SG2"));
+
+    assertThat(ccae, hasNumReferrers(filename, SERVICE_GROUP, "SG1", 1));
+    assertThat(ccae, hasNumReferrers(filename, SERVICE_GROUP, "SG2", 0));
   }
 }
