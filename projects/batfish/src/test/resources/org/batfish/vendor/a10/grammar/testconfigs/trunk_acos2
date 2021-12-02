@@ -4,6 +4,7 @@ hostname trunk_acos2
 !
 ! Default (static?) trunk definition
 trunk 2
+ ! Interfaces may not show up below if attached to a trunk
  ethernet 5 ethernet 2 to 3
  name trunk2Name
 !
@@ -13,8 +14,6 @@ interface ethernet 1
  lacp timeout short
  enable
 !
-interface ethernet 2
- enable
 !
 interface ethernet 3
  enable

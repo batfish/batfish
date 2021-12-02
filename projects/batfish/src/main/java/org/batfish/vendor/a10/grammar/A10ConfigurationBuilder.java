@@ -1658,6 +1658,11 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
         ifaces -> {
           ifaces.forEach(
               iface -> {
+                assert iface.getType() == Type.ETHERNET;
+                // Interfaces may not show up elsewhere if members of a trunk
+                _c.getInterfacesEthernet()
+                    .computeIfAbsent(iface.getNumber(), n -> new Interface(Type.ETHERNET, n));
+                _c.defineStructure(INTERFACE, getInterfaceName(iface), ctx);
                 _c.referenceStructure(
                     INTERFACE, getInterfaceName(iface), A10StructureUsage.TRUNK_INTERFACE, line);
                 _currentTrunk.getMembers().add(iface);
