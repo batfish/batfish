@@ -49,6 +49,7 @@ import static org.batfish.vendor.a10.representation.A10Conversion.SNAT_PORT_POOL
 import static org.batfish.vendor.a10.representation.A10StructureType.ACCESS_LIST;
 import static org.batfish.vendor.a10.representation.A10StructureType.HEALTH_MONITOR;
 import static org.batfish.vendor.a10.representation.A10StructureType.INTERFACE;
+import static org.batfish.vendor.a10.representation.A10StructureType.NAT_POOL;
 import static org.batfish.vendor.a10.representation.A10StructureType.VRRP_A_FAIL_OVER_POLICY_TEMPLATE;
 import static org.batfish.vendor.a10.representation.A10StructureType.VRRP_A_VRID;
 import static org.batfish.vendor.a10.representation.Interface.DEFAULT_MTU;
@@ -1315,6 +1316,19 @@ public class A10GrammarTest {
     assertTrue(pool2.getPortOverload());
     assertThat(pool2.getScaleoutDeviceId(), equalTo(1));
     assertThat(pool2.getVrid(), equalTo(2));
+  }
+
+  @Test
+  public void testNatPoolReference() throws IOException {
+    String hostname = "nat_pool_ref";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Confirm reference counts
+    assertThat(ccae, hasNumReferrers(filename, NAT_POOL, "POOL1", 1));
+    assertThat(ccae, hasNumReferrers(filename, NAT_POOL, "POOL2", 0));
   }
 
   @Test
