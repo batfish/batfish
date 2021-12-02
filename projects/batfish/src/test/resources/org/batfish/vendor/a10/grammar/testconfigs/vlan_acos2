@@ -3,16 +3,14 @@
 hostname vlan_acos2
 !
 vlan 2
+ ! Interfaces may not show up below if attached to a vlan
  tagged ethernet 1 ethernet 2
 !
 vlan 3
+ ! Interfaces may not show up below if attached to a vlan
  untagged ethernet 1 ethernet 3 to 4
 !
 interface ethernet 1
-!
-interface ethernet 2
-!
-interface ethernet 3
 !
 interface ethernet 4
 !

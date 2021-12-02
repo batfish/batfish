@@ -625,7 +625,19 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     // TODO enforce interface restrictions
     //  e.g. untagged iface cannot be reused, cannot attach trunk members directly, etc.
     toInterfaceReferences(ctx.vlan_iface_references(), A10StructureUsage.VLAN_TAGGED_INTERFACE)
-        .ifPresent(refs -> _currentVlan.addTagged(refs));
+        .ifPresent(
+            refs -> {
+              refs.forEach(
+                  ref -> {
+                    if (ref.getType() == Type.ETHERNET) {
+                      // Ethernet interfaces may not show up elsewhere if members of a vlan
+                      _c.getInterfacesEthernet()
+                          .computeIfAbsent(ref.getNumber(), n -> new Interface(Type.ETHERNET, n));
+                    }
+                    _c.defineStructure(INTERFACE, getInterfaceName(ref), ctx);
+                  });
+              _currentVlan.addTagged(refs);
+            });
   }
 
   @Override
@@ -633,7 +645,19 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     // TODO enforce interface restrictions
     //  e.g. untagged iface cannot be reused, cannot attach trunk members directly, etc.
     toInterfaceReferences(ctx.vlan_iface_references(), A10StructureUsage.VLAN_UNTAGGED_INTERFACE)
-        .ifPresent(refs -> _currentVlan.addUntagged(refs));
+        .ifPresent(
+            refs -> {
+              refs.forEach(
+                  ref -> {
+                    if (ref.getType() == Type.ETHERNET) {
+                      // Ethernet interfaces may not show up elsewhere if members of a vlan
+                      _c.getInterfacesEthernet()
+                          .computeIfAbsent(ref.getNumber(), n -> new Interface(Type.ETHERNET, n));
+                    }
+                    _c.defineStructure(INTERFACE, getInterfaceName(ref), ctx);
+                  });
+              _currentVlan.addUntagged(refs);
+            });
   }
 
   /**

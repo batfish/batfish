@@ -17,7 +17,6 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddressMetadata;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
@@ -52,8 +51,6 @@ import static org.batfish.vendor.a10.representation.A10StructureType.HEALTH_MONI
 import static org.batfish.vendor.a10.representation.A10StructureType.INTERFACE;
 import static org.batfish.vendor.a10.representation.A10StructureType.VRRP_A_FAIL_OVER_POLICY_TEMPLATE;
 import static org.batfish.vendor.a10.representation.A10StructureType.VRRP_A_VRID;
-import static org.batfish.vendor.a10.representation.A10StructureUsage.VLAN_TAGGED_INTERFACE;
-import static org.batfish.vendor.a10.representation.A10StructureUsage.VLAN_UNTAGGED_INTERFACE;
 import static org.batfish.vendor.a10.representation.Interface.DEFAULT_MTU;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.Matchers.allOf;
@@ -629,6 +626,8 @@ public class A10GrammarTest {
     assertThat(vlans.keySet(), containsInAnyOrder(2, 3));
     Vlan vlan2 = vlans.get(2);
     Vlan vlan3 = vlans.get(3);
+    Map<Integer, Interface> eths = c.getInterfacesEthernet();
+    assertThat(eths.keySet(), containsInAnyOrder(1, 2, 3, 4));
 
     assertThat(vlan2.getNumber(), equalTo(2));
     assertThat(
@@ -699,6 +698,13 @@ public class A10GrammarTest {
     assertThat(
         ccae,
         hasNumReferrers(filename, INTERFACE, getInterfaceName(Interface.Type.ETHERNET, 3), 2));
+    // Referenced from (and initially defined) in vlan
+    assertThat(
+        ccae,
+        hasNumReferrers(filename, INTERFACE, getInterfaceName(Interface.Type.ETHERNET, 4), 1));
+    assertThat(
+        ccae,
+        hasNumReferrers(filename, INTERFACE, getInterfaceName(Interface.Type.ETHERNET, 5), 1));
 
     // Referenced from vlan
     assertThat(
@@ -722,22 +728,6 @@ public class A10GrammarTest {
     // Unused trunk should have no references
     assertThat(
         ccae, hasNumReferrers(filename, INTERFACE, getInterfaceName(Interface.Type.TRUNK, 200), 0));
-
-    // Confirm undefined references are detected
-    assertThat(
-        ccae,
-        hasUndefinedReference(
-            filename,
-            INTERFACE,
-            getInterfaceName(Interface.Type.ETHERNET, 4),
-            VLAN_TAGGED_INTERFACE));
-    assertThat(
-        ccae,
-        hasUndefinedReference(
-            filename,
-            INTERFACE,
-            getInterfaceName(Interface.Type.ETHERNET, 5),
-            VLAN_UNTAGGED_INTERFACE));
   }
 
   @Test
