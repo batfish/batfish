@@ -791,6 +791,8 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
     String name;
     if (ctx.ip != null) {
       name = ctx.ip.getText();
+    } else if (ctx.ip6 != null) {
+      name = ctx.ip6.getText();
     } else if (ctx.name != null) {
       name = ctx.name.getText();
     } else {

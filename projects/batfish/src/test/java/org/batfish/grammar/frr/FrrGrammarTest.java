@@ -1076,7 +1076,15 @@ public class FrrGrammarTest {
         "    import vrf Vrf_tenant1",
         "    neighbor 2001:100:1:31::2 route-map wanguard6-any-out out",
         "    neighbor 2001:100:1:31::2 next-hop-self",
-        "    neighbor 2001:100:1:31::2 activate");
+        "    neighbor 2001:100:1:31::2 activate",
+        "    aggregate-address 2a02:4780:9::/48",
+        "    network 2a02:4780:9::/48 route-map internal",
+        "  address-family ipv4 unicast",
+        "    neighbor 2001:100:1:31::2 remove-private-AS",
+        "    neighbor 2001:100:1:31::2 next-hop-self",
+        "    neighbor 2001:100:1:31::2 allowas-in",
+        "    neighbor 2001:100:1:31::2 route-map cogent6-out out",
+        "    neighbor 2001:100:1:31::2 route-map cogent6-in in");
     Map<String, BgpNeighbor> neighbors = _frr.getBgpProcess().getDefaultVrf().getNeighbors();
     assertThat(neighbors.keySet(), contains("2001:100:1:31::2"));
     BgpNeighbor foo = neighbors.get("2001:100:1:31::2");
