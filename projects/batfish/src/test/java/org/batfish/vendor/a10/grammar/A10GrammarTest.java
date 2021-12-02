@@ -1062,9 +1062,7 @@ public class A10GrammarTest {
                 WarningMatchers.hasText(
                     containsString(
                         "VLAN settings for members of Trunk1 are different, ignoring their VLAN"
-                            + " settings")),
-                WarningMatchers.hasText(
-                    "Trunk member Ethernet10 does not exist, cannot add to Trunk1"))));
+                            + " settings")))));
   }
 
   @Test
