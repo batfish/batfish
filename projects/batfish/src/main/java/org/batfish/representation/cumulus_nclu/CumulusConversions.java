@@ -1002,7 +1002,7 @@ public final class CumulusConversions {
                             l2Vnis.add(
                                 Layer2VniConfig.builder()
                                     .setVni(vxlan.getVni())
-                                    .setVrf(vrf.getName())
+                                    .setVrf(DEFAULT_VRF_NAME)
                                     .setRouteDistinguisher(rd)
                                     .setRouteTarget(rt)
                                     .build());
@@ -1620,24 +1620,16 @@ public final class CumulusConversions {
                                     .setSrcVrf(DEFAULT_VRF_NAME)
                                     .build()));
               } else {
-                // This is an L2 VNI. Find the VRF by looking up the VLAN
-                vrfName = vsConfig.getVrfForVlan(vxlan.getBridgeAccessVlan());
-                if (vrfName == null) {
-                  // This is a workaround until we properly support pure-L2 VNIs (with no IRBs)
-                  vrfName = DEFAULT_VRF_NAME;
-                }
-                Optional.ofNullable(c.getVrfs().get(vrfName))
-                    .ifPresent(
-                        vrf ->
-                            vrf.addLayer2Vni(
-                                Layer2Vni.builder()
-                                    .setVni(vxlan.getId())
-                                    .setVlan(vxlan.getBridgeAccessVlan())
-                                    .setSourceAddress(localIp)
-                                    .setUdpPort(NamedPort.VXLAN.number())
-                                    .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
-                                    .setSrcVrf(DEFAULT_VRF_NAME)
-                                    .build()));
+                c.getDefaultVrf()
+                    .addLayer2Vni(
+                        Layer2Vni.builder()
+                            .setVni(vxlan.getId())
+                            .setVlan(vxlan.getBridgeAccessVlan())
+                            .setSourceAddress(localIp)
+                            .setUdpPort(NamedPort.VXLAN.number())
+                            .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
+                            .setSrcVrf(DEFAULT_VRF_NAME)
+                            .build());
               }
             });
   }

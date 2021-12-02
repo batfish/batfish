@@ -740,28 +740,23 @@ public final class CumulusConversionsTest {
   @Test
   public void testGenerateBgpCommonPeerConfig_allL2Vni() {
     Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_NCLU);
-
-    Vrf vrf1 = Vrf.builder().setName("vrf1").build();
-    vrf1.setLayer2Vnis(
+    Vrf defaultVrf = Vrf.builder().setName(DEFAULT_VRF_NAME).build();
+    defaultVrf.setLayer2Vnis(
         ImmutableList.of(
             Layer2Vni.builder()
                 .setVni(1)
                 .setVlan(11)
                 .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
-                .setSrcVrf(vrf1.getName())
-                .build()));
-
-    Vrf vrf2 = Vrf.builder().setName("vrf2").build();
-    vrf2.setLayer2Vnis(
-        ImmutableList.of(
+                .setSrcVrf(DEFAULT_VRF_NAME)
+                .build(),
             Layer2Vni.builder()
                 .setVni(2)
                 .setVlan(22)
                 .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
-                .setSrcVrf(vrf2.getName())
+                .setSrcVrf(DEFAULT_VRF_NAME)
                 .build()));
 
-    c.setVrfs(ImmutableMap.of(vrf1.getName(), vrf1, vrf2.getName(), vrf2));
+    c.setVrfs(ImmutableMap.of(defaultVrf.getName(), defaultVrf));
 
     CumulusNcluConfiguration vsConfig = new CumulusNcluConfiguration();
     vsConfig.setHostname(c.getHostname());
@@ -807,13 +802,13 @@ public final class CumulusConversionsTest {
             ImmutableSortedSet.of(
                 Layer2VniConfig.builder()
                     .setVni(1)
-                    .setVrf(vrf1.getName())
+                    .setVrf(DEFAULT_VRF_NAME)
                     .setRouteDistinguisher(RouteDistinguisher.from(routerId, 0))
                     .setRouteTarget(toRouteTarget(localAs, 1))
                     .build(),
                 Layer2VniConfig.builder()
                     .setVni(2)
-                    .setVrf(vrf2.getName())
+                    .setVrf(DEFAULT_VRF_NAME)
                     .setRouteDistinguisher(RouteDistinguisher.from(routerId, 1))
                     .setRouteTarget(toRouteTarget(localAs, 2))
                     .build())));
