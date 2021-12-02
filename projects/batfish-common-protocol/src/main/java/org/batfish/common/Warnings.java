@@ -37,6 +37,13 @@ public class Warnings implements Serializable {
       this._redFlagRecord = redFlagRecord;
       this._unimplementedRecord = unimplementedRecord;
     }
+
+    public static @Nonnull Settings fromLogger(BatfishLogger logger) {
+      return new Warnings.Settings(
+          logger.isActive(LEVEL_PEDANTIC),
+          logger.isActive(LEVEL_REDFLAG),
+          logger.isActive(LEVEL_UNIMPLEMENTED));
+    }
   }
 
   public static final String TAG_PEDANTIC = "MISCELLANEOUS";
@@ -86,17 +93,15 @@ public class Warnings implements Serializable {
   }
 
   public Warnings() {
-    this(false, false, false);
+    this(new Settings(false, false, false));
   }
 
   public Warnings(boolean pedanticRecord, boolean redFlagRecord, boolean unimplementedRecord) {
-    this(
-        new Settings(pedanticRecord, redFlagRecord, unimplementedRecord),
-        new TreeSet<>(),
-        new TreeSet<>(),
-        new TreeSet<>(),
-        new LinkedList<>(),
-        null);
+    this(new Settings(pedanticRecord, redFlagRecord, unimplementedRecord));
+  }
+
+  public Warnings(Settings settings) {
+    this(settings, new TreeSet<>(), new TreeSet<>(), new TreeSet<>(), new LinkedList<>(), null);
   }
 
   private Warnings(
