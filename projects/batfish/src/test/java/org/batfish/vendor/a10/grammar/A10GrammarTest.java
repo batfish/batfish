@@ -1821,7 +1821,8 @@ public class A10GrammarTest {
                 hasComment("Member reference must include port when not specified separately"),
                 hasComment(
                     "Cannot reference non-existent health monitor UNDEFINED for service-group"
-                        + " SG1"))));
+                        + " SG1"),
+                hasComment("New service-group must have a protocol specified."))));
   }
 
   /**
