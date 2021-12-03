@@ -1,0 +1,19 @@
+!BATFISH_FORMAT: a10_acos
+hostname service_group_ref
+!
+!
+slb server SERVER1 10.0.0.1
+!
+slb service-group SG1 tcp
+  ! Note: can define new ports for a server in this context
+  member SERVER1 80
+!
+slb service-group SG2 tcp
+  ! Note: can define new ports for a server in this context
+  member SERVER1 81
+!
+!
+slb virtual-server VS1 10.0.0.101
+  port 80 tcp range 10
+    service-group SG1
+!
