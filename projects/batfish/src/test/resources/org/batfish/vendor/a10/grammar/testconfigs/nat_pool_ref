@@ -1,0 +1,11 @@
+!BATFISH_FORMAT: a10_acos
+hostname nat_pool_ref
+!
+ip nat pool POOL1 10.10.10.10 10.10.10.11 netmask /24
+ip nat pool POOL2 10.10.10.20 10.10.10.21 netmask /24
+!
+!
+slb virtual-server VS1 10.0.0.101
+  port 80 tcp range 10
+    source-nat pool POOL1
+!
