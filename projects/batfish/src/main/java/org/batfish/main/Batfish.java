@@ -2729,7 +2729,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                     jobFileMap ->
                         makeParseVendorConfigurationJob(
                             snapshot, jobFileMap, ConfigurationFormat.UNKNOWN))
-                .collect(ImmutableList.toImmutableList());
+                .collect(Collectors.toList()); // should not be immutable because we shuffle below
 
         // Java parallel streams are not self-balancing in large networks, so shuffle the jobs.
         Collections.shuffle(jobs);
