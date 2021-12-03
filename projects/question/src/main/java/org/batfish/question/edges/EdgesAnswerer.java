@@ -180,11 +180,18 @@ public class EdgesAnswerer extends Answerer {
                     getLayer1Edges(includeNodes, includeRemoteNodes, layer1LogicalTopology))
             .orElse(ImmutableMultiset.of());
       case USER_PROVIDED_LAYER1:
+        // user-provided layer1 edges do not support filtering by node.
+        // the only use case we care about is getting the entire (canonicalized) layer1 topology,
+        // which can include non-existent nodes. we don't want to filter them out, so the simplest
+        // thing to do is disable filtering.
         return topologyProvider
             .getUserProvidedLayer1Topology(snapshot)
             .map(
                 userProvidedLayer1Topology ->
-                    getLayer1Edges(includeNodes, includeRemoteNodes, userProvidedLayer1Topology))
+                    (Multiset<Row>)
+                        userProvidedLayer1Topology.getGraph().edges().stream()
+                            .map(EdgesAnswerer::layer1EdgeToRow)
+                            .collect(Collectors.toCollection(HashMultiset::create)))
             .orElse(ImmutableMultiset.of());
       case LAYER3:
       default:

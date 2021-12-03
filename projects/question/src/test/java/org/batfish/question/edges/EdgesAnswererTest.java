@@ -911,7 +911,8 @@ public class EdgesAnswererTest {
   public void testUserProvidedL1() {
     Layer1Topologies layer1Topologies =
         new Layer1Topologies(
-            new Layer1Topology(new Layer1Edge("n1", "i1", "n2", "i2")),
+            new Layer1Topology(
+                new Layer1Edge("n1", "i1", "n2", "i2"), new Layer1Edge("x1", "i1", "x2", "i2")),
             Layer1Topology.EMPTY,
             Layer1Topology.EMPTY,
             Layer1Topology.EMPTY);
@@ -931,13 +932,21 @@ public class EdgesAnswererTest {
 
     assertThat(
         rows,
-        contains(
+        containsInAnyOrder(
             allOf(
                 hasColumn(
                     COL_INTERFACE, equalTo(NodeInterfacePair.of("n1", "i1")), Schema.INTERFACE),
                 hasColumn(
                     COL_REMOTE_INTERFACE,
                     equalTo(NodeInterfacePair.of("n2", "i2")),
+                    Schema.INTERFACE)),
+            // includeNodes and includeRemoteNodes are ignored for user-provided layer1
+            allOf(
+                hasColumn(
+                    COL_INTERFACE, equalTo(NodeInterfacePair.of("x1", "i1")), Schema.INTERFACE),
+                hasColumn(
+                    COL_REMOTE_INTERFACE,
+                    equalTo(NodeInterfacePair.of("x2", "i2")),
                     Schema.INTERFACE))));
   }
 }
