@@ -37,6 +37,7 @@ import com.google.common.cache.Cache;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
@@ -66,6 +67,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -78,6 +80,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -1623,40 +1626,31 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   /**
-   * Returns a list of {@link ParseVendorConfigurationJob} to parse each file.
+   * Returns a {@link ParseVendorConfigurationJob}.
    *
    * <p>{@code expectedFormat} specifies the type of files expected in the {@code keyedFileText}
    * map, or is set to {@link ConfigurationFormat#UNKNOWN} to trigger format detection.
    */
-  private List<ParseVendorConfigurationJob> makeParseVendorConfigurationsJobs(
+  private ParseVendorConfigurationJob makeParseVendorConfigurationJob(
       NetworkSnapshot snapshot,
       Map<String, String> keyedFileText,
       ConfigurationFormat expectedFormat) {
-    List<ParseVendorConfigurationJob> jobs = new ArrayList<>(keyedFileText.size());
-    for (Entry<String, String> vendorFile : keyedFileText.entrySet()) {
-      @Nullable
-      SpanContext parseVendorConfigurationSpanContext =
-          GlobalTracer.get().activeSpan() == null
-              ? null
-              : GlobalTracer.get().activeSpan().context();
-
-      ParseVendorConfigurationJob job =
-          new ParseVendorConfigurationJob(
-              _settings,
-              snapshot,
-              ImmutableMap.of(vendorFile.getKey(), vendorFile.getValue()),
-              Warnings.Settings.fromLogger(_settings.getLogger()),
-              expectedFormat,
-              HashMultimap.create(),
-              parseVendorConfigurationSpanContext);
-      jobs.add(job);
-    }
-    return jobs;
+    return new ParseVendorConfigurationJob(
+        _settings,
+        snapshot,
+        keyedFileText,
+        Warnings.Settings.fromLogger(_settings.getLogger()),
+        expectedFormat,
+        HashMultimap.create(),
+        GlobalTracer.get().activeSpan() == null ? null : GlobalTracer.get().activeSpan().context());
   }
 
   /**
    * Parses the given configuration files and returns a map keyed by hostname representing the
    * {@link VendorConfiguration vendor-specific configurations}.
+   *
+   * <p>{@code keyedConfigurationText} is a map from filename to its content, and each entry
+   * represent a single file parsing job.
    *
    * <p>{@code expectedFormat} specifies the type of files expected in the {@code keyedFileText}
    * map, or is set to {@link ConfigurationFormat#UNKNOWN} to trigger format detection.
@@ -1666,11 +1660,35 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Map<String, String> keyedConfigurationText,
       ParseVendorConfigurationAnswerElement answerElement,
       ConfigurationFormat expectedFormat) {
+    List<Map<String, String>> jobList =
+        keyedConfigurationText.entrySet().stream()
+            .map(e -> ImmutableMap.of(e.getKey(), e.getValue()))
+            .collect(ImmutableList.toImmutableList());
+    return parseVendorConfigurations(snapshot, jobList, answerElement, expectedFormat);
+  }
+
+  /**
+   * Parses the given configuration files and returns a map keyed by hostname representing the
+   * {@link VendorConfiguration vendor-specific configurations}.
+   *
+   * <p>{@code keyedConfigurationTexts} is a list of (possibly multi-file) parsing jobs, where each
+   * job is described by its corresponding filename to content map.
+   *
+   * <p>{@code expectedFormat} specifies the type of files expected in the {@code keyedFileTexts}
+   * map, or is set to {@link ConfigurationFormat#UNKNOWN} to trigger format detection.
+   */
+  private SortedMap<String, VendorConfiguration> parseVendorConfigurations(
+      NetworkSnapshot snapshot,
+      List<Map<String, String>> keyedConfigurationTexts,
+      ParseVendorConfigurationAnswerElement answerElement,
+      ConfigurationFormat expectedFormat) {
     _logger.info("\n*** PARSING VENDOR CONFIGURATION FILES ***\n");
     _logger.resetTimer();
     SortedMap<String, VendorConfiguration> vendorConfigurations = new TreeMap<>();
     List<ParseVendorConfigurationJob> jobs =
-        makeParseVendorConfigurationsJobs(snapshot, keyedConfigurationText, expectedFormat);
+        keyedConfigurationTexts.stream()
+            .map(fileMap -> makeParseVendorConfigurationJob(snapshot, fileMap, expectedFormat))
+            .collect(ImmutableList.toImmutableList());
     BatfishJobExecutor.runJobsInExecutor(
         _settings,
         _logger,
@@ -2673,19 +2691,46 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Span makeJobsSpan = GlobalTracer.get().buildSpan("Read files and make jobs").start();
       try (Scope makeJobsScope = GlobalTracer.get().scopeManager().activate(makeJobsSpan)) {
         assert makeJobsScope != null; // avoid unused warning
-        Map<String, String> keyedConfigText;
-        // user filename (configs/foo) -> text of configs/foo
+        List<Map<String, String>> keyedConfigTexts = new LinkedList<>();
+
+        // add devices in the 'configs' folder
         try (Stream<String> keys = _storage.listInputNetworkConfigurationsKeys(snapshot)) {
-          keyedConfigText = readAllInputObjects(keys, snapshot);
+          keyedConfigTexts.addAll(
+              readAllInputObjects(keys, snapshot).entrySet().stream()
+                  .map(entry -> ImmutableMap.of(entry.getKey(), entry.getValue()))
+                  .collect(ImmutableList.toImmutableList()));
         } catch (IOException e) {
           throw new UncheckedIOException(e);
         }
-        if (!keyedConfigText.isEmpty()) {
+
+        // add devices in the sonic_configs folder
+        try (Stream<String> keys = _storage.listInputSonicConfigsKeys(snapshot)) {
+          Map<String, String> sonicObjects = readAllInputObjects(keys, snapshot);
+          keyedConfigTexts.addAll(
+              makeSonicFilePairs(sonicObjects.keySet(), answerElement).parallelStream()
+                  .map(
+                      files ->
+                          files.stream()
+                              .collect(
+                                  ImmutableMap.toImmutableMap(
+                                      Function.identity(), sonicObjects::get)))
+                  .collect(ImmutableList.toImmutableList()));
+        } catch (IOException e) {
+          throw new UncheckedIOException(e);
+        }
+
+        if (!keyedConfigTexts.isEmpty()) {
           found = true;
         }
+
         jobs =
-            makeParseVendorConfigurationsJobs(
-                snapshot, keyedConfigText, ConfigurationFormat.UNKNOWN);
+            keyedConfigTexts.stream()
+                .map(
+                    jobFileMap ->
+                        makeParseVendorConfigurationJob(
+                            snapshot, jobFileMap, ConfigurationFormat.UNKNOWN))
+                .collect(Collectors.toList()); // should not be immutable because we shuffle below
+
         // Java parallel streams are not self-balancing in large networks, so shuffle the jobs.
         Collections.shuffle(jobs);
       } finally {
@@ -2775,19 +2820,42 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Map<String, VendorConfiguration> vendorConfigurations;
     Span parseNetworkConfigsSpan = GlobalTracer.get().buildSpan("Parse network configs").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(parseNetworkConfigsSpan)) {
+      ImmutableMap.Builder<String, VendorConfiguration> vendorConfigurationBuilder =
+          ImmutableMap.builder();
       assert scope != null; // avoid unused warning
-      Map<String, String> keyedConfigText;
+      List<Map<String, String>> keyedConfigTexts = new LinkedList<>();
+
+      // consider what is in the configs folder
       try (Stream<String> keys = _storage.listInputNetworkConfigurationsKeys(snapshot)) {
-        keyedConfigText = readAllInputObjects(keys, snapshot);
+        keyedConfigTexts.addAll(
+            readAllInputObjects(keys, snapshot).entrySet().stream()
+                .map(e -> ImmutableMap.of(e.getKey(), e.getValue()))
+                .collect(ImmutableList.toImmutableList()));
       } catch (IOException e) {
         throw new UncheckedIOException(e);
       }
-      if (!keyedConfigText.isEmpty()) {
+      // consider what is in the sonic_configs folder
+      try (Stream<String> keys = _storage.listInputSonicConfigsKeys(snapshot)) {
+        Map<String, String> sonicObjects = readAllInputObjects(keys, snapshot);
+        keyedConfigTexts.addAll(
+            makeSonicFilePairs(sonicObjects.keySet(), answerElement).stream()
+                .map(
+                    files ->
+                        files.stream()
+                            .collect(
+                                ImmutableMap.toImmutableMap(
+                                    Function.identity(), sonicObjects::get)))
+                .collect(ImmutableList.toImmutableList()));
+      } catch (IOException e) {
+        throw new UncheckedIOException(e);
+      }
+
+      if (!keyedConfigTexts.isEmpty()) {
         found = true;
       }
       vendorConfigurations =
           parseVendorConfigurations(
-              snapshot, keyedConfigText, answerElement, ConfigurationFormat.UNKNOWN);
+              snapshot, keyedConfigTexts, answerElement, ConfigurationFormat.UNKNOWN);
     } finally {
       parseNetworkConfigsSpan.finish();
     }
@@ -2838,6 +2906,67 @@ public class Batfish extends PluginConsumer implements IBatfish {
       serializeNetworkConfigsSpan.finish();
     }
     return found;
+  }
+
+  /**
+   * Given a set of sonic object keys, return a collection of key pairs that occur in the same
+   * folder, representing (presumably) the frr.conf and configdb.json files.
+   */
+  @VisibleForTesting
+  static Collection<Set<String>> makeSonicFilePairs(
+      Set<String> sonicKeys, ParseVendorConfigurationAnswerElement pvcae) {
+    ImmutableMultimap.Builder<String, String> dirToFilesB = ImmutableMultimap.builder();
+
+    // Expected packaging: sonic_configs -> dir1 -> (dir2 ->)* {file1, file2}
+
+    for (String filename : sonicKeys) {
+      // Using Path as a convenient way to interpret hierarchical keys for now (as for AWS)
+      Path path = Paths.get(filename);
+      if (path.getNameCount() < 3) {
+        // file right below sonic_configs
+        pvcae.addRedFlagWarning(
+            filename,
+            new Warning(
+                "Unexpected packaging: SONiC files must be in a subdirectory under sonic_configs.",
+                "sonic"));
+        pvcae.getParseStatus().put(filename, ParseStatus.IGNORED);
+        continue;
+      }
+      String dir = path.getParent().toString();
+      dirToFilesB.put(dir, filename);
+    }
+    ImmutableMultimap<String, String> dirToFiles = dirToFilesB.build();
+    List<Set<String>> validFilePairs = new LinkedList<>();
+    for (String dir : dirToFiles.keySet()) {
+      Collection<String> files = dirToFiles.get(dir);
+      if (files.size() == 1) {
+        String filename = files.iterator().next();
+        pvcae.addRedFlagWarning(
+            filename,
+            new Warning(
+                "Unexpected packaging: File appears by itself; SONiC files must have their"
+                    + " counterpart in the same directory.",
+                "sonic"));
+        pvcae.getParseStatus().put(filename, ParseStatus.IGNORED);
+        continue;
+      }
+      if (files.size() > 2) {
+        for (String filename : files) {
+          pvcae.addRedFlagWarning(
+              filename,
+              new Warning(
+                  String.format(
+                      "Unexpected packaging: File appears in a directory with %d other files; SONiC"
+                          + " files must have only their counterpart in the same directory.",
+                      files.size() - 1),
+                  "sonic"));
+          pvcae.getParseStatus().put(filename, ParseStatus.IGNORED);
+        }
+        continue;
+      }
+      validFilePairs.add(ImmutableSet.copyOf(files));
+    }
+    return validFilePairs;
   }
 
   /**

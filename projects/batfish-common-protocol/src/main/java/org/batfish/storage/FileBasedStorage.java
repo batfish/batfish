@@ -130,6 +130,7 @@ public class FileBasedStorage implements StorageProvider {
   private static final String RELPATH_FORK_REQUEST_FILE = "fork_request";
   private static final String RELPATH_ENV_TOPOLOGY_FILE = "env_topology";
   private static final String RELPATH_CONVERSION_CONTEXT = "conversion_context";
+  private static final String RELPATH_PARSING_CONTEXT = "parsing_context";
   private static final String RELPATH_CONVERT_ANSWER_PATH = "convert_answer";
   private static final String RELPATH_ANSWERS_DIR = "answers";
   private static final String RELPATH_ANSWER_METADATA = "answer_metadata.json";
@@ -1955,6 +1956,14 @@ public class FileBasedStorage implements StorageProvider {
       throws IOException {
     return listSnapshotInputObjectKeys(snapshot)
         .filter(key -> keyInDir(key, BfConsts.RELPATH_CHECKPOINT_MANAGEMENT_DIR));
+  }
+
+  @MustBeClosed
+  @Nonnull
+  @Override
+  public Stream<String> listInputSonicConfigsKeys(NetworkSnapshot snapshot) throws IOException {
+    return listSnapshotInputObjectKeys(snapshot)
+        .filter(key -> keyInDir(key, BfConsts.RELPATH_SONIC_CONFIGS_DIR));
   }
 
   private @Nonnull Path getParseVendorConfigurationAnswerElementPath(NetworkSnapshot snapshot) {
