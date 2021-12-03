@@ -17,6 +17,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferencedStructure;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddressMetadata;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
@@ -52,6 +53,7 @@ import static org.batfish.vendor.a10.representation.A10StructureType.INTERFACE;
 import static org.batfish.vendor.a10.representation.A10StructureType.NAT_POOL;
 import static org.batfish.vendor.a10.representation.A10StructureType.VRRP_A_FAIL_OVER_POLICY_TEMPLATE;
 import static org.batfish.vendor.a10.representation.A10StructureType.VRRP_A_VRID;
+import static org.batfish.vendor.a10.representation.A10StructureUsage.VIRTUAL_SERVER_SOURCE_NAT_POOL;
 import static org.batfish.vendor.a10.representation.Interface.DEFAULT_MTU;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.Matchers.allOf;
@@ -1328,6 +1330,8 @@ public class A10GrammarTest {
 
     // Confirm reference counts
     assertThat(ccae, hasNumReferrers(filename, NAT_POOL, "POOL1", 1));
+    assertThat(
+        ccae, hasReferencedStructure(filename, NAT_POOL, "POOL1", VIRTUAL_SERVER_SOURCE_NAT_POOL));
     assertThat(ccae, hasNumReferrers(filename, NAT_POOL, "POOL2", 0));
   }
 
