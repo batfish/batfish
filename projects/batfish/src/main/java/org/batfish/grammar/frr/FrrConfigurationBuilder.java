@@ -18,6 +18,7 @@ import static org.batfish.representation.frr.CumulusStructureUsage.BGP_ADDRESS_F
 import static org.batfish.representation.frr.CumulusStructureUsage.BGP_ADDRESS_FAMILY_IPV6_IMPORT_VRF;
 import static org.batfish.representation.frr.CumulusStructureUsage.BGP_ADDRESS_FAMILY_L2VPN_ADVERTISE_IPV4_UNICAST;
 import static org.batfish.representation.frr.CumulusStructureUsage.BGP_ADDRESS_FAMILY_L2VPN_ADVERTISE_IPV6_UNICAST;
+import static org.batfish.representation.frr.CumulusStructureUsage.BGP_IPV4_UNICAST_NEIGHBOR_DEFAULT_ORIGINATE_ROUTE_MAP;
 import static org.batfish.representation.frr.CumulusStructureUsage.BGP_IPV4_UNICAST_REDISTRIBUTE_CONNECTED_ROUTE_MAP;
 import static org.batfish.representation.frr.CumulusStructureUsage.BGP_IPV4_UNICAST_REDISTRIBUTE_OSPF_ROUTE_MAP;
 import static org.batfish.representation.frr.CumulusStructureUsage.BGP_IPV4_UNICAST_REDISTRIBUTE_STATIC_ROUTE_MAP;
@@ -1117,6 +1118,15 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
       return;
     }
     _currentBgpNeighborIpv4UnicastAddressFamily.setDefaultOriginate(true);
+    if (ctx.route_map_name() != null) {
+      String routeMapName = toString(ctx.route_map_name());
+      _currentBgpNeighborIpv4UnicastAddressFamily.setDefaultOriginateRouteMap(routeMapName);
+      _vc.referenceStructure(
+          ROUTE_MAP,
+          routeMapName,
+          BGP_IPV4_UNICAST_NEIGHBOR_DEFAULT_ORIGINATE_ROUTE_MAP,
+          ctx.route_map_name().getStart().getLine());
+    }
   }
 
   @Override

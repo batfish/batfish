@@ -1,5 +1,6 @@
 package org.batfish.grammar.frr;
 
+import static junit.framework.TestCase.assertEquals;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasText;
 import static org.batfish.common.matchers.WarningsMatchers.hasParseWarning;
@@ -694,17 +695,18 @@ public class FrrGrammarTest {
   public void testBgpAddressFamilyNeighborDefaultOriginate_parsing() {
     parseLines(
         "router bgp 1",
-        "neighbor N interface description N",
-        "address-family ipv4 unicast",
-        "neighbor N default-originate",
-        "exit-address-family");
-    assertTrue(
-        _frr.getBgpProcess()
-            .getDefaultVrf()
-            .getNeighbors()
-            .get("N")
-            .getIpv4UnicastAddressFamily()
-            .getDefaultOriginate());
+        "  neighbor N interface description N",
+        "  neighbor N2 interface description N2",
+        "  address-family ipv4 unicast",
+        "    neighbor N default-originate",
+        "    neighbor N2 default-originate route-map RM",
+        "  exit-address-family");
+    Map<String, BgpNeighbor> bgpNeighbors = _frr.getBgpProcess().getDefaultVrf().getNeighbors();
+    assertTrue(bgpNeighbors.get("N").getIpv4UnicastAddressFamily().getDefaultOriginate());
+    assertNull(bgpNeighbors.get("N").getIpv4UnicastAddressFamily().getDefaultOriginateRouteMap());
+    assertTrue(bgpNeighbors.get("N2").getIpv4UnicastAddressFamily().getDefaultOriginate());
+    assertEquals(
+        "RM", bgpNeighbors.get("N2").getIpv4UnicastAddressFamily().getDefaultOriginateRouteMap());
   }
 
   @Test
@@ -787,6 +789,49 @@ public class FrrGrammarTest {
                     .setProtocol(RoutingProtocol.BGP)
                     .setSrcProtocol(RoutingProtocol.BGP)
                     .setAsPath(AsPath.ofSingletonAsSets(3L, 2L)) // propagated route
+                    .setAdmin(20)
+                    .setLocalPreference(100)
+                    .build())));
+  }
+
+  /**
+   * Test that default routes originated via default-originate are subjected to configured route
+   * maps.
+   */
+  @Test
+  public void testBgpAddressFamilyNeighborDefaultOriginate_routeMap() throws IOException {
+    /*
+     There are two nodes in the topology: originator and listener.
+     The default-originate route-map points to a route-map that prepends ASN 23.
+     We check if the originated route has the prepended ASN.
+    */
+
+    String snapshotName = "default-originate-route-map";
+    List<String> configurationNames = ImmutableList.of("frr-originator", "frr-listener");
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationFiles(SNAPSHOTS_PREFIX + snapshotName, configurationNames)
+                .build(),
+            _folder);
+
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+    DataPlane dp = batfish.loadDataPlane(snapshot);
+
+    assertThat(
+        dp.getRibs().get("frr-listener").get(DEFAULT_VRF_NAME).getRoutes(),
+        hasItem(
+            equalTo(
+                Bgpv4Route.testBuilder()
+                    .setNetwork(Prefix.ZERO)
+                    .setNextHopIp(Ip.parse("10.1.1.2"))
+                    .setReceivedFromIp(Ip.parse("10.1.1.2"))
+                    .setOriginatorIp(Ip.parse("2.2.2.2"))
+                    .setOriginType(OriginType.INCOMPLETE)
+                    .setProtocol(RoutingProtocol.BGP)
+                    .setSrcProtocol(RoutingProtocol.BGP)
+                    .setAsPath(AsPath.ofSingletonAsSets(2L, 23L))
                     .setAdmin(20)
                     .setLocalPreference(100)
                     .build())));

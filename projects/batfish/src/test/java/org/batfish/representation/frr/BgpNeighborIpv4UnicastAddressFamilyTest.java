@@ -25,6 +25,7 @@ public class BgpNeighborIpv4UnicastAddressFamilyTest {
     _withSettings.setActivated(true);
     _withSettings.setAllowAsIn(5);
     _withSettings.setDefaultOriginate(true);
+    _withSettings.setDefaultOriginateRouteMap("RM");
     _withSettings.setRemovePrivateAsMode(RemovePrivateAsMode.REPLACE_AS);
     _withSettings.setRouteReflectorClient(false);
   }
@@ -36,6 +37,7 @@ public class BgpNeighborIpv4UnicastAddressFamilyTest {
     assertTrue(_empty.getActivated());
     assertEquals(_empty.getAllowAsIn().intValue(), 5);
     assertTrue(_empty.getDefaultOriginate());
+    assertEquals("RM", _empty.getDefaultOriginateRouteMap());
     assertEquals(_empty.getRemovePrivateAsMode(), RemovePrivateAsMode.REPLACE_AS);
     assertFalse(_empty.getRouteReflectorClient());
   }
@@ -47,6 +49,7 @@ public class BgpNeighborIpv4UnicastAddressFamilyTest {
     assertThat(_empty.getActivated(), nullValue());
     assertThat(_empty.getAllowAsIn(), nullValue());
     assertThat(_empty.getDefaultOriginate(), nullValue());
+    assertThat(_empty.getDefaultOriginateRouteMap(), nullValue());
     assertNull(_empty.getRemovePrivateAsMode());
     assertThat(_empty.getRouteReflectorClient(), nullValue());
   }
@@ -58,6 +61,9 @@ public class BgpNeighborIpv4UnicastAddressFamilyTest {
     assertThat(_withSettings.getActivated(), equalTo(_withSettings.getActivated()));
     assertThat(_withSettings.getAllowAsIn(), equalTo(_withSettings.getAllowAsIn()));
     assertThat(_withSettings.getDefaultOriginate(), equalTo(_withSettings.getDefaultOriginate()));
+    assertThat(
+        _withSettings.getDefaultOriginateRouteMap(),
+        equalTo(_withSettings.getDefaultOriginateRouteMap()));
     assertThat(
         _withSettings.getRemovePrivateAsMode(), equalTo(_withSettings.getRemovePrivateAsMode()));
     assertThat(
