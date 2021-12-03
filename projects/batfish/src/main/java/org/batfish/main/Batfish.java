@@ -2821,8 +2821,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Map<String, VendorConfiguration> vendorConfigurations;
     Span parseNetworkConfigsSpan = GlobalTracer.get().buildSpan("Parse network configs").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(parseNetworkConfigsSpan)) {
-      ImmutableMap.Builder<String, VendorConfiguration> vendorConfigurationBuilder =
-          ImmutableMap.builder();
       assert scope != null; // avoid unused warning
       List<Map<String, String>> keyedConfigTexts = new LinkedList<>();
 
