@@ -17,6 +17,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferencedStructure;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddressMetadata;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
@@ -49,10 +50,12 @@ import static org.batfish.vendor.a10.representation.A10Conversion.SNAT_PORT_POOL
 import static org.batfish.vendor.a10.representation.A10StructureType.ACCESS_LIST;
 import static org.batfish.vendor.a10.representation.A10StructureType.HEALTH_MONITOR;
 import static org.batfish.vendor.a10.representation.A10StructureType.INTERFACE;
+import static org.batfish.vendor.a10.representation.A10StructureType.NAT_POOL;
 import static org.batfish.vendor.a10.representation.A10StructureType.SERVER;
 import static org.batfish.vendor.a10.representation.A10StructureType.SERVICE_GROUP;
 import static org.batfish.vendor.a10.representation.A10StructureType.VRRP_A_FAIL_OVER_POLICY_TEMPLATE;
 import static org.batfish.vendor.a10.representation.A10StructureType.VRRP_A_VRID;
+import static org.batfish.vendor.a10.representation.A10StructureUsage.VIRTUAL_SERVER_SOURCE_NAT_POOL;
 import static org.batfish.vendor.a10.representation.Interface.DEFAULT_MTU;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.Matchers.allOf;
@@ -1317,6 +1320,21 @@ public class A10GrammarTest {
     assertTrue(pool2.getPortOverload());
     assertThat(pool2.getScaleoutDeviceId(), equalTo(1));
     assertThat(pool2.getVrid(), equalTo(2));
+  }
+
+  @Test
+  public void testNatPoolReference() throws IOException {
+    String hostname = "nat_pool_ref";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Confirm reference counts
+    assertThat(ccae, hasNumReferrers(filename, NAT_POOL, "POOL1", 1));
+    assertThat(
+        ccae, hasReferencedStructure(filename, NAT_POOL, "POOL1", VIRTUAL_SERVER_SOURCE_NAT_POOL));
+    assertThat(ccae, hasNumReferrers(filename, NAT_POOL, "POOL2", 0));
   }
 
   @Test
