@@ -934,7 +934,7 @@ public interface StorageProvider {
    */
   @MustBeClosed
   @Nonnull
-  Stream<String> listInputSonicConfigDbKeys(NetworkSnapshot snapshot) throws IOException;
+  Stream<String> listInputSonicConfigsKeys(NetworkSnapshot snapshot) throws IOException;
 
   /**
    * Returns a list of snapshot input object keys corresponding to host configurations.

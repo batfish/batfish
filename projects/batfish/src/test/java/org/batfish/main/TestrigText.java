@@ -198,7 +198,7 @@ public class TestrigText {
     public Builder setSonicConfigDbFiles(String testrigResourcePrefix, Iterable<String> filenames) {
       _sonicConfigDbBytes =
           readTestrigResources(
-              testrigResourcePrefix, BfConsts.RELPATH_SONIC_CONFIGDB_DIR, filenames);
+              testrigResourcePrefix, BfConsts.RELPATH_SONIC_CONFIGS_DIR, filenames);
       return this;
     }
 

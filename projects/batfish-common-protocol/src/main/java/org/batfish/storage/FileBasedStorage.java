@@ -1961,9 +1961,9 @@ public class FileBasedStorage implements StorageProvider {
   @MustBeClosed
   @Nonnull
   @Override
-  public Stream<String> listInputSonicConfigDbKeys(NetworkSnapshot snapshot) throws IOException {
+  public Stream<String> listInputSonicConfigsKeys(NetworkSnapshot snapshot) throws IOException {
     return listSnapshotInputObjectKeys(snapshot)
-        .filter(key -> keyInDir(key, BfConsts.RELPATH_SONIC_CONFIGDB_DIR));
+        .filter(key -> keyInDir(key, BfConsts.RELPATH_SONIC_CONFIGS_DIR));
   }
 
   private @Nonnull Path getParseVendorConfigurationAnswerElementPath(NetworkSnapshot snapshot) {

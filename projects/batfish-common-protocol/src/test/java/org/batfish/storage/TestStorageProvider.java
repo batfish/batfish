@@ -616,7 +616,7 @@ public class TestStorageProvider implements StorageProvider {
 
   @Nonnull
   @Override
-  public Stream<String> listInputSonicConfigDbKeys(NetworkSnapshot snapshot) throws IOException {
+  public Stream<String> listInputSonicConfigsKeys(NetworkSnapshot snapshot) throws IOException {
     throw new UnsupportedOperationException();
   }
 
