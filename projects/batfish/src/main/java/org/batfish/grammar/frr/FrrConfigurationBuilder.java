@@ -118,6 +118,7 @@ import org.batfish.grammar.frr.FrrParser.Rms_communityContext;
 import org.batfish.grammar.frr.FrrParser.Rms_local_preferenceContext;
 import org.batfish.grammar.frr.FrrParser.Rms_metricContext;
 import org.batfish.grammar.frr.FrrParser.Rms_metric_typeContext;
+import org.batfish.grammar.frr.FrrParser.Rms_srcContext;
 import org.batfish.grammar.frr.FrrParser.Rms_tagContext;
 import org.batfish.grammar.frr.FrrParser.Rms_weightContext;
 import org.batfish.grammar.frr.FrrParser.Rmsipnh_literalContext;
@@ -1663,6 +1664,14 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
       return;
     }
     _currentRouteMapEntry.setSetMetricType(new RouteMapSetMetricType(type));
+  }
+
+  @Override
+  public void exitRms_src(Rms_srcContext ctx) {
+    if (ctx.ip_address() != null) {
+      todo(ctx);
+    }
+    // no warning for v6
   }
 
   @Override
