@@ -1957,6 +1957,14 @@ public class FileBasedStorage implements StorageProvider {
         .filter(key -> keyInDir(key, BfConsts.RELPATH_CHECKPOINT_MANAGEMENT_DIR));
   }
 
+  @MustBeClosed
+  @Nonnull
+  @Override
+  public Stream<String> listInputSonicConfigsKeys(NetworkSnapshot snapshot) throws IOException {
+    return listSnapshotInputObjectKeys(snapshot)
+        .filter(key -> keyInDir(key, BfConsts.RELPATH_SONIC_CONFIGS_DIR));
+  }
+
   private @Nonnull Path getParseVendorConfigurationAnswerElementPath(NetworkSnapshot snapshot) {
     return getSnapshotOutputDir(snapshot.getNetwork(), snapshot.getSnapshot())
         .resolve(RELPATH_PARSE_ANSWER_PATH);
