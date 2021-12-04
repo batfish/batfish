@@ -698,9 +698,8 @@ public final class FrrConversions {
             .setOwner(c)
             .setName(generatedBgpPeerExportPolicyName(vrfName, neighbor.getName()));
 
-    // If default originate is set for a neighbor, we will send it a "fresh" default route. This
-    // route is subjected to defaultOriginateRouteMap, not to the neighbor's outgoing route map.
-    // We will drop other default routes.
+    // If default originate is set for a neighbor, we will send it a "fresh" default route is not
+    // subjected to the neighbor's outgoing route map. We will drop other default routes.
     if (bgpDefaultOriginate(neighbor)) {
       initBgpDefaultRouteExportPolicy(c);
       peerExportPolicy.addStatement(
