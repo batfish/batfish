@@ -169,7 +169,9 @@ sbafi6_null_tail
 :
   (
      // there are likely others but haven't seen examples yet, so leaving for later
-     NEIGHBOR
+     AGGREGATE_ADDRESS
+     | NEIGHBOR
+     | NETWORK
      | NO
      | REDISTRIBUTE
   ) null_rest_of_line
@@ -399,7 +401,7 @@ sb_network
 
 sbafi_neighbor
 :
-  NEIGHBOR (ip = IP_ADDRESS | name = word)
+  NEIGHBOR (ip = IP_ADDRESS | ip6=IPV6_ADDRESS | name = word)
   (
     sbafin_activate
   | sbafin_allowas_in
