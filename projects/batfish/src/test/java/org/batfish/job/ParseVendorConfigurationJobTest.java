@@ -3,8 +3,10 @@ package org.batfish.job;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.job.ParseVendorConfigurationJob.detectFormat;
+import static org.batfish.job.ParseVendorConfigurationJob.getSonicFrrFilename;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
@@ -16,11 +18,15 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 /** Tests of {@link ParseVendorConfigurationJob}. */
 public class ParseVendorConfigurationJobTest {
   private static final String HOST_TESTCONFIGS_PREFIX = "org/batfish/job/host/";
+
+  @Rule public ExpectedException _thrown = ExpectedException.none();
 
   private static ParseVendorConfigurationResult parseHost(String resourcePath) {
     return new ParseVendorConfigurationJob(
@@ -100,5 +106,39 @@ public class ParseVendorConfigurationJobTest {
     assertThat(
         detectFormat(ImmutableMap.of("file", fileText), settings, ConfigurationFormat.UNKNOWN),
         equalTo(ConfigurationFormat.IGNORED));
+  }
+
+  @Test
+  public void testGetSonicFrrFilename() {
+    assertEquals(
+        "frr", getSonicFrrFilename(ImmutableMap.of("frr", "hello", "configdb.json", "{}")));
+
+    // leading whitespace
+    assertEquals(
+        "frr", getSonicFrrFilename(ImmutableMap.of("frr", "hello", "configdb.json", " \n  {}")));
+  }
+
+  @Test
+  public void testGetSonicFrrFilename_twoJsonFiles() {
+    _thrown.expect(IllegalArgumentException.class);
+    getSonicFrrFilename(ImmutableMap.of("f1", "{}", "f2", "{}"));
+  }
+
+  @Test
+  public void testGetSonicFrrFilename_noJsonFiles() {
+    _thrown.expect(IllegalArgumentException.class);
+    getSonicFrrFilename(ImmutableMap.of("f1", "aa", "f2", "ab"));
+  }
+
+  @Test
+  public void testGetSonicFrrFilename_oneFile() {
+    _thrown.expect(IllegalArgumentException.class);
+    getSonicFrrFilename(ImmutableMap.of("frr", "hello"));
+  }
+
+  @Test
+  public void testGetSonicFrrFilename_manyFiles() {
+    _thrown.expect(IllegalArgumentException.class);
+    getSonicFrrFilename(ImmutableMap.of("frr", "hello", "a", "{}", "b", "{}"));
   }
 }

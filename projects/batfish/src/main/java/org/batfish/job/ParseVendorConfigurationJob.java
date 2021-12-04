@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -65,6 +66,7 @@ import org.batfish.grammar.flatvyos.FlatVyosCombinedParser;
 import org.batfish.grammar.flatvyos.FlatVyosControlPlaneExtractor;
 import org.batfish.grammar.fortios.FortiosCombinedParser;
 import org.batfish.grammar.fortios.FortiosControlPlaneExtractor;
+import org.batfish.grammar.frr.FrrCombinedParser;
 import org.batfish.grammar.iptables.IptablesCombinedParser;
 import org.batfish.grammar.iptables.IptablesControlPlaneExtractor;
 import org.batfish.grammar.mrv.MrvCombinedParser;
@@ -79,6 +81,7 @@ import org.batfish.vendor.a10.grammar.A10CombinedParser;
 import org.batfish.vendor.a10.grammar.A10ControlPlaneExtractor;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayCombinedParser;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayControlPlaneExtractor;
+import org.batfish.vendor.sonic.grammar.SonicControlPlaneExtractor;
 
 @ParametersAreNonnullByDefault
 public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigurationResult> {
@@ -226,7 +229,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
    */
   @SuppressWarnings("fallthrough")
   private VendorConfiguration parseFiles(ConfigurationFormat format) {
-    ControlPlaneExtractor extractor = null;
+    ControlPlaneExtractor extractor;
     FlattenerLineMap lineMap = null;
 
     Span parseSpan = GlobalTracer.get().buildSpan("Creating parser").start();
@@ -411,6 +414,28 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
                     "Failed to create host config from file: '%s', with error: %s",
                     filename, e.getMessage()),
                 e);
+          }
+
+        case SONIC:
+          {
+            String frrFilename = getSonicFrrFilename(_fileTexts);
+            String frrText = _fileTexts.get(frrFilename);
+            String configDbFilename =
+                _fileTexts.keySet().stream()
+                    .filter(name -> !name.equals(frrFilename))
+                    .findAny()
+                    .get(); // there has to be another file
+            String configDbFileText = _fileTexts.get(configDbFilename);
+            FrrCombinedParser frrParser = new FrrCombinedParser(frrText, _settings, 1, 0);
+            extractor =
+                new SonicControlPlaneExtractor(
+                    configDbFileText,
+                    frrText,
+                    frrParser,
+                    _fileResults.get(frrFilename)._warnings,
+                    _fileResults.get(frrFilename)._silentSyntax);
+            parseFile(frrFilename, frrParser, extractor);
+            break;
           }
 
         case VYOS:
@@ -735,22 +760,6 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
     return _fileTexts;
   }
 
-  /**
-   * For some existing APIs, e.g., {@link
-   * org.batfish.vendor.VendorConfiguration#setFilename(java.lang.String)}, a single filename is
-   * expected. This representative filename, corresponding to the main file, will be used until we
-   * can upgrade those APIs.
-   */
-  @SuppressWarnings("unused")
-  private String getRepresentativeFilename(
-      Map<String, String> fileTexts, ConfigurationFormat format) {
-    if (fileTexts.size() == 1) {
-      return Iterables.getOnlyElement(fileTexts.keySet());
-    }
-    // TODO: for multi-file cases, implement format-based representative
-    throw new UnsupportedOperationException();
-  }
-
   /** Returns a string, made up of filenames, used in warnings */
   static String jobFilenamesToString(Collection<String> filenames) {
     return filenames.size() == 1
@@ -759,5 +768,53 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
             .map(Names::escapeNameIfNeeded)
             .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()))
             .toString();
+  }
+
+  /**
+   * For some existing APIs, e.g., {@link
+   * org.batfish.vendor.VendorConfiguration#setFilename(java.lang.String)}, a single filename is
+   * expected. This representative filename, corresponding to the main file, will be used until we
+   * can upgrade those APIs.
+   */
+  @SuppressWarnings("unused")
+  private static String getRepresentativeFilename(
+      Map<String, String> fileTexts, ConfigurationFormat format) {
+    if (fileTexts.size() == 1) {
+      return Iterables.getOnlyElement(fileTexts.keySet());
+    }
+    if (format == ConfigurationFormat.SONIC) {
+      return getSonicFrrFilename(fileTexts);
+    }
+    throw new IllegalArgumentException("Cannot get representative filename for " + format);
+  }
+
+  /** Given filename to text map for a device, return which of the two files is frr.conf. */
+  @VisibleForTesting
+  static String getSonicFrrFilename(Map<String, String> fileTexts) {
+    if (fileTexts.size() != 2) {
+      // Batfish pairs up files -- but we double check
+      throw new IllegalArgumentException(
+          String.format(
+              "SONiC files should come in pairs. Got %d files: %s",
+              fileTexts.size(), fileTexts.keySet()));
+    }
+    Iterator<String> fileIterator = fileTexts.keySet().iterator();
+    String filename1 = fileIterator.next();
+    String filename2 = fileIterator.next();
+    // The file starting with '{' is a cheap way to check it is configdb.json. Valid frr.conf
+    // files cannot start with '{'.
+    String fileText1 = fileTexts.get(filename1).trim();
+    String fileText2 = fileTexts.get(filename2).trim();
+    if (fileText1.startsWith("{") && !fileText2.startsWith("{")) {
+      return filename2;
+    }
+    if (!fileText1.startsWith("{") && fileText2.startsWith("{")) {
+      return filename1;
+    }
+    if (fileText1.startsWith("{") && fileText2.startsWith("{")) {
+      throw new IllegalArgumentException("Neither SONiC file appears to be frr configuration");
+    }
+    // both start with '{'
+    throw new IllegalArgumentException("Neither SONiC file appears to be configdb JSON file");
   }
 }
