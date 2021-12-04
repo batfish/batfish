@@ -38,6 +38,11 @@ ip_prefix_length
   UINT8
 ;
 
+ipv6_address
+:
+  IPV6_ADDRESS
+;
+
 access_list_action
 :
    PERMIT
