@@ -928,6 +928,15 @@ public interface StorageProvider {
   Stream<String> listInputCheckpointManagementKeys(NetworkSnapshot snapshot) throws IOException;
 
   /**
+   * Returns a list of snapshot input object keys corresponding to SONiC config files.
+   *
+   * @throws IOException if there is an error
+   */
+  @MustBeClosed
+  @Nonnull
+  Stream<String> listInputSonicConfigsKeys(NetworkSnapshot snapshot) throws IOException;
+
+  /**
    * Returns a list of snapshot input object keys corresponding to host configurations.
    *
    * @throws IOException if there is an error
