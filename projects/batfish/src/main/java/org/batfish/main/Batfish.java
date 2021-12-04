@@ -2802,7 +2802,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
     } finally {
       serializeNetworkConfigsSpan.finish();
     }
-    return !vendorConfigurations.isEmpty();
+    try {
+      return !vendorConfigurations.isEmpty() // common-case quick check
+          || _storage.listInputNetworkConfigurationsKeys(snapshot).findAny().isPresent()
+          || _storage.listInputSonicConfigsKeys(snapshot).findAny().isPresent();
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
   }
 
   /**
@@ -2900,7 +2906,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
     } finally {
       serializeNetworkConfigsSpan.finish();
     }
-    return !vendorConfigurations.isEmpty();
+    try {
+      return !vendorConfigurations.isEmpty() // common-case quick check
+          || _storage.listInputNetworkConfigurationsKeys(snapshot).findAny().isPresent()
+          || _storage.listInputSonicConfigsKeys(snapshot).findAny().isPresent();
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
   }
 
   /**
