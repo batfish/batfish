@@ -1083,8 +1083,8 @@ public class FrrGrammarTest {
         "    neighbor 2001:100:1:31::2 remove-private-AS",
         "    neighbor 2001:100:1:31::2 next-hop-self",
         "    neighbor 2001:100:1:31::2 allowas-in",
-        "    neighbor 2001:100:1:31::2 route-map cogent6-out out",
-        "    neighbor 2001:100:1:31::2 route-map cogent6-in in");
+        "    neighbor 2001:100:1:31::2 route-map rm-out out",
+        "    neighbor 2001:100:1:31::2 route-map rm-in in");
     Map<String, BgpNeighbor> neighbors = _frr.getBgpProcess().getDefaultVrf().getNeighbors();
     assertThat(neighbors.keySet(), contains("2001:100:1:31::2"));
     BgpNeighbor foo = neighbors.get("2001:100:1:31::2");
