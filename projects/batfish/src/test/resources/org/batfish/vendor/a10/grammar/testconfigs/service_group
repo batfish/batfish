@@ -30,6 +30,8 @@ slb service-group SG2 tcp
     enable
     priority 16
   member SERVER3 80
+! Can re-enter without protocol
+slb service-group SG2
   ! Can define new ports for a server in this context
   member SERVER3 81
   method least-request

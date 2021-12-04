@@ -1688,7 +1688,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     List<ParseVendorConfigurationJob> jobs =
         keyedConfigurationTexts.stream()
             .map(fileMap -> makeParseVendorConfigurationJob(snapshot, fileMap, expectedFormat))
-            .collect(ImmutableList.toImmutableList());
+            .collect(
+                Collectors.toList()); // should not be immutable because the job executor shuffles
     BatfishJobExecutor.runJobsInExecutor(
         _settings,
         _logger,
