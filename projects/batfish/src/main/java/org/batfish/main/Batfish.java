@@ -2802,18 +2802,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
     } finally {
       serializeNetworkConfigsSpan.finish();
     }
-    try {
-      return !vendorConfigurations.isEmpty() // common-case quick check
-          || _storage.listInputNetworkConfigurationsKeys(snapshot).findAny().isPresent()
-          || _storage.listInputSonicConfigsKeys(snapshot).findAny().isPresent();
-    } catch (IOException e) {
-      throw new UncheckedIOException(e);
-    }
+    // checking vendorConfigurations is a quick, common-case check before creating streams
+    return !vendorConfigurations.isEmpty() || networkConfigsExist(snapshot);
   }
 
-  /**
-   * Returns {@code true} iff at least one valid (node-generating) network configuration was found.
-   */
+  /** Returns {@code true} iff at least one network configuration was found. */
   private boolean oldSerializeNetworkConfigs(
       NetworkSnapshot snapshot,
       ParseVendorConfigurationAnswerElement answerElement,
@@ -2906,13 +2899,27 @@ public class Batfish extends PluginConsumer implements IBatfish {
     } finally {
       serializeNetworkConfigsSpan.finish();
     }
-    try {
-      return !vendorConfigurations.isEmpty() // common-case quick check
-          || _storage.listInputNetworkConfigurationsKeys(snapshot).findAny().isPresent()
-          || _storage.listInputSonicConfigsKeys(snapshot).findAny().isPresent();
+    // checking vendorConfigurations is a quick, common-case check before creating streams
+    return !vendorConfigurations.isEmpty() || networkConfigsExist(snapshot);
+  }
+
+  /** Returns if any network configuration files exist under configs or sonic_configs folders. */
+  private boolean networkConfigsExist(NetworkSnapshot snapshot) {
+    try (Stream<String> keys = _storage.listInputNetworkConfigurationsKeys(snapshot)) {
+      if (keys.findAny().isPresent()) {
+        return true;
+      }
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
+    try (Stream<String> keys = _storage.listInputSonicConfigsKeys(snapshot)) {
+      if (keys.findAny().isPresent()) {
+        return true;
+      }
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+    return false;
   }
 
   /**
