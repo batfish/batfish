@@ -7,6 +7,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.VendorConversionException;
@@ -29,16 +31,16 @@ import org.batfish.representation.frr.Vxlan;
 public class SonicConfiguration extends FrrVendorConfiguration {
 
   private @Nullable String _hostname;
-  private @Nullable ConfigDb _configDb;
+  private @Nonnull ConfigDb _configDb;
   private @Nonnull final FrrConfiguration _frr;
 
   public SonicConfiguration() {
+    _configDb = ConfigDb.builder().build();
     _frr = new FrrConfiguration();
   }
 
   @Override
   public List<Configuration> toVendorIndependentConfigurations() throws VendorConversionException {
-    checkArgument(_configDb != null, "Conversion called before configDb was set");
     checkArgument(_hostname != null, "Conversion called before hostname was set");
 
     Configuration c = new Configuration(_hostname, ConfigurationFormat.SONIC);
@@ -64,7 +66,7 @@ public class SonicConfiguration extends FrrVendorConfiguration {
           Interface.builder()
               .setName(portName)
               .setOwner(c)
-              .setVrf(c.getDefaultVrf()) // TODO: everything is default VRF at the moment
+              .setVrf(c.getDefaultVrf()) // everything is default VRF at the moment
               .setType(InterfaceType.PHYSICAL)
               .setDescription(port.getDescription().orElse(null))
               .setMtu(port.getMtu().orElse(null))
@@ -84,7 +86,7 @@ public class SonicConfiguration extends FrrVendorConfiguration {
     return _configDb;
   }
 
-  public void setConfigDb(@Nullable ConfigDb configDb) {
+  public void setConfigDb(ConfigDb configDb) {
     _configDb = configDb;
   }
 
@@ -95,23 +97,31 @@ public class SonicConfiguration extends FrrVendorConfiguration {
 
   @Override
   public boolean hasInterface(String ifaceName) {
-    return false;
+    return _configDb.getInterfaces().containsKey(ifaceName);
   }
 
   @Override
   public boolean hasVrf(String vrfName) {
-    return false;
+    return vrfName.equals(DEFAULT_VRF_NAME); // only have default VRF for now
   }
 
   @Override
   public String getInterfaceVrf(String ifaceName) {
-    return null;
+    if (!_configDb.getInterfaces().containsKey(ifaceName)) {
+      throw new NoSuchElementException("Interface " + ifaceName + " does not exist");
+    }
+    return DEFAULT_VRF_NAME; // only have default VRF for now
   }
 
   @Nonnull
   @Override
   public List<ConcreteInterfaceAddress> getInterfaceAddresses(String ifaceName) {
-    return null;
+    if (!_configDb.getInterfaces().containsKey(ifaceName)) {
+      throw new NoSuchElementException("Interface " + ifaceName + " does not exist");
+    }
+    return Optional.ofNullable(_configDb.getInterfaces().get(ifaceName).getAddress())
+        .map(ImmutableList::of)
+        .orElse(ImmutableList.of());
   }
 
   @Override
