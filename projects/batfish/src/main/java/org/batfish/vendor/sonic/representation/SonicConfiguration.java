@@ -1,5 +1,10 @@
 package org.batfish.vendor.sonic.representation;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
@@ -9,11 +14,15 @@ import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DeviceModel;
+import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceType;
+import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.Vrf;
 import org.batfish.representation.frr.FrrConfiguration;
 import org.batfish.representation.frr.FrrVendorConfiguration;
 import org.batfish.representation.frr.Vxlan;
-
-// TODO: implement conversion
+import org.batfish.vendor.sonic.representation.PortDb.Port;
 
 @ParametersAreNonnullByDefault
 public class SonicConfiguration extends FrrVendorConfiguration {
@@ -24,6 +33,48 @@ public class SonicConfiguration extends FrrVendorConfiguration {
 
   public SonicConfiguration() {
     _frr = new FrrConfiguration();
+  }
+
+  @Override
+  public List<Configuration> toVendorIndependentConfigurations() throws VendorConversionException {
+    checkArgument(_configDb != null, "Conversion called before configDb was set");
+    checkArgument(_hostname != null, "Conversion called before hostname was set");
+
+    Configuration c = new Configuration(_hostname, ConfigurationFormat.SONIC);
+    c.setDeviceModel(DeviceModel.SONIC);
+    c.setDefaultCrossZoneAction(LineAction.PERMIT); // TODO: confirm
+    c.setDefaultInboundAction(LineAction.PERMIT); // TODO: confirm
+    c.setExportBgpFromBgpRib(true);
+
+    // create default VRF
+    Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
+    c.setVrfs(ImmutableMap.of(DEFAULT_VRF_NAME, vrf));
+
+    convertPorts(c, _configDb.getPort(), _configDb.getInterface());
+
+    return ImmutableList.of(c);
+  }
+
+  private void convertPorts(Configuration c, PortDb portDb, InterfaceDb interfaceDb) {
+    for (String portName : portDb.getPorts().keySet()) {
+      Port port = portDb.getPorts().get(portName);
+      Interface.Builder ib =
+          Interface.builder()
+              .setName(portName)
+              .setOwner(c)
+              .setVrf(c.getDefaultVrf()) // TODO: everything is default VRF at the moment
+              .setType(InterfaceType.PHYSICAL)
+              .setDescription(port.getDescription().orElse(null))
+              .setMtu(port.getMtu().orElse(null))
+              .setActive(port.getAdminStatus().orElse(true)); // default is active
+
+      if (interfaceDb.getInterfaces().containsKey(portName)) {
+        L3Interface l3Interface = interfaceDb.getInterfaces().get(portName);
+        ib.setAddress(l3Interface.getAddress());
+      }
+
+      ib.build();
+    }
   }
 
   @Nullable
@@ -63,7 +114,7 @@ public class SonicConfiguration extends FrrVendorConfiguration {
 
   @Override
   public Map<String, Vxlan> getVxlans() {
-    return null;
+    throw new UnsupportedOperationException();
   }
 
   @Override
@@ -78,9 +129,4 @@ public class SonicConfiguration extends FrrVendorConfiguration {
 
   @Override
   public void setVendor(ConfigurationFormat format) {}
-
-  @Override
-  public List<Configuration> toVendorIndependentConfigurations() throws VendorConversionException {
-    return null;
-  }
 }

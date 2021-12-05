@@ -1,5 +1,6 @@
 package org.batfish.vendor.sonic.representation;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.vendor.sonic.representation.ConfigDbObject.Type.DEVICE_METADATA;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -15,6 +16,7 @@ import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.vendor.sonic.representation.ConfigDbObject.Type;
 
 /**
  * Represents ConfigDb for a one Sonic node.
@@ -23,6 +25,21 @@ import org.batfish.common.util.BatfishObjectMapper;
  */
 @ParametersAreNonnullByDefault
 public class ConfigDb implements Serializable {
+
+  public @Nonnull InterfaceDb getInterface() {
+    return firstNonNull(
+        (InterfaceDb) _objects.get(Type.INTERFACE), new InterfaceDb(ImmutableMap.of()));
+  }
+
+  public @Nonnull LoopbackDb getLoopback() {
+    return firstNonNull(
+        (LoopbackDb) _objects.get(Type.LOOPBACK), new LoopbackDb(ImmutableMap.of()));
+  }
+
+  public @Nonnull PortDb getPort() {
+    return firstNonNull((PortDb) _objects.get(Type.PORT), new PortDb(ImmutableMap.of()));
+  }
+
   private final @Nonnull Map<ConfigDbObject.Type, ConfigDbObject> _objects;
 
   public ConfigDb(Map<ConfigDbObject.Type, ConfigDbObject> objects) {
@@ -38,15 +55,39 @@ public class ConfigDb implements Serializable {
         switch (objectType) {
           case DEVICE_METADATA:
             objectMap.put(
-                ConfigDbObject.Type.DEVICE_METADATA,
+                Type.DEVICE_METADATA,
                 BatfishObjectMapper.ignoreUnknownMapper()
                     .treeToValue(objects.get(key), DeviceMetadata.class));
             break;
           case INTERFACE:
             objectMap.put(
-                ConfigDbObject.Type.INTERFACE,
+                Type.INTERFACE,
                 BatfishObjectMapper.ignoreUnknownMapper()
                     .treeToValue(objects.get(key), InterfaceDb.class));
+            break;
+          case LOOPBACK:
+            objectMap.put(
+                Type.LOOPBACK,
+                BatfishObjectMapper.ignoreUnknownMapper()
+                    .treeToValue(objects.get(key), LoopbackDb.class));
+            break;
+          case NTP_SERVER:
+            objectMap.put(
+                Type.NTP_SERVER,
+                BatfishObjectMapper.ignoreUnknownMapper()
+                    .treeToValue(objects.get(key), NtpServer.class));
+            break;
+          case PORT:
+            objectMap.put(
+                Type.PORT,
+                BatfishObjectMapper.ignoreUnknownMapper()
+                    .treeToValue(objects.get(key), PortDb.class));
+            break;
+          case SYSLOG_SERVER:
+            objectMap.put(
+                Type.SYSLOG_SERVER,
+                BatfishObjectMapper.ignoreUnknownMapper()
+                    .treeToValue(objects.get(key), SyslogServer.class));
             break;
           default:
             throw new UnsupportedOperationException(

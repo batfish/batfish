@@ -16,7 +16,7 @@ import org.batfish.vendor.sonic.representation.ConfigDb;
 import org.batfish.vendor.sonic.representation.ConfigDbObject;
 import org.batfish.vendor.sonic.representation.DeviceMetadata;
 import org.batfish.vendor.sonic.representation.InterfaceDb;
-import org.batfish.vendor.sonic.representation.InterfaceDb.Interface;
+import org.batfish.vendor.sonic.representation.L3Interface;
 import org.batfish.vendor.sonic.representation.SonicConfiguration;
 import org.junit.Rule;
 import org.junit.Test;
@@ -56,7 +56,7 @@ public class SonicGrammarTest {
                     new InterfaceDb(
                         ImmutableMap.of(
                             "Ethernet0",
-                            new Interface(ConcreteInterfaceAddress.parse("1.1.1.1/24"))))))));
+                            new L3Interface(ConcreteInterfaceAddress.parse("1.1.1.1/24"))))))));
     assertThat(vc.getFrrConfiguration().getRouteMaps().keySet(), equalTo(ImmutableSet.of("TEST")));
   }
 }

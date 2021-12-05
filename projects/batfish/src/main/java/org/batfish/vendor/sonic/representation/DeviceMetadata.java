@@ -25,7 +25,8 @@ public class DeviceMetadata implements ConfigDbObject {
 
   @JsonCreator
   private static DeviceMetadata create(Map<String, Map<String, String>> properties) {
-    checkArgument(properties.size() == 1, "DEVICE_METADATA should have only one property");
+    checkArgument(
+        properties.size() == 1, "DEVICE_METADATA should have only one property called 'localhost'");
     checkArgument(properties.containsKey("localhost"), "'localhost' not found in %DEVICE_METADATA");
     return new DeviceMetadata(properties.get("localhost"));
   }

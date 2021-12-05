@@ -12,26 +12,18 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.junit.Test;
 
-public class InterfaceDbTest {
+public class LoopbackDbTest {
 
   @Test
   public void testJacksonDeserialization() throws JsonProcessingException {
-    String input =
-        "{"
-            + "\"Ethernet136\": {},"
-            + "\"Ethernet136|0:0:0:0:0:ffff:ac13:5d00/127\": {},"
-            + "\"Ethernet136|172.19.93.0/31\": {},"
-            + "\"Ethernet137\": {}"
-            + "}";
+    String input = "{\"Loopback0|172.19.93.0/31\": {}}";
     assertThat(
         BatfishObjectMapper.ignoreUnknownMapper().readValue(input, InterfaceDb.class),
         equalTo(
             new InterfaceDb(
                 ImmutableMap.of(
-                    "Ethernet136",
-                    new L3Interface(ConcreteInterfaceAddress.parse("172.19.93.0/31")),
-                    "Ethernet137",
-                    new L3Interface(null)))));
+                    "Loopback0",
+                    new L3Interface(ConcreteInterfaceAddress.parse("172.19.93.0/31"))))));
   }
 
   @Test

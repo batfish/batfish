@@ -11,21 +11,21 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 /**
- * Represents a physical L3 interfaces, found under INTERFACE:
- * https://github.com/Azure/SONiC/wiki/Configuration#data-plane-l3-interfaces
+ * Represents loopback interfaces, found under LOOPBACK:
+ * https://github.com/Azure/SONiC/wiki/Configuration#loopback-interface
  */
 @ParametersAreNonnullByDefault
-public class InterfaceDb implements ConfigDbObject {
+public class LoopbackDb implements ConfigDbObject {
 
   private @Nonnull final Map<String, L3Interface> _interfaces;
 
-  public InterfaceDb(Map<String, L3Interface> interfaces) {
+  public LoopbackDb(Map<String, L3Interface> interfaces) {
     _interfaces = ImmutableMap.copyOf(interfaces);
   }
 
   @JsonCreator
-  private static InterfaceDb create(Map<String, Object> interfaces) {
-    return new InterfaceDb(createL3Interfaces(interfaces));
+  private static LoopbackDb create(Map<String, Object> interfaces) {
+    return new LoopbackDb(createL3Interfaces(interfaces));
   }
 
   @Nonnull
@@ -38,10 +38,10 @@ public class InterfaceDb implements ConfigDbObject {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof InterfaceDb)) {
+    if (!(o instanceof LoopbackDb)) {
       return false;
     }
-    InterfaceDb that = (InterfaceDb) o;
+    LoopbackDb that = (LoopbackDb) o;
     return Objects.equals(_interfaces, that._interfaces);
   }
 

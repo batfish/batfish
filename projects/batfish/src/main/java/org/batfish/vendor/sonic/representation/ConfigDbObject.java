@@ -11,6 +11,10 @@ import java.io.Serializable;
 public interface ConfigDbObject extends Serializable {
   enum Type {
     DEVICE_METADATA,
-    INTERFACE
+    INTERFACE,
+    LOOPBACK,
+    NTP_SERVER,
+    PORT,
+    SYSLOG_SERVER
   }
 }
