@@ -7,6 +7,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -50,7 +52,7 @@ public class SonicConfiguration extends FrrVendorConfiguration {
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
     c.setVrfs(ImmutableMap.of(DEFAULT_VRF_NAME, vrf));
 
-    convertPorts(c, _configDb.getPort(), _configDb.getInterface());
+    convertPorts(c, _configDb.getPortDb(), _configDb.getInterfaceDb());
 
     return ImmutableList.of(c);
   }
@@ -62,7 +64,7 @@ public class SonicConfiguration extends FrrVendorConfiguration {
           Interface.builder()
               .setName(portName)
               .setOwner(c)
-              .setVrf(c.getDefaultVrf()) // TODO: everything is default VRF at the moment
+              .setVrf(c.getDefaultVrf()) // everything is default VRF at the moment
               .setType(InterfaceType.PHYSICAL)
               .setDescription(port.getDescription().orElse(null))
               .setMtu(port.getMtu().orElse(null))
@@ -93,23 +95,32 @@ public class SonicConfiguration extends FrrVendorConfiguration {
 
   @Override
   public boolean hasInterface(String ifaceName) {
-    return false;
+    return _configDb.getInterfaceDb().getInterfaces().containsKey(ifaceName);
   }
 
   @Override
   public boolean hasVrf(String vrfName) {
-    return false;
+    return vrfName.equals(DEFAULT_VRF_NAME); // only have default VRF for now
   }
 
   @Override
   public String getInterfaceVrf(String ifaceName) {
-    return null;
+    if (!_configDb.getInterfaceDb().getInterfaces().containsKey(ifaceName)) {
+      throw new NoSuchElementException("Interface " + ifaceName + " does not exist");
+    }
+    return DEFAULT_VRF_NAME; // only have default VRF for now
   }
 
   @Nonnull
   @Override
   public List<ConcreteInterfaceAddress> getInterfaceAddresses(String ifaceName) {
-    return null;
+    if (!_configDb.getInterfaceDb().getInterfaces().containsKey(ifaceName)) {
+      throw new NoSuchElementException("Interface " + ifaceName + " does not exist");
+    }
+    return Optional.ofNullable(
+            _configDb.getInterfaceDb().getInterfaces().get(ifaceName).getAddress())
+        .map(ImmutableList::of)
+        .orElse(ImmutableList.of());
   }
 
   @Override

@@ -26,17 +26,17 @@ import org.batfish.vendor.sonic.representation.ConfigDbObject.Type;
 @ParametersAreNonnullByDefault
 public class ConfigDb implements Serializable {
 
-  public @Nonnull InterfaceDb getInterface() {
+  public @Nonnull InterfaceDb getInterfaceDb() {
     return firstNonNull(
         (InterfaceDb) _objects.get(Type.INTERFACE), new InterfaceDb(ImmutableMap.of()));
   }
 
-  public @Nonnull LoopbackDb getLoopback() {
+  public @Nonnull LoopbackDb getLoopbackDb() {
     return firstNonNull(
         (LoopbackDb) _objects.get(Type.LOOPBACK), new LoopbackDb(ImmutableMap.of()));
   }
 
-  public @Nonnull PortDb getPort() {
+  public @Nonnull PortDb getPortDb() {
     return firstNonNull((PortDb) _objects.get(Type.PORT), new PortDb(ImmutableMap.of()));
   }
 
