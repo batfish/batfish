@@ -11,7 +11,10 @@ public enum ParseStatus {
   EMPTY,
   /** Batfish has encountered an unrecoverable error during parsing */
   FAILED,
-  /** File was explicitly ignored by the user */
+  /**
+   * File was ignored either explicitly by the user or it was of a multi-file bundle that was not
+   * properly packaged.
+   */
   IGNORED,
   /** File is part of an unused overlay configuration */
   ORPHANED,

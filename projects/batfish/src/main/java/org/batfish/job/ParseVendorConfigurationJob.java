@@ -2,13 +2,13 @@ package org.batfish.job;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import io.opentracing.References;
 import io.opentracing.Scope;
@@ -109,14 +109,28 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
     @Nonnull private ParseTreeSentences _parseTreeSentences;
     @Nonnull private final SilentSyntaxCollection _silentSyntax;
     @Nonnull private final Warnings _warnings;
+    @Nullable private ParseStatus _parseStatus;
 
     public FileResult(
         ParseTreeSentences parseTreeSentences,
         SilentSyntaxCollection silentSyntax,
         Warnings warnings) {
+      this(parseTreeSentences, silentSyntax, warnings, null);
+    }
+
+    public FileResult(
+        ParseTreeSentences parseTreeSentences,
+        SilentSyntaxCollection silentSyntax,
+        Warnings warnings,
+        @Nullable ParseStatus parseStatus) {
       _parseTreeSentences = parseTreeSentences;
       _silentSyntax = silentSyntax;
       _warnings = warnings;
+      _parseStatus = parseStatus;
+    }
+
+    public void setParseStatus(ParseStatus parseStatus) {
+      _parseStatus = parseStatus;
     }
 
     @Nonnull
@@ -132,6 +146,11 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
     @Nonnull
     public Warnings getWarnings() {
       return _warnings;
+    }
+
+    @Nullable
+    public ParseStatus getParseStatus() {
+      return _parseStatus;
     }
   }
 
@@ -177,7 +196,8 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
                         new FileResult(
                             new ParseTreeSentences(),
                             new SilentSyntaxCollection(),
-                            new Warnings(logSettings))));
+                            new Warnings(logSettings),
+                            ParseStatus.UNKNOWN)));
     _expectedFormat = expectedFormat;
     _duplicateHostnames = duplicateHostnames;
     _spanContext = spanContext;
@@ -229,7 +249,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
    */
   @SuppressWarnings("fallthrough")
   private VendorConfiguration parseFiles(ConfigurationFormat format) {
-    ControlPlaneExtractor extractor;
+    VendorConfiguration vc;
     FlattenerLineMap lineMap = null;
 
     Span parseSpan = GlobalTracer.get().buildSpan("Creating parser").start();
@@ -237,27 +257,29 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
       assert scope != null; // avoid unused warning
 
       // pull out the common case
-      String filename = getRepresentativeFilename(_fileTexts, format);
+      String filename = _fileTexts.keySet().iterator().next();
       String fileText = _fileTexts.get(filename);
 
       switch (format) {
         case A10_ACOS:
           {
             A10CombinedParser a10Parser = new A10CombinedParser(fileText, _settings);
-            extractor =
+            ControlPlaneExtractor extractor =
                 new A10ControlPlaneExtractor(
                     fileText,
                     a10Parser,
                     _fileResults.get(filename)._warnings,
                     _fileResults.get(filename)._silentSyntax);
             parseFile(filename, a10Parser, extractor);
+            vc = extractor.getVendorConfiguration();
+            vc.setFilename(filename);
             break;
           }
 
         case ARISTA:
           {
             AristaCombinedParser aristaParser = new AristaCombinedParser(fileText, _settings);
-            extractor =
+            ControlPlaneExtractor extractor =
                 new AristaControlPlaneExtractor(
                     fileText,
                     aristaParser,
@@ -265,6 +287,8 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
                     _fileResults.get(filename)._warnings,
                     _fileResults.get(filename)._silentSyntax);
             parseFile(filename, aristaParser, extractor);
+            vc = extractor.getVendorConfiguration();
+            vc.setFilename(filename);
             break;
           }
 
@@ -275,7 +299,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
         case FOUNDRY:
           {
             CiscoCombinedParser ciscoParser = new CiscoCombinedParser(fileText, _settings);
-            extractor =
+            ControlPlaneExtractor extractor =
                 new CiscoControlPlaneExtractor(
                     fileText,
                     ciscoParser,
@@ -283,18 +307,22 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
                     _fileResults.get(filename)._warnings,
                     _fileResults.get(filename)._silentSyntax);
             parseFile(filename, ciscoParser, extractor);
+            vc = extractor.getVendorConfiguration();
+            vc.setFilename(filename);
             break;
           }
         case CISCO_ASA:
           {
             AsaCombinedParser asaParser = new AsaCombinedParser(fileText, _settings);
-            extractor =
+            ControlPlaneExtractor extractor =
                 new AsaControlPlaneExtractor(
                     fileText,
                     asaParser,
                     _fileResults.get(filename)._warnings,
                     _fileResults.get(filename)._silentSyntax);
             parseFile(filename, asaParser, extractor);
+            vc = extractor.getVendorConfiguration();
+            vc.setFilename(filename);
             break;
           }
 
@@ -302,20 +330,22 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
           {
             CiscoNxosCombinedParser ciscoNxosParser =
                 new CiscoNxosCombinedParser(fileText, _settings);
-            extractor =
+            ControlPlaneExtractor extractor =
                 new NxosControlPlaneExtractor(
                     fileText,
                     ciscoNxosParser,
                     _fileResults.get(filename)._warnings,
                     _fileResults.get(filename)._silentSyntax);
             parseFile(filename, ciscoNxosParser, extractor);
+            vc = extractor.getVendorConfiguration();
+            vc.setFilename(filename);
             break;
           }
 
         case CISCO_IOS_XR:
           {
             CiscoXrCombinedParser ciscoXrParser = new CiscoXrCombinedParser(fileText, _settings);
-            extractor =
+            ControlPlaneExtractor extractor =
                 new CiscoXrControlPlaneExtractor(
                     fileText,
                     ciscoXrParser,
@@ -323,6 +353,8 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
                     _fileResults.get(filename)._warnings,
                     _fileResults.get(filename)._silentSyntax);
             parseFile(filename, ciscoXrParser, extractor);
+            vc = extractor.getVendorConfiguration();
+            vc.setFilename(filename);
             break;
           }
 
@@ -330,13 +362,15 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
           {
             CheckPointGatewayCombinedParser checkPointParser =
                 new CheckPointGatewayCombinedParser(fileText, _settings);
-            extractor =
+            ControlPlaneExtractor extractor =
                 new CheckPointGatewayControlPlaneExtractor(
                     fileText,
                     checkPointParser,
                     _fileResults.get(filename)._warnings,
                     _fileResults.get(filename)._silentSyntax);
             parseFile(filename, checkPointParser, extractor);
+            vc = extractor.getVendorConfiguration();
+            vc.setFilename(filename);
             break;
           }
 
@@ -344,7 +378,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
           {
             CumulusConcatenatedCombinedParser parser =
                 new CumulusConcatenatedCombinedParser(fileText, _settings);
-            extractor =
+            ControlPlaneExtractor extractor =
                 new CumulusConcatenatedControlPlaneExtractor(
                     fileText,
                     _fileResults.get(filename)._warnings,
@@ -356,19 +390,23 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
                     _settings.getPrintParseTreeLineNums(),
                     _fileResults.get(filename)._silentSyntax);
             parseFile(filename, parser, extractor);
+            vc = extractor.getVendorConfiguration();
+            vc.setFilename(filename);
             break;
           }
 
         case CUMULUS_NCLU:
           {
             CumulusNcluCombinedParser parser = new CumulusNcluCombinedParser(fileText, _settings);
-            extractor =
+            ControlPlaneExtractor extractor =
                 new CumulusNcluControlPlaneExtractor(
                     fileText,
                     parser,
                     _fileResults.get(filename)._warnings,
                     _fileResults.get(filename)._silentSyntax);
             parseFile(filename, parser, extractor);
+            vc = extractor.getVendorConfiguration();
+            vc.setFilename(filename);
             break;
           }
 
@@ -376,7 +414,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
           {
             F5BigipStructuredCombinedParser parser =
                 new F5BigipStructuredCombinedParser(fileText, _settings);
-            extractor =
+            ControlPlaneExtractor extractor =
                 new F5BigipStructuredControlPlaneExtractor(
                     fileText,
                     parser,
@@ -388,19 +426,23 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
                     _settings.getPrintParseTreeLineNums(),
                     _fileResults.get(filename)._silentSyntax);
             parseFile(filename, parser, extractor);
+            vc = extractor.getVendorConfiguration();
+            vc.setFilename(filename);
             break;
           }
 
         case FORTIOS:
           {
             FortiosCombinedParser parser = new FortiosCombinedParser(fileText, _settings);
-            extractor =
+            ControlPlaneExtractor extractor =
                 new FortiosControlPlaneExtractor(
                     fileText,
                     parser,
                     _fileResults.get(filename)._warnings,
                     _fileResults.get(filename)._silentSyntax);
             parseFile(filename, parser, extractor);
+            vc = extractor.getVendorConfiguration();
+            vc.setFilename(filename);
             break;
           }
 
@@ -427,14 +469,22 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
                     .get(); // there has to be another file
             String configDbFileText = _fileTexts.get(configDbFilename);
             FrrCombinedParser frrParser = new FrrCombinedParser(frrText, _settings, 1, 0);
-            extractor =
+            SonicControlPlaneExtractor extractor =
                 new SonicControlPlaneExtractor(
                     configDbFileText,
                     frrText,
                     frrParser,
                     _fileResults.get(frrFilename)._warnings,
                     _fileResults.get(frrFilename)._silentSyntax);
+            try {
+              extractor.processConfigDb();
+            } catch (JsonProcessingException exception) {
+              throw new BatfishException("Error deserializing " + configDbFilename, exception);
+            }
             parseFile(frrFilename, frrParser, extractor);
+            vc = extractor.getVendorConfiguration();
+            vc.setFilename(frrFilename);
+            vc.setSecondaryFilenames(ImmutableList.of(configDbFilename));
             break;
           }
 
@@ -458,15 +508,19 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
                   .getFlattenedConfigurationText();
           // fall through
         case FLAT_VYOS:
-          FlatVyosCombinedParser flatVyosParser = new FlatVyosCombinedParser(fileText, _settings);
-          extractor =
-              new FlatVyosControlPlaneExtractor(
-                  fileText,
-                  flatVyosParser,
-                  _fileResults.get(filename)._warnings,
-                  _fileResults.get(filename)._silentSyntax);
-          parseFile(filename, flatVyosParser, extractor);
-          break;
+          {
+            FlatVyosCombinedParser flatVyosParser = new FlatVyosCombinedParser(fileText, _settings);
+            ControlPlaneExtractor extractor =
+                new FlatVyosControlPlaneExtractor(
+                    fileText,
+                    flatVyosParser,
+                    _fileResults.get(filename)._warnings,
+                    _fileResults.get(filename)._silentSyntax);
+            parseFile(filename, flatVyosParser, extractor);
+            vc = extractor.getVendorConfiguration();
+            vc.setFilename(filename);
+            break;
+          }
 
         case JUNIPER:
           try {
@@ -486,39 +540,51 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
           }
           // fall through
         case FLAT_JUNIPER:
-          FlatJuniperCombinedParser flatJuniperParser =
-              new FlatJuniperCombinedParser(fileText, _settings, lineMap);
-          extractor =
-              new FlatJuniperControlPlaneExtractor(
-                  fileText,
-                  flatJuniperParser,
-                  _fileResults.get(filename)._warnings,
-                  _fileResults.get(filename)._silentSyntax);
-          parseFile(filename, flatJuniperParser, extractor);
-          break;
+          {
+            FlatJuniperCombinedParser flatJuniperParser =
+                new FlatJuniperCombinedParser(fileText, _settings, lineMap);
+            ControlPlaneExtractor extractor =
+                new FlatJuniperControlPlaneExtractor(
+                    fileText,
+                    flatJuniperParser,
+                    _fileResults.get(filename)._warnings,
+                    _fileResults.get(filename)._silentSyntax);
+            parseFile(filename, flatJuniperParser, extractor);
+            vc = extractor.getVendorConfiguration();
+            vc.setFilename(filename);
+            break;
+          }
 
         case IPTABLES:
-          IptablesCombinedParser iptablesParser = new IptablesCombinedParser(fileText, _settings);
-          extractor =
-              new IptablesControlPlaneExtractor(
-                  fileText,
-                  iptablesParser,
-                  _fileResults.get(filename)._warnings,
-                  filename,
-                  _fileResults.get(filename)._silentSyntax);
-          parseFile(filename, iptablesParser, extractor);
-          break;
+          {
+            IptablesCombinedParser iptablesParser = new IptablesCombinedParser(fileText, _settings);
+            ControlPlaneExtractor extractor =
+                new IptablesControlPlaneExtractor(
+                    fileText,
+                    iptablesParser,
+                    _fileResults.get(filename)._warnings,
+                    filename,
+                    _fileResults.get(filename)._silentSyntax);
+            parseFile(filename, iptablesParser, extractor);
+            vc = extractor.getVendorConfiguration();
+            vc.setFilename(filename);
+            break;
+          }
 
         case MRV:
-          MrvCombinedParser mrvParser = new MrvCombinedParser(fileText, _settings);
-          extractor =
-              new MrvControlPlaneExtractor(
-                  fileText,
-                  mrvParser,
-                  _fileResults.get(filename)._warnings,
-                  _fileResults.get(filename)._silentSyntax);
-          parseFile(filename, mrvParser, extractor);
-          break;
+          {
+            MrvCombinedParser mrvParser = new MrvCombinedParser(fileText, _settings);
+            ControlPlaneExtractor extractor =
+                new MrvControlPlaneExtractor(
+                    fileText,
+                    mrvParser,
+                    _fileResults.get(filename)._warnings,
+                    _fileResults.get(filename)._silentSyntax);
+            parseFile(filename, mrvParser, extractor);
+            vc = extractor.getVendorConfiguration();
+            vc.setFilename(filename);
+            break;
+          }
 
         case PALO_ALTO_NESTED:
           try {
@@ -538,16 +604,20 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
           }
           // fall through
         case PALO_ALTO:
-          PaloAltoCombinedParser paParser =
-              new PaloAltoCombinedParser(fileText, _settings, lineMap);
-          extractor =
-              new PaloAltoControlPlaneExtractor(
-                  fileText,
-                  paParser,
-                  _fileResults.get(filename)._warnings,
-                  _fileResults.get(filename)._silentSyntax);
-          parseFile(filename, paParser, extractor);
-          break;
+          {
+            PaloAltoCombinedParser paParser =
+                new PaloAltoCombinedParser(fileText, _settings, lineMap);
+            ControlPlaneExtractor extractor =
+                new PaloAltoControlPlaneExtractor(
+                    fileText,
+                    paParser,
+                    _fileResults.get(filename)._warnings,
+                    _fileResults.get(filename)._silentSyntax);
+            parseFile(filename, paParser, extractor);
+            vc = extractor.getVendorConfiguration();
+            vc.setFilename(filename);
+            break;
+          }
 
         default:
           throw new BatfishException(
@@ -557,29 +627,19 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
       parseSpan.finish();
     }
 
-    String representativeFilename = getRepresentativeFilename(_fileTexts, format);
-    VendorConfiguration vc = extractor.getVendorConfiguration();
     vc.setVendor(format);
-    vc.setFilename(representativeFilename);
     if (Strings.isNullOrEmpty(vc.getHostname())) {
-      _fileResults
-          .get(representativeFilename)
-          ._warnings
-          .redFlag(
-              String.format(
-                  "No hostname set in %s\n",
-                  _fileTexts.keySet().stream()
-                      .map(f -> f.replace("\\", "/"))
-                      .collect(ImmutableList.toImmutableList())));
+      _warnings.redFlag(
+          String.format("No hostname set in %s\n", jobFilenamesToString(_fileTexts.keySet())));
       String guessedHostname =
-          Paths.get(representativeFilename)
+          Paths.get(vc.getFilename()) // use the primary file for guessing filename
               .getFileName()
               .toString()
               .toLowerCase()
               .replaceAll("\\.(cfg|conf)$", "");
       _logger.redflag(
           "\tNo hostname set! Guessing hostname from filename: '"
-              + representativeFilename
+              + vc.getFilename()
               + "' ==> '"
               + guessedHostname
               + "'\n");
@@ -634,14 +694,21 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
       Batfish.logWarnings(_logger, _fileResults.get(filename)._warnings);
       postProcessSpan.finish();
     }
+
+    _fileResults
+        .get(filename)
+        .setParseStatus(
+            extractor.getVendorConfiguration().getUnrecognized()
+                ? ParseStatus.PARTIALLY_UNRECOGNIZED
+                : ParseStatus.PASSED);
   }
 
   /**
    * Parses the given file and returns a {@link ParseResult} for this job.
    *
-   * <p>The returned {@link ParseResult} will always have a valid {@link ParseResult#getStatus()}.
-   * It may also contain a {@link ParseResult#getConfig() parsed vendor-specific configuration} or a
-   * {@link ParseResult#getFailureCause() failure cause}.
+   * <p>The returned {@link ParseResult} will always have a valid ParseStatus for each file. It may
+   * also contain a {@link ParseResult#getConfig() parsed vendor-specific configuration} or a {@link
+   * ParseResult#getFailureCause() failure cause}.
    */
   @Nonnull
   public ParseResult parse() {
@@ -651,54 +718,55 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
     // Handle specially some cases that will not produce a vendor configuration file.
     if (format == ConfigurationFormat.EMPTY) {
       _warnings.redFlag(String.format("Empty file(s): %s\n", jobFiles));
-      return new ParseResult(null, null, _fileResults, format, ParseStatus.EMPTY, _warnings);
+      _fileResults.forEach((filename, fileResult) -> fileResult.setParseStatus(ParseStatus.EMPTY));
+      return new ParseResult(null, null, _fileResults, format, _warnings);
     } else if (format == ConfigurationFormat.IGNORED) {
       _warnings.redFlag(String.format("Ignored file(s): %s\n", jobFiles));
-      return new ParseResult(null, null, _fileResults, format, ParseStatus.IGNORED, _warnings);
+      _fileResults.forEach(
+          (filename, fileResult) -> fileResult.setParseStatus(ParseStatus.IGNORED));
+      return new ParseResult(null, null, _fileResults, format, _warnings);
     } else if (format == ConfigurationFormat.UNKNOWN) {
       _warnings.redFlag(String.format("Unable to detect format for file(s): %s\n", jobFiles));
-      return new ParseResult(null, null, _fileResults, format, ParseStatus.UNKNOWN, _warnings);
+      _fileResults.forEach(
+          (filename, fileResult) -> fileResult.setParseStatus(ParseStatus.UNKNOWN));
+      return new ParseResult(null, null, _fileResults, format, _warnings);
     } else if (UNIMPLEMENTED_FORMATS.contains(format)) {
       String unsupportedError =
           String.format(
               "Unsupported configuration format '%s' for file(s): %s\n", format, jobFiles);
       if (!_settings.ignoreUnsupported()) {
+        _fileResults.forEach(
+            (filename, fileResult) -> fileResult.setParseStatus(ParseStatus.FAILED));
         return new ParseResult(
-            null,
-            new BatfishException(unsupportedError),
-            _fileResults,
-            format,
-            ParseStatus.FAILED,
-            _warnings);
+            null, new BatfishException(unsupportedError), _fileResults, format, _warnings);
       }
       _warnings.redFlag(unsupportedError);
-      return new ParseResult(null, null, _fileResults, format, ParseStatus.UNSUPPORTED, _warnings);
+      _fileResults.forEach(
+          (filename, fileResult) -> fileResult.setParseStatus(ParseStatus.UNSUPPORTED));
+      return new ParseResult(null, null, _fileResults, format, _warnings);
     }
 
     try {
       // Actually parse the files.
       VendorConfiguration vc = parseFiles(format);
-      ParseStatus status =
-          vc.getUnrecognized() ? ParseStatus.PARTIALLY_UNRECOGNIZED : ParseStatus.PASSED;
-      return new ParseResult(vc, null, _fileResults, format, status, _warnings);
+      return new ParseResult(vc, null, _fileResults, format, _warnings);
     } catch (WillNotCommitException e) {
+      _fileResults.forEach((key, value) -> value.setParseStatus(ParseStatus.WILL_NOT_COMMIT));
       if (_settings.getHaltOnParseError()) {
         // Fail the job if we need to
-        return new ParseResult(
-            null, e, _fileResults, format, ParseStatus.WILL_NOT_COMMIT, _warnings);
+        return new ParseResult(null, e, _fileResults, format, _warnings);
       }
       // Otherwise just generate a warning
       _warnings.redFlag(e.getMessage());
-      return new ParseResult(
-          null, null, _fileResults, format, ParseStatus.WILL_NOT_COMMIT, _warnings);
+      return new ParseResult(null, null, _fileResults, format, _warnings);
     } catch (Exception e) {
+      _fileResults.forEach((filename, fileResult) -> fileResult.setParseStatus(ParseStatus.FAILED));
       return new ParseResult(
           null,
           new BatfishException(
               String.format("Error parsing configuration file(s): %s", _fileTexts.keySet()), e),
           _fileResults,
           format,
-          ParseStatus.FAILED,
           _warnings);
     }
   }
@@ -712,7 +780,6 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
           result.getFormat(),
           result.getConfig(),
           result.getWarnings(),
-          result.getStatus(),
           _duplicateHostnames);
     } else if (result.getFailureCause() != null) {
       return new ParseVendorConfigurationResult(
@@ -728,8 +795,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
           _logger.getHistory(),
           result.getFileResults(),
           result.getFormat(),
-          result.getWarnings(),
-          result.getStatus());
+          result.getWarnings());
     }
   }
 
@@ -768,24 +834,6 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
             .map(Names::escapeNameIfNeeded)
             .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()))
             .toString();
-  }
-
-  /**
-   * For some existing APIs, e.g., {@link
-   * org.batfish.vendor.VendorConfiguration#setFilename(java.lang.String)}, a single filename is
-   * expected. This representative filename, corresponding to the main file, will be used until we
-   * can upgrade those APIs.
-   */
-  @SuppressWarnings("unused")
-  private static String getRepresentativeFilename(
-      Map<String, String> fileTexts, ConfigurationFormat format) {
-    if (fileTexts.size() == 1) {
-      return Iterables.getOnlyElement(fileTexts.keySet());
-    }
-    if (format == ConfigurationFormat.SONIC) {
-      return getSonicFrrFilename(fileTexts);
-    }
-    throw new IllegalArgumentException("Cannot get representative filename for " + format);
   }
 
   /** Given filename to text map for a device, return which of the two files is frr.conf. */
