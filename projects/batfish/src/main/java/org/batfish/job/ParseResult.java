@@ -1,5 +1,7 @@
 package org.batfish.job;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.google.common.collect.ImmutableMap;
 import java.io.Serializable;
 import java.util.Map;
@@ -27,6 +29,9 @@ public class ParseResult implements Serializable {
       Map<String, FileResult> fileResults,
       ConfigurationFormat format,
       Warnings warnings) {
+    checkArgument(
+        fileResults.values().stream().noneMatch(fr -> fr.getParseStatus() == null),
+        "ParseStatus is not set for some files");
     _config = config;
     _failureCause = failureCause;
     _fileResults = ImmutableMap.copyOf(fileResults);
