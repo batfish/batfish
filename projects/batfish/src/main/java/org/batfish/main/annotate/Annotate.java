@@ -111,7 +111,8 @@ public final class Annotate {
                 ImmutableMultimap.of(),
                 null)
             .call();
-    if (parseResult.getStatus() == FAILED) {
+    if (parseResult.getFileResults().values().stream()
+        .anyMatch(result -> result.getParseStatus() == FAILED)) {
       LOGGER.error("Failed to parse: {}", inputFile);
       return null;
     }

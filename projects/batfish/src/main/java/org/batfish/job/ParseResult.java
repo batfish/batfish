@@ -8,7 +8,6 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.job.ParseVendorConfigurationJob.FileResult;
 import org.batfish.vendor.VendorConfiguration;
 
@@ -20,7 +19,6 @@ public class ParseResult implements Serializable {
   @Nullable private final Throwable _failureCause;
   @Nonnull private final Map<String, FileResult> _fileResults;
   @Nonnull private final ConfigurationFormat _format;
-  @Nonnull private final ParseStatus _status;
   @Nonnull private final Warnings _warnings;
 
   public ParseResult(
@@ -28,13 +26,11 @@ public class ParseResult implements Serializable {
       @Nullable Throwable failureCause,
       Map<String, FileResult> fileResults,
       ConfigurationFormat format,
-      ParseStatus status,
       Warnings warnings) {
     _config = config;
     _failureCause = failureCause;
     _fileResults = ImmutableMap.copyOf(fileResults);
     _format = format;
-    _status = status;
     _warnings = warnings;
   }
 
@@ -60,11 +56,6 @@ public class ParseResult implements Serializable {
   @Nonnull
   public ConfigurationFormat getFormat() {
     return _format;
-  }
-
-  @Nonnull
-  public ParseStatus getStatus() {
-    return _status;
   }
 
   /**

@@ -45,11 +45,13 @@ public class ParseVendorConfigurationResultTest {
         new ParseVendorConfigurationResult(
             0,
             new BatfishLoggerHistory(),
-            ImmutableMap.of(filename, new FileResult(parseTree, silentSyntax, fileWarnings)),
+            ImmutableMap.of(
+                filename,
+                new FileResult(
+                    parseTree, silentSyntax, fileWarnings, ParseStatus.PARTIALLY_UNRECOGNIZED)),
             ConfigurationFormat.CISCO_IOS,
             config,
             new Warnings(),
-            ParseStatus.PASSED,
             HashMultimap.create());
 
     SortedMap<String, VendorConfiguration> configs = new TreeMap<>();
@@ -66,6 +68,10 @@ public class ParseVendorConfigurationResultTest {
 
     // Confirm result warning was properly applied to answerElement
     assertThat(answerWarnings, hasEntry(filename, fileWarnings));
+
+    // Confirm that status was applied
+    assertThat(
+        answerElement.getParseStatus(), hasEntry(filename, ParseStatus.PARTIALLY_UNRECOGNIZED));
   }
 
   @Test
@@ -97,13 +103,20 @@ public class ParseVendorConfigurationResultTest {
             new BatfishLoggerHistory(),
             ImmutableMap.of(
                 filenames.get(0),
-                new FileResult(parseTrees.get(0), silentSyntaxes.get(0), fileWarnings.get(0)),
+                new FileResult(
+                    parseTrees.get(0),
+                    silentSyntaxes.get(0),
+                    fileWarnings.get(0),
+                    ParseStatus.PARTIALLY_UNRECOGNIZED),
                 filenames.get(1),
-                new FileResult(parseTrees.get(1), silentSyntaxes.get(1), fileWarnings.get(1))),
+                new FileResult(
+                    parseTrees.get(1),
+                    silentSyntaxes.get(1),
+                    fileWarnings.get(1),
+                    ParseStatus.PASSED)),
             ConfigurationFormat.CISCO_IOS,
             config,
             globalWarnings,
-            ParseStatus.PASSED,
             HashMultimap.create());
 
     SortedMap<String, VendorConfiguration> configs = new TreeMap<>();
@@ -125,5 +138,11 @@ public class ParseVendorConfigurationResultTest {
 
     // Confirm that global warnings were applied
     assertThat(answerWarnings, hasEntry("[file1, file2]", globalWarnings));
+
+    // Confirm that status was applied
+    assertThat(
+        answerElement.getParseStatus(),
+        hasEntry(filenames.get(0), ParseStatus.PARTIALLY_UNRECOGNIZED));
+    assertThat(answerElement.getParseStatus(), hasEntry(filenames.get(1), ParseStatus.PASSED));
   }
 }
