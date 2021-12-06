@@ -196,8 +196,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
                         new FileResult(
                             new ParseTreeSentences(),
                             new SilentSyntaxCollection(),
-                            new Warnings(logSettings),
-                            ParseStatus.UNKNOWN)));
+                            new Warnings(logSettings))));
     _expectedFormat = expectedFormat;
     _duplicateHostnames = duplicateHostnames;
     _spanContext = spanContext;
