@@ -85,7 +85,7 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No hostname set in [configs/r1.cfg]\n"
+              "text" : "No hostname set in configs/r1.cfg\n"
             }
           ]
         },
@@ -93,7 +93,7 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No hostname set in [configs/r2.cfg]\n"
+              "text" : "No hostname set in configs/r2.cfg\n"
             }
           ]
         },
@@ -101,7 +101,7 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No hostname set in [configs/r3.cfg]\n"
+              "text" : "No hostname set in configs/r3.cfg\n"
             }
           ]
         },
@@ -109,7 +109,7 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No hostname set in [configs/z1-firewall.cfg]\n"
+              "text" : "No hostname set in configs/z1-firewall.cfg\n"
             }
           ]
         },
@@ -117,7 +117,7 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No hostname set in [configs/z2-firewall.cfg]\n"
+              "text" : "No hostname set in configs/z2-firewall.cfg\n"
             }
           ]
         }
