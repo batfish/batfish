@@ -694,13 +694,6 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
       Batfish.logWarnings(_logger, _fileResults.get(filename)._warnings);
       postProcessSpan.finish();
     }
-
-    _fileResults
-        .get(filename)
-        .setParseStatus(
-            extractor.getVendorConfiguration().getUnrecognized()
-                ? ParseStatus.PARTIALLY_UNRECOGNIZED
-                : ParseStatus.PASSED);
   }
 
   /**
@@ -718,40 +711,38 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
     // Handle specially some cases that will not produce a vendor configuration file.
     if (format == ConfigurationFormat.EMPTY) {
       _warnings.redFlag(String.format("Empty file(s): %s\n", jobFiles));
-      _fileResults.forEach((filename, fileResult) -> fileResult.setParseStatus(ParseStatus.EMPTY));
+      setParseStatus(ParseStatus.EMPTY);
       return new ParseResult(null, null, _fileResults, format, _warnings);
     } else if (format == ConfigurationFormat.IGNORED) {
       _warnings.redFlag(String.format("Ignored file(s): %s\n", jobFiles));
-      _fileResults.forEach(
-          (filename, fileResult) -> fileResult.setParseStatus(ParseStatus.IGNORED));
+      setParseStatus(ParseStatus.IGNORED);
       return new ParseResult(null, null, _fileResults, format, _warnings);
     } else if (format == ConfigurationFormat.UNKNOWN) {
       _warnings.redFlag(String.format("Unable to detect format for file(s): %s\n", jobFiles));
-      _fileResults.forEach(
-          (filename, fileResult) -> fileResult.setParseStatus(ParseStatus.UNKNOWN));
+      setParseStatus(ParseStatus.UNKNOWN);
       return new ParseResult(null, null, _fileResults, format, _warnings);
     } else if (UNIMPLEMENTED_FORMATS.contains(format)) {
       String unsupportedError =
           String.format(
               "Unsupported configuration format '%s' for file(s): %s\n", format, jobFiles);
       if (!_settings.ignoreUnsupported()) {
-        _fileResults.forEach(
-            (filename, fileResult) -> fileResult.setParseStatus(ParseStatus.FAILED));
+        setParseStatus(ParseStatus.FAILED);
         return new ParseResult(
             null, new BatfishException(unsupportedError), _fileResults, format, _warnings);
       }
       _warnings.redFlag(unsupportedError);
-      _fileResults.forEach(
-          (filename, fileResult) -> fileResult.setParseStatus(ParseStatus.UNSUPPORTED));
+      setParseStatus(ParseStatus.UNSUPPORTED);
       return new ParseResult(null, null, _fileResults, format, _warnings);
     }
 
     try {
       // Actually parse the files.
       VendorConfiguration vc = parseFiles(format);
+      setParseStatus(
+          vc.getUnrecognized() ? ParseStatus.PARTIALLY_UNRECOGNIZED : ParseStatus.PASSED);
       return new ParseResult(vc, null, _fileResults, format, _warnings);
     } catch (WillNotCommitException e) {
-      _fileResults.forEach((key, value) -> value.setParseStatus(ParseStatus.WILL_NOT_COMMIT));
+      setParseStatus(ParseStatus.WILL_NOT_COMMIT);
       if (_settings.getHaltOnParseError()) {
         // Fail the job if we need to
         return new ParseResult(null, e, _fileResults, format, _warnings);
@@ -760,7 +751,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
       _warnings.redFlag(e.getMessage());
       return new ParseResult(null, null, _fileResults, format, _warnings);
     } catch (Exception e) {
-      _fileResults.forEach((filename, fileResult) -> fileResult.setParseStatus(ParseStatus.FAILED));
+      setParseStatus(ParseStatus.FAILED);
       return new ParseResult(
           null,
           new BatfishException(
@@ -769,6 +760,16 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
           format,
           _warnings);
     }
+  }
+
+  /** Sets the ParseStatus for files for which it is not already set. */
+  private void setParseStatus(ParseStatus parseStatus) {
+    _fileResults.forEach(
+        (filename, fileResult) -> {
+          if (fileResult.getParseStatus() == null) {
+            fileResult.setParseStatus(parseStatus);
+          }
+        });
   }
 
   public ParseVendorConfigurationResult fromResult(ParseResult result, long elapsed) {
