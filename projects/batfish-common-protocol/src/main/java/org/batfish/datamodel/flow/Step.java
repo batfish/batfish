@@ -14,7 +14,9 @@ import javax.annotation.Nonnull;
 @JsonSubTypes({
   @JsonSubTypes.Type(value = ArpErrorStep.class, name = "ArpError"),
   @JsonSubTypes.Type(value = DeliveredStep.class, name = "Delivered"),
+  @JsonSubTypes.Type(value = EnterFromVxlanTunnelStep.class, name = "EnterFromVxlanTunnel"),
   @JsonSubTypes.Type(value = EnterInputIfaceStep.class, name = "EnterInputInterface"),
+  @JsonSubTypes.Type(value = ExitIntoVxlanTunnelStep.class, name = "ExitIntoVxlanTunnel"),
   @JsonSubTypes.Type(value = ExitOutputIfaceStep.class, name = "ExitOutputInterface"),
   @JsonSubTypes.Type(value = FilterStep.class, name = "Filter"),
   @JsonSubTypes.Type(value = InboundStep.class, name = "Inbound"),
