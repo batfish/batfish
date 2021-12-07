@@ -1,5 +1,6 @@
 {
   "class" : "org.batfish.question.VIModelQuestionPlugin$VIModelQuestion",
+  "nodes" : "n1",
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
@@ -8,6 +9,15 @@
     "longDescription" : "Returns a JSON dictionary with all of the configuration parameters and neighbor relations stored in the vendor independent data-model.",
     "tags" : [
       "configuration"
-    ]
+    ],
+    "variables" : {
+      "nodes" : {
+        "description" : "Include nodes matching this name or regex",
+        "displayName" : "Nodes",
+        "optional" : true,
+        "type" : "nodeSpec",
+        "value" : "n1"
+      }
+    }
   }
 }
