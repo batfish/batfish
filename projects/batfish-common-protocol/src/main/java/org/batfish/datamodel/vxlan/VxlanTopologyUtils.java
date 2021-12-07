@@ -2,6 +2,7 @@ package org.batfish.datamodel.vxlan;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Table;
 import com.google.common.collect.Table.Cell;
@@ -15,7 +16,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.batfish.common.plugin.TracerouteEngine;
 import org.batfish.datamodel.BumTransportMethod;
@@ -186,7 +186,7 @@ public final class VxlanTopologyUtils {
       MutableGraph<VxlanNode> graph = GraphBuilder.undirected().allowsSelfLoops(false).build();
       initialVxlanTopology.getGraph().edges().parallelStream()
           .filter(edge -> reachableEdge(edge, nc, tracerouteEngine))
-          .collect(Collectors.toList())
+          .collect(ImmutableList.toImmutableList())
           .forEach(edge -> graph.putEdge(edge.nodeU(), edge.nodeV()));
       return new VxlanTopology(graph);
     } finally {
