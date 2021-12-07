@@ -13,10 +13,8 @@ import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.batfish.vendor.sonic.representation.ConfigDb;
-import org.batfish.vendor.sonic.representation.ConfigDbObject;
 import org.batfish.vendor.sonic.representation.DeviceMetadata;
-import org.batfish.vendor.sonic.representation.InterfaceDb;
-import org.batfish.vendor.sonic.representation.InterfaceDb.Interface;
+import org.batfish.vendor.sonic.representation.L3Interface;
 import org.batfish.vendor.sonic.representation.SonicConfiguration;
 import org.junit.Rule;
 import org.junit.Test;
@@ -48,15 +46,12 @@ public class SonicGrammarTest {
     assertThat(
         vc.getConfigDb(),
         equalTo(
-            new ConfigDb(
-                ImmutableMap.of(
-                    ConfigDbObject.Type.DEVICE_METADATA,
-                    new DeviceMetadata(ImmutableMap.of("hostname", "basic")),
-                    ConfigDbObject.Type.INTERFACE,
-                    new InterfaceDb(
-                        ImmutableMap.of(
-                            "Ethernet0",
-                            new Interface(ConcreteInterfaceAddress.parse("1.1.1.1/24"))))))));
+            ConfigDb.builder()
+                .setDeviceMetadata(ImmutableMap.of("localhost", new DeviceMetadata("basic")))
+                .setInterfaces(
+                    ImmutableMap.of(
+                        "Ethernet0", new L3Interface(ConcreteInterfaceAddress.parse("1.1.1.1/24"))))
+                .build()));
     assertThat(vc.getFrrConfiguration().getRouteMaps().keySet(), equalTo(ImmutableSet.of("TEST")));
   }
 }

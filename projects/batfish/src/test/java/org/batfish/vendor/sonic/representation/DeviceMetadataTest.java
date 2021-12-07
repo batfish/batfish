@@ -5,7 +5,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -15,24 +14,24 @@ public class DeviceMetadataTest {
 
   @Test
   public void testJacksonDeserialization() throws JsonProcessingException {
-    String input = "{" + "\"localhost\": { \"hostname\": \"myname\" }}";
+    String input = "{ \"hostname\": \"name\", \"GARBAGE\": 1 }";
     assertThat(
         BatfishObjectMapper.ignoreUnknownMapper().readValue(input, DeviceMetadata.class),
-        equalTo(new DeviceMetadata(ImmutableMap.of("hostname", "myname"))));
+        equalTo(new DeviceMetadata("name")));
   }
 
   @Test
   public void testJavaSerialization() {
-    DeviceMetadata obj = new DeviceMetadata(ImmutableMap.of("hostname", "myname"));
+    DeviceMetadata obj = new DeviceMetadata("name");
     assertEquals(obj, SerializationUtils.clone(obj));
   }
 
+  @SuppressWarnings("UnstableApiUsage")
   @Test
   public void testEquals() {
-    DeviceMetadata obj = new DeviceMetadata(ImmutableMap.of());
     new EqualsTester()
-        .addEqualityGroup(obj, new DeviceMetadata(ImmutableMap.of()))
-        .addEqualityGroup(new DeviceMetadata(ImmutableMap.of("hostname", "myname")))
+        .addEqualityGroup(new DeviceMetadata(null), new DeviceMetadata(null))
+        .addEqualityGroup(new DeviceMetadata("hostname"))
         .testEquals();
   }
 }

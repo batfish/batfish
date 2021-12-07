@@ -2695,15 +2695,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
         assert makeJobsScope != null; // avoid unused warning
         // add devices in the 'configs' folder
         try (Stream<String> keys = _storage.listInputNetworkConfigurationsKeys(snapshot)) {
-          jobs.addAll(
-              readAllInputObjects(keys, snapshot).entrySet().stream()
-                  .map(
-                      entry ->
-                          makeParseVendorConfigurationJob(
-                              snapshot,
-                              ImmutableMap.of(entry.getKey(), entry.getValue()),
-                              ConfigurationFormat.UNKNOWN))
-                  .collect(ImmutableList.toImmutableList()));
+          readAllInputObjects(keys, snapshot).entrySet().stream()
+              .map(
+                  entry ->
+                      makeParseVendorConfigurationJob(
+                          snapshot,
+                          ImmutableMap.of(entry.getKey(), entry.getValue()),
+                          ConfigurationFormat.UNKNOWN))
+              .forEach(jobs::add);
         } catch (IOException e) {
           throw new UncheckedIOException(e);
         }
@@ -2711,18 +2710,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
         // add devices in the sonic_configs folder
         try (Stream<String> keys = _storage.listInputSonicConfigsKeys(snapshot)) {
           Map<String, String> sonicObjects = readAllInputObjects(keys, snapshot);
-          jobs.addAll(
-              makeSonicFilePairs(sonicObjects.keySet(), answerElement).parallelStream()
-                  .map(
-                      files ->
-                          makeParseVendorConfigurationJob(
-                              snapshot,
-                              files.stream()
-                                  .collect(
-                                      ImmutableMap.toImmutableMap(
-                                          Function.identity(), sonicObjects::get)),
-                              ConfigurationFormat.SONIC))
-                  .collect(ImmutableList.toImmutableList()));
+          makeSonicFilePairs(sonicObjects.keySet(), answerElement).parallelStream()
+              .map(
+                  files ->
+                      makeParseVendorConfigurationJob(
+                          snapshot,
+                          files.stream()
+                              .collect(
+                                  ImmutableMap.toImmutableMap(
+                                      Function.identity(), sonicObjects::get)),
+                          ConfigurationFormat.SONIC))
+              .forEach(jobs::add);
         } catch (IOException e) {
           throw new UncheckedIOException(e);
         }
