@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.batfish.common.plugin.TracerouteEngine;
 import org.batfish.datamodel.BumTransportMethod;
@@ -183,8 +184,9 @@ public final class VxlanTopologyUtils {
       assert scope != null;
       NetworkConfigurations nc = NetworkConfigurations.of(configurations);
       MutableGraph<VxlanNode> graph = GraphBuilder.undirected().allowsSelfLoops(false).build();
-      initialVxlanTopology.getGraph().edges().stream()
+      initialVxlanTopology.getGraph().edges().parallelStream()
           .filter(edge -> reachableEdge(edge, nc, tracerouteEngine))
+          .collect(Collectors.toList())
           .forEach(edge -> graph.putEdge(edge.nodeU(), edge.nodeV()));
       return new VxlanTopology(graph);
     } finally {
