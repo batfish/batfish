@@ -57,6 +57,7 @@ public class TestrigText {
     private byte[] _layer1TopologyBytes;
     private Map<String, byte[]> _routingTablesBytes;
     private byte[] _runtimeDataBytes;
+    private Map<String, byte[]> _sonicConfigBytes;
 
     public TestrigText build() {
       TestrigText testrigText = new TestrigText();
@@ -72,6 +73,7 @@ public class TestrigText {
       testrigText.setLayer1TopologyBytes(_layer1TopologyBytes);
       testrigText.setRoutingTablesBytes(_routingTablesBytes);
       testrigText.setRuntimeDataBytes(_runtimeDataBytes);
+      testrigText.setSonicConfigBytes(_sonicConfigBytes);
       return testrigText;
     }
 
@@ -193,6 +195,13 @@ public class TestrigText {
       return this;
     }
 
+    public Builder setSonicConfigFiles(String testrigResourcePrefix, Iterable<String> filenames) {
+      _sonicConfigBytes =
+          readTestrigResources(
+              testrigResourcePrefix, BfConsts.RELPATH_SONIC_CONFIGS_DIR, filenames);
+      return this;
+    }
+
     public @Nonnull Builder setExternalBgpAnnouncements(String testrigResourcePrefix) {
       _externalBgpAnnouncementsBytes =
           readTestrigResources(
@@ -231,6 +240,7 @@ public class TestrigText {
   private byte[] _layer1TopologyBytes;
   private Map<String, byte[]> _routingTablesBytes;
   private byte[] _runtimeDataBytes;
+  private Map<String, byte[]> _sonicConfigBytes;
 
   public Map<String, byte[]> getAwsBytes() {
     return _awsBytes;
@@ -280,6 +290,10 @@ public class TestrigText {
     return _runtimeDataBytes;
   }
 
+  public Map<String, byte[]> getSonicConfigBytes() {
+    return _sonicConfigBytes;
+  }
+
   public void setAwsBytes(Map<String, byte[]> awsBytes) {
     _awsBytes = awsBytes;
   }
@@ -326,5 +340,9 @@ public class TestrigText {
 
   public void setRuntimeDataBytes(byte[] runtimeDataBytes) {
     _runtimeDataBytes = runtimeDataBytes;
+  }
+
+  public void setSonicConfigBytes(Map<String, byte[]> sonicConfigBytes) {
+    _sonicConfigBytes = sonicConfigBytes;
   }
 }
