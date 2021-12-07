@@ -16,6 +16,7 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.datamodel.Prefix6;
 
 /**
  * Represents ConfigDb for a one Sonic node.
@@ -30,7 +31,8 @@ public class ConfigDb implements Serializable {
   private final @Nonnull Map<String, DeviceMetadata> _deviceMetadata;
   private final @Nonnull Map<String, L3Interface> _interfaces;
 
-  public ConfigDb(Map<String, DeviceMetadata> deviceMetadata, Map<String, L3Interface> interfaces) {
+  private ConfigDb(
+      Map<String, DeviceMetadata> deviceMetadata, Map<String, L3Interface> interfaces) {
     _deviceMetadata = deviceMetadata;
     _interfaces = interfaces;
   }
@@ -39,40 +41,42 @@ public class ConfigDb implements Serializable {
   private static ConfigDb create(
       @Nullable @JsonProperty(PROP_DEVICE_METADATA) Map<String, DeviceMetadata> deviceMetadata,
       @Nullable @JsonProperty(PROP_INTERFACE) Map<String, Object> interfacesMap) {
-    return new ConfigDb(
-        firstNonNull(deviceMetadata, ImmutableMap.of()),
-        createInterfaces(firstNonNull(interfacesMap, ImmutableMap.<String, Object>of()).keySet()));
+    return ConfigDb.builder()
+        .setDeviceMetadata(deviceMetadata)
+        .setInterfaces(
+            createInterfaces(
+                // all data is in the keys (see createInterfaces), so we just pass that in
+                firstNonNull(interfacesMap, ImmutableMap.<String, Object>of()).keySet()))
+        .build();
   }
 
   /**
    * Converts configdb's interface multi-level key encoding for interfaces, where keys are
    * "Ethernet", "Ethernet|1.1.1.1", to a map of interfaces.
+   *
+   * <p>In this encoding, the same interface may appear as key multiple times: by itself, with a v4
+   * address, or with a v6 address.
    */
   @VisibleForTesting
   static Map<String, L3Interface> createInterfaces(Set<String> interfaceKeys) {
     Map<String, L3Interface> interfaces = new HashMap<>();
     for (String key : interfaceKeys) {
-      String[] parts = key.split("\\|");
-      switch (parts.length) {
-        case 1: // interface name, without the address
-          interfaces.computeIfAbsent(parts[0], i -> new L3Interface(null));
-          break;
-        case 2:
-          try {
-            ConcreteInterfaceAddress v4Address = ConcreteInterfaceAddress.parse(parts[1]);
-            interfaces.put(parts[0], new L3Interface(v4Address));
-          } catch (IllegalArgumentException e) {
-            // ignore -- could be v6 address
-          }
-          break;
-        default:
-          throw new IllegalArgumentException("Illegal interface key " + key);
+      String[] parts = key.split("\\|", 2);
+      interfaces.computeIfAbsent(parts[0], i -> new L3Interface(null));
+      if (parts.length == 2) {
+        try {
+          // if the interface appears with a v4 address, overwrite with that version
+          ConcreteInterfaceAddress v4Address = ConcreteInterfaceAddress.parse(parts[1]);
+          interfaces.put(parts[0], new L3Interface(v4Address));
+        } catch (IllegalArgumentException e) {
+          Prefix6.parse(parts[1]); // try to parse as v6; Will throw an exception upon failure
+        }
       }
     }
     return ImmutableMap.copyOf(interfaces);
   }
 
-  public Optional<String> getHostname() {
+  public @Nonnull Optional<String> getHostname() {
     return Optional.ofNullable(_deviceMetadata.get("localhost"))
         .flatMap(DeviceMetadata::getHostname)
         .map(String::toLowerCase);
@@ -113,20 +117,21 @@ public class ConfigDb implements Serializable {
 
     private Builder() {}
 
-    public Builder setDeviceMetadata(Map<String, DeviceMetadata> deviceMetadata) {
+    public @Nonnull Builder setDeviceMetadata(
+        @Nullable Map<String, DeviceMetadata> deviceMetadata) {
       this._deviceMetadata = deviceMetadata;
       return this;
     }
 
-    public Builder setInterfaces(Map<String, L3Interface> interfaces) {
+    public @Nonnull Builder setInterfaces(@Nullable Map<String, L3Interface> interfaces) {
       this._interfaces = interfaces;
       return this;
     }
 
-    public ConfigDb build() {
+    public @Nonnull ConfigDb build() {
       return new ConfigDb(
-          firstNonNull(_deviceMetadata, ImmutableMap.of()),
-          firstNonNull(_interfaces, ImmutableMap.of()));
+          firstNonNull(ImmutableMap.copyOf(_deviceMetadata), ImmutableMap.of()),
+          firstNonNull(ImmutableMap.copyOf(_interfaces), ImmutableMap.of()));
     }
   }
 }
