@@ -130,8 +130,8 @@ public class ConfigDb implements Serializable {
 
     public @Nonnull ConfigDb build() {
       return new ConfigDb(
-          firstNonNull(ImmutableMap.copyOf(_deviceMetadata), ImmutableMap.of()),
-          firstNonNull(ImmutableMap.copyOf(_interfaces), ImmutableMap.of()));
+          ImmutableMap.copyOf(firstNonNull(_deviceMetadata, ImmutableMap.of())),
+          ImmutableMap.copyOf(firstNonNull(_interfaces, ImmutableMap.of())));
     }
   }
 }
