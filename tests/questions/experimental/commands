@@ -118,7 +118,7 @@ test -raw tests/questions/experimental/testRoutePolicies.ref validate-template t
 test -raw tests/questions/experimental/traceroute.ref validate-template traceroute startLocation="location", ignoreFilters=false, maxTraces=0, headers={"dstIps" : "1.1.1.1/32"}
 
 # test viModel
-test -raw tests/questions/experimental/viModel.ref validate-template viModel
+test -raw tests/questions/experimental/viModel.ref validate-template viModel nodes="n1"
 
 # validate vrrpProperties
 test -raw tests/questions/experimental/vrrpProperties.ref validate-template vrrpProperties excludeShutInterfaces=true, interfaces="i1", nodes="n1"
