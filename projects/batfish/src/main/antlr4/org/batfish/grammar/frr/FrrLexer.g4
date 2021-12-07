@@ -438,6 +438,8 @@ SOFT_RECONFIGURATION: 'soft-reconfiguration';
 
 SOURCE_PROTOCOL: 'source-protocol';
 
+SRC: 'src';
+
 STANDARD
 :
   'standard' -> pushMode ( M_Word )

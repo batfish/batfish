@@ -64,6 +64,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
+import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.common.runtime.SnapshotRuntimeData;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AsPath;
@@ -1076,7 +1077,15 @@ public class FrrGrammarTest {
         "    import vrf Vrf_tenant1",
         "    neighbor 2001:100:1:31::2 route-map wanguard6-any-out out",
         "    neighbor 2001:100:1:31::2 next-hop-self",
-        "    neighbor 2001:100:1:31::2 activate");
+        "    neighbor 2001:100:1:31::2 activate",
+        "    aggregate-address 2a02:4780:9::/48",
+        "    network 2a02:4780:9::/48 route-map internal",
+        "  address-family ipv4 unicast",
+        "    neighbor 2001:100:1:31::2 remove-private-AS",
+        "    neighbor 2001:100:1:31::2 next-hop-self",
+        "    neighbor 2001:100:1:31::2 allowas-in",
+        "    neighbor 2001:100:1:31::2 route-map rm-out out",
+        "    neighbor 2001:100:1:31::2 route-map rm-in in");
     Map<String, BgpNeighbor> neighbors = _frr.getBgpProcess().getDefaultVrf().getNeighbors();
     assertThat(neighbors.keySet(), contains("2001:100:1:31::2"));
     BgpNeighbor foo = neighbors.get("2001:100:1:31::2");
@@ -1442,6 +1451,15 @@ public class FrrGrammarTest {
       RouteMapEntry entry = _frr.getRouteMaps().get(name).getEntries().get(20);
       assertThat(entry.getSetMetricType().getMetricType(), equalTo(RouteMapMetricType.TYPE_2));
     }
+  }
+
+  @Test
+  public void testFrrRouteMapSetSrc() {
+    _warnings = new Warnings(false, true, false);
+    parseLines("route-map RM permit 10", "set src 1.1.1.1", "set src 2a02:4780:9:ffff::1");
+    // there should be only one warning, for v4 line
+    ParseWarning warning = Iterables.getOnlyElement(_warnings.getParseWarnings());
+    assertThat(warning, hasText("src 1.1.1.1"));
   }
 
   @Test

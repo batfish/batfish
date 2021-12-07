@@ -99,16 +99,14 @@ public final class Annotate {
       LOGGER.warn("Skipping {} because of preprocessing error: {}", inputText, e);
       return null;
     }
-    Warnings warnings = new Warnings(true, true, true);
     LOGGER.debug("Parsing: {}", inputFile);
     // parse the preprocessed text
     ParseVendorConfigurationResult parseResult =
         new ParseVendorConfigurationJob(
                 settings,
                 new NetworkSnapshot(new NetworkId("dummyNetwork"), new SnapshotId("dummySnapshot")),
-                preprocessedText,
-                inputFile.toString(),
-                warnings,
+                ImmutableMap.of(inputFile.toString(), preprocessedText),
+                new Warnings.Settings(true, true, true),
                 ConfigurationFormat.UNKNOWN,
                 ImmutableMultimap.of(),
                 null)
@@ -121,8 +119,8 @@ public final class Annotate {
     LOGGER.debug("Annotating: {}", inputFile);
     return annotatePreprocessedFile(
         preprocessedText,
-        parseResult.getSilentSyntax(),
-        warnings,
+        parseResult.getFileResults().get(inputFile.toString()).getSilentSyntax(),
+        parseResult.getFileResults().get(inputFile.toString()).getWarnings(),
         getCommentHeader(parseResult.getConfigurationFormat()));
   }
 

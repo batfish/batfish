@@ -1597,7 +1597,7 @@ public final class CiscoNxosGrammarTest {
         ImmutableSortedSet.of(
             Layer2VniConfig.builder()
                 .setVni(1111)
-                .setVrf(tenantVrfName)
+                .setVrf(DEFAULT_VRF_NAME)
                 .setRouteDistinguisher(RouteDistinguisher.from(routerId, 32768))
                 .setRouteTarget(ExtendedCommunity.target(1, 1111))
                 .setImportRouteTarget(ExtendedCommunity.target(1, 1111).matchString())
@@ -1624,6 +1624,7 @@ public final class CiscoNxosGrammarTest {
     assertThat(peer.getEvpnAddressFamily(), notNullValue());
     assertThat(peer.getEvpnAddressFamily().getL2VNIs(), equalTo(expectedL2Vnis));
     assertThat(peer.getEvpnAddressFamily().getL3VNIs(), equalTo(expectedL3Vnis));
+    assertThat(peer.getEvpnAddressFamily().getNveIp(), equalTo(Ip.parse("1.1.1.1")));
     assertThat(c.getVrfs().get(tenantVrfName).getBgpProcess(), notNullValue());
   }
 

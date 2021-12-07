@@ -8,6 +8,7 @@ import static org.batfish.common.matchers.WarningsMatchers.hasRedFlag;
 import static org.batfish.common.util.Resources.readResourceBytes;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
+import static org.batfish.main.Batfish.makeSonicFilePairs;
 import static org.batfish.main.Batfish.mergeInternetAndIspNodes;
 import static org.batfish.main.Batfish.postProcessInterfaceDependencies;
 import static org.hamcrest.Matchers.allOf;
@@ -80,6 +81,8 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerStatus;
+import org.batfish.datamodel.answers.ParseStatus;
+import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.questions.Question;
@@ -586,6 +589,8 @@ public class BatfishTest {
             ConfigurationFormat.HOST,
             ignoredIface1,
             ignoredIface2,
+            "eth3-Mgmt2", // checkpoint-style management
+            "eth13-Mgmt23", // checkpoint-style management
             "mgmt0",
             "Management",
             "fxp0-0",
@@ -796,5 +801,111 @@ public class BatfishTest {
                 config.getHostname(), config, modeledConfig.getHostname(), modeledConfig)));
     assertThat(snapshotEdges, equalTo(ImmutableSet.of(edge, modeledEdge)));
     assertThat(warnings, hasRedFlag(hasText(containsString("Cannot add internet and ISP nodes"))));
+  }
+
+  @Test
+  public void testMakeSonicFilePairs() {
+    {
+      // "normal" case
+      assertThat(
+          makeSonicFilePairs(
+              ImmutableSet.of(
+                  "sonic_configs/dev1/frr",
+                  "sonic_configs/dev1/configdb",
+                  "sonic_configs/dev2/frr",
+                  "sonic_configs/dev2/configdb"),
+              null),
+          equalTo(
+              ImmutableList.of(
+                  ImmutableSet.of("sonic_configs/dev1/frr", "sonic_configs/dev1/configdb"),
+                  ImmutableSet.of("sonic_configs/dev2/frr", "sonic_configs/dev2/configdb"))));
+    }
+    {
+      // file not in a subdirectory
+      ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
+      assertThat(
+          makeSonicFilePairs(ImmutableSet.of("sonic_configs/frr"), pvcae),
+          equalTo(ImmutableList.of()));
+      assertThat(
+          pvcae.getParseStatus(),
+          equalTo(ImmutableMap.of("sonic_configs/frr", ParseStatus.IGNORED)));
+      assertThat(
+          pvcae.getWarnings().get("sonic_configs/frr").getRedFlagWarnings(),
+          contains(
+              hasText(
+                  "Unexpected packaging: SONiC files must be in a subdirectory under"
+                      + " sonic_configs.")));
+    }
+    {
+      // Only 1 file in a subdirectory
+      ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
+      assertThat(
+          makeSonicFilePairs(ImmutableSet.of("sonic_configs/dev/frr"), pvcae),
+          equalTo(ImmutableList.of()));
+      assertThat(
+          pvcae.getParseStatus(),
+          equalTo(ImmutableMap.of("sonic_configs/dev/frr", ParseStatus.IGNORED)));
+      assertThat(
+          pvcae.getWarnings().get("sonic_configs/dev/frr").getRedFlagWarnings(),
+          contains(
+              hasText(
+                  "Unexpected packaging: File appears by itself; SONiC files must have their"
+                      + " counterpart in the same directory.")));
+    }
+    {
+      // 2+ files in a subdirectory
+      ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
+      assertThat(
+          makeSonicFilePairs(
+              ImmutableSet.of(
+                  "sonic_configs/dev/frr1", "sonic_configs/dev/frr2", "sonic_configs/dev/frr3"),
+              pvcae),
+          equalTo(ImmutableList.of()));
+      assertThat(
+          pvcae.getParseStatus(),
+          equalTo(
+              ImmutableMap.of(
+                  "sonic_configs/dev/frr1",
+                  ParseStatus.IGNORED,
+                  "sonic_configs/dev/frr2",
+                  ParseStatus.IGNORED,
+                  "sonic_configs/dev/frr3",
+                  ParseStatus.IGNORED)));
+      String message =
+          "Unexpected packaging: File appears in a directory with 2 other files; SONiC files must"
+              + " have only their counterpart in the same directory.";
+      assertThat(
+          pvcae.getWarnings().get("sonic_configs/dev/frr1").getRedFlagWarnings(),
+          contains(hasText(message)));
+      assertThat(
+          pvcae.getWarnings().get("sonic_configs/dev/frr2").getRedFlagWarnings(),
+          contains(hasText(message)));
+      assertThat(
+          pvcae.getWarnings().get("sonic_configs/dev/frr2").getRedFlagWarnings(),
+          contains(hasText(message)));
+    }
+    {
+      // mix of good and bad situations
+      ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
+      assertThat(
+          makeSonicFilePairs(
+              ImmutableSet.of(
+                  "sonic_configs/dev1/frr",
+                  "sonic_configs/dev1/configdb",
+                  "sonic_configs/dev2/frr"),
+              pvcae),
+          equalTo(
+              ImmutableList.of(
+                  ImmutableSet.of("sonic_configs/dev1/frr", "sonic_configs/dev1/configdb"))));
+      assertThat(
+          pvcae.getParseStatus(),
+          equalTo(ImmutableMap.of("sonic_configs/dev2/frr", ParseStatus.IGNORED)));
+      assertThat(
+          pvcae.getWarnings().get("sonic_configs/dev2/frr").getRedFlagWarnings(),
+          contains(
+              hasText(
+                  "Unexpected packaging: File appears by itself; SONiC files must have their"
+                      + " counterpart in the same directory.")));
+    }
   }
 }

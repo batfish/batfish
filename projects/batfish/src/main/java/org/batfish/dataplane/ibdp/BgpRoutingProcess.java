@@ -386,7 +386,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   @Override
   public void initialize(Node n) {
     _initialized = true;
-    initLocalEvpnRoutes(n);
+    initLocalEvpnRoutes();
   }
 
   /** Returns true if this process has been initialized */
@@ -715,7 +715,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
   /** Initialize the EVPN RIBs based on EVPN address family config */
   @VisibleForTesting
-  void initLocalEvpnRoutes(Node n) {
+  void initLocalEvpnRoutes() {
     Builder<EvpnType3Route> initializationBuilder = RibDelta.builder();
     getAllPeerConfigs(_process)
         .map(BgpPeerConfig::getEvpnAddressFamily)
@@ -762,7 +762,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         // so that this route is not installed back in the main RIB of any of the VRFs
         .setOriginatorIp(routerId)
         .setOriginMechanism(GENERATED)
-        .setOriginType(OriginType.EGP)
+        // TODO Allow customization of origin type per vendor
+        .setOriginType(OriginType.IGP)
         .setProtocol(RoutingProtocol.BGP)
         .setRouteDistinguisher(routeDistinguisher)
         .setVniIp(vni.getSourceAddress())
@@ -2122,7 +2123,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   /** Convert a BGP v4 route to a EVPN type 5 route. */
   private static @Nonnull EvpnType5Route toEvpnType5Route(
       Bgpv4Route route, RouteDistinguisher rd, Set<ExtendedCommunity> rt) {
-    assert !(route.getNextHop() instanceof NextHopVrf);
     return EvpnType5Route.builder()
         .setNetwork(route.getNetwork())
         .setAsPath(route.getAsPath())
@@ -2130,7 +2130,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         .addCommunities(rt) // add route targets
         .setLocalPreference(route.getLocalPreference())
         .setMetric(route.getMetric())
-        .setNextHop(route.getNextHop())
+        .setNextHop(NextHopDiscard.instance())
         .setOriginatorIp(route.getOriginatorIp())
         .setOriginMechanism(route.getOriginMechanism())
         .setOriginType(route.getOriginType())

@@ -625,7 +625,19 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     // TODO enforce interface restrictions
     //  e.g. untagged iface cannot be reused, cannot attach trunk members directly, etc.
     toInterfaceReferences(ctx.vlan_iface_references(), A10StructureUsage.VLAN_TAGGED_INTERFACE)
-        .ifPresent(refs -> _currentVlan.addTagged(refs));
+        .ifPresent(
+            refs -> {
+              refs.forEach(
+                  ref -> {
+                    if (ref.getType() == Type.ETHERNET) {
+                      // Ethernet interfaces may not show up elsewhere if members of a vlan
+                      _c.getInterfacesEthernet()
+                          .computeIfAbsent(ref.getNumber(), n -> new Interface(Type.ETHERNET, n));
+                    }
+                    _c.defineStructure(INTERFACE, getInterfaceName(ref), ctx);
+                  });
+              _currentVlan.addTagged(refs);
+            });
   }
 
   @Override
@@ -633,7 +645,19 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     // TODO enforce interface restrictions
     //  e.g. untagged iface cannot be reused, cannot attach trunk members directly, etc.
     toInterfaceReferences(ctx.vlan_iface_references(), A10StructureUsage.VLAN_UNTAGGED_INTERFACE)
-        .ifPresent(refs -> _currentVlan.addUntagged(refs));
+        .ifPresent(
+            refs -> {
+              refs.forEach(
+                  ref -> {
+                    if (ref.getType() == Type.ETHERNET) {
+                      // Ethernet interfaces may not show up elsewhere if members of a vlan
+                      _c.getInterfacesEthernet()
+                          .computeIfAbsent(ref.getNumber(), n -> new Interface(Type.ETHERNET, n));
+                    }
+                    _c.defineStructure(INTERFACE, getInterfaceName(ref), ctx);
+                  });
+              _currentVlan.addUntagged(refs);
+            });
   }
 
   /**
@@ -1132,19 +1156,31 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   @Override
   public void enterSs_service_group(A10Parser.Ss_service_groupContext ctx) {
     Optional<String> maybeName = toString(ctx, ctx.service_group_name());
-    ServerPort.Type type = toType(ctx.tcp_or_udp());
+    ServerPort.Type type = ctx.tcp_or_udp() == null ? null : toType(ctx.tcp_or_udp());
     if (!maybeName.isPresent()) {
-      _currentServiceGroup = new ServiceGroup(ctx.service_group_name().getText(), type); // dummy
+      _currentServiceGroup =
+          new ServiceGroup(ctx.service_group_name().getText(), ServerPort.Type.TCP); // dummy
       return;
     }
-    _currentServiceGroup = _c.getOrCreateServiceGroup(maybeName.get(), type);
 
-    if (type != _currentServiceGroup.getType()) {
+    // Can only omit type/protocol for an already-existing group
+    _currentServiceGroup = _c.getServiceGroups().get(maybeName.get());
+    if (_currentServiceGroup == null) {
+      if (type == null) {
+        warn(ctx, "New service-group must have a protocol specified.");
+        _currentServiceGroup = new ServiceGroup(maybeName.get(), ServerPort.Type.TCP); // dummy
+        return;
+      }
+      _currentServiceGroup = _c.getOrCreateServiceGroup(maybeName.get(), type);
+    }
+
+    if (type != null && type != _currentServiceGroup.getType()) {
       warn(
           ctx,
           "Cannot modify the service-group type field at runtime, ignoring this service-group"
               + " block.");
-      _currentServiceGroup = new ServiceGroup(ctx.service_group_name().getText(), type); // dummy
+      _currentServiceGroup =
+          new ServiceGroup(ctx.service_group_name().getText(), ServerPort.Type.TCP); // dummy
       return;
     }
 
@@ -1658,6 +1694,11 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
         ifaces -> {
           ifaces.forEach(
               iface -> {
+                assert iface.getType() == Type.ETHERNET;
+                // Interfaces may not show up elsewhere if members of a trunk
+                _c.getInterfacesEthernet()
+                    .computeIfAbsent(iface.getNumber(), n -> new Interface(Type.ETHERNET, n));
+                _c.defineStructure(INTERFACE, getInterfaceName(iface), ctx);
                 _c.referenceStructure(
                     INTERFACE, getInterfaceName(iface), A10StructureUsage.TRUNK_INTERFACE, line);
                 _currentTrunk.getMembers().add(iface);

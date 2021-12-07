@@ -95,6 +95,7 @@ rm_set
     | rms_local_preference
     | rms_metric
     | rms_metric_type
+    | rms_src
     | rms_tag
     | rms_weight
   )
@@ -230,6 +231,11 @@ rms_ip
 rms_ipv6
 :
   IPV6 rmsipv6_next_hop
+;
+
+rms_src
+:
+  SRC (ip_address | ipv6_address) NEWLINE
 ;
 
 rms_tag

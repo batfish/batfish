@@ -23,3 +23,6 @@ slb service-group SG1 tcp
 ! Cannot change type / protocol
 slb service-group SG1 udp
 !
+! Cannot create new group without type / protocol
+slb service-group SG2
+!

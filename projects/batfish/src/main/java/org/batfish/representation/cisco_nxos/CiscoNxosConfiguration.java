@@ -649,14 +649,30 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     processBgpNetworkStatements(c, nxBgpVrf, vrfName, newBgpProcess);
     processBgpRedistributeStatements(c, nxBgpVrf, vrfName, newBgpProcess);
 
+    // Find NVE source address for EVPN routes originated on this device.
+    // TODO Support devices multiple NVEs for this context.
+    Ip nveIp =
+        _nves.values().stream()
+            .map(
+                nve ->
+                    Optional.ofNullable(nve.getSourceInterface())
+                        .map(c.getAllInterfaces()::get)
+                        .map(org.batfish.datamodel.Interface::getConcreteAddress)
+                        .map(ConcreteInterfaceAddress::getIp))
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .findFirst()
+            .orElse(null);
+
     // Process active neighbors first.
     Map<Ip, BgpActivePeerConfig> activeNeighbors =
-        Conversions.getNeighbors(c, this, v, newBgpProcess, nxBgpGlobal, nxBgpVrf, _w);
+        Conversions.getNeighbors(c, this, v, newBgpProcess, nxBgpGlobal, nxBgpVrf, nveIp, _w);
     newBgpProcess.setNeighbors(ImmutableSortedMap.copyOf(activeNeighbors));
 
     // Process passive neighbors next
     Map<Prefix, BgpPassivePeerConfig> passiveNeighbors =
-        Conversions.getPassiveNeighbors(c, this, v, newBgpProcess, nxBgpGlobal, nxBgpVrf, _w);
+        Conversions.getPassiveNeighbors(
+            c, this, v, newBgpProcess, nxBgpGlobal, nxBgpVrf, nveIp, _w);
     newBgpProcess.setPassiveNeighbors(ImmutableSortedMap.copyOf(passiveNeighbors));
 
     v.setBgpProcess(newBgpProcess);
@@ -1490,7 +1506,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
               .build();
       _c.getVrfs().get(vsTenantVrfForL3Vni.getName()).addLayer3Vni(vniSettings);
     } else {
-      org.batfish.datamodel.Vrf viTenantVrfForL2Vni = getMemberVrfForVlan(vlan);
       Layer2Vni vniSettings =
           Layer2Vni.builder()
               .setBumTransportIps(bumTransportIps)
@@ -1504,10 +1519,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
               .setVlan(vlan)
               .setSrcVrf(DEFAULT_VRF_NAME)
               .build();
-      if (viTenantVrfForL2Vni == null) {
-        return;
-      }
-      viTenantVrfForL2Vni.addLayer2Vni(vniSettings);
+      _c.getDefaultVrf().addLayer2Vni(vniSettings);
     }
   }
 

@@ -275,6 +275,7 @@ public final class Conversions {
       BgpProcess proc,
       BgpGlobalConfiguration bgpConfig,
       BgpVrfConfiguration bgpVrf,
+      @Nullable Ip nveIp,
       Warnings warnings) {
     return bgpVrf.getNeighbors().entrySet().stream()
         .peek(e -> e.getValue().doInherit(bgpConfig, warnings))
@@ -294,6 +295,7 @@ public final class Conversions {
                             bgpVrf,
                             e.getValue(),
                             false,
+                            nveIp,
                             warnings)));
   }
 
@@ -305,6 +307,7 @@ public final class Conversions {
       BgpProcess proc,
       BgpGlobalConfiguration bgpConfig,
       BgpVrfConfiguration bgpVrf,
+      @Nullable Ip nveIp,
       Warnings warnings) {
     return bgpVrf.getPassiveNeighbors().entrySet().stream()
         .peek(e -> e.getValue().doInherit(bgpConfig, warnings))
@@ -324,6 +327,7 @@ public final class Conversions {
                             bgpVrf,
                             e.getValue(),
                             true,
+                            nveIp,
                             warnings)));
   }
 
@@ -409,6 +413,7 @@ public final class Conversions {
       BgpVrfConfiguration vrfConfig,
       BgpVrfNeighborConfiguration neighbor,
       boolean dynamic,
+      @Nullable Ip nveIp,
       Warnings warnings) {
 
     BgpPeerConfig.Builder<?, ?> newNeighborBuilder;
@@ -509,7 +514,7 @@ public final class Conversions {
       @Nullable
       BgpVrfL2VpnEvpnAddressFamilyConfiguration vrfL2VpnAf = vrfConfig.getL2VpnEvpnAddressFamily();
       EvpnAddressFamily.Builder evpnFamilyBuilder =
-          EvpnAddressFamily.builder().setPropagateUnmatched(false);
+          EvpnAddressFamily.builder().setPropagateUnmatched(false).setNveIp(nveIp);
 
       RoutingPolicy importPolicy =
           createNeighborImportPolicy(
@@ -564,70 +569,68 @@ public final class Conversions {
 
     // looping over all VRFs in VI configuration so we can get all VNI settings which were valid and
     // mapped to some VRF (including the default VRF)
-    for (Vrf tenantVrf : c.getVrfs().values()) {
-      for (Layer2Vni l2Vni : tenantVrf.getLayer2Vnis().values()) {
+    for (Layer2Vni l2Vni : c.getDefaultVrf().getLayer2Vnis().values()) {
 
-        Integer macVrfId = getMacVrfIdForL2Vni(vsConfig, l2Vni.getVni());
-        if (macVrfId == null) {
-          continue;
-        }
-
-        EvpnVni evpnVni =
-            Optional.ofNullable(vsConfig.getEvpn())
-                .map(evpn -> evpn.getVni(l2Vni.getVni()))
-                .orElse(null);
-        if (evpnVni == null) {
-          continue;
-        }
-
-        ExtendedCommunityOrAuto exportRtOrAuto = evpnVni.getExportRt();
-        if (exportRtOrAuto == null) {
-          // export route target is not present as auto and neither is user-defined, no L2 routes
-          // (MAC-routes)
-          // will be exported for hosts in this VNI. Assuming this to be an invalid EVPN
-          // configuration
-          // for lack of explicit doc from Cisco
-          warnings.redFlag(
-              String.format(
-                  "No export route-target defined for L2 VNI '%s', no L2 routes will be exported",
-                  l2Vni.getVni()));
-          continue;
-        }
-        ExtendedCommunityOrAuto importRtOrAuto = evpnVni.getImportRt();
-        if (importRtOrAuto == null) {
-          // import route target is not present as auto and neither is user-defined, no L2 routes
-          // (MAC-routes)
-          // will be imported for this VNI. Assuming this to be an invalid EVPN configuration for
-          // lack
-          // of explicit doc from Cisco
-          warnings.redFlag(
-              String.format(
-                  "No import route-target defined for L2 VNI '%s', no L2 routes will be imported",
-                  l2Vni.getVni()));
-          continue;
-        }
-
-        RouteDistinguisher rd =
-            Optional.ofNullable(evpnVni.getRd())
-                .map(RouteDistinguisherOrAuto::getRouteDistinguisher)
-                .orElse(null);
-
-        layer2Vnis.add(
-            Layer2VniConfig.builder()
-                .setVni(l2Vni.getVni())
-                .setVrf(tenantVrf.getName())
-                .setRouteDistinguisher(
-                    firstNonNull(rd, RouteDistinguisher.from(viBgpProcess.getRouterId(), macVrfId)))
-                .setImportRouteTarget(
-                    importRtOrAuto.isAuto()
-                        ? toRouteTarget(localAs, l2Vni.getVni()).matchString()
-                        : importRtOrAuto.getExtendedCommunity().matchString())
-                .setRouteTarget(
-                    exportRtOrAuto.isAuto()
-                        ? toRouteTarget(localAs, l2Vni.getVni())
-                        : exportRtOrAuto.getExtendedCommunity())
-                .build());
+      Integer macVrfId = getMacVrfIdForL2Vni(vsConfig, l2Vni.getVni());
+      if (macVrfId == null) {
+        continue;
       }
+
+      EvpnVni evpnVni =
+          Optional.ofNullable(vsConfig.getEvpn())
+              .map(evpn -> evpn.getVni(l2Vni.getVni()))
+              .orElse(null);
+      if (evpnVni == null) {
+        continue;
+      }
+
+      ExtendedCommunityOrAuto exportRtOrAuto = evpnVni.getExportRt();
+      if (exportRtOrAuto == null) {
+        // export route target is not present as auto and neither is user-defined, no L2 routes
+        // (MAC-routes)
+        // will be exported for hosts in this VNI. Assuming this to be an invalid EVPN
+        // configuration
+        // for lack of explicit doc from Cisco
+        warnings.redFlag(
+            String.format(
+                "No export route-target defined for L2 VNI '%s', no L2 routes will be exported",
+                l2Vni.getVni()));
+        continue;
+      }
+      ExtendedCommunityOrAuto importRtOrAuto = evpnVni.getImportRt();
+      if (importRtOrAuto == null) {
+        // import route target is not present as auto and neither is user-defined, no L2 routes
+        // (MAC-routes)
+        // will be imported for this VNI. Assuming this to be an invalid EVPN configuration for
+        // lack
+        // of explicit doc from Cisco
+        warnings.redFlag(
+            String.format(
+                "No import route-target defined for L2 VNI '%s', no L2 routes will be imported",
+                l2Vni.getVni()));
+        continue;
+      }
+
+      RouteDistinguisher rd =
+          Optional.ofNullable(evpnVni.getRd())
+              .map(RouteDistinguisherOrAuto::getRouteDistinguisher)
+              .orElse(null);
+
+      layer2Vnis.add(
+          Layer2VniConfig.builder()
+              .setVni(l2Vni.getVni())
+              .setVrf(DEFAULT_VRF_NAME)
+              .setRouteDistinguisher(
+                  firstNonNull(rd, RouteDistinguisher.from(viBgpProcess.getRouterId(), macVrfId)))
+              .setImportRouteTarget(
+                  importRtOrAuto.isAuto()
+                      ? toRouteTarget(localAs, l2Vni.getVni()).matchString()
+                      : importRtOrAuto.getExtendedCommunity().matchString())
+              .setRouteTarget(
+                  exportRtOrAuto.isAuto()
+                      ? toRouteTarget(localAs, l2Vni.getVni())
+                      : exportRtOrAuto.getExtendedCommunity())
+              .build());
     }
     return layer2Vnis.build();
   }

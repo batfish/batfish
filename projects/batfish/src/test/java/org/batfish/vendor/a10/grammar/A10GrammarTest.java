@@ -17,7 +17,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferencedStructure;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddressMetadata;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
@@ -50,10 +50,12 @@ import static org.batfish.vendor.a10.representation.A10Conversion.SNAT_PORT_POOL
 import static org.batfish.vendor.a10.representation.A10StructureType.ACCESS_LIST;
 import static org.batfish.vendor.a10.representation.A10StructureType.HEALTH_MONITOR;
 import static org.batfish.vendor.a10.representation.A10StructureType.INTERFACE;
+import static org.batfish.vendor.a10.representation.A10StructureType.NAT_POOL;
+import static org.batfish.vendor.a10.representation.A10StructureType.SERVER;
+import static org.batfish.vendor.a10.representation.A10StructureType.SERVICE_GROUP;
 import static org.batfish.vendor.a10.representation.A10StructureType.VRRP_A_FAIL_OVER_POLICY_TEMPLATE;
 import static org.batfish.vendor.a10.representation.A10StructureType.VRRP_A_VRID;
-import static org.batfish.vendor.a10.representation.A10StructureUsage.VLAN_TAGGED_INTERFACE;
-import static org.batfish.vendor.a10.representation.A10StructureUsage.VLAN_UNTAGGED_INTERFACE;
+import static org.batfish.vendor.a10.representation.A10StructureUsage.VIRTUAL_SERVER_SOURCE_NAT_POOL;
 import static org.batfish.vendor.a10.representation.Interface.DEFAULT_MTU;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.Matchers.allOf;
@@ -629,6 +631,8 @@ public class A10GrammarTest {
     assertThat(vlans.keySet(), containsInAnyOrder(2, 3));
     Vlan vlan2 = vlans.get(2);
     Vlan vlan3 = vlans.get(3);
+    Map<Integer, Interface> eths = c.getInterfacesEthernet();
+    assertThat(eths.keySet(), containsInAnyOrder(1, 2, 3, 4));
 
     assertThat(vlan2.getNumber(), equalTo(2));
     assertThat(
@@ -699,6 +703,13 @@ public class A10GrammarTest {
     assertThat(
         ccae,
         hasNumReferrers(filename, INTERFACE, getInterfaceName(Interface.Type.ETHERNET, 3), 2));
+    // Referenced from (and initially defined) in vlan
+    assertThat(
+        ccae,
+        hasNumReferrers(filename, INTERFACE, getInterfaceName(Interface.Type.ETHERNET, 4), 1));
+    assertThat(
+        ccae,
+        hasNumReferrers(filename, INTERFACE, getInterfaceName(Interface.Type.ETHERNET, 5), 1));
 
     // Referenced from vlan
     assertThat(
@@ -722,22 +733,6 @@ public class A10GrammarTest {
     // Unused trunk should have no references
     assertThat(
         ccae, hasNumReferrers(filename, INTERFACE, getInterfaceName(Interface.Type.TRUNK, 200), 0));
-
-    // Confirm undefined references are detected
-    assertThat(
-        ccae,
-        hasUndefinedReference(
-            filename,
-            INTERFACE,
-            getInterfaceName(Interface.Type.ETHERNET, 4),
-            VLAN_TAGGED_INTERFACE));
-    assertThat(
-        ccae,
-        hasUndefinedReference(
-            filename,
-            INTERFACE,
-            getInterfaceName(Interface.Type.ETHERNET, 5),
-            VLAN_UNTAGGED_INTERFACE));
   }
 
   @Test
@@ -1062,9 +1057,7 @@ public class A10GrammarTest {
                 WarningMatchers.hasText(
                     containsString(
                         "VLAN settings for members of Trunk1 are different, ignoring their VLAN"
-                            + " settings")),
-                WarningMatchers.hasText(
-                    "Trunk member Ethernet10 does not exist, cannot add to Trunk1"))));
+                            + " settings")))));
   }
 
   @Test
@@ -1327,6 +1320,21 @@ public class A10GrammarTest {
     assertTrue(pool2.getPortOverload());
     assertThat(pool2.getScaleoutDeviceId(), equalTo(1));
     assertThat(pool2.getVrid(), equalTo(2));
+  }
+
+  @Test
+  public void testNatPoolReference() throws IOException {
+    String hostname = "nat_pool_ref";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Confirm reference counts
+    assertThat(ccae, hasNumReferrers(filename, NAT_POOL, "POOL1", 1));
+    assertThat(
+        ccae, hasReferencedStructure(filename, NAT_POOL, "POOL1", VIRTUAL_SERVER_SOURCE_NAT_POOL));
+    assertThat(ccae, hasNumReferrers(filename, NAT_POOL, "POOL2", 0));
   }
 
   @Test
@@ -1593,7 +1601,9 @@ public class A10GrammarTest {
     ServerPort.ServerPortAndType tcp80 = new ServerPort.ServerPortAndType(80, ServerPort.Type.TCP);
     ServerPort.ServerPortAndType udp81 = new ServerPort.ServerPortAndType(81, ServerPort.Type.UDP);
 
-    assertThat(c.getServers().keySet(), containsInAnyOrder("SERVER1", "SERVER2", "SERVER3"));
+    // Using unicode dash \u2013
+    String server3Name = "SERVER–3";
+    assertThat(c.getServers().keySet(), containsInAnyOrder("SERVER1", "SERVER2", server3Name));
 
     {
       Server server1 = c.getServers().get("SERVER1");
@@ -1635,9 +1645,9 @@ public class A10GrammarTest {
     }
 
     {
-      Server server3 = c.getServers().get("SERVER3");
+      Server server3 = c.getServers().get(server3Name);
       assertFalse(server3.getEnable());
-      assertThat(server3.getName(), equalTo("SERVER3"));
+      assertThat(server3.getName(), equalTo(server3Name));
       assertFalse(server3.getStatsDataEnable());
       Map<ServerPort.ServerPortAndType, ServerPort> server3Ports = server3.getPorts();
       assertThat(server3Ports.keySet(), contains(udp81));
@@ -1811,7 +1821,8 @@ public class A10GrammarTest {
                 hasComment("Member reference must include port when not specified separately"),
                 hasComment(
                     "Cannot reference non-existent health monitor UNDEFINED for service-group"
-                        + " SG1"))));
+                        + " SG1"),
+                hasComment("New service-group must have a protocol specified."))));
   }
 
   /**
@@ -2231,5 +2242,35 @@ public class A10GrammarTest {
 
     assertThat(ccae, hasNumReferrers(filename, ACCESS_LIST, "ACL_UNUSED", 0));
     assertThat(ccae, hasNumReferrers(filename, ACCESS_LIST, "ACL1", 1));
+  }
+
+  @Test
+  public void testServerReferences() throws IOException {
+    String hostname = "server_ref";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(ccae, hasDefinedStructure(filename, SERVER, "SERVER1"));
+    assertThat(ccae, hasDefinedStructure(filename, SERVER, "SERVER2"));
+
+    assertThat(ccae, hasNumReferrers(filename, SERVER, "SERVER1", 1));
+    assertThat(ccae, hasNumReferrers(filename, SERVER, "SERVER2", 0));
+  }
+
+  @Test
+  public void testServiceGroupReferences() throws IOException {
+    String hostname = "service_group_ref";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(ccae, hasDefinedStructure(filename, SERVICE_GROUP, "SG1"));
+    assertThat(ccae, hasDefinedStructure(filename, SERVICE_GROUP, "SG2"));
+
+    assertThat(ccae, hasNumReferrers(filename, SERVICE_GROUP, "SG1", 1));
+    assertThat(ccae, hasNumReferrers(filename, SERVICE_GROUP, "SG2", 0));
   }
 }
