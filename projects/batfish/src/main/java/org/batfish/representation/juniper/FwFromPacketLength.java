@@ -25,7 +25,7 @@ public class FwFromPacketLength implements FwFrom {
 
   @Override
   public Field getField() {
-    return _except ? Field.FRAGMENT_OFFSET_EXCEPT : Field.PACKET_LENGTH;
+    return _except ? Field.PACKET_LENGTH_EXCEPT : Field.PACKET_LENGTH;
   }
 
   @Override
