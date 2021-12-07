@@ -3,9 +3,14 @@ package org.batfish.question;
 import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSortedMap;
+import java.util.Comparator;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.SortedMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -16,13 +21,17 @@ import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.specifier.AllNodesNodeSpecifier;
+import org.batfish.specifier.NodeSpecifier;
+import org.batfish.specifier.SpecifierContext;
+import org.batfish.specifier.SpecifierFactories;
 
 @AutoService(Plugin.class)
 public final class VIModelQuestionPlugin extends QuestionPlugin {
 
-  public static final class VIModelAnswerElement extends AnswerElement {
+  private static final String PROP_NODES = "nodes";
 
-    private static final String PROP_NODES = "nodes";
+  public static final class VIModelAnswerElement extends AnswerElement {
 
     private final SortedMap<String, Configuration> _nodes;
 
@@ -50,11 +59,37 @@ public final class VIModelQuestionPlugin extends QuestionPlugin {
 
     @Override
     public VIModelAnswerElement answer(NetworkSnapshot snapshot) {
-      return new VIModelAnswerElement(_batfish.loadConfigurations(snapshot));
+      return new VIModelAnswerElement(
+          getConfigs((VIModelQuestion) _question, _batfish.specifierContext(snapshot)));
+    }
+
+    @JsonIgnore
+    @VisibleForTesting
+    static SortedMap<String, Configuration> getConfigs(
+        VIModelQuestion question, SpecifierContext specifierContext) {
+      NodeSpecifier nodeSpecifier = question.getNodeSpecifier();
+      Set<String> nodes = nodeSpecifier.resolve(specifierContext);
+      return specifierContext.getConfigs().entrySet().stream()
+          .filter(entry -> nodes.contains(entry.getKey()))
+          .collect(
+              ImmutableSortedMap.toImmutableSortedMap(
+                  Comparator.naturalOrder(), Entry::getKey, Entry::getValue));
     }
   }
 
   public static final class VIModelQuestion extends Question {
+
+    private @Nullable final String _nodes;
+
+    public VIModelQuestion(@Nullable String nodes) {
+      _nodes = nodes;
+    }
+
+    @JsonCreator
+    private static VIModelQuestion create(@Nullable @JsonProperty(PROP_NODES) String nodes) {
+      return new VIModelQuestion(nodes);
+    }
+
     @Override
     public boolean getDataPlane() {
       return false;
@@ -63,6 +98,15 @@ public final class VIModelQuestionPlugin extends QuestionPlugin {
     @Override
     public String getName() {
       return "viModel";
+    }
+
+    @JsonProperty(PROP_NODES)
+    public @Nullable String getNodes() {
+      return _nodes;
+    }
+
+    private NodeSpecifier getNodeSpecifier() {
+      return SpecifierFactories.getNodeSpecifierOrDefault(_nodes, AllNodesNodeSpecifier.INSTANCE);
     }
   }
 
@@ -73,6 +117,6 @@ public final class VIModelQuestionPlugin extends QuestionPlugin {
 
   @Override
   protected Question createQuestion() {
-    return new VIModelQuestion();
+    return new VIModelQuestion(null);
   }
 }
