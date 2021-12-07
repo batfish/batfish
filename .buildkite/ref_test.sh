@@ -10,9 +10,13 @@ if [ $# -lt 1 -o $# -gt 2 ]; then
   exit 1
 fi
 
-JACOCO_VERSION=0.8.2
+JACOCO_VERSION=0.8.7
 JACOCO_AGENT_JAR_NAME="org.jacoco.agent-${JACOCO_VERSION}-runtime.jar"
 JACOCO_AGENT_JAR="${HOME}/.m2/repository/org/jacoco/org.jacoco.agent/${JACOCO_VERSION}/${JACOCO_AGENT_JAR_NAME}"
+
+if [ ! -f ${JACOCO_AGENT_JAR} ]; then
+  mvn dependency:get -Dartifact=org.jacoco:org.jacoco.agent:${JACOCO_VERSION}:jar:runtime
+fi
 
 CMD_FILE="$1"
 JACOCO_FILE="workspace/${CMD_FILE}/jacoco.exec"
