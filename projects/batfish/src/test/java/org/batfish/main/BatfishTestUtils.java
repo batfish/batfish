@@ -5,6 +5,7 @@ import static org.batfish.common.BfConsts.RELPATH_CHECKPOINT_MANAGEMENT_DIR;
 import static org.batfish.common.BfConsts.RELPATH_CONFIGURATIONS_DIR;
 import static org.batfish.common.BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES;
 import static org.batfish.common.BfConsts.RELPATH_HOST_CONFIGS_DIR;
+import static org.batfish.common.BfConsts.RELPATH_SONIC_CONFIGS_DIR;
 import static org.batfish.common.util.Resources.readResourceBytes;
 
 import com.google.common.cache.Cache;
@@ -190,6 +191,7 @@ public class BatfishTestUtils {
     byte[] ispConfigBytes = testrigText.getIspConfigBytes();
     byte[] layer1TopologyBytes = testrigText.getLayer1TopologyBytes();
     byte[] runtimeDataBytes = testrigText.getRuntimeDataBytes();
+    Map<String, byte[]> sonicConfigDbBytes = testrigText.getSonicConfigBytes();
     ConversionContext conversionContext = testrigText.getConversionContext();
 
     Settings settings = new Settings(new String[] {});
@@ -247,6 +249,8 @@ public class BatfishTestUtils {
           storage,
           batfish.getSnapshot());
     }
+    writeTemporarySnapshotInputFiles(
+        sonicConfigDbBytes, RELPATH_SONIC_CONFIGS_DIR, storage, batfish.getSnapshot());
     if (conversionContext != null) {
       // Note: only works when the snapshot input does not contain anything that would populate
       // conversion context.
