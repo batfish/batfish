@@ -4,6 +4,7 @@ import static com.google.common.collect.Maps.immutableEntry;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.batfish.datamodel.FirewallSessionInterfaceInfo.Action.POST_NAT_FIB_LOOKUP;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
@@ -609,23 +610,23 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
       // would match a static src NAT rule (because static rules take precedence over hide).
       // TODO Is traffic matching this condition still eligible to match a separate dst NAT rule?
       // TODO Intranet-matching for auto static rules too, once we support them on non-host objects
-      List<AclLineMatchExpr> staticSrcRuleMatchExprs =
-          autoStaticNatObjects.stream()
-              .map(natObj -> matchAutomaticStaticRule(natObj, true))
-              .collect(ImmutableList.toImmutableList());
-      PacketMatchExpr notMatchingStaticSrcRule =
-          new PacketMatchExpr(not(or(staticSrcRuleMatchExprs)));
-      List<Statement> internalTrafficStatements =
+      List<AclLineMatchExpr> matchInternalTraffic =
           autoHideNatObjects.stream()
               .map(natObj -> matchInternalTraffic(natObj, addressSpaceToMatchExpr))
               .filter(Optional::isPresent)
               .map(Optional::get)
-              .map(
-                  matchInternal ->
-                      new If(new PacketMatchExpr(matchInternal), ImmutableList.of(returnFibLookup)))
               .collect(ImmutableList.toImmutableList());
-      if (!internalTrafficStatements.isEmpty()) {
-        statements.add(new If(notMatchingStaticSrcRule, internalTrafficStatements));
+      if (!matchInternalTraffic.isEmpty()) {
+        AclLineMatchExpr matchAnyInternalTraffic = or(matchInternalTraffic);
+        AclLineMatchExpr matchedByStaticSrcRules =
+            or(
+                autoStaticNatObjects.stream()
+                    .map(natObj -> matchAutomaticStaticRule(natObj, true))
+                    .collect(ImmutableList.toImmutableList()));
+        statements.add(
+            new If(
+                new PacketMatchExpr(and(not(matchedByStaticSrcRules), matchAnyInternalTraffic)),
+                ImmutableList.of(returnFibLookup)));
       }
     }
 
