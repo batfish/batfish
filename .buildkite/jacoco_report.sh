@@ -8,9 +8,13 @@ TMP=$(mktemp -d)
 unzip -q "${ALLINONE_JAR}" -d "${TMP}"
 
 # Next: generate aggregated code coverage report
-JACOCO_VERSION=0.8.2
+JACOCO_VERSION=0.8.7
 JACOCO_CLI_JAR_NAME="org.jacoco.cli-${JACOCO_VERSION}-nodeps.jar"
 JACOCO_CLI_JAR="${HOME}/.m2/repository/org/jacoco/org.jacoco.cli/${JACOCO_VERSION}/${JACOCO_CLI_JAR_NAME}"
+
+if [ ! -f ${JACOCO_CLI_JAR} ]; then
+  mvn dependency:get -Dartifact=org.jacoco:org.jacoco.cli:${JACOCO_VERSION}:jar:nodeps
+fi
 
 java -jar ${JACOCO_CLI_JAR} report \
      $(find workspace/ -name jacoco.exec -type f) \
