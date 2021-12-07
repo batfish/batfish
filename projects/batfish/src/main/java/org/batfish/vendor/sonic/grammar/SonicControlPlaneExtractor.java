@@ -3,7 +3,6 @@ package org.batfish.vendor.sonic.grammar;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.Set;
 import javax.annotation.Nonnull;
-import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.ErrorDetails;
 import org.batfish.common.NetworkSnapshot;
@@ -20,7 +19,6 @@ import org.batfish.vendor.VendorConfiguration;
 import org.batfish.vendor.sonic.representation.ConfigDb;
 import org.batfish.vendor.sonic.representation.SonicConfiguration;
 
-@ParametersAreNonnullByDefault
 public class SonicControlPlaneExtractor implements ControlPlaneExtractor {
   private @Nonnull final String _configDbText;
   private @Nonnull final String _frrFileText;

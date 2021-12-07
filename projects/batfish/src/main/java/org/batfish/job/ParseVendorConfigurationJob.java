@@ -761,7 +761,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
   }
 
   /** Returns a string, made up of filenames, used in warnings */
-  static String jobFilenamesToString(Collection<String> filenames) {
+  static @Nonnull String jobFilenamesToString(Collection<String> filenames) {
     return filenames.size() == 1
         ? filenames.iterator().next() // backward-compatible, common case of one file
         : filenames.stream()
@@ -776,7 +776,6 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
    * expected. This representative filename, corresponding to the main file, will be used until we
    * can upgrade those APIs.
    */
-  @SuppressWarnings("unused")
   private static String getRepresentativeFilename(
       Map<String, String> fileTexts, ConfigurationFormat format) {
     if (fileTexts.size() == 1) {
@@ -787,6 +786,8 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
     }
     throw new IllegalArgumentException("Cannot get representative filename for " + format);
   }
+
+  private static final Pattern LIKELY_JSON = Pattern.compile("^\\s*\\{", Pattern.DOTALL);
 
   /** Given filename to text map for a device, return which of the two files is frr.conf. */
   @VisibleForTesting
@@ -801,17 +802,17 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
     Iterator<String> fileIterator = fileTexts.keySet().iterator();
     String filename1 = fileIterator.next();
     String filename2 = fileIterator.next();
-    // The file starting with '{' is a cheap way to check it is configdb.json. Valid frr.conf
+    // The file starting with '{' is a cheap way to check if it is configdb.json. Valid frr.conf
     // files cannot start with '{'.
-    String fileText1 = fileTexts.get(filename1).trim();
-    String fileText2 = fileTexts.get(filename2).trim();
-    if (fileText1.startsWith("{") && !fileText2.startsWith("{")) {
+    boolean fileText1IsJson = LIKELY_JSON.matcher(fileTexts.get(filename1)).find();
+    boolean fileText2IsJson = LIKELY_JSON.matcher(fileTexts.get(filename2)).find();
+    if (fileText1IsJson && !fileText2IsJson) {
       return filename2;
     }
-    if (!fileText1.startsWith("{") && fileText2.startsWith("{")) {
+    if (!fileText1IsJson && fileText2IsJson) {
       return filename1;
     }
-    if (fileText1.startsWith("{") && fileText2.startsWith("{")) {
+    if (fileText1IsJson) { // if this is true fileText2 must also be JSON
       throw new IllegalArgumentException("Neither SONiC file appears to be frr configuration");
     }
     // both start with '{'

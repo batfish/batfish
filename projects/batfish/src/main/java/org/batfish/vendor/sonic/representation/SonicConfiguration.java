@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -15,7 +14,10 @@ import org.batfish.representation.frr.Vxlan;
 
 // TODO: implement conversion
 
-@ParametersAreNonnullByDefault
+/**
+ * Represents configuration of a SONiC device, containing information in both its configdb.json and
+ * frr.conf files
+ */
 public class SonicConfiguration extends FrrVendorConfiguration {
 
   private @Nullable String _hostname;

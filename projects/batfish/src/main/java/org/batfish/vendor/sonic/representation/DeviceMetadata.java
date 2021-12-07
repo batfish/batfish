@@ -1,33 +1,32 @@
 package org.batfish.vendor.sonic.representation;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableMap;
-import java.util.Map;
+import java.io.Serializable;
 import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /** Represents device metadata: https://github.com/Azure/SONiC/wiki/Configuration#device-metadata */
-public class DeviceMetadata implements ConfigDbObject {
+public class DeviceMetadata implements Serializable {
 
-  private @Nonnull final Map<String, String> _properties;
+  private static final String PROP_HOSTNAME = "hostname";
 
-  public DeviceMetadata(Map<String, String> properties) {
-    _properties = ImmutableMap.copyOf(properties);
+  private @Nullable final String _hostname;
+
+  public @Nonnull Optional<String> getHostname() {
+    return Optional.ofNullable(_hostname);
   }
 
-  public Optional<String> getHostname() {
-    return Optional.ofNullable(_properties.get("hostname"));
+  public DeviceMetadata(@Nullable String hostname) {
+    _hostname = hostname;
   }
 
   @JsonCreator
-  private static DeviceMetadata create(Map<String, Map<String, String>> properties) {
-    checkArgument(properties.size() == 1, "DEVICE_METADATA should have only one property");
-    checkArgument(properties.containsKey("localhost"), "'localhost' not found in %DEVICE_METADATA");
-    return new DeviceMetadata(properties.get("localhost"));
+  private static DeviceMetadata create(@Nullable @JsonProperty(PROP_HOSTNAME) String hostname) {
+    return new DeviceMetadata(hostname);
   }
 
   @Override
@@ -39,16 +38,16 @@ public class DeviceMetadata implements ConfigDbObject {
       return false;
     }
     DeviceMetadata that = (DeviceMetadata) o;
-    return _properties.equals(that._properties);
+    return Objects.equals(_hostname, that._hostname);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_properties);
+    return Objects.hash(_hostname);
   }
 
   @Override
   public String toString() {
-    return MoreObjects.toStringHelper(this).add("properties", _properties).toString();
+    return MoreObjects.toStringHelper(this).add("hostname", _hostname).toString();
   }
 }
