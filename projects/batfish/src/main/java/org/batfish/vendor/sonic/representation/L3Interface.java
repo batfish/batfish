@@ -6,6 +6,12 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 
+/**
+ * Represents an L3 interface that appears under INTERFACE, PORT_CHANNEL, or VLAN objects in
+ * configdb.
+ *
+ * <p>This object is created by parsing the multi-level key encoding in those objects.
+ */
 public class L3Interface implements Serializable {
   private final ConcreteInterfaceAddress _address;
 
@@ -32,6 +38,6 @@ public class L3Interface implements Serializable {
 
   @Override
   public String toString() {
-    return MoreObjects.toStringHelper(this).add("address", _address).toString();
+    return MoreObjects.toStringHelper(this).omitNullValues().add("address", _address).toString();
   }
 }

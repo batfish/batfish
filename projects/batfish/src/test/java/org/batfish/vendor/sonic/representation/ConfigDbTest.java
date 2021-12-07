@@ -21,7 +21,7 @@ public class ConfigDbTest {
     String input = "{ \"GARBAGE\": 1, \"INTERFACE\": {}}";
     assertThat(
         BatfishObjectMapper.ignoreUnknownMapper().readValue(input, ConfigDb.class),
-        equalTo(new ConfigDb(ImmutableMap.of(), ImmutableMap.of())));
+        equalTo(ConfigDb.builder().build()));
   }
 
   @Test
@@ -85,7 +85,7 @@ public class ConfigDbTest {
   public void testEquals() {
     ConfigDb.Builder builder = ConfigDb.builder();
     new EqualsTester()
-        .addEqualityGroup(ConfigDb.builder().build(), ConfigDb.builder().build())
+        .addEqualityGroup(builder.build(), builder.build())
         .addEqualityGroup(
             builder
                 .setDeviceMetadata(ImmutableMap.of("localhost", new DeviceMetadata(null)))
