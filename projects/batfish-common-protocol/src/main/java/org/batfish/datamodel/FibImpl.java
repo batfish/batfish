@@ -24,6 +24,7 @@ import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.route.nh.NextHopVisitor;
 import org.batfish.datamodel.route.nh.NextHopVrf;
+import org.batfish.datamodel.route.nh.NextHopVtep;
 
 @ParametersAreNonnullByDefault
 public final class FibImpl implements Fib {
@@ -168,6 +169,11 @@ public final class FibImpl implements Fib {
             public FibAction visitNextHopVrf(NextHopVrf nextHopVrf) {
               return new FibNextVrf(nextHopVrf.getVrfName());
             }
+
+            @Override
+            public FibAction visitNextHopVtep(NextHopVtep nextHopVtep) {
+              return new FibVtep(nextHopVtep.getVni(), nextHopVtep.getVtepIp());
+            }
           }.visit(route.getNextHop());
       entriesBuilder.add(new FibEntry(fibAction, stack));
       return;
@@ -304,6 +310,12 @@ public final class FibImpl implements Fib {
 
       @Override
       public Void visitNextHopVrf(NextHopVrf nextHopVrf) {
+        ResolutionTreeNode.withParent(route, treeNode, Route.UNSET_ROUTE_NEXT_HOP_IP);
+        return null;
+      }
+
+      @Override
+      public Void visitNextHopVtep(NextHopVtep nextHopVtep) {
         ResolutionTreeNode.withParent(route, treeNode, Route.UNSET_ROUTE_NEXT_HOP_IP);
         return null;
       }

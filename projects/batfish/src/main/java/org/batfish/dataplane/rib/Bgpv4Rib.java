@@ -37,6 +37,7 @@ import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.route.nh.NextHopVisitor;
 import org.batfish.datamodel.route.nh.NextHopVrf;
+import org.batfish.datamodel.route.nh.NextHopVtep;
 
 /** BGPv4-specific RIB implementation */
 @ParametersAreNonnullByDefault
@@ -311,6 +312,12 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
         @Override
         public Boolean visitNextHopVrf(NextHopVrf nextHopVrf) {
           // The next hop is in a different VRF, so nothing to check in current main RIB
+          return false;
+        }
+
+        @Override
+        public Boolean visitNextHopVtep(NextHopVtep nextHopVtep) {
+          // The next hop is over a VXLAN edge, so nothing to check in current main RIB
           return false;
         }
       };

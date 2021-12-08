@@ -10,6 +10,7 @@ import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.FibForward;
 import org.batfish.datamodel.FibNextVrf;
 import org.batfish.datamodel.FibNullRoute;
+import org.batfish.datamodel.FibVtep;
 import org.batfish.datamodel.FilterResult;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IpAccessList;
@@ -93,6 +94,12 @@ public final class PacketPolicyEvaluator {
             @Override
             public Boolean visitFibNullRoute(FibNullRoute fibNullRoute) {
               // nothing to do
+              return false;
+            }
+
+            @Override
+            public Boolean visitFibVtep(FibVtep fibVtep) {
+              // packet will go out a VXLAN tunnel, not an interface
               return false;
             }
           };

@@ -17,6 +17,7 @@ import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.FibForward;
 import org.batfish.datamodel.FibNextVrf;
 import org.batfish.datamodel.FibNullRoute;
+import org.batfish.datamodel.FibVtep;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.visitors.FibActionVisitor;
@@ -74,6 +75,11 @@ public final class IpsRoutedOutInterfacesFactory {
 
     @Override
     public Optional<String> visitFibNullRoute(FibNullRoute fibNullRoute) {
+      return Optional.empty();
+    }
+
+    @Override
+    public Optional<String> visitFibVtep(FibVtep fibVtep) {
       return Optional.empty();
     }
 

@@ -44,6 +44,7 @@ import org.batfish.datamodel.FibEntry;
 import org.batfish.datamodel.FibForward;
 import org.batfish.datamodel.FibNextVrf;
 import org.batfish.datamodel.FibNullRoute;
+import org.batfish.datamodel.FibVtep;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Interface;
@@ -560,6 +561,13 @@ public final class BgpTopologyUtils {
 
                       @Override
                       public String visitFibNullRoute(FibNullRoute fibNullRoute) {
+                        return null;
+                      }
+
+                      @Override
+                      public String visitFibVtep(FibVtep fibVtep) {
+                        // TODO What source IPs are viable for an originated packet routed out a
+                        //  VXLAN tunnel?
                         return null;
                       }
                     }))

@@ -209,4 +209,9 @@ public class TracerouteEngineImplContext {
       String currentNodeName, String outgoingIfaceName) {
     return _topology.getNeighbors(NodeInterfacePair.of(currentNodeName, outgoingIfaceName));
   }
+
+  @Nonnull
+  Map<String, Set<String>> getVxlanNeighbors(String currentNodeName, Ip vtepIp, int vni) {
+    return _forwardingAnalysis.getVxlanNeighbors(currentNodeName, vtepIp, vni);
+  }
 }

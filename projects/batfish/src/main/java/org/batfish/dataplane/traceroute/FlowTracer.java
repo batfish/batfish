@@ -64,6 +64,7 @@ import org.batfish.datamodel.FibEntry;
 import org.batfish.datamodel.FibForward;
 import org.batfish.datamodel.FibNextVrf;
 import org.batfish.datamodel.FibNullRoute;
+import org.batfish.datamodel.FibVtep;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo.Action;
 import org.batfish.datamodel.FirewallSessionVrfInfo;
@@ -150,6 +151,8 @@ class FlowTracer {
     private static final Comparator<FibAction> INSTANCE = new FibActionComparator();
     private static final Comparator<FibForward> FIB_FORWARD_COMPARATOR =
         comparing(FibForward::getInterfaceName).thenComparing(FibForward::getArpIp);
+    private static final Comparator<FibVtep> FIB_VTEP_COMPARATOR =
+        comparing(FibVtep::getVtepIp).thenComparing(FibVtep::getVni);
 
     /**
      * new FibActionSameTypeComparator(a).visit(b) compares a and b and requires that a.getClass()
@@ -179,6 +182,11 @@ class FlowTracer {
         FibNullRoute.class.cast(_rhs);
         return 0;
       }
+
+      @Override
+      public Integer visitFibVtep(FibVtep fibVtep) {
+        return FIB_VTEP_COMPARATOR.compare(fibVtep, (FibVtep) _rhs);
+      }
     }
 
     private static final FibActionVisitor<Integer> FIB_ACTION_TYPE_PRECEDENCE =
@@ -196,6 +204,11 @@ class FlowTracer {
           @Override
           public Integer visitFibNullRoute(FibNullRoute fibNullRoute) {
             return 3;
+          }
+
+          @Override
+          public Integer visitFibVtep(FibVtep fibVtep) {
+            return 4;
           }
         };
 
@@ -1484,6 +1497,13 @@ class FlowTracer {
             routingStepBuilder.setAction(NULL_ROUTED);
             return null;
           }
+
+          @Override
+          public Void visitFibVtep(FibVtep fibVtep) {
+            // TODO: New StepAction?
+            routingStepBuilder.setAction(FORWARDED);
+            return null;
+          }
         });
     return routingStepBuilder.setDetail(routingStepDetailBuilder.build()).build();
   }
@@ -1538,6 +1558,63 @@ class FlowTracer {
           @Override
           public Void visitFibNullRoute(FibNullRoute fibNullRoute) {
             buildNullRoutedTrace();
+            return null;
+          }
+
+          @Override
+          public Void visitFibVtep(FibVtep fibVtep) {
+            Map<String, Set<String>> remoteNodesAndVrfs =
+                _tracerouteContext.getVxlanNeighbors(
+                    currentNodeName, fibVtep.getVtepIp(), fibVtep.getVni());
+
+            if (remoteNodesAndVrfs.isEmpty()) {
+              // There should always be a viable remote VRF (EVPN external announcements are not
+              // supported)
+              throw new IllegalStateException(
+                  String.format(
+                      "No viable remote VRFs found for next hop VTEP %s, VNI %s in node %s",
+                      fibVtep.getVtepIp(), fibVtep.getVni(), currentNodeName));
+            }
+
+            // Tie up this hop. TODO Add ExitIntoVxlanTunnel step.
+            Hop hop = new Hop(_currentNode, _steps);
+            _hops.add(
+                forwardedHop(hop, _originalFlow, getVisitedBreadcrumb(), getHopSessionInfo()));
+
+            for (String node : remoteNodesAndVrfs.keySet()) {
+              for (String vrf : remoteNodesAndVrfs.get(node)) {
+                // TODO Make that vrf deal with it
+                FlowTracer forkedTracer =
+                    new FlowTracer(
+                        _tracerouteContext,
+                        _tracerouteContext.getConfigurations().get(node),
+                        null,
+                        new Node(node),
+                        _traceRecorder,
+                        _lastHopNodeAndOutgoingInterface, // todo ?
+                        new ArrayList<>(_newSessions),
+                        _originalFlow,
+                        vrf,
+                        new ArrayList<>(_hops),
+                        new ArrayList<>(),
+                        _breadcrumbs,
+                        _currentFlow,
+                        _origNewSessionsSize,
+                        _origBreadcrumbsSize,
+                        _breadcrumbInterner);
+                if (forkedTracer.isAcceptedAtCurrentVrf(dstIp)) {
+                  forkedTracer.buildAcceptTrace();
+                } else {
+                  forkedTracer.fibLookup(
+                      dstIp,
+                      node,
+                      vrf,
+                      _tracerouteContext.getFib(node, vrf).get(),
+                      forwardOutInterfaceHandler,
+                      intraHopBreadcrumbs);
+                }
+              }
+            }
             return null;
           }
         });
