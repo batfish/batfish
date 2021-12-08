@@ -44,8 +44,7 @@ public final class AclLineMatchExprs {
   @VisibleForTesting
   static final AclLineMatchExpr NEW_TCP_FLOWS = and(TCP_FLOWS, not(ESTABLISHED_TCP_FLOWS));
 
-  public static final AclLineMatchExpr NEW_FLOWS =
-      implies(matchIpProtocol(IpProtocol.TCP), NEW_TCP_FLOWS);
+  public static final AclLineMatchExpr NEW_FLOWS = implies(TCP_FLOWS, NEW_TCP_FLOWS);
 
   public static AclLineMatchExpr and(String traceElement, AclLineMatchExpr... exprs) {
     return new AndMatchExpr(ImmutableList.copyOf(exprs), traceElement);

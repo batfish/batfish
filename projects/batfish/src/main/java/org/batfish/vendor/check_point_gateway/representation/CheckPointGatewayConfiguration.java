@@ -34,6 +34,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -526,11 +527,43 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
 
     // First match any manual rules. If a manual rule is matched, no other rules can be matched,
     // regardless of what translations the manual rule applies, so return.
-    manualRules.forEach(
-        rule ->
-            getManualRuleStatement(
-                    rule, serviceToMatchExpr, addressSpaceToMatchExpr, objects, returnFibLookup)
-                .ifPresent(statements::add));
+
+    // Also, condense sequential rulesd that share the same original source address, for VI
+    // performance
+    Uid lastMatchSourceUid = null;
+    PacketMatchExpr lastMatchSourceAddress = null;
+    List<Statement> currentSourceUidStatements = new LinkedList<>();
+    for (NatRule manualRule : manualRules) {
+      Optional<Statement> st =
+          getManualRuleStatement(
+              manualRule, serviceToMatchExpr, addressSpaceToMatchExpr, objects, returnFibLookup);
+      if (!st.isPresent()) {
+        continue;
+      }
+      // Since we got here, we know that the UID corresponds to a valid address space
+      if (!manualRule.getOriginalSource().equals(lastMatchSourceUid)) {
+        if (!currentSourceUidStatements.isEmpty()) {
+          statements.add(
+              currentSourceUidStatements.size() == 1
+                  ? currentSourceUidStatements.get(0)
+                  : new If(lastMatchSourceAddress, currentSourceUidStatements));
+          currentSourceUidStatements.clear();
+        }
+        lastMatchSourceUid = manualRule.getUid();
+        lastMatchSourceAddress =
+            new PacketMatchExpr(
+                addressSpaceToMatchExpr.convertSource(
+                    (AddressSpace) objects.get(lastMatchSourceUid)));
+      }
+      currentSourceUidStatements.add(st.get());
+    }
+    if (!currentSourceUidStatements.isEmpty()) {
+      statements.add(
+          currentSourceUidStatements.size() == 1
+              ? currentSourceUidStatements.get(0)
+              : new If(lastMatchSourceAddress, currentSourceUidStatements));
+      currentSourceUidStatements.clear();
+    }
 
     // Convert automatic NAT rules
     if (!autoHideNatObjects.isEmpty() || !autoStaticNatObjects.isEmpty()) {
