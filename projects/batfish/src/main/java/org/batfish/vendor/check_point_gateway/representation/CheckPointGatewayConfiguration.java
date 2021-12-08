@@ -543,13 +543,17 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
       // Since we got here, we know that the UID corresponds to a valid address space
       if (!manualRule.getOriginalSource().equals(lastMatchSourceUid)) {
         if (!currentSourceUidStatements.isEmpty()) {
+          _w.redFlag(
+              String.format(
+                  "Added %d combined xforms for %s (UID %s)",
+                  currentSourceUidStatements.size(), _hostname, lastMatchSourceUid));
           statements.add(
               currentSourceUidStatements.size() == 1
                   ? currentSourceUidStatements.get(0)
                   : new If(lastMatchSourceAddress, currentSourceUidStatements));
           currentSourceUidStatements.clear();
         }
-        lastMatchSourceUid = manualRule.getUid();
+        lastMatchSourceUid = manualRule.getOriginalSource();
         lastMatchSourceAddress =
             new PacketMatchExpr(
                 addressSpaceToMatchExpr.convertSource(
