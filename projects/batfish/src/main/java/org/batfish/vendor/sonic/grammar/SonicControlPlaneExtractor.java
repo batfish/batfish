@@ -4,11 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
-import org.batfish.common.ErrorDetails;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.grammar.BatfishParseException;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.ImplementedRules;
@@ -52,24 +50,16 @@ public class SonicControlPlaneExtractor implements ControlPlaneExtractor {
     return ImplementedRules.getImplementedRules(FrrConfigurationBuilder.class);
   }
 
+  public void processConfigDb() throws JsonProcessingException {
+    ConfigDb configDb =
+        BatfishObjectMapper.ignoreUnknownMapper().readValue(_configDbText, ConfigDb.class);
+    _configuration.setConfigDb(configDb);
+    configDb.getHostname().ifPresent(_configuration::setHostname);
+  }
+
+  /** This method is called for FRR parsing, after configDb processing */
   @Override
   public void processParseTree(NetworkSnapshot snapshot, ParserRuleContext tree) {
-
-    try {
-      ConfigDb configDb =
-          BatfishObjectMapper.ignoreUnknownMapper().readValue(_configDbText, ConfigDb.class);
-      _configuration.setConfigDb(configDb);
-      configDb.getHostname().ifPresent(_configuration::setHostname);
-    } catch (JsonProcessingException exception) {
-      // completely fail now, instead of trying making sense of frr file. if configdb.json parsing
-      // failed, the generated node will be useless anyway. this way the user will notice something
-      // is amiss more easily.
-      throw new BatfishParseException(
-          "Error parsing configdb file",
-          exception,
-          new ErrorDetails("File could not be deserialized as a configdb object"));
-    }
-
     FrrConfigurationBuilder cb =
         new FrrConfigurationBuilder(
             _configuration, _frrParser, _frrWarnings, _frrFileText, _frrSilentSyntax);
