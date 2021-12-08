@@ -58,6 +58,64 @@ public class ConfigDbTest {
   }
 
   @Test
+  public void testDeserializationLoopback() throws JsonProcessingException {
+    String input = "{ \"LOOPBACK\": {\"Loopback0\": {}}}";
+    assertThat(
+        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, ConfigDb.class),
+        equalTo(
+            ConfigDb.builder()
+                .setLoopbacks(ImmutableMap.of("Loopback0", new L3Interface(null)))
+                .build()));
+  }
+
+  @Test
+  public void testDeserializationNtpServer() throws JsonProcessingException {
+    String input = "{ \"NTP_SERVER\": {\"23.92.29.245\": {}, \"2.debian.pool.ntp.org\": {}}}";
+    assertThat(
+        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, ConfigDb.class),
+        equalTo(
+            ConfigDb.builder()
+                .setNtpServers(ImmutableSet.of("23.92.29.245", "2.debian.pool.ntp.org"))
+                .build()));
+  }
+
+  @Test
+  public void testJacksonDeserializationPort() throws JsonProcessingException {
+    String input =
+        "{\"PORT\" :{\n"
+            + "        \"Ethernet0\": {\n"
+            + "            \"description\": \"L3-sbf00-fr001:Ethernet0\"\n"
+            + "        },\n"
+            + "        \"Ethernet8\": {\n"
+            + "            \"mtu\": \"9212\"\n"
+            + "        }"
+            + "}}";
+
+    assertThat(
+        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, ConfigDb.class),
+        equalTo(
+            ConfigDb.builder()
+                .setPorts(
+                    ImmutableMap.of(
+                        "Ethernet0",
+                        Port.builder().setDescription("L3-sbf00-fr001:Ethernet0").build(),
+                        "Ethernet8",
+                        Port.builder().setMtu(9212).build()))
+                .build()));
+  }
+
+  @Test
+  public void testDeserializationSyslogServer() throws JsonProcessingException {
+    String input = "{ \"SYSLOG_SERVER\": {\"23.92.29.245\": {}, \"10.11.150.5\": {}}}";
+    assertThat(
+        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, ConfigDb.class),
+        equalTo(
+            ConfigDb.builder()
+                .setSyslogServers(ImmutableSet.of("23.92.29.245", "10.11.150.5"))
+                .build()));
+  }
+
+  @Test
   public void testCreateInterfaces() {
     assertThat(
         createInterfaces(
@@ -92,6 +150,11 @@ public class ConfigDbTest {
                 .build())
         .addEqualityGroup(
             builder.setInterfaces(ImmutableMap.of("iface", new L3Interface(null))).build())
+        .addEqualityGroup(
+            builder.setLoopbacks(ImmutableMap.of("l0", new L3Interface(null))).build())
+        .addEqualityGroup(builder.setNtpServers(ImmutableSet.of("ntp")).build())
+        .addEqualityGroup(builder.setPorts(ImmutableMap.of("a", Port.builder().build())))
+        .addEqualityGroup(builder.setSyslogServers(ImmutableSet.of("aa")).build())
         .testEquals();
   }
 }

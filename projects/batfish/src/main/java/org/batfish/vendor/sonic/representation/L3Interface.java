@@ -13,10 +13,15 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
  * <p>This object is created by parsing the multi-level key encoding in those objects.
  */
 public class L3Interface implements Serializable {
-  private final ConcreteInterfaceAddress _address;
+  // TODO: Does Sonic permit multiple addresses?
+  private final @Nullable ConcreteInterfaceAddress _address;
 
   public L3Interface(@Nullable ConcreteInterfaceAddress address) {
     _address = address;
+  }
+
+  public @Nullable ConcreteInterfaceAddress getAddress() {
+    return _address;
   }
 
   @Override

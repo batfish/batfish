@@ -33,4 +33,5 @@ public enum DeviceModel {
   JUNIPER_UNSPECIFIED,
   PALO_ALTO_FIREWALL,
   PALO_ALTO_PANORAMA,
+  SONIC
 }
