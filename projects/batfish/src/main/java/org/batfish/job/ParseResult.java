@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -55,9 +56,9 @@ public class ParseResult implements Serializable {
    * Get results for individual files. File-level warnings and parse trees are contained in this
    * map. Warnings not specific to a file are in {@link #getWarnings()}
    */
-  // package private
+  // TODO: Make package private after downstreams are ported off
   @Nonnull
-  Map<String, FileResult> getFileResults() {
+  public Map<String, FileResult> getFileResults() {
     return _fileResults;
   }
 
@@ -86,5 +87,10 @@ public class ParseResult implements Serializable {
   /** Get ParseStatus for the specified file, or an empty optional if the file is not found. */
   public Optional<ParseStatus> getParseStatus(String filename) {
     return Optional.ofNullable(_fileResults.get(filename)).map(FileResult::getParseStatus);
+  }
+
+  /** Get names of all constituent files. */
+  public Set<String> getFilenames() {
+    return _fileResults.keySet();
   }
 }
