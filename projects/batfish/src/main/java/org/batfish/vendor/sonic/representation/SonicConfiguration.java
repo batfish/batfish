@@ -117,7 +117,7 @@ public class SonicConfiguration extends FrrVendorConfiguration {
 
   @Override
   public @Nonnull String getInterfaceVrf(String ifaceName) {
-    if (getInterface(ifaceName) == null) {
+    if (!hasInterface(ifaceName)) {
       throw new NoSuchElementException("Interface " + ifaceName + " does not exist");
     }
     return DEFAULT_VRF_NAME; // only have default VRF for now
