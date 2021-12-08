@@ -84,7 +84,7 @@ public class ParseResult implements Serializable {
   }
 
   /** Get ParseStatus for the specified file, or an empty optional if the file is not found. */
-  public Optional<ParseStatus> ParseStatus(String filename) {
+  public Optional<ParseStatus> getParseStatus(String filename) {
     return Optional.ofNullable(_fileResults.get(filename)).map(FileResult::getParseStatus);
   }
 }
