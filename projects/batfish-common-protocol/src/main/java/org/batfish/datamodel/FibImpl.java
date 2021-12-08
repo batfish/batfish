@@ -1,5 +1,7 @@
 package org.batfish.datamodel;
 
+import static org.batfish.datamodel.Names.generatedTenantVniInterfaceName;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableCollection;
@@ -24,6 +26,7 @@ import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.route.nh.NextHopVisitor;
 import org.batfish.datamodel.route.nh.NextHopVrf;
+import org.batfish.datamodel.route.nh.NextHopVtep;
 
 @ParametersAreNonnullByDefault
 public final class FibImpl implements Fib {
@@ -168,6 +171,14 @@ public final class FibImpl implements Fib {
             public FibAction visitNextHopVrf(NextHopVrf nextHopVrf) {
               return new FibNextVrf(nextHopVrf.getVrfName());
             }
+
+            @Override
+            public FibAction visitNextHopVtep(NextHopVtep nextHopVtep) {
+              // Forward out the VXLAN "interface", which will send to the correct remote node by
+              // "ARPing" for the VTEP IP.
+              String forwardingIface = generatedTenantVniInterfaceName(nextHopVtep.getVni());
+              return new FibForward(nextHopVtep.getVtepIp(), forwardingIface);
+            }
           }.visit(route.getNextHop());
       entriesBuilder.add(new FibEntry(fibAction, stack));
       return;
@@ -304,6 +315,12 @@ public final class FibImpl implements Fib {
 
       @Override
       public Void visitNextHopVrf(NextHopVrf nextHopVrf) {
+        ResolutionTreeNode.withParent(route, treeNode, Route.UNSET_ROUTE_NEXT_HOP_IP);
+        return null;
+      }
+
+      @Override
+      public Void visitNextHopVtep(NextHopVtep nextHopVtep) {
         ResolutionTreeNode.withParent(route, treeNode, Route.UNSET_ROUTE_NEXT_HOP_IP);
         return null;
       }

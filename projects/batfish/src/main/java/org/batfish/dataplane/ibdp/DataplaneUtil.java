@@ -29,6 +29,7 @@ import org.batfish.datamodel.ForwardingAnalysisImpl;
 import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.vxlan.Layer2Vni;
+import org.batfish.datamodel.vxlan.VxlanTopology;
 
 /** Utility functions to convert dataplane {@link Node} into other structures */
 public final class DataplaneUtil {
@@ -53,10 +54,16 @@ public final class DataplaneUtil {
       Map<String, Map<String, Fib>> fibs,
       Map<String, Configuration> configs,
       Topology layer3Topology,
-      L3Adjacencies l3Adjacencies) {
+      L3Adjacencies l3Adjacencies,
+      VxlanTopology vxlanTopology) {
     IpOwners ipOwners = new IpOwners(configs, l3Adjacencies);
     return new ForwardingAnalysisImpl(
-        configs, fibs, layer3Topology, computeLocationInfo(ipOwners, configs), ipOwners);
+        configs,
+        fibs,
+        layer3Topology,
+        vxlanTopology,
+        computeLocationInfo(ipOwners, configs),
+        ipOwners);
   }
 
   static @Nonnull SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>>
