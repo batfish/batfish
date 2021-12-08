@@ -32,8 +32,6 @@ public class ParseVendorConfigurationResult
 
   private final @Nonnull ConfigurationFormat _format;
 
-  private final ParseStatus _status;
-
   private VendorConfiguration _vc;
 
   /** Job-level (not file-level) warnings */
@@ -49,7 +47,6 @@ public class ParseVendorConfigurationResult
     super(elapsedTime, history, failureCause);
     _fileResults = ImmutableMap.copyOf(fileResults);
     _format = format;
-    _status = ParseStatus.FAILED;
     _warnings = warnings;
   }
 
@@ -60,14 +57,12 @@ public class ParseVendorConfigurationResult
       @Nonnull ConfigurationFormat format,
       VendorConfiguration vc,
       @Nonnull Warnings warnings,
-      @Nonnull ParseStatus status,
       @Nonnull Multimap<String, String> duplicateHostnames) {
     super(elapsedTime, history);
     _fileResults = fileResults;
     _format = format;
     _vc = vc;
     _warnings = warnings;
-    _status = status;
     _duplicateHostnames = duplicateHostnames;
   }
 
@@ -76,13 +71,11 @@ public class ParseVendorConfigurationResult
       BatfishLoggerHistory history,
       @Nonnull Map<String, FileResult> fileResults,
       @Nonnull ConfigurationFormat format,
-      @Nonnull Warnings warnings,
-      @Nonnull ParseStatus status) {
+      @Nonnull Warnings warnings) {
     super(elapsedTime, history);
     _fileResults = fileResults;
     _format = format;
     _warnings = warnings;
-    _status = status;
   }
 
   @Override
@@ -105,8 +98,11 @@ public class ParseVendorConfigurationResult
       ParseVendorConfigurationAnswerElement answerElement) {
     appendHistory(logger);
     String jobKey = jobFilenamesToString(_fileResults.keySet());
-    answerElement.getParseStatus().put(jobKey, _status);
-    answerElement.getFileFormats().put(jobKey, _format);
+    _fileResults.forEach(
+        (filename, fileResult) -> {
+          answerElement.getParseStatus().put(filename, fileResult.getParseStatus());
+          answerElement.getFileFormats().put(filename, _format);
+        });
     if (_vc != null) {
       String hostname = _vc.getHostname();
       if (vendorConfigurations.containsKey(hostname)) {
@@ -143,7 +139,8 @@ public class ParseVendorConfigurationResult
               answerElement.getParseTrees().put(name, result.getParseTreeSentences());
             }
           });
-    } else if (_status == ParseStatus.FAILED) {
+    } else if (_fileResults.values().stream()
+        .anyMatch(fileResult -> fileResult.getParseStatus() == ParseStatus.FAILED)) {
       assert _failureCause != null; // status == FAILED, failureCause must be non-null
       answerElement
           .getErrors()
@@ -194,11 +191,6 @@ public class ParseVendorConfigurationResult
       index++;
     }
     return modifiedName;
-  }
-
-  @Nonnull
-  public ParseStatus getStatus() {
-    return _status;
   }
 
   /** Returns a modified host name to use when duplicate hostnames are encountered */

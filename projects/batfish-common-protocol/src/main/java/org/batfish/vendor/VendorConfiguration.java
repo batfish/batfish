@@ -43,6 +43,7 @@ public abstract class VendorConfiguration implements Serializable {
   private transient @Nullable ConversionContext _conversionContext;
   private transient ConvertConfigurationAnswerElement _answerElement;
   protected String _filename;
+  protected @Nonnull List<String> _secondaryFilenames;
   @Nonnull protected transient SnapshotRuntimeData _runtimeData;
   private VendorConfiguration _overlayConfiguration;
   /** Type description -> Name -> DefinedStructureInfo */
@@ -66,6 +67,7 @@ public abstract class VendorConfiguration implements Serializable {
     _structureDefinitions = new TreeMap<>();
     _structureReferences = new TreeMap<>();
     _undefinedReferences = new TreeMap<>();
+    _secondaryFilenames = ImmutableList.of();
   }
 
   public String canonicalizeInterfaceName(String name) {
@@ -81,8 +83,17 @@ public abstract class VendorConfiguration implements Serializable {
     return _conversionContext;
   }
 
+  /** Returns the primary file from which this vendor configuration was extracted */
   public String getFilename() {
     return _filename;
+  }
+
+  /**
+   * Returns any additional files, beyond the primary one, from which this vendor configuration was
+   * extracted
+   */
+  public @Nonnull List<String> getSecondaryFilenames() {
+    return _secondaryFilenames;
   }
 
   public abstract String getHostname();
@@ -360,6 +371,10 @@ public abstract class VendorConfiguration implements Serializable {
 
   public void setFilename(String filename) {
     _filename = filename;
+  }
+
+  public void setSecondaryFilenames(List<String> filenames) {
+    _secondaryFilenames = ImmutableList.copyOf(filenames);
   }
 
   public abstract void setHostname(String hostname);

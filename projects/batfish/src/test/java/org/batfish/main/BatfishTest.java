@@ -828,7 +828,7 @@ public class BatfishTest {
           equalTo(ImmutableList.of()));
       assertThat(
           pvcae.getParseStatus(),
-          equalTo(ImmutableMap.of("sonic_configs/frr", ParseStatus.IGNORED)));
+          equalTo(ImmutableMap.of("sonic_configs/frr", ParseStatus.UNEXPECTED_PACKAGING)));
       assertThat(
           pvcae.getWarnings().get("sonic_configs/frr").getRedFlagWarnings(),
           contains(
@@ -844,7 +844,7 @@ public class BatfishTest {
           equalTo(ImmutableList.of()));
       assertThat(
           pvcae.getParseStatus(),
-          equalTo(ImmutableMap.of("sonic_configs/dev/frr", ParseStatus.IGNORED)));
+          equalTo(ImmutableMap.of("sonic_configs/dev/frr", ParseStatus.UNEXPECTED_PACKAGING)));
       assertThat(
           pvcae.getWarnings().get("sonic_configs/dev/frr").getRedFlagWarnings(),
           contains(
@@ -866,11 +866,11 @@ public class BatfishTest {
           equalTo(
               ImmutableMap.of(
                   "sonic_configs/dev/frr1",
-                  ParseStatus.IGNORED,
+                  ParseStatus.UNEXPECTED_PACKAGING,
                   "sonic_configs/dev/frr2",
-                  ParseStatus.IGNORED,
+                  ParseStatus.UNEXPECTED_PACKAGING,
                   "sonic_configs/dev/frr3",
-                  ParseStatus.IGNORED)));
+                  ParseStatus.UNEXPECTED_PACKAGING)));
       String message =
           "Unexpected packaging: File appears in a directory with 2 other files; SONiC files must"
               + " have only their counterpart in the same directory.";
@@ -899,7 +899,7 @@ public class BatfishTest {
                   ImmutableSet.of("sonic_configs/dev1/frr", "sonic_configs/dev1/configdb"))));
       assertThat(
           pvcae.getParseStatus(),
-          equalTo(ImmutableMap.of("sonic_configs/dev2/frr", ParseStatus.IGNORED)));
+          equalTo(ImmutableMap.of("sonic_configs/dev2/frr", ParseStatus.UNEXPECTED_PACKAGING)));
       assertThat(
           pvcae.getWarnings().get("sonic_configs/dev2/frr").getRedFlagWarnings(),
           contains(
