@@ -80,17 +80,17 @@ public class ParseResult implements Serializable {
    * Get warnings for the specified file, or an empty optional if the file is not found. Job-level
    * warnings can be accessed via {@link #getWarnings()}
    */
-  public Optional<Warnings> getWarnings(String filename) {
+  public @Nonnull Optional<Warnings> getWarnings(String filename) {
     return Optional.ofNullable(_fileResults.get(filename)).map(FileResult::getWarnings);
   }
 
   /** Get ParseStatus for the specified file, or an empty optional if the file is not found. */
-  public Optional<ParseStatus> getParseStatus(String filename) {
+  public @Nonnull Optional<ParseStatus> getParseStatus(String filename) {
     return Optional.ofNullable(_fileResults.get(filename)).map(FileResult::getParseStatus);
   }
 
   /** Get names of all constituent files. */
-  public Set<String> getFilenames() {
+  public @Nonnull Set<String> getFilenames() {
     return _fileResults.keySet();
   }
 }
