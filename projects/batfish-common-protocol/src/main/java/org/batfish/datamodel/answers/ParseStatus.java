@@ -55,6 +55,8 @@ public enum ParseStatus {
         return "File contained at least one unrecognized line";
       case PASSED:
         return "File parsed successfully";
+      case UNEXPECTED_PACKAGING:
+        return "File was not correctly packaged in the snapshot";
       case UNKNOWN:
         return "File format is unknown";
       case UNSUPPORTED:
