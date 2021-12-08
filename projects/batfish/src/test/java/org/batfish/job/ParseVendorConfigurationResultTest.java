@@ -47,8 +47,8 @@ public class ParseVendorConfigurationResultTest {
             new BatfishLoggerHistory(),
             ImmutableMap.of(
                 filename,
-                new FileResult(
-                    parseTree, silentSyntax, fileWarnings, ParseStatus.PARTIALLY_UNRECOGNIZED)),
+                new FileResult(parseTree, silentSyntax, fileWarnings)
+                    .setParseStatus(ParseStatus.PARTIALLY_UNRECOGNIZED)),
             ConfigurationFormat.CISCO_IOS,
             config,
             new Warnings(),
@@ -103,17 +103,11 @@ public class ParseVendorConfigurationResultTest {
             new BatfishLoggerHistory(),
             ImmutableMap.of(
                 filenames.get(0),
-                new FileResult(
-                    parseTrees.get(0),
-                    silentSyntaxes.get(0),
-                    fileWarnings.get(0),
-                    ParseStatus.PARTIALLY_UNRECOGNIZED),
+                new FileResult(parseTrees.get(0), silentSyntaxes.get(0), fileWarnings.get(0))
+                    .setParseStatus(ParseStatus.PARTIALLY_UNRECOGNIZED),
                 filenames.get(1),
-                new FileResult(
-                    parseTrees.get(1),
-                    silentSyntaxes.get(1),
-                    fileWarnings.get(1),
-                    ParseStatus.PASSED)),
+                new FileResult(parseTrees.get(1), silentSyntaxes.get(1), fileWarnings.get(1))
+                    .setParseStatus(ParseStatus.PASSED)),
             ConfigurationFormat.CISCO_IOS,
             config,
             globalWarnings,

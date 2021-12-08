@@ -11,10 +11,7 @@ public enum ParseStatus {
   EMPTY,
   /** Batfish has encountered an unrecoverable error during parsing */
   FAILED,
-  /**
-   * File was ignored either explicitly by the user or it was of a multi-file bundle that was not
-   * properly packaged.
-   */
+  /** File was explicitly ignore by the user */
   IGNORED,
   /** File is part of an unused overlay configuration */
   ORPHANED,
@@ -22,6 +19,8 @@ public enum ParseStatus {
   PARTIALLY_UNRECOGNIZED,
   /** File was fully parsed */
   PASSED,
+  /** File was packaged in an unexpected manner in the snapshot */
+  UNEXPECTED_PACKAGING,
   /** Batfish could not detect the file format */
   UNKNOWN,
   /** Batfish does not support the format/vendor config in the file */

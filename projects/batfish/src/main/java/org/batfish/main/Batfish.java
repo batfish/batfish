@@ -2941,7 +2941,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
             new Warning(
                 "Unexpected packaging: SONiC files must be in a subdirectory under sonic_configs.",
                 "sonic"));
-        pvcae.getParseStatus().put(filename, ParseStatus.IGNORED);
+        pvcae.getParseStatus().put(filename, ParseStatus.UNEXPECTED_PACKAGING);
         continue;
       }
       String dir = path.getParent().toString();
@@ -2959,7 +2959,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 "Unexpected packaging: File appears by itself; SONiC files must have their"
                     + " counterpart in the same directory.",
                 "sonic"));
-        pvcae.getParseStatus().put(filename, ParseStatus.IGNORED);
+        pvcae.getParseStatus().put(filename, ParseStatus.UNEXPECTED_PACKAGING);
         continue;
       }
       if (files.size() > 2) {
@@ -2972,7 +2972,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                           + " files must have only their counterpart in the same directory.",
                       files.size() - 1),
                   "sonic"));
-          pvcae.getParseStatus().put(filename, ParseStatus.IGNORED);
+          pvcae.getParseStatus().put(filename, ParseStatus.UNEXPECTED_PACKAGING);
         }
         continue;
       }
