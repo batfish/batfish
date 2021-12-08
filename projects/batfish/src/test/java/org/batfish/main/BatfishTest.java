@@ -866,11 +866,11 @@ public class BatfishTest {
           equalTo(
               ImmutableMap.of(
                   "sonic_configs/dev/frr1",
-                  ParseStatus.IGNORED,
+                  ParseStatus.UNEXPECTED_PACKAGING,
                   "sonic_configs/dev/frr2",
-                  ParseStatus.IGNORED,
+                  ParseStatus.UNEXPECTED_PACKAGING,
                   "sonic_configs/dev/frr3",
-                  ParseStatus.IGNORED)));
+                  ParseStatus.UNEXPECTED_PACKAGING)));
       String message =
           "Unexpected packaging: File appears in a directory with 2 other files; SONiC files must"
               + " have only their counterpart in the same directory.";
