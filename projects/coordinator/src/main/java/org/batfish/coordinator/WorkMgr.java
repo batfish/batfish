@@ -1422,7 +1422,7 @@ public class WorkMgr extends AbstractCoordinator {
       Path srcDir = subDir.getParent();
       throw new BatfishException(
           String.format(
-              "At least one of these directories must exist: %s. "
+              "Unexpected packaging of snapshot. At least one of these directories must exist: %s. "
                   + "See %s for instructions on how to package your snapshot for analysis.",
               configPaths.stream().map(srcDir::relativize).collect(ImmutableList.toImmutableList()),
               SNAPSHOT_PACKAGING_INSTRUCTIONS_URL));
