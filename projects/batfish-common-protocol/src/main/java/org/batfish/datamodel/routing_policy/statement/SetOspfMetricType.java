@@ -3,7 +3,7 @@ package org.batfish.datamodel.routing_policy.statement;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.batfish.common.BatfishException;
-import org.batfish.datamodel.OspfExternalRoute;
+import org.batfish.datamodel.HasWritableOspfMetricType;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
@@ -49,9 +49,11 @@ public class SetOspfMetricType extends Statement {
   @Override
   public Result execute(Environment environment) {
     Result result = new Result();
-    OspfExternalRoute.Builder ospfExternalRoute =
-        (OspfExternalRoute.Builder) environment.getOutputRoute();
-    ospfExternalRoute.setOspfMetricType(_metricType);
+    if ((environment.getOutputRoute() instanceof HasWritableOspfMetricType<?, ?>)) {
+      HasWritableOspfMetricType<?, ?> outputRoute =
+          (HasWritableOspfMetricType<?, ?>) environment.getOutputRoute();
+      outputRoute.setOspfMetricType(_metricType);
+    }
     return result;
   }
 
