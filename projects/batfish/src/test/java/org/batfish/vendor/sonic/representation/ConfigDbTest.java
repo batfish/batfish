@@ -150,6 +150,11 @@ public class ConfigDbTest {
                 .build())
         .addEqualityGroup(
             builder.setInterfaces(ImmutableMap.of("iface", new L3Interface(null))).build())
+        .addEqualityGroup(
+            builder.setLoopbacks(ImmutableMap.of("l0", new L3Interface(null))).build())
+        .addEqualityGroup(builder.setNtpServers(ImmutableSet.of("ntp")).build())
+        .addEqualityGroup(builder.setPorts(ImmutableMap.of("a", Port.builder().build())))
+        .addEqualityGroup(builder.setSyslogServers(ImmutableSet.of("aa")).build())
         .testEquals();
   }
 }

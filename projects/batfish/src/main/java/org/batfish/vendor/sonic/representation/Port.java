@@ -8,10 +8,8 @@ import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
 
 /** Represents PORT object: https://github.com/Azure/SONiC/wiki/Configuration#port */
-@ParametersAreNonnullByDefault
 public class Port implements Serializable {
   private static final String PROP_DESCRIPTION = "description";
   private static final String PROP_MTU = "mtu";
@@ -19,10 +17,10 @@ public class Port implements Serializable {
 
   private @Nullable final String _description;
   private @Nullable final Integer _mtu;
-  private @Nullable final Boolean _adminStatus;
+  private @Nullable final Boolean _adminStatusUp;
 
-  public @Nonnull Optional<Boolean> getAdminStatus() {
-    return Optional.ofNullable(_adminStatus);
+  public @Nonnull Optional<Boolean> getAdminStatusUp() {
+    return Optional.ofNullable(_adminStatusUp);
   }
 
   public @Nonnull Optional<String> getDescription() {
@@ -34,20 +32,20 @@ public class Port implements Serializable {
   }
 
   @JsonCreator
-  private static Port create(
+  private @Nonnull static Port create(
       @Nullable @JsonProperty(PROP_ADMIN_STATUS) String adminStatus,
       @Nullable @JsonProperty(PROP_DESCRIPTION) String description,
       @Nullable @JsonProperty(PROP_MTU) String mtu) {
     return Port.builder()
-        // up => true, everything else is false
-        .setAdminStatus(Optional.ofNullable(adminStatus).map("up"::equals).orElse(null))
+        .setAdminStatusUp(Optional.ofNullable(adminStatus).map("up"::equals).orElse(null))
         .setDescription(description)
         .setMtu(Optional.ofNullable(mtu).map(Integer::parseInt).orElse(null))
         .build();
   }
 
-  private Port(@Nullable Boolean adminStatus, @Nullable String description, @Nullable Integer mtu) {
-    _adminStatus = adminStatus;
+  private @Nonnull Port(
+      @Nullable Boolean adminStatus, @Nullable String description, @Nullable Integer mtu) {
+    _adminStatusUp = adminStatus;
     _description = description;
     _mtu = mtu;
   }
@@ -61,52 +59,52 @@ public class Port implements Serializable {
       return false;
     }
     Port that = (Port) o;
-    return Objects.equals(_adminStatus, that._adminStatus)
+    return Objects.equals(_adminStatusUp, that._adminStatusUp)
         && Objects.equals(_description, that._description)
         && Objects.equals(_mtu, that._mtu);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_adminStatus, _description, _mtu);
+    return Objects.hash(_adminStatusUp, _description, _mtu);
   }
 
   @Override
-  public String toString() {
+  public @Nonnull String toString() {
     return MoreObjects.toStringHelper(this)
         .omitNullValues()
-        .add("adminStatus", _adminStatus)
+        .add("adminStatusUp", _adminStatusUp)
         .add("description", _description)
         .add("mtu", _mtu)
         .toString();
   }
 
-  public static Builder builder() {
+  public @Nonnull static Builder builder() {
     return new Builder();
   }
 
   public static final class Builder {
     private String _description;
     private Integer _mtu;
-    private Boolean _adminStatus;
+    private Boolean _adminStatusUp;
 
-    public Builder setAdminStatus(@Nullable Boolean adminStatus) {
-      this._adminStatus = adminStatus;
+    public @Nonnull Builder setAdminStatusUp(@Nullable Boolean adminStatusUp) {
+      this._adminStatusUp = adminStatusUp;
       return this;
     }
 
-    public Builder setDescription(@Nullable String description) {
+    public @Nonnull Builder setDescription(@Nullable String description) {
       this._description = description;
       return this;
     }
 
-    public Builder setMtu(@Nullable Integer mtu) {
+    public @Nonnull Builder setMtu(@Nullable Integer mtu) {
       this._mtu = mtu;
       return this;
     }
 
-    public Port build() {
-      return new Port(_adminStatus, _description, _mtu);
+    public @Nonnull Port build() {
+      return new Port(_adminStatusUp, _description, _mtu);
     }
   }
 }

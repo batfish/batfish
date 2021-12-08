@@ -10,7 +10,7 @@ public class PortTest {
 
   @Test
   public void testJavaSerialization() {
-    Port obj = Port.builder().build();
+    Port obj = Port.builder().setAdminStatusUp(true).setDescription("desc").setMtu(32).build();
     assertEquals(obj, SerializationUtils.clone(obj));
   }
 
@@ -20,9 +20,9 @@ public class PortTest {
     Port.Builder builder = Port.builder();
     new EqualsTester()
         .addEqualityGroup(builder.build(), builder.build())
-        .addEqualityGroup(builder.setAdminStatus(true))
-        .addEqualityGroup(builder.setDescription("desc"))
-        .addEqualityGroup(builder.setMtu(23))
+        .addEqualityGroup(builder.setAdminStatusUp(true).build())
+        .addEqualityGroup(builder.setDescription("desc").build())
+        .addEqualityGroup(builder.setMtu(23).build())
         .testEquals();
   }
 }

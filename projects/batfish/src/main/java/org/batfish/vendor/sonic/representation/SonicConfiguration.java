@@ -1,6 +1,6 @@
 package org.batfish.vendor.sonic.representation;
 
-import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 
 import com.google.common.collect.ImmutableList;
@@ -31,17 +31,17 @@ import org.batfish.representation.frr.Vxlan;
 public class SonicConfiguration extends FrrVendorConfiguration {
 
   private @Nullable String _hostname;
-  private @Nonnull ConfigDb _configDb;
+  private ConfigDb _configDb; // set via the extractor
   private @Nonnull final FrrConfiguration _frr;
 
   public SonicConfiguration() {
-    _configDb = ConfigDb.builder().build();
     _frr = new FrrConfiguration();
   }
 
   @Override
   public List<Configuration> toVendorIndependentConfigurations() throws VendorConversionException {
-    checkArgument(_hostname != null, "Conversion called before hostname was set");
+    checkState(_hostname != null, "Conversion called before hostname was set");
+    checkState(_configDb != null, "Conversion called before configDb was set");
 
     Configuration c = new Configuration(_hostname, ConfigurationFormat.SONIC);
     c.setDeviceModel(DeviceModel.SONIC);
@@ -70,7 +70,7 @@ public class SonicConfiguration extends FrrVendorConfiguration {
               .setType(InterfaceType.PHYSICAL)
               .setDescription(port.getDescription().orElse(null))
               .setMtu(port.getMtu().orElse(null))
-              .setActive(port.getAdminStatus().orElse(true)); // default is active
+              .setActive(port.getAdminStatusUp().orElse(true)); // default is active
 
       if (interfaces.containsKey(portName)) {
         L3Interface l3Interface = interfaces.get(portName);
@@ -81,7 +81,6 @@ public class SonicConfiguration extends FrrVendorConfiguration {
     }
   }
 
-  @Nullable
   public ConfigDb getConfigDb() {
     return _configDb;
   }
@@ -91,13 +90,24 @@ public class SonicConfiguration extends FrrVendorConfiguration {
   }
 
   @Override
-  public FrrConfiguration getFrrConfiguration() {
+  public @Nonnull FrrConfiguration getFrrConfiguration() {
     return _frr;
+  }
+
+  private @Nullable L3Interface getInterface(String ifaceName) {
+    // This function will need to be extended if/when non-L3 interfaces appear in the VS model
+    if (_configDb.getInterfaces().containsKey(ifaceName)) {
+      return _configDb.getInterfaces().get(ifaceName);
+    }
+    if (_configDb.getLoopbacks().containsKey(ifaceName)) {
+      return _configDb.getLoopbacks().get(ifaceName);
+    }
+    return null;
   }
 
   @Override
   public boolean hasInterface(String ifaceName) {
-    return _configDb.getInterfaces().containsKey(ifaceName);
+    return getInterface(ifaceName) != null;
   }
 
   @Override
@@ -106,20 +116,20 @@ public class SonicConfiguration extends FrrVendorConfiguration {
   }
 
   @Override
-  public String getInterfaceVrf(String ifaceName) {
-    if (!_configDb.getInterfaces().containsKey(ifaceName)) {
+  public @Nonnull String getInterfaceVrf(String ifaceName) {
+    if (getInterface(ifaceName) == null) {
       throw new NoSuchElementException("Interface " + ifaceName + " does not exist");
     }
     return DEFAULT_VRF_NAME; // only have default VRF for now
   }
 
-  @Nonnull
   @Override
-  public List<ConcreteInterfaceAddress> getInterfaceAddresses(String ifaceName) {
-    if (!_configDb.getInterfaces().containsKey(ifaceName)) {
+  public @Nonnull List<ConcreteInterfaceAddress> getInterfaceAddresses(String ifaceName) {
+    L3Interface l3Interface = getInterface(ifaceName);
+    if (l3Interface == null) {
       throw new NoSuchElementException("Interface " + ifaceName + " does not exist");
     }
-    return Optional.ofNullable(_configDb.getInterfaces().get(ifaceName).getAddress())
+    return Optional.ofNullable(l3Interface.getAddress())
         .map(ImmutableList::of)
         .orElse(ImmutableList.of());
   }

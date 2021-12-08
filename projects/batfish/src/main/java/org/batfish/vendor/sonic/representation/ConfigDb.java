@@ -97,8 +97,7 @@ public class ConfigDb implements Serializable {
             createInterfaces(
                 firstNonNull(interfacesMap, ImmutableMap.<String, Object>of()).keySet()))
         .setLoopbacks(
-            createInterfaces(
-                firstNonNull(interfacesMap, ImmutableMap.<String, Object>of()).keySet()))
+            createInterfaces(firstNonNull(loopbackMap, ImmutableMap.<String, Object>of()).keySet()))
         .setNtpServers(firstNonNull(ntpServersMap, ImmutableMap.<String, Object>of()).keySet())
         .setPorts(ports)
         .setSyslogServers(
@@ -147,12 +146,18 @@ public class ConfigDb implements Serializable {
       return false;
     }
     ConfigDb other = (ConfigDb) o;
-    return _deviceMetadata.equals(other._deviceMetadata) && _interfaces.equals(other._interfaces);
+    return _deviceMetadata.equals(other._deviceMetadata)
+        && _interfaces.equals(other._interfaces)
+        && _loopbacks.equals(other._loopbacks)
+        && _ntpServers.equals(other._ntpServers)
+        && _ports.equals(other._ports)
+        && _syslogServers.equals(other._syslogServers);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_deviceMetadata, _interfaces);
+    return Objects.hash(
+        _deviceMetadata, _interfaces, _loopbacks, _ntpServers, _ports, _syslogServers);
   }
 
   @Override
