@@ -18,7 +18,8 @@ import org.batfish.datamodel.route.nh.NextHop;
 public abstract class OspfExternalRoute extends OspfRoute {
   private static final Interner<OspfExternalRoute> _cache = Interners.newWeakInterner();
 
-  public static final class Builder extends AbstractRouteBuilder<Builder, OspfExternalRoute> {
+  public static final class Builder extends AbstractRouteBuilder<Builder, OspfExternalRoute>
+      implements HasWritableOspfMetricType<Builder, OspfExternalRoute> {
 
     @Nullable private String _advertiser;
     @Nullable private Long _area;
@@ -107,6 +108,7 @@ public abstract class OspfExternalRoute extends OspfRoute {
     }
 
     @Nonnull
+    @Override
     public Builder setOspfMetricType(@Nonnull OspfMetricType ospfMetricType) {
       _ospfMetricType = ospfMetricType;
       return getThis();
