@@ -7,6 +7,7 @@ import static org.batfish.datamodel.FirewallSessionInterfaceInfo.Action.POST_NAT
 import static org.batfish.datamodel.Prefix.MAX_PREFIX_LENGTH;
 import static org.batfish.vendor.a10.representation.A10Conversion.VIRTUAL_TCP_PORT_TYPES;
 import static org.batfish.vendor.a10.representation.A10Conversion.VIRTUAL_UDP_PORT_TYPES;
+import static org.batfish.vendor.a10.representation.A10Conversion.computeAclName;
 import static org.batfish.vendor.a10.representation.A10Conversion.createBgpProcess;
 import static org.batfish.vendor.a10.representation.A10Conversion.getEnabledVrids;
 import static org.batfish.vendor.a10.representation.A10Conversion.getFloatingIpKernelRoutes;
@@ -25,6 +26,7 @@ import static org.batfish.vendor.a10.representation.A10Conversion.getVirtualServ
 import static org.batfish.vendor.a10.representation.A10Conversion.haAppliesToInterface;
 import static org.batfish.vendor.a10.representation.A10Conversion.isVrrpAEnabled;
 import static org.batfish.vendor.a10.representation.A10Conversion.orElseChain;
+import static org.batfish.vendor.a10.representation.A10Conversion.toAclLines;
 import static org.batfish.vendor.a10.representation.A10Conversion.toDstTransformationSteps;
 import static org.batfish.vendor.a10.representation.A10Conversion.toMatchCondition;
 import static org.batfish.vendor.a10.representation.A10Conversion.toSnatTransformationStep;
@@ -350,6 +352,8 @@ public final class A10Configuration extends VendorConfiguration {
         (prefix, manager) ->
             manager.getVariants().forEach((ip, sr) -> convertStaticRoute(vrf, prefix, sr)));
 
+    convertAccessLists();
+
     // Must be done after interface conversion
     convertVirtualServers();
     convertVrrpA();
@@ -580,12 +584,25 @@ public final class A10Configuration extends VendorConfiguration {
         .forEach(i -> i.setVrrpGroups(toVrrpGroups(i, vrrpGroupBuildersBuilder.build())));
   }
 
+  private void convertAccessLists() {
+    _accessLists.forEach((name, acl) -> convertAccessList(acl));
+  }
+
+  private void convertAccessList(AccessList acl) {
+    IpAccessList.builder()
+        .setLines(toAclLines(acl).collect(ImmutableList.toImmutableList()))
+        .setOwner(_c)
+        .setName(computeAclName(acl.getName()))
+        .build();
+  }
+
   /**
    * Convert virtual-servers to load-balancing VI constructs and attach resulting ACLs and
    * transformations to interfaces. Modifies VI interfaces and must be called after those are
    * created.
    */
   private void convertVirtualServers() {
+    // Build transformations
     Optional<Transformation> xform =
         orElseChain(
             _virtualServers.values().stream()
@@ -593,12 +610,19 @@ public final class A10Configuration extends VendorConfiguration {
                 .flatMap(vs -> toSimpleTransformations(vs).stream())
                 .collect(ImmutableList.toImmutableList()));
 
+    // Build ACLs
     ImmutableList<AclLine> lines =
         _virtualServers.values().stream()
             .filter(A10Conversion::isVirtualServerEnabled)
-            .flatMap(vs -> vs.getPorts().values().stream())
-            .filter(A10Conversion::isVirtualServerPortEnabled)
-            .map(A10Configuration::toAclLine)
+            .flatMap(
+                vs ->
+                    vs.getPorts().values().stream()
+                        .filter(A10Conversion::isVirtualServerPortEnabled)
+                        .filter(
+                            vp ->
+                                vp.getAccessList() != null
+                                    && _accessLists.containsKey(vp.getAccessList()))
+                        .flatMap(vp -> toAclLines(vs, vp, vp.getAccessList())))
             .collect(ImmutableList.toImmutableList());
     IpAccessList virtServerAcl =
         IpAccessList.builder()
@@ -606,6 +630,7 @@ public final class A10Configuration extends VendorConfiguration {
             .setOwner(_c)
             .setLines(lines)
             .build();
+
     xform.ifPresent(
         x ->
             _c.getAllInterfaces()
@@ -617,11 +642,6 @@ public final class A10Configuration extends VendorConfiguration {
                       iface.setIncomingTransformation(x);
                       iface.setInboundFilter(virtServerAcl);
                     }));
-  }
-
-  private static @Nonnull AclLine toAclLine(VirtualServerPort port) {
-    // TODO
-    return null;
   }
 
   /**

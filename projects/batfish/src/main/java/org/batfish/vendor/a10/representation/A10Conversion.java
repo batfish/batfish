@@ -32,23 +32,31 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.KernelRoute;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.Names;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
+import org.batfish.datamodel.acl.DeniedByAcl;
+import org.batfish.datamodel.acl.PermittedByAcl;
+import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -800,5 +808,143 @@ public class A10Conversion {
         assert false;
         return true;
     }
+  }
+
+  /** Convert the {@link AccessList} to a {@link Stream} of {@link AclLine}s. */
+  @VisibleForTesting
+  public static @Nonnull Stream<AclLine> toAclLines(AccessList acl) {
+    return Stream.concat(
+        acl.getRules().stream()
+            .map(rule -> new ExprAclLine(toLineAction(rule), toMatchExpr(rule), "placeholder")),
+        Stream.of(new ExprAclLine(LineAction.DENY, TrueExpr.INSTANCE, "Default deny all")));
+  }
+
+  /**
+   * Convert the {@link AccessListRule} for the specified {@link VirtualServerPort} in the specified
+   * {@link VirtualServer} to an {@link AclLine}.
+   */
+  @VisibleForTesting
+  public static @Nonnull Stream<AclLine> toAclLines(
+      VirtualServer server, VirtualServerPort port, String aclName) {
+    return Stream.of(
+        new ExprAclLine(
+            LineAction.PERMIT,
+            AclLineMatchExprs.and(
+                toMatchExpr(server),
+                toMatchExpr(port),
+                new PermittedByAcl(computeAclName(aclName))),
+            "placeholder"),
+        new ExprAclLine(
+            LineAction.DENY,
+            AclLineMatchExprs.and(
+                toMatchExpr(server), toMatchExpr(port), new DeniedByAcl(computeAclName(aclName))),
+            "placeholder"));
+  }
+
+  /**
+   * Compute the VI {@link org.batfish.datamodel.IpAccessList} name for the specified {@link
+   * AccessList}.
+   */
+  @VisibleForTesting
+  public static String computeAclName(String aclName) {
+    return String.format("IP_ACCESS_LIST~%s", aclName);
+  }
+
+  /** Convert a {@link VirtualServerTarget} to its corresponding {@link AclLineMatchExpr}. */
+  static final class VirtualServerTargetToMatchExpr
+      implements VirtualServerTargetVisitor<AclLineMatchExpr> {
+    static final VirtualServerTargetToMatchExpr INSTANCE = new VirtualServerTargetToMatchExpr();
+
+    @Override
+    public AclLineMatchExpr visitAddress(VirtualServerTargetAddress address) {
+      return AclLineMatchExprs.matchDst(address.getAddress());
+    }
+  }
+
+  /** Convert a {@link AccessListAddress} to a corresponding {@link AclLineMatchExpr}. */
+  static final class AccessListAddressToIpSpace implements AccessListAddressVisitor<IpSpace> {
+    static final AccessListAddressToIpSpace INSTANCE = new AccessListAddressToIpSpace();
+
+    @Override
+    public IpSpace visitAny(AccessListAddressAny address) {
+      return UniverseIpSpace.INSTANCE;
+    }
+
+    @Override
+    public IpSpace visitHost(AccessListAddressHost address) {
+      return address.getHost().toIpSpace();
+    }
+  }
+
+  /** Convert an {@link AccessListAddress} to a destination {@link AclLineMatchExpr}. */
+  private static AclLineMatchExpr aclAddrToDstMatchExpr(AccessListAddress address) {
+    return AclLineMatchExprs.matchDst(AccessListAddressToIpSpace.INSTANCE.visit(address));
+  }
+
+  /** Convert an {@link AccessListAddress} to a source {@link AclLineMatchExpr}. */
+  private static AclLineMatchExpr aclAddrToSrcMatchExpr(AccessListAddress address) {
+    return AclLineMatchExprs.matchSrc(AccessListAddressToIpSpace.INSTANCE.visit(address));
+  }
+
+  @VisibleForTesting
+  public static @Nonnull AclLineMatchExpr toMatchExpr(VirtualServer server) {
+    return VirtualServerTargetToMatchExpr.INSTANCE.visit(server.getTarget());
+  }
+
+  @VisibleForTesting
+  public static @Nonnull AclLineMatchExpr toMatchExpr(VirtualServerPort port) {
+    Optional<IpProtocol> protocol = toProtocol(port);
+    assert protocol.isPresent();
+    return AclLineMatchExprs.and(
+        AclLineMatchExprs.matchIpProtocol(protocol.get()),
+        AclLineMatchExprs.matchDstPort(toIntegerSpace(port)));
+  }
+
+  @VisibleForTesting
+  public static @Nonnull AclLineMatchExpr toMatchExpr(AccessListRule rule) {
+    ImmutableList.Builder<AclLineMatchExpr> exprs =
+        ImmutableList.<AclLineMatchExpr>builder()
+            .add(aclAddrToDstMatchExpr(rule.getDestination()))
+            .add(aclAddrToSrcMatchExpr(rule.getSource()));
+    Optional<IpProtocol> maybeProtocol = RuleToIpProtocol.INSTANCE.visit(rule);
+    maybeProtocol.ifPresent(p -> exprs.add(AclLineMatchExprs.matchIpProtocol(p)));
+    return AclLineMatchExprs.and(exprs.build());
+  }
+
+  /**
+   * Convert a {@link AccessListRule} to its corresponding {@link IpProtocol}. If the protocol is
+   * unconstrained, then {@link Optional#empty()} is returned.
+   */
+  static final class RuleToIpProtocol implements AccessListRuleVisitor<Optional<IpProtocol>> {
+    static final RuleToIpProtocol INSTANCE = new RuleToIpProtocol();
+
+    @Override
+    public Optional<IpProtocol> visitIcmp(AccessListRuleIcmp rule) {
+      return Optional.of(IpProtocol.ICMP);
+    }
+
+    @Override
+    public Optional<IpProtocol> visitIp(AccessListRuleIp rule) {
+      return Optional.empty();
+    }
+
+    @Override
+    public Optional<IpProtocol> visitTcp(AccessListRuleTcp rule) {
+      return Optional.of(IpProtocol.TCP);
+    }
+
+    @Override
+    public Optional<IpProtocol> visitUdp(AccessListRuleUdp rule) {
+      return Optional.of(IpProtocol.UDP);
+    }
+  }
+
+  /** Get the {@link LineAction} for the specified {@link AccessList}. */
+  private static @Nonnull LineAction toLineAction(AccessListRule rule) {
+    if (rule.getAction() == AccessListRule.Action.PERMIT) {
+      return LineAction.PERMIT;
+    }
+    assert rule.getAction() == AccessListRule.Action.DENY;
+    return LineAction.DENY;
   }
 }

@@ -38,10 +38,12 @@ import static org.batfish.vendor.a10.representation.A10Conversion.getInterfaceEn
 import static org.batfish.vendor.a10.representation.A10Conversion.getNatPoolIps;
 import static org.batfish.vendor.a10.representation.A10Conversion.getVirtualServerIps;
 import static org.batfish.vendor.a10.representation.A10Conversion.haAppliesToInterface;
+import static org.batfish.vendor.a10.representation.A10Conversion.toAclLine;
 import static org.batfish.vendor.a10.representation.A10Conversion.toDstTransformationSteps;
 import static org.batfish.vendor.a10.representation.A10Conversion.toIntegerSpace;
 import static org.batfish.vendor.a10.representation.A10Conversion.toKernelRoute;
 import static org.batfish.vendor.a10.representation.A10Conversion.toMatchCondition;
+import static org.batfish.vendor.a10.representation.A10Conversion.toMatchExpr;
 import static org.batfish.vendor.a10.representation.A10Conversion.toProtocol;
 import static org.batfish.vendor.a10.representation.A10Conversion.toVrrpGroupBuilder;
 import static org.batfish.vendor.a10.representation.A10Conversion.toVrrpGroups;
@@ -71,15 +73,18 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRoute;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.KernelRoute;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Names;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
@@ -192,6 +197,150 @@ public class A10ConversionTest {
                         .setIpProtocols(IpProtocol.TCP)
                         .build()))));
   }
+
+  @Test
+  public void testVirtualServerToMatchExpr() {
+    Ip addr = Ip.parse("10.10.10.10");
+    VirtualServerTarget vst = new VirtualServerTargetAddress(addr);
+    VirtualServer vs = new VirtualServer("vs", vst);
+
+    assertThat(_tb.toBDD(toMatchExpr(vs)), equalTo(_tb.toBDD(AclLineMatchExprs.matchDst(addr))));
+  }
+
+  @Test
+  public void testVirtualServerTargetToMatchExpr() {
+    Ip addr = Ip.parse("10.10.10.10");
+    VirtualServerTarget vst = new VirtualServerTargetAddress(addr);
+
+    assertThat(
+        _tb.toBDD(A10Conversion.VirtualServerTargetToMatchExpr.INSTANCE.visit(vst)),
+        equalTo(_tb.toBDD(AclLineMatchExprs.matchDst(addr))));
+  }
+
+  @Test
+  public void testVirtualServerPortToMatchExpr() {
+    VirtualServerPort vsp = new VirtualServerPort(10, VirtualServerPort.Type.UDP, 1);
+
+    assertThat(
+        _tb.toBDD(toMatchExpr(vsp)),
+        equalTo(
+            _tb.toBDD(
+                AclLineMatchExprs.and(
+                    AclLineMatchExprs.matchIpProtocol(IpProtocol.UDP),
+                    AclLineMatchExprs.matchDstPort(IntegerSpace.of(new SubRange(10, 11)))))));
+  }
+
+  @Test
+  public void testRuleToMatchExpr() {
+    Ip src = Ip.parse("10.9.8.7");
+    Ip dest = Ip.parse("10.11.12.13");
+    AccessListRule ruleDest =
+        new AccessListRuleTcp(
+            AccessListRule.Action.DENY,
+            AccessListAddressAny.INSTANCE,
+            new AccessListAddressHost(dest));
+    AccessListRule ruleSrc =
+        new AccessListRuleTcp(
+            AccessListRule.Action.DENY,
+            new AccessListAddressHost(src),
+            AccessListAddressAny.INSTANCE);
+
+    assertThat(
+        _tb.toBDD(toMatchExpr(ruleDest)),
+        equalTo(
+            _tb.toBDD(
+                AclLineMatchExprs.and(
+                    AclLineMatchExprs.matchDst(dest),
+                    AclLineMatchExprs.matchIpProtocol(IpProtocol.TCP)))));
+    assertThat(
+        _tb.toBDD(toMatchExpr(ruleSrc)),
+        equalTo(
+            _tb.toBDD(
+                AclLineMatchExprs.and(
+                    AclLineMatchExprs.matchSrc(src),
+                    AclLineMatchExprs.matchIpProtocol(IpProtocol.TCP)))));
+  }
+
+  @Test
+  public void testRuleToIpProtocol() {
+    AccessListRule ruleIp =
+        new AccessListRuleIp(
+            AccessListRule.Action.DENY,
+            AccessListAddressAny.INSTANCE,
+            AccessListAddressAny.INSTANCE);
+    AccessListRule ruleIcmp =
+        new AccessListRuleIcmp(
+            AccessListRule.Action.DENY,
+            AccessListAddressAny.INSTANCE,
+            AccessListAddressAny.INSTANCE);
+    AccessListRule ruleTcp =
+        new AccessListRuleTcp(
+            AccessListRule.Action.DENY,
+            AccessListAddressAny.INSTANCE,
+            AccessListAddressAny.INSTANCE);
+    AccessListRule ruleUdp =
+        new AccessListRuleUdp(
+            AccessListRule.Action.DENY,
+            AccessListAddressAny.INSTANCE,
+            AccessListAddressAny.INSTANCE);
+
+    assertThat(A10Conversion.RuleToIpProtocol.INSTANCE.visit(ruleIp), equalTo(Optional.empty()));
+    assertThat(
+        A10Conversion.RuleToIpProtocol.INSTANCE.visit(ruleIcmp),
+        equalTo(Optional.of(IpProtocol.ICMP)));
+    assertThat(
+        A10Conversion.RuleToIpProtocol.INSTANCE.visit(ruleTcp),
+        equalTo(Optional.of(IpProtocol.TCP)));
+    assertThat(
+        A10Conversion.RuleToIpProtocol.INSTANCE.visit(ruleUdp),
+        equalTo(Optional.of(IpProtocol.UDP)));
+  }
+
+  @Test
+  public void testAccessListAddressToIpSpace() {
+    Ip addr = Ip.parse("10.0.0.1");
+    assertThat(
+        A10Conversion.AccessListAddressToIpSpace.INSTANCE.visit(AccessListAddressAny.INSTANCE),
+        equalTo(UniverseIpSpace.INSTANCE));
+    assertThat(
+        A10Conversion.AccessListAddressToIpSpace.INSTANCE.visit(new AccessListAddressHost(addr)),
+        equalTo(addr.toIpSpace()));
+  }
+
+  @Test
+  public void testToAclLine() {
+    Ip addrServer = Ip.parse("10.10.10.10");
+    VirtualServerTarget vst = new VirtualServerTargetAddress(addrServer);
+    VirtualServer vs = new VirtualServer("vs", vst);
+
+    VirtualServerPort vsp = new VirtualServerPort(443, VirtualServerPort.Type.TCP, null);
+
+    Ip addrSource = Ip.parse("10.0.0.1");
+    Ip addrDest = Ip.parse("10.10.10.10");
+    AccessListRule rule =
+        new AccessListRuleIp(
+            AccessListRule.Action.PERMIT,
+            new AccessListAddressHost(addrSource),
+            new AccessListAddressHost(addrDest));
+
+    assertThat(
+        _tb.toBDD(toAclLine(vs, vsp, rule)),
+        equalTo(
+            _tb.toBDD(
+                new ExprAclLine(
+                    LineAction.PERMIT,
+                    AclLineMatchExprs.and(
+                        // Virtual Server
+                        AclLineMatchExprs.matchDst(addrServer),
+                        // Virtual Server Port
+                        AclLineMatchExprs.matchIpProtocol(IpProtocol.TCP),
+                        AclLineMatchExprs.matchDstPort(443),
+                        // Actual ACL
+                        AclLineMatchExprs.matchDst(addrDest),
+                        AclLineMatchExprs.matchSrc(addrSource)),
+                    "name"))));
+  }
+  // TODO test toAclLine (and lines? or refactor that away?)
 
   @Test
   public void testToDstTransformationSteps() {

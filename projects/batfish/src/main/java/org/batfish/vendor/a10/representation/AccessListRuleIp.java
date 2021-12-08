@@ -22,6 +22,11 @@ public class AccessListRuleIp implements AccessListRule {
     return _destination;
   }
 
+  @Override
+  public <T> T accept(AccessListRuleVisitor<T> visitor) {
+    return visitor.visitIp(this);
+  }
+
   public AccessListRuleIp(Action action, AccessListAddress source, AccessListAddress destination) {
     _action = action;
     _source = source;

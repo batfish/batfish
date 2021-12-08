@@ -22,6 +22,11 @@ public class AccessListRuleIcmp implements AccessListRule {
     return _destination;
   }
 
+  @Override
+  public <T> T accept(AccessListRuleVisitor<T> visitor) {
+    return visitor.visitIcmp(this);
+  }
+
   public AccessListRuleIcmp(
       Action action, AccessListAddress source, AccessListAddress destination) {
     _action = action;

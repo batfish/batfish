@@ -24,6 +24,11 @@ public class AccessListRuleTcp implements AccessListRule {
     return _destination;
   }
 
+  @Override
+  public <T> T accept(AccessListRuleVisitor<T> visitor) {
+    return visitor.visitTcp(this);
+  }
+
   /** Destination port range this rule matches on. */
   @Nullable
   public SubRange getDestinationRange() {

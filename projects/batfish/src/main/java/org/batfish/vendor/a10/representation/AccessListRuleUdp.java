@@ -24,6 +24,11 @@ public class AccessListRuleUdp implements AccessListRule {
     return _destination;
   }
 
+  @Override
+  public <T> T accept(AccessListRuleVisitor<T> visitor) {
+    return visitor.visitUdp(this);
+  }
+
   /** Destination port range this rule matches on. */
   @Nullable
   public SubRange getDestinationRange() {

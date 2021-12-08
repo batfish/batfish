@@ -18,4 +18,6 @@ public interface AccessListRule extends Serializable {
 
   @Nonnull
   AccessListAddress getDestination();
+
+  <T> T accept(AccessListRuleVisitor<T> visitor);
 }
