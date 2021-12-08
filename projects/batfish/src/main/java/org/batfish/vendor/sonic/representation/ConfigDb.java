@@ -5,7 +5,6 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
@@ -158,14 +157,6 @@ public class ConfigDb implements Serializable {
   public int hashCode() {
     return Objects.hash(
         _deviceMetadata, _interfaces, _loopbacks, _ntpServers, _ports, _syslogServers);
-  }
-
-  @Override
-  public String toString() {
-    return MoreObjects.toStringHelper(this)
-        .add("deviceMetadata", _deviceMetadata)
-        .add("interfaces", _interfaces)
-        .toString();
   }
 
   public static Builder builder() {

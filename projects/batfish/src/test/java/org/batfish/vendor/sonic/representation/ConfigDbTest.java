@@ -75,7 +75,7 @@ public class ConfigDbTest {
         BatfishObjectMapper.ignoreUnknownMapper().readValue(input, ConfigDb.class),
         equalTo(
             ConfigDb.builder()
-                .setNtpServers(ImmutableSet.of("23.92.29.45", "2.debian.pool.ntp.org"))
+                .setNtpServers(ImmutableSet.of("23.92.29.245", "2.debian.pool.ntp.org"))
                 .build()));
   }
 
@@ -111,7 +111,7 @@ public class ConfigDbTest {
         BatfishObjectMapper.ignoreUnknownMapper().readValue(input, ConfigDb.class),
         equalTo(
             ConfigDb.builder()
-                .setNtpServers(ImmutableSet.of("23.92.29.45", "10.11.150.5"))
+                .setSyslogServers(ImmutableSet.of("23.92.29.245", "10.11.150.5"))
                 .build()));
   }
 
