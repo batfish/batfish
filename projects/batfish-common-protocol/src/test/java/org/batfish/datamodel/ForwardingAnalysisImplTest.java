@@ -52,6 +52,7 @@ import java.util.Set;
 import org.batfish.common.topology.GlobalBroadcastNoPointToPoint;
 import org.batfish.common.topology.IpOwners;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
+import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -1406,7 +1407,8 @@ public class ForwardingAnalysisImplTest {
         new ForwardingAnalysisImpl(
             configs,
             fibs,
-            new Topology(ImmutableSortedSet.of()),
+            Topology.EMPTY,
+            VxlanTopology.EMPTY,
             computeLocationInfo(ipOwners, configs),
             ipOwners);
 
@@ -1499,7 +1501,8 @@ public class ForwardingAnalysisImplTest {
         new ForwardingAnalysisImpl(
             configs,
             fibs,
-            new Topology(ImmutableSortedSet.of()),
+            Topology.EMPTY,
+            VxlanTopology.EMPTY,
             computeLocationInfo(ipOwners, configs),
             ipOwners);
 

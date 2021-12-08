@@ -95,6 +95,7 @@ final class IncrementalBdpEngine {
         .setNodes(nodes)
         .setLayer3Topology(currentTopologyContext.getLayer3Topology())
         .setL3Adjacencies(currentTopologyContext.getL3Adjacencies())
+        .setVxlanTopology(currentTopologyContext.getVxlanTopology())
         .build();
   }
 
