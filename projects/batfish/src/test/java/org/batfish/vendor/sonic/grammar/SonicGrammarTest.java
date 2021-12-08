@@ -1,6 +1,8 @@
 package org.batfish.vendor.sonic.grammar;
 
+import static com.google.common.collect.Iterables.getOnlyElement;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
@@ -9,6 +11,7 @@ import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.datamodel.Configuration;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -53,5 +56,8 @@ public class SonicGrammarTest {
                         "Ethernet0", new L3Interface(ConcreteInterfaceAddress.parse("1.1.1.1/24"))))
                 .build()));
     assertThat(vc.getFrrConfiguration().getRouteMaps().keySet(), equalTo(ImmutableSet.of("TEST")));
+
+    Configuration c = getOnlyElement(vc.toVendorIndependentConfigurations());
+    assertEquals("basic", c.getHostname());
   }
 }
