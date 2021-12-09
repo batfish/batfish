@@ -1,5 +1,9 @@
 package org.batfish.datamodel.route.nh;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -15,6 +19,7 @@ public final class NextHopVrf implements NextHop {
   }
 
   /** VRF in which to resolve the destination */
+  @JsonProperty(PROP_VRF)
   @Nonnull
   public String getVrfName() {
     return _vrfName;
@@ -47,7 +52,15 @@ public final class NextHopVrf implements NextHop {
     return visitor.visitNextHopVrf(this);
   }
 
+  private static final String PROP_VRF = "vrf";
+
   @Nonnull private final String _vrfName;
+
+  @JsonCreator
+  private static @Nonnull NextHopVrf create(@JsonProperty(PROP_VRF) @Nullable String vrfName) {
+    checkArgument(vrfName != null, "Missing %s", PROP_VRF);
+    return of(vrfName);
+  }
 
   private NextHopVrf(String vrfName) {
     _vrfName = vrfName;
