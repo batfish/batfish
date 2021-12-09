@@ -35,7 +35,7 @@ import org.junit.rules.TemporaryFolder;
 public class SearchFiltersDifferentialTest {
   @Rule public TemporaryFolder _tmp = new TemporaryFolder();
 
-  private static final String ENTER_ALL = "enter(.*)";
+  private static final String ENTER_ALL = "@enter(/.*/)";
 
   private static final String HOSTNAME = "hostname";
   private static final String ACLNAME = "acl";

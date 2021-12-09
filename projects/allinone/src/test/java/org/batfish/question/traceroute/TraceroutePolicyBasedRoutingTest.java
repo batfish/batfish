@@ -52,7 +52,7 @@ import org.junit.rules.TemporaryFolder;
 public class TraceroutePolicyBasedRoutingTest {
 
   private static final String PACKET_POLICY_NAME = "packetPolicy";
-  private static final String SOURCE_LOCATION_STR = "enter(c1[ingressInterface])";
+  private static final String SOURCE_LOCATION_STR = "@enter(c1[ingressInterface])";
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
   private static final Ip INGRESS_IFACE_IP = Ip.parse("1.1.1.1");

@@ -1,11 +1,11 @@
 {
   "class" : "org.batfish.question.multipath.MultipathConsistencyQuestion",
   "headers" : {
-    "dstIps" : "ofLocation(enter(.*))"
+    "dstIps" : "@enter(/.*/)"
   },
   "maxTraces" : 1,
   "pathConstraints" : {
-    "startLocation" : "enter(.*)"
+    "startLocation" : "@enter(/.*/)"
   },
   "differential" : false,
   "includeOneTableKeys" : true,

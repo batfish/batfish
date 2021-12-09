@@ -114,19 +114,6 @@ public class ParserIpSpaceTest {
   }
 
   @Test
-  public void testIpSpaceAddressGroupRef() {
-    IpSpaceAstNode expectedAst = new AddressGroupIpSpaceAstNode("a", "b");
-
-    assertThat(ParserUtils.getAst(getRunner().run("ref.addressgroup(a, b)")), equalTo(expectedAst));
-    assertThat(
-        ParserUtils.getAst(getRunner().run(" ref.addressgroup ( a , b ) ")), equalTo(expectedAst));
-    assertThat(
-        ParserUtils.getAst(getRunner().run("REF.ADDRESSGROUP(a , b)")), equalTo(expectedAst));
-    assertThat(
-        ParserUtils.getAst(getRunner().run("ref.addressGroup(a , b)")), equalTo(expectedAst));
-  }
-
-  @Test
   public void testIpSpaceIpAddress() {
     assertThat(ParserUtils.getAst(getRunner().run("1.1.1.1")), equalTo(new IpAstNode("1.1.1.1")));
   }
@@ -151,17 +138,6 @@ public class ParserIpSpaceTest {
     assertThat(
         ParserUtils.getAst(getRunner().run("1.1.1.1:2.2.2.2")),
         equalTo(new IpWildcardAstNode("1.1.1.1:2.2.2.2")));
-  }
-
-  @Test
-  public void testIpSpaceLocationNode() {
-    IpSpaceAstNode expectedNode =
-        new LocationIpSpaceAstNode(InterfaceLocationAstNode.createFromNode("node"));
-
-    assertThat(ParserUtils.getAst(getRunner().run("node")), equalTo(expectedNode));
-
-    assertThat(ParserUtils.getAst(getRunner().run("ofLocation(node)")), equalTo(expectedNode));
-    assertThat(ParserUtils.getAst(getRunner().run(" OFlocation ( node ) ")), equalTo(expectedNode));
   }
 
   @Test

@@ -2,11 +2,11 @@
     "class": "org.batfish.question.multipath.MultipathConsistencyQuestion",
     "differential": false,
     "headers": {
-      "dstIps": "ofLocation(enter(.*))"
+      "dstIps": "@enter(/.*/)"
     },
     "maxTraces": "${maxTraces}",
     "pathConstraints": {
-      "startLocation": "enter(.*)"
+      "startLocation": "@enter(/.*/)"
     },
     "instance": {
         "description": "Validates multipath consistency between all pairs of subnets.",
