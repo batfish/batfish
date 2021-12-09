@@ -998,8 +998,18 @@ public class Parser extends CommonParser {
 
   @Anchor(HIDDEN)
   public Rule LocationInternet() {
-    return Sequence(
-        IgnoreCase(IspModelingUtils.INTERNET_HOST_NAME), push(InternetLocationAstNode.INSTANCE));
+    /* This rule is special cases the location 'internet'. It also accepts 'internet[...]'; otherwise, we'll get parsing failure when internet part of such input matches and nothing is left to consume the rest. */
+    return FirstOf(
+        Sequence(
+            IgnoreCase(IspModelingUtils.INTERNET_HOST_NAME),
+            WhiteSpace(),
+            InterfaceWithNodeTail(),
+            push(
+                new InterfaceWithNodeInterfaceAstNode(
+                    new NameNodeAstNode(IspModelingUtils.INTERNET_HOST_NAME), pop()))),
+        Sequence(
+            IgnoreCase(IspModelingUtils.INTERNET_HOST_NAME),
+            push(InternetLocationAstNode.INSTANCE)));
   }
 
   @Anchor(LOCATION_ENTER)

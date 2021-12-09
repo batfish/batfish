@@ -21,6 +21,7 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import org.batfish.common.CompletionMetadata;
+import org.batfish.common.util.isp.IspModelingUtils;
 import org.batfish.datamodel.InterfaceType;
 import org.junit.Rule;
 import org.junit.Test;
@@ -182,6 +183,27 @@ public class ParserLocationTest {
     assertThat(ParserUtils.getAst(getRunner().run("@enter(node1)")), equalTo(expectedAst));
     assertThat(ParserUtils.getAst(getRunner().run(" @enter ( node1 ) ")), equalTo(expectedAst));
     assertThat(ParserUtils.getAst(getRunner().run("@EnTER(node1)")), equalTo(expectedAst));
+  }
+
+  /** Test of the special internet query and then also interfaces on the internet node. */
+  @Test
+  public void testParseLocationInternet() {
+    assertThat(
+        ParserUtils.getAst(getRunner().run("internet")), equalTo(InternetLocationAstNode.INSTANCE));
+    assertThat(
+        ParserUtils.getAst(getRunner().run("internet[To-Isp123]")),
+        equalTo(
+            new InterfaceWithNodeInterfaceAstNode(
+                new NameNodeAstNode(IspModelingUtils.INTERNET_HOST_NAME),
+                new NameInterfaceAstNode("To-Isp123"))));
+    assertThat(
+        ParserUtils.getAst(getRunner().run("@enter(internet[To-Isp123])")),
+        equalTo(
+            new EnterLocationAstNode(
+                InterfaceLocationAstNode.createFromInterfaceWithNode(
+                    new InterfaceWithNodeInterfaceAstNode(
+                        new NameNodeAstNode(IspModelingUtils.INTERNET_HOST_NAME),
+                        new NameInterfaceAstNode("To-Isp123"))))));
   }
 
   @Test
