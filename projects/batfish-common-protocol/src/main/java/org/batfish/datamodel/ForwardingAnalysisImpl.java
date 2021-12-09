@@ -3,13 +3,11 @@ package org.batfish.datamodel;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
-import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
@@ -26,10 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -40,7 +35,6 @@ import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.bdd.MemoizedIpSpaceToBDD;
 import org.batfish.common.topology.IpOwners;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.batfish.datamodel.vxlan.VxlanNode;
 import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.batfish.specifier.InterfaceLinkLocation;
 import org.batfish.specifier.Location;
@@ -53,9 +47,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
 
   // node -> vrf -> forwarding behavior for that VRF.
   private final Map<String, Map<String, VrfForwardingBehavior>> _vrfForwardingBehavior;
-
-  private final Map<String, Configuration> _configurations;
-  private final VxlanTopology _vxlanTopology;
 
   public ForwardingAnalysisImpl(
       Map<String, Configuration> configurations,
@@ -145,10 +136,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                                     routesWithNextHop.get(node).get(vrf));
                               })))
               .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
-
-      // todo optimize
-      _configurations = configurations;
-      _vxlanTopology = vxlanTopology;
 
       assert sanityCheck(configurations);
     } finally {
@@ -1241,29 +1228,5 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                     Collectors.mapping(
                         fibEntry -> ((FibForward) fibEntry.getAction()).getArpIp(),
                         Collectors.toSet()))));
-  }
-
-  @Override
-  public Map<String, Set<String>> getVxlanNeighbors(String currentNodeName, Ip vtepIp, int vni) {
-    SortedMap<String, ImmutableSortedSet.Builder<String>> remoteNodesAndVrfs = new TreeMap<>();
-    _vxlanTopology
-        .getGraph()
-        .adjacentNodes(VxlanNode.builder().setHostname(currentNodeName).setVni(vni).build())
-        .stream()
-        .forEach(
-            vxlanNode -> {
-              String remoteNode = vxlanNode.getHostname();
-              for (Vrf remoteVrf : _configurations.get(remoteNode).getVrfs().values()) {
-                if (Optional.ofNullable(remoteVrf.getLayer2Vnis().get(vni))
-                    .filter(l2Vni -> vtepIp.equals(l2Vni.getSourceAddress()))
-                    .isPresent()) {
-                  remoteNodesAndVrfs
-                      .computeIfAbsent(remoteNode, k -> ImmutableSortedSet.naturalOrder())
-                      .add(remoteVrf.getName());
-                }
-              }
-            });
-    return toImmutableSortedMap(
-        remoteNodesAndVrfs.entrySet(), Entry::getKey, e -> e.getValue().build());
   }
 }

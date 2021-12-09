@@ -2,21 +2,17 @@ package org.batfish.datamodel;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
-import java.util.Set;
 import javax.annotation.Nonnull;
 
 public class MockForwardingAnalysis implements ForwardingAnalysis {
   private final Map<String, Map<String, VrfForwardingBehavior>> _vrfForwardingBehavior;
   private final Map<String, Map<String, IpSpace>> _arpReplies;
-  private final Map<String, Set<String>> _vxlanVrfs;
 
   private MockForwardingAnalysis(
       Map<String, Map<String, IpSpace>> arpReplies,
-      Map<String, Map<String, VrfForwardingBehavior>> vrfForwardingBehavior,
-      Map<String, Set<String>> vxlanVrfs) {
+      Map<String, Map<String, VrfForwardingBehavior>> vrfForwardingBehavior) {
     _arpReplies = ImmutableMap.copyOf(arpReplies);
     _vrfForwardingBehavior = ImmutableMap.copyOf(vrfForwardingBehavior);
-    _vxlanVrfs = vxlanVrfs;
   }
 
   @Override
@@ -28,12 +24,6 @@ public class MockForwardingAnalysis implements ForwardingAnalysis {
   @Override
   public Map<String, Map<String, VrfForwardingBehavior>> getVrfForwardingBehavior() {
     return _vrfForwardingBehavior;
-  }
-
-  @Nonnull
-  @Override
-  public Map<String, Set<String>> getVxlanNeighbors(String currentNodeName, Ip vtepIp, int vni) {
-    return _vxlanVrfs;
   }
 
   /** Helper when we only need VrfForwardinBehavior at a single vrf */
@@ -80,7 +70,6 @@ public class MockForwardingAnalysis implements ForwardingAnalysis {
     private Map<String, Map<String, VrfForwardingBehavior>> _vrfForwardingBehavior =
         ImmutableMap.of();
     private Map<String, Map<String, IpSpace>> _arpReplies = ImmutableMap.of();
-    private Map<String, Set<String>> _vxlanVrfs = ImmutableMap.of();
 
     public Builder setVrfForwardingBehavior(
         Map<String, Map<String, VrfForwardingBehavior>> vrfForwardingBehavior) {
@@ -93,13 +82,8 @@ public class MockForwardingAnalysis implements ForwardingAnalysis {
       return this;
     }
 
-    public Builder setVxlanVrfs(Map<String, Set<String>> vxlanVrfs) {
-      _vxlanVrfs = vxlanVrfs;
-      return this;
-    }
-
     public MockForwardingAnalysis build() {
-      return new MockForwardingAnalysis(_arpReplies, _vrfForwardingBehavior, _vxlanVrfs);
+      return new MockForwardingAnalysis(_arpReplies, _vrfForwardingBehavior);
     }
   }
 }
