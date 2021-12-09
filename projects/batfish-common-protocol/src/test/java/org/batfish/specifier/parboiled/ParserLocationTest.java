@@ -16,12 +16,12 @@ import static org.batfish.specifier.parboiled.Anchor.Type.NODE_TYPE;
 import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_AND_INTERFACE_GROUP;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import org.batfish.common.CompletionMetadata;
+import org.batfish.common.util.isp.IspModelingUtils;
 import org.batfish.datamodel.InterfaceType;
 import org.junit.Rule;
 import org.junit.Test;
@@ -215,9 +215,20 @@ public class ParserLocationTest {
   public void testParseLocationInternet() {
     assertThat(
         ParserUtils.getAst(getRunner().run("internet")), equalTo(InternetLocationAstNode.INSTANCE));
-    // fixme after fixing grammar
-    assertThat(ParserUtils.getAst(getRunner().run("internet[To-Isp123]")), nullValue());
-    assertThat(ParserUtils.getAst(getRunner().run("@enter(internet[To-Isp123])")), nullValue());
+    assertThat(
+        ParserUtils.getAst(getRunner().run("internet[To-Isp123]")),
+        equalTo(
+            new InterfaceWithNodeInterfaceAstNode(
+                new NameNodeAstNode(IspModelingUtils.INTERNET_HOST_NAME),
+                new NameInterfaceAstNode("To-Isp123"))));
+    assertThat(
+        ParserUtils.getAst(getRunner().run("@enter(internet[To-Isp123])")),
+        equalTo(
+            new EnterLocationAstNode(
+                InterfaceLocationAstNode.createFromInterfaceWithNode(
+                    new InterfaceWithNodeInterfaceAstNode(
+                        new NameNodeAstNode(IspModelingUtils.INTERNET_HOST_NAME),
+                        new NameInterfaceAstNode("To-Isp123"))))));
   }
 
   @Test
