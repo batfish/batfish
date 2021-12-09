@@ -35,7 +35,6 @@ import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.bdd.MemoizedIpSpaceToBDD;
 import org.batfish.common.topology.IpOwners;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.batfish.specifier.InterfaceLinkLocation;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
@@ -52,7 +51,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
       Map<String, Configuration> configurations,
       Map<String, Map<String, Fib>> fibs,
       Topology topology,
-      VxlanTopology vxlanTopology,
       Map<Location, LocationInfo> locationInfo,
       IpOwners ipOwners) {
     Span span = GlobalTracer.get().buildSpan("Construct ForwardingAnalysis").start();

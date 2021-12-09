@@ -52,7 +52,6 @@ import java.util.Set;
 import org.batfish.common.topology.GlobalBroadcastNoPointToPoint;
 import org.batfish.common.topology.IpOwners;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
-import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -1405,12 +1404,7 @@ public class ForwardingAnalysisImplTest {
 
     ForwardingAnalysis fa =
         new ForwardingAnalysisImpl(
-            configs,
-            fibs,
-            Topology.EMPTY,
-            VxlanTopology.EMPTY,
-            computeLocationInfo(ipOwners, configs),
-            ipOwners);
+            configs, fibs, Topology.EMPTY, computeLocationInfo(ipOwners, configs), ipOwners);
 
     InterfaceForwardingBehavior ifb =
         fa.getVrfForwardingBehavior()
@@ -1499,12 +1493,7 @@ public class ForwardingAnalysisImplTest {
     IpOwners ipOwners = new IpOwners(configs, GlobalBroadcastNoPointToPoint.instance());
     ForwardingAnalysis analysis =
         new ForwardingAnalysisImpl(
-            configs,
-            fibs,
-            Topology.EMPTY,
-            VxlanTopology.EMPTY,
-            computeLocationInfo(ipOwners, configs),
-            ipOwners);
+            configs, fibs, Topology.EMPTY, computeLocationInfo(ipOwners, configs), ipOwners);
 
     InterfaceForwardingBehavior i1ForwardingBehavior =
         analysis
