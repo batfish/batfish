@@ -1,0 +1,27 @@
+{
+  "class" : "org.batfish.question.a10.A10VirtualServerConfigurationQuestion",
+  "nodes" : "abcd",
+  "differential" : false,
+  "includeOneTableKeys" : true,
+  "instance" : {
+    "description" : "Returns Virtual Server configuration of A10 devices.",
+    "instanceName" : "qname",
+    "longDescription" : "Lists all the Virtual Server to service group to server mappings in A10 configurations.",
+    "orderedVariableNames" : [
+      "nodes"
+    ],
+    "tags" : [
+      "configuration",
+      "vip"
+    ],
+    "variables" : {
+      "nodes" : {
+        "description" : "Include nodes matching this name or regex",
+        "displayName" : "Nodes",
+        "optional" : true,
+        "type" : "nodeSpec",
+        "value" : "abcd"
+      }
+    }
+  }
+}
