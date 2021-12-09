@@ -2,11 +2,11 @@
     "class": "org.batfish.question.multipath.MultipathConsistencyQuestion",
     "differential": false,
     "headers": {
-      "dstIps": "ofLocation([type(loopback)])"
+      "dstIps": "@interfaceType(loopback)"
     },
     "maxTraces": "${maxTraces}",
     "pathConstraints": {
-      "startLocation": "[type(loopback)]"
+      "startLocation": "@interfaceType(loopback)"
     },
     "instance": {
         "description": "Validates multipath consistency between all pairs of loopbacks.",

@@ -70,7 +70,7 @@ public class TracerouteAnswererHelperTest {
 
     PacketHeaderConstraints headerConstraints =
         PacketHeaderConstraints.builder().setSrcIp("1.1.1.1").setDstIp("2.2.2.2").build();
-    String sourceLocationStr = "enter(/.*/)";
+    String sourceLocationStr = "@enter(/.*/)";
 
     // specifier resolves to locations of active and inactive interfaces
     Set<Location> specifiedLocations =

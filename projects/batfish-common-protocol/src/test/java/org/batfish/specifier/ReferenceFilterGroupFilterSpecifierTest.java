@@ -64,7 +64,7 @@ public class ReferenceFilterGroupFilterSpecifierTest {
                     new FilterGroup(
                         ImmutableList.of(
                             _filter1.getName(),
-                            "outFilterOf(" + _interfaceName + ")", // should match _filter3
+                            "@out(" + _interfaceName + ")", // should match _filter3
                             ""), // should match nothing; shouldn't accidentally match everything
                         _filterGroupName)))
             .build();

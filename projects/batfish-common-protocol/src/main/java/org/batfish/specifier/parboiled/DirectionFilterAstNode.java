@@ -7,9 +7,9 @@ abstract class DirectionFilterAstNode implements FilterAstNode {
   private final InterfaceAstNode _interfaceAst;
 
   static DirectionFilterAstNode create(String direction, AstNode interfaceAst) {
-    if (direction.equalsIgnoreCase("@in") || direction.equalsIgnoreCase("inFilterOf")) {
+    if (direction.equalsIgnoreCase("@in")) {
       return new InFilterAstNode((InterfaceAstNode) interfaceAst);
-    } else if (direction.equalsIgnoreCase("@out") || direction.equalsIgnoreCase("outFilterOf")) {
+    } else if (direction.equalsIgnoreCase("@out")) {
       return new OutFilterAstNode((InterfaceAstNode) interfaceAst);
     } else {
       throw new IllegalStateException("Unknown direction specifier for filters " + direction);

@@ -1,11 +1,11 @@
 {
   "class" : "org.batfish.question.multipath.MultipathConsistencyQuestion",
   "headers" : {
-    "dstIps" : "ofLocation([type(loopback)])"
+    "dstIps" : "@interfaceType(loopback)"
   },
   "maxTraces" : 1,
   "pathConstraints" : {
-    "startLocation" : "[type(loopback)]"
+    "startLocation" : "@interfaceType(loopback)"
   },
   "differential" : false,
   "includeOneTableKeys" : true,
