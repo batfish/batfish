@@ -2273,4 +2273,17 @@ public class A10GrammarTest {
     assertThat(ccae, hasNumReferrers(filename, SERVICE_GROUP, "SG1", 1));
     assertThat(ccae, hasNumReferrers(filename, SERVICE_GROUP, "SG2", 0));
   }
+
+  @Test
+  public void testAccessListConversion() {
+    String hostname = "access_list";
+    Configuration c = parseConfig(hostname);
+
+    String i1Name = getInterfaceName(Type.ETHERNET, 1);
+    String i2Name = getInterfaceName(Type.ETHERNET, 2);
+    String i3Name = getInterfaceName(Type.ETHERNET, 3);
+    int haGroup = 1;
+
+    assertThat(c.getAllInterfaces(), hasKeys(i1Name, i2Name, i3Name));
+  }
 }

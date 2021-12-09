@@ -588,6 +588,7 @@ public final class A10Configuration extends VendorConfiguration {
     _accessLists.forEach((name, acl) -> convertAccessList(acl));
   }
 
+  /** Convert the specified {@link AccessList} into a VI ACL and attach to the VI configuration. */
   private void convertAccessList(AccessList acl) {
     IpAccessList.builder()
         .setLines(toAclLines(acl).collect(ImmutableList.toImmutableList()))
@@ -622,7 +623,7 @@ public final class A10Configuration extends VendorConfiguration {
                             vp ->
                                 vp.getAccessList() != null
                                     && _accessLists.containsKey(vp.getAccessList()))
-                        .flatMap(vp -> toAclLines(vs, vp, vp.getAccessList())))
+                        .flatMap(vp -> toAclLines(vs, vp, vp.getAccessList(), _filename)))
             .collect(ImmutableList.toImmutableList());
     IpAccessList virtServerAcl =
         IpAccessList.builder()
@@ -640,7 +641,7 @@ public final class A10Configuration extends VendorConfiguration {
                           new FirewallSessionInterfaceInfo(
                               POST_NAT_FIB_LOOKUP, ImmutableList.of(iface.getName()), null, null));
                       iface.setIncomingTransformation(x);
-                      iface.setInboundFilter(virtServerAcl);
+                      iface.setIncomingFilter(virtServerAcl);
                     }));
   }
 

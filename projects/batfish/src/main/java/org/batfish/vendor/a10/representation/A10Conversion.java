@@ -50,6 +50,7 @@ import org.batfish.datamodel.Names;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -75,6 +76,7 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.transformation.ApplyAll;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
+import org.batfish.vendor.VendorStructureId;
 import org.batfish.vendor.a10.representation.BgpNeighbor.SendCommunity;
 
 /** Conversion helpers for converting VS model {@link A10Configuration} to the VI model. */
@@ -133,11 +135,12 @@ public class A10Conversion {
   @VisibleForTesting
   @Nonnull
   static IntegerSpace toIntegerSpace(VirtualServerPort port) {
-    return IntegerSpace.of(
-            new SubRange(
-                port.getNumber(),
-                port.getNumber() + Optional.ofNullable(port.getRange()).orElse(0)))
-        .intersection(IntegerSpace.PORTS);
+    return IntegerSpace.of(toSubRange(port)).intersection(IntegerSpace.PORTS);
+  }
+
+  private static @Nonnull SubRange toSubRange(VirtualServerPort port) {
+    return new SubRange(
+        port.getNumber(), port.getNumber() + Optional.ofNullable(port.getRange()).orElse(0));
   }
 
   /** Returns the {@link IpProtocol} corresponding to the specified virtual-server port. */
@@ -810,35 +813,83 @@ public class A10Conversion {
     }
   }
 
-  /** Convert the {@link AccessList} to a {@link Stream} of {@link AclLine}s. */
+  /** Convert the specified {@link AccessList} to a {@link Stream} of {@link AclLine}s. */
   @VisibleForTesting
   public static @Nonnull Stream<AclLine> toAclLines(AccessList acl) {
+    // TODO structure links
     return Stream.concat(
         acl.getRules().stream()
-            .map(rule -> new ExprAclLine(toLineAction(rule), toMatchExpr(rule), "placeholder")),
+            .map(
+                rule ->
+                    new ExprAclLine(
+                        toLineAction(rule), toMatchExpr(rule), "placeholder rule name")),
         Stream.of(new ExprAclLine(LineAction.DENY, TrueExpr.INSTANCE, "Default deny all")));
   }
 
   /**
-   * Convert the {@link AccessListRule} for the specified {@link VirtualServerPort} in the specified
-   * {@link VirtualServer} to an {@link AclLine}.
+   * Convert a {@link Stream} of {@link AclLine} representing the {@link AccessList} for the
+   * specified {@link VirtualServerPort} in the specified {@link VirtualServer}.
    */
   @VisibleForTesting
   public static @Nonnull Stream<AclLine> toAclLines(
-      VirtualServer server, VirtualServerPort port, String aclName) {
+      VirtualServer server, VirtualServerPort port, String aclName, String filename) {
+    // TODO structure links
     return Stream.of(
         new ExprAclLine(
             LineAction.PERMIT,
             AclLineMatchExprs.and(
-                toMatchExpr(server),
-                toMatchExpr(port),
-                new PermittedByAcl(computeAclName(aclName))),
+                TraceElement.builder().add("Matched access-list on virtual server").build(),
+                toMatchExpr(server, port, filename),
+                new PermittedByAcl(
+                    computeAclName(aclName), traceElementForAccessList(aclName, filename))),
             "placeholder"),
         new ExprAclLine(
             LineAction.DENY,
             AclLineMatchExprs.and(
-                toMatchExpr(server), toMatchExpr(port), new DeniedByAcl(computeAclName(aclName))),
+                TraceElement.builder().add("Matched access-list on virtual server").build(),
+                toMatchExpr(server, port, filename),
+                new DeniedByAcl(
+                    computeAclName(aclName), traceElementForAccessList(aclName, filename))),
             "placeholder"));
+  }
+
+  private static @Nonnull AclLineMatchExpr toMatchExpr(
+      VirtualServer server, VirtualServerPort port, String filename) {
+    return AclLineMatchExprs.and(
+        traceElementForVirtualServer(server, filename), toMatchExpr(server), toMatchExpr(port));
+  }
+
+  public static TraceElement traceElementForAccessList(String aclName, String filename) {
+    return TraceElement.builder()
+        .add("Matched access-list")
+        .add(
+            aclName,
+            new VendorStructureId(filename, A10StructureType.ACCESS_LIST.getDescription(), aclName))
+        .build();
+  }
+
+  public static TraceElement traceElementForVirtualServer(VirtualServer server, String filename) {
+    String serverName = server.getName();
+    return TraceElement.builder()
+        .add("Matched virtual-server")
+        .add(
+            serverName,
+            new VendorStructureId(
+                filename, A10StructureType.VIRTUAL_SERVER.getDescription(), serverName))
+        .build();
+  }
+
+  public static TraceElement traceElementForVirtualServerPort(VirtualServerPort port) {
+    return TraceElement.builder()
+        .add(String.format("Matched %s %s", port.getType().toString(), toPortString(port)))
+        .build();
+  }
+
+  public static String toPortString(VirtualServerPort port) {
+    if (port.getRange() != null) {
+      return String.format("ports %d-%d", port.getNumber(), port.getNumber() + port.getRange());
+    }
+    return String.format("port %d", port.getNumber());
   }
 
   /**
@@ -857,33 +908,60 @@ public class A10Conversion {
 
     @Override
     public AclLineMatchExpr visitAddress(VirtualServerTargetAddress address) {
-      return AclLineMatchExprs.matchDst(address.getAddress());
+      return AclLineMatchExprs.matchDst(
+          address.getAddress().toIpSpace(),
+          TraceElement.builder()
+              .add(String.format("Matched virtual-server target address %s", address.getAddress()))
+              .build());
     }
   }
 
   /** Convert a {@link AccessListAddress} to a corresponding {@link AclLineMatchExpr}. */
-  static final class AccessListAddressToIpSpace implements AccessListAddressVisitor<IpSpace> {
-    static final AccessListAddressToIpSpace INSTANCE = new AccessListAddressToIpSpace();
+  static final class AccessListAddressToMatchExpr {
+    static final AccessListAddressToMatchExprImpl _source =
+        new AccessListAddressToMatchExprImpl(true);
+    static final AccessListAddressToMatchExprImpl _dest =
+        new AccessListAddressToMatchExprImpl(false);
 
-    @Override
-    public IpSpace visitAny(AccessListAddressAny address) {
-      return UniverseIpSpace.INSTANCE;
+    private static final class AccessListAddressToMatchExprImpl
+        implements AccessListAddressVisitor<AclLineMatchExpr> {
+      @Override
+      public AclLineMatchExpr visitAny(AccessListAddressAny address) {
+        TraceElement te =
+            TraceElement.builder()
+                .add(String.format("Matched %s address any", _isSource ? "source" : "destination"))
+                .build();
+        IpSpace ip = UniverseIpSpace.INSTANCE;
+        return _isSource ? AclLineMatchExprs.matchSrc(ip, te) : AclLineMatchExprs.matchDst(ip, te);
+      }
+
+      @Override
+      public AclLineMatchExpr visitHost(AccessListAddressHost address) {
+        TraceElement te =
+            TraceElement.builder()
+                .add(
+                    String.format(
+                        "Matched %s address %s",
+                        _isSource ? "source" : "destination", address.getHost()))
+                .build();
+        IpSpace ip = address.getHost().toIpSpace();
+        return _isSource ? AclLineMatchExprs.matchSrc(ip, te) : AclLineMatchExprs.matchDst(ip, te);
+      }
+
+      public AccessListAddressToMatchExprImpl(boolean isSource) {
+        _isSource = isSource;
+      }
+
+      private final boolean _isSource;
     }
 
-    @Override
-    public IpSpace visitHost(AccessListAddressHost address) {
-      return address.getHost().toIpSpace();
+    public static AclLineMatchExpr visitSrc(AccessListAddress address) {
+      return _source.visit(address);
     }
-  }
 
-  /** Convert an {@link AccessListAddress} to a destination {@link AclLineMatchExpr}. */
-  private static AclLineMatchExpr aclAddrToDstMatchExpr(AccessListAddress address) {
-    return AclLineMatchExprs.matchDst(AccessListAddressToIpSpace.INSTANCE.visit(address));
-  }
-
-  /** Convert an {@link AccessListAddress} to a source {@link AclLineMatchExpr}. */
-  private static AclLineMatchExpr aclAddrToSrcMatchExpr(AccessListAddress address) {
-    return AclLineMatchExprs.matchSrc(AccessListAddressToIpSpace.INSTANCE.visit(address));
+    public static AclLineMatchExpr visitDst(AccessListAddress address) {
+      return _dest.visit(address);
+    }
   }
 
   @VisibleForTesting
@@ -896,6 +974,7 @@ public class A10Conversion {
     Optional<IpProtocol> protocol = toProtocol(port);
     assert protocol.isPresent();
     return AclLineMatchExprs.and(
+        traceElementForVirtualServerPort(port),
         AclLineMatchExprs.matchIpProtocol(protocol.get()),
         AclLineMatchExprs.matchDstPort(toIntegerSpace(port)));
   }
@@ -904,8 +983,8 @@ public class A10Conversion {
   public static @Nonnull AclLineMatchExpr toMatchExpr(AccessListRule rule) {
     ImmutableList.Builder<AclLineMatchExpr> exprs =
         ImmutableList.<AclLineMatchExpr>builder()
-            .add(aclAddrToDstMatchExpr(rule.getDestination()))
-            .add(aclAddrToSrcMatchExpr(rule.getSource()));
+            .add(AccessListAddressToMatchExpr.visitDst(rule.getDestination()))
+            .add(AccessListAddressToMatchExpr.visitSrc(rule.getSource()));
     Optional<IpProtocol> maybeProtocol = RuleToIpProtocol.INSTANCE.visit(rule);
     maybeProtocol.ifPresent(p -> exprs.add(AclLineMatchExprs.matchIpProtocol(p)));
     return AclLineMatchExprs.and(exprs.build());
