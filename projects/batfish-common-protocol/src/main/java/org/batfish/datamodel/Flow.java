@@ -30,15 +30,15 @@ public final class Flow implements Comparable<Flow>, Serializable {
     private @Nullable IpProtocol _ipProtocol;
     private int _packetLength;
     private @Nonnull Ip _srcIp;
-    @Nullable private Integer _srcPort;
-    private int _tcpFlagsAck;
-    private int _tcpFlagsCwr;
-    private int _tcpFlagsEce;
-    private int _tcpFlagsFin;
-    private int _tcpFlagsPsh;
-    private int _tcpFlagsRst;
-    private int _tcpFlagsSyn;
-    private int _tcpFlagsUrg;
+    private @Nullable Integer _srcPort;
+    private boolean _tcpFlagsAck;
+    private boolean _tcpFlagsCwr;
+    private boolean _tcpFlagsEce;
+    private boolean _tcpFlagsFin;
+    private boolean _tcpFlagsPsh;
+    private boolean _tcpFlagsRst;
+    private boolean _tcpFlagsSyn;
+    private boolean _tcpFlagsUrg;
 
     private Builder() {
       _dscp = 0;
@@ -49,14 +49,7 @@ public final class Flow implements Comparable<Flow>, Serializable {
       _srcIp = Ip.ZERO;
       _ingressVrf = Configuration.DEFAULT_VRF_NAME;
       _packetLength = 64; // min-sized ICMP packet (which is more than min-sized TCP/UDP)
-      _tcpFlagsCwr = 0;
-      _tcpFlagsEce = 0;
-      _tcpFlagsUrg = 0;
-      _tcpFlagsAck = 0;
-      _tcpFlagsPsh = 0;
-      _tcpFlagsRst = 0;
-      _tcpFlagsSyn = 0;
-      _tcpFlagsFin = 0;
+      // all tcp flags default to false
     }
 
     private Builder(Flow flow) {
@@ -74,14 +67,14 @@ public final class Flow implements Comparable<Flow>, Serializable {
       _icmpType = flow._icmpType;
       _icmpCode = flow._icmpCode;
       _packetLength = flow._packetLength;
-      _tcpFlagsAck = flow.getTcpFlagsAck();
-      _tcpFlagsCwr = flow.getTcpFlagsCwr();
-      _tcpFlagsEce = flow.getTcpFlagsEce();
-      _tcpFlagsUrg = flow.getTcpFlagsUrg();
-      _tcpFlagsPsh = flow.getTcpFlagsPsh();
-      _tcpFlagsRst = flow.getTcpFlagsRst();
-      _tcpFlagsSyn = flow.getTcpFlagsSyn();
-      _tcpFlagsFin = flow.getTcpFlagsFin();
+      _tcpFlagsAck = flow.getTcpFlags().getAck();
+      _tcpFlagsCwr = flow.getTcpFlags().getCwr();
+      _tcpFlagsEce = flow.getTcpFlags().getEce();
+      _tcpFlagsFin = flow.getTcpFlags().getFin();
+      _tcpFlagsPsh = flow.getTcpFlags().getPsh();
+      _tcpFlagsRst = flow.getTcpFlags().getRst();
+      _tcpFlagsSyn = flow.getTcpFlags().getSyn();
+      _tcpFlagsUrg = flow.getTcpFlags().getUrg();
     }
 
     public Flow build() {
@@ -191,38 +184,6 @@ public final class Flow implements Comparable<Flow>, Serializable {
       return _srcPort;
     }
 
-    public int getTcpFlagsAck() {
-      return _tcpFlagsAck;
-    }
-
-    public int getTcpFlagsCwr() {
-      return _tcpFlagsCwr;
-    }
-
-    public int getTcpFlagsEce() {
-      return _tcpFlagsEce;
-    }
-
-    public int getTcpFlagsFin() {
-      return _tcpFlagsFin;
-    }
-
-    public int getTcpFlagsPsh() {
-      return _tcpFlagsPsh;
-    }
-
-    public int getTcpFlagsRst() {
-      return _tcpFlagsRst;
-    }
-
-    public int getTcpFlagsSyn() {
-      return _tcpFlagsSyn;
-    }
-
-    public int getTcpFlagsUrg() {
-      return _tcpFlagsUrg;
-    }
-
     public Builder setDscp(int dscp) {
       _dscp = dscp;
       return this;
@@ -303,55 +264,55 @@ public final class Flow implements Comparable<Flow>, Serializable {
       return this;
     }
 
-    public Builder setTcpFlagsAck(Integer tcpFlagsAck) {
+    public Builder setTcpFlagsAck(boolean tcpFlagsAck) {
       _tcpFlagsAck = tcpFlagsAck;
       return this;
     }
 
-    public Builder setTcpFlagsCwr(Integer tcpFlagsCwr) {
+    public Builder setTcpFlagsCwr(boolean tcpFlagsCwr) {
       _tcpFlagsCwr = tcpFlagsCwr;
       return this;
     }
 
-    public Builder setTcpFlagsEce(Integer tcpFlagsEce) {
+    public Builder setTcpFlagsEce(boolean tcpFlagsEce) {
       _tcpFlagsEce = tcpFlagsEce;
       return this;
     }
 
-    public Builder setTcpFlagsFin(Integer tcpFlagsFin) {
+    public Builder setTcpFlagsFin(boolean tcpFlagsFin) {
       _tcpFlagsFin = tcpFlagsFin;
       return this;
     }
 
-    public Builder setTcpFlagsPsh(Integer tcpFlagsPsh) {
+    public Builder setTcpFlagsPsh(boolean tcpFlagsPsh) {
       _tcpFlagsPsh = tcpFlagsPsh;
       return this;
     }
 
-    public Builder setTcpFlagsRst(Integer tcpFlagsRst) {
+    public Builder setTcpFlagsRst(boolean tcpFlagsRst) {
       _tcpFlagsRst = tcpFlagsRst;
       return this;
     }
 
-    public Builder setTcpFlagsSyn(Integer tcpFlagsSyn) {
+    public Builder setTcpFlagsSyn(boolean tcpFlagsSyn) {
       _tcpFlagsSyn = tcpFlagsSyn;
       return this;
     }
 
-    public Builder setTcpFlagsUrg(Integer tcpFlagsUrg) {
+    public Builder setTcpFlagsUrg(boolean tcpFlagsUrg) {
       _tcpFlagsUrg = tcpFlagsUrg;
       return this;
     }
 
     public Builder setTcpFlags(TcpFlags tcpFlags) {
-      _tcpFlagsAck = tcpFlags.getAck() ? 1 : 0;
-      _tcpFlagsCwr = tcpFlags.getCwr() ? 1 : 0;
-      _tcpFlagsEce = tcpFlags.getEce() ? 1 : 0;
-      _tcpFlagsFin = tcpFlags.getFin() ? 1 : 0;
-      _tcpFlagsPsh = tcpFlags.getPsh() ? 1 : 0;
-      _tcpFlagsRst = tcpFlags.getRst() ? 1 : 0;
-      _tcpFlagsSyn = tcpFlags.getSyn() ? 1 : 0;
-      _tcpFlagsUrg = tcpFlags.getUrg() ? 1 : 0;
+      _tcpFlagsAck = tcpFlags.getAck();
+      _tcpFlagsCwr = tcpFlags.getCwr();
+      _tcpFlagsEce = tcpFlags.getEce();
+      _tcpFlagsFin = tcpFlags.getFin();
+      _tcpFlagsPsh = tcpFlags.getPsh();
+      _tcpFlagsRst = tcpFlags.getRst();
+      _tcpFlagsSyn = tcpFlags.getSyn();
+      _tcpFlagsUrg = tcpFlags.getUrg();
       return this;
     }
   }
@@ -416,14 +377,14 @@ public final class Flow implements Comparable<Flow>, Serializable {
       @Nullable Integer icmpType,
       @Nullable Integer icmpCode,
       int packetLength,
-      int tcpFlagsCwr,
-      int tcpFlagsEce,
-      int tcpFlagsUrg,
-      int tcpFlagsAck,
-      int tcpFlagsPsh,
-      int tcpFlagsRst,
-      int tcpFlagsSyn,
-      int tcpFlagsFin) {
+      boolean tcpFlagsCwr,
+      boolean tcpFlagsEce,
+      boolean tcpFlagsUrg,
+      boolean tcpFlagsAck,
+      boolean tcpFlagsPsh,
+      boolean tcpFlagsRst,
+      boolean tcpFlagsSyn,
+      boolean tcpFlagsFin) {
     checkArgument(
         ingressInterface != null || ingressVrf != null,
         "Either ingressInterface or ingressVrf must not be null.");
@@ -447,14 +408,14 @@ public final class Flow implements Comparable<Flow>, Serializable {
     // this ugliness is for backwards compatibility (for now)
     _tcpFlags =
         new TcpFlags(
-            tcpFlagsAck != 0,
-            tcpFlagsCwr != 0,
-            tcpFlagsEce != 0,
-            tcpFlagsFin != 0,
-            tcpFlagsPsh != 0,
-            tcpFlagsRst != 0,
-            tcpFlagsSyn != 0,
-            tcpFlagsUrg != 0);
+            tcpFlagsAck,
+            tcpFlagsCwr,
+            tcpFlagsEce,
+            tcpFlagsFin,
+            tcpFlagsPsh,
+            tcpFlagsRst,
+            tcpFlagsSyn,
+            tcpFlagsUrg);
     if (_ipProtocol == IpProtocol.ICMP) {
       checkArgument(_icmpType != null, "ICMP packets must have an ICMP type");
       checkArgument(_icmpCode != null, "ICMP packets must have an ICMP code");
@@ -508,14 +469,14 @@ public final class Flow implements Comparable<Flow>, Serializable {
         icmpType,
         icmpCode,
         packetLength,
-        tcpFlagsCwr,
-        tcpFlagsEce,
-        tcpFlagsUrg,
-        tcpFlagsAck,
-        tcpFlagsPsh,
-        tcpFlagsRst,
-        tcpFlagsSyn,
-        tcpFlagsFin);
+        tcpFlagsCwr != 0,
+        tcpFlagsEce != 0,
+        tcpFlagsUrg != 0,
+        tcpFlagsAck != 0,
+        tcpFlagsPsh != 0,
+        tcpFlagsRst != 0,
+        tcpFlagsSyn != 0,
+        tcpFlagsFin != 0);
   }
 
   @Override
@@ -658,44 +619,43 @@ public final class Flow implements Comparable<Flow>, Serializable {
   }
 
   // Again, backwards-compatibility tcp-flag ugliness below
-
   @JsonProperty(PROP_TCP_FLAGS_ACK)
-  public int getTcpFlagsAck() {
+  private int getJsonTcpFlagsAck() {
     return _tcpFlags.getAck() ? 1 : 0;
   }
 
   @JsonProperty(PROP_TCP_FLAGS_CWR)
-  public int getTcpFlagsCwr() {
+  private int getJsonTcpFlagsCwr() {
     return _tcpFlags.getCwr() ? 1 : 0;
   }
 
   @JsonProperty(PROP_TCP_FLAGS_ECE)
-  public int getTcpFlagsEce() {
+  private int getJsonTcpFlagsEce() {
     return _tcpFlags.getEce() ? 1 : 0;
   }
 
   @JsonProperty(PROP_TCP_FLAGS_FIN)
-  public int getTcpFlagsFin() {
+  private int getJsonTcpFlagsFin() {
     return _tcpFlags.getFin() ? 1 : 0;
   }
 
   @JsonProperty(PROP_TCP_FLAGS_PSH)
-  public int getTcpFlagsPsh() {
+  private int getJsonTcpFlagsPsh() {
     return _tcpFlags.getPsh() ? 1 : 0;
   }
 
   @JsonProperty(PROP_TCP_FLAGS_RST)
-  public int getTcpFlagsRst() {
+  private int getJsonTcpFlagsRst() {
     return _tcpFlags.getRst() ? 1 : 0;
   }
 
   @JsonProperty(PROP_TCP_FLAGS_SYN)
-  public int getTcpFlagsSyn() {
+  private int getJsonTcpFlagsSyn() {
     return _tcpFlags.getSyn() ? 1 : 0;
   }
 
   @JsonProperty(PROP_TCP_FLAGS_URG)
-  public int getTcpFlagsUrg() {
+  private int getJsonTcpFlagsUrg() {
     return _tcpFlags.getUrg() ? 1 : 0;
   }
 
@@ -736,14 +696,15 @@ public final class Flow implements Comparable<Flow>, Serializable {
   private String tcpFlagsStr() {
     return String.format(
         " tcpFlags:%d%d%d%d%d%d%d%d",
-        getTcpFlagsAck(),
-        getTcpFlagsEce(),
-        getTcpFlagsUrg(),
-        getTcpFlagsAck(),
-        getTcpFlagsPsh(),
-        getTcpFlagsRst(),
-        getTcpFlagsSyn(),
-        getTcpFlagsFin());
+        // Ordered by wire order, not alphabetical / logical order. LSB on the right.
+        getJsonTcpFlagsCwr(),
+        getJsonTcpFlagsEce(),
+        getJsonTcpFlagsUrg(),
+        getJsonTcpFlagsAck(),
+        getJsonTcpFlagsPsh(),
+        getJsonTcpFlagsRst(),
+        getJsonTcpFlagsSyn(),
+        getJsonTcpFlagsFin());
   }
 
   public Builder toBuilder() {
