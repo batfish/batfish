@@ -396,8 +396,8 @@ public class Parser extends CommonParser {
    *
    *   filterWithoutNode := filterWithoutNodeTerm [{@literal &} | , | \ filterWithoutNodeTerm]*
    *
-   *   filterWithoutNodeTerm := @in(interfaceSpec)  // inFilterOf is also supported for back compat
-   *               | @out(interfaceSpec) // outFilterOf is also supported
+   *   filterWithoutNodeTerm := @in(interfaceSpec)
+   *               | @out(interfaceSpec)
    *               | filterName
    *               | filterNameRegex
    *               | ( filterWithoutNode )
@@ -547,7 +547,7 @@ public class Parser extends CommonParser {
    *   interfaceWithoutNode := interfaceWithoutNodeTerm [{@literal &} | , | \ interfaceWithoutNodeTerm]*
    *
    *   interfaceWithoutNodeTerm
-   *                        := @connectedTo(ipSpaceSpec)  // non-@ versions also supported for back compat
+   *                        := @connectedTo(ipSpaceSpec)
    *                        | @interfacegroup(a, b)
    *                        | @interfaceType(interfaceType)
    *                        | @vrf(vrfName)
@@ -822,9 +822,8 @@ public class Parser extends CommonParser {
    * <pre>
    * ipSpaceSpec := ipSpecTerm [{@literal &} | , | \ ipSpecTerm]*
    *
-   * ipSpecTerm := @addgressgroup(groupname, bookname)  //ref.addressgroup for back compat
+   * ipSpecTerm := @addgressgroup(groupname, bookname)
    *               | locationSpec
-   *               | ofLocation(locationSpec)           // back compat
    *               | ipPrefix (e.g., 1.1.1.0/24)
    *               | ipWildcard (e.g., 1.1.1.1:255.255.255.0)
    *               | ipRange (e.g., 1.1.1.1-1.1.1.2)

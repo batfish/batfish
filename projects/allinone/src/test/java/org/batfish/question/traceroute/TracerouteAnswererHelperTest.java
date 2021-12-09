@@ -140,7 +140,7 @@ public class TracerouteAnswererHelperTest {
   public void testGetFlows_dst() {
     TracerouteAnswererHelper helper =
         new TracerouteAnswererHelper(
-            PacketHeaderConstraints.builder().setDstIp("ofLocation(node2)").build(),
+            PacketHeaderConstraints.builder().setDstIp("node2").build(),
             String.format("%s[%s]", NODE1, LOOPBACK),
             _batfish.specifierContext(_batfish.getSnapshot()));
     Set<Flow> flows = helper.getFlows();
