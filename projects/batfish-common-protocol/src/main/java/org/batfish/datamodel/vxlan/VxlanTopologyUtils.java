@@ -20,10 +20,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.common.plugin.TracerouteEngine;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
@@ -292,6 +294,33 @@ public final class VxlanTopologyUtils {
                     .build();
               });
     }
+  }
+
+  public static @Nonnull Set<Edge> vxlanTopologyToLayer3Edges(
+      VxlanTopology vxlanTopology, Map<String, Configuration> configurations) {
+    ImmutableSet.Builder<Edge> edgesBuilder = ImmutableSet.builder();
+    for (EndpointPair<VxlanNode> endPoint : vxlanTopology.getGraph().edges()) {
+      VxlanNode node1 = endPoint.nodeU();
+      VxlanNode node2 = endPoint.nodeV();
+      String node1Name = node1.getHostname();
+      String node2Name = node2.getHostname();
+      int vni1 = node1.getVni();
+      int vni2 = node2.getVni();
+      String iface1Name = generatedTenantVniInterfaceName(vni1);
+      String iface2Name = generatedTenantVniInterfaceName(vni2);
+      Configuration c1 = configurations.get(node1Name);
+      Configuration c2 = configurations.get(node2Name);
+      assert c1 != null;
+      assert c2 != null;
+      if (!(c1.getAllInterfaces().containsKey(iface1Name)
+          && c2.getAllInterfaces().containsKey(iface2Name))) {
+        // VNI was either layer-2 or defective layer-3, so no interface was generated.
+        continue;
+      }
+      edgesBuilder.add(Edge.of(node1Name, iface1Name, node2Name, iface2Name));
+      edgesBuilder.add(Edge.of(node2Name, iface2Name, node1Name, iface1Name));
+    }
+    return edgesBuilder.build();
   }
 
   /** A unique identifier for a {@link Vrf} in a network */

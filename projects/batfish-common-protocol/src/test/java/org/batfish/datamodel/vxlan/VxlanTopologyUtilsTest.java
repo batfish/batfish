@@ -13,6 +13,8 @@ import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.computeVniSettingsT
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.computeVxlanTopology;
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.prunedVxlanTopology;
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.vxlanFlowDelivered;
+import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.vxlanTopologyToLayer3Edges;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
@@ -44,6 +46,7 @@ import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Interface;
@@ -805,5 +808,47 @@ public final class VxlanTopologyUtilsTest {
 
     // v2 vni 2
     assertThat(c.getAllInterfaces(), not(hasKey(vni2IfaceName)));
+  }
+
+  @Test
+  public void testVxlanTopologyToLayer3Edges() {
+    Configuration c1 = new Configuration("c1", ConfigurationFormat.CISCO_NX);
+    c1.setDefaultCrossZoneAction(LineAction.PERMIT);
+    c1.setDefaultInboundAction(LineAction.PERMIT);
+    Configuration c2 = new Configuration("c2", ConfigurationFormat.CISCO_NX);
+    c2.setDefaultCrossZoneAction(LineAction.PERMIT);
+    c2.setDefaultInboundAction(LineAction.PERMIT);
+    Vrf v1 = Vrf.builder().setOwner(c1).setName("v1").build();
+    Vrf v2 = Vrf.builder().setOwner(c2).setName("v2").build();
+    Ip sourceAddress1 = Ip.parse("10.0.0.1");
+    Ip sourceAddress2 = Ip.parse("10.0.0.2");
+    int vni = 1000;
+    Layer3Vni.Builder l3b =
+        Layer3Vni.builder()
+            .setBumTransportIps(ImmutableSet.of())
+            .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
+            .setSrcVrf(DEFAULT_VRF_NAME)
+            .setUdpPort(5);
+    v1.addLayer3Vni(l3b.setVni(vni).setSourceAddress(sourceAddress1).build());
+    v2.addLayer3Vni(l3b.setVni(vni).setSourceAddress(sourceAddress2).build());
+    addTenantVniInterfaces(c1);
+    addTenantVniInterfaces(c2);
+
+    MutableGraph<VxlanNode> graph = GraphBuilder.undirected().allowsSelfLoops(false).build();
+    VxlanNode node1 = new VxlanNode(c1.getHostname(), vni);
+    VxlanNode node2 = new VxlanNode(c2.getHostname(), vni);
+    graph.addNode(node1);
+    graph.addNode(node2);
+    graph.putEdge(node1, node2);
+    VxlanTopology vxlanTopology = new VxlanTopology(graph);
+
+    String ifaceName = generatedTenantVniInterfaceName(vni);
+
+    assertThat(
+        vxlanTopologyToLayer3Edges(
+            vxlanTopology, ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2)),
+        containsInAnyOrder(
+            Edge.of(c1.getHostname(), ifaceName, c2.getHostname(), ifaceName),
+            Edge.of(c2.getHostname(), ifaceName, c1.getHostname(), ifaceName)));
   }
 }
