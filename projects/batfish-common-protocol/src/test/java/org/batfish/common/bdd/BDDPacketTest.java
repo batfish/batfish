@@ -135,13 +135,13 @@ public class BDDPacketTest {
     int srcPort = 0xFF;
 
     IpProtocol ipProtocol = IpProtocol.TCP;
-    int tcpAck = 0;
-    int tcpCwr = 1;
-    int tcpEce = 0;
-    int tcpFin = 1;
-    int tcpPsh = 0;
-    int tcpRst = 1;
-    int tcpUrg = 0;
+    boolean tcpAck = false;
+    boolean tcpCwr = true;
+    boolean tcpEce = false;
+    boolean tcpFin = true;
+    boolean tcpPsh = false;
+    boolean tcpRst = true;
+    boolean tcpUrg = false;
 
     BDD bdd =
         pkt.getDstIp()

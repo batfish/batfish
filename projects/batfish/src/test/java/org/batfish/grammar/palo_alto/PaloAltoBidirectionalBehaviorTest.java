@@ -52,7 +52,7 @@ public final class PaloAltoBidirectionalBehaviorTest {
   private @Nonnull Flow bidirForwardFlow(String hostname, Ip dstIp) {
     return Flow.builder()
         .setIpProtocol(IpProtocol.TCP)
-        .setTcpFlagsSyn(1)
+        .setTcpFlagsSyn(true)
         .setIngressInterface(INTERFACE1)
         .setIngressNode(hostname)
         .setSrcIp(BIDIR_DEFAULT_SRC_IP)
@@ -65,7 +65,7 @@ public final class PaloAltoBidirectionalBehaviorTest {
   private @Nonnull Flow bidirForwardOutsideFlow(String hostname) {
     return Flow.builder()
         .setIpProtocol(IpProtocol.TCP)
-        .setTcpFlagsSyn(1)
+        .setTcpFlagsSyn(true)
         .setIngressInterface(INTERFACE2)
         .setIngressNode(hostname)
         .setSrcIp(BIDIR_DEFAULT_DST_IP)

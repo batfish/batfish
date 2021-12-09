@@ -33,10 +33,10 @@ public class TcpFlagsMatchConditionsTest {
     TcpFlagsMatchConditions conditions =
         TcpFlagsMatchConditions.builder().setTcpFlags(flags).setUseUrg(true).build();
     assertThat(
-        conditions.match(Flow.builder().setTcpFlagsUrg(1).setIngressNode("n").build()),
+        conditions.match(Flow.builder().setTcpFlagsUrg(true).setIngressNode("n").build()),
         equalTo(true));
     assertThat(
-        conditions.match(Flow.builder().setTcpFlagsUrg(0).setIngressNode("n").build()),
+        conditions.match(Flow.builder().setTcpFlagsUrg(false).setIngressNode("n").build()),
         equalTo(false));
   }
 
@@ -47,7 +47,7 @@ public class TcpFlagsMatchConditionsTest {
     TcpFlagsMatchConditions conditions =
         TcpFlagsMatchConditions.builder().setTcpFlags(flags).build();
     assertThat(
-        conditions.match(Flow.builder().setTcpFlagsUrg(1).setIngressNode("n").build()),
+        conditions.match(Flow.builder().setTcpFlagsUrg(true).setIngressNode("n").build()),
         equalTo(true));
     // Fields that do not match, but are ignored do not break match
     conditions =
@@ -58,7 +58,7 @@ public class TcpFlagsMatchConditionsTest {
             .build();
     assertThat(
         conditions.match(
-            Flow.builder().setTcpFlagsUrg(0).setTcpFlagsRst(1).setIngressNode("n").build()),
+            Flow.builder().setTcpFlagsUrg(false).setTcpFlagsRst(true).setIngressNode("n").build()),
         equalTo(true));
   }
 

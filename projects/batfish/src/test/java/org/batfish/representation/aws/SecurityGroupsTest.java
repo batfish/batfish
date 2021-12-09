@@ -387,8 +387,8 @@ public class SecurityGroupsTest {
         .setDstIp(Ip.parse("1.2.3.4"))
         .setSrcPort(22)
         .setDstPort(NamedPort.EPHEMERAL_LOWEST.number())
-        .setTcpFlagsAck(0)
-        .setTcpFlagsSyn(1);
+        .setTcpFlagsAck(false)
+        .setTcpFlagsSyn(true);
 
     assertThat(
         outFilter
@@ -412,8 +412,8 @@ public class SecurityGroupsTest {
         .setDstIp(Ip.parse("1.2.3.5"))
         .setSrcPort(22)
         .setDstPort(NamedPort.EPHEMERAL_LOWEST.number())
-        .setTcpFlagsAck(1)
-        .setTcpFlagsSyn(1);
+        .setTcpFlagsAck(true)
+        .setTcpFlagsSyn(true);
 
     assertThat(
         outFilter
