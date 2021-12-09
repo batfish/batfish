@@ -2,14 +2,7 @@
 !
 hostname a10_virtual_server_configuration
 !
-slb virtual-server vs1 10.10.10.1
-  port 443 tcp
-    name vs1.10000
-    service-group vs1.10000
-!
-slb service-group vs1.10000 tcp
-  member S1 10000
-  member S2 9999
+ip nat pool pool1 10.136.58.27 10.136.58.27 netmask /24
 !
 slb server s1 1.1.1.1
   port 10000 tcp
@@ -17,4 +10,22 @@ slb server s1 1.1.1.1
 slb server s2 2.2.2.2
   port 9999 tcp
 !
-end
+slb service-group vs1.10000 tcp
+  member s1 10000
+  member s2 9999
+!
+slb service-group vs1.20000 tcp
+! no members
+!
+slb virtual-server vs1 10.10.10.1
+  port 443 tcp
+    name vs1.10000
+    source-nat pool pool1
+    service-group vs1.10000
+  port 444 http
+    name vs1.20000
+    service-group vs1.20000
+!
+slb virtual-server vs2NoSG 10.10.10.2
+  port 443 tcp
+!

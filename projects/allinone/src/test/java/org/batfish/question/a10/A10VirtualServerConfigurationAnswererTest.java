@@ -7,6 +7,7 @@ import static org.batfish.question.a10.A10VirtualServerConfigurationAnswerer.COL
 import static org.batfish.question.a10.A10VirtualServerConfigurationAnswerer.COL_SERVERS;
 import static org.batfish.question.a10.A10VirtualServerConfigurationAnswerer.COL_SERVICE_GROUP_NAME;
 import static org.batfish.question.a10.A10VirtualServerConfigurationAnswerer.COL_SERVICE_GROUP_TYPE;
+import static org.batfish.question.a10.A10VirtualServerConfigurationAnswerer.COL_SOURCE_NAT_POOL_NAME;
 import static org.batfish.question.a10.A10VirtualServerConfigurationAnswerer.COL_VIRTUAL_SERVER_IP;
 import static org.batfish.question.a10.A10VirtualServerConfigurationAnswerer.COL_VIRTUAL_SERVER_NAME;
 import static org.batfish.question.a10.A10VirtualServerConfigurationAnswerer.COL_VIRTUAL_SERVER_PORT;
@@ -15,6 +16,7 @@ import static org.batfish.question.a10.A10VirtualServerConfigurationAnswerer.COL
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
@@ -55,8 +57,7 @@ public class A10VirtualServerConfigurationAnswererTest {
         new A10VirtualServerConfigurationAnswerer(question, batfish);
     TableAnswerElement answer = answerer.answer(batfish.getSnapshot());
 
-    // answer should have one row per virtual
-    assertThat(answer.getRows(), hasSize(1));
+    assertThat(answer.getRows(), hasSize(3));
 
     assertThat(
         answer,
@@ -75,6 +76,30 @@ public class A10VirtualServerConfigurationAnswererTest {
                     hasColumn(
                         COL_SERVERS,
                         equalTo(ImmutableSet.of("s1:10000:1.1.1.1", "s2:9999:2.2.2.2")),
-                        Schema.set(Schema.STRING))))));
+                        Schema.set(Schema.STRING)),
+                    hasColumn(COL_SOURCE_NAT_POOL_NAME, equalTo("pool1"), Schema.STRING)),
+                allOf(
+                    hasColumn(COL_NODE, equalTo(new Node(hostname1)), Schema.NODE),
+                    hasColumn(COL_VIRTUAL_SERVER_NAME, equalTo("vs1"), Schema.STRING),
+                    hasColumn(COL_VIRTUAL_SERVER_IP, equalTo(Ip.parse("10.10.10.1")), Schema.IP),
+                    hasColumn(COL_VIRTUAL_SERVER_PORT, equalTo(444), Schema.INTEGER),
+                    hasColumn(COL_VIRTUAL_SERVER_TYPE, equalTo("HTTP"), Schema.STRING),
+                    hasColumn(
+                        COL_VIRTUAL_SERVER_PORT_TYPE_NAME, equalTo("vs1.20000"), Schema.STRING),
+                    hasColumn(COL_SERVICE_GROUP_NAME, equalTo("vs1.20000"), Schema.STRING),
+                    hasColumn(COL_SERVICE_GROUP_TYPE, equalTo("TCP"), Schema.STRING),
+                    hasColumn(COL_SERVERS, equalTo(ImmutableSet.of()), Schema.set(Schema.STRING)),
+                    hasColumn(COL_SOURCE_NAT_POOL_NAME, nullValue(), Schema.STRING)),
+                allOf(
+                    hasColumn(COL_NODE, equalTo(new Node(hostname1)), Schema.NODE),
+                    hasColumn(COL_VIRTUAL_SERVER_NAME, equalTo("vs2NoSG"), Schema.STRING),
+                    hasColumn(COL_VIRTUAL_SERVER_IP, equalTo(Ip.parse("10.10.10.2")), Schema.IP),
+                    hasColumn(COL_VIRTUAL_SERVER_PORT, equalTo(443), Schema.INTEGER),
+                    hasColumn(COL_VIRTUAL_SERVER_TYPE, equalTo("TCP"), Schema.STRING),
+                    hasColumn(COL_VIRTUAL_SERVER_PORT_TYPE_NAME, nullValue(), Schema.STRING),
+                    hasColumn(COL_SERVICE_GROUP_NAME, nullValue(), Schema.STRING),
+                    hasColumn(COL_SERVICE_GROUP_TYPE, nullValue(), Schema.STRING),
+                    hasColumn(COL_SERVERS, equalTo(ImmutableSet.of()), Schema.set(Schema.STRING)),
+                    hasColumn(COL_SOURCE_NAT_POOL_NAME, nullValue(), Schema.STRING)))));
   }
 }

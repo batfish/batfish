@@ -43,6 +43,7 @@ public class A10VirtualServerConfigurationAnswerer extends Answerer {
   public static final String COL_SERVICE_GROUP_NAME = "Service_Group_Name";
   public static final String COL_SERVICE_GROUP_TYPE = "Service_Group_Type";
   public static final String COL_SERVERS = "Servers";
+  public static final String COL_SOURCE_NAT_POOL_NAME = "Source_NAT_Pool_Name";
 
   /**
    * Creates {@link ColumnMetadata}s that the answer should have.
@@ -76,6 +77,9 @@ public class A10VirtualServerConfigurationAnswerer extends Answerer {
             new ColumnMetadata(
                 COL_SERVICE_GROUP_TYPE, Schema.STRING, "Service Group Type", false, true))
         .add(new ColumnMetadata(COL_SERVERS, Schema.set(Schema.STRING), "Servers", false, true))
+        .add(
+            new ColumnMetadata(
+                COL_SOURCE_NAT_POOL_NAME, Schema.STRING, "Source NAT Pool Name", false, true))
         .build();
   }
 
@@ -133,6 +137,7 @@ public class A10VirtualServerConfigurationAnswerer extends Answerer {
                   serviceGroupName,
                   serviceGroup == null ? null : serviceGroup.getType(),
                   servers,
+                  virtualServerPort.getSourceNat(),
                   columnMetadata));
         }
       }
@@ -159,6 +164,7 @@ public class A10VirtualServerConfigurationAnswerer extends Answerer {
       @Nullable String serviceGroupName,
       @Nullable ServerPort.Type serviceGroupType,
       Set<String> servers,
+      String sourceNatPoolName,
       Map<String, ColumnMetadata> columnMetadata) {
     return Row.builder(columnMetadata)
         .put(COL_NODE, node)
@@ -170,6 +176,7 @@ public class A10VirtualServerConfigurationAnswerer extends Answerer {
         .put(COL_SERVICE_GROUP_NAME, serviceGroupName)
         .put(COL_SERVICE_GROUP_TYPE, serviceGroupType)
         .put(COL_SERVERS, servers)
+        .put(COL_SOURCE_NAT_POOL_NAME, sourceNatPoolName)
         .build();
   }
 
