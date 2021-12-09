@@ -818,32 +818,59 @@ public final class VxlanTopologyUtilsTest {
     Configuration c2 = new Configuration("c2", ConfigurationFormat.CISCO_NX);
     c2.setDefaultCrossZoneAction(LineAction.PERMIT);
     c2.setDefaultInboundAction(LineAction.PERMIT);
+    Vrf default1 = Vrf.builder().setOwner(c1).setName(DEFAULT_VRF_NAME).build();
+    Vrf default2 = Vrf.builder().setOwner(c2).setName(DEFAULT_VRF_NAME).build();
     Vrf v1 = Vrf.builder().setOwner(c1).setName("v1").build();
     Vrf v2 = Vrf.builder().setOwner(c2).setName("v2").build();
     Ip sourceAddress1 = Ip.parse("10.0.0.1");
     Ip sourceAddress2 = Ip.parse("10.0.0.2");
-    int vni = 1000;
+
+    // Add layer-2 VNIs, which should not result in layer-3 edges
+    int l2Vni = 500;
+    Layer2Vni.Builder l2b =
+        Layer2Vni.builder()
+            .setBumTransportIps(ImmutableSet.of())
+            .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
+            .setSrcVrf(DEFAULT_VRF_NAME)
+            .setUdpPort(5)
+            .setVlan(500)
+            .setVni(l2Vni);
+    default1.addLayer2Vni(l2b.setSourceAddress(sourceAddress1).build());
+    default2.addLayer2Vni(l2b.setSourceAddress(sourceAddress2).build());
+
+    // Add layer-3 VNIs, which should result in layer-3 edges
+    int l3Vni = 1000;
     Layer3Vni.Builder l3b =
         Layer3Vni.builder()
             .setBumTransportIps(ImmutableSet.of())
             .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
             .setSrcVrf(DEFAULT_VRF_NAME)
-            .setUdpPort(5);
-    v1.addLayer3Vni(l3b.setVni(vni).setSourceAddress(sourceAddress1).build());
-    v2.addLayer3Vni(l3b.setVni(vni).setSourceAddress(sourceAddress2).build());
+            .setUdpPort(5)
+            .setVni(l3Vni);
+    v1.addLayer3Vni(l3b.setSourceAddress(sourceAddress1).build());
+    v2.addLayer3Vni(l3b.setSourceAddress(sourceAddress2).build());
+
     addTenantVniInterfaces(c1);
     addTenantVniInterfaces(c2);
 
     MutableGraph<VxlanNode> graph = GraphBuilder.undirected().allowsSelfLoops(false).build();
-    VxlanNode node1 = new VxlanNode(c1.getHostname(), vni);
-    VxlanNode node2 = new VxlanNode(c2.getHostname(), vni);
-    graph.addNode(node1);
-    graph.addNode(node2);
-    graph.putEdge(node1, node2);
+    VxlanNode l2Node1 = new VxlanNode(c1.getHostname(), l2Vni);
+    VxlanNode l2Node2 = new VxlanNode(c2.getHostname(), l2Vni);
+    VxlanNode l3Node1 = new VxlanNode(c1.getHostname(), l3Vni);
+    VxlanNode l3Node2 = new VxlanNode(c2.getHostname(), l3Vni);
+    // Add VXLAN edges for layer-2 VNIs
+    graph.addNode(l2Node1);
+    graph.addNode(l2Node2);
+    graph.putEdge(l2Node1, l2Node2);
+    // Add VXLAN edges for layer-3 VNIs
+    graph.addNode(l3Node1);
+    graph.addNode(l3Node2);
+    graph.putEdge(l3Node1, l3Node2);
     VxlanTopology vxlanTopology = new VxlanTopology(graph);
 
-    String ifaceName = generatedTenantVniInterfaceName(vni);
+    String ifaceName = generatedTenantVniInterfaceName(l3Vni);
 
+    // Should see edges for layer-3 VNI interfaces, and nothing else
     assertThat(
         vxlanTopologyToLayer3Edges(
             vxlanTopology, ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2)),
