@@ -98,7 +98,7 @@ public class TracerouteAnswererHelperTest {
     TracerouteAnswererHelper helper =
         new TracerouteAnswererHelper(
             PacketHeaderConstraints.builder().setDstIp("2.2.2.2").build(),
-            "enter(node1)",
+            "@enter(node1)",
             _batfish.specifierContext(_batfish.getSnapshot()));
     thrown.expect(IllegalArgumentException.class);
     helper.getFlows();
@@ -109,7 +109,7 @@ public class TracerouteAnswererHelperTest {
     TracerouteAnswererHelper helper =
         new TracerouteAnswererHelper(
             PacketHeaderConstraints.builder().setSrcIp("1.1.1.0").setDstIp("2.2.2.2").build(),
-            "enter(node1)",
+            "@enter(node1)",
             _batfish.specifierContext(_batfish.getSnapshot()));
 
     Set<Flow> flows = helper.getFlows();
