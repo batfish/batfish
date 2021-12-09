@@ -11,7 +11,7 @@ public enum ParseStatus {
   EMPTY,
   /** Batfish has encountered an unrecoverable error during parsing */
   FAILED,
-  /** File was explicitly ignored by the user */
+  /** File was explicitly ignore by the user */
   IGNORED,
   /** File is part of an unused overlay configuration */
   ORPHANED,
@@ -19,6 +19,8 @@ public enum ParseStatus {
   PARTIALLY_UNRECOGNIZED,
   /** File was fully parsed */
   PASSED,
+  /** File was packaged in an unexpected manner in the snapshot */
+  UNEXPECTED_PACKAGING,
   /** Batfish could not detect the file format */
   UNKNOWN,
   /** Batfish does not support the format/vendor config in the file */
@@ -53,6 +55,8 @@ public enum ParseStatus {
         return "File contained at least one unrecognized line";
       case PASSED:
         return "File parsed successfully";
+      case UNEXPECTED_PACKAGING:
+        return "File was not correctly packaged in the snapshot";
       case UNKNOWN:
         return "File format is unknown";
       case UNSUPPORTED:

@@ -1,0 +1,10 @@
+{
+  "DEVICE_METADATA": {
+    "localhost": {
+      "hostname": "basic"
+    }
+  },
+  "INTERFACE": {
+    "Ethernet0|1.1.1.1/24": {}
+  }
+}

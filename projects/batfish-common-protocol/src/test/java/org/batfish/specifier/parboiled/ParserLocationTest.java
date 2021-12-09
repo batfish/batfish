@@ -21,6 +21,7 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import org.batfish.common.CompletionMetadata;
+import org.batfish.common.util.isp.IspModelingUtils;
 import org.batfish.datamodel.InterfaceType;
 import org.junit.Rule;
 import org.junit.Test;
@@ -182,31 +183,27 @@ public class ParserLocationTest {
     assertThat(ParserUtils.getAst(getRunner().run("@enter(node1)")), equalTo(expectedAst));
     assertThat(ParserUtils.getAst(getRunner().run(" @enter ( node1 ) ")), equalTo(expectedAst));
     assertThat(ParserUtils.getAst(getRunner().run("@EnTER(node1)")), equalTo(expectedAst));
-
-    // old style
-    assertThat(ParserUtils.getAst(getRunner().run("enter(node1)")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" EnTer ( node1 ) ")), equalTo(expectedAst));
   }
 
+  /** Test of the special internet query and then also interfaces on the internet node. */
   @Test
-  public void testParseLocationEnterDeprecatedNodeInterface() {
+  public void testParseLocationInternet() {
     assertThat(
-        ParserUtils.getAst(getRunner().run("enter(firewall[GigabitEthernet0/0/2])")),
+        ParserUtils.getAst(getRunner().run("internet")), equalTo(InternetLocationAstNode.INSTANCE));
+    assertThat(
+        ParserUtils.getAst(getRunner().run("internet[To-Isp123]")),
+        equalTo(
+            new InterfaceWithNodeInterfaceAstNode(
+                new NameNodeAstNode(IspModelingUtils.INTERNET_HOST_NAME),
+                new NameInterfaceAstNode("To-Isp123"))));
+    assertThat(
+        ParserUtils.getAst(getRunner().run("@enter(internet[To-Isp123])")),
         equalTo(
             new EnterLocationAstNode(
                 InterfaceLocationAstNode.createFromInterfaceWithNode(
                     new InterfaceWithNodeInterfaceAstNode(
-                        new NameNodeAstNode("firewall"),
-                        new NameInterfaceAstNode("GigabitEthernet0/0/2"))))));
-
-    assertThat(
-        ParserUtils.getAst(getRunner().run("enter(firewall.*[GigabitEthernet0/0/2])")),
-        equalTo(
-            new EnterLocationAstNode(
-                InterfaceLocationAstNode.createFromInterfaceWithNode(
-                    new InterfaceWithNodeInterfaceAstNode(
-                        new NameRegexNodeAstNode("firewall.*"),
-                        new NameInterfaceAstNode("GigabitEthernet0/0/2"))))));
+                        new NameNodeAstNode(IspModelingUtils.INTERNET_HOST_NAME),
+                        new NameInterfaceAstNode("To-Isp123"))))));
   }
 
   @Test
@@ -216,28 +213,6 @@ public class ParserLocationTest {
         InterfaceLocationAstNode.createFromInterfaceWithNode(
             new NameNodeAstNode("node"),
             new TypeInterfaceAstNode(InterfaceType.PHYSICAL.toString()));
-
-    assertThat(ParserUtils.getAst(getRunner().run(input)), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" " + input + " ")), equalTo(expectedAst));
-  }
-
-  @Test
-  public void testParseLocationInterfaceDeprecated() {
-    String input = "[eth0/1]";
-    InterfaceLocationAstNode expectedAst =
-        InterfaceLocationAstNode.createFromInterface(new NameInterfaceAstNode("eth0/1"));
-
-    assertThat(ParserUtils.getAst(getRunner().run(input)), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" " + input + " ")), equalTo(expectedAst));
-  }
-
-  @Test
-  public void testParseLocationInterfaceDeprecatedInsideFunc() {
-    String input = "enter([ref.interfacegroup(sea, host-iface)])";
-    LocationAstNode expectedAst =
-        new EnterLocationAstNode(
-            InterfaceLocationAstNode.createFromInterface(
-                new InterfaceGroupInterfaceAstNode("sea", "host-iface")));
 
     assertThat(ParserUtils.getAst(getRunner().run(input)), equalTo(expectedAst));
     assertThat(ParserUtils.getAst(getRunner().run(" " + input + " ")), equalTo(expectedAst));

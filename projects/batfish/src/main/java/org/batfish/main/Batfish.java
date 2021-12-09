@@ -2667,7 +2667,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
   /**
    * Parses configuration files for networking devices from the uploaded user data and produces
    * {@link VendorConfiguration vendor-specific configurations} serialized to the given output path.
-   * Returns {@code true} iff at least one network configuration was found.
+   *
+   * <p>Returns {@code true} iff at least one valid (node-generating) network configuration was
+   * found.
    *
    * <p>This function should be named better, but it's called by the {@link
    * #serializeVendorConfigs(NetworkSnapshot)}, so leaving as-is for now.
@@ -2680,7 +2682,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       // Not able to cache with overlays.
       return oldSerializeNetworkConfigs(snapshot, answerElement, overlayHostConfigurations);
     }
-    boolean found = false;
     _logger.info("\n*** READING DEVICE CONFIGURATION FILES ***\n");
 
     List<ParseVendorConfigurationResult> parseResults;
@@ -2688,18 +2689,20 @@ public class Batfish extends PluginConsumer implements IBatfish {
     try (Scope scope = GlobalTracer.get().scopeManager().activate(parseNetworkConfigsSpan)) {
       assert scope != null; // avoid unused warning
 
-      List<ParseVendorConfigurationJob> jobs;
+      List<ParseVendorConfigurationJob> jobs = new LinkedList<>();
       Span makeJobsSpan = GlobalTracer.get().buildSpan("Read files and make jobs").start();
       try (Scope makeJobsScope = GlobalTracer.get().scopeManager().activate(makeJobsSpan)) {
         assert makeJobsScope != null; // avoid unused warning
-        List<Map<String, String>> keyedConfigTexts = new LinkedList<>();
-
         // add devices in the 'configs' folder
         try (Stream<String> keys = _storage.listInputNetworkConfigurationsKeys(snapshot)) {
-          keyedConfigTexts.addAll(
-              readAllInputObjects(keys, snapshot).entrySet().stream()
-                  .map(entry -> ImmutableMap.of(entry.getKey(), entry.getValue()))
-                  .collect(ImmutableList.toImmutableList()));
+          readAllInputObjects(keys, snapshot).entrySet().stream()
+              .map(
+                  entry ->
+                      makeParseVendorConfigurationJob(
+                          snapshot,
+                          ImmutableMap.of(entry.getKey(), entry.getValue()),
+                          ConfigurationFormat.UNKNOWN))
+              .forEach(jobs::add);
         } catch (IOException e) {
           throw new UncheckedIOException(e);
         }
@@ -2707,30 +2710,20 @@ public class Batfish extends PluginConsumer implements IBatfish {
         // add devices in the sonic_configs folder
         try (Stream<String> keys = _storage.listInputSonicConfigsKeys(snapshot)) {
           Map<String, String> sonicObjects = readAllInputObjects(keys, snapshot);
-          keyedConfigTexts.addAll(
-              makeSonicFilePairs(sonicObjects.keySet(), answerElement).parallelStream()
-                  .map(
-                      files ->
+          makeSonicFilePairs(sonicObjects.keySet(), answerElement).parallelStream()
+              .map(
+                  files ->
+                      makeParseVendorConfigurationJob(
+                          snapshot,
                           files.stream()
                               .collect(
                                   ImmutableMap.toImmutableMap(
-                                      Function.identity(), sonicObjects::get)))
-                  .collect(ImmutableList.toImmutableList()));
+                                      Function.identity(), sonicObjects::get)),
+                          ConfigurationFormat.SONIC))
+              .forEach(jobs::add);
         } catch (IOException e) {
           throw new UncheckedIOException(e);
         }
-
-        if (!keyedConfigTexts.isEmpty()) {
-          found = true;
-        }
-
-        jobs =
-            keyedConfigTexts.stream()
-                .map(
-                    jobFileMap ->
-                        makeParseVendorConfigurationJob(
-                            snapshot, jobFileMap, ConfigurationFormat.UNKNOWN))
-                .collect(Collectors.toList()); // should not be immutable because we shuffle below
 
         // Java parallel streams are not self-balancing in large networks, so shuffle the jobs.
         Collections.shuffle(jobs);
@@ -2807,7 +2800,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     } finally {
       serializeNetworkConfigsSpan.finish();
     }
-    return found;
+    // checking vendorConfigurations is a quick, common-case check before creating streams
+    return !vendorConfigurations.isEmpty() || networkConfigsExist(snapshot);
   }
 
   /** Returns {@code true} iff at least one network configuration was found. */
@@ -2815,46 +2809,45 @@ public class Batfish extends PluginConsumer implements IBatfish {
       NetworkSnapshot snapshot,
       ParseVendorConfigurationAnswerElement answerElement,
       SortedMap<String, VendorConfiguration> overlayHostConfigurations) {
-    boolean found = false;
     _logger.info("\n*** READING DEVICE CONFIGURATION FILES ***\n");
 
-    Map<String, VendorConfiguration> vendorConfigurations;
+    Map<String, VendorConfiguration> vendorConfigurations = new HashMap<>();
     Span parseNetworkConfigsSpan = GlobalTracer.get().buildSpan("Parse network configs").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(parseNetworkConfigsSpan)) {
       assert scope != null; // avoid unused warning
-      List<Map<String, String>> keyedConfigTexts = new LinkedList<>();
 
       // consider what is in the configs folder
       try (Stream<String> keys = _storage.listInputNetworkConfigurationsKeys(snapshot)) {
-        keyedConfigTexts.addAll(
-            readAllInputObjects(keys, snapshot).entrySet().stream()
-                .map(e -> ImmutableMap.of(e.getKey(), e.getValue()))
-                .collect(ImmutableList.toImmutableList()));
+        vendorConfigurations.putAll(
+            parseVendorConfigurations(
+                snapshot,
+                readAllInputObjects(keys, snapshot).entrySet().stream()
+                    .map(e -> ImmutableMap.of(e.getKey(), e.getValue()))
+                    .collect(ImmutableList.toImmutableList()),
+                answerElement,
+                ConfigurationFormat.UNKNOWN));
       } catch (IOException e) {
         throw new UncheckedIOException(e);
       }
       // consider what is in the sonic_configs folder
       try (Stream<String> keys = _storage.listInputSonicConfigsKeys(snapshot)) {
         Map<String, String> sonicObjects = readAllInputObjects(keys, snapshot);
-        keyedConfigTexts.addAll(
-            makeSonicFilePairs(sonicObjects.keySet(), answerElement).stream()
-                .map(
-                    files ->
-                        files.stream()
-                            .collect(
-                                ImmutableMap.toImmutableMap(
-                                    Function.identity(), sonicObjects::get)))
-                .collect(ImmutableList.toImmutableList()));
+        vendorConfigurations.putAll(
+            parseVendorConfigurations(
+                snapshot,
+                makeSonicFilePairs(sonicObjects.keySet(), answerElement).stream()
+                    .map(
+                        files ->
+                            files.stream()
+                                .collect(
+                                    ImmutableMap.toImmutableMap(
+                                        Function.identity(), sonicObjects::get)))
+                    .collect(ImmutableList.toImmutableList()),
+                answerElement,
+                ConfigurationFormat.SONIC));
       } catch (IOException e) {
         throw new UncheckedIOException(e);
       }
-
-      if (!keyedConfigTexts.isEmpty()) {
-        found = true;
-      }
-      vendorConfigurations =
-          parseVendorConfigurations(
-              snapshot, keyedConfigTexts, answerElement, ConfigurationFormat.UNKNOWN);
     } finally {
       parseNetworkConfigsSpan.finish();
     }
@@ -2904,7 +2897,27 @@ public class Batfish extends PluginConsumer implements IBatfish {
     } finally {
       serializeNetworkConfigsSpan.finish();
     }
-    return found;
+    // checking vendorConfigurations is a quick, common-case check before creating streams
+    return !vendorConfigurations.isEmpty() || networkConfigsExist(snapshot);
+  }
+
+  /** Returns if any network configuration files exist under configs or sonic_configs folders. */
+  private boolean networkConfigsExist(NetworkSnapshot snapshot) {
+    try (Stream<String> keys = _storage.listInputNetworkConfigurationsKeys(snapshot)) {
+      if (keys.findAny().isPresent()) {
+        return true;
+      }
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+    try (Stream<String> keys = _storage.listInputSonicConfigsKeys(snapshot)) {
+      if (keys.findAny().isPresent()) {
+        return true;
+      }
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+    return false;
   }
 
   /**
@@ -2928,7 +2941,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
             new Warning(
                 "Unexpected packaging: SONiC files must be in a subdirectory under sonic_configs.",
                 "sonic"));
-        pvcae.getParseStatus().put(filename, ParseStatus.IGNORED);
+        pvcae.getParseStatus().put(filename, ParseStatus.UNEXPECTED_PACKAGING);
         continue;
       }
       String dir = path.getParent().toString();
@@ -2946,7 +2959,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 "Unexpected packaging: File appears by itself; SONiC files must have their"
                     + " counterpart in the same directory.",
                 "sonic"));
-        pvcae.getParseStatus().put(filename, ParseStatus.IGNORED);
+        pvcae.getParseStatus().put(filename, ParseStatus.UNEXPECTED_PACKAGING);
         continue;
       }
       if (files.size() > 2) {
@@ -2959,7 +2972,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                           + " files must have only their counterpart in the same directory.",
                       files.size() - 1),
                   "sonic"));
-          pvcae.getParseStatus().put(filename, ParseStatus.IGNORED);
+          pvcae.getParseStatus().put(filename, ParseStatus.UNEXPECTED_PACKAGING);
         }
         continue;
       }

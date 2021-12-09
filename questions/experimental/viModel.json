@@ -1,6 +1,7 @@
 {
     "class": "org.batfish.question.VIModelQuestionPlugin$VIModelQuestion",
     "differential": false,
+    "nodes": "${nodes}",
     "instance": {
         "description": "Lists configuration attributes of nodes and edges in the network.",
         "instanceName": "viModel",
@@ -8,6 +9,13 @@
         "tags": [
             "configuration"
         ],
-        "variables": {}
+        "variables": {
+            "nodes": {
+                "description": "Include nodes matching this name or regex",
+                "type": "nodeSpec",
+                "optional": true,
+                "displayName": "Nodes"
+            }
+        }
     }
 }

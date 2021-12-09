@@ -1,9 +1,11 @@
 package org.batfish.job;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.addTenantVniInterfaces;
 import static org.batfish.vendor.ConversionContext.EMPTY_CONVERSION_CONTEXT;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
@@ -14,6 +16,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
@@ -399,6 +402,8 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
    *
    * <p>Sanity checks such as asserting that required properties hold.
    *
+   * <p>Generation of helper structures such as tenant vrf l3vni interfaces
+   *
    * <p>Finishing touches such as converting structures to their immutable forms.
    */
   @VisibleForTesting
@@ -412,6 +417,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
       throw new BatfishException(
           "Implementation error: missing default inbound action for host: '" + hostname + "'");
     }
+    addTenantVniInterfaces(c);
     c.simplifyRoutingPolicies();
     c.computeRoutingPolicySources(w);
     verifyInterfaces(c, w);
@@ -560,7 +566,11 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     try {
       VendorConfiguration vendorConfiguration = (VendorConfiguration) _configObject;
       Warnings warnings = Batfish.buildWarnings(_settings);
-      String filename = vendorConfiguration.getFilename();
+      List<String> filenames =
+          ImmutableList.<String>builder()
+              .add(vendorConfiguration.getFilename())
+              .addAll(vendorConfiguration.getSecondaryFilenames())
+              .build();
       vendorConfiguration.setWarnings(warnings);
       vendorConfiguration.setAnswerElement(answerElement);
       vendorConfiguration.setConversionContext(_conversionContext);
@@ -590,7 +600,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
         String hostname = configuration.getHostname();
         configurations.put(hostname, configuration);
         warningsByHost.put(hostname, warnings);
-        fileMap.put(filename, hostname);
+        filenames.forEach(filename -> fileMap.put(filename, hostname));
       }
       _logger.info(" ...OK\n");
     } catch (Exception e) {

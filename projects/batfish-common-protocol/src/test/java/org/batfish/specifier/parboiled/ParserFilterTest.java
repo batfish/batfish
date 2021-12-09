@@ -129,10 +129,6 @@ public class ParserFilterTest {
     assertThat(ParserUtils.getAst(getRunner().run("@in(eth0)")), equalTo(expectedAst));
     assertThat(ParserUtils.getAst(getRunner().run(" @in ( eth0 ) ")), equalTo(expectedAst));
     assertThat(ParserUtils.getAst(getRunner().run("@IN(eth0)")), equalTo(expectedAst));
-
-    // old style
-    assertThat(ParserUtils.getAst(getRunner().run("inFilterOf(eth0)")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" InFilterOF ( eth0 ) ")), equalTo(expectedAst));
   }
 
   @Test
@@ -142,10 +138,6 @@ public class ParserFilterTest {
     assertThat(ParserUtils.getAst(getRunner().run("@out(eth0)")), equalTo(expectedAst));
     assertThat(ParserUtils.getAst(getRunner().run(" @out ( eth0 ) ")), equalTo(expectedAst));
     assertThat(ParserUtils.getAst(getRunner().run("@OUT(eth0)")), equalTo(expectedAst));
-
-    // old style
-    assertThat(ParserUtils.getAst(getRunner().run("outFilterOf(eth0)")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" OUTFilterOf ( eth0 ) ")), equalTo(expectedAst));
   }
 
   @Test

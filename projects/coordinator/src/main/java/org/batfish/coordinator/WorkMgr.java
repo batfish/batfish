@@ -1411,22 +1411,20 @@ public class WorkMgr extends AbstractCoordinator {
    *     dir, or a hosts dir
    */
   private static void validateSnapshotDir(Path subDir) {
-    // Confirm there is a configs, hosts, or AWS configs dir
-    Path hostConfigsPath = subDir.resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR);
-    Path networkConfigsPath = subDir.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR);
-    Path awsConfigsPath = subDir.resolve(BfConsts.RELPATH_AWS_CONFIGS_DIR);
-    if (!Files.exists(hostConfigsPath)
-        && !Files.exists(networkConfigsPath)
-        && !Files.exists(awsConfigsPath)) {
+    // Confirm that at least one of the config subfolders is present
+    List<Path> configPaths =
+        ImmutableList.of(
+            subDir.resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR),
+            subDir.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR),
+            subDir.resolve(BfConsts.RELPATH_AWS_CONFIGS_DIR),
+            subDir.resolve(BfConsts.RELPATH_SONIC_CONFIGS_DIR));
+    if (configPaths.stream().noneMatch(Files::exists)) {
       Path srcDir = subDir.getParent();
       throw new BatfishException(
           String.format(
-              "Unexpected packaging of snapshot. No networks configs dir '%s', AWS configs dir"
-                  + " '%s', or hosts dir '%s' found. See %s for more details on how to package"
-                  + " your snapshot for analysis.",
-              srcDir.relativize(networkConfigsPath),
-              srcDir.relativize(awsConfigsPath),
-              srcDir.relativize(hostConfigsPath),
+              "Unexpected packaging of snapshot. At least one of these directories must exist: %s. "
+                  + "See %s for instructions on how to package your snapshot for analysis.",
+              configPaths.stream().map(srcDir::relativize).collect(ImmutableList.toImmutableList()),
               SNAPSHOT_PACKAGING_INSTRUCTIONS_URL));
     }
   }

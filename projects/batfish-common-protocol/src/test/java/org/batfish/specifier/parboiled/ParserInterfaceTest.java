@@ -180,11 +180,6 @@ public class ParserInterfaceTest {
     assertThat(
         ParserUtils.getAst(getRunner().run(" @connectedTo ( 1.1.1.1 ) ")), equalTo(expectedAst));
     assertThat(ParserUtils.getAst(getRunner().run("@COnnECTEDTO(1.1.1.1)")), equalTo(expectedAst));
-
-    // old style
-    assertThat(ParserUtils.getAst(getRunner().run("connectedTo(1.1.1.1)")), equalTo(expectedAst));
-    assertThat(
-        ParserUtils.getAst(getRunner().run(" connectedTo ( 1.1.1.1 ) ")), equalTo(expectedAst));
   }
 
   @Test
@@ -195,12 +190,6 @@ public class ParserInterfaceTest {
     assertThat(
         ParserUtils.getAst(getRunner().run(" @interfacegroup ( a , b ) ")), equalTo(expectedAst));
     assertThat(ParserUtils.getAst(getRunner().run("@InterfaceGrouP(a , b)")), equalTo(expectedAst));
-
-    // old style
-    assertThat(
-        ParserUtils.getAst(getRunner().run("ref.interfacegroup(a, b)")), equalTo(expectedAst));
-    assertThat(
-        ParserUtils.getAst(getRunner().run(" ref.interfacegroup (a, b ) ")), equalTo(expectedAst));
   }
 
   @Test
@@ -257,10 +246,6 @@ public class ParserInterfaceTest {
         ParserUtils.getAst(getRunner().run(" @interfaceType ( physical ) ")), equalTo(expectedAst));
     assertThat(
         ParserUtils.getAst(getRunner().run("@interFAcetype(PHYsical)")), equalTo(expectedAst));
-
-    // old style
-    assertThat(ParserUtils.getAst(getRunner().run("type(physical)")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" type ( physical ) ")), equalTo(expectedAst));
   }
 
   @Test
@@ -270,10 +255,6 @@ public class ParserInterfaceTest {
     assertThat(ParserUtils.getAst(getRunner().run("@vrf(vrf-name)")), equalTo(expectedAst));
     assertThat(ParserUtils.getAst(getRunner().run(" @vrf ( vrf-name ) ")), equalTo(expectedAst));
     assertThat(ParserUtils.getAst(getRunner().run("@VrF(vrf-name)")), equalTo(expectedAst));
-
-    // old style
-    assertThat(ParserUtils.getAst(getRunner().run("vrf(vrf-name)")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" vrf ( vrf-name ) ")), equalTo(expectedAst));
   }
 
   @Test
@@ -283,10 +264,6 @@ public class ParserInterfaceTest {
     assertThat(ParserUtils.getAst(getRunner().run("@zone(zone-name)")), equalTo(expectedAst));
     assertThat(ParserUtils.getAst(getRunner().run(" @zone ( zone-name ) ")), equalTo(expectedAst));
     assertThat(ParserUtils.getAst(getRunner().run("@ZoNe(zone-name)")), equalTo(expectedAst));
-
-    // old style
-    assertThat(ParserUtils.getAst(getRunner().run("zone(zone-name)")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" zone ( zone-name ) ")), equalTo(expectedAst));
   }
 
   @Test

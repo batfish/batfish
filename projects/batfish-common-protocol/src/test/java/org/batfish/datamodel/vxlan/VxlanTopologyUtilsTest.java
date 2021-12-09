@@ -1,7 +1,10 @@
 package org.batfish.datamodel.vxlan;
 
 import static com.google.common.collect.ImmutableSortedSet.of;
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.Names.generatedTenantVniInterfaceName;
 import static org.batfish.datamodel.vxlan.Layer2Vni.testBuilder;
+import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.addTenantVniInterfaces;
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.addVniEdge;
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.addVniEdges;
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.buildVxlanNode;
@@ -12,6 +15,8 @@ import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.prunedVxlanTopology
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.vxlanFlowDelivered;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -44,6 +49,7 @@ import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Vrf;
@@ -185,7 +191,7 @@ public final class VxlanTopologyUtilsTest {
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     _c1 = cb.setHostname(NODE1).build();
     _c2 = cb.setHostname(NODE2).build();
-    Vrf.Builder vb = nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
+    Vrf.Builder vb = nf.vrfBuilder().setName(DEFAULT_VRF_NAME);
     _v1 = vb.setOwner(_c1).build();
     _v2 = vb.setOwner(_c2).build();
   }
@@ -767,5 +773,37 @@ public final class VxlanTopologyUtilsTest {
             new TestTracerouteEngine(
                 ImmutableMap.of(
                     NODE1, new TestTracerouteEngineResult("wrong place", true, true)))));
+  }
+
+  @Test
+  public void testAddTenantVniInterfaces() {
+    Configuration c = new Configuration("c", ConfigurationFormat.CISCO_NX);
+    c.setDefaultCrossZoneAction(LineAction.PERMIT);
+    c.setDefaultInboundAction(LineAction.PERMIT);
+    Vrf.Builder vb = Vrf.builder().setOwner(c);
+    Vrf v1 = vb.setName("v1").build();
+    Vrf v2 = vb.setName("v2").build();
+    Ip sourceAddress = Ip.parse("10.0.0.1");
+    Layer3Vni.Builder l3b =
+        Layer3Vni.builder()
+            .setBumTransportIps(ImmutableSet.of())
+            .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
+            .setSrcVrf(DEFAULT_VRF_NAME)
+            .setUdpPort(5);
+    v1.addLayer3Vni(l3b.setVni(1).setSourceAddress(sourceAddress).build());
+    v2.addLayer3Vni(l3b.setVni(2).setSourceAddress(null).build());
+    String vni1IfaceName = generatedTenantVniInterfaceName(1);
+    String vni2IfaceName = generatedTenantVniInterfaceName(2);
+    addTenantVniInterfaces(c);
+
+    // v1 vni 1
+    assertThat(c.getAllInterfaces(v1.getName()), hasKey(vni1IfaceName));
+
+    Interface vni1Iface = c.getAllInterfaces().get(vni1IfaceName);
+
+    assertThat(vni1Iface.getAdditionalArpIps(), equalTo(sourceAddress.toIpSpace()));
+
+    // v2 vni 2
+    assertThat(c.getAllInterfaces(), not(hasKey(vni2IfaceName)));
   }
 }
