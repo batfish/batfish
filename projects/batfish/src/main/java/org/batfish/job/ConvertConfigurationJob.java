@@ -1,6 +1,7 @@
 package org.batfish.job;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.addTenantVniInterfaces;
 import static org.batfish.vendor.ConversionContext.EMPTY_CONVERSION_CONTEXT;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -401,6 +402,8 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
    *
    * <p>Sanity checks such as asserting that required properties hold.
    *
+   * <p>Generation of helper structures such as tenant vrf l3vni interfaces
+   *
    * <p>Finishing touches such as converting structures to their immutable forms.
    */
   @VisibleForTesting
@@ -414,6 +417,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
       throw new BatfishException(
           "Implementation error: missing default inbound action for host: '" + hostname + "'");
     }
+    addTenantVniInterfaces(c);
     c.simplifyRoutingPolicies();
     c.computeRoutingPolicySources(w);
     verifyInterfaces(c, w);

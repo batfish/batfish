@@ -1,5 +1,8 @@
 package org.batfish.datamodel.vxlan;
 
+import static org.batfish.datamodel.InterfaceType.TUNNEL;
+import static org.batfish.datamodel.Names.generatedTenantVniInterfaceName;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableList;
@@ -22,10 +25,13 @@ import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.NetworkConfigurations;
+import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.TraceAndReverseFlow;
@@ -250,6 +256,36 @@ public final class VxlanTopologyUtils {
                   && hops.get(hops.size() - 1).getNode().getName().equals(receiver)
                   && trace.getDisposition() == FlowDisposition.ACCEPTED;
             });
+  }
+
+  // TODO: does this value matter?
+  private static final Ip TENANT_VNI_INTERFACE_LINK_LOCAL_ADDRESS = Ip.parse("169.254.0.1");
+
+  /** Add an interface for each l3vni to its tenant VRF to represent endpoints of a VXLAN tunnel. */
+  @VisibleForTesting
+  public static void addTenantVniInterfaces(Configuration c) {
+    for (Vrf vrf : c.getVrfs().values()) {
+      vrf.getLayer3Vnis()
+          .forEach(
+              (vni, l3vni) -> {
+                if (l3vni.getSourceAddress() == null) {
+                  // defective layer-3 VNI, so don't generate an interface
+                  return;
+                }
+                // TODO: support sessions
+                Interface.builder()
+                    .setName(generatedTenantVniInterfaceName(vni))
+                    .setOwner(c)
+                    .setVrf(vrf)
+                    .setAdditionalArpIps(l3vni.getSourceAddress().toIpSpace())
+                    .setAddresses(LinkLocalAddress.of(TENANT_VNI_INTERFACE_LINK_LOCAL_ADDRESS))
+                    .setActive(true)
+                    .setProxyArp(false)
+                    .setType(TUNNEL)
+                    .setSwitchportMode(SwitchportMode.NONE)
+                    .build();
+              });
+    }
   }
 
   /** A unique identifier for a {@link Vrf} in a network */
