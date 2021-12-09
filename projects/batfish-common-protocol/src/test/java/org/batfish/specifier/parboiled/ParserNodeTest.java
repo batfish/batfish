@@ -115,10 +115,6 @@ public class ParserNodeTest {
     assertThat(ParserUtils.getAst(getRunner().run("@role(a, b)")), equalTo(expectedAst));
     assertThat(ParserUtils.getAst(getRunner().run(" @role ( a , b ) ")), equalTo(expectedAst));
     assertThat(ParserUtils.getAst(getRunner().run("@RoLe(a , b)")), equalTo(expectedAst));
-
-    // old style
-    assertThat(ParserUtils.getAst(getRunner().run("ref.noderole(a, b)")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" ref.noderoLE (a, b ) ")), equalTo(expectedAst));
   }
 
   @Test
