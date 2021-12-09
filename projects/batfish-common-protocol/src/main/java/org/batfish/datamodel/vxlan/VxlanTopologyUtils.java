@@ -19,20 +19,17 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.common.plugin.TracerouteEngine;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
-import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
-import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.NetworkConfigurations;
@@ -282,10 +279,7 @@ public final class VxlanTopologyUtils {
                     .setName(generatedTenantVniInterfaceName(vni))
                     .setOwner(c)
                     .setVrf(vrf)
-                    .setAdditionalArpIps(
-                        Optional.ofNullable(l3vni.getSourceAddress())
-                            .<IpSpace>map(Ip::toIpSpace)
-                            .orElse(EmptyIpSpace.INSTANCE))
+                    .setAdditionalArpIps(l3vni.getSourceAddress().toIpSpace())
                     .setAddresses(LinkLocalAddress.of(TENANT_VNI_INTERFACE_LINK_LOCAL_ADDRESS))
                     .setActive(true)
                     .setProxyArp(false)

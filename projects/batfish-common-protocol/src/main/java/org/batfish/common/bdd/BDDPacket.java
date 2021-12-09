@@ -6,6 +6,7 @@ import static org.batfish.common.bdd.BDDUtils.swapPairing;
 
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
+import com.google.errorprone.annotations.concurrent.LazyInit;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.List;
@@ -13,6 +14,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDPairing;
@@ -21,8 +23,8 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.bdd.BDDFlowConstraintGenerator.FlowPreference;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 
 /**
  * A collection of attributes describing an packet, represented using BDDs
@@ -96,7 +98,7 @@ public class BDDPacket {
   private final BDDPairing _swapSourceAndDestinationPairing;
   private final IpSpaceToBDD _dstIpSpaceToBDD;
   private final IpSpaceToBDD _srcIpSpaceToBDD;
-  private final @Nonnull BDD _saneFlow;
+  @LazyInit private @Nullable BDD _saneFlow;
 
   // Generating flow preference for representative flow picking
   private final Supplier<BDDFlowConstraintGenerator> _flowConstraintGeneratorSupplier =
@@ -170,13 +172,19 @@ public class BDDPacket {
 
     _dstIpSpaceToBDD = new MemoizedIpSpaceToBDD(_dstIp, ImmutableMap.of());
     _srcIpSpaceToBDD = new MemoizedIpSpaceToBDD(_srcIp, ImmutableMap.of());
-
-    _saneFlow = saneIpFlow();
   }
 
   public @Nonnull BDD getSaneFlowConstraint() {
+    BDD ret = _saneFlow;
+    if (ret == null) {
+      IpAccessListToBdd toBdd =
+          new IpAccessListToBddImpl(
+              this, BDDSourceManager.empty(this), ImmutableMap.of(), ImmutableMap.of());
+      ret = toBdd.convert(AclLineMatchExprs.VALID_FLOWS);
+      _saneFlow = ret;
+    }
     // Make a copy, just in case the caller does something silly like try to free it.
-    return _saneFlow.id();
+    return ret.id();
   }
 
   /*
@@ -248,7 +256,7 @@ public class BDDPacket {
    * @return A Flow.Builder for a representative of the set, if it's non-empty
    */
   public Optional<Flow.Builder> getFlow(BDD bdd, FlowPreference preference) {
-    BDD saneBDD = bdd.and(_saneFlow);
+    BDD saneBDD = bdd.and(getSaneFlowConstraint());
     if (saneBDD.isZero()) {
       return Optional.empty();
     }
@@ -272,7 +280,7 @@ public class BDDPacket {
    *     assignment.
    */
   public @Nonnull BDD getFlowBDD(BDD bdd, FlowPreference preference) {
-    BDD saneBDD = bdd.and(_saneFlow);
+    BDD saneBDD = bdd.and(getSaneFlowConstraint());
     if (saneBDD.isZero()) {
       return saneBDD;
     }
@@ -299,7 +307,7 @@ public class BDDPacket {
    *     correspond to valid L3 flows.
    */
   public @Nonnull Flow.Builder getRepresentativeFlow(BDD bdd) {
-    BDD saneBDD = bdd.and(_saneFlow);
+    BDD saneBDD = bdd.and(getSaneFlowConstraint());
     checkArgument(!saneBDD.isZero(), "The input set of flows does not contain any valid flows");
     return getFromFromAssignment(saneBDD.minAssignmentBits());
   }
@@ -471,24 +479,6 @@ public class BDDPacket {
         && _dscp.equals(other._dscp)
         && _ecn.equals(other._ecn)
         && _fragmentOffset.equals(other._fragmentOffset);
-  }
-
-  /**
-   * Returns a BDD representing known constraints on all sane IP flows. For example, all IP Packets
-   * are at least 20 bytes long, and all TCP packets are at least 40 bytes.
-   */
-  private BDD saneIpFlow() {
-    BDD ipPacketsAreAtLeast20Long = _packetLength.geq(20);
-    BDD validIcmp = _ipProtocol.value(IpProtocol.ICMP).impWith(_packetLength.geq(64));
-    BDD validUdp =
-        _ipProtocol
-            .value(IpProtocol.UDP)
-            .impWith(_packetLength.geq(28).and(_srcPort.geq(1)).and(_dstPort.geq(1)));
-    BDD validTcp =
-        _ipProtocol
-            .value(IpProtocol.TCP)
-            .impWith(_packetLength.geq(40).and(_srcPort.geq(1)).and(_dstPort.geq(1)));
-    return BDDOps.andNull(ipPacketsAreAtLeast20Long, validIcmp, validTcp, validUdp);
   }
 
   public BDD restrict(BDD bdd, Prefix pfx) {

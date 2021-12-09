@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Range;
 import java.util.Iterator;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -31,7 +32,9 @@ public final class AclLineMatchExprs {
 
   public static final TrueExpr TRUE = TrueExpr.INSTANCE;
 
+  static final AclLineMatchExpr ICMP_FLOWS = matchIpProtocol(IpProtocol.ICMP);
   static final AclLineMatchExpr TCP_FLOWS = matchIpProtocol(IpProtocol.TCP);
+  static final AclLineMatchExpr UDP_FLOWS = matchIpProtocol(IpProtocol.UDP);
 
   @VisibleForTesting
   static final AclLineMatchExpr ESTABLISHED_TCP_FLOWS =
@@ -44,8 +47,40 @@ public final class AclLineMatchExprs {
   @VisibleForTesting
   static final AclLineMatchExpr NEW_TCP_FLOWS = and(TCP_FLOWS, not(ESTABLISHED_TCP_FLOWS));
 
-  public static final AclLineMatchExpr NEW_FLOWS =
-      implies(matchIpProtocol(IpProtocol.TCP), NEW_TCP_FLOWS);
+  /** A reusable expression to indicate new flows. */
+  public static final AclLineMatchExpr NEW_FLOWS = implies(TCP_FLOWS, NEW_TCP_FLOWS);
+
+  /** A reusable expression to indicate flows that meet basic integrity constraints. */
+  public static final AclLineMatchExpr VALID_FLOWS = makeValidFlows();
+
+  private static AclLineMatchExpr makeValidFlows() {
+    // Minimum IP packet size is 20 bytes.
+    AclLineMatchExpr ip = not(matchPacketLength(IntegerSpace.of(Range.closedOpen(0, 20))));
+    AclLineMatchExpr icmp =
+        implies(
+            ICMP_FLOWS,
+            // Minimum ICMP packet size is 64 bytes.
+            not(matchPacketLength(IntegerSpace.of(Range.closedOpen(0, 64)))));
+    AclLineMatchExpr tcp =
+        implies(
+            TCP_FLOWS,
+            and(
+                // Minimum TCP packet size is 40 bytes.
+                not(matchPacketLength(IntegerSpace.of(Range.closedOpen(0, 40)))),
+                // Ports cannot be 0.
+                not(matchSrcPort(0)),
+                not(matchDstPort(0))));
+    AclLineMatchExpr udp =
+        implies(
+            UDP_FLOWS,
+            and(
+                // Minimum UDP packet size is 28 bytes.
+                not(matchPacketLength(IntegerSpace.of(Range.closedOpen(0, 28)))),
+                // Ports cannot be 0.
+                not(matchSrcPort(0)),
+                not(matchDstPort(0))));
+    return and(ip, icmp, tcp, udp);
+  }
 
   public static AclLineMatchExpr and(String traceElement, AclLineMatchExpr... exprs) {
     return new AndMatchExpr(ImmutableList.copyOf(exprs), traceElement);
