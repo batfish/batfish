@@ -146,6 +146,10 @@ public final class Names {
     return String.format("%s~on~%s", source, hostname);
   }
 
+  public static String generatedTenantVniInterfaceName(int vni) {
+    return String.format("nve~%d", vni);
+  }
+
   /**
    * Return the Batfish canonical name for a filter between zones.
    *
