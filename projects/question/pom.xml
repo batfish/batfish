@@ -64,6 +64,11 @@
 
         <dependency>
             <groupId>org.batfish</groupId>
+            <artifactId>batfish</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.batfish</groupId>
             <artifactId>bdd</artifactId>
         </dependency>
 
