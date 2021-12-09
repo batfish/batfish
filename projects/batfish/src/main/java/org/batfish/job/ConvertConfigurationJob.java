@@ -1,6 +1,8 @@
 package org.batfish.job;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.batfish.datamodel.InterfaceType.TUNNEL;
+import static org.batfish.datamodel.Names.generatedTenantVniInterfaceName;
 import static org.batfish.vendor.ConversionContext.EMPTY_CONVERSION_CONTEXT;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -18,6 +20,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -41,6 +44,7 @@ import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpIpSpace;
@@ -48,6 +52,7 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcardIpSpace;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
+import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.Mlag;
 import org.batfish.datamodel.PrefixIpSpace;
 import org.batfish.datamodel.Route6FilterList;
@@ -401,6 +406,8 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
    *
    * <p>Sanity checks such as asserting that required properties hold.
    *
+   * <p>Generation of helper structures such as tenant vrf l3vni interfaces
+   *
    * <p>Finishing touches such as converting structures to their immutable forms.
    */
   @VisibleForTesting
@@ -414,6 +421,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
       throw new BatfishException(
           "Implementation error: missing default inbound action for host: '" + hostname + "'");
     }
+    addTenantVniInterfaces(c);
     c.simplifyRoutingPolicies();
     c.computeRoutingPolicySources(w);
     verifyInterfaces(c, w);
@@ -460,6 +468,34 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     verifyAsPathStructures(c);
     verifyCommunityStructures(c);
     removeInvalidAcls(c, w);
+  }
+
+  // does this value matter?
+  private static final Ip TENANT_VNI_INTERFACE_LINK_LOCAL_ADDRESS = Ip.parse("169.254.0.1");
+
+  /** Add an interface for each l3vni to its tenant VRF to represent endpoints of a VXLAN tunnel. */
+  @VisibleForTesting
+  static void addTenantVniInterfaces(Configuration c) {
+    for (Vrf vrf : c.getVrfs().values()) {
+      vrf.getLayer3Vnis()
+          .forEach(
+              (vni, l3vni) -> {
+                Interface.builder()
+                    .setName(generatedTenantVniInterfaceName(vni))
+                    .setOwner(c)
+                    .setVrf(vrf)
+                    .setAdditionalArpIps(
+                        Optional.ofNullable(l3vni.getSourceAddress())
+                            .<IpSpace>map(Ip::toIpSpace)
+                            .orElse(EmptyIpSpace.INSTANCE))
+                    .setAddresses(LinkLocalAddress.of(TENANT_VNI_INTERFACE_LINK_LOCAL_ADDRESS))
+                    .setActive(true)
+                    .setProxyArp(false)
+                    .setType(TUNNEL)
+                    .setSwitchportMode(SwitchportMode.NONE)
+                    .build();
+              });
+    }
   }
 
   private static void verifyAsPathStructures(Configuration c) {
