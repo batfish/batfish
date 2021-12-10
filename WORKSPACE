@@ -6,9 +6,9 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_jar")
 # External Java dependencies (from Maven)                #
 ##########################################################
 
-RULES_JVM_EXTERNAL_TAG = "46dd58e3f7f4afa9d5ceea115416afa7ad4a3925"
+RULES_JVM_EXTERNAL_TAG = "4.2"
 
-RULES_JVM_EXTERNAL_SHA = "b525c329dce9e61eb1e21a30c36213bc759e106704a12c7ae32bae121bd8235e"
+RULES_JVM_EXTERNAL_SHA = "cd1a77b7b02e8e008439ca76fd34f5b07aecb8c752961f9640dea15e9e5ba1ca"
 
 http_archive(
     name = "rules_jvm_external",

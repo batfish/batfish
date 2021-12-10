@@ -17,7 +17,7 @@ junit_tests(
         "//projects/batfish-common-protocol:common",
         "//projects/batfish-common-protocol/src/test/java/org/batfish/common/matchers",
         "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/matchers",
-        "//projects/batfish/src/main/java/org/batfish/grammar/frr:frr",
+        "//projects/batfish/src/main/java/org/batfish/grammar/frr",
         "//projects/batfish/src/main/java/org/batfish/representation/cumulus_concatenated",
         "//projects/batfish/src/main/java/org/batfish/representation/frr",
         "@maven//:com_google_guava_guava",
