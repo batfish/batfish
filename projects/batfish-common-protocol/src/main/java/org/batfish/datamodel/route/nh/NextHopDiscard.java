@@ -1,5 +1,8 @@
 package org.batfish.datamodel.route.nh;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
@@ -8,7 +11,9 @@ import javax.annotation.Nullable;
  */
 public final class NextHopDiscard implements NextHop {
 
-  public static NextHopDiscard instance() {
+  @JsonValue
+  @JsonCreator
+  public static @Nonnull NextHopDiscard instance() {
     return INSTANCE;
   }
 

@@ -1,5 +1,8 @@
 package org.batfish.datamodel.route.nh;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import java.io.Serializable;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Interface;
@@ -11,6 +14,14 @@ import org.batfish.datamodel.Route;
  * interface, next hops to be looked up in a different VRF, null-routing next hops. Consumers of
  * this interface <em>should</em> be prepared to deal with different types of next hops.
  */
+@JsonTypeInfo(use = Id.NAME, property = "type")
+@JsonSubTypes({
+  @JsonSubTypes.Type(value = NextHopDiscard.class, name = "discard"),
+  @JsonSubTypes.Type(value = NextHopInterface.class, name = "interface"),
+  @JsonSubTypes.Type(value = NextHopIp.class, name = "ip"),
+  @JsonSubTypes.Type(value = NextHopVrf.class, name = "next-vrf"),
+  @JsonSubTypes.Type(value = NextHopVtep.class, name = "vtep")
+})
 public interface NextHop extends Serializable {
   <T> T accept(NextHopVisitor<T> visitor);
 

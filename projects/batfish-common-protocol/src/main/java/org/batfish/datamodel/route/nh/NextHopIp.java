@@ -2,6 +2,8 @@ package org.batfish.datamodel.route.nh;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.base.MoreObjects;
@@ -25,6 +27,7 @@ public final class NextHopIp implements NextHop {
     return CACHE.get(ip);
   }
 
+  @JsonProperty(PROP_IP)
   @Nonnull
   public Ip getIp() {
     return _ip;
@@ -58,6 +61,14 @@ public final class NextHopIp implements NextHop {
   }
 
   @Nonnull private final Ip _ip;
+
+  private static final String PROP_IP = "ip";
+
+  @JsonCreator
+  private static @Nonnull NextHopIp create(@JsonProperty(PROP_IP) @Nullable Ip ip) {
+    checkArgument(ip != null, "Missing %s", PROP_IP);
+    return of(ip);
+  }
 
   private NextHopIp(Ip ip) {
     checkArgument(
