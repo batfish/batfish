@@ -19,6 +19,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.Arrays;
@@ -75,8 +76,11 @@ public class A10VirtualServerConfigurationAnswererTest {
                     hasColumn(COL_SERVICE_GROUP_TYPE, equalTo("TCP"), Schema.STRING),
                     hasColumn(
                         COL_SERVERS,
-                        equalTo(ImmutableSet.of("s1:10000:1.1.1.1", "s2:9999:2.2.2.2")),
-                        Schema.set(Schema.STRING)),
+                        equalTo(
+                            ImmutableSet.of(
+                                ImmutableList.of("s1", "10000", "1.1.1.1"),
+                                ImmutableList.of("s2", "9999", "2.2.2.2"))),
+                        Schema.set(Schema.list(Schema.STRING))),
                     hasColumn(COL_SOURCE_NAT_POOL_NAME, equalTo("pool1"), Schema.STRING)),
                 allOf(
                     hasColumn(COL_NODE, equalTo(new Node(hostname1)), Schema.NODE),
@@ -88,7 +92,10 @@ public class A10VirtualServerConfigurationAnswererTest {
                         COL_VIRTUAL_SERVER_PORT_TYPE_NAME, equalTo("vs1.20000"), Schema.STRING),
                     hasColumn(COL_SERVICE_GROUP_NAME, equalTo("vs1.20000"), Schema.STRING),
                     hasColumn(COL_SERVICE_GROUP_TYPE, equalTo("TCP"), Schema.STRING),
-                    hasColumn(COL_SERVERS, equalTo(ImmutableSet.of()), Schema.set(Schema.STRING)),
+                    hasColumn(
+                        COL_SERVERS,
+                        equalTo(ImmutableSet.of()),
+                        Schema.set(Schema.list(Schema.STRING))),
                     hasColumn(COL_SOURCE_NAT_POOL_NAME, nullValue(), Schema.STRING)),
                 allOf(
                     hasColumn(COL_NODE, equalTo(new Node(hostname1)), Schema.NODE),
@@ -99,7 +106,10 @@ public class A10VirtualServerConfigurationAnswererTest {
                     hasColumn(COL_VIRTUAL_SERVER_PORT_TYPE_NAME, nullValue(), Schema.STRING),
                     hasColumn(COL_SERVICE_GROUP_NAME, nullValue(), Schema.STRING),
                     hasColumn(COL_SERVICE_GROUP_TYPE, nullValue(), Schema.STRING),
-                    hasColumn(COL_SERVERS, equalTo(ImmutableSet.of()), Schema.set(Schema.STRING)),
+                    hasColumn(
+                        COL_SERVERS,
+                        equalTo(ImmutableSet.of()),
+                        Schema.set(Schema.list(Schema.STRING))),
                     hasColumn(COL_SOURCE_NAT_POOL_NAME, nullValue(), Schema.STRING)))));
   }
 }

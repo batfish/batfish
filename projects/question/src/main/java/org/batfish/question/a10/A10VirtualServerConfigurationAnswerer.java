@@ -76,7 +76,9 @@ public class A10VirtualServerConfigurationAnswerer extends Answerer {
         .add(
             new ColumnMetadata(
                 COL_SERVICE_GROUP_TYPE, Schema.STRING, "Service Group Type", false, true))
-        .add(new ColumnMetadata(COL_SERVERS, Schema.set(Schema.STRING), "Servers", false, true))
+        .add(
+            new ColumnMetadata(
+                COL_SERVERS, Schema.set(Schema.list(Schema.STRING)), "Servers", false, true))
         .add(
             new ColumnMetadata(
                 COL_SOURCE_NAT_POOL_NAME, Schema.STRING, "Source NAT Pool Name", false, true))
@@ -113,16 +115,15 @@ public class A10VirtualServerConfigurationAnswerer extends Answerer {
           String serviceGroupName = virtualServerPort.getServiceGroup();
           ServiceGroup serviceGroup =
               serviceGroupName == null ? null : a10Vc.getServiceGroups().get(serviceGroupName);
-          Set<String> servers =
+          Set<List<String>> servers =
               serviceGroup == null
                   ? ImmutableSet.of()
                   : serviceGroup.getMembers().values().stream()
                       .map(
                           member ->
-                              String.format(
-                                  "%s:%s:%s",
+                              ImmutableList.of(
                                   member.getName(),
-                                  member.getPort(),
+                                  Integer.toString(member.getPort()),
                                   getServerTarget(member.getName(), a10Vc)))
                       .collect(ImmutableSet.toImmutableSet());
           rows.add(
@@ -163,7 +164,7 @@ public class A10VirtualServerConfigurationAnswerer extends Answerer {
       String virtualServerPortTypeName,
       @Nullable String serviceGroupName,
       @Nullable ServerPort.Type serviceGroupType,
-      Set<String> servers,
+      Set<List<String>> servers,
       String sourceNatPoolName,
       Map<String, ColumnMetadata> columnMetadata) {
     return Row.builder(columnMetadata)
