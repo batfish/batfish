@@ -90,18 +90,34 @@ public final class TcpFlagsMatchConditions
     }
   }
 
-  /** Shorthand for match conditions for a ACK (acknowledgement) packet */
+  /**
+   * Shorthand for match conditions for a ACK (acknowledgement) packet. Other bits are
+   * unconstrained.
+   */
   public static final TcpFlagsMatchConditions ACK_TCP_FLAG =
       builder().setTcpFlags(TcpFlags.builder().setAck(true).build()).setUseAck(true).build();
-  /** Shorthand for match conditions for a RST (reset) packet */
+  /** Shorthand for match conditions for a RST (reset) packet. Other bits are unconstrained. */
   public static final TcpFlagsMatchConditions RST_TCP_FLAG =
       builder().setTcpFlags(TcpFlags.builder().setRst(true).build()).setUseRst(true).build();
-  /** Shorthand for match conditions for a SYN-ACK packet */
+  /** Shorthand for match conditions for a SYN-ACK packet. Other bits are unconstrained. */
   public static final TcpFlagsMatchConditions SYN_ACK_TCP_FLAG =
       builder()
           .setTcpFlags(TcpFlags.builder().setAck(true).setSyn(true).build())
           .setUseAck(true)
           .setUseSyn(true)
+          .build();
+  /** Shorthand for match conditions for a SYN-only packet, with all other bits cleared */
+  public static final TcpFlagsMatchConditions SYN_ONLY_TCP_FLAG =
+      builder()
+          .setTcpFlags(TcpFlags.builder().setSyn(true).build())
+          .setUseAck(true)
+          .setUseCwr(true)
+          .setUseFin(true)
+          .setUseEce(true)
+          .setUsePsh(true)
+          .setUseRst(true)
+          .setUseSyn(true)
+          .setUseUrg(true)
           .build();
 
   private static final Comparator<TcpFlagsMatchConditions> COMPARATOR =
