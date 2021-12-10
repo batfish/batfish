@@ -6,8 +6,8 @@ junit_tests(
     name = "tests",
     srcs = glob(["*.java"]),
     deps = [
-        "//projects/symbolic/src/main/java/org/batfish/symbolic/state:state",
-          "//projects/batfish-common-protocol:common",
+        "//projects/batfish-common-protocol:common",
+        "//projects/symbolic/src/main/java/org/batfish/symbolic/state",
         "@maven//:com_google_guava_guava",
         "@maven//:com_google_guava_guava_testlib",
         "@maven//:junit_junit",

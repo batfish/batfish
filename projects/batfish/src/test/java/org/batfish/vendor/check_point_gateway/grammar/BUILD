@@ -12,8 +12,8 @@ junit_tests(
     ]),
     resources = [
         "//projects/batfish/src/test/resources:log4j_config",
-        "//projects/batfish/src/test/resources/org/batfish/vendor/check_point_gateway/grammar/testconfigs",
         "//projects/batfish/src/test/resources/org/batfish/vendor/check_point_gateway/grammar/snapshots",
+        "//projects/batfish/src/test/resources/org/batfish/vendor/check_point_gateway/grammar/testconfigs",
     ],
     tags = ["cpu:4"],
     runtime_deps = [

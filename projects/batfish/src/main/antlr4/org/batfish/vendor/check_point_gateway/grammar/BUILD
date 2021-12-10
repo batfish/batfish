@@ -12,8 +12,8 @@ java_library(
     ],
     javacopts = ["-XepDisableAllChecks"],
     deps = [
-        "//projects/batfish/src/main/java/org/batfish/vendor/check_point_gateway/grammar:check_point_gateway_base",
         "//projects/batfish-common-protocol:parser_common",
+        "//projects/batfish/src/main/java/org/batfish/vendor/check_point_gateway/grammar:check_point_gateway_base",
         "@maven//:org_antlr_antlr4_runtime",
     ],
 )
