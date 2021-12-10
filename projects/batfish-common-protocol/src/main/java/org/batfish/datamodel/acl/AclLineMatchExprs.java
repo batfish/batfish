@@ -37,15 +37,8 @@ public final class AclLineMatchExprs {
   static final AclLineMatchExpr UDP_FLOWS = matchIpProtocol(IpProtocol.UDP);
 
   @VisibleForTesting
-  static final AclLineMatchExpr ESTABLISHED_TCP_FLOWS =
-      and(
-          TCP_FLOWS,
-          matchTcpFlags(
-              // ack or rst
-              TcpFlagsMatchConditions.ACK_TCP_FLAG, TcpFlagsMatchConditions.RST_TCP_FLAG));
-
-  @VisibleForTesting
-  static final AclLineMatchExpr NEW_TCP_FLOWS = and(TCP_FLOWS, not(ESTABLISHED_TCP_FLOWS));
+  static final AclLineMatchExpr NEW_TCP_FLOWS =
+      and(TCP_FLOWS, matchTcpFlags(TcpFlagsMatchConditions.SYN_ONLY_TCP_FLAG));
 
   /** A reusable expression to indicate new flows. */
   public static final AclLineMatchExpr NEW_FLOWS = implies(TCP_FLOWS, NEW_TCP_FLOWS);
