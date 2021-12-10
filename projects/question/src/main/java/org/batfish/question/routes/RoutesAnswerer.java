@@ -614,6 +614,20 @@ public class RoutesAnswerer extends Answerer {
                 Boolean.TRUE));
         columnBuilder.add(
             new ColumnMetadata(
+                COL_BASE_PREFIX + COL_RECEIVED_FROM_IP,
+                Schema.STRING,
+                "Route's Received from IP",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_DELTA_PREFIX + COL_RECEIVED_FROM_IP,
+                Schema.STRING,
+                "Route's Received from IP",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
                 COL_BASE_PREFIX + COL_WEIGHT,
                 Schema.INTEGER,
                 "Route's BGP weight",
