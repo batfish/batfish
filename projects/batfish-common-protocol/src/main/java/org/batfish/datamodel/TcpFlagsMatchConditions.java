@@ -90,18 +90,34 @@ public final class TcpFlagsMatchConditions
     }
   }
 
-  /** Shorthand for match conditions for a ACK (acknowledgement) packet */
+  /**
+   * Shorthand for match conditions for a ACK (acknowledgement) packet. Other bits are
+   * unconstrained.
+   */
   public static final TcpFlagsMatchConditions ACK_TCP_FLAG =
       builder().setTcpFlags(TcpFlags.builder().setAck(true).build()).setUseAck(true).build();
-  /** Shorthand for match conditions for a RST (reset) packet */
+  /** Shorthand for match conditions for a RST (reset) packet. Other bits are unconstrained. */
   public static final TcpFlagsMatchConditions RST_TCP_FLAG =
       builder().setTcpFlags(TcpFlags.builder().setRst(true).build()).setUseRst(true).build();
-  /** Shorthand for match conditions for a SYN-ACK packet */
+  /** Shorthand for match conditions for a SYN-ACK packet. Other bits are unconstrained. */
   public static final TcpFlagsMatchConditions SYN_ACK_TCP_FLAG =
       builder()
           .setTcpFlags(TcpFlags.builder().setAck(true).setSyn(true).build())
           .setUseAck(true)
           .setUseSyn(true)
+          .build();
+  /** Shorthand for match conditions for a SYN-only packet, with all other bits cleared */
+  public static final TcpFlagsMatchConditions SYN_ONLY_TCP_FLAG =
+      builder()
+          .setTcpFlags(TcpFlags.builder().setSyn(true).build())
+          .setUseAck(true)
+          .setUseCwr(true)
+          .setUseFin(true)
+          .setUseEce(true)
+          .setUsePsh(true)
+          .setUseRst(true)
+          .setUseSyn(true)
+          .setUseUrg(true)
           .build();
 
   private static final Comparator<TcpFlagsMatchConditions> COMPARATOR =
@@ -244,14 +260,14 @@ public final class TcpFlagsMatchConditions
    * <p>Note this function will return {@code true} if no bits are used.
    */
   public boolean match(Flow flow) {
-    return !(_useAck && _tcpFlags.getAck() ^ (flow.getTcpFlagsAck() == 1))
-        && !(_useCwr && _tcpFlags.getCwr() ^ (flow.getTcpFlagsCwr() == 1))
-        && !(_useEce && _tcpFlags.getEce() ^ (flow.getTcpFlagsEce() == 1))
-        && !(_useFin && _tcpFlags.getFin() ^ (flow.getTcpFlagsFin() == 1))
-        && !(_usePsh && _tcpFlags.getPsh() ^ (flow.getTcpFlagsPsh() == 1))
-        && !(_useRst && _tcpFlags.getRst() ^ (flow.getTcpFlagsRst() == 1))
-        && !(_useSyn && _tcpFlags.getSyn() ^ (flow.getTcpFlagsSyn() == 1))
-        && !(_useUrg && _tcpFlags.getUrg() ^ (flow.getTcpFlagsUrg() == 1));
+    return !(_useAck && _tcpFlags.getAck() ^ flow.getTcpFlags().getAck())
+        && !(_useCwr && _tcpFlags.getCwr() ^ flow.getTcpFlags().getCwr())
+        && !(_useEce && _tcpFlags.getEce() ^ flow.getTcpFlags().getEce())
+        && !(_useFin && _tcpFlags.getFin() ^ flow.getTcpFlags().getFin())
+        && !(_usePsh && _tcpFlags.getPsh() ^ flow.getTcpFlags().getPsh())
+        && !(_useRst && _tcpFlags.getRst() ^ flow.getTcpFlags().getRst())
+        && !(_useSyn && _tcpFlags.getSyn() ^ flow.getTcpFlags().getSyn())
+        && !(_useUrg && _tcpFlags.getUrg() ^ flow.getTcpFlags().getUrg());
   }
 
   /**

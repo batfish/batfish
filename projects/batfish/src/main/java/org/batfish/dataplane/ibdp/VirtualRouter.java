@@ -974,7 +974,7 @@ public final class VirtualRouter {
         @Override
         public Void visitNextHopVtep(NextHopVtep nextHopVtep) {
           // should not be possible; only EVPN and BGP routes have this next hop type.
-          return null;
+          throw new IllegalStateException("Static routes cannot forward via VXLAN tunnel");
         }
       }.visit(sr.getNextHop());
     }

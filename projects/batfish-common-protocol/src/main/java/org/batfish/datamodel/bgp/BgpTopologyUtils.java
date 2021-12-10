@@ -598,7 +598,7 @@ public final class BgpTopologyUtils {
       Flow flowFromSrc =
           Flow.builder()
               .setIpProtocol(IpProtocol.TCP)
-              .setTcpFlagsSyn(1)
+              .setTcpFlagsSyn(true)
               .setIngressNode(initiatorId.getHostname())
               .setIngressVrf(initiatorId.getVrfName())
               .setSrcIp(potentialLocalIp)

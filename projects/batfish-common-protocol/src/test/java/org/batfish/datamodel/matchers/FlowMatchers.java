@@ -107,59 +107,59 @@ public final class FlowMatchers {
     return new HasSrcPort(portMatcher);
   }
 
-  public static Matcher<Flow> hasTcpFlagsAck(Integer tcpAck) {
+  public static Matcher<Flow> hasTcpFlagsAck(boolean tcpAck) {
     return new HasTcpFlagsAck(equalTo(tcpAck));
   }
 
-  public static Matcher<Flow> hasTcpFlagsAck(Matcher<? super Integer> matcher) {
+  public static Matcher<Flow> hasTcpFlagsAck(Matcher<? super Boolean> matcher) {
     return new HasTcpFlagsAck(matcher);
   }
 
-  public static Matcher<Flow> hasTcpFlagsCwr(Integer tcpCwr) {
+  public static Matcher<Flow> hasTcpFlagsCwr(boolean tcpCwr) {
     return new HasTcpFlagsCwr(equalTo(tcpCwr));
   }
 
-  public static Matcher<Flow> hasTcpFlagsCwr(Matcher<? super Integer> matcher) {
+  public static Matcher<Flow> hasTcpFlagsCwr(Matcher<? super Boolean> matcher) {
     return new HasTcpFlagsCwr(matcher);
   }
 
-  public static Matcher<Flow> hasTcpFlagsEce(Integer tcpEce) {
+  public static Matcher<Flow> hasTcpFlagsEce(boolean tcpEce) {
     return new HasTcpFlagsEce(equalTo(tcpEce));
   }
 
-  public static Matcher<Flow> hasTcpFlagsEce(Matcher<? super Integer> matcher) {
+  public static Matcher<Flow> hasTcpFlagsEce(Matcher<? super Boolean> matcher) {
     return new HasTcpFlagsEce(matcher);
   }
 
-  public static Matcher<Flow> hasTcpFlagsFin(Integer tcpFin) {
+  public static Matcher<Flow> hasTcpFlagsFin(boolean tcpFin) {
     return new HasTcpFlagsFin(equalTo(tcpFin));
   }
 
-  public static Matcher<Flow> hasTcpFlagsFin(Matcher<? super Integer> matcher) {
+  public static Matcher<Flow> hasTcpFlagsFin(Matcher<? super Boolean> matcher) {
     return new HasTcpFlagsFin(matcher);
   }
 
-  public static Matcher<Flow> hasTcpFlagsPsh(Integer tcpPsh) {
+  public static Matcher<Flow> hasTcpFlagsPsh(boolean tcpPsh) {
     return new HasTcpFlagsPsh(equalTo(tcpPsh));
   }
 
-  public static Matcher<Flow> hasTcpFlagsPsh(Matcher<? super Integer> matcher) {
+  public static Matcher<Flow> hasTcpFlagsPsh(Matcher<? super Boolean> matcher) {
     return new HasTcpFlagsPsh(matcher);
   }
 
-  public static Matcher<Flow> hasTcpFlagsRst(Integer tcpRst) {
+  public static Matcher<Flow> hasTcpFlagsRst(boolean tcpRst) {
     return new HasTcpFlagsRst(equalTo(tcpRst));
   }
 
-  public static Matcher<Flow> hasTcpFlagsRst(Matcher<? super Integer> matcher) {
+  public static Matcher<Flow> hasTcpFlagsRst(Matcher<? super Boolean> matcher) {
     return new HasTcpFlagsRst(matcher);
   }
 
-  public static Matcher<Flow> hasTcpFlagsUrg(Integer tcpUrg) {
+  public static Matcher<Flow> hasTcpFlagsUrg(boolean tcpUrg) {
     return new HasTcpFlagsUrg(equalTo(tcpUrg));
   }
 
-  public static Matcher<Flow> hasTcpFlagsUrg(Matcher<? super Integer> matcher) {
+  public static Matcher<Flow> hasTcpFlagsUrg(Matcher<? super Boolean> matcher) {
     return new HasTcpFlagsUrg(matcher);
   }
 }
