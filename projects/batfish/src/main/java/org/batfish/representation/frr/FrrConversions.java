@@ -591,7 +591,7 @@ public final class FrrConversions {
         .setGeneratedRoutes(
             bgpDefaultOriginate(neighbor)
                 ? ImmutableSet.of(
-                    getGeneratedRoute(
+                    getGeneratedDefaultRoute(
                         neighbor.getIpv4UnicastAddressFamily().getDefaultOriginateRouteMap()))
                 : null)
         // Ipv4 unicast is enabled by default
@@ -1751,11 +1751,13 @@ public final class FrrConversions {
   }
 
   @VisibleForTesting
-  static GeneratedRoute getGeneratedRoute(@Nullable String routeMapName) {
+  static GeneratedRoute getGeneratedDefaultRoute(@Nullable String routeMapName) {
+    // On FRR, the default-originate route-map is used to determine both if a route should be
+    // generated and what attributes to set.
     return GeneratedRoute.builder()
         .setNetwork(Prefix.ZERO)
         .setAdmin(MAX_ADMINISTRATIVE_COST)
-        .setAttributePolicy(routeMapName)
+        .setGenerationPolicy(routeMapName)
         .build();
   }
 }

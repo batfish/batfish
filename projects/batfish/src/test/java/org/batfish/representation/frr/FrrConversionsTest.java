@@ -30,7 +30,7 @@ import static org.batfish.representation.frr.FrrConversions.computeOspfExportPol
 import static org.batfish.representation.frr.FrrConversions.convertIpv4UnicastAddressFamily;
 import static org.batfish.representation.frr.FrrConversions.convertOspfRedistributionPolicy;
 import static org.batfish.representation.frr.FrrConversions.generateBgpCommonPeerConfig;
-import static org.batfish.representation.frr.FrrConversions.getGeneratedRoute;
+import static org.batfish.representation.frr.FrrConversions.getGeneratedDefaultRoute;
 import static org.batfish.representation.frr.FrrConversions.getSetMaxMedMetric;
 import static org.batfish.representation.frr.FrrConversions.getSetNextHop;
 import static org.batfish.representation.frr.FrrConversions.inferClusterId;
@@ -702,7 +702,7 @@ public final class FrrConversionsTest {
     // there should be a generated default route
     assertThat(
         newProc.getActiveNeighbors().get(peerIp).getGeneratedRoutes(),
-        equalTo(ImmutableSet.of(getGeneratedRoute(null))));
+        equalTo(ImmutableSet.of(getGeneratedDefaultRoute(null))));
 
     // We test exact match with the constant REJECT_DEFAULT_ROUTE here. The constant is
     // tested in testRejectDefaultRoute()

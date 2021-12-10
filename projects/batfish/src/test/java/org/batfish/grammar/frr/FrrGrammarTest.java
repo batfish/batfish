@@ -36,6 +36,7 @@ import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.hasToString;
 import static org.hamcrest.Matchers.isA;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
@@ -801,13 +802,16 @@ public class FrrGrammarTest {
   @Test
   public void testBgpAddressFamilyNeighborDefaultOriginate_routeMap() throws IOException {
     /*
-     There are two nodes in the topology: originator and listener.
-     The default-originate route-map points to a route-map that prepends ASN 23.
-     We check if the originated route has the prepended ASN.
+     The topology has one originator and three listeners: 1, 3, 4
+      - listener1 has default-originate with empty match conditions.
+      - listener3 has default-originate with a match condition that succeeds.
+      - listener4 has default-originate with a match condition that fails.
+     All route-maps are prepending, so we can test if attributes are being set.
     */
 
     String snapshotName = "default-originate-route-map";
-    List<String> configurationNames = ImmutableList.of("frr-originator", "frr-listener");
+    List<String> configurationNames =
+        ImmutableList.of("frr-originator", "frr-listener1", "frr-listener3", "frr-listener4");
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
@@ -820,7 +824,7 @@ public class FrrGrammarTest {
     DataPlane dp = batfish.loadDataPlane(snapshot);
 
     assertThat(
-        dp.getRibs().get("frr-listener").get(DEFAULT_VRF_NAME).getRoutes(),
+        dp.getRibs().get("frr-listener1").get(DEFAULT_VRF_NAME).getRoutes(),
         hasItem(
             equalTo(
                 Bgpv4Route.testBuilder()
@@ -835,6 +839,26 @@ public class FrrGrammarTest {
                     .setAdmin(20)
                     .setLocalPreference(100)
                     .build())));
+
+    assertThat(
+        dp.getRibs().get("frr-listener3").get(DEFAULT_VRF_NAME).getRoutes(),
+        hasItem(
+            equalTo(
+                Bgpv4Route.testBuilder()
+                    .setNetwork(Prefix.ZERO)
+                    .setNextHopIp(Ip.parse("10.1.1.2"))
+                    .setReceivedFromIp(Ip.parse("10.1.1.2"))
+                    .setOriginatorIp(Ip.parse("2.2.2.2"))
+                    .setOriginType(OriginType.INCOMPLETE)
+                    .setProtocol(RoutingProtocol.BGP)
+                    .setSrcProtocol(RoutingProtocol.BGP)
+                    .setAsPath(AsPath.ofSingletonAsSets(2L, 23L))
+                    .setAdmin(20)
+                    .setLocalPreference(100)
+                    .build())));
+    assertThat(
+        dp.getRibs().get("frr-listener4").get(DEFAULT_VRF_NAME).getRoutes(),
+        not(hasItem(hasPrefix(Prefix.ZERO))));
   }
 
   @Test
