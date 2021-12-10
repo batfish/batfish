@@ -23,6 +23,7 @@ import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGINATOR_ID;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGIN_PROTOCOL;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGIN_TYPE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_PROTOCOL;
+import static org.batfish.question.routes.RoutesAnswerer.COL_RECEIVED_FROM_IP;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_DISTINGUISHER;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_ENTRY_PRESENCE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_STATUS;
@@ -442,6 +443,7 @@ public class RoutesAnswererUtil {
         .put(COL_ORIGIN_PROTOCOL, bgpv4Route.getSrcProtocol())
         .put(COL_ORIGIN_TYPE, bgpv4Route.getOriginType())
         .put(COL_ORIGINATOR_ID, bgpv4Route.getOriginatorIp())
+        .put(COL_RECEIVED_FROM_IP, bgpv4Route.getReceivedFromIp())
         .put(
             COL_CLUSTER_LIST,
             bgpv4Route.getClusterList().isEmpty() ? null : bgpv4Route.getClusterList())
