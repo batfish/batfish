@@ -1404,11 +1404,7 @@ public class ForwardingAnalysisImplTest {
 
     ForwardingAnalysis fa =
         new ForwardingAnalysisImpl(
-            configs,
-            fibs,
-            new Topology(ImmutableSortedSet.of()),
-            computeLocationInfo(ipOwners, configs),
-            ipOwners);
+            configs, fibs, Topology.EMPTY, computeLocationInfo(ipOwners, configs), ipOwners);
 
     InterfaceForwardingBehavior ifb =
         fa.getVrfForwardingBehavior()
@@ -1497,11 +1493,7 @@ public class ForwardingAnalysisImplTest {
     IpOwners ipOwners = new IpOwners(configs, GlobalBroadcastNoPointToPoint.instance());
     ForwardingAnalysis analysis =
         new ForwardingAnalysisImpl(
-            configs,
-            fibs,
-            new Topology(ImmutableSortedSet.of()),
-            computeLocationInfo(ipOwners, configs),
-            ipOwners);
+            configs, fibs, Topology.EMPTY, computeLocationInfo(ipOwners, configs), ipOwners);
 
     InterfaceForwardingBehavior i1ForwardingBehavior =
         analysis

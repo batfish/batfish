@@ -94,6 +94,7 @@ import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.route.nh.NextHopVisitor;
 import org.batfish.datamodel.route.nh.NextHopVrf;
+import org.batfish.datamodel.route.nh.NextHopVtep;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.MainRib;
 import org.batfish.datamodel.routing_policy.expr.RibExpr;
@@ -968,6 +969,12 @@ public final class VirtualRouter {
           // next vrf routes are always active unconditionally
           _staticUnconditionalRib.mergeRouteGetDelta(sr);
           return null;
+        }
+
+        @Override
+        public Void visitNextHopVtep(NextHopVtep nextHopVtep) {
+          // should not be possible; only EVPN and BGP routes have this next hop type.
+          throw new IllegalStateException("Static routes cannot forward via VXLAN tunnel");
         }
       }.visit(sr.getNextHop());
     }
