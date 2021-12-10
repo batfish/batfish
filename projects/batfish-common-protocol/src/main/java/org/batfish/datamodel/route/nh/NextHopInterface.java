@@ -2,6 +2,8 @@ package org.batfish.datamodel.route.nh;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -29,12 +31,14 @@ public final class NextHopInterface implements NextHop {
       CacheBuilder.newBuilder().softValues().maximumSize(1 << 20).build(CacheLoader.from(x -> x));
 
   /** The interface name to which the traffic should be routed */
+  @JsonProperty(PROP_INTERFACE)
   @Nonnull
   public String getInterfaceName() {
     return _interfaceName;
   }
 
   /** Optional next hop/ARP IP to use */
+  @JsonProperty(PROP_IP)
   @Nullable
   public Ip getIp() {
     return _ip;
@@ -97,8 +101,19 @@ public final class NextHopInterface implements NextHop {
     return visitor.visitNextHopInterface(this);
   }
 
+  private static final String PROP_INTERFACE = "interface";
+  private static final String PROP_IP = "ip";
+
   @Nonnull private final String _interfaceName;
   @Nullable private final Ip _ip;
+
+  @JsonCreator
+  private static @Nonnull NextHopInterface create(
+      @JsonProperty(PROP_INTERFACE) @Nullable String iface,
+      @JsonProperty(PROP_IP) @Nullable Ip ip) {
+    checkArgument(iface != null, "Missing %s", PROP_INTERFACE);
+    return of(iface, ip);
+  }
 
   private NextHopInterface(String interfaceName, @Nullable Ip ip) {
     checkArgument(
