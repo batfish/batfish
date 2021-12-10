@@ -16,6 +16,7 @@ import static org.batfish.question.routes.RoutesAnswerer.COL_COMMUNITIES;
 import static org.batfish.question.routes.RoutesAnswerer.COL_LOCAL_PREF;
 import static org.batfish.question.routes.RoutesAnswerer.COL_METRIC;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NETWORK;
+import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP_INTERFACE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP_IP;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NODE;
@@ -73,6 +74,7 @@ import org.batfish.datamodel.Route;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.BgpRouteStatus;
+import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Row.RowBuilder;
@@ -395,6 +397,7 @@ public class RoutesAnswererUtil {
         .put(COL_NODE, new Node(hostName))
         .put(COL_VRF_NAME, vrfName)
         .put(COL_NETWORK, abstractRoute.getNetwork())
+        .put(COL_NEXT_HOP, abstractRoute.getNextHop())
         .put(COL_NEXT_HOP_IP, nextHopIp)
         .put(COL_NEXT_HOP_INTERFACE, abstractRoute.getNextHopInterface())
         .put(COL_PROTOCOL, abstractRoute.getProtocol())
@@ -429,6 +432,7 @@ public class RoutesAnswererUtil {
         .put(COL_NODE, new Node(hostName))
         .put(COL_VRF_NAME, vrfName)
         .put(COL_NETWORK, bgpv4Route.getNetwork())
+        .put(COL_NEXT_HOP, bgpv4Route.getNextHop())
         .put(COL_NEXT_HOP_IP, nextHopIp)
         .put(COL_NEXT_HOP_INTERFACE, bgpv4Route.getNextHopInterface())
         .put(COL_PROTOCOL, bgpv4Route.getProtocol())
@@ -466,6 +470,7 @@ public class RoutesAnswererUtil {
         .put(COL_NODE, new Node(hostName))
         .put(COL_VRF_NAME, vrfName)
         .put(COL_NETWORK, evpnRoute.getNetwork())
+        .put(COL_NEXT_HOP, evpnRoute.getNextHop())
         .put(COL_NEXT_HOP_IP, nextHopIp)
         .put(COL_NEXT_HOP_INTERFACE, evpnRoute.getNextHopInterface())
         .put(COL_PROTOCOL, evpnRoute.getProtocol())
@@ -550,12 +555,14 @@ public class RoutesAnswererUtil {
       KeyPresenceStatus secondaryKeyPresence,
       RowBuilder rowBuilder) {
     Ip nextHopIp = routeRowSecondaryKey.getNextHopIp();
+    NextHop nextHop = routeRowSecondaryKey.getNextHop();
     String protocol = routeRowSecondaryKey.getProtocol();
     // populating base columns for secondary key if it is present in base snapshot or in both
     // snapshots
     if (secondaryKeyPresence == KeyPresenceStatus.IN_BOTH
         || secondaryKeyPresence == KeyPresenceStatus.ONLY_IN_SNAPSHOT) {
       rowBuilder
+          .put(COL_BASE_PREFIX + COL_NEXT_HOP, nextHop)
           .put(COL_BASE_PREFIX + COL_NEXT_HOP_IP, nextHopIp)
           .put(COL_BASE_PREFIX + COL_PROTOCOL, protocol);
     }
@@ -564,6 +571,7 @@ public class RoutesAnswererUtil {
     if (secondaryKeyPresence == KeyPresenceStatus.IN_BOTH
         || secondaryKeyPresence == KeyPresenceStatus.ONLY_IN_REFERENCE) {
       rowBuilder
+          .put(COL_DELTA_PREFIX + COL_NEXT_HOP, nextHop)
           .put(COL_DELTA_PREFIX + COL_NEXT_HOP_IP, nextHopIp)
           .put(COL_DELTA_PREFIX + COL_PROTOCOL, protocol);
     }
@@ -740,6 +748,7 @@ public class RoutesAnswererUtil {
                                         k -> new HashMap<>())
                                     .computeIfAbsent(
                                         new RouteRowSecondaryKey(
+                                            route.getNextHop(),
                                             route.getNextHopIp(),
                                             route.getProtocol().protocolName()),
                                         k -> new TreeSet<>())
@@ -824,6 +833,7 @@ public class RoutesAnswererUtil {
                                                     k -> new HashMap<>())
                                                 .computeIfAbsent(
                                                     new RouteRowSecondaryKey(
+                                                        route.getNextHop(),
                                                         route.getNextHopIp(),
                                                         route.getProtocol().protocolName()),
                                                     k -> new TreeSet<>())

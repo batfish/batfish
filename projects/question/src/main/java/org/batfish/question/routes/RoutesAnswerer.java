@@ -31,7 +31,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Answerer;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.util.InterfaceNameComparator;
+import org.batfish.common.util.NextHopComparator;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Ip;
@@ -58,6 +58,7 @@ public class RoutesAnswerer extends Answerer {
   static final String COL_NODE = "Node";
   static final String COL_VRF_NAME = "VRF";
   static final String COL_NETWORK = "Network";
+  static final String COL_NEXT_HOP = "Next_Hop";
   static final String COL_NEXT_HOP_INTERFACE = "Next_Hop_Interface";
   static final String COL_NEXT_HOP_IP = "Next_Hop_IP";
   static final String COL_PROTOCOL = "Protocol";
@@ -245,17 +246,13 @@ public class RoutesAnswerer extends Answerer {
       Comparator.<Row, String>comparing(row -> row.getNode(COL_NODE).getName())
           .thenComparing(row -> row.getString(COL_VRF_NAME))
           .thenComparing(row -> row.getPrefix(COL_NETWORK))
-          .thenComparing(
-              row -> row.getIp(COL_NEXT_HOP_IP), Comparator.nullsFirst(Comparator.naturalOrder()))
-          .thenComparing(
-              row -> row.getString(COL_NEXT_HOP_INTERFACE), InterfaceNameComparator.instance());
+          .thenComparing(row -> row.getNextHop(COL_NEXT_HOP), NextHopComparator.instance());
 
   private static final Comparator<Row> BGP_COMPARATOR =
       Comparator.<Row, String>comparing(row -> row.getNode(COL_NODE).getName())
           .thenComparing(row -> row.getString(COL_VRF_NAME))
           .thenComparing(row -> row.getPrefix(COL_NETWORK))
-          .thenComparing(
-              row -> row.getIp(COL_NEXT_HOP_IP), Comparator.nullsFirst(Comparator.naturalOrder()));
+          .thenComparing(row -> row.getNextHop(COL_NEXT_HOP), NextHopComparator.instance());
 
   /** Generate the table metadata based on the {@code rib} we are pulling */
   @VisibleForTesting
@@ -279,6 +276,9 @@ public class RoutesAnswerer extends Answerer {
                     "Route distinguisher",
                     Boolean.FALSE,
                     Boolean.TRUE))
+            .add(
+                new ColumnMetadata(
+                    COL_NEXT_HOP, Schema.NEXT_HOP, "Route's Next Hop", Boolean.FALSE, Boolean.TRUE))
             .add(
                 new ColumnMetadata(
                     COL_NEXT_HOP_IP, Schema.IP, "Route's Next Hop IP", Boolean.FALSE, Boolean.TRUE))
@@ -351,6 +351,13 @@ public class RoutesAnswerer extends Answerer {
                     COL_STATUS,
                     Schema.list(Schema.STRING),
                     "Route's statuses",
+                    Boolean.FALSE,
+                    Boolean.TRUE))
+            .add(
+                new ColumnMetadata(
+                    COL_NEXT_HOP,
+                    Schema.NEXT_HOP,
+                    "Route's Next Hop IP",
                     Boolean.FALSE,
                     Boolean.TRUE))
             .add(
@@ -426,6 +433,9 @@ public class RoutesAnswerer extends Answerer {
         columnBuilder
             .add(
                 new ColumnMetadata(
+                    COL_NEXT_HOP, Schema.NEXT_HOP, "Route's Next Hop", Boolean.FALSE, Boolean.TRUE))
+            .add(
+                new ColumnMetadata(
                     COL_NEXT_HOP_IP, Schema.IP, "Route's Next Hop IP", Boolean.FALSE, Boolean.TRUE))
             .add(
                 new ColumnMetadata(
@@ -498,6 +508,20 @@ public class RoutesAnswerer extends Answerer {
                 COL_DELTA_PREFIX + COL_STATUS,
                 Schema.list(Schema.STRING),
                 "Route's statuses",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_BASE_PREFIX + COL_NEXT_HOP,
+                Schema.NEXT_HOP,
+                "Route's Next Hop",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_DELTA_PREFIX + COL_NEXT_HOP,
+                Schema.NEXT_HOP,
+                "Route's Next Hop",
                 Boolean.FALSE,
                 Boolean.TRUE));
         columnBuilder.add(
@@ -643,6 +667,20 @@ public class RoutesAnswerer extends Answerer {
         break;
       case MAIN:
       default:
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_BASE_PREFIX + COL_NEXT_HOP,
+                Schema.NEXT_HOP,
+                "Route's Next Hop",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_DELTA_PREFIX + COL_NEXT_HOP,
+                Schema.NEXT_HOP,
+                "Route's Next Hop",
+                Boolean.FALSE,
+                Boolean.TRUE));
         columnBuilder.add(
             new ColumnMetadata(
                 COL_BASE_PREFIX + COL_NEXT_HOP_IP,

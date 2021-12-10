@@ -12,6 +12,7 @@ import static org.batfish.question.routes.RoutesAnswerer.COL_COMMUNITIES;
 import static org.batfish.question.routes.RoutesAnswerer.COL_LOCAL_PREF;
 import static org.batfish.question.routes.RoutesAnswerer.COL_METRIC;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NETWORK;
+import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP_INTERFACE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP_IP;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NODE;
@@ -312,6 +313,7 @@ public class RoutesAnswererTest {
             COL_NODE,
             COL_VRF_NAME,
             COL_NETWORK,
+            COL_NEXT_HOP,
             COL_NEXT_HOP_IP,
             COL_NEXT_HOP_INTERFACE,
             COL_PROTOCOL,
@@ -327,6 +329,7 @@ public class RoutesAnswererTest {
             Schema.NODE,
             Schema.STRING,
             Schema.PREFIX,
+            Schema.NEXT_HOP,
             Schema.IP,
             Schema.STRING,
             Schema.STRING,
@@ -343,6 +346,7 @@ public class RoutesAnswererTest {
             COL_VRF_NAME,
             COL_NETWORK,
             COL_STATUS,
+            COL_NEXT_HOP,
             COL_NEXT_HOP_IP,
             COL_NEXT_HOP_INTERFACE,
             COL_PROTOCOL,
@@ -376,6 +380,7 @@ public class RoutesAnswererTest {
             COL_NETWORK,
             COL_STATUS,
             COL_ROUTE_DISTINGUISHER,
+            COL_NEXT_HOP,
             COL_NEXT_HOP_IP,
             COL_NEXT_HOP_INTERFACE,
             COL_PROTOCOL,
@@ -413,6 +418,8 @@ public class RoutesAnswererTest {
             COL_VRF_NAME,
             COL_NETWORK,
             COL_ROUTE_ENTRY_PRESENCE,
+            COL_BASE_PREFIX + COL_NEXT_HOP,
+            COL_DELTA_PREFIX + COL_NEXT_HOP,
             COL_BASE_PREFIX + COL_NEXT_HOP_IP,
             COL_DELTA_PREFIX + COL_NEXT_HOP_IP,
             COL_BASE_PREFIX + COL_PROTOCOL,
@@ -435,6 +442,8 @@ public class RoutesAnswererTest {
             Schema.STRING,
             Schema.PREFIX,
             Schema.STRING,
+            Schema.NEXT_HOP,
+            Schema.NEXT_HOP,
             Schema.IP,
             Schema.IP,
             Schema.STRING,
@@ -459,6 +468,8 @@ public class RoutesAnswererTest {
         COL_ROUTE_ENTRY_PRESENCE,
         COL_BASE_PREFIX + COL_STATUS,
         COL_DELTA_PREFIX + COL_STATUS,
+        COL_BASE_PREFIX + COL_NEXT_HOP,
+        COL_DELTA_PREFIX + COL_NEXT_HOP,
         COL_BASE_PREFIX + COL_NEXT_HOP_IP,
         COL_DELTA_PREFIX + COL_NEXT_HOP_IP,
         COL_BASE_PREFIX + COL_PROTOCOL,
@@ -490,6 +501,8 @@ public class RoutesAnswererTest {
         Schema.STRING,
         Schema.list(Schema.STRING),
         Schema.list(Schema.STRING),
+        Schema.NEXT_HOP,
+        Schema.NEXT_HOP,
         Schema.IP,
         Schema.IP,
         Schema.STRING,

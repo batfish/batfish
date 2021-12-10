@@ -91,6 +91,7 @@ import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.BgpRouteStatus;
+import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.table.Row;
@@ -454,41 +455,44 @@ public class RoutesAnswererUtilTest {
     List<List<RouteRowAttribute>> diffMatrixMissingBase = new ArrayList<>();
     diffMatrixMissingBase.add(Lists.newArrayList(null, routeRowAttrBuilder.build()));
 
+    Ip nextHopIp = Ip.parse("1.1.1.2");
+    NextHop nextHop = NextHopIp.of(nextHopIp);
+
     List<DiffRoutesOutput> diff =
         ImmutableList.of(
             new DiffRoutesOutput(
                 new RouteRowKey("node", "vrf", Prefix.parse("1.1.1.1/24")),
-                new RouteRowSecondaryKey(Ip.parse("1.1.1.2"), "bgp"),
+                new RouteRowSecondaryKey(nextHop, nextHopIp, "bgp"),
                 KeyPresenceStatus.IN_BOTH,
                 diffMatrix,
                 KeyPresenceStatus.IN_BOTH),
             new DiffRoutesOutput(
                 new RouteRowKey("node", "vrf", Prefix.parse("1.1.1.1/24")),
-                new RouteRowSecondaryKey(Ip.parse("1.1.1.2"), "bgp"),
+                new RouteRowSecondaryKey(nextHop, nextHopIp, "bgp"),
                 KeyPresenceStatus.IN_BOTH,
                 diffMatrixChanged,
                 KeyPresenceStatus.IN_BOTH),
             new DiffRoutesOutput(
                 new RouteRowKey("node", "vrf", Prefix.parse("1.1.1.1/24")),
-                new RouteRowSecondaryKey(Ip.parse("1.1.1.2"), "bgp"),
+                new RouteRowSecondaryKey(nextHop, nextHopIp, "bgp"),
                 KeyPresenceStatus.ONLY_IN_SNAPSHOT,
                 diffMatrixMissingRefs,
                 KeyPresenceStatus.IN_BOTH),
             new DiffRoutesOutput(
                 new RouteRowKey("node", "vrf", Prefix.parse("1.1.1.1/24")),
-                new RouteRowSecondaryKey(Ip.parse("1.1.1.2"), "bgp"),
+                new RouteRowSecondaryKey(nextHop, nextHopIp, "bgp"),
                 KeyPresenceStatus.ONLY_IN_REFERENCE,
                 diffMatrixMissingBase,
                 KeyPresenceStatus.IN_BOTH),
             new DiffRoutesOutput(
                 new RouteRowKey("node", "vrf", Prefix.parse("1.1.1.1/24")),
-                new RouteRowSecondaryKey(Ip.parse("1.1.1.2"), "bgp"),
+                new RouteRowSecondaryKey(nextHop, nextHopIp, "bgp"),
                 KeyPresenceStatus.IN_BOTH,
                 diffMatrixMissingRefs,
                 KeyPresenceStatus.IN_BOTH),
             new DiffRoutesOutput(
                 new RouteRowKey("node", "vrf", Prefix.parse("1.1.1.1/24")),
-                new RouteRowSecondaryKey(Ip.parse("1.1.1.2"), "bgp"),
+                new RouteRowSecondaryKey(nextHop, nextHopIp, "bgp"),
                 KeyPresenceStatus.IN_BOTH,
                 diffMatrixMissingBase,
                 KeyPresenceStatus.IN_BOTH));
@@ -575,14 +579,16 @@ public class RoutesAnswererUtilTest {
     // checking equality of inner group
     Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>> expectedInnerMap =
         ImmutableMap.of(
-            new RouteRowSecondaryKey(Ip.parse("1.1.1.2"), "ospfE2"),
+            new RouteRowSecondaryKey(
+                NextHopInterface.of("e0", Ip.parse("1.1.1.2")), Ip.parse("1.1.1.2"), "ospfE2"),
             ImmutableSortedSet.of(
                 RouteRowAttribute.builder()
                     .setAdminDistance(10)
                     .setMetric(30L)
                     .setNextHopInterface("e0")
                     .build()),
-            new RouteRowSecondaryKey(Ip.parse("1.1.1.3"), "ospfE2"),
+            new RouteRowSecondaryKey(
+                NextHopInterface.of("e0", Ip.parse("1.1.1.3")), Ip.parse("1.1.1.3"), "ospfE2"),
             ImmutableSortedSet.of(
                 RouteRowAttribute.builder()
                     .setAdminDistance(10)
@@ -649,7 +655,8 @@ public class RoutesAnswererUtilTest {
     // only the ibgp route is included because of the RoutingProtocolSpecifier above
     Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>> expectedInnerMap =
         ImmutableMap.of(
-            new RouteRowSecondaryKey(Ip.parse("1.1.1.3"), "ibgp"),
+            new RouteRowSecondaryKey(
+                NextHopIp.of(Ip.parse("1.1.1.3")), Ip.parse("1.1.1.3"), "ibgp"),
             ImmutableSortedSet.of(
                 RouteRowAttribute.builder()
                     .setAdminDistance(10)
@@ -716,7 +723,7 @@ public class RoutesAnswererUtilTest {
     // checking equality of inner group
     Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>> expectedInnerMap =
         ImmutableMap.of(
-            new RouteRowSecondaryKey(Ip.parse("1.1.1.2"), "bgp"),
+            new RouteRowSecondaryKey(NextHopIp.of(Ip.parse("1.1.1.2")), Ip.parse("1.1.1.2"), "bgp"),
             ImmutableSortedSet.of(
                 RouteRowAttribute.builder()
                     .setAdminDistance(10)
@@ -726,7 +733,7 @@ public class RoutesAnswererUtilTest {
                     .setOriginType(OriginType.IGP)
                     .setStatus(BEST)
                     .build()),
-            new RouteRowSecondaryKey(Ip.parse("1.1.1.3"), "bgp"),
+            new RouteRowSecondaryKey(NextHopIp.of(Ip.parse("1.1.1.3")), Ip.parse("1.1.1.3"), "bgp"),
             ImmutableSortedSet.of(
                 RouteRowAttribute.builder()
                     .setAdminDistance(10)
@@ -779,7 +786,7 @@ public class RoutesAnswererUtilTest {
     // checking equality of inner group
     Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>> expectedInnerMap =
         ImmutableMap.of(
-            new RouteRowSecondaryKey(Ip.parse("1.1.1.2"), "bgp"),
+            new RouteRowSecondaryKey(NextHopIp.of(Ip.parse("1.1.1.2")), Ip.parse("1.1.1.2"), "bgp"),
             ImmutableSortedSet.of(
                 RouteRowAttribute.builder()
                     .setAdminDistance(10)
@@ -796,10 +803,14 @@ public class RoutesAnswererUtilTest {
   @Test
   public void testGetRoutesDiffCommonKey() {
     RouteRowKey routeRowKey = new RouteRowKey("node", "vrf", Prefix.parse("2.2.2.2/24"));
-    RouteRowSecondaryKey rrsk1 = new RouteRowSecondaryKey(Ip.parse("1.1.1.1"), "bgp");
-    RouteRowSecondaryKey rrsk2 = new RouteRowSecondaryKey(Ip.parse("1.1.1.2"), "bgp");
-    RouteRowSecondaryKey rrsk3 = new RouteRowSecondaryKey(Ip.parse("1.1.1.3"), "bgp");
-    RouteRowSecondaryKey rrsk4 = new RouteRowSecondaryKey(Ip.parse("1.1.1.4"), "bgp");
+    RouteRowSecondaryKey rrsk1 =
+        new RouteRowSecondaryKey(NextHopIp.of(Ip.parse("1.1.1.1")), Ip.parse("1.1.1.1"), "bgp");
+    RouteRowSecondaryKey rrsk2 =
+        new RouteRowSecondaryKey(NextHopIp.of(Ip.parse("1.1.1.2")), Ip.parse("1.1.1.2"), "bgp");
+    RouteRowSecondaryKey rrsk3 =
+        new RouteRowSecondaryKey(NextHopIp.of(Ip.parse("1.1.1.3")), Ip.parse("1.1.1.3"), "bgp");
+    RouteRowSecondaryKey rrsk4 =
+        new RouteRowSecondaryKey(NextHopIp.of(Ip.parse("1.1.1.4")), Ip.parse("1.1.1.4"), "bgp");
 
     RouteRowAttribute rra1 = RouteRowAttribute.builder().setNextHop("node1").build();
     RouteRowAttribute rra2 = RouteRowAttribute.builder().setNextHop("node2").build();
@@ -869,8 +880,10 @@ public class RoutesAnswererUtilTest {
     RouteRowKey routeRowKey1 = new RouteRowKey("node1", "vrf", Prefix.parse("1.1.1.1/24"));
     RouteRowKey routeRowKey2 = new RouteRowKey("node2", "vrf", Prefix.parse("1.1.1.2/24"));
 
-    RouteRowSecondaryKey rrsk1 = new RouteRowSecondaryKey(Ip.parse("1.1.1.1"), "bgp");
-    RouteRowSecondaryKey rrsk2 = new RouteRowSecondaryKey(Ip.parse("1.1.1.2"), "bgp");
+    RouteRowSecondaryKey rrsk1 =
+        new RouteRowSecondaryKey(NextHopIp.of(Ip.parse("1.1.1.1")), Ip.parse("1.1.1.1"), "bgp");
+    RouteRowSecondaryKey rrsk2 =
+        new RouteRowSecondaryKey(NextHopIp.of(Ip.parse("1.1.1.2")), Ip.parse("1.1.1.2"), "bgp");
 
     RouteRowAttribute rra1 = RouteRowAttribute.builder().setNextHop("node11").build();
     RouteRowAttribute rra2 = RouteRowAttribute.builder().setNextHop("node22").build();
@@ -921,7 +934,8 @@ public class RoutesAnswererUtilTest {
         ImmutableList.of(
             new DiffRoutesOutput(
                 new RouteRowKey("node", "vrf", Prefix.parse("1.1.1.1/24")),
-                new RouteRowSecondaryKey(Ip.parse("1.1.1.2"), "bgp"),
+                new RouteRowSecondaryKey(
+                    NextHopIp.of(Ip.parse("1.1.1.1")), Ip.parse("1.1.1.2"), "bgp"),
                 KeyPresenceStatus.IN_BOTH,
                 diffMatrix,
                 KeyPresenceStatus.IN_BOTH));

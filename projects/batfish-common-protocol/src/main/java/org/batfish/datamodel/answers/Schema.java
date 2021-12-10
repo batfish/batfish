@@ -21,6 +21,7 @@ import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.BgpRoute;
 import org.batfish.datamodel.questions.BgpRouteDiffs;
+import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.trace.TraceTree;
 
 public class Schema {
@@ -52,6 +53,7 @@ public class Schema {
           .put("Ip", getClassString(Ip.class))
           .put("Issue", getClassString(Issue.class))
           .put("Long", getClassString(Long.class))
+          .put("NextHop", getClassString(NextHop.class))
           .put("Object", getClassString(Object.class))
           .put("Node", getClassString(Node.class))
           .put("Prefix", getClassString(Prefix.class))
@@ -72,6 +74,7 @@ public class Schema {
   public static final Schema IP = new Schema("Ip");
   public static final Schema ISSUE = new Schema("Issue");
   public static final Schema LONG = new Schema("Long");
+  public static final Schema NEXT_HOP = new Schema("NextHop");
   public static final Schema OBJECT = new Schema("Object");
   public static final Schema NODE = new Schema("Node");
   public static final Schema PREFIX = new Schema("Prefix");
