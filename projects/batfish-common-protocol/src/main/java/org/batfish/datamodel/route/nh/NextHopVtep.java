@@ -5,7 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.google.common.base.MoreObjects;
 import java.util.Objects;
 import javax.annotation.Nonnull;
-import javax.annotation.ParametersAreNonnullByDefault;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 
 /**
@@ -14,7 +14,6 @@ import org.batfish.datamodel.Ip;
  * Note that this class will reject invalid VTEP IP values such as {@link Ip#ZERO}, {@link Ip#MAX},
  * {@link Ip#AUTO}.
  */
-@ParametersAreNonnullByDefault
 public class NextHopVtep implements NextHop {
   public int getVni() {
     return _vni;
@@ -39,7 +38,7 @@ public class NextHopVtep implements NextHop {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     } else if (!(o instanceof NextHopVtep)) {
