@@ -6,7 +6,7 @@
   "instance" : {
     "description" : "Returns Virtual Server configuration of A10 devices.",
     "instanceName" : "qname",
-    "longDescription" : "Lists all the Virtual Server to service group to server mappings in A10 configurations.",
+    "longDescription" : "Lists all the virtual-server to service-group to server mappings in A10 configurations.",
     "orderedVariableNames" : [
       "nodes"
     ],
