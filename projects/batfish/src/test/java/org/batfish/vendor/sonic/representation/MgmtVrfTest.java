@@ -6,30 +6,21 @@ import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Test;
 
-public class PortTest {
+public class MgmtVrfTest {
 
   @Test
   public void testJavaSerialization() {
-    Port obj =
-        Port.builder()
-            .setAdminStatusUp(true)
-            .setDescription("desc")
-            .setMtu(32)
-            .setSpeed(42)
-            .build();
+    MgmtVrf obj = MgmtVrf.builder().setMgmtVrfEnabled(true).build();
     assertEquals(obj, SerializationUtils.clone(obj));
   }
 
   @SuppressWarnings("UnstableApiUsage")
   @Test
   public void testEquals() {
-    Port.Builder builder = Port.builder();
+    MgmtVrf.Builder builder = MgmtVrf.builder();
     new EqualsTester()
         .addEqualityGroup(builder.build(), builder.build())
-        .addEqualityGroup(builder.setAdminStatusUp(true).build())
-        .addEqualityGroup(builder.setDescription("desc").build())
-        .addEqualityGroup(builder.setMtu(23).build())
-        .addEqualityGroup(builder.setSpeed(42).build())
+        .addEqualityGroup(builder.setMgmtVrfEnabled(true).build())
         .testEquals();
   }
 }

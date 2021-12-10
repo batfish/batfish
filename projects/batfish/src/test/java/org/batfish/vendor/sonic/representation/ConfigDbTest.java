@@ -69,6 +69,59 @@ public class ConfigDbTest {
   }
 
   @Test
+  public void testDeserializationMgmtInterface() throws JsonProcessingException {
+    String input = "{ \"MGMT_INTERFACE\": {\"eth0|10.11.150.11/16\": {\"gwaddr\": \"10.11.0.1\"}}}";
+    assertThat(
+        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, ConfigDb.class),
+        equalTo(
+            ConfigDb.builder()
+                .setMgmtInterfaces(
+                    ImmutableMap.of(
+                        "eth0", new L3Interface(ConcreteInterfaceAddress.parse("10.11.150.11/16"))))
+                .build()));
+  }
+
+  @Test
+  public void testJacksonDeserializationMgmtPort() throws JsonProcessingException {
+    String input =
+        "{\"MGMT_PORT\" :{\n"
+            + "        \"eth0\": {\n"
+            + "            \"description\": \"Management0\",\n"
+            + "            \"speed\": \"1000\""
+            + "        }\n"
+            + "}}";
+
+    assertThat(
+        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, ConfigDb.class),
+        equalTo(
+            ConfigDb.builder()
+                .setMgmtPorts(
+                    ImmutableMap.of(
+                        "eth0",
+                        Port.builder().setDescription("Management0").setSpeed(1000).build()))
+                .build()));
+  }
+
+  @Test
+  public void testJacksonDeserializationMgmtVrfConfig() throws JsonProcessingException {
+    String input =
+        "{\"MGMT_VRF_CONFIG\" :{\n"
+            + "        \"vrf_global\": {\n"
+            + "            \"mgmtVrfEnabled\": \"true\""
+            + "        }\n"
+            + "}}";
+
+    assertThat(
+        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, ConfigDb.class),
+        equalTo(
+            ConfigDb.builder()
+                .setMgmtVrfs(
+                    ImmutableMap.of(
+                        "vrf_global", MgmtVrf.builder().setMgmtVrfEnabled(true).build()))
+                .build()));
+  }
+
+  @Test
   public void testDeserializationNtpServer() throws JsonProcessingException {
     String input = "{ \"NTP_SERVER\": {\"23.92.29.245\": {}, \"2.debian.pool.ntp.org\": {}}}";
     assertThat(
@@ -152,6 +205,12 @@ public class ConfigDbTest {
             builder.setInterfaces(ImmutableMap.of("iface", new L3Interface(null))).build())
         .addEqualityGroup(
             builder.setLoopbacks(ImmutableMap.of("l0", new L3Interface(null))).build())
+        .addEqualityGroup(
+            builder.setMgmtInterfaces(ImmutableMap.of("eth0", new L3Interface(null))).build())
+        .addEqualityGroup(
+            builder.setMgmtPorts(ImmutableMap.of("eth0", Port.builder().build())).build())
+        .addEqualityGroup(
+            builder.setMgmtVrfs(ImmutableMap.of("vrf_global", MgmtVrf.builder().build())).build())
         .addEqualityGroup(builder.setNtpServers(ImmutableSet.of("ntp")).build())
         .addEqualityGroup(builder.setPorts(ImmutableMap.of("a", Port.builder().build())))
         .addEqualityGroup(builder.setSyslogServers(ImmutableSet.of("aa")).build())
