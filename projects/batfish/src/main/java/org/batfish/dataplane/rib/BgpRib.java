@@ -35,6 +35,7 @@ import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.route.nh.NextHopVisitor;
 import org.batfish.datamodel.route.nh.NextHopVrf;
+import org.batfish.datamodel.route.nh.NextHopVtep;
 
 /**
  * A generic BGP RIB containing the common properties among the RIBs for different types of BGP
@@ -430,6 +431,12 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
 
               @Override
               public Long visitNextHopVrf(NextHopVrf nextHopVrf) {
+                // TODO: something better?
+                return Long.MAX_VALUE;
+              }
+
+              @Override
+              public Long visitNextHopVtep(NextHopVtep nextHopVtep) {
                 // TODO: something better?
                 return Long.MAX_VALUE;
               }

@@ -13,4 +13,6 @@ public interface NextHopVisitor<T> {
   T visitNextHopDiscard(NextHopDiscard nextHopDiscard);
 
   T visitNextHopVrf(NextHopVrf nextHopVrf);
+
+  T visitNextHopVtep(NextHopVtep nextHopVtep);
 }
