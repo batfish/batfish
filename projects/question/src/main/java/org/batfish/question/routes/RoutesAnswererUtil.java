@@ -622,6 +622,9 @@ public class RoutesAnswererUtil {
         .put(
             prefix + COL_ORIGIN_TYPE,
             routeRowAttribute != null ? routeRowAttribute.getOriginType() : null)
+        .put(
+            prefix + COL_RECEIVED_FROM_IP,
+            routeRowAttribute != null ? routeRowAttribute.getReceivedFromIp() : null)
         .put(prefix + COL_TAG, routeRowAttribute != null ? routeRowAttribute.getTag() : null)
         .put(
             prefix + COL_STATUS,
@@ -846,6 +849,8 @@ public class RoutesAnswererUtil {
                                                                 .map(Community::toString)
                                                                 .collect(toImmutableList()))
                                                         .setOriginType(route.getOriginType())
+                                                        .setReceivedFromIp(
+                                                            route.getReceivedFromIp())
                                                         .setTag(
                                                             route.getTag() == Route.UNSET_ROUTE_TAG
                                                                 ? null

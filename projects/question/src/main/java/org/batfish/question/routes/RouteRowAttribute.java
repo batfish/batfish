@@ -14,6 +14,7 @@ import javax.annotation.ParametersAreNullableByDefault;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Route;
@@ -45,6 +46,8 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
 
   @Nullable private final OriginType _originType;
 
+  @Nullable private final Ip _receivedFromIp;
+
   @Nullable private final Long _tag;
 
   @Nullable private final BgpRouteStatus _status;
@@ -62,6 +65,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
       String originalProtocol,
       OriginMechanism originMechanism,
       OriginType originType,
+      Ip receivedFromIp,
       Long tag,
       BgpRouteStatus status,
       Integer weight) {
@@ -75,6 +79,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
     _originProtocol = originalProtocol;
     _originMechanism = originMechanism;
     _originType = originType;
+    _receivedFromIp = receivedFromIp;
     _tag = tag;
     _status = status;
     _weight = weight;
@@ -130,6 +135,10 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
     return _originType;
   }
 
+  public @Nullable Ip getReceivedFromIp() {
+    return _receivedFromIp;
+  }
+
   @Nullable
   public Long getTag() {
     return _tag;
@@ -160,6 +169,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
           .thenComparing(
               RouteRowAttribute::getOriginMechanism, nullsLast(OriginMechanism::compareTo))
           .thenComparing(RouteRowAttribute::getOriginType, nullsLast(OriginType::compareTo))
+          .thenComparing(RouteRowAttribute::getReceivedFromIp, nullsLast(Ip::compareTo))
           .thenComparing(RouteRowAttribute::getTag, nullsLast(Long::compareTo))
           .thenComparing(RouteRowAttribute::getStatus, nullsLast(BgpRouteStatus::compareTo))
           .thenComparing(
@@ -191,6 +201,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
         && Objects.equals(_originProtocol, that._originProtocol)
         && Objects.equals(_originMechanism, that._originMechanism)
         && Objects.equals(_originType, that._originType)
+        && Objects.equals(_receivedFromIp, that._receivedFromIp)
         && Objects.equals(_tag, that._tag)
         && Objects.equals(_status, that._status)
         && Objects.equals(_weight, that._weight);
@@ -208,6 +219,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
         _communities,
         _originProtocol,
         _originType == null ? 0 : _originType.ordinal(),
+        _receivedFromIp,
         _tag,
         _status == null ? 0 : _status.ordinal(),
         _weight);
@@ -225,6 +237,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
     @Nullable private String _originProtocol;
     @Nullable private OriginMechanism _originMechanism;
     @Nullable private OriginType _originType;
+    @Nullable private Ip _receivedFromIp;
     @Nullable private Long _tag;
     @Nullable private BgpRouteStatus _status;
     @Nullable private Integer _weight;
@@ -244,6 +257,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
           _originProtocol,
           _originMechanism,
           _originType,
+          _receivedFromIp,
           _tag,
           _status,
           _weight);
@@ -296,6 +310,11 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
 
     public Builder setOriginType(OriginType originType) {
       _originType = originType;
+      return this;
+    }
+
+    public Builder setReceivedFromIp(Ip receivedFromIp) {
+      _receivedFromIp = receivedFromIp;
       return this;
     }
 

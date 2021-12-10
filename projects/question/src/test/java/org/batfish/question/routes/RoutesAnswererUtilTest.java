@@ -436,6 +436,7 @@ public class RoutesAnswererUtilTest {
             .setAdminDistance(200)
             .setMetric(2L)
             .setOriginProtocol("bgp")
+            .setReceivedFromIp(Ip.parse("6.6.6.6"))
             .setAsPath(AsPath.ofSingletonAsSets(ImmutableList.of(1L, 2L)))
             .setLocalPreference(1L)
             .setWeight(7);
