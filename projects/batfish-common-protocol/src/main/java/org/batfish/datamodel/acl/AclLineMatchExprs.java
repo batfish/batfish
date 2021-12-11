@@ -36,12 +36,24 @@ public final class AclLineMatchExprs {
   static final AclLineMatchExpr TCP_FLOWS = matchIpProtocol(IpProtocol.TCP);
   static final AclLineMatchExpr UDP_FLOWS = matchIpProtocol(IpProtocol.UDP);
 
+  /**
+   * TCP-specific settings for the first packet of a TCP flow.
+   *
+   * <p>Note this <strong>DOES NOT</strong> handle non-TCP fields like fragment offset.
+   *
+   * @see #NEW_FLOWS for other fields.
+   */
   @VisibleForTesting
   static final AclLineMatchExpr NEW_TCP_FLOWS =
       and(TCP_FLOWS, matchTcpFlags(TcpFlagsMatchConditions.SYN_ONLY_TCP_FLAG));
 
   /** A reusable expression to indicate new flows. */
-  public static final AclLineMatchExpr NEW_FLOWS = implies(TCP_FLOWS, NEW_TCP_FLOWS);
+  public static final AclLineMatchExpr NEW_FLOWS =
+      and(
+          // A new flow is the first fragment or is not fragmented
+          matchFragmentOffset(0),
+          // A new TCP flow has specific TCP flags set
+          implies(TCP_FLOWS, NEW_TCP_FLOWS));
 
   /** A reusable expression to indicate flows that meet basic integrity constraints. */
   public static final AclLineMatchExpr VALID_FLOWS = makeValidFlows();
