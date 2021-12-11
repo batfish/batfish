@@ -1,5 +1,7 @@
 package org.batfish.vendor.sonic.representation;
 
+import static org.batfish.representation.frr.FrrConversions.SPEED_CONVERSION_FACTOR;
+
 import java.util.Map;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
@@ -11,6 +13,9 @@ public class SonicConversions {
   /** Converts physical ports found under PORT or the MGMT_PORT objects. */
   static void convertPorts(
       Configuration c, Map<String, Port> ports, Map<String, L3Interface> interfaces, Vrf vrf) {
+
+    // TODO: Set bandwidth appropriately. Factor in runtime data
+
     for (String portName : ports.keySet()) {
       Port port = ports.get(portName);
       Interface.Builder ib =
@@ -22,7 +27,9 @@ public class SonicConversions {
               .setDescription(port.getDescription().orElse(null))
               .setMtu(port.getMtu().orElse(null))
               .setSpeed(
-                  port.getSpeed().map(Integer::doubleValue).orElse(null)) // TODO: default speed
+                  port.getSpeed()
+                      .map(speed -> speed * SPEED_CONVERSION_FACTOR)
+                      .orElse(null)) // TODO: default speed
               .setActive(port.getAdminStatusUp().orElse(true)); // default is active
 
       if (interfaces.containsKey(portName)) {

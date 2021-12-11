@@ -6,6 +6,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSpeed;
+import static org.batfish.representation.frr.FrrConversions.SPEED_CONVERSION_FACTOR;
 import static org.batfish.vendor.sonic.representation.SonicConversions.convertPorts;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.nullValue;
@@ -46,7 +47,7 @@ public class SonicConversionsTest {
               hasAddress(ifaceAddress),
               hasMtu(56),
               hasDescription("desc"),
-              hasSpeed(23.0)));
+              hasSpeed(23 * SPEED_CONVERSION_FACTOR)));
     }
     {
       // interface does not exist
