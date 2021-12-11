@@ -73,5 +73,7 @@ public class AclLineMatchExprsTest {
     assertFalse(matches(NEW_FLOWS, SYN_ACK_FLOW));
     assertTrue(matches(NEW_FLOWS, SYN_FLOW));
     assertTrue(matches(NEW_FLOWS, UDP_FLOW));
+    assertFalse(matches(NEW_FLOWS, SYN_FLOW.toBuilder().setFragmentOffset(1).build()));
+    assertFalse(matches(NEW_FLOWS, UDP_FLOW.toBuilder().setFragmentOffset(1).build()));
   }
 }
