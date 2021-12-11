@@ -17,6 +17,7 @@ public class BgpNeighborIpv4UnicastAddressFamily implements Serializable {
   @Nullable private Boolean _activated;
   @Nullable private Integer _allowAsIn;
   @Nullable private Boolean _defaultOriginate;
+  @Nullable private String _defaultOriginateRouteMap;
   @Nullable private RemovePrivateAsMode _removePrivateAsMode;
   @Nullable private Boolean _routeReflectorClient;
   @Nullable private Boolean _nextHopSelf;
@@ -84,6 +85,10 @@ public class BgpNeighborIpv4UnicastAddressFamily implements Serializable {
       _defaultOriginate = other.getDefaultOriginate();
     }
 
+    if (_defaultOriginateRouteMap == null) {
+      _defaultOriginateRouteMap = other.getDefaultOriginateRouteMap();
+    }
+
     if (_removePrivateAsMode == null) {
       _removePrivateAsMode = other.getRemovePrivateAsMode();
     }
@@ -127,5 +132,13 @@ public class BgpNeighborIpv4UnicastAddressFamily implements Serializable {
 
   public void setDefaultOriginate(@Nullable Boolean defaultOriginate) {
     _defaultOriginate = defaultOriginate;
+  }
+
+  public @Nullable String getDefaultOriginateRouteMap() {
+    return _defaultOriginateRouteMap;
+  }
+
+  public void setDefaultOriginateRouteMap(@Nullable String defaultOriginateRouteMap) {
+    _defaultOriginateRouteMap = defaultOriginateRouteMap;
   }
 }

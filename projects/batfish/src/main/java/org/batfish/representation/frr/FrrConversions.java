@@ -153,10 +153,6 @@ public final class FrrConversions {
   public static final long DEFAULT_OSPF_MAX_METRIC = 0xFFFF;
 
   @VisibleForTesting
-  static GeneratedRoute GENERATED_DEFAULT_ROUTE =
-      GeneratedRoute.builder().setNetwork(Prefix.ZERO).setAdmin(MAX_ADMINISTRATIVE_COST).build();
-
-  @VisibleForTesting
   static final Statement REJECT_DEFAULT_ROUTE =
       new If(
           Common.matchDefaultRoute(), ImmutableList.of(Statements.ReturnFalse.toStaticStatement()));
@@ -593,7 +589,11 @@ public final class FrrConversions {
         .setRemoteAsns(neighbor.getRemoteAs().getRemoteAs(localAs))
         .setEbgpMultihop(firstNonNull(neighbor.getEbgpMultihop(), false))
         .setGeneratedRoutes(
-            bgpDefaultOriginate(neighbor) ? ImmutableSet.of(GENERATED_DEFAULT_ROUTE) : null)
+            bgpDefaultOriginate(neighbor)
+                ? ImmutableSet.of(
+                    getGeneratedDefaultRoute(
+                        neighbor.getIpv4UnicastAddressFamily().getDefaultOriginateRouteMap()))
+                : null)
         // Ipv4 unicast is enabled by default
         .setIpv4UnicastAddressFamily(
             convertIpv4UnicastAddressFamily(
@@ -1748,5 +1748,16 @@ public final class FrrConversions {
       return c.getVrfs().get(DEFAULT_VRF_NAME);
     }
     return c.getVrfs().computeIfAbsent(vrfName, org.batfish.datamodel.Vrf::new);
+  }
+
+  @VisibleForTesting
+  static GeneratedRoute getGeneratedDefaultRoute(@Nullable String routeMapName) {
+    // On FRR, the default-originate route-map is used to determine both if a route should be
+    // generated and what attributes to set.
+    return GeneratedRoute.builder()
+        .setNetwork(Prefix.ZERO)
+        .setAdmin(MAX_ADMINISTRATIVE_COST)
+        .setGenerationPolicy(routeMapName)
+        .build();
   }
 }
