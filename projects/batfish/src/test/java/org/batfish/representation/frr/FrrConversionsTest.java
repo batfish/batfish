@@ -19,7 +19,6 @@ import static org.batfish.datamodel.routing_policy.statement.Statements.ExitAcce
 import static org.batfish.datamodel.routing_policy.statement.Statements.RemovePrivateAs;
 import static org.batfish.representation.frr.FrrConfiguration.LOOPBACK_INTERFACE_NAME;
 import static org.batfish.representation.frr.FrrConversions.DEFAULT_MAX_MED;
-import static org.batfish.representation.frr.FrrConversions.GENERATED_DEFAULT_ROUTE;
 import static org.batfish.representation.frr.FrrConversions.REJECT_DEFAULT_ROUTE;
 import static org.batfish.representation.frr.FrrConversions.addBgpNeighbor;
 import static org.batfish.representation.frr.FrrConversions.addOspfInterfaces;
@@ -31,6 +30,7 @@ import static org.batfish.representation.frr.FrrConversions.computeOspfExportPol
 import static org.batfish.representation.frr.FrrConversions.convertIpv4UnicastAddressFamily;
 import static org.batfish.representation.frr.FrrConversions.convertOspfRedistributionPolicy;
 import static org.batfish.representation.frr.FrrConversions.generateBgpCommonPeerConfig;
+import static org.batfish.representation.frr.FrrConversions.getGeneratedDefaultRoute;
 import static org.batfish.representation.frr.FrrConversions.getSetMaxMedMetric;
 import static org.batfish.representation.frr.FrrConversions.getSetNextHop;
 import static org.batfish.representation.frr.FrrConversions.inferClusterId;
@@ -702,7 +702,7 @@ public final class FrrConversionsTest {
     // there should be a generated default route
     assertThat(
         newProc.getActiveNeighbors().get(peerIp).getGeneratedRoutes(),
-        equalTo(ImmutableSet.of(GENERATED_DEFAULT_ROUTE)));
+        equalTo(ImmutableSet.of(getGeneratedDefaultRoute(null))));
 
     // We test exact match with the constant REJECT_DEFAULT_ROUTE here. The constant is
     // tested in testRejectDefaultRoute()
