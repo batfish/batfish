@@ -2,7 +2,6 @@ package org.batfish.vendor.sonic.representation;
 
 import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
-import static org.batfish.vendor.sonic.representation.SonicConversions.convertMgmtPorts;
 import static org.batfish.vendor.sonic.representation.SonicConversions.convertPorts;
 
 import com.google.common.collect.ImmutableList;
@@ -57,8 +56,9 @@ public class SonicConfiguration extends FrrVendorConfiguration {
         .forEach(vrfName -> Vrf.builder().setName(vrfName).setOwner(c).build());
     warnMgmtVrfs(_configDb.getMgmtVrfs(), _w);
 
-    convertPorts(c, _configDb.getPorts(), _configDb.getInterfaces());
-    convertMgmtPorts(
+    // all physical ports are under default VRF (haven't seen VRF definitions in configdb model)
+    convertPorts(c, _configDb.getPorts(), _configDb.getInterfaces(), c.getDefaultVrf());
+    convertPorts(
         c,
         _configDb.getMgmtPorts(),
         _configDb.getMgmtInterfaces(),

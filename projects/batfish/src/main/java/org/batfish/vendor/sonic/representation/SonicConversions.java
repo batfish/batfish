@@ -8,50 +8,24 @@ import org.batfish.datamodel.Vrf;
 
 public class SonicConversions {
 
-  /** Converts physical ports found under PORT object. */
+  /** Converts physical ports found under PORT or the MGMT_PORT objects. */
   static void convertPorts(
-      Configuration c, Map<String, Port> ports, Map<String, L3Interface> interfaces) {
+      Configuration c, Map<String, Port> ports, Map<String, L3Interface> interfaces, Vrf vrf) {
     for (String portName : ports.keySet()) {
       Port port = ports.get(portName);
       Interface.Builder ib =
           Interface.builder()
               .setName(portName)
               .setOwner(c)
-              .setVrf(c.getDefaultVrf()) // all physical ports are in default VRF at the moment
+              .setVrf(vrf)
               .setType(InterfaceType.PHYSICAL)
               .setDescription(port.getDescription().orElse(null))
               .setMtu(port.getMtu().orElse(null))
+              .setSpeed(port.getSpeed().map(Double::new).orElse(null))
               .setActive(port.getAdminStatusUp().orElse(true)); // default is active
 
       if (interfaces.containsKey(portName)) {
         L3Interface l3Interface = interfaces.get(portName);
-        ib.setAddress(l3Interface.getAddress());
-      }
-
-      ib.build();
-    }
-  }
-
-  /** Converts management ports. T */
-  static void convertMgmtPorts(
-      Configuration c,
-      Map<String, Port> mgmtPorts,
-      Map<String, L3Interface> mgmtInterfaces,
-      Vrf mgmtVrf) {
-    for (String portName : mgmtPorts.keySet()) {
-      Port port = mgmtPorts.get(portName);
-      Interface.Builder ib =
-          Interface.builder()
-              .setName(portName)
-              .setOwner(c)
-              .setVrf(mgmtVrf)
-              .setType(InterfaceType.PHYSICAL)
-              .setDescription(port.getDescription().orElse(null))
-              .setMtu(port.getMtu().orElse(null))
-              .setActive(port.getAdminStatusUp().orElse(true)); // default is active
-
-      if (mgmtInterfaces.containsKey(portName)) {
-        L3Interface l3Interface = mgmtInterfaces.get(portName);
         ib.setAddress(l3Interface.getAddress());
       }
 
