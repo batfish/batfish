@@ -29,6 +29,7 @@
           "layer1",
           "layer3",
           "ospf",
+          "user_provided_layer1",
           "vxlan"
         ],
         "description" : "Types of edges to include. Default is layer3.",
@@ -57,6 +58,9 @@
           },
           {
             "name" : "ospf"
+          },
+          {
+            "name" : "user_provided_layer1"
           },
           {
             "name" : "vxlan"
