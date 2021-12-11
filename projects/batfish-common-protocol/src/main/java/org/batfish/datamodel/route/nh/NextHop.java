@@ -19,7 +19,7 @@ import org.batfish.datamodel.Route;
   @JsonSubTypes.Type(value = NextHopDiscard.class, name = "discard"),
   @JsonSubTypes.Type(value = NextHopInterface.class, name = "interface"),
   @JsonSubTypes.Type(value = NextHopIp.class, name = "ip"),
-  @JsonSubTypes.Type(value = NextHopVrf.class, name = "next-vrf"),
+  @JsonSubTypes.Type(value = NextHopVrf.class, name = "vrf"),
   @JsonSubTypes.Type(value = NextHopVtep.class, name = "vtep")
 })
 public interface NextHop extends Serializable {
