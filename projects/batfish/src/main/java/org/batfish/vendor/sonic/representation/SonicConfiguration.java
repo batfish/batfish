@@ -2,9 +2,10 @@ package org.batfish.vendor.sonic.representation;
 
 import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.vendor.sonic.representation.SonicConversions.convertMgmtPorts;
+import static org.batfish.vendor.sonic.representation.SonicConversions.convertPorts;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -12,12 +13,11 @@ import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.VendorConversionException;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
-import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Vrf;
 import org.batfish.representation.frr.FrrConfiguration;
@@ -49,36 +49,22 @@ public class SonicConfiguration extends FrrVendorConfiguration {
     c.setDefaultInboundAction(LineAction.PERMIT); // TODO: confirm
     c.setExportBgpFromBgpRib(true);
 
-    // create default VRF
-    Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
-    c.setVrfs(ImmutableMap.of(DEFAULT_VRF_NAME, vrf));
+    // create VRFs
+    Vrf.builder().setName(DEFAULT_VRF_NAME).setOwner(c).build();
+    _configDb
+        .getMgmtVrfs()
+        .keySet()
+        .forEach(vrfName -> Vrf.builder().setName(vrfName).setOwner(c).build());
+    warnMgmtVrfs(_configDb.getMgmtVrfs(), _w);
 
     convertPorts(c, _configDb.getPorts(), _configDb.getInterfaces());
+    convertMgmtPorts(
+        c,
+        _configDb.getMgmtPorts(),
+        _configDb.getMgmtInterfaces(),
+        c.getVrfs().get(getMgmtVrfName(_configDb.getMgmtVrfs())));
 
     return ImmutableList.of(c);
-  }
-
-  private void convertPorts(
-      Configuration c, Map<String, Port> ports, Map<String, L3Interface> interfaces) {
-    for (String portName : ports.keySet()) {
-      Port port = ports.get(portName);
-      Interface.Builder ib =
-          Interface.builder()
-              .setName(portName)
-              .setOwner(c)
-              .setVrf(c.getDefaultVrf()) // everything is default VRF at the moment
-              .setType(InterfaceType.PHYSICAL)
-              .setDescription(port.getDescription().orElse(null))
-              .setMtu(port.getMtu().orElse(null))
-              .setActive(port.getAdminStatusUp().orElse(true)); // default is active
-
-      if (interfaces.containsKey(portName)) {
-        L3Interface l3Interface = interfaces.get(portName);
-        ib.setAddress(l3Interface.getAddress());
-      }
-
-      ib.build();
-    }
   }
 
   public ConfigDb getConfigDb() {
@@ -94,25 +80,36 @@ public class SonicConfiguration extends FrrVendorConfiguration {
     return _frr;
   }
 
-  private @Nullable L3Interface getInterface(String ifaceName) {
-    // This function will need to be extended if/when non-L3 interfaces appear in the VS model
-    if (_configDb.getInterfaces().containsKey(ifaceName)) {
-      return _configDb.getInterfaces().get(ifaceName);
+  private static void warnMgmtVrfs(Map<String, MgmtVrf> mgmtVrfs, Warnings w) {
+    int numMgmtVrfsDefined = mgmtVrfs.keySet().size();
+    if (numMgmtVrfsDefined == 1) {
+      return;
     }
-    if (_configDb.getLoopbacks().containsKey(ifaceName)) {
-      return _configDb.getLoopbacks().get(ifaceName);
-    }
-    return null;
+    w.redFlag(
+        String.format(
+            "%s.  Putting management ports in VRF '%s'",
+            numMgmtVrfsDefined == 0
+                ? "No management VRF is defined."
+                : "Multiple management VRFs defined",
+            getMgmtVrfName(mgmtVrfs)));
   }
+
+  private static String getMgmtVrfName(Map<String, MgmtVrf> mgmtVrfs) {
+    return mgmtVrfs.keySet().stream().sorted().findFirst().orElse(DEFAULT_VRF_NAME);
+  }
+
+  /* Overrides for FrrVendorConfiguration follow. They are called during FRR control plane extraction, to get information on what is in ConfigDb. */
 
   @Override
   public boolean hasInterface(String ifaceName) {
-    return getInterface(ifaceName) != null;
+    return _configDb.getPorts().containsKey(ifaceName)
+        || _configDb.getLoopbacks().containsKey(ifaceName)
+        || _configDb.getMgmtPorts().containsKey(ifaceName);
   }
 
   @Override
   public boolean hasVrf(String vrfName) {
-    return vrfName.equals(DEFAULT_VRF_NAME); // only have default VRF for now
+    return vrfName.equals(DEFAULT_VRF_NAME) || _configDb.getMgmtVrfs().containsKey(vrfName);
   }
 
   @Override
@@ -120,24 +117,50 @@ public class SonicConfiguration extends FrrVendorConfiguration {
     if (!hasInterface(ifaceName)) {
       throw new NoSuchElementException("Interface " + ifaceName + " does not exist");
     }
-    return DEFAULT_VRF_NAME; // only have default VRF for now
+    if (_configDb.getPorts().containsKey(ifaceName)) {
+      return DEFAULT_VRF_NAME; // only have default VRF for physical ports
+    }
+    if (_configDb.getLoopbacks().containsKey(ifaceName)) {
+      return DEFAULT_VRF_NAME; // only have default VRF for loopbacks
+    }
+    if (_configDb.getMgmtPorts().containsKey(ifaceName)) {
+      return getMgmtVrfName(_configDb.getMgmtVrfs());
+    }
+    // should never get here
+    throw new NoSuchElementException("Interface " + ifaceName + " does not exist");
   }
 
   @Override
   public @Nonnull List<ConcreteInterfaceAddress> getInterfaceAddresses(String ifaceName) {
-    L3Interface l3Interface = getInterface(ifaceName);
-    if (l3Interface == null) {
+    if (!hasInterface(ifaceName)) {
       throw new NoSuchElementException("Interface " + ifaceName + " does not exist");
     }
-    return Optional.ofNullable(l3Interface.getAddress())
-        .map(ImmutableList::of)
-        .orElse(ImmutableList.of());
+    if (_configDb.getPorts().containsKey(ifaceName)) {
+      return Optional.ofNullable(_configDb.getInterfaces().get(ifaceName))
+          .flatMap(iface -> Optional.ofNullable(iface.getAddress()).map(ImmutableList::of))
+          .orElse(ImmutableList.of());
+    }
+    if (_configDb.getLoopbacks().containsKey(ifaceName)) {
+      return Optional.ofNullable(_configDb.getLoopbacks().get(ifaceName))
+          .flatMap(iface -> Optional.ofNullable(iface.getAddress()).map(ImmutableList::of))
+          .orElse(ImmutableList.of());
+    }
+    if (_configDb.getMgmtPorts().containsKey(ifaceName)) {
+      return Optional.ofNullable(_configDb.getMgmtInterfaces().get(ifaceName))
+          .flatMap(iface -> Optional.ofNullable(iface.getAddress()).map(ImmutableList::of))
+          .orElse(ImmutableList.of());
+    }
+    // should never get here
+    throw new NoSuchElementException("Interface " + ifaceName + " does not exist");
   }
 
   @Override
   public Map<String, Vxlan> getVxlans() {
+    // we don't have vxlan support for Sonic yet, so this method shouldn't be called
     throw new UnsupportedOperationException();
   }
+
+  /* Overrides for VendorConfiguration follow */
 
   @Override
   public @Nullable String getHostname() {

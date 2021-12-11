@@ -45,8 +45,12 @@ public class ConfigDb implements Serializable {
     return _mgmtPorts;
   }
 
-  public @Nonnull Map<String, Port> getMgmtInterfaces() {
-    return _mgmtPorts;
+  public @Nonnull Map<String, L3Interface> getMgmtInterfaces() {
+    return _mgmtInterfaces;
+  }
+
+  public @Nonnull Map<String, MgmtVrf> getMgmtVrfs() {
+    return _mgmtVrfs;
   }
 
   public @Nonnull Map<String, Port> getPorts() {
@@ -121,7 +125,7 @@ public class ConfigDb implements Serializable {
         .setLoopbacks(
             createInterfaces(firstNonNull(loopbackMap, ImmutableMap.<String, Object>of()).keySet()))
         .setMgmtInterfaces(
-            // ignoring gwaddr of management interfaces
+            // ignoring gwaddr and force_mgmt_routes of management interfaces for now
             createInterfaces(
                 firstNonNull(mgmtInterfaceMap, ImmutableMap.<String, Object>of()).keySet()))
         .setMgmtPorts(mgmtPorts)

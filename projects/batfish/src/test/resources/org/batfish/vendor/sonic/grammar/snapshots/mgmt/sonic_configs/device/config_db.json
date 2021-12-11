@@ -1,0 +1,31 @@
+{
+  "DEVICE_METADATA": {
+    "localhost": {
+      "hostname": "mgmt"
+    }
+  },
+  "MGMT_INTERFACE": {
+    "eth0|1.1.1.1/24": {
+      "gwaddr": "10.11.0.1"
+    },
+    "eth0|FC00:2::32/64": {
+      "forced_mgmt_routes": [
+        "10.0.0.100/31",
+        "10.250.0.8",
+        "10.255.0.0/28"
+      ],
+      "gwaddr": "fc00:2::1"
+    }
+  },
+  "MGMT_PORT": {
+    "eth0": {
+      "alias": "eth0",
+      "admin_status": "up"
+    }
+  },
+  "MGMT_VRF_CONFIG": {
+    "vrf_global": {
+      "mgmtVrfEnabled": "true"
+    }
+  }
+}

@@ -6,5 +6,10 @@
   },
   "INTERFACE": {
     "Ethernet0|1.1.1.1/24": {}
+  },
+  "PORT": {
+    "Ethernet0": {
+      "description": "basic-port"
+    }
   }
 }
