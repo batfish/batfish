@@ -21,7 +21,8 @@ public class SonicConversions {
               .setType(InterfaceType.PHYSICAL)
               .setDescription(port.getDescription().orElse(null))
               .setMtu(port.getMtu().orElse(null))
-              .setSpeed(port.getSpeed().map(Double::new).orElse(null))
+              .setSpeed(
+                  port.getSpeed().map(Integer::doubleValue).orElse(null)) // TODO: default speed
               .setActive(port.getAdminStatusUp().orElse(true)); // default is active
 
       if (interfaces.containsKey(portName)) {
