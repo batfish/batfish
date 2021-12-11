@@ -822,8 +822,16 @@ public class A10Conversion {
             .map(
                 rule ->
                     new ExprAclLine(
-                        toLineAction(rule), toMatchExpr(rule), "placeholder rule name")),
-        Stream.of(new ExprAclLine(LineAction.DENY, TrueExpr.INSTANCE, "Default deny all")));
+                        toLineAction(rule),
+                        RuleToMatchExpr.INSTANCE.visit(rule),
+                        "placeholder rule name")),
+        Stream.of(
+            new ExprAclLine(
+                LineAction.DENY,
+                TrueExpr.INSTANCE,
+                "Default deny all",
+                TraceElement.builder().add("No line matched, denied by implicit deny all").build(),
+                null)));
   }
 
   /**
@@ -838,18 +846,20 @@ public class A10Conversion {
         new ExprAclLine(
             LineAction.PERMIT,
             AclLineMatchExprs.and(
-                TraceElement.builder().add("Matched access-list on virtual server").build(),
-                toMatchExpr(server, port, filename),
+                traceElementForVirtualServer(server, filename),
+                toMatchExpr(server),
+                toMatchExpr(port),
                 new PermittedByAcl(
-                    computeAclName(aclName), traceElementForAccessList(aclName, filename))),
+                    computeAclName(aclName), traceElementForAccessList(aclName, filename, true))),
             "placeholder"),
         new ExprAclLine(
             LineAction.DENY,
             AclLineMatchExprs.and(
-                TraceElement.builder().add("Matched access-list on virtual server").build(),
-                toMatchExpr(server, port, filename),
+                traceElementForVirtualServer(server, filename),
+                toMatchExpr(server),
+                toMatchExpr(port),
                 new DeniedByAcl(
-                    computeAclName(aclName), traceElementForAccessList(aclName, filename))),
+                    computeAclName(aclName), traceElementForAccessList(aclName, filename, false))),
             "placeholder"));
   }
 
@@ -859,9 +869,10 @@ public class A10Conversion {
         traceElementForVirtualServer(server, filename), toMatchExpr(server), toMatchExpr(port));
   }
 
-  public static TraceElement traceElementForAccessList(String aclName, String filename) {
+  public static TraceElement traceElementForAccessList(
+      String aclName, String filename, boolean permitted) {
     return TraceElement.builder()
-        .add("Matched access-list")
+        .add(String.format("%s by access-list", permitted ? "Permitted" : "Denied"))
         .add(
             aclName,
             new VendorStructureId(filename, A10StructureType.ACCESS_LIST.getDescription(), aclName))
@@ -979,42 +990,84 @@ public class A10Conversion {
         AclLineMatchExprs.matchDstPort(toIntegerSpace(port)));
   }
 
+  // TODO remove this
   @VisibleForTesting
   public static @Nonnull AclLineMatchExpr toMatchExpr(AccessListRule rule) {
     ImmutableList.Builder<AclLineMatchExpr> exprs =
         ImmutableList.<AclLineMatchExpr>builder()
             .add(AccessListAddressToMatchExpr.visitDst(rule.getDestination()))
             .add(AccessListAddressToMatchExpr.visitSrc(rule.getSource()));
-    Optional<IpProtocol> maybeProtocol = RuleToIpProtocol.INSTANCE.visit(rule);
-    maybeProtocol.ifPresent(p -> exprs.add(AclLineMatchExprs.matchIpProtocol(p)));
+    exprs.add(RuleToMatchExpr.INSTANCE.visit(rule));
     return AclLineMatchExprs.and(exprs.build());
   }
 
-  /**
-   * Convert a {@link AccessListRule} to its corresponding {@link IpProtocol}. If the protocol is
-   * unconstrained, then {@link Optional#empty()} is returned.
-   */
-  static final class RuleToIpProtocol implements AccessListRuleVisitor<Optional<IpProtocol>> {
-    static final RuleToIpProtocol INSTANCE = new RuleToIpProtocol();
+  /** Convert a {@link AccessListRule} to its corresponding {@link AclLineMatchExpr}. */
+  private static final class RuleToMatchExpr implements AccessListRuleVisitor<AclLineMatchExpr> {
+    static final RuleToMatchExpr INSTANCE = new RuleToMatchExpr();
 
     @Override
-    public Optional<IpProtocol> visitIcmp(AccessListRuleIcmp rule) {
-      return Optional.of(IpProtocol.ICMP);
+    public AclLineMatchExpr visitIcmp(AccessListRuleIcmp rule) {
+      AclLineMatchExpr expr =
+          AclLineMatchExprs.matchIpProtocol(
+              IpProtocol.ICMP, TraceElement.builder().add("Matched protocol ICMP").build());
+      return buildFinalExpr(rule, ImmutableList.of(expr));
     }
 
     @Override
-    public Optional<IpProtocol> visitIp(AccessListRuleIp rule) {
-      return Optional.empty();
+    public AclLineMatchExpr visitIp(AccessListRuleIp rule) {
+      return buildFinalExpr(rule, ImmutableList.of());
     }
 
     @Override
-    public Optional<IpProtocol> visitTcp(AccessListRuleTcp rule) {
-      return Optional.of(IpProtocol.TCP);
+    public AclLineMatchExpr visitTcp(AccessListRuleTcp rule) {
+      ImmutableList.Builder<AclLineMatchExpr> exprs =
+          ImmutableList.<AclLineMatchExpr>builder()
+              .add(
+                  AclLineMatchExprs.matchIpProtocol(
+                      IpProtocol.TCP, TraceElement.builder().add("Matched protocol TCP").build()));
+      if (rule.getDestinationRange() != null) {
+        exprs.add(portRangeToMatchExpr(rule.getDestinationRange()));
+      }
+      return buildFinalExpr(rule, exprs.build());
     }
 
     @Override
-    public Optional<IpProtocol> visitUdp(AccessListRuleUdp rule) {
-      return Optional.of(IpProtocol.UDP);
+    public AclLineMatchExpr visitUdp(AccessListRuleUdp rule) {
+      ImmutableList.Builder<AclLineMatchExpr> exprs =
+          ImmutableList.<AclLineMatchExpr>builder()
+              .add(
+                  AclLineMatchExprs.matchIpProtocol(
+                      IpProtocol.UDP, TraceElement.builder().add("Matched protocol UDP").build()));
+      if (rule.getDestinationRange() != null) {
+        exprs.add(portRangeToMatchExpr(rule.getDestinationRange()));
+      }
+      return buildFinalExpr(rule, exprs.build());
+    }
+
+    /**
+     * Build final {@link AclLineMatchExpr} for the generic {@link AccessListRule} given its
+     * rule-type-specific {@code specificExpr}.
+     */
+    private AclLineMatchExpr buildFinalExpr(
+        AccessListRule rule, List<AclLineMatchExpr> specificExprs) {
+      ImmutableList.Builder<AclLineMatchExpr> exprs =
+          ImmutableList.<AclLineMatchExpr>builder()
+              .add(AccessListAddressToMatchExpr.visitDst(rule.getDestination()))
+              .add(AccessListAddressToMatchExpr.visitSrc(rule.getSource()));
+      exprs.addAll(specificExprs);
+      return AclLineMatchExprs.and(exprs.build());
+    }
+
+    private AclLineMatchExpr portRangeToMatchExpr(SubRange range) {
+      TraceElement te =
+          range.getEnd() == range.getStart()
+              ? TraceElement.builder()
+                  .add(String.format("Matched port %d", range.getStart()))
+                  .build()
+              : TraceElement.builder()
+                  .add(String.format("Matched port range %d-%d", range.getStart(), range.getEnd()))
+                  .build();
+      return AclLineMatchExprs.matchDstPort(IntegerSpace.of(range), te);
     }
   }
 

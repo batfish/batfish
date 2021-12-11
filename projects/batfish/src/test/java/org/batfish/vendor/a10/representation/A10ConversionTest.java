@@ -284,15 +284,15 @@ public class A10ConversionTest {
             AccessListAddressAny.INSTANCE,
             AccessListAddressAny.INSTANCE);
 
-    assertThat(A10Conversion.RuleToIpProtocol.INSTANCE.visit(ruleIp), equalTo(Optional.empty()));
+    assertThat(A10Conversion.RuleToMatchExpr.INSTANCE.visit(ruleIp), equalTo(Optional.empty()));
     assertThat(
-        A10Conversion.RuleToIpProtocol.INSTANCE.visit(ruleIcmp),
+        A10Conversion.RuleToMatchExpr.INSTANCE.visit(ruleIcmp),
         equalTo(Optional.of(IpProtocol.ICMP)));
     assertThat(
-        A10Conversion.RuleToIpProtocol.INSTANCE.visit(ruleTcp),
+        A10Conversion.RuleToMatchExpr.INSTANCE.visit(ruleTcp),
         equalTo(Optional.of(IpProtocol.TCP)));
     assertThat(
-        A10Conversion.RuleToIpProtocol.INSTANCE.visit(ruleUdp),
+        A10Conversion.RuleToMatchExpr.INSTANCE.visit(ruleUdp),
         equalTo(Optional.of(IpProtocol.UDP)));
   }
 
