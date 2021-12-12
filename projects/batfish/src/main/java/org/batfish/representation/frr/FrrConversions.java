@@ -1773,7 +1773,7 @@ public final class FrrConversions {
             .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())));
   }
 
-  static @Nonnull String computeRouteMapEntryName(String routeMapName, int sequence) {
+  public static @Nonnull String computeRouteMapEntryName(String routeMapName, int sequence) {
     return String.format("%s %d", routeMapName, sequence);
   }
 
