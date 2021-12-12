@@ -923,17 +923,19 @@ public class CumulusConcatenatedGrammarTest {
 
     assertThat(
         c.getAllInterfaces(), hasKeys("swp1", "swp2", "swp3", "swp4", "swp5", "lo", "v1", "v2"));
+    // passes
+    assertThat(
+        c.getAllInterfaces().get("swp3").getAllAddresses(),
+        contains(
+            ConcreteInterfaceAddress.parse("10.1.1.1/32"),
+            ConcreteInterfaceAddress.parse("10.2.1.2/24")));
+    // fails
     assertThat(
         c.getAllInterfaces().get("swp1").getAllAddresses(),
         contains(
             ConcreteInterfaceAddress.parse("10.0.0.2/32"),
             ConcreteInterfaceAddress.parse("10.1.1.2/32"),
             ConcreteInterfaceAddress.parse("10.2.1.1/24")));
-    assertThat(
-        c.getAllInterfaces().get("swp3").getAllAddresses(),
-        contains(
-            ConcreteInterfaceAddress.parse("10.1.1.1/32"),
-            ConcreteInterfaceAddress.parse("10.2.1.2/24")));
     {
       Interface iface = c.getAllInterfaces().get("swp1");
       assertThat(iface.getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.1.1.2/32")));
