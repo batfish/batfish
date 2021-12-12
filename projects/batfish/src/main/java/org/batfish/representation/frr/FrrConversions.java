@@ -63,6 +63,7 @@ import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
@@ -191,6 +192,55 @@ public final class FrrConversions {
   }
 
   /**
+   * The entry point for converting FRR part of the configuration.
+   *
+   * <p>Pre-conditions at the time this function is called:
+   *
+   * <ul>
+   *   <li>All interfaces must have been created and properly configured in {@code c}, including
+   *       those defined exclusively in the frr.conf file.
+   *   <li>All VRFs must have been created in {@code c}, including those defined exclusively in the
+   *       frr.conf file.
+   *   <li>All L2 and L3 VNIs must have been added to the VI VRFs.
+   * </ul>
+   */
+  public static void convertFrr(Configuration c, FrrVendorConfiguration vc) {
+
+    FrrConfiguration frrConfiguration = vc.getFrrConfiguration();
+
+    // FRR does not generate local routes for connected routes.
+    c.getAllInterfaces()
+        .values()
+        .forEach(
+            i -> {
+              ImmutableSortedMap.Builder<ConcreteInterfaceAddress, ConnectedRouteMetadata>
+                  metadata = ImmutableSortedMap.naturalOrder();
+              for (InterfaceAddress a : i.getAllAddresses()) {
+                if (!(a instanceof ConcreteInterfaceAddress)) {
+                  continue;
+                }
+                ConcreteInterfaceAddress address = (ConcreteInterfaceAddress) a;
+                metadata.put(
+                    address, ConnectedRouteMetadata.builder().setGenerateLocalRoute(false).build());
+              }
+              i.setAddressMetadata(metadata.build());
+            });
+
+    convertStaticRoutes(c, frrConfiguration); // static routes in the FRR file
+    convertIpAsPathAccessLists(c, frrConfiguration.getIpAsPathAccessLists());
+    convertIpPrefixLists(c, frrConfiguration.getIpPrefixLists(), vc.getFilename());
+    convertIpCommunityLists(c, frrConfiguration.getIpCommunityLists());
+    convertRouteMaps(c, frrConfiguration, vc.getFilename(), vc.getWarnings());
+    convertDnsServers(c, frrConfiguration.getIpv4Nameservers());
+
+    convertOspfProcess(c, vc, frrConfiguration, vc.getWarnings());
+    addOspfUnnumberedLLAs(c);
+
+    addBgpUnnumberedLLAs(c, frrConfiguration);
+    convertBgpProcess(c, vc, frrConfiguration, vc.getWarnings());
+  }
+
+  /**
    * For interfaces that didn't get an address via either OutOfBand or FRR, give them a link-local
    * address if they are being used for BGP unnumbered.
    */
@@ -234,7 +284,11 @@ public final class FrrConversions {
             });
   }
 
-  /** Convert the static routes in the frr.conf file */
+  /**
+   * Convert the static routes in the frr.conf file.
+   *
+   * <p>The VRFs must have been created in {@code c} before calling this function.
+   */
   public static void convertStaticRoutes(Configuration c, FrrConfiguration frr) {
     // default vrf static routes
     org.batfish.datamodel.Vrf defVrf = c.getVrfs().get(DEFAULT_VRF_NAME);
@@ -244,10 +298,12 @@ public final class FrrConversions {
     frr.getVrfs()
         .values()
         .forEach(
-            frrVrf -> {
-              org.batfish.datamodel.Vrf newVrf = getOrCreateVrf(c, frrVrf.getName());
-              frrVrf.getStaticRoutes().forEach(sr -> newVrf.getStaticRoutes().add(sr.convert()));
-            });
+            frrVrf ->
+                frrVrf
+                    .getStaticRoutes()
+                    .forEach(
+                        sr ->
+                            c.getVrfs().get(frrVrf.getName()).getStaticRoutes().add(sr.convert())));
   }
 
   /**
@@ -1739,15 +1795,6 @@ public final class FrrConversions {
       return Optional.empty();
     }
     return Optional.ofNullable(frrConfiguration.getInterfaces().get(ifaceName).getOspf());
-  }
-
-  @Nonnull
-  public static org.batfish.datamodel.Vrf getOrCreateVrf(
-      Configuration c, @Nullable String vrfName) {
-    if (vrfName == null) {
-      return c.getVrfs().get(DEFAULT_VRF_NAME);
-    }
-    return c.getVrfs().computeIfAbsent(vrfName, org.batfish.datamodel.Vrf::new);
   }
 
   @VisibleForTesting
