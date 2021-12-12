@@ -24,7 +24,7 @@
     }
   },
   "MGMT_VRF_CONFIG": {
-    "vrf_global": {
+    "vrf_global_not_default": {
       "mgmtVrfEnabled": "true"
     }
   }

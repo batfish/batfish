@@ -84,11 +84,11 @@ public class ConfigDbTest {
   @Test
   public void testJacksonDeserializationMgmtPort() throws JsonProcessingException {
     String input =
-        "{\"MGMT_PORT\" :{\n"
-            + "        \"eth0\": {\n"
-            + "            \"description\": \"Management0\",\n"
+        "{\"MGMT_PORT\" :{"
+            + "        \"eth0\": {"
+            + "            \"description\": \"Management0\","
             + "            \"speed\": \"1000\""
-            + "        }\n"
+            + "        }"
             + "}}";
 
     assertThat(
@@ -105,10 +105,10 @@ public class ConfigDbTest {
   @Test
   public void testJacksonDeserializationMgmtVrfConfig() throws JsonProcessingException {
     String input =
-        "{\"MGMT_VRF_CONFIG\" :{\n"
-            + "        \"vrf_global\": {\n"
+        "{\"MGMT_VRF_CONFIG\" :{"
+            + "        \"vrf_global\": {"
             + "            \"mgmtVrfEnabled\": \"true\""
-            + "        }\n"
+            + "        }"
             + "}}";
 
     assertThat(
@@ -135,12 +135,12 @@ public class ConfigDbTest {
   @Test
   public void testJacksonDeserializationPort() throws JsonProcessingException {
     String input =
-        "{\"PORT\" :{\n"
-            + "        \"Ethernet0\": {\n"
-            + "            \"description\": \"L3-sbf00-fr001:Ethernet0\"\n"
-            + "        },\n"
-            + "        \"Ethernet8\": {\n"
-            + "            \"mtu\": \"9212\"\n"
+        "{\"PORT\" :{"
+            + "        \"Ethernet0\": {"
+            + "            \"description\": \"L3-sbf00-fr001:Ethernet0\""
+            + "        },"
+            + "        \"Ethernet8\": {"
+            + "            \"mtu\": \"9212\""
             + "        }"
             + "}}";
 

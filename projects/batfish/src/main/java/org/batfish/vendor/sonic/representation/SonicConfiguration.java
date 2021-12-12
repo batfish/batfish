@@ -12,7 +12,6 @@ import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.VendorConversionException;
-import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -28,6 +27,10 @@ import org.batfish.representation.frr.Vxlan;
  * frr.conf files
  */
 public class SonicConfiguration extends FrrVendorConfiguration {
+
+  // If MGMT_VRF is not explicitly defined, we use this name.
+  // TODO: confirm device behavior
+  static final String DEFAULT_MGMT_VRF_NAME = "vrf_global";
 
   private @Nullable String _hostname;
   private ConfigDb _configDb; // set via the extractor
@@ -54,9 +57,17 @@ public class SonicConfiguration extends FrrVendorConfiguration {
         .getMgmtVrfs()
         .keySet()
         .forEach(vrfName -> Vrf.builder().setName(vrfName).setOwner(c).build());
-    warnMgmtVrfs(_configDb.getMgmtVrfs(), _w);
 
-    // all physical ports are under default VRF (haven't seen VRF definitions in configdb model)
+    // warn about multiple management VRFs
+    if (_configDb.getMgmtVrfs().size() > 1) {
+      _w.redFlag(
+          String.format(
+              "Multiple management VRFs defined.  Putting management ports in VRF '%s'",
+              getMgmtVrfName(_configDb.getMgmtVrfs())));
+    }
+
+    // all ports under the PORT object are in the default VRF
+    // (haven't seen VRF definitions in configdb model)
     convertPorts(c, _configDb.getPorts(), _configDb.getInterfaces(), c.getDefaultVrf());
     convertPorts(
         c,
@@ -80,22 +91,8 @@ public class SonicConfiguration extends FrrVendorConfiguration {
     return _frr;
   }
 
-  private static void warnMgmtVrfs(Map<String, MgmtVrf> mgmtVrfs, Warnings w) {
-    int numMgmtVrfsDefined = mgmtVrfs.keySet().size();
-    if (numMgmtVrfsDefined == 1) {
-      return;
-    }
-    w.redFlag(
-        String.format(
-            "%s.  Putting management ports in VRF '%s'",
-            numMgmtVrfsDefined == 0
-                ? "No management VRF is defined."
-                : "Multiple management VRFs defined",
-            getMgmtVrfName(mgmtVrfs)));
-  }
-
   private static String getMgmtVrfName(Map<String, MgmtVrf> mgmtVrfs) {
-    return mgmtVrfs.keySet().stream().sorted().findFirst().orElse(DEFAULT_VRF_NAME);
+    return mgmtVrfs.keySet().stream().sorted().findFirst().orElse(DEFAULT_MGMT_VRF_NAME);
   }
 
   /* Overrides for FrrVendorConfiguration follow. They are called during FRR control plane extraction, to get information on what is in ConfigDb. */
@@ -118,7 +115,7 @@ public class SonicConfiguration extends FrrVendorConfiguration {
       throw new NoSuchElementException("Interface " + ifaceName + " does not exist");
     }
     if (_configDb.getPorts().containsKey(ifaceName)) {
-      return DEFAULT_VRF_NAME; // only have default VRF for physical ports
+      return DEFAULT_VRF_NAME; // only have default VRF for ports in PORT object
     }
     if (_configDb.getLoopbacks().containsKey(ifaceName)) {
       return DEFAULT_VRF_NAME; // only have default VRF for loopbacks

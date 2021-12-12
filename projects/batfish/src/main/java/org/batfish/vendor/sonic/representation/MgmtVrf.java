@@ -30,12 +30,12 @@ public class MgmtVrf implements Serializable {
         .build();
   }
 
-  private @Nonnull MgmtVrf(@Nullable Boolean mgmtVrfEnabled) {
+  private MgmtVrf(@Nullable Boolean mgmtVrfEnabled) {
     _mgmtVrfEnabled = mgmtVrfEnabled;
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     }

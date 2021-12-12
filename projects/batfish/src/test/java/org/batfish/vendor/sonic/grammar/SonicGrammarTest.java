@@ -3,6 +3,7 @@ package org.batfish.vendor.sonic.grammar;
 import static com.google.common.collect.Iterables.getOnlyElement;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddress;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrfName;
 import static org.hamcrest.Matchers.allOf;
@@ -74,10 +75,14 @@ public class SonicGrammarTest {
     assertEquals("basic", c.getHostname());
     assertThat(
         Iterables.getOnlyElement(c.getAllInterfaces().values()),
-        allOf(hasName("Ethernet0"), hasVrfName(DEFAULT_VRF_NAME), hasAddress("1.1.1.1/24")));
+        allOf(
+            hasName("Ethernet0"),
+            hasVrfName(DEFAULT_VRF_NAME),
+            hasAddress("1.1.1.1/24"),
+            hasDescription("basic-port")));
   }
 
-  /** Test that management interfaces in the right VRF are created. */
+  /** Test that management interfaces are created and put in the right VRF. */
   @Test
   public void testMgmt() throws IOException {
     String snapshotName = "mgmt";
@@ -96,12 +101,13 @@ public class SonicGrammarTest {
                 ImmutableMap.of(
                     "eth0", new L3Interface(ConcreteInterfaceAddress.parse("1.1.1.1/24"))))
             .setMgmtVrfs(
-                ImmutableMap.of("vrf_global", MgmtVrf.builder().setMgmtVrfEnabled(true).build()))
+                ImmutableMap.of(
+                    "vrf_global_not_default", MgmtVrf.builder().setMgmtVrfEnabled(true).build()))
             .build();
     assertEquals(expectedConfigDb, vc.getConfigDb());
     Configuration c = getOnlyElement(vc.toVendorIndependentConfigurations());
     assertThat(
         Iterables.getOnlyElement(c.getAllInterfaces().values()),
-        allOf(hasName("eth0"), hasVrfName("vrf_global"), hasAddress("1.1.1.1/24")));
+        allOf(hasName("eth0"), hasVrfName("vrf_global_not_default"), hasAddress("1.1.1.1/24")));
   }
 }
