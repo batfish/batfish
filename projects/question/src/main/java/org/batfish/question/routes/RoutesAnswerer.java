@@ -615,14 +615,14 @@ public class RoutesAnswerer extends Answerer {
         columnBuilder.add(
             new ColumnMetadata(
                 COL_BASE_PREFIX + COL_RECEIVED_FROM_IP,
-                Schema.STRING,
+                Schema.IP,
                 "Route's Received from IP",
                 Boolean.FALSE,
                 Boolean.TRUE));
         columnBuilder.add(
             new ColumnMetadata(
                 COL_DELTA_PREFIX + COL_RECEIVED_FROM_IP,
-                Schema.STRING,
+                Schema.IP,
                 "Route's Received from IP",
                 Boolean.FALSE,
                 Boolean.TRUE));
