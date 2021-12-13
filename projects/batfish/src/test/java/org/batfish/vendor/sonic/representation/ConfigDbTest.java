@@ -25,7 +25,7 @@ public class ConfigDbTest {
     assertThat(deserialize(input, warnings), equalTo(ConfigDb.builder().build()));
     assertThat(
         Iterables.getOnlyElement(warnings.getUnimplementedWarnings()).getText(),
-        equalTo("Unimplemented configdb key 'GARBAGE'"));
+        equalTo("Unimplemented configdb table 'GARBAGE'"));
   }
 
   @Test

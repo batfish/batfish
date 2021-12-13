@@ -286,26 +286,31 @@ public class ConfigDb implements Serializable {
       ObjectMapper mapper = BatfishObjectMapper.ignoreUnknownMapper();
       while (fieldIterator.hasNext()) {
         String field = fieldIterator.next();
-        JsonParser value = mapper.treeAsTokens(tree.get(field));
+        TreeNode value = tree.get(field);
         switch (field) {
           case PROP_DEVICE_METADATA:
             configDb.setDeviceMetadata(
-                mapper.readValue(value, new TypeReference<Map<String, DeviceMetadata>>() {}));
+                mapper.convertValue(value, new TypeReference<Map<String, DeviceMetadata>>() {}));
             break;
           case PROP_INTERFACE:
             configDb.setInterfaces(
                 createInterfaces(
-                    mapper.readValue(value, new TypeReference<Map<String, Object>>() {}).keySet()));
+                    mapper
+                        .convertValue(value, new TypeReference<Map<String, Object>>() {})
+                        .keySet()));
             break;
           case PROP_LOOPBACK:
             configDb.setLoopbacks(
                 createInterfaces(
-                    mapper.readValue(value, new TypeReference<Map<String, Object>>() {}).keySet()));
+                    mapper
+                        .convertValue(value, new TypeReference<Map<String, Object>>() {})
+                        .keySet()));
             break;
           case PROP_MGMT_INTERFACE:
             {
               Map<String, Map<String, Object>> mgmtInterfaceMap =
-                  mapper.readValue(value, new TypeReference<Map<String, Map<String, Object>>>() {});
+                  mapper.convertValue(
+                      value, new TypeReference<Map<String, Map<String, Object>>>() {});
               configDb.setMgmtInterfaces(createInterfaces(mgmtInterfaceMap.keySet()));
               Set<String> innerProperties =
                   mgmtInterfaceMap.values().stream()
@@ -319,26 +324,27 @@ public class ConfigDb implements Serializable {
             }
           case PROP_MGMT_PORT:
             configDb.setMgmtPorts(
-                mapper.readValue(value, new TypeReference<Map<String, Port>>() {}));
+                mapper.convertValue(value, new TypeReference<Map<String, Port>>() {}));
             break;
           case PROP_MGMT_VRF_CONFIG:
             configDb.setMgmtVrfs(
-                mapper.readValue(value, new TypeReference<Map<String, MgmtVrf>>() {}));
+                mapper.convertValue(value, new TypeReference<Map<String, MgmtVrf>>() {}));
             break;
           case PROP_NTP_SERVER:
             configDb.setNtpServers(
-                mapper.readValue(value, new TypeReference<Map<String, Object>>() {}).keySet());
+                mapper.convertValue(value, new TypeReference<Map<String, Object>>() {}).keySet());
             break;
           case PROP_PORT:
-            configDb.setPorts(mapper.readValue(value, new TypeReference<Map<String, Port>>() {}));
+            configDb.setPorts(
+                mapper.convertValue(value, new TypeReference<Map<String, Port>>() {}));
             break;
           case PROP_SYSLOG_SERVER:
             configDb.setSyslogServers(
-                mapper.readValue(value, new TypeReference<Map<String, Object>>() {}).keySet());
+                mapper.convertValue(value, new TypeReference<Map<String, Object>>() {}).keySet());
             break;
           default:
             if (!IGNORED_PROPERTIES.contains(field)) {
-              _warnings.unimplemented(String.format("Unimplemented configdb key '%s'", field));
+              _warnings.unimplemented(String.format("Unimplemented configdb table '%s'", field));
             }
         }
       }
