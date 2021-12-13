@@ -27,6 +27,7 @@ public abstract class EvpnRoute<B extends Builder<B, R>, R extends BgpRoute<B, R
       extends BgpRoute.Builder<B, R> {
 
     @Nullable protected RouteDistinguisher _routeDistinguisher;
+    @Nullable protected Integer _vni;
 
     @Override
     public final B setAdmin(int admin) {
@@ -59,6 +60,11 @@ public abstract class EvpnRoute<B extends Builder<B, R>, R extends BgpRoute<B, R
       return getThis();
     }
 
+    public B setVni(Integer vni) {
+      _vni = vni;
+      return getThis();
+    }
+
     @Nonnull
     @Override
     public abstract R build();
@@ -71,7 +77,10 @@ public abstract class EvpnRoute<B extends Builder<B, R>, R extends BgpRoute<B, R
   static final @VisibleForTesting int EVPN_ADMIN = 0;
 
   static final String PROP_ROUTE_DISTINGUISHER = "routeDistinguisher";
+  static final String PROP_VNI = "vni";
+
   @Nonnull protected final RouteDistinguisher _routeDistinguisher;
+  @Nonnull protected final int _vni;
 
   protected EvpnRoute(
       Prefix network,
@@ -90,7 +99,8 @@ public abstract class EvpnRoute<B extends Builder<B, R>, R extends BgpRoute<B, R
       @Nullable RoutingProtocol srcProtocol,
       long tag,
       int weight,
-      RouteDistinguisher routeDistinguisher) {
+      RouteDistinguisher routeDistinguisher,
+      int vni) {
     super(
         network,
         nextHop,
@@ -112,12 +122,18 @@ public abstract class EvpnRoute<B extends Builder<B, R>, R extends BgpRoute<B, R
         true,
         true);
     _routeDistinguisher = routeDistinguisher;
+    _vni = vni;
   }
 
   @Nonnull
   @JsonProperty(PROP_ROUTE_DISTINGUISHER)
   public RouteDistinguisher getRouteDistinguisher() {
     return _routeDistinguisher;
+  }
+
+  @JsonProperty(PROP_VNI)
+  public int getVni() {
+    return _vni;
   }
 
   /** Return extended communities that are route targets for this route */
