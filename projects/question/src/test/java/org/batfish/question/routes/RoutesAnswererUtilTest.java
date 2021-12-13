@@ -17,6 +17,7 @@ import static org.batfish.question.routes.RoutesAnswerer.COL_NODE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGINATOR_ID;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGIN_PROTOCOL;
 import static org.batfish.question.routes.RoutesAnswerer.COL_PROTOCOL;
+import static org.batfish.question.routes.RoutesAnswerer.COL_RECEIVED_FROM_IP;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_DISTINGUISHER;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_ENTRY_PRESENCE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_TAG;
@@ -245,6 +246,7 @@ public class RoutesAnswererUtilTest {
             .setCommunities(ImmutableSortedSet.of(StandardCommunity.of(65537L)))
             .setProtocol(RoutingProtocol.BGP)
             .setOriginatorIp(Ip.parse("1.1.1.2"))
+            .setReceivedFromIp(Ip.parse("3.3.3.3"))
             .setAsPath(AsPath.ofSingletonAsSets(ImmutableList.of(1L, 2L)))
             .setWeight(7);
     Bgpv4Route standardRoute = rb.setNextHopIp(ip).build();
@@ -276,6 +278,7 @@ public class RoutesAnswererUtilTest {
             hasColumn(COL_ORIGIN_PROTOCOL, nullValue(), Schema.STRING),
             hasColumn(COL_TAG, nullValue(), Schema.INTEGER),
             hasColumn(COL_ORIGINATOR_ID, Ip.parse("1.1.1.2"), Schema.IP),
+            hasColumn(COL_RECEIVED_FROM_IP, Ip.parse("3.3.3.3"), Schema.IP),
             hasColumn(COL_CLUSTER_LIST, nullValue(), Schema.list(Schema.LONG)),
             hasColumn(COL_WEIGHT, equalTo(7), Schema.INTEGER));
 
@@ -433,6 +436,7 @@ public class RoutesAnswererUtilTest {
             .setAdminDistance(200)
             .setMetric(2L)
             .setOriginProtocol("bgp")
+            .setReceivedFromIp(Ip.parse("6.6.6.6"))
             .setAsPath(AsPath.ofSingletonAsSets(ImmutableList.of(1L, 2L)))
             .setLocalPreference(1L)
             .setWeight(7);

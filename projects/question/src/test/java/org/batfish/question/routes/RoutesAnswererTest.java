@@ -19,6 +19,7 @@ import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGINATOR_ID;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGIN_PROTOCOL;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGIN_TYPE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_PROTOCOL;
+import static org.batfish.question.routes.RoutesAnswerer.COL_RECEIVED_FROM_IP;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_DISTINGUISHER;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_ENTRY_PRESENCE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_STATUS;
@@ -353,6 +354,7 @@ public class RoutesAnswererTest {
             COL_ORIGIN_PROTOCOL,
             COL_ORIGIN_TYPE,
             COL_ORIGINATOR_ID,
+            COL_RECEIVED_FROM_IP,
             COL_CLUSTER_LIST,
             COL_WEIGHT,
             COL_TAG);
@@ -473,6 +475,8 @@ public class RoutesAnswererTest {
         COL_DELTA_PREFIX + COL_ORIGIN_PROTOCOL,
         COL_BASE_PREFIX + COL_ORIGIN_TYPE,
         COL_DELTA_PREFIX + COL_ORIGIN_TYPE,
+        COL_BASE_PREFIX + COL_RECEIVED_FROM_IP,
+        COL_DELTA_PREFIX + COL_RECEIVED_FROM_IP,
         COL_BASE_PREFIX + COL_WEIGHT,
         COL_DELTA_PREFIX + COL_WEIGHT,
         COL_BASE_PREFIX + COL_TAG,
@@ -502,6 +506,8 @@ public class RoutesAnswererTest {
         Schema.STRING,
         Schema.STRING,
         Schema.STRING,
+        Schema.IP,
+        Schema.IP,
         Schema.INTEGER,
         Schema.INTEGER,
         Schema.LONG,
