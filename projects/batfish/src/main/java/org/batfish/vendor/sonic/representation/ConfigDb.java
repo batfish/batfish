@@ -41,6 +41,18 @@ public class ConfigDb implements Serializable {
     return _ntpServers;
   }
 
+  public @Nonnull Map<String, Port> getMgmtPorts() {
+    return _mgmtPorts;
+  }
+
+  public @Nonnull Map<String, L3Interface> getMgmtInterfaces() {
+    return _mgmtInterfaces;
+  }
+
+  public @Nonnull Map<String, MgmtVrf> getMgmtVrfs() {
+    return _mgmtVrfs;
+  }
+
   public @Nonnull Map<String, Port> getPorts() {
     return _ports;
   }
@@ -52,6 +64,9 @@ public class ConfigDb implements Serializable {
   private static final String PROP_DEVICE_METADATA = "DEVICE_METADATA";
   private static final String PROP_INTERFACE = "INTERFACE";
   private static final String PROP_LOOPBACK = "LOOPBACK";
+  private static final String PROP_MGMT_INTERFACE = "MGMT_INTERFACE";
+  private static final String PROP_MGMT_PORT = "MGMT_PORT";
+  private static final String PROP_MGMT_VRF_CONFIG = "MGMT_VRF_CONFIG";
   private static final String PROP_PORT = "PORT";
   private static final String PROP_NTP_SERVER = "NTP_SERVER";
   private static final String PROP_SYSLOG_SERVER = "SYSLOG_SERVER";
@@ -59,6 +74,9 @@ public class ConfigDb implements Serializable {
   private final @Nonnull Map<String, DeviceMetadata> _deviceMetadata;
   private final @Nonnull Map<String, L3Interface> _interfaces;
   private final @Nonnull Map<String, L3Interface> _loopbacks;
+  private final @Nonnull Map<String, L3Interface> _mgmtInterfaces;
+  private final @Nonnull Map<String, Port> _mgmtPorts;
+  private final @Nonnull Map<String, MgmtVrf> _mgmtVrfs;
   private final @Nonnull Set<String> _ntpServers;
   private final @Nonnull Map<String, Port> _ports;
   private final @Nonnull Set<String> _syslogServers;
@@ -67,12 +85,18 @@ public class ConfigDb implements Serializable {
       Map<String, DeviceMetadata> deviceMetadata,
       Map<String, L3Interface> interfaces,
       Map<String, L3Interface> loopbacks,
+      Map<String, L3Interface> mgmtInterfaces,
+      Map<String, Port> mgmtPorts,
+      Map<String, MgmtVrf> mgmtVrfs,
       Set<String> ntpServers,
       Map<String, Port> ports,
       Set<String> syslogServers) {
     _deviceMetadata = deviceMetadata;
     _interfaces = interfaces;
     _loopbacks = loopbacks;
+    _mgmtInterfaces = mgmtInterfaces;
+    _mgmtPorts = mgmtPorts;
+    _mgmtVrfs = mgmtVrfs;
     _ntpServers = ntpServers;
     _ports = ports;
     _syslogServers = syslogServers;
@@ -83,6 +107,9 @@ public class ConfigDb implements Serializable {
       @Nullable @JsonProperty(PROP_DEVICE_METADATA) Map<String, DeviceMetadata> deviceMetadata,
       @Nullable @JsonProperty(PROP_INTERFACE) Map<String, Object> interfacesMap,
       @Nullable @JsonProperty(PROP_LOOPBACK) Map<String, Object> loopbackMap,
+      @Nullable @JsonProperty(PROP_MGMT_INTERFACE) Map<String, Object> mgmtInterfaceMap,
+      @Nullable @JsonProperty(PROP_MGMT_PORT) Map<String, Port> mgmtPorts,
+      @Nullable @JsonProperty(PROP_MGMT_VRF_CONFIG) Map<String, MgmtVrf> mgmtVrfs,
       @Nullable @JsonProperty(PROP_NTP_SERVER) Map<String, Object> ntpServersMap,
       @Nullable @JsonProperty(PROP_PORT) Map<String, Port> ports,
       @Nullable @JsonProperty(PROP_SYSLOG_SERVER) Map<String, Object> syslogServersMap) {
@@ -97,6 +124,12 @@ public class ConfigDb implements Serializable {
                 firstNonNull(interfacesMap, ImmutableMap.<String, Object>of()).keySet()))
         .setLoopbacks(
             createInterfaces(firstNonNull(loopbackMap, ImmutableMap.<String, Object>of()).keySet()))
+        .setMgmtInterfaces(
+            // ignoring gwaddr and force_mgmt_routes of management interfaces for now
+            createInterfaces(
+                firstNonNull(mgmtInterfaceMap, ImmutableMap.<String, Object>of()).keySet()))
+        .setMgmtPorts(mgmtPorts)
+        .setMgmtVrfs(mgmtVrfs)
         .setNtpServers(firstNonNull(ntpServersMap, ImmutableMap.<String, Object>of()).keySet())
         .setPorts(ports)
         .setSyslogServers(
@@ -137,7 +170,7 @@ public class ConfigDb implements Serializable {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     }
@@ -148,6 +181,9 @@ public class ConfigDb implements Serializable {
     return _deviceMetadata.equals(other._deviceMetadata)
         && _interfaces.equals(other._interfaces)
         && _loopbacks.equals(other._loopbacks)
+        && _mgmtInterfaces.equals(other._mgmtInterfaces)
+        && _mgmtPorts.equals(other._mgmtPorts)
+        && _mgmtVrfs.equals(other._mgmtVrfs)
         && _ntpServers.equals(other._ntpServers)
         && _ports.equals(other._ports)
         && _syslogServers.equals(other._syslogServers);
@@ -156,7 +192,15 @@ public class ConfigDb implements Serializable {
   @Override
   public int hashCode() {
     return Objects.hash(
-        _deviceMetadata, _interfaces, _loopbacks, _ntpServers, _ports, _syslogServers);
+        _deviceMetadata,
+        _interfaces,
+        _loopbacks,
+        _mgmtInterfaces,
+        _mgmtPorts,
+        _mgmtVrfs,
+        _ntpServers,
+        _ports,
+        _syslogServers);
   }
 
   public static Builder builder() {
@@ -167,6 +211,9 @@ public class ConfigDb implements Serializable {
     private Map<String, DeviceMetadata> _deviceMetadata;
     private Map<String, L3Interface> _interfaces;
     private Map<String, L3Interface> _loopbacks;
+    private Map<String, L3Interface> _mgmtInterfaces;
+    private Map<String, Port> _mgmtPorts;
+    private Map<String, MgmtVrf> _mgmtVrfs;
     private Set<String> _ntpServers;
     private Map<String, Port> _ports;
     private Set<String> _syslogServers;
@@ -186,6 +233,21 @@ public class ConfigDb implements Serializable {
 
     public @Nonnull Builder setLoopbacks(@Nullable Map<String, L3Interface> loopbacks) {
       this._loopbacks = loopbacks;
+      return this;
+    }
+
+    public @Nonnull Builder setMgmtInterfaces(@Nullable Map<String, L3Interface> mgmtInterfaces) {
+      this._mgmtInterfaces = mgmtInterfaces;
+      return this;
+    }
+
+    public @Nonnull Builder setMgmtPorts(@Nullable Map<String, Port> mgmtPorts) {
+      this._mgmtPorts = mgmtPorts;
+      return this;
+    }
+
+    public @Nonnull Builder setMgmtVrfs(@Nullable Map<String, MgmtVrf> mgmtVrfs) {
+      this._mgmtVrfs = mgmtVrfs;
       return this;
     }
 
@@ -209,6 +271,9 @@ public class ConfigDb implements Serializable {
           ImmutableMap.copyOf(firstNonNull(_deviceMetadata, ImmutableMap.of())),
           ImmutableMap.copyOf(firstNonNull(_interfaces, ImmutableMap.of())),
           ImmutableMap.copyOf(firstNonNull(_loopbacks, ImmutableMap.of())),
+          ImmutableMap.copyOf(firstNonNull(_mgmtInterfaces, ImmutableMap.of())),
+          ImmutableMap.copyOf(firstNonNull(_mgmtPorts, ImmutableMap.of())),
+          ImmutableMap.copyOf(firstNonNull(_mgmtVrfs, ImmutableMap.of())),
           ImmutableSet.copyOf(firstNonNull(_ntpServers, ImmutableSet.of())),
           ImmutableMap.copyOf(firstNonNull(_ports, ImmutableMap.of())),
           ImmutableSet.copyOf(firstNonNull(_syslogServers, ImmutableSet.of())));
