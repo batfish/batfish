@@ -117,54 +117,6 @@ public class ConfigDb implements Serializable {
     _syslogServers = syslogServers;
   }
 
-  //  @JsonCreator
-  //  private static ConfigDb create(
-  //      @Nullable @JsonProperty(PROP_DEVICE_METADATA) Map<String, DeviceMetadata> deviceMetadata,
-  //      @Nullable @JsonProperty(PROP_INTERFACE) Map<String, Object> interfacesMap,
-  //      @Nullable @JsonProperty(PROP_LOOPBACK) Map<String, Object> loopbackMap,
-  //      @Nullable @JsonProperty(PROP_MGMT_INTERFACE)
-  //          Map<String, Map<String, Object>> mgmtInterfaceMap,
-  //      @Nullable @JsonProperty(PROP_MGMT_PORT) Map<String, Port> mgmtPorts,
-  //      @Nullable @JsonProperty(PROP_MGMT_VRF_CONFIG) Map<String, MgmtVrf> mgmtVrfs,
-  //      @Nullable @JsonProperty(PROP_NTP_SERVER) Map<String, Object> ntpServersMap,
-  //      @Nullable @JsonProperty(PROP_PORT) Map<String, Port> ports,
-  //      @Nullable @JsonProperty(PROP_SYSLOG_SERVER) Map<String, Object> syslogServersMap) {
-  //
-  //    Warnings warnings = new Warnings(true, true, true);
-  //    if (mgmtInterfaceMap != null) {
-  //      Set<String> subKeys =
-  //          mgmtInterfaceMap.values().stream()
-  //              .flatMap(map -> map.keySet().stream())
-  //              .collect(ImmutableSet.toImmutableSet());
-  //      if (!subKeys.isEmpty()) {
-  //        warnings.unimplemented(
-  //            String.format("Unimplemented MGMT_INTERFACE properties: %s", subKeys));
-  //      }
-  //    }
-  //
-  //    // in many cases below, all data is embedded in the key of the map, the value is empty.
-  //    // that is why we are using only the keys
-  //
-  //    return ConfigDb.builder()
-  //        .setDeviceMetadata(deviceMetadata)
-  //        .setInterfaces(
-  //            createInterfaces(
-  //                firstNonNull(interfacesMap, ImmutableMap.<String, Object>of()).keySet()))
-  //        .setLoopbacks(
-  //            createInterfaces(firstNonNull(loopbackMap, ImmutableMap.<String,
-  // Object>of()).keySet()))
-  //        .setMgmtInterfaces(
-  //            createInterfaces(
-  //                firstNonNull(mgmtInterfaceMap, ImmutableMap.<String, Object>of()).keySet()))
-  //        .setMgmtPorts(mgmtPorts)
-  //        .setMgmtVrfs(mgmtVrfs)
-  //        .setNtpServers(firstNonNull(ntpServersMap, ImmutableMap.<String, Object>of()).keySet())
-  //        .setPorts(ports)
-  //        .setSyslogServers(
-  //            firstNonNull(syslogServersMap, ImmutableMap.<String, Object>of()).keySet())
-  //        .build();
-  //  }
-
   /**
    * Converts configdb's interface multi-level key encoding for interfaces, where keys are
    * "Ethernet", "Ethernet|1.1.1.1", to a map of interfaces.
