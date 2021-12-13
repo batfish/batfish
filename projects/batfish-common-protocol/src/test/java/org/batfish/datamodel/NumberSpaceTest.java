@@ -26,4 +26,9 @@ public class NumberSpaceTest {
     LongSpace space = LongSpace.of(Range.closed(10L, 1000L));
     assertEquals(space.toString(), space.toStringAsSubsetOf(SPACE1));
   }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testToStringAsSubsetOf_invalid() {
+    SPACE1.toStringAsSubsetOf(LongSpace.EMPTY);
+  }
 }
