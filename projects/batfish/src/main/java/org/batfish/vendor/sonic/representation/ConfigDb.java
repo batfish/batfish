@@ -2,19 +2,29 @@ package org.batfish.vendor.sonic.representation;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.TreeNode;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.common.Warnings;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Prefix6;
 
@@ -61,6 +71,7 @@ public class ConfigDb implements Serializable {
     return _syslogServers;
   }
 
+  // Add any parsed property to PARSED_PROPERTIES
   private static final String PROP_DEVICE_METADATA = "DEVICE_METADATA";
   private static final String PROP_INTERFACE = "INTERFACE";
   private static final String PROP_LOOPBACK = "LOOPBACK";
@@ -70,6 +81,10 @@ public class ConfigDb implements Serializable {
   private static final String PROP_PORT = "PORT";
   private static final String PROP_NTP_SERVER = "NTP_SERVER";
   private static final String PROP_SYSLOG_SERVER = "SYSLOG_SERVER";
+
+  /** Properties that are knowingly ignored and we won't warn the user about ignoring them */
+  public static final Set<String> IGNORED_PROPERTIES =
+      ImmutableSet.of("BUFFER_QUEUE", "DSCP_TO_TC_MAP", "ZTP");
 
   private final @Nonnull Map<String, DeviceMetadata> _deviceMetadata;
   private final @Nonnull Map<String, L3Interface> _interfaces;
@@ -102,40 +117,53 @@ public class ConfigDb implements Serializable {
     _syslogServers = syslogServers;
   }
 
-  @JsonCreator
-  private static ConfigDb create(
-      @Nullable @JsonProperty(PROP_DEVICE_METADATA) Map<String, DeviceMetadata> deviceMetadata,
-      @Nullable @JsonProperty(PROP_INTERFACE) Map<String, Object> interfacesMap,
-      @Nullable @JsonProperty(PROP_LOOPBACK) Map<String, Object> loopbackMap,
-      @Nullable @JsonProperty(PROP_MGMT_INTERFACE) Map<String, Object> mgmtInterfaceMap,
-      @Nullable @JsonProperty(PROP_MGMT_PORT) Map<String, Port> mgmtPorts,
-      @Nullable @JsonProperty(PROP_MGMT_VRF_CONFIG) Map<String, MgmtVrf> mgmtVrfs,
-      @Nullable @JsonProperty(PROP_NTP_SERVER) Map<String, Object> ntpServersMap,
-      @Nullable @JsonProperty(PROP_PORT) Map<String, Port> ports,
-      @Nullable @JsonProperty(PROP_SYSLOG_SERVER) Map<String, Object> syslogServersMap) {
-
-    // in many cases below, all data is embedded in the key of the map, the value is empty.
-    // that is why we are using only the keys
-
-    return ConfigDb.builder()
-        .setDeviceMetadata(deviceMetadata)
-        .setInterfaces(
-            createInterfaces(
-                firstNonNull(interfacesMap, ImmutableMap.<String, Object>of()).keySet()))
-        .setLoopbacks(
-            createInterfaces(firstNonNull(loopbackMap, ImmutableMap.<String, Object>of()).keySet()))
-        .setMgmtInterfaces(
-            // ignoring gwaddr and force_mgmt_routes of management interfaces for now
-            createInterfaces(
-                firstNonNull(mgmtInterfaceMap, ImmutableMap.<String, Object>of()).keySet()))
-        .setMgmtPorts(mgmtPorts)
-        .setMgmtVrfs(mgmtVrfs)
-        .setNtpServers(firstNonNull(ntpServersMap, ImmutableMap.<String, Object>of()).keySet())
-        .setPorts(ports)
-        .setSyslogServers(
-            firstNonNull(syslogServersMap, ImmutableMap.<String, Object>of()).keySet())
-        .build();
-  }
+  //  @JsonCreator
+  //  private static ConfigDb create(
+  //      @Nullable @JsonProperty(PROP_DEVICE_METADATA) Map<String, DeviceMetadata> deviceMetadata,
+  //      @Nullable @JsonProperty(PROP_INTERFACE) Map<String, Object> interfacesMap,
+  //      @Nullable @JsonProperty(PROP_LOOPBACK) Map<String, Object> loopbackMap,
+  //      @Nullable @JsonProperty(PROP_MGMT_INTERFACE)
+  //          Map<String, Map<String, Object>> mgmtInterfaceMap,
+  //      @Nullable @JsonProperty(PROP_MGMT_PORT) Map<String, Port> mgmtPorts,
+  //      @Nullable @JsonProperty(PROP_MGMT_VRF_CONFIG) Map<String, MgmtVrf> mgmtVrfs,
+  //      @Nullable @JsonProperty(PROP_NTP_SERVER) Map<String, Object> ntpServersMap,
+  //      @Nullable @JsonProperty(PROP_PORT) Map<String, Port> ports,
+  //      @Nullable @JsonProperty(PROP_SYSLOG_SERVER) Map<String, Object> syslogServersMap) {
+  //
+  //    Warnings warnings = new Warnings(true, true, true);
+  //    if (mgmtInterfaceMap != null) {
+  //      Set<String> subKeys =
+  //          mgmtInterfaceMap.values().stream()
+  //              .flatMap(map -> map.keySet().stream())
+  //              .collect(ImmutableSet.toImmutableSet());
+  //      if (!subKeys.isEmpty()) {
+  //        warnings.unimplemented(
+  //            String.format("Unimplemented MGMT_INTERFACE properties: %s", subKeys));
+  //      }
+  //    }
+  //
+  //    // in many cases below, all data is embedded in the key of the map, the value is empty.
+  //    // that is why we are using only the keys
+  //
+  //    return ConfigDb.builder()
+  //        .setDeviceMetadata(deviceMetadata)
+  //        .setInterfaces(
+  //            createInterfaces(
+  //                firstNonNull(interfacesMap, ImmutableMap.<String, Object>of()).keySet()))
+  //        .setLoopbacks(
+  //            createInterfaces(firstNonNull(loopbackMap, ImmutableMap.<String,
+  // Object>of()).keySet()))
+  //        .setMgmtInterfaces(
+  //            createInterfaces(
+  //                firstNonNull(mgmtInterfaceMap, ImmutableMap.<String, Object>of()).keySet()))
+  //        .setMgmtPorts(mgmtPorts)
+  //        .setMgmtVrfs(mgmtVrfs)
+  //        .setNtpServers(firstNonNull(ntpServersMap, ImmutableMap.<String, Object>of()).keySet())
+  //        .setPorts(ports)
+  //        .setSyslogServers(
+  //            firstNonNull(syslogServersMap, ImmutableMap.<String, Object>of()).keySet())
+  //        .build();
+  //  }
 
   /**
    * Converts configdb's interface multi-level key encoding for interfaces, where keys are
@@ -277,6 +305,92 @@ public class ConfigDb implements Serializable {
           ImmutableSet.copyOf(firstNonNull(_ntpServers, ImmutableSet.of())),
           ImmutableMap.copyOf(firstNonNull(_ports, ImmutableMap.of())),
           ImmutableSet.copyOf(firstNonNull(_syslogServers, ImmutableSet.of())));
+    }
+  }
+
+  public static ConfigDb deserialize(String configDbText, Warnings warnings)
+      throws JsonProcessingException {
+    return BatfishObjectMapper.mapper()
+        .copy() // clone because the deserializer has Warnings object that must not be shared
+        .registerModule(
+            new SimpleModule().addDeserializer(ConfigDb.class, new Deserializer(warnings)))
+        .readValue(configDbText, ConfigDb.class);
+  }
+
+  private static final class Deserializer extends StdDeserializer<ConfigDb> {
+
+    private @Nonnull final Warnings _warnings;
+
+    public Deserializer(Warnings warnings) {
+      super(ConfigDb.class);
+      _warnings = warnings;
+    }
+
+    @Override
+    public ConfigDb deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+      ConfigDb.Builder configDb = ConfigDb.builder();
+      TreeNode tree = p.readValueAsTree();
+      Iterator<String> fieldIterator = tree.fieldNames();
+      ObjectMapper mapper = BatfishObjectMapper.ignoreUnknownMapper();
+      while (fieldIterator.hasNext()) {
+        String field = fieldIterator.next();
+        JsonParser value = mapper.treeAsTokens(tree.get(field));
+        switch (field) {
+          case PROP_DEVICE_METADATA:
+            configDb.setDeviceMetadata(
+                mapper.readValue(value, new TypeReference<Map<String, DeviceMetadata>>() {}));
+            break;
+          case PROP_INTERFACE:
+            configDb.setInterfaces(
+                createInterfaces(
+                    mapper.readValue(value, new TypeReference<Map<String, Object>>() {}).keySet()));
+            break;
+          case PROP_LOOPBACK:
+            configDb.setLoopbacks(
+                createInterfaces(
+                    mapper.readValue(value, new TypeReference<Map<String, Object>>() {}).keySet()));
+            break;
+          case PROP_MGMT_INTERFACE:
+            {
+              Map<String, Map<String, Object>> mgmtInterfaceMap =
+                  mapper.readValue(value, new TypeReference<Map<String, Map<String, Object>>>() {});
+              configDb.setMgmtInterfaces(createInterfaces(mgmtInterfaceMap.keySet()));
+              Set<String> innerProperties =
+                  mgmtInterfaceMap.values().stream()
+                      .flatMap(map -> map.keySet().stream())
+                      .collect(ImmutableSet.toImmutableSet());
+              innerProperties.forEach(
+                  key ->
+                      _warnings.unimplemented(
+                          String.format("Unimplemented MGMT_INTERFACE property '%s'", key)));
+              break;
+            }
+          case PROP_MGMT_PORT:
+            configDb.setMgmtPorts(
+                mapper.readValue(value, new TypeReference<Map<String, Port>>() {}));
+            break;
+          case PROP_MGMT_VRF_CONFIG:
+            configDb.setMgmtVrfs(
+                mapper.readValue(value, new TypeReference<Map<String, MgmtVrf>>() {}));
+            break;
+          case PROP_NTP_SERVER:
+            configDb.setNtpServers(
+                mapper.readValue(value, new TypeReference<Map<String, Object>>() {}).keySet());
+            break;
+          case PROP_PORT:
+            configDb.setPorts(mapper.readValue(value, new TypeReference<Map<String, Port>>() {}));
+            break;
+          case PROP_SYSLOG_SERVER:
+            configDb.setSyslogServers(
+                mapper.readValue(value, new TypeReference<Map<String, Object>>() {}).keySet());
+            break;
+          default:
+            if (!IGNORED_PROPERTIES.contains(field)) {
+              _warnings.unimplemented(String.format("Unimplemented configdb key '%s'", field));
+            }
+        }
+      }
+      return configDb.build();
     }
   }
 }

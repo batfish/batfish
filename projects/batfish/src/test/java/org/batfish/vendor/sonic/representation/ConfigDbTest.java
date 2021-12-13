@@ -1,6 +1,7 @@
 package org.batfish.vendor.sonic.representation;
 
 import static org.batfish.vendor.sonic.representation.ConfigDb.createInterfaces;
+import static org.batfish.vendor.sonic.representation.ConfigDb.deserialize;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -8,9 +9,10 @@ import static org.junit.Assert.assertThat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
-import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.junit.Test;
 
@@ -19,16 +21,18 @@ public class ConfigDbTest {
   @Test
   public void testJacksonDeserialization() throws JsonProcessingException {
     String input = "{ \"GARBAGE\": 1, \"INTERFACE\": {}}";
+    Warnings warnings = new Warnings(true, true, true);
+    assertThat(deserialize(input, warnings), equalTo(ConfigDb.builder().build()));
     assertThat(
-        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, ConfigDb.class),
-        equalTo(ConfigDb.builder().build()));
+        Iterables.getOnlyElement(warnings.getUnimplementedWarnings()).getText(),
+        equalTo("Unimplemented configdb key 'GARBAGE'"));
   }
 
   @Test
   public void testDeserializationDeviceMetadata() throws JsonProcessingException {
     String input = "{ \"DEVICE_METADATA\": {\"localhost\": {\"hostname\": \"name\"}}}";
     assertThat(
-        BatfishObjectMapper.mapper().readValue(input, ConfigDb.class),
+        deserialize(input, new Warnings()),
         equalTo(
             ConfigDb.builder()
                 .setDeviceMetadata(ImmutableMap.of("localhost", new DeviceMetadata("name")))
@@ -45,7 +49,7 @@ public class ConfigDbTest {
             + "\"Ethernet137\": {}"
             + "}}";
     assertThat(
-        BatfishObjectMapper.mapper().readValue(input, ConfigDb.class),
+        deserialize(input, new Warnings()),
         equalTo(
             ConfigDb.builder()
                 .setInterfaces(
@@ -61,7 +65,7 @@ public class ConfigDbTest {
   public void testDeserializationLoopback() throws JsonProcessingException {
     String input = "{ \"LOOPBACK\": {\"Loopback0\": {}}}";
     assertThat(
-        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, ConfigDb.class),
+        deserialize(input, new Warnings()),
         equalTo(
             ConfigDb.builder()
                 .setLoopbacks(ImmutableMap.of("Loopback0", new L3Interface(null)))
@@ -71,14 +75,18 @@ public class ConfigDbTest {
   @Test
   public void testDeserializationMgmtInterface() throws JsonProcessingException {
     String input = "{ \"MGMT_INTERFACE\": {\"eth0|10.11.150.11/16\": {\"gwaddr\": \"10.11.0.1\"}}}";
+    Warnings warnings = new Warnings(true, true, true);
     assertThat(
-        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, ConfigDb.class),
+        deserialize(input, warnings),
         equalTo(
             ConfigDb.builder()
                 .setMgmtInterfaces(
                     ImmutableMap.of(
                         "eth0", new L3Interface(ConcreteInterfaceAddress.parse("10.11.150.11/16"))))
                 .build()));
+    assertThat(
+        Iterables.getOnlyElement(warnings.getUnimplementedWarnings()).getText(),
+        equalTo("Unimplemented MGMT_INTERFACE property 'gwaddr'"));
   }
 
   @Test
@@ -92,7 +100,7 @@ public class ConfigDbTest {
             + "}}";
 
     assertThat(
-        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, ConfigDb.class),
+        deserialize(input, new Warnings()),
         equalTo(
             ConfigDb.builder()
                 .setMgmtPorts(
@@ -112,7 +120,7 @@ public class ConfigDbTest {
             + "}}";
 
     assertThat(
-        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, ConfigDb.class),
+        deserialize(input, new Warnings()),
         equalTo(
             ConfigDb.builder()
                 .setMgmtVrfs(
@@ -125,7 +133,7 @@ public class ConfigDbTest {
   public void testDeserializationNtpServer() throws JsonProcessingException {
     String input = "{ \"NTP_SERVER\": {\"23.92.29.245\": {}, \"2.debian.pool.ntp.org\": {}}}";
     assertThat(
-        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, ConfigDb.class),
+        deserialize(input, new Warnings()),
         equalTo(
             ConfigDb.builder()
                 .setNtpServers(ImmutableSet.of("23.92.29.245", "2.debian.pool.ntp.org"))
@@ -145,7 +153,7 @@ public class ConfigDbTest {
             + "}}";
 
     assertThat(
-        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, ConfigDb.class),
+        deserialize(input, new Warnings()),
         equalTo(
             ConfigDb.builder()
                 .setPorts(
@@ -161,7 +169,7 @@ public class ConfigDbTest {
   public void testDeserializationSyslogServer() throws JsonProcessingException {
     String input = "{ \"SYSLOG_SERVER\": {\"23.92.29.245\": {}, \"10.11.150.5\": {}}}";
     assertThat(
-        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, ConfigDb.class),
+        deserialize(input, new Warnings()),
         equalTo(
             ConfigDb.builder()
                 .setSyslogServers(ImmutableSet.of("23.92.29.245", "10.11.150.5"))

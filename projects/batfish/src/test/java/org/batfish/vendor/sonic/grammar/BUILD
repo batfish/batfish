@@ -27,6 +27,7 @@ junit_tests(
         "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/matchers",
         "//projects/batfish/src/main/java/org/batfish/vendor/sonic/grammar",
         "//projects/batfish/src/main/java/org/batfish/vendor/sonic/representation",
+        "@maven//:com_fasterxml_jackson_core_jackson_core",
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_guava_guava",
         "@maven//:junit_junit",

@@ -6,7 +6,6 @@ import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
-import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.ImplementedRules;
@@ -19,6 +18,7 @@ import org.batfish.vendor.sonic.representation.SonicConfiguration;
 
 public class SonicControlPlaneExtractor implements ControlPlaneExtractor {
   private @Nonnull final String _configDbText;
+  private @Nonnull final Warnings _configDbWarnings;
   private @Nonnull final String _frrFileText;
   private @Nonnull final FrrCombinedParser _frrParser;
   private @Nonnull final Warnings _frrWarnings;
@@ -28,11 +28,13 @@ public class SonicControlPlaneExtractor implements ControlPlaneExtractor {
 
   public SonicControlPlaneExtractor(
       String configDbText,
+      Warnings configDbWarnings,
       String frrText,
       FrrCombinedParser frrParser,
       Warnings frrWarnings,
       SilentSyntaxCollection frrSilentSyntax) {
     _configDbText = configDbText;
+    _configDbWarnings = configDbWarnings;
     _frrFileText = frrText;
     _frrParser = frrParser;
     _frrWarnings = frrWarnings;
@@ -51,8 +53,7 @@ public class SonicControlPlaneExtractor implements ControlPlaneExtractor {
   }
 
   public void processConfigDb() throws JsonProcessingException {
-    ConfigDb configDb =
-        BatfishObjectMapper.ignoreUnknownMapper().readValue(_configDbText, ConfigDb.class);
+    ConfigDb configDb = ConfigDb.deserialize(_configDbText, _configDbWarnings);
     _configuration.setConfigDb(configDb);
     configDb.getHostname().ifPresent(_configuration::setHostname);
   }
