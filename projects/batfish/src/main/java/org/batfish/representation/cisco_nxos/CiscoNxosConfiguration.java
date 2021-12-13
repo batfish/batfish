@@ -1480,10 +1480,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     if (vlan == null) {
       return;
     }
-    if (_c.getAllInterfaces().values().stream()
-        .noneMatch(iface -> vlan.equals(iface.getVlan()) && iface.getActive())) {
-      return;
-    }
 
     if (nveVni.isAssociateVrf()) {
       // L3 VNI
