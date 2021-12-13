@@ -44,9 +44,9 @@ BATFISH_MAVEN_ARTIFACTS = [
     "org.apache.commons:commons-text:1.9",
     "org.apache.httpcomponents:httpclient:4.5.13",  # managed up 2021-06-04 for CVE-2020-13956
     "org.apache.httpcomponents:httpcore:4.4.14",  # managed up 2021-06-04 for fixes
-    "org.apache.logging.log4j:log4j-api:2.14.1",
-    "org.apache.logging.log4j:log4j-core:2.14.1",
-    "org.apache.logging.log4j:log4j-slf4j-impl:2.14.1",
+    "org.apache.logging.log4j:log4j-api:2.15.0",
+    "org.apache.logging.log4j:log4j-core:2.15.0",
+    "org.apache.logging.log4j:log4j-slf4j-impl:2.15.0",
     "org.apache.thrift:libthrift:0.14.0",  # managed up: CVE-2020-13949
     "org.apache.tomcat.embed:tomcat-embed-core:8.5.72",  # managed up: CVE-2021-42340
     "org.codehaus.jettison:jettison:1.4.0",
