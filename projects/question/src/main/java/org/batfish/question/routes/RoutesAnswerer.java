@@ -77,6 +77,7 @@ public class RoutesAnswerer extends Answerer {
   static final String COL_ORIGIN_TYPE = "Origin_Type";
   static final String COL_CLUSTER_LIST = "Cluster_List";
   static final String COL_ORIGINATOR_ID = "Originator_Id";
+  static final String COL_RECEIVED_FROM_IP = "Received_From_IP";
   static final String COL_STATUS = "Status";
   static final String COL_WEIGHT = "Weight";
 
@@ -408,6 +409,9 @@ public class RoutesAnswerer extends Answerer {
                     Boolean.TRUE))
             .add(
                 new ColumnMetadata(
+                    COL_RECEIVED_FROM_IP, Schema.IP, "IP of the neighbor who sent this route"))
+            .add(
+                new ColumnMetadata(
                     COL_CLUSTER_LIST,
                     Schema.list(Schema.LONG),
                     "Route's Cluster List",
@@ -606,6 +610,20 @@ public class RoutesAnswerer extends Answerer {
                 COL_DELTA_PREFIX + COL_ORIGIN_TYPE,
                 Schema.STRING,
                 "Route's Origin type",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_BASE_PREFIX + COL_RECEIVED_FROM_IP,
+                Schema.IP,
+                "Route's Received from IP",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_DELTA_PREFIX + COL_RECEIVED_FROM_IP,
+                Schema.IP,
+                "Route's Received from IP",
                 Boolean.FALSE,
                 Boolean.TRUE));
         columnBuilder.add(
