@@ -407,7 +407,7 @@ public final class XrGrammarTest {
     assertThat(c.getIpv4Acls(), hasKeys("acl"));
     Ipv4AccessList acl = c.getIpv4Acls().get("acl");
     // TODO: get the remark line in there too.
-    assertThat(acl.getLines(), hasSize(8));
+    assertThat(acl.getLines(), aMapWithSize(9));
 
     assertThat(c.getIpv6Acls(), hasKeys("aclv6"));
     Ipv6AccessList aclv6 = c.getIpv6Acls().get("aclv6");
@@ -421,10 +421,14 @@ public final class XrGrammarTest {
     assertThat(c.getIpAccessLists(), hasKeys("acl"));
     IpAccessList acl = c.getIpAccessLists().get("acl");
     // TODO: get the remark line in there too.
-    assertThat(acl.getLines(), hasSize(8));
+    assertThat(acl.getLines(), hasSize(9));
+    {
+      // Test reordering - (20, 30, 31, rather than 31 last)
+      assertThat(acl.getLines().get(2).getName(), equalTo("31 permit ipv4 31.31.31.31/32 any"));
+    }
     {
       // Test fragments.
-      AclLine fragmentLine = acl.getLines().get(7);
+      AclLine fragmentLine = acl.getLines().get(8);
       PermitAndDenyBdds bdds = _aclToBdd.toPermitAndDenyBdds(fragmentLine);
       HeaderSpace expected =
           HeaderSpace.builder()
@@ -2443,10 +2447,10 @@ public final class XrGrammarTest {
     assertThat(vc.getIpv4Acls(), hasKeys(aclName));
 
     Ipv4AccessList acl = vc.getIpv4Acls().get(aclName);
-    Iterator<Ipv4AccessListLine> i = acl.getLines().iterator();
+    Iterator<Ipv4AccessListLine> i = acl.getLines().values().iterator();
     acl.getLines()
         .forEach(
-            line ->
+            (seq, line) ->
                 assertThat(
                     line.getServiceSpecifier(),
                     instanceOf(SimpleExtendedAccessListServiceSpecifier.class)));
@@ -3533,9 +3537,9 @@ public final class XrGrammarTest {
     // Ipv4
     {
       Ipv4AccessList acl = vc.getIpv4Acls().get("aclv4");
-      assertThat(acl.getLines(), iterableWithSize(2));
-      Ipv4AccessListLine nhIpLine = acl.getLines().get(0);
-      Ipv4AccessListLine nhVrfLine = acl.getLines().get(1);
+      assertThat(acl.getLines(), aMapWithSize(2));
+      Ipv4AccessListLine nhIpLine = acl.getLines().get(30L);
+      Ipv4AccessListLine nhVrfLine = acl.getLines().get(40L);
 
       assertThat(nhIpLine.getNexthop1().getIp(), equalTo(Ip.parse("10.0.13.1")));
       assertNull(nhIpLine.getNexthop1().getVrf());

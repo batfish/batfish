@@ -2244,7 +2244,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
   @VisibleForTesting
   static boolean isIpv4AclUsedForAbf(@Nonnull Ipv4AccessList acl) {
     // ABF lines will always have nexthop1 set
-    return acl.getLines().stream().anyMatch(l -> l.getNexthop1() != null);
+    return acl.getLines().values().stream().anyMatch(l -> l.getNexthop1() != null);
   }
 
   /**
