@@ -8,10 +8,12 @@ import static org.batfish.representation.cisco_xr.CiscoXrConversions.toRouteFilt
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
-import junit.framework.TestCase;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -26,7 +28,7 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.vendor.VendorStructureId;
 import org.junit.Test;
 
-public class CiscoXrConversionsTest extends TestCase {
+public class CiscoXrConversionsTest {
 
   /** Check that vendorStructureId is set when ACL is converted to route filter list */
   @Test
