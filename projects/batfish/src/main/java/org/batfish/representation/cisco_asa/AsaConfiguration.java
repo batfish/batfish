@@ -2681,7 +2681,8 @@ public final class AsaConfiguration extends VendorConfiguration {
     c.setDnsSourceInterface(_dnsSourceInterface);
     c.setDomainName(_domainName);
     c.setExportBgpFromBgpRib(true);
-    c.setNormalVlanRange(new SubRange(VLAN_NORMAL_MIN_CISCO, VLAN_NORMAL_MAX_CISCO));
+    c.setNormalVlanRange(
+        IntegerSpace.of(new SubRange(VLAN_NORMAL_MIN_CISCO, VLAN_NORMAL_MAX_CISCO)));
     c.setTacacsServers(_tacacsServers);
     c.setTacacsSourceInterface(_tacacsSourceInterface);
     c.setNtpSourceInterface(_ntpSourceInterface);

@@ -5278,6 +5278,10 @@ public final class CiscoNxosGrammarTest {
             hasSourceAddress(nullValue()),
             hasUdpPort(equalTo(DEFAULT_UDP_PORT)),
             hasVni(20001)));
+    // Make sure Vlan3 - associated with VNI 20001 - is up after post-processing. While it has no
+    // associated switchports and is in autostate, it should stay up since it is associated with a
+    // Layer3Vni.
+    assertThat(c, hasInterface("Vlan3", isActive()));
 
     assertThat(c, hasDefaultVrf(hasL2VniSettings(hasKey(30001))));
     assertThat(

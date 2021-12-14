@@ -1496,6 +1496,9 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                       && iface.getVrfName().equals(vsTenantVrfForL3Vni.getName()))) {
         return;
       }
+      // Ensure IRB stays up even if it has no associated switchports
+      //
+      _c.setNormalVlanRange(_c.getNormalVlanRange().difference(IntegerSpace.of(vlan)));
       Layer3Vni vniSettings =
           Layer3Vni.builder()
               .setBumTransportIps(bumTransportIps)
