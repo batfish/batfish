@@ -36,6 +36,10 @@ vrf context tenant1
   rd auto
   address-family ipv4 unicast
     route-target both auto evpn
+interface vlan3
+  vrf member tenant1
+  no shutdown
+  ip forward
 interface nve1
   no shutdown
   global mcast-group 233.0.0.0 L2

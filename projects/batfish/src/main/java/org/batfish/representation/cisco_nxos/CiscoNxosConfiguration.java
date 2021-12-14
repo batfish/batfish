@@ -1477,11 +1477,23 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     } else {
       bumTransportIps = ImmutableSortedSet.copyOf(nveVni.getPeerIps());
     }
+    Integer vlan = getVlanForVni(nveVni.getVni());
+    if (vlan == null) {
+      // NX-OS requires all VNIs be associated with a VLAN
+      return;
+    }
     if (nveVni.isAssociateVrf()) {
-      // L3 VNI
-
       Vrf vsTenantVrfForL3Vni = getVrfForL3Vni(_vrfs, nveVni.getVni());
       if (vsTenantVrfForL3Vni == null || _c.getVrfs().get(vsTenantVrfForL3Vni.getName()) == null) {
+        return;
+      }
+      // NX-OS requires all L3 VNI VLANs have an associated active IRB in the tenant VRF
+      if (_c.getAllInterfaces().values().stream()
+          .noneMatch(
+              iface ->
+                  vlan.equals(iface.getVlan())
+                      && iface.getActive()
+                      && iface.getVrfName().equals(vsTenantVrfForL3Vni.getName()))) {
         return;
       }
       Layer3Vni vniSettings =
@@ -1498,10 +1510,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
               .build();
       _c.getVrfs().get(vsTenantVrfForL3Vni.getName()).addLayer3Vni(vniSettings);
     } else {
-      Integer vlan = getVlanForVni(nveVni.getVni());
-      if (vlan == null) {
-        return;
-      }
       Layer2Vni vniSettings =
           Layer2Vni.builder()
               .setBumTransportIps(bumTransportIps)
