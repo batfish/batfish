@@ -93,6 +93,7 @@ import org.batfish.datamodel.GeneratedRoute6;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
 import org.batfish.datamodel.IkePhase1Proposal;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceAddress;
@@ -1793,7 +1794,8 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     c.setDnsSourceInterface(_dnsSourceInterface);
     c.setDomainName(_domainName);
     c.setExportBgpFromBgpRib(true);
-    c.setNormalVlanRange(new SubRange(VLAN_NORMAL_MIN_CISCO, VLAN_NORMAL_MAX_CISCO));
+    c.setNormalVlanRange(
+        IntegerSpace.of(new SubRange(VLAN_NORMAL_MIN_CISCO, VLAN_NORMAL_MAX_CISCO)));
     c.setTacacsServers(_tacacsServers);
     c.setTacacsSourceInterface(_tacacsSourceInterface);
     c.setNtpSourceInterface(_ntpSourceInterface);

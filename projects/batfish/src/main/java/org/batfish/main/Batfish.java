@@ -153,7 +153,6 @@ import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -960,11 +959,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 vlanId -> vlanMemberCounts.compute(vlanId, (k, v) -> (v == null) ? 1 : (v + 1)));
       }
       // Disable all "normal" vlan interfaces with zero member counts:
-      SubRange normalVlanRange = c.getNormalVlanRange();
+      IntegerSpace normalVlanRange = c.getNormalVlanRange();
       for (Map.Entry<Integer, Integer> entry : vlanMemberCounts.entrySet()) {
         if (entry.getValue() == 0) {
           int vlanNumber = entry.getKey();
-          if (normalVlanRange.includes(vlanNumber)) {
+          if (normalVlanRange.contains(vlanNumber)) {
             Interface iface = vlanInterfaces.get(vlanNumber);
             if ((iface != null) && iface.getAutoState()) {
               _logger.warnf(
