@@ -11,10 +11,6 @@ vlan 2
   name Name-Of-Vlan-2
   vn-segment 2222
 !
-vlan 3
-  name Name-Of-Vlan-3
-  vn-segment 3333
-!
 vrf context tenant1
   !! this VRF does not appear under "router bgp"
   !! but should still have a BGP process
@@ -23,6 +19,12 @@ vrf context tenant1
   address-family ipv4 unicast
     route-target both auto evpn
 !
+interface ethernet1/1
+  no switchport
+  vrf member tenant1
+  ip address 10.50.0.1/24
+  no shutdown
+
 interface nve1
   no shutdown
   host-reachability protocol bgp

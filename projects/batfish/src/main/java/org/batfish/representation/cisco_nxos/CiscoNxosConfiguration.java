@@ -226,6 +226,7 @@ import org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform;
 import org.batfish.datamodel.vendor_family.cisco_nxos.NxosMajorVersion;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.Layer3Vni;
+import org.batfish.datamodel.vxlan.Vni;
 import org.batfish.representation.cisco_nxos.BgpVrfIpv6AddressFamilyConfiguration.Network;
 import org.batfish.representation.cisco_nxos.DistributeList.DistributeListFilterType;
 import org.batfish.representation.cisco_nxos.Nve.IngressReplicationProtocol;
@@ -1476,11 +1477,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     } else {
       bumTransportIps = ImmutableSortedSet.copyOf(nveVni.getPeerIps());
     }
-    Integer vlan = getVlanForVni(nveVni.getVni());
-    if (vlan == null) {
-      return;
-    }
-
     if (nveVni.isAssociateVrf()) {
       // L3 VNI
 
@@ -1496,12 +1492,16 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                   nve.getSourceInterface() != null
                       ? getInterfaceIp(_c.getAllInterfaces(), nve.getSourceInterface())
                       : null)
-              .setUdpPort(Layer2Vni.DEFAULT_UDP_PORT)
+              .setUdpPort(Vni.DEFAULT_UDP_PORT)
               .setVni(nveVni.getVni())
               .setSrcVrf(DEFAULT_VRF_NAME)
               .build();
       _c.getVrfs().get(vsTenantVrfForL3Vni.getName()).addLayer3Vni(vniSettings);
     } else {
+      Integer vlan = getVlanForVni(nveVni.getVni());
+      if (vlan == null) {
+        return;
+      }
       Layer2Vni vniSettings =
           Layer2Vni.builder()
               .setBumTransportIps(bumTransportIps)
@@ -1510,7 +1510,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                   nve.getSourceInterface() != null
                       ? getInterfaceIp(_c.getAllInterfaces(), nve.getSourceInterface())
                       : null)
-              .setUdpPort(Layer2Vni.DEFAULT_UDP_PORT)
+              .setUdpPort(Vni.DEFAULT_UDP_PORT)
               .setVni(nveVni.getVni())
               .setVlan(vlan)
               .setSrcVrf(DEFAULT_VRF_NAME)

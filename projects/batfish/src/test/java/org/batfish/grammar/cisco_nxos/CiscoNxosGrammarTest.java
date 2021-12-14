@@ -5302,8 +5302,8 @@ public final class CiscoNxosGrammarTest {
             VniSettingsMatchers.hasVlan(equalTo(5)),
             hasVni(40001)));
 
-    // VLAN for VNI 500001 is shutdown
-    assertThat(c, not(hasDefaultVrf(hasL2VniSettings(hasKey(50001)))));
+    // Even though IRB for vlan6<->VNI 50001 is shutdown, should still communicate about VNI
+    assertThat(c, hasDefaultVrf(hasL2VniSettings(hasKey(50001))));
   }
 
   @Test
