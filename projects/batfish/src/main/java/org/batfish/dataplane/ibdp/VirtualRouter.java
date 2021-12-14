@@ -1529,13 +1529,24 @@ public final class VirtualRouter {
                         Entry::getKey, e -> e.getValue().getConfiguration())));
     for (Bgpv4ToEvpnVrfLeakConfig leakConfig :
         _vrf.getVrfLeakConfig().getBgpv4ToEvpnVrfLeakConfigs()) {
+      Optional<VirtualRouter> exportingVr = _node.getVirtualRouter(leakConfig.getImportFromVrf());
       Optional<BgpRoutingProcess> exportingBgpProc =
-          _node
-              .getVirtualRouter(leakConfig.getImportFromVrf())
-              .map(VirtualRouter::getBgpRoutingProcess);
+          exportingVr.map(VirtualRouter::getBgpRoutingProcess);
       if (exportingBgpProc.isPresent()) {
-        _bgpRoutingProcess.importCrossVrfV4RoutesToEvpn(
-            exportingBgpProc.get().getRoutesToLeak(), leakConfig, nc, allNodes);
+        Set<Layer3Vni> exportingVrfL3Vnis = exportingVr.get().getLayer3Vnis();
+        if (exportingVrfL3Vnis.size() == 1) {
+          int vni = exportingVrfL3Vnis.iterator().next().getVni();
+          _bgpRoutingProcess.importCrossVrfV4RoutesToEvpn(
+              exportingBgpProc.get().getRoutesToLeak(), leakConfig, vni, nc, allNodes);
+        } else {
+          LOGGER.error(
+              "Exporting BGP routes to EVPN from VRF {} to VRF {} on node {} failed. Exporting VRF"
+                  + " expected to have exactly one layer 3 VNI, but has {}",
+              leakConfig.getImportFromVrf(),
+              _name,
+              _c.getHostname(),
+              exportingVrfL3Vnis.size());
+        }
       } else {
         LOGGER.error(
             "Exporting BGP routes to EVPN from VRF {} to VRF {} on node {} failed. Exporting VRF"

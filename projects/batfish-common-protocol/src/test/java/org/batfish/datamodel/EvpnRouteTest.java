@@ -25,7 +25,8 @@ public class EvpnRouteTest {
             .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
-            .setRouteDistinguisher(RouteDistinguisher.from(Ip.parse("1.1.1.1"), 2));
+            .setRouteDistinguisher(RouteDistinguisher.from(Ip.parse("1.1.1.1"), 2))
+            .setVni(1);
 
     assertThat(builder.build().getRouteTargets(), empty());
     assertThat(
