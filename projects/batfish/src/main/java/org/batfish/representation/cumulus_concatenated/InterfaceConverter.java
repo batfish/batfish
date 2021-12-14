@@ -1,11 +1,11 @@
 package org.batfish.representation.cumulus_concatenated;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.representation.frr.FrrStructureType.BOND;
-import static org.batfish.representation.frr.FrrStructureType.INTERFACE;
-import static org.batfish.representation.frr.FrrStructureType.VLAN;
-import static org.batfish.representation.frr.FrrStructureType.VRF;
-import static org.batfish.representation.frr.FrrStructureType.VXLAN;
+import static org.batfish.representation.cumulus_concatenated.CumulusStructureType.BOND;
+import static org.batfish.representation.cumulus_concatenated.CumulusStructureType.INTERFACE;
+import static org.batfish.representation.cumulus_concatenated.CumulusStructureType.VLAN;
+import static org.batfish.representation.cumulus_concatenated.CumulusStructureType.VRF;
+import static org.batfish.representation.cumulus_concatenated.CumulusStructureType.VXLAN;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
@@ -13,7 +13,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
-import org.batfish.representation.frr.InterfaceBridgeSettings;
 import org.batfish.representation.frr.Vxlan;
 
 /** Converter from cumulus interfaces file model to Cumulus VS model. */

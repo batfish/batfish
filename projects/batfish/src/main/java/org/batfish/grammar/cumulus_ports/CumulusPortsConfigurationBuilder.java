@@ -15,8 +15,8 @@ import org.batfish.grammar.cumulus_ports.CumulusPortsParser.DisabledContext;
 import org.batfish.grammar.cumulus_ports.CumulusPortsParser.Port_definitionContext;
 import org.batfish.grammar.cumulus_ports.CumulusPortsParser.SpeedContext;
 import org.batfish.representation.cumulus_concatenated.CumulusConcatenatedConfiguration;
-import org.batfish.representation.frr.FrrStructureType;
-import org.batfish.representation.frr.FrrStructureUsage;
+import org.batfish.representation.cumulus_concatenated.CumulusStructureType;
+import org.batfish.representation.cumulus_concatenated.CumulusStructureUsage;
 
 /**
  * Populates a {@link CumulusConcatenatedConfiguration} from the data in a {@link
@@ -83,9 +83,9 @@ public class CumulusPortsConfigurationBuilder extends CumulusPortsParserBaseList
       _config.getPortsConfiguration().setSpeed(subIfaceName, subIfaceSpeedMbps);
 
       _config.referenceStructure(
-          FrrStructureType.INTERFACE,
+          CumulusStructureType.INTERFACE,
           subIfaceName,
-          FrrStructureUsage.PORT_BREAKOUT,
+          CumulusStructureUsage.PORT_BREAKOUT,
           ctx.getStart().getLine());
     }
   }
@@ -97,9 +97,9 @@ public class CumulusPortsConfigurationBuilder extends CumulusPortsParserBaseList
     _config.getPortsConfiguration().setDisabled(ifaceName, true);
 
     _config.referenceStructure(
-        FrrStructureType.INTERFACE,
+        CumulusStructureType.INTERFACE,
         ifaceName,
-        FrrStructureUsage.PORT_DISABLED,
+        CumulusStructureUsage.PORT_DISABLED,
         ctx.getStart().getLine());
   }
 
@@ -114,9 +114,9 @@ public class CumulusPortsConfigurationBuilder extends CumulusPortsParserBaseList
     _config.getPortsConfiguration().setSpeed(ifaceName, speedGbps * 1000);
 
     _config.referenceStructure(
-        FrrStructureType.INTERFACE,
+        CumulusStructureType.INTERFACE,
         ifaceName,
-        FrrStructureUsage.PORT_SPEED,
+        CumulusStructureUsage.PORT_SPEED,
         ctx.getStart().getLine());
   }
 

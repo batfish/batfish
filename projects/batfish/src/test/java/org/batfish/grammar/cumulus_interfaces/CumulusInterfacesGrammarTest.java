@@ -32,11 +32,11 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Cumulus_in
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.representation.cumulus_concatenated.CumulusConcatenatedConfiguration;
 import org.batfish.representation.cumulus_concatenated.CumulusInterfacesConfiguration;
+import org.batfish.representation.cumulus_concatenated.InterfaceBridgeSettings;
+import org.batfish.representation.cumulus_concatenated.InterfaceClagSettings;
 import org.batfish.representation.cumulus_concatenated.InterfacesInterface;
 import org.batfish.representation.frr.FrrStructureType;
 import org.batfish.representation.frr.FrrStructureUsage;
-import org.batfish.representation.frr.InterfaceBridgeSettings;
-import org.batfish.representation.frr.InterfaceClagSettings;
 import org.batfish.representation.frr.StaticRoute;
 import org.junit.Before;
 import org.junit.Test;

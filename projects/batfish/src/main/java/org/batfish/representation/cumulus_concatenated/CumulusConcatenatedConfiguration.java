@@ -39,6 +39,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
 import org.batfish.common.runtime.InterfaceRuntimeData;
@@ -68,16 +69,15 @@ import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.Layer3Vni;
 import org.batfish.datamodel.vxlan.Vni;
 import org.batfish.representation.cumulus_concatenated.CumulusPortsConfiguration.PortSettings;
-import org.batfish.representation.frr.Bridge;
 import org.batfish.representation.frr.FrrConfiguration;
 import org.batfish.representation.frr.FrrInterface;
 import org.batfish.representation.frr.FrrStructureType;
 import org.batfish.representation.frr.FrrStructureUsage;
 import org.batfish.representation.frr.FrrVendorConfiguration;
-import org.batfish.representation.frr.InterfaceBridgeSettings;
-import org.batfish.representation.frr.InterfaceClagSettings;
 import org.batfish.representation.frr.Vrf;
 import org.batfish.representation.frr.Vxlan;
+import org.batfish.vendor.StructureType;
+import org.batfish.vendor.StructureUsage;
 import org.batfish.vendor.VendorConfiguration;
 
 /**
@@ -743,48 +743,48 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
 
   private void markStructures() {
     markAbstractStructure(
-        FrrStructureType.ABSTRACT_INTERFACE,
-        FrrStructureUsage.BGP_NEIGHBOR_INTERFACE,
+        CumulusStructureType.ABSTRACT_INTERFACE,
+        CumulusStructureUsage.BGP_NEIGHBOR_INTERFACE,
         ImmutableSet.of(
-            FrrStructureType.BOND,
-            FrrStructureType.INTERFACE,
-            FrrStructureType.LOOPBACK,
-            FrrStructureType.VLAN,
-            FrrStructureType.VRF));
+            CumulusStructureType.BOND,
+            CumulusStructureType.INTERFACE,
+            CumulusStructureType.LOOPBACK,
+            CumulusStructureType.VLAN,
+            CumulusStructureType.VRF));
     markAbstractStructure(
-        FrrStructureType.ABSTRACT_INTERFACE,
-        FrrStructureUsage.BRIDGE_PORT,
+        CumulusStructureType.ABSTRACT_INTERFACE,
+        CumulusStructureUsage.BRIDGE_PORT,
         ImmutableSet.of(
-            FrrStructureType.BOND,
-            FrrStructureType.INTERFACE,
-            FrrStructureType.LOOPBACK,
-            FrrStructureType.VLAN,
-            FrrStructureType.VRF,
-            FrrStructureType.VXLAN));
+            CumulusStructureType.BOND,
+            CumulusStructureType.INTERFACE,
+            CumulusStructureType.LOOPBACK,
+            CumulusStructureType.VLAN,
+            CumulusStructureType.VRF,
+            CumulusStructureType.VXLAN));
     markAbstractStructure(
-        FrrStructureType.ABSTRACT_INTERFACE,
-        FrrStructureUsage.ROUTE_MAP_MATCH_INTERFACE,
+        CumulusStructureType.ABSTRACT_INTERFACE,
+        CumulusStructureUsage.ROUTE_MAP_MATCH_INTERFACE,
         ImmutableSet.of(
-            FrrStructureType.BOND,
-            FrrStructureType.INTERFACE,
-            FrrStructureType.LOOPBACK,
-            FrrStructureType.VLAN,
-            FrrStructureType.VRF));
+            CumulusStructureType.BOND,
+            CumulusStructureType.INTERFACE,
+            CumulusStructureType.LOOPBACK,
+            CumulusStructureType.VLAN,
+            CumulusStructureType.VRF));
     markAbstractStructure(
-        FrrStructureType.ABSTRACT_INTERFACE,
-        FrrStructureUsage.PORT_SPEED,
-        ImmutableSet.of(FrrStructureType.INTERFACE));
-    markConcreteStructure(FrrStructureType.BOND);
-    markConcreteStructure(FrrStructureType.INTERFACE);
-    markConcreteStructure(FrrStructureType.IP_AS_PATH_ACCESS_LIST);
-    markConcreteStructure(FrrStructureType.IP_COMMUNITY_LIST);
-    markConcreteStructure(FrrStructureType.IP_PREFIX_LIST);
-    markConcreteStructure(FrrStructureType.LOOPBACK);
-    markConcreteStructure(FrrStructureType.ROUTE_MAP);
-    markConcreteStructure(FrrStructureType.ROUTE_MAP_ENTRY);
-    markConcreteStructure(FrrStructureType.VLAN);
-    markConcreteStructure(FrrStructureType.VRF);
-    markConcreteStructure(FrrStructureType.VXLAN);
+        CumulusStructureType.ABSTRACT_INTERFACE,
+        CumulusStructureUsage.PORT_SPEED,
+        ImmutableSet.of(CumulusStructureType.INTERFACE));
+    markConcreteStructure(CumulusStructureType.BOND);
+    markConcreteStructure(CumulusStructureType.INTERFACE);
+    markConcreteStructure(CumulusStructureType.IP_AS_PATH_ACCESS_LIST);
+    markConcreteStructure(CumulusStructureType.IP_COMMUNITY_LIST);
+    markConcreteStructure(CumulusStructureType.IP_PREFIX_LIST);
+    markConcreteStructure(CumulusStructureType.LOOPBACK);
+    markConcreteStructure(CumulusStructureType.ROUTE_MAP);
+    markConcreteStructure(CumulusStructureType.ROUTE_MAP_ENTRY);
+    markConcreteStructure(CumulusStructureType.VLAN);
+    markConcreteStructure(CumulusStructureType.VRF);
+    markConcreteStructure(CumulusStructureType.VXLAN);
   }
 
   private void initVendorFamily(Configuration c) {
@@ -809,7 +809,7 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
     if (bridgeIface == null) {
       return new Bridge();
     }
-    Bridge bridge = new org.batfish.representation.frr.Bridge();
+    Bridge bridge = new Bridge();
     bridge.setPorts(firstNonNull(bridgeIface.getBridgePorts(), DEFAULT_BRIDGE_PORTS));
     InterfaceBridgeSettings bridgeSettings = bridgeIface.getBridgeSettings();
     if (bridgeSettings != null) {
@@ -890,6 +890,36 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
       throw new NoSuchElementException(String.format("Interface %s does not exist", ifaceName));
     }
     return _interfacesConfiguration.getInterfaces().get(ifaceName).getAddresses();
+  }
+
+  /**
+   * {@link org.batfish.grammar.frr.FrrConfigurationBuilder} may call this function using FRR types,
+   * so we convert to Cumulus-specific types and call the parent
+   */
+  @Override
+  public void referenceStructure(StructureType type, String name, StructureUsage usage, int line) {
+    CumulusStructureType cumulusType =
+        type instanceof FrrStructureType
+            ? CumulusStructureType.fromFrrStructureType((FrrStructureType) type)
+            : (CumulusStructureType) type;
+    CumulusStructureUsage cumulusUsage =
+        usage instanceof FrrStructureUsage
+            ? CumulusStructureUsage.fromFrrStructureUsage((FrrStructureUsage) usage)
+            : (CumulusStructureUsage) usage;
+    super.referenceStructure(cumulusType, name, cumulusUsage, line);
+  }
+
+  /**
+   * {@link org.batfish.grammar.frr.FrrConfigurationBuilder} may call this function using FRR types,
+   * so we convert to Cumulus-specific types and call the parent
+   */
+  @Override
+  public void defineStructure(StructureType type, String name, ParserRuleContext ctx) {
+    CumulusStructureType cumulusType =
+        type instanceof FrrStructureType
+            ? CumulusStructureType.fromFrrStructureType((FrrStructureType) type)
+            : (CumulusStructureType) type;
+    super.defineStructure(cumulusType, name, ctx);
   }
 
   public static Builder builder() {
