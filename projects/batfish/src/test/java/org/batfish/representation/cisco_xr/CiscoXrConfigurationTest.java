@@ -15,6 +15,7 @@ public class CiscoXrConfigurationTest {
   public void testIsIpv4AclUsedForAbf() {
     Ipv4AccessListLine nonAbfLine =
         Ipv4AccessListLine.builder()
+            .setSeq(10L)
             .setName("non-abf line")
             .setAction(LineAction.PERMIT)
             .setSrcAddressSpecifier(new WildcardAddressSpecifier(IpWildcard.ANY))
@@ -26,6 +27,7 @@ public class CiscoXrConfigurationTest {
             .build();
     Ipv4AccessListLine abfLine =
         Ipv4AccessListLine.builder()
+            .setSeq(10L)
             .setName("abf line")
             .setAction(LineAction.PERMIT)
             .setSrcAddressSpecifier(new WildcardAddressSpecifier(IpWildcard.ANY))
