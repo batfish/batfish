@@ -5,7 +5,6 @@ import static org.batfish.datamodel.LineAction.PERMIT;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
-import junit.framework.TestCase;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginMechanism;
@@ -17,7 +16,7 @@ import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.trace.Tracer;
 import org.junit.Test;
 
-public class ResultTest extends TestCase {
+public class ResultTest {
 
   @Test
   public void testEquals() {

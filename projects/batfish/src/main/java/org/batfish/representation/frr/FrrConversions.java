@@ -63,6 +63,7 @@ import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
@@ -153,10 +154,6 @@ public final class FrrConversions {
   public static final long DEFAULT_OSPF_MAX_METRIC = 0xFFFF;
 
   @VisibleForTesting
-  static GeneratedRoute GENERATED_DEFAULT_ROUTE =
-      GeneratedRoute.builder().setNetwork(Prefix.ZERO).setAdmin(MAX_ADMINISTRATIVE_COST).build();
-
-  @VisibleForTesting
   static final Statement REJECT_DEFAULT_ROUTE =
       new If(
           Common.matchDefaultRoute(), ImmutableList.of(Statements.ReturnFalse.toStaticStatement()));
@@ -195,10 +192,59 @@ public final class FrrConversions {
   }
 
   /**
+   * The entry point for converting FRR part of the configuration.
+   *
+   * <p>Pre-conditions at the time this function is called:
+   *
+   * <ul>
+   *   <li>All interfaces must have been created and properly configured in {@code c}, including
+   *       those defined exclusively in the frr.conf file.
+   *   <li>All VRFs must have been created in {@code c}, including those defined exclusively in the
+   *       frr.conf file.
+   *   <li>All L2 and L3 VNIs must have been added to the VI VRFs.
+   * </ul>
+   */
+  public static void convertFrr(Configuration c, FrrVendorConfiguration vc) {
+
+    FrrConfiguration frrConfiguration = vc.getFrrConfiguration();
+
+    // FRR does not generate local routes for connected routes.
+    c.getAllInterfaces()
+        .values()
+        .forEach(
+            i -> {
+              ImmutableSortedMap.Builder<ConcreteInterfaceAddress, ConnectedRouteMetadata>
+                  metadata = ImmutableSortedMap.naturalOrder();
+              for (InterfaceAddress a : i.getAllAddresses()) {
+                if (!(a instanceof ConcreteInterfaceAddress)) {
+                  continue;
+                }
+                ConcreteInterfaceAddress address = (ConcreteInterfaceAddress) a;
+                metadata.put(
+                    address, ConnectedRouteMetadata.builder().setGenerateLocalRoute(false).build());
+              }
+              i.setAddressMetadata(metadata.build());
+            });
+
+    convertStaticRoutes(c, frrConfiguration); // static routes in the FRR file
+    convertIpAsPathAccessLists(c, frrConfiguration.getIpAsPathAccessLists());
+    convertIpPrefixLists(c, frrConfiguration.getIpPrefixLists(), vc.getFilename());
+    convertIpCommunityLists(c, frrConfiguration.getIpCommunityLists());
+    convertRouteMaps(c, frrConfiguration, vc.getFilename(), vc.getWarnings());
+    convertDnsServers(c, frrConfiguration.getIpv4Nameservers());
+
+    convertOspfProcess(c, vc, frrConfiguration, vc.getWarnings());
+    addOspfUnnumberedLLAs(c);
+
+    addBgpUnnumberedLLAs(c, frrConfiguration);
+    convertBgpProcess(c, vc, frrConfiguration, vc.getWarnings());
+  }
+
+  /**
    * For interfaces that didn't get an address via either OutOfBand or FRR, give them a link-local
    * address if they are being used for BGP unnumbered.
    */
-  public static void addBgpUnnumberedLLAs(Configuration c, FrrConfiguration frrConfiguration) {
+  private static void addBgpUnnumberedLLAs(Configuration c, FrrConfiguration frrConfiguration) {
     c.getAllInterfaces()
         .forEach(
             (iname, iface) -> {
@@ -214,7 +260,7 @@ public final class FrrConversions {
    * For interfaces that didn't get an address via either OutOfBand or FRR, give them a link-local
    * address if they are being used for OSPF unnumbered.
    */
-  public static void addOspfUnnumberedLLAs(Configuration c) {
+  private static void addOspfUnnumberedLLAs(Configuration c) {
     c.getAllInterfaces()
         .forEach(
             (iname, iface) -> {
@@ -238,8 +284,12 @@ public final class FrrConversions {
             });
   }
 
-  /** Convert the static routes in the frr.conf file */
-  public static void convertStaticRoutes(Configuration c, FrrConfiguration frr) {
+  /**
+   * Convert the static routes in the frr.conf file.
+   *
+   * <p>The VRFs must have been created in {@code c} before calling this function.
+   */
+  private static void convertStaticRoutes(Configuration c, FrrConfiguration frr) {
     // default vrf static routes
     org.batfish.datamodel.Vrf defVrf = c.getVrfs().get(DEFAULT_VRF_NAME);
     frr.getStaticRoutes().forEach(sr -> defVrf.getStaticRoutes().add(sr.convert()));
@@ -248,10 +298,12 @@ public final class FrrConversions {
     frr.getVrfs()
         .values()
         .forEach(
-            frrVrf -> {
-              org.batfish.datamodel.Vrf newVrf = getOrCreateVrf(c, frrVrf.getName());
-              frrVrf.getStaticRoutes().forEach(sr -> newVrf.getStaticRoutes().add(sr.convert()));
-            });
+            frrVrf ->
+                frrVrf
+                    .getStaticRoutes()
+                    .forEach(
+                        sr ->
+                            c.getVrfs().get(frrVrf.getName()).getStaticRoutes().add(sr.convert())));
   }
 
   /**
@@ -262,8 +314,7 @@ public final class FrrConversions {
    * @return the inferred Ip or empty optional if that is not possible.
    */
   @VisibleForTesting
-  @Nonnull
-  static Optional<Ip> inferPeerIp(Interface viIface) {
+  static @Nonnull Optional<Ip> inferPeerIp(Interface viIface) {
     // one concrete interface address
     if (viIface.getAllAddresses().size() != 1
         || viIface.getAddress() == null
@@ -295,7 +346,7 @@ public final class FrrConversions {
   }
 
   /** Creates BGP aggregates aggregate routes for the input vrf. */
-  static void generateBgpAggregates(
+  private static void generateBgpAggregates(
       Configuration c,
       org.batfish.datamodel.BgpProcess proc,
       Map<Prefix, BgpVrfAddressFamilyAggregateNetworkConfiguration> aggregateNetworks) {
@@ -334,8 +385,8 @@ public final class FrrConversions {
    * <p>If any Batfish-generated structures are generated, does the bookkeeping in the provided
    * {@link Configuration} to ensure they are available and tracked.
    */
-  @Nullable
-  static If suppressSummarizedPrefixes(
+  @VisibleForTesting
+  static @Nullable If suppressSummarizedPrefixes(
       Configuration c, String vrfName, Stream<Prefix> summaryOnlyPrefixes) {
     Iterator<Prefix> prefixesToSuppress = summaryOnlyPrefixes.iterator();
     if (!prefixesToSuppress.hasNext()) {
@@ -359,7 +410,7 @@ public final class FrrConversions {
         ImmutableList.of());
   }
 
-  public static void convertBgpProcess(
+  private static void convertBgpProcess(
       Configuration c, FrrVendorConfiguration vc, FrrConfiguration frr, Warnings w) {
     BgpProcess bgpProcess = frr.getBgpProcess();
     if (bgpProcess == null) {
@@ -406,8 +457,7 @@ public final class FrrConversions {
             });
   }
 
-  @Nonnull
-  private static org.batfish.datamodel.BgpProcess.Builder bgpProcessBuilder() {
+  private static @Nonnull org.batfish.datamodel.BgpProcess.Builder bgpProcessBuilder() {
     return org.batfish.datamodel.BgpProcess.builder()
         .setEbgpAdminCost(DEFAULT_EBGP_ADMIN)
         .setIbgpAdminCost(DEFAULT_IBGP_ADMIN)
@@ -421,8 +471,8 @@ public final class FrrConversions {
    * Returns {@link org.batfish.datamodel.BgpProcess} for named {@code bgpVrf} if valid, or else
    * {@code null}.
    */
-  @Nullable
-  static org.batfish.datamodel.BgpProcess toBgpProcess(
+  @VisibleForTesting
+  static @Nonnull org.batfish.datamodel.BgpProcess toBgpProcess(
       Configuration c, FrrConfiguration frr, String vrfName, BgpVrf bgpVrf) {
     BgpProcess bgpProcess = frr.getBgpProcess();
     Ip routerId = bgpVrf.getRouterId();
@@ -593,7 +643,11 @@ public final class FrrConversions {
         .setRemoteAsns(neighbor.getRemoteAs().getRemoteAs(localAs))
         .setEbgpMultihop(firstNonNull(neighbor.getEbgpMultihop(), false))
         .setGeneratedRoutes(
-            bgpDefaultOriginate(neighbor) ? ImmutableSet.of(GENERATED_DEFAULT_ROUTE) : null)
+            bgpDefaultOriginate(neighbor)
+                ? ImmutableSet.of(
+                    getGeneratedDefaultRoute(
+                        neighbor.getIpv4UnicastAddressFamily().getDefaultOriginateRouteMap()))
+                : null)
         // Ipv4 unicast is enabled by default
         .setIpv4UnicastAddressFamily(
             convertIpv4UnicastAddressFamily(
@@ -608,8 +662,7 @@ public final class FrrConversions {
   }
 
   @VisibleForTesting
-  @Nullable
-  static Ipv4UnicastAddressFamily convertIpv4UnicastAddressFamily(
+  static @Nullable Ipv4UnicastAddressFamily convertIpv4UnicastAddressFamily(
       @Nullable BgpNeighborIpv4UnicastAddressFamily ipv4UnicastAddressFamily,
       boolean defaultIpv4Unicast,
       RoutingPolicy exportRoutingPolicy,
@@ -688,8 +741,7 @@ public final class FrrConversions {
         c, vc, frr, neighbor, localAs, bgpVrf, newProc, peerConfigBuilder, w);
   }
 
-  @Nonnull
-  private static RoutingPolicy computeBgpNeighborExportRoutingPolicy(
+  private static @Nonnull RoutingPolicy computeBgpNeighborExportRoutingPolicy(
       Configuration c, BgpNeighbor neighbor, BgpVrf bgpVrf, @Nullable Long localAs) {
     String vrfName = bgpVrf.getVrfName();
 
@@ -759,9 +811,8 @@ public final class FrrConversions {
         .build();
   }
 
-  @Nullable
   @VisibleForTesting
-  static RoutingPolicy computeBgpNeighborImportRoutingPolicy(
+  static @Nullable RoutingPolicy computeBgpNeighborImportRoutingPolicy(
       Configuration c, BgpNeighbor neighbor, BgpVrf bgpVrf) {
     BooleanExpr peerImportConditions = getBgpNeighborImportPolicyCallExpr(neighbor);
     if (peerImportConditions == null) {
@@ -862,9 +913,8 @@ public final class FrrConversions {
         : null;
   }
 
-  @Nullable
   @VisibleForTesting
-  static Ip resolveLocalIpFromUpdateSource(
+  static @Nullable Ip resolveLocalIpFromUpdateSource(
       @Nullable BgpNeighborSource source, Configuration c, Warnings warnings) {
     if (source == null) {
       return null;
@@ -910,9 +960,8 @@ public final class FrrConversions {
   }
 
   /** Scan all interfaces, find first that contains given remote IP */
-  @Nullable
   @VisibleForTesting
-  static Ip computeLocalIpForBgpNeighbor(Ip remoteIp, Configuration c, String vrfName) {
+  static @Nullable Ip computeLocalIpForBgpNeighbor(Ip remoteIp, Configuration c, String vrfName) {
     org.batfish.datamodel.Vrf vrf = c.getVrfs().get(vrfName);
     if (vrf == null) {
       return null;
@@ -1061,8 +1110,7 @@ public final class FrrConversions {
         && Boolean.TRUE.equals(neighbor.getIpv4UnicastAddressFamily().getDefaultOriginate());
   }
 
-  @Nullable
-  private static EvpnAddressFamily toEvpnAddressFamily(
+  private static @Nullable EvpnAddressFamily toEvpnAddressFamily(
       Configuration c,
       FrrVendorConfiguration vc,
       FrrConfiguration frr,
@@ -1193,9 +1241,8 @@ public final class FrrConversions {
    * href="https://docs.cumulusnetworks.com/display/DOCS/Ethernet+Virtual+Private+Network+-+EVPN#EthernetVirtualPrivateNetwork-EVPN-RD-auto-derivationAuto-derivationofRDsandRTs">
    * cumulus documentation</a> for detailed explanation.
    */
-  @Nonnull
   @VisibleForTesting
-  static ExtendedCommunity toRouteTarget(long asn, long vxlanId) {
+  static @Nonnull ExtendedCommunity toRouteTarget(long asn, long vxlanId) {
     return ExtendedCommunity.target(asn & 0xFFFFL, vxlanId);
   }
 
@@ -1319,8 +1366,7 @@ public final class FrrConversions {
   }
 
   @VisibleForTesting
-  @Nonnull
-  static If convertOspfRedistributionPolicy(
+  static @Nonnull If convertOspfRedistributionPolicy(
       RedistributionPolicy policy, Map<String, RouteMap> routeMaps) {
     CumulusRoutingProtocol protocol = policy.getCumulusRoutingProtocol();
 
@@ -1357,7 +1403,7 @@ public final class FrrConversions {
    * device is used. Otherwise, 0.0.0.0 is used.
    */
   @VisibleForTesting
-  static Ip inferRouterId(Configuration c) {
+  static @Nonnull Ip inferRouterId(Configuration c) {
     if (c.getAllInterfaces().containsKey(LOOPBACK_INTERFACE_NAME)) {
       Optional<ConcreteInterfaceAddress> maxLoIp =
           c.getAllInterfaces().get(LOOPBACK_INTERFACE_NAME).getAllConcreteAddresses().stream()
@@ -1388,8 +1434,7 @@ public final class FrrConversions {
    * @param routerId router ID of the {@code bgpVrf} (already inferred if needed)
    */
   @VisibleForTesting
-  @Nullable
-  static Long inferClusterId(
+  static @Nullable Long inferClusterId(
       BgpVrf bgpVrf, Ip routerId, BgpNeighbor neighbor, @Nullable Long localAs) {
     assert neighbor.getRemoteAs() != null; // precondition
     // Do not set cluster Id if peer is eBGP
@@ -1455,7 +1500,7 @@ public final class FrrConversions {
   }
 
   @VisibleForTesting
-  static SortedMap<Long, OspfArea> computeOspfAreas(
+  static @Nonnull SortedMap<Long, OspfArea> computeOspfAreas(
       Configuration c,
       FrrConfiguration vsConfig,
       OspfVrf ospfVrf,
@@ -1529,8 +1574,7 @@ public final class FrrConversions {
     return ret.build();
   }
 
-  @Nullable
-  private static org.batfish.datamodel.ospf.OspfNetworkType toOspfNetworkType(
+  private static @Nullable org.batfish.datamodel.ospf.OspfNetworkType toOspfNetworkType(
       @Nullable OspfNetworkType type, Warnings w) {
     if (type == null) {
       return null;
@@ -1664,7 +1708,7 @@ public final class FrrConversions {
     return output;
   }
 
-  public static void convertIpAsPathAccessLists(
+  private static void convertIpAsPathAccessLists(
       Configuration c, Map<String, IpAsPathAccessList> ipAsPathAccessLists) {
     ipAsPathAccessLists.forEach(
         (name, asPathAccessList) ->
@@ -1683,7 +1727,7 @@ public final class FrrConversions {
     return new AsPathAccessList(name, lines);
   }
 
-  public static void convertIpPrefixLists(
+  private static void convertIpPrefixLists(
       Configuration c, Map<String, IpPrefixList> ipPrefixLists, String vendorConfigFilename) {
     ipPrefixLists.forEach(
         (name, ipPrefixList) ->
@@ -1715,14 +1759,14 @@ public final class FrrConversions {
         ipPrefixListLine.getLengthRange());
   }
 
-  public static void convertRouteMaps(
+  private static void convertRouteMaps(
       Configuration c, FrrConfiguration vc, String filename, Warnings w) {
     vc.getRouteMaps()
         .forEach(
             (name, routeMap) -> new RouteMapConvertor(c, vc, routeMap, filename, w).toRouteMap());
   }
 
-  public static void convertDnsServers(Configuration c, List<Ip> ipv4Nameservers) {
+  private static void convertDnsServers(Configuration c, List<Ip> ipv4Nameservers) {
     c.setDnsServers(
         ipv4Nameservers.stream()
             .map(Object::toString)
@@ -1741,12 +1785,14 @@ public final class FrrConversions {
     return Optional.ofNullable(frrConfiguration.getInterfaces().get(ifaceName).getOspf());
   }
 
-  @Nonnull
-  public static org.batfish.datamodel.Vrf getOrCreateVrf(
-      Configuration c, @Nullable String vrfName) {
-    if (vrfName == null) {
-      return c.getVrfs().get(DEFAULT_VRF_NAME);
-    }
-    return c.getVrfs().computeIfAbsent(vrfName, org.batfish.datamodel.Vrf::new);
+  @VisibleForTesting
+  static GeneratedRoute getGeneratedDefaultRoute(@Nullable String routeMapName) {
+    // On FRR, the default-originate route-map is used to determine both if a route should be
+    // generated and what attributes to set.
+    return GeneratedRoute.builder()
+        .setNetwork(Prefix.ZERO)
+        .setAdmin(MAX_ADMINISTRATIVE_COST)
+        .setGenerationPolicy(routeMapName)
+        .build();
   }
 }

@@ -7,13 +7,11 @@ vlan 1
   name Name-Of-Vlan-1
   vn-segment 1111
 !
-!! VLAN interface for vlan 2 is not mapped to any VRF so L2 VNI 2222 will go in default VRF
 vlan 2
   name Name-Of-Vlan-2
   vn-segment 2222
 !
 vlan 3
-  name Name-Of-Vlan-3
   vn-segment 3333
 !
 vrf context tenant1
@@ -24,6 +22,17 @@ vrf context tenant1
   address-family ipv4 unicast
     route-target both auto evpn
 !
+interface ethernet1/1
+  no switchport
+  vrf member tenant1
+  ip address 10.50.0.1/24
+  no shutdown
+!
+interface Vlan3
+  vrf member tenant1
+  no shutdown
+  ! Needed when interface has no IP. Currently unsupported (assumed true).
+  ip forward
 interface nve1
   no shutdown
   host-reachability protocol bgp
@@ -54,17 +63,6 @@ router bgp 1
   neighbor 1.1.1.1
       inherit peer SPINE
       remote-as 12121
-!
-interface Vlan1
-  vrf member tenant1
-  no shutdown
-!
-interface Vlan2
-  no shutdown
-!
-interface Vlan3
-  vrf member tenant1
-  no shutdown
 !
 interface loopback0
   ip address 1.1.1.1/32

@@ -1,26 +1,25 @@
 package org.batfish.representation.cisco_xr;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import javax.annotation.Nonnull;
 
-public class Ipv4AccessList implements Serializable {
+public final class Ipv4AccessList implements Serializable {
 
-  @Nonnull private List<Ipv4AccessListLine> _lines;
+  private final @Nonnull SortedMap<Long, Ipv4AccessListLine> _lines;
   @Nonnull private final String _name;
 
   public Ipv4AccessList(@Nonnull String id) {
     _name = id;
-    _lines = new ArrayList<>();
+    _lines = new TreeMap<>();
   }
 
   public void addLine(@Nonnull Ipv4AccessListLine line) {
-    _lines.add(line);
+    _lines.put(line.getSeq(), line);
   }
 
-  @Nonnull
-  public List<Ipv4AccessListLine> getLines() {
+  public @Nonnull SortedMap<Long, Ipv4AccessListLine> getLines() {
     return _lines;
   }
 
@@ -29,10 +28,17 @@ public class Ipv4AccessList implements Serializable {
     return _name;
   }
 
+  public long getNextSeq() {
+    if (_lines.isEmpty()) {
+      return 10L;
+    }
+    return _lines.lastKey() + 10L;
+  }
+
   @Override
   public String toString() {
     StringBuilder output = new StringBuilder(super.toString() + "\n" + "Identifier: " + _name);
-    for (Ipv4AccessListLine line : _lines) {
+    for (Ipv4AccessListLine line : _lines.values()) {
       output.append("\n").append(line);
     }
     return output.toString();

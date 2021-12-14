@@ -31,6 +31,7 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.testing.EqualsTester;
 import java.util.List;
 import java.util.Set;
 import org.batfish.common.plugin.TracerouteEngine;
@@ -45,6 +46,7 @@ import org.batfish.datamodel.flow.SessionMatchExpr;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceAndReverseFlow;
 import org.batfish.datamodel.table.Row;
+import org.batfish.question.traceroute.BidirectionalTracerouteAnswerer.Key;
 import org.junit.Test;
 
 /** Tests for {@link BidirectionalTracerouteAnswerer}. */
@@ -65,6 +67,48 @@ public final class BidirectionalTracerouteAnswererTest {
 
   private static final SessionMatchExpr DUMMY_SESSION_FLOW =
       new SessionMatchExpr(IpProtocol.HOPOPT, Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2"), null, null);
+
+  @Test
+  public void testKeyEquals() {
+    Flow flow1 = Flow.builder().setIngressNode("ingressNode").setDstIp(Ip.ZERO).build();
+    Flow flow2 = Flow.builder().setIngressNode("ingressNode").setDstIp(Ip.MAX).build();
+    SessionMatchExpr dummySessionMatch =
+        new SessionMatchExpr(IpProtocol.TCP, Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2"), null, null);
+    FirewallSessionTraceInfo session =
+        new FirewallSessionTraceInfo(
+            "hostname", Accept.INSTANCE, ImmutableSet.of(), dummySessionMatch, null);
+    new EqualsTester()
+        .addEqualityGroup(
+            new Key(flow1, ImmutableSet.of(), flow1), new Key(flow1, ImmutableSet.of(), flow1))
+        .addEqualityGroup(new Key(flow2, ImmutableSet.of(), flow1))
+        .addEqualityGroup(new Key(flow1, ImmutableSet.of(session), flow1))
+        .addEqualityGroup(new Key(flow1, ImmutableSet.of(), null))
+        .testEquals();
+  }
+
+  @Test
+  public void testKey() {
+    Flow flow1 = Flow.builder().setIngressNode("ingressNode").setDstIp(Ip.ZERO).build();
+    Flow flow2 = Flow.builder().setIngressNode("ingressNode").setDstIp(Ip.MAX).build();
+    SessionMatchExpr dummySessionMatch =
+        new SessionMatchExpr(IpProtocol.TCP, Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2"), null, null);
+    Trace successTrace = new Trace(ACCEPTED, ImmutableList.of());
+    assertThat(
+        Key.from(
+            new BidirectionalTrace(flow1, successTrace, ImmutableSet.of(), flow2, successTrace)),
+        equalTo(new Key(flow1, ImmutableSet.of(), flow2)));
+    assertThat(
+        Key.from(
+            new BidirectionalTrace(flow2, successTrace, ImmutableSet.of(), flow1, successTrace)),
+        equalTo(new Key(flow2, ImmutableSet.of(), flow1)));
+    FirewallSessionTraceInfo session =
+        new FirewallSessionTraceInfo(
+            "hostname", Accept.INSTANCE, ImmutableSet.of(), dummySessionMatch, null);
+    Trace failTrace = new Trace(DENIED_IN, ImmutableList.of());
+    assertThat(
+        Key.from(new BidirectionalTrace(flow1, failTrace, ImmutableSet.of(session), null, null)),
+        equalTo(new Key(flow1, ImmutableSet.of(session), null)));
+  }
 
   @Test
   public void testNoReverseFlow() {
@@ -255,7 +299,7 @@ public final class BidirectionalTracerouteAnswererTest {
           new BidirectionalTrace(FORWARD_FLOW, t2, ImmutableSet.of(), REVERSE_FLOW, t4);
 
       List<BidirectionalTrace> bts = ImmutableList.of(bt1, bt2, bt3, bt4);
-      assertThat(groupTraces(bts), hasEntry(equalTo(bt1.getKey()), equalTo(bts)));
+      assertThat(groupTraces(bts), hasEntry(equalTo(Key.from(bt1)), equalTo(bts)));
     }
 
     {
@@ -269,7 +313,7 @@ public final class BidirectionalTracerouteAnswererTest {
           groupTraces(ImmutableList.of(bt1, bt2)),
           equalTo(
               ImmutableMap.of(
-                  bt1.getKey(), ImmutableList.of(bt1), bt2.getKey(), ImmutableList.of(bt2))));
+                  Key.from(bt1), ImmutableList.of(bt1), Key.from(bt2), ImmutableList.of(bt2))));
     }
 
     {
@@ -283,7 +327,7 @@ public final class BidirectionalTracerouteAnswererTest {
           groupTraces(ImmutableList.of(bt1, bt2)),
           equalTo(
               ImmutableMap.of(
-                  bt1.getKey(), ImmutableList.of(bt1), bt2.getKey(), ImmutableList.of(bt2))));
+                  Key.from(bt1), ImmutableList.of(bt1), Key.from(bt2), ImmutableList.of(bt2))));
     }
 
     {
@@ -297,7 +341,7 @@ public final class BidirectionalTracerouteAnswererTest {
           groupTraces(ImmutableList.of(bt1, bt2)),
           equalTo(
               ImmutableMap.of(
-                  bt1.getKey(), ImmutableList.of(bt1), bt2.getKey(), ImmutableList.of(bt2))));
+                  Key.from(bt1), ImmutableList.of(bt1), Key.from(bt2), ImmutableList.of(bt2))));
     }
 
     {
@@ -311,7 +355,7 @@ public final class BidirectionalTracerouteAnswererTest {
           groupTraces(ImmutableList.of(bt1, bt2)),
           equalTo(
               ImmutableMap.of(
-                  bt1.getKey(), ImmutableList.of(bt1), bt2.getKey(), ImmutableList.of(bt2))));
+                  Key.from(bt1), ImmutableList.of(bt1), Key.from(bt2), ImmutableList.of(bt2))));
     }
   }
 
@@ -327,7 +371,7 @@ public final class BidirectionalTracerouteAnswererTest {
       BidirectionalTrace bt2 =
           new BidirectionalTrace(FORWARD_FLOW, t2, ImmutableSet.of(), REVERSE_FLOW, t2);
 
-      Row row = toRow(bt1.getKey(), ImmutableList.of(bt1, bt2));
+      Row row = toRow(Key.from(bt1), ImmutableList.of(bt1, bt2));
       assertThat(
           row,
           allOf(
@@ -345,7 +389,7 @@ public final class BidirectionalTracerouteAnswererTest {
       BidirectionalTrace bt2 =
           new BidirectionalTrace(FORWARD_FLOW, t1, ImmutableSet.of(), REVERSE_FLOW, t2);
 
-      Row row = toRow(bt1.getKey(), ImmutableList.of(bt1, bt2));
+      Row row = toRow(Key.from(bt1), ImmutableList.of(bt1, bt2));
       assertThat(
           row,
           allOf(
@@ -367,7 +411,7 @@ public final class BidirectionalTracerouteAnswererTest {
       BidirectionalTrace bt4 =
           new BidirectionalTrace(FORWARD_FLOW, t2, ImmutableSet.of(), REVERSE_FLOW, t2);
 
-      Row row = toRow(bt1.getKey(), ImmutableList.of(bt1, bt2, bt3, bt4));
+      Row row = toRow(Key.from(bt1), ImmutableList.of(bt1, bt2, bt3, bt4));
       assertThat(
           row,
           allOf(
@@ -389,7 +433,7 @@ public final class BidirectionalTracerouteAnswererTest {
       Set<FirewallSessionTraceInfo> sessions = ImmutableSet.of(session1, session2);
 
       BidirectionalTrace bt = new BidirectionalTrace(FORWARD_FLOW, t1, sessions, REVERSE_FLOW, t1);
-      Row row = toRow(bt.getKey(), ImmutableList.of(bt));
+      Row row = toRow(Key.from(bt), ImmutableList.of(bt));
       assertThat(
           row,
           allOf(
@@ -406,7 +450,7 @@ public final class BidirectionalTracerouteAnswererTest {
       Trace t = new Trace(DENIED_IN, ImmutableList.of());
       BidirectionalTrace bt =
           new BidirectionalTrace(FORWARD_FLOW, t, ImmutableSet.of(), null, null);
-      Row row = toRow(bt.getKey(), ImmutableList.of(bt));
+      Row row = toRow(Key.from(bt), ImmutableList.of(bt));
       assertThat(
           row,
           allOf(

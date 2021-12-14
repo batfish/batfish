@@ -19,55 +19,6 @@ public final class BidirectionalTrace {
   private final @Nullable Flow _reverseFlow;
   private final @Nullable Trace _reverseTrace;
 
-  public static final class Key {
-    private final @Nonnull Flow _forwardFlow;
-    private final @Nonnull Set<FirewallSessionTraceInfo> _newSessions;
-    private final @Nullable Flow _reverseFlow;
-
-    public Key(
-        @Nonnull Flow forwardFlow,
-        @Nonnull Set<FirewallSessionTraceInfo> newSessions,
-        @Nullable Flow reverseFlow) {
-      _forwardFlow = forwardFlow;
-      _newSessions = ImmutableSet.copyOf(newSessions);
-      _reverseFlow = reverseFlow;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) {
-        return true;
-      }
-      if (!(o instanceof Key)) {
-        return false;
-      }
-      Key key = (Key) o;
-      return Objects.equals(_forwardFlow, key._forwardFlow)
-          && Objects.equals(_newSessions, key._newSessions)
-          && Objects.equals(_reverseFlow, key._reverseFlow);
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hash(_forwardFlow, _newSessions, _reverseFlow);
-    }
-
-    @Nonnull
-    public Flow getForwardFlow() {
-      return _forwardFlow;
-    }
-
-    @Nonnull
-    public Set<FirewallSessionTraceInfo> getNewSessions() {
-      return _newSessions;
-    }
-
-    @Nullable
-    public Flow getReverseFlow() {
-      return _reverseFlow;
-    }
-  }
-
   public BidirectionalTrace(
       Flow forwardFlow,
       Trace forwardTrace,
@@ -96,9 +47,9 @@ public final class BidirectionalTrace {
       return false;
     }
     BidirectionalTrace that = (BidirectionalTrace) o;
-    return Objects.equals(_forwardFlow, that._forwardFlow)
-        && Objects.equals(_forwardTrace, that._forwardTrace)
-        && Objects.equals(_newSessions, that._newSessions)
+    return _forwardFlow.equals(that._forwardFlow)
+        && _forwardTrace.equals(that._forwardTrace)
+        && _newSessions.equals(that._newSessions)
         && Objects.equals(_reverseFlow, that._reverseFlow)
         && Objects.equals(_reverseTrace, that._reverseTrace);
   }
@@ -116,11 +67,6 @@ public final class BidirectionalTrace {
   @Nonnull
   public Trace getForwardTrace() {
     return _forwardTrace;
-  }
-
-  @Nonnull
-  public Key getKey() {
-    return new Key(_forwardFlow, _newSessions, _reverseFlow);
   }
 
   @Nonnull

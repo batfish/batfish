@@ -1,6 +1,5 @@
 package org.batfish.datamodel.acl;
 
-import static org.batfish.datamodel.acl.AclLineMatchExprs.ESTABLISHED_TCP_FLOWS;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.NEW_FLOWS;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.NEW_TCP_FLOWS;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
@@ -16,7 +15,6 @@ import com.google.common.collect.ImmutableMap;
 import java.util.function.Supplier;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IpProtocol;
-import org.batfish.datamodel.TcpFlags;
 import org.junit.Test;
 
 public class AclLineMatchExprsTest {
@@ -24,18 +22,20 @@ public class AclLineMatchExprsTest {
     return new Evaluator(flow, "src", ImmutableMap.of(), ImmutableMap.of()).visit(expr);
   }
 
-  private static final Flow NEW_TCP_FLOW;
   private static final Flow ACK_FLOW;
   private static final Flow RST_FLOW;
+  private static final Flow SYN_FLOW;
+  private static final Flow SYN_ACK_FLOW;
   private static final Flow UDP_FLOW;
 
   static {
     Supplier<Flow.Builder> fb = () -> Flow.builder().setIngressNode("n");
     Supplier<Flow.Builder> tcpFb =
         () -> fb.get().setIpProtocol(IpProtocol.TCP).setSrcPort(1).setDstPort(2);
-    ACK_FLOW = tcpFb.get().setTcpFlags(TcpFlags.builder().setAck(true).build()).build();
-    RST_FLOW = tcpFb.get().setTcpFlags(TcpFlags.builder().setRst(true).build()).build();
-    NEW_TCP_FLOW = tcpFb.get().build();
+    ACK_FLOW = tcpFb.get().setTcpFlagsAck(true).build();
+    RST_FLOW = tcpFb.get().setTcpFlagsRst(true).build();
+    SYN_FLOW = tcpFb.get().setTcpFlagsSyn(true).build();
+    SYN_ACK_FLOW = tcpFb.get().setTcpFlagsSyn(true).setTcpFlagsAck(true).build();
 
     UDP_FLOW = fb.get().setIpProtocol(IpProtocol.UDP).setSrcPort(1).setDstPort(2).build();
   }
@@ -57,25 +57,23 @@ public class AclLineMatchExprsTest {
   }
 
   @Test
-  public void testEstablishedTcpFlows() {
-    assertTrue(matches(ESTABLISHED_TCP_FLOWS, ACK_FLOW));
-    assertTrue(matches(ESTABLISHED_TCP_FLOWS, RST_FLOW));
-    assertFalse(matches(ESTABLISHED_TCP_FLOWS, NEW_TCP_FLOW));
-  }
-
-  @Test
   public void testNewTcpFlows() {
+    assertFalse(matches(NEW_TCP_FLOWS, ACK_FLOW));
     assertFalse(matches(NEW_TCP_FLOWS, ACK_FLOW));
     assertFalse(matches(NEW_TCP_FLOWS, RST_FLOW));
     assertFalse(matches(NEW_TCP_FLOWS, UDP_FLOW));
-    assertTrue(matches(NEW_TCP_FLOWS, NEW_TCP_FLOW));
+    assertTrue(matches(NEW_TCP_FLOWS, SYN_FLOW));
+    assertFalse(matches(NEW_TCP_FLOWS, SYN_ACK_FLOW));
   }
 
   @Test
   public void testNewFlows() {
     assertFalse(matches(NEW_FLOWS, ACK_FLOW));
     assertFalse(matches(NEW_FLOWS, RST_FLOW));
-    assertTrue(matches(NEW_FLOWS, NEW_TCP_FLOW));
+    assertFalse(matches(NEW_FLOWS, SYN_ACK_FLOW));
+    assertTrue(matches(NEW_FLOWS, SYN_FLOW));
     assertTrue(matches(NEW_FLOWS, UDP_FLOW));
+    assertFalse(matches(NEW_FLOWS, SYN_FLOW.toBuilder().setFragmentOffset(1).build()));
+    assertFalse(matches(NEW_FLOWS, UDP_FLOW.toBuilder().setFragmentOffset(1).build()));
   }
 }

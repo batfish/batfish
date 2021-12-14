@@ -15,19 +15,13 @@ public class Ipv4AccessListLine implements Serializable {
   public static class Builder {
 
     @Nullable private LineAction _action;
-
     @Nullable private AccessListAddressSpecifier _dstAddressSpecifier;
-
     @Nullable private String _name;
-
     @Nullable private Ipv4Nexthop _nexthop1;
-
     @Nullable private Ipv4Nexthop _nexthop2;
-
     @Nullable private Ipv4Nexthop _nexthop3;
-
     @Nullable private AccessListServiceSpecifier _serviceSpecifier;
-
+    @Nullable private Long _seq;
     @Nullable private AccessListAddressSpecifier _srcAddressSpecifier;
 
     private Builder() {}
@@ -71,6 +65,11 @@ public class Ipv4AccessListLine implements Serializable {
       return this;
     }
 
+    public Builder setSeq(long seq) {
+      _seq = seq;
+      return this;
+    }
+
     public Builder setSrcAddressSpecifier(AccessListAddressSpecifier srcAddressSpecifier) {
       _srcAddressSpecifier = srcAddressSpecifier;
       return this;
@@ -82,24 +81,19 @@ public class Ipv4AccessListLine implements Serializable {
     return new Builder();
   }
 
+  private final long _seq;
   @Nonnull private final LineAction _action;
-
-  @Nonnull private final AccessListAddressSpecifier _dstAddressSpecifier;
-
   @Nonnull private final String _name;
-
-  @Nullable private final Ipv4Nexthop _nexthop1;
-
-  @Nullable private final Ipv4Nexthop _nexthop2;
-
-  @Nullable private final Ipv4Nexthop _nexthop3;
-
-  @Nonnull private final AccessListServiceSpecifier _serviceSpecifier;
-
   @Nonnull private final AccessListAddressSpecifier _srcAddressSpecifier;
+  @Nonnull private final AccessListAddressSpecifier _dstAddressSpecifier;
+  @Nonnull private final AccessListServiceSpecifier _serviceSpecifier;
+  @Nullable private final Ipv4Nexthop _nexthop1;
+  @Nullable private final Ipv4Nexthop _nexthop2;
+  @Nullable private final Ipv4Nexthop _nexthop3;
 
   private Ipv4AccessListLine(Builder builder) {
     _action = requireNonNull(builder._action);
+    _seq = requireNonNull(builder._seq);
     _dstAddressSpecifier = requireNonNull(builder._dstAddressSpecifier);
     _name = requireNonNull(builder._name);
     _serviceSpecifier = requireNonNull(builder._serviceSpecifier);
@@ -142,6 +136,10 @@ public class Ipv4AccessListLine implements Serializable {
   @Nonnull
   public AccessListServiceSpecifier getServiceSpecifier() {
     return _serviceSpecifier;
+  }
+
+  public long getSeq() {
+    return _seq;
   }
 
   @Nonnull

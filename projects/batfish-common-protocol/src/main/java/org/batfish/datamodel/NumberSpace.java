@@ -370,7 +370,12 @@ public abstract class NumberSpace<
    * completeSpace}. Differs from {@link #toString()} in that this method can return {@code "all"}
    * (if this space equals the {@code completeSpace} or {@code "none"} (if this space is empty).
    */
-  public String toStringAsSubsetOf(NumberSpace<?, ?, ?> completeSpace) {
+  public String toStringAsSubsetOf(S completeSpace) {
+    checkArgument(
+        completeSpace.contains(getThis()),
+        "Unexpected subset %s not contained in complete space %s",
+        this,
+        completeSpace);
     return isEmpty() ? "none" : equals(completeSpace) ? "all" : toString();
   }
 }

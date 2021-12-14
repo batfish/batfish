@@ -226,6 +226,7 @@ import org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform;
 import org.batfish.datamodel.vendor_family.cisco_nxos.NxosMajorVersion;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.Layer3Vni;
+import org.batfish.datamodel.vxlan.Vni;
 import org.batfish.representation.cisco_nxos.BgpVrfIpv6AddressFamilyConfiguration.Network;
 import org.batfish.representation.cisco_nxos.DistributeList.DistributeListFilterType;
 import org.batfish.representation.cisco_nxos.Nve.IngressReplicationProtocol;
@@ -1478,18 +1479,21 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     }
     Integer vlan = getVlanForVni(nveVni.getVni());
     if (vlan == null) {
+      // NX-OS requires all VNIs be associated with a VLAN
       return;
     }
-    if (_c.getAllInterfaces().values().stream()
-        .noneMatch(iface -> vlan.equals(iface.getVlan()) && iface.getActive())) {
-      return;
-    }
-
     if (nveVni.isAssociateVrf()) {
-      // L3 VNI
-
       Vrf vsTenantVrfForL3Vni = getVrfForL3Vni(_vrfs, nveVni.getVni());
       if (vsTenantVrfForL3Vni == null || _c.getVrfs().get(vsTenantVrfForL3Vni.getName()) == null) {
+        return;
+      }
+      // NX-OS requires all L3 VNI VLANs have an associated active IRB in the tenant VRF
+      if (_c.getAllInterfaces().values().stream()
+          .noneMatch(
+              iface ->
+                  vlan.equals(iface.getVlan())
+                      && iface.getActive()
+                      && iface.getVrfName().equals(vsTenantVrfForL3Vni.getName()))) {
         return;
       }
       Layer3Vni vniSettings =
@@ -1500,7 +1504,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                   nve.getSourceInterface() != null
                       ? getInterfaceIp(_c.getAllInterfaces(), nve.getSourceInterface())
                       : null)
-              .setUdpPort(Layer2Vni.DEFAULT_UDP_PORT)
+              .setUdpPort(Vni.DEFAULT_UDP_PORT)
               .setVni(nveVni.getVni())
               .setSrcVrf(DEFAULT_VRF_NAME)
               .build();
@@ -1514,7 +1518,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                   nve.getSourceInterface() != null
                       ? getInterfaceIp(_c.getAllInterfaces(), nve.getSourceInterface())
                       : null)
-              .setUdpPort(Layer2Vni.DEFAULT_UDP_PORT)
+              .setUdpPort(Vni.DEFAULT_UDP_PORT)
               .setVni(nveVni.getVni())
               .setVlan(vlan)
               .setSrcVrf(DEFAULT_VRF_NAME)

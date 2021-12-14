@@ -1590,7 +1590,7 @@ public class TracerouteEngineImplTest {
             .setIpProtocol(TCP)
             .setSrcPort(80)
             .setDstPort(80)
-            .setTcpFlagsSyn(1)
+            .setTcpFlagsSyn(true)
             .build();
 
     // Flow going in
@@ -1603,7 +1603,7 @@ public class TracerouteEngineImplTest {
             .setIpProtocol(TCP)
             .setSrcPort(80)
             .setDstPort(80)
-            .setTcpFlagsSyn(1)
+            .setTcpFlagsSyn(true)
             .build();
 
     TraceAndReverseFlow traceAndReverseFlowOut =

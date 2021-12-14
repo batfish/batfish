@@ -15,6 +15,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
 import org.batfish.common.NetworkSnapshot;
@@ -188,16 +189,14 @@ public class BidirectionalTracerouteAnswerer extends Answerer {
   }
 
   @VisibleForTesting
-  static Map<BidirectionalTrace.Key, List<BidirectionalTrace>> groupTraces(
-      List<BidirectionalTrace> traces) {
-    return traces.stream()
-        .collect(Collectors.groupingBy(BidirectionalTrace::getKey, Collectors.toList()));
+  static Map<Key, List<BidirectionalTrace>> groupTraces(List<BidirectionalTrace> traces) {
+    return traces.stream().collect(Collectors.groupingBy(Key::from, Collectors.toList()));
   }
 
   @VisibleForTesting
-  static Row toRow(BidirectionalTrace.Key key, List<BidirectionalTrace> traces) {
+  static Row toRow(Key key, List<BidirectionalTrace> traces) {
     // Invariant: each trace has getKey() equal to key.
-    assert traces.stream().allMatch(trace -> trace.getKey().equals(key));
+    assert traces.stream().allMatch(trace -> Key.from(trace).equals(key));
 
     List<Trace> forwardTraces =
         traces.stream()
@@ -225,5 +224,59 @@ public class BidirectionalTracerouteAnswerer extends Answerer {
         key.getReverseFlow(),
         COL_REVERSE_TRACES,
         reverseTraces);
+  }
+
+  static final class Key {
+    private final @Nonnull Flow _forwardFlow;
+    private final @Nonnull Set<FirewallSessionTraceInfo> _newSessions;
+    private final @Nullable Flow _reverseFlow;
+
+    public static Key from(BidirectionalTrace trace) {
+      return new Key(trace.getForwardFlow(), trace.getNewSessions(), trace.getReverseFlow());
+    }
+
+    @VisibleForTesting
+    Key(
+        @Nonnull Flow forwardFlow,
+        @Nonnull Set<FirewallSessionTraceInfo> newSessions,
+        @Nullable Flow reverseFlow) {
+      _forwardFlow = forwardFlow;
+      _newSessions = ImmutableSet.copyOf(newSessions);
+      _reverseFlow = reverseFlow;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof Key)) {
+        return false;
+      }
+      Key key = (Key) o;
+      return Objects.equals(_forwardFlow, key._forwardFlow)
+          && Objects.equals(_newSessions, key._newSessions)
+          && Objects.equals(_reverseFlow, key._reverseFlow);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(_forwardFlow, _newSessions, _reverseFlow);
+    }
+
+    @Nonnull
+    public Flow getForwardFlow() {
+      return _forwardFlow;
+    }
+
+    @Nonnull
+    public Set<FirewallSessionTraceInfo> getNewSessions() {
+      return _newSessions;
+    }
+
+    @Nullable
+    public Flow getReverseFlow() {
+      return _reverseFlow;
+    }
   }
 }

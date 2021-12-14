@@ -83,7 +83,7 @@
         <jsonassert.version>1.5.0</jsonassert.version>
         <jsr305.version>3.0.2</jsr305.version>
         <junit.version>4.12</junit.version>
-        <log4j.version>2.14.1</log4j.version>
+        <log4j.version>2.16.0</log4j.version>
         <lz4.version>1.7.1</lz4.version>
         <mockito.version>3.3.3</mockito.version>
         <opentracing-jaxrs2.version>1.0.0</opentracing-jaxrs2.version>

@@ -119,80 +119,80 @@ public final class FlowMatchersImpl {
     }
   }
 
-  public static final class HasTcpFlagsAck extends FeatureMatcher<Flow, Integer> {
-    HasTcpFlagsAck(Matcher<? super Integer> subMatcher) {
+  public static final class HasTcpFlagsAck extends FeatureMatcher<Flow, Boolean> {
+    HasTcpFlagsAck(Matcher<? super Boolean> subMatcher) {
       super(subMatcher, "A Flow with tcpFlagsAck:", "tcpFlagsAck");
     }
 
     @Override
-    protected Integer featureValueOf(Flow flow) {
-      return flow.getTcpFlagsAck();
+    protected Boolean featureValueOf(Flow flow) {
+      return flow.getTcpFlags().getAck();
     }
   }
 
-  public static final class HasTcpFlagsCwr extends FeatureMatcher<Flow, Integer> {
-    HasTcpFlagsCwr(Matcher<? super Integer> subMatcher) {
+  public static final class HasTcpFlagsCwr extends FeatureMatcher<Flow, Boolean> {
+    HasTcpFlagsCwr(Matcher<? super Boolean> subMatcher) {
       super(subMatcher, "A Flow with tcpFlagsCwr:", "tcpFlagsCwr");
     }
 
     @Override
-    protected Integer featureValueOf(Flow flow) {
-      return flow.getTcpFlagsCwr();
+    protected Boolean featureValueOf(Flow flow) {
+      return flow.getTcpFlags().getCwr();
     }
   }
 
-  public static final class HasTcpFlagsEce extends FeatureMatcher<Flow, Integer> {
-    HasTcpFlagsEce(Matcher<? super Integer> subMatcher) {
+  public static final class HasTcpFlagsEce extends FeatureMatcher<Flow, Boolean> {
+    HasTcpFlagsEce(Matcher<? super Boolean> subMatcher) {
       super(subMatcher, "A Flow with tcpFlagsEce:", "tcpFlagsEce");
     }
 
     @Override
-    protected Integer featureValueOf(Flow flow) {
-      return flow.getTcpFlagsEce();
+    protected Boolean featureValueOf(Flow flow) {
+      return flow.getTcpFlags().getEce();
     }
   }
 
-  public static final class HasTcpFlagsFin extends FeatureMatcher<Flow, Integer> {
-    HasTcpFlagsFin(Matcher<? super Integer> subMatcher) {
+  public static final class HasTcpFlagsFin extends FeatureMatcher<Flow, Boolean> {
+    HasTcpFlagsFin(Matcher<? super Boolean> subMatcher) {
       super(subMatcher, "A Flow with tcpFlagsFin:", "tcpFlagsFin");
     }
 
     @Override
-    protected Integer featureValueOf(Flow flow) {
-      return flow.getTcpFlagsFin();
+    protected Boolean featureValueOf(Flow flow) {
+      return flow.getTcpFlags().getFin();
     }
   }
 
-  public static final class HasTcpFlagsPsh extends FeatureMatcher<Flow, Integer> {
-    HasTcpFlagsPsh(Matcher<? super Integer> subMatcher) {
+  public static final class HasTcpFlagsPsh extends FeatureMatcher<Flow, Boolean> {
+    HasTcpFlagsPsh(Matcher<? super Boolean> subMatcher) {
       super(subMatcher, "A Flow with tcpFlagsPsh:", "tcpFlagsPsh");
     }
 
     @Override
-    protected Integer featureValueOf(Flow flow) {
-      return flow.getTcpFlagsPsh();
+    protected Boolean featureValueOf(Flow flow) {
+      return flow.getTcpFlags().getPsh();
     }
   }
 
-  public static final class HasTcpFlagsRst extends FeatureMatcher<Flow, Integer> {
-    HasTcpFlagsRst(Matcher<? super Integer> subMatcher) {
+  public static final class HasTcpFlagsRst extends FeatureMatcher<Flow, Boolean> {
+    HasTcpFlagsRst(Matcher<? super Boolean> subMatcher) {
       super(subMatcher, "A Flow with tcpFlagsRst:", "tcpFlagsRst");
     }
 
     @Override
-    protected Integer featureValueOf(Flow flow) {
-      return flow.getTcpFlagsRst();
+    protected Boolean featureValueOf(Flow flow) {
+      return flow.getTcpFlags().getRst();
     }
   }
 
-  public static final class HasTcpFlagsUrg extends FeatureMatcher<Flow, Integer> {
-    HasTcpFlagsUrg(Matcher<? super Integer> subMatcher) {
+  public static final class HasTcpFlagsUrg extends FeatureMatcher<Flow, Boolean> {
+    HasTcpFlagsUrg(Matcher<? super Boolean> subMatcher) {
       super(subMatcher, "A Flow with tcpFlagsUrg:", "tcpFlagsUrg");
     }
 
     @Override
-    protected Integer featureValueOf(Flow flow) {
-      return flow.getTcpFlagsUrg();
+    protected Boolean featureValueOf(Flow flow) {
+      return flow.getTcpFlags().getUrg();
     }
   }
 }

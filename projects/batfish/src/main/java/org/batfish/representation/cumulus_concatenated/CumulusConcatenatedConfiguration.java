@@ -14,16 +14,7 @@ import static org.batfish.representation.frr.FrrConversions.DEFAULT_LOOPBACK_MTU
 import static org.batfish.representation.frr.FrrConversions.DEFAULT_PORT_BANDWIDTH;
 import static org.batfish.representation.frr.FrrConversions.DEFAULT_PORT_MTU;
 import static org.batfish.representation.frr.FrrConversions.SPEED_CONVERSION_FACTOR;
-import static org.batfish.representation.frr.FrrConversions.addBgpUnnumberedLLAs;
-import static org.batfish.representation.frr.FrrConversions.addOspfUnnumberedLLAs;
-import static org.batfish.representation.frr.FrrConversions.convertBgpProcess;
-import static org.batfish.representation.frr.FrrConversions.convertDnsServers;
-import static org.batfish.representation.frr.FrrConversions.convertIpAsPathAccessLists;
-import static org.batfish.representation.frr.FrrConversions.convertIpCommunityLists;
-import static org.batfish.representation.frr.FrrConversions.convertIpPrefixLists;
-import static org.batfish.representation.frr.FrrConversions.convertOspfProcess;
-import static org.batfish.representation.frr.FrrConversions.convertRouteMaps;
-import static org.batfish.representation.frr.FrrConversions.convertStaticRoutes;
+import static org.batfish.representation.frr.FrrConversions.convertFrr;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultimap;
@@ -57,7 +48,6 @@ import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
@@ -170,34 +160,11 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
     populateFrrInterfaceProperties(c);
     ensureInterfacesHaveTypes(c);
 
-    addBgpUnnumberedLLAs(c, _frrConfiguration);
-
-    // FRR does not generate local routes for connected routes.
-    c.getAllInterfaces()
-        .values()
-        .forEach(
-            i -> {
-              ImmutableSortedMap.Builder<ConcreteInterfaceAddress, ConnectedRouteMetadata>
-                  metadata = ImmutableSortedMap.naturalOrder();
-              for (InterfaceAddress a : i.getAllAddresses()) {
-                if (!(a instanceof ConcreteInterfaceAddress)) {
-                  continue;
-                }
-                ConcreteInterfaceAddress address = (ConcreteInterfaceAddress) a;
-                metadata.put(
-                    address, ConnectedRouteMetadata.builder().setGenerateLocalRoute(false).build());
-              }
-              i.setAddressMetadata(metadata.build());
-            });
+    // create any VRFs defined in frr.conf that didn't get created as part of interface creation
+    // (because no interface was mapped to it)
+    _frrConfiguration.getVrfs().keySet().forEach(vrfName -> getOrCreateVrf(c, vrfName));
 
     initPostUpRoutes(c); // turn post-up interface routes to static routes
-    convertStaticRoutes(c, _frrConfiguration); // static routes in the FRR file
-
-    convertIpAsPathAccessLists(c, _frrConfiguration.getIpAsPathAccessLists());
-    convertIpPrefixLists(c, _frrConfiguration.getIpPrefixLists(), _filename);
-    convertIpCommunityLists(c, _frrConfiguration.getIpCommunityLists());
-    convertRouteMaps(c, _frrConfiguration, _filename, _w);
-    convertDnsServers(c, _frrConfiguration.getIpv4Nameservers());
 
     convertClags(c, this, _w);
 
@@ -217,9 +184,7 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
         vsLoopback == null ? null : vsLoopback.getVxlanLocalTunnelIp(),
         _w);
 
-    convertOspfProcess(c, this, _frrConfiguration, _w);
-    addOspfUnnumberedLLAs(c);
-    convertBgpProcess(c, this, _frrConfiguration, _w);
+    convertFrr(c, this);
 
     initVendorFamily(c);
     warnDuplicateClagIds();

@@ -11,11 +11,11 @@ import static org.batfish.common.util.StreamUtil.toListInRandomOrder;
 import static org.batfish.datamodel.bgp.BgpTopologyUtils.initBgpTopology;
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.computeVxlanTopology;
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.prunedVxlanTopology;
+import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.vxlanTopologyToLayer3Edges;
 import static org.batfish.dataplane.rib.AbstractRib.importRib;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
@@ -44,6 +44,7 @@ import org.batfish.common.topology.broadcast.BroadcastL3Adjacencies;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IsisRoute;
 import org.batfish.datamodel.NetworkConfigurations;
@@ -198,8 +199,11 @@ final class IncrementalBdpEngine {
           computeLayer3Topology(
               computeRawLayer3Topology(newAdjacencies, configurations),
               // Overlay edges consist of "plain" tunnels and IPSec tunnels
-              Sets.union(
-                  toEdgeSet(newIpsecTopology, configurations), newTunnelTopology.asEdgeSet()));
+              ImmutableSet.<Edge>builder()
+                  .addAll(toEdgeSet(newIpsecTopology, configurations))
+                  .addAll(newTunnelTopology.asEdgeSet())
+                  .addAll(vxlanTopologyToLayer3Edges(newVxlanTopology, configurations))
+                  .build());
     } else {
       newLayer3Topology = currentTopologyContext.getLayer3Topology();
     }

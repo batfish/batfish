@@ -31,7 +31,8 @@ public final class EvpnMasterRibTest {
             .setProtocol(RoutingProtocol.BGP)
             .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP)
-            .setOriginatorIp(Ip.ZERO);
+            .setOriginatorIp(Ip.ZERO)
+            .setVni(1);
     EvpnType5Route route1 =
         rb.setRouteDistinguisher(RouteDistinguisher.from(1, 1L)).setLocalPreference(10).build();
     EvpnType5Route route21 =
@@ -61,6 +62,7 @@ public final class EvpnMasterRibTest {
             .setOriginatorIp(Ip.ZERO)
             .setRouteDistinguisher(RouteDistinguisher.from(1, 1L))
             .setLocalPreference(10)
+            .setVni(1)
             .build();
 
     // Route should be added.

@@ -51,7 +51,6 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
-import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.BgpVrfLeakConfig;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -66,7 +65,6 @@ import org.batfish.datamodel.IkePhase1Proposal;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.Ip6AccessListLine;
-import org.batfish.datamodel.Ip6Wildcard;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
@@ -142,7 +140,6 @@ import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighLow
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighMatch;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityLowMatch;
 import org.batfish.datamodel.routing_policy.communities.TypesFirstAscendingSpaceSeparated;
-import org.batfish.datamodel.routing_policy.expr.AsPathSetElem;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
@@ -913,9 +910,9 @@ public class CiscoXrConversions {
           .getValue()
           .getAllAddresses()
           .forEach(
-              interfaceAddress -> {
-                ipToIfaceNameMap.put(interfaceAddress.getIp(), interfaceNameToInterface.getKey());
-              });
+              interfaceAddress ->
+                  ipToIfaceNameMap.put(
+                      interfaceAddress.getIp(), interfaceNameToInterface.getKey()));
     }
     return ipToIfaceNameMap;
   }
@@ -1140,14 +1137,8 @@ public class CiscoXrConversions {
       Ip6AccessListLine newLine = new Ip6AccessListLine();
       newLine.setName(fromLine.getName());
       newLine.setAction(fromLine.getAction());
-      Ip6Wildcard srcIpWildcard = fromLine.getSourceIpWildcard();
-      if (srcIpWildcard != null) {
-        newLine.getSrcIps().add(srcIpWildcard);
-      }
-      Ip6Wildcard dstIpWildcard = fromLine.getDestinationIpWildcard();
-      if (dstIpWildcard != null) {
-        newLine.getDstIps().add(dstIpWildcard);
-      }
+      newLine.getSrcIps().add(fromLine.getSourceIpWildcard());
+      newLine.getDstIps().add(fromLine.getDestinationIpWildcard());
       // TODO: src/dst address group
       fromLine.getProtocol().ifPresent(p -> newLine.getIpProtocols().add(p));
       newLine.getDstPorts().addAll(fromLine.getDstPorts());
@@ -1176,7 +1167,7 @@ public class CiscoXrConversions {
   static IpAccessList toIpAccessList(
       Ipv4AccessList eaList, Map<String, ObjectGroup> objectGroups, String filename) {
     List<AclLine> lines =
-        eaList.getLines().stream()
+        eaList.getLines().values().stream()
             .map(l -> toExprAclLine(l, objectGroups, filename, eaList.getName()))
             .collect(ImmutableList.toImmutableList());
     String name = eaList.getName();
@@ -1715,7 +1706,7 @@ public class CiscoXrConversions {
 
   static RouteFilterList toRouteFilterList(Ipv4AccessList eaList, String vendorConfigFilename) {
     List<RouteFilterLine> lines =
-        eaList.getLines().stream()
+        eaList.getLines().values().stream()
             .map(CiscoXrConversions::toRouteFilterLine)
             .collect(ImmutableList.toImmutableList());
     return new RouteFilterList(
@@ -1744,7 +1735,7 @@ public class CiscoXrConversions {
       Ipv4AccessList eaList, Map<String, ObjectGroup> objectGroups, Warnings warnings) {
     return new PacketPolicy(
         computeAbfIpv4PolicyName(eaList.getName()),
-        eaList.getLines().stream()
+        eaList.getLines().values().stream()
             .filter(l -> canConvertAbfAclLine(l, eaList.getName(), warnings))
             .map(l -> toPacketPolicyStatement(l, objectGroups))
             .collect(ImmutableList.toImmutableList()),
@@ -1845,47 +1836,6 @@ public class CiscoXrConversions {
     return ImmutableList.copyOf(redistributeIfsWithEmptyFalse);
   }
 
-  /**
-   * Checks if the {@link DistributeList distributeList} can be converted to a routing policy.
-   * Returns false if it refers to an extended access list, which is not supported and also returns
-   * false if the access-list referred by it does not exist.
-   *
-   * <p>Adds appropriate {@link org.batfish.common.Warning} if the {@link DistributeList
-   * distributeList} is not found to be valid for conversion to routing policy.
-   *
-   * @param c Vendor independent {@link Configuration configuration}
-   * @param distributeList {@link DistributeList distributeList} to be validated
-   * @param vsConfig Vendor specific {@link CiscoXrConfiguration configuration}
-   * @return false if the {@link DistributeList distributeList} cannot be converted to a routing
-   *     policy
-   */
-  static boolean sanityCheckEigrpDistributeList(
-      @Nonnull Configuration c,
-      @Nonnull DistributeList distributeList,
-      @Nonnull CiscoXrConfiguration vsConfig) {
-    if (distributeList.getFilterType() == DistributeListFilterType.ACCESS_LIST
-        && vsConfig.getIpv4Acls().containsKey(distributeList.getFilterName())) {
-      vsConfig
-          .getWarnings()
-          .redFlag(
-              String.format(
-                  "Extended access lists are not supported in EIGRP distribute-lists: %s",
-                  distributeList.getFilterName()));
-      return false;
-    } else if (!c.getRouteFilterLists().containsKey(distributeList.getFilterName())) {
-      // if referred access-list is not defined, all prefixes will be allowed
-      vsConfig
-          .getWarnings()
-          .redFlag(
-              String.format(
-                  "distribute-list refers an undefined access-list `%s`, it will not filter"
-                      + " anything",
-                  distributeList.getFilterName()));
-      return false;
-    }
-    return true;
-  }
-
   static org.batfish.datamodel.StaticRoute toStaticRoute(StaticRoute staticRoute) {
     String nextHopInterface = staticRoute.getNextHopInterface();
     if (nextHopInterface != null && nextHopInterface.toLowerCase().startsWith("null")) {
@@ -1942,12 +1892,6 @@ public class CiscoXrConversions {
                 IPV4_ACCESS_LIST_LINE.getDescription(),
                 aclLineName(aclName, line.getName())))
         .build();
-  }
-
-  private static AsPathAccessListLine toAsPathAccessListLine(AsPathSetElem elem) {
-    String regex = CiscoXrConfiguration.toJavaRegex(elem.regex());
-    AsPathAccessListLine line = new AsPathAccessListLine(LineAction.PERMIT, regex);
-    return line;
   }
 
   private static RouteFilterLine toRouteFilterLine(Ipv4AccessListLine fromLine) {
@@ -2031,8 +1975,7 @@ public class CiscoXrConversions {
         return org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_MULTIPOINT;
       default:
         warnings.redFlag(
-            String.format(
-                "Conversion of CiscoXr OSPF network type '%s' is not handled.", type.toString()));
+            String.format("Conversion of CiscoXr OSPF network type '%s' is not handled.", type));
         return null;
     }
   }

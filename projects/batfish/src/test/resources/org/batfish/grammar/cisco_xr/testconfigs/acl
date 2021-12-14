@@ -13,6 +13,10 @@ ipv4 access-list acl
  80 permit udp 6.6.6.0/23 any eq 9999
  90 permit ipv4 any any fragments
 !
+ipv4 access-list acl
+ ! One out of order line should be reordered up top.
+ 31 permit ipv4 31.31.31.31/32 any
+!
 ipv6 access-list aclv6
  10 remark Some remark
  20 permit tcp any 1111:1111:1111:1111::/64 eq 8080
