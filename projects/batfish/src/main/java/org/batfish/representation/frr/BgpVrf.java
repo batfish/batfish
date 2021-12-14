@@ -25,8 +25,7 @@ public class BgpVrf implements Serializable {
   private final @Nonnull String _vrfName;
   private @Nullable Long _confederationId;
   private @Nullable Long _maxMedAdministrative;
-  private final @Nonnull Map<CumulusRoutingProtocol, BgpRedistributionPolicy>
-      _redistributionPolicies;
+  private final @Nonnull Map<FrrRoutingProtocol, BgpRedistributionPolicy> _redistributionPolicies;
 
   public BgpVrf(String vrfName) {
     // the default is true unless explicitly disabled (via "no bgp default ipv4-unicast")
@@ -145,7 +144,7 @@ public class BgpVrf implements Serializable {
             .build();
   }
 
-  public @Nonnull Map<CumulusRoutingProtocol, BgpRedistributionPolicy> getRedistributionPolicies() {
+  public @Nonnull Map<FrrRoutingProtocol, BgpRedistributionPolicy> getRedistributionPolicies() {
     return _redistributionPolicies;
   }
 }

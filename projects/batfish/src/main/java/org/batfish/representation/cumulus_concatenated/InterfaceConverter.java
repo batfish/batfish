@@ -1,11 +1,11 @@
 package org.batfish.representation.cumulus_concatenated;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.representation.frr.CumulusStructureType.BOND;
-import static org.batfish.representation.frr.CumulusStructureType.INTERFACE;
-import static org.batfish.representation.frr.CumulusStructureType.VLAN;
-import static org.batfish.representation.frr.CumulusStructureType.VRF;
-import static org.batfish.representation.frr.CumulusStructureType.VXLAN;
+import static org.batfish.representation.frr.FrrStructureType.BOND;
+import static org.batfish.representation.frr.FrrStructureType.INTERFACE;
+import static org.batfish.representation.frr.FrrStructureType.VLAN;
+import static org.batfish.representation.frr.FrrStructureType.VRF;
+import static org.batfish.representation.frr.FrrStructureType.VXLAN;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;

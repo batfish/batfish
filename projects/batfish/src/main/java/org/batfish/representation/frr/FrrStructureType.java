@@ -3,7 +3,7 @@ package org.batfish.representation.frr;
 import javax.annotation.Nonnull;
 import org.batfish.vendor.StructureType;
 
-public enum CumulusStructureType implements StructureType {
+public enum FrrStructureType implements StructureType {
   ABSTRACT_INTERFACE("abstract interface"),
   BOND("bond"),
   IP_AS_PATH_ACCESS_LIST("ip as-path access-list"),
@@ -22,7 +22,7 @@ public enum CumulusStructureType implements StructureType {
 
   private final @Nonnull String _description;
 
-  private CumulusStructureType(String description) {
+  private FrrStructureType(String description) {
     _description = description;
   }
 
@@ -31,20 +31,20 @@ public enum CumulusStructureType implements StructureType {
     return _description;
   }
 
-  public CumulusStructureUsage selfReference() {
+  public FrrStructureUsage selfReference() {
     switch (this) {
       case BOND:
-        return CumulusStructureUsage.BOND_SELF_REFERENCE;
+        return FrrStructureUsage.BOND_SELF_REFERENCE;
       case INTERFACE:
-        return CumulusStructureUsage.INTERFACE_SELF_REFERENCE;
+        return FrrStructureUsage.INTERFACE_SELF_REFERENCE;
       case LOOPBACK:
-        return CumulusStructureUsage.LOOPBACK_SELF_REFERENCE;
+        return FrrStructureUsage.LOOPBACK_SELF_REFERENCE;
       case VLAN:
-        return CumulusStructureUsage.VLAN_SELF_REFERENCE;
+        return FrrStructureUsage.VLAN_SELF_REFERENCE;
       case VRF:
-        return CumulusStructureUsage.VRF_SELF_REFERENCE;
+        return FrrStructureUsage.VRF_SELF_REFERENCE;
       case VXLAN:
-        return CumulusStructureUsage.VXLAN_SELF_REFERENCE;
+        return FrrStructureUsage.VXLAN_SELF_REFERENCE;
       default:
         throw new IllegalArgumentException(
             String.format("CumulusStructureType %s has no self-reference usage", _description));

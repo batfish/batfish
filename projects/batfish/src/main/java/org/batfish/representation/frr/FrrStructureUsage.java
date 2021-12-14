@@ -3,7 +3,7 @@ package org.batfish.representation.frr;
 import javax.annotation.Nonnull;
 import org.batfish.vendor.StructureUsage;
 
-public enum CumulusStructureUsage implements StructureUsage {
+public enum FrrStructureUsage implements StructureUsage {
   BGP_ADDRESS_FAMILY_IPV4_IMPORT_VRF("bgp address-family ipv4 unicast import vrf"),
   BGP_ADDRESS_FAMILY_IPV6_IMPORT_VRF("bgp address-family ipv6 unicast import vrf"),
   BGP_ADDRESS_FAMILY_L2VPN_ADVERTISE_IPV4_UNICAST(
@@ -55,7 +55,7 @@ public enum CumulusStructureUsage implements StructureUsage {
 
   private final @Nonnull String _description;
 
-  private CumulusStructureUsage(String description) {
+  private FrrStructureUsage(String description) {
     _description = description;
   }
 

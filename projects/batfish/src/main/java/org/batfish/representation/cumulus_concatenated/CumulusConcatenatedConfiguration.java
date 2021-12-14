@@ -69,10 +69,10 @@ import org.batfish.datamodel.vxlan.Layer3Vni;
 import org.batfish.datamodel.vxlan.Vni;
 import org.batfish.representation.cumulus_concatenated.CumulusPortsConfiguration.PortSettings;
 import org.batfish.representation.frr.Bridge;
-import org.batfish.representation.frr.CumulusStructureType;
-import org.batfish.representation.frr.CumulusStructureUsage;
 import org.batfish.representation.frr.FrrConfiguration;
 import org.batfish.representation.frr.FrrInterface;
+import org.batfish.representation.frr.FrrStructureType;
+import org.batfish.representation.frr.FrrStructureUsage;
 import org.batfish.representation.frr.FrrVendorConfiguration;
 import org.batfish.representation.frr.InterfaceBridgeSettings;
 import org.batfish.representation.frr.InterfaceClagSettings;
@@ -743,48 +743,48 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
 
   private void markStructures() {
     markAbstractStructure(
-        CumulusStructureType.ABSTRACT_INTERFACE,
-        CumulusStructureUsage.BGP_NEIGHBOR_INTERFACE,
+        FrrStructureType.ABSTRACT_INTERFACE,
+        FrrStructureUsage.BGP_NEIGHBOR_INTERFACE,
         ImmutableSet.of(
-            CumulusStructureType.BOND,
-            CumulusStructureType.INTERFACE,
-            CumulusStructureType.LOOPBACK,
-            CumulusStructureType.VLAN,
-            CumulusStructureType.VRF));
+            FrrStructureType.BOND,
+            FrrStructureType.INTERFACE,
+            FrrStructureType.LOOPBACK,
+            FrrStructureType.VLAN,
+            FrrStructureType.VRF));
     markAbstractStructure(
-        CumulusStructureType.ABSTRACT_INTERFACE,
-        CumulusStructureUsage.BRIDGE_PORT,
+        FrrStructureType.ABSTRACT_INTERFACE,
+        FrrStructureUsage.BRIDGE_PORT,
         ImmutableSet.of(
-            CumulusStructureType.BOND,
-            CumulusStructureType.INTERFACE,
-            CumulusStructureType.LOOPBACK,
-            CumulusStructureType.VLAN,
-            CumulusStructureType.VRF,
-            CumulusStructureType.VXLAN));
+            FrrStructureType.BOND,
+            FrrStructureType.INTERFACE,
+            FrrStructureType.LOOPBACK,
+            FrrStructureType.VLAN,
+            FrrStructureType.VRF,
+            FrrStructureType.VXLAN));
     markAbstractStructure(
-        CumulusStructureType.ABSTRACT_INTERFACE,
-        CumulusStructureUsage.ROUTE_MAP_MATCH_INTERFACE,
+        FrrStructureType.ABSTRACT_INTERFACE,
+        FrrStructureUsage.ROUTE_MAP_MATCH_INTERFACE,
         ImmutableSet.of(
-            CumulusStructureType.BOND,
-            CumulusStructureType.INTERFACE,
-            CumulusStructureType.LOOPBACK,
-            CumulusStructureType.VLAN,
-            CumulusStructureType.VRF));
+            FrrStructureType.BOND,
+            FrrStructureType.INTERFACE,
+            FrrStructureType.LOOPBACK,
+            FrrStructureType.VLAN,
+            FrrStructureType.VRF));
     markAbstractStructure(
-        CumulusStructureType.ABSTRACT_INTERFACE,
-        CumulusStructureUsage.PORT_SPEED,
-        ImmutableSet.of(CumulusStructureType.INTERFACE));
-    markConcreteStructure(CumulusStructureType.BOND);
-    markConcreteStructure(CumulusStructureType.INTERFACE);
-    markConcreteStructure(CumulusStructureType.IP_AS_PATH_ACCESS_LIST);
-    markConcreteStructure(CumulusStructureType.IP_COMMUNITY_LIST);
-    markConcreteStructure(CumulusStructureType.IP_PREFIX_LIST);
-    markConcreteStructure(CumulusStructureType.LOOPBACK);
-    markConcreteStructure(CumulusStructureType.ROUTE_MAP);
-    markConcreteStructure(CumulusStructureType.ROUTE_MAP_ENTRY);
-    markConcreteStructure(CumulusStructureType.VLAN);
-    markConcreteStructure(CumulusStructureType.VRF);
-    markConcreteStructure(CumulusStructureType.VXLAN);
+        FrrStructureType.ABSTRACT_INTERFACE,
+        FrrStructureUsage.PORT_SPEED,
+        ImmutableSet.of(FrrStructureType.INTERFACE));
+    markConcreteStructure(FrrStructureType.BOND);
+    markConcreteStructure(FrrStructureType.INTERFACE);
+    markConcreteStructure(FrrStructureType.IP_AS_PATH_ACCESS_LIST);
+    markConcreteStructure(FrrStructureType.IP_COMMUNITY_LIST);
+    markConcreteStructure(FrrStructureType.IP_PREFIX_LIST);
+    markConcreteStructure(FrrStructureType.LOOPBACK);
+    markConcreteStructure(FrrStructureType.ROUTE_MAP);
+    markConcreteStructure(FrrStructureType.ROUTE_MAP_ENTRY);
+    markConcreteStructure(FrrStructureType.VLAN);
+    markConcreteStructure(FrrStructureType.VRF);
+    markConcreteStructure(FrrStructureType.VXLAN);
   }
 
   private void initVendorFamily(Configuration c) {
