@@ -345,7 +345,7 @@ public class RoutesAnswererUtilTest {
 
   @Test
   public void testEvpnRibRouteColumns() {
-    // Create two BGP routes: one standard route and one from a BGP unnumbered session
+    // Create two EVPN routes: one standard route and one from a BGP unnumbered session
     Ip ip = Ip.parse("1.1.1.1");
     Prefix prefix = ip.toPrefix();
     EvpnType3Route.Builder rb =
@@ -358,6 +358,7 @@ public class RoutesAnswererUtilTest {
             .setProtocol(RoutingProtocol.BGP)
             .setOriginatorIp(Ip.parse("1.1.1.2"))
             .setAsPath(AsPath.ofSingletonAsSets(ImmutableList.of(1L, 2L)))
+            .setVni(1)
             .setWeight(7);
     EvpnType3Route standardRoute = rb.setNextHopIp(ip).build();
 

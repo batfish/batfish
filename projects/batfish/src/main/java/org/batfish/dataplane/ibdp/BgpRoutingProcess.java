@@ -766,6 +766,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         .setOriginType(OriginType.IGP)
         .setProtocol(RoutingProtocol.BGP)
         .setRouteDistinguisher(routeDistinguisher)
+        .setVni(vni.getVni())
         .setVniIp(vni.getSourceAddress())
         .setNextHop(NextHopDiscard.instance())
         .build();
@@ -2093,9 +2094,16 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     unstage();
   }
 
+  /**
+   * Imports the provided BGPv4 route advertisements to our EVPN RIB.
+   *
+   * @param routesToLeak BGPv4 delta from exporting VRF
+   * @param vni VNI of exporting VRF
+   */
   public void importCrossVrfV4RoutesToEvpn(
       Stream<RouteAdvertisement<Bgpv4Route>> routesToLeak,
       Bgpv4ToEvpnVrfLeakConfig leakConfig,
+      int vni,
       NetworkConfigurations nc,
       Map<String, Node> allNodes) {
     RibDelta.Builder<EvpnType5Route> type5Delta = RibDelta.builder();
@@ -2106,7 +2114,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                   adv.getRoute(),
                   // srcProcess attributes guaranteed populated by exportsCurrentV4DeltaToEvpn
                   leakConfig.getSrcVrfRouteDistinguisher(),
-                  leakConfig.getAttachRouteTargets());
+                  leakConfig.getAttachRouteTargets(),
+                  vni);
           if (adv.isWithdrawn()) {
             type5Delta.remove(evpnRoute, adv.getReason());
           } else {
@@ -2122,7 +2131,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
   /** Convert a BGP v4 route to a EVPN type 5 route. */
   private static @Nonnull EvpnType5Route toEvpnType5Route(
-      Bgpv4Route route, RouteDistinguisher rd, Set<ExtendedCommunity> rt) {
+      Bgpv4Route route, RouteDistinguisher rd, Set<ExtendedCommunity> rt, int vni) {
     return EvpnType5Route.builder()
         .setNetwork(route.getNetwork())
         .setAsPath(route.getAsPath())
@@ -2139,6 +2148,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         .setReceivedFromRouteReflectorClient(route.getReceivedFromRouteReflectorClient())
         .setRouteDistinguisher(rd)
         .setSrcProtocol(route.getSrcProtocol())
+        .setVni(vni)
         .setWeight(route.getWeight())
         .build();
   }
