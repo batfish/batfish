@@ -30,6 +30,7 @@ public class EvpnType3RouteTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setRouteDistinguisher(RouteDistinguisher.from(Ip.parse("1.1.1.1"), 2))
+            .setVni(1)
             .setVniIp(Ip.parse("1.1.1.1"))
             .build();
     assertThat(SerializationUtils.clone(er), equalTo(er));
@@ -46,6 +47,7 @@ public class EvpnType3RouteTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setRouteDistinguisher(RouteDistinguisher.from(Ip.parse("1.1.1.1"), 2))
+            .setVni(1)
             .setVniIp(Ip.parse("1.1.1.1"))
             .build();
     assertThat(BatfishObjectMapper.clone(er, EvpnType3Route.class), equalTo(er));
@@ -62,6 +64,7 @@ public class EvpnType3RouteTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setRouteDistinguisher(RouteDistinguisher.from(Ip.parse("1.1.1.1"), 2))
+            .setVni(1)
             .setVniIp(Ip.parse("1.1.1.1"))
             .build();
     assertThat(er, equalTo(er.toBuilder().build()));
@@ -78,6 +81,7 @@ public class EvpnType3RouteTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setRouteDistinguisher(RouteDistinguisher.from(Ip.parse("1.1.1.1"), 2))
+            .setVni(1)
             .setVniIp(Ip.parse("1.1.1.1"));
     new EqualsTester()
         .addEqualityGroup(erb.build(), erb.build())
@@ -93,6 +97,9 @@ public class EvpnType3RouteTest {
         .addEqualityGroup(erb.setOriginType(OriginType.INCOMPLETE).build())
         .addEqualityGroup(erb.setReceivedFromIp(Ip.parse("1.1.1.1")).build())
         .addEqualityGroup(erb.setReceivedFromRouteReflectorClient(true).build())
+        .addEqualityGroup(
+            erb.setRouteDistinguisher(RouteDistinguisher.from(Ip.parse("2.2.2.2"), 2)).build())
+        .addEqualityGroup(erb.setVni(2).build())
         .addEqualityGroup(erb.setProtocol(RoutingProtocol.IBGP).build())
         .addEqualityGroup(erb.setSrcProtocol(RoutingProtocol.STATIC).build())
         .addEqualityGroup(erb.setWeight(1).build())
@@ -111,7 +118,8 @@ public class EvpnType3RouteTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHop(NextHopDiscard.instance())
-            .setRouteDistinguisher(RouteDistinguisher.from(Ip.parse("2.2.2.2"), 2));
+            .setRouteDistinguisher(RouteDistinguisher.from(Ip.parse("2.2.2.2"), 2))
+            .setVni(1);
 
     assertThat(erb.build().getNetwork(), equalTo(Prefix.parse("1.1.1.1/32")));
   }
@@ -128,6 +136,7 @@ public class EvpnType3RouteTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setRouteDistinguisher(RouteDistinguisher.from(Ip.parse("1.2.3.4"), 2))
+            .setVni(1)
             .build();
 
     assertThat(

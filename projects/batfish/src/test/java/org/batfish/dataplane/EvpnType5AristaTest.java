@@ -129,6 +129,7 @@ public class EvpnType5AristaTest {
             .setSrcProtocol(RoutingProtocol.CONNECTED)
             .setReceivedFromIp(Ip.ZERO)
             .setOriginatorIp(originatorIp)
+            .setVni(15004)
             .setWeight(AristaConfiguration.DEFAULT_LOCAL_BGP_WEIGHT)
             .build();
     assertThat(exportedEvpnRoute, equalTo(expectedEvpnRoute));

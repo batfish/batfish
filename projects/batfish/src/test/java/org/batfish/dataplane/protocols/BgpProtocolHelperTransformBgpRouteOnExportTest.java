@@ -540,6 +540,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
             .setProtocol(RoutingProtocol.BGP)
             .setSrcProtocol(RoutingProtocol.CONNECTED)
             .setReceivedFromIp(Ip.ZERO)
+            .setVni(1)
             .setWeight(AristaConfiguration.DEFAULT_LOCAL_BGP_WEIGHT);
     {
       // EBGP or IBGP with a learned EVPN route: Exported route should keep original NHIP
