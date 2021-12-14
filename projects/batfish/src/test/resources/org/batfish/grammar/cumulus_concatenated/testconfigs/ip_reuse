@@ -78,14 +78,20 @@ interface swp1
  ip address 10.1.1.1/32
  ip address 10.1.1.2/32
  ip ospf area 0
- ip address 10.2.1.1/24
 !
 ! Should be first to be initialized since it appears last, independently of earlier declaration.
-! Should have neither of thse addresses, since they were assigned to other interfaces in interfaces file.
+! Should have neither of these addresses, since they were assigned to other interfaces in interfaces file.
 interface swp3
   ip address 10.0.0.1/32
   ip address 10.0.0.2/32
   ip ospf area 0
+!
+! Should own 10.2.1.1/24 even though the prefix overlaps with swp7
+interface swp6
+  ip address 10.2.1.1/24
+!
+! Should own 10.2.1.2/24 even though the prefix overlaps with swp6
+interface swp7
   ip address 10.2.1.2/24
 !
 router ospf
