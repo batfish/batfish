@@ -1176,7 +1176,7 @@ public class CiscoXrConversions {
   static IpAccessList toIpAccessList(
       Ipv4AccessList eaList, Map<String, ObjectGroup> objectGroups, String filename) {
     List<AclLine> lines =
-        eaList.getLines().stream()
+        eaList.getLines().values().stream()
             .map(l -> toExprAclLine(l, objectGroups, filename, eaList.getName()))
             .collect(ImmutableList.toImmutableList());
     String name = eaList.getName();
@@ -1715,7 +1715,7 @@ public class CiscoXrConversions {
 
   static RouteFilterList toRouteFilterList(Ipv4AccessList eaList, String vendorConfigFilename) {
     List<RouteFilterLine> lines =
-        eaList.getLines().stream()
+        eaList.getLines().values().stream()
             .map(CiscoXrConversions::toRouteFilterLine)
             .collect(ImmutableList.toImmutableList());
     return new RouteFilterList(
@@ -1744,7 +1744,7 @@ public class CiscoXrConversions {
       Ipv4AccessList eaList, Map<String, ObjectGroup> objectGroups, Warnings warnings) {
     return new PacketPolicy(
         computeAbfIpv4PolicyName(eaList.getName()),
-        eaList.getLines().stream()
+        eaList.getLines().values().stream()
             .filter(l -> canConvertAbfAclLine(l, eaList.getName(), warnings))
             .map(l -> toPacketPolicyStatement(l, objectGroups))
             .collect(ImmutableList.toImmutableList()),

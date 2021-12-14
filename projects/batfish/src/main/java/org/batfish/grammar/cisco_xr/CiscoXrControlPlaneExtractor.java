@@ -3627,13 +3627,15 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
           IPV4_ACCESS_LIST_LINE, qualifiedName, IPV4_ACCESS_LIST_LINE_SELF_REF, configLine);
     }
 
+    long seq = ctx.num != null ? toLong(ctx.num) : _currentIpv4Acl.getNextSeq();
     Ipv4AccessListLine line =
         _currentIpv4AclLine
-            .setAction(action)
-            .setDstAddressSpecifier(dstAddressSpecifier)
             .setName(name)
-            .setServiceSpecifier(serviceSpecifier)
+            .setSeq(seq)
+            .setAction(action)
             .setSrcAddressSpecifier(srcAddressSpecifier)
+            .setDstAddressSpecifier(dstAddressSpecifier)
+            .setServiceSpecifier(serviceSpecifier)
             .build();
     if (line.getAction() != LineAction.PERMIT && line.getNexthop1() != null) {
       warn(ctx, "ACL based forwarding can only be configured on an ACL line with a permit action");
