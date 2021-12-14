@@ -84,6 +84,7 @@ import org.batfish.datamodel.bgp.AddressFamily.Type;
 import org.batfish.datamodel.bgp.BgpAggregate;
 import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.bgp.BgpTopology.EdgeId;
+import org.batfish.datamodel.bgp.EvpnAddressFamily;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.dataplane.rib.RibGroup;
@@ -1613,6 +1614,20 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
           Direction.OUT);
       return Optional.empty();
     }
+    if (afType == Type.EVPN) {
+      // Need to specially set NH for EVPN routes.
+      // invariants of address family being EVPN
+      assert transformedOutgoingRouteBuilder instanceof EvpnRoute.Builder<?, ?>;
+      assert exportCandidate instanceof EvpnRoute<?, ?>;
+      if (!BgpProtocolHelper.setEvpnNhPostExport(
+          (EvpnRoute.Builder<?, ?>) transformedOutgoingRouteBuilder,
+          (EvpnAddressFamily) addressFamily,
+          exportCandidate.getNextHop(),
+          ((EvpnRoute<?, ?>) exportCandidate).getVni())) {
+        // do not export if next hop could not be set
+        return Optional.empty();
+      }
+    }
     // Apply final post-policy transformations before sending advertisement to neighbor
     BgpProtocolHelper.transformBgpRoutePostExport(
         transformedOutgoingRouteBuilder,
@@ -2112,7 +2127,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
           EvpnType5Route evpnRoute =
               toEvpnType5Route(
                   adv.getRoute(),
-                  // srcProcess attributes guaranteed populated by exportsCurrentV4DeltaToEvpn
                   leakConfig.getSrcVrfRouteDistinguisher(),
                   leakConfig.getAttachRouteTargets(),
                   vni);

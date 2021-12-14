@@ -223,8 +223,14 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
             routesWithNextHop.keySet(),
             Function.identity(),
             iface -> {
-              IpSpace externalArpIps =
-                  locationInfo.get(new InterfaceLinkLocation(node, iface)).getArpIps();
+              InterfaceLinkLocation ill = new InterfaceLinkLocation(node, iface);
+              IpSpace externalArpIps;
+              if (!locationInfo.containsKey(ill)) {
+                externalArpIps = EmptyIpSpace.INSTANCE;
+              } else {
+                externalArpIps =
+                    locationInfo.get(new InterfaceLinkLocation(node, iface)).getArpIps();
+              }
 
               /* Compute ARP stuff bottom-up from _arpReplies. */
               IpSpace someoneReplies = computeSomeoneReplies(node, iface, topology, _arpReplies);
@@ -1191,9 +1197,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                         .forEach(i -> assertInterfaceActive(node, i, configurations))));
   }
 
-  /**
-   * Asserts that all interfaces in the given nested map are inactive in the given configurations.
-   */
+  /** Asserts that all interfaces in the given nested map are active in the given configurations. */
   private static void assertAllInterfacesActiveNodeInterface(
       Map<String, Map<String, IpSpace>> nodeInterfaceMap,
       Map<String, Configuration> configurations) {
