@@ -50,6 +50,22 @@ public class EvpnNxosTest {
   private static final int L3VNI = 10001;
   private static final String TENANT_VRF_NAME = "tenant";
 
+  /*
+   * Topology:
+   *                   10.0.4.1                   10.0.4.2
+   * h1 <===============> r1 <=====================> r2 <===============> h2
+   *    i1    Ethernet1/2    Ethernet1/1 Ethernet1/1    Ethernet1/2    i1
+   *    .2 10.0.1.0/24 .1    .1    10.0.3.0/24    .2    .1 10.0.2.0/24 .2
+   * - There is an EVPN session betwen r1 and r2
+   * - Ethernet1/1 on r1/r2 are in default vrf
+   * - Ethernet1/2 on r1/r2 are in tenant vrf
+   * - 10.0.1.0/24 and 10.0.2.0/24 are redistributed into BGP on r1 and r2 respectively
+   * - BGP routes routes in tenant vrf are leaked into EVPN on r1/r2
+   * - r1 tenant vrf main RIB should have 10.0.2.0/24 with VTEP next hop 10.0.4.2 for VNI 10001
+   * - r2 tenant vrf main RIB should have 10.0.1.0/24 with VTEP next hop 10.0.4.1 for VNI 10001
+   * - Subnets of r1/r2 interfaces connected to h1/2 are redistributed into BGP
+   * - h1 and h2 should be able to reach other across the tunnel
+   */
   @Before
   public void setup() throws IOException {
     String r1Filename = "r1";

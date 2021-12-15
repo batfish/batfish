@@ -1666,7 +1666,7 @@ public final class CiscoNxosGrammarTest {
                   .setImportPolicy(importPolicyName)
                   .build()));
 
-      EvpnType5Route r =
+      EvpnType5Route.Builder rb =
           EvpnType5Route.builder()
               .setNetwork(Prefix.strict("10.0.0.0/24"))
               .setNextHop(NextHopVtep.of(3333, Ip.parse("5.6.7.8")))
@@ -1675,11 +1675,23 @@ public final class CiscoNxosGrammarTest {
               .setOriginMechanism(OriginMechanism.LEARNED)
               .setOriginType(OriginType.IGP)
               .setOriginatorIp(Ip.parse("5.6.7.8"))
-              .setRouteDistinguisher(RouteDistinguisher.from(routerId, tenantVrfPosition))
-              .setCommunities(CommunitySet.of(ExtendedCommunity.target(1, 3333)))
+              .setRouteDistinguisher(RouteDistinguisher.from(routerId, tenantVrfPosition));
+      EvpnType5Route permittedRouteSingleRouteTarget =
+          rb.setCommunities(CommunitySet.of(ExtendedCommunity.target(1, 3333))).build();
+      EvpnType5Route permittedRouteMultipleRouteTargets =
+          rb.setCommunities(
+                  CommunitySet.of(
+                      ExtendedCommunity.target(1, 3333), ExtendedCommunity.target(5, 3333)))
               .build();
+      EvpnType5Route deniedRouteWrongRouteTarget =
+          rb.setCommunities(CommunitySet.of(ExtendedCommunity.target(5, 3333))).build();
+      EvpnType5Route deniedRouteNoRouteTarget = rb.setCommunities(CommunitySet.of()).build();
       RoutingPolicy importPolicy = c.getRoutingPolicies().get(importPolicyName);
-      assertRoutingPolicyPermitsRoute(importPolicy, r);
+
+      assertRoutingPolicyPermitsRoute(importPolicy, permittedRouteSingleRouteTarget);
+      assertRoutingPolicyPermitsRoute(importPolicy, permittedRouteMultipleRouteTargets);
+      assertRoutingPolicyDeniesRoute(importPolicy, deniedRouteWrongRouteTarget);
+      assertRoutingPolicyDeniesRoute(importPolicy, deniedRouteNoRouteTarget);
     }
   }
 
