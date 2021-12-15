@@ -19,6 +19,8 @@ import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDPairing;
 import net.sf.javabdd.JFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.batfish.common.BatfishException;
 import org.batfish.common.bdd.BDDFlowConstraintGenerator.FlowPreference;
 import org.batfish.datamodel.Flow;
@@ -32,6 +34,7 @@ import org.batfish.datamodel.acl.AclLineMatchExprs;
  * @author Ryan Beckett
  */
 public class BDDPacket {
+  private static final Logger LOGGER = LogManager.getLogger(BDDPacket.class);
 
   /*
    * Initial size of the BDD factory node table. Automatically resized as needed. Increasing this
@@ -208,6 +211,7 @@ public class BDDPacket {
    * @return A {@link BDD} representing the sentence "this variable is true" for the new variable.
    */
   public BDD allocateBDDBit(String name) {
+    LOGGER.info("Allocating {}: bit at index {}", name, _nextFreeBDDVarIdx);
     if (_factory.varNum() < _nextFreeBDDVarIdx + 1) {
       _factory.setVarNum(_nextFreeBDDVarIdx + 1);
     }
@@ -226,6 +230,8 @@ public class BDDPacket {
    * @return The new variable.
    */
   public BDDInteger allocateBDDInteger(String name, int bits, boolean reverse) {
+    LOGGER.info(
+        "Allocating {}: BDD Integer of size {} at index {}", name, bits, _nextFreeBDDVarIdx);
     if (_factory.varNum() < _nextFreeBDDVarIdx + bits) {
       _factory.setVarNum(_nextFreeBDDVarIdx + bits);
     }
