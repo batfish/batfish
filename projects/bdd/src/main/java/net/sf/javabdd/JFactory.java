@@ -52,7 +52,7 @@ import org.apache.logging.log4j.Logger;
 public final class JFactory extends BDDFactory {
   private static final Logger LOGGER = LogManager.getLogger(JFactory.class);
   /** Whether to maintain (and in some cases print) statistics about the cache use. */
-  private static final boolean CACHESTATS = false;
+  private static final boolean CACHESTATS = true;
 
   /**
    * Whether to flush (clear completely) the cache when live BDD nodes are garbage collected. If
