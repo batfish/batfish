@@ -7,6 +7,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -14,6 +15,8 @@ import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.datamodel.Prefix;
+import org.batfish.vendor.sonic.representation.AclRule.PacketAction;
 import org.junit.Test;
 
 public class ConfigDbTest {
@@ -26,6 +29,61 @@ public class ConfigDbTest {
     assertThat(
         Iterables.getOnlyElement(warnings.getUnimplementedWarnings()).getText(),
         equalTo("Unimplemented configdb table 'GARBAGE'"));
+  }
+
+  @Test
+  public void testDeserializationAclTable() throws JsonProcessingException {
+    String input =
+        "{\"ACL_TABLE\": {"
+            + "        \"ctrl-plane-snmp-acl\": {"
+            + "            \"ports\": ["
+            + "                \"CtrlPlane\""
+            + "            ],"
+            + "            \"stage\": \"INGRESS\","
+            + "            \"type\": \"L3\""
+            + "        }"
+            + "    }}";
+    assertThat(
+        deserialize(input, new Warnings()),
+        equalTo(
+            ConfigDb.builder()
+                .setAclTables(
+                    ImmutableMap.of(
+                        "ctrl-plane-snmp-acl",
+                        AclTable.builder()
+                            .setPorts(ImmutableList.of("CtrlPlane"))
+                            .setStage("INGRESS")
+                            .setType("L3")
+                            .build()))
+                .build()));
+  }
+
+  @Test
+  public void testDeserializationAclRule() throws JsonProcessingException {
+    String input =
+        "{\"ACL_RULE\": {\n"
+            + "        \"ctrl-plane-snmp-acl|RULE_10\": {\n"
+            + "            \"IP_PROTOCOL\": \"17\",\n"
+            + "            \"L4_DST_PORT\": \"161\",\n"
+            + "            \"PACKET_ACTION\": \"FORWARD\",\n"
+            + "            \"PRIORITY\": \"10\",\n"
+            + "            \"SRC_IP\": \"10.1.4.0/22\"\n"
+            + "        }}}";
+    assertThat(
+        deserialize(input, new Warnings()),
+        equalTo(
+            ConfigDb.builder()
+                .setAclRules(
+                    ImmutableMap.of(
+                        "ctrl-plane-snmp-acl|RULE_10",
+                        AclRule.builder()
+                            .setIpProtocol(17)
+                            .setL4DstPort(161)
+                            .setPacketAction(PacketAction.FORWARD)
+                            .setPriority(10)
+                            .setSrcIp(Prefix.parse("10.1.4.0/22"))
+                            .build()))
+                .build()));
   }
 
   @Test
@@ -205,6 +263,10 @@ public class ConfigDbTest {
     ConfigDb.Builder builder = ConfigDb.builder();
     new EqualsTester()
         .addEqualityGroup(builder.build(), builder.build())
+        .addEqualityGroup(
+            builder.setAclRules(ImmutableMap.of("aclrule", AclRule.builder().build())).build())
+        .addEqualityGroup(
+            builder.setAclTables(ImmutableMap.of("acl", AclTable.builder().build())).build())
         .addEqualityGroup(
             builder
                 .setDeviceMetadata(ImmutableMap.of("localhost", new DeviceMetadata(null)))
