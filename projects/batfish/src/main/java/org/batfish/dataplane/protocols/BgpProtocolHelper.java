@@ -25,6 +25,7 @@ import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Bgpv4Route.Builder;
 import org.batfish.datamodel.EvpnRoute;
+import org.batfish.datamodel.EvpnType5Route;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginMechanism;
@@ -384,8 +385,8 @@ public final class BgpProtocolHelper {
    * Perform BGP export transformations on a given route <em>after</em> export policy has been
    * applied to the route, route was accepted, but before route is sent "onto the wire".
    *
-   * <p>Sets next hop, if not already set by export policy, for non-EVPN routes only. EVPN next hops
-   * should be set by {@link #setEvpnNhPostExport}.
+   * <p>Sets next hop, if not already set by export policy, for non-EVPN-type-5 routes only. EVPN
+   * type 5 routes' next hops should be set by {@link #setEvpnType5NhPostExport}.
    *
    * @param routeBuilder Builder for the output (exported) route
    * @param ourSessionProperties properties for the sender's session
@@ -401,7 +402,6 @@ public final class BgpProtocolHelper {
     transformBgpRoutePostExport(
         routeBuilder,
         ourSessionProperties.isEbgp(),
-        af.getType().equals(Type.EVPN),
         af.getAddressFamilyCapabilities().getSendCommunity(),
         af.getAddressFamilyCapabilities().getSendExtendedCommunity(),
         ourSessionProperties.getConfedSessionType(),
@@ -411,8 +411,11 @@ public final class BgpProtocolHelper {
   }
 
   /**
-   * Perform BGP export transformations on a given route <em>after</em> export policy has been *
+   * Perform BGP export transformations on a given route <em>after</em> export policy has been
    * applied to the route, route was accepted, but before route is sent "onto the wire".
+   *
+   * <p>Sets next hop, if not already set by export policy, for non-EVPN-type-5 routes only. EVPN
+   * type 5 routes' next hops should be set by {@link #setEvpnType5NhPostExport}.
    *
    * @param routeBuilder Builder for the output (exported) route
    * @param isEbgp true for ebgp sessions
@@ -429,7 +432,6 @@ public final class BgpProtocolHelper {
       void transformBgpRoutePostExport(
           B routeBuilder,
           boolean isEbgp,
-          boolean isEvpn,
           boolean sendStandardCommunities,
           boolean sendExtendedCommunities,
           ConfedSessionType confedSessionType,
@@ -475,7 +477,10 @@ public final class BgpProtocolHelper {
     // Skip setting our own next hop if it has already been set by the routing policy
     // TODO: When sending out a BGP route with a NextHopVtep, should that next hop be preserved?
     //  If so, this should step be skipped for such routes.
-    if (!isEvpn && routeBuilder.getNextHopIp().equals(UNSET_ROUTE_NEXT_HOP_IP)) {
+    // TODO: This next hop is incorrect for EVPN type 3 routes (not critical since type 3 routes'
+    //  next hops have no function).
+    if (!(routeBuilder instanceof EvpnType5Route.Builder)
+        && routeBuilder.getNextHopIp().equals(UNSET_ROUTE_NEXT_HOP_IP)) {
       if (isEbgp) {
         routeBuilder.setNextHopIp(localIp);
       } else { // iBGP session
@@ -502,15 +507,18 @@ public final class BgpProtocolHelper {
   }
 
   /**
-   * Sets next hop on EVPN route builder in preparation for export. Uses original route's next hop
-   * unless it is {@link NextHopDiscard}, which indicates the original route was originated; in this
-   * case the route builder is given a {@link NextHopVtep}.
+   * Sets next hop on EVPN type 5 route builder in preparation for export. Uses original route's
+   * next hop unless it is {@link NextHopDiscard}, which indicates the original route was
+   * originated; in this case the route builder is given a {@link NextHopVtep}.
    *
    * @return {@code true} if the next hop was successfully set. May be {@code false} if the export
    *     candidate was originated on this node and our EVPN address family has no NVE IP.
    */
-  public static <B extends EvpnRoute.Builder<?, ?>> boolean setEvpnNhPostExport(
-      B routeBuilder, EvpnAddressFamily af, NextHop originalRouteNh, int originalRouteVni) {
+  public static boolean setEvpnType5NhPostExport(
+      EvpnType5Route.Builder routeBuilder,
+      EvpnAddressFamily af,
+      NextHop originalRouteNh,
+      int originalRouteVni) {
     if (!originalRouteNh.equals(NextHopDiscard.instance())) {
       // Original route has a non-discard next hop. Use that.
       routeBuilder.setNextHop(originalRouteNh);

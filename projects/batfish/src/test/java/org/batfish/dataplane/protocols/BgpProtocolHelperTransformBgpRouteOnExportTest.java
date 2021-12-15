@@ -6,7 +6,7 @@ import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasCommunities;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasOriginType;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.convertGeneratedRouteToBgp;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.convertNonBgpRouteToBgpRoute;
-import static org.batfish.dataplane.protocols.BgpProtocolHelper.setEvpnNhPostExport;
+import static org.batfish.dataplane.protocols.BgpProtocolHelper.setEvpnType5NhPostExport;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.transformBgpRoutePostExport;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
@@ -186,7 +186,6 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
     transformBgpRoutePostExport(
         routeBuilder,
         _sessionProperties.isEbgp(),
-        false,
         _fromNeighbor
             .getIpv4UnicastAddressFamily()
             .getAddressFamilyCapabilities()
@@ -513,7 +512,6 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
         true,
         false,
         false,
-        false,
         ConfedSessionType.NO_CONFED,
         1,
         Ip.parse("1.1.1.1"),
@@ -523,7 +521,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
   }
 
   @Test
-  public void testSetEvpnNhPostExport() {
+  public void testSetEvpnType5NhPostExport() {
     // Simulate exporting an EVPN route. If the route appears to be originated (based on NHIP),
     // transformBgpRoutePostExport should set its NHIP to the address family's NVE IP. Otherwise, it
     // should preserve the original NHIP for both EBGP and IBGP.
@@ -553,12 +551,13 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
       NextHop originalNh = NextHopVtep.of(exportRouteVni, Ip.parse("5.5.5.5"));
       outgoingRouteBuilder.setProtocol(RoutingProtocol.BGP).clearNextHop();
       setUpPeers(false);
-      assertTrue(setEvpnNhPostExport(outgoingRouteBuilder, af, originalNh, exportRouteVni));
+      assertTrue(setEvpnType5NhPostExport(outgoingRouteBuilder, af, originalNh, exportRouteVni));
       assertThat(outgoingRouteBuilder.build(), hasNextHop(originalNh));
 
       outgoingRouteBuilder.setProtocol(RoutingProtocol.BGP).clearNextHop();
       setUpPeers(false);
-      assertTrue(setEvpnNhPostExport(outgoingRouteBuilder, afNoNveIp, originalNh, exportRouteVni));
+      assertTrue(
+          setEvpnType5NhPostExport(outgoingRouteBuilder, afNoNveIp, originalNh, exportRouteVni));
       assertThat(outgoingRouteBuilder.build(), hasNextHop(originalNh));
     }
     {
@@ -567,12 +566,13 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
       NextHop nhDiscard = NextHopDiscard.instance();
       outgoingRouteBuilder.setProtocol(RoutingProtocol.BGP).clearNextHop();
       setUpPeers(false);
-      assertTrue(setEvpnNhPostExport(outgoingRouteBuilder, af, nhDiscard, exportRouteVni));
+      assertTrue(setEvpnType5NhPostExport(outgoingRouteBuilder, af, nhDiscard, exportRouteVni));
       assertThat(outgoingRouteBuilder.build(), hasNextHop(NextHopVtep.of(exportRouteVni, nveIp)));
 
       outgoingRouteBuilder.setProtocol(RoutingProtocol.BGP).clearNextHop();
       setUpPeers(false);
-      assertFalse(setEvpnNhPostExport(outgoingRouteBuilder, afNoNveIp, nhDiscard, exportRouteVni));
+      assertFalse(
+          setEvpnType5NhPostExport(outgoingRouteBuilder, afNoNveIp, nhDiscard, exportRouteVni));
     }
   }
 }

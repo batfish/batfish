@@ -1614,16 +1614,16 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
           Direction.OUT);
       return Optional.empty();
     }
-    if (afType == Type.EVPN) {
-      // Need to specially set NH for EVPN routes.
-      // invariants of address family being EVPN
-      assert transformedOutgoingRouteBuilder instanceof EvpnRoute.Builder<?, ?>;
-      assert exportCandidate instanceof EvpnRoute<?, ?>;
-      if (!BgpProtocolHelper.setEvpnNhPostExport(
-          (EvpnRoute.Builder<?, ?>) transformedOutgoingRouteBuilder,
+    if (exportCandidate instanceof EvpnType5Route) {
+      // Need to specially set NH for EVPN type 5 routes.
+      // invariants of export candidate being EVPN
+      assert addressFamily instanceof EvpnAddressFamily;
+      assert transformedOutgoingRouteBuilder instanceof EvpnType5Route.Builder;
+      if (!BgpProtocolHelper.setEvpnType5NhPostExport(
+          (EvpnType5Route.Builder) transformedOutgoingRouteBuilder,
           (EvpnAddressFamily) addressFamily,
           exportCandidate.getNextHop(),
-          ((EvpnRoute<?, ?>) exportCandidate).getVni())) {
+          ((EvpnType5Route) exportCandidate).getVni())) {
         // do not export if next hop could not be set
         return Optional.empty();
       }
