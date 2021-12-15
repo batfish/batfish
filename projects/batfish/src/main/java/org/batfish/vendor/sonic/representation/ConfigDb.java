@@ -389,6 +389,7 @@ public class ConfigDb implements Serializable {
           case PROP_VLAN:
             configDb.setVlans(
                 mapper.convertValue(value, new TypeReference<Map<String, Vlan>>() {}));
+            break;
           case PROP_VLAN_INTERFACE:
             configDb.setVlanInterfaces(
                 createInterfaces(
