@@ -2,9 +2,12 @@ package org.batfish.vendor.sonic.grammar;
 
 import static com.google.common.collect.Iterables.getOnlyElement;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAccessVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddress;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInterfaceType;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasName;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrfName;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
@@ -20,6 +23,8 @@ import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.InterfaceType;
+import org.batfish.datamodel.SwitchportMode;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -109,5 +114,30 @@ public class SonicGrammarTest {
     assertThat(
         Iterables.getOnlyElement(c.getAllInterfaces().values()),
         allOf(hasName("eth0"), hasVrfName("vrf_global_not_default"), hasAddress("1.1.1.1/24")));
+  }
+
+  /** Test that VLAN related tables are processed. */
+  @Test
+  public void testVlan() throws IOException {
+    String snapshotName = "vlan";
+    Batfish batfish = getBatfish(snapshotName, "device/frr.conf", "device/config_db.json");
+
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    SonicConfiguration vc =
+        (SonicConfiguration) batfish.loadVendorConfigurations(snapshot).get("vlan");
+    vc.setWarnings(new Warnings());
+    Configuration c = getOnlyElement(vc.toVendorIndependentConfigurations());
+
+    assertThat(
+        c.getAllInterfaces().get("Vlan1"),
+        allOf(
+            hasName("Vlan1"),
+            hasVrfName("default"),
+            hasAddress("172.19.0.1/24"),
+            hasInterfaceType(InterfaceType.VLAN)));
+
+    assertThat(
+        c.getAllInterfaces().get("Ethernet0"),
+        allOf(hasName("Ethernet0"), hasAccessVlan(1), hasSwitchPortMode(SwitchportMode.ACCESS)));
   }
 }
