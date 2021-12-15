@@ -158,9 +158,6 @@ public final class GuardEraseAndSet implements Transition {
                     .map(GuardEraseAndSet::getForwardRelation)
                     .collect(Collectors.toList())),
             ges._swap);
-    for (GuardEraseAndSet guardEraseAndSet : gess) {
-      guardEraseAndSet._forwardRelation.free();
-    }
     return result;
   }
 
@@ -175,7 +172,6 @@ public final class GuardEraseAndSet implements Transition {
   public Transition constrainAfter(BDD after) {
     BDD afterPrime = after.replace(_swap);
     BDD forwardRelation = _forwardRelation.and(afterPrime);
-    afterPrime.free();
     if (forwardRelation.isZero()) {
       return ZERO;
     }
@@ -188,12 +184,12 @@ public final class GuardEraseAndSet implements Transition {
 
   @Override
   public BDD transitForward(BDD bdd) {
-    return bdd.applyEx(_forwardRelation, BDDFactory.and, _vars).replaceWith(_swap);
+    return bdd.applyEx(_forwardRelation, BDDFactory.and, _vars).replace(_swap);
   }
 
   @Override
   public BDD transitBackward(BDD bdd) {
-    return bdd.applyEx(_backwardRelation.get(), BDDFactory.and, _vars).replaceWith(_swap);
+    return bdd.applyEx(_backwardRelation.get(), BDDFactory.and, _vars).replace(_swap);
   }
 
   @Override
@@ -202,7 +198,6 @@ public final class GuardEraseAndSet implements Transition {
     if (forwardRelation.isZero()) {
       return ZERO;
     }
-    _forwardRelation.free();
     return new GuardEraseAndSet(_vars, forwardRelation, _swap);
   }
 
@@ -210,7 +205,6 @@ public final class GuardEraseAndSet implements Transition {
   public Transition andNotAfter(BDD after) {
     BDD afterPrime = after.replace(_swap);
     BDD forwardRelation = _forwardRelation.diff(afterPrime);
-    afterPrime.free();
     if (forwardRelation.isZero()) {
       return ZERO;
     }
