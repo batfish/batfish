@@ -8,6 +8,7 @@ feature interface-vlan
 feature vn-segment-vlan-based
 feature nv overlay
 
+! r1's VTEP IP
 ip route 10.0.4.1/32 10.0.3.1
 vlan 1,1001
 vlan 1001
