@@ -829,6 +829,11 @@ public final class AsaConfiguration extends VendorConfiguration {
     return firstNonNull(iface.getAlias(), iface.getName());
   }
 
+  private String getNewInterfaceName(@Nonnull String ifaceName) {
+    Interface iface = _interfaces.get(ifaceName);
+    return iface != null ? getNewInterfaceName(iface) : ifaceName;
+  }
+
   public String getNtpSourceInterface() {
     return _ntpSourceInterface;
   }
@@ -1573,7 +1578,10 @@ public final class AsaConfiguration extends VendorConfiguration {
     Vrf vrf = _vrfs.computeIfAbsent(vrfName, Vrf::new);
     newIface.setDescription(iface.getDescription());
     newIface.setActive(iface.getActive());
-    newIface.setChannelGroup(iface.getChannelGroup());
+    if (iface.getChannelGroup() != null) {
+      // to handle nameif in setting channel group, get the alias from the interface if possible
+      newIface.setChannelGroup(getNewInterfaceName(iface.getChannelGroup()));
+    }
     newIface.setCryptoMap(iface.getCryptoMap());
     newIface.setHsrpGroups(
         CollectionUtil.toImmutableMap(
@@ -2959,11 +2967,13 @@ public final class AsaConfiguration extends VendorConfiguration {
     _interfaces.forEach(
         (ifaceName, iface) -> {
           // Portchannels
-          String chGroup = iface.getChannelGroup();
-          if (chGroup != null) {
-            org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(chGroup);
-            if (viIface != null) {
-              viIface.addDependency(new Dependency(ifaceName, DependencyType.AGGREGATE));
+          if (iface.getChannelGroup() != null) {
+            String chGroup = getNewInterfaceName(iface.getChannelGroup());
+            if (chGroup != null) {
+              org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(chGroup);
+              if (viIface != null) {
+                viIface.addDependency(new Dependency(ifaceName, DependencyType.AGGREGATE));
+              }
             }
           }
           // subinterfaces
@@ -2972,12 +2982,11 @@ public final class AsaConfiguration extends VendorConfiguration {
             String parentInterfaceName = m.group(1);
             Interface parentInterface = _interfaces.get(parentInterfaceName);
             if (parentInterface != null) {
+              String newParentInterfaceName = getNewInterfaceName(parentInterfaceName);
               org.batfish.datamodel.Interface viIface =
-                  iface.getAlias() != null
-                      ? c.getAllInterfaces().get(iface.getAlias())
-                      : c.getAllInterfaces().get(ifaceName);
+                  c.getAllInterfaces().get(getNewInterfaceName(iface));
               if (viIface != null) {
-                viIface.addDependency(new Dependency(parentInterfaceName, DependencyType.BIND));
+                viIface.addDependency(new Dependency(newParentInterfaceName, DependencyType.BIND));
               }
             }
           }
