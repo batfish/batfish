@@ -3,6 +3,7 @@ package org.batfish.bddreachability.transition;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.bddreachability.transition.Transitions.ZERO;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Iterables;
@@ -240,6 +241,9 @@ public final class GuardEraseAndSet implements Transition {
 
   @Override
   public String toString() {
-    return GuardEraseAndSet.class.getSimpleName();
+    return MoreObjects.toStringHelper(GuardEraseAndSet.class)
+        .add("numEraseVars", _vars.nodeCount())
+        .add("relationSize", _forwardRelation.nodeCount())
+        .toString();
   }
 }

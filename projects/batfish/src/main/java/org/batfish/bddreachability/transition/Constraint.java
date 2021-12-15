@@ -64,6 +64,9 @@ public final class Constraint implements Transition {
 
   @Override
   public String toString() {
-    return MoreObjects.toStringHelper(Constraint.class).add("topVar", _constraint.var()).toString();
+    return MoreObjects.toStringHelper(Constraint.class)
+        .add("topVar", _constraint.var())
+        .add("size", _constraint.nodeCount())
+        .toString();
   }
 }
