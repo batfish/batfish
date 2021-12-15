@@ -34,6 +34,14 @@ import org.batfish.datamodel.Prefix6;
  */
 public class ConfigDb implements Serializable {
 
+  public @Nonnull Map<String, AclTable> getAclTables() {
+    return _aclTables;
+  }
+
+  public @Nonnull Map<String, AclRule> getAclRules() {
+    return _aclRules;
+  }
+
   public @Nonnull Map<String, DeviceMetadata> getDeviceMetadata() {
     return _deviceMetadata;
   }
@@ -70,6 +78,8 @@ public class ConfigDb implements Serializable {
     return _syslogServers;
   }
 
+  private static final String PROP_ACL_RULE = "ACL_RULE";
+  private static final String PROP_ACL_TABLE = "ACL_TABLE";
   private static final String PROP_DEVICE_METADATA = "DEVICE_METADATA";
   private static final String PROP_INTERFACE = "INTERFACE";
   private static final String PROP_LOOPBACK = "LOOPBACK";
@@ -84,6 +94,8 @@ public class ConfigDb implements Serializable {
   public static final Set<String> IGNORED_PROPERTIES =
       ImmutableSet.of("BUFFER_QUEUE", "DSCP_TO_TC_MAP", "ZTP");
 
+  private final @Nonnull Map<String, AclTable> _aclTables;
+  private final @Nonnull Map<String, AclRule> _aclRules;
   private final @Nonnull Map<String, DeviceMetadata> _deviceMetadata;
   private final @Nonnull Map<String, L3Interface> _interfaces;
   private final @Nonnull Map<String, L3Interface> _loopbacks;
@@ -95,6 +107,8 @@ public class ConfigDb implements Serializable {
   private final @Nonnull Set<String> _syslogServers;
 
   private ConfigDb(
+      Map<String, AclRule> aclRules,
+      Map<String, AclTable> aclTables,
       Map<String, DeviceMetadata> deviceMetadata,
       Map<String, L3Interface> interfaces,
       Map<String, L3Interface> loopbacks,
@@ -104,6 +118,8 @@ public class ConfigDb implements Serializable {
       Set<String> ntpServers,
       Map<String, Port> ports,
       Set<String> syslogServers) {
+    _aclRules = aclRules;
+    _aclTables = aclTables;
     _deviceMetadata = deviceMetadata;
     _interfaces = interfaces;
     _loopbacks = loopbacks;
@@ -152,6 +168,8 @@ public class ConfigDb implements Serializable {
   }
 
   public static final class Builder {
+    private Map<String, AclRule> _aclRules;
+    private Map<String, AclTable> _aclTables;
     private Map<String, DeviceMetadata> _deviceMetadata;
     private Map<String, L3Interface> _interfaces;
     private Map<String, L3Interface> _loopbacks;
@@ -163,6 +181,16 @@ public class ConfigDb implements Serializable {
     private Set<String> _syslogServers;
 
     private Builder() {}
+
+    public @Nonnull Builder setAclRules(@Nullable Map<String, AclRule> aclRules) {
+      this._aclRules = aclRules;
+      return this;
+    }
+
+    public @Nonnull Builder setAclTables(@Nullable Map<String, AclTable> aclTables) {
+      this._aclTables = aclTables;
+      return this;
+    }
 
     public @Nonnull Builder setDeviceMetadata(
         @Nullable Map<String, DeviceMetadata> deviceMetadata) {
@@ -212,6 +240,8 @@ public class ConfigDb implements Serializable {
 
     public @Nonnull ConfigDb build() {
       return new ConfigDb(
+          ImmutableMap.copyOf(firstNonNull(_aclRules, ImmutableMap.of())),
+          ImmutableMap.copyOf(firstNonNull(_aclTables, ImmutableMap.of())),
           ImmutableMap.copyOf(firstNonNull(_deviceMetadata, ImmutableMap.of())),
           ImmutableMap.copyOf(firstNonNull(_interfaces, ImmutableMap.of())),
           ImmutableMap.copyOf(firstNonNull(_loopbacks, ImmutableMap.of())),
@@ -247,11 +277,20 @@ public class ConfigDb implements Serializable {
       ConfigDb.Builder configDb = ConfigDb.builder();
       TreeNode tree = p.readValueAsTree();
       Iterator<String> fieldIterator = tree.fieldNames();
-      ObjectMapper mapper = BatfishObjectMapper.ignoreUnknownMapper();
+      // don't want to ignore unknown by default -- sub properties may do that
+      ObjectMapper mapper = BatfishObjectMapper.mapper();
       while (fieldIterator.hasNext()) {
         String field = fieldIterator.next();
         TreeNode value = tree.get(field);
         switch (field) {
+          case PROP_ACL_RULE:
+            configDb.setAclRules(
+                mapper.convertValue(value, new TypeReference<Map<String, AclRule>>() {}));
+            break;
+          case PROP_ACL_TABLE:
+            configDb.setAclTables(
+                mapper.convertValue(value, new TypeReference<Map<String, AclTable>>() {}));
+            break;
           case PROP_DEVICE_METADATA:
             configDb.setDeviceMetadata(
                 mapper.convertValue(value, new TypeReference<Map<String, DeviceMetadata>>() {}));
