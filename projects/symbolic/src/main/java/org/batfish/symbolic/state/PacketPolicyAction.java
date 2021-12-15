@@ -58,6 +58,7 @@ public final class PacketPolicyAction implements StateExpr {
   @Override
   public String toString() {
     return String.format(
-        "%s{%s,%s,%s}", PacketPolicyAction.class.getSimpleName(), _hostname, _policyName, _action);
+        "%s{%s,%s,%s,%s}",
+        PacketPolicyAction.class.getSimpleName(), _hostname, _vrf, _policyName, _action);
   }
 }
