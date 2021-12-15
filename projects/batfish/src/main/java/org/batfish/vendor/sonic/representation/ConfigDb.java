@@ -71,7 +71,18 @@ public class ConfigDb implements Serializable {
     return _syslogServers;
   }
 
-  // Add any parsed property to PARSED_PROPERTIES
+  public @Nonnull Map<String, Vlan> getVlans() {
+    return _vlans;
+  }
+
+  public @Nonnull Map<String, L3Interface> getVlanInterfaces() {
+    return _vlanInterfaces;
+  }
+
+  public @Nonnull Map<String, VlanMember> getVlanMembers() {
+    return _vlanMembers;
+  }
+
   private static final String PROP_DEVICE_METADATA = "DEVICE_METADATA";
   private static final String PROP_INTERFACE = "INTERFACE";
   private static final String PROP_LOOPBACK = "LOOPBACK";
@@ -81,6 +92,9 @@ public class ConfigDb implements Serializable {
   private static final String PROP_PORT = "PORT";
   private static final String PROP_NTP_SERVER = "NTP_SERVER";
   private static final String PROP_SYSLOG_SERVER = "SYSLOG_SERVER";
+  private static final String PROP_VLAN = "VLAN";
+  private static final String PROP_VLAN_INTERFACE = "VLAN_INTERFACE";
+  private static final String PROP_VLAN_MEMBER = "VLAN_MEMBER";
 
   /** Properties that are knowingly ignored and we won't warn the user about ignoring them */
   public static final Set<String> IGNORED_PROPERTIES =
@@ -95,6 +109,9 @@ public class ConfigDb implements Serializable {
   private final @Nonnull Set<String> _ntpServers;
   private final @Nonnull Map<String, Port> _ports;
   private final @Nonnull Set<String> _syslogServers;
+  private final @Nonnull Map<String, Vlan> _vlans;
+  private final @Nonnull Map<String, L3Interface> _vlanInterfaces;
+  private final @Nonnull Map<String, VlanMember> _vlanMembers;
 
   private ConfigDb(
       Map<String, DeviceMetadata> deviceMetadata,
@@ -105,7 +122,10 @@ public class ConfigDb implements Serializable {
       Map<String, MgmtVrf> mgmtVrfs,
       Set<String> ntpServers,
       Map<String, Port> ports,
-      Set<String> syslogServers) {
+      Set<String> syslogServers,
+      Map<String, Vlan> vlans,
+      Map<String, L3Interface> vlanInterfaces,
+      Map<String, VlanMember> vlanMembers) {
     _deviceMetadata = deviceMetadata;
     _interfaces = interfaces;
     _loopbacks = loopbacks;
@@ -115,6 +135,9 @@ public class ConfigDb implements Serializable {
     _ntpServers = ntpServers;
     _ports = ports;
     _syslogServers = syslogServers;
+    _vlans = vlans;
+    _vlanInterfaces = vlanInterfaces;
+    _vlanMembers = vlanMembers;
   }
 
   /**
@@ -197,6 +220,9 @@ public class ConfigDb implements Serializable {
     private Set<String> _ntpServers;
     private Map<String, Port> _ports;
     private Set<String> _syslogServers;
+    private Map<String, Vlan> _vlans;
+    private Map<String, L3Interface> _vlanInterfaces;
+    private Map<String, VlanMember> _vlanMembers;
 
     private Builder() {}
 
@@ -246,6 +272,21 @@ public class ConfigDb implements Serializable {
       return this;
     }
 
+    public @Nonnull Builder setVlans(@Nullable Map<String, Vlan> vlans) {
+      this._vlans = vlans;
+      return this;
+    }
+
+    public @Nonnull Builder setVlanInterfaces(@Nullable Map<String, L3Interface> vlanInterfaces) {
+      this._vlanInterfaces = vlanInterfaces;
+      return this;
+    }
+
+    public @Nonnull Builder setVlanMembers(@Nullable Map<String, VlanMember> vlanMembers) {
+      this._vlanMembers = vlanMembers;
+      return this;
+    }
+
     public @Nonnull ConfigDb build() {
       return new ConfigDb(
           ImmutableMap.copyOf(firstNonNull(_deviceMetadata, ImmutableMap.of())),
@@ -256,7 +297,10 @@ public class ConfigDb implements Serializable {
           ImmutableMap.copyOf(firstNonNull(_mgmtVrfs, ImmutableMap.of())),
           ImmutableSet.copyOf(firstNonNull(_ntpServers, ImmutableSet.of())),
           ImmutableMap.copyOf(firstNonNull(_ports, ImmutableMap.of())),
-          ImmutableSet.copyOf(firstNonNull(_syslogServers, ImmutableSet.of())));
+          ImmutableSet.copyOf(firstNonNull(_syslogServers, ImmutableSet.of())),
+          ImmutableMap.copyOf(firstNonNull(_vlans, ImmutableMap.of())),
+          ImmutableMap.copyOf(firstNonNull(_vlanInterfaces, ImmutableMap.of())),
+          ImmutableMap.copyOf(firstNonNull(_vlanMembers, ImmutableMap.of())));
     }
   }
 
@@ -341,6 +385,20 @@ public class ConfigDb implements Serializable {
           case PROP_SYSLOG_SERVER:
             configDb.setSyslogServers(
                 mapper.convertValue(value, new TypeReference<Map<String, Object>>() {}).keySet());
+            break;
+          case PROP_VLAN:
+            configDb.setVlans(
+                mapper.convertValue(value, new TypeReference<Map<String, Vlan>>() {}));
+          case PROP_VLAN_INTERFACE:
+            configDb.setVlanInterfaces(
+                createInterfaces(
+                    mapper
+                        .convertValue(value, new TypeReference<Map<String, Object>>() {})
+                        .keySet()));
+            break;
+          case PROP_VLAN_MEMBER:
+            configDb.setVlanMembers(
+                mapper.convertValue(value, new TypeReference<Map<String, VlanMember>>() {}));
             break;
           default:
             if (!IGNORED_PROPERTIES.contains(field)) {
