@@ -4077,7 +4077,22 @@ public final class JFactory extends BDDFactory {
   }
 
   private void BddCache_clean_multiop(BddCache cache) {
-    throw new UnsupportedOperationException("Clean is unimplemented for multiop cache.");
+    for (int n = 0; n < cache.tablesize; n++) {
+      MultiOpBddCacheData entry = (MultiOpBddCacheData) cache.table[n];
+      if (entry.a != -1) {
+        boolean invalid = false;
+        for (int i = 0; i < entry.operands.length; i++) {
+          if (LOW(entry.operands[i]) == INVALID_BDD) {
+            invalid = true;
+            break;
+          }
+        }
+        if (invalid) {
+          entry.a = -1;
+          entry.operands = null;
+        }
+      }
+    }
   }
 
   private void bdd_setpair(bddPair pair, int oldvar, int newvar) {
