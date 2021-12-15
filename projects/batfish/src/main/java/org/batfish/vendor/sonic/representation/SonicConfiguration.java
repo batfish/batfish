@@ -3,6 +3,7 @@ package org.batfish.vendor.sonic.representation;
 import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.vendor.sonic.representation.SonicConversions.convertPorts;
+import static org.batfish.vendor.sonic.representation.SonicConversions.convertVlans;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
@@ -75,6 +76,14 @@ public class SonicConfiguration extends FrrVendorConfiguration {
         _configDb.getMgmtInterfaces(),
         c.getVrfs().get(getMgmtVrfName(_configDb.getMgmtVrfs())));
 
+    convertVlans(
+        c,
+        _configDb.getVlans(),
+        _configDb.getVlanMembers(),
+        _configDb.getVlanInterfaces(),
+        c.getDefaultVrf(),
+        _w);
+
     return ImmutableList.of(c);
   }
 
@@ -101,7 +110,8 @@ public class SonicConfiguration extends FrrVendorConfiguration {
   public boolean hasInterface(String ifaceName) {
     return _configDb.getPorts().containsKey(ifaceName)
         || _configDb.getLoopbacks().containsKey(ifaceName)
-        || _configDb.getMgmtPorts().containsKey(ifaceName);
+        || _configDb.getMgmtPorts().containsKey(ifaceName)
+        || _configDb.getVlans().containsKey(ifaceName);
   }
 
   @Override
@@ -122,6 +132,9 @@ public class SonicConfiguration extends FrrVendorConfiguration {
     }
     if (_configDb.getMgmtPorts().containsKey(ifaceName)) {
       return getMgmtVrfName(_configDb.getMgmtVrfs());
+    }
+    if (_configDb.getVlans().containsKey(ifaceName)) {
+      return DEFAULT_VRF_NAME;
     }
     // should never get here
     throw new NoSuchElementException("Interface " + ifaceName + " does not exist");
@@ -144,6 +157,11 @@ public class SonicConfiguration extends FrrVendorConfiguration {
     }
     if (_configDb.getMgmtPorts().containsKey(ifaceName)) {
       return Optional.ofNullable(_configDb.getMgmtInterfaces().get(ifaceName))
+          .flatMap(iface -> Optional.ofNullable(iface.getAddress()).map(ImmutableList::of))
+          .orElse(ImmutableList.of());
+    }
+    if (_configDb.getVlans().containsKey(ifaceName)) {
+      return Optional.ofNullable(_configDb.getVlanInterfaces().get(ifaceName))
           .flatMap(iface -> Optional.ofNullable(iface.getAddress()).map(ImmutableList::of))
           .orElse(ImmutableList.of());
     }
