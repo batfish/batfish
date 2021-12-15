@@ -69,7 +69,13 @@ public final class BDDReachabilityUtils {
       Table<StateExpr, StateExpr, Transition> edges,
       BiFunction<Transition, BDD, BDD> traverse) {
     Span span = GlobalTracer.get().buildSpan("BDDReachabilityAnalysis.fixpoint").start();
+    Map<StateExpr, AtomicLong> counts = new HashMap<>();
     Map<StateExpr, AtomicLong> times = new HashMap<>();
+    Table<StateExpr, StateExpr, AtomicLong> traverseCounts =
+        edges.cellSet().stream()
+            .collect(
+                ImmutableTable.toImmutableTable(
+                    Cell::getRowKey, Cell::getColumnKey, ignored -> new AtomicLong()));
     Table<StateExpr, StateExpr, AtomicLong> traverseTimes =
         edges.cellSet().stream()
             .collect(
@@ -84,6 +90,7 @@ public final class BDDReachabilityUtils {
 
         dirtyStates.forEach(
             dirtyState -> {
+              counts.computeIfAbsent(dirtyState, ignored -> new AtomicLong()).incrementAndGet();
               AtomicLong time = times.computeIfAbsent(dirtyState, ignored -> new AtomicLong());
               long startTime = System.nanoTime();
               Map<StateExpr, Transition> dirtyStateEdges = edges.row(dirtyState);
@@ -96,6 +103,7 @@ public final class BDDReachabilityUtils {
               BDD dirtyStateBDD = reachableSets.get(dirtyState);
               dirtyStateEdges.forEach(
                   (neighbor, edge) -> {
+                    traverseCounts.get(dirtyState, neighbor).incrementAndGet();
                     AtomicLong traverseTime = traverseTimes.get(dirtyState, neighbor);
                     long startTraverse = System.nanoTime();
                     BDD result = traverse.apply(edge, dirtyStateBDD);
@@ -126,14 +134,29 @@ public final class BDDReachabilityUtils {
             Comparator.<Entry<StateExpr, AtomicLong>>comparingLong(c -> c.getValue().get())
                 .reversed())
         .limit(30)
-        .forEach(e -> LOGGER.info("Top dirty state times: {}", e));
+        .forEach(
+            e ->
+                LOGGER.info(
+                    "Top dirty state times: {} took {}s for {} visits",
+                    e.getKey(),
+                    e.getValue().doubleValue() / 1000000000.0,
+                    counts.get(e.getKey())));
     traverseTimes.cellSet().stream()
         .sorted(
             Comparator.<Cell<StateExpr, StateExpr, AtomicLong>>comparingLong(
                     c -> c.getValue().get())
                 .reversed())
         .limit(30)
-        .forEach(c -> LOGGER.info("Top traverse times: {}", c));
+        .forEach(
+            c -> {
+              LOGGER.info(
+                  "Top traverse times: {} --> {} took {}s for {} traversals",
+                  c.getRowKey(),
+                  c.getColumnKey(),
+                  c.getValue().doubleValue() / 1000000000.0,
+                  traverseCounts.get(c.getRowKey(), c.getColumnKey()));
+              LOGGER.info(edges.get(c.getRowKey(), c.getColumnKey()));
+            });
   }
 
   @VisibleForTesting

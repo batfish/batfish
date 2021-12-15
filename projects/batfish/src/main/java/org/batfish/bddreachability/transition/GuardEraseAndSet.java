@@ -237,4 +237,9 @@ public final class GuardEraseAndSet implements Transition {
     // forwardRelation
     return Objects.hashCode(_vars, _forwardRelation);
   }
+
+  @Override
+  public String toString() {
+    return GuardEraseAndSet.class.getSimpleName();
+  }
 }
