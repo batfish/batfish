@@ -911,13 +911,6 @@ public final class BDDReachabilityAnalysisFactory {
                         }
 
                         PacketPolicy policy = config.getPacketPolicies().get(policyName);
-                        LOGGER.info(
-                            "Converting policy {} on node {} vrf {} with {} statements (main"
-                                + " branch)",
-                            policyName,
-                            nodeName,
-                            vrfName,
-                            policy.getStatements().size());
                         long t = System.currentTimeMillis();
                         PacketPolicyToBdd.BddPacketPolicy bddPacketPolicy =
                             PacketPolicyToBdd.evaluate(
@@ -932,10 +925,12 @@ public final class BDDReachabilityAnalysisFactory {
                                             nodeName, vrfName)));
                         t = System.currentTimeMillis() - t;
                         LOGGER.info(
-                            "Converted policy {} on node {} vrf {} to {} edges in {}ms",
+                            "Converted policy {} on node {} vrf {} with {} top-level statements to"
+                                + " {} edges in {}ms",
                             policyName,
                             nodeName,
                             vrfName,
+                            policy.getStatements().size(),
                             bddPacketPolicy.getEdges().size(),
                             t);
 
