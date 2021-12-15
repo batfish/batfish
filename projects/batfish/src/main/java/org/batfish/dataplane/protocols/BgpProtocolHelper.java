@@ -385,7 +385,7 @@ public final class BgpProtocolHelper {
    * Perform BGP export transformations on a given route <em>after</em> export policy has been
    * applied to the route, route was accepted, but before route is sent "onto the wire".
    *
-   * <p>Sets next hop, if not already set by export policy, for non-EVPN-type-5 routes only. EVPN
+   * <p>Sets next hop - if not already set by export policy - for non-EVPN-type-5 routes only. EVPN
    * type 5 routes' next hops should be set by {@link #setEvpnType5NhPostExport}.
    *
    * @param routeBuilder Builder for the output (exported) route
@@ -414,7 +414,7 @@ public final class BgpProtocolHelper {
    * Perform BGP export transformations on a given route <em>after</em> export policy has been
    * applied to the route, route was accepted, but before route is sent "onto the wire".
    *
-   * <p>Sets next hop, if not already set by export policy, for non-EVPN-type-5 routes only. EVPN
+   * <p>Sets next hop - if not already set by export policy - for non-EVPN-type-5 routes only. EVPN
    * type 5 routes' next hops should be set by {@link #setEvpnType5NhPostExport}.
    *
    * @param routeBuilder Builder for the output (exported) route
