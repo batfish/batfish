@@ -9,7 +9,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.junit.Test;
@@ -158,12 +157,5 @@ public class ConfigDbTest {
                 new L3Interface(ConcreteInterfaceAddress.parse("172.19.93.0/31")),
                 "Ethernet137",
                 new L3Interface(null))));
-  }
-
-  /** Test that configdb is serializable */
-  @Test
-  public void testJavaSerialization() {
-    ConfigDb obj = ConfigDb.builder().build();
-    SerializationUtils.clone(obj);
   }
 }
