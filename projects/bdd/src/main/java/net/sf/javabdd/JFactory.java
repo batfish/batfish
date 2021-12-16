@@ -4077,6 +4077,9 @@ public final class JFactory extends BDDFactory {
   }
 
   private void BddCache_clean_multiop(BddCache cache) {
+    if (cache == null) {
+      return;
+    }
     for (int n = 0; n < cache.tablesize; n++) {
       MultiOpBddCacheData entry = (MultiOpBddCacheData) cache.table[n];
       if (entry.a != -1) {
