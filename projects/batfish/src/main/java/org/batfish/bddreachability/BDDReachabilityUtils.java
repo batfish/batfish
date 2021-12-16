@@ -76,8 +76,7 @@ public final class BDDReachabilityUtils {
       SetMultimap<StateExpr, BDD> dirtyInputs = HashMultimap.create();
 
       // To (try to) minimize how many times we're transiting the same edges, dirtyStates will be
-      // removed in order of
-      // increasing visitCounts.
+      // removed in order of increasing visitCounts.
       // invariants:
       // 1. the queue never contains duplicate elements.
       // 2. visitCounts are never incremented while the state is in the queue.
@@ -103,14 +102,14 @@ public final class BDDReachabilityUtils {
         BDD newValue = prior == null ? learned : learned.or(prior);
         if (newValue.equals(prior)) {
           // No change, so no need to update neighbors.
-          return;
+          continue;
         }
         reachableSets.put(dirtyState, newValue);
 
         Map<StateExpr, Transition> dirtyStateEdges = edges.row(dirtyState);
         if (dirtyStateEdges.isEmpty()) {
           // dirtyState has no edges, so no neighbors to update.
-          return;
+          continue;
         }
 
         dirtyStateEdges.forEach(
