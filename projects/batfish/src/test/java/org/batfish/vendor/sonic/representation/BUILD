@@ -14,6 +14,7 @@ junit_tests(
     deps = [
         "//projects/batfish:batfish_testlib",
         "//projects/batfish-common-protocol:common",
+        "//projects/batfish-common-protocol/src/test/java/org/batfish/common/matchers",
         "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/matchers",
         "//projects/batfish/src/main/java/org/batfish/representation/frr",
         "//projects/batfish/src/main/java/org/batfish/vendor/sonic/representation",
