@@ -84,7 +84,9 @@ public final class BDDReachabilityUtils {
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
       PriorityQueue<StateExpr> dirtyStates =
-          new PriorityQueue<>(Comparator.comparingLong(st -> counts.get(st).longValue()));
+          new PriorityQueue<>(
+              Comparator.comparingLong(
+                  st -> counts.computeIfAbsent(st, ignored -> new AtomicLong()).longValue()));
       dirtyStates.addAll(reachableSets.keySet());
 
       while (!dirtyStates.isEmpty()) {
