@@ -2,6 +2,7 @@ package org.batfish.datamodel.vxlan;
 
 import static org.batfish.datamodel.InterfaceType.TUNNEL;
 import static org.batfish.datamodel.Names.generatedTenantVniInterfaceName;
+import static org.batfish.datamodel.vxlan.VniLayer.LAYER_2;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashBasedTable;
@@ -88,7 +89,11 @@ public final class VxlanTopologyUtils {
   /** Build a {@link VxlanNode} for the given {@link Layer2Vni} and {@link VrfId}. */
   @VisibleForTesting
   static VxlanNode buildVxlanNode(VrfId vrf, Layer2Vni vniSettings) {
-    return VxlanNode.builder().setHostname(vrf._hostname).setVni(vniSettings.getVni()).build();
+    return VxlanNode.builder()
+        .setHostname(vrf._hostname)
+        .setVni(vniSettings.getVni())
+        .setVniLayer(LAYER_2)
+        .build();
   }
 
   /** Check if two {@link Layer2Vni} have compatible configurations */
@@ -293,27 +298,30 @@ public final class VxlanTopologyUtils {
   public static @Nonnull Set<Edge> vxlanTopologyToLayer3Edges(
       VxlanTopology vxlanTopology, Map<String, Configuration> configurations) {
     ImmutableSet.Builder<Edge> edgesBuilder = ImmutableSet.builder();
-    for (EndpointPair<VxlanNode> endPoint : vxlanTopology.getGraph().edges()) {
-      VxlanNode node1 = endPoint.nodeU();
-      VxlanNode node2 = endPoint.nodeV();
-      String node1Name = node1.getHostname();
-      String node2Name = node2.getHostname();
-      int vni1 = node1.getVni();
-      int vni2 = node2.getVni();
-      String iface1Name = generatedTenantVniInterfaceName(vni1);
-      String iface2Name = generatedTenantVniInterfaceName(vni2);
-      Configuration c1 = configurations.get(node1Name);
-      Configuration c2 = configurations.get(node2Name);
-      assert c1 != null;
-      assert c2 != null;
-      if (!(c1.getAllInterfaces().containsKey(iface1Name)
-          && c2.getAllInterfaces().containsKey(iface2Name))) {
-        // VNI was either layer-2 or defective layer-3, so no interface was generated.
-        continue;
-      }
-      edgesBuilder.add(Edge.of(node1Name, iface1Name, node2Name, iface2Name));
-      edgesBuilder.add(Edge.of(node2Name, iface2Name, node1Name, iface1Name));
-    }
+    vxlanTopology
+        .getLayer3VniEdges()
+        .forEach(
+            endpointPair -> {
+              VxlanNode node1 = endpointPair.nodeU();
+              VxlanNode node2 = endpointPair.nodeV();
+              String node1Name = node1.getHostname();
+              String node2Name = node2.getHostname();
+              int vni1 = node1.getVni();
+              int vni2 = node2.getVni();
+              String iface1Name = generatedTenantVniInterfaceName(vni1);
+              String iface2Name = generatedTenantVniInterfaceName(vni2);
+              Configuration c1 = configurations.get(node1Name);
+              Configuration c2 = configurations.get(node2Name);
+              assert c1 != null;
+              assert c2 != null;
+              if (!(c1.getAllInterfaces().containsKey(iface1Name)
+                  && c2.getAllInterfaces().containsKey(iface2Name))) {
+                // VNI was defective, so no interface was generated.
+                return;
+              }
+              edgesBuilder.add(Edge.of(node1Name, iface1Name, node2Name, iface2Name));
+              edgesBuilder.add(Edge.of(node2Name, iface2Name, node1Name, iface1Name));
+            });
     return edgesBuilder.build();
   }
 
