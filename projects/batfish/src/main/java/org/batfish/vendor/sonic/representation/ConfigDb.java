@@ -18,7 +18,6 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -146,40 +145,6 @@ public class ConfigDb implements Serializable {
     return Optional.ofNullable(_deviceMetadata.get("localhost"))
         .flatMap(DeviceMetadata::getHostname)
         .map(String::toLowerCase);
-  }
-
-  @Override
-  public boolean equals(@Nullable Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (!(o instanceof ConfigDb)) {
-      return false;
-    }
-    ConfigDb other = (ConfigDb) o;
-    return _deviceMetadata.equals(other._deviceMetadata)
-        && _interfaces.equals(other._interfaces)
-        && _loopbacks.equals(other._loopbacks)
-        && _mgmtInterfaces.equals(other._mgmtInterfaces)
-        && _mgmtPorts.equals(other._mgmtPorts)
-        && _mgmtVrfs.equals(other._mgmtVrfs)
-        && _ntpServers.equals(other._ntpServers)
-        && _ports.equals(other._ports)
-        && _syslogServers.equals(other._syslogServers);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(
-        _deviceMetadata,
-        _interfaces,
-        _loopbacks,
-        _mgmtInterfaces,
-        _mgmtPorts,
-        _mgmtVrfs,
-        _ntpServers,
-        _ports,
-        _syslogServers);
   }
 
   public static Builder builder() {
