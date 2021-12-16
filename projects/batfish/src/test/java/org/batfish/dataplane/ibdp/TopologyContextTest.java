@@ -1,5 +1,6 @@
 package org.batfish.dataplane.ibdp;
 
+import static org.batfish.datamodel.vxlan.VniLayer.LAYER_2;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -70,7 +71,7 @@ public final class TopologyContextTest {
             "a", "b", "c", "d", ConcreteInterfaceAddress.parse("192.0.2.0/31")));
     MutableGraph<VxlanNode> vxlanTopology =
         GraphBuilder.undirected().allowsSelfLoops(false).build();
-    vxlanTopology.addNode(new VxlanNode("a", 5));
+    vxlanTopology.addNode(new VxlanNode("a", 5, LAYER_2));
 
     new EqualsTester()
         .addEqualityGroup(new Object())
@@ -134,7 +135,7 @@ public final class TopologyContextTest {
             "a", "b", "c", "d", ConcreteInterfaceAddress.parse("192.0.2.0/31")));
     MutableGraph<VxlanNode> vxlanTopology =
         GraphBuilder.undirected().allowsSelfLoops(false).build();
-    vxlanTopology.addNode(new VxlanNode("a", 5));
+    vxlanTopology.addNode(new VxlanNode("a", 5, LAYER_2));
     builder
         .setBgpTopology(new BgpTopology(bgpTopology))
         .setEigrpTopology(new EigrpTopology(eigrpTopology))
