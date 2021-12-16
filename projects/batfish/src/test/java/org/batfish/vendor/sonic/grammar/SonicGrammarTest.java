@@ -23,7 +23,6 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.batfish.vendor.sonic.representation.ConfigDb;
 import org.batfish.vendor.sonic.representation.DeviceMetadata;
 import org.batfish.vendor.sonic.representation.L3Interface;
 import org.batfish.vendor.sonic.representation.MgmtVrf;
@@ -58,17 +57,16 @@ public class SonicGrammarTest {
         (SonicConfiguration) batfish.loadVendorConfigurations(snapshot).get("basic");
     vc.setWarnings(new Warnings());
     assertThat(
-        vc.getConfigDb(),
+        vc.getConfigDb().getDeviceMetadata(),
+        equalTo(ImmutableMap.of("localhost", new DeviceMetadata("basic"))));
+    assertThat(
+        vc.getConfigDb().getPorts(),
+        equalTo(ImmutableMap.of("Ethernet0", Port.builder().setDescription("basic-port").build())));
+    assertThat(
+        vc.getConfigDb().getInterfaces(),
         equalTo(
-            ConfigDb.builder()
-                .setDeviceMetadata(ImmutableMap.of("localhost", new DeviceMetadata("basic")))
-                .setPorts(
-                    ImmutableMap.of(
-                        "Ethernet0", Port.builder().setDescription("basic-port").build()))
-                .setInterfaces(
-                    ImmutableMap.of(
-                        "Ethernet0", new L3Interface(ConcreteInterfaceAddress.parse("1.1.1.1/24"))))
-                .build()));
+            ImmutableMap.of(
+                "Ethernet0", new L3Interface(ConcreteInterfaceAddress.parse("1.1.1.1/24")))));
     assertThat(vc.getFrrConfiguration().getRouteMaps().keySet(), equalTo(ImmutableSet.of("TEST")));
 
     Configuration c = getOnlyElement(vc.toVendorIndependentConfigurations());
@@ -93,18 +91,20 @@ public class SonicGrammarTest {
         (SonicConfiguration) batfish.loadVendorConfigurations(snapshot).get("mgmt");
     vc.setWarnings(new Warnings());
 
-    ConfigDb expectedConfigDb =
-        ConfigDb.builder()
-            .setDeviceMetadata(ImmutableMap.of("localhost", new DeviceMetadata("mgmt")))
-            .setMgmtPorts(ImmutableMap.of("eth0", Port.builder().setAdminStatusUp(true).build()))
-            .setMgmtInterfaces(
-                ImmutableMap.of(
-                    "eth0", new L3Interface(ConcreteInterfaceAddress.parse("1.1.1.1/24"))))
-            .setMgmtVrfs(
-                ImmutableMap.of(
-                    "vrf_global_not_default", MgmtVrf.builder().setMgmtVrfEnabled(true).build()))
-            .build();
-    assertEquals(expectedConfigDb, vc.getConfigDb());
+    assertEquals(
+        ImmutableMap.of("localhost", new DeviceMetadata("mgmt")),
+        vc.getConfigDb().getDeviceMetadata());
+    assertEquals(
+        ImmutableMap.of("eth0", new L3Interface(ConcreteInterfaceAddress.parse("1.1.1.1/24"))),
+        vc.getConfigDb().getMgmtInterfaces());
+    assertEquals(
+        ImmutableMap.of("eth0", Port.builder().setAdminStatusUp(true).build()),
+        vc.getConfigDb().getMgmtPorts());
+    assertEquals(
+        ImmutableMap.of(
+            "vrf_global_not_default", MgmtVrf.builder().setMgmtVrfEnabled(true).build()),
+        vc.getConfigDb().getMgmtVrfs());
+
     Configuration c = getOnlyElement(vc.toVendorIndependentConfigurations());
     assertThat(
         Iterables.getOnlyElement(c.getAllInterfaces().values()),
