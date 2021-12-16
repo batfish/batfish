@@ -1,0 +1,20 @@
+ip_reuse_different_address_same_prefix
+# This file describes the network interfaces
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+
+# ports.conf --
+frr version 4.0+cl3u8
+frr defaults datacenter
+hostname ip_reuse_different_address_same_prefix
+!
+! Should own 10.2.1.1/24 even though the prefix overlaps with swp2
+interface swp1
+  ip address 10.2.1.1/24
+!
+! Should own 10.2.1.2/24 even though the prefix overlaps with swp1
+interface swp7
+  ip address 10.2.1.2/24
+!
+line vty
+!

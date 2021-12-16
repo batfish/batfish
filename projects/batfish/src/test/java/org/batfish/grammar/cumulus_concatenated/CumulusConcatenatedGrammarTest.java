@@ -975,6 +975,17 @@ public class CumulusConcatenatedGrammarTest {
     }
   }
 
+  @Test(expected = AssertionError.class) // https://github.com/batfish/batfish/issues/7819
+  public void testIpReuse_differentAddressSamePrefix() throws IOException {
+    Configuration c = parseConfig("ip_reuse_different_address_same_prefix");
+    assertThat(
+        c.getAllInterfaces().get("swp1").getAllAddresses(),
+        contains(ConcreteInterfaceAddress.parse("10.2.1.1/24")));
+    assertThat(
+        c.getAllInterfaces().get("swp2").getAllAddresses(),
+        contains(ConcreteInterfaceAddress.parse("10.2.1.2/24")));
+  }
+
   @Test
   public void testOspfAddresses() throws IOException {
     Configuration c = parseConfig("ip_reuse");
