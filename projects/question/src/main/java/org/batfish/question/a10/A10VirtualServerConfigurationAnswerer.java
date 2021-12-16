@@ -37,6 +37,7 @@ public class A10VirtualServerConfigurationAnswerer extends Answerer {
   public static final String COL_NODE = "Node";
   public static final String COL_VIRTUAL_SERVER_NAME = "Virtual_Server_Name";
   public static final String COL_VIRTUAL_SERVER_IP = "Virtual_Server_IP";
+  public static final String COL_VIRTUAL_SERVER_ENABLED = "Virtual_Server_Enabled";
   public static final String COL_VIRTUAL_SERVER_PORT = "Virtual_Server_Port";
   public static final String COL_VIRTUAL_SERVER_TYPE = "Virtual_Server_Type";
   public static final String COL_VIRTUAL_SERVER_PORT_TYPE_NAME = "Virtual_Server_Port_Type_Name";
@@ -56,6 +57,9 @@ public class A10VirtualServerConfigurationAnswerer extends Answerer {
         .add(
             new ColumnMetadata(
                 COL_VIRTUAL_SERVER_NAME, Schema.STRING, "Virtual Server Name", true, false))
+        .add(
+            new ColumnMetadata(
+                COL_VIRTUAL_SERVER_ENABLED, Schema.BOOLEAN, "Virtual Server Enabled", true, false))
         .add(new ColumnMetadata(COL_VIRTUAL_SERVER_IP, Schema.IP, "Virtual Server IP", true, false))
         .add(
             new ColumnMetadata(
@@ -130,6 +134,7 @@ public class A10VirtualServerConfigurationAnswerer extends Answerer {
               getRow(
                   node,
                   virtualServer.getName(),
+                  virtualServer.getEnable(),
                   ((VirtualServerTargetVisitor<Ip>) VirtualServerTargetAddress::getAddress)
                       .visit(virtualServer.getTarget()),
                   virtualServerPort.getNumber(),
@@ -158,6 +163,7 @@ public class A10VirtualServerConfigurationAnswerer extends Answerer {
   private static Row getRow(
       Node node,
       String virtualServerName,
+      Boolean virtualServerEnabled,
       Ip virtualServerIp,
       int virtualServerPort,
       VirtualServerPort.Type virtualServerType,
@@ -170,6 +176,7 @@ public class A10VirtualServerConfigurationAnswerer extends Answerer {
     return Row.builder(columnMetadata)
         .put(COL_NODE, node)
         .put(COL_VIRTUAL_SERVER_NAME, virtualServerName)
+        .put(COL_VIRTUAL_SERVER_ENABLED, virtualServerEnabled)
         .put(COL_VIRTUAL_SERVER_IP, virtualServerIp)
         .put(COL_VIRTUAL_SERVER_PORT, virtualServerPort)
         .put(COL_VIRTUAL_SERVER_TYPE, virtualServerType)

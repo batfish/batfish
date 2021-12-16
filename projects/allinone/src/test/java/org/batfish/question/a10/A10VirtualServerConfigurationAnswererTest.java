@@ -8,6 +8,7 @@ import static org.batfish.question.a10.A10VirtualServerConfigurationAnswerer.COL
 import static org.batfish.question.a10.A10VirtualServerConfigurationAnswerer.COL_SERVICE_GROUP_NAME;
 import static org.batfish.question.a10.A10VirtualServerConfigurationAnswerer.COL_SERVICE_GROUP_TYPE;
 import static org.batfish.question.a10.A10VirtualServerConfigurationAnswerer.COL_SOURCE_NAT_POOL_NAME;
+import static org.batfish.question.a10.A10VirtualServerConfigurationAnswerer.COL_VIRTUAL_SERVER_ENABLED;
 import static org.batfish.question.a10.A10VirtualServerConfigurationAnswerer.COL_VIRTUAL_SERVER_IP;
 import static org.batfish.question.a10.A10VirtualServerConfigurationAnswerer.COL_VIRTUAL_SERVER_NAME;
 import static org.batfish.question.a10.A10VirtualServerConfigurationAnswerer.COL_VIRTUAL_SERVER_PORT;
@@ -67,6 +68,7 @@ public class A10VirtualServerConfigurationAnswererTest {
                 allOf(
                     hasColumn(COL_NODE, equalTo(new Node(hostname1)), Schema.NODE),
                     hasColumn(COL_VIRTUAL_SERVER_NAME, equalTo("vs1"), Schema.STRING),
+                    hasColumn(COL_VIRTUAL_SERVER_ENABLED, equalTo(true), Schema.BOOLEAN),
                     hasColumn(COL_VIRTUAL_SERVER_IP, equalTo(Ip.parse("10.10.10.1")), Schema.IP),
                     hasColumn(COL_VIRTUAL_SERVER_PORT, equalTo(443), Schema.INTEGER),
                     hasColumn(COL_VIRTUAL_SERVER_TYPE, equalTo("TCP"), Schema.STRING),
