@@ -277,8 +277,7 @@ public class ConfigDb implements Serializable {
       ConfigDb.Builder configDb = ConfigDb.builder();
       TreeNode tree = p.readValueAsTree();
       Iterator<String> fieldIterator = tree.fieldNames();
-      // don't want to ignore unknown by default -- sub properties may do that
-      ObjectMapper mapper = BatfishObjectMapper.mapper();
+      ObjectMapper mapper = BatfishObjectMapper.ignoreUnknownMapper();
       while (fieldIterator.hasNext()) {
         String field = fieldIterator.next();
         TreeNode value = tree.get(field);

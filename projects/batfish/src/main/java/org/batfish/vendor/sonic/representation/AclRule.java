@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Prefix;
@@ -18,6 +19,34 @@ public class AclRule implements Serializable {
     DROP,
     ACCEPT,
     FORWARD
+  }
+
+  public @Nonnull Optional<Integer> getIpProtocol() {
+    return Optional.ofNullable(_ipProtocol);
+  }
+
+  public @Nonnull Optional<Prefix> getDstIp() {
+    return Optional.ofNullable(_dstIp);
+  }
+
+  public @Nonnull Optional<Prefix> getSrcIp() {
+    return Optional.ofNullable(_srcIp);
+  }
+
+  public @Nonnull Optional<Integer> getL4DstPort() {
+    return Optional.ofNullable(_l4DstPort);
+  }
+
+  public @Nonnull Optional<Integer> getL4SrcPort() {
+    return Optional.ofNullable(_l4SrcPort);
+  }
+
+  public @Nonnull Optional<Integer> getPriority() {
+    return Optional.ofNullable(_priority);
+  }
+
+  public @Nonnull Optional<PacketAction> getPacketAction() {
+    return Optional.ofNullable(_packetAction);
   }
 
   private static final String PROP_IP_PROTOCOL = "IP_PROTOCOL";
