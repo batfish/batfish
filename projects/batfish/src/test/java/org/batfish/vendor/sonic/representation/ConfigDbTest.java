@@ -3,15 +3,12 @@ package org.batfish.vendor.sonic.representation;
 import static org.batfish.vendor.sonic.representation.ConfigDb.createInterfaces;
 import static org.batfish.vendor.sonic.representation.ConfigDb.deserialize;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import com.google.common.testing.EqualsTester;
-import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.junit.Test;
@@ -20,9 +17,11 @@ public class ConfigDbTest {
 
   @Test
   public void testJacksonDeserialization() throws JsonProcessingException {
-    String input = "{ \"GARBAGE\": 1, \"INTERFACE\": {}}";
+    String input = "{ \"GARBAGE\": 1, \"INTERFACE\": {\"Ethernet0\": {}}}";
     Warnings warnings = new Warnings(true, true, true);
-    assertThat(deserialize(input, warnings), equalTo(ConfigDb.builder().build()));
+    assertThat(
+        deserialize(input, warnings).getInterfaces(),
+        equalTo(ImmutableMap.of("Ethernet0", new L3Interface(null))));
     assertThat(
         Iterables.getOnlyElement(warnings.getUnimplementedWarnings()).getText(),
         equalTo("Unimplemented configdb table 'GARBAGE'"));
@@ -32,11 +31,8 @@ public class ConfigDbTest {
   public void testDeserializationDeviceMetadata() throws JsonProcessingException {
     String input = "{ \"DEVICE_METADATA\": {\"localhost\": {\"hostname\": \"name\"}}}";
     assertThat(
-        deserialize(input, new Warnings()),
-        equalTo(
-            ConfigDb.builder()
-                .setDeviceMetadata(ImmutableMap.of("localhost", new DeviceMetadata("name")))
-                .build()));
+        deserialize(input, new Warnings()).getDeviceMetadata(),
+        equalTo(ImmutableMap.of("localhost", new DeviceMetadata("name"))));
   }
 
   @Test
@@ -49,27 +45,21 @@ public class ConfigDbTest {
             + "\"Ethernet137\": {}"
             + "}}";
     assertThat(
-        deserialize(input, new Warnings()),
+        deserialize(input, new Warnings()).getInterfaces(),
         equalTo(
-            ConfigDb.builder()
-                .setInterfaces(
-                    ImmutableMap.of(
-                        "Ethernet136",
-                        new L3Interface(ConcreteInterfaceAddress.parse("172.19.93.0/31")),
-                        "Ethernet137",
-                        new L3Interface(null)))
-                .build()));
+            ImmutableMap.of(
+                "Ethernet136",
+                new L3Interface(ConcreteInterfaceAddress.parse("172.19.93.0/31")),
+                "Ethernet137",
+                new L3Interface(null))));
   }
 
   @Test
   public void testDeserializationLoopback() throws JsonProcessingException {
     String input = "{ \"LOOPBACK\": {\"Loopback0\": {}}}";
     assertThat(
-        deserialize(input, new Warnings()),
-        equalTo(
-            ConfigDb.builder()
-                .setLoopbacks(ImmutableMap.of("Loopback0", new L3Interface(null)))
-                .build()));
+        deserialize(input, new Warnings()).getLoopbacks(),
+        equalTo(ImmutableMap.of("Loopback0", new L3Interface(null))));
   }
 
   @Test
@@ -77,13 +67,10 @@ public class ConfigDbTest {
     String input = "{ \"MGMT_INTERFACE\": {\"eth0|10.11.150.11/16\": {\"gwaddr\": \"10.11.0.1\"}}}";
     Warnings warnings = new Warnings(true, true, true);
     assertThat(
-        deserialize(input, warnings),
+        deserialize(input, warnings).getMgmtInterfaces(),
         equalTo(
-            ConfigDb.builder()
-                .setMgmtInterfaces(
-                    ImmutableMap.of(
-                        "eth0", new L3Interface(ConcreteInterfaceAddress.parse("10.11.150.11/16"))))
-                .build()));
+            ImmutableMap.of(
+                "eth0", new L3Interface(ConcreteInterfaceAddress.parse("10.11.150.11/16")))));
     assertThat(
         Iterables.getOnlyElement(warnings.getUnimplementedWarnings()).getText(),
         equalTo("Unimplemented MGMT_INTERFACE property 'gwaddr'"));
@@ -98,16 +85,11 @@ public class ConfigDbTest {
             + "            \"speed\": \"1000\""
             + "        }"
             + "}}";
-
     assertThat(
-        deserialize(input, new Warnings()),
+        deserialize(input, new Warnings()).getMgmtPorts(),
         equalTo(
-            ConfigDb.builder()
-                .setMgmtPorts(
-                    ImmutableMap.of(
-                        "eth0",
-                        Port.builder().setDescription("Management0").setSpeed(1000).build()))
-                .build()));
+            ImmutableMap.of(
+                "eth0", Port.builder().setDescription("Management0").setSpeed(1000).build())));
   }
 
   @Test
@@ -118,26 +100,17 @@ public class ConfigDbTest {
             + "            \"mgmtVrfEnabled\": \"true\""
             + "        }"
             + "}}";
-
     assertThat(
-        deserialize(input, new Warnings()),
-        equalTo(
-            ConfigDb.builder()
-                .setMgmtVrfs(
-                    ImmutableMap.of(
-                        "vrf_global", MgmtVrf.builder().setMgmtVrfEnabled(true).build()))
-                .build()));
+        deserialize(input, new Warnings()).getMgmtVrfs(),
+        equalTo(ImmutableMap.of("vrf_global", MgmtVrf.builder().setMgmtVrfEnabled(true).build())));
   }
 
   @Test
   public void testDeserializationNtpServer() throws JsonProcessingException {
     String input = "{ \"NTP_SERVER\": {\"23.92.29.245\": {}, \"2.debian.pool.ntp.org\": {}}}";
     assertThat(
-        deserialize(input, new Warnings()),
-        equalTo(
-            ConfigDb.builder()
-                .setNtpServers(ImmutableSet.of("23.92.29.245", "2.debian.pool.ntp.org"))
-                .build()));
+        deserialize(input, new Warnings()).getNtpServers(),
+        equalTo(ImmutableSet.of("23.92.29.245", "2.debian.pool.ntp.org")));
   }
 
   @Test
@@ -151,29 +124,22 @@ public class ConfigDbTest {
             + "            \"mtu\": \"9212\""
             + "        }"
             + "}}";
-
     assertThat(
-        deserialize(input, new Warnings()),
+        deserialize(input, new Warnings()).getPorts(),
         equalTo(
-            ConfigDb.builder()
-                .setPorts(
-                    ImmutableMap.of(
-                        "Ethernet0",
-                        Port.builder().setDescription("L3-sbf00-fr001:Ethernet0").build(),
-                        "Ethernet8",
-                        Port.builder().setMtu(9212).build()))
-                .build()));
+            ImmutableMap.of(
+                "Ethernet0",
+                Port.builder().setDescription("L3-sbf00-fr001:Ethernet0").build(),
+                "Ethernet8",
+                Port.builder().setMtu(9212).build())));
   }
 
   @Test
   public void testDeserializationSyslogServer() throws JsonProcessingException {
     String input = "{ \"SYSLOG_SERVER\": {\"23.92.29.245\": {}, \"10.11.150.5\": {}}}";
     assertThat(
-        deserialize(input, new Warnings()),
-        equalTo(
-            ConfigDb.builder()
-                .setSyslogServers(ImmutableSet.of("23.92.29.245", "10.11.150.5"))
-                .build()));
+        deserialize(input, new Warnings()).getSyslogServers(),
+        equalTo(ImmutableSet.of("23.92.29.245", "10.11.150.5")));
   }
 
   @Test
@@ -191,37 +157,5 @@ public class ConfigDbTest {
                 new L3Interface(ConcreteInterfaceAddress.parse("172.19.93.0/31")),
                 "Ethernet137",
                 new L3Interface(null))));
-  }
-
-  @Test
-  public void testJavaSerialization() {
-    ConfigDb obj = ConfigDb.builder().build();
-    assertEquals(obj, SerializationUtils.clone(obj));
-  }
-
-  @SuppressWarnings("UnstableApiUsage")
-  @Test
-  public void testEquals() {
-    ConfigDb.Builder builder = ConfigDb.builder();
-    new EqualsTester()
-        .addEqualityGroup(builder.build(), builder.build())
-        .addEqualityGroup(
-            builder
-                .setDeviceMetadata(ImmutableMap.of("localhost", new DeviceMetadata(null)))
-                .build())
-        .addEqualityGroup(
-            builder.setInterfaces(ImmutableMap.of("iface", new L3Interface(null))).build())
-        .addEqualityGroup(
-            builder.setLoopbacks(ImmutableMap.of("l0", new L3Interface(null))).build())
-        .addEqualityGroup(
-            builder.setMgmtInterfaces(ImmutableMap.of("eth0", new L3Interface(null))).build())
-        .addEqualityGroup(
-            builder.setMgmtPorts(ImmutableMap.of("eth0", Port.builder().build())).build())
-        .addEqualityGroup(
-            builder.setMgmtVrfs(ImmutableMap.of("vrf_global", MgmtVrf.builder().build())).build())
-        .addEqualityGroup(builder.setNtpServers(ImmutableSet.of("ntp")).build())
-        .addEqualityGroup(builder.setPorts(ImmutableMap.of("a", Port.builder().build())))
-        .addEqualityGroup(builder.setSyslogServers(ImmutableSet.of("aa")).build())
-        .testEquals();
   }
 }
