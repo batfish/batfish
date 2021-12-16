@@ -3,6 +3,7 @@ package org.batfish.vendor.sonic.representation;
 import static org.batfish.datamodel.ConfigurationFormat.SONIC;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddress;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasHumanName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSpeed;
@@ -26,6 +27,7 @@ public class SonicConversionsTest {
     Port port =
         Port.builder()
             .setAdminStatusUp(false)
+            .setAlias("alias")
             .setMtu(56)
             .setDescription("desc")
             .setSpeed(23)
@@ -44,6 +46,7 @@ public class SonicConversionsTest {
           Iterables.getOnlyElement(c.getAllInterfaces().values()),
           allOf(
               hasName("iface"),
+              hasHumanName("alias"),
               hasAddress(ifaceAddress),
               hasMtu(56),
               hasDescription("desc"),

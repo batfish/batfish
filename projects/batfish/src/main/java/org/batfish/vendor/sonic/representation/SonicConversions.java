@@ -21,6 +21,7 @@ public class SonicConversions {
       Interface.Builder ib =
           Interface.builder()
               .setName(portName)
+              .setHumanName(port.getAlias().orElse(null))
               .setOwner(c)
               .setVrf(vrf)
               .setType(InterfaceType.PHYSICAL)
