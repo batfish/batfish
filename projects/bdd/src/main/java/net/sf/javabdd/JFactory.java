@@ -37,6 +37,7 @@ import java.util.Random;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -375,9 +376,12 @@ public final class JFactory extends BDDFactory {
     }
 
     @Override
-    public boolean equals(BDD that) {
-      boolean b = _index == ((BDDImpl) that)._index;
-      return b;
+    public boolean equals(@Nullable Object o) {
+      if (!(o instanceof BDDImpl)) {
+        return false;
+      }
+      BDDImpl that = (BDDImpl) o;
+      return _index == that._index;
     }
 
     @Override
