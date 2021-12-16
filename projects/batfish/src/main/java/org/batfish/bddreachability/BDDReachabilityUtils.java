@@ -17,10 +17,10 @@ import io.opentracing.util.GlobalTracer;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiFunction;
@@ -83,48 +83,43 @@ public final class BDDReachabilityUtils {
                     Cell::getRowKey, Cell::getColumnKey, ignored -> new AtomicLong()));
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
-      Set<StateExpr> dirtyStates = ImmutableSet.copyOf(reachableSets.keySet());
+      PriorityQueue<StateExpr> dirtyStates =
+          new PriorityQueue<>(Comparator.comparingLong(st -> counts.get(st).longValue()));
 
       while (!dirtyStates.isEmpty()) {
-        Set<StateExpr> newDirtyStates = new HashSet<>();
+        StateExpr dirtyState = dirtyStates.poll();
+        counts.computeIfAbsent(dirtyState, ignored -> new AtomicLong()).incrementAndGet();
+        AtomicLong time = times.computeIfAbsent(dirtyState, ignored -> new AtomicLong());
+        long startTime = System.nanoTime();
+        Map<StateExpr, Transition> dirtyStateEdges = edges.row(dirtyState);
+        if (dirtyStateEdges == null) {
+          // dirtyState has no edges
+          time.addAndGet(System.nanoTime() - startTime);
+          continue;
+        }
 
-        dirtyStates.forEach(
-            dirtyState -> {
-              counts.computeIfAbsent(dirtyState, ignored -> new AtomicLong()).incrementAndGet();
-              AtomicLong time = times.computeIfAbsent(dirtyState, ignored -> new AtomicLong());
-              long startTime = System.nanoTime();
-              Map<StateExpr, Transition> dirtyStateEdges = edges.row(dirtyState);
-              if (dirtyStateEdges == null) {
-                // dirtyState has no edges
-                time.addAndGet(System.nanoTime() - startTime);
+        BDD dirtyStateBDD = reachableSets.get(dirtyState);
+        dirtyStateEdges.forEach(
+            (neighbor, edge) -> {
+              traverseCounts.get(dirtyState, neighbor).incrementAndGet();
+              AtomicLong traverseTime = traverseTimes.get(dirtyState, neighbor);
+              long startTraverse = System.nanoTime();
+              BDD result = traverse.apply(edge, dirtyStateBDD);
+              if (result.isZero()) {
+                traverseTime.addAndGet(System.nanoTime() - startTraverse);
                 return;
               }
 
-              BDD dirtyStateBDD = reachableSets.get(dirtyState);
-              dirtyStateEdges.forEach(
-                  (neighbor, edge) -> {
-                    traverseCounts.get(dirtyState, neighbor).incrementAndGet();
-                    AtomicLong traverseTime = traverseTimes.get(dirtyState, neighbor);
-                    long startTraverse = System.nanoTime();
-                    BDD result = traverse.apply(edge, dirtyStateBDD);
-                    if (result.isZero()) {
-                      traverseTime.addAndGet(System.nanoTime() - startTraverse);
-                      return;
-                    }
-
-                    // update neighbor's reachable set
-                    BDD oldReach = reachableSets.get(neighbor);
-                    BDD newReach = oldReach == null ? result : oldReach.or(result);
-                    if (oldReach == null || !oldReach.equals(newReach)) {
-                      reachableSets.put(neighbor, newReach);
-                      newDirtyStates.add(neighbor);
-                    }
-                    traverseTime.addAndGet(System.nanoTime() - startTraverse);
-                  });
-              time.addAndGet(System.nanoTime() - startTime);
+              // update neighbor's reachable set
+              BDD oldReach = reachableSets.get(neighbor);
+              BDD newReach = oldReach == null ? result : oldReach.or(result);
+              if (oldReach == null || !oldReach.equals(newReach)) {
+                reachableSets.put(neighbor, newReach);
+                dirtyStates.add(neighbor);
+              }
+              traverseTime.addAndGet(System.nanoTime() - startTraverse);
             });
-
-        dirtyStates = newDirtyStates;
+        time.addAndGet(System.nanoTime() - startTime);
       }
     } finally {
       span.finish();
