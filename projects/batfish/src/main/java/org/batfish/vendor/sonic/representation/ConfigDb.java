@@ -71,7 +71,6 @@ public class ConfigDb implements Serializable {
     return _syslogServers;
   }
 
-  // Add any parsed property to PARSED_PROPERTIES
   private static final String PROP_DEVICE_METADATA = "DEVICE_METADATA";
   private static final String PROP_INTERFACE = "INTERFACE";
   private static final String PROP_LOOPBACK = "LOOPBACK";
