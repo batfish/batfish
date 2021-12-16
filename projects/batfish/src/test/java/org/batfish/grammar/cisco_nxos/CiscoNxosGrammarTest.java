@@ -14,6 +14,7 @@ import static org.batfish.datamodel.Ip.ZERO;
 import static org.batfish.datamodel.IpWildcard.ipWithWildcardMask;
 import static org.batfish.datamodel.Names.generatedBgpIndependentNetworkPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
+import static org.batfish.datamodel.Names.generatedEvpnToBgpv4VrfLeakPolicyName;
 import static org.batfish.datamodel.OriginMechanism.REDISTRIBUTE;
 import static org.batfish.datamodel.Route.UNSET_NEXT_HOP_INTERFACE;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
@@ -188,6 +189,7 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.Bgpv4ToEvpnVrfLeakConfig;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -198,6 +200,8 @@ import org.batfish.datamodel.DscpType;
 import org.batfish.datamodel.EigrpExternalRoute;
 import org.batfish.datamodel.EigrpInternalRoute;
 import org.batfish.datamodel.EigrpRoute;
+import org.batfish.datamodel.EvpnToBgpv4VrfLeakConfig;
+import org.batfish.datamodel.EvpnType5Route;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Flow.Builder;
 import org.batfish.datamodel.GeneratedRoute;
@@ -217,6 +221,7 @@ import org.batfish.datamodel.LocalRoute;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.Names;
+import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfExternalRoute;
 import org.batfish.datamodel.OspfInterAreaRoute;
@@ -232,6 +237,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.datamodel.VrfLeakConfig;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -270,6 +276,7 @@ import org.batfish.datamodel.packet_policy.PacketPolicyEvaluator;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
+import org.batfish.datamodel.route.nh.NextHopVtep;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.communities.CommunityContext;
@@ -1592,6 +1599,7 @@ public final class CiscoNxosGrammarTest {
 
     String tenantVrfName = "tenant1";
     Ip routerId = Ip.parse("10.1.1.1");
+    int tenantVrfPosition = 3;
     // All defined VXLAN Vnis
     ImmutableSortedSet<Layer2VniConfig> expectedL2Vnis =
         ImmutableSortedSet.of(
@@ -1615,7 +1623,7 @@ public final class CiscoNxosGrammarTest {
                 .setVni(3333)
                 .setVrf(tenantVrfName)
                 .setAdvertiseV4Unicast(true)
-                .setRouteDistinguisher(RouteDistinguisher.from(routerId, 3))
+                .setRouteDistinguisher(RouteDistinguisher.from(routerId, tenantVrfPosition))
                 .setRouteTarget(ExtendedCommunity.target(1, 3333))
                 .setImportRouteTarget(ExtendedCommunity.target(1, 3333).matchString())
                 .build());
@@ -1626,6 +1634,65 @@ public final class CiscoNxosGrammarTest {
     assertThat(peer.getEvpnAddressFamily().getL3VNIs(), equalTo(expectedL3Vnis));
     assertThat(peer.getEvpnAddressFamily().getNveIp(), equalTo(Ip.parse("1.1.1.1")));
     assertThat(c.getVrfs().get(tenantVrfName).getBgpProcess(), notNullValue());
+
+    // check leak configs
+    {
+      // bgpv4 -> evpn
+      VrfLeakConfig leak = c.getDefaultVrf().getVrfLeakConfig();
+
+      assertNotNull(leak);
+      assertTrue(leak.getLeakAsBgp());
+      assertThat(
+          leak.getBgpv4ToEvpnVrfLeakConfigs(),
+          contains(
+              Bgpv4ToEvpnVrfLeakConfig.builder()
+                  .setAttachRouteTargets(ExtendedCommunity.target(1, 3333))
+                  .setImportFromVrf(tenantVrfName)
+                  .setSrcVrfRouteDistinguisher(RouteDistinguisher.from(routerId, tenantVrfPosition))
+                  .build()));
+    }
+    {
+      // evpn -> bgpv4
+      VrfLeakConfig leak = c.getVrfs().get(tenantVrfName).getVrfLeakConfig();
+      assertNotNull(leak);
+      assertTrue(leak.getLeakAsBgp());
+      String importPolicyName = generatedEvpnToBgpv4VrfLeakPolicyName(tenantVrfName);
+
+      assertThat(
+          leak.getEvpnToBgpv4VrfLeakConfigs(),
+          contains(
+              EvpnToBgpv4VrfLeakConfig.builder()
+                  .setImportFromVrf(DEFAULT_VRF_NAME)
+                  .setImportPolicy(importPolicyName)
+                  .build()));
+
+      EvpnType5Route.Builder rb =
+          EvpnType5Route.builder()
+              .setNetwork(Prefix.strict("10.0.0.0/24"))
+              .setNextHop(NextHopVtep.of(3333, Ip.parse("5.6.7.8")))
+              .setVni(3333)
+              .setProtocol(RoutingProtocol.BGP)
+              .setOriginMechanism(OriginMechanism.LEARNED)
+              .setOriginType(OriginType.IGP)
+              .setOriginatorIp(Ip.parse("5.6.7.8"))
+              .setRouteDistinguisher(RouteDistinguisher.from(routerId, tenantVrfPosition));
+      EvpnType5Route permittedRouteSingleRouteTarget =
+          rb.setCommunities(CommunitySet.of(ExtendedCommunity.target(1, 3333))).build();
+      EvpnType5Route permittedRouteMultipleRouteTargets =
+          rb.setCommunities(
+                  CommunitySet.of(
+                      ExtendedCommunity.target(1, 3333), ExtendedCommunity.target(5, 3333)))
+              .build();
+      EvpnType5Route deniedRouteWrongRouteTarget =
+          rb.setCommunities(CommunitySet.of(ExtendedCommunity.target(5, 3333))).build();
+      EvpnType5Route deniedRouteNoRouteTarget = rb.setCommunities(CommunitySet.of()).build();
+      RoutingPolicy importPolicy = c.getRoutingPolicies().get(importPolicyName);
+
+      assertRoutingPolicyPermitsRoute(importPolicy, permittedRouteSingleRouteTarget);
+      assertRoutingPolicyPermitsRoute(importPolicy, permittedRouteMultipleRouteTargets);
+      assertRoutingPolicyDeniesRoute(importPolicy, deniedRouteWrongRouteTarget);
+      assertRoutingPolicyDeniesRoute(importPolicy, deniedRouteNoRouteTarget);
+    }
   }
 
   @Test
