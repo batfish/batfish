@@ -1,0 +1,64 @@
+{
+  "edges": [
+    {
+      "node1": {
+        "hostname": "h1",
+        "interfaceName": "i1"
+      },
+      "node2": {
+        "hostname": "r1",
+        "interfaceName": "Ethernet1/2"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "r1",
+        "interfaceName": "Ethernet1/2"
+      },
+      "node2": {
+        "hostname": "h1",
+        "interfaceName": "i1"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "r1",
+        "interfaceName": "Ethernet1/1"
+      },
+      "node2": {
+        "hostname": "r2",
+        "interfaceName": "Ethernet1/1"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "r2",
+        "interfaceName": "Ethernet1/1"
+      },
+      "node2": {
+        "hostname": "r1",
+        "interfaceName": "Ethernet1/1"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "h2",
+        "interfaceName": "i1"
+      },
+      "node2": {
+        "hostname": "r2",
+        "interfaceName": "Ethernet1/2"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "r2",
+        "interfaceName": "Ethernet1/2"
+      },
+      "node2": {
+        "hostname": "h2",
+        "interfaceName": "i1"
+      }
+    }
+  ]
+}

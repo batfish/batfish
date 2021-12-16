@@ -21,6 +21,7 @@ import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPref
 import static org.batfish.representation.cisco_nxos.BgpVrfIpAddressFamilyConfiguration.DEFAULT_DISTANCE_EBGP;
 import static org.batfish.representation.cisco_nxos.BgpVrfIpAddressFamilyConfiguration.DEFAULT_DISTANCE_IBGP;
 import static org.batfish.representation.cisco_nxos.BgpVrfIpAddressFamilyConfiguration.DEFAULT_DISTANCE_LOCAL_BGP;
+import static org.batfish.representation.cisco_nxos.Conversions.convertBgpLeakConfigs;
 import static org.batfish.representation.cisco_nxos.Conversions.getVrfForL3Vni;
 import static org.batfish.representation.cisco_nxos.Conversions.inferRouterId;
 import static org.batfish.representation.cisco_nxos.Conversions.toBgpAggregate;
@@ -3866,9 +3867,21 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     convertNves();
     convertBgp();
     convertEigrp();
+    makeLeakConfigs();
 
     markStructures();
     return _c;
+  }
+
+  private void makeLeakConfigs() {
+    _vrfs.forEach(
+        (vrfName, vrf) ->
+            convertBgpLeakConfigs(
+                vrf,
+                _c.getVrfs().get(vrfName),
+                _bgpGlobalConfiguration,
+                _c.getDefaultVrf().getBgpProcess(),
+                _c));
   }
 
   private void computeImplicitOspfAreas() {

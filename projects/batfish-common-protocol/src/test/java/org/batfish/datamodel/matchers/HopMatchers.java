@@ -16,7 +16,7 @@ import org.hamcrest.Matcher;
 
 /** {@link Matcher Matchers} for {@link Hop}. */
 public final class HopMatchers {
-  public static HasNodeName hasNodeName(String nodeName) {
+  public static Matcher<Hop> hasNodeName(String nodeName) {
     return new HasNodeName(equalTo(nodeName));
   }
 

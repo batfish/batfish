@@ -9,6 +9,7 @@ import static org.batfish.datamodel.Names.generatedBgpPeerEvpnExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerEvpnImportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerImportPolicyName;
+import static org.batfish.datamodel.Names.generatedEvpnToBgpv4VrfLeakPolicyName;
 import static org.batfish.datamodel.routing_policy.Common.generateSuppressionPolicy;
 import static org.batfish.datamodel.routing_policy.statement.Statements.ExitAccept;
 import static org.batfish.datamodel.routing_policy.statement.Statements.RemovePrivateAs;
@@ -37,8 +38,10 @@ import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.Bgpv4ToEvpnVrfLeakConfig;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.EvpnToBgpv4VrfLeakConfig;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceType;
@@ -49,6 +52,7 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.VrfLeakConfig;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.AllowRemoteAsOutMode;
 import org.batfish.datamodel.bgp.BgpAggregate;
@@ -60,6 +64,10 @@ import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.routing_policy.Common;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.communities.CommunityIs;
+import org.batfish.datamodel.routing_policy.communities.HasCommunity;
+import org.batfish.datamodel.routing_policy.communities.InputCommunities;
+import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.expr.AsnValue;
 import org.batfish.datamodel.routing_policy.expr.AutoAs;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
@@ -762,8 +770,8 @@ public final class Conversions {
    * href="https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus9000/sw/7-x/vxlan/configuration/guide/b_Cisco_Nexus_9000_Series_NX-OS_VXLAN_Configuration_Guide_7x/b_Cisco_Nexus_9000_Series_NX-OS_VXLAN_Configuration_Guide_7x_chapter_0100.html">
    * Cisco NX-OS documentation</a> for detailed explanation.
    */
-  @Nonnull
-  private static ExtendedCommunity toRouteTarget(long asn, long vni) {
+  @VisibleForTesting
+  static @Nonnull ExtendedCommunity toRouteTarget(long asn, long vni) {
     return ExtendedCommunity.target(asn & 0xFFFFL, vni);
   }
 
@@ -1033,6 +1041,83 @@ public final class Conversions {
           .addStatement(Statements.ReturnFalse.toStaticStatement())
           .build();
     }
+  }
+
+  static void convertBgpLeakConfigs(
+      org.batfish.representation.cisco_nxos.Vrf vrf,
+      Vrf newVrf,
+      BgpGlobalConfiguration bgpGlobalConfig,
+      @Nullable BgpProcess newDefaultVrfBgpProcess,
+      Configuration c) {
+    // TODO: handle v4<=>v4 leaking
+    long localAs = bgpGlobalConfig.getLocalAs();
+    if (localAs == 0 || newDefaultVrfBgpProcess == null) {
+      // no BGP process at all or for this VRF
+      return;
+    }
+    VrfAddressFamily ipv4af = vrf.getAddressFamily(AddressFamily.IPV4_UNICAST);
+    ExtendedCommunityOrAuto exportRtOrAuto = ipv4af.getExportRtEvpn();
+    ExtendedCommunityOrAuto importRtOrAuto = ipv4af.getImportRtEvpn();
+    RouteDistinguisherOrAuto rdOrAuto = vrf.getRd();
+    if (rdOrAuto == null) {
+      // cannot export nor import without a route distinguisher
+      return;
+    }
+    Integer vni = vrf.getVni();
+    if (vni == null) {
+      // cannot leak to/from evpn rib without a vni
+      return;
+    }
+    RouteDistinguisher rd =
+        RouteDistinguisher.from(newDefaultVrfBgpProcess.getRouterId(), vrf.getId());
+    if (exportRtOrAuto != null) {
+      // This VRF exports BGPv4 into default VRF's EVPN. Create VRF leak config for default VRF
+      ExtendedCommunity exportRt =
+          exportRtOrAuto.isAuto()
+              ? toRouteTarget(localAs, vni)
+              : exportRtOrAuto.getExtendedCommunity();
+      Bgpv4ToEvpnVrfLeakConfig leakConfig =
+          Bgpv4ToEvpnVrfLeakConfig.builder()
+              .setImportFromVrf(vrf.getName())
+              .setSrcVrfRouteDistinguisher(rd)
+              .setAttachRouteTargets(exportRt)
+              .build();
+      org.batfish.datamodel.Vrf defaultVrf = c.getVrfs().get(DEFAULT_VRF_NAME);
+      getOrInitVrfLeakConfig(defaultVrf).addBgpv4ToEvpnVrfLeakConfig(leakConfig);
+    }
+    if (importRtOrAuto != null) {
+      // This VRF imports default VRF's EVPN into its BGPv4. Create VRF leak config for it
+      ExtendedCommunity importRt =
+          importRtOrAuto.isAuto()
+              ? toRouteTarget(localAs, vni)
+              : importRtOrAuto.getExtendedCommunity();
+      assert importRt != null;
+      RoutingPolicy importPolicy =
+          RoutingPolicy.builder()
+              .setOwner(c)
+              .setName(generatedEvpnToBgpv4VrfLeakPolicyName(vrf.getName()))
+              .addStatement(
+                  // Only import EVPN routes that match this VRF's import route target
+                  new If(
+                      new MatchCommunities(
+                          InputCommunities.instance(), new HasCommunity(new CommunityIs(importRt))),
+                      ImmutableList.of(Statements.ReturnTrue.toStaticStatement())))
+              .addStatement(Statements.ReturnFalse.toStaticStatement())
+              .build();
+      getOrInitVrfLeakConfig(newVrf)
+          .addEvpnToBgpv4VrfLeakConfig(
+              EvpnToBgpv4VrfLeakConfig.builder()
+                  .setImportFromVrf(DEFAULT_VRF_NAME)
+                  .setImportPolicy(importPolicy.getName())
+                  .build());
+    }
+  }
+
+  private static VrfLeakConfig getOrInitVrfLeakConfig(Vrf vrf) {
+    if (vrf.getVrfLeakConfig() == null) {
+      vrf.setVrfLeakConfig(new VrfLeakConfig(true));
+    }
+    return vrf.getVrfLeakConfig();
   }
 
   private static String getTextDesc(Ip ip, Vrf v) {
