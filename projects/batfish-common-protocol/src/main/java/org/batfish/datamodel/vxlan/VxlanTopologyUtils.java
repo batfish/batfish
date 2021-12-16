@@ -3,6 +3,7 @@ package org.batfish.datamodel.vxlan;
 import static org.batfish.datamodel.InterfaceType.TUNNEL;
 import static org.batfish.datamodel.Names.generatedTenantVniInterfaceName;
 import static org.batfish.datamodel.vxlan.VniLayer.LAYER_2;
+import static org.batfish.datamodel.vxlan.VniLayer.LAYER_3;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashBasedTable;
@@ -21,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import javax.annotation.Nonnull;
 import org.batfish.common.plugin.TracerouteEngine;
 import org.batfish.datamodel.BumTransportMethod;
@@ -47,25 +49,25 @@ public final class VxlanTopologyUtils {
    * are compatible
    */
   @VisibleForTesting
-  static void addVniEdge(
+  static void addLayer2VniEdge(
       MutableGraph<VxlanNode> graph,
       VrfId vrfTail,
       Layer2Vni vniSettingsTail,
       VrfId vrfHead,
       Layer2Vni vniSettingsHead) {
-    if (compatibleVniSettings(vniSettingsTail, vniSettingsHead)) {
-      VxlanNode nodeTail = buildVxlanNode(vrfTail, vniSettingsTail);
-      VxlanNode nodeHead = buildVxlanNode(vrfHead, vniSettingsHead);
+    if (compatibleLayer2VniSettings(vniSettingsTail, vniSettingsHead)) {
+      VxlanNode nodeTail = buildLayer2VxlanNode(vrfTail, vniSettingsTail);
+      VxlanNode nodeHead = buildLayer2VxlanNode(vrfHead, vniSettingsHead);
       graph.putEdge(nodeTail, nodeHead);
     }
   }
 
   /**
-   * Add edges to the {@code graph} between all VRFs that have {@code vni} configured on them
-   * (excludes self-edges).
+   * Add edges to the {@code graph} between all VRFs that have layer-2 {@code vni} configured on
+   * them (excludes self-edges).
    */
   @VisibleForTesting
-  static void addVniEdges(
+  static void addLayer2VniEdges(
       MutableGraph<VxlanNode> graph,
       Table<VrfId, Integer, Layer2Vni> allVniSettings,
       Integer vni,
@@ -76,7 +78,51 @@ public final class VxlanTopologyUtils {
         if (vrfTail.equals(vrfHead)) {
           continue;
         }
-        addVniEdge(
+        addLayer2VniEdge(
+            graph,
+            vrfTail,
+            allVniSettings.get(vrfTail, vni),
+            vrfHead,
+            allVniSettings.get(vrfHead, vni));
+      }
+    }
+  }
+
+  /**
+   * Add an edge to the {@code graph} between one pair of {@link Layer3Vni}, if their configurations
+   * are compatible
+   */
+  @VisibleForTesting
+  static void addLayer3VniEdge(
+      MutableGraph<VxlanNode> graph,
+      VrfId vrfTail,
+      Layer3Vni vniSettingsTail,
+      VrfId vrfHead,
+      Layer3Vni vniSettingsHead) {
+    if (compatibleLayer3VniSettings(vniSettingsTail, vniSettingsHead)) {
+      VxlanNode nodeTail = buildLayer3VxlanNode(vrfTail, vniSettingsTail);
+      VxlanNode nodeHead = buildLayer3VxlanNode(vrfHead, vniSettingsHead);
+      graph.putEdge(nodeTail, nodeHead);
+    }
+  }
+
+  /**
+   * Add edges to the {@code graph} between all VRFs that have layer-3 {@code vni} configured on
+   * them (excludes self-edges).
+   */
+  @VisibleForTesting
+  static void addLayer3VniEdges(
+      MutableGraph<VxlanNode> graph,
+      Table<VrfId, Integer, Layer3Vni> allVniSettings,
+      Integer vni,
+      Map<VrfId, Layer3Vni> vrfs) {
+    for (VrfId vrfTail : vrfs.keySet()) {
+      for (VrfId vrfHead : vrfs.keySet()) {
+        // Generate all VRF combinations without repetition
+        if (vrfTail.equals(vrfHead)) {
+          continue;
+        }
+        addLayer3VniEdge(
             graph,
             vrfTail,
             allVniSettings.get(vrfTail, vni),
@@ -88,7 +134,7 @@ public final class VxlanTopologyUtils {
 
   /** Build a {@link VxlanNode} for the given {@link Layer2Vni} and {@link VrfId}. */
   @VisibleForTesting
-  static VxlanNode buildVxlanNode(VrfId vrf, Layer2Vni vniSettings) {
+  static VxlanNode buildLayer2VxlanNode(VrfId vrf, Layer2Vni vniSettings) {
     return VxlanNode.builder()
         .setHostname(vrf._hostname)
         .setVni(vniSettings.getVni())
@@ -96,9 +142,19 @@ public final class VxlanTopologyUtils {
         .build();
   }
 
+  /** Build a {@link VxlanNode} for the given {@link Layer3Vni} and {@link VrfId}. */
+  @VisibleForTesting
+  static VxlanNode buildLayer3VxlanNode(VrfId vrf, Layer3Vni vniSettings) {
+    return VxlanNode.builder()
+        .setHostname(vrf._hostname)
+        .setVni(vniSettings.getVni())
+        .setVniLayer(LAYER_3)
+        .build();
+  }
+
   /** Check if two {@link Layer2Vni} have compatible configurations */
   @VisibleForTesting
-  static boolean compatibleVniSettings(Layer2Vni vniSettingsTail, Layer2Vni vniSettingsHead) {
+  static boolean compatibleLayer2VniSettings(Layer2Vni vniSettingsTail, Layer2Vni vniSettingsHead) {
     return vniSettingsTail.getBumTransportMethod() == vniSettingsHead.getBumTransportMethod()
         && vniSettingsTail.getUdpPort().equals(vniSettingsHead.getUdpPort())
         && vniSettingsTail.getSourceAddress() != null
@@ -115,8 +171,19 @@ public final class VxlanTopologyUtils {
                     .contains(vniSettingsTail.getSourceAddress())));
   }
 
+  /** Check if two {@link Layer3Vni} have compatible configurations */
   @VisibleForTesting
-  static @Nonnull String getVniSrcVrf(Layer2Vni vniSettings) {
+  static boolean compatibleLayer3VniSettings(Layer3Vni vniSettingsTail, Layer3Vni vniSettingsHead) {
+    return vniSettingsTail.getUdpPort().equals(vniSettingsHead.getUdpPort())
+        && vniSettingsTail.getSourceAddress() != null
+        && vniSettingsHead.getSourceAddress() != null
+        && !vniSettingsTail.getSourceAddress().equals(vniSettingsHead.getSourceAddress())
+        && vniSettingsTail.getLearnedNexthopVtepIps().contains(vniSettingsHead.getSourceAddress())
+        && vniSettingsHead.getLearnedNexthopVtepIps().contains(vniSettingsTail.getSourceAddress());
+  }
+
+  @VisibleForTesting
+  static @Nonnull String getVniSrcVrf(Vni vniSettings) {
     return vniSettings.getSrcVrf();
   }
 
@@ -126,28 +193,35 @@ public final class VxlanTopologyUtils {
    */
   public static @Nonnull VxlanTopology computeVxlanTopology(
       Map<String, Configuration> configurations) {
-    return internalComputeVxlanTopology(computeVniSettingsTable(configurations));
+    return internalComputeVxlanTopology(
+        computeVniSettingsTable(configurations, Vrf::getLayer2Vnis),
+        computeVniSettingsTable(configurations, Vrf::getLayer3Vnis));
   }
 
   /**
    * Compute the VXLAN topology based on the {@link Layer2Vni} extracted from the given table.
    *
-   * @param allVniSettings table of the VNI settings. Row is hostname, Column is VRF name.
+   * @param layer2VniSettings table of the layer-2 VNI settings. Row is hostname, Column is VRF
+   *     name.
+   * @param layer3VniSettings table of the layer-3 VNI settings. Row is hostname, Column is VRF
+   *     name.
    */
   public static @Nonnull VxlanTopology computeVxlanTopology(
-      Table<String, String, ? extends Collection<Layer2Vni>> allVniSettings) {
-    return internalComputeVxlanTopology(computeVniSettingsTable(allVniSettings));
+      Table<String, String, ? extends Collection<Layer2Vni>> layer2VniSettings,
+      Table<String, String, ? extends Collection<Layer3Vni>> layer3VniSettings) {
+    return internalComputeVxlanTopology(
+        computeVniSettingsTable(layer2VniSettings), computeVniSettingsTable(layer3VniSettings));
   }
 
   /** Convert configurations into a table format that's easier to work with */
   @VisibleForTesting
   @Nonnull
-  static Table<VrfId, Integer, Layer2Vni> computeVniSettingsTable(
-      Map<String, Configuration> configurations) {
-    Table<VrfId, Integer, Layer2Vni> table = HashBasedTable.create();
+  static <V extends Vni> Table<VrfId, Integer, V> computeVniSettingsTable(
+      Map<String, Configuration> configurations, Function<Vrf, Map<Integer, V>> vniGetter) {
+    Table<VrfId, Integer, V> table = HashBasedTable.create();
     for (Configuration c : configurations.values()) {
       for (Vrf vrf : c.getVrfs().values()) {
-        for (Layer2Vni vniSettings : vrf.getLayer2Vnis().values()) {
+        for (V vniSettings : vniGetter.apply(vrf).values()) {
           table.put(new VrfId(c.getHostname(), vrf.getName()), vniSettings.getVni(), vniSettings);
         }
       }
@@ -160,14 +234,14 @@ public final class VxlanTopologyUtils {
    * with
    */
   @Nonnull
-  private static Table<VrfId, Integer, Layer2Vni> computeVniSettingsTable(
-      Table<String, String, ? extends Collection<Layer2Vni>> allVniSettings) {
-    Table<VrfId, Integer, Layer2Vni> table = HashBasedTable.create();
-    for (Cell<String, String, ? extends Collection<Layer2Vni>> cell : allVniSettings.cellSet()) {
+  private static <V extends Vni> Table<VrfId, Integer, V> computeVniSettingsTable(
+      Table<String, String, ? extends Collection<V>> allVniSettings) {
+    Table<VrfId, Integer, V> table = HashBasedTable.create();
+    for (Cell<String, String, ? extends Collection<V>> cell : allVniSettings.cellSet()) {
       assert cell.getValue() != null;
       assert cell.getRowKey() != null;
       assert cell.getColumnKey() != null;
-      for (Layer2Vni vni : cell.getValue()) {
+      for (V vni : cell.getValue()) {
         table.put(new VrfId(cell.getRowKey(), cell.getColumnKey()), vni.getVni(), vni);
       }
     }
@@ -176,11 +250,15 @@ public final class VxlanTopologyUtils {
 
   /** Compute the VXLAN topology. Adds edges per VNI. */
   private static @Nonnull VxlanTopology internalComputeVxlanTopology(
-      Table<VrfId, Integer, Layer2Vni> allVniSettings) {
+      Table<VrfId, Integer, Layer2Vni> layer2VniSettings,
+      Table<VrfId, Integer, Layer3Vni> layer3VniSettings) {
     MutableGraph<VxlanNode> graph = GraphBuilder.undirected().allowsSelfLoops(false).build();
-    allVniSettings
+    layer2VniSettings
         .columnMap() // group by vni
-        .forEach((vni, vrfs) -> addVniEdges(graph, allVniSettings, vni, vrfs));
+        .forEach((vni, vrfs) -> addLayer2VniEdges(graph, layer2VniSettings, vni, vrfs));
+    layer3VniSettings
+        .columnMap() // group by vni
+        .forEach((vni, vrfs) -> addLayer3VniEdges(graph, layer3VniSettings, vni, vrfs));
     return new VxlanTopology(graph);
   }
 
@@ -214,20 +292,31 @@ public final class VxlanTopologyUtils {
     VxlanNode nodeV = edge.nodeV();
     String hostU = nodeU.getHostname();
     String hostV = nodeV.getHostname();
-    // nodeU and nodeV must be compatible coming in to this function
     int vni = nodeU.getVni();
-    Layer2Vni vniSettingsU = nc.getVniSettings(hostU, vni).get();
-    // early exit if unsupported
-    if (vniSettingsU.getBumTransportMethod() != BumTransportMethod.UNICAST_FLOOD_GROUP) {
-      // TODO: support multicast transport
-      return false;
+    // nodeU and nodeV must be compatible coming in to this function
+    assert nodeU.getVniLayer() == nodeV.getVniLayer();
+    Vni vniU;
+    Vni vniV;
+    if (nodeU.getVniLayer() == LAYER_2) {
+      vniU = nc.getVniSettings(hostU, vni, Vrf::getLayer2Vnis).get();
+      // early exit if unsupported
+      if (((Layer2Vni) vniU).getBumTransportMethod() != BumTransportMethod.UNICAST_FLOOD_GROUP) {
+        // TODO: support multicast transport
+        return false;
+      }
+      vniV = nc.getVniSettings(hostV, vni, Vrf::getLayer2Vnis).get();
+    } else {
+      assert nodeU.getVniLayer() == LAYER_3;
+      vniU = nc.getVniSettings(hostU, vni, Vrf::getLayer3Vnis).get();
+      vniV = nc.getVniSettings(hostV, vni, Vrf::getLayer3Vnis).get();
     }
-    Layer2Vni vniSettingsV = nc.getVniSettings(hostV, vni).get();
-    String vrfU = getVniSrcVrf(vniSettingsU);
-    String vrfV = getVniSrcVrf(vniSettingsV);
-    Ip srcIpU = vniSettingsU.getSourceAddress();
-    Ip srcIpV = vniSettingsV.getSourceAddress();
-    int udpPort = vniSettingsU.getUdpPort();
+    String vrfU = getVniSrcVrf(vniU);
+    String vrfV = getVniSrcVrf(vniV);
+    Ip srcIpU = vniU.getSourceAddress();
+    Ip srcIpV = vniV.getSourceAddress();
+    assert srcIpU != null;
+    assert srcIpV != null;
+    int udpPort = vniU.getUdpPort();
     return vxlanFlowDelivered(hostU, vrfU, srcIpU, hostV, srcIpV, udpPort, tracerouteEngine)
         && vxlanFlowDelivered(hostV, vrfV, srcIpV, hostU, srcIpU, udpPort, tracerouteEngine);
   }
