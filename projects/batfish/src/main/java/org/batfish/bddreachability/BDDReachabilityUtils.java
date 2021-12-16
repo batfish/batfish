@@ -9,26 +9,19 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Streams;
 import com.google.common.collect.Table;
-import com.google.common.collect.Table.Cell;
 import com.google.common.collect.Tables;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
 import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import net.sf.javabdd.BDD;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.batfish.bddreachability.transition.Transition;
 import org.batfish.bddreachability.transition.Transitions;
 import org.batfish.common.BatfishException;
@@ -46,8 +39,6 @@ import org.batfish.symbolic.state.StateExpr;
  * Utility methods for {@link BDDReachabilityAnalysis} and {@link BDDReachabilityAnalysisFactory}.
  */
 public final class BDDReachabilityUtils {
-  private static final Logger LOGGER = LogManager.getLogger(BDDReachabilityUtils.class);
-
   public static Table<StateExpr, StateExpr, Transition> computeForwardEdgeTable(
       Iterable<Edge> edges) {
     return computeForwardEdgeTable(Streams.stream(edges));
@@ -69,12 +60,6 @@ public final class BDDReachabilityUtils {
       Table<StateExpr, StateExpr, Transition> edges,
       BiFunction<Transition, BDD, BDD> traverse) {
     Span span = GlobalTracer.get().buildSpan("BDDReachabilityAnalysis.fixpoint").start();
-    Map<StateExpr, AtomicLong> times = new HashMap<>();
-    Table<StateExpr, StateExpr, AtomicLong> traverseTimes =
-        edges.cellSet().stream()
-            .collect(
-                ImmutableTable.toImmutableTable(
-                    Cell::getRowKey, Cell::getColumnKey, ignored -> new AtomicLong()));
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
       Set<StateExpr> dirtyStates = ImmutableSet.copyOf(reachableSets.keySet());
@@ -84,23 +69,17 @@ public final class BDDReachabilityUtils {
 
         dirtyStates.forEach(
             dirtyState -> {
-              AtomicLong time = times.computeIfAbsent(dirtyState, ignored -> new AtomicLong());
-              long startTime = System.nanoTime();
               Map<StateExpr, Transition> dirtyStateEdges = edges.row(dirtyState);
               if (dirtyStateEdges == null) {
                 // dirtyState has no edges
-                time.addAndGet(System.nanoTime() - startTime);
                 return;
               }
 
               BDD dirtyStateBDD = reachableSets.get(dirtyState);
               dirtyStateEdges.forEach(
                   (neighbor, edge) -> {
-                    AtomicLong traverseTime = traverseTimes.get(dirtyState, neighbor);
-                    long startTraverse = System.nanoTime();
                     BDD result = traverse.apply(edge, dirtyStateBDD);
                     if (result.isZero()) {
-                      traverseTime.addAndGet(System.nanoTime() - startTraverse);
                       return;
                     }
 
@@ -111,9 +90,7 @@ public final class BDDReachabilityUtils {
                       reachableSets.put(neighbor, newReach);
                       newDirtyStates.add(neighbor);
                     }
-                    traverseTime.addAndGet(System.nanoTime() - startTraverse);
                   });
-              time.addAndGet(System.nanoTime() - startTime);
             });
 
         dirtyStates = newDirtyStates;
@@ -121,19 +98,6 @@ public final class BDDReachabilityUtils {
     } finally {
       span.finish();
     }
-    times.entrySet().stream()
-        .sorted(
-            Comparator.<Entry<StateExpr, AtomicLong>>comparingLong(c -> c.getValue().get())
-                .reversed())
-        .limit(30)
-        .forEach(e -> LOGGER.info("Top dirty state times: {}", e));
-    traverseTimes.cellSet().stream()
-        .sorted(
-            Comparator.<Cell<StateExpr, StateExpr, AtomicLong>>comparingLong(
-                    c -> c.getValue().get())
-                .reversed())
-        .limit(30)
-        .forEach(c -> LOGGER.info("Top traverse times: {}", c));
   }
 
   @VisibleForTesting
