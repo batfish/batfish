@@ -19,6 +19,7 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
@@ -219,11 +220,13 @@ public class SonicConversions {
   static void attachAcl(
       Configuration c, String aclName, IpAccessList ipAccessList, AclTable aclTable, Warnings w) {
     if (aclTable.getType().orElse(null) != Type.L3) {
-      // While all ACLs are added to the configuration, but only type L3 is attached to interfaces
+      // While all ACLs are added to the configuration, but only type L3 ones are attached to
+      // interfaces
       return;
     }
     Stage aclStage = aclTable.getStage().orElse(null);
     if (aclStage != Stage.EGRESS && aclStage != Stage.INGRESS) {
+      w.redFlag("Unimplemented ACL stage: " + aclStage);
       return;
     }
     for (String port : aclTable.getPorts()) {
@@ -231,7 +234,8 @@ public class SonicConversions {
       if (viIface == null) {
         if (!port.equalsIgnoreCase("CtrlPlane")) {
           w.redFlag(
-              String.format("Port %s referenced in ACL_TABLE %s does not exist.", port, aclName));
+              String.format(
+                  "Port '%s' referenced in ACL_TABLE '%s' does not exist.", port, aclName));
         }
         continue;
       }
@@ -247,28 +251,28 @@ public class SonicConversions {
    * Converts all the rules of the given {@code aclName} into {@link IpAccessList} and adds it to
    * device configuration {@code c}.
    */
-  @VisibleForTesting
-  static IpAccessList convertAcl(
+  private static IpAccessList convertAcl(
       Configuration c, String aclName, Map<String, AclRule> aclRules, Warnings w) {
     Map<Integer, AclLine> aclLines = new HashMap<>();
-    for (String ruleKey : aclRules.keySet()) {
+    for (String ruleKey :
+        aclRules.keySet().stream().sorted().collect(Collectors.toList())) { // deterministic order
       String[] parts = ruleKey.split("\\|", 2);
       if (parts.length != 2) {
         w.redFlag("Rule name not found in ACL_RULE key " + ruleKey);
         continue;
       }
-      if (parts[0].equals(aclName)) { // not this ACL's rule
+      if (!parts[0].equals(aclName)) { // not this ACL's rule
         continue;
       }
       Integer priority = aclRules.get(ruleKey).getPriority().orElse(null);
       if (priority == null) {
-        w.redFlag(String.format("Ignored ACL_RULE %s because PRIORITY was not defined", ruleKey));
+        w.redFlag(String.format("Ignored ACL_RULE '%s' because PRIORITY was not defined", ruleKey));
         continue;
       }
       if (aclLines.containsKey(priority)) {
         w.redFlag(
             String.format(
-                "Ignored ACL_RULE %s because its PRIORITY is duplicate of %s|%s",
+                "Ignored ACL_RULE '%s' because its PRIORITY is duplicate of '%s|%s'",
                 ruleKey, aclName, aclLines.get(priority).getName()));
         continue;
       }
@@ -289,8 +293,7 @@ public class SonicConversions {
         .build();
   }
 
-  @VisibleForTesting
-  static Optional<AclLine> convertAclRule(
+  private static Optional<AclLine> convertAclRule(
       String ruleKey, String ruleName, AclRule aclRule, Warnings w) {
     PacketAction packetAction = aclRule.getPacketAction().orElse(null);
     if (packetAction == null) {

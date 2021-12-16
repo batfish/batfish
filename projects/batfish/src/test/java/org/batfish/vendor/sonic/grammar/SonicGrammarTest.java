@@ -10,11 +10,13 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrfName;
+import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -26,9 +28,19 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.Prefix;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
+import org.batfish.vendor.sonic.representation.AclRule;
+import org.batfish.vendor.sonic.representation.AclRule.PacketAction;
+import org.batfish.vendor.sonic.representation.AclTable;
+import org.batfish.vendor.sonic.representation.AclTable.Stage;
+import org.batfish.vendor.sonic.representation.AclTable.Type;
 import org.batfish.vendor.sonic.representation.DeviceMetadata;
 import org.batfish.vendor.sonic.representation.L3Interface;
 import org.batfish.vendor.sonic.representation.MgmtVrf;
@@ -141,5 +153,53 @@ public class SonicGrammarTest {
     assertThat(
         c.getAllInterfaces().get("Ethernet0"),
         allOf(hasName("Ethernet0"), hasAccessVlan(1), hasSwitchPortMode(SwitchportMode.ACCESS)));
+  }
+
+  @Test
+  public void testAcl() throws IOException {
+    String snapshotName = "acl";
+    Batfish batfish = getBatfish(snapshotName, "device/frr.conf", "device/config_db.json");
+
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    SonicConfiguration vc =
+        (SonicConfiguration) batfish.loadVendorConfigurations(snapshot).get("acl");
+    vc.setWarnings(new Warnings());
+    assertThat(
+        vc.getConfigDb().getAclTables(),
+        equalTo(
+            ImmutableMap.of(
+                "test-acl",
+                AclTable.builder()
+                    .setPorts(ImmutableList.of("Ethernet0"))
+                    .setStage(Stage.INGRESS)
+                    .setType(Type.L3)
+                    .build())));
+    assertThat(
+        vc.getConfigDb().getAclRules(),
+        equalTo(
+            ImmutableMap.of(
+                "test-acl|RULE_1",
+                AclRule.builder()
+                    .setIpProtocol(17)
+                    .setL4DstPort(161)
+                    .setPacketAction(PacketAction.ACCEPT)
+                    .setPriority(10)
+                    .setSrcIp(Prefix.parse("10.1.4.0/22"))
+                    .build())));
+
+    Configuration c = getOnlyElement(vc.toVendorIndependentConfigurations());
+    IpAccessList ipAccessList = c.getAllInterfaces().get("Ethernet0").getInboundFilter();
+    assertThat(
+        ipAccessList,
+        accepts(
+            Flow.builder()
+                .setIngressNode(c.getHostname())
+                .setIpProtocol(IpProtocol.UDP)
+                .setSrcPort(2323)
+                .setDstPort(161)
+                .setSrcIp(Ip.parse("10.1.4.1"))
+                .build(),
+            ipAccessList.getName(),
+            c));
   }
 }
