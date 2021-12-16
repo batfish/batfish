@@ -12,21 +12,34 @@ import javax.annotation.Nullable;
  * Represents the settings of a VLAN: https://github.com/Azure/SONiC/wiki/Configuration#vlan_member
  */
 public class VlanMember implements Serializable {
+  public enum TaggingMode {
+    TAGGED,
+    UNTAGGED
+  }
+
   private static final String PROP_TAGGING_MODE = "tagging_mode";
 
-  private @Nullable final String _taggingMode;
+  private @Nullable final TaggingMode _taggingMode;
 
-  public @Nullable String getTaggingMode() {
+  public @Nullable TaggingMode getTaggingMode() {
     return _taggingMode;
   }
 
   @JsonCreator
   private @Nonnull static VlanMember create(
-      @Nullable @JsonProperty(PROP_TAGGING_MODE) String taggingMode) {
+      @Nullable @JsonProperty(PROP_TAGGING_MODE) String taggingModeStr) {
+    TaggingMode taggingMode = null;
+    if ("tagged".equals(taggingModeStr)) {
+      taggingMode = TaggingMode.TAGGED;
+    } else if ("untagged".equals(taggingModeStr)) {
+      taggingMode = TaggingMode.UNTAGGED;
+    } else if (taggingModeStr != null) {
+      throw new IllegalArgumentException("Unknown tagging mode " + taggingModeStr);
+    }
     return VlanMember.builder().setTaggingMode(taggingMode).build();
   }
 
-  private VlanMember(@Nullable String taggingMode) {
+  private VlanMember(@Nullable TaggingMode taggingMode) {
     _taggingMode = taggingMode;
   }
 
@@ -60,9 +73,9 @@ public class VlanMember implements Serializable {
   }
 
   public static final class Builder {
-    private String _taggingMode;
+    private TaggingMode _taggingMode;
 
-    public @Nonnull Builder setTaggingMode(@Nullable String taggingMode) {
+    public @Nonnull Builder setTaggingMode(@Nullable TaggingMode taggingMode) {
       this._taggingMode = taggingMode;
       return this;
     }

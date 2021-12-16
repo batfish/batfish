@@ -33,6 +33,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Vrf;
+import org.batfish.vendor.sonic.representation.VlanMember.TaggingMode;
 import org.junit.Test;
 
 public class SonicConversionsTest {
@@ -121,11 +122,11 @@ public class SonicConversionsTest {
                 .build()),
         ImmutableMap.of(
             "Vlan1|Ethernet0",
-            VlanMember.builder().setTaggingMode("tagged").build(),
+            VlanMember.builder().setTaggingMode(TaggingMode.TAGGED).build(),
             "Vlan1|Ethernet1",
-            VlanMember.builder().setTaggingMode("untagged").build(),
+            VlanMember.builder().setTaggingMode(TaggingMode.UNTAGGED).build(),
             "Vlan1|Ethernet2",
-            VlanMember.builder().setTaggingMode("untagged").build()),
+            VlanMember.builder().setTaggingMode(TaggingMode.UNTAGGED).build()),
         ImmutableMap.of(),
         vrf,
         w);
@@ -141,15 +142,6 @@ public class SonicConversionsTest {
         c.getAllInterfaces().get("Ethernet1"),
         allOf(hasSwitchPortMode(SwitchportMode.ACCESS), hasAccessVlan(1)));
     // Ethernet2 does not exist in c -- it should have been created with the right L2 settings
-    assertThat(
-        c.getAllInterfaces().get("Ethernet2"),
-        allOf(
-            hasName("Ethernet2"),
-            hasVrfName(vrf.getName()),
-            hasInterfaceType(InterfaceType.PHYSICAL),
-            hasSwitchPortMode(SwitchportMode.ACCESS),
-            hasAccessVlan(1)));
-    // Ethernet2 does not exist in c -- it should have been created
     assertThat(
         c.getAllInterfaces().get("Ethernet2"),
         allOf(

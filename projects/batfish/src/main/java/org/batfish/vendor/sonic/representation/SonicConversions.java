@@ -4,6 +4,7 @@ import static org.batfish.representation.frr.FrrConversions.SPEED_CONVERSION_FAC
 
 import java.util.Map;
 import java.util.Optional;
+import javax.annotation.Nonnull;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IntegerSpace;
@@ -99,7 +100,7 @@ public class SonicConversions {
           continue;
         }
         switch (vlanMember.getTaggingMode()) {
-          case "tagged":
+          case TAGGED:
             memberInterface.setSwitchport(true);
             memberInterface.setSwitchportMode(SwitchportMode.TRUNK);
             memberInterface.setNativeVlan(vlan.getVlanId());
@@ -108,7 +109,7 @@ public class SonicConversions {
                     .map(IntegerSpace::of)
                     .orElse(IntegerSpace.EMPTY));
             break;
-          case "untagged":
+          case UNTAGGED:
             memberInterface.setSwitchport(true);
             memberInterface.setSwitchportMode(SwitchportMode.ACCESS);
             memberInterface.setAccessVlan(vlan.getVlanId());
@@ -116,7 +117,7 @@ public class SonicConversions {
           default:
             w.redFlag(
                 String.format(
-                    "Unknown tagging_mode %s for vlan member %s",
+                    "Unhandled tagging_mode %s for vlan member %s",
                     vlanMember.getTaggingMode(), memberKey));
         }
       }
@@ -125,7 +126,7 @@ public class SonicConversions {
 
   // Super simple name to type conversion
   // TODO: expand later as needed
-  private static InterfaceType interfaceNameToType(String interfaceName) {
+  private @Nonnull static InterfaceType interfaceNameToType(String interfaceName) {
     if (interfaceName.toLowerCase().startsWith("eth")) {
       return InterfaceType.PHYSICAL;
     }
