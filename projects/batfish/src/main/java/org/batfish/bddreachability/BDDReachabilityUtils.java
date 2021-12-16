@@ -85,6 +85,7 @@ public final class BDDReachabilityUtils {
       assert scope != null; // avoid unused warning
       PriorityQueue<StateExpr> dirtyStates =
           new PriorityQueue<>(Comparator.comparingLong(st -> counts.get(st).longValue()));
+      dirtyStates.addAll(reachableSets.keySet());
 
       while (!dirtyStates.isEmpty()) {
         StateExpr dirtyState = dirtyStates.poll();
