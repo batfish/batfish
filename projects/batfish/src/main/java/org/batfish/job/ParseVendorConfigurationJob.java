@@ -502,6 +502,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
             SonicControlPlaneExtractor extractor =
                 new SonicControlPlaneExtractor(
                     configDbFileText,
+                    _fileResults.get(configDbFilename)._warnings,
                     frrText,
                     frrParser,
                     _fileResults.get(frrFilename)._warnings,
