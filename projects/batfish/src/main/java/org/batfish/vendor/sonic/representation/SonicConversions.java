@@ -229,7 +229,7 @@ public class SonicConversions {
     for (String port : aclTable.getPorts()) {
       Interface viIface = c.getAllInterfaces().get(port);
       if (viIface == null) {
-        if (!port.toLowerCase().equals("ctrlplane")) {
+        if (!port.equalsIgnoreCase("CtrlPlane")) {
           w.redFlag(
               String.format("Port %s referenced in ACL_TABLE %s does not exist.", port, aclName));
         }
