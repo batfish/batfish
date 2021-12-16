@@ -19,15 +19,26 @@ import javax.annotation.Nullable;
  */
 public class AclTable implements Serializable {
 
+  public enum Type {
+    MIRROR,
+    MIRRORV6,
+    L3,
+  }
+
+  public enum Stage {
+    INGRESS,
+    EGRESS
+  }
+
   public @Nonnull List<String> getPorts() {
     return _ports;
   }
 
-  public @Nonnull Optional<String> getStage() {
+  public @Nonnull Optional<Stage> getStage() {
     return Optional.ofNullable(_stage);
   }
 
-  public @Nonnull Optional<String> getType() {
+  public @Nonnull Optional<Type> getType() {
     return Optional.ofNullable(_type);
   }
 
@@ -36,18 +47,18 @@ public class AclTable implements Serializable {
   private static final String PROP_TYPE = "type";
 
   private @Nonnull final List<String> _ports;
-  private @Nullable final String _stage;
-  private @Nullable final String _type;
+  private @Nullable final Stage _stage;
+  private @Nullable final Type _type;
 
   @JsonCreator
   private @Nonnull static AclTable create(
-      @Nullable @JsonProperty(PROP_PORTS) List<String> ports,
-      @Nullable @JsonProperty(PROP_STAGE) String stage,
-      @Nullable @JsonProperty(PROP_TYPE) String type) {
+      @Nullable @JsonProperty(PROP_PORTS) ImmutableList<String> ports,
+      @Nullable @JsonProperty(PROP_STAGE) Stage stage,
+      @Nullable @JsonProperty(PROP_TYPE) Type type) {
     return AclTable.builder().setPorts(ports).setStage(stage).setType(type).build();
   }
 
-  private AclTable(List<String> ports, @Nullable String stage, @Nullable String type) {
+  private AclTable(List<String> ports, @Nullable Stage stage, @Nullable Type type) {
     _ports = ports;
     _stage = stage;
     _type = type;
@@ -87,21 +98,21 @@ public class AclTable implements Serializable {
   }
 
   public static final class Builder {
-    private List<String> _ports;
-    private String _stage;
-    private String _type;
+    private ImmutableList<String> _ports;
+    private Stage _stage;
+    private Type _type;
 
-    public @Nonnull Builder setPorts(@Nullable List<String> ports) {
+    public @Nonnull Builder setPorts(@Nullable ImmutableList<String> ports) {
       this._ports = ports;
       return this;
     }
 
-    public @Nonnull Builder setStage(@Nullable String stage) {
+    public @Nonnull Builder setStage(@Nullable Stage stage) {
       this._stage = stage;
       return this;
     }
 
-    public @Nonnull Builder setType(@Nullable String type) {
+    public @Nonnull Builder setType(@Nullable Type type) {
       this._type = type;
       return this;
     }

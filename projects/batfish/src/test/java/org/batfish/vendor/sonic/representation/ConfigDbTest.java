@@ -15,6 +15,8 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Prefix;
 import org.batfish.vendor.sonic.representation.VlanMember.TaggingMode;
 import org.batfish.vendor.sonic.representation.AclRule.PacketAction;
+import org.batfish.vendor.sonic.representation.AclTable.Stage;
+import org.batfish.vendor.sonic.representation.AclTable.Type;
 import org.junit.Test;
 
 public class ConfigDbTest {
@@ -50,8 +52,8 @@ public class ConfigDbTest {
                 "ctrl-plane-snmp-acl",
                 AclTable.builder()
                     .setPorts(ImmutableList.of("CtrlPlane"))
-                    .setStage("INGRESS")
-                    .setType("L3")
+                    .setStage(Stage.INGRESS)
+                    .setType(Type.L3)
                     .build())));
   }
 

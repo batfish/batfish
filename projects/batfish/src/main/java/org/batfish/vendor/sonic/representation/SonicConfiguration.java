@@ -2,6 +2,7 @@ package org.batfish.vendor.sonic.representation;
 
 import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.vendor.sonic.representation.SonicConversions.convertAcls;
 import static org.batfish.vendor.sonic.representation.SonicConversions.convertPorts;
 import static org.batfish.vendor.sonic.representation.SonicConversions.convertVlans;
 
@@ -83,6 +84,8 @@ public class SonicConfiguration extends FrrVendorConfiguration {
         _configDb.getVlanInterfaces(),
         c.getDefaultVrf(),
         _w);
+
+    convertAcls(c, _configDb.getAclTables(), _configDb.getAclRules(), _w);
 
     return ImmutableList.of(c);
   }
