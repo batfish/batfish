@@ -59,7 +59,7 @@ public final class JFactory extends BDDFactory {
    * entries.
    */
   // Warning: we've never tried with this flag false.
-  private static final boolean FLUSH_CACHE_ON_GC = true;
+  private static final boolean FLUSH_CACHE_ON_GC = false;
 
   /**
    * If set, assertions will be made on BDD internal computations. Used in developing the factory.
