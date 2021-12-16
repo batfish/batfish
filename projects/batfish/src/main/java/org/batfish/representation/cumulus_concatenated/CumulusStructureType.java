@@ -1,9 +1,9 @@
 package org.batfish.representation.cumulus_concatenated;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import com.google.common.collect.ImmutableMap;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import javax.annotation.Nonnull;
 import org.batfish.representation.frr.FrrStructureType;
 import org.batfish.vendor.StructureType;
@@ -37,18 +37,26 @@ public enum CumulusStructureType implements StructureType {
     _description = frrStructureType.getDescription();
   }
 
-  private static final Map<String, CumulusStructureType> MAP = initMap();
+  private static final Map<FrrStructureType, CumulusStructureType> FRR_TO_CUMULUS_MAP = initMap();
 
   public static CumulusStructureType fromFrrStructureType(
       @Nonnull FrrStructureType frrStructureType) {
-    checkArgument(MAP.containsKey(frrStructureType.getDescription()));
-    return MAP.get(frrStructureType.getDescription());
+    // initMap ensures that all keys exists
+    return FRR_TO_CUMULUS_MAP.get(frrStructureType);
   }
 
-  private static Map<String, CumulusStructureType> initMap() {
-    ImmutableMap.Builder<String, CumulusStructureType> map = ImmutableMap.builder();
-    for (CumulusStructureType value : CumulusStructureType.values()) {
-      map.put(value.getDescription(), value);
+  private static Map<FrrStructureType, CumulusStructureType> initMap() {
+    ImmutableMap.Builder<FrrStructureType, CumulusStructureType> map = ImmutableMap.builder();
+    for (FrrStructureType frrType : FrrStructureType.values()) {
+      CumulusStructureType matchingCumulusType =
+          Arrays.stream(CumulusStructureType.values())
+              .filter(cType -> cType.getDescription().equals(frrType.getDescription()))
+              .findFirst()
+              .orElseThrow(
+                  () ->
+                      new NoSuchElementException(
+                          "No CumulusStructureType exists for FrrStructureType " + frrType));
+      map.put(frrType, matchingCumulusType);
     }
     return map.build();
   }

@@ -467,9 +467,7 @@ public final class CumulusInterfacesConfigurationBuilder extends CumulusInterfac
         return CumulusStructureUsage.VXLAN_SELF_REFERENCE;
       default:
         throw new IllegalArgumentException(
-            String.format(
-                "CumulusStructureType %s has no self-reference usage",
-                structureType.getDescription()));
+            String.format("CumulusStructureType %s has no self-reference usage", structureType));
     }
   }
 
