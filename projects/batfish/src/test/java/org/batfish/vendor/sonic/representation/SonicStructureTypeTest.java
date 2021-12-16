@@ -1,15 +1,13 @@
-package org.batfish.representation.cumulus_concatenated;
+package org.batfish.vendor.sonic.representation;
 
-import static org.batfish.representation.cumulus_concatenated.CumulusStructureType.fromFrrStructureType;
+import static org.batfish.vendor.sonic.representation.SonicStructureType.fromFrrStructureType;
 
 import org.batfish.representation.frr.FrrStructureType;
 import org.junit.Test;
 
-public class CumulusStructureTypeTest {
-
+public class SonicStructureTypeTest {
   /**
-   * Test that there is a {@link CumulusStructureType} corresponding to each {@link
-   * FrrStructureType}.
+   * Test that there is a {@link SonicStructureType} corresponding to each {@link FrrStructureType}.
    */
   @Test
   public void testFrrInheritance() {
