@@ -1,7 +1,6 @@
 package org.batfish.question.a10;
 
-import static org.batfish.vendor.a10.representation.A10Conversion.isVirtualServerEnabled;
-import static org.batfish.vendor.a10.representation.A10Conversion.isVirtualServerPortEnabled;
+import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
@@ -139,17 +138,18 @@ public class A10VirtualServerConfigurationAnswerer extends Answerer {
                               ImmutableList.of(
                                   member.getName(),
                                   Integer.toString(member.getPort()),
+                                  firstNonNull(member.getEnable(), true) ? "enabled" : "disabled",
                                   getServerTarget(member.getName(), a10Vc)))
                       .collect(ImmutableSet.toImmutableSet());
           rows.add(
               getRow(
                   node,
                   virtualServer.getName(),
-                  isVirtualServerEnabled(virtualServer),
+                  firstNonNull(virtualServer.getEnable(), true),
                   ((VirtualServerTargetVisitor<Ip>) VirtualServerTargetAddress::getAddress)
                       .visit(virtualServer.getTarget()),
                   virtualServerPort.getNumber(),
-                  isVirtualServerPortEnabled(virtualServerPort),
+                  firstNonNull(virtualServerPort.getEnable(), true),
                   virtualServerPort.getType(),
                   virtualServerPort.getName(),
                   serviceGroupName,

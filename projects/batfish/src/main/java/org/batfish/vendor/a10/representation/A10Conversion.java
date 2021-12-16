@@ -235,13 +235,13 @@ public class A10Conversion {
     return Optional.ofNullable(current);
   }
 
-  public static boolean isVirtualServerEnabled(VirtualServer virtualServer) {
+  static boolean isVirtualServerEnabled(VirtualServer virtualServer) {
     return firstNonNull(virtualServer.getEnable(), true)
         && virtualServer.getPorts().values().stream()
             .anyMatch(A10Conversion::isVirtualServerPortEnabled);
   }
 
-  public static boolean isVirtualServerPortEnabled(VirtualServerPort port) {
+  static boolean isVirtualServerPortEnabled(VirtualServerPort port) {
     return firstNonNull(port.getEnable(), true);
   }
 
