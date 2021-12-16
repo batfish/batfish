@@ -9,7 +9,6 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.SetMultimap;
-import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
 import com.google.common.collect.Table;
 import com.google.common.collect.Tables;
@@ -84,10 +83,8 @@ public final class BDDReachabilityUtils {
               Set<BDD> inputs = dirtyInputs.removeAll(dirtyState);
               assert !inputs.isEmpty();
               BDD prior = reachableSets.get(dirtyState);
-              BDD newValue =
-                  prior == null
-                      ? factory.orAll(inputs)
-                      : factory.orAll(Sets.union(inputs, ImmutableSet.of(prior)));
+              BDD learned = factory.orAll(inputs);
+              BDD newValue = prior == null ? learned : learned.or(prior);
               if (prior != null && newValue.equals(prior)) {
                 // No change, so no need to update neighbors.
                 return;
@@ -100,10 +97,9 @@ public final class BDDReachabilityUtils {
                 return;
               }
 
-              BDD dirtyStateBDD = reachableSets.get(dirtyState);
               dirtyStateEdges.forEach(
                   (neighbor, edge) -> {
-                    BDD result = traverse.apply(edge, dirtyStateBDD);
+                    BDD result = traverse.apply(edge, learned);
                     if (!result.isZero()) {
                       dirtyInputs.put(neighbor, result);
                     }
