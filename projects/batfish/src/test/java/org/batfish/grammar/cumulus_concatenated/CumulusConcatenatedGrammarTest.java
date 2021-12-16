@@ -975,7 +975,7 @@ public class CumulusConcatenatedGrammarTest {
     }
   }
 
-  @Test
+  @Test(expected = AssertionError.class) // https://github.com/batfish/batfish/issues/7819
   public void testIpReuse_differentAddressSamePrefix() throws IOException {
     Configuration c = parseConfig("ip_reuse_different_address_same_prefix");
     assertThat(
