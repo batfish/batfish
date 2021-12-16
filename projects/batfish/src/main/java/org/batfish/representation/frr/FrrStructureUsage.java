@@ -39,7 +39,7 @@ public enum FrrStructureUsage implements StructureUsage {
 
   private final @Nonnull String _description;
 
-  private FrrStructureUsage(String description) {
+  FrrStructureUsage(String description) {
     _description = description;
   }
 

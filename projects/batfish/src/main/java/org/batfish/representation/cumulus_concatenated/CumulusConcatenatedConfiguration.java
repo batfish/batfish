@@ -3,6 +3,7 @@ package org.batfish.representation.cumulus_concatenated;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.representation.cumulus_concatenated.CumulusStructureType.fromFrrStructureType;
 import static org.batfish.representation.cumulus_concatenated.InterfaceConverter.BRIDGE_NAME;
 import static org.batfish.representation.cumulus_concatenated.InterfaceConverter.DEFAULT_BRIDGE_PORTS;
 import static org.batfish.representation.cumulus_concatenated.InterfaceConverter.DEFAULT_BRIDGE_PVID;
@@ -76,8 +77,6 @@ import org.batfish.representation.frr.FrrStructureUsage;
 import org.batfish.representation.frr.FrrVendorConfiguration;
 import org.batfish.representation.frr.Vrf;
 import org.batfish.representation.frr.Vxlan;
-import org.batfish.vendor.StructureType;
-import org.batfish.vendor.StructureUsage;
 import org.batfish.vendor.VendorConfiguration;
 
 /**
@@ -892,34 +891,16 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
     return _interfacesConfiguration.getInterfaces().get(ifaceName).getAddresses();
   }
 
-  /**
-   * {@link org.batfish.grammar.frr.FrrConfigurationBuilder} may call this function using FRR types,
-   * so we convert to Cumulus-specific types and call the parent
-   */
   @Override
-  public void referenceStructure(StructureType type, String name, StructureUsage usage, int line) {
-    CumulusStructureType cumulusType =
-        type instanceof FrrStructureType
-            ? CumulusStructureType.fromFrrStructureType((FrrStructureType) type)
-            : (CumulusStructureType) type;
-    CumulusStructureUsage cumulusUsage =
-        usage instanceof FrrStructureUsage
-            ? CumulusStructureUsage.fromFrrStructureUsage((FrrStructureUsage) usage)
-            : (CumulusStructureUsage) usage;
-    super.referenceStructure(cumulusType, name, cumulusUsage, line);
+  public void referenceStructure(
+      FrrStructureType frrStructureType, String name, FrrStructureUsage usage, int line) {
+    super.referenceStructure(fromFrrStructureType(frrStructureType), name, usage, line);
   }
 
-  /**
-   * {@link org.batfish.grammar.frr.FrrConfigurationBuilder} may call this function using FRR types,
-   * so we convert to Cumulus-specific types and call the parent
-   */
   @Override
-  public void defineStructure(StructureType type, String name, ParserRuleContext ctx) {
-    CumulusStructureType cumulusType =
-        type instanceof FrrStructureType
-            ? CumulusStructureType.fromFrrStructureType((FrrStructureType) type)
-            : (CumulusStructureType) type;
-    super.defineStructure(cumulusType, name, ctx);
+  public void defineStructure(
+      FrrStructureType frrStructureType, String name, ParserRuleContext ctx) {
+    super.defineStructure(fromFrrStructureType(frrStructureType), name, ctx);
   }
 
   public static Builder builder() {

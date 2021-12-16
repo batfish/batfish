@@ -12,7 +12,7 @@ public enum CumulusStructureType implements StructureType {
   BOND("bond"),
   VXLAN("vxlan"),
 
-  // delegated to FRR
+  // these are defined in FRR files, so convert from there
   ABSTRACT_INTERFACE(FrrStructureType.ABSTRACT_INTERFACE),
   IP_AS_PATH_ACCESS_LIST(FrrStructureType.IP_AS_PATH_ACCESS_LIST),
   IP_COMMUNITY_LIST(FrrStructureType.IP_COMMUNITY_LIST),
@@ -56,25 +56,5 @@ public enum CumulusStructureType implements StructureType {
   @Override
   public @Nonnull String getDescription() {
     return _description;
-  }
-
-  public CumulusStructureUsage selfReference() {
-    switch (this) {
-      case BOND:
-        return CumulusStructureUsage.BOND_SELF_REFERENCE;
-      case INTERFACE:
-        return CumulusStructureUsage.INTERFACE_SELF_REFERENCE;
-      case LOOPBACK:
-        return CumulusStructureUsage.LOOPBACK_SELF_REFERENCE;
-      case VLAN:
-        return CumulusStructureUsage.VLAN_SELF_REFERENCE;
-      case VRF:
-        return CumulusStructureUsage.VRF_SELF_REFERENCE;
-      case VXLAN:
-        return CumulusStructureUsage.VXLAN_SELF_REFERENCE;
-      default:
-        throw new IllegalArgumentException(
-            String.format("CumulusStructureType %s has no self-reference usage", _description));
-    }
   }
 }

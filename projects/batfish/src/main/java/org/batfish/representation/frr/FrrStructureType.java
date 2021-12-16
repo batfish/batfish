@@ -1,9 +1,13 @@
 package org.batfish.representation.frr;
 
 import javax.annotation.Nonnull;
-import org.batfish.vendor.StructureType;
 
-public enum FrrStructureType implements StructureType {
+/**
+ * An enum with structure types that can appear in frr.conf files. It does not inherit {@link
+ * org.batfish.vendor.StructureType} because FRR is not an independent, stand-alone vendor. Vendors
+ * that are based on FRR (e.g., Cumulus, Sonic) "cast" these types into their own structure types.
+ */
+public enum FrrStructureType {
   ABSTRACT_INTERFACE("abstract interface"),
   IP_AS_PATH_ACCESS_LIST("ip as-path access-list"),
   IP_COMMUNITY_LIST("ip community-list"),
@@ -20,11 +24,10 @@ public enum FrrStructureType implements StructureType {
 
   private final @Nonnull String _description;
 
-  private FrrStructureType(String description) {
+  FrrStructureType(String description) {
     _description = description;
   }
 
-  @Override
   public @Nonnull String getDescription() {
     return _description;
   }

@@ -451,6 +451,28 @@ public final class CumulusInterfacesConfigurationBuilder extends CumulusInterfac
     _config.getInterfacesConfiguration().setAuto(name);
   }
 
+  private static CumulusStructureUsage toSelfReferenceUsage(CumulusStructureType structureType) {
+    switch (structureType) {
+      case BOND:
+        return CumulusStructureUsage.BOND_SELF_REFERENCE;
+      case INTERFACE:
+        return CumulusStructureUsage.INTERFACE_SELF_REFERENCE;
+      case LOOPBACK:
+        return CumulusStructureUsage.LOOPBACK_SELF_REFERENCE;
+      case VLAN:
+        return CumulusStructureUsage.VLAN_SELF_REFERENCE;
+      case VRF:
+        return CumulusStructureUsage.VRF_SELF_REFERENCE;
+      case VXLAN:
+        return CumulusStructureUsage.VXLAN_SELF_REFERENCE;
+      default:
+        throw new IllegalArgumentException(
+            String.format(
+                "CumulusStructureType %s has no self-reference usage",
+                structureType.getDescription()));
+    }
+  }
+
   @Override
   public void exitS_iface(S_ifaceContext ctx) {
     // _currentIface will be null for the loopback interface
@@ -459,12 +481,7 @@ public final class CumulusInterfacesConfigurationBuilder extends CumulusInterfac
       _config.referenceStructure(
           _currentIface.getType(),
           _currentIface.getName(),
-          _currentIface.getType().selfReference(),
-          ctx.getStart().getLine());
-      _config.referenceStructure(
-          _currentIface.getType(),
-          _currentIface.getName(),
-          _currentIface.getType().selfReference(),
+          toSelfReferenceUsage(_currentIface.getType()),
           ctx.getStart().getLine());
       _currentIface = null;
       _currentIfaceName = null;
