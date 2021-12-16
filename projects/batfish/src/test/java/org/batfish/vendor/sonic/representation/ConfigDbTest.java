@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.vendor.sonic.representation.VlanMember.TaggingMode;
 import org.junit.Test;
 
 public class ConfigDbTest {
@@ -178,7 +179,8 @@ public class ConfigDbTest {
         deserialize(input, new Warnings()).getVlanMembers(),
         equalTo(
             ImmutableMap.of(
-                "Vlan2|Ethernet2", VlanMember.builder().setTaggingMode("tagged").build())));
+                "Vlan2|Ethernet2",
+                VlanMember.builder().setTaggingMode(TaggingMode.TAGGED).build())));
   }
 
   @Test

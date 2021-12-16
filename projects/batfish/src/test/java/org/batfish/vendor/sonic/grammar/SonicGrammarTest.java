@@ -8,6 +8,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInterfaceType;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrfName;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
@@ -132,6 +133,7 @@ public class SonicGrammarTest {
         c.getAllInterfaces().get("Vlan1"),
         allOf(
             hasName("Vlan1"),
+            hasVlan(1),
             hasVrfName("default"),
             hasAddress("172.19.0.1/24"),
             hasInterfaceType(InterfaceType.VLAN)));
