@@ -5,7 +5,7 @@ import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasN
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasCommunities;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.isEvpnType3RouteThat;
-import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasBumTransportIps;
+import static org.batfish.datamodel.matchers.VniMatchers.hasBumTransportIps;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;

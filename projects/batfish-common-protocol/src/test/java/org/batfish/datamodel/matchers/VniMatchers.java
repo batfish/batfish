@@ -2,37 +2,49 @@ package org.batfish.datamodel.matchers;
 
 import static org.hamcrest.Matchers.equalTo;
 
+import java.util.Collection;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.matchers.VniSettingsMatchersImpl.HasBumTransportIps;
-import org.batfish.datamodel.matchers.VniSettingsMatchersImpl.HasBumTransportMethod;
-import org.batfish.datamodel.matchers.VniSettingsMatchersImpl.HasSourceAddress;
-import org.batfish.datamodel.matchers.VniSettingsMatchersImpl.HasUdpPort;
-import org.batfish.datamodel.matchers.VniSettingsMatchersImpl.HasVlan;
-import org.batfish.datamodel.matchers.VniSettingsMatchersImpl.HasVni;
+import org.batfish.datamodel.matchers.VniMatchersImpl.HasBumTransportIps;
+import org.batfish.datamodel.matchers.VniMatchersImpl.HasBumTransportMethod;
+import org.batfish.datamodel.matchers.VniMatchersImpl.HasLearnedNexthopVtepIps;
+import org.batfish.datamodel.matchers.VniMatchersImpl.HasSourceAddress;
+import org.batfish.datamodel.matchers.VniMatchersImpl.HasUdpPort;
+import org.batfish.datamodel.matchers.VniMatchersImpl.HasVlan;
+import org.batfish.datamodel.matchers.VniMatchersImpl.HasVni;
 import org.batfish.datamodel.vxlan.Layer2Vni;
+import org.batfish.datamodel.vxlan.Layer3Vni;
 import org.batfish.datamodel.vxlan.Vni;
 import org.hamcrest.Matcher;
 
-public class VniSettingsMatchers {
+public class VniMatchers {
 
-  private VniSettingsMatchers() {}
+  private VniMatchers() {}
 
   /**
-   * Provides a matcher that matches if the {@link Vni}'s BUM transport IPs matches the {@code
+   * Provides a matcher that matches if the {@link Layer2Vni}'s BUM transport IPs matches the {@code
    * subMatcher}.
    */
-  public static @Nonnull Matcher<Vni> hasBumTransportIps(
+  public static @Nonnull Matcher<Layer2Vni> hasBumTransportIps(
       @Nonnull Matcher<? super Iterable<Ip>> subMatcher) {
     return new HasBumTransportIps(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the {@link Layer3Vni}'s learned next-hop VTEP IPs matches
+   * the {@code subMatcher}.
+   */
+  public static @Nonnull Matcher<Layer3Vni> hasLearnedNexthopVtepIps(
+      @Nonnull Matcher<? super Collection<Ip>> subMatcher) {
+    return new HasLearnedNexthopVtepIps(subMatcher);
   }
 
   /**
    * Provides a matcher that matches if the {@link Vni}'s BUM transport method matches the {@code
    * subMatcher}.
    */
-  public static @Nonnull Matcher<Vni> hasBumTransportMethod(
+  public static @Nonnull Matcher<Layer2Vni> hasBumTransportMethod(
       @Nonnull Matcher<? super BumTransportMethod> subMatcher) {
     return new HasBumTransportMethod(subMatcher);
   }
