@@ -2,6 +2,7 @@ package org.batfish.question.edges;
 
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.batfish.datamodel.vxlan.Layer2Vni.testBuilder;
+import static org.batfish.datamodel.vxlan.VniLayer.LAYER_2;
 import static org.batfish.question.edges.EdgesAnswerer.COL_AS_NUMBER;
 import static org.batfish.question.edges.EdgesAnswerer.COL_INTERFACE;
 import static org.batfish.question.edges.EdgesAnswerer.COL_IP;
@@ -485,8 +486,16 @@ public class EdgesAnswererTest {
                     includeNodes,
                     includeRemoteNodes,
                     EndpointPair.unordered(
-                        VxlanNode.builder().setHostname(VXLAN_NODE1).setVni(VXLAN_VNI).build(),
-                        VxlanNode.builder().setHostname(VXLAN_NODE2).setVni(VXLAN_VNI).build()))
+                        VxlanNode.builder()
+                            .setHostname(VXLAN_NODE1)
+                            .setVni(VXLAN_VNI)
+                            .setVniLayer(LAYER_2)
+                            .build(),
+                        VxlanNode.builder()
+                            .setHostname(VXLAN_NODE2)
+                            .setVni(VXLAN_VNI)
+                            .setVniLayer(LAYER_2)
+                            .build()))
                 .collect(ImmutableMultiset.toImmutableMultiset())));
   }
 
@@ -496,8 +505,10 @@ public class EdgesAnswererTest {
     Map<String, Configuration> configurations = nc.getMap();
     Set<String> includeNodes = configurations.keySet();
     Set<String> includeRemoteNodes = configurations.keySet();
-    VxlanNode node1 = VxlanNode.builder().setHostname(VXLAN_NODE1).setVni(VXLAN_VNI).build();
-    VxlanNode node2 = VxlanNode.builder().setHostname(VXLAN_NODE2).setVni(VXLAN_VNI).build();
+    VxlanNode node1 =
+        VxlanNode.builder().setHostname(VXLAN_NODE1).setVni(VXLAN_VNI).setVniLayer(LAYER_2).build();
+    VxlanNode node2 =
+        VxlanNode.builder().setHostname(VXLAN_NODE2).setVni(VXLAN_VNI).setVniLayer(LAYER_2).build();
 
     // no filter
     assertThat(
@@ -531,8 +542,16 @@ public class EdgesAnswererTest {
     assertThat(
         vxlanEdgeToRow(
             nc,
-            VxlanNode.builder().setHostname(VXLAN_NODE1).setVni(VXLAN_VNI).build(),
-            VxlanNode.builder().setHostname(VXLAN_NODE2).setVni(VXLAN_VNI).build()),
+            VxlanNode.builder()
+                .setHostname(VXLAN_NODE1)
+                .setVni(VXLAN_VNI)
+                .setVniLayer(LAYER_2)
+                .build(),
+            VxlanNode.builder()
+                .setHostname(VXLAN_NODE2)
+                .setVni(VXLAN_VNI)
+                .setVniLayer(LAYER_2)
+                .build()),
         equalTo(
             Row.builder()
                 .put(EdgesAnswerer.COL_VNI, VXLAN_VNI)
