@@ -12,6 +12,7 @@ import static org.batfish.question.a10.A10VirtualServerConfigurationAnswerer.COL
 import static org.batfish.question.a10.A10VirtualServerConfigurationAnswerer.COL_VIRTUAL_SERVER_IP;
 import static org.batfish.question.a10.A10VirtualServerConfigurationAnswerer.COL_VIRTUAL_SERVER_NAME;
 import static org.batfish.question.a10.A10VirtualServerConfigurationAnswerer.COL_VIRTUAL_SERVER_PORT;
+import static org.batfish.question.a10.A10VirtualServerConfigurationAnswerer.COL_VIRTUAL_SERVER_PORT_ENABLED;
 import static org.batfish.question.a10.A10VirtualServerConfigurationAnswerer.COL_VIRTUAL_SERVER_PORT_TYPE_NAME;
 import static org.batfish.question.a10.A10VirtualServerConfigurationAnswerer.COL_VIRTUAL_SERVER_TYPE;
 import static org.hamcrest.Matchers.allOf;
@@ -71,6 +72,7 @@ public class A10VirtualServerConfigurationAnswererTest {
                     hasColumn(COL_VIRTUAL_SERVER_ENABLED, equalTo(true), Schema.BOOLEAN),
                     hasColumn(COL_VIRTUAL_SERVER_IP, equalTo(Ip.parse("10.10.10.1")), Schema.IP),
                     hasColumn(COL_VIRTUAL_SERVER_PORT, equalTo(443), Schema.INTEGER),
+                    hasColumn(COL_VIRTUAL_SERVER_PORT_ENABLED, equalTo(true), Schema.BOOLEAN),
                     hasColumn(COL_VIRTUAL_SERVER_TYPE, equalTo("TCP"), Schema.STRING),
                     hasColumn(
                         COL_VIRTUAL_SERVER_PORT_TYPE_NAME, equalTo("vs1.10000"), Schema.STRING),

@@ -1,5 +1,8 @@
 package org.batfish.question.a10;
 
+import static org.batfish.vendor.a10.representation.A10Conversion.isVirtualServerEnabled;
+import static org.batfish.vendor.a10.representation.A10Conversion.isVirtualServerPortEnabled;
+
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -39,6 +42,7 @@ public class A10VirtualServerConfigurationAnswerer extends Answerer {
   public static final String COL_VIRTUAL_SERVER_IP = "Virtual_Server_IP";
   public static final String COL_VIRTUAL_SERVER_ENABLED = "Virtual_Server_Enabled";
   public static final String COL_VIRTUAL_SERVER_PORT = "Virtual_Server_Port";
+  public static final String COL_VIRTUAL_SERVER_PORT_ENABLED = "Virtual_Server_Port_Enabled";
   public static final String COL_VIRTUAL_SERVER_TYPE = "Virtual_Server_Type";
   public static final String COL_VIRTUAL_SERVER_PORT_TYPE_NAME = "Virtual_Server_Port_Type_Name";
   public static final String COL_SERVICE_GROUP_NAME = "Service_Group_Name";
@@ -64,6 +68,13 @@ public class A10VirtualServerConfigurationAnswerer extends Answerer {
         .add(
             new ColumnMetadata(
                 COL_VIRTUAL_SERVER_PORT, Schema.INTEGER, "Virtual Server Port", true, false))
+        .add(
+            new ColumnMetadata(
+                COL_VIRTUAL_SERVER_PORT_ENABLED,
+                Schema.BOOLEAN,
+                "Virtual Server Port Enabled",
+                true,
+                false))
         .add(
             new ColumnMetadata(
                 COL_VIRTUAL_SERVER_TYPE, Schema.STRING, "Virtual Server Type", true, false))
@@ -134,10 +145,11 @@ public class A10VirtualServerConfigurationAnswerer extends Answerer {
               getRow(
                   node,
                   virtualServer.getName(),
-                  virtualServer.getEnable(),
+                  isVirtualServerEnabled(virtualServer),
                   ((VirtualServerTargetVisitor<Ip>) VirtualServerTargetAddress::getAddress)
                       .visit(virtualServer.getTarget()),
                   virtualServerPort.getNumber(),
+                  isVirtualServerPortEnabled(virtualServerPort),
                   virtualServerPort.getType(),
                   virtualServerPort.getName(),
                   serviceGroupName,
@@ -163,9 +175,10 @@ public class A10VirtualServerConfigurationAnswerer extends Answerer {
   private static Row getRow(
       Node node,
       String virtualServerName,
-      Boolean virtualServerEnabled,
+      boolean virtualServerEnabled,
       Ip virtualServerIp,
       int virtualServerPort,
+      boolean virtualServerPortEnabled,
       VirtualServerPort.Type virtualServerType,
       String virtualServerPortTypeName,
       @Nullable String serviceGroupName,
@@ -179,6 +192,7 @@ public class A10VirtualServerConfigurationAnswerer extends Answerer {
         .put(COL_VIRTUAL_SERVER_ENABLED, virtualServerEnabled)
         .put(COL_VIRTUAL_SERVER_IP, virtualServerIp)
         .put(COL_VIRTUAL_SERVER_PORT, virtualServerPort)
+        .put(COL_VIRTUAL_SERVER_PORT_ENABLED, virtualServerPortEnabled)
         .put(COL_VIRTUAL_SERVER_TYPE, virtualServerType)
         .put(COL_VIRTUAL_SERVER_PORT_TYPE_NAME, virtualServerPortTypeName)
         .put(COL_SERVICE_GROUP_NAME, serviceGroupName)
