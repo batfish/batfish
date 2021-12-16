@@ -98,7 +98,7 @@ public class SonicGrammarTest {
         ImmutableMap.of("eth0", new L3Interface(ConcreteInterfaceAddress.parse("1.1.1.1/24"))),
         vc.getConfigDb().getMgmtInterfaces());
     assertEquals(
-        ImmutableMap.of("eth0", Port.builder().setAdminStatusUp(true).build()),
+        ImmutableMap.of("eth0", Port.builder().setAdminStatusUp(true).setAlias("eth0").build()),
         vc.getConfigDb().getMgmtPorts());
     assertEquals(
         ImmutableMap.of(

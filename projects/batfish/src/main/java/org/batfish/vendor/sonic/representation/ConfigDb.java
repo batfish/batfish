@@ -247,7 +247,9 @@ public class ConfigDb implements Serializable {
       ConfigDb.Builder configDb = ConfigDb.builder();
       TreeNode tree = p.readValueAsTree();
       Iterator<String> fieldIterator = tree.fieldNames();
-      ObjectMapper mapper = BatfishObjectMapper.ignoreUnknownMapper();
+      // this mapper is used to convert the child trees. by default, it will not ignore unknown keys
+      // inside children. the child classes may choose to ignore keys via Jackson annotation.
+      ObjectMapper mapper = BatfishObjectMapper.mapper();
       while (fieldIterator.hasNext()) {
         String field = fieldIterator.next();
         TreeNode value = tree.get(field);

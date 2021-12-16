@@ -15,6 +15,7 @@ import javax.annotation.Nullable;
  */
 public class MgmtVrf implements Serializable {
   private static final String PROP_MGMT_VRF_ENABLED = "mgmtVrfEnabled";
+  private static final String PROP_IN_BAND_MGMT_ENABLED = "in_band_mgmt_enabled";
 
   private @Nullable final Boolean _mgmtVrfEnabled;
 
@@ -24,7 +25,9 @@ public class MgmtVrf implements Serializable {
 
   @JsonCreator
   private @Nonnull static MgmtVrf create(
+      @Nullable @JsonProperty(PROP_IN_BAND_MGMT_ENABLED) String inBandMgmtEnabled,
       @Nullable @JsonProperty(PROP_MGMT_VRF_ENABLED) String mgmtVrfEnabled) {
+    // ignore PROP_IN_BAND_MGMT_ENABLED
     return MgmtVrf.builder()
         .setMgmtVrfEnabled(Optional.ofNullable(mgmtVrfEnabled).map("true"::equals).orElse(null))
         .build();
