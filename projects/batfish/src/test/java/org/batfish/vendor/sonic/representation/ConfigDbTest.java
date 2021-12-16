@@ -149,31 +149,21 @@ public class ConfigDbTest {
         "{ \"VLAN\": { \"Vlan2\": {\"dhcp_servers\": [\"1.1.1.1\"], \"members\": [\"Ethernet0\"],"
             + " \"vlanid\": \"2\"}}}";
     assertThat(
-        deserialize(input, new Warnings()),
+        deserialize(input, new Warnings()).getVlans(),
         equalTo(
-            ConfigDb.builder()
-                .setVlans(
-                    ImmutableMap.of(
-                        "Vlan2",
-                        Vlan.builder()
-                            .setMembers(ImmutableList.of("Ethernet0"))
-                            .setVlanId(2)
-                            .build()))
-                .build()));
+            ImmutableMap.of(
+                "Vlan2",
+                Vlan.builder().setMembers(ImmutableList.of("Ethernet0")).setVlanId(2).build())));
   }
 
   @Test
   public void testDeserializationVlanInterface() throws JsonProcessingException {
     String input = "{ \"VLAN_INTERFACE\": {\"Vlan2|10.11.150.11/16\": {}}}";
     assertThat(
-        deserialize(input, new Warnings()),
+        deserialize(input, new Warnings()).getVlanInterfaces(),
         equalTo(
-            ConfigDb.builder()
-                .setVlanInterfaces(
-                    ImmutableMap.of(
-                        "Vlan2",
-                        new L3Interface(ConcreteInterfaceAddress.parse("10.11.150.11/16"))))
-                .build()));
+            ImmutableMap.of(
+                "Vlan2", new L3Interface(ConcreteInterfaceAddress.parse("10.11.150.11/16")))));
   }
 
   @Test
@@ -184,15 +174,11 @@ public class ConfigDbTest {
             + "            \"tagging_mode\": \"tagged\""
             + "        }"
             + "}}";
-
     assertThat(
-        deserialize(input, new Warnings()),
+        deserialize(input, new Warnings()).getVlanMembers(),
         equalTo(
-            ConfigDb.builder()
-                .setVlanMembers(
-                    ImmutableMap.of(
-                        "Vlan2|Ethernet2", VlanMember.builder().setTaggingMode("tagged").build()))
-                .build()));
+            ImmutableMap.of(
+                "Vlan2|Ethernet2", VlanMember.builder().setTaggingMode("tagged").build())));
   }
 
   @Test
