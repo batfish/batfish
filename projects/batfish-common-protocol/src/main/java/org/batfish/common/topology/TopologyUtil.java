@@ -350,7 +350,8 @@ public final class TopologyUtil {
       @Nonnull Layer1Topology layer1LogicalTopology,
       VxlanTopology vxlanTopology,
       @Nonnull Map<String, Configuration> configurations) {
-    if (layer1LogicalTopology.isEmpty() && vxlanTopology.getGraph().edges().isEmpty()) {
+    if (layer1LogicalTopology.isEmpty()
+        && !vxlanTopology.getLayer2VniEdges().findAny().isPresent()) {
       return Layer2Topology.EMPTY;
     }
     Layer2Topology.Builder l2TopologyBuilder = Layer2Topology.builder();
@@ -365,7 +366,8 @@ public final class TopologyUtil {
             .map(Layer1Node::getHostname)
             .collect(ImmutableSet.toImmutableSet());
     Set<String> nodesWithVxlan =
-        vxlanTopology.getGraph().edges().stream()
+        vxlanTopology
+            .getLayer2VniEdges()
             .flatMap(edge -> Stream.of(edge.nodeU(), edge.nodeV()))
             .map(VxlanNode::getHostname)
             .collect(ImmutableSet.toImmutableSet());
@@ -413,7 +415,7 @@ public final class TopologyUtil {
    */
   @VisibleForTesting
   static @Nonnull Stream<Layer2Edge> computeVniInterNodeEdges(VxlanTopology vxlanTopology) {
-    return vxlanTopology.getGraph().edges().stream().flatMap(TopologyUtil::toVniVniEdges);
+    return vxlanTopology.getLayer2VniEdges().flatMap(TopologyUtil::toVniVniEdges);
   }
 
   /**

@@ -4,6 +4,8 @@ import static com.google.common.collect.ImmutableSortedSet.of;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Names.generatedTenantVniInterfaceName;
 import static org.batfish.datamodel.vxlan.Layer2Vni.testBuilder;
+import static org.batfish.datamodel.vxlan.VniLayer.LAYER_2;
+import static org.batfish.datamodel.vxlan.VniLayer.LAYER_3;
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.addTenantVniInterfaces;
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.addVniEdge;
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.addVniEdges;
@@ -227,8 +229,12 @@ public final class VxlanTopologyUtilsTest {
         equalTo(
             ImmutableSet.of(
                 EndpointPair.unordered(
-                    VxlanNode.builder().setHostname(NODE2).setVni(VNI).build(),
-                    VxlanNode.builder().setHostname(NODE1).setVni(VNI).build()))));
+                    VxlanNode.builder().setHostname(NODE2).setVni(VNI).setVniLayer(LAYER_2).build(),
+                    VxlanNode.builder()
+                        .setHostname(NODE1)
+                        .setVni(VNI)
+                        .setVniLayer(LAYER_2)
+                        .build()))));
   }
 
   @Test
@@ -277,8 +283,10 @@ public final class VxlanTopologyUtilsTest {
             new VrfId(_c1.getHostname(), _v1.getName()), vniSettingsTail,
             new VrfId(_c2.getHostname(), _v2.getName()), vniSettingsHead));
 
-    VxlanNode nodeTail = VxlanNode.builder().setHostname(NODE1).setVni(VNI).build();
-    VxlanNode nodeHead = VxlanNode.builder().setHostname(NODE2).setVni(VNI).build();
+    VxlanNode nodeTail =
+        VxlanNode.builder().setHostname(NODE1).setVni(VNI).setVniLayer(LAYER_2).build();
+    VxlanNode nodeHead =
+        VxlanNode.builder().setHostname(NODE2).setVni(VNI).setVniLayer(LAYER_2).build();
 
     assertThat(graph.edges(), equalTo(ImmutableSet.of(EndpointPair.unordered(nodeTail, nodeHead))));
   }
@@ -294,7 +302,7 @@ public final class VxlanTopologyUtilsTest {
             .build();
     assertThat(
         buildVxlanNode(new VrfId(_c1.getHostname(), _v1.getName()), vniSettings),
-        equalTo(VxlanNode.builder().setHostname(NODE1).setVni(VNI).build()));
+        equalTo(VxlanNode.builder().setHostname(NODE1).setVni(VNI).setVniLayer(LAYER_2).build()));
   }
 
   @Test
@@ -575,8 +583,10 @@ public final class VxlanTopologyUtilsTest {
     _v2.setLayer2Vnis(
         ImmutableSet.of(vniSettingsBuilder.setSourceAddress(SRC_IP2).setVlan(VLAN2).build()));
 
-    VxlanNode nodeTail = VxlanNode.builder().setHostname(NODE1).setVni(VNI).build();
-    VxlanNode nodeHead = VxlanNode.builder().setHostname(NODE2).setVni(VNI).build();
+    VxlanNode nodeTail =
+        VxlanNode.builder().setHostname(NODE1).setVni(VNI).setVniLayer(LAYER_2).build();
+    VxlanNode nodeHead =
+        VxlanNode.builder().setHostname(NODE2).setVni(VNI).setVniLayer(LAYER_2).build();
 
     assertThat(
         VxlanTopologyUtils.computeVxlanTopology(configurations).getGraph().edges(),
@@ -599,8 +609,10 @@ public final class VxlanTopologyUtilsTest {
     table.put(_c1.getHostname(), _v1.getName(), ImmutableSet.of(vniSettingsTail));
     table.put(_c2.getHostname(), _v2.getName(), ImmutableSet.of(vniSettingsHead));
 
-    VxlanNode nodeTail = VxlanNode.builder().setHostname(NODE1).setVni(VNI).build();
-    VxlanNode nodeHead = VxlanNode.builder().setHostname(NODE2).setVni(VNI).build();
+    VxlanNode nodeTail =
+        VxlanNode.builder().setHostname(NODE1).setVni(VNI).setVniLayer(LAYER_2).build();
+    VxlanNode nodeHead =
+        VxlanNode.builder().setHostname(NODE2).setVni(VNI).setVniLayer(LAYER_2).build();
 
     assertThat(
         computeVxlanTopology(table).getGraph().edges(),
@@ -610,7 +622,7 @@ public final class VxlanTopologyUtilsTest {
   @Test
   public void testPrunedVxlanTopologyDiscard() {
     MutableGraph<VxlanNode> graph = GraphBuilder.undirected().allowsSelfLoops(false).build();
-    graph.putEdge(new VxlanNode(NODE1, VNI), new VxlanNode(NODE2, VNI));
+    graph.putEdge(new VxlanNode(NODE1, VNI, LAYER_2), new VxlanNode(NODE2, VNI, LAYER_2));
     VxlanTopology initial = new VxlanTopology(graph);
 
     // no reachability
@@ -632,7 +644,7 @@ public final class VxlanTopologyUtilsTest {
   @Test
   public void testPrunedVxlanTopologyKeep() {
     MutableGraph<VxlanNode> graph = GraphBuilder.undirected().allowsSelfLoops(false).build();
-    graph.putEdge(new VxlanNode(NODE1, VNI), new VxlanNode(NODE2, VNI));
+    graph.putEdge(new VxlanNode(NODE1, VNI, LAYER_2), new VxlanNode(NODE2, VNI, LAYER_2));
     VxlanTopology initial = new VxlanTopology(graph);
 
     assertEquals(
@@ -652,7 +664,8 @@ public final class VxlanTopologyUtilsTest {
   public void testReachableEdgeBothDirections() {
     assertTrue(
         VxlanTopologyUtils.reachableEdge(
-            EndpointPair.unordered(new VxlanNode(NODE1, VNI), new VxlanNode(NODE2, VNI)),
+            EndpointPair.unordered(
+                new VxlanNode(NODE1, VNI, LAYER_2), new VxlanNode(NODE2, VNI, LAYER_2)),
             NetworkConfigurations.of(compatibleVxlanConfigs()),
             new TestTracerouteEngine(
                 ImmutableMap.of(
@@ -666,7 +679,8 @@ public final class VxlanTopologyUtilsTest {
   public void testReachableEdgeFirstDirectionOnly() {
     assertFalse(
         VxlanTopologyUtils.reachableEdge(
-            EndpointPair.unordered(new VxlanNode(NODE1, VNI), new VxlanNode(NODE2, VNI)),
+            EndpointPair.unordered(
+                new VxlanNode(NODE1, VNI, LAYER_2), new VxlanNode(NODE2, VNI, LAYER_2)),
             NetworkConfigurations.of(compatibleVxlanConfigs()),
             new TestTracerouteEngine(
                 ImmutableMap.of(
@@ -697,7 +711,8 @@ public final class VxlanTopologyUtilsTest {
 
     assertFalse(
         VxlanTopologyUtils.reachableEdge(
-            EndpointPair.unordered(new VxlanNode(NODE1, VNI), new VxlanNode(NODE2, VNI)),
+            EndpointPair.unordered(
+                new VxlanNode(NODE1, VNI, LAYER_2), new VxlanNode(NODE2, VNI, LAYER_2)),
             NetworkConfigurations.of(configs),
             new TestTracerouteEngine(
                 ImmutableMap.of(
@@ -711,7 +726,8 @@ public final class VxlanTopologyUtilsTest {
   public void testReachableEdgeSecondDirectionOnly() {
     assertFalse(
         VxlanTopologyUtils.reachableEdge(
-            EndpointPair.unordered(new VxlanNode(NODE1, VNI), new VxlanNode(NODE2, VNI)),
+            EndpointPair.unordered(
+                new VxlanNode(NODE1, VNI, LAYER_2), new VxlanNode(NODE2, VNI, LAYER_2)),
             NetworkConfigurations.of(compatibleVxlanConfigs()),
             new TestTracerouteEngine(
                 ImmutableMap.of(
@@ -787,12 +803,7 @@ public final class VxlanTopologyUtilsTest {
     Vrf v1 = vb.setName("v1").build();
     Vrf v2 = vb.setName("v2").build();
     Ip sourceAddress = Ip.parse("10.0.0.1");
-    Layer3Vni.Builder l3b =
-        Layer3Vni.builder()
-            .setBumTransportIps(ImmutableSet.of())
-            .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
-            .setSrcVrf(DEFAULT_VRF_NAME)
-            .setUdpPort(5);
+    Layer3Vni.Builder l3b = Layer3Vni.builder().setSrcVrf(DEFAULT_VRF_NAME).setUdpPort(5);
     v1.addLayer3Vni(l3b.setVni(1).setSourceAddress(sourceAddress).build());
     v2.addLayer3Vni(l3b.setVni(2).setSourceAddress(null).build());
     String vni1IfaceName = generatedTenantVniInterfaceName(1);
@@ -841,12 +852,7 @@ public final class VxlanTopologyUtilsTest {
     // Add layer-3 VNIs, which should result in layer-3 edges
     int l3Vni = 1000;
     Layer3Vni.Builder l3b =
-        Layer3Vni.builder()
-            .setBumTransportIps(ImmutableSet.of())
-            .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
-            .setSrcVrf(DEFAULT_VRF_NAME)
-            .setUdpPort(5)
-            .setVni(l3Vni);
+        Layer3Vni.builder().setSrcVrf(DEFAULT_VRF_NAME).setUdpPort(5).setVni(l3Vni);
     v1.addLayer3Vni(l3b.setSourceAddress(sourceAddress1).build());
     v2.addLayer3Vni(l3b.setSourceAddress(sourceAddress2).build());
 
@@ -854,10 +860,10 @@ public final class VxlanTopologyUtilsTest {
     addTenantVniInterfaces(c2);
 
     MutableGraph<VxlanNode> graph = GraphBuilder.undirected().allowsSelfLoops(false).build();
-    VxlanNode l2Node1 = new VxlanNode(c1.getHostname(), l2Vni);
-    VxlanNode l2Node2 = new VxlanNode(c2.getHostname(), l2Vni);
-    VxlanNode l3Node1 = new VxlanNode(c1.getHostname(), l3Vni);
-    VxlanNode l3Node2 = new VxlanNode(c2.getHostname(), l3Vni);
+    VxlanNode l2Node1 = new VxlanNode(c1.getHostname(), l2Vni, LAYER_2);
+    VxlanNode l2Node2 = new VxlanNode(c2.getHostname(), l2Vni, LAYER_2);
+    VxlanNode l3Node1 = new VxlanNode(c1.getHostname(), l3Vni, LAYER_3);
+    VxlanNode l3Node2 = new VxlanNode(c2.getHostname(), l3Vni, LAYER_3);
     // Add VXLAN edges for layer-2 VNIs
     graph.addNode(l2Node1);
     graph.addNode(l2Node2);

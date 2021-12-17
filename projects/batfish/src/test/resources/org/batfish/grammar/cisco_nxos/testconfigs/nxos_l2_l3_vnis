@@ -11,6 +11,9 @@ vlan 2
   name Name-Of-Vlan-2
   vn-segment 2222
 !
+vlan 3
+  vn-segment 3333
+!
 vrf context tenant1
   !! this VRF does not appear under "router bgp"
   !! but should still have a BGP process
@@ -24,7 +27,12 @@ interface ethernet1/1
   vrf member tenant1
   ip address 10.50.0.1/24
   no shutdown
-
+!
+interface Vlan3
+  vrf member tenant1
+  no shutdown
+  ! Needed when interface has no IP. Currently unsupported (assumed true).
+  ip forward
 interface nve1
   no shutdown
   host-reachability protocol bgp

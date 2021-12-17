@@ -1,0 +1,16 @@
+! This is an ASA device.
+ASA Version 9.9
+!
+hostname port_channel
+!
+interface GigabitEthernet0/2
+ description inside network
+ channel-group 2 mode active
+ no nameif
+ no security-level
+ no ip address
+!
+interface Port-channel2
+ description inside network
+ security-level 100
+ ip address 10.10.10.10 255.255.255.0 standby 10.10.10.11

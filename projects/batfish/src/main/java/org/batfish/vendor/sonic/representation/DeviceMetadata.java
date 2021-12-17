@@ -1,6 +1,7 @@
 package org.batfish.vendor.sonic.representation;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import java.io.Serializable;
@@ -10,6 +11,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /** Represents device metadata: https://github.com/Azure/SONiC/wiki/Configuration#device-metadata */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class DeviceMetadata implements Serializable {
 
   private static final String PROP_HOSTNAME = "hostname";

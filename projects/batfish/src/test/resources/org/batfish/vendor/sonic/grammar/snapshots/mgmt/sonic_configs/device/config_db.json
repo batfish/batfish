@@ -19,7 +19,6 @@
   },
   "MGMT_PORT": {
     "eth0": {
-      "alias": "eth0",
       "admin_status": "up"
     }
   },

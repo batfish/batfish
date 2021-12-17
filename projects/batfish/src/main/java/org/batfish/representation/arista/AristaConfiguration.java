@@ -2156,7 +2156,8 @@ public final class AristaConfiguration extends VendorConfiguration {
     c.setDnsSourceInterface(_dnsSourceInterface);
     c.setDomainName(_domainName);
     c.setExportBgpFromBgpRib(true);
-    c.setNormalVlanRange(new SubRange(VLAN_NORMAL_MIN_CISCO, VLAN_NORMAL_MAX_CISCO));
+    c.setNormalVlanRange(
+        IntegerSpace.of(new SubRange(VLAN_NORMAL_MIN_CISCO, VLAN_NORMAL_MAX_CISCO)));
     c.setTacacsServers(_tacacsServers);
     c.setTacacsSourceInterface(_tacacsSourceInterface);
     c.setNtpSourceInterface(_ntpSourceInterface);
@@ -2764,21 +2765,7 @@ public final class AristaConfiguration extends VendorConfiguration {
 
   private static Layer3Vni toL3Vni(
       @Nonnull AristaEosVxlan vxlan, @Nonnull Integer vni, @Nullable Ip sourceAddress) {
-    SortedSet<Ip> bumTransportIps = vxlan.getFloodAddresses();
-
-    // default to unicast flooding unless specified otherwise
-    BumTransportMethod bumTransportMethod = BumTransportMethod.UNICAST_FLOOD_GROUP;
-
-    // Check if multicast is enabled
-    Ip multicastAddress = vxlan.getMulticastGroup();
-    if (bumTransportIps.isEmpty() && multicastAddress != null) {
-      bumTransportMethod = BumTransportMethod.MULTICAST_GROUP;
-      bumTransportIps = ImmutableSortedSet.of(multicastAddress);
-    }
-
     return Layer3Vni.builder()
-        .setBumTransportIps(bumTransportIps)
-        .setBumTransportMethod(bumTransportMethod)
         .setSourceAddress(sourceAddress)
         .setUdpPort(firstNonNull(vxlan.getUdpPort(), AristaEosVxlan.DEFAULT_UDP_PORT))
         .setVni(vni)

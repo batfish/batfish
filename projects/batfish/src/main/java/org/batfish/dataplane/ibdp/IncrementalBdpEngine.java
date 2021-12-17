@@ -168,7 +168,11 @@ final class IncrementalBdpEngine {
 
     // Update L3 adjacencies if necessary.
     L3Adjacencies newAdjacencies;
-    if (!currentTopologyContext.getVxlanTopology().equals(newVxlanTopology)) {
+    if (!currentTopologyContext
+        .getVxlanTopology()
+        .getLayer2VniEdges()
+        .collect(ImmutableSet.toImmutableSet())
+        .equals(newVxlanTopology.getLayer2VniEdges().collect(ImmutableSet.toImmutableSet()))) {
       LOGGER.info("Updating Layer 3 adjacencies");
       if (L3Adjacencies.USE_NEW_METHOD) {
         newAdjacencies =

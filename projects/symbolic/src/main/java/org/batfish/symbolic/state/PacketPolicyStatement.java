@@ -25,7 +25,15 @@ public final class PacketPolicyStatement implements StateExpr {
     return _id;
   }
 
-  public String getVrf() {
+  public @Nonnull String getHostname() {
+    return _hostname;
+  }
+
+  public @Nonnull String getPacketPolicyName() {
+    return _packetPolicyName;
+  }
+
+  public @Nonnull String getVrf() {
     return _vrf;
   }
 

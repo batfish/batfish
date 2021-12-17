@@ -37,6 +37,7 @@ import java.util.Random;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -59,7 +60,7 @@ public final class JFactory extends BDDFactory {
    * entries.
    */
   // Warning: we've never tried with this flag false.
-  private static final boolean FLUSH_CACHE_ON_GC = true;
+  private static final boolean FLUSH_CACHE_ON_GC = false;
 
   /**
    * If set, assertions will be made on BDD internal computations. Used in developing the factory.
@@ -375,9 +376,12 @@ public final class JFactory extends BDDFactory {
     }
 
     @Override
-    public boolean equals(BDD that) {
-      boolean b = _index == ((BDDImpl) that)._index;
-      return b;
+    public boolean equals(@Nullable Object o) {
+      if (!(o instanceof BDDImpl)) {
+        return false;
+      }
+      BDDImpl that = (BDDImpl) o;
+      return _index == that._index;
     }
 
     @Override
@@ -4077,7 +4081,25 @@ public final class JFactory extends BDDFactory {
   }
 
   private void BddCache_clean_multiop(BddCache cache) {
-    throw new UnsupportedOperationException("Clean is unimplemented for multiop cache.");
+    if (cache == null) {
+      return;
+    }
+    for (int n = 0; n < cache.tablesize; n++) {
+      MultiOpBddCacheData entry = (MultiOpBddCacheData) cache.table[n];
+      if (entry.a != -1) {
+        boolean invalid = false;
+        for (int i = 0; i < entry.operands.length; i++) {
+          if (LOW(entry.operands[i]) == INVALID_BDD) {
+            invalid = true;
+            break;
+          }
+        }
+        if (invalid) {
+          entry.a = -1;
+          entry.operands = null;
+        }
+      }
+    }
   }
 
   private void bdd_setpair(bddPair pair, int oldvar, int newvar) {
