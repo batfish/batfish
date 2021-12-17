@@ -13,6 +13,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Sets;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -228,10 +229,9 @@ public class SonicConversions {
      */
     @Override
     public int compareTo(AclRuleWithName other) {
-      if (!getPriority().equals(other.getPriority())) {
-        return other.getPriority().compareTo(getPriority());
-      }
-      return _name.compareTo(other._name);
+      return Comparator.comparing(AclRuleWithName::getPriority, Comparator.reverseOrder())
+          .thenComparing(r -> r._name)
+          .compare(this, other);
     }
 
     @SuppressWarnings("OptionalGetWithoutIsPresent")
