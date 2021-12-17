@@ -33,6 +33,7 @@ public final class AddLastHopConstraint implements Transition {
 
   @Override
   public BDD transitBackward(BDD bdd) {
+    // TODO: does existsLastHop free?
     return _mgr.existsLastHop(bdd);
   }
 }

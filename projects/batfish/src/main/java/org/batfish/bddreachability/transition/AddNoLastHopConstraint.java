@@ -33,6 +33,7 @@ public final class AddNoLastHopConstraint implements Transition {
     /* Unlike BDDSourceManager transitions, we don't require the LastHopOutgoingInterfaceManager
      * variable to be constrained inside the node.
      */
+    // TODO: does existsLastHop free?
     return _mgr.existsLastHop(bdd);
   }
 }
