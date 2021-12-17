@@ -240,7 +240,8 @@ public final class BDDOutgoingOriginalFlowFilterManager {
    * backwards transition will not erase vars.
    */
   public BDD outgoingOriginalFlowFiltersConstraint() {
-    return _outgoingOriginalFlowFiltersConstraint.get();
+    // Callers may free the returned BDD.
+    return _outgoingOriginalFlowFiltersConstraint.get().id();
   }
 
   private BDD computeOutgoingOriginalFlowFiltersConstraint() {
@@ -262,7 +263,7 @@ public final class BDDOutgoingOriginalFlowFilterManager {
 
   /** Existentially quantify the source variable. */
   public BDD erase(BDD bdd) {
-    return _finiteDomain.existsValue(bdd).exist(_permitVar);
+    return _finiteDomain.existsValue(bdd).existEq(_permitVar);
   }
 
   /**

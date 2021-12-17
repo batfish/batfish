@@ -168,20 +168,6 @@ public abstract class BDDBitVector {
     bitvec = null;
   }
 
-  public BDDBitVector map2(BDDBitVector that, BDDFactory.BDDOp op) {
-    if (bitvec.length != that.bitvec.length) {
-      throw new BDDException();
-    }
-
-    BDDFactory bdd = getFactory();
-    BDDBitVector res = bdd.createBitVector(bitvec.length);
-    for (int n = 0; n < bitvec.length; n++) {
-      res.bitvec[n] = bitvec[n].apply(that.bitvec[n], op);
-    }
-
-    return res;
-  }
-
   public BDDBitVector add(BDDBitVector that) {
 
     if (bitvec.length != that.bitvec.length) {
@@ -228,7 +214,7 @@ public abstract class BDDBitVector {
 
       /* c = (l[n] & r[n] & c) | (!l[n] & (r[n] | c)); */
       BDD tmp1 = that.bitvec[n].or(c);
-      BDD tmp2 = bitvec[n].apply(tmp1, BDDFactory.less);
+      BDD tmp2 = bitvec[n].less(tmp1);
       tmp1.free();
       tmp1 = bitvec[n].and(that.bitvec[n]);
       tmp1.andWith(c);
@@ -252,8 +238,8 @@ public abstract class BDDBitVector {
       /* p = (!l[n] & r[n]) |
        *     bdd_apply(l[n], r[n], bddop_biimp) & p; */
 
-      BDD tmp1 = bitvec[n].apply(r.bitvec[n], BDDFactory.less);
-      BDD tmp2 = bitvec[n].apply(r.bitvec[n], BDDFactory.biimp);
+      BDD tmp1 = bitvec[n].less(r.bitvec[n]);
+      BDD tmp2 = bitvec[n].biimp(r.bitvec[n]);
       tmp2.andWith(p);
       tmp1.orWith(tmp2);
       p = tmp1;

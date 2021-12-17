@@ -153,7 +153,7 @@ public class NQueensTest extends BDDTestCase {
       /* No one in the same column */
       for (l = 0; l < N; l++) {
         if (l != j) {
-          BDD u = X[i][l].apply(X[i][j], BDDFactory.nand);
+          BDD u = X[i][l].nand(X[i][j]);
           a.andWith(u);
         }
       }
@@ -161,7 +161,7 @@ public class NQueensTest extends BDDTestCase {
       /* No one in the same row */
       for (k = 0; k < N; k++) {
         if (k != i) {
-          BDD u = X[i][j].apply(X[k][j], BDDFactory.nand);
+          BDD u = X[i][j].nand(X[k][j]);
           b.andWith(u);
         }
       }
@@ -171,7 +171,7 @@ public class NQueensTest extends BDDTestCase {
         int ll = k - i + j;
         if (ll >= 0 && ll < N) {
           if (k != i) {
-            BDD u = X[i][j].apply(X[k][ll], BDDFactory.nand);
+            BDD u = X[i][j].nand(X[k][ll]);
             c.andWith(u);
           }
         }
@@ -182,7 +182,7 @@ public class NQueensTest extends BDDTestCase {
         int ll = i + j - k;
         if (ll >= 0 && ll < N) {
           if (k != i) {
-            BDD u = X[i][j].apply(X[k][ll], BDDFactory.nand);
+            BDD u = X[i][j].nand(X[k][ll]);
             d.andWith(u);
           }
         }

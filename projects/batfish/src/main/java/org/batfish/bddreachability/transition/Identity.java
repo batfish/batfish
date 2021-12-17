@@ -15,11 +15,11 @@ public final class Identity implements Transition {
 
   @Override
   public BDD transitForward(BDD bdd) {
-    return bdd;
+    return bdd.id();
   }
 
   @Override
   public BDD transitBackward(BDD bdd) {
-    return bdd;
+    return bdd.id();
   }
 }
