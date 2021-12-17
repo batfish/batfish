@@ -39,7 +39,7 @@ public enum CumulusStructureType implements StructureType {
 
   private static final Map<FrrStructureType, CumulusStructureType> FRR_TO_CUMULUS_MAP = initMap();
 
-  public static CumulusStructureType fromFrrStructureType(
+  public static @Nonnull CumulusStructureType fromFrrStructureType(
       @Nonnull FrrStructureType frrStructureType) {
     // initMap ensures that all keys exists
     return FRR_TO_CUMULUS_MAP.get(frrStructureType);

@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.representation.cumulus_concatenated.CumulusStructureType.fromFrrStructureType;
+import static org.batfish.representation.cumulus_concatenated.CumulusStructureUsage.fromFrrStructureUsage;
 import static org.batfish.representation.cumulus_concatenated.InterfaceConverter.BRIDGE_NAME;
 import static org.batfish.representation.cumulus_concatenated.InterfaceConverter.DEFAULT_BRIDGE_PORTS;
 import static org.batfish.representation.cumulus_concatenated.InterfaceConverter.DEFAULT_BRIDGE_PVID;
@@ -894,7 +895,8 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
   @Override
   public void referenceStructure(
       FrrStructureType frrStructureType, String name, FrrStructureUsage usage, int line) {
-    super.referenceStructure(fromFrrStructureType(frrStructureType), name, usage, line);
+    super.referenceStructure(
+        fromFrrStructureType(frrStructureType), name, fromFrrStructureUsage(usage), line);
   }
 
   @Override

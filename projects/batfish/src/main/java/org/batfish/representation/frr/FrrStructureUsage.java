@@ -1,9 +1,13 @@
 package org.batfish.representation.frr;
 
 import javax.annotation.Nonnull;
-import org.batfish.vendor.StructureUsage;
 
-public enum FrrStructureUsage implements StructureUsage {
+/**
+ * An enum with structure usages that can appear in frr.conf files. It does not inherit {@link
+ * org.batfish.vendor.StructureUsage} because FRR is not an independent, stand-alone vendor. Vendors
+ * that are based on FRR (e.g., Cumulus, Sonic) "cast" these usages into their own structure types.
+ */
+public enum FrrStructureUsage {
   BGP_ADDRESS_FAMILY_IPV4_IMPORT_VRF("bgp address-family ipv4 unicast import vrf"),
   BGP_ADDRESS_FAMILY_IPV6_IMPORT_VRF("bgp address-family ipv6 unicast import vrf"),
   BGP_ADDRESS_FAMILY_L2VPN_ADVERTISE_IPV4_UNICAST(
@@ -43,7 +47,6 @@ public enum FrrStructureUsage implements StructureUsage {
     _description = description;
   }
 
-  @Override
   public @Nonnull String getDescription() {
     return _description;
   }

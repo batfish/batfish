@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.vendor.sonic.representation.SonicConversions.convertPorts;
 import static org.batfish.vendor.sonic.representation.SonicStructureType.fromFrrStructureType;
+import static org.batfish.vendor.sonic.representation.SonicStructureUsage.fromFrrStructureUsage;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
@@ -164,7 +165,8 @@ public class SonicConfiguration extends FrrVendorConfiguration {
   @Override
   public void referenceStructure(
       FrrStructureType frrStructureType, String name, FrrStructureUsage usage, int line) {
-    super.referenceStructure(fromFrrStructureType(frrStructureType), name, usage, line);
+    super.referenceStructure(
+        fromFrrStructureType(frrStructureType), name, fromFrrStructureUsage(usage), line);
   }
 
   @Override

@@ -1,4 +1,4 @@
-package org.batfish.representation.cumulus_concatenated;
+package org.batfish.vendor.sonic.representation;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Arrays;
@@ -8,22 +8,7 @@ import javax.annotation.Nonnull;
 import org.batfish.representation.frr.FrrStructureUsage;
 import org.batfish.vendor.StructureUsage;
 
-public enum CumulusStructureUsage implements StructureUsage {
-  BOND_SELF_REFERENCE("bond self-reference"),
-  BOND_SLAVE("bond slave"),
-  BOND_VRF("bond vrf"),
-  BRIDGE_PORT("bridge ports"),
-  INTERFACE_CLAG_BACKUP_IP_VRF("interface clag backup-ip vrf"),
-  INTERFACE_SELF_REFERENCE("interface self-reference"),
-  INTERFACE_VRF("interface vrf"),
-  LOOPBACK_SELF_REFERENCE("loopback self-reference"),
-  PORT_BREAKOUT("port breakout"),
-  PORT_DISABLED("port disabled"),
-  PORT_SPEED("port speed"),
-  VLAN_SELF_REFERENCE("vlan self-reference"),
-  VLAN_VRF("vlan vrf"),
-  VRF_SELF_REFERENCE("vrf self-reference"),
-  VXLAN_SELF_REFERENCE("vxlan self-reference"),
+public enum SonicStructureUsage implements StructureUsage {
 
   // delegated to FRR
   BGP_ADDRESS_FAMILY_IPV4_IMPORT_VRF(FrrStructureUsage.BGP_ADDRESS_FAMILY_IPV4_IMPORT_VRF),
@@ -64,34 +49,34 @@ public enum CumulusStructureUsage implements StructureUsage {
 
   private final @Nonnull String _description;
 
-  CumulusStructureUsage(@Nonnull String description) {
+  SonicStructureUsage(@Nonnull String description) {
     _description = description;
   }
 
-  CumulusStructureUsage(@Nonnull FrrStructureUsage frrStructureUsage) {
+  SonicStructureUsage(@Nonnull FrrStructureUsage frrStructureUsage) {
     _description = frrStructureUsage.getDescription();
   }
 
-  private static final Map<FrrStructureUsage, CumulusStructureUsage> FRR_TO_CUMULUS_MAP = initMap();
+  private static final Map<FrrStructureUsage, SonicStructureUsage> FRR_TO_SONIC_MAP = initMap();
 
-  public static @Nonnull CumulusStructureUsage fromFrrStructureUsage(
+  public static @Nonnull SonicStructureUsage fromFrrStructureUsage(
       @Nonnull FrrStructureUsage frrStructureUsage) {
     // initMap ensures that all keys exists
-    return FRR_TO_CUMULUS_MAP.get(frrStructureUsage);
+    return FRR_TO_SONIC_MAP.get(frrStructureUsage);
   }
 
-  private static Map<FrrStructureUsage, CumulusStructureUsage> initMap() {
-    ImmutableMap.Builder<FrrStructureUsage, CumulusStructureUsage> map = ImmutableMap.builder();
+  private static Map<FrrStructureUsage, SonicStructureUsage> initMap() {
+    ImmutableMap.Builder<FrrStructureUsage, SonicStructureUsage> map = ImmutableMap.builder();
     for (FrrStructureUsage frrUsage : FrrStructureUsage.values()) {
-      CumulusStructureUsage matchingCumulusUsage =
-          Arrays.stream(CumulusStructureUsage.values())
+      SonicStructureUsage matchingSonicType =
+          Arrays.stream(SonicStructureUsage.values())
               .filter(cType -> cType.getDescription().equals(frrUsage.getDescription()))
               .findFirst()
               .orElseThrow(
                   () ->
                       new NoSuchElementException(
-                          "No CumulusStructureUsage exists for FrrStructureUsage " + frrUsage));
-      map.put(frrUsage, matchingCumulusUsage);
+                          "No SonicStructureUsage exists for FrrStructureUsage " + frrUsage));
+      map.put(frrUsage, matchingSonicType);
     }
     return map.build();
   }
