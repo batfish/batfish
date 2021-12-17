@@ -16,8 +16,11 @@ import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -69,44 +72,58 @@ public final class BDDReachabilityUtils {
       // Get a BDDFactory for zero and orAll.
       BDDFactory factory = reachableSets.entrySet().iterator().next().getValue().getFactory();
 
-      // The set of states to process in the next round.
-      Set<StateExpr> dirtyStates = ImmutableSet.copyOf(reachableSets.keySet());
       // For each state to process in the next round, all the incoming BDDs.
       SetMultimap<StateExpr, BDD> dirtyInputs = HashMultimap.create();
+
+      // To (try to) minimize how many times we're transiting the same edges, dirtyStates will be
+      // removed in order of increasing visitCounts.
+      // invariants:
+      // 1. the queue never contains duplicate elements.
+      // 2. visitCounts are never incremented while the state is in the queue.
+      HashMap<StateExpr, Integer> visitCounts = new HashMap<>();
+      PriorityQueue<StateExpr> dirtyStates =
+          new PriorityQueue<>(Comparator.comparingInt(st -> visitCounts.getOrDefault(st, 0)));
+
       // Seed the dirty inputs with the initial reachable sets, then clear the reachable sets.
-      reachableSets.forEach(dirtyInputs::put);
+      reachableSets.forEach(
+          (key, value) -> {
+            dirtyInputs.put(key, value);
+            dirtyStates.add(key);
+          });
       reachableSets.clear();
 
       while (!dirtyStates.isEmpty()) {
-        dirtyStates.forEach(
-            dirtyState -> {
-              Set<BDD> inputs = dirtyInputs.removeAll(dirtyState);
-              assert !inputs.isEmpty();
-              BDD prior = reachableSets.get(dirtyState);
-              BDD learned = factory.orAll(inputs);
-              BDD newValue = prior == null ? learned : learned.or(prior);
-              if (newValue.equals(prior)) {
-                // No change, so no need to update neighbors.
-                return;
-              }
-              reachableSets.put(dirtyState, newValue);
+        StateExpr dirtyState = dirtyStates.remove();
+        visitCounts.compute(dirtyState, (unused, oldCount) -> oldCount == null ? 1 : oldCount + 1);
+        Set<BDD> inputs = dirtyInputs.removeAll(dirtyState);
+        assert !inputs.isEmpty();
+        BDD prior = reachableSets.get(dirtyState);
+        BDD learned = factory.orAll(inputs);
+        BDD newValue = prior == null ? learned : learned.or(prior);
+        if (newValue.equals(prior)) {
+          // No change, so no need to update neighbors.
+          continue;
+        }
+        reachableSets.put(dirtyState, newValue);
 
-              Map<StateExpr, Transition> dirtyStateEdges = edges.row(dirtyState);
-              if (dirtyStateEdges.isEmpty()) {
-                // dirtyState has no edges, so no neighbors to update.
-                return;
-              }
+        Map<StateExpr, Transition> dirtyStateEdges = edges.row(dirtyState);
+        if (dirtyStateEdges.isEmpty()) {
+          // dirtyState has no edges, so no neighbors to update.
+          continue;
+        }
 
-              dirtyStateEdges.forEach(
-                  (neighbor, edge) -> {
-                    BDD result = traverse.apply(edge, learned);
-                    if (!result.isZero()) {
-                      dirtyInputs.put(neighbor, result);
-                    }
-                  });
+        dirtyStateEdges.forEach(
+            (neighbor, edge) -> {
+              BDD result = traverse.apply(edge, learned);
+              if (!result.isZero()) {
+                // this is a new result. add it to neighbor's inputs. if neighbor isn't already in
+                // the dirtyStates queue, add it.
+                if (!dirtyInputs.containsKey(neighbor)) {
+                  dirtyStates.add(neighbor);
+                }
+                dirtyInputs.put(neighbor, result);
+              }
             });
-
-        dirtyStates = ImmutableSet.copyOf(dirtyInputs.keySet());
       }
     } finally {
       span.finish();
