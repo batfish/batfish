@@ -2228,6 +2228,14 @@ public class AristaGrammarTest {
     }
   }
 
+  // xfail until we support activating Vlan interfaces via VXLAN
+  @Test(expected = AssertionError.class)
+  public void testVxlanVlanActivationConversion() {
+    Configuration config = parseConfig("arista_vxlan_vlan_activation");
+    assertThat(config, hasInterface("Vlan6", isActive(false)));
+    assertThat(config, hasInterface("Vlan5", isActive()));
+  }
+
   @Test
   public void testRedistributeExtraction() {
     AristaConfiguration config = parseVendorConfig("arista_bgp_redistribute");
