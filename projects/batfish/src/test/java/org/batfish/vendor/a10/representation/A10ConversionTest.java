@@ -47,6 +47,7 @@ import static org.batfish.vendor.a10.representation.A10Conversion.toProtocol;
 import static org.batfish.vendor.a10.representation.A10Conversion.toVrrpGroupBuilder;
 import static org.batfish.vendor.a10.representation.A10Conversion.toVrrpGroups;
 import static org.batfish.vendor.a10.representation.A10Conversion.traceElementForVirtualServer;
+import static org.batfish.vendor.a10.representation.A10Conversion.traceElementForVirtualServerPort;
 import static org.batfish.vendor.a10.representation.A10Conversion.vrrpADisabledAppliesToInterface;
 import static org.batfish.vendor.a10.representation.A10Conversion.vrrpAEnabledAppliesToInterface;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -221,13 +222,15 @@ public class A10ConversionTest {
   public void testVirtualServerPortToMatchExpr() {
     VirtualServerPort vsp = new VirtualServerPort(10, VirtualServerPort.Type.UDP, 1);
 
+    AclLineMatchExpr matchExpr = toMatchExpr(vsp);
     assertThat(
-        _tb.toBDD(toMatchExpr(vsp)),
+        _tb.toBDD(matchExpr),
         equalTo(
             _tb.toBDD(
                 AclLineMatchExprs.and(
                     AclLineMatchExprs.matchIpProtocol(IpProtocol.UDP),
                     AclLineMatchExprs.matchDstPort(IntegerSpace.of(new SubRange(10, 11)))))));
+    assertThat(matchExpr.getTraceElement(), equalTo(traceElementForVirtualServerPort(vsp)));
   }
 
   @Test
