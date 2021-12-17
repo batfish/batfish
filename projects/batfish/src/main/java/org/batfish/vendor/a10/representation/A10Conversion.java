@@ -13,6 +13,8 @@ import static org.batfish.datamodel.transformation.TransformationStep.assignDest
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationPort;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourcePort;
+import static org.batfish.vendor.a10.representation.TraceElements.traceElementForVirtualServer;
+import static org.batfish.vendor.a10.representation.TraceElements.traceElementForVirtualServerPort;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -68,7 +70,6 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.transformation.ApplyAll;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
-import org.batfish.vendor.VendorStructureId;
 import org.batfish.vendor.a10.representation.BgpNeighbor.SendCommunity;
 
 /** Conversion helpers for converting VS model {@link A10Configuration} to the VI model. */
@@ -803,30 +804,6 @@ public class A10Conversion {
         assert false;
         return true;
     }
-  }
-
-  public static TraceElement traceElementForVirtualServer(VirtualServer server, String filename) {
-    String serverName = server.getName();
-    return TraceElement.builder()
-        .add("Matched virtual-server")
-        .add(
-            serverName,
-            new VendorStructureId(
-                filename, A10StructureType.VIRTUAL_SERVER.getDescription(), serverName))
-        .build();
-  }
-
-  public static TraceElement traceElementForVirtualServerPort(VirtualServerPort port) {
-    return TraceElement.builder()
-        .add(String.format("Matched %s %s", port.getType().toString(), toPortString(port)))
-        .build();
-  }
-
-  public static String toPortString(VirtualServerPort port) {
-    if (port.getRange() != null) {
-      return String.format("ports %d-%d", port.getNumber(), port.getNumber() + port.getRange());
-    }
-    return String.format("port %d", port.getNumber());
   }
 
   /** Convert a {@link VirtualServerTarget} to its corresponding {@link AclLineMatchExpr}. */
