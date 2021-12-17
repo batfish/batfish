@@ -803,12 +803,7 @@ public final class VxlanTopologyUtilsTest {
     Vrf v1 = vb.setName("v1").build();
     Vrf v2 = vb.setName("v2").build();
     Ip sourceAddress = Ip.parse("10.0.0.1");
-    Layer3Vni.Builder l3b =
-        Layer3Vni.builder()
-            .setBumTransportIps(ImmutableSet.of())
-            .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
-            .setSrcVrf(DEFAULT_VRF_NAME)
-            .setUdpPort(5);
+    Layer3Vni.Builder l3b = Layer3Vni.builder().setSrcVrf(DEFAULT_VRF_NAME).setUdpPort(5);
     v1.addLayer3Vni(l3b.setVni(1).setSourceAddress(sourceAddress).build());
     v2.addLayer3Vni(l3b.setVni(2).setSourceAddress(null).build());
     String vni1IfaceName = generatedTenantVniInterfaceName(1);
@@ -857,12 +852,7 @@ public final class VxlanTopologyUtilsTest {
     // Add layer-3 VNIs, which should result in layer-3 edges
     int l3Vni = 1000;
     Layer3Vni.Builder l3b =
-        Layer3Vni.builder()
-            .setBumTransportIps(ImmutableSet.of())
-            .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
-            .setSrcVrf(DEFAULT_VRF_NAME)
-            .setUdpPort(5)
-            .setVni(l3Vni);
+        Layer3Vni.builder().setSrcVrf(DEFAULT_VRF_NAME).setUdpPort(5).setVni(l3Vni);
     v1.addLayer3Vni(l3b.setSourceAddress(sourceAddress1).build());
     v2.addLayer3Vni(l3b.setSourceAddress(sourceAddress2).build());
 

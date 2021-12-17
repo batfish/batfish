@@ -1470,14 +1470,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     if (nve.isShutdown()) {
       return;
     }
-    BumTransportMethod bumTransportMethod = getBumTransportMethod(nveVni, nve);
-    SortedSet<Ip> bumTransportIps;
-    if (nveVni.getIngressReplicationProtocol() != IngressReplicationProtocol.STATIC
-        && bumTransportMethod == MULTICAST_GROUP) {
-      bumTransportIps = ImmutableSortedSet.of(getMultiCastGroupIp(nveVni, nve));
-    } else {
-      bumTransportIps = ImmutableSortedSet.copyOf(nveVni.getPeerIps());
-    }
     Integer vlan = getVlanForVni(nveVni.getVni());
     if (vlan == null) {
       // NX-OS requires all VNIs be associated with a VLAN
@@ -1502,8 +1494,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       _c.setNormalVlanRange(_c.getNormalVlanRange().difference(IntegerSpace.of(vlan)));
       Layer3Vni vniSettings =
           Layer3Vni.builder()
-              .setBumTransportIps(bumTransportIps)
-              .setBumTransportMethod(bumTransportMethod)
               .setSourceAddress(
                   nve.getSourceInterface() != null
                       ? getInterfaceIp(_c.getAllInterfaces(), nve.getSourceInterface())
@@ -1514,6 +1504,14 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
               .build();
       _c.getVrfs().get(vsTenantVrfForL3Vni.getName()).addLayer3Vni(vniSettings);
     } else {
+      BumTransportMethod bumTransportMethod = getBumTransportMethod(nveVni, nve);
+      SortedSet<Ip> bumTransportIps;
+      if (nveVni.getIngressReplicationProtocol() != IngressReplicationProtocol.STATIC
+          && bumTransportMethod == MULTICAST_GROUP) {
+        bumTransportIps = ImmutableSortedSet.of(getMultiCastGroupIp(nveVni, nve));
+      } else {
+        bumTransportIps = ImmutableSortedSet.copyOf(nveVni.getPeerIps());
+      }
       Layer2Vni vniSettings =
           Layer2Vni.builder()
               .setBumTransportIps(bumTransportIps)

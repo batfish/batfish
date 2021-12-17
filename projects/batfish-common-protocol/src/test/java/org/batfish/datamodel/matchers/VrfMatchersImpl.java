@@ -117,9 +117,9 @@ final class VrfMatchersImpl {
     }
   }
 
-  static final class HasVniSettings extends FeatureMatcher<Vrf, Map<Integer, Layer2Vni>> {
-    HasVniSettings(@Nonnull Matcher<? super Map<Integer, Layer2Vni>> subMatcher) {
-      super(subMatcher, "A VRF with VNI settings:", "vniSettings");
+  static final class HasLayer2Vnis extends FeatureMatcher<Vrf, Map<Integer, Layer2Vni>> {
+    HasLayer2Vnis(@Nonnull Matcher<? super Map<Integer, Layer2Vni>> subMatcher) {
+      super(subMatcher, "A VRF with layer2Vnis:", "layer2Vnis");
     }
 
     @Override
