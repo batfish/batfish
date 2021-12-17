@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -24,8 +25,8 @@ public class Vlan implements Serializable {
     return _members;
   }
 
-  public @Nullable Integer getVlanId() {
-    return _vlanId;
+  public @Nonnull Optional<Integer> getVlanId() {
+    return Optional.ofNullable(_vlanId);
   }
 
   @JsonCreator

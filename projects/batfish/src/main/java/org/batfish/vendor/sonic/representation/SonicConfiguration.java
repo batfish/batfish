@@ -111,7 +111,8 @@ public class SonicConfiguration extends FrrVendorConfiguration {
     return _configDb.getPorts().containsKey(ifaceName)
         || _configDb.getLoopbacks().containsKey(ifaceName)
         || _configDb.getMgmtPorts().containsKey(ifaceName)
-        || _configDb.getVlans().containsKey(ifaceName);
+        || (_configDb.getVlans().containsKey(ifaceName)
+            && _configDb.getVlanInterfaces().containsKey(ifaceName));
   }
 
   @Override
@@ -133,7 +134,8 @@ public class SonicConfiguration extends FrrVendorConfiguration {
     if (_configDb.getMgmtPorts().containsKey(ifaceName)) {
       return getMgmtVrfName(_configDb.getMgmtVrfs());
     }
-    if (_configDb.getVlans().containsKey(ifaceName)) {
+    if (_configDb.getVlans().containsKey(ifaceName)
+        && _configDb.getVlanInterfaces().containsKey(ifaceName)) {
       return DEFAULT_VRF_NAME;
     }
     // should never get here
@@ -160,9 +162,10 @@ public class SonicConfiguration extends FrrVendorConfiguration {
           .flatMap(iface -> Optional.ofNullable(iface.getAddress()).map(ImmutableList::of))
           .orElse(ImmutableList.of());
     }
-    if (_configDb.getVlans().containsKey(ifaceName)) {
-      return Optional.ofNullable(_configDb.getVlanInterfaces().get(ifaceName))
-          .flatMap(iface -> Optional.ofNullable(iface.getAddress()).map(ImmutableList::of))
+    if (_configDb.getVlans().containsKey(ifaceName)
+        && _configDb.getVlanInterfaces().containsKey(ifaceName)) {
+      return Optional.ofNullable(_configDb.getVlanInterfaces().get(ifaceName).getAddress())
+          .map(ImmutableList::of)
           .orElse(ImmutableList.of());
     }
     // should never get here
