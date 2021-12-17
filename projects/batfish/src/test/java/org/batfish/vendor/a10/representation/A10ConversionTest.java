@@ -42,9 +42,11 @@ import static org.batfish.vendor.a10.representation.A10Conversion.toDstTransform
 import static org.batfish.vendor.a10.representation.A10Conversion.toIntegerSpace;
 import static org.batfish.vendor.a10.representation.A10Conversion.toKernelRoute;
 import static org.batfish.vendor.a10.representation.A10Conversion.toMatchCondition;
+import static org.batfish.vendor.a10.representation.A10Conversion.toMatchExpr;
 import static org.batfish.vendor.a10.representation.A10Conversion.toProtocol;
 import static org.batfish.vendor.a10.representation.A10Conversion.toVrrpGroupBuilder;
 import static org.batfish.vendor.a10.representation.A10Conversion.toVrrpGroups;
+import static org.batfish.vendor.a10.representation.A10Conversion.traceElementForVirtualServer;
 import static org.batfish.vendor.a10.representation.A10Conversion.vrrpADisabledAppliesToInterface;
 import static org.batfish.vendor.a10.representation.A10Conversion.vrrpAEnabledAppliesToInterface;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -82,6 +84,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.VrrpGroup;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.transformation.ApplyAll;
@@ -191,6 +194,40 @@ public class A10ConversionTest {
                         .setDstPorts(new SubRange(80, 90))
                         .setIpProtocols(IpProtocol.TCP)
                         .build()))));
+  }
+
+  @Test
+  public void testVirtualServerToMatchExpr() {
+    Ip addr = Ip.parse("10.10.10.10");
+    VirtualServerTarget vst = new VirtualServerTargetAddress(addr);
+    VirtualServer vs = new VirtualServer("vs", vst);
+
+    AclLineMatchExpr matchExpr = toMatchExpr(vs, "filename");
+    assertThat(_tb.toBDD(matchExpr), equalTo(_tb.toBDD(AclLineMatchExprs.matchDst(addr))));
+    assertThat(matchExpr.getTraceElement(), equalTo(traceElementForVirtualServer(vs, "filename")));
+  }
+
+  @Test
+  public void testVirtualServerTargetToMatchExpr() {
+    Ip addr = Ip.parse("10.10.10.10");
+    VirtualServerTarget vst = new VirtualServerTargetAddress(addr);
+
+    assertThat(
+        _tb.toBDD(A10Conversion.VirtualServerTargetToMatchExpr.INSTANCE.visit(vst)),
+        equalTo(_tb.toBDD(AclLineMatchExprs.matchDst(addr))));
+  }
+
+  @Test
+  public void testVirtualServerPortToMatchExpr() {
+    VirtualServerPort vsp = new VirtualServerPort(10, VirtualServerPort.Type.UDP, 1);
+
+    assertThat(
+        _tb.toBDD(toMatchExpr(vsp)),
+        equalTo(
+            _tb.toBDD(
+                AclLineMatchExprs.and(
+                    AclLineMatchExprs.matchIpProtocol(IpProtocol.UDP),
+                    AclLineMatchExprs.matchDstPort(IntegerSpace.of(new SubRange(10, 11)))))));
   }
 
   @Test

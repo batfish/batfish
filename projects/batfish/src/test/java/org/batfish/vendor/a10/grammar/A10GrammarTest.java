@@ -1875,7 +1875,9 @@ public class A10GrammarTest {
     assertInbound(Iterables.getOnlyElement(traces.get(flowNoMatchProtocol)));
 
     // Since dst IP is that of a disabled virtual-server, the flow is forwarded untransformed.
-    assertNull(getTransformedFlow(Iterables.getOnlyElement(traces.get(flowNoMatchEnable))));
+    assertThat(
+        getTransformedFlow(Iterables.getOnlyElement(traces.get(flowNoMatchEnable))),
+        equalTo(flowNoMatchEnable));
   }
 
   /**

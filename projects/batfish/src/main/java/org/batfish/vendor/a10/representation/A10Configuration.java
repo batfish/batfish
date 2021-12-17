@@ -24,9 +24,8 @@ import static org.batfish.vendor.a10.representation.A10Conversion.getVirtualServ
 import static org.batfish.vendor.a10.representation.A10Conversion.getVirtualServerKernelRoutes;
 import static org.batfish.vendor.a10.representation.A10Conversion.haAppliesToInterface;
 import static org.batfish.vendor.a10.representation.A10Conversion.isVrrpAEnabled;
-import static org.batfish.vendor.a10.representation.A10Conversion.orElseChain;
 import static org.batfish.vendor.a10.representation.A10Conversion.toDstTransformationSteps;
-import static org.batfish.vendor.a10.representation.A10Conversion.toMatchCondition;
+import static org.batfish.vendor.a10.representation.A10Conversion.toMatchExpr;
 import static org.batfish.vendor.a10.representation.A10Conversion.toSnatTransformationStep;
 import static org.batfish.vendor.a10.representation.A10Conversion.toVrrpGroupBuilder;
 import static org.batfish.vendor.a10.representation.A10Conversion.toVrrpGroups;
@@ -70,6 +69,15 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.VrrpGroup;
+import org.batfish.datamodel.acl.TrueExpr;
+import org.batfish.datamodel.packet_policy.ApplyTransformation;
+import org.batfish.datamodel.packet_policy.FibLookup;
+import org.batfish.datamodel.packet_policy.If;
+import org.batfish.datamodel.packet_policy.IngressInterfaceVrf;
+import org.batfish.datamodel.packet_policy.PacketMatchExpr;
+import org.batfish.datamodel.packet_policy.PacketPolicy;
+import org.batfish.datamodel.packet_policy.Return;
+import org.batfish.datamodel.packet_policy.Statement;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.transformation.ApplyAll;
 import org.batfish.datamodel.transformation.ApplyAny;
@@ -86,6 +94,9 @@ import org.batfish.vendor.a10.representation.Interface.Type;
 
 /** Datamodel class representing an A10 device configuration. */
 public final class A10Configuration extends VendorConfiguration {
+
+  private static final String VIRTUAL_SERVERS_PACKET_POLICY_NAME =
+      "~VIRTUAL_SERVERS_PACKET_POLICY~";
 
   public A10Configuration() {
     _accessLists = new HashMap<>();
@@ -581,39 +592,57 @@ public final class A10Configuration extends VendorConfiguration {
    * interfaces. Modifies VI interfaces and must be called after those are created.
    */
   private void convertVirtualServers() {
-    Optional<Transformation> xform =
-        orElseChain(
-            _virtualServers.values().stream()
-                .filter(A10Conversion::isVirtualServerEnabled)
-                .flatMap(vs -> toSimpleTransformations(vs).stream())
-                .collect(ImmutableList.toImmutableList()));
-    xform.ifPresent(
-        x ->
-            _c.getAllInterfaces()
-                .forEach(
-                    (name, iface) -> {
-                      iface.setFirewallSessionInterfaceInfo(
-                          new FirewallSessionInterfaceInfo(
-                              POST_NAT_FIB_LOOKUP, ImmutableList.of(iface.getName()), null, null));
-                      iface.setIncomingTransformation(x);
-                    }));
+    // Build transformations
+    createPacketPolicy();
+
+    _c.getAllInterfaces()
+        .forEach(
+            (name, iface) -> {
+              iface.setFirewallSessionInterfaceInfo(
+                  new FirewallSessionInterfaceInfo(
+                      POST_NAT_FIB_LOOKUP, ImmutableList.of(iface.getName()), null, null));
+              iface.setPacketPolicy(VIRTUAL_SERVERS_PACKET_POLICY_NAME);
+            });
+  }
+
+  /** Create a {@link PacketPolicy} which encodes the NAT transformations for this device. */
+  private void createPacketPolicy() {
+    Return returnFibLookup = new Return(new FibLookup(IngressInterfaceVrf.instance()));
+
+    ImmutableList.Builder<Statement> statements = ImmutableList.builder();
+    _virtualServers.values().stream()
+        .filter(A10Conversion::isVirtualServerEnabled)
+        .forEach(vs -> statements.add(toStatement(vs)));
+    PacketPolicy policy =
+        new PacketPolicy(VIRTUAL_SERVERS_PACKET_POLICY_NAME, statements.build(), returnFibLookup);
+    _c.getPacketPolicies().put(VIRTUAL_SERVERS_PACKET_POLICY_NAME, policy);
   }
 
   /**
-   * Returns the list of intermediate {@link SimpleTransformation}s used to build the VI {@link
-   * Transformation}. Each element corresponds to the transformation for a {@link Server} member of
-   * the specified {@link VirtualServer}.
+   * Convert specified {@link VirtualServer}'s transformations into a packet policy {@link
+   * Statement}.
    */
-  @Nonnull
-  private List<SimpleTransformation> toSimpleTransformations(VirtualServer server) {
-    return server.getPorts().values().stream()
-        .filter(A10Conversion::isVirtualServerPortEnabled)
-        .map(
-            p ->
-                new SimpleTransformation(
-                    toMatchCondition(server.getTarget(), p, VirtualServerTargetToIpSpace.INSTANCE),
-                    toTransformationStep(p)))
-        .collect(ImmutableList.toImmutableList());
+  private Statement toStatement(VirtualServer vs) {
+    return new If(
+        new PacketMatchExpr(toMatchExpr(vs, _filename)),
+        vs.getPorts().values().stream()
+            .filter(A10Conversion::isVirtualServerPortEnabled)
+            .map(this::toStatement)
+            .collect(ImmutableList.toImmutableList()));
+  }
+
+  /**
+   * Convert specified {@link VirtualServerPort}'s transformations into a packet policy {@link
+   * Statement}.
+   */
+  private Statement toStatement(VirtualServerPort port) {
+    ImmutableList.Builder<Statement> trueStatements = ImmutableList.builder();
+    // TODO apply acl here, if applicable
+    trueStatements.add(
+        new ApplyTransformation(
+            new Transformation(
+                TrueExpr.INSTANCE, ImmutableList.of(toTransformationStep(port)), null, null)));
+    return new If(new PacketMatchExpr(toMatchExpr(port)), trueStatements.build());
   }
 
   /**

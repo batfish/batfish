@@ -46,6 +46,7 @@ import org.batfish.datamodel.Names;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
@@ -67,6 +68,7 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.transformation.ApplyAll;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
+import org.batfish.vendor.VendorStructureId;
 import org.batfish.vendor.a10.representation.BgpNeighbor.SendCommunity;
 
 /** Conversion helpers for converting VS model {@link A10Configuration} to the VI model. */
@@ -125,11 +127,12 @@ public class A10Conversion {
   @VisibleForTesting
   @Nonnull
   static IntegerSpace toIntegerSpace(VirtualServerPort port) {
-    return IntegerSpace.of(
-            new SubRange(
-                port.getNumber(),
-                port.getNumber() + Optional.ofNullable(port.getRange()).orElse(0)))
-        .intersection(IntegerSpace.PORTS);
+    return IntegerSpace.of(toSubRange(port)).intersection(IntegerSpace.PORTS);
+  }
+
+  private static @Nonnull SubRange toSubRange(VirtualServerPort port) {
+    return new SubRange(
+        port.getNumber(), port.getNumber() + Optional.ofNullable(port.getRange()).orElse(0));
   }
 
   /** Returns the {@link IpProtocol} corresponding to the specified virtual-server port. */
@@ -800,5 +803,61 @@ public class A10Conversion {
         assert false;
         return true;
     }
+  }
+
+  public static TraceElement traceElementForVirtualServer(VirtualServer server, String filename) {
+    String serverName = server.getName();
+    return TraceElement.builder()
+        .add("Matched virtual-server")
+        .add(
+            serverName,
+            new VendorStructureId(
+                filename, A10StructureType.VIRTUAL_SERVER.getDescription(), serverName))
+        .build();
+  }
+
+  public static TraceElement traceElementForVirtualServerPort(VirtualServerPort port) {
+    return TraceElement.builder()
+        .add(String.format("Matched %s %s", port.getType().toString(), toPortString(port)))
+        .build();
+  }
+
+  public static String toPortString(VirtualServerPort port) {
+    if (port.getRange() != null) {
+      return String.format("ports %d-%d", port.getNumber(), port.getNumber() + port.getRange());
+    }
+    return String.format("port %d", port.getNumber());
+  }
+
+  /** Convert a {@link VirtualServerTarget} to its corresponding {@link AclLineMatchExpr}. */
+  static final class VirtualServerTargetToMatchExpr
+      implements VirtualServerTargetVisitor<AclLineMatchExpr> {
+    static final VirtualServerTargetToMatchExpr INSTANCE = new VirtualServerTargetToMatchExpr();
+
+    @Override
+    public AclLineMatchExpr visitAddress(VirtualServerTargetAddress address) {
+      return AclLineMatchExprs.matchDst(
+          address.getAddress().toIpSpace(),
+          TraceElement.builder()
+              .add(String.format("Matched virtual-server target address %s", address.getAddress()))
+              .build());
+    }
+  }
+
+  @VisibleForTesting
+  public static @Nonnull AclLineMatchExpr toMatchExpr(VirtualServer server, String filename) {
+    return AclLineMatchExprs.and(
+        traceElementForVirtualServer(server, filename),
+        VirtualServerTargetToMatchExpr.INSTANCE.visit(server.getTarget()));
+  }
+
+  @VisibleForTesting
+  public static @Nonnull AclLineMatchExpr toMatchExpr(VirtualServerPort port) {
+    Optional<IpProtocol> protocol = toProtocol(port);
+    assert protocol.isPresent();
+    return AclLineMatchExprs.and(
+        traceElementForVirtualServerPort(port),
+        AclLineMatchExprs.matchIpProtocol(protocol.get()),
+        AclLineMatchExprs.matchDstPort(toIntegerSpace(port)));
   }
 }
