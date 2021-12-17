@@ -402,6 +402,16 @@ public final class XrGrammarTest {
   }
 
   @Test
+  public void testInterfaceAclExtraction() {
+    CiscoXrConfiguration c = parseVendorConfig("interface-acl");
+
+    assertThat(c.getInterfaces(), hasKey("Bundle-Ether1"));
+    org.batfish.representation.cisco_xr.Interface be1 = c.getInterfaces().get("Bundle-Ether1");
+    assertThat(be1.getIncomingFilter(), equalTo("acl-in"));
+    assertThat(be1.getOutgoingFilter(), equalTo("acl-out"));
+  }
+
+  @Test
   public void testAclExtraction() {
     CiscoXrConfiguration c = parseVendorConfig("acl");
     assertThat(c.getIpv4Acls(), hasKeys("acl"));
