@@ -207,6 +207,7 @@ public class SonicConversions {
     throw new IllegalArgumentException("Cannot infer type for interface name " + interfaceName);
   }
 
+  /** An intermediate class to order ACL rules and simplify processing code. */
   @VisibleForTesting
   static class AclRuleWithName implements Comparable<AclRuleWithName> {
     private final String _name;
@@ -249,6 +250,11 @@ public class SonicConversions {
    */
   static void convertAcls(
       Configuration c, Map<String, AclTable> aclTables, Map<String, AclRule> aclRules, Warnings w) {
+    /*
+     Walk the AclRule entries, to filter out bad rules and organize the rest by the ACL of which they are a part.
+     This organization  puts the rules of an ACL in a SortedSet that is ordered from high to low PRIORITY.
+     If two rules have  the same PRIORITY, ties are broken by rule name.
+    */
 
     Set<String> rulesWithoutPriority = new HashSet<>();
     Set<String> rulesWithoutPacketAction = new HashSet<>();
@@ -321,6 +327,10 @@ public class SonicConversions {
                                     aclName, aclRuleWithName._name, aclName))));
   }
 
+  /**
+   * Attaches the {@code ipAccessList} derived from {@cide aclTable} to the appropriate interfaces
+   * in {@code c}.
+   */
   @VisibleForTesting
   static void attachAcl(
       Configuration c, String aclName, IpAccessList ipAccessList, AclTable aclTable, Warnings w) {
@@ -352,7 +362,7 @@ public class SonicConversions {
   }
 
   /**
-   * Converts all the rules of the given {@code aclName} into {@link IpAccessList} and adds it to
+   * Converts all the rules of {@code aclName} into {@link IpAccessList} and adds the result to
    * device configuration {@code c}.
    */
   private static IpAccessList convertAcl(
