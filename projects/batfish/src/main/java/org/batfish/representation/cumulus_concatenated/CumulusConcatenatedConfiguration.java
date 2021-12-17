@@ -713,7 +713,6 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
                                     .setVni(vxlan.getId())
                                     .setSourceAddress(localIp)
                                     .setUdpPort(NamedPort.VXLAN.number())
-                                    .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
                                     .setSrcVrf(DEFAULT_VRF_NAME)
                                     .build()));
               } else {

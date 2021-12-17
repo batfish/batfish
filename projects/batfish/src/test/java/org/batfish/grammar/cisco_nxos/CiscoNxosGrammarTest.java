@@ -78,12 +78,13 @@ import static org.batfish.datamodel.matchers.NssaSettingsMatchers.hasSuppressTyp
 import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasNssa;
 import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasStub;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasArea;
-import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasBumTransportIps;
-import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasBumTransportMethod;
-import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasSourceAddress;
-import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasUdpPort;
-import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasVni;
-import static org.batfish.datamodel.matchers.VrfMatchers.hasL2VniSettings;
+import static org.batfish.datamodel.matchers.VniMatchers.hasBumTransportIps;
+import static org.batfish.datamodel.matchers.VniMatchers.hasBumTransportMethod;
+import static org.batfish.datamodel.matchers.VniMatchers.hasLearnedNexthopVtepIps;
+import static org.batfish.datamodel.matchers.VniMatchers.hasSourceAddress;
+import static org.batfish.datamodel.matchers.VniMatchers.hasUdpPort;
+import static org.batfish.datamodel.matchers.VniMatchers.hasVni;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasLayer2Vnis;
 import static org.batfish.datamodel.routing_policy.Common.SUMMARY_ONLY_SUPPRESSION_POLICY_NAME;
 import static org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform.NEXUS_3000;
 import static org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform.NEXUS_5000;
@@ -263,7 +264,7 @@ import org.batfish.datamodel.matchers.OspfAreaMatchers;
 import org.batfish.datamodel.matchers.Route6FilterListMatchers;
 import org.batfish.datamodel.matchers.RouteFilterListMatchers;
 import org.batfish.datamodel.matchers.StubSettingsMatchers;
-import org.batfish.datamodel.matchers.VniSettingsMatchers;
+import org.batfish.datamodel.matchers.VniMatchers;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfAreaSummary.SummaryRouteBehavior;
 import org.batfish.datamodel.ospf.OspfMetricType;
@@ -5323,7 +5324,7 @@ public final class CiscoNxosGrammarTest {
   public void testNveVnisConversion() throws IOException {
     Configuration c = parseConfig("nxos_nve_vnis");
 
-    assertThat(c, hasDefaultVrf(hasL2VniSettings(hasKey(10001))));
+    assertThat(c, hasDefaultVrf(hasLayer2Vnis(hasKey(10001))));
     assertThat(
         c.getDefaultVrf().getLayer2Vnis().get(10001),
         allOf(
@@ -5331,7 +5332,7 @@ public final class CiscoNxosGrammarTest {
             hasBumTransportMethod(equalTo(BumTransportMethod.MULTICAST_GROUP)),
             hasSourceAddress(nullValue()),
             hasUdpPort(equalTo(DEFAULT_UDP_PORT)),
-            VniSettingsMatchers.hasVlan(equalTo(2)),
+            VniMatchers.hasVlan(equalTo(2)),
             hasVni(10001)));
 
     String tenant1 = "tenant1"; // 20001 is an L3 VNI so it should be mapped to a VRF
@@ -5339,9 +5340,8 @@ public final class CiscoNxosGrammarTest {
     assertThat(
         c.getVrfs().get(tenant1).getLayer3Vnis().get(20001),
         allOf(
-            // L3 mcast IP
-            hasBumTransportIps(equalTo(ImmutableSortedSet.of(Ip.parse("234.0.0.0")))),
-            hasBumTransportMethod(equalTo(BumTransportMethod.MULTICAST_GROUP)),
+            // TODO: support conversion of Tenant Routed Multicast (TRM) settings
+            hasLearnedNexthopVtepIps(empty()),
             hasSourceAddress(nullValue()),
             hasUdpPort(equalTo(DEFAULT_UDP_PORT)),
             hasVni(20001)));
@@ -5350,7 +5350,7 @@ public final class CiscoNxosGrammarTest {
     // Layer3Vni.
     assertThat(c, hasInterface("Vlan3", isActive()));
 
-    assertThat(c, hasDefaultVrf(hasL2VniSettings(hasKey(30001))));
+    assertThat(c, hasDefaultVrf(hasLayer2Vnis(hasKey(30001))));
     assertThat(
         c.getDefaultVrf().getLayer2Vnis().get(30001),
         allOf(
@@ -5359,10 +5359,10 @@ public final class CiscoNxosGrammarTest {
             hasBumTransportMethod(equalTo(BumTransportMethod.MULTICAST_GROUP)),
             hasSourceAddress(nullValue()),
             hasUdpPort(equalTo(DEFAULT_UDP_PORT)),
-            VniSettingsMatchers.hasVlan(equalTo(4)),
+            VniMatchers.hasVlan(equalTo(4)),
             hasVni(30001)));
 
-    assertThat(c, hasDefaultVrf(hasL2VniSettings(hasKey(40001))));
+    assertThat(c, hasDefaultVrf(hasLayer2Vnis(hasKey(40001))));
     assertThat(
         c.getDefaultVrf().getLayer2Vnis().get(40001),
         allOf(
@@ -5370,11 +5370,11 @@ public final class CiscoNxosGrammarTest {
             hasBumTransportMethod(equalTo(BumTransportMethod.UNICAST_FLOOD_GROUP)),
             hasSourceAddress(equalTo(Ip.parse("1.1.1.1"))),
             hasUdpPort(equalTo(DEFAULT_UDP_PORT)),
-            VniSettingsMatchers.hasVlan(equalTo(5)),
+            VniMatchers.hasVlan(equalTo(5)),
             hasVni(40001)));
 
     // Even though IRB for vlan6<->VNI 50001 is shutdown, should still communicate about VNI
-    assertThat(c, hasDefaultVrf(hasL2VniSettings(hasKey(50001))));
+    assertThat(c, hasDefaultVrf(hasLayer2Vnis(hasKey(50001))));
   }
 
   @Test

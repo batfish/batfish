@@ -2765,21 +2765,7 @@ public final class AristaConfiguration extends VendorConfiguration {
 
   private static Layer3Vni toL3Vni(
       @Nonnull AristaEosVxlan vxlan, @Nonnull Integer vni, @Nullable Ip sourceAddress) {
-    SortedSet<Ip> bumTransportIps = vxlan.getFloodAddresses();
-
-    // default to unicast flooding unless specified otherwise
-    BumTransportMethod bumTransportMethod = BumTransportMethod.UNICAST_FLOOD_GROUP;
-
-    // Check if multicast is enabled
-    Ip multicastAddress = vxlan.getMulticastGroup();
-    if (bumTransportIps.isEmpty() && multicastAddress != null) {
-      bumTransportMethod = BumTransportMethod.MULTICAST_GROUP;
-      bumTransportIps = ImmutableSortedSet.of(multicastAddress);
-    }
-
     return Layer3Vni.builder()
-        .setBumTransportIps(bumTransportIps)
-        .setBumTransportMethod(bumTransportMethod)
         .setSourceAddress(sourceAddress)
         .setUdpPort(firstNonNull(vxlan.getUdpPort(), AristaEosVxlan.DEFAULT_UDP_PORT))
         .setVni(vni)
