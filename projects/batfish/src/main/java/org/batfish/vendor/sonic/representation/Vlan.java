@@ -15,6 +15,7 @@ import javax.annotation.Nullable;
 
 /** Represents the settings of a VLAN: https://github.com/Azure/SONiC/wiki/Configuration#vlan */
 public class Vlan implements Serializable {
+  private static final String PROP_DHCP_SERVERS = "dhcp_servers";
   private static final String PROP_MEMBERS = "members";
   private static final String PROP_VLANID = "vlanid";
 
@@ -29,11 +30,12 @@ public class Vlan implements Serializable {
     return Optional.ofNullable(_vlanId);
   }
 
+  @SuppressWarnings("unused")
   @JsonCreator
   private @Nonnull static Vlan create(
+      @Nullable @JsonProperty(PROP_DHCP_SERVERS) List<String> dhcpServers, // ignored
       @Nullable @JsonProperty(PROP_MEMBERS) ImmutableList<String> members,
       @Nullable @JsonProperty(PROP_VLANID) Integer vlanId) {
-    // dhcp_servers are ignored
     return Vlan.builder().setMembers(members).setVlanId(vlanId).build();
   }
 
