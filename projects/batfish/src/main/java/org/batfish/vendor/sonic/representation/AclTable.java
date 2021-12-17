@@ -42,6 +42,11 @@ public class AclTable implements Serializable {
     return Optional.ofNullable(_type);
   }
 
+  /** Whether the port name refers to control plane */
+  public boolean isControlPlanePort(String portName) {
+    return portName.equalsIgnoreCase("CtrlPlane");
+  }
+
   private static final String PROP_PORTS = "ports";
   private static final String PROP_STAGE = "stage";
   private static final String PROP_TYPE = "type";
@@ -80,7 +85,8 @@ public class AclTable implements Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_ports, _stage, _type);
+    return Objects.hash(
+        _ports, _stage == null ? null : _stage.ordinal(), _type == null ? null : _type.ordinal());
   }
 
   @Override

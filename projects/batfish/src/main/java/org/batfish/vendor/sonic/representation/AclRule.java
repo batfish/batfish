@@ -123,7 +123,13 @@ public class AclRule implements Serializable {
   @Override
   public int hashCode() {
     return Objects.hash(
-        _ipProtocol, _dstIp, _srcIp, _l4DstPort, _l4SrcPort, _priority, _packetAction);
+        _ipProtocol,
+        _dstIp,
+        _srcIp,
+        _l4DstPort,
+        _l4SrcPort,
+        _priority,
+        _packetAction == null ? null : _packetAction.ordinal());
   }
 
   public @Nonnull static Builder builder() {

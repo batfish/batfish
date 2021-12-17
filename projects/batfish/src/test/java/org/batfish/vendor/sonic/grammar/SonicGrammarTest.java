@@ -2,6 +2,10 @@ package org.batfish.vendor.sonic.grammar;
 
 import static com.google.common.collect.Iterables.getOnlyElement;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDstPort;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocol;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAccessVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddress;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
@@ -10,8 +14,8 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrfName;
-import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -22,17 +26,20 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import java.io.IOException;
 import java.util.Arrays;
+import javax.annotation.Nonnull;
+import net.sf.javabdd.BDD;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
+import org.batfish.common.bdd.IpAccessListToBdd;
+import org.batfish.datamodel.AclLine;
+import org.batfish.datamodel.BddTestbed;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.InterfaceType;
-import org.batfish.datamodel.SwitchportMode;
-import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.SwitchportMode;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -155,6 +162,14 @@ public class SonicGrammarTest {
         allOf(hasName("Ethernet0"), hasAccessVlan(1), hasSwitchPortMode(SwitchportMode.ACCESS)));
   }
 
+  private static final BddTestbed _bddTestbed =
+      new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
+  private static final IpAccessListToBdd _aclToBdd = _bddTestbed.getAclToBdd();
+
+  private static @Nonnull BDD toMatchBDD(AclLine aclLine) {
+    return _aclToBdd.toPermitAndDenyBdds(aclLine).getMatchBdd();
+  }
+
   @Test
   public void testAcl() throws IOException {
     String snapshotName = "acl";
@@ -190,16 +205,15 @@ public class SonicGrammarTest {
     Configuration c = getOnlyElement(vc.toVendorIndependentConfigurations());
     IpAccessList ipAccessList = c.getAllInterfaces().get("Ethernet0").getInboundFilter();
     assertThat(
-        ipAccessList,
-        accepts(
-            Flow.builder()
-                .setIngressNode(c.getHostname())
-                .setIpProtocol(IpProtocol.UDP)
-                .setSrcPort(2323)
-                .setDstPort(161)
-                .setSrcIp(Ip.parse("10.1.4.1"))
-                .build(),
-            ipAccessList.getName(),
-            c));
+        ipAccessList.getLines().stream()
+            .map(SonicGrammarTest::toMatchBDD)
+            .collect(ImmutableList.toImmutableList()),
+        contains(
+            toMatchBDD(
+                ExprAclLine.accepting(
+                    and(
+                        matchIpProtocol(17),
+                        matchDstPort(161),
+                        matchSrc(Prefix.parse("10.1.4.0/22")))))));
   }
 }

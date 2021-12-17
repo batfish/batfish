@@ -4,6 +4,12 @@ import static junit.framework.TestCase.assertFalse;
 import static org.batfish.common.matchers.WarningMatchers.hasText;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.ConfigurationFormat.SONIC;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDstPort;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocol;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcPort;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAccessVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddress;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
@@ -17,18 +23,16 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSpeed;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrfName;
 import static org.batfish.representation.frr.FrrConversions.SPEED_CONVERSION_FACTOR;
-import static org.batfish.vendor.sonic.representation.SonicConversions.checkVlanId;
-import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
-import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.vendor.sonic.representation.SonicConversions.attachAcl;
+import static org.batfish.vendor.sonic.representation.SonicConversions.checkVlanId;
 import static org.batfish.vendor.sonic.representation.SonicConversions.convertAcls;
 import static org.batfish.vendor.sonic.representation.SonicConversions.convertPorts;
 import static org.batfish.vendor.sonic.representation.SonicConversions.convertVlans;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -38,24 +42,29 @@ import static org.junit.Assert.assertTrue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
+import java.util.Map;
+import javax.annotation.Nonnull;
+import net.sf.javabdd.BDD;
 import org.batfish.common.Warnings;
+import org.batfish.common.bdd.IpAccessListToBdd;
+import org.batfish.datamodel.AclLine;
+import org.batfish.datamodel.BddTestbed;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceType;
-import org.batfish.datamodel.SwitchportMode;
-import org.batfish.datamodel.Vrf;
-import org.batfish.vendor.sonic.representation.VlanMember.TaggingMode;
-import java.util.Map;
-import org.batfish.datamodel.AclLine;
-import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.Vrf;
 import org.batfish.vendor.sonic.representation.AclRule.PacketAction;
 import org.batfish.vendor.sonic.representation.AclTable.Stage;
 import org.batfish.vendor.sonic.representation.AclTable.Type;
+import org.batfish.vendor.sonic.representation.SonicConversions.AclRuleWithName;
+import org.batfish.vendor.sonic.representation.VlanMember.TaggingMode;
 import org.junit.Test;
 
 public class SonicConversionsTest {
@@ -252,6 +261,14 @@ public class SonicConversionsTest {
     return String.format("%s|%s", aclName, ruleName);
   }
 
+  private static final BddTestbed _bddTestbed =
+      new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
+  private static final IpAccessListToBdd _aclToBdd = _bddTestbed.getAclToBdd();
+
+  private static @Nonnull BDD toMatchBDD(AclLine aclLine) {
+    return _aclToBdd.toPermitAndDenyBdds(aclLine).getMatchBdd();
+  }
+
   @Test
   public void testConvertAcls() {
     String ifaceName = "Ethernet0";
@@ -270,13 +287,11 @@ public class SonicConversionsTest {
                 .build());
     Prefix srcPrefix = Prefix.parse("1.1.1.1/24");
     Prefix dstPrefix = Prefix.parse("2.2.2.2/24");
-    // RULE_1 (higher pri) drops a subset of traffic that RULE_2 (lower pri) allows
-    // RULE_3 is highest priority but belongs to another ACL, so should be ignored
     Map<String, AclRule> aclRules =
         ImmutableMap.of(
             ruleKey(aclName, "RULE_1"),
             AclRule.builder()
-                .setPriority(100)
+                .setPriority(100) // higher priority
                 .setPacketAction(PacketAction.DROP)
                 .setSrcIp(srcPrefix.getStartIp().toPrefix())
                 .setDstIp(dstPrefix.getStartIp().toPrefix())
@@ -289,54 +304,9 @@ public class SonicConversionsTest {
                 .setPriority(90)
                 .setPacketAction(PacketAction.ACCEPT)
                 .setSrcIp(srcPrefix)
-                .setDstIp(dstPrefix)
-                .setL4SrcPort(42424)
-                .setL4DstPort(443)
-                .setIpProtocol(IpProtocol.TCP.number())
-                .build(),
-            ruleKey("other", "RULE_3"),
-            AclRule.builder()
-                .setPriority(1000)
-                .setPacketAction(PacketAction.ACCEPT)
-                .setSrcIp(srcPrefix)
-                .setDstIp(dstPrefix)
-                .setL4SrcPort(42424)
-                .setL4DstPort(443)
-                .setIpProtocol(IpProtocol.TCP.number())
                 .build());
 
-    Flow dropFlowRule1 =
-        Flow.builder()
-            .setIngressNode(c.getHostname())
-            .setIpProtocol(IpProtocol.TCP)
-            .setSrcIp(srcPrefix.getStartIp())
-            .setDstIp(dstPrefix.getStartIp())
-            .setSrcPort(42424)
-            .setDstPort(443)
-            .build();
-    Flow acceptFlowRule2 =
-        Flow.builder()
-            .setIngressNode(c.getHostname())
-            .setIpProtocol(IpProtocol.TCP)
-            .setSrcIp(srcPrefix.getEndIp())
-            .setDstIp(dstPrefix.getEndIp())
-            .setSrcPort(42424)
-            .setDstPort(443)
-            .build();
-    Flow dropFlowDefault =
-        Flow.builder()
-            .setIngressNode(c.getHostname())
-            .setIpProtocol(IpProtocol.TCP)
-            .setSrcIp(srcPrefix.getEndIp())
-            .setDstIp(dstPrefix.getEndIp())
-            .setSrcPort(443) // unmatched port
-            .setDstPort(443)
-            .build();
-
-    Warnings warnings = new Warnings(true, true, true);
-    convertAcls(c, aclTables, aclRules, warnings);
-
-    assertTrue(warnings.getRedFlagWarnings().isEmpty());
+    convertAcls(c, aclTables, aclRules, new Warnings());
 
     // ACL exists in the VI model and is attached properly
     IpAccessList ipAccessList = c.getIpAccessLists().get(aclName);
@@ -350,14 +320,24 @@ public class SonicConversionsTest {
             .map(AclLine::getName)
             .collect(ImmutableList.toImmutableList()));
 
-    // check behavior
-    assertThat(ipAccessList, rejects(dropFlowRule1, null, c));
-    assertThat(ipAccessList, accepts(acceptFlowRule2, null, c));
-    assertThat(ipAccessList, rejects(dropFlowDefault, null, c));
+    assertThat(
+        ipAccessList.getLines().stream()
+            .map(SonicConversionsTest::toMatchBDD)
+            .collect(ImmutableList.toImmutableList()),
+        contains(
+            toMatchBDD(
+                ExprAclLine.rejecting(
+                    and(
+                        matchIpProtocol(IpProtocol.TCP),
+                        matchSrc(srcPrefix.getStartIp()),
+                        matchDst(dstPrefix.getStartIp()),
+                        matchSrcPort(42424),
+                        matchDstPort(443)))),
+            toMatchBDD(ExprAclLine.accepting(and(matchSrc(srcPrefix))))));
   }
 
   @Test
-  public void testConvertAcls_rulePriority() {
+  public void testConvertAcls_badRules() {
     String ifaceName = "Ethernet0";
     Configuration c =
         Configuration.builder().setHostname("host").setConfigurationFormat(SONIC).build();
@@ -372,41 +352,18 @@ public class SonicConversionsTest {
                 .setStage(Stage.INGRESS)
                 .setType(Type.L3)
                 .build());
-    Prefix srcPrefix = Prefix.parse("1.1.1.1/24");
-    Prefix dstPrefix = Prefix.parse("2.2.2.2/24");
-    // RULE_1 and RULE_2 have the same priority
-    // RULE_3 has no priority
     Map<String, AclRule> aclRules =
         ImmutableMap.of(
-            ruleKey(aclName, "RULE_1"),
-            AclRule.builder()
-                .setPriority(100)
-                .setPacketAction(PacketAction.DROP)
-                .setSrcIp(srcPrefix.getStartIp().toPrefix())
-                .setDstIp(dstPrefix.getStartIp().toPrefix())
-                .setL4SrcPort(42424)
-                .setL4DstPort(443)
-                .setIpProtocol(IpProtocol.TCP.number())
-                .build(),
-            ruleKey(aclName, "RULE_2"),
-            AclRule.builder()
-                .setPriority(100)
-                .setPacketAction(PacketAction.ACCEPT)
-                .setSrcIp(srcPrefix)
-                .setDstIp(dstPrefix)
-                .setL4SrcPort(42424)
-                .setL4DstPort(443)
-                .setIpProtocol(IpProtocol.TCP.number())
-                .build(),
-            ruleKey(aclName, "RULE_3"),
-            AclRule.builder()
-                .setPacketAction(PacketAction.ACCEPT)
-                .setSrcIp(srcPrefix)
-                .setDstIp(dstPrefix)
-                .setL4SrcPort(42424)
-                .setL4DstPort(443)
-                .setIpProtocol(IpProtocol.TCP.number())
-                .build());
+            "badkey",
+            AclRule.builder().setPriority(100).setPacketAction(PacketAction.DROP).build(),
+            ruleKey(aclName, "NoPriority"),
+            AclRule.builder().setPacketAction(PacketAction.ACCEPT).build(),
+            ruleKey(aclName, "NoPacketAction"),
+            AclRule.builder().setPriority(100).build(),
+            ruleKey("other", "NoAcl"),
+            AclRule.builder().setPriority(100).setPacketAction(PacketAction.DROP).build(),
+            ruleKey(aclName, "GoodRule"),
+            AclRule.builder().setPriority(100).setPacketAction(PacketAction.DROP).build());
 
     Warnings warnings = new Warnings(true, true, true);
     convertAcls(c, aclTables, aclRules, warnings);
@@ -414,22 +371,38 @@ public class SonicConversionsTest {
     assertThat(
         warnings.getRedFlagWarnings(),
         containsInAnyOrder(
-            hasText("Ignored ACL_RULE 'testAcl|RULE_3' because PRIORITY was not defined"),
-            hasText(
-                "Ignored ACL_RULE 'testAcl|RULE_2' because its PRIORITY is duplicate of"
-                    + " 'testAcl|RULE_1'")));
+            hasText("Ignored ACL_RULE badkey: Badly formatted name"),
+            hasText("Ignored ACL_RULE testAcl|NoPriority: Missing PRIORITY"),
+            hasText("Ignored ACL_RULE testAcl|NoPacketAction: Missing PACKET_ACTION"),
+            hasText("Ignored ACL_RULE other|NoAcl: Missing ACL_TABLE 'other'")));
 
-    // ACL exists in the VI model and is attached properly
+    // ACLs are still converted with whatever is left
     IpAccessList ipAccessList = c.getIpAccessLists().get(aclName);
     assertNotNull(ipAccessList);
     assertEquals(aclName, c.getAllInterfaces().get(ifaceName).getInboundFilter().getName());
-
-    // Only RULE_1 is included
     assertEquals(
-        ImmutableList.of("RULE_1"),
+        ImmutableList.of("GoodRule"),
         ipAccessList.getLines().stream()
             .map(AclLine::getName)
             .collect(ImmutableList.toImmutableList()));
+  }
+
+  @Test
+  public void testAclWithRuleNameCompareTo() {
+    AclRule.Builder builder = AclRule.builder().setPacketAction(PacketAction.ACCEPT);
+
+    assertTrue(
+        new AclRuleWithName("rule1", builder.setPriority(100).build())
+                .compareTo(new AclRuleWithName("rule1", builder.setPriority(90).build()))
+            < 1);
+    assertTrue(
+        new AclRuleWithName("rule2", builder.setPriority(100).build())
+                .compareTo(new AclRuleWithName("rule1", builder.setPriority(100).build()))
+            < 1);
+    assertTrue(
+        new AclRuleWithName("rule1", builder.setPriority(100).build())
+                .compareTo(new AclRuleWithName("rule1", builder.setPriority(100).build()))
+            == 0);
   }
 
   @Test
