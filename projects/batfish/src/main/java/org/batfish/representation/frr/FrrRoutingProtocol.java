@@ -6,16 +6,14 @@ import java.util.Map;
 import java.util.Set;
 import org.batfish.datamodel.RoutingProtocol;
 
-public enum CumulusRoutingProtocol {
+public enum FrrRoutingProtocol {
   OSPF,
   BGP,
   CONNECTED,
   STATIC;
 
-  /**
-   * Maps each {@link CumulusRoutingProtocol} to the set of {@link RoutingProtocol}s it includes.
-   */
-  public static final Map<CumulusRoutingProtocol, Set<RoutingProtocol>> VI_PROTOCOLS_MAP =
+  /** Maps each {@link FrrRoutingProtocol} to the set of {@link RoutingProtocol}s it includes. */
+  public static final Map<FrrRoutingProtocol, Set<RoutingProtocol>> VI_PROTOCOLS_MAP =
       ImmutableMap.of(
           BGP,
           ImmutableSet.of(RoutingProtocol.BGP, RoutingProtocol.IBGP),

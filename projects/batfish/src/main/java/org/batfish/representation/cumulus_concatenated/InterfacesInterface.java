@@ -3,11 +3,11 @@ package org.batfish.representation.cumulus_concatenated;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.representation.cumulus_concatenated.CumulusConcatenatedConfiguration.VLAN_INTERFACE_PATTERN;
-import static org.batfish.representation.frr.CumulusStructureType.BOND;
-import static org.batfish.representation.frr.CumulusStructureType.INTERFACE;
-import static org.batfish.representation.frr.CumulusStructureType.VLAN;
-import static org.batfish.representation.frr.CumulusStructureType.VRF;
-import static org.batfish.representation.frr.CumulusStructureType.VXLAN;
+import static org.batfish.representation.cumulus_concatenated.CumulusStructureType.BOND;
+import static org.batfish.representation.cumulus_concatenated.CumulusStructureType.INTERFACE;
+import static org.batfish.representation.cumulus_concatenated.CumulusStructureType.VLAN;
+import static org.batfish.representation.cumulus_concatenated.CumulusStructureType.VRF;
+import static org.batfish.representation.cumulus_concatenated.CumulusStructureType.VXLAN;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -24,10 +24,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MacAddress;
-import org.batfish.representation.frr.CumulusStructureType;
 import org.batfish.representation.frr.FrrInterface;
-import org.batfish.representation.frr.InterfaceBridgeSettings;
-import org.batfish.representation.frr.InterfaceClagSettings;
 import org.batfish.representation.frr.StaticRoute;
 
 /**
