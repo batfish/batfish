@@ -25,9 +25,13 @@ import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.vendor.a10.representation.A10Configuration;
+import org.batfish.vendor.a10.representation.Server;
 import org.batfish.vendor.a10.representation.ServerPort;
+import org.batfish.vendor.a10.representation.ServerPort.ServerPortAndType;
+import org.batfish.vendor.a10.representation.ServerPort.Type;
 import org.batfish.vendor.a10.representation.ServerTargetVisitor;
 import org.batfish.vendor.a10.representation.ServiceGroup;
+import org.batfish.vendor.a10.representation.ServiceGroupMember;
 import org.batfish.vendor.a10.representation.VirtualServer;
 import org.batfish.vendor.a10.representation.VirtualServerPort;
 import org.batfish.vendor.a10.representation.VirtualServerTargetAddress;
@@ -134,12 +138,14 @@ public class A10VirtualServerConfigurationAnswerer extends Answerer {
                   ? ImmutableSet.of()
                   : serviceGroup.getMembers().values().stream()
                       .map(
-                          member ->
-                              ImmutableList.of(
-                                  member.getName(),
-                                  Integer.toString(member.getPort()),
-                                  firstNonNull(member.getEnable(), true) ? "enabled" : "disabled",
-                                  getServerTarget(member.getName(), a10Vc)))
+                          member -> {
+                            Server server = a10Vc.getServers().get(member.getName());
+                            return ImmutableList.of(
+                                member.getName(),
+                                Integer.toString(member.getPort()),
+                                getServerTarget(server),
+                                getServerActive(member, server, serviceGroup.getType()));
+                          })
                       .collect(ImmutableSet.toImmutableSet());
           rows.add(
               getRow(
@@ -163,13 +169,31 @@ public class A10VirtualServerConfigurationAnswerer extends Answerer {
     return rows;
   }
 
-  private static String getServerTarget(String serverName, A10Configuration a10Vc) {
-    return Optional.ofNullable(a10Vc.getServers().get(serverName))
-        .map(
-            server ->
-                ((ServerTargetVisitor<String>) address -> address.getAddress().toString())
-                    .visit(server.getTarget()))
-        .orElse("Undefined");
+  /**
+   * Returns if this server is active based on whether the member, server, and server port are
+   * enabled.
+   */
+  private static String getServerActive(
+      ServiceGroupMember member, @Nullable Server server, Type type) {
+    if (server == null) {
+      return "inactive";
+    }
+    return firstNonNull(member.getEnable(), true)
+            && firstNonNull(server.getEnable(), true)
+            && Optional.ofNullable(
+                    server.getPorts().get(new ServerPortAndType(member.getPort(), type)))
+                .map(serverPort -> firstNonNull(serverPort.getEnable(), true))
+                .orElse(false)
+        ? "active"
+        : "inactive";
+  }
+
+  private static String getServerTarget(@Nullable Server server) {
+    if (server == null) {
+      return "Undefined";
+    }
+    return ((ServerTargetVisitor<String>) address -> address.getAddress().toString())
+        .visit(server.getTarget());
   }
 
   private static Row getRow(

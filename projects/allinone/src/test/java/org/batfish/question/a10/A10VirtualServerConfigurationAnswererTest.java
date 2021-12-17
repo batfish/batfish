@@ -82,8 +82,10 @@ public class A10VirtualServerConfigurationAnswererTest {
                         COL_SERVERS,
                         equalTo(
                             ImmutableSet.of(
-                                ImmutableList.of("s1", "10000", "enabled", "1.1.1.1"),
-                                ImmutableList.of("s2", "9999", "disabled", "2.2.2.2"))),
+                                ImmutableList.of("s1", "10000", "1.1.1.1", "active"),
+                                ImmutableList.of("s2", "9999", "2.2.2.2", "inactive"),
+                                ImmutableList.of("s3", "10000", "3.3.3.3", "inactive"),
+                                ImmutableList.of("s4", "10000", "4.4.4.4", "inactive"))),
                         Schema.set(Schema.list(Schema.STRING))),
                     hasColumn(COL_SOURCE_NAT_POOL_NAME, equalTo("pool1"), Schema.STRING)),
                 allOf(
