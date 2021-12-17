@@ -2,9 +2,12 @@ package org.batfish.vendor.sonic.representation;
 
 import static org.batfish.representation.frr.FrrConversions.SPEED_CONVERSION_FACTOR;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Sets;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Set;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IntegerSpace;
@@ -61,20 +64,24 @@ public class SonicConversions {
       Map<String, L3Interface> vlanInterfaces,
       Vrf vrf,
       Warnings w) {
+    warnMissingVlans(vlans.keySet(), vlanInterfaces.keySet(), w);
     for (String vlanName : vlans.keySet()) {
       Vlan vlan = vlans.get(vlanName);
-      Interface.builder()
-          .setName(vlanName)
-          .setOwner(c)
-          .setVrf(vrf)
-          .setType(InterfaceType.VLAN)
-          .setVlan(vlan.getVlanId())
-          .setActive(true)
-          .setAddress(
-              Optional.ofNullable(vlanInterfaces.get(vlanName))
-                  .flatMap(vlanIface -> Optional.ofNullable(vlanIface.getAddress()))
-                  .orElse(null))
-          .build();
+      if (!checkVlanId(vlanName, vlan.getVlanId().orElse(null), w)) {
+        continue;
+      }
+      int vlanId = vlan.getVlanId().get(); // must exist since checkVlanId passed
+      if (vlanInterfaces.containsKey(vlanName)) {
+        Interface.builder()
+            .setName(vlanName)
+            .setOwner(c)
+            .setVrf(vrf)
+            .setType(InterfaceType.VLAN)
+            .setVlan(vlanId)
+            .setActive(true)
+            .setAddress(vlanInterfaces.get(vlanName).getAddress())
+            .build();
+      }
 
       for (String memberName : vlan.getMembers()) {
         Interface memberInterface = c.getAllInterfaces().get(memberName);
@@ -104,16 +111,13 @@ public class SonicConversions {
           case TAGGED:
             memberInterface.setSwitchport(true);
             memberInterface.setSwitchportMode(SwitchportMode.TRUNK);
-            memberInterface.setNativeVlan(vlan.getVlanId());
-            memberInterface.setAllowedVlans(
-                Optional.ofNullable(vlan.getVlanId())
-                    .map(IntegerSpace::of)
-                    .orElse(IntegerSpace.EMPTY));
+            memberInterface.setNativeVlan(vlanId);
+            memberInterface.setAllowedVlans(IntegerSpace.of(vlanId));
             break;
           case UNTAGGED:
             memberInterface.setSwitchport(true);
             memberInterface.setSwitchportMode(SwitchportMode.ACCESS);
-            memberInterface.setAccessVlan(vlan.getVlanId());
+            memberInterface.setAccessVlan(vlanId);
             break;
           default:
             w.redFlag(
@@ -123,6 +127,48 @@ public class SonicConversions {
         }
       }
     }
+  }
+
+  private static void warnMissingVlans(Set<String> vlans, Set<String> vlanInterfaces, Warnings w) {
+    Set<String> missingVlans = Sets.difference(vlanInterfaces, vlans);
+    if (!missingVlans.isEmpty()) {
+      w.redFlag(
+          String.format(
+              "Ignoring VLAN_INTERFACEs %s because they don't have VLANs defined.", missingVlans));
+    }
+  }
+
+  @VisibleForTesting
+  static boolean checkVlanId(String vlanName, @Nullable Integer vlanId, Warnings w) {
+    if (vlanId == null) {
+      w.redFlag(String.format("%s ignored: vlanid is not configured.", vlanName));
+      return false;
+    }
+    if (vlanId < 1 || vlanId > 4094) {
+      w.redFlag(
+          String.format(
+              "%s ignored: It has invalid vlan id %d. Vlan ids should be between 1 and 4094.",
+              vlanName, vlanId));
+      return false;
+    }
+    try {
+      int vlanIdFromName = Integer.parseInt(vlanName.replaceFirst("^Vlan", ""));
+      if (vlanIdFromName != vlanId) {
+        w.redFlag(
+            String.format(
+                "%s ignored: Vlan id in the name does not match configured vlan id %d",
+                vlanName, vlanId));
+        return false;
+      }
+    } catch (NumberFormatException e) {
+      w.redFlag(
+          String.format(
+              "%s ignored: Unexpected name format. Vlan names should be like 'Vlan1', with 'Vlan'"
+                  + " followed by its numerical id.",
+              vlanName));
+      return false;
+    }
+    return true;
   }
 
   // Super simple name to type conversion

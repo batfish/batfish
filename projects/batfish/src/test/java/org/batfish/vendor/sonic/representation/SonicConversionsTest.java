@@ -1,5 +1,6 @@
 package org.batfish.vendor.sonic.representation;
 
+import static junit.framework.TestCase.assertFalse;
 import static org.batfish.common.matchers.WarningMatchers.hasText;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.ConfigurationFormat.SONIC;
@@ -16,12 +17,16 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSpeed;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrfName;
 import static org.batfish.representation.frr.FrrConversions.SPEED_CONVERSION_FACTOR;
+import static org.batfish.vendor.sonic.representation.SonicConversions.checkVlanId;
 import static org.batfish.vendor.sonic.representation.SonicConversions.convertPorts;
 import static org.batfish.vendor.sonic.representation.SonicConversions.convertVlans;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -79,25 +84,78 @@ public class SonicConversionsTest {
     }
   }
 
+  /**
+   * Checks if the Vlan interface is created in the right circumstances and the interactions between
+   * data in VLAN and VLAN_INTERFACE.
+   */
   @Test
-  public void testConvertVlans_createsVlanInterface() {
-    Configuration c =
-        Configuration.builder().setHostname("host").setConfigurationFormat(SONIC).build();
-    Vrf vrf = Vrf.builder().setOwner(c).setName(DEFAULT_VRF_NAME).build();
-    convertVlans(
-        c,
-        ImmutableMap.of("Vlan1", Vlan.builder().setVlanId(1).build()),
-        ImmutableMap.of(),
-        ImmutableMap.of("Vlan1", new L3Interface(ConcreteInterfaceAddress.parse("1.1.1.1/24"))),
-        vrf,
-        new Warnings());
-    assertThat(
-        c.getAllInterfaces().get("Vlan1"),
-        allOf(
-            hasName("Vlan1"),
-            hasVrfName(vrf.getName()),
-            hasAddress("1.1.1.1/24"),
-            hasInterfaceType(InterfaceType.VLAN)));
+  public void testConvertVlans_vlanInterface() {
+    {
+      Configuration c =
+          Configuration.builder().setHostname("host").setConfigurationFormat(SONIC).build();
+      Vrf vrf = Vrf.builder().setOwner(c).setName(DEFAULT_VRF_NAME).build();
+      convertVlans(
+          c,
+          ImmutableMap.of("Vlan1", Vlan.builder().setVlanId(1).build()),
+          ImmutableMap.of(),
+          ImmutableMap.of("Vlan1", new L3Interface(ConcreteInterfaceAddress.parse("1.1.1.1/24"))),
+          vrf,
+          new Warnings());
+      assertThat(
+          c.getAllInterfaces().get("Vlan1"),
+          allOf(
+              hasName("Vlan1"),
+              hasVrfName(vrf.getName()),
+              hasAddress("1.1.1.1/24"),
+              hasInterfaceType(InterfaceType.VLAN)));
+    }
+    {
+      // no vlan interface
+      Configuration c =
+          Configuration.builder().setHostname("host").setConfigurationFormat(SONIC).build();
+      Vrf vrf = Vrf.builder().setOwner(c).setName(DEFAULT_VRF_NAME).build();
+      convertVlans(
+          c,
+          ImmutableMap.of("Vlan1", Vlan.builder().setVlanId(1).build()),
+          ImmutableMap.of(),
+          ImmutableMap.of(),
+          vrf,
+          new Warnings());
+      assertNull(c.getAllInterfaces().get("Vlan1"));
+    }
+    {
+      // bad vlanid
+      Configuration c =
+          Configuration.builder().setHostname("host").setConfigurationFormat(SONIC).build();
+      Vrf vrf = Vrf.builder().setOwner(c).setName(DEFAULT_VRF_NAME).build();
+      convertVlans(
+          c,
+          ImmutableMap.of("Vlan1", Vlan.builder().setVlanId(12).build()),
+          ImmutableMap.of(),
+          ImmutableMap.of("Vlan1", new L3Interface(ConcreteInterfaceAddress.parse("1.1.1.1/24"))),
+          vrf,
+          new Warnings());
+      assertNull(c.getAllInterfaces().get("Vlan1"));
+    }
+    {
+      // vlan exists only in VLAN_INTERFACE
+      Configuration c =
+          Configuration.builder().setHostname("host").setConfigurationFormat(SONIC).build();
+      Vrf vrf = Vrf.builder().setOwner(c).setName(DEFAULT_VRF_NAME).build();
+      Warnings warnings = new Warnings(true, true, true);
+      convertVlans(
+          c,
+          ImmutableMap.of(),
+          ImmutableMap.of(),
+          ImmutableMap.of("Vlan1", new L3Interface(ConcreteInterfaceAddress.parse("1.1.1.1/24"))),
+          vrf,
+          warnings);
+      assertNull(c.getAllInterfaces().get("Vlan1"));
+      assertThat(
+          warnings.getRedFlagWarnings(),
+          contains(
+              hasText("Ignoring VLAN_INTERFACEs [Vlan1] because they don't have VLANs defined.")));
+    }
   }
 
   @Test
@@ -162,5 +220,15 @@ public class SonicConversionsTest {
             hasSwitchPortMode(SwitchportMode.NONE)));
     assertThat(
         w.getRedFlagWarnings(), hasItem(hasText("Vlan member Vlan1|Ethernet3 is not configured")));
+  }
+
+  @Test
+  public void testCheckVlanId() {
+    assertFalse(checkVlanId("Vlan1", null, new Warnings()));
+    assertFalse(checkVlanId("Vlan1", 0, new Warnings()));
+    assertFalse(checkVlanId("Vlan1", 4095, new Warnings()));
+    assertFalse(checkVlanId("Vlan0", 1, new Warnings()));
+    assertFalse(checkVlanId("VlanXX", 1, new Warnings()));
+    assertTrue(checkVlanId("Vlan1", 1, new Warnings()));
   }
 }
