@@ -6,15 +6,15 @@ import javax.annotation.Nullable;
 
 public class BgpRedistributionPolicy implements Serializable {
 
-  private final @Nonnull CumulusRoutingProtocol _protocol;
+  private final @Nonnull FrrRoutingProtocol _protocol;
   private final @Nullable String _routeMap;
 
-  public BgpRedistributionPolicy(CumulusRoutingProtocol protocol, @Nullable String routeMap) {
+  public BgpRedistributionPolicy(FrrRoutingProtocol protocol, @Nullable String routeMap) {
     _protocol = protocol;
     _routeMap = routeMap;
   }
 
-  public @Nonnull CumulusRoutingProtocol getProtocol() {
+  public @Nonnull FrrRoutingProtocol getProtocol() {
     return _protocol;
   }
 

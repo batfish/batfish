@@ -4,6 +4,8 @@ import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.vendor.sonic.representation.SonicConversions.convertPorts;
 import static org.batfish.vendor.sonic.representation.SonicConversions.convertVlans;
+import static org.batfish.vendor.sonic.representation.SonicStructureType.fromFrrStructureType;
+import static org.batfish.vendor.sonic.representation.SonicStructureUsage.fromFrrStructureUsage;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
@@ -12,6 +14,7 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -20,6 +23,8 @@ import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Vrf;
 import org.batfish.representation.frr.FrrConfiguration;
+import org.batfish.representation.frr.FrrStructureType;
+import org.batfish.representation.frr.FrrStructureUsage;
 import org.batfish.representation.frr.FrrVendorConfiguration;
 import org.batfish.representation.frr.Vxlan;
 
@@ -176,6 +181,19 @@ public class SonicConfiguration extends FrrVendorConfiguration {
   public Map<String, Vxlan> getVxlans() {
     // we don't have vxlan support for Sonic yet, so this method shouldn't be called
     throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void referenceStructure(
+      FrrStructureType frrStructureType, String name, FrrStructureUsage usage, int line) {
+    super.referenceStructure(
+        fromFrrStructureType(frrStructureType), name, fromFrrStructureUsage(usage), line);
+  }
+
+  @Override
+  public void defineStructure(
+      FrrStructureType frrStructureType, String name, ParserRuleContext ctx) {
+    super.defineStructure(fromFrrStructureType(frrStructureType), name, ctx);
   }
 
   /* Overrides for VendorConfiguration follow */
