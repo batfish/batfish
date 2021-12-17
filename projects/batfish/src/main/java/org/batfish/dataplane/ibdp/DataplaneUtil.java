@@ -29,6 +29,7 @@ import org.batfish.datamodel.ForwardingAnalysisImpl;
 import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.vxlan.Layer2Vni;
+import org.batfish.datamodel.vxlan.Layer3Vni;
 
 /** Utility functions to convert dataplane {@link Node} into other structures */
 public final class DataplaneUtil {
@@ -132,12 +133,26 @@ public final class DataplaneUtil {
                             cell.getValue()))));
   }
 
-  static @Nonnull Table<String, String, Set<Layer2Vni>> computeVniSettings(
+  static @Nonnull Table<String, String, Set<Layer2Vni>> computeLayer2VniSettings(
       Map<String, Node> nodes) {
     ImmutableTable.Builder<String, String, Set<Layer2Vni>> result = ImmutableTable.builder();
     for (Node node : nodes.values()) {
       for (VirtualRouter vr : node.getVirtualRouters()) {
         result.put(node.getConfiguration().getHostname(), vr.getName(), vr.getLayer2Vnis());
+      }
+    }
+    return result.build();
+  }
+
+  static @Nonnull Table<String, String, Set<Layer3Vni>> computeLayer3VniSettings(
+      Map<String, Node> nodes) {
+    ImmutableTable.Builder<String, String, Set<Layer3Vni>> result = ImmutableTable.builder();
+    for (Node node : nodes.values()) {
+      for (VirtualRouter vr : node.getVirtualRouters()) {
+        result.put(
+            node.getConfiguration().getHostname(),
+            vr.getName(),
+            ImmutableSet.copyOf(vr.getLayer3Vnis().values()));
       }
     }
     return result.build();

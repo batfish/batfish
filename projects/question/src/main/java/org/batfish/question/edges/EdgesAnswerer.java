@@ -41,6 +41,7 @@ import org.batfish.datamodel.IpsecPeerConfigId;
 import org.batfish.datamodel.IpsecSession;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.bgp.BgpTopology;
@@ -429,9 +430,11 @@ public class EdgesAnswerer extends Answerer {
 
   @VisibleForTesting
   static Row vxlanEdgeToRow(NetworkConfigurations nc, VxlanNode node, VxlanNode remoteNode) {
-    Layer2Vni node1Settings = nc.getVniSettings(node.getHostname(), node.getVni()).get();
+    // TODO: support information about layer-3 VNIs
+    Layer2Vni node1Settings =
+        nc.getVniSettings(node.getHostname(), node.getVni(), Vrf::getLayer2Vnis).get();
     Layer2Vni node2Settings =
-        nc.getVniSettings(remoteNode.getHostname(), remoteNode.getVni()).get();
+        nc.getVniSettings(remoteNode.getHostname(), remoteNode.getVni(), Vrf::getLayer2Vnis).get();
     RowBuilder row = Row.builder();
     row.put(COL_VNI, node.getVni())
         .put(COL_NODE, new Node(node.getHostname()))

@@ -183,6 +183,7 @@ import org.batfish.datamodel.ospf.OspfTopologyUtils;
 import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.vxlan.Layer2Vni;
+import org.batfish.datamodel.vxlan.Layer3Vni;
 import org.batfish.dataplane.TracerouteEngineImpl;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BatfishParseException;
@@ -810,6 +811,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
         @Override
         public Table<String, String, Set<Layer2Vni>> getLayer2Vnis() {
+          throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Table<String, String, Set<Layer3Vni>> getLayer3Vnis() {
           throw new UnsupportedOperationException();
         }
       };

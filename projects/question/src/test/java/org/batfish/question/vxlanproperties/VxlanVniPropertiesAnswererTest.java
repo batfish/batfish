@@ -194,7 +194,7 @@ public final class VxlanVniPropertiesAnswererTest {
                   .setUdpPort(1234)
                   .setBumTransportMethod(BumTransportMethod.MULTICAST_GROUP)
                   .build()));
-      return MockDataPlane.builder().setVniSettings(vnis).build();
+      return MockDataPlane.builder().setLayer2VniSettings(vnis).build();
     }
 
     @Override
