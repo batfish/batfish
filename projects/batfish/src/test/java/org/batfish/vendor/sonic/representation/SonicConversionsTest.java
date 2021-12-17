@@ -399,10 +399,10 @@ public class SonicConversionsTest {
         new AclRuleWithName("rule2", builder.setPriority(100).build())
                 .compareTo(new AclRuleWithName("rule1", builder.setPriority(100).build()))
             < 1);
-    assertTrue(
+    assertEquals(
+        0,
         new AclRuleWithName("rule1", builder.setPriority(100).build())
-                .compareTo(new AclRuleWithName("rule1", builder.setPriority(100).build()))
-            == 0);
+            .compareTo(new AclRuleWithName("rule1", builder.setPriority(100).build())));
   }
 
   @Test
