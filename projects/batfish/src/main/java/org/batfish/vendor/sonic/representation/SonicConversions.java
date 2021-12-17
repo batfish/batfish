@@ -1,20 +1,44 @@
 package org.batfish.vendor.sonic.representation;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDstPort;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocol;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcPort;
 import static org.batfish.representation.frr.FrrConversions.SPEED_CONVERSION_FACTOR;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Sets;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceType;
+import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.vendor.sonic.representation.AclRule.PacketAction;
+import org.batfish.vendor.sonic.representation.AclTable.Stage;
+import org.batfish.vendor.sonic.representation.AclTable.Type;
 
 public class SonicConversions {
 
@@ -181,5 +205,216 @@ public class SonicConversions {
       return InterfaceType.AGGREGATED;
     }
     throw new IllegalArgumentException("Cannot infer type for interface name " + interfaceName);
+  }
+
+  /** An intermediate class to order ACL rules and simplify processing code. */
+  @VisibleForTesting
+  static class AclRuleWithName implements Comparable<AclRuleWithName> {
+    private final String _name;
+    private final AclRule _rule;
+
+    AclRuleWithName(String name, AclRule rule) {
+      checkArgument(
+          rule.getPriority().isPresent(),
+          "AclRuleWithName cannot be instantiated with null priority");
+      checkArgument(
+          rule.getPacketAction().isPresent(),
+          "AclRuleWithName cannot be instantiated with null packet action");
+      _name = name;
+      _rule = rule;
+    }
+
+    /**
+     * Gives lower ranks to higher priority rules, and uses names in case priorities are identical.
+     */
+    @Override
+    public int compareTo(AclRuleWithName other) {
+      return Comparator.comparing(AclRuleWithName::getPriority, Comparator.reverseOrder())
+          .thenComparing(r -> r._name)
+          .compare(this, other);
+    }
+
+    @SuppressWarnings("OptionalGetWithoutIsPresent")
+    private @Nonnull Integer getPriority() {
+      return _rule.getPriority().get(); // must exist
+    }
+
+    @SuppressWarnings("OptionalGetWithoutIsPresent")
+    private @Nonnull PacketAction getPacketAction() {
+      return _rule.getPacketAction().get(); // must exist
+    }
+  }
+
+  /**
+   * Converts the ACL information under ACL_TABLE and ACL_RULE tables into IpAccessLists and
+   * attached them to the appropriate interfaces.
+   *
+   * <p>All VI interfaces must have been created prior to calling this method.
+   */
+  static void convertAcls(
+      Configuration c, Map<String, AclTable> aclTables, Map<String, AclRule> aclRules, Warnings w) {
+    /*
+     Walk the AclRule entries, to filter out bad rules and organize the rest by the ACL of which they are a part.
+     This organization  puts the rules of an ACL in a SortedSet that is ordered from high to low PRIORITY.
+     If two rules have  the same PRIORITY, ties are broken by rule name.
+    */
+
+    Set<String> rulesWithoutPriority = new HashSet<>();
+    Set<String> rulesWithoutPacketAction = new HashSet<>();
+    Set<String> rulesWithBadKeys = new HashSet<>();
+    Map<String, SortedSet<AclRuleWithName>> aclNameToRules = new HashMap<>();
+    aclRules.forEach(
+        (key, value) -> {
+          String[] ruleKeyParts = key.split("\\|", 2);
+          if (ruleKeyParts.length < 2) {
+            rulesWithBadKeys.add(key);
+            return;
+          }
+          if (!value.getPriority().isPresent()) {
+            rulesWithoutPriority.add(key);
+            return;
+          }
+          if (!value.getPacketAction().isPresent()) {
+            rulesWithoutPacketAction.add(key);
+            return;
+          }
+          aclNameToRules
+              .computeIfAbsent(ruleKeyParts[0], aclName -> new TreeSet<>())
+              .add(new AclRuleWithName(ruleKeyParts[1], value));
+        });
+
+    warnBadRules(
+        rulesWithBadKeys,
+        rulesWithoutPriority,
+        rulesWithoutPacketAction,
+        aclNameToRules,
+        aclTables.keySet(),
+        w);
+
+    for (String aclName : aclTables.keySet()) {
+      IpAccessList ipAccessList =
+          convertAcl(
+              c,
+              aclName,
+              // if an Acl is in ACL_TABLE but not in ACL_RULE, we create an empty Acl
+              Optional.ofNullable(aclNameToRules.get(aclName)).orElse(ImmutableSortedSet.of()),
+              w);
+      AclTable aclTable = aclTables.get(aclName);
+      attachAcl(c, aclName, ipAccessList, aclTable, w);
+    }
+  }
+
+  private static void warnBadRules(
+      Set<String> rulesWithBadKeys,
+      Set<String> rulesWithoutPriority,
+      Set<String> rulesWithoutPacketAction,
+      Map<String, SortedSet<AclRuleWithName>> aclNameToRules,
+      Set<String> aclTableNames,
+      Warnings w) {
+    rulesWithBadKeys.forEach(
+        key -> w.redFlag(String.format("Ignored ACL_RULE %s: Badly formatted name", key)));
+    rulesWithoutPriority.forEach(
+        key -> w.redFlag(String.format("Ignored ACL_RULE %s: Missing PRIORITY", key)));
+    rulesWithoutPacketAction.forEach(
+        key -> w.redFlag(String.format("Ignored ACL_RULE %s: Missing PACKET_ACTION", key)));
+    Sets.difference(aclNameToRules.keySet(), aclTableNames) // missing acl tables
+        .forEach(
+            aclName ->
+                aclNameToRules
+                    .get(aclName)
+                    .forEach(
+                        aclRuleWithName ->
+                            w.redFlag(
+                                String.format(
+                                    "Ignored ACL_RULE %s|%s: Missing ACL_TABLE '%s'",
+                                    aclName, aclRuleWithName._name, aclName))));
+  }
+
+  /**
+   * Attaches the {@code ipAccessList} derived from {@cide aclTable} to the appropriate interfaces
+   * in {@code c}.
+   */
+  @VisibleForTesting
+  static void attachAcl(
+      Configuration c, String aclName, IpAccessList ipAccessList, AclTable aclTable, Warnings w) {
+    if (aclTable.getType().orElse(null) != Type.L3) {
+      // All ACLs are added to the configuration, but only type L3 ones are attached to interfaces
+      return;
+    }
+    Stage aclStage = aclTable.getStage().orElse(null);
+    if (aclStage != Stage.EGRESS && aclStage != Stage.INGRESS) {
+      w.redFlag("Unimplemented ACL stage: " + aclStage);
+      return;
+    }
+    for (String port : aclTable.getPorts()) {
+      Interface viIface = c.getAllInterfaces().get(port);
+      if (viIface == null) {
+        if (!aclTable.isControlPlanePort(port)) {
+          w.redFlag(
+              String.format(
+                  "Port '%s' referenced in ACL_TABLE '%s' does not exist.", port, aclName));
+        }
+        continue;
+      }
+      if (aclStage == Stage.INGRESS) {
+        viIface.setInboundFilter(ipAccessList);
+      } else { // EGRESS
+        viIface.setOutgoingFilter(ipAccessList);
+      }
+    }
+  }
+
+  /**
+   * Converts all the rules of {@code aclName} into {@link IpAccessList} and adds the result to
+   * device configuration {@code c}.
+   */
+  private static IpAccessList convertAcl(
+      Configuration c, String aclName, SortedSet<AclRuleWithName> aclRules, Warnings w) {
+    return IpAccessList.builder()
+        .setOwner(c)
+        .setName(aclName)
+        .setLines(
+            aclRules.stream()
+                .map(rule -> convertAclRule(aclName, rule, w))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(ImmutableList.toImmutableList()))
+        .build();
+  }
+
+  private static Optional<AclLine> convertAclRule(
+      String aclName, AclRuleWithName aclRuleWithName, Warnings w) {
+    AclRule aclRule = aclRuleWithName._rule;
+    List<AclLineMatchExpr> conjuncts = new LinkedList<>();
+    if (aclRule.getIpProtocol().isPresent()) {
+      conjuncts.add(matchIpProtocol(aclRule.getIpProtocol().get()));
+    }
+    if (aclRule.getDstIp().isPresent()) {
+      conjuncts.add(matchDst(aclRule.getDstIp().get()));
+    }
+    if (aclRule.getSrcIp().isPresent()) {
+      conjuncts.add(matchSrc(aclRule.getSrcIp().get()));
+    }
+    if (aclRule.getL4DstPort().isPresent()) {
+      conjuncts.add(matchDstPort(aclRule.getL4DstPort().get()));
+    }
+    if (aclRule.getL4SrcPort().isPresent()) {
+      conjuncts.add(matchSrcPort(aclRule.getL4SrcPort().get()));
+    }
+    AclLineMatchExpr matchExpr = and(conjuncts);
+
+    switch (aclRuleWithName.getPacketAction()) {
+      case ACCEPT:
+      case FORWARD:
+        return Optional.of(ExprAclLine.accepting(aclRuleWithName._name, matchExpr));
+      case DROP:
+        return Optional.of(ExprAclLine.rejecting(aclRuleWithName._name, matchExpr));
+      default:
+        w.redFlag(
+            String.format(
+                "Ignored ACL_RULE %s|%s: PACKET_ACTION %s is unimplemented",
+                aclName, aclRuleWithName._name, aclRuleWithName.getPacketAction()));
+        return Optional.empty();
+    }
   }
 }

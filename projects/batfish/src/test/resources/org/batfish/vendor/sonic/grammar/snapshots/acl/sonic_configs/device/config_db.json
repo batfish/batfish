@@ -1,0 +1,31 @@
+{
+  "DEVICE_METADATA": {
+    "localhost": {
+      "hostname": "acl"
+    }
+  },
+  "INTERFACE": {
+    "Ethernet0|1.1.1.1/24": {}
+  },
+  "PORT": {
+    "Ethernet0": {}
+  },
+  "ACL_RULE": {
+    "test-acl|RULE_1": {
+      "IP_PROTOCOL": "17",
+      "L4_DST_PORT": "161",
+      "PACKET_ACTION": "ACCEPT",
+      "PRIORITY": "10",
+      "SRC_IP": "10.1.4.0/22"
+    }
+  },
+  "ACL_TABLE": {
+    "test-acl": {
+      "ports": [
+        "Ethernet0"
+      ],
+      "stage": "INGRESS",
+      "type": "L3"
+    }
+  }
+}

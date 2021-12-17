@@ -12,6 +12,10 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.datamodel.Prefix;
+import org.batfish.vendor.sonic.representation.AclRule.PacketAction;
+import org.batfish.vendor.sonic.representation.AclTable.Stage;
+import org.batfish.vendor.sonic.representation.AclTable.Type;
 import org.batfish.vendor.sonic.representation.VlanMember.TaggingMode;
 import org.junit.Test;
 
@@ -27,6 +31,55 @@ public class ConfigDbTest {
     assertThat(
         Iterables.getOnlyElement(warnings.getUnimplementedWarnings()).getText(),
         equalTo("Unimplemented configdb table 'GARBAGE'"));
+  }
+
+  @Test
+  public void testDeserializationAclTable() throws JsonProcessingException {
+    String input =
+        "{\"ACL_TABLE\": {"
+            + "        \"ctrl-plane-snmp-acl\": {"
+            + "            \"ports\": ["
+            + "                \"CtrlPlane\""
+            + "            ],"
+            + "            \"stage\": \"INGRESS\","
+            + "            \"type\": \"L3\""
+            + "        }"
+            + "    }}";
+    assertThat(
+        deserialize(input, new Warnings()).getAclTables(),
+        equalTo(
+            ImmutableMap.of(
+                "ctrl-plane-snmp-acl",
+                AclTable.builder()
+                    .setPorts(ImmutableList.of("CtrlPlane"))
+                    .setStage(Stage.INGRESS)
+                    .setType(Type.L3)
+                    .build())));
+  }
+
+  @Test
+  public void testDeserializationAclRule() throws JsonProcessingException {
+    String input =
+        "{\"ACL_RULE\": {\n"
+            + "        \"ctrl-plane-snmp-acl|RULE_10\": {\n"
+            + "            \"IP_PROTOCOL\": \"17\",\n"
+            + "            \"L4_DST_PORT\": \"161\",\n"
+            + "            \"PACKET_ACTION\": \"FORWARD\",\n"
+            + "            \"PRIORITY\": \"10\",\n"
+            + "            \"SRC_IP\": \"10.1.4.0/22\"\n"
+            + "        }}}";
+    assertThat(
+        deserialize(input, new Warnings()).getAclRules(),
+        equalTo(
+            ImmutableMap.of(
+                "ctrl-plane-snmp-acl|RULE_10",
+                AclRule.builder()
+                    .setIpProtocol(17)
+                    .setL4DstPort(161)
+                    .setPacketAction(PacketAction.FORWARD)
+                    .setPriority(10)
+                    .setSrcIp(Prefix.parse("10.1.4.0/22"))
+                    .build())));
   }
 
   @Test
