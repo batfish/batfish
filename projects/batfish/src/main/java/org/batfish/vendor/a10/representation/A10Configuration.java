@@ -65,6 +65,7 @@ import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SwitchportMode;
@@ -355,8 +356,9 @@ public final class A10Configuration extends VendorConfiguration {
 
     markStructures();
 
-    // add a reference book for virtual addresses
+    // these make internal data accessible
     generateReferenceBook();
+    generateNatPoolIpSpaces();
 
     return ImmutableList.of(_c);
   }
@@ -381,6 +383,19 @@ public final class A10Configuration extends VendorConfiguration {
                                     vServer.getName()))
                         .collect(ImmutableList.toImmutableList()))
                 .build());
+  }
+
+  /** Creates named IpSpaces from configured NAT pools. */
+  private void generateNatPoolIpSpaces() {
+    _natPools.forEach(
+        (name, pool) ->
+            _c.getIpSpaces()
+                .put(ipSpaceNameForNatPool(name), IpRange.range(pool.getStart(), pool.getEnd())));
+  }
+
+  @VisibleForTesting
+  static String ipSpaceNameForNatPool(String natPoolName) {
+    return String.format("NatPool~%s", natPoolName);
   }
 
   private void convertBgp() {
