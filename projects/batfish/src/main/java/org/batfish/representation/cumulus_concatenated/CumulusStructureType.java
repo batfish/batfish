@@ -1,5 +1,7 @@
 package org.batfish.representation.cumulus_concatenated;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.google.common.collect.ImmutableMap;
 import java.util.Arrays;
 import java.util.Map;
@@ -34,6 +36,7 @@ public enum CumulusStructureType implements StructureType {
   }
 
   CumulusStructureType(@Nonnull FrrStructureType frrStructureType) {
+    checkArgument(name().equals(frrStructureType.name())); // enforce 1:1 name mapping
     _description = frrStructureType.getDescription();
   }
 
@@ -50,7 +53,7 @@ public enum CumulusStructureType implements StructureType {
     for (FrrStructureType frrType : FrrStructureType.values()) {
       CumulusStructureType matchingCumulusType =
           Arrays.stream(CumulusStructureType.values())
-              .filter(cType -> cType.getDescription().equals(frrType.getDescription()))
+              .filter(cType -> cType.name().equals(frrType.name()))
               .findFirst()
               .orElseThrow(
                   () ->

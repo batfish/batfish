@@ -1,5 +1,7 @@
 package org.batfish.representation.cumulus_concatenated;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.google.common.collect.ImmutableMap;
 import java.util.Arrays;
 import java.util.Map;
@@ -69,6 +71,7 @@ public enum CumulusStructureUsage implements StructureUsage {
   }
 
   CumulusStructureUsage(@Nonnull FrrStructureUsage frrStructureUsage) {
+    checkArgument(name().equals(frrStructureUsage.name())); // enforce 1:1 name mapping
     _description = frrStructureUsage.getDescription();
   }
 
@@ -85,7 +88,7 @@ public enum CumulusStructureUsage implements StructureUsage {
     for (FrrStructureUsage frrUsage : FrrStructureUsage.values()) {
       CumulusStructureUsage matchingCumulusUsage =
           Arrays.stream(CumulusStructureUsage.values())
-              .filter(cType -> cType.getDescription().equals(frrUsage.getDescription()))
+              .filter(cType -> cType.name().equals(frrUsage.name()))
               .findFirst()
               .orElseThrow(
                   () ->

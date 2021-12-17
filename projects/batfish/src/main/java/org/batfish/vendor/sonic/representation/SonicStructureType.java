@@ -1,5 +1,7 @@
 package org.batfish.vendor.sonic.representation;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.google.common.collect.ImmutableMap;
 import java.util.Arrays;
 import java.util.Map;
@@ -31,6 +33,7 @@ public enum SonicStructureType implements StructureType {
   }
 
   SonicStructureType(@Nonnull FrrStructureType frrStructureType) {
+    checkArgument(name().equals(frrStructureType.name())); // enforce 1:1 name mapping
     _description = frrStructureType.getDescription();
   }
 
@@ -47,7 +50,7 @@ public enum SonicStructureType implements StructureType {
     for (FrrStructureType frrType : FrrStructureType.values()) {
       SonicStructureType matchingSonicType =
           Arrays.stream(SonicStructureType.values())
-              .filter(cType -> cType.getDescription().equals(frrType.getDescription()))
+              .filter(cType -> cType.name().equals(frrType.name()))
               .findFirst()
               .orElseThrow(
                   () ->
