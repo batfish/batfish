@@ -13,7 +13,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Sets;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -224,11 +223,15 @@ public class SonicConversions {
       _rule = rule;
     }
 
+    /**
+     * Gives lower ranks to higher priority rules, and uses names in case priorities are identical.
+     */
     @Override
-    public int compareTo(AclRuleWithName o) {
-      return Comparator.comparing(AclRuleWithName::getPriority)
-          .thenComparing(r -> r._name)
-          .compare(o, this); // reverse order, so higher priority goes first
+    public int compareTo(AclRuleWithName other) {
+      if (!getPriority().equals(other.getPriority())) {
+        return other.getPriority().compareTo(getPriority());
+      }
+      return _name.compareTo(other._name);
     }
 
     @SuppressWarnings("OptionalGetWithoutIsPresent")
