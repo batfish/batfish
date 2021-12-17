@@ -4136,16 +4136,12 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     }
     if (ctx.interface_acl != null) {
       String name = toString(ctx.interface_acl);
-      CiscoXrStructureUsage usage = null;
+      CiscoXrStructureUsage usage;
       if (ctx.INGRESS() != null) {
-        for (Interface currentInterface : _currentInterfaces) {
-          usage = INTERFACE_IPV6_ACCESS_GROUP_INGRESS;
-        }
+        usage = INTERFACE_IPV6_ACCESS_GROUP_INGRESS;
       } else {
         assert ctx.EGRESS() != null;
-        for (Interface currentInterface : _currentInterfaces) {
-          usage = INTERFACE_IPV6_ACCESS_GROUP_EGRESS;
-        }
+        usage = INTERFACE_IPV6_ACCESS_GROUP_EGRESS;
       }
       _configuration.referenceStructure(IPV6_ACCESS_LIST, name, usage, line);
     }
