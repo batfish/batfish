@@ -92,7 +92,7 @@ public final class BDDFiniteDomain<V> {
   }
 
   public BDD existsValue(BDD bdd) {
-    return _varBits == null ? bdd : bdd.exist(_varBits);
+    return _varBits == null ? bdd.id() : bdd.exist(_varBits);
   }
 
   public BDD getConstraintForValue(V value) {
