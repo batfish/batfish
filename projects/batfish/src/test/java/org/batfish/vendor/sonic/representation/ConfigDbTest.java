@@ -13,10 +13,10 @@ import com.google.common.collect.Iterables;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Prefix;
-import org.batfish.vendor.sonic.representation.VlanMember.TaggingMode;
 import org.batfish.vendor.sonic.representation.AclRule.PacketAction;
 import org.batfish.vendor.sonic.representation.AclTable.Stage;
 import org.batfish.vendor.sonic.representation.AclTable.Type;
+import org.batfish.vendor.sonic.representation.VlanMember.TaggingMode;
 import org.junit.Test;
 
 public class ConfigDbTest {
