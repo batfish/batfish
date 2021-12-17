@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -21,8 +22,8 @@ public class VlanMember implements Serializable {
 
   private @Nullable final TaggingMode _taggingMode;
 
-  public @Nullable TaggingMode getTaggingMode() {
-    return _taggingMode;
+  public @Nonnull Optional<TaggingMode> getTaggingMode() {
+    return Optional.ofNullable(_taggingMode);
   }
 
   @JsonCreator
@@ -57,7 +58,7 @@ public class VlanMember implements Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_taggingMode);
+    return Objects.hash(_taggingMode == null ? null : _taggingMode.ordinal());
   }
 
   @Override

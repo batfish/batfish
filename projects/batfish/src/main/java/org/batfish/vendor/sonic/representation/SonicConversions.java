@@ -103,11 +103,11 @@ public class SonicConversions {
           w.redFlag(String.format("Vlan member %s is not configured", memberKey));
           continue;
         }
-        if (vlanMember.getTaggingMode() == null) {
+        if (!vlanMember.getTaggingMode().isPresent()) {
           w.redFlag(String.format("tagging_mode is not configured for vlan member %s", memberKey));
           continue;
         }
-        switch (vlanMember.getTaggingMode()) {
+        switch (vlanMember.getTaggingMode().get()) {
           case TAGGED:
             memberInterface.setSwitchport(true);
             memberInterface.setSwitchportMode(SwitchportMode.TRUNK);
@@ -123,7 +123,7 @@ public class SonicConversions {
             w.redFlag(
                 String.format(
                     "Unhandled tagging_mode %s for vlan member %s",
-                    vlanMember.getTaggingMode(), memberKey));
+                    vlanMember.getTaggingMode().get(), memberKey));
         }
       }
     }
