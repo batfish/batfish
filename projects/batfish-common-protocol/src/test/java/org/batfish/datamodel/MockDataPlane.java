@@ -10,6 +10,7 @@ import java.util.SortedMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.vxlan.Layer2Vni;
+import org.batfish.datamodel.vxlan.Layer3Vni;
 
 public class MockDataPlane implements DataPlane {
 
@@ -24,14 +25,16 @@ public class MockDataPlane implements DataPlane {
     @Nonnull
     private SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> _ribs;
 
-    @Nonnull private Table<String, String, Set<Layer2Vni>> _vniSettings;
+    @Nonnull private Table<String, String, Set<Layer2Vni>> _layer2VniSettings;
+    @Nonnull private Table<String, String, Set<Layer3Vni>> _layer3VniSettings;
 
     private Builder() {
       _bgpRoutes = HashBasedTable.create();
       _evpnRoutes = HashBasedTable.create();
       _fibs = ImmutableMap.of();
       _ribs = ImmutableSortedMap.of();
-      _vniSettings = HashBasedTable.create();
+      _layer2VniSettings = HashBasedTable.create();
+      _layer3VniSettings = HashBasedTable.create();
     }
 
     public MockDataPlane build() {
@@ -70,8 +73,15 @@ public class MockDataPlane implements DataPlane {
       return this;
     }
 
-    public Builder setVniSettings(@Nonnull Table<String, String, Set<Layer2Vni>> vniSettings) {
-      _vniSettings = vniSettings;
+    public Builder setLayer2VniSettings(
+        @Nonnull Table<String, String, Set<Layer2Vni>> layer2VniSettings) {
+      _layer2VniSettings = layer2VniSettings;
+      return this;
+    }
+
+    public Builder setLayer3VniSettings(
+        @Nonnull Table<String, String, Set<Layer3Vni>> layer3VniSettings) {
+      _layer3VniSettings = layer3VniSettings;
       return this;
     }
 
@@ -97,7 +107,8 @@ public class MockDataPlane implements DataPlane {
   private final SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>>
       _ribs;
 
-  @Nonnull private Table<String, String, Set<Layer2Vni>> _vniSettings;
+  @Nonnull private Table<String, String, Set<Layer2Vni>> _layer2VniSettings;
+  @Nonnull private Table<String, String, Set<Layer3Vni>> _layer3VniSettings;
 
   private MockDataPlane(Builder builder) {
     _bgpRoutes = builder._bgpRoutes;
@@ -107,7 +118,8 @@ public class MockDataPlane implements DataPlane {
     _fibs = builder._fibs;
     _forwardingAnalysis = builder._forwardingAnalysis;
     _ribs = ImmutableSortedMap.copyOf(builder._ribs);
-    _vniSettings = builder._vniSettings;
+    _layer2VniSettings = builder._layer2VniSettings;
+    _layer3VniSettings = builder._layer3VniSettings;
   }
 
   @Nonnull
@@ -162,6 +174,12 @@ public class MockDataPlane implements DataPlane {
   @Nonnull
   @Override
   public Table<String, String, Set<Layer2Vni>> getLayer2Vnis() {
-    return _vniSettings;
+    return _layer2VniSettings;
+  }
+
+  @Nonnull
+  @Override
+  public Table<String, String, Set<Layer3Vni>> getLayer3Vnis() {
+    return _layer3VniSettings;
   }
 }
