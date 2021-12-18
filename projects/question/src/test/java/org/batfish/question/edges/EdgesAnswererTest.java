@@ -3,6 +3,7 @@ package org.batfish.question.edges;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.batfish.datamodel.vxlan.Layer2Vni.testBuilder;
 import static org.batfish.datamodel.vxlan.VniLayer.LAYER_2;
+import static org.batfish.datamodel.vxlan.VniLayer.LAYER_3;
 import static org.batfish.question.edges.EdgesAnswerer.COL_AS_NUMBER;
 import static org.batfish.question.edges.EdgesAnswerer.COL_INTERFACE;
 import static org.batfish.question.edges.EdgesAnswerer.COL_IP;
@@ -40,6 +41,7 @@ import static org.batfish.question.edges.EdgesAnswerer.vxlanEdgeToRows;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -533,6 +535,24 @@ public class EdgesAnswererTest {
                 EndpointPair.unordered(node1, node2))
             .collect(ImmutableList.toImmutableList()),
         containsInAnyOrder(vxlanEdgeToRow(nc, node2, node1)));
+  }
+
+  @Test
+  public void testVxlanEdgeToRowsLayer3() {
+    NetworkConfigurations nc = buildVxlanNetworkConfigurations();
+    Map<String, Configuration> configurations = nc.getMap();
+    Set<String> includeNodes = configurations.keySet();
+    Set<String> includeRemoteNodes = configurations.keySet();
+    VxlanNode node1 =
+        VxlanNode.builder().setHostname(VXLAN_NODE1).setVni(VXLAN_VNI).setVniLayer(LAYER_3).build();
+    VxlanNode node2 =
+        VxlanNode.builder().setHostname(VXLAN_NODE2).setVni(VXLAN_VNI).setVniLayer(LAYER_3).build();
+
+    // no filter
+    assertThat(
+        vxlanEdgeToRows(nc, includeNodes, includeRemoteNodes, EndpointPair.unordered(node1, node2))
+            .collect(ImmutableList.toImmutableList()),
+        empty());
   }
 
   @Test
