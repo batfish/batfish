@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -38,7 +39,6 @@ import org.batfish.common.bdd.BDDOps;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpSpaceToBDD;
-import org.batfish.common.util.CollectionUtil;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.packet_policy.Action;
 import org.batfish.datamodel.packet_policy.ApplyFilter;
@@ -201,6 +201,7 @@ class PacketPolicyToBdd {
         .asMap()
         .forEach(
             (srcState, outEdgesInfo) -> {
+              /*
               // I have a bunch of OutEdgeInfos. what's the right way to branch?
               // if they're all branching at the same level, great. group by that and then go.
               Map<Integer, Integer> outEdgeCountByLevel = new HashMap<>();
@@ -227,6 +228,7 @@ class PacketPolicyToBdd {
                   srcState,
                   outEdgeCountByLevel,
                   numOutEdgeConstraintsByLevel);
+               */
 
               // just add the edges for now -- don't want to think hard
               outEdgesInfo.forEach(
@@ -461,7 +463,7 @@ class PacketPolicyToBdd {
     Map<List<Statement>, Integer> thenBranchOccurrences = new HashMap<>();
 
     // empty map means unconstrained. null means zero
-    Map<Integer, BDD> _reachableBddsByTopLevel = new HashMap<>();
+    Map<Integer, BDD> _reachableBddsByTopLevel = new TreeMap<>();
     Transition _outTransition = IDENTITY;
 
     Multimap<StateExpr, OutEdgeInfo> _outEdges = HashMultimap.create();
@@ -522,13 +524,13 @@ class PacketPolicyToBdd {
 
       Map<Integer, BDD> thenReachable = null;
       if (!thenReach.isZero()) {
-        thenReachable = new HashMap<>(_reachableBddsByTopLevel);
+        thenReachable = new TreeMap<>(_reachableBddsByTopLevel);
         thenReachable.put(matchConstraintLevel, thenReach);
       }
 
       Map<Integer, BDD> elseReachable = null;
       if (!elseReach.isZero()) {
-        elseReachable = new HashMap<>(_reachableBddsByTopLevel);
+        elseReachable = new TreeMap<>(_reachableBddsByTopLevel);
         elseReachable.put(matchConstraintLevel, elseReach);
       }
 
