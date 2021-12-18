@@ -3,6 +3,7 @@ package org.batfish.vendor.a10.representation;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.vendor.VendorStructureId;
 
+/** Collection of methods to create {@link TraceElement trace elements} for A10 structures. */
 public final class TraceElements {
   public static TraceElement traceElementForVirtualServer(VirtualServer server, String filename) {
     String serverName = server.getName();
