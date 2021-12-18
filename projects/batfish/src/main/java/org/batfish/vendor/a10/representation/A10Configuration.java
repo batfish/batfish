@@ -356,7 +356,6 @@ public final class A10Configuration extends VendorConfiguration {
 
     markStructures();
 
-    // these make internal data accessible
     generateReferenceBook();
     generateNatPoolIpSpaces();
 
