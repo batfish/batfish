@@ -38,6 +38,7 @@ import org.batfish.common.bdd.BDDOps;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpSpaceToBDD;
+import org.batfish.common.util.CollectionUtil;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.packet_policy.Action;
 import org.batfish.datamodel.packet_policy.ApplyFilter;
@@ -213,13 +214,19 @@ class PacketPolicyToBdd {
                             outEdgeConstraintsByLevel.put(level, bdd);
                           }));
 
+              Map<Integer, Integer> numOutEdgeConstraintsByLevel =
+                  CollectionUtil.toImmutableMap(
+                      outEdgeConstraintsByLevel.asMap(),
+                      Map.Entry::getKey,
+                      entry -> entry.getValue().size());
+
               LOGGER.info(
                   "out edges from {}...\n"
                       + " with constraints by level: {}\n"
                       + " unique constraints per level: {}",
                   srcState,
                   outEdgeCountByLevel,
-                  outEdgeConstraintsByLevel);
+                  numOutEdgeConstraintsByLevel);
 
               // just add the edges for now -- don't want to think hard
               outEdgesInfo.forEach(
