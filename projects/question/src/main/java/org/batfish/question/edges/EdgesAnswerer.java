@@ -61,7 +61,6 @@ import org.batfish.datamodel.table.Row.RowBuilder;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.datamodel.vxlan.Layer2Vni;
-import org.batfish.datamodel.vxlan.VniLayer;
 import org.batfish.datamodel.vxlan.VxlanNode;
 import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.batfish.question.edges.EdgesQuestion.EdgeType;
@@ -219,7 +218,8 @@ public class EdgesAnswerer extends Answerer {
       Set<String> includeNodes,
       Set<String> includeRemoteNodes,
       VxlanTopology vxlanTopology) {
-    return vxlanTopology.getGraph().edges().stream()
+    return vxlanTopology
+        .getLayer2VniEdges()
         .flatMap(edge -> vxlanEdgeToRows(nc, includeNodes, includeRemoteNodes, edge))
         .collect(Collectors.toCollection(HashMultiset::create));
   }
@@ -419,10 +419,6 @@ public class EdgesAnswerer extends Answerer {
     VxlanNode node2 = edge.nodeV();
     String h1 = node1.getHostname();
     String h2 = node2.getHostname();
-    if (node1.getVniLayer() == VniLayer.LAYER_3 || node2.getVniLayer() == VniLayer.LAYER_3) {
-      // TODO: support information about layer-3 VNIs
-      return Stream.of();
-    }
     Stream.Builder<Row> builder = Stream.builder();
     if (includeNodes.contains(h1) && includeRemoteNodes.contains(h2)) {
       builder.add(vxlanEdgeToRow(nc, node1, node2));
