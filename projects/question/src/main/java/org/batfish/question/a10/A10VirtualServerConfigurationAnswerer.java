@@ -1,6 +1,8 @@
 package org.batfish.question.a10;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.batfish.vendor.a10.representation.A10Conversion.isVirtualServerEnabled;
+import static org.batfish.vendor.a10.representation.A10Conversion.isVirtualServerPortEnabled;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
@@ -151,11 +153,11 @@ public class A10VirtualServerConfigurationAnswerer extends Answerer {
               getRow(
                   node,
                   virtualServer.getName(),
-                  firstNonNull(virtualServer.getEnable(), true),
+                  isVirtualServerEnabled(virtualServer),
                   ((VirtualServerTargetVisitor<Ip>) VirtualServerTargetAddress::getAddress)
                       .visit(virtualServer.getTarget()),
                   virtualServerPort.getNumber(),
-                  firstNonNull(virtualServerPort.getEnable(), true),
+                  isVirtualServerPortEnabled(virtualServerPort),
                   virtualServerPort.getType(),
                   virtualServerPort.getName(),
                   serviceGroupName,
