@@ -218,7 +218,8 @@ public class EdgesAnswerer extends Answerer {
       Set<String> includeNodes,
       Set<String> includeRemoteNodes,
       VxlanTopology vxlanTopology) {
-    return vxlanTopology.getGraph().edges().stream()
+    return vxlanTopology
+        .getLayer2VniEdges()
         .flatMap(edge -> vxlanEdgeToRows(nc, includeNodes, includeRemoteNodes, edge))
         .collect(Collectors.toCollection(HashMultiset::create));
   }
