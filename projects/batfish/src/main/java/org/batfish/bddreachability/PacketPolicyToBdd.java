@@ -11,6 +11,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -33,7 +34,6 @@ import org.batfish.bddreachability.IpsRoutedOutInterfacesFactory.IpsRoutedOutInt
 import org.batfish.bddreachability.transition.Or;
 import org.batfish.bddreachability.transition.TransformationToTransition;
 import org.batfish.bddreachability.transition.Transition;
-import org.batfish.bddreachability.transition.Transitions;
 import org.batfish.common.bdd.BDDOps;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpAccessListToBdd;
@@ -185,13 +185,54 @@ class PacketPolicyToBdd {
      * which can be expressed as the complement of the union of packets we have already accounted
      * for.
      */
-    if (stmtConverter._currentStatementOutTransition != ZERO) {
-      // add edge to default action
-      addEdge(
+    if (stmtConverter._reachableBddsByTopLevel != null) {
+      stmtConverter._outEdges.put(
           stmtConverter.currentStatement(),
-          new PacketPolicyAction(_hostname, _vrf, p.getName(), p.getDefaultAction().getAction()),
-          stmtConverter._currentStatementOutTransition);
+          new OutEdgeInfo(
+              stmtConverter._reachableBddsByTopLevel,
+              stmtConverter._outTransition,
+              new PacketPolicyAction(
+                  _hostname, _vrf, p.getName(), p.getDefaultAction().getAction())));
     }
+
+    stmtConverter
+        ._outEdges
+        .asMap()
+        .forEach(
+            (srcState, outEdgesInfo) -> {
+              // I have a bunch of OutEdgeInfos. what's the right way to branch?
+              // if they're all branching at the same level, great. group by that and then go.
+              Map<Integer, Integer> outEdgeCountByLevel = new HashMap<>();
+              Multimap<Integer, BDD> outEdgeConstraintsByLevel = HashMultimap.create();
+              outEdgesInfo.forEach(
+                  outEdgeInfo ->
+                      outEdgeInfo._guardsByTopVar.forEach(
+                          (level, bdd) -> {
+                            outEdgeCountByLevel.compute(
+                                level, (unused, count) -> count == null ? 1 : count + 1);
+                            outEdgeConstraintsByLevel.put(level, bdd);
+                          }));
+
+              LOGGER.info(
+                  "out edges from {}...\n"
+                      + " with constraints by level: {}\n"
+                      + " unique constraints per level: {}",
+                  srcState,
+                  outEdgeCountByLevel,
+                  outEdgeConstraintsByLevel);
+
+              // just add the edges for now -- don't want to think hard
+              outEdgesInfo.forEach(
+                  outEdgeInfo -> {
+                    Transition t = outEdgeInfo._transition;
+                    if (!outEdgeInfo._guardsByTopVar.isEmpty()) {
+                      t =
+                          compose(
+                              constraint(BDDOps.andNull(outEdgeInfo._guardsByTopVar.values())), t);
+                    }
+                    addEdge(srcState, outEdgeInfo._target, t);
+                  });
+            });
   }
 
   private void addEdge(StateExpr source, StateExpr target, Transition transition) {
@@ -389,6 +430,18 @@ class PacketPolicyToBdd {
     }
   }
 
+  private static final class OutEdgeInfo {
+    final Map<Integer, BDD> _guardsByTopVar;
+    final Transition _transition;
+    final StateExpr _target;
+
+    private OutEdgeInfo(Map<Integer, BDD> guardsByTopVar, Transition transition, StateExpr target) {
+      _guardsByTopVar = ImmutableMap.copyOf(guardsByTopVar);
+      _transition = transition;
+      _target = target;
+    }
+  }
+
   /**
    * Walks all the statements in the packet policy, statefully building up BDDs based on boolean
    * expressions that are encountered. When a {@link Return} is encountered, calls into a
@@ -398,33 +451,25 @@ class PacketPolicyToBdd {
     private int _statementCounter = 0;
     private PacketPolicyStatement _currentStatement;
 
-    /* The transition of the (not yet created) edge leading out of currentStatement() the next statement of the policy.
-     * We update this constraint instead of creating new states/edges when possible. It's not possible if the policy
-     * returns, or if multiple statements lead into the next statement (i.e. due to fallthrough from the then branch of
-     * an if statement), or after transformation statements (because in transformations are not expressible as a
-     * constraint).
-     */
-    private Transition _currentStatementOutTransition;
-
-    private BDD _one;
-    private BDD _zero;
-
     Map<List<Statement>, Integer> thenBranchOccurrences = new HashMap<>();
+
+    // empty map means unconstrained. null means zero
+    Map<Integer, BDD> _reachableBddsByTopLevel = new HashMap<>();
+    Transition _outTransition = IDENTITY;
+
+    Multimap<StateExpr, OutEdgeInfo> _outEdges = HashMultimap.create();
 
     private StatementToBdd(BoolExprToBdd boolExprToBdd) {
       _boolExprToBdd = boolExprToBdd;
       _currentStatement =
           new PacketPolicyStatement(_hostname, _vrf, _policy.getName(), _statementCounter++);
       BDDFactory factory = _boolExprToBdd._ipAccessListToBdd.getBDDPacket().getFactory();
-      _one = factory.one();
-      _zero = factory.zero();
-      _currentStatementOutTransition = IDENTITY;
     }
 
     public void visitStatements(List<Statement> statements) {
       for (Statement statement : statements) {
         visit(statement);
-        if (_currentStatementOutTransition == ZERO) {
+        if (_reachableBddsByTopLevel == null) {
           // does not fall through, so exit immediately
           return;
         }
@@ -445,81 +490,128 @@ class PacketPolicyToBdd {
     public Void visit(Statement stmt) {
       // if this happens, we're generating dead parts of the graph. No need to crash in prod, so
       // using assert.
-      assert _currentStatementOutTransition != ZERO
-          : "Should not convert unreachable statements to BDD";
+      assert _reachableBddsByTopLevel != null : "Should not convert unreachable statements to BDD";
       return stmt.accept(this);
     }
 
     @Override
     public Void visitIf(If ifStmt) {
-      if (ifStmt.getTrueStatements().stream().anyMatch(stmt -> !(stmt instanceof Return))
-          && Iterables.getLast(ifStmt.getTrueStatements()) instanceof Return) {
-        // nontrivial and non-fall-through
-        thenBranchOccurrences.compute(
-            ifStmt.getTrueStatements(), (k, oldCount) -> oldCount == null ? 1 : oldCount + 1);
+      if (_outTransition != IDENTITY) {
+        // cannot constrain after transition
+        PacketPolicyStatement src = _currentStatement;
+        PacketPolicyStatement tgt = nextStatement();
+        _outEdges.put(src, new OutEdgeInfo(_reachableBddsByTopLevel, _outTransition, tgt));
+        _reachableBddsByTopLevel.clear();
+        _outTransition = IDENTITY;
       }
+
       BDD matchConstraint = _boolExprToBdd.visit(ifStmt.getMatchCondition());
-      // invariant: _currentStatementOutTransition always composes cleanly with a constraint
-      Transition thenTrans =
-          Transitions.mergeComposed(_currentStatementOutTransition, constraint(matchConstraint));
-      Transition elseTrans = _currentStatementOutTransition.andNotAfter(matchConstraint);
 
-      assert thenTrans != null;
-      assert elseTrans != null;
+      int matchConstraintLevel = matchConstraint.level();
+      BDD oldReach = _reachableBddsByTopLevel.get(matchConstraintLevel);
 
-      if (thenTrans == ZERO) {
-        _currentStatementOutTransition = elseTrans;
+      BDD thenReach = oldReach == null ? matchConstraint : oldReach.and(matchConstraint);
+      BDD elseReach = oldReach == null ? matchConstraint.not() : oldReach.diff(matchConstraint);
+
+      Map<Integer, BDD> thenReachable = null;
+      if (!thenReach.isZero()) {
+        thenReachable = new HashMap<>(_reachableBddsByTopLevel);
+        thenReachable.put(matchConstraintLevel, thenReach);
+      }
+
+      Map<Integer, BDD> elseReachable = null;
+      if (!elseReach.isZero()) {
+        elseReachable = new HashMap<>(_reachableBddsByTopLevel);
+        elseReachable.put(matchConstraintLevel, elseReach);
+      }
+
+      if (thenReachable == null) {
+        _reachableBddsByTopLevel = elseReachable;
         return null;
       }
 
       PacketPolicyStatement ifSt = currentStatement();
 
       // initialize pathConstraint for then branch
-      _currentStatementOutTransition = thenTrans;
+      _reachableBddsByTopLevel = thenReachable;
       visitStatements(ifStmt.getTrueStatements());
-      Transition thenFallThroughTrans = _currentStatementOutTransition;
 
-      if (elseTrans != ZERO && thenFallThroughTrans != ZERO) {
+      Map<Integer, BDD> thenFallThroughReachable = _reachableBddsByTopLevel;
+      Transition thenFallThroughTrans = _outTransition;
+
+      if (elseReachable != null && thenFallThroughReachable != null) {
+        // assume out transition is nonnull, and thus we need to create a new node
+
         // the then branch falls through
         // allocate a new statement node to fan into
         PacketPolicyStatement thenFallThroughSt = currentStatement();
         PacketPolicyStatement nextSt = nextStatement();
-        addEdge(ifSt, nextSt, elseTrans);
-        addEdge(thenFallThroughSt, nextSt, thenFallThroughTrans);
-        _currentStatementOutTransition = IDENTITY;
-      } else if (elseTrans != ZERO) {
+
+        // invariant: else branch transition is IDENTITY (because at the beginning of this method we
+        // add a node if not)
+        _outEdges.put(ifSt, new OutEdgeInfo(elseReachable, IDENTITY, nextSt));
+        _outEdges.put(
+            thenFallThroughSt,
+            new OutEdgeInfo(thenFallThroughReachable, thenFallThroughTrans, nextSt));
+        _reachableBddsByTopLevel.clear();
+        _outTransition = IDENTITY;
+      } else if (elseReachable != null) {
         _currentStatement = ifSt;
-        _currentStatementOutTransition = elseTrans;
-      } else if (thenFallThroughTrans != ZERO) {
-        _currentStatementOutTransition = thenFallThroughTrans;
+        _reachableBddsByTopLevel = elseReachable;
+        _outTransition = IDENTITY;
+      } else if (thenFallThroughTrans != null) {
+        return null;
       } else {
         // both branches are zero
-        _currentStatementOutTransition = ZERO;
+        _reachableBddsByTopLevel = null;
+        _outTransition = null;
       }
       return null;
     }
 
     @Override
     public Void visitReturn(Return returnStmt) {
-      addEdge(
+      _outEdges.put(
           currentStatement(),
-          new PacketPolicyAction(_hostname, _vrf, _policy.getName(), returnStmt.getAction()),
-          _currentStatementOutTransition);
+          new OutEdgeInfo(
+              _reachableBddsByTopLevel,
+              _outTransition,
+              new PacketPolicyAction(_hostname, _vrf, _policy.getName(), returnStmt.getAction())));
       // does not fall through
-      _currentStatementOutTransition = ZERO;
+      _reachableBddsByTopLevel = null;
+      _outTransition = null;
       return null;
     }
 
     @Override
     public Void visitApplyFilter(ApplyFilter applyFilter) {
+      if (_outTransition != IDENTITY) {
+        // cannot constrain after transition
+        PacketPolicyStatement src = currentStatement();
+        PacketPolicyStatement target = nextStatement();
+        _outEdges.put(src, new OutEdgeInfo(_reachableBddsByTopLevel, _outTransition, target));
+        _reachableBddsByTopLevel.clear();
+        _outTransition = IDENTITY;
+      }
+
       BDD permitBdd =
           _boolExprToBdd._ipAccessListToBdd.toBdd(new PermittedByAcl(applyFilter.getFilter()));
-      addEdge(
-          currentStatement(),
-          new PacketPolicyAction(_hostname, _vrf, _policy.getName(), Drop.instance()),
-          _currentStatementOutTransition.andNotAfter(permitBdd));
-      _currentStatementOutTransition =
-          mergeComposed(_currentStatementOutTransition, constraint(permitBdd));
+
+      Map<Integer, BDD> reachAndDeny = new HashMap<>(_reachableBddsByTopLevel);
+      reachAndDeny.compute(
+          permitBdd.level(),
+          (level, oldReach) -> oldReach == null ? permitBdd.not() : oldReach.diff(permitBdd));
+
+      _outEdges.put(
+          _currentStatement,
+          new OutEdgeInfo(
+              reachAndDeny,
+              IDENTITY,
+              new PacketPolicyAction(_hostname, _vrf, _policy.getName(), Drop.instance())));
+
+      _reachableBddsByTopLevel.compute(
+          permitBdd.level(),
+          (level, oldReach) -> oldReach == null ? permitBdd : oldReach.and(permitBdd));
       return null;
     }
 
@@ -527,7 +619,7 @@ class PacketPolicyToBdd {
     public Void visitApplyTransformation(ApplyTransformation transformation) {
       Transition transition =
           _transformationToTransition.toTransition(transformation.getTransformation());
-      _currentStatementOutTransition = compose(_currentStatementOutTransition, transition);
+      _outTransition = compose(_outTransition, transition);
       return null;
     }
   }

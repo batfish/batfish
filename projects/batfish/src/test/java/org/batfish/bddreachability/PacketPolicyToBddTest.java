@@ -456,6 +456,109 @@ public final class PacketPolicyToBddTest {
   }
 
   @Test
+  public void testTransformationChain1() {
+    Ip ip1 = Ip.parse("1.1.1.1");
+    Ip ip2 = Ip.parse("2.2.2.2");
+    Ip ip3 = Ip.parse("3.3.3.3");
+    Ip ip4 = Ip.parse("4.4.4.4");
+    ApplyTransformation t1 =
+        new ApplyTransformation(
+            always()
+                .apply(TransformationStep.assignDestinationIp(ip1, ip1))
+                //                                    TransformationStep.assignSourcePort(1),
+                //                                    TransformationStep.assignSourceIp(ip1, ip1))
+                .build());
+    //    ApplyTransformation t2 =
+    //            new ApplyTransformation(
+    //                    always()
+    //                            .apply(
+    //                                    TransformationStep.assignDestinationIp(ip2, ip2),
+    //                                    TransformationStep.assignSourcePort(2),
+    //                                    TransformationStep.assignSourceIp(ip2, ip2))
+    //                            .build());
+    //    ApplyTransformation t3 =
+    //            new ApplyTransformation(
+    //                    always()
+    //                            .apply(
+    //                                    TransformationStep.assignDestinationIp(ip3, ip3),
+    //                                    TransformationStep.assignSourcePort(3),
+    //                                    TransformationStep.assignSourceIp(ip3, ip3))
+    //                            .build());
+    Return ret = new Return(new FibLookup(new LiteralVrfName("vrf")));
+    PacketPolicy policy =
+        new PacketPolicy(
+            _policyName,
+            ImmutableList.of(
+                //                            new If(new PacketMatchExpr(matchDst(ip1)),
+                // ImmutableList.of(t2, ret)),
+                //                            new If(new PacketMatchExpr(matchDst(ip2)),
+                // ImmutableList.of(t3, ret)),
+                new If(new PacketMatchExpr(matchDst(ip3)), ImmutableList.of(t1, ret))),
+            new Return(Drop.instance()));
+    PacketPolicyToBdd.BddPacketPolicy result =
+        PacketPolicyToBdd.evaluate(
+            _hostname, _ingressVrf, policy, _ipAccessListToBdd, EMPTY_IPS_ROUTED_OUT_INTERFACES);
+    BDD ip1Bdd = _bddPacket.getDstIpSpaceToBDD().toBDD(ip1);
+    BDD ip3Bdd = _bddPacket.getDstIpSpaceToBDD().toBDD(ip3);
+    BDD protocolsWithPortsBdd = computePortTransformationProtocolsBdd(_bddPacket.getIpProtocol());
+    BDD vars = _bddPacket.getDstIp().getVars();
+    assertThat(
+        result.getEdges(),
+        containsInAnyOrder(
+            edge(statement(0), _dropState, constraint(ip3Bdd.not())),
+            edge(
+                statement(0),
+                fibLookupState("vrf"),
+                GuardEraseAndSet.orAll(
+                    ImmutableList.of(
+                        //                                            new GuardEraseAndSet(vars,
+                        // ip1Bdd, ip2Bdd.and(srcIp2Bdd).and(srcPort2Bdd)),
+                        //                                            new GuardEraseAndSet(vars,
+                        // ip2Bdd, ip3Bdd.and(srcIp3Bdd).and(srcPort3Bdd)),
+                        new GuardEraseAndSet(vars, ip3Bdd, ip1Bdd))))));
+  }
+
+  @Test
+  public void testTransformationChain2() {
+    Ip ip1 = Ip.parse("1.1.1.1");
+    Ip ip2 = Ip.parse("2.2.2.2");
+    Ip ip3 = Ip.parse("3.3.3.3");
+    Ip ip4 = Ip.parse("4.4.4.4");
+    ApplyTransformation t1 =
+        new ApplyTransformation(
+            always().apply(TransformationStep.assignDestinationIp(ip1, ip1)).build());
+    ApplyTransformation t2 =
+        new ApplyTransformation(
+            always().apply(TransformationStep.assignDestinationIp(ip2, ip2)).build());
+    Return ret = new Return(new FibLookup(new LiteralVrfName("vrf")));
+    PacketPolicy policy =
+        new PacketPolicy(
+            _policyName,
+            ImmutableList.of(
+                new If(new PacketMatchExpr(matchDst(ip1)), ImmutableList.of(t2, ret)),
+                new If(new PacketMatchExpr(matchDst(ip3)), ImmutableList.of(t1, ret))),
+            new Return(Drop.instance()));
+    PacketPolicyToBdd.BddPacketPolicy result =
+        PacketPolicyToBdd.evaluate(
+            _hostname, _ingressVrf, policy, _ipAccessListToBdd, EMPTY_IPS_ROUTED_OUT_INTERFACES);
+    BDD ip1Bdd = _bddPacket.getDstIpSpaceToBDD().toBDD(ip1);
+    BDD ip2Bdd = _bddPacket.getDstIpSpaceToBDD().toBDD(ip2);
+    BDD ip3Bdd = _bddPacket.getDstIpSpaceToBDD().toBDD(ip3);
+    BDD vars = _bddPacket.getDstIp().getVars();
+    assertThat(
+        result.getEdges(),
+        containsInAnyOrder(
+            edge(statement(0), _dropState, constraint(ip1Bdd.or(ip3Bdd).not())),
+            edge(
+                statement(0),
+                fibLookupState("vrf"),
+                GuardEraseAndSet.orAll(
+                    ImmutableList.of(
+                        new GuardEraseAndSet(vars, ip1Bdd, ip2Bdd),
+                        new GuardEraseAndSet(vars, ip3Bdd, ip1Bdd))))));
+  }
+
+  @Test
   public void testTransformationChain() {
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip2 = Ip.parse("2.2.2.2");
@@ -503,10 +606,9 @@ public final class PacketPolicyToBddTest {
     BDD srcIp1Bdd = _bddPacket.getSrcIpSpaceToBDD().toBDD(ip1);
     BDD srcIp2Bdd = _bddPacket.getSrcIpSpaceToBDD().toBDD(ip2);
     BDD srcIp3Bdd = _bddPacket.getSrcIpSpaceToBDD().toBDD(ip3);
-    BDD protocolsWithPortsBdd = computePortTransformationProtocolsBdd(_bddPacket.getIpProtocol());
-    BDD srcPort1Bdd = protocolsWithPortsBdd.imp(_bddPacket.getSrcPort().value(1));
-    BDD srcPort2Bdd = protocolsWithPortsBdd.imp(_bddPacket.getSrcPort().value(2));
-    BDD srcPort3Bdd = protocolsWithPortsBdd.imp(_bddPacket.getSrcPort().value(3));
+    BDD srcPort1Bdd = (_bddPacket.getSrcPort().value(1));
+    BDD srcPort2Bdd = (_bddPacket.getSrcPort().value(2));
+    BDD srcPort3Bdd = (_bddPacket.getSrcPort().value(3));
     BDD vars =
         _bddPacket
             .getDstIp()
