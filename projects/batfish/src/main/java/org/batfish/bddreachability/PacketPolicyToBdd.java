@@ -422,8 +422,21 @@ class PacketPolicyToBdd {
     }
 
     public void visitStatements(List<Statement> statements) {
+      int i = 0;
       for (Statement statement : statements) {
+        if (i++ == 500) {
+          PacketPolicyStatement src = currentStatement();
+          PacketPolicyStatement tgt = nextStatement();
+          addEdge(src, tgt, _currentStatementOutTransition);
+          _currentStatementOutTransition = IDENTITY;
+          i = 0;
+        }
+        StateExpr current = _currentStatement;
         visit(statement);
+        if (current == _currentStatement) {
+          // created a statement, so restart count
+          i = 0;
+        }
         if (_currentStatementOutTransition == ZERO) {
           // does not fall through, so exit immediately
           return;
