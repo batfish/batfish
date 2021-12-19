@@ -111,7 +111,7 @@ public class ConfigDbTest {
 
   @Test
   public void testDeserializationLoopback() throws JsonProcessingException {
-    String input = "{ \"LOOPBACK\": {\"Loopback0\": {}}}";
+    String input = "{ \"LOOPBACK_INTERFACE\": {\"Loopback0\": {}}}";
     assertThat(
         deserialize(input, new Warnings()).getLoopbacks(),
         equalTo(ImmutableMap.of("Loopback0", new L3Interface(null))));

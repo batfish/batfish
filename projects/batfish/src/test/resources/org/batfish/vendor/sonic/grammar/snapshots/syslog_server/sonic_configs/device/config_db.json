@@ -1,0 +1,11 @@
+{
+  "DEVICE_METADATA": {
+    "localhost": {
+      "hostname": "syslog_server"
+    }
+  },
+  "SYSLOG_SERVER": {
+    "10.128.255.33": {},
+    "10.128.255.65": {}
+  }
+}
