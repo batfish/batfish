@@ -2,10 +2,15 @@ package org.batfish.vendor.sonic.representation;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.representation.frr.FrrStructureType;
 import org.batfish.vendor.StructureType;
@@ -25,6 +30,14 @@ public enum SonicStructureType implements StructureType {
   ROUTE_MAP_ENTRY(FrrStructureType.ROUTE_MAP_ENTRY),
   VLAN(FrrStructureType.VLAN),
   VRF(FrrStructureType.VRF);
+
+  // TODO: Add abstract structures here after adding structures from configdb
+  public static final Multimap<SonicStructureType, SonicStructureType> ABSTRACT_STRUCTURES =
+      ImmutableListMultimap.<SonicStructureType, SonicStructureType>builder().build();
+
+  public static final Set<SonicStructureType> CONCRETE_STRUCTURES =
+      ImmutableSet.copyOf(
+          Sets.difference(ImmutableSet.copyOf(values()), ABSTRACT_STRUCTURES.keySet()));
 
   private final @Nonnull String _description;
 
