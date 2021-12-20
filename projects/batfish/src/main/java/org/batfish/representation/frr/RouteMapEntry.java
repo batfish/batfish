@@ -33,6 +33,7 @@ public final class RouteMapEntry implements Serializable {
   private @Nullable RouteMapSetCommListDelete _setCommListDelete;
   private @Nullable RouteMapSetCommunity _setCommunity;
   private @Nullable RouteMapSetLocalPreference _setLocalPreference;
+  private @Nullable RouteMapSetOrigin _setOrigin;
   private @Nullable RouteMapSetTag _setTag;
   private @Nullable RouteMapSetWeight _setWeight;
 
@@ -128,6 +129,7 @@ public final class RouteMapEntry implements Serializable {
             _setIpNextHop,
             _setCommunity,
             _setLocalPreference,
+            _setOrigin,
             _setTag,
             _setWeight)
         .filter(Objects::nonNull);
@@ -243,5 +245,13 @@ public final class RouteMapEntry implements Serializable {
 
   public void setContinue(@Nullable RouteMapContinue aContinue) {
     _continue = aContinue;
+  }
+
+  public @Nullable RouteMapSetOrigin getSetOrigin() {
+    return _setOrigin;
+  }
+
+  public void setSetOrigin(RouteMapSetOrigin setOrigin) {
+    _setOrigin = setOrigin;
   }
 }

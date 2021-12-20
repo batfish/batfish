@@ -95,6 +95,7 @@ rm_set
     | rms_local_preference
     | rms_metric
     | rms_metric_type
+    | rms_origin
     | rms_src
     | rms_tag
     | rms_weight
@@ -118,6 +119,11 @@ rms_metric_type
     TYPE_1
     | TYPE_2
   ) NEWLINE
+;
+
+rms_origin
+:
+  ORIGIN origin_type NEWLINE
 ;
 
 rmm_ip
