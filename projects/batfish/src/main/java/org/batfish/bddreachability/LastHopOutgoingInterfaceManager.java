@@ -98,7 +98,7 @@ public final class LastHopOutgoingInterfaceManager {
     }
 
     // No domains! Nothing to do.
-    return bdd;
+    return bdd.id();
   }
 
   /** Return whether the input {@link BDD} has a constraint on the last hop variable. */
