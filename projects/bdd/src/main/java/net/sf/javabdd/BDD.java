@@ -163,15 +163,7 @@ public abstract class BDD {
    * @return the logical 'and' of two BDDs
    */
   public BDD and(BDD that) {
-    return apply(that, BDDFactory.and, true);
-  }
-
-  /**
-   * {@link #and(BDD)}, but {@code this} {@link BDD} is changed to the result rather than creating a
-   * new BDD object.
-   */
-  public BDD andEq(BDD that) {
-    return apply(that, BDDFactory.and, false);
+    return apply(that, BDDFactory.and);
   }
 
   /**
@@ -205,15 +197,7 @@ public abstract class BDD {
    * @return the logical 'nand' of two BDDs
    */
   public BDD nand(BDD that) {
-    return apply(that, BDDFactory.nand, true);
-  }
-
-  /**
-   * {@link #nand(BDD)}, but {@code this} {@link BDD} is changed to the result rather than creating
-   * a new BDD object.
-   */
-  public BDD nandEq(BDD that) {
-    return apply(that, BDDFactory.nand, false);
+    return apply(that, BDDFactory.nand);
   }
 
   /**
@@ -238,15 +222,7 @@ public abstract class BDD {
    * @return the logical 'or' of two BDDs
    */
   public BDD or(BDD that) {
-    return apply(that, BDDFactory.or, true);
-  }
-
-  /**
-   * {@link #or(BDD)}, but {@code this} {@link BDD} is changed to the result rather than creating a
-   * new BDD object.
-   */
-  public BDD orEq(BDD that) {
-    return apply(that, BDDFactory.or, false);
+    return apply(that, BDDFactory.or);
   }
 
   /**
@@ -271,15 +247,7 @@ public abstract class BDD {
    * @return the logical 'nor' of two BDDs
    */
   public BDD nor(BDD that) {
-    return apply(that, BDDFactory.nor, true);
-  }
-
-  /**
-   * {@link #nor(BDD)}, but {@code this} {@link BDD} is changed to the result rather than creating a
-   * new BDD object.
-   */
-  public BDD norEq(BDD that) {
-    return apply(that, BDDFactory.nor, false);
+    return apply(that, BDDFactory.nor);
   }
 
   /**
@@ -304,15 +272,7 @@ public abstract class BDD {
    * @return the logical 'xor' of two BDDs
    */
   public BDD xor(BDD that) {
-    return apply(that, BDDFactory.xor, true);
-  }
-
-  /**
-   * {@link #xor(BDD)}, but {@code this} {@link BDD} is changed to the result rather than creating a
-   * new BDD object.
-   */
-  public BDD xorEq(BDD that) {
-    return apply(that, BDDFactory.xor, false);
+    return apply(that, BDDFactory.xor);
   }
 
   /**
@@ -337,15 +297,7 @@ public abstract class BDD {
    * @return the logical 'implication' of two BDDs
    */
   public BDD imp(BDD that) {
-    return apply(that, BDDFactory.imp, true);
-  }
-
-  /**
-   * {@link #imp(BDD)}, but {@code this} {@link BDD} is changed to the result rather than creating a
-   * new BDD object.
-   */
-  public BDD impEq(BDD that) {
-    return apply(that, BDDFactory.imp, false);
+    return apply(that, BDDFactory.imp);
   }
 
   /**
@@ -370,15 +322,7 @@ public abstract class BDD {
    * @return the logical 'inverse implication' of two BDDs
    */
   public BDD invimp(BDD that) {
-    return apply(that, BDDFactory.invimp, true);
-  }
-
-  /**
-   * {@link #invimp(BDD)}, but {@code this} {@link BDD} is changed to the result rather than
-   * creating a new BDD object.
-   */
-  public BDD invimpEq(BDD that) {
-    return apply(that, BDDFactory.invimp, false);
+    return apply(that, BDDFactory.invimp);
   }
 
   /**
@@ -404,15 +348,7 @@ public abstract class BDD {
    * @return the logical 'bi-implication' of two BDDs
    */
   public BDD biimp(BDD that) {
-    return apply(that, BDDFactory.biimp, true);
-  }
-
-  /**
-   * {@link #biimp(BDD)}, but {@code this} {@link BDD} is changed to the result rather than creating
-   * a new BDD object.
-   */
-  public BDD biimpEq(BDD that) {
-    return apply(that, BDDFactory.biimp, false);
+    return apply(that, BDDFactory.biimp);
   }
 
   /**
@@ -435,15 +371,7 @@ public abstract class BDD {
    * @return the logical 'difference' of two BDDs
    */
   public BDD diff(BDD that) {
-    return apply(that, BDDFactory.diff, true);
-  }
-
-  /**
-   * {@link #diff(BDD)}, but {@code this} {@link BDD} is changed to the result rather than creating
-   * a new BDD object.
-   */
-  public BDD diffEq(BDD that) {
-    return apply(that, BDDFactory.diff, false);
+    return apply(that, BDDFactory.diff);
   }
 
   /**
@@ -486,15 +414,7 @@ public abstract class BDD {
    * @return the logical 'less-than' of two BDDs
    */
   public BDD less(BDD that) {
-    return apply(that, BDDFactory.less, true);
-  }
-
-  /**
-   * {@link #less(BDD)}, but {@code this} {@link BDD} is changed to the result rather than creating
-   * a new BDD object.
-   */
-  public BDD lessEq(BDD that) {
-    return apply(that, BDDFactory.less, false);
+    return apply(that, BDDFactory.less);
   }
 
   /**
@@ -581,19 +501,7 @@ public abstract class BDD {
    * @return the result of the existential quantification
    * @see net.sf.javabdd.BDDDomain#set()
    */
-  public BDD exist(BDD var) {
-    return exist(var, true);
-  }
-
-  /**
-   * {@link #exist(BDD)}, but {@code this} {@link BDD} is changed to the result rather than creating
-   * a new BDD object.
-   */
-  public BDD existEq(BDD var) {
-    return exist(var, false);
-  }
-
-  abstract BDD exist(BDD var, boolean makeNew);
+  public abstract BDD exist(BDD var);
 
   /**
    * Project this BDD onto the variables in the set. i.e. existentially quantify all other
@@ -686,13 +594,13 @@ public abstract class BDD {
   /**
    * Returns the result of applying the binary operator <tt>opr</tt> to the two BDDs.
    *
+   * <p>Compare to bdd_apply.
+   *
    * @param that the BDD to apply the operator on
    * @param opr the operator to apply
-   * @param makeNew whether a new BDD is created ({@code true}) or {@code this} BDD is modified.
-   *     Note that {@code that} is never changed.
    * @return the result of applying the operator
    */
-  abstract BDD apply(BDD that, BDDFactory.BDDOp opr, boolean makeNew);
+  public abstract BDD apply(BDD that, BDDFactory.BDDOp opr);
 
   /**
    * Makes this BDD be the result of the binary operator <tt>opr</tt> of two BDDs. The "that" BDD is
