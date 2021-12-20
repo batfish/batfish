@@ -14,9 +14,19 @@ public class DeviceMetadataTest {
 
   @Test
   public void testJacksonDeserialization() throws JsonProcessingException {
-    String input = "{ \"hostname\": \"name\", \"GARBAGE\": 1 }";
+    String input =
+        "{"
+            + "    \"bgp_asn\": \"65044\","
+            + "    \"default_config_profile\": \"l3\","
+            + "    \"docker_routing_config_mode\": \"split\","
+            + "    \"hostname\": \"name\","
+            + "    \"hwsku\": \"XXXYYY\","
+            + "    \"mac\": \"c8:f7:50:ec:07:41\","
+            + "    \"platform\": \"x86_64-XXX\","
+            + "    \"type\": \"LeafRouter\""
+            + "}";
     assertThat(
-        BatfishObjectMapper.ignoreUnknownMapper().readValue(input, DeviceMetadata.class),
+        BatfishObjectMapper.mapper().readValue(input, DeviceMetadata.class),
         equalTo(new DeviceMetadata("name")));
   }
 

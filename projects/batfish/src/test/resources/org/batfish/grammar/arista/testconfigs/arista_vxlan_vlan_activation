@@ -1,0 +1,27 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname arista_vxlan_vlan_activation
+!
+! Note that toggling this service requires a device restart
+service routing protocols model multi-agent
+!
+vlan 5
+!
+vlan 6
+!
+interface Vlan5
+!
+interface Vlan6
+!
+interface Loopback1
+  ip address 5.5.5.5/32
+!
+interface Vxlan1
+  vxlan source-interface Loopback1
+  vxlan vlan 5 vni 10005
+  ! no entry for vlan 6, so Vlan6 should be down
+!
+router bgp 65000
+  vlan-aware-bundle b
+  !
+!

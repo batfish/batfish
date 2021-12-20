@@ -3,6 +3,7 @@ package org.batfish.representation.frr;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.vendor.VendorConfiguration;
 
@@ -37,4 +38,11 @@ public abstract class FrrVendorConfiguration extends VendorConfiguration {
 
   // TODO: Simplify and unbundle what is happening in this method
   public abstract Map<String, Vxlan> getVxlans();
+
+  /** Logs a structure reference seen during FRR file parsing. */
+  public abstract void referenceStructure(
+      FrrStructureType type, String name, FrrStructureUsage usage, int line);
+
+  /** Logs a structure definition seen during FRR file parsing. */
+  public abstract void defineStructure(FrrStructureType type, String name, ParserRuleContext ctx);
 }

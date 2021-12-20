@@ -1,4 +1,4 @@
-package org.batfish.representation.frr;
+package org.batfish.representation.cumulus_concatenated;
 
 import static com.google.common.base.Preconditions.checkState;
 

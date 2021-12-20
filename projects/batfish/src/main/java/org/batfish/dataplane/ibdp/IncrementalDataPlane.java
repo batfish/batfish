@@ -27,6 +27,7 @@ import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.vxlan.Layer2Vni;
+import org.batfish.datamodel.vxlan.Layer3Vni;
 
 /** Dataplane computation result of incremental dataplane engine */
 @ParametersAreNonnullByDefault
@@ -46,7 +47,13 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
   @Nonnull
   @Override
   public Table<String, String, Set<Layer2Vni>> getLayer2Vnis() {
-    return _vniSettings;
+    return _layer2VniSettings;
+  }
+
+  @Nonnull
+  @Override
+  public Table<String, String, Set<Layer3Vni>> getLayer3Vnis() {
+    return _layer3VniSettings;
   }
 
   @Nonnull
@@ -123,7 +130,8 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
   @Nonnull private final ForwardingAnalysis _forwardingAnalysis;
   @Nonnull private final Table<String, String, Set<EvpnRoute<?, ?>>> _evpnRoutes;
   @Nonnull private final Table<String, String, Set<EvpnRoute<?, ?>>> _evpnBackupRoutes;
-  @Nonnull private final Table<String, String, Set<Layer2Vni>> _vniSettings;
+  @Nonnull private final Table<String, String, Set<Layer2Vni>> _layer2VniSettings;
+  @Nonnull private final Table<String, String, Set<Layer3Vni>> _layer3VniSettings;
 
   @Nonnull
   private final SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>>
@@ -156,7 +164,8 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
     LOGGER.info("Computing main RIBs");
     _ribs = DataplaneUtil.computeRibs(nodes);
     _prefixTracerSummary = computePrefixTracingInfo(nodes);
-    _vniSettings = DataplaneUtil.computeVniSettings(nodes);
+    _layer2VniSettings = DataplaneUtil.computeLayer2VniSettings(nodes);
+    _layer3VniSettings = DataplaneUtil.computeLayer3VniSettings(nodes);
   }
 
   private static SortedMap<String, SortedMap<String, Map<Prefix, Map<String, Set<String>>>>>

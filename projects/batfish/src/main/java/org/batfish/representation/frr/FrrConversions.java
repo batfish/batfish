@@ -21,9 +21,9 @@ import static org.batfish.datamodel.routing_policy.Common.generateSuppressionPol
 import static org.batfish.datamodel.routing_policy.Common.initDenyAllBgpRedistributionPolicy;
 import static org.batfish.datamodel.routing_policy.statement.Statements.RemovePrivateAs;
 import static org.batfish.representation.frr.BgpProcess.BGP_UNNUMBERED_IP;
-import static org.batfish.representation.frr.CumulusRoutingProtocol.VI_PROTOCOLS_MAP;
 import static org.batfish.representation.frr.FrrConfiguration.LINK_LOCAL_ADDRESS;
 import static org.batfish.representation.frr.FrrConfiguration.LOOPBACK_INTERFACE_NAME;
+import static org.batfish.representation.frr.FrrRoutingProtocol.VI_PROTOCOLS_MAP;
 import static org.batfish.representation.frr.OspfInterface.DEFAULT_OSPF_DEAD_INTERVAL;
 import static org.batfish.representation.frr.OspfInterface.DEFAULT_OSPF_HELLO_INTERVAL;
 import static org.batfish.representation.frr.OspfProcess.DEFAULT_OSPF_PROCESS_NAME;
@@ -1051,7 +1051,7 @@ public final class FrrConversions {
         .forEach(
             redistributeProtocolPolicy -> {
               // Get a match expression for the protocol to be redistributed
-              CumulusRoutingProtocol protocol = redistributeProtocolPolicy.getProtocol();
+              FrrRoutingProtocol protocol = redistributeProtocolPolicy.getProtocol();
               MatchProtocol matchProtocol = new MatchProtocol(VI_PROTOCOLS_MAP.get(protocol));
               BooleanExpr exportProtocolConditions = matchProtocol;
 
@@ -1368,7 +1368,7 @@ public final class FrrConversions {
   @VisibleForTesting
   static @Nonnull If convertOspfRedistributionPolicy(
       RedistributionPolicy policy, Map<String, RouteMap> routeMaps) {
-    CumulusRoutingProtocol protocol = policy.getCumulusRoutingProtocol();
+    FrrRoutingProtocol protocol = policy.getCumulusRoutingProtocol();
 
     // All redistribution must match the specified protocol.
     Conjunction ospfExportConditions = new Conjunction();
@@ -1747,7 +1747,7 @@ public final class FrrConversions {
         lines,
         new VendorStructureId(
             vendorConfigFilename,
-            CumulusStructureType.IP_PREFIX_LIST.getDescription(),
+            FrrStructureType.IP_PREFIX_LIST.getDescription(),
             ipPrefixList.getName()));
   }
 

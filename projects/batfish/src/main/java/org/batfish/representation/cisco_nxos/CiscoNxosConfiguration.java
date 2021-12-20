@@ -21,6 +21,7 @@ import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPref
 import static org.batfish.representation.cisco_nxos.BgpVrfIpAddressFamilyConfiguration.DEFAULT_DISTANCE_EBGP;
 import static org.batfish.representation.cisco_nxos.BgpVrfIpAddressFamilyConfiguration.DEFAULT_DISTANCE_IBGP;
 import static org.batfish.representation.cisco_nxos.BgpVrfIpAddressFamilyConfiguration.DEFAULT_DISTANCE_LOCAL_BGP;
+import static org.batfish.representation.cisco_nxos.Conversions.convertBgpLeakConfigs;
 import static org.batfish.representation.cisco_nxos.Conversions.getVrfForL3Vni;
 import static org.batfish.representation.cisco_nxos.Conversions.inferRouterId;
 import static org.batfish.representation.cisco_nxos.Conversions.toBgpAggregate;
@@ -1469,14 +1470,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     if (nve.isShutdown()) {
       return;
     }
-    BumTransportMethod bumTransportMethod = getBumTransportMethod(nveVni, nve);
-    SortedSet<Ip> bumTransportIps;
-    if (nveVni.getIngressReplicationProtocol() != IngressReplicationProtocol.STATIC
-        && bumTransportMethod == MULTICAST_GROUP) {
-      bumTransportIps = ImmutableSortedSet.of(getMultiCastGroupIp(nveVni, nve));
-    } else {
-      bumTransportIps = ImmutableSortedSet.copyOf(nveVni.getPeerIps());
-    }
     Integer vlan = getVlanForVni(nveVni.getVni());
     if (vlan == null) {
       // NX-OS requires all VNIs be associated with a VLAN
@@ -1496,10 +1489,11 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                       && iface.getVrfName().equals(vsTenantVrfForL3Vni.getName()))) {
         return;
       }
+      // Ensure IRB stays up even if it has no associated switchports
+      //
+      _c.setNormalVlanRange(_c.getNormalVlanRange().difference(IntegerSpace.of(vlan)));
       Layer3Vni vniSettings =
           Layer3Vni.builder()
-              .setBumTransportIps(bumTransportIps)
-              .setBumTransportMethod(bumTransportMethod)
               .setSourceAddress(
                   nve.getSourceInterface() != null
                       ? getInterfaceIp(_c.getAllInterfaces(), nve.getSourceInterface())
@@ -1510,6 +1504,14 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
               .build();
       _c.getVrfs().get(vsTenantVrfForL3Vni.getName()).addLayer3Vni(vniSettings);
     } else {
+      BumTransportMethod bumTransportMethod = getBumTransportMethod(nveVni, nve);
+      SortedSet<Ip> bumTransportIps;
+      if (nveVni.getIngressReplicationProtocol() != IngressReplicationProtocol.STATIC
+          && bumTransportMethod == MULTICAST_GROUP) {
+        bumTransportIps = ImmutableSortedSet.of(getMultiCastGroupIp(nveVni, nve));
+      } else {
+        bumTransportIps = ImmutableSortedSet.copyOf(nveVni.getPeerIps());
+      }
       Layer2Vni vniSettings =
           Layer2Vni.builder()
               .setBumTransportIps(bumTransportIps)
@@ -3863,9 +3865,21 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     convertNves();
     convertBgp();
     convertEigrp();
+    makeLeakConfigs();
 
     markStructures();
     return _c;
+  }
+
+  private void makeLeakConfigs() {
+    _vrfs.forEach(
+        (vrfName, vrf) ->
+            convertBgpLeakConfigs(
+                vrf,
+                _c.getVrfs().get(vrfName),
+                _bgpGlobalConfiguration,
+                _c.getDefaultVrf().getBgpProcess(),
+                _c));
   }
 
   private void computeImplicitOspfAreas() {

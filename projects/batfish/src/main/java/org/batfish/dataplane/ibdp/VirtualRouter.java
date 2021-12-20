@@ -17,10 +17,15 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Multimaps;
 import com.google.common.collect.Ordering;
+import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Streams;
 import com.google.common.graph.Network;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -228,10 +233,10 @@ public final class VirtualRouter {
    */
   private Set<Layer2Vni> _layer2Vnis;
   /**
-   * Layer 3 VNI settings that are updated dynamically as the dataplane is being computed (e.g.,
-   * based on EVPN route advertisements).
+   * Map of VNI to Layer 3 VNI settings that are updated dynamically as the dataplane is being
+   * computed (e.g., based on EVPN route advertisements).
    */
-  private Set<Layer3Vni> _layer3Vnis;
+  private Map<Integer, Layer3Vni> _layer3Vnis;
 
   /** A {@link Vrf} that this virtual router represents */
   final Vrf _vrf;
@@ -266,7 +271,7 @@ public final class VirtualRouter {
     _eigrpProcesses = ImmutableMap.of();
     _ospfProcesses = ImmutableMap.of();
     _layer2Vnis = ImmutableSet.copyOf(_vrf.getLayer2Vnis().values());
-    _layer3Vnis = ImmutableSet.copyOf(_vrf.getLayer3Vnis().values());
+    _layer3Vnis = ImmutableMap.copyOf(_vrf.getLayer3Vnis());
     if (_vrf.getBgpProcess() != null) {
       _bgpRoutingProcess =
           new BgpRoutingProcess(
@@ -1430,7 +1435,7 @@ public final class VirtualRouter {
   }
 
   /** Return the current set of {@link Layer3Vni} associated with this VRF */
-  public Set<Layer3Vni> getLayer3Vnis() {
+  public Map<Integer, Layer3Vni> getLayer3Vnis() {
     return _layer3Vnis;
   }
 
@@ -1533,7 +1538,7 @@ public final class VirtualRouter {
       Optional<BgpRoutingProcess> exportingBgpProc =
           exportingVr.map(VirtualRouter::getBgpRoutingProcess);
       if (exportingBgpProc.isPresent()) {
-        Set<Layer3Vni> exportingVrfL3Vnis = exportingVr.get().getLayer3Vnis();
+        Collection<Layer3Vni> exportingVrfL3Vnis = exportingVr.get().getLayer3Vnis().values();
         if (exportingVrfL3Vnis.size() == 1) {
           int vni = exportingVrfL3Vnis.iterator().next().getVni();
           _bgpRoutingProcess.importCrossVrfV4RoutesToEvpn(
@@ -1589,6 +1594,41 @@ public final class VirtualRouter {
       return vs;
     }
     return vs.addToFloodList(route.getVniIp());
+  }
+
+  /**
+   * Process EVPN type 5 routes in our RIB and update learned VTEPs on corresponding {@link
+   * Layer3Vni}s if neessary.
+   */
+  public void updateLayer3Vnis() {
+    if (_bgpRoutingProcess == null) {
+      // won't have next hop VTEP routes without a BGP process
+      return;
+    }
+    SetMultimap<Integer, Ip> vtepsByVni = Multimaps.newSetMultimap(new HashMap<>(), HashSet::new);
+    _mainRib.getRoutes().stream()
+        .map(AbstractRoute::getNextHop)
+        .filter(NextHopVtep.class::isInstance)
+        .map(NextHopVtep.class::cast)
+        .forEach(
+            nextHopVtep -> {
+              vtepsByVni.put(nextHopVtep.getVni(), nextHopVtep.getVtepIp());
+            });
+    Map<Integer, Layer3Vni> newLayer3Vnis = new HashMap<>(_layer3Vnis);
+    vtepsByVni
+        .asMap()
+        .forEach(
+            (vni, ips) -> {
+              Layer3Vni l3Vni = _layer3Vnis.get(vni);
+              if (l3Vni == null) {
+                // shouldn't happen, but skip just in case
+                return;
+              }
+              newLayer3Vnis.put(
+                  vni,
+                  l3Vni.toBuilder().setLearnedNexthopVtepIps(ImmutableSet.copyOf(ips)).build());
+            });
+    _layer3Vnis = ImmutableMap.copyOf(newLayer3Vnis);
   }
 
   /**

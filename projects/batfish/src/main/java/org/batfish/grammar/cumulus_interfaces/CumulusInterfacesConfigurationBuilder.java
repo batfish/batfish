@@ -67,10 +67,10 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Si_no_inet
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.representation.cumulus_concatenated.CumulusConcatenatedConfiguration;
 import org.batfish.representation.cumulus_concatenated.CumulusInterfacesConfiguration;
+import org.batfish.representation.cumulus_concatenated.CumulusStructureType;
+import org.batfish.representation.cumulus_concatenated.CumulusStructureUsage;
+import org.batfish.representation.cumulus_concatenated.InterfaceClagSettings;
 import org.batfish.representation.cumulus_concatenated.InterfacesInterface;
-import org.batfish.representation.frr.CumulusStructureType;
-import org.batfish.representation.frr.CumulusStructureUsage;
-import org.batfish.representation.frr.InterfaceClagSettings;
 import org.batfish.representation.frr.StaticRoute;
 
 /**
@@ -451,6 +451,26 @@ public final class CumulusInterfacesConfigurationBuilder extends CumulusInterfac
     _config.getInterfacesConfiguration().setAuto(name);
   }
 
+  private static CumulusStructureUsage toSelfReferenceUsage(CumulusStructureType structureType) {
+    switch (structureType) {
+      case BOND:
+        return CumulusStructureUsage.BOND_SELF_REFERENCE;
+      case INTERFACE:
+        return CumulusStructureUsage.INTERFACE_SELF_REFERENCE;
+      case LOOPBACK:
+        return CumulusStructureUsage.LOOPBACK_SELF_REFERENCE;
+      case VLAN:
+        return CumulusStructureUsage.VLAN_SELF_REFERENCE;
+      case VRF:
+        return CumulusStructureUsage.VRF_SELF_REFERENCE;
+      case VXLAN:
+        return CumulusStructureUsage.VXLAN_SELF_REFERENCE;
+      default:
+        throw new IllegalArgumentException(
+            String.format("CumulusStructureType %s has no self-reference usage", structureType));
+    }
+  }
+
   @Override
   public void exitS_iface(S_ifaceContext ctx) {
     // _currentIface will be null for the loopback interface
@@ -459,12 +479,7 @@ public final class CumulusInterfacesConfigurationBuilder extends CumulusInterfac
       _config.referenceStructure(
           _currentIface.getType(),
           _currentIface.getName(),
-          _currentIface.getType().selfReference(),
-          ctx.getStart().getLine());
-      _config.referenceStructure(
-          _currentIface.getType(),
-          _currentIface.getName(),
-          _currentIface.getType().selfReference(),
+          toSelfReferenceUsage(_currentIface.getType()),
           ctx.getStart().getLine());
       _currentIface = null;
       _currentIfaceName = null;

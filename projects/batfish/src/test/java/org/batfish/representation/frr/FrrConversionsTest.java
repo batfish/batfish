@@ -260,7 +260,7 @@ public final class FrrConversionsTest {
         rfl.getVendorStructureId(),
         equalTo(
             new VendorStructureId(
-                "file", CumulusStructureType.IP_PREFIX_LIST.getDescription(), "name")));
+                "file", FrrStructureType.IP_PREFIX_LIST.getDescription(), "name")));
   }
 
   @Test
@@ -1230,7 +1230,7 @@ public final class FrrConversionsTest {
     OspfVrf ospfVrf = new OspfVrf(DEFAULT_VRF_NAME);
     ospfVrf.setRouterId(Ip.parse("1.2.3.4"));
 
-    RedistributionPolicy rp = new RedistributionPolicy(CumulusRoutingProtocol.BGP, "some-map");
+    RedistributionPolicy rp = new RedistributionPolicy(FrrRoutingProtocol.BGP, "some-map");
     _frr.getRouteMaps().put("some-map", new RouteMap("some-map"));
 
     // Method under test
@@ -1475,8 +1475,8 @@ public final class FrrConversionsTest {
     vrf.setRouterId(Ip.parse("1.1.1.1"));
     vrf.getRedistributionPolicies()
         .put(
-            CumulusRoutingProtocol.OSPF,
-            new BgpRedistributionPolicy(CumulusRoutingProtocol.OSPF, "redist_policy"));
+            FrrRoutingProtocol.OSPF,
+            new BgpRedistributionPolicy(FrrRoutingProtocol.OSPF, "redist_policy"));
 
     // setup OspfVrf
     OspfVrf ospf = _frr.getOspfProcess().getDefaultVrf();

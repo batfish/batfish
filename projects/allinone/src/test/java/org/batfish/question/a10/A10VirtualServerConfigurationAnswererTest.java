@@ -8,9 +8,11 @@ import static org.batfish.question.a10.A10VirtualServerConfigurationAnswerer.COL
 import static org.batfish.question.a10.A10VirtualServerConfigurationAnswerer.COL_SERVICE_GROUP_NAME;
 import static org.batfish.question.a10.A10VirtualServerConfigurationAnswerer.COL_SERVICE_GROUP_TYPE;
 import static org.batfish.question.a10.A10VirtualServerConfigurationAnswerer.COL_SOURCE_NAT_POOL_NAME;
+import static org.batfish.question.a10.A10VirtualServerConfigurationAnswerer.COL_VIRTUAL_SERVER_ENABLED;
 import static org.batfish.question.a10.A10VirtualServerConfigurationAnswerer.COL_VIRTUAL_SERVER_IP;
 import static org.batfish.question.a10.A10VirtualServerConfigurationAnswerer.COL_VIRTUAL_SERVER_NAME;
 import static org.batfish.question.a10.A10VirtualServerConfigurationAnswerer.COL_VIRTUAL_SERVER_PORT;
+import static org.batfish.question.a10.A10VirtualServerConfigurationAnswerer.COL_VIRTUAL_SERVER_PORT_ENABLED;
 import static org.batfish.question.a10.A10VirtualServerConfigurationAnswerer.COL_VIRTUAL_SERVER_PORT_TYPE_NAME;
 import static org.batfish.question.a10.A10VirtualServerConfigurationAnswerer.COL_VIRTUAL_SERVER_TYPE;
 import static org.hamcrest.Matchers.allOf;
@@ -67,8 +69,10 @@ public class A10VirtualServerConfigurationAnswererTest {
                 allOf(
                     hasColumn(COL_NODE, equalTo(new Node(hostname1)), Schema.NODE),
                     hasColumn(COL_VIRTUAL_SERVER_NAME, equalTo("vs1"), Schema.STRING),
+                    hasColumn(COL_VIRTUAL_SERVER_ENABLED, equalTo(true), Schema.BOOLEAN),
                     hasColumn(COL_VIRTUAL_SERVER_IP, equalTo(Ip.parse("10.10.10.1")), Schema.IP),
                     hasColumn(COL_VIRTUAL_SERVER_PORT, equalTo(443), Schema.INTEGER),
+                    hasColumn(COL_VIRTUAL_SERVER_PORT_ENABLED, equalTo(true), Schema.BOOLEAN),
                     hasColumn(COL_VIRTUAL_SERVER_TYPE, equalTo("TCP"), Schema.STRING),
                     hasColumn(
                         COL_VIRTUAL_SERVER_PORT_TYPE_NAME, equalTo("vs1.10000"), Schema.STRING),
@@ -78,15 +82,19 @@ public class A10VirtualServerConfigurationAnswererTest {
                         COL_SERVERS,
                         equalTo(
                             ImmutableSet.of(
-                                ImmutableList.of("s1", "10000", "1.1.1.1"),
-                                ImmutableList.of("s2", "9999", "2.2.2.2"))),
+                                ImmutableList.of("s1", "10000", "1.1.1.1", "active"),
+                                ImmutableList.of("s2", "9999", "2.2.2.2", "inactive"),
+                                ImmutableList.of("s3", "10000", "3.3.3.3", "inactive"),
+                                ImmutableList.of("s4", "10000", "4.4.4.4", "inactive"))),
                         Schema.set(Schema.list(Schema.STRING))),
                     hasColumn(COL_SOURCE_NAT_POOL_NAME, equalTo("pool1"), Schema.STRING)),
                 allOf(
                     hasColumn(COL_NODE, equalTo(new Node(hostname1)), Schema.NODE),
                     hasColumn(COL_VIRTUAL_SERVER_NAME, equalTo("vs1"), Schema.STRING),
+                    hasColumn(COL_VIRTUAL_SERVER_ENABLED, equalTo(true), Schema.BOOLEAN),
                     hasColumn(COL_VIRTUAL_SERVER_IP, equalTo(Ip.parse("10.10.10.1")), Schema.IP),
                     hasColumn(COL_VIRTUAL_SERVER_PORT, equalTo(444), Schema.INTEGER),
+                    hasColumn(COL_VIRTUAL_SERVER_PORT_ENABLED, equalTo(false), Schema.BOOLEAN),
                     hasColumn(COL_VIRTUAL_SERVER_TYPE, equalTo("HTTP"), Schema.STRING),
                     hasColumn(
                         COL_VIRTUAL_SERVER_PORT_TYPE_NAME, equalTo("vs1.20000"), Schema.STRING),
@@ -100,8 +108,10 @@ public class A10VirtualServerConfigurationAnswererTest {
                 allOf(
                     hasColumn(COL_NODE, equalTo(new Node(hostname1)), Schema.NODE),
                     hasColumn(COL_VIRTUAL_SERVER_NAME, equalTo("vs2NoSG"), Schema.STRING),
+                    hasColumn(COL_VIRTUAL_SERVER_ENABLED, equalTo(true), Schema.BOOLEAN),
                     hasColumn(COL_VIRTUAL_SERVER_IP, equalTo(Ip.parse("10.10.10.2")), Schema.IP),
                     hasColumn(COL_VIRTUAL_SERVER_PORT, equalTo(443), Schema.INTEGER),
+                    hasColumn(COL_VIRTUAL_SERVER_PORT_ENABLED, equalTo(true), Schema.BOOLEAN),
                     hasColumn(COL_VIRTUAL_SERVER_TYPE, equalTo("TCP"), Schema.STRING),
                     hasColumn(COL_VIRTUAL_SERVER_PORT_TYPE_NAME, nullValue(), Schema.STRING),
                     hasColumn(COL_SERVICE_GROUP_NAME, nullValue(), Schema.STRING),

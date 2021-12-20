@@ -150,19 +150,16 @@ public final class Layer2Vni implements Vni {
         _srcVrf);
   }
 
-  @Override
   public @Nullable Ip getMulticastGroup() {
     return _bumTransportMethod == BumTransportMethod.MULTICAST_GROUP
         ? Iterables.getOnlyElement(_bumTransportIps)
         : null;
   }
 
-  @Override
   public @Nonnull Set<Ip> getBumTransportIps() {
     return _bumTransportIps;
   }
 
-  @Override
   public @Nonnull BumTransportMethod getBumTransportMethod() {
     return _bumTransportMethod;
   }

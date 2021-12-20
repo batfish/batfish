@@ -19,6 +19,7 @@ import static org.batfish.datamodel.matchers.EdgeMatchers.hasNode1;
 import static org.batfish.datamodel.matchers.EdgeMatchers.hasNode2;
 import static org.batfish.datamodel.matchers.EdgeMatchers.hasTail;
 import static org.batfish.datamodel.vxlan.Layer2Vni.testBuilder;
+import static org.batfish.datamodel.vxlan.VniLayer.LAYER_2;
 import static org.hamcrest.Matchers.both;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
@@ -161,7 +162,7 @@ public final class TopologyUtilTest {
     v2.addLayer2Vni(vnb.build());
 
     MutableGraph<VxlanNode> graph = GraphBuilder.undirected().allowsSelfLoops(false).build();
-    graph.putEdge(new VxlanNode(s1Name, vni), new VxlanNode(s2Name, vni));
+    graph.putEdge(new VxlanNode(s1Name, vni, LAYER_2), new VxlanNode(s2Name, vni, LAYER_2));
     VxlanTopology vxlanTopology = new VxlanTopology(graph);
     Layer1Topology layer1Topology = Layer1Topology.EMPTY;
 
@@ -195,7 +196,7 @@ public final class TopologyUtilTest {
     String vniName = computeVniName(vni);
 
     MutableGraph<VxlanNode> graph = GraphBuilder.undirected().allowsSelfLoops(false).build();
-    graph.putEdge(new VxlanNode(s1Name, vni), new VxlanNode(s2Name, vni));
+    graph.putEdge(new VxlanNode(s1Name, vni, LAYER_2), new VxlanNode(s2Name, vni, LAYER_2));
     VxlanTopology vxlanTopology = new VxlanTopology(graph);
     Layer2Node n1 = new Layer2Node(s1Name, vniName, null);
     Layer2Node n2 = new Layer2Node(s2Name, vniName, null);

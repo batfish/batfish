@@ -4,34 +4,34 @@ import static com.google.common.base.Preconditions.checkState;
 import static java.lang.Long.parseLong;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.grammar.frr.FrrParser.Int_exprContext;
-import static org.batfish.representation.frr.CumulusStructureType.ABSTRACT_INTERFACE;
-import static org.batfish.representation.frr.CumulusStructureType.IPV6_PREFIX_LIST;
-import static org.batfish.representation.frr.CumulusStructureType.IP_AS_PATH_ACCESS_LIST;
-import static org.batfish.representation.frr.CumulusStructureType.IP_COMMUNITY_LIST;
-import static org.batfish.representation.frr.CumulusStructureType.IP_COMMUNITY_LIST_EXPANDED;
-import static org.batfish.representation.frr.CumulusStructureType.IP_COMMUNITY_LIST_STANDARD;
-import static org.batfish.representation.frr.CumulusStructureType.IP_PREFIX_LIST;
-import static org.batfish.representation.frr.CumulusStructureType.ROUTE_MAP;
-import static org.batfish.representation.frr.CumulusStructureType.ROUTE_MAP_ENTRY;
-import static org.batfish.representation.frr.CumulusStructureType.VRF;
-import static org.batfish.representation.frr.CumulusStructureUsage.BGP_ADDRESS_FAMILY_IPV4_IMPORT_VRF;
-import static org.batfish.representation.frr.CumulusStructureUsage.BGP_ADDRESS_FAMILY_IPV6_IMPORT_VRF;
-import static org.batfish.representation.frr.CumulusStructureUsage.BGP_ADDRESS_FAMILY_L2VPN_ADVERTISE_IPV4_UNICAST;
-import static org.batfish.representation.frr.CumulusStructureUsage.BGP_ADDRESS_FAMILY_L2VPN_ADVERTISE_IPV6_UNICAST;
-import static org.batfish.representation.frr.CumulusStructureUsage.BGP_IPV4_UNICAST_NEIGHBOR_DEFAULT_ORIGINATE_ROUTE_MAP;
-import static org.batfish.representation.frr.CumulusStructureUsage.BGP_IPV4_UNICAST_REDISTRIBUTE_CONNECTED_ROUTE_MAP;
-import static org.batfish.representation.frr.CumulusStructureUsage.BGP_IPV4_UNICAST_REDISTRIBUTE_OSPF_ROUTE_MAP;
-import static org.batfish.representation.frr.CumulusStructureUsage.BGP_IPV4_UNICAST_REDISTRIBUTE_STATIC_ROUTE_MAP;
-import static org.batfish.representation.frr.CumulusStructureUsage.BGP_NETWORK;
-import static org.batfish.representation.frr.CumulusStructureUsage.OSPF_REDISTRIBUTE_BGP_ROUTE_MAP;
-import static org.batfish.representation.frr.CumulusStructureUsage.OSPF_REDISTRIBUTE_CONNECTED_ROUTE_MAP;
-import static org.batfish.representation.frr.CumulusStructureUsage.OSPF_REDISTRIBUTE_STATIC_ROUTE_MAP;
-import static org.batfish.representation.frr.CumulusStructureUsage.ROUTE_MAP_CALL;
-import static org.batfish.representation.frr.CumulusStructureUsage.ROUTE_MAP_ENTRY_SELF_REFERENCE;
-import static org.batfish.representation.frr.CumulusStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST;
-import static org.batfish.representation.frr.CumulusStructureUsage.ROUTE_MAP_SET_COMM_LIST_DELETE;
 import static org.batfish.representation.frr.FrrConversions.DEFAULT_MAX_MED;
 import static org.batfish.representation.frr.FrrConversions.computeRouteMapEntryName;
+import static org.batfish.representation.frr.FrrStructureType.ABSTRACT_INTERFACE;
+import static org.batfish.representation.frr.FrrStructureType.IPV6_PREFIX_LIST;
+import static org.batfish.representation.frr.FrrStructureType.IP_AS_PATH_ACCESS_LIST;
+import static org.batfish.representation.frr.FrrStructureType.IP_COMMUNITY_LIST;
+import static org.batfish.representation.frr.FrrStructureType.IP_COMMUNITY_LIST_EXPANDED;
+import static org.batfish.representation.frr.FrrStructureType.IP_COMMUNITY_LIST_STANDARD;
+import static org.batfish.representation.frr.FrrStructureType.IP_PREFIX_LIST;
+import static org.batfish.representation.frr.FrrStructureType.ROUTE_MAP;
+import static org.batfish.representation.frr.FrrStructureType.ROUTE_MAP_ENTRY;
+import static org.batfish.representation.frr.FrrStructureType.VRF;
+import static org.batfish.representation.frr.FrrStructureUsage.BGP_ADDRESS_FAMILY_IPV4_IMPORT_VRF;
+import static org.batfish.representation.frr.FrrStructureUsage.BGP_ADDRESS_FAMILY_IPV6_IMPORT_VRF;
+import static org.batfish.representation.frr.FrrStructureUsage.BGP_ADDRESS_FAMILY_L2VPN_ADVERTISE_IPV4_UNICAST;
+import static org.batfish.representation.frr.FrrStructureUsage.BGP_ADDRESS_FAMILY_L2VPN_ADVERTISE_IPV6_UNICAST;
+import static org.batfish.representation.frr.FrrStructureUsage.BGP_IPV4_UNICAST_NEIGHBOR_DEFAULT_ORIGINATE_ROUTE_MAP;
+import static org.batfish.representation.frr.FrrStructureUsage.BGP_IPV4_UNICAST_REDISTRIBUTE_CONNECTED_ROUTE_MAP;
+import static org.batfish.representation.frr.FrrStructureUsage.BGP_IPV4_UNICAST_REDISTRIBUTE_OSPF_ROUTE_MAP;
+import static org.batfish.representation.frr.FrrStructureUsage.BGP_IPV4_UNICAST_REDISTRIBUTE_STATIC_ROUTE_MAP;
+import static org.batfish.representation.frr.FrrStructureUsage.BGP_NETWORK;
+import static org.batfish.representation.frr.FrrStructureUsage.OSPF_REDISTRIBUTE_BGP_ROUTE_MAP;
+import static org.batfish.representation.frr.FrrStructureUsage.OSPF_REDISTRIBUTE_CONNECTED_ROUTE_MAP;
+import static org.batfish.representation.frr.FrrStructureUsage.OSPF_REDISTRIBUTE_STATIC_ROUTE_MAP;
+import static org.batfish.representation.frr.FrrStructureUsage.ROUTE_MAP_CALL;
+import static org.batfish.representation.frr.FrrStructureUsage.ROUTE_MAP_ENTRY_SELF_REFERENCE;
+import static org.batfish.representation.frr.FrrStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST;
+import static org.batfish.representation.frr.FrrStructureUsage.ROUTE_MAP_SET_COMM_LIST_DELETE;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
@@ -220,11 +220,11 @@ import org.batfish.representation.frr.BgpProcess;
 import org.batfish.representation.frr.BgpRedistributionPolicy;
 import org.batfish.representation.frr.BgpVrf;
 import org.batfish.representation.frr.BgpVrfAddressFamilyAggregateNetworkConfiguration;
-import org.batfish.representation.frr.CumulusRoutingProtocol;
-import org.batfish.representation.frr.CumulusStructureType;
-import org.batfish.representation.frr.CumulusStructureUsage;
 import org.batfish.representation.frr.FrrConfiguration;
 import org.batfish.representation.frr.FrrInterface;
+import org.batfish.representation.frr.FrrRoutingProtocol;
+import org.batfish.representation.frr.FrrStructureType;
+import org.batfish.representation.frr.FrrStructureUsage;
 import org.batfish.representation.frr.FrrVendorConfiguration;
 import org.batfish.representation.frr.IpAsPathAccessList;
 import org.batfish.representation.frr.IpAsPathAccessListLine;
@@ -487,7 +487,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
       _currentBgpVrf = new BgpVrf(vrfName);
       _frr.getBgpProcess().getVrfs().put(vrfName, _currentBgpVrf);
       _vc.referenceStructure(
-          VRF, vrfName, CumulusStructureUsage.BGP_VRF, ctx.vrf_name().getStart().getLine());
+          VRF, vrfName, FrrStructureUsage.BGP_VRF, ctx.vrf_name().getStart().getLine());
     }
     _currentBgpVrf.setAutonomousSystem(parseLong(ctx.autonomous_system().getText()));
   }
@@ -527,18 +527,18 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
       ParserRuleContext ctx,
       Bgp_redist_typeContext bgpRedistTypeContext,
       @Nullable String routeMap) {
-    CumulusRoutingProtocol srcProtocol;
-    CumulusStructureUsage usage;
+    FrrRoutingProtocol srcProtocol;
+    FrrStructureUsage usage;
 
     if (bgpRedistTypeContext.STATIC() != null) {
       usage = BGP_IPV4_UNICAST_REDISTRIBUTE_STATIC_ROUTE_MAP;
-      srcProtocol = CumulusRoutingProtocol.STATIC;
+      srcProtocol = FrrRoutingProtocol.STATIC;
     } else if (bgpRedistTypeContext.CONNECTED() != null) {
       usage = BGP_IPV4_UNICAST_REDISTRIBUTE_CONNECTED_ROUTE_MAP;
-      srcProtocol = CumulusRoutingProtocol.CONNECTED;
+      srcProtocol = FrrRoutingProtocol.CONNECTED;
     } else if (bgpRedistTypeContext.OSPF() != null) {
       usage = BGP_IPV4_UNICAST_REDISTRIBUTE_OSPF_ROUTE_MAP;
-      srcProtocol = CumulusRoutingProtocol.OSPF;
+      srcProtocol = FrrRoutingProtocol.OSPF;
     } else {
       throw new BatfishException("Unexpected redistribution protocol");
     }
@@ -706,9 +706,9 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
     String routeMapName = toString(ctx.route_map_name());
     _currentAggregate.setRouteMap(routeMapName);
     _vc.referenceStructure(
-        CumulusStructureType.ROUTE_MAP,
+        FrrStructureType.ROUTE_MAP,
         routeMapName,
-        CumulusStructureUsage.BGP_AGGREGATE_ADDRESS_ROUTE_MAP,
+        FrrStructureUsage.BGP_AGGREGATE_ADDRESS_ROUTE_MAP,
         ctx.getStart().getLine());
   }
 
@@ -723,9 +723,9 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
     String routeMapName = toString(ctx.route_map_name());
     _currentAggregate.setSuppressMap(routeMapName);
     _vc.referenceStructure(
-        CumulusStructureType.ROUTE_MAP,
+        FrrStructureType.ROUTE_MAP,
         routeMapName,
-        CumulusStructureUsage.BGP_AGGREGATE_ADDRESS_SUPPRESS_MAP,
+        FrrStructureUsage.BGP_AGGREGATE_ADDRESS_SUPPRESS_MAP,
         ctx.getStart().getLine());
   }
 
@@ -1014,18 +1014,18 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
       ParserRuleContext ctx,
       Ospf_redist_typeContext ospfRedistTypeContext,
       @Nullable String routeMap) {
-    CumulusRoutingProtocol srcProtocol;
-    CumulusStructureUsage usage;
+    FrrRoutingProtocol srcProtocol;
+    FrrStructureUsage usage;
 
     if (ospfRedistTypeContext.STATIC() != null) {
       usage = OSPF_REDISTRIBUTE_STATIC_ROUTE_MAP;
-      srcProtocol = CumulusRoutingProtocol.STATIC;
+      srcProtocol = FrrRoutingProtocol.STATIC;
     } else if (ospfRedistTypeContext.CONNECTED() != null) {
       usage = OSPF_REDISTRIBUTE_CONNECTED_ROUTE_MAP;
-      srcProtocol = CumulusRoutingProtocol.CONNECTED;
+      srcProtocol = FrrRoutingProtocol.CONNECTED;
     } else if (ospfRedistTypeContext.BGP() != null) {
       usage = OSPF_REDISTRIBUTE_BGP_ROUTE_MAP;
-      srcProtocol = CumulusRoutingProtocol.BGP;
+      srcProtocol = FrrRoutingProtocol.BGP;
     } else {
       throw new BatfishException("Unexpected redistribution protocol");
     }
@@ -1177,11 +1177,11 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   @Override
   public void exitSbafln_route_map(Sbafln_route_mapContext ctx) {
     String name = ctx.name.getText();
-    CumulusStructureUsage usage;
+    FrrStructureUsage usage;
     if (ctx.IN() != null) {
-      usage = CumulusStructureUsage.BGP_L2VPN_EVPN_NEIGHBOR_ROUTE_MAP_IN;
+      usage = FrrStructureUsage.BGP_L2VPN_EVPN_NEIGHBOR_ROUTE_MAP_IN;
     } else if (ctx.OUT() != null) {
-      usage = CumulusStructureUsage.BGP_L2VPN_EVPN_NEIGHBOR_ROUTE_MAP_OUT;
+      usage = FrrStructureUsage.BGP_L2VPN_EVPN_NEIGHBOR_ROUTE_MAP_OUT;
     } else {
       throw new IllegalStateException("only support in and out in route map");
     }
@@ -1394,12 +1394,12 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
       return;
     }
     String name = ctx.name.getText();
-    CumulusStructureUsage usage;
+    FrrStructureUsage usage;
     if (ctx.IN() != null) {
-      usage = CumulusStructureUsage.BGP_IPV4_UNICAST_NEIGHBOR_ROUTE_MAP_IN;
+      usage = FrrStructureUsage.BGP_IPV4_UNICAST_NEIGHBOR_ROUTE_MAP_IN;
       _currentBgpNeighborIpv4UnicastAddressFamily.setRouteMapIn(name);
     } else if (ctx.OUT() != null) {
-      usage = CumulusStructureUsage.BGP_IPV4_UNICAST_NEIGHBOR_ROUTE_MAP_OUT;
+      usage = FrrStructureUsage.BGP_IPV4_UNICAST_NEIGHBOR_ROUTE_MAP_OUT;
       _currentBgpNeighborIpv4UnicastAddressFamily.setRouteMapOut(name);
     } else {
       throw new IllegalStateException("only support in and out in route map");
@@ -1539,7 +1539,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
     _vc.referenceStructure(
         IP_AS_PATH_ACCESS_LIST,
         name,
-        CumulusStructureUsage.ROUTE_MAP_MATCH_AS_PATH,
+        FrrStructureUsage.ROUTE_MAP_MATCH_AS_PATH,
         ctx.getStart().getLine());
   }
 
@@ -1571,7 +1571,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
     _vc.referenceStructure(
         ABSTRACT_INTERFACE,
         name,
-        CumulusStructureUsage.ROUTE_MAP_MATCH_INTERFACE,
+        FrrStructureUsage.ROUTE_MAP_MATCH_INTERFACE,
         ctx.getStart().getLine());
   }
 
@@ -1599,7 +1599,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
     _vc.referenceStructure(
         IP_PREFIX_LIST,
         name,
-        CumulusStructureUsage.ROUTE_MAP_MATCH_IP_ADDRESS_PREFIX_LIST,
+        FrrStructureUsage.ROUTE_MAP_MATCH_IP_ADDRESS_PREFIX_LIST,
         ctx.getStart().getLine());
   }
 
@@ -1869,7 +1869,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
       }
       _frr.getOrCreateVrf(vrfName).getStaticRoutes().add(route);
       _vc.referenceStructure(
-          VRF, vrfName, CumulusStructureUsage.STATIC_ROUTE_VRF, ctx.vrf.getStart().getLine());
+          VRF, vrfName, FrrStructureUsage.STATIC_ROUTE_VRF, ctx.vrf.getStart().getLine());
     }
   }
 

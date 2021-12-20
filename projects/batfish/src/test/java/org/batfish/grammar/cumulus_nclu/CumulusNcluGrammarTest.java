@@ -44,10 +44,10 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrfName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isSwitchport;
-import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasBumTransportMethod;
-import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasSourceAddress;
-import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasUdpPort;
-import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasVni;
+import static org.batfish.datamodel.matchers.VniMatchers.hasBumTransportMethod;
+import static org.batfish.datamodel.matchers.VniMatchers.hasSourceAddress;
+import static org.batfish.datamodel.matchers.VniMatchers.hasUdpPort;
+import static org.batfish.datamodel.matchers.VniMatchers.hasVni;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.main.BatfishTestUtils.DUMMY_SNAPSHOT_1;
@@ -123,7 +123,7 @@ import org.batfish.datamodel.bgp.VniConfig;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.matchers.BgpNeighborMatchers;
-import org.batfish.datamodel.matchers.VniSettingsMatchers;
+import org.batfish.datamodel.matchers.VniMatchers;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
@@ -1570,7 +1570,7 @@ public final class CumulusNcluGrammarTest {
             allOf(
                 hasVni(102000),
                 hasBumTransportMethod(equalTo(BumTransportMethod.UNICAST_FLOOD_GROUP)),
-                VniSettingsMatchers.hasVlan(equalTo(2000)),
+                VniMatchers.hasVlan(equalTo(2000)),
                 hasSourceAddress(equalTo(Ip.parse("1.1.1.1"))),
                 hasUdpPort(equalTo(NamedPort.VXLAN.number())))));
 
@@ -1581,7 +1581,6 @@ public final class CumulusNcluGrammarTest {
             equalTo(
                 Layer3Vni.builder()
                     .setVni(101000)
-                    .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
                     .setSourceAddress(Ip.parse("1.1.1.1"))
                     .setUdpPort(NamedPort.VXLAN.number())
                     .setSrcVrf(DEFAULT_VRF_NAME)

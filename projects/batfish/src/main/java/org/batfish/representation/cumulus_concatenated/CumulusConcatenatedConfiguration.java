@@ -3,6 +3,8 @@ package org.batfish.representation.cumulus_concatenated;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.representation.cumulus_concatenated.CumulusStructureType.fromFrrStructureType;
+import static org.batfish.representation.cumulus_concatenated.CumulusStructureUsage.fromFrrStructureUsage;
 import static org.batfish.representation.cumulus_concatenated.InterfaceConverter.BRIDGE_NAME;
 import static org.batfish.representation.cumulus_concatenated.InterfaceConverter.DEFAULT_BRIDGE_PORTS;
 import static org.batfish.representation.cumulus_concatenated.InterfaceConverter.DEFAULT_BRIDGE_PVID;
@@ -39,6 +41,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
 import org.batfish.common.runtime.InterfaceRuntimeData;
@@ -68,14 +71,11 @@ import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.Layer3Vni;
 import org.batfish.datamodel.vxlan.Vni;
 import org.batfish.representation.cumulus_concatenated.CumulusPortsConfiguration.PortSettings;
-import org.batfish.representation.frr.Bridge;
-import org.batfish.representation.frr.CumulusStructureType;
-import org.batfish.representation.frr.CumulusStructureUsage;
 import org.batfish.representation.frr.FrrConfiguration;
 import org.batfish.representation.frr.FrrInterface;
+import org.batfish.representation.frr.FrrStructureType;
+import org.batfish.representation.frr.FrrStructureUsage;
 import org.batfish.representation.frr.FrrVendorConfiguration;
-import org.batfish.representation.frr.InterfaceBridgeSettings;
-import org.batfish.representation.frr.InterfaceClagSettings;
 import org.batfish.representation.frr.Vrf;
 import org.batfish.representation.frr.Vxlan;
 import org.batfish.vendor.VendorConfiguration;
@@ -713,7 +713,6 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
                                     .setVni(vxlan.getId())
                                     .setSourceAddress(localIp)
                                     .setUdpPort(NamedPort.VXLAN.number())
-                                    .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
                                     .setSrcVrf(DEFAULT_VRF_NAME)
                                     .build()));
               } else {
@@ -809,7 +808,7 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
     if (bridgeIface == null) {
       return new Bridge();
     }
-    Bridge bridge = new org.batfish.representation.frr.Bridge();
+    Bridge bridge = new Bridge();
     bridge.setPorts(firstNonNull(bridgeIface.getBridgePorts(), DEFAULT_BRIDGE_PORTS));
     InterfaceBridgeSettings bridgeSettings = bridgeIface.getBridgeSettings();
     if (bridgeSettings != null) {
@@ -890,6 +889,19 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
       throw new NoSuchElementException(String.format("Interface %s does not exist", ifaceName));
     }
     return _interfacesConfiguration.getInterfaces().get(ifaceName).getAddresses();
+  }
+
+  @Override
+  public void referenceStructure(
+      FrrStructureType frrStructureType, String name, FrrStructureUsage usage, int line) {
+    super.referenceStructure(
+        fromFrrStructureType(frrStructureType), name, fromFrrStructureUsage(usage), line);
+  }
+
+  @Override
+  public void defineStructure(
+      FrrStructureType frrStructureType, String name, ParserRuleContext ctx) {
+    super.defineStructure(fromFrrStructureType(frrStructureType), name, ctx);
   }
 
   public static Builder builder() {

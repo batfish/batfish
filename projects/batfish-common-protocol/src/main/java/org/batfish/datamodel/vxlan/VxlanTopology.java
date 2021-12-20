@@ -1,15 +1,20 @@
 package org.batfish.datamodel.vxlan;
 
+import static org.batfish.datamodel.vxlan.VniLayer.LAYER_2;
+import static org.batfish.datamodel.vxlan.VniLayer.LAYER_3;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
+import com.google.common.graph.EndpointPair;
 import com.google.common.graph.Graph;
 import com.google.common.graph.GraphBuilder;
 import com.google.common.graph.ImmutableGraph;
 import com.google.common.graph.MutableGraph;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.topology.UndirectedEdge;
@@ -47,6 +52,24 @@ public final class VxlanTopology {
     return _graph.edges().stream()
         .map(endpointPair -> new UndirectedEdge<>(endpointPair.nodeU(), endpointPair.nodeV()))
         .collect(ImmutableList.toImmutableList());
+  }
+
+  @JsonIgnore
+  public @Nonnull Stream<EndpointPair<VxlanNode>> getLayer2VniEdges() {
+    return _graph.edges().stream()
+        .filter(
+            endpointPair ->
+                endpointPair.nodeU().getVniLayer() == LAYER_2
+                    && endpointPair.nodeV().getVniLayer() == LAYER_2);
+  }
+
+  @JsonIgnore
+  public @Nonnull Stream<EndpointPair<VxlanNode>> getLayer3VniEdges() {
+    return _graph.edges().stream()
+        .filter(
+            endpointPair ->
+                endpointPair.nodeU().getVniLayer() == LAYER_3
+                    && endpointPair.nodeV().getVniLayer() == LAYER_3);
   }
 
   @JsonIgnore
