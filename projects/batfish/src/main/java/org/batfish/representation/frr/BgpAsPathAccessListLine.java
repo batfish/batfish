@@ -5,11 +5,11 @@ import javax.annotation.Nonnull;
 import org.batfish.datamodel.LineAction;
 
 /** Represents one line of a Cumulus AS-path access list. */
-public class IpAsPathAccessListLine implements Serializable {
+public class BgpAsPathAccessListLine implements Serializable {
   private final @Nonnull LineAction _action;
   private final String _regex;
 
-  public IpAsPathAccessListLine(@Nonnull LineAction action, String regex) {
+  public BgpAsPathAccessListLine(@Nonnull LineAction action, String regex) {
     _action = action;
     _regex = regex;
   }

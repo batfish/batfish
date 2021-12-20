@@ -8,22 +8,22 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 /** Represents a Cumulus AS-path access list. */
 @ParametersAreNonnullByDefault
-public class IpAsPathAccessList implements Serializable {
+public class BgpAsPathAccessList implements Serializable {
 
   private final @Nonnull String _name;
-  private final @Nonnull List<IpAsPathAccessListLine> _lines;
+  private final @Nonnull List<BgpAsPathAccessListLine> _lines;
 
-  public IpAsPathAccessList(String name) {
+  public BgpAsPathAccessList(String name) {
     _name = name;
     _lines = new ArrayList<>();
   }
 
-  public void addLine(IpAsPathAccessListLine line) {
+  public void addLine(BgpAsPathAccessListLine line) {
     _lines.add(line);
   }
 
   @Nonnull
-  public List<IpAsPathAccessListLine> getLines() {
+  public List<BgpAsPathAccessListLine> getLines() {
     return _lines;
   }
 

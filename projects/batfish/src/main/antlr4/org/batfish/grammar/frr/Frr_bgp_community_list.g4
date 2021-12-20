@@ -1,4 +1,4 @@
-parser grammar Frr_ip_community_list;
+parser grammar Frr_bgp_community_list;
 
 import Frr_common;
 
@@ -6,16 +6,16 @@ options {
   tokenVocab = FrrLexer;
 }
 
-ip_community_list
+b_community_list
 :
   COMMUNITY_LIST
   (
-    icl_expanded
-    | icl_standard
+    bcl_expanded
+    | bcl_standard
   )
 ;
 
-icl_expanded
+bcl_expanded
 :
   EXPANDED name = ip_community_list_name
   action = line_action
@@ -25,7 +25,7 @@ icl_expanded
   ) NEWLINE
 ;
 
-icl_standard
+bcl_standard
 :
   STANDARD name = ip_community_list_name
   action = line_action communities += standard_community+ NEWLINE

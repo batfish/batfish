@@ -16,8 +16,8 @@ public enum CumulusStructureType implements StructureType {
 
   // these are defined in FRR files, so convert from there
   ABSTRACT_INTERFACE(FrrStructureType.ABSTRACT_INTERFACE),
-  IP_AS_PATH_ACCESS_LIST(FrrStructureType.IP_AS_PATH_ACCESS_LIST),
-  IP_COMMUNITY_LIST(FrrStructureType.IP_COMMUNITY_LIST),
+  BGP_AS_PATH_ACCESS_LIST(FrrStructureType.BGP_AS_PATH_ACCESS_LIST),
+  BGP_COMMUNITY_LIST(FrrStructureType.BGP_COMMUNITY_LIST),
   INTERFACE(FrrStructureType.INTERFACE),
   IP_COMMUNITY_LIST_EXPANDED(FrrStructureType.IP_COMMUNITY_LIST_EXPANDED),
   IP_COMMUNITY_LIST_STANDARD(FrrStructureType.IP_COMMUNITY_LIST_STANDARD),

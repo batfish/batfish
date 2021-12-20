@@ -36,17 +36,17 @@ public class FrrConfiguration implements Serializable {
   private final @Nonnull Map<String, RouteMap> _routeMaps;
   private final @Nonnull Set<StaticRoute> _staticRoutes;
   private @Nonnull Map<String, Vrf> _vrfs;
-  private final @Nonnull Map<String, IpAsPathAccessList> _ipAsPathAccessLists;
+  private final @Nonnull Map<String, BgpAsPathAccessList> _bgpAsPathAccessLists;
   private final @Nonnull Map<String, IpPrefixList> _ipPrefixLists;
   private final @Nonnull Map<String, Ipv6PrefixList> _ipv6PrefixLists;
-  private final @Nonnull Map<String, IpCommunityList> _ipCommunityLists;
+  private final @Nonnull Map<String, BgpCommunityList> _bgpCommunityLists;
 
   public FrrConfiguration() {
     _interfaces = new HashMap<>();
-    _ipAsPathAccessLists = new HashMap<>();
+    _bgpAsPathAccessLists = new HashMap<>();
     _ipPrefixLists = new HashMap<>();
     _ipv6PrefixLists = new HashMap<>();
-    _ipCommunityLists = new HashMap<>();
+    _bgpCommunityLists = new HashMap<>();
     _ipv4Nameservers = new LinkedList<>();
     _ipv6Nameservers = new LinkedList<>();
     _routeMaps = new HashMap<>();
@@ -95,8 +95,8 @@ public class FrrConfiguration implements Serializable {
   }
 
   @Nonnull
-  public Map<String, IpAsPathAccessList> getIpAsPathAccessLists() {
-    return _ipAsPathAccessLists;
+  public Map<String, BgpAsPathAccessList> getBgpAsPathAccessLists() {
+    return _bgpAsPathAccessLists;
   }
 
   @Nonnull
@@ -110,8 +110,8 @@ public class FrrConfiguration implements Serializable {
   }
 
   @Nonnull
-  public Map<String, IpCommunityList> getIpCommunityLists() {
-    return _ipCommunityLists;
+  public Map<String, BgpCommunityList> getBgpCommunityLists() {
+    return _bgpCommunityLists;
   }
 
   @Nonnull

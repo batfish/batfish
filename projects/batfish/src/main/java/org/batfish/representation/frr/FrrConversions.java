@@ -227,9 +227,9 @@ public final class FrrConversions {
             });
 
     convertStaticRoutes(c, frrConfiguration); // static routes in the FRR file
-    convertIpAsPathAccessLists(c, frrConfiguration.getIpAsPathAccessLists());
+    convertBgpAsPathAccessLists(c, frrConfiguration.getBgpAsPathAccessLists());
     convertIpPrefixLists(c, frrConfiguration.getIpPrefixLists(), vc.getFilename());
-    convertIpCommunityLists(c, frrConfiguration.getIpCommunityLists());
+    convertBgpCommunityLists(c, frrConfiguration.getBgpCommunityLists());
     convertRouteMaps(c, frrConfiguration, vc.getFilename(), vc.getWarnings());
     convertDnsServers(c, frrConfiguration.getIpv4Nameservers());
 
@@ -1593,41 +1593,41 @@ public final class FrrConversions {
     }
   }
 
-  public static void convertIpCommunityLists(
-      Configuration c, Map<String, IpCommunityList> ipCommunityLists) {
+  public static void convertBgpCommunityLists(
+      Configuration c, Map<String, BgpCommunityList> bgpCommunityLists) {
     // create CommunitySetMatchExpr for route-map match community
-    ipCommunityLists.forEach(
+    bgpCommunityLists.forEach(
         (name, list) -> {
-          if (list instanceof IpCommunityListStandard) {
+          if (list instanceof BgpCommunityListStandard) {
             c.getCommunitySetMatchExprs()
-                .put(name, toCommunitySetMatchExpr((IpCommunityListStandard) list));
-          } else if (list instanceof IpCommunityListExpanded) {
+                .put(name, toCommunitySetMatchExpr((BgpCommunityListStandard) list));
+          } else if (list instanceof BgpCommunityListExpanded) {
             c.getCommunitySetMatchExprs()
-                .put(name, toCommunitySetMatchExpr((IpCommunityListExpanded) list));
+                .put(name, toCommunitySetMatchExpr((BgpCommunityListExpanded) list));
           }
         });
 
     // The following code-block is only for "set comm-list delete" statements.
-    ipCommunityLists.forEach(
+    bgpCommunityLists.forEach(
         (name, list) -> {
-          if (list instanceof IpCommunityListStandard) {
+          if (list instanceof BgpCommunityListStandard) {
             c.getCommunityMatchExprs()
-                .put(name, toCommunityMatchExpr((IpCommunityListStandard) list));
-          } else if (list instanceof IpCommunityListExpanded) {
+                .put(name, toCommunityMatchExpr((BgpCommunityListStandard) list));
+          } else if (list instanceof BgpCommunityListExpanded) {
             c.getCommunityMatchExprs()
-                .put(name, toCommunityMatchExpr((IpCommunityListExpanded) list));
+                .put(name, toCommunityMatchExpr((BgpCommunityListExpanded) list));
           }
         });
   }
 
   @VisibleForTesting
   static @Nonnull CommunityMatchExpr toCommunityMatchExpr(
-      IpCommunityListStandard ipCommunityListStandard) {
+      BgpCommunityListStandard bgpCommunityListStandard) {
     Set<Community> whitelist = new HashSet<>();
     Set<Community> blacklist = new HashSet<>();
 
     // TODO: support set comm-list delete semantics for line with more than one community
-    for (IpCommunityListStandardLine line : ipCommunityListStandard.getLines()) {
+    for (BgpCommunityListStandardLine line : bgpCommunityListStandard.getLines()) {
       if (line.getCommunities().size() != 1) {
         continue;
       }
@@ -1648,31 +1648,31 @@ public final class FrrConversions {
 
   @VisibleForTesting
   static @Nonnull CommunityMatchExpr toCommunityMatchExpr(
-      IpCommunityListExpanded ipCommunityListExpanded) {
+      BgpCommunityListExpanded bgpCommunityListExpanded) {
     return CommunityAcl.acl(
-        ipCommunityListExpanded.getLines().stream()
+        bgpCommunityListExpanded.getLines().stream()
             .map(FrrConversions::toCommunityAclLine)
             .collect(ImmutableList.toImmutableList()));
   }
 
   private static @Nonnull CommunitySetMatchExpr toCommunitySetMatchExpr(
-      IpCommunityListStandard ipCommunityListStandard) {
+      BgpCommunityListStandard bgpCommunityListStandard) {
     return CommunitySetAcl.acl(
-        ipCommunityListStandard.getLines().stream()
+        bgpCommunityListStandard.getLines().stream()
             .map(FrrConversions::toCommunitySetAclLine)
             .collect(ImmutableList.toImmutableList()));
   }
 
   private static @Nonnull CommunitySetMatchExpr toCommunitySetMatchExpr(
-      IpCommunityListExpanded ipCommunityListExpanded) {
+      BgpCommunityListExpanded bgpCommunityListExpanded) {
     return CommunitySetAcl.acl(
-        ipCommunityListExpanded.getLines().stream()
+        bgpCommunityListExpanded.getLines().stream()
             .map(FrrConversions::toCommunitySetAclLine)
             .collect(ImmutableList.toImmutableList()));
   }
 
   private static @Nonnull CommunitySetAclLine toCommunitySetAclLine(
-      IpCommunityListStandardLine line) {
+      BgpCommunityListStandardLine line) {
     return new CommunitySetAclLine(
         line.getAction(),
         CommunitySetMatchAll.matchAll(
@@ -1682,7 +1682,7 @@ public final class FrrConversions {
   }
 
   private static @Nonnull CommunitySetAclLine toCommunitySetAclLine(
-      IpCommunityListExpandedLine line) {
+      BgpCommunityListExpandedLine line) {
     return new CommunitySetAclLine(
         line.getAction(),
         new CommunitySetMatchRegex(
@@ -1690,7 +1690,7 @@ public final class FrrConversions {
             toJavaRegex(line.getRegex())));
   }
 
-  private static @Nonnull CommunityAclLine toCommunityAclLine(IpCommunityListExpandedLine line) {
+  private static @Nonnull CommunityAclLine toCommunityAclLine(BgpCommunityListExpandedLine line) {
     return new CommunityAclLine(
         line.getAction(),
         new CommunityMatchRegex(ColonSeparatedRendering.instance(), toJavaRegex(line.getRegex())));
@@ -1708,15 +1708,15 @@ public final class FrrConversions {
     return output;
   }
 
-  private static void convertIpAsPathAccessLists(
-      Configuration c, Map<String, IpAsPathAccessList> ipAsPathAccessLists) {
-    ipAsPathAccessLists.forEach(
+  private static void convertBgpAsPathAccessLists(
+      Configuration c, Map<String, BgpAsPathAccessList> bgpAsPathAccessLists) {
+    bgpAsPathAccessLists.forEach(
         (name, asPathAccessList) ->
             c.getAsPathAccessLists().put(name, toAsPathAccessList(asPathAccessList)));
   }
 
   @VisibleForTesting
-  static @Nonnull AsPathAccessList toAsPathAccessList(IpAsPathAccessList asPathAccessList) {
+  static @Nonnull AsPathAccessList toAsPathAccessList(BgpAsPathAccessList asPathAccessList) {
     String name = asPathAccessList.getName();
     List<AsPathAccessListLine> lines =
         asPathAccessList.getLines().stream()
