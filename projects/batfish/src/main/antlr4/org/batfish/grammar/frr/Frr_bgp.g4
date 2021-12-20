@@ -386,7 +386,29 @@ sbnp_remote_as
 
 sbnp_timers
 :
-  TIMERS CONNECT uint32 NEWLINE
+  TIMERS
+  (
+    sbnpt_connect
+    | sbnpt_delayopen
+    | sbnpt_keepalive_hold
+  )
+;
+
+sbnpt_connect
+:
+  CONNECT uint32 NEWLINE
+;
+
+sbnpt_delayopen
+:
+  // timer value should be between 1-240 but we don't enforce
+  DELAYOPEN uint8 NEWLINE
+;
+
+sbnpt_keepalive_hold
+:
+   // first number is keepalive time and second is hold timer
+   uint32 uint32 NEWLINE
 ;
 
 sbnp_update_source
