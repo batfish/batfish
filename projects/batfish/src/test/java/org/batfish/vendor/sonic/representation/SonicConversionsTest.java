@@ -41,6 +41,7 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import java.util.Map;
 import javax.annotation.Nonnull;
@@ -121,6 +122,7 @@ public class SonicConversionsTest {
       Vrf vrf = Vrf.builder().setOwner(c).setName(DEFAULT_VRF_NAME).build();
       convertVlans(
           c,
+          ImmutableSet.of(),
           ImmutableMap.of("Vlan1", Vlan.builder().setVlanId(1).build()),
           ImmutableMap.of(),
           ImmutableMap.of("Vlan1", new L3Interface(ConcreteInterfaceAddress.parse("1.1.1.1/24"))),
@@ -141,6 +143,7 @@ public class SonicConversionsTest {
       Vrf vrf = Vrf.builder().setOwner(c).setName(DEFAULT_VRF_NAME).build();
       convertVlans(
           c,
+          ImmutableSet.of(),
           ImmutableMap.of("Vlan1", Vlan.builder().setVlanId(1).build()),
           ImmutableMap.of(),
           ImmutableMap.of(),
@@ -155,6 +158,7 @@ public class SonicConversionsTest {
       Vrf vrf = Vrf.builder().setOwner(c).setName(DEFAULT_VRF_NAME).build();
       convertVlans(
           c,
+          ImmutableSet.of(),
           ImmutableMap.of("Vlan1", Vlan.builder().setVlanId(12).build()),
           ImmutableMap.of(),
           ImmutableMap.of("Vlan1", new L3Interface(ConcreteInterfaceAddress.parse("1.1.1.1/24"))),
@@ -170,6 +174,7 @@ public class SonicConversionsTest {
       Warnings warnings = new Warnings(true, true, true);
       convertVlans(
           c,
+          ImmutableSet.of(),
           ImmutableMap.of(),
           ImmutableMap.of(),
           ImmutableMap.of("Vlan1", new L3Interface(ConcreteInterfaceAddress.parse("1.1.1.1/24"))),
@@ -188,7 +193,7 @@ public class SonicConversionsTest {
     Configuration c =
         Configuration.builder().setHostname("host").setConfigurationFormat(SONIC).build();
     Vrf vrf = Vrf.builder().setOwner(c).setName(DEFAULT_VRF_NAME).build();
-    ImmutableList.of("Ethernet0", "Ethernet1")
+    ImmutableList.of("Ethernet0", "Ethernet1", "Ethernet4", "Ethernet5")
         .forEach(
             ifaceName ->
                 Interface.builder()
@@ -200,11 +205,19 @@ public class SonicConversionsTest {
     Warnings w = new Warnings(true, true, true);
     convertVlans(
         c,
+        ImmutableSet.of("Ethernet4", "Ethernet5"),
         ImmutableMap.of(
             "Vlan1",
             Vlan.builder()
                 .setVlanId(1)
-                .setMembers(ImmutableList.of("Ethernet0", "Ethernet1", "Ethernet2", "Ethernet3"))
+                .setMembers(
+                    ImmutableList.of(
+                        "Ethernet0",
+                        "Ethernet1",
+                        "Ethernet2",
+                        "Ethernet3",
+                        "Ethernet4",
+                        "Ethernet5"))
                 .build()),
         ImmutableMap.of(
             "Vlan1|Ethernet0",
@@ -212,6 +225,10 @@ public class SonicConversionsTest {
             "Vlan1|Ethernet1",
             VlanMember.builder().setTaggingMode(TaggingMode.UNTAGGED).build(),
             "Vlan1|Ethernet2",
+            VlanMember.builder().setTaggingMode(TaggingMode.UNTAGGED).build(),
+            "Vlan1|Ethernet4",
+            VlanMember.builder().setTaggingMode(TaggingMode.TAGGED).build(),
+            "Vlan1|Ethernet5",
             VlanMember.builder().setTaggingMode(TaggingMode.UNTAGGED).build()),
         ImmutableMap.of(),
         vrf,
@@ -245,6 +262,17 @@ public class SonicConversionsTest {
             hasSwitchPortMode(SwitchportMode.NONE)));
     assertThat(
         w.getRedFlagWarnings(), hasItem(hasText("Vlan member Vlan1|Ethernet3 is not configured")));
+    // Ethernet4 (tagged) exists in c as an L3 interface
+    assertThat(
+        c.getAllInterfaces().get("Ethernet4"),
+        allOf(
+            hasSwitchPortMode(SwitchportMode.NONE),
+            hasNativeVlan(1),
+            hasAllowedVlans(IntegerSpace.of(1))));
+    // Ethernet5 (untagged) exists in c as an L3 interface
+    assertThat(
+        c.getAllInterfaces().get("Ethernet5"),
+        allOf(hasSwitchPortMode(SwitchportMode.NONE), hasAccessVlan(1)));
   }
 
   @Test

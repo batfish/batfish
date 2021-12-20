@@ -79,10 +79,12 @@ public class SonicConversions {
    *
    * <p>It will create a new VI interface for the VLAN and put it in {@code vrf}. If the VI version
    * of a member interface does not already exist in {@code c}, it is created as well. The member
-   * interfaces are configured based on the tagging mode.
+   * interfaces are configured based on the tagging mode and whether they appear in {@code
+   * l3interfaces}, which is the set of interfaces defined as being L3 in configdb.
    */
   static void convertVlans(
       Configuration c,
+      Set<String> l3Interfaces,
       Map<String, Vlan> vlans,
       Map<String, VlanMember> vlanMembers,
       Map<String, L3Interface> vlanInterfaces,
@@ -133,14 +135,18 @@ public class SonicConversions {
         }
         switch (vlanMember.getTaggingMode().get()) {
           case TAGGED:
-            memberInterface.setSwitchport(true);
-            memberInterface.setSwitchportMode(SwitchportMode.TRUNK);
+            if (!l3Interfaces.contains(memberName)) {
+              memberInterface.setSwitchport(true);
+              memberInterface.setSwitchportMode(SwitchportMode.TRUNK);
+            }
             memberInterface.setNativeVlan(vlanId);
             memberInterface.setAllowedVlans(IntegerSpace.of(vlanId));
             break;
           case UNTAGGED:
-            memberInterface.setSwitchport(true);
-            memberInterface.setSwitchportMode(SwitchportMode.ACCESS);
+            if (!l3Interfaces.contains(memberName)) {
+              memberInterface.setSwitchport(true);
+              memberInterface.setSwitchportMode(SwitchportMode.ACCESS);
+            }
             memberInterface.setAccessVlan(vlanId);
             break;
           default:

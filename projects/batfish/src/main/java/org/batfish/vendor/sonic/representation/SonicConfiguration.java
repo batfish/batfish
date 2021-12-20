@@ -9,6 +9,7 @@ import static org.batfish.vendor.sonic.representation.SonicStructureType.fromFrr
 import static org.batfish.vendor.sonic.representation.SonicStructureUsage.fromFrrStructureUsage;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Sets;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -84,6 +85,7 @@ public class SonicConfiguration extends FrrVendorConfiguration {
 
     convertVlans(
         c,
+        Sets.union(_configDb.getInterfaces().keySet(), _configDb.getMgmtInterfaces().keySet()),
         _configDb.getVlans(),
         _configDb.getVlanMembers(),
         _configDb.getVlanInterfaces(),
