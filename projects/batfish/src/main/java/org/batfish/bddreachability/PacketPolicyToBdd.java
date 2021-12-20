@@ -427,13 +427,14 @@ class PacketPolicyToBdd {
         if (i++ == 500) {
           PacketPolicyStatement src = currentStatement();
           PacketPolicyStatement tgt = nextStatement();
+	  LOGGER.info("inserting edge {} -> {} after {} statements", src, tgt, i);
           addEdge(src, tgt, _currentStatementOutTransition);
           _currentStatementOutTransition = IDENTITY;
           i = 0;
         }
         StateExpr current = _currentStatement;
         visit(statement);
-        if (current == _currentStatement) {
+        if (current != _currentStatement) {
           // created a statement, so restart count
           i = 0;
         }
