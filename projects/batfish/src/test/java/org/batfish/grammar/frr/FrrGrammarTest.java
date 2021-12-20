@@ -1520,6 +1520,30 @@ public class FrrGrammarTest {
   }
 
   @Test
+  public void testFrrRouteMapSetOrigin() {
+    String name = "ROUTE-MAP-NAME";
+    parseLines(
+        "route-map ROUTE-MAP-NAME permit 10",
+        "set origin egp",
+        "route-map ROUTE-MAP-NAME permit 20",
+        "set origin igp",
+        "route-map ROUTE-MAP-NAME permit 30",
+        "set origin incomplete");
+    {
+      RouteMapEntry entry = _frr.getRouteMaps().get(name).getEntries().get(10);
+      assertThat(entry.getSetOrigin().getOriginType(), equalTo(OriginType.EGP));
+    }
+    {
+      RouteMapEntry entry = _frr.getRouteMaps().get(name).getEntries().get(20);
+      assertThat(entry.getSetOrigin().getOriginType(), equalTo(OriginType.IGP));
+    }
+    {
+      RouteMapEntry entry = _frr.getRouteMaps().get(name).getEntries().get(30);
+      assertThat(entry.getSetOrigin().getOriginType(), equalTo(OriginType.INCOMPLETE));
+    }
+  }
+
+  @Test
   public void testFrrRouteMapSetSrc() {
     _warnings = new Warnings(false, true, false);
     parseLines("route-map RM permit 10", "set src 1.1.1.1", "set src 2a02:4780:9:ffff::1");

@@ -119,6 +119,7 @@ import org.batfish.grammar.frr.FrrParser.Rms_communityContext;
 import org.batfish.grammar.frr.FrrParser.Rms_local_preferenceContext;
 import org.batfish.grammar.frr.FrrParser.Rms_metricContext;
 import org.batfish.grammar.frr.FrrParser.Rms_metric_typeContext;
+import org.batfish.grammar.frr.FrrParser.Rms_originContext;
 import org.batfish.grammar.frr.FrrParser.Rms_srcContext;
 import org.batfish.grammar.frr.FrrParser.Rms_tagContext;
 import org.batfish.grammar.frr.FrrParser.Rms_weightContext;
@@ -264,6 +265,7 @@ import org.batfish.representation.frr.RouteMapSetIpNextHopLiteral;
 import org.batfish.representation.frr.RouteMapSetLocalPreference;
 import org.batfish.representation.frr.RouteMapSetMetric;
 import org.batfish.representation.frr.RouteMapSetMetricType;
+import org.batfish.representation.frr.RouteMapSetOrigin;
 import org.batfish.representation.frr.RouteMapSetPrependAsPath;
 import org.batfish.representation.frr.RouteMapSetTag;
 import org.batfish.representation.frr.RouteMapSetWeight;
@@ -1676,6 +1678,11 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
       return;
     }
     _currentRouteMapEntry.setSetMetricType(new RouteMapSetMetricType(type));
+  }
+
+  @Override
+  public void exitRms_origin(Rms_originContext ctx) {
+    _currentRouteMapEntry.setSetOrigin(new RouteMapSetOrigin(toOriginType(ctx.origin_type())));
   }
 
   @Override
