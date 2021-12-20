@@ -7,9 +7,9 @@ import static org.batfish.grammar.frr.FrrParser.Int_exprContext;
 import static org.batfish.representation.frr.FrrConversions.DEFAULT_MAX_MED;
 import static org.batfish.representation.frr.FrrConversions.computeRouteMapEntryName;
 import static org.batfish.representation.frr.FrrStructureType.ABSTRACT_INTERFACE;
+import static org.batfish.representation.frr.FrrStructureType.BGP_AS_PATH_ACCESS_LIST;
+import static org.batfish.representation.frr.FrrStructureType.BGP_COMMUNITY_LIST;
 import static org.batfish.representation.frr.FrrStructureType.IPV6_PREFIX_LIST;
-import static org.batfish.representation.frr.FrrStructureType.IP_AS_PATH_ACCESS_LIST;
-import static org.batfish.representation.frr.FrrStructureType.IP_COMMUNITY_LIST;
 import static org.batfish.representation.frr.FrrStructureType.IP_COMMUNITY_LIST_EXPANDED;
 import static org.batfish.representation.frr.FrrStructureType.IP_COMMUNITY_LIST_STANDARD;
 import static org.batfish.representation.frr.FrrStructureType.IP_PREFIX_LIST;
@@ -79,13 +79,13 @@ import org.batfish.grammar.frr.FrrParser.Agg_feature_originContext;
 import org.batfish.grammar.frr.FrrParser.Agg_feature_route_mapContext;
 import org.batfish.grammar.frr.FrrParser.Agg_feature_summary_onlyContext;
 import org.batfish.grammar.frr.FrrParser.Agg_feature_suppress_mapContext;
+import org.batfish.grammar.frr.FrrParser.B_as_path_access_listContext;
+import org.batfish.grammar.frr.FrrParser.Bcl_expandedContext;
+import org.batfish.grammar.frr.FrrParser.Bcl_standardContext;
 import org.batfish.grammar.frr.FrrParser.Bgp_redist_typeContext;
 import org.batfish.grammar.frr.FrrParser.Frr_configurationContext;
-import org.batfish.grammar.frr.FrrParser.Icl_expandedContext;
-import org.batfish.grammar.frr.FrrParser.Icl_standardContext;
 import org.batfish.grammar.frr.FrrParser.Interface_ospf_costContext;
 import org.batfish.grammar.frr.FrrParser.Ip_addressContext;
-import org.batfish.grammar.frr.FrrParser.Ip_as_pathContext;
 import org.batfish.grammar.frr.FrrParser.Ip_community_list_nameContext;
 import org.batfish.grammar.frr.FrrParser.Ip_prefix_lengthContext;
 import org.batfish.grammar.frr.FrrParser.Ip_prefix_listContext;
@@ -200,6 +200,13 @@ import org.batfish.grammar.frr.FrrParser.Sv_routeContext;
 import org.batfish.grammar.frr.FrrParser.Sv_vniContext;
 import org.batfish.grammar.frr.FrrParser.Uint32Context;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
+import org.batfish.representation.frr.BgpAsPathAccessList;
+import org.batfish.representation.frr.BgpAsPathAccessListLine;
+import org.batfish.representation.frr.BgpCommunityList;
+import org.batfish.representation.frr.BgpCommunityListExpanded;
+import org.batfish.representation.frr.BgpCommunityListExpandedLine;
+import org.batfish.representation.frr.BgpCommunityListStandard;
+import org.batfish.representation.frr.BgpCommunityListStandardLine;
 import org.batfish.representation.frr.BgpDynamic6Neighbor;
 import org.batfish.representation.frr.BgpDynamicNeighbor;
 import org.batfish.representation.frr.BgpInterfaceNeighbor;
@@ -227,13 +234,6 @@ import org.batfish.representation.frr.FrrRoutingProtocol;
 import org.batfish.representation.frr.FrrStructureType;
 import org.batfish.representation.frr.FrrStructureUsage;
 import org.batfish.representation.frr.FrrVendorConfiguration;
-import org.batfish.representation.frr.IpAsPathAccessList;
-import org.batfish.representation.frr.IpAsPathAccessListLine;
-import org.batfish.representation.frr.IpCommunityList;
-import org.batfish.representation.frr.IpCommunityListExpanded;
-import org.batfish.representation.frr.IpCommunityListExpandedLine;
-import org.batfish.representation.frr.IpCommunityListStandard;
-import org.batfish.representation.frr.IpCommunityListStandardLine;
 import org.batfish.representation.frr.IpPrefixList;
 import org.batfish.representation.frr.IpPrefixListLine;
 import org.batfish.representation.frr.Ipv6PrefixList;
@@ -1539,7 +1539,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
     String name = ctx.name.getText();
     _currentRouteMapEntry.setMatchAsPath(new RouteMapMatchAsPath(name));
     _vc.referenceStructure(
-        IP_AS_PATH_ACCESS_LIST,
+        BGP_AS_PATH_ACCESS_LIST,
         name,
         FrrStructureUsage.ROUTE_MAP_MATCH_AS_PATH,
         ctx.getStart().getLine());
@@ -1550,7 +1550,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
     ctx.names.forEach(
         name ->
             _vc.referenceStructure(
-                IP_COMMUNITY_LIST,
+                BGP_COMMUNITY_LIST,
                 name.getText(),
                 ROUTE_MAP_MATCH_COMMUNITY_LIST,
                 name.getStart().getLine()));
@@ -1735,7 +1735,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
     }
     _currentRouteMapEntry.setSetCommListDelete(new RouteMapSetCommListDelete(name));
     _vc.referenceStructure(
-        IP_COMMUNITY_LIST, name, ROUTE_MAP_SET_COMM_LIST_DELETE, ctx.getStart().getLine());
+        BGP_COMMUNITY_LIST, name, ROUTE_MAP_SET_COMM_LIST_DELETE, ctx.getStart().getLine());
   }
 
   @Override
@@ -1762,7 +1762,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   }
 
   @Override
-  public void enterIcl_expanded(Icl_expandedContext ctx) {
+  public void enterBcl_expanded(Bcl_expandedContext ctx) {
     String name = toString(ctx.name);
     if (Strings.isNullOrEmpty(name)) {
       return;
@@ -1771,9 +1771,9 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
         ctx.quoted != null
             ? ctx.quoted.text != null ? ctx.quoted.text.getText() : ""
             : ctx.regex.getText();
-    IpCommunityList communityList =
-        _frr.getIpCommunityLists().computeIfAbsent(name, IpCommunityListExpanded::new);
-    if (!(communityList instanceof IpCommunityListExpanded)) {
+    BgpCommunityList communityList =
+        _frr.getBgpCommunityLists().computeIfAbsent(name, BgpCommunityListExpanded::new);
+    if (!(communityList instanceof BgpCommunityListExpanded)) {
       warn(
           ctx,
           String.format(
@@ -1782,15 +1782,15 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
               name));
       return;
     }
-    IpCommunityListExpanded communityListExpanded = (IpCommunityListExpanded) communityList;
+    BgpCommunityListExpanded communityListExpanded = (BgpCommunityListExpanded) communityList;
     communityListExpanded
         .getLines()
-        .add(new IpCommunityListExpandedLine(toLineAction(ctx.action), regex));
+        .add(new BgpCommunityListExpandedLine(toLineAction(ctx.action), regex));
     _vc.defineStructure(IP_COMMUNITY_LIST_EXPANDED, name, ctx);
   }
 
   @Override
-  public void enterIcl_standard(Icl_standardContext ctx) {
+  public void enterBcl_standard(Bcl_standardContext ctx) {
     Optional<Set<StandardCommunity>> communities = toStandardCommunitySet(ctx.communities);
     if (!communities.isPresent()) {
       return;
@@ -1799,9 +1799,9 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
     if (Strings.isNullOrEmpty(name)) {
       return;
     }
-    IpCommunityList communityList =
-        _frr.getIpCommunityLists().computeIfAbsent(name, IpCommunityListStandard::new);
-    if (!(communityList instanceof IpCommunityListStandard)) {
+    BgpCommunityList communityList =
+        _frr.getBgpCommunityLists().computeIfAbsent(name, BgpCommunityListStandard::new);
+    if (!(communityList instanceof BgpCommunityListStandard)) {
       warn(
           ctx,
           String.format(
@@ -1810,10 +1810,10 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
               name));
       return;
     }
-    IpCommunityListStandard communityListStandard = (IpCommunityListStandard) communityList;
+    BgpCommunityListStandard communityListStandard = (BgpCommunityListStandard) communityList;
     communityListStandard
         .getLines()
-        .add(new IpCommunityListStandardLine(toLineAction(ctx.action), communities.get()));
+        .add(new BgpCommunityListStandardLine(toLineAction(ctx.action), communities.get()));
     _vc.defineStructure(IP_COMMUNITY_LIST_STANDARD, name, ctx);
   }
 
@@ -1892,14 +1892,14 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   }
 
   @Override
-  public void exitIp_as_path(Ip_as_pathContext ctx) {
+  public void exitB_as_path_access_list(B_as_path_access_listContext ctx) {
     String name = ctx.name.getText();
     LineAction action = toLineAction(ctx.action);
     String regex = ctx.as_path_regex.getText();
-    _frr.getIpAsPathAccessLists()
-        .computeIfAbsent(name, IpAsPathAccessList::new)
-        .addLine(new IpAsPathAccessListLine(action, regex));
-    _vc.defineStructure(IP_AS_PATH_ACCESS_LIST, name, ctx);
+    _frr.getBgpAsPathAccessLists()
+        .computeIfAbsent(name, BgpAsPathAccessList::new)
+        .addLine(new BgpAsPathAccessListLine(action, regex));
+    _vc.defineStructure(BGP_AS_PATH_ACCESS_LIST, name, ctx);
   }
 
   @Override

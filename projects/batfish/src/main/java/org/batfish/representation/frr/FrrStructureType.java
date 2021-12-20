@@ -9,8 +9,8 @@ import javax.annotation.Nonnull;
  */
 public enum FrrStructureType {
   ABSTRACT_INTERFACE("abstract interface"),
-  IP_AS_PATH_ACCESS_LIST("ip as-path access-list"),
-  IP_COMMUNITY_LIST("ip community-list"),
+  BGP_AS_PATH_ACCESS_LIST("bgp as-path access-list"),
+  BGP_COMMUNITY_LIST("bgp community-list"),
   INTERFACE("interface"),
   IP_COMMUNITY_LIST_EXPANDED("ip community-list expanded"),
   IP_COMMUNITY_LIST_STANDARD("ip community-list standard"),

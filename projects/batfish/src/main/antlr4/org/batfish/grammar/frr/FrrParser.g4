@@ -1,6 +1,6 @@
 parser grammar FrrParser;
 
-import Frr_bgp, Frr_common, Frr_interface, Frr_ip_community_list, Frr_ip_prefix_list, Frr_ipv6_prefix_list, Frr_ospf, Frr_routemap, Frr_vrf;
+import Frr_bgp, Frr_bgp_community_list, Frr_common, Frr_interface, Frr_ip_prefix_list, Frr_ipv6_prefix_list, Frr_ospf, Frr_routemap, Frr_vrf;
 
 options {
   superClass =
@@ -18,6 +18,7 @@ frr_configuration
 statement
 :
   s_agentx
+  | s_bgp
   | s_enable
   | s_end
   | s_interface
@@ -37,7 +38,7 @@ statement
   | s_vrf
 ;
 
-ip_as_path
+b_as_path_access_list
 :
   AS_PATH ACCESS_LIST name = word action = access_list_action as_path_regex = REGEX NEWLINE
 ;
@@ -50,6 +51,15 @@ ip_forwarding
 s_agentx
 :
   AGENTX NEWLINE
+;
+
+s_bgp
+:
+   BGP
+   (
+      b_community_list
+      | b_as_path_access_list
+   )
 ;
 
 si_description
@@ -101,8 +111,8 @@ s_ip
 :
   IP
   (
-    ip_as_path
-    | ip_community_list
+    b_as_path_access_list     // old variant of as-path access-list. new one use bgp, not ip.
+    | b_community_list    // old variant of community-list. new one use bgp, not ip.
     | ip_forwarding
     | ip_prefix_list
     | ip_route
