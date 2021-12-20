@@ -18,7 +18,6 @@ frr_configuration
 statement
 :
   s_agentx
-  | s_router_bgp
   | s_enable
   | s_end
   | s_interface
@@ -31,6 +30,7 @@ statement
   | s_no
   | s_password
   | s_routemap
+  | s_router_bgp
   | s_router_ospf
   | s_service
   | s_username
