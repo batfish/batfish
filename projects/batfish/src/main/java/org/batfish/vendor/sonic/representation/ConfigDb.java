@@ -78,6 +78,14 @@ public class ConfigDb implements Serializable {
     return _syslogServers;
   }
 
+  public @Nonnull Map<String, Tacplus> getTacplusses() {
+    return _tacplusses;
+  }
+
+  public @Nonnull Set<String> getTacplusServers() {
+    return _tacplusServers;
+  }
+
   public @Nonnull Map<String, Vlan> getVlans() {
     return _vlans;
   }
@@ -101,6 +109,8 @@ public class ConfigDb implements Serializable {
   private static final String PROP_PORT = "PORT";
   private static final String PROP_NTP_SERVER = "NTP_SERVER";
   private static final String PROP_SYSLOG_SERVER = "SYSLOG_SERVER";
+  private static final String PROP_TACPLUS = "TACPLUS";
+  private static final String PROP_TACPLUS_SERVER = "TACPLUS_SERVER";
   private static final String PROP_VLAN = "VLAN";
   private static final String PROP_VLAN_INTERFACE = "VLAN_INTERFACE";
   private static final String PROP_VLAN_MEMBER = "VLAN_MEMBER";
@@ -120,6 +130,8 @@ public class ConfigDb implements Serializable {
   private final @Nonnull Set<String> _ntpServers;
   private final @Nonnull Map<String, Port> _ports;
   private final @Nonnull Set<String> _syslogServers;
+  private final @Nonnull Map<String, Tacplus> _tacplusses;
+  private final @Nonnull Set<String> _tacplusServers;
   private final @Nonnull Map<String, Vlan> _vlans;
   private final @Nonnull Map<String, L3Interface> _vlanInterfaces;
   private final @Nonnull Map<String, VlanMember> _vlanMembers;
@@ -136,6 +148,8 @@ public class ConfigDb implements Serializable {
       Set<String> ntpServers,
       Map<String, Port> ports,
       Set<String> syslogServers,
+      Map<String, Tacplus> tacplusses,
+      Set<String> tacplusServers,
       Map<String, Vlan> vlans,
       Map<String, L3Interface> vlanInterfaces,
       Map<String, VlanMember> vlanMembers) {
@@ -150,6 +164,8 @@ public class ConfigDb implements Serializable {
     _ntpServers = ntpServers;
     _ports = ports;
     _syslogServers = syslogServers;
+    _tacplusses = tacplusses;
+    _tacplusServers = tacplusServers;
     _vlans = vlans;
     _vlanInterfaces = vlanInterfaces;
     _vlanMembers = vlanMembers;
@@ -187,6 +203,10 @@ public class ConfigDb implements Serializable {
         .map(String::toLowerCase);
   }
 
+  public @Nonnull Optional<String> getTacplusSourceInterface() {
+    return Optional.ofNullable(_tacplusses.get("global")).flatMap(Tacplus::getSrcIntf);
+  }
+
   public static Builder builder() {
     return new Builder();
   }
@@ -203,6 +223,8 @@ public class ConfigDb implements Serializable {
     private Set<String> _ntpServers;
     private Map<String, Port> _ports;
     private Set<String> _syslogServers;
+    private Map<String, Tacplus> _tacplusses;
+    private Set<String> _tacplusServers;
     private Map<String, Vlan> _vlans;
     private Map<String, L3Interface> _vlanInterfaces;
     private Map<String, VlanMember> _vlanMembers;
@@ -265,6 +287,16 @@ public class ConfigDb implements Serializable {
       return this;
     }
 
+    public @Nonnull Builder setTacplusses(@Nullable Map<String, Tacplus> tacplusses) {
+      this._tacplusses = tacplusses;
+      return this;
+    }
+
+    public @Nonnull Builder setTacplusServers(@Nullable Set<String> tacplusServers) {
+      this._tacplusServers = tacplusServers;
+      return this;
+    }
+
     public @Nonnull Builder setVlans(@Nullable Map<String, Vlan> vlans) {
       this._vlans = vlans;
       return this;
@@ -293,6 +325,8 @@ public class ConfigDb implements Serializable {
           ImmutableSet.copyOf(firstNonNull(_ntpServers, ImmutableSet.of())),
           ImmutableMap.copyOf(firstNonNull(_ports, ImmutableMap.of())),
           ImmutableSet.copyOf(firstNonNull(_syslogServers, ImmutableSet.of())),
+          ImmutableMap.copyOf(firstNonNull(_tacplusses, ImmutableMap.of())),
+          ImmutableSet.copyOf(firstNonNull(_tacplusServers, ImmutableSet.of())),
           ImmutableMap.copyOf(firstNonNull(_vlans, ImmutableMap.of())),
           ImmutableMap.copyOf(firstNonNull(_vlanInterfaces, ImmutableMap.of())),
           ImmutableMap.copyOf(firstNonNull(_vlanMembers, ImmutableMap.of())));
@@ -389,6 +423,15 @@ public class ConfigDb implements Serializable {
             break;
           case PROP_SYSLOG_SERVER:
             configDb.setSyslogServers(
+                mapper.convertValue(value, new TypeReference<Map<String, Object>>() {}).keySet());
+            break;
+          case PROP_TACPLUS:
+            configDb.setTacplusses(
+                mapper.convertValue(value, new TypeReference<Map<String, Tacplus>>() {}));
+            break;
+          case PROP_TACPLUS_SERVER:
+            // ignoring properties of individual servers
+            configDb.setTacplusServers(
                 mapper.convertValue(value, new TypeReference<Map<String, Object>>() {}).keySet());
             break;
           case PROP_VLAN:

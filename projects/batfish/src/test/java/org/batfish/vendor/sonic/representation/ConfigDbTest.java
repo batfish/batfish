@@ -198,6 +198,33 @@ public class ConfigDbTest {
   }
 
   @Test
+  public void testDeserializationTacplus() throws JsonProcessingException {
+    String input =
+        "{ \"TACPLUS\": {\"global\": {"
+            + "    \"auth_type\": \"login\","
+            + "    \"src_intf\": \"Loopback0\""
+            + "}}}";
+    assertThat(
+        deserialize(input, new Warnings()).getTacplusses(),
+        equalTo(ImmutableMap.of("global", Tacplus.builder().setSrcIntf("Loopback0").build())));
+  }
+
+  @Test
+  public void testDeserializationTacplusServer() throws JsonProcessingException {
+    String input =
+        "{ \"TACPLUS_SERVER\": {\"23.92.29.245\": {"
+            + "    \"auth_type\": \"pap\","
+            + "    \"passkey\": \"U2FsdGVkX19is+CjcG3V8dSm539YTkwEby6VzzfkDN0=\","
+            + "    \"priority\": \"1\","
+            + "    \"tcp_port\": \"49\","
+            + "    \"timeout\": \"5\""
+            + "}}}";
+    assertThat(
+        deserialize(input, new Warnings()).getTacplusServers(),
+        equalTo(ImmutableSet.of("23.92.29.245")));
+  }
+
+  @Test
   public void testDeserializationVlan() throws JsonProcessingException {
     String input =
         "{ \"VLAN\": { \"Vlan2\": {\"dhcp_servers\": [\"1.1.1.1\"], \"members\": [\"Ethernet0\"],"
