@@ -92,6 +92,9 @@ public class SonicConfiguration extends FrrVendorConfiguration {
 
     convertAcls(c, _configDb.getAclTables(), _configDb.getAclRules(), _w);
 
+    c.setTacacsServers(_configDb.getTacplusServers());
+    c.setTacacsSourceInterface(_configDb.getTacplusSourceInterface().orElse(null));
+
     return ImmutableList.of(c);
   }
 
