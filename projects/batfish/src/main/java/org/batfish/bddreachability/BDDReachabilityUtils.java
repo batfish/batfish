@@ -9,6 +9,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.SetMultimap;
+import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
 import com.google.common.collect.Table;
 import com.google.common.collect.Tables;
@@ -87,7 +88,7 @@ public final class BDDReachabilityUtils {
       // Seed the dirty inputs with the initial reachable sets, then clear the reachable sets.
       reachableSets.forEach(
           (key, value) -> {
-            dirtyInputs.put(key, value);
+            dirtyInputs.put(key, value.id());
             dirtyStates.add(key);
           });
       reachableSets.clear();
@@ -98,20 +99,34 @@ public final class BDDReachabilityUtils {
         Set<BDD> inputs = dirtyInputs.removeAll(dirtyState);
         assert !inputs.isEmpty();
         BDD prior = reachableSets.get(dirtyState);
-        BDD learned = factory.orAll(inputs);
-        BDD newValue = prior == null ? learned : learned.or(prior);
+        BDD newValue =
+            prior == null
+                ? factory.orAll(inputs)
+                : factory.orAll(Sets.union(inputs, ImmutableSet.of(prior)));
         if (newValue.equals(prior)) {
           // No change, so no need to update neighbors.
+          newValue.free();
+          inputs.forEach(BDD::free);
           continue;
         }
+
+        // Update the value and free the old one.
         reachableSets.put(dirtyState, newValue);
+        if (prior != null) {
+          prior.free();
+        }
 
         Map<StateExpr, Transition> dirtyStateEdges = edges.row(dirtyState);
         if (dirtyStateEdges.isEmpty()) {
-          // dirtyState has no edges, so no neighbors to update.
+          inputs.forEach(BDD::free);
           continue;
         }
 
+        // Compute the newly learned BDDs (union of inputs) and then free them.
+        BDD learned = prior == null ? newValue.id() : factory.orAll(inputs);
+        inputs.forEach(BDD::free);
+
+        // Forward the learned BDDs along each outgoing edge.
         dirtyStateEdges.forEach(
             (neighbor, edge) -> {
               BDD result = traverse.apply(edge, learned);
@@ -124,6 +139,7 @@ public final class BDDReachabilityUtils {
                 dirtyInputs.put(neighbor, result);
               }
             });
+        learned.free();
       }
     } finally {
       span.finish();
