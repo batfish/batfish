@@ -18,34 +18,25 @@ public final class NextHopComparatorTest {
 
   @Test
   public void testCompareClass() {
-    assertThat(
-        instance().compare(NextHopDiscard.instance(), NextHopInterface.of("foo")), lessThan(0));
-    assertThat(
-        instance().compare(NextHopDiscard.instance(), NextHopIp.of(Ip.parse("1.1.1.1"))),
-        lessThan(0));
-    assertThat(instance().compare(NextHopDiscard.instance(), NextHopVrf.of("foo")), lessThan(0));
-    assertThat(
-        instance().compare(NextHopDiscard.instance(), NextHopVtep.of(5, Ip.parse("1.1.1.1"))),
-        lessThan(0));
+    NextHopDiscard discard = NextHopDiscard.instance();
+    NextHopInterface iface = NextHopInterface.of("foo");
+    NextHopIp ip = NextHopIp.of(Ip.parse("1.1.1.1"));
+    NextHopVrf vrf = NextHopVrf.of("foo");
+    NextHopVtep vtep = NextHopVtep.of(5, Ip.parse("1.1.1.1"));
 
-    assertThat(
-        instance().compare(NextHopInterface.of("foo"), NextHopIp.of(Ip.parse("1.1.1.1"))),
-        lessThan(0));
-    assertThat(instance().compare(NextHopInterface.of("foo"), NextHopVrf.of("foo")), lessThan(0));
-    assertThat(
-        instance().compare(NextHopInterface.of("foo"), NextHopVtep.of(5, Ip.parse("1.1.1.1"))),
-        lessThan(0));
+    assertThat(instance().compare(discard, iface), lessThan(0));
+    assertThat(instance().compare(discard, ip), lessThan(0));
+    assertThat(instance().compare(discard, vrf), lessThan(0));
+    assertThat(instance().compare(discard, vtep), lessThan(0));
 
-    assertThat(
-        instance().compare(NextHopIp.of(Ip.parse("1.1.1.1")), NextHopVrf.of("foo")), lessThan(0));
-    assertThat(
-        instance()
-            .compare(NextHopIp.of(Ip.parse("1.1.1.1")), NextHopVtep.of(5, Ip.parse("1.1.1.1"))),
-        lessThan(0));
+    assertThat(instance().compare(iface, ip), lessThan(0));
+    assertThat(instance().compare(iface, vrf), lessThan(0));
+    assertThat(instance().compare(iface, vtep), lessThan(0));
 
-    assertThat(
-        instance().compare(NextHopVrf.of("foo"), NextHopVtep.of(5, Ip.parse("1.1.1.1"))),
-        lessThan(0));
+    assertThat(instance().compare(ip, vrf), lessThan(0));
+    assertThat(instance().compare(ip, vtep), lessThan(0));
+
+    assertThat(instance().compare(vrf, vtep), lessThan(0));
   }
 
   @Test

@@ -355,11 +355,7 @@ public class RoutesAnswerer extends Answerer {
                     Boolean.TRUE))
             .add(
                 new ColumnMetadata(
-                    COL_NEXT_HOP,
-                    Schema.NEXT_HOP,
-                    "Route's Next Hop IP",
-                    Boolean.FALSE,
-                    Boolean.TRUE))
+                    COL_NEXT_HOP, Schema.NEXT_HOP, "Route's Next Hop", Boolean.FALSE, Boolean.TRUE))
             .add(
                 new ColumnMetadata(
                     COL_NEXT_HOP_IP, Schema.IP, "Route's Next Hop IP", Boolean.FALSE, Boolean.TRUE))
