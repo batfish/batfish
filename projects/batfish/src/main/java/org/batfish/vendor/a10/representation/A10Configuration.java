@@ -598,7 +598,7 @@ public final class A10Configuration extends VendorConfiguration {
     Optional<Transformation> xform =
         orElseChain(
             _virtualServers.values().stream()
-                .filter(A10Conversion::isVirtualServerEnabled)
+                .filter(A10Conversion::isAnyVirtualServerPortEnabled)
                 .flatMap(vs -> toSimpleTransformations(vs).stream())
                 .collect(ImmutableList.toImmutableList()));
     xform.ifPresent(
