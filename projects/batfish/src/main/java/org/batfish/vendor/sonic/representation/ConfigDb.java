@@ -204,6 +204,9 @@ public class ConfigDb implements Serializable {
   }
 
   public @Nonnull Optional<String> getTacplusSourceInterface() {
+    // haven't seen documentation for TACPLUS datamodel. so, guessing based on a similar datamodel
+    // for NTP.
+    // global is the only option seen in real data thus far.
     return Optional.ofNullable(_tacplusses.get("global")).flatMap(Tacplus::getSrcIntf);
   }
 
