@@ -2715,7 +2715,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         // add devices in the sonic_configs folder
         try (Stream<String> keys = _storage.listInputSonicConfigsKeys(snapshot)) {
           Map<String, String> sonicObjects = readAllInputObjects(keys, snapshot);
-          makeSonicFilePairs(sonicObjects.keySet(), answerElement).parallelStream()
+          makeSonicFilePairs(sonicObjects.keySet(), answerElement).stream()
               .map(
                   files ->
                       makeParseVendorConfigurationJob(
