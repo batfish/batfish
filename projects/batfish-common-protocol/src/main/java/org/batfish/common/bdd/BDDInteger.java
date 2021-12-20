@@ -367,7 +367,7 @@ public class BDDInteger {
         var4._bitvec[var5] = _bitvec[var5].xor(var1._bitvec[var5]);
         var4._bitvec[var5] = var4._bitvec[var5].xor(var3.id());
         BDD var6 = var1._bitvec[var5].or(var3);
-        BDD var7 = _bitvec[var5].less(var6);
+        BDD var7 = _bitvec[var5].apply(var6, BDDFactory.less);
         var6.free();
         var6 = _bitvec[var5].and(var1._bitvec[var5]);
         var6 = var6.and(var3);

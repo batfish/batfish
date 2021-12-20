@@ -91,15 +91,8 @@ public final class BDDFiniteDomain<V> {
         values, Entry::getKey, entry -> new BDDFiniteDomain<>(var, entry.getValue()));
   }
 
-  /**
-   * Returns a new {@link BDD} equal to {@code bdd} with the variables in this {@link
-   * BDDFiniteDomain domain} removed.
-   *
-   * <p>The input {@link BDD} is not modified. The output BDD is guaranteed to be different from the
-   * input and can be safely modified or freed by the caller.
-   */
   public BDD existsValue(BDD bdd) {
-    return _varBits == null ? bdd.id() : bdd.exist(_varBits);
+    return _varBits == null ? bdd : bdd.exist(_varBits);
   }
 
   public BDD getConstraintForValue(V value) {
