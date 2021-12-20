@@ -13,6 +13,8 @@ import static org.batfish.datamodel.transformation.TransformationStep.assignDest
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationPort;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourcePort;
+import static org.batfish.vendor.a10.representation.TraceElements.traceElementForVirtualServer;
+import static org.batfish.vendor.a10.representation.TraceElements.traceElementForVirtualServerPort;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -46,6 +48,7 @@ import org.batfish.datamodel.Names;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
@@ -125,11 +128,12 @@ public class A10Conversion {
   @VisibleForTesting
   @Nonnull
   static IntegerSpace toIntegerSpace(VirtualServerPort port) {
-    return IntegerSpace.of(
-            new SubRange(
-                port.getNumber(),
-                port.getNumber() + Optional.ofNullable(port.getRange()).orElse(0)))
-        .intersection(IntegerSpace.PORTS);
+    return IntegerSpace.of(toSubRange(port)).intersection(IntegerSpace.PORTS);
+  }
+
+  private static @Nonnull SubRange toSubRange(VirtualServerPort port) {
+    return new SubRange(
+        port.getNumber(), port.getNumber() + Optional.ofNullable(port.getRange()).orElse(0));
   }
 
   /** Returns the {@link IpProtocol} corresponding to the specified virtual-server port. */
@@ -804,5 +808,37 @@ public class A10Conversion {
         assert false;
         return true;
     }
+  }
+
+  /** Convert a {@link VirtualServerTarget} to its corresponding {@link AclLineMatchExpr}. */
+  static final class VirtualServerTargetToMatchExpr
+      implements VirtualServerTargetVisitor<AclLineMatchExpr> {
+    static final VirtualServerTargetToMatchExpr INSTANCE = new VirtualServerTargetToMatchExpr();
+
+    @Override
+    public AclLineMatchExpr visitAddress(VirtualServerTargetAddress address) {
+      return AclLineMatchExprs.matchDst(
+          address.getAddress().toIpSpace(),
+          TraceElement.builder()
+              .add(String.format("Matched virtual-server target address %s", address.getAddress()))
+              .build());
+    }
+  }
+
+  @VisibleForTesting
+  public static @Nonnull AclLineMatchExpr toMatchExpr(VirtualServer server, String filename) {
+    return AclLineMatchExprs.and(
+        traceElementForVirtualServer(server, filename),
+        VirtualServerTargetToMatchExpr.INSTANCE.visit(server.getTarget()));
+  }
+
+  @VisibleForTesting
+  public static @Nonnull AclLineMatchExpr toMatchExpr(VirtualServerPort port) {
+    Optional<IpProtocol> protocol = toProtocol(port);
+    assert protocol.isPresent();
+    return AclLineMatchExprs.and(
+        traceElementForVirtualServerPort(port),
+        AclLineMatchExprs.matchIpProtocol(protocol.get()),
+        AclLineMatchExprs.matchDstPort(toIntegerSpace(port)));
   }
 }
