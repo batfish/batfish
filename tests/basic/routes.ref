@@ -25,6 +25,13 @@
           "schema" : "Prefix"
         },
         {
+          "description" : "Route's Next Hop",
+          "isKey" : false,
+          "isValue" : true,
+          "name" : "Next_Hop",
+          "schema" : "NextHop"
+        },
+        {
           "description" : "Route's Next Hop IP",
           "isKey" : false,
           "isValue" : true,
@@ -77,6 +84,10 @@
         },
         "VRF" : "default",
         "Network" : "1.0.1.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "connected",
@@ -91,6 +102,10 @@
         },
         "VRF" : "default",
         "Network" : "1.0.1.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "local",
@@ -105,6 +120,11 @@
         },
         "VRF" : "default",
         "Network" : "1.0.2.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0",
+          "ip" : "1.0.1.2"
+        },
         "Next_Hop_IP" : "1.0.1.2",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
@@ -119,6 +139,10 @@
         },
         "VRF" : "default",
         "Network" : "1.1.1.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "Loopback0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "Loopback0",
         "Protocol" : "connected",
@@ -133,6 +157,11 @@
         },
         "VRF" : "default",
         "Network" : "1.2.2.2/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0",
+          "ip" : "1.0.1.2"
+        },
         "Next_Hop_IP" : "1.0.1.2",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
@@ -147,6 +176,11 @@
         },
         "VRF" : "default",
         "Network" : "1.10.1.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0",
+          "ip" : "1.0.1.2"
+        },
         "Next_Hop_IP" : "1.0.1.2",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
@@ -161,6 +195,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.0.0/16",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.12.11.2"
+        },
         "Next_Hop_IP" : "10.12.11.2",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "bgp",
@@ -175,6 +213,10 @@
         },
         "VRF" : "default",
         "Network" : "3.0.1.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.13.22.3"
+        },
         "Next_Hop_IP" : "10.13.22.3",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -189,6 +231,10 @@
         },
         "VRF" : "default",
         "Network" : "3.0.2.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.13.22.3"
+        },
         "Next_Hop_IP" : "10.13.22.3",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -203,6 +249,10 @@
         },
         "VRF" : "default",
         "Network" : "10.12.11.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "connected",
@@ -217,6 +267,10 @@
         },
         "VRF" : "default",
         "Network" : "10.12.11.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "local",
@@ -231,6 +285,11 @@
         },
         "VRF" : "default",
         "Network" : "10.13.22.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0",
+          "ip" : "1.0.1.2"
+        },
         "Next_Hop_IP" : "1.0.1.2",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospfE2",
@@ -245,6 +304,11 @@
         },
         "VRF" : "default",
         "Network" : "10.14.22.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0",
+          "ip" : "1.0.1.2"
+        },
         "Next_Hop_IP" : "1.0.1.2",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospfE2",
@@ -259,6 +323,11 @@
         },
         "VRF" : "default",
         "Network" : "1.0.1.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "1.0.2.2"
+        },
         "Next_Hop_IP" : "1.0.2.2",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
@@ -273,6 +342,10 @@
         },
         "VRF" : "default",
         "Network" : "1.0.2.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "connected",
@@ -287,6 +360,10 @@
         },
         "VRF" : "default",
         "Network" : "1.0.2.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "local",
@@ -301,6 +378,11 @@
         },
         "VRF" : "default",
         "Network" : "1.1.1.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "1.0.2.2"
+        },
         "Next_Hop_IP" : "1.0.2.2",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
@@ -315,6 +397,10 @@
         },
         "VRF" : "default",
         "Network" : "1.2.2.2/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "Loopback0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "Loopback0",
         "Protocol" : "connected",
@@ -329,6 +415,11 @@
         },
         "VRF" : "default",
         "Network" : "1.10.1.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "1.0.2.2"
+        },
         "Next_Hop_IP" : "1.0.2.2",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
@@ -343,6 +434,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.0.0/16",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.12.11.2"
+        },
         "Next_Hop_IP" : "10.12.11.2",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -357,6 +452,10 @@
         },
         "VRF" : "default",
         "Network" : "3.0.1.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.13.22.3"
+        },
         "Next_Hop_IP" : "10.13.22.3",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "bgp",
@@ -371,6 +470,10 @@
         },
         "VRF" : "default",
         "Network" : "3.0.2.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.13.22.3"
+        },
         "Next_Hop_IP" : "10.13.22.3",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "bgp",
@@ -385,6 +488,11 @@
         },
         "VRF" : "default",
         "Network" : "10.12.11.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "1.0.2.2"
+        },
         "Next_Hop_IP" : "1.0.2.2",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospfE2",
@@ -399,6 +507,10 @@
         },
         "VRF" : "default",
         "Network" : "10.13.22.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "connected",
@@ -413,6 +525,10 @@
         },
         "VRF" : "default",
         "Network" : "10.13.22.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "local",
@@ -427,6 +543,10 @@
         },
         "VRF" : "default",
         "Network" : "10.14.22.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet2/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "connected",
@@ -441,6 +561,10 @@
         },
         "VRF" : "default",
         "Network" : "10.14.22.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet2/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "local",
@@ -455,6 +579,10 @@
         },
         "VRF" : "default",
         "Network" : "1.0.1.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "connected",
@@ -469,6 +597,10 @@
         },
         "VRF" : "default",
         "Network" : "1.0.1.2/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "local",
@@ -483,6 +615,10 @@
         },
         "VRF" : "default",
         "Network" : "1.0.2.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "connected",
@@ -497,6 +633,10 @@
         },
         "VRF" : "default",
         "Network" : "1.0.2.2/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "local",
@@ -511,6 +651,11 @@
         },
         "VRF" : "default",
         "Network" : "1.1.1.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "1.0.1.1"
+        },
         "Next_Hop_IP" : "1.0.1.1",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
@@ -525,6 +670,11 @@
         },
         "VRF" : "default",
         "Network" : "1.2.2.2/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0",
+          "ip" : "1.0.2.1"
+        },
         "Next_Hop_IP" : "1.0.2.1",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
@@ -539,6 +689,10 @@
         },
         "VRF" : "default",
         "Network" : "1.10.1.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "Loopback0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "Loopback0",
         "Protocol" : "connected",
@@ -553,6 +707,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.0.0/16",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.12.11.2"
+        },
         "Next_Hop_IP" : "10.12.11.2",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -567,6 +725,10 @@
         },
         "VRF" : "default",
         "Network" : "3.0.1.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.13.22.3"
+        },
         "Next_Hop_IP" : "10.13.22.3",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -581,6 +743,10 @@
         },
         "VRF" : "default",
         "Network" : "3.0.2.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.13.22.3"
+        },
         "Next_Hop_IP" : "10.13.22.3",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -595,6 +761,11 @@
         },
         "VRF" : "default",
         "Network" : "10.12.11.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "1.0.1.1"
+        },
         "Next_Hop_IP" : "1.0.1.1",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospfE2",
@@ -609,6 +780,11 @@
         },
         "VRF" : "default",
         "Network" : "10.13.22.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0",
+          "ip" : "1.0.2.1"
+        },
         "Next_Hop_IP" : "1.0.2.1",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospfE2",
@@ -623,6 +799,11 @@
         },
         "VRF" : "default",
         "Network" : "10.14.22.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0",
+          "ip" : "1.0.2.1"
+        },
         "Next_Hop_IP" : "1.0.2.1",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospfE2",
@@ -637,6 +818,10 @@
         },
         "VRF" : "default",
         "Network" : "1.0.1.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.12.11.1"
+        },
         "Next_Hop_IP" : "10.12.11.1",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "bgp",
@@ -651,6 +836,10 @@
         },
         "VRF" : "default",
         "Network" : "1.0.2.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.12.11.1"
+        },
         "Next_Hop_IP" : "10.12.11.1",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "bgp",
@@ -665,6 +854,10 @@
         },
         "VRF" : "default",
         "Network" : "2.1.1.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "Loopback0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "Loopback0",
         "Protocol" : "connected",
@@ -679,6 +872,11 @@
         },
         "VRF" : "default",
         "Network" : "2.1.1.2/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "2.12.11.2"
+        },
         "Next_Hop_IP" : "2.12.11.2",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
@@ -693,6 +891,11 @@
         },
         "VRF" : "default",
         "Network" : "2.1.1.2/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet2/0",
+          "ip" : "2.12.12.2"
+        },
         "Next_Hop_IP" : "2.12.12.2",
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospf",
@@ -707,6 +910,11 @@
         },
         "VRF" : "default",
         "Network" : "2.1.2.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "2.12.11.2"
+        },
         "Next_Hop_IP" : "2.12.11.2",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
@@ -721,6 +929,11 @@
         },
         "VRF" : "default",
         "Network" : "2.1.2.2/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet2/0",
+          "ip" : "2.12.12.2"
+        },
         "Next_Hop_IP" : "2.12.12.2",
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospf",
@@ -735,6 +948,11 @@
         },
         "VRF" : "default",
         "Network" : "2.1.3.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "2.12.11.2"
+        },
         "Next_Hop_IP" : "2.12.11.2",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
@@ -749,6 +967,11 @@
         },
         "VRF" : "default",
         "Network" : "2.1.3.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet2/0",
+          "ip" : "2.12.12.2"
+        },
         "Next_Hop_IP" : "2.12.12.2",
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospf",
@@ -763,6 +986,11 @@
         },
         "VRF" : "default",
         "Network" : "2.1.3.2/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "2.12.11.2"
+        },
         "Next_Hop_IP" : "2.12.11.2",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
@@ -777,6 +1005,11 @@
         },
         "VRF" : "default",
         "Network" : "2.1.3.2/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet2/0",
+          "ip" : "2.12.12.2"
+        },
         "Next_Hop_IP" : "2.12.12.2",
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospf",
@@ -791,6 +1024,10 @@
         },
         "VRF" : "default",
         "Network" : "2.12.11.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "connected",
@@ -805,6 +1042,10 @@
         },
         "VRF" : "default",
         "Network" : "2.12.11.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "local",
@@ -819,6 +1060,10 @@
         },
         "VRF" : "default",
         "Network" : "2.12.12.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet2/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "connected",
@@ -833,6 +1078,10 @@
         },
         "VRF" : "default",
         "Network" : "2.12.12.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet2/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "local",
@@ -847,6 +1096,11 @@
         },
         "VRF" : "default",
         "Network" : "2.12.21.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "2.12.11.2"
+        },
         "Next_Hop_IP" : "2.12.11.2",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
@@ -861,6 +1115,11 @@
         },
         "VRF" : "default",
         "Network" : "2.12.22.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet2/0",
+          "ip" : "2.12.12.2"
+        },
         "Next_Hop_IP" : "2.12.12.2",
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospf",
@@ -875,6 +1134,11 @@
         },
         "VRF" : "default",
         "Network" : "2.23.11.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "2.12.11.2"
+        },
         "Next_Hop_IP" : "2.12.11.2",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
@@ -889,6 +1153,11 @@
         },
         "VRF" : "default",
         "Network" : "2.23.12.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "2.12.11.2"
+        },
         "Next_Hop_IP" : "2.12.11.2",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
@@ -903,6 +1172,11 @@
         },
         "VRF" : "default",
         "Network" : "2.23.21.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet2/0",
+          "ip" : "2.12.12.2"
+        },
         "Next_Hop_IP" : "2.12.12.2",
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospf",
@@ -917,6 +1191,11 @@
         },
         "VRF" : "default",
         "Network" : "2.23.22.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet2/0",
+          "ip" : "2.12.12.2"
+        },
         "Next_Hop_IP" : "2.12.12.2",
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospf",
@@ -931,6 +1210,11 @@
         },
         "VRF" : "default",
         "Network" : "2.34.101.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "2.12.11.2"
+        },
         "Next_Hop_IP" : "2.12.11.2",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospfE2",
@@ -945,6 +1229,11 @@
         },
         "VRF" : "default",
         "Network" : "2.34.101.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet2/0",
+          "ip" : "2.12.12.2"
+        },
         "Next_Hop_IP" : "2.12.12.2",
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospfE2",
@@ -959,6 +1248,11 @@
         },
         "VRF" : "default",
         "Network" : "2.34.201.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "2.12.11.2"
+        },
         "Next_Hop_IP" : "2.12.11.2",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospfE2",
@@ -973,6 +1267,11 @@
         },
         "VRF" : "default",
         "Network" : "2.34.201.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet2/0",
+          "ip" : "2.12.12.2"
+        },
         "Next_Hop_IP" : "2.12.12.2",
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospfE2",
@@ -987,6 +1286,9 @@
         },
         "VRF" : "default",
         "Network" : "2.128.0.0/16",
+        "Next_Hop" : {
+          "type" : "discard"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "null_interface",
         "Protocol" : "aggregate",
@@ -1001,6 +1303,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.0.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "2.34.101.4"
+        },
         "Next_Hop_IP" : "2.34.101.4",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -1015,6 +1321,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.0.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "2.34.101.4"
+        },
         "Next_Hop_IP" : "2.34.101.4",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -1029,6 +1339,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.0.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "2.34.201.4"
+        },
         "Next_Hop_IP" : "2.34.201.4",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -1043,6 +1357,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.0.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "2.34.201.4"
+        },
         "Next_Hop_IP" : "2.34.201.4",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -1057,6 +1375,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.1.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "2.34.101.4"
+        },
         "Next_Hop_IP" : "2.34.101.4",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -1071,6 +1393,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.1.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "2.34.101.4"
+        },
         "Next_Hop_IP" : "2.34.101.4",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -1085,6 +1411,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.1.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "2.34.201.4"
+        },
         "Next_Hop_IP" : "2.34.201.4",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -1099,6 +1429,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.1.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "2.34.201.4"
+        },
         "Next_Hop_IP" : "2.34.201.4",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -1113,6 +1447,10 @@
         },
         "VRF" : "default",
         "Network" : "3.0.1.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.23.21.3"
+        },
         "Next_Hop_IP" : "10.23.21.3",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -1127,6 +1465,10 @@
         },
         "VRF" : "default",
         "Network" : "3.0.1.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.23.21.3"
+        },
         "Next_Hop_IP" : "10.23.21.3",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -1141,6 +1483,10 @@
         },
         "VRF" : "default",
         "Network" : "3.0.2.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.23.21.3"
+        },
         "Next_Hop_IP" : "10.23.21.3",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -1155,6 +1501,10 @@
         },
         "VRF" : "default",
         "Network" : "3.0.2.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.23.21.3"
+        },
         "Next_Hop_IP" : "10.23.21.3",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -1169,6 +1519,10 @@
         },
         "VRF" : "default",
         "Network" : "10.12.11.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "connected",
@@ -1183,6 +1537,10 @@
         },
         "VRF" : "default",
         "Network" : "10.12.11.2/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "local",
@@ -1197,6 +1555,11 @@
         },
         "VRF" : "default",
         "Network" : "10.23.21.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "2.12.11.2"
+        },
         "Next_Hop_IP" : "2.12.11.2",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospfE2",
@@ -1211,6 +1574,11 @@
         },
         "VRF" : "default",
         "Network" : "10.23.21.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet2/0",
+          "ip" : "2.12.12.2"
+        },
         "Next_Hop_IP" : "2.12.12.2",
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospfE2",
@@ -1225,6 +1593,10 @@
         },
         "VRF" : "default",
         "Network" : "1.0.1.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.12.11.1"
+        },
         "Next_Hop_IP" : "10.12.11.1",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -1239,6 +1611,10 @@
         },
         "VRF" : "default",
         "Network" : "1.0.1.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.12.11.1"
+        },
         "Next_Hop_IP" : "10.12.11.1",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -1253,6 +1629,10 @@
         },
         "VRF" : "default",
         "Network" : "1.0.2.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.12.11.1"
+        },
         "Next_Hop_IP" : "10.12.11.1",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -1267,6 +1647,10 @@
         },
         "VRF" : "default",
         "Network" : "1.0.2.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.12.11.1"
+        },
         "Next_Hop_IP" : "10.12.11.1",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -1281,6 +1665,11 @@
         },
         "VRF" : "default",
         "Network" : "2.1.1.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet2/0",
+          "ip" : "2.12.21.2"
+        },
         "Next_Hop_IP" : "2.12.21.2",
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospf",
@@ -1295,6 +1684,11 @@
         },
         "VRF" : "default",
         "Network" : "2.1.1.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "2.12.22.2"
+        },
         "Next_Hop_IP" : "2.12.22.2",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
@@ -1309,6 +1703,10 @@
         },
         "VRF" : "default",
         "Network" : "2.1.1.2/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "Loopback0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "Loopback0",
         "Protocol" : "connected",
@@ -1323,6 +1721,11 @@
         },
         "VRF" : "default",
         "Network" : "2.1.2.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet2/0",
+          "ip" : "2.12.21.2"
+        },
         "Next_Hop_IP" : "2.12.21.2",
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospf",
@@ -1337,6 +1740,11 @@
         },
         "VRF" : "default",
         "Network" : "2.1.2.2/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "2.12.22.2"
+        },
         "Next_Hop_IP" : "2.12.22.2",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
@@ -1351,6 +1759,11 @@
         },
         "VRF" : "default",
         "Network" : "2.1.3.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet2/0",
+          "ip" : "2.12.21.2"
+        },
         "Next_Hop_IP" : "2.12.21.2",
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospf",
@@ -1365,6 +1778,11 @@
         },
         "VRF" : "default",
         "Network" : "2.1.3.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "2.12.22.2"
+        },
         "Next_Hop_IP" : "2.12.22.2",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
@@ -1379,6 +1797,11 @@
         },
         "VRF" : "default",
         "Network" : "2.1.3.2/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet2/0",
+          "ip" : "2.12.21.2"
+        },
         "Next_Hop_IP" : "2.12.21.2",
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospf",
@@ -1393,6 +1816,11 @@
         },
         "VRF" : "default",
         "Network" : "2.1.3.2/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "2.12.22.2"
+        },
         "Next_Hop_IP" : "2.12.22.2",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
@@ -1407,6 +1835,11 @@
         },
         "VRF" : "default",
         "Network" : "2.12.11.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet2/0",
+          "ip" : "2.12.21.2"
+        },
         "Next_Hop_IP" : "2.12.21.2",
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospf",
@@ -1421,6 +1854,11 @@
         },
         "VRF" : "default",
         "Network" : "2.12.12.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "2.12.22.2"
+        },
         "Next_Hop_IP" : "2.12.22.2",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
@@ -1435,6 +1873,10 @@
         },
         "VRF" : "default",
         "Network" : "2.12.21.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet2/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "connected",
@@ -1449,6 +1891,10 @@
         },
         "VRF" : "default",
         "Network" : "2.12.21.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet2/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "local",
@@ -1463,6 +1909,10 @@
         },
         "VRF" : "default",
         "Network" : "2.12.22.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "connected",
@@ -1477,6 +1927,10 @@
         },
         "VRF" : "default",
         "Network" : "2.12.22.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "local",
@@ -1491,6 +1945,11 @@
         },
         "VRF" : "default",
         "Network" : "2.23.11.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet2/0",
+          "ip" : "2.12.21.2"
+        },
         "Next_Hop_IP" : "2.12.21.2",
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospf",
@@ -1505,6 +1964,11 @@
         },
         "VRF" : "default",
         "Network" : "2.23.12.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet2/0",
+          "ip" : "2.12.21.2"
+        },
         "Next_Hop_IP" : "2.12.21.2",
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospf",
@@ -1519,6 +1983,11 @@
         },
         "VRF" : "default",
         "Network" : "2.23.21.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "2.12.22.2"
+        },
         "Next_Hop_IP" : "2.12.22.2",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
@@ -1533,6 +2002,11 @@
         },
         "VRF" : "default",
         "Network" : "2.23.22.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "2.12.22.2"
+        },
         "Next_Hop_IP" : "2.12.22.2",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
@@ -1547,6 +2021,11 @@
         },
         "VRF" : "default",
         "Network" : "2.34.101.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet2/0",
+          "ip" : "2.12.21.2"
+        },
         "Next_Hop_IP" : "2.12.21.2",
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospfE2",
@@ -1561,6 +2040,11 @@
         },
         "VRF" : "default",
         "Network" : "2.34.101.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "2.12.22.2"
+        },
         "Next_Hop_IP" : "2.12.22.2",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospfE2",
@@ -1575,6 +2059,11 @@
         },
         "VRF" : "default",
         "Network" : "2.34.201.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet2/0",
+          "ip" : "2.12.21.2"
+        },
         "Next_Hop_IP" : "2.12.21.2",
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospfE2",
@@ -1589,6 +2078,11 @@
         },
         "VRF" : "default",
         "Network" : "2.34.201.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "2.12.22.2"
+        },
         "Next_Hop_IP" : "2.12.22.2",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospfE2",
@@ -1603,6 +2097,9 @@
         },
         "VRF" : "default",
         "Network" : "2.128.0.0/16",
+        "Next_Hop" : {
+          "type" : "discard"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "null_interface",
         "Protocol" : "aggregate",
@@ -1617,6 +2114,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.0.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "2.34.101.4"
+        },
         "Next_Hop_IP" : "2.34.101.4",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -1631,6 +2132,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.0.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "2.34.101.4"
+        },
         "Next_Hop_IP" : "2.34.101.4",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -1645,6 +2150,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.0.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "2.34.201.4"
+        },
         "Next_Hop_IP" : "2.34.201.4",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -1659,6 +2168,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.0.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "2.34.201.4"
+        },
         "Next_Hop_IP" : "2.34.201.4",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -1673,6 +2186,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.1.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "2.34.101.4"
+        },
         "Next_Hop_IP" : "2.34.101.4",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -1687,6 +2204,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.1.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "2.34.101.4"
+        },
         "Next_Hop_IP" : "2.34.101.4",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -1701,6 +2222,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.1.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "2.34.201.4"
+        },
         "Next_Hop_IP" : "2.34.201.4",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -1715,6 +2240,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.1.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "2.34.201.4"
+        },
         "Next_Hop_IP" : "2.34.201.4",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -1729,6 +2258,10 @@
         },
         "VRF" : "default",
         "Network" : "3.0.1.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.23.21.3"
+        },
         "Next_Hop_IP" : "10.23.21.3",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "bgp",
@@ -1743,6 +2276,10 @@
         },
         "VRF" : "default",
         "Network" : "3.0.2.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.23.21.3"
+        },
         "Next_Hop_IP" : "10.23.21.3",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "bgp",
@@ -1757,6 +2294,11 @@
         },
         "VRF" : "default",
         "Network" : "10.12.11.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet2/0",
+          "ip" : "2.12.21.2"
+        },
         "Next_Hop_IP" : "2.12.21.2",
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospfE2",
@@ -1771,6 +2313,11 @@
         },
         "VRF" : "default",
         "Network" : "10.12.11.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "2.12.22.2"
+        },
         "Next_Hop_IP" : "2.12.22.2",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospfE2",
@@ -1785,6 +2332,10 @@
         },
         "VRF" : "default",
         "Network" : "10.23.21.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "connected",
@@ -1799,6 +2350,10 @@
         },
         "VRF" : "default",
         "Network" : "10.23.21.2/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "local",
@@ -1813,6 +2368,10 @@
         },
         "VRF" : "default",
         "Network" : "1.0.1.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.12.11.1"
+        },
         "Next_Hop_IP" : "10.12.11.1",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -1827,6 +2386,10 @@
         },
         "VRF" : "default",
         "Network" : "1.0.2.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.12.11.1"
+        },
         "Next_Hop_IP" : "10.12.11.1",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -1841,6 +2404,11 @@
         },
         "VRF" : "default",
         "Network" : "2.1.1.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0",
+          "ip" : "2.12.11.1"
+        },
         "Next_Hop_IP" : "2.12.11.1",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
@@ -1855,6 +2423,11 @@
         },
         "VRF" : "default",
         "Network" : "2.1.1.2/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "2.12.21.1"
+        },
         "Next_Hop_IP" : "2.12.21.1",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
@@ -1869,6 +2442,10 @@
         },
         "VRF" : "default",
         "Network" : "2.1.2.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "Loopback0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "Loopback0",
         "Protocol" : "connected",
@@ -1883,6 +2460,11 @@
         },
         "VRF" : "default",
         "Network" : "2.1.2.2/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0",
+          "ip" : "2.12.11.1"
+        },
         "Next_Hop_IP" : "2.12.11.1",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
@@ -1897,6 +2479,11 @@
         },
         "VRF" : "default",
         "Network" : "2.1.2.2/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "2.12.21.1"
+        },
         "Next_Hop_IP" : "2.12.21.1",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
@@ -1911,6 +2498,11 @@
         },
         "VRF" : "default",
         "Network" : "2.1.2.2/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet2/0",
+          "ip" : "2.23.11.3"
+        },
         "Next_Hop_IP" : "2.23.11.3",
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospf",
@@ -1925,6 +2517,11 @@
         },
         "VRF" : "default",
         "Network" : "2.1.2.2/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet3/0",
+          "ip" : "2.23.12.3"
+        },
         "Next_Hop_IP" : "2.23.12.3",
         "Next_Hop_Interface" : "GigabitEthernet3/0",
         "Protocol" : "ospf",
@@ -1939,6 +2536,11 @@
         },
         "VRF" : "default",
         "Network" : "2.1.3.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet2/0",
+          "ip" : "2.23.11.3"
+        },
         "Next_Hop_IP" : "2.23.11.3",
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospf",
@@ -1953,6 +2555,11 @@
         },
         "VRF" : "default",
         "Network" : "2.1.3.2/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet3/0",
+          "ip" : "2.23.12.3"
+        },
         "Next_Hop_IP" : "2.23.12.3",
         "Next_Hop_Interface" : "GigabitEthernet3/0",
         "Protocol" : "ospf",
@@ -1967,6 +2574,10 @@
         },
         "VRF" : "default",
         "Network" : "2.12.11.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "connected",
@@ -1981,6 +2592,10 @@
         },
         "VRF" : "default",
         "Network" : "2.12.11.2/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "local",
@@ -1995,6 +2610,11 @@
         },
         "VRF" : "default",
         "Network" : "2.12.12.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0",
+          "ip" : "2.12.11.1"
+        },
         "Next_Hop_IP" : "2.12.11.1",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
@@ -2009,6 +2629,10 @@
         },
         "VRF" : "default",
         "Network" : "2.12.21.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "connected",
@@ -2023,6 +2647,10 @@
         },
         "VRF" : "default",
         "Network" : "2.12.21.2/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "local",
@@ -2037,6 +2665,11 @@
         },
         "VRF" : "default",
         "Network" : "2.12.22.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "2.12.21.1"
+        },
         "Next_Hop_IP" : "2.12.21.1",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
@@ -2051,6 +2684,10 @@
         },
         "VRF" : "default",
         "Network" : "2.23.11.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet2/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "connected",
@@ -2065,6 +2702,10 @@
         },
         "VRF" : "default",
         "Network" : "2.23.11.2/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet2/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "local",
@@ -2079,6 +2720,10 @@
         },
         "VRF" : "default",
         "Network" : "2.23.12.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet3/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet3/0",
         "Protocol" : "connected",
@@ -2093,6 +2738,10 @@
         },
         "VRF" : "default",
         "Network" : "2.23.12.2/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet3/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet3/0",
         "Protocol" : "local",
@@ -2107,6 +2756,11 @@
         },
         "VRF" : "default",
         "Network" : "2.23.21.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet2/0",
+          "ip" : "2.23.11.3"
+        },
         "Next_Hop_IP" : "2.23.11.3",
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospf",
@@ -2121,6 +2775,11 @@
         },
         "VRF" : "default",
         "Network" : "2.23.22.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet3/0",
+          "ip" : "2.23.12.3"
+        },
         "Next_Hop_IP" : "2.23.12.3",
         "Next_Hop_Interface" : "GigabitEthernet3/0",
         "Protocol" : "ospf",
@@ -2135,6 +2794,11 @@
         },
         "VRF" : "default",
         "Network" : "2.34.101.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet2/0",
+          "ip" : "2.23.11.3"
+        },
         "Next_Hop_IP" : "2.23.11.3",
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospfE2",
@@ -2149,6 +2813,11 @@
         },
         "VRF" : "default",
         "Network" : "2.34.201.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet3/0",
+          "ip" : "2.23.12.3"
+        },
         "Next_Hop_IP" : "2.23.12.3",
         "Next_Hop_Interface" : "GigabitEthernet3/0",
         "Protocol" : "ospfE2",
@@ -2163,6 +2832,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.0.0/16",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "2.1.1.1"
+        },
         "Next_Hop_IP" : "2.1.1.1",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -2177,6 +2850,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.0.0/16",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "2.1.1.2"
+        },
         "Next_Hop_IP" : "2.1.1.2",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -2191,6 +2868,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.0.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "2.34.101.4"
+        },
         "Next_Hop_IP" : "2.34.101.4",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -2205,6 +2886,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.0.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "2.34.201.4"
+        },
         "Next_Hop_IP" : "2.34.201.4",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -2219,6 +2904,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.1.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "2.34.101.4"
+        },
         "Next_Hop_IP" : "2.34.101.4",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -2233,6 +2922,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.1.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "2.34.201.4"
+        },
         "Next_Hop_IP" : "2.34.201.4",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -2247,6 +2940,10 @@
         },
         "VRF" : "default",
         "Network" : "3.0.1.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.23.21.3"
+        },
         "Next_Hop_IP" : "10.23.21.3",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -2261,6 +2958,10 @@
         },
         "VRF" : "default",
         "Network" : "3.0.2.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.23.21.3"
+        },
         "Next_Hop_IP" : "10.23.21.3",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -2275,6 +2976,11 @@
         },
         "VRF" : "default",
         "Network" : "10.12.11.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0",
+          "ip" : "2.12.11.1"
+        },
         "Next_Hop_IP" : "2.12.11.1",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospfE2",
@@ -2289,6 +2995,11 @@
         },
         "VRF" : "default",
         "Network" : "10.23.21.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "2.12.21.1"
+        },
         "Next_Hop_IP" : "2.12.21.1",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospfE2",
@@ -2303,6 +3014,10 @@
         },
         "VRF" : "default",
         "Network" : "1.0.1.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.12.11.1"
+        },
         "Next_Hop_IP" : "10.12.11.1",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -2317,6 +3032,10 @@
         },
         "VRF" : "default",
         "Network" : "1.0.2.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.12.11.1"
+        },
         "Next_Hop_IP" : "10.12.11.1",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -2331,6 +3050,11 @@
         },
         "VRF" : "default",
         "Network" : "2.1.1.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "2.12.12.1"
+        },
         "Next_Hop_IP" : "2.12.12.1",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
@@ -2345,6 +3069,11 @@
         },
         "VRF" : "default",
         "Network" : "2.1.1.2/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0",
+          "ip" : "2.12.22.1"
+        },
         "Next_Hop_IP" : "2.12.22.1",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
@@ -2359,6 +3088,11 @@
         },
         "VRF" : "default",
         "Network" : "2.1.2.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "2.12.12.1"
+        },
         "Next_Hop_IP" : "2.12.12.1",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
@@ -2373,6 +3107,11 @@
         },
         "VRF" : "default",
         "Network" : "2.1.2.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0",
+          "ip" : "2.12.22.1"
+        },
         "Next_Hop_IP" : "2.12.22.1",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
@@ -2387,6 +3126,11 @@
         },
         "VRF" : "default",
         "Network" : "2.1.2.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet3/0",
+          "ip" : "2.23.21.3"
+        },
         "Next_Hop_IP" : "2.23.21.3",
         "Next_Hop_Interface" : "GigabitEthernet3/0",
         "Protocol" : "ospf",
@@ -2401,6 +3145,11 @@
         },
         "VRF" : "default",
         "Network" : "2.1.2.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet2/0",
+          "ip" : "2.23.22.3"
+        },
         "Next_Hop_IP" : "2.23.22.3",
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospf",
@@ -2415,6 +3164,10 @@
         },
         "VRF" : "default",
         "Network" : "2.1.2.2/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "Loopback0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "Loopback0",
         "Protocol" : "connected",
@@ -2429,6 +3182,11 @@
         },
         "VRF" : "default",
         "Network" : "2.1.3.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet3/0",
+          "ip" : "2.23.21.3"
+        },
         "Next_Hop_IP" : "2.23.21.3",
         "Next_Hop_Interface" : "GigabitEthernet3/0",
         "Protocol" : "ospf",
@@ -2443,6 +3201,11 @@
         },
         "VRF" : "default",
         "Network" : "2.1.3.2/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet2/0",
+          "ip" : "2.23.22.3"
+        },
         "Next_Hop_IP" : "2.23.22.3",
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospf",
@@ -2457,6 +3220,11 @@
         },
         "VRF" : "default",
         "Network" : "2.12.11.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "2.12.12.1"
+        },
         "Next_Hop_IP" : "2.12.12.1",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
@@ -2471,6 +3239,10 @@
         },
         "VRF" : "default",
         "Network" : "2.12.12.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "connected",
@@ -2485,6 +3257,10 @@
         },
         "VRF" : "default",
         "Network" : "2.12.12.2/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "local",
@@ -2499,6 +3275,11 @@
         },
         "VRF" : "default",
         "Network" : "2.12.21.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0",
+          "ip" : "2.12.22.1"
+        },
         "Next_Hop_IP" : "2.12.22.1",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
@@ -2513,6 +3294,10 @@
         },
         "VRF" : "default",
         "Network" : "2.12.22.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "connected",
@@ -2527,6 +3312,10 @@
         },
         "VRF" : "default",
         "Network" : "2.12.22.2/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "local",
@@ -2541,6 +3330,11 @@
         },
         "VRF" : "default",
         "Network" : "2.23.11.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet3/0",
+          "ip" : "2.23.21.3"
+        },
         "Next_Hop_IP" : "2.23.21.3",
         "Next_Hop_Interface" : "GigabitEthernet3/0",
         "Protocol" : "ospf",
@@ -2555,6 +3349,11 @@
         },
         "VRF" : "default",
         "Network" : "2.23.12.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet2/0",
+          "ip" : "2.23.22.3"
+        },
         "Next_Hop_IP" : "2.23.22.3",
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospf",
@@ -2569,6 +3368,10 @@
         },
         "VRF" : "default",
         "Network" : "2.23.21.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet3/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet3/0",
         "Protocol" : "connected",
@@ -2583,6 +3386,10 @@
         },
         "VRF" : "default",
         "Network" : "2.23.21.2/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet3/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet3/0",
         "Protocol" : "local",
@@ -2597,6 +3404,10 @@
         },
         "VRF" : "default",
         "Network" : "2.23.22.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet2/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "connected",
@@ -2611,6 +3422,10 @@
         },
         "VRF" : "default",
         "Network" : "2.23.22.2/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet2/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "local",
@@ -2625,6 +3440,11 @@
         },
         "VRF" : "default",
         "Network" : "2.34.101.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet3/0",
+          "ip" : "2.23.21.3"
+        },
         "Next_Hop_IP" : "2.23.21.3",
         "Next_Hop_Interface" : "GigabitEthernet3/0",
         "Protocol" : "ospfE2",
@@ -2639,6 +3459,11 @@
         },
         "VRF" : "default",
         "Network" : "2.34.201.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet2/0",
+          "ip" : "2.23.22.3"
+        },
         "Next_Hop_IP" : "2.23.22.3",
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "ospfE2",
@@ -2653,6 +3478,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.0.0/16",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "2.1.1.1"
+        },
         "Next_Hop_IP" : "2.1.1.1",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -2667,6 +3496,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.0.0/16",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "2.1.1.2"
+        },
         "Next_Hop_IP" : "2.1.1.2",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -2681,6 +3514,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.0.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "2.34.101.4"
+        },
         "Next_Hop_IP" : "2.34.101.4",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -2695,6 +3532,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.0.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "2.34.201.4"
+        },
         "Next_Hop_IP" : "2.34.201.4",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -2709,6 +3550,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.1.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "2.34.101.4"
+        },
         "Next_Hop_IP" : "2.34.101.4",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -2723,6 +3568,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.1.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "2.34.201.4"
+        },
         "Next_Hop_IP" : "2.34.201.4",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -2737,6 +3586,10 @@
         },
         "VRF" : "default",
         "Network" : "3.0.1.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.23.21.3"
+        },
         "Next_Hop_IP" : "10.23.21.3",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -2751,6 +3604,10 @@
         },
         "VRF" : "default",
         "Network" : "3.0.2.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.23.21.3"
+        },
         "Next_Hop_IP" : "10.23.21.3",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -2765,6 +3622,11 @@
         },
         "VRF" : "default",
         "Network" : "10.12.11.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "2.12.12.1"
+        },
         "Next_Hop_IP" : "2.12.12.1",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospfE2",
@@ -2779,6 +3641,11 @@
         },
         "VRF" : "default",
         "Network" : "10.23.21.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0",
+          "ip" : "2.12.22.1"
+        },
         "Next_Hop_IP" : "2.12.22.1",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospfE2",
@@ -2793,6 +3660,10 @@
         },
         "VRF" : "default",
         "Network" : "1.0.1.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "2.34.101.3"
+        },
         "Next_Hop_IP" : "2.34.101.3",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "bgp",
@@ -2807,6 +3678,10 @@
         },
         "VRF" : "default",
         "Network" : "1.0.1.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "2.34.201.3"
+        },
         "Next_Hop_IP" : "2.34.201.3",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "bgp",
@@ -2821,6 +3696,10 @@
         },
         "VRF" : "default",
         "Network" : "1.0.2.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "2.34.101.3"
+        },
         "Next_Hop_IP" : "2.34.101.3",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "bgp",
@@ -2835,6 +3714,10 @@
         },
         "VRF" : "default",
         "Network" : "1.0.2.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "2.34.201.3"
+        },
         "Next_Hop_IP" : "2.34.201.3",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "bgp",
@@ -2849,6 +3732,10 @@
         },
         "VRF" : "default",
         "Network" : "2.1.1.2/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "Loopback0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "Loopback0",
         "Protocol" : "connected",
@@ -2863,6 +3750,10 @@
         },
         "VRF" : "default",
         "Network" : "2.34.101.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "connected",
@@ -2877,6 +3768,10 @@
         },
         "VRF" : "default",
         "Network" : "2.34.101.4/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "local",
@@ -2891,6 +3786,10 @@
         },
         "VRF" : "default",
         "Network" : "2.34.201.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "connected",
@@ -2905,6 +3804,10 @@
         },
         "VRF" : "default",
         "Network" : "2.34.201.4/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "local",
@@ -2919,6 +3822,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.0.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet2/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "connected",
@@ -2933,6 +3840,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.0.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet2/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "local",
@@ -2947,6 +3858,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.1.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet3/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet3/0",
         "Protocol" : "connected",
@@ -2961,6 +3876,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.1.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet3/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet3/0",
         "Protocol" : "local",
@@ -2975,6 +3894,10 @@
         },
         "VRF" : "default",
         "Network" : "3.0.1.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "2.34.101.3"
+        },
         "Next_Hop_IP" : "2.34.101.3",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "bgp",
@@ -2989,6 +3912,10 @@
         },
         "VRF" : "default",
         "Network" : "3.0.1.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "2.34.201.3"
+        },
         "Next_Hop_IP" : "2.34.201.3",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "bgp",
@@ -3003,6 +3930,10 @@
         },
         "VRF" : "default",
         "Network" : "3.0.2.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "2.34.101.3"
+        },
         "Next_Hop_IP" : "2.34.101.3",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "bgp",
@@ -3017,6 +3948,10 @@
         },
         "VRF" : "default",
         "Network" : "3.0.2.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "2.34.201.3"
+        },
         "Next_Hop_IP" : "2.34.201.3",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "bgp",
@@ -3031,6 +3966,10 @@
         },
         "VRF" : "default",
         "Network" : "1.0.1.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.12.11.1"
+        },
         "Next_Hop_IP" : "10.12.11.1",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -3045,6 +3984,10 @@
         },
         "VRF" : "default",
         "Network" : "1.0.1.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.12.11.1"
+        },
         "Next_Hop_IP" : "10.12.11.1",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -3059,6 +4002,10 @@
         },
         "VRF" : "default",
         "Network" : "1.0.2.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.12.11.1"
+        },
         "Next_Hop_IP" : "10.12.11.1",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -3073,6 +4020,10 @@
         },
         "VRF" : "default",
         "Network" : "1.0.2.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.12.11.1"
+        },
         "Next_Hop_IP" : "10.12.11.1",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -3087,6 +4038,11 @@
         },
         "VRF" : "default",
         "Network" : "2.1.1.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0",
+          "ip" : "2.23.11.2"
+        },
         "Next_Hop_IP" : "2.23.11.2",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
@@ -3101,6 +4057,11 @@
         },
         "VRF" : "default",
         "Network" : "2.1.1.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "2.23.21.2"
+        },
         "Next_Hop_IP" : "2.23.21.2",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
@@ -3115,6 +4076,11 @@
         },
         "VRF" : "default",
         "Network" : "2.1.1.2/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0",
+          "ip" : "2.23.11.2"
+        },
         "Next_Hop_IP" : "2.23.11.2",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
@@ -3129,6 +4095,11 @@
         },
         "VRF" : "default",
         "Network" : "2.1.1.2/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "2.23.21.2"
+        },
         "Next_Hop_IP" : "2.23.21.2",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
@@ -3143,6 +4114,11 @@
         },
         "VRF" : "default",
         "Network" : "2.1.2.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0",
+          "ip" : "2.23.11.2"
+        },
         "Next_Hop_IP" : "2.23.11.2",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
@@ -3157,6 +4133,11 @@
         },
         "VRF" : "default",
         "Network" : "2.1.2.2/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "2.23.21.2"
+        },
         "Next_Hop_IP" : "2.23.21.2",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
@@ -3171,6 +4152,10 @@
         },
         "VRF" : "default",
         "Network" : "2.1.3.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "Loopback0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "Loopback0",
         "Protocol" : "connected",
@@ -3185,6 +4170,11 @@
         },
         "VRF" : "default",
         "Network" : "2.1.3.2/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0",
+          "ip" : "2.23.11.2"
+        },
         "Next_Hop_IP" : "2.23.11.2",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
@@ -3199,6 +4189,11 @@
         },
         "VRF" : "default",
         "Network" : "2.1.3.2/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "2.23.21.2"
+        },
         "Next_Hop_IP" : "2.23.21.2",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
@@ -3213,6 +4208,11 @@
         },
         "VRF" : "default",
         "Network" : "2.12.11.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0",
+          "ip" : "2.23.11.2"
+        },
         "Next_Hop_IP" : "2.23.11.2",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
@@ -3227,6 +4227,11 @@
         },
         "VRF" : "default",
         "Network" : "2.12.12.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "2.23.21.2"
+        },
         "Next_Hop_IP" : "2.23.21.2",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
@@ -3241,6 +4246,11 @@
         },
         "VRF" : "default",
         "Network" : "2.12.21.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0",
+          "ip" : "2.23.11.2"
+        },
         "Next_Hop_IP" : "2.23.11.2",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
@@ -3255,6 +4265,11 @@
         },
         "VRF" : "default",
         "Network" : "2.12.22.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "2.23.21.2"
+        },
         "Next_Hop_IP" : "2.23.21.2",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
@@ -3269,6 +4284,10 @@
         },
         "VRF" : "default",
         "Network" : "2.23.11.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "connected",
@@ -3283,6 +4302,10 @@
         },
         "VRF" : "default",
         "Network" : "2.23.11.3/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "local",
@@ -3297,6 +4320,11 @@
         },
         "VRF" : "default",
         "Network" : "2.23.12.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0",
+          "ip" : "2.23.11.2"
+        },
         "Next_Hop_IP" : "2.23.11.2",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
@@ -3311,6 +4339,10 @@
         },
         "VRF" : "default",
         "Network" : "2.23.21.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "connected",
@@ -3325,6 +4357,10 @@
         },
         "VRF" : "default",
         "Network" : "2.23.21.3/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "local",
@@ -3339,6 +4375,11 @@
         },
         "VRF" : "default",
         "Network" : "2.23.22.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "2.23.21.2"
+        },
         "Next_Hop_IP" : "2.23.21.2",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
@@ -3353,6 +4394,10 @@
         },
         "VRF" : "default",
         "Network" : "2.34.101.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet2/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "connected",
@@ -3367,6 +4412,10 @@
         },
         "VRF" : "default",
         "Network" : "2.34.101.3/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet2/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "local",
@@ -3381,6 +4430,11 @@
         },
         "VRF" : "default",
         "Network" : "2.34.201.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0",
+          "ip" : "2.23.11.2"
+        },
         "Next_Hop_IP" : "2.23.11.2",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospfE2",
@@ -3395,6 +4449,11 @@
         },
         "VRF" : "default",
         "Network" : "2.34.201.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "2.23.21.2"
+        },
         "Next_Hop_IP" : "2.23.21.2",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospfE2",
@@ -3409,6 +4468,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.0.0/16",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "2.1.1.1"
+        },
         "Next_Hop_IP" : "2.1.1.1",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -3423,6 +4486,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.0.0/16",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "2.1.1.1"
+        },
         "Next_Hop_IP" : "2.1.1.1",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -3437,6 +4504,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.0.0/16",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "2.1.1.2"
+        },
         "Next_Hop_IP" : "2.1.1.2",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -3451,6 +4522,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.0.0/16",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "2.1.1.2"
+        },
         "Next_Hop_IP" : "2.1.1.2",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -3465,6 +4540,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.0.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "2.34.101.4"
+        },
         "Next_Hop_IP" : "2.34.101.4",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "bgp",
@@ -3479,6 +4558,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.1.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "2.34.101.4"
+        },
         "Next_Hop_IP" : "2.34.101.4",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "bgp",
@@ -3493,6 +4576,10 @@
         },
         "VRF" : "default",
         "Network" : "3.0.1.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.23.21.3"
+        },
         "Next_Hop_IP" : "10.23.21.3",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -3507,6 +4594,10 @@
         },
         "VRF" : "default",
         "Network" : "3.0.1.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.23.21.3"
+        },
         "Next_Hop_IP" : "10.23.21.3",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -3521,6 +4612,10 @@
         },
         "VRF" : "default",
         "Network" : "3.0.2.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.23.21.3"
+        },
         "Next_Hop_IP" : "10.23.21.3",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -3535,6 +4630,10 @@
         },
         "VRF" : "default",
         "Network" : "3.0.2.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.23.21.3"
+        },
         "Next_Hop_IP" : "10.23.21.3",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -3549,6 +4648,11 @@
         },
         "VRF" : "default",
         "Network" : "10.12.11.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0",
+          "ip" : "2.23.11.2"
+        },
         "Next_Hop_IP" : "2.23.11.2",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospfE2",
@@ -3563,6 +4667,11 @@
         },
         "VRF" : "default",
         "Network" : "10.12.11.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "2.23.21.2"
+        },
         "Next_Hop_IP" : "2.23.21.2",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospfE2",
@@ -3577,6 +4686,11 @@
         },
         "VRF" : "default",
         "Network" : "10.23.21.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0",
+          "ip" : "2.23.11.2"
+        },
         "Next_Hop_IP" : "2.23.11.2",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospfE2",
@@ -3591,6 +4705,11 @@
         },
         "VRF" : "default",
         "Network" : "10.23.21.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "2.23.21.2"
+        },
         "Next_Hop_IP" : "2.23.21.2",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospfE2",
@@ -3605,6 +4724,10 @@
         },
         "VRF" : "default",
         "Network" : "1.0.1.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.12.11.1"
+        },
         "Next_Hop_IP" : "10.12.11.1",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -3619,6 +4742,10 @@
         },
         "VRF" : "default",
         "Network" : "1.0.1.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.12.11.1"
+        },
         "Next_Hop_IP" : "10.12.11.1",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -3633,6 +4760,10 @@
         },
         "VRF" : "default",
         "Network" : "1.0.2.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.12.11.1"
+        },
         "Next_Hop_IP" : "10.12.11.1",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -3647,6 +4778,10 @@
         },
         "VRF" : "default",
         "Network" : "1.0.2.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.12.11.1"
+        },
         "Next_Hop_IP" : "10.12.11.1",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -3661,6 +4796,11 @@
         },
         "VRF" : "default",
         "Network" : "2.1.1.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "2.23.12.2"
+        },
         "Next_Hop_IP" : "2.23.12.2",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
@@ -3675,6 +4815,11 @@
         },
         "VRF" : "default",
         "Network" : "2.1.1.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0",
+          "ip" : "2.23.22.2"
+        },
         "Next_Hop_IP" : "2.23.22.2",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
@@ -3689,6 +4834,11 @@
         },
         "VRF" : "default",
         "Network" : "2.1.1.2/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "2.23.12.2"
+        },
         "Next_Hop_IP" : "2.23.12.2",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
@@ -3703,6 +4853,11 @@
         },
         "VRF" : "default",
         "Network" : "2.1.1.2/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0",
+          "ip" : "2.23.22.2"
+        },
         "Next_Hop_IP" : "2.23.22.2",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
@@ -3717,6 +4872,11 @@
         },
         "VRF" : "default",
         "Network" : "2.1.2.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "2.23.12.2"
+        },
         "Next_Hop_IP" : "2.23.12.2",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
@@ -3731,6 +4891,11 @@
         },
         "VRF" : "default",
         "Network" : "2.1.2.2/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0",
+          "ip" : "2.23.22.2"
+        },
         "Next_Hop_IP" : "2.23.22.2",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
@@ -3745,6 +4910,11 @@
         },
         "VRF" : "default",
         "Network" : "2.1.3.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "2.23.12.2"
+        },
         "Next_Hop_IP" : "2.23.12.2",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
@@ -3759,6 +4929,11 @@
         },
         "VRF" : "default",
         "Network" : "2.1.3.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0",
+          "ip" : "2.23.22.2"
+        },
         "Next_Hop_IP" : "2.23.22.2",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
@@ -3773,6 +4948,10 @@
         },
         "VRF" : "default",
         "Network" : "2.1.3.2/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "Loopback0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "Loopback0",
         "Protocol" : "connected",
@@ -3787,6 +4966,11 @@
         },
         "VRF" : "default",
         "Network" : "2.12.11.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "2.23.12.2"
+        },
         "Next_Hop_IP" : "2.23.12.2",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
@@ -3801,6 +4985,11 @@
         },
         "VRF" : "default",
         "Network" : "2.12.12.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0",
+          "ip" : "2.23.22.2"
+        },
         "Next_Hop_IP" : "2.23.22.2",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
@@ -3815,6 +5004,11 @@
         },
         "VRF" : "default",
         "Network" : "2.12.21.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "2.23.12.2"
+        },
         "Next_Hop_IP" : "2.23.12.2",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
@@ -3829,6 +5023,11 @@
         },
         "VRF" : "default",
         "Network" : "2.12.22.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0",
+          "ip" : "2.23.22.2"
+        },
         "Next_Hop_IP" : "2.23.22.2",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
@@ -3843,6 +5042,11 @@
         },
         "VRF" : "default",
         "Network" : "2.23.11.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "2.23.12.2"
+        },
         "Next_Hop_IP" : "2.23.12.2",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
@@ -3857,6 +5061,10 @@
         },
         "VRF" : "default",
         "Network" : "2.23.12.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "connected",
@@ -3871,6 +5079,10 @@
         },
         "VRF" : "default",
         "Network" : "2.23.12.3/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "local",
@@ -3885,6 +5097,11 @@
         },
         "VRF" : "default",
         "Network" : "2.23.21.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0",
+          "ip" : "2.23.22.2"
+        },
         "Next_Hop_IP" : "2.23.22.2",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
@@ -3899,6 +5116,10 @@
         },
         "VRF" : "default",
         "Network" : "2.23.22.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "connected",
@@ -3913,6 +5134,10 @@
         },
         "VRF" : "default",
         "Network" : "2.23.22.3/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "local",
@@ -3927,6 +5152,11 @@
         },
         "VRF" : "default",
         "Network" : "2.34.101.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "2.23.12.2"
+        },
         "Next_Hop_IP" : "2.23.12.2",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospfE2",
@@ -3941,6 +5171,11 @@
         },
         "VRF" : "default",
         "Network" : "2.34.101.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0",
+          "ip" : "2.23.22.2"
+        },
         "Next_Hop_IP" : "2.23.22.2",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospfE2",
@@ -3955,6 +5190,10 @@
         },
         "VRF" : "default",
         "Network" : "2.34.201.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet2/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "connected",
@@ -3969,6 +5208,10 @@
         },
         "VRF" : "default",
         "Network" : "2.34.201.3/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet2/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "local",
@@ -3983,6 +5226,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.0.0/16",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "2.1.1.1"
+        },
         "Next_Hop_IP" : "2.1.1.1",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -3997,6 +5244,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.0.0/16",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "2.1.1.1"
+        },
         "Next_Hop_IP" : "2.1.1.1",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -4011,6 +5262,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.0.0/16",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "2.1.1.2"
+        },
         "Next_Hop_IP" : "2.1.1.2",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -4025,6 +5280,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.0.0/16",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "2.1.1.2"
+        },
         "Next_Hop_IP" : "2.1.1.2",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -4039,6 +5298,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.0.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "2.34.201.4"
+        },
         "Next_Hop_IP" : "2.34.201.4",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "bgp",
@@ -4053,6 +5316,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.1.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "2.34.201.4"
+        },
         "Next_Hop_IP" : "2.34.201.4",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "bgp",
@@ -4067,6 +5334,10 @@
         },
         "VRF" : "default",
         "Network" : "3.0.1.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.23.21.3"
+        },
         "Next_Hop_IP" : "10.23.21.3",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -4081,6 +5352,10 @@
         },
         "VRF" : "default",
         "Network" : "3.0.1.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.23.21.3"
+        },
         "Next_Hop_IP" : "10.23.21.3",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -4095,6 +5370,10 @@
         },
         "VRF" : "default",
         "Network" : "3.0.2.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.23.21.3"
+        },
         "Next_Hop_IP" : "10.23.21.3",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -4109,6 +5388,10 @@
         },
         "VRF" : "default",
         "Network" : "3.0.2.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.23.21.3"
+        },
         "Next_Hop_IP" : "10.23.21.3",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -4123,6 +5406,11 @@
         },
         "VRF" : "default",
         "Network" : "10.12.11.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "2.23.12.2"
+        },
         "Next_Hop_IP" : "2.23.12.2",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospfE2",
@@ -4137,6 +5425,11 @@
         },
         "VRF" : "default",
         "Network" : "10.12.11.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0",
+          "ip" : "2.23.22.2"
+        },
         "Next_Hop_IP" : "2.23.22.2",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospfE2",
@@ -4151,6 +5444,11 @@
         },
         "VRF" : "default",
         "Network" : "10.23.21.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "2.23.12.2"
+        },
         "Next_Hop_IP" : "2.23.12.2",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospfE2",
@@ -4165,6 +5463,11 @@
         },
         "VRF" : "default",
         "Network" : "10.23.21.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0",
+          "ip" : "2.23.22.2"
+        },
         "Next_Hop_IP" : "2.23.22.2",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospfE2",
@@ -4179,6 +5482,10 @@
         },
         "VRF" : "default",
         "Network" : "1.0.1.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.13.22.1"
+        },
         "Next_Hop_IP" : "10.13.22.1",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -4193,6 +5500,10 @@
         },
         "VRF" : "default",
         "Network" : "1.0.2.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.13.22.1"
+        },
         "Next_Hop_IP" : "10.13.22.1",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -4207,6 +5518,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.0.0/16",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.23.21.2"
+        },
         "Next_Hop_IP" : "10.23.21.2",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "bgp",
@@ -4221,6 +5536,10 @@
         },
         "VRF" : "default",
         "Network" : "3.0.1.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "connected",
@@ -4235,6 +5554,10 @@
         },
         "VRF" : "default",
         "Network" : "3.0.1.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "local",
@@ -4249,6 +5572,11 @@
         },
         "VRF" : "default",
         "Network" : "3.0.2.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0",
+          "ip" : "3.0.1.2"
+        },
         "Next_Hop_IP" : "3.0.1.2",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
@@ -4263,6 +5591,10 @@
         },
         "VRF" : "default",
         "Network" : "3.1.1.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "Loopback0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "Loopback0",
         "Protocol" : "connected",
@@ -4277,6 +5609,11 @@
         },
         "VRF" : "default",
         "Network" : "3.2.2.2/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0",
+          "ip" : "3.0.1.2"
+        },
         "Next_Hop_IP" : "3.0.1.2",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
@@ -4291,6 +5628,11 @@
         },
         "VRF" : "default",
         "Network" : "3.10.1.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0",
+          "ip" : "3.0.1.2"
+        },
         "Next_Hop_IP" : "3.0.1.2",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
@@ -4305,6 +5647,11 @@
         },
         "VRF" : "default",
         "Network" : "10.13.22.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0",
+          "ip" : "3.0.1.2"
+        },
         "Next_Hop_IP" : "3.0.1.2",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospfE2",
@@ -4319,6 +5666,10 @@
         },
         "VRF" : "default",
         "Network" : "10.23.21.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "connected",
@@ -4333,6 +5684,10 @@
         },
         "VRF" : "default",
         "Network" : "10.23.21.3/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "local",
@@ -4347,6 +5702,10 @@
         },
         "VRF" : "default",
         "Network" : "1.0.1.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.13.22.1"
+        },
         "Next_Hop_IP" : "10.13.22.1",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "bgp",
@@ -4361,6 +5720,10 @@
         },
         "VRF" : "default",
         "Network" : "1.0.2.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.13.22.1"
+        },
         "Next_Hop_IP" : "10.13.22.1",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "bgp",
@@ -4375,6 +5738,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.0.0/16",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.23.21.2"
+        },
         "Next_Hop_IP" : "10.23.21.2",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -4389,6 +5756,11 @@
         },
         "VRF" : "default",
         "Network" : "3.0.1.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "3.0.2.2"
+        },
         "Next_Hop_IP" : "3.0.2.2",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
@@ -4403,6 +5775,10 @@
         },
         "VRF" : "default",
         "Network" : "3.0.2.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "connected",
@@ -4417,6 +5793,10 @@
         },
         "VRF" : "default",
         "Network" : "3.0.2.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "local",
@@ -4431,6 +5811,11 @@
         },
         "VRF" : "default",
         "Network" : "3.1.1.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "3.0.2.2"
+        },
         "Next_Hop_IP" : "3.0.2.2",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
@@ -4445,6 +5830,10 @@
         },
         "VRF" : "default",
         "Network" : "3.2.2.2/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "Loopback0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "Loopback0",
         "Protocol" : "connected",
@@ -4459,6 +5848,11 @@
         },
         "VRF" : "default",
         "Network" : "3.10.1.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "3.0.2.2"
+        },
         "Next_Hop_IP" : "3.0.2.2",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
@@ -4473,6 +5867,10 @@
         },
         "VRF" : "default",
         "Network" : "10.13.22.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "connected",
@@ -4487,6 +5885,10 @@
         },
         "VRF" : "default",
         "Network" : "10.13.22.3/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "local",
@@ -4501,6 +5903,11 @@
         },
         "VRF" : "default",
         "Network" : "10.23.21.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "3.0.2.2"
+        },
         "Next_Hop_IP" : "3.0.2.2",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospfE2",
@@ -4515,6 +5922,10 @@
         },
         "VRF" : "default",
         "Network" : "1.0.1.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.13.22.1"
+        },
         "Next_Hop_IP" : "10.13.22.1",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -4529,6 +5940,10 @@
         },
         "VRF" : "default",
         "Network" : "1.0.2.0/24",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.13.22.1"
+        },
         "Next_Hop_IP" : "10.13.22.1",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -4543,6 +5958,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.0.0/16",
+        "Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.23.21.2"
+        },
         "Next_Hop_IP" : "10.23.21.2",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
@@ -4557,6 +5976,10 @@
         },
         "VRF" : "default",
         "Network" : "3.0.1.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "connected",
@@ -4571,6 +5994,10 @@
         },
         "VRF" : "default",
         "Network" : "3.0.1.2/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "local",
@@ -4585,6 +6012,10 @@
         },
         "VRF" : "default",
         "Network" : "3.0.2.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "connected",
@@ -4599,6 +6030,10 @@
         },
         "VRF" : "default",
         "Network" : "3.0.2.2/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "local",
@@ -4613,6 +6048,11 @@
         },
         "VRF" : "default",
         "Network" : "3.1.1.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "3.0.1.1"
+        },
         "Next_Hop_IP" : "3.0.1.1",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospf",
@@ -4627,6 +6067,11 @@
         },
         "VRF" : "default",
         "Network" : "3.2.2.2/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0",
+          "ip" : "3.0.2.1"
+        },
         "Next_Hop_IP" : "3.0.2.1",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospf",
@@ -4641,6 +6086,10 @@
         },
         "VRF" : "default",
         "Network" : "3.10.1.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "Loopback0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "Loopback0",
         "Protocol" : "connected",
@@ -4655,6 +6104,11 @@
         },
         "VRF" : "default",
         "Network" : "10.13.22.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet0/0",
+          "ip" : "3.0.2.1"
+        },
         "Next_Hop_IP" : "3.0.2.1",
         "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Protocol" : "ospfE2",
@@ -4669,6 +6123,11 @@
         },
         "VRF" : "default",
         "Network" : "10.23.21.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet1/0",
+          "ip" : "3.0.1.1"
+        },
         "Next_Hop_IP" : "3.0.1.1",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Protocol" : "ospfE2",
@@ -4683,6 +6142,10 @@
         },
         "VRF" : "default",
         "Network" : "90.90.90.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet2/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "connected",
@@ -4697,6 +6160,10 @@
         },
         "VRF" : "default",
         "Network" : "90.90.90.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet3/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet3/0",
         "Protocol" : "connected",
@@ -4711,6 +6178,10 @@
         },
         "VRF" : "default",
         "Network" : "90.90.90.1/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet2/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Protocol" : "local",
@@ -4725,6 +6196,10 @@
         },
         "VRF" : "default",
         "Network" : "90.90.90.2/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "GigabitEthernet3/0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet3/0",
         "Protocol" : "local",
@@ -4739,6 +6214,11 @@
         },
         "VRF" : "default",
         "Network" : "0.0.0.0/0",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "eth0",
+          "ip" : "2.128.0.1"
+        },
         "Next_Hop_IP" : "2.128.0.1",
         "Next_Hop_Interface" : "eth0",
         "Protocol" : "static",
@@ -4753,6 +6233,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.0.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "eth0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "eth0",
         "Protocol" : "connected",
@@ -4767,6 +6251,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.0.101/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "eth0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "eth0",
         "Protocol" : "local",
@@ -4781,6 +6269,11 @@
         },
         "VRF" : "default",
         "Network" : "0.0.0.0/0",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "eth0",
+          "ip" : "2.128.1.1"
+        },
         "Next_Hop_IP" : "2.128.1.1",
         "Next_Hop_Interface" : "eth0",
         "Protocol" : "static",
@@ -4795,6 +6288,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.1.0/24",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "eth0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "eth0",
         "Protocol" : "connected",
@@ -4809,6 +6306,10 @@
         },
         "VRF" : "default",
         "Network" : "2.128.1.101/32",
+        "Next_Hop" : {
+          "type" : "interface",
+          "interface" : "eth0"
+        },
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "eth0",
         "Protocol" : "local",

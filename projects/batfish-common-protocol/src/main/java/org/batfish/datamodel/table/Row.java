@@ -39,6 +39,7 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.Exclusion;
+import org.batfish.datamodel.route.nh.NextHop;
 
 /**
  * Represents one row of the table answer. Each row is basically a map of key value pairs, where the
@@ -316,6 +317,10 @@ public class Row implements Serializable {
 
   public Prefix getPrefix(String column) {
     return (Prefix) get(column, Schema.PREFIX);
+  }
+
+  public @Nullable NextHop getNextHop(String column) {
+    return (NextHop) get(column, Schema.NEXT_HOP);
   }
 
   public SelfDescribingObject getSelfDescribing(String column) {

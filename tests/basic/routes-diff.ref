@@ -32,6 +32,20 @@
           "schema" : "String"
         },
         {
+          "description" : "Route's Next Hop",
+          "isKey" : false,
+          "isValue" : true,
+          "name" : "Snapshot_Next_Hop",
+          "schema" : "NextHop"
+        },
+        {
+          "description" : "Route's Next Hop",
+          "isKey" : false,
+          "isValue" : true,
+          "name" : "Reference_Next_Hop",
+          "schema" : "NextHop"
+        },
+        {
           "description" : "Route's Next Hop IP",
           "isKey" : false,
           "isValue" : true,
@@ -127,6 +141,10 @@
         "VRF" : "default",
         "Network" : "4.0.0.0/8",
         "Entry_Presence" : "Only in Snapshot",
+        "Snapshot_Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.14.22.4"
+        },
         "Snapshot_Next_Hop_IP" : "10.14.22.4",
         "Snapshot_Protocol" : "ibgp",
         "Snapshot_Next_Hop_Interface" : "dynamic",
@@ -137,6 +155,7 @@
         "Reference_Metric" : null,
         "Reference_Admin_Distance" : null,
         "Reference_Tag" : null,
+        "Reference_Next_Hop" : null,
         "Reference_Next_Hop_IP" : null,
         "Reference_Protocol" : null
       },
@@ -148,6 +167,10 @@
         "VRF" : "default",
         "Network" : "4.0.0.0/8",
         "Entry_Presence" : "Only in Snapshot",
+        "Snapshot_Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.14.22.4"
+        },
         "Snapshot_Next_Hop_IP" : "10.14.22.4",
         "Snapshot_Protocol" : "bgp",
         "Snapshot_Next_Hop_Interface" : "dynamic",
@@ -158,6 +181,7 @@
         "Reference_Metric" : null,
         "Reference_Admin_Distance" : null,
         "Reference_Tag" : null,
+        "Reference_Next_Hop" : null,
         "Reference_Next_Hop_IP" : null,
         "Reference_Protocol" : null
       },
@@ -169,6 +193,10 @@
         "VRF" : "default",
         "Network" : "4.0.0.0/8",
         "Entry_Presence" : "Only in Snapshot",
+        "Snapshot_Next_Hop" : {
+          "type" : "ip",
+          "ip" : "10.14.22.4"
+        },
         "Snapshot_Next_Hop_IP" : "10.14.22.4",
         "Snapshot_Protocol" : "ibgp",
         "Snapshot_Next_Hop_Interface" : "dynamic",
@@ -179,6 +207,7 @@
         "Reference_Metric" : null,
         "Reference_Admin_Distance" : null,
         "Reference_Tag" : null,
+        "Reference_Next_Hop" : null,
         "Reference_Next_Hop_IP" : null,
         "Reference_Protocol" : null
       }
