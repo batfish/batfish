@@ -268,9 +268,9 @@ public final class FrrConversionsTest {
     String permitted_regex = "(^| )11111($| )";
     String denied_regex = "(^| )22222($| )";
 
-    IpAsPathAccessList asPathAccessList = new IpAsPathAccessList("name");
-    asPathAccessList.addLine(new IpAsPathAccessListLine(LineAction.DENY, denied_regex));
-    asPathAccessList.addLine(new IpAsPathAccessListLine(LineAction.PERMIT, permitted_regex));
+    BgpAsPathAccessList asPathAccessList = new BgpAsPathAccessList("name");
+    asPathAccessList.addLine(new BgpAsPathAccessListLine(LineAction.DENY, denied_regex));
+    asPathAccessList.addLine(new BgpAsPathAccessListLine(LineAction.PERMIT, permitted_regex));
     AsPathAccessList viList = toAsPathAccessList(asPathAccessList);
 
     // Cache initialization only happens in AsPathAccessList on deserialization o.O

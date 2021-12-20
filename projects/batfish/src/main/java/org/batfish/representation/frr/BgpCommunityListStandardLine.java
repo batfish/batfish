@@ -7,15 +7,15 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 
 /**
- * A line of an {@link IpCommunityListStandard}.
+ * A line of an {@link BgpCommunityListStandard}.
  *
  * <p>A route must contain every community from {@link #getCommunities} to be matched by this line.
  */
-public final class IpCommunityListStandardLine implements Serializable {
+public final class BgpCommunityListStandardLine implements Serializable {
   private final @Nonnull LineAction _action;
   private final @Nonnull Set<StandardCommunity> _communities;
 
-  public IpCommunityListStandardLine(LineAction action, Set<StandardCommunity> communities) {
+  public BgpCommunityListStandardLine(LineAction action, Set<StandardCommunity> communities) {
     _action = action;
     _communities = communities;
   }

@@ -15,8 +15,8 @@ import static org.batfish.representation.frr.FrrConversions.computeRouteMapEntry
 import static org.batfish.representation.frr.FrrRoutingProtocol.CONNECTED;
 import static org.batfish.representation.frr.FrrRoutingProtocol.OSPF;
 import static org.batfish.representation.frr.FrrRoutingProtocol.STATIC;
-import static org.batfish.representation.frr.FrrStructureType.IP_AS_PATH_ACCESS_LIST;
-import static org.batfish.representation.frr.FrrStructureType.IP_COMMUNITY_LIST;
+import static org.batfish.representation.frr.FrrStructureType.BGP_AS_PATH_ACCESS_LIST;
+import static org.batfish.representation.frr.FrrStructureType.BGP_COMMUNITY_LIST;
 import static org.batfish.representation.frr.FrrStructureType.ROUTE_MAP;
 import static org.batfish.representation.frr.FrrStructureType.VRF;
 import static org.batfish.representation.frr.FrrStructureUsage.BGP_ADDRESS_FAMILY_IPV4_IMPORT_VRF;
@@ -104,6 +104,10 @@ import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.batfish.representation.cumulus_concatenated.CumulusConcatenatedConfiguration;
 import org.batfish.representation.cumulus_concatenated.InterfacesInterface;
+import org.batfish.representation.frr.BgpAsPathAccessList;
+import org.batfish.representation.frr.BgpAsPathAccessListLine;
+import org.batfish.representation.frr.BgpCommunityListExpanded;
+import org.batfish.representation.frr.BgpCommunityListExpandedLine;
 import org.batfish.representation.frr.BgpInterfaceNeighbor;
 import org.batfish.representation.frr.BgpIpNeighbor;
 import org.batfish.representation.frr.BgpNeighbor;
@@ -120,10 +124,6 @@ import org.batfish.representation.frr.FrrInterface;
 import org.batfish.representation.frr.FrrRoutingProtocol;
 import org.batfish.representation.frr.FrrStructureType;
 import org.batfish.representation.frr.FrrStructureUsage;
-import org.batfish.representation.frr.IpAsPathAccessList;
-import org.batfish.representation.frr.IpAsPathAccessListLine;
-import org.batfish.representation.frr.IpCommunityListExpanded;
-import org.batfish.representation.frr.IpCommunityListExpandedLine;
 import org.batfish.representation.frr.IpPrefixList;
 import org.batfish.representation.frr.IpPrefixListLine;
 import org.batfish.representation.frr.Ipv6PrefixList;
@@ -1368,10 +1368,10 @@ public class FrrGrammarTest {
 
     // Both AS paths should be referenced.
     assertThat(
-        getStructureReferences(IP_AS_PATH_ACCESS_LIST, asPathName1, ROUTE_MAP_MATCH_AS_PATH),
+        getStructureReferences(BGP_AS_PATH_ACCESS_LIST, asPathName1, ROUTE_MAP_MATCH_AS_PATH),
         contains(2));
     assertThat(
-        getStructureReferences(IP_AS_PATH_ACCESS_LIST, asPathName2, ROUTE_MAP_MATCH_AS_PATH),
+        getStructureReferences(BGP_AS_PATH_ACCESS_LIST, asPathName2, ROUTE_MAP_MATCH_AS_PATH),
         contains(3));
   }
 
@@ -1385,10 +1385,10 @@ public class FrrGrammarTest {
     assertThat(entry.getMatchCommunity().getNames(), equalTo(ImmutableList.of("CN1", "CN2")));
 
     assertThat(
-        getStructureReferences(IP_COMMUNITY_LIST, "CN1", ROUTE_MAP_MATCH_COMMUNITY_LIST),
+        getStructureReferences(BGP_COMMUNITY_LIST, "CN1", ROUTE_MAP_MATCH_COMMUNITY_LIST),
         contains(2));
     assertThat(
-        getStructureReferences(IP_COMMUNITY_LIST, "CN2", ROUTE_MAP_MATCH_COMMUNITY_LIST),
+        getStructureReferences(BGP_COMMUNITY_LIST, "CN2", ROUTE_MAP_MATCH_COMMUNITY_LIST),
         contains(2));
   }
 
@@ -1400,10 +1400,10 @@ public class FrrGrammarTest {
     assertThat(entry.getMatchCommunity().getNames(), equalTo(ImmutableList.of("CN1", "CN2")));
 
     assertThat(
-        getStructureReferences(IP_COMMUNITY_LIST, "CN1", ROUTE_MAP_MATCH_COMMUNITY_LIST),
+        getStructureReferences(BGP_COMMUNITY_LIST, "CN1", ROUTE_MAP_MATCH_COMMUNITY_LIST),
         contains(2));
     assertThat(
-        getStructureReferences(IP_COMMUNITY_LIST, "CN2", ROUTE_MAP_MATCH_COMMUNITY_LIST),
+        getStructureReferences(BGP_COMMUNITY_LIST, "CN2", ROUTE_MAP_MATCH_COMMUNITY_LIST),
         contains(3));
   }
 
@@ -1544,12 +1544,13 @@ public class FrrGrammarTest {
 
     parse(String.format("ip community-list expanded %s permit 10000:10 20000:20\n", name));
 
-    IpCommunityListExpanded communityList =
-        (IpCommunityListExpanded) _frr.getIpCommunityLists().get(name);
+    BgpCommunityListExpanded communityList =
+        (BgpCommunityListExpanded) _frr.getBgpCommunityLists().get(name);
 
-    List<IpCommunityListExpandedLine> expected =
-        Lists.newArrayList(new IpCommunityListExpandedLine(LineAction.PERMIT, "10000:10 20000:20"));
-    List<IpCommunityListExpandedLine> actual = communityList.getLines();
+    List<BgpCommunityListExpandedLine> expected =
+        Lists.newArrayList(
+            new BgpCommunityListExpandedLine(LineAction.PERMIT, "10000:10 20000:20"));
+    List<BgpCommunityListExpandedLine> actual = communityList.getLines();
     assertThat(expected.size(), equalTo(actual.size()));
     assertThat(expected.get(0).getAction(), equalTo(actual.get(0).getAction()));
     assertThat(expected.get(0).getRegex(), equalTo(actual.get(0).getRegex()));
@@ -1696,20 +1697,20 @@ public class FrrGrammarTest {
             as4));
 
     // Check that config has the expected AS-path access list with the expected name and num lines
-    assertThat(_frr.getIpAsPathAccessLists().keySet(), contains(name));
-    IpAsPathAccessList asPathAccessList = _frr.getIpAsPathAccessLists().get(name);
+    assertThat(_frr.getBgpAsPathAccessLists().keySet(), contains(name));
+    BgpAsPathAccessList asPathAccessList = _frr.getBgpAsPathAccessLists().get(name);
     assertThat(asPathAccessList.getName(), equalTo(name));
     assertThat(asPathAccessList.getLines(), hasSize(8));
 
     // Check that lines look as expected
-    IpAsPathAccessListLine line0 = asPathAccessList.getLines().get(0);
-    IpAsPathAccessListLine line1 = asPathAccessList.getLines().get(1);
-    IpAsPathAccessListLine line2 = asPathAccessList.getLines().get(2);
-    IpAsPathAccessListLine line3 = asPathAccessList.getLines().get(3);
-    IpAsPathAccessListLine line4 = asPathAccessList.getLines().get(4);
-    IpAsPathAccessListLine line5 = asPathAccessList.getLines().get(5);
-    IpAsPathAccessListLine line6 = asPathAccessList.getLines().get(6);
-    IpAsPathAccessListLine line7 = asPathAccessList.getLines().get(7);
+    BgpAsPathAccessListLine line0 = asPathAccessList.getLines().get(0);
+    BgpAsPathAccessListLine line1 = asPathAccessList.getLines().get(1);
+    BgpAsPathAccessListLine line2 = asPathAccessList.getLines().get(2);
+    BgpAsPathAccessListLine line3 = asPathAccessList.getLines().get(3);
+    BgpAsPathAccessListLine line4 = asPathAccessList.getLines().get(4);
+    BgpAsPathAccessListLine line5 = asPathAccessList.getLines().get(5);
+    BgpAsPathAccessListLine line6 = asPathAccessList.getLines().get(6);
+    BgpAsPathAccessListLine line7 = asPathAccessList.getLines().get(7);
 
     assertThat(line0.getAction(), equalTo(LineAction.PERMIT));
     assertThat(line1.getAction(), equalTo(LineAction.PERMIT));
@@ -1731,7 +1732,7 @@ public class FrrGrammarTest {
 
     // Check that the AS-path access list definition was registered
     DefinedStructureInfo definedStructureInfo =
-        getDefinedStructureInfo(FrrStructureType.IP_AS_PATH_ACCESS_LIST, name);
+        getDefinedStructureInfo(FrrStructureType.BGP_AS_PATH_ACCESS_LIST, name);
     assertThat(
         definedStructureInfo.getDefinitionLines().enumerate(), contains(1, 2, 3, 4, 5, 6, 7, 8));
   }
