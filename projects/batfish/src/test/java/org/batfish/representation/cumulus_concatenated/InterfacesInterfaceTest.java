@@ -5,7 +5,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.rules.ExpectedException.none;
 
 import com.google.common.collect.ImmutableSet;
-import org.batfish.representation.frr.CumulusStructureType;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;

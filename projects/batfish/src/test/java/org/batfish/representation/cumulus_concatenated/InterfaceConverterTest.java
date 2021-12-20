@@ -18,7 +18,6 @@ import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MacAddress;
 import org.batfish.datamodel.Prefix;
-import org.batfish.representation.frr.InterfaceBridgeSettings;
 import org.batfish.representation.frr.StaticRoute;
 import org.batfish.representation.frr.Vxlan;
 import org.junit.Test;

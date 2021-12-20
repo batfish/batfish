@@ -18,6 +18,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
+import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Edge;
@@ -124,9 +126,28 @@ public class EvpnNxosTest {
             allOf(
                 hasPrefix(Prefix.strict("10.0.1.0/24")),
                 hasNextHop(NextHopVtep.of(L3VNI, Ip.parse("10.0.4.1"))))));
+
+    // test main RIB routes
+    Set<AnnotatedRoute<AbstractRoute>> r1Routes =
+        dp.getRibs().get("r1").get(TENANT_VRF_NAME).getTypedRoutes();
+    Set<AnnotatedRoute<AbstractRoute>> r2Routes =
+        dp.getRibs().get("r2").get(TENANT_VRF_NAME).getTypedRoutes();
+
+    assertThat(
+        r1Routes,
+        hasItem(
+            allOf(
+                hasPrefix(Prefix.strict("10.0.2.0/24")),
+                hasNextHop(NextHopVtep.of(L3VNI, Ip.parse("10.0.4.2"))))));
+    assertThat(
+        r2Routes,
+        hasItem(
+            allOf(
+                hasPrefix(Prefix.strict("10.0.1.0/24")),
+                hasNextHop(NextHopVtep.of(L3VNI, Ip.parse("10.0.4.1"))))));
   }
 
-  @Test(expected = AssertionError.class) // xfail this until l3vni topology edges are fixed
+  @Test
   public void testTopology() {
     Topology topology = _batfish.getTopologyProvider().getLayer3Topology(_batfish.getSnapshot());
     String vniIface = generatedTenantVniInterfaceName(L3VNI);
@@ -138,7 +159,7 @@ public class EvpnNxosTest {
             hasItem(Edge.of("r2", vniIface, "r1", vniIface))));
   }
 
-  @Test(expected = AssertionError.class) // xfail this until l3vni topology edges are fixed
+  @Test
   public void testConnectivity() {
     Ip h1Ip = Ip.parse("10.0.1.1");
     Ip h2Ip = Ip.parse("10.0.2.2");

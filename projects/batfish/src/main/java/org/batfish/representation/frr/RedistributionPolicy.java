@@ -8,12 +8,12 @@ import javax.annotation.Nullable;
 /** Represents a redistribution policy configuration for Cumulus FRR. */
 public final class RedistributionPolicy implements Serializable {
   public RedistributionPolicy(
-      CumulusRoutingProtocol cumulusRoutingProtocol, @Nullable String routeMap) {
+      FrrRoutingProtocol cumulusRoutingProtocol, @Nullable String routeMap) {
     _cumulusRoutingProtocol = cumulusRoutingProtocol;
     _routeMap = routeMap;
   }
 
-  public @Nonnull CumulusRoutingProtocol getCumulusRoutingProtocol() {
+  public @Nonnull FrrRoutingProtocol getCumulusRoutingProtocol() {
     return _cumulusRoutingProtocol;
   }
 
@@ -25,7 +25,7 @@ public final class RedistributionPolicy implements Serializable {
   ///// Private implementation details /////
   //////////////////////////////////////////
 
-  private final @Nonnull CumulusRoutingProtocol _cumulusRoutingProtocol;
+  private final @Nonnull FrrRoutingProtocol _cumulusRoutingProtocol;
   private final @Nullable String _routeMap;
 
   @Override

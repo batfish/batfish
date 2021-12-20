@@ -1,4 +1,4 @@
-package org.batfish.representation.frr;
+package org.batfish.representation.cumulus_concatenated;
 
 import java.io.Serializable;
 import javax.annotation.Nonnull;

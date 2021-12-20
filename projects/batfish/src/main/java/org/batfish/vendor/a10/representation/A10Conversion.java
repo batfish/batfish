@@ -235,13 +235,17 @@ public class A10Conversion {
     return Optional.ofNullable(current);
   }
 
-  static boolean isVirtualServerEnabled(VirtualServer virtualServer) {
-    return firstNonNull(virtualServer.getEnable(), true)
+  public static boolean isVirtualServerEnabled(VirtualServer virtualServer) {
+    return firstNonNull(virtualServer.getEnable(), true);
+  }
+
+  static boolean isAnyVirtualServerPortEnabled(VirtualServer virtualServer) {
+    return isVirtualServerEnabled(virtualServer)
         && virtualServer.getPorts().values().stream()
             .anyMatch(A10Conversion::isVirtualServerPortEnabled);
   }
 
-  static boolean isVirtualServerPortEnabled(VirtualServerPort port) {
+  public static boolean isVirtualServerPortEnabled(VirtualServerPort port) {
     return firstNonNull(port.getEnable(), true);
   }
 
@@ -320,7 +324,7 @@ public class A10Conversion {
   static @Nonnull Stream<Ip> getVirtualServerIps(
       Collection<VirtualServer> virtualServers, int vrid) {
     return virtualServers.stream()
-        .filter(A10Conversion::isVirtualServerEnabled)
+        .filter(A10Conversion::isAnyVirtualServerPortEnabled)
         .filter(vs -> vrid == getVirtualServerVrid(vs))
         .map(VirtualServerTargetVirtualAddressExtractor::extractIp);
   }
@@ -332,7 +336,7 @@ public class A10Conversion {
   static @Nonnull Stream<Ip> getVirtualServerIpsByHaGroup(
       Collection<VirtualServer> virtualServers, int haGroup) {
     return virtualServers.stream()
-        .filter(A10Conversion::isVirtualServerEnabled)
+        .filter(A10Conversion::isAnyVirtualServerPortEnabled)
         .filter(vs -> haGroup == getVirtualServerHaGroup(vs))
         .map(VirtualServerTargetVirtualAddressExtractor::extractIp);
   }
@@ -345,7 +349,7 @@ public class A10Conversion {
   static @Nonnull Stream<Ip> getVirtualServerIpsForAllVrids(
       Collection<VirtualServer> virtualServers) {
     return virtualServers.stream()
-        .filter(A10Conversion::isVirtualServerEnabled)
+        .filter(A10Conversion::isAnyVirtualServerPortEnabled)
         .map(VirtualServerTargetVirtualAddressExtractor::extractIp);
   }
 
@@ -353,7 +357,7 @@ public class A10Conversion {
   static @Nonnull Stream<KernelRoute> getVirtualServerKernelRoutes(
       Collection<VirtualServer> virtualServers) {
     return virtualServers.stream()
-        .filter(A10Conversion::isVirtualServerEnabled)
+        .filter(A10Conversion::isAnyVirtualServerPortEnabled)
         .map(A10Conversion::toKernelRoute);
   }
 

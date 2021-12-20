@@ -1,5 +1,9 @@
 package org.batfish.question.a10;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.batfish.vendor.a10.representation.A10Conversion.isVirtualServerEnabled;
+import static org.batfish.vendor.a10.representation.A10Conversion.isVirtualServerPortEnabled;
+
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -23,9 +27,13 @@ import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.vendor.a10.representation.A10Configuration;
+import org.batfish.vendor.a10.representation.Server;
 import org.batfish.vendor.a10.representation.ServerPort;
+import org.batfish.vendor.a10.representation.ServerPort.ServerPortAndType;
+import org.batfish.vendor.a10.representation.ServerPort.Type;
 import org.batfish.vendor.a10.representation.ServerTargetVisitor;
 import org.batfish.vendor.a10.representation.ServiceGroup;
+import org.batfish.vendor.a10.representation.ServiceGroupMember;
 import org.batfish.vendor.a10.representation.VirtualServer;
 import org.batfish.vendor.a10.representation.VirtualServerPort;
 import org.batfish.vendor.a10.representation.VirtualServerTargetAddress;
@@ -37,7 +45,9 @@ public class A10VirtualServerConfigurationAnswerer extends Answerer {
   public static final String COL_NODE = "Node";
   public static final String COL_VIRTUAL_SERVER_NAME = "Virtual_Server_Name";
   public static final String COL_VIRTUAL_SERVER_IP = "Virtual_Server_IP";
+  public static final String COL_VIRTUAL_SERVER_ENABLED = "Virtual_Server_Enabled";
   public static final String COL_VIRTUAL_SERVER_PORT = "Virtual_Server_Port";
+  public static final String COL_VIRTUAL_SERVER_PORT_ENABLED = "Virtual_Server_Port_Enabled";
   public static final String COL_VIRTUAL_SERVER_TYPE = "Virtual_Server_Type";
   public static final String COL_VIRTUAL_SERVER_PORT_TYPE_NAME = "Virtual_Server_Port_Type_Name";
   public static final String COL_SERVICE_GROUP_NAME = "Service_Group_Name";
@@ -56,10 +66,20 @@ public class A10VirtualServerConfigurationAnswerer extends Answerer {
         .add(
             new ColumnMetadata(
                 COL_VIRTUAL_SERVER_NAME, Schema.STRING, "Virtual Server Name", true, false))
+        .add(
+            new ColumnMetadata(
+                COL_VIRTUAL_SERVER_ENABLED, Schema.BOOLEAN, "Virtual Server Enabled", true, false))
         .add(new ColumnMetadata(COL_VIRTUAL_SERVER_IP, Schema.IP, "Virtual Server IP", true, false))
         .add(
             new ColumnMetadata(
                 COL_VIRTUAL_SERVER_PORT, Schema.INTEGER, "Virtual Server Port", true, false))
+        .add(
+            new ColumnMetadata(
+                COL_VIRTUAL_SERVER_PORT_ENABLED,
+                Schema.BOOLEAN,
+                "Virtual Server Port Enabled",
+                true,
+                false))
         .add(
             new ColumnMetadata(
                 COL_VIRTUAL_SERVER_TYPE, Schema.STRING, "Virtual Server Type", true, false))
@@ -120,19 +140,24 @@ public class A10VirtualServerConfigurationAnswerer extends Answerer {
                   ? ImmutableSet.of()
                   : serviceGroup.getMembers().values().stream()
                       .map(
-                          member ->
-                              ImmutableList.of(
-                                  member.getName(),
-                                  Integer.toString(member.getPort()),
-                                  getServerTarget(member.getName(), a10Vc)))
+                          member -> {
+                            Server server = a10Vc.getServers().get(member.getName());
+                            return ImmutableList.of(
+                                member.getName(),
+                                Integer.toString(member.getPort()),
+                                getServerTarget(server),
+                                getServerActive(member, server, serviceGroup.getType()));
+                          })
                       .collect(ImmutableSet.toImmutableSet());
           rows.add(
               getRow(
                   node,
                   virtualServer.getName(),
+                  isVirtualServerEnabled(virtualServer),
                   ((VirtualServerTargetVisitor<Ip>) VirtualServerTargetAddress::getAddress)
                       .visit(virtualServer.getTarget()),
                   virtualServerPort.getNumber(),
+                  isVirtualServerPortEnabled(virtualServerPort),
                   virtualServerPort.getType(),
                   virtualServerPort.getName(),
                   serviceGroupName,
@@ -146,20 +171,40 @@ public class A10VirtualServerConfigurationAnswerer extends Answerer {
     return rows;
   }
 
-  private static String getServerTarget(String serverName, A10Configuration a10Vc) {
-    return Optional.ofNullable(a10Vc.getServers().get(serverName))
-        .map(
-            server ->
-                ((ServerTargetVisitor<String>) address -> address.getAddress().toString())
-                    .visit(server.getTarget()))
-        .orElse("Undefined");
+  /**
+   * Returns if this server is active based on whether the member, server, and server port are
+   * enabled.
+   */
+  private static String getServerActive(
+      ServiceGroupMember member, @Nullable Server server, Type type) {
+    if (server == null) {
+      return "inactive";
+    }
+    return firstNonNull(member.getEnable(), true)
+            && firstNonNull(server.getEnable(), true)
+            && Optional.ofNullable(
+                    server.getPorts().get(new ServerPortAndType(member.getPort(), type)))
+                .map(serverPort -> firstNonNull(serverPort.getEnable(), true))
+                .orElse(false)
+        ? "active"
+        : "inactive";
+  }
+
+  private static String getServerTarget(@Nullable Server server) {
+    if (server == null) {
+      return "Undefined";
+    }
+    return ((ServerTargetVisitor<String>) address -> address.getAddress().toString())
+        .visit(server.getTarget());
   }
 
   private static Row getRow(
       Node node,
       String virtualServerName,
+      boolean virtualServerEnabled,
       Ip virtualServerIp,
       int virtualServerPort,
+      boolean virtualServerPortEnabled,
       VirtualServerPort.Type virtualServerType,
       String virtualServerPortTypeName,
       @Nullable String serviceGroupName,
@@ -170,8 +215,10 @@ public class A10VirtualServerConfigurationAnswerer extends Answerer {
     return Row.builder(columnMetadata)
         .put(COL_NODE, node)
         .put(COL_VIRTUAL_SERVER_NAME, virtualServerName)
+        .put(COL_VIRTUAL_SERVER_ENABLED, virtualServerEnabled)
         .put(COL_VIRTUAL_SERVER_IP, virtualServerIp)
         .put(COL_VIRTUAL_SERVER_PORT, virtualServerPort)
+        .put(COL_VIRTUAL_SERVER_PORT_ENABLED, virtualServerPortEnabled)
         .put(COL_VIRTUAL_SERVER_TYPE, virtualServerType)
         .put(COL_VIRTUAL_SERVER_PORT_TYPE_NAME, virtualServerPortTypeName)
         .put(COL_SERVICE_GROUP_NAME, serviceGroupName)

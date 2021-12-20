@@ -20,7 +20,7 @@ public class OspfProcess implements Serializable {
       100E9D; // https://docs.cumulusnetworks.com/cumulus-linux/Layer-3/Open-Shortest-Path-First-OSPF/#auto-cost-reference-bandwidth
   public static String DEFAULT_OSPF_PROCESS_NAME = "default";
 
-  private Map<CumulusRoutingProtocol, RedistributionPolicy> _redistributionPolicies;
+  private Map<FrrRoutingProtocol, RedistributionPolicy> _redistributionPolicies;
   private @Nullable Boolean _maxMetricRouterLsa;
 
   public OspfProcess() {
@@ -29,7 +29,7 @@ public class OspfProcess implements Serializable {
     _defaultPassiveInterface = false;
     _networkAreas = new HashMap<>();
     _vrfs = new HashMap<>();
-    _redistributionPolicies = new EnumMap<>(CumulusRoutingProtocol.class);
+    _redistributionPolicies = new EnumMap<>(FrrRoutingProtocol.class);
   }
 
   public @Nonnull OspfVrf getDefaultVrf() {
@@ -52,7 +52,7 @@ public class OspfProcess implements Serializable {
     _defaultPassiveInterface = defaultPassiveInterface;
   }
 
-  public Map<CumulusRoutingProtocol, RedistributionPolicy> getRedistributionPolicies() {
+  public Map<FrrRoutingProtocol, RedistributionPolicy> getRedistributionPolicies() {
     return _redistributionPolicies;
   }
 

@@ -114,6 +114,7 @@ import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.vxlan.Layer2Vni;
+import org.batfish.datamodel.vxlan.Layer3Vni;
 import org.batfish.datamodel.vxlan.VxlanNode;
 import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.batfish.datamodel.vxlan.VxlanTopologyUtils;
@@ -144,18 +145,34 @@ public class EdgesAnswererTest {
     Vrf v1 = vb.setOwner(c1).build();
     Vrf v2 = vb.setOwner(c2).build();
     Map<String, Configuration> configurations = ImmutableMap.of(VXLAN_NODE1, c1, VXLAN_NODE2, c2);
-    Layer2Vni.Builder vniSettingsBuilder =
+
+    Layer2Vni.Builder layer2VniSettingsBuilder =
         testBuilder()
             .setBumTransportIps(ImmutableSortedSet.of(VXLAN_MULTICAST_GROUP))
             .setBumTransportMethod(BumTransportMethod.MULTICAST_GROUP)
             .setUdpPort(VXLAN_UDP_PORT)
             .setVni(VXLAN_VNI);
-    Layer2Vni vniSettingsTail =
-        vniSettingsBuilder.setSourceAddress(VXLAN_SRC_IP1).setVlan(VXLAN_VLAN1).build();
-    v1.setLayer2Vnis(ImmutableSet.of(vniSettingsTail));
+    Layer2Vni layer2VniSettingsTail =
+        layer2VniSettingsBuilder.setSourceAddress(VXLAN_SRC_IP1).setVlan(VXLAN_VLAN1).build();
+    v1.setLayer2Vnis(ImmutableSet.of(layer2VniSettingsTail));
     v2.setLayer2Vnis(
         ImmutableSet.of(
-            vniSettingsBuilder.setSourceAddress(VXLAN_SRC_IP2).setVlan(VXLAN_VLAN2).build()));
+            layer2VniSettingsBuilder.setSourceAddress(VXLAN_SRC_IP2).setVlan(VXLAN_VLAN2).build()));
+
+    Layer3Vni.Builder layer3VniSettingsBuilder =
+        Layer3Vni.testBuilder().setUdpPort(VXLAN_UDP_PORT).setVni(VXLAN_VNI);
+    Layer3Vni layer3VniSettingsTail =
+        layer3VniSettingsBuilder
+            .setLearnedNexthopVtepIps(ImmutableSortedSet.of(VXLAN_SRC_IP2))
+            .setSourceAddress(VXLAN_SRC_IP1)
+            .build();
+    Layer3Vni layer3VniSettingsHead =
+        layer3VniSettingsBuilder
+            .setLearnedNexthopVtepIps(ImmutableSortedSet.of(VXLAN_SRC_IP1))
+            .setSourceAddress(VXLAN_SRC_IP2)
+            .build();
+    v1.setLayer3Vnis(ImmutableSet.of(layer3VniSettingsTail));
+    v2.setLayer3Vnis(ImmutableSet.of(layer3VniSettingsHead));
     return NetworkConfigurations.of(configurations);
   }
 
