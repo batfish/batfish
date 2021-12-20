@@ -22,7 +22,7 @@ public final class TraceElements {
         .build();
   }
 
-  public static String toPortString(VirtualServerPort port) {
+  private static String toPortString(VirtualServerPort port) {
     if (port.getRange() != null) {
       return String.format("ports %d-%d", port.getNumber(), port.getNumber() + port.getRange());
     }
