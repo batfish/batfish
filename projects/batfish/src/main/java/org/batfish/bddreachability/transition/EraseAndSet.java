@@ -48,7 +48,7 @@ public final class EraseAndSet implements Transition {
 
   @Override
   public BDD transitForward(BDD bdd) {
-    return _setValue.isOne() ? bdd.exist(_eraseVars) : bdd.exist(_eraseVars).and(_setValue);
+    return _setValue.isOne() ? bdd.exist(_eraseVars) : bdd.exist(_eraseVars).andEq(_setValue);
   }
 
   @Override

@@ -188,7 +188,10 @@ public final class JFactory extends BDDFactory {
         return makeBDD(result);
       }
       if (_index != result) {
+        // Swap both the index and the reference to the new value.
+        // This would be a no-op in the else branch.
         bdd_delref(_index);
+        bdd_addref(result);
         _index = result;
       }
       return this;
