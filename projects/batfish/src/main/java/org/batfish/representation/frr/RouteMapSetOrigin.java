@@ -9,7 +9,7 @@ import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 
-/** Clause of set metric in route map. */
+/** Clause of 'set origin' in route map. */
 public class RouteMapSetOrigin implements RouteMapSet {
 
   private @Nonnull final OriginType _originType;
