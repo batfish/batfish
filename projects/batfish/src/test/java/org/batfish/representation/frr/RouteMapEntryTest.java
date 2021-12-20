@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.representation.frr.RouteMapMatchSourceProtocol.Protocol;
@@ -120,5 +121,15 @@ public class RouteMapEntryTest {
     ImmutableList<RouteMapSet> sets = entry.getSets().collect(ImmutableList.toImmutableList());
 
     assertThat(sets, contains(isA(RouteMapSetCommunity.class)));
+  }
+
+  @Test
+  public void testGetSets_Origin() {
+    RouteMapEntry entry = new RouteMapEntry(10, LineAction.DENY);
+    entry.setSetOrigin(new RouteMapSetOrigin(OriginType.IGP));
+
+    ImmutableList<RouteMapSet> sets = entry.getSets().collect(ImmutableList.toImmutableList());
+
+    assertThat(sets, contains(isA(RouteMapSetOrigin.class)));
   }
 }
