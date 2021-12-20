@@ -6,7 +6,7 @@ options {
   tokenVocab = FrrLexer;
 }
 
-s_bgp
+s_router_bgp
 :
   ROUTER BGP autonomous_system (VRF vrf_name)? NEWLINE
   bgp_inner*
@@ -14,158 +14,158 @@ s_bgp
 
 bgp_inner
 :
-  sb_address_family
-| sb_always_compare_med
-| sb_bgp
-| sb_neighbor
-| sb_network
-| sb_no
-| sb_redistribute
-| sb_timers
-| sbafi_neighbor
+  rb_address_family
+| rb_always_compare_med
+| rb_bgp
+| rb_neighbor
+| rb_network
+| rb_no
+| rb_redistribute
+| rb_timers
+| rbafi_neighbor
 ;
 
-sb_bgp
+rb_bgp
 :
   BGP
   (
-    sbb_bestpath
-    | sbb_confederation
-    | sbb_log_neighbor_changes
-    | sbb_router_id
-    | sbb_cluster_id
-    | sbb_max_med_administrative
-    | sbb_listen
+    rbb_bestpath
+    | rbb_confederation
+    | rbb_log_neighbor_changes
+    | rbb_router_id
+    | rbb_cluster_id
+    | rbb_max_med_administrative
+    | rbb_listen
   )
 ;
 
-sb_no
+rb_no
 :
   NO
   (
-    sbno_bgp
+    rbno_bgp
   )
 ;
 
 
-sbno_bgp
+rbno_bgp
 :
   BGP
   (
-     sbnob_default
+     rbnob_default
   )
 ;
 
-sbnob_default
+rbnob_default
 :
   DEFAULT
   (
-     sbnobd_ipv4_unicast
+     rbnobd_ipv4_unicast
   )
 ;
 
-sbb_confederation
+rbb_confederation
 :
   CONFEDERATION IDENTIFIER id = uint32 NEWLINE
 ;
 
-sbb_bestpath
+rbb_bestpath
 :
   BESTPATH
   (
-    sbbb_aspath_multipath_relax
+    rbbb_aspath_multipath_relax
   )
 ;
 
-sbb_log_neighbor_changes
+rbb_log_neighbor_changes
 :
   LOG_NEIGHBOR_CHANGES NEWLINE
 ;
 
-sbb_max_med_administrative
+rbb_max_med_administrative
 :
    MAX_MED ADMINISTRATIVE (med = uint32)? NEWLINE
 ;
 
-sbbb_aspath_multipath_relax
+rbbb_aspath_multipath_relax
 :
   AS_PATH MULTIPATH_RELAX NEWLINE
 ;
 
-sb_redistribute
+rb_redistribute
 :
   REDISTRIBUTE bgp_redist_type (ROUTE_MAP route_map_name)? NEWLINE
 ;
 
-sbb_router_id
+rbb_router_id
 :
   ROUTER_ID IP_ADDRESS NEWLINE
 ;
 
-sbb_cluster_id
+rbb_cluster_id
 :
   CLUSTER_ID IP_ADDRESS NEWLINE
 ;
 
-sb_neighbor
+rb_neighbor
 :
-  NEIGHBOR (sbn_ip | sbn_ip6 | sbn_name)
+  NEIGHBOR (rbn_ip | rbn_ip6 | rbn_name)
 ;
 
-sb_address_family
+rb_address_family
 :
-  ADDRESS_FAMILY sbaf
+  ADDRESS_FAMILY rbaf
   (EXIT_ADDRESS_FAMILY NEWLINE)?
 ;
 
-sbaf
+rbaf
 :
-    sbaf_ipv4_unicast
-  | sbaf_ipv6_unicast
-  | sbaf_l2vpn_evpn
+    rbaf_ipv4_unicast
+  | rbaf_ipv6_unicast
+  | rbaf_l2vpn_evpn
 ;
 
-sbaf_ipv4_unicast
+rbaf_ipv4_unicast
 :
   IPV4 UNICAST NEWLINE
-  sbafi_inner*
+  rbafi_inner*
 ;
 
-sbafi_inner
+rbafi_inner
 :
-  sbafi_aggregate_address
-| sbafi_import
-| sbafi_maximum_paths
-| sbafi_network
-| sbafi_neighbor
-| sbafi_no
-| sbafi_redistribute
+  rbafi_aggregate_address
+| rbafi_import
+| rbafi_maximum_paths
+| rbafi_network
+| rbafi_neighbor
+| rbafi_no
+| rbafi_redistribute
 ;
 
-sbaf_ipv6_unicast
+rbaf_ipv6_unicast
 :
   IPV6 UNICAST NEWLINE
-  sbafi6_inner*
+  rbafi6_inner*
 ;
 
-sbafi6_inner
+rbafi6_inner
 :
-  sbafi6_import
-| sbafi6_maximum_paths
-| sbafi6_null_tail
+  rbafi6_import
+| rbafi6_maximum_paths
+| rbafi6_null_tail
 ;
 
-sbafi6_maximum_paths
+rbafi6_maximum_paths
 :
   MAXIMUM_PATHS (IBGP)? num = uint32 NEWLINE
 ;
 
-sbafi6_import
+rbafi6_import
 :
   IMPORT VRF (vrf_name | ROUTE_MAP route_map_name) NEWLINE
 ;
 
-sbafi6_null_tail
+rbafi6_null_tail
 :
   (
      // there are likely others but haven't seen examples yet, so leaving for later
@@ -178,31 +178,31 @@ sbafi6_null_tail
 ;
 
 
-sbaf_l2vpn_evpn
+rbaf_l2vpn_evpn
 :
   L2VPN EVPN NEWLINE
-  sbafl_inner*
+  rbafl_inner*
 ;
 
-sbafl_inner
+rbafl_inner
 :
-  sbafl_advertise
-| sbafl_advertise_all_vni
-| sbafl_advertise_default_gw
-| sbafl_neighbor
+  rbafl_advertise
+| rbafl_advertise_all_vni
+| rbafl_advertise_default_gw
+| rbafl_neighbor
 ;
 
-sbafl_neighbor
+rbafl_neighbor
 :
    NEIGHBOR neighbor = (IP_ADDRESS | WORD)
    (
-      sbafln_activate
-      | sbafln_route_map
-      | sbafln_route_reflector_client
+      rbafln_activate
+      | rbafln_route_map
+      | rbafln_route_reflector_client
    )
 ;
 
-sbafi_aggregate_address
+rbafi_aggregate_address
 :
   AGGREGATE_ADDRESS IP_PREFIX agg_feature* NEWLINE
 ;
@@ -229,271 +229,271 @@ agg_feature_summary_only: SUMMARY_ONLY;
 
 agg_feature_suppress_map: SUPPRESS_MAP mapname = route_map_name;
 
-sbafi_import
+rbafi_import
 :
   IMPORT VRF (vrf_name | ROUTE_MAP route_map_name) NEWLINE
 ;
 
-sbafi_maximum_paths
+rbafi_maximum_paths
 :
   MAXIMUM_PATHS (IBGP)? num = uint32 NEWLINE
 ;
 
-sbafi_network
+rbafi_network
 :
   NETWORK network = prefix (ROUTE_MAP rm = route_map_name)? NEWLINE
 ;
 
-sbafi_redistribute
+rbafi_redistribute
 :
   REDISTRIBUTE bgp_redist_type (ROUTE_MAP route_map_name)? NEWLINE
 ;
 
-sbafl_advertise
+rbafl_advertise
 :
   ADVERTISE
   (
-     sbafla_ipv4_unicast
-     | sbafla_ipv6_unicast
+     rbafla_ipv4_unicast
+     | rbafla_ipv6_unicast
   )
 ;
 
-sbafla_ipv4_unicast
+rbafla_ipv4_unicast
 :
   IPV4 UNICAST (ROUTE_MAP rm = route_map_name)? NEWLINE
 ;
 
-sbafla_ipv6_unicast
+rbafla_ipv6_unicast
 :
   IPV6 UNICAST (ROUTE_MAP rm = route_map_name)? NEWLINE
 ;
 
-sbafl_advertise_all_vni
+rbafl_advertise_all_vni
 :
   ADVERTISE_ALL_VNI NEWLINE
 ;
 
-sbafl_advertise_default_gw
+rbafl_advertise_default_gw
 :
   ADVERTISE_DEFAULT_GW NEWLINE
 ;
 
-sbafln_activate
+rbafln_activate
 :
   ACTIVATE NEWLINE
 ;
 
-sbafln_route_map
+rbafln_route_map
 :
   ROUTE_MAP name=word (IN | OUT) NEWLINE
 ;
 
-sbafln_route_reflector_client
+rbafln_route_reflector_client
 :
    ROUTE_REFLECTOR_CLIENT NEWLINE
 ;
 
-sb_always_compare_med
+rb_always_compare_med
 :
   BGP ALWAYS_COMPARE_MED NEWLINE
 ;
 
-sbn_ip
+rbn_ip
 :
-  ip = IP_ADDRESS sbn_property
+  ip = IP_ADDRESS rbn_property
 ;
 
-sbn_ip6
+rbn_ip6
 :
-   ip6 = IPV6_ADDRESS sbn_property
+   ip6 = IPV6_ADDRESS rbn_property
 ;
 
-sbn_name
+rbn_name
 :
   name = word
     (
-      sbn_interface       // set an interface neighbor property
-    | sbn_peer_group_decl // declare a new peer group
-    | sbn_property        // set a peer-group property
-    // Nothing else should go in here. New properties should go in sbn_property
+      rbn_interface       // set an interface neighbor property
+    | rbn_peer_group_decl // declare a new peer group
+    | rbn_property        // set a peer-group property
+    // Nothing else should go in here. New properties should go in rbn_property
     )
 ;
 
-sbn_interface
+rbn_interface
 :
-  INTERFACE sbn_property
+  INTERFACE rbn_property
 ;
 
-sbn_peer_group_decl
+rbn_peer_group_decl
 :
   PEER_GROUP NEWLINE
 ;
 
-sbn_property
+rbn_property
 :
- sbnp_advertisement_interval
-| sbnp_bfd
-| sbnp_description
-| sbnp_ebgp_multihop
-| sbnp_local_as
-| sbnp_password
-| sbnp_peer_group
-| sbnp_remote_as
-| sbnp_timers
-| sbnp_update_source
+ rbnp_advertisement_interval
+| rbnp_bfd
+| rbnp_description
+| rbnp_ebgp_multihop
+| rbnp_local_as
+| rbnp_password
+| rbnp_peer_group
+| rbnp_remote_as
+| rbnp_timers
+| rbnp_update_source
 ;
 
-sbnp_advertisement_interval
+rbnp_advertisement_interval
 :
    ADVERTISEMENT_INTERVAL uint32 NEWLINE
 ;
 
 
-sbnp_bfd
+rbnp_bfd
 :
   BFD word* NEWLINE
 ;
 
-sbnp_description
+rbnp_description
 :
   DESCRIPTION REMARK_TEXT NEWLINE
 ;
 
-sbnp_ebgp_multihop
+rbnp_ebgp_multihop
 :
   EBGP_MULTIHOP (num = uint32)? NEWLINE
 ;
 
-sbnp_local_as
+rbnp_local_as
 :
   LOCAL_AS asn = autonomous_system (NO_PREPEND REPLACE_AS?)? NEWLINE
 ;
 
-sbnp_password
+rbnp_password
 :
   PASSWORD REMARK_TEXT NEWLINE
 ;
 
-sbnp_peer_group
+rbnp_peer_group
 :
   PEER_GROUP name = word NEWLINE
 ;
 
-sbnp_remote_as
+rbnp_remote_as
 :
   REMOTE_AS (autonomous_system | EXTERNAL | INTERNAL) NEWLINE
 ;
 
-sbnp_timers
+rbnp_timers
 :
   TIMERS CONNECT uint32 NEWLINE
 ;
 
-sbnp_update_source
+rbnp_update_source
 :
   UPDATE_SOURCE (ip = IP_ADDRESS | name = word) NEWLINE
 ;
 
-sb_network
+rb_network
 :
   NETWORK network = prefix (ROUTE_MAP rm = route_map_name)? NEWLINE
 ;
 
-sbafi_neighbor
+rbafi_neighbor
 :
   NEIGHBOR (ip = IP_ADDRESS | ip6=IPV6_ADDRESS | name = word)
   (
-    sbafin_activate
-  | sbafin_allowas_in
-  | sbafin_default_originate
-  | sbafin_next_hop_self
-  | sbafin_remove_private_as
-  | sbafin_route_reflector_client
-  | sbafin_send_community
-  | sbafin_soft_reconfiguration
-  | sbafin_route_map
+    rbafin_activate
+  | rbafin_allowas_in
+  | rbafin_default_originate
+  | rbafin_next_hop_self
+  | rbafin_remove_private_as
+  | rbafin_route_reflector_client
+  | rbafin_send_community
+  | rbafin_soft_reconfiguration
+  | rbafin_route_map
   )
 ;
 
-sbafi_no
+rbafi_no
 :
-  NO sbafino_neighbor
+  NO rbafino_neighbor
 ;
 
-sbafino_neighbor
+rbafino_neighbor
 :
   NEIGHBOR (ipv4=IP_ADDRESS | ipv6=IPV6_ADDRESS | name = word)
   (
-    sbafinon_activate
+    rbafinon_activate
   )
 ;
 
-sbafinon_activate
+rbafinon_activate
 :
   ACTIVATE NEWLINE
 ;
 
-sbafin_activate
+rbafin_activate
 :
   ACTIVATE NEWLINE
 ;
 
-sbafin_allowas_in
+rbafin_allowas_in
 :
   ALLOWAS_IN (count = UINT8)? NEWLINE
 ;
 
-sbafin_default_originate
+rbafin_default_originate
 :
   DEFAULT_ORIGINATE (ROUTE_MAP route_map_name)? NEWLINE
 ;
 
-sbafin_next_hop_self
+rbafin_next_hop_self
 :
   NEXT_HOP_SELF (FORCE | ALL)? NEWLINE
 ;
 
-sbafin_remove_private_as
+rbafin_remove_private_as
 :
   REMOVE_PRIVATE_AS (ALL REPLACE_AS?)? NEWLINE
 ;
 
 
-sbafin_route_reflector_client
+rbafin_route_reflector_client
 :
   ROUTE_REFLECTOR_CLIENT NEWLINE
 ;
 
-sbafin_send_community
+rbafin_send_community
 :
   SEND_COMMUNITY EXTENDED? NEWLINE
 ;
 
-sbafin_soft_reconfiguration
+rbafin_soft_reconfiguration
 :
   SOFT_RECONFIGURATION INBOUND NEWLINE
 ;
 
-sbafin_route_map
+rbafin_route_map
 :
   ROUTE_MAP name=word (IN | OUT) NEWLINE
 ;
 
-sbb_listen
+rbb_listen
 :
   LISTEN
   (
-    sbbl_limit
-    | sbbl_range
+    rbbl_limit
+    | rbbl_range
   )
 ;
 
-sbbl_limit
+rbbl_limit
 :
   LIMIT uint32 NEWLINE
 ;
 
-sbbl_range
+rbbl_range
 :
   RANGE
    (
@@ -504,12 +504,12 @@ sbbl_range
   NEWLINE
 ;
 
-sbnobd_ipv4_unicast
+rbnobd_ipv4_unicast
 :
     IPV4_UNICAST NEWLINE
 ;
 
-sb_timers
+rb_timers
 :
     TIMERS BGP uint32 uint32 NEWLINE
 ;

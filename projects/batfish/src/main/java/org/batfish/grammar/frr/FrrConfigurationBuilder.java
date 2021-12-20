@@ -7,9 +7,9 @@ import static org.batfish.grammar.frr.FrrParser.Int_exprContext;
 import static org.batfish.representation.frr.FrrConversions.DEFAULT_MAX_MED;
 import static org.batfish.representation.frr.FrrConversions.computeRouteMapEntryName;
 import static org.batfish.representation.frr.FrrStructureType.ABSTRACT_INTERFACE;
+import static org.batfish.representation.frr.FrrStructureType.BGP_AS_PATH_ACCESS_LIST;
+import static org.batfish.representation.frr.FrrStructureType.BGP_COMMUNITY_LIST;
 import static org.batfish.representation.frr.FrrStructureType.IPV6_PREFIX_LIST;
-import static org.batfish.representation.frr.FrrStructureType.IP_AS_PATH_ACCESS_LIST;
-import static org.batfish.representation.frr.FrrStructureType.IP_COMMUNITY_LIST;
 import static org.batfish.representation.frr.FrrStructureType.IP_COMMUNITY_LIST_EXPANDED;
 import static org.batfish.representation.frr.FrrStructureType.IP_COMMUNITY_LIST_STANDARD;
 import static org.batfish.representation.frr.FrrStructureType.IP_PREFIX_LIST;
@@ -101,6 +101,53 @@ import org.batfish.grammar.frr.FrrParser.Pl6_line_actionContext;
 import org.batfish.grammar.frr.FrrParser.Pl_line_actionContext;
 import org.batfish.grammar.frr.FrrParser.Prefix6Context;
 import org.batfish.grammar.frr.FrrParser.PrefixContext;
+import org.batfish.grammar.frr.FrrParser.Rb_neighborContext;
+import org.batfish.grammar.frr.FrrParser.Rb_networkContext;
+import org.batfish.grammar.frr.FrrParser.Rb_redistributeContext;
+import org.batfish.grammar.frr.FrrParser.Rbaf_ipv4_unicastContext;
+import org.batfish.grammar.frr.FrrParser.Rbaf_l2vpn_evpnContext;
+import org.batfish.grammar.frr.FrrParser.Rbafi6_importContext;
+import org.batfish.grammar.frr.FrrParser.Rbafi_aggregate_addressContext;
+import org.batfish.grammar.frr.FrrParser.Rbafi_importContext;
+import org.batfish.grammar.frr.FrrParser.Rbafi_neighborContext;
+import org.batfish.grammar.frr.FrrParser.Rbafi_networkContext;
+import org.batfish.grammar.frr.FrrParser.Rbafi_redistributeContext;
+import org.batfish.grammar.frr.FrrParser.Rbafin_activateContext;
+import org.batfish.grammar.frr.FrrParser.Rbafin_allowas_inContext;
+import org.batfish.grammar.frr.FrrParser.Rbafin_default_originateContext;
+import org.batfish.grammar.frr.FrrParser.Rbafin_next_hop_selfContext;
+import org.batfish.grammar.frr.FrrParser.Rbafin_remove_private_asContext;
+import org.batfish.grammar.frr.FrrParser.Rbafin_route_mapContext;
+import org.batfish.grammar.frr.FrrParser.Rbafin_route_reflector_clientContext;
+import org.batfish.grammar.frr.FrrParser.Rbafino_neighborContext;
+import org.batfish.grammar.frr.FrrParser.Rbafinon_activateContext;
+import org.batfish.grammar.frr.FrrParser.Rbafl_advertise_all_vniContext;
+import org.batfish.grammar.frr.FrrParser.Rbafl_advertise_default_gwContext;
+import org.batfish.grammar.frr.FrrParser.Rbafl_neighborContext;
+import org.batfish.grammar.frr.FrrParser.Rbafla_ipv4_unicastContext;
+import org.batfish.grammar.frr.FrrParser.Rbafla_ipv6_unicastContext;
+import org.batfish.grammar.frr.FrrParser.Rbafln_activateContext;
+import org.batfish.grammar.frr.FrrParser.Rbafln_route_mapContext;
+import org.batfish.grammar.frr.FrrParser.Rbafln_route_reflector_clientContext;
+import org.batfish.grammar.frr.FrrParser.Rbb_cluster_idContext;
+import org.batfish.grammar.frr.FrrParser.Rbb_confederationContext;
+import org.batfish.grammar.frr.FrrParser.Rbb_max_med_administrativeContext;
+import org.batfish.grammar.frr.FrrParser.Rbb_router_idContext;
+import org.batfish.grammar.frr.FrrParser.Rbbb_aspath_multipath_relaxContext;
+import org.batfish.grammar.frr.FrrParser.Rbbl_limitContext;
+import org.batfish.grammar.frr.FrrParser.Rbbl_rangeContext;
+import org.batfish.grammar.frr.FrrParser.Rbn_interfaceContext;
+import org.batfish.grammar.frr.FrrParser.Rbn_ip6Context;
+import org.batfish.grammar.frr.FrrParser.Rbn_ipContext;
+import org.batfish.grammar.frr.FrrParser.Rbn_nameContext;
+import org.batfish.grammar.frr.FrrParser.Rbn_peer_group_declContext;
+import org.batfish.grammar.frr.FrrParser.Rbnobd_ipv4_unicastContext;
+import org.batfish.grammar.frr.FrrParser.Rbnp_descriptionContext;
+import org.batfish.grammar.frr.FrrParser.Rbnp_ebgp_multihopContext;
+import org.batfish.grammar.frr.FrrParser.Rbnp_local_asContext;
+import org.batfish.grammar.frr.FrrParser.Rbnp_peer_groupContext;
+import org.batfish.grammar.frr.FrrParser.Rbnp_remote_asContext;
+import org.batfish.grammar.frr.FrrParser.Rbnp_update_sourceContext;
 import org.batfish.grammar.frr.FrrParser.Rm_callContext;
 import org.batfish.grammar.frr.FrrParser.Rm_descriptionContext;
 import org.batfish.grammar.frr.FrrParser.Rmm_as_pathContext;
@@ -135,58 +182,11 @@ import org.batfish.grammar.frr.FrrParser.Ronopi_interface_nameContext;
 import org.batfish.grammar.frr.FrrParser.Ropi_defaultContext;
 import org.batfish.grammar.frr.FrrParser.Ropi_interface_nameContext;
 import org.batfish.grammar.frr.FrrParser.Route_map_nameContext;
-import org.batfish.grammar.frr.FrrParser.S_bgpContext;
 import org.batfish.grammar.frr.FrrParser.S_interfaceContext;
 import org.batfish.grammar.frr.FrrParser.S_routemapContext;
+import org.batfish.grammar.frr.FrrParser.S_router_bgpContext;
 import org.batfish.grammar.frr.FrrParser.S_router_ospfContext;
 import org.batfish.grammar.frr.FrrParser.S_vrfContext;
-import org.batfish.grammar.frr.FrrParser.Sb_neighborContext;
-import org.batfish.grammar.frr.FrrParser.Sb_networkContext;
-import org.batfish.grammar.frr.FrrParser.Sb_redistributeContext;
-import org.batfish.grammar.frr.FrrParser.Sbaf_ipv4_unicastContext;
-import org.batfish.grammar.frr.FrrParser.Sbaf_l2vpn_evpnContext;
-import org.batfish.grammar.frr.FrrParser.Sbafi6_importContext;
-import org.batfish.grammar.frr.FrrParser.Sbafi_aggregate_addressContext;
-import org.batfish.grammar.frr.FrrParser.Sbafi_importContext;
-import org.batfish.grammar.frr.FrrParser.Sbafi_neighborContext;
-import org.batfish.grammar.frr.FrrParser.Sbafi_networkContext;
-import org.batfish.grammar.frr.FrrParser.Sbafi_redistributeContext;
-import org.batfish.grammar.frr.FrrParser.Sbafin_activateContext;
-import org.batfish.grammar.frr.FrrParser.Sbafin_allowas_inContext;
-import org.batfish.grammar.frr.FrrParser.Sbafin_default_originateContext;
-import org.batfish.grammar.frr.FrrParser.Sbafin_next_hop_selfContext;
-import org.batfish.grammar.frr.FrrParser.Sbafin_remove_private_asContext;
-import org.batfish.grammar.frr.FrrParser.Sbafin_route_mapContext;
-import org.batfish.grammar.frr.FrrParser.Sbafin_route_reflector_clientContext;
-import org.batfish.grammar.frr.FrrParser.Sbafino_neighborContext;
-import org.batfish.grammar.frr.FrrParser.Sbafinon_activateContext;
-import org.batfish.grammar.frr.FrrParser.Sbafl_advertise_all_vniContext;
-import org.batfish.grammar.frr.FrrParser.Sbafl_advertise_default_gwContext;
-import org.batfish.grammar.frr.FrrParser.Sbafl_neighborContext;
-import org.batfish.grammar.frr.FrrParser.Sbafla_ipv4_unicastContext;
-import org.batfish.grammar.frr.FrrParser.Sbafla_ipv6_unicastContext;
-import org.batfish.grammar.frr.FrrParser.Sbafln_activateContext;
-import org.batfish.grammar.frr.FrrParser.Sbafln_route_mapContext;
-import org.batfish.grammar.frr.FrrParser.Sbafln_route_reflector_clientContext;
-import org.batfish.grammar.frr.FrrParser.Sbb_cluster_idContext;
-import org.batfish.grammar.frr.FrrParser.Sbb_confederationContext;
-import org.batfish.grammar.frr.FrrParser.Sbb_max_med_administrativeContext;
-import org.batfish.grammar.frr.FrrParser.Sbb_router_idContext;
-import org.batfish.grammar.frr.FrrParser.Sbbb_aspath_multipath_relaxContext;
-import org.batfish.grammar.frr.FrrParser.Sbbl_limitContext;
-import org.batfish.grammar.frr.FrrParser.Sbbl_rangeContext;
-import org.batfish.grammar.frr.FrrParser.Sbn_interfaceContext;
-import org.batfish.grammar.frr.FrrParser.Sbn_ip6Context;
-import org.batfish.grammar.frr.FrrParser.Sbn_ipContext;
-import org.batfish.grammar.frr.FrrParser.Sbn_nameContext;
-import org.batfish.grammar.frr.FrrParser.Sbn_peer_group_declContext;
-import org.batfish.grammar.frr.FrrParser.Sbnobd_ipv4_unicastContext;
-import org.batfish.grammar.frr.FrrParser.Sbnp_descriptionContext;
-import org.batfish.grammar.frr.FrrParser.Sbnp_ebgp_multihopContext;
-import org.batfish.grammar.frr.FrrParser.Sbnp_local_asContext;
-import org.batfish.grammar.frr.FrrParser.Sbnp_peer_groupContext;
-import org.batfish.grammar.frr.FrrParser.Sbnp_remote_asContext;
-import org.batfish.grammar.frr.FrrParser.Sbnp_update_sourceContext;
 import org.batfish.grammar.frr.FrrParser.Si_descriptionContext;
 import org.batfish.grammar.frr.FrrParser.Si_shutdownContext;
 import org.batfish.grammar.frr.FrrParser.Siip_addressContext;
@@ -475,7 +475,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   }
 
   @Override
-  public void enterS_bgp(S_bgpContext ctx) {
+  public void enterS_router_bgp(S_router_bgpContext ctx) {
     if (_frr.getBgpProcess() == null) {
       _frr.setBgpProcess(new BgpProcess());
     }
@@ -493,32 +493,32 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   }
 
   @Override
-  public void exitS_bgp(S_bgpContext ctx) {
+  public void exitS_router_bgp(S_router_bgpContext ctx) {
     _currentBgpVrf = null;
   }
 
   @Override
-  public void enterSbaf_ipv4_unicast(Sbaf_ipv4_unicastContext ctx) {
+  public void enterRbaf_ipv4_unicast(Rbaf_ipv4_unicastContext ctx) {
     if (_currentBgpVrf.getIpv4Unicast() == null) {
       _currentBgpVrf.setIpv4Unicast(new BgpIpv4UnicastAddressFamily());
     }
   }
 
   @Override
-  public void enterSbaf_l2vpn_evpn(Sbaf_l2vpn_evpnContext ctx) {
+  public void enterRbaf_l2vpn_evpn(Rbaf_l2vpn_evpnContext ctx) {
     if (_currentBgpVrf.getL2VpnEvpn() == null) {
       _currentBgpVrf.setL2VpnEvpn(new BgpL2vpnEvpnAddressFamily());
     }
   }
 
   @Override
-  public void exitSb_redistribute(Sb_redistributeContext ctx) {
+  public void exitRb_redistribute(Rb_redistributeContext ctx) {
     String routeMap = ctx.route_map_name() == null ? null : ctx.route_map_name().getText();
     handleOspfToBgpRedistribution(ctx, ctx.bgp_redist_type(), routeMap);
   }
 
   @Override
-  public void exitSbafi_redistribute(Sbafi_redistributeContext ctx) {
+  public void exitRbafi_redistribute(Rbafi_redistributeContext ctx) {
     String routeMap = ctx.route_map_name() == null ? null : ctx.route_map_name().getText();
     handleOspfToBgpRedistribution(ctx, ctx.bgp_redist_type(), routeMap);
   }
@@ -569,7 +569,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   }
 
   @Override
-  public void exitSbafi_import(Sbafi_importContext ctx) {
+  public void exitRbafi_import(Rbafi_importContext ctx) {
     todo(ctx);
     if (ctx.vrf_name() != null) {
       _vc.referenceStructure(
@@ -588,7 +588,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   }
 
   @Override
-  public void exitSbafi6_import(Sbafi6_importContext ctx) {
+  public void exitRbafi6_import(Rbafi6_importContext ctx) {
     if (ctx.vrf_name() != null) {
       _vc.referenceStructure(
           VRF,
@@ -606,7 +606,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   }
 
   @Override
-  public void exitSbafi_network(Sbafi_networkContext ctx) {
+  public void exitRbafi_network(Rbafi_networkContext ctx) {
     @Nullable String routeMap = null;
     if (ctx.rm != null) {
       routeMap = getFullText(ctx.rm);
@@ -617,17 +617,17 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   }
 
   @Override
-  public void exitSbafl_advertise_all_vni(Sbafl_advertise_all_vniContext ctx) {
+  public void exitRbafl_advertise_all_vni(Rbafl_advertise_all_vniContext ctx) {
     _currentBgpVrf.getL2VpnEvpn().setAdvertiseAllVni(true);
   }
 
   @Override
-  public void exitSbafl_advertise_default_gw(Sbafl_advertise_default_gwContext ctx) {
+  public void exitRbafl_advertise_default_gw(Rbafl_advertise_default_gwContext ctx) {
     _currentBgpVrf.getL2VpnEvpn().setAdvertiseDefaultGw(true);
   }
 
   @Override
-  public void enterSbafla_ipv4_unicast(Sbafla_ipv4_unicastContext ctx) {
+  public void enterRbafla_ipv4_unicast(Rbafla_ipv4_unicastContext ctx) {
     // setting in enter instead of exit since in future we can attach a routemap
     _currentBgpVrf.getL2VpnEvpn().setAdvertiseIpv4Unicast(new BgpL2VpnEvpnIpv4Unicast());
     if (ctx.rm != null) {
@@ -645,7 +645,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   }
 
   @Override
-  public void enterSbafla_ipv6_unicast(Sbafla_ipv6_unicastContext ctx) {
+  public void enterRbafla_ipv6_unicast(Rbafla_ipv6_unicastContext ctx) {
     if (ctx.rm != null) {
       _vc.referenceStructure(
           ROUTE_MAP,
@@ -656,12 +656,12 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   }
 
   @Override
-  public void enterSbafi_aggregate_address(Sbafi_aggregate_addressContext ctx) {
+  public void enterRbafi_aggregate_address(Rbafi_aggregate_addressContext ctx) {
     _currentAggregate = new BgpVrfAddressFamilyAggregateNetworkConfiguration();
   }
 
   @Override
-  public void exitSbafi_aggregate_address(Sbafi_aggregate_addressContext ctx) {
+  public void exitRbafi_aggregate_address(Rbafi_aggregate_addressContext ctx) {
     Map<Prefix, BgpVrfAddressFamilyAggregateNetworkConfiguration> aggregateNetworks =
         _currentBgpVrf.getIpv4Unicast().getAggregateNetworks();
     Prefix prefix = Prefix.parse(ctx.IP_PREFIX().getText());
@@ -735,7 +735,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   }
 
   @Override
-  public void exitSbnp_local_as(Sbnp_local_asContext ctx) {
+  public void exitRbnp_local_as(Rbnp_local_asContext ctx) {
     long asn = Long.parseLong(ctx.autonomous_system().getText());
     if (_currentBgpNeighbor == null) {
       _w.addWarning(ctx, getFullText(ctx), _parser, "cannot find bgp neighbor");
@@ -748,7 +748,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   }
 
   @Override
-  public void exitSbnp_update_source(Sbnp_update_sourceContext ctx) {
+  public void exitRbnp_update_source(Rbnp_update_sourceContext ctx) {
     if (_currentBgpNeighbor == null) {
       _w.addWarning(ctx, getFullText(ctx), _parser, "cannot find bgp neighbor");
       return;
@@ -765,7 +765,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   }
 
   @Override
-  public void enterSbafl_neighbor(Sbafl_neighborContext ctx) {
+  public void enterRbafl_neighbor(Rbafl_neighborContext ctx) {
     String neighborName = ctx.neighbor.getText();
     BgpNeighbor neighbor = _currentBgpVrf.getNeighbors().get(neighborName);
     if (neighbor == null) {
@@ -784,12 +784,12 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   }
 
   @Override
-  public void exitSbafl_neighbor(Sbafl_neighborContext ctx) {
+  public void exitRbafl_neighbor(Rbafl_neighborContext ctx) {
     _currentBgpNeighborL2vpnEvpnAddressFamily = null;
   }
 
   @Override
-  public void enterSbafi_neighbor(Sbafi_neighborContext ctx) {
+  public void enterRbafi_neighbor(Rbafi_neighborContext ctx) {
     String name;
     if (ctx.ip != null) {
       name = ctx.ip.getText();
@@ -815,12 +815,12 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   }
 
   @Override
-  public void exitSbafi_neighbor(Sbafi_neighborContext ctx) {
+  public void exitRbafi_neighbor(Rbafi_neighborContext ctx) {
     _currentBgpNeighborIpv4UnicastAddressFamily = null;
   }
 
   @Override
-  public void enterSbafino_neighbor(Sbafino_neighborContext ctx) {
+  public void enterRbafino_neighbor(Rbafino_neighborContext ctx) {
     String name;
     if (ctx.ipv4 != null) {
       name = ctx.ipv4.getText();
@@ -846,12 +846,12 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   }
 
   @Override
-  public void exitSbafino_neighbor(Sbafino_neighborContext ctx) {
+  public void exitRbafino_neighbor(Rbafino_neighborContext ctx) {
     _currentBgpNeighborIpv4UnicastAddressFamily = null;
   }
 
   @Override
-  public void exitSb_network(Sb_networkContext ctx) {
+  public void exitRb_network(Rb_networkContext ctx) {
     @Nullable String routeMap = null;
     if (ctx.rm != null) {
       routeMap = getFullText(ctx.rm);
@@ -862,7 +862,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   }
 
   @Override
-  public void exitSbnobd_ipv4_unicast(Sbnobd_ipv4_unicastContext ctx) {
+  public void exitRbnobd_ipv4_unicast(Rbnobd_ipv4_unicastContext ctx) {
     if (_currentBgpVrf == null) {
       _w.addWarning(ctx, getFullText(ctx), _parser, "cannot find bgp vrf");
       return;
@@ -1080,7 +1080,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   }
 
   @Override
-  public void exitSbafin_activate(Sbafin_activateContext ctx) {
+  public void exitRbafin_activate(Rbafin_activateContext ctx) {
     if (_currentBgpNeighborIpv4UnicastAddressFamily == null) {
       return;
     }
@@ -1088,7 +1088,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   }
 
   @Override
-  public void exitSbafinon_activate(Sbafinon_activateContext ctx) {
+  public void exitRbafinon_activate(Rbafinon_activateContext ctx) {
     if (_currentBgpNeighborIpv4UnicastAddressFamily == null) {
       return;
     }
@@ -1096,7 +1096,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   }
 
   @Override
-  public void exitSbafin_allowas_in(Sbafin_allowas_inContext ctx) {
+  public void exitRbafin_allowas_in(Rbafin_allowas_inContext ctx) {
     if (_currentBgpNeighborIpv4UnicastAddressFamily == null) {
       // TODO: remove this silent ignore from here and other places
       return;
@@ -1112,7 +1112,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   }
 
   @Override
-  public void exitSbafin_default_originate(Sbafin_default_originateContext ctx) {
+  public void exitRbafin_default_originate(Rbafin_default_originateContext ctx) {
     // TODO: handle address-family l2vpn-evpn
     if (_currentBgpNeighborIpv4UnicastAddressFamily == null) {
       return;
@@ -1130,7 +1130,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   }
 
   @Override
-  public void exitSbafin_next_hop_self(Sbafin_next_hop_selfContext ctx) {
+  public void exitRbafin_next_hop_self(Rbafin_next_hop_selfContext ctx) {
     if (_currentBgpNeighborIpv4UnicastAddressFamily == null) {
       return;
     }
@@ -1144,7 +1144,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   }
 
   @Override
-  public void exitSbafin_remove_private_as(Sbafin_remove_private_asContext ctx) {
+  public void exitRbafin_remove_private_as(Rbafin_remove_private_asContext ctx) {
     if (_currentBgpNeighborIpv4UnicastAddressFamily == null) {
       return;
     }
@@ -1159,7 +1159,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   }
 
   @Override
-  public void exitSbafin_route_reflector_client(Sbafin_route_reflector_clientContext ctx) {
+  public void exitRbafin_route_reflector_client(Rbafin_route_reflector_clientContext ctx) {
     if (_currentBgpNeighborIpv4UnicastAddressFamily == null) {
       return;
     }
@@ -1167,7 +1167,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   }
 
   @Override
-  public void exitSbafln_activate(Sbafln_activateContext ctx) {
+  public void exitRbafln_activate(Rbafln_activateContext ctx) {
     if (_currentBgpNeighborL2vpnEvpnAddressFamily == null) {
       return;
     }
@@ -1175,7 +1175,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   }
 
   @Override
-  public void exitSbafln_route_map(Sbafln_route_mapContext ctx) {
+  public void exitRbafln_route_map(Rbafln_route_mapContext ctx) {
     String name = ctx.name.getText();
     FrrStructureUsage usage;
     if (ctx.IN() != null) {
@@ -1194,7 +1194,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   }
 
   @Override
-  public void exitSbafln_route_reflector_client(Sbafln_route_reflector_clientContext ctx) {
+  public void exitRbafln_route_reflector_client(Rbafln_route_reflector_clientContext ctx) {
     if (_currentBgpNeighborL2vpnEvpnAddressFamily == null) {
       return;
     }
@@ -1212,29 +1212,29 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   }
 
   @Override
-  public void exitSbbb_aspath_multipath_relax(Sbbb_aspath_multipath_relaxContext ctx) {
+  public void exitRbbb_aspath_multipath_relax(Rbbb_aspath_multipath_relaxContext ctx) {
     _currentBgpVrf.setAsPathMultipathRelax(true);
   }
 
   @Override
-  public void exitSbb_router_id(Sbb_router_idContext ctx) {
+  public void exitRbb_router_id(Rbb_router_idContext ctx) {
     _currentBgpVrf.setRouterId(Ip.parse(ctx.IP_ADDRESS().getText()));
   }
 
   @Override
-  public void exitSbb_cluster_id(Sbb_cluster_idContext ctx) {
+  public void exitRbb_cluster_id(Rbb_cluster_idContext ctx) {
     _currentBgpVrf.setClusterId(
         Ip.parse(ctx.IP_ADDRESS() != null ? ctx.IP_ADDRESS().getText() : null));
   }
 
   @Override
-  public void exitSbb_confederation(Sbb_confederationContext ctx) {
+  public void exitRbb_confederation(Rbb_confederationContext ctx) {
     Long id = toLong(ctx.id);
     _currentBgpVrf.setConfederationId(id);
   }
 
   @Override
-  public void exitSbb_max_med_administrative(Sbb_max_med_administrativeContext ctx) {
+  public void exitRbb_max_med_administrative(Rbb_max_med_administrativeContext ctx) {
     if (ctx.med != null) {
       _currentBgpVrf.setMaxMedAdministrative(Long.parseLong(ctx.med.getText()));
     } else {
@@ -1243,7 +1243,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   }
 
   @Override
-  public void exitSbbl_range(Sbbl_rangeContext ctx) {
+  public void exitRbbl_range(Rbbl_rangeContext ctx) {
     BgpNeighbor bgpNeighbor;
     if (ctx.prefix() != null) {
       Prefix listenRange = toPrefix(ctx.prefix());
@@ -1264,12 +1264,12 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   }
 
   @Override
-  public void exitSbbl_limit(Sbbl_limitContext ctx) {
+  public void exitRbbl_limit(Rbbl_limitContext ctx) {
     warn(ctx, "Batfish does not limit the number sessions for dynamic BGP neighbors");
   }
 
   @Override
-  public void enterSbn_ip(Sbn_ipContext ctx) {
+  public void enterRbn_ip(Rbn_ipContext ctx) {
     _currentBgpNeighbor =
         _currentBgpVrf
             .getNeighbors()
@@ -1278,7 +1278,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   }
 
   @Override
-  public void enterSbn_ip6(Sbn_ip6Context ctx) {
+  public void enterRbn_ip6(Rbn_ip6Context ctx) {
     _currentBgpNeighbor =
         _currentBgpVrf
             .getNeighbors()
@@ -1287,19 +1287,19 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   }
 
   @Override
-  public void enterSbn_name(Sbn_nameContext ctx) {
+  public void enterRbn_name(Rbn_nameContext ctx) {
     // if neighbor does not already exist, get will return null. That's ok -- the listener for
     // child parse node will create it.
     _currentBgpNeighbor = _currentBgpVrf.getNeighbors().get(ctx.name.getText());
   }
 
   @Override
-  public void exitSb_neighbor(Sb_neighborContext ctx) {
+  public void exitRb_neighbor(Rb_neighborContext ctx) {
     _currentBgpNeighbor = null;
   }
 
   @Override
-  public void enterSbn_interface(Sbn_interfaceContext ctx) {
+  public void enterRbn_interface(Rbn_interfaceContext ctx) {
     if (_currentBgpNeighbor != null) {
       // warn if it's not an interface
       if (!(_currentBgpNeighbor instanceof BgpInterfaceNeighbor)) {
@@ -1312,7 +1312,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
                 "neighbor %s not declared to be an interface", _currentBgpNeighbor.getName()));
       }
     } else {
-      Sbn_nameContext parentCtx = (Sbn_nameContext) ctx.getParent();
+      Rbn_nameContext parentCtx = (Rbn_nameContext) ctx.getParent();
       String ifaceName = parentCtx.name.getText();
       _currentBgpNeighbor = new BgpInterfaceNeighbor(ifaceName);
       checkState(
@@ -1322,7 +1322,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   }
 
   @Override
-  public void exitSbn_peer_group_decl(Sbn_peer_group_declContext ctx) {
+  public void exitRbn_peer_group_decl(Rbn_peer_group_declContext ctx) {
     if (_currentBgpNeighbor != null) {
       String line = getFullText(ctx.getParent()) + getFullText(ctx);
       _w.addWarning(
@@ -1332,7 +1332,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
           String.format("neighbor %s already defined", _currentBgpNeighbor.getName()));
     }
 
-    Sbn_nameContext parentCtx = (Sbn_nameContext) ctx.getParent();
+    Rbn_nameContext parentCtx = (Rbn_nameContext) ctx.getParent();
     String peerGroupName = parentCtx.name.getText();
     checkState(
         _currentBgpVrf.getNeighbors().put(peerGroupName, new BgpPeerGroupNeighbor(peerGroupName))
@@ -1341,17 +1341,17 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   }
 
   @Override
-  public void exitSbnp_description(Sbnp_descriptionContext ctx) {
+  public void exitRbnp_description(Rbnp_descriptionContext ctx) {
     _currentBgpNeighbor.setDescription(ctx.REMARK_TEXT().getText());
   }
 
   @Override
-  public void exitSbnp_peer_group(Sbnp_peer_groupContext ctx) {
+  public void exitRbnp_peer_group(Rbnp_peer_groupContext ctx) {
     _currentBgpNeighbor.setPeerGroup(ctx.name.getText());
   }
 
   @Override
-  public void exitSbnp_remote_as(Sbnp_remote_asContext ctx) {
+  public void exitRbnp_remote_as(Rbnp_remote_asContext ctx) {
     assert _currentBgpNeighbor != null;
     if (ctx.autonomous_system() != null) {
       _currentBgpNeighbor.setRemoteAs(
@@ -1365,7 +1365,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   }
 
   @Override
-  public void exitSbnp_ebgp_multihop(Sbnp_ebgp_multihopContext ctx) {
+  public void exitRbnp_ebgp_multihop(Rbnp_ebgp_multihopContext ctx) {
     if (ctx.num != null) {
       warn(
           ctx.getParent(),
@@ -1389,7 +1389,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   }
 
   @Override
-  public void exitSbafin_route_map(Sbafin_route_mapContext ctx) {
+  public void exitRbafin_route_map(Rbafin_route_mapContext ctx) {
     if (_currentBgpNeighborIpv4UnicastAddressFamily == null) {
       return;
     }
@@ -1537,7 +1537,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
     String name = ctx.name.getText();
     _currentRouteMapEntry.setMatchAsPath(new RouteMapMatchAsPath(name));
     _vc.referenceStructure(
-        IP_AS_PATH_ACCESS_LIST,
+        BGP_AS_PATH_ACCESS_LIST,
         name,
         FrrStructureUsage.ROUTE_MAP_MATCH_AS_PATH,
         ctx.getStart().getLine());
@@ -1548,8 +1548,10 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
     ctx.names.forEach(
         name ->
             _vc.referenceStructure(
-                IP_COMMUNITY_LIST, name.getText(),
-                ROUTE_MAP_MATCH_COMMUNITY_LIST, name.getStart().getLine()));
+                BGP_COMMUNITY_LIST,
+                name.getText(),
+                ROUTE_MAP_MATCH_COMMUNITY_LIST,
+                name.getStart().getLine()));
 
     _currentRouteMapEntry.setMatchCommunity(
         new RouteMapMatchCommunity(
@@ -1726,7 +1728,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
     }
     _currentRouteMapEntry.setSetCommListDelete(new RouteMapSetCommListDelete(name));
     _vc.referenceStructure(
-        IP_COMMUNITY_LIST, name, ROUTE_MAP_SET_COMM_LIST_DELETE, ctx.getStart().getLine());
+        BGP_COMMUNITY_LIST, name, ROUTE_MAP_SET_COMM_LIST_DELETE, ctx.getStart().getLine());
   }
 
   @Override
@@ -1890,7 +1892,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
     _frr.getIpAsPathAccessLists()
         .computeIfAbsent(name, IpAsPathAccessList::new)
         .addLine(new IpAsPathAccessListLine(action, regex));
-    _vc.defineStructure(IP_AS_PATH_ACCESS_LIST, name, ctx);
+    _vc.defineStructure(BGP_AS_PATH_ACCESS_LIST, name, ctx);
   }
 
   @Override
