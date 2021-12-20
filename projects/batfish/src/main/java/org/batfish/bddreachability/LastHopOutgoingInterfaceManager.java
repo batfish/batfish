@@ -90,12 +90,6 @@ public final class LastHopOutgoingInterfaceManager {
         : domainsWithSharedVariable(pkt, VAR_NAME, lastHops);
   }
 
-  /**
-   * Returns a new {@link BDD} equal to {@code bdd} with the last hop constraint removed.
-   *
-   * <p>The input {@link BDD} is not modified. The output BDD is guaranteed to be different from the
-   * input and can be safely modified or freed by the caller.
-   */
   public BDD existsLastHop(BDD bdd) {
     // all domains have the same variable, so just pick one.
     Iterator<BDDFiniteDomain<NodeInterfacePair>> iterator = _finiteDomains.values().iterator();
@@ -104,7 +98,7 @@ public final class LastHopOutgoingInterfaceManager {
     }
 
     // No domains! Nothing to do.
-    return bdd.id();
+    return bdd;
   }
 
   /** Return whether the input {@link BDD} has a constraint on the last hop variable. */
