@@ -1539,10 +1539,10 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testFrrIpCommunityListExpanded() {
+  public void testFrrBgpCommunityListExpanded() {
     String name = "NAME";
 
-    parse(String.format("ip community-list expanded %s permit 10000:10 20000:20\n", name));
+    parse(String.format("bgp community-list expanded %s permit 10000:10 20000:20\n", name));
 
     BgpCommunityListExpanded communityList =
         (BgpCommunityListExpanded) _frr.getBgpCommunityLists().get(name);
@@ -1554,6 +1554,16 @@ public class FrrGrammarTest {
     assertThat(expected.size(), equalTo(actual.size()));
     assertThat(expected.get(0).getAction(), equalTo(actual.get(0).getAction()));
     assertThat(expected.get(0).getRegex(), equalTo(actual.get(0).getRegex()));
+  }
+
+  @Test
+  public void testFrrIpCommunityListExpanded() {
+    // check that the old syntax still parses into a BGP community list
+    String name = "NAME";
+    parse(String.format("ip community-list expanded %s permit 10000:10 20000:20\n", name));
+    BgpCommunityListExpanded communityList =
+        (BgpCommunityListExpanded) _frr.getBgpCommunityLists().get(name);
+    assertNotNull(communityList);
   }
 
   @Test
@@ -1677,7 +1687,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testFrrIpAsPathAccessList() {
+  public void testFrrBgpAsPathAccessList() {
     String name = "NAME";
     String as1 = "^11111$";
     String as2 = "_1_";
@@ -1685,14 +1695,14 @@ public class FrrGrammarTest {
     String as4 = "^1(1)";
     parse(
         String.format(
-            "ip as-path access-list %s permit %s\n"
-                + "ip as-path access-list %s permit %s\n"
-                + "ip as-path access-list %s permit %s\n"
-                + "ip as-path access-list %s permit %s\n"
-                + "ip as-path access-list %s deny %s\n"
-                + "ip as-path access-list %s deny %s\n"
-                + "ip as-path access-list %s deny %s\n"
-                + "ip as-path access-list %s deny %s\n",
+            "bgp as-path access-list %s permit %s\n"
+                + "bgp as-path access-list %s permit %s\n"
+                + "bgp as-path access-list %s permit %s\n"
+                + "bgp as-path access-list %s permit %s\n"
+                + "bgp as-path access-list %s deny %s\n"
+                + "bgp as-path access-list %s deny %s\n"
+                + "bgp as-path access-list %s deny %s\n"
+                + "bgp as-path access-list %s deny %s\n",
             name, as1, name, as2, name, as3, name, as4, name, as1, name, as2, name, as3, name,
             as4));
 
@@ -1735,6 +1745,14 @@ public class FrrGrammarTest {
         getDefinedStructureInfo(FrrStructureType.BGP_AS_PATH_ACCESS_LIST, name);
     assertThat(
         definedStructureInfo.getDefinitionLines().enumerate(), contains(1, 2, 3, 4, 5, 6, 7, 8));
+  }
+
+  @Test
+  public void testFrrIpAsPathAccessList() {
+    // check that old syntax parses into BgpAsPathAccessList
+    String name = "NAME";
+    parse(String.format("ip as-path access-list %s permit ^$\n", name));
+    assertThat(_frr.getBgpAsPathAccessLists().keySet(), contains(name));
   }
 
   @Test
