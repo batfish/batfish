@@ -25,6 +25,6 @@ final class RemoveLastHopConstraint implements Transition {
   @Override
   public BDD transitBackward(BDD bdd) {
     assert !_mgr.hasLastHopConstraint(bdd);
-    return bdd;
+    return bdd.id();
   }
 }

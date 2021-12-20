@@ -179,11 +179,29 @@ public final class JFactory extends BDDFactory {
       return makeBDD(bdd_constrain(x, y));
     }
 
+    /**
+     * Given the index of the result of an operation, either changes {@code this} {@link BDD} (when
+     * {@code makeNew} is false) or creates a new BDD ({@code makeNew} is true).
+     */
+    private BDD eqOrNew(int result, boolean makeNew) {
+      if (makeNew) {
+        return makeBDD(result);
+      }
+      if (_index != result) {
+        // Swap both the index and the reference to the new value.
+        // This would be a no-op in the else branch.
+        bdd_delref(_index);
+        bdd_addref(result);
+        _index = result;
+      }
+      return this;
+    }
+
     @Override
-    public BDD exist(BDD var) {
+    BDD exist(BDD var, boolean makeNew) {
       int x = _index;
       int y = ((BDDImpl) var)._index;
-      return makeBDD(bdd_exist(x, y));
+      return eqOrNew(bdd_exist(x, y), makeNew);
     }
 
     @Override
@@ -258,11 +276,11 @@ public final class JFactory extends BDDFactory {
     }
 
     @Override
-    public BDD apply(BDD that, BDDOp opr) {
+    BDD apply(BDD that, BDDOp opr, boolean makeNew) {
       int x = _index;
       int y = ((BDDImpl) that)._index;
       int z = opr.id;
-      return makeBDD(bdd_apply(x, y, z));
+      return eqOrNew(bdd_apply(x, y, z), makeNew);
     }
 
     @Override

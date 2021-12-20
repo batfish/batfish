@@ -36,6 +36,6 @@ public final class RemoveOutgoingInterfaceConstraints implements Transition {
   public BDD transitBackward(BDD bdd) {
     // Ensure BDD's egress interface is not already constrained
     assert bdd.equals(_mgr.erase(bdd));
-    return bdd;
+    return bdd.id();
   }
 }
