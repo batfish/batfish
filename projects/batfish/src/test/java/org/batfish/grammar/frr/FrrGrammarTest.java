@@ -2877,7 +2877,11 @@ public class FrrGrammarTest {
   @Test
   public void testBgpNeighborTimers() {
     // does not crash
-    parseLines("router bgp 65432", "  neighbor PEERS timers connect 15");
+    parseLines(
+        "router bgp 65432",
+        "  neighbor PEERS timers connect 15888",
+        "  neighbor PEERS timers delayopen 15",
+        "  neighbor PEERS timers 15 23");
   }
 
   @Test

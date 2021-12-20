@@ -145,6 +145,8 @@ DEFAULT_ORIGINATE: 'default-originate';
 
 DEFAULTS: 'defaults';
 
+DELAYOPEN: 'delayopen';
+
 DELETE: 'delete';
 
 DENY: 'deny';
