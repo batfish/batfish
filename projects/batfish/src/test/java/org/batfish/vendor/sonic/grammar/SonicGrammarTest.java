@@ -136,6 +136,22 @@ public class SonicGrammarTest {
         allOf(hasName("eth0"), hasVrfName("vrf_global_not_default"), hasAddress("1.1.1.1/24")));
   }
 
+  /** Test that TACPLUS related tables are processed. */
+  @Test
+  public void testTacplus() throws IOException {
+    String snapshotName = "tacplus";
+    Batfish batfish = getBatfish(snapshotName, "device/frr.conf", "device/config_db.json");
+
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    SonicConfiguration vc =
+        (SonicConfiguration) batfish.loadVendorConfigurations(snapshot).get("tacplus");
+    vc.setWarnings(new Warnings());
+    Configuration c = getOnlyElement(vc.toVendorIndependentConfigurations());
+
+    assertThat(c.getTacacsServers(), equalTo(ImmutableSet.of("10.128.255.35", "10.128.255.67")));
+    assertThat(c.getTacacsSourceInterface(), equalTo("Loopback0"));
+  }
+
   /** Test that VLAN related tables are processed. */
   @Test
   public void testVlan() throws IOException {

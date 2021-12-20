@@ -1,0 +1,27 @@
+{
+  "DEVICE_METADATA": {
+    "localhost": {
+      "hostname": "tacplus"
+    }
+  },
+  "TACPLUS": {
+    "global": {
+      "auth_type": "login",
+      "src_intf": "Loopback0"
+    }
+  },
+  "TACPLUS_SERVER": {
+    "10.128.255.35": {
+      "auth_type": "pap",
+      "priority": "1",
+      "tcp_port": "49",
+      "timeout": "5"
+    },
+    "10.128.255.67": {
+      "auth_type": "pap",
+      "priority": "1",
+      "tcp_port": "49",
+      "timeout": "5"
+    }
+  }
+}
