@@ -68,7 +68,7 @@ public class A10VirtualServerConfigurationAnswerer extends Answerer {
                 COL_VIRTUAL_SERVER_NAME, Schema.STRING, "Virtual Server Name", true, false))
         .add(
             new ColumnMetadata(
-                COL_VIRTUAL_SERVER_ENABLED, Schema.BOOLEAN, "Virtual Server Enabled", true, false))
+                COL_VIRTUAL_SERVER_ENABLED, Schema.BOOLEAN, "Virtual Server Enabled", false, true))
         .add(new ColumnMetadata(COL_VIRTUAL_SERVER_IP, Schema.IP, "Virtual Server IP", true, false))
         .add(
             new ColumnMetadata(
@@ -78,8 +78,8 @@ public class A10VirtualServerConfigurationAnswerer extends Answerer {
                 COL_VIRTUAL_SERVER_PORT_ENABLED,
                 Schema.BOOLEAN,
                 "Virtual Server Port Enabled",
-                true,
-                false))
+                false,
+                true))
         .add(
             new ColumnMetadata(
                 COL_VIRTUAL_SERVER_TYPE, Schema.STRING, "Virtual Server Type", true, false))
