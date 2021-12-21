@@ -10,13 +10,13 @@ import net.sf.javabdd.BDD;
 import org.junit.Test;
 
 public class BDDFlowConstraintGeneratorTest {
-  private static BDDPacket PKT = new BDDPacket();
-
   @Test
   public void testIsPrivateIp() {
-    BDD isPrivateIp = isPrivateIp(PKT.getDstIpSpaceToBDD());
+    BDDPacket pkt = new BDDPacket();
+    BDDOps ops = new BDDOps(pkt.getFactory());
+    BDD isPrivateIp = isPrivateIp(ops, pkt.getDstIpSpaceToBDD());
 
-    IpSpaceToBDD dstIp = PKT.getDstIpSpaceToBDD();
+    IpSpaceToBDD dstIp = pkt.getDstIpSpaceToBDD();
     BDD privateSubnet10 = dstIp.toBDD(PRIVATE_SUBNET_10);
     BDD privateSubnet172 = dstIp.toBDD(PRIVATE_SUBNET_172);
     BDD privateSubnet192 = dstIp.toBDD(PRIVATE_SUBNET_192);

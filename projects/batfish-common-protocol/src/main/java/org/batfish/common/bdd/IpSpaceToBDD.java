@@ -170,13 +170,13 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
   @Override
   public BDD visitIpWildcardSetIpSpace(IpWildcardSetIpSpace ipWildcardSetIpSpace) {
     BDD whitelist =
-        _bddOps.orAll(
+        _bddOps.or(
             ipWildcardSetIpSpace.getWhitelist().stream()
                 .map((IpWildcard wc) -> visit(wc.toIpSpace()))
                 .collect(Collectors.toList()));
 
     BDD blacklist =
-        _bddOps.orAll(
+        _bddOps.or(
             ipWildcardSetIpSpace.getBlacklist().stream()
                 .map((IpWildcard wc) -> visit(wc.toIpSpace()))
                 .collect(Collectors.toList()));
