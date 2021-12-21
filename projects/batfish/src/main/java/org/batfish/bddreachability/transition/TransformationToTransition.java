@@ -123,8 +123,7 @@ public class TransformationToTransition {
       BDDInteger var = ipField(step.getIpField());
       IpSpaceToBDD varToBdd = ipFieldToBDD(step.getIpField());
       int len = prefix.getPrefixLength();
-      BDD erase =
-          Arrays.stream(var.getBitvec()).limit(len).reduce(var.getFactory().one(), BDD::and);
+      BDD erase = _bddPacket.getFactory().andAll(Arrays.asList(var.getBitvec()).subList(0, len));
       BDD setValue = varToBdd.toBDD(prefix);
       return new EraseAndSet(erase, setValue);
     }
