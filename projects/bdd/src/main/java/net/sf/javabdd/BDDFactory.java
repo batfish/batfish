@@ -346,7 +346,7 @@ public abstract class BDDFactory {
    *
    * @param bddOperands the BDDs to 'or' together
    */
-  public abstract BDD orAll(Collection<BDD> bddOperands);
+  public abstract BDD orAll(Iterable<BDD> bddOperands);
 
   /**
    * Sets the node table size.

@@ -5,11 +5,11 @@ import static com.google.common.collect.ImmutableTable.toImmutableTable;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableTable;
-import com.google.common.collect.SetMultimap;
-import com.google.common.collect.Sets;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.LinkedListMultimap;
+import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Streams;
 import com.google.common.collect.Table;
 import com.google.common.collect.Tables;
@@ -17,8 +17,10 @@ import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.PriorityQueue;
@@ -74,7 +76,7 @@ public final class BDDReachabilityUtils {
       BDDFactory factory = reachableSets.entrySet().iterator().next().getValue().getFactory();
 
       // For each state to process in the next round, all the incoming BDDs.
-      SetMultimap<StateExpr, BDD> dirtyInputs = HashMultimap.create();
+      ListMultimap<StateExpr, BDD> dirtyInputs = LinkedListMultimap.create();
 
       // To (try to) minimize how many times we're transiting the same edges, dirtyStates will be
       // removed in order of increasing visitCounts.
@@ -96,13 +98,13 @@ public final class BDDReachabilityUtils {
       while (!dirtyStates.isEmpty()) {
         StateExpr dirtyState = dirtyStates.remove();
         visitCounts.compute(dirtyState, (unused, oldCount) -> oldCount == null ? 1 : oldCount + 1);
-        Set<BDD> inputs = dirtyInputs.removeAll(dirtyState);
+        List<BDD> inputs = dirtyInputs.removeAll(dirtyState);
         assert !inputs.isEmpty();
         BDD prior = reachableSets.get(dirtyState);
         BDD newValue =
             prior == null
                 ? factory.orAll(inputs)
-                : factory.orAll(Sets.union(inputs, ImmutableSet.of(prior)));
+                : factory.orAll(Iterables.concat(inputs, Collections.singleton(prior)));
         if (newValue.equals(prior)) {
           // No change, so no need to update neighbors.
           newValue.free();
