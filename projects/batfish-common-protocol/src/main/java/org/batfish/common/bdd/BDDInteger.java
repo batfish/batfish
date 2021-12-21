@@ -198,17 +198,21 @@ public class BDDInteger {
     checkArgument(val >= 0, "value is negative");
     checkArgument(val <= _maxVal, "value %s is out of range [0, %s]", val, _maxVal);
     long currentVal = val;
-    BDD bdd = _factory.one();
+    BDD[] bits = new BDD[_bitvec.length];
     for (int i = _bitvec.length - 1; i >= 0; i--) {
       BDD b = _bitvec[i];
       if ((currentVal & 1) != 0) {
-        bdd = bdd.and(b);
+        bits[i] = b.id();
       } else {
-        bdd = bdd.diff(b);
+        bits[i] = b.not();
       }
       currentVal >>= 1;
     }
-    return bdd;
+    BDD ret = _factory.andAll(bits);
+    for (BDD b : bits) {
+      b.free();
+    }
+    return ret;
   }
 
   // Helper function to compute leq on the last N bits of the input value.
