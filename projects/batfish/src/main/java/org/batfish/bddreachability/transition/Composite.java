@@ -29,18 +29,22 @@ public final class Composite implements Transition {
 
   @Override
   public BDD transitForward(BDD bdd) {
-    BDD result = bdd;
+    BDD result = bdd.id();
     for (int i = 0; i < _transitions.size() && !result.isZero(); i++) {
-      result = _transitions.get(i).transitForward(result);
+      BDD nextResult = _transitions.get(i).transitForward(result);
+      result.free();
+      result = nextResult;
     }
     return result;
   }
 
   @Override
   public BDD transitBackward(BDD bdd) {
-    BDD result = bdd;
+    BDD result = bdd.id();
     for (int i = _transitions.size() - 1; i >= 0 && !result.isZero(); i--) {
-      result = _transitions.get(i).transitBackward(result);
+      BDD nextResult = _transitions.get(i).transitBackward(result);
+      result.free();
+      result = nextResult;
     }
     return result;
   }
