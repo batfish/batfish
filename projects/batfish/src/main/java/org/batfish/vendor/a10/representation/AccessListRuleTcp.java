@@ -35,18 +35,27 @@ public class AccessListRuleTcp implements AccessListRule {
     return _destinationRange;
   }
 
+  /** Text of the ACL line in the original configuration. */
+  @Nonnull
+  public String getLineText() {
+    return _lineText;
+  }
+
   public void setDestinationRange(@Nullable SubRange destinationRange) {
     _destinationRange = destinationRange;
   }
 
-  public AccessListRuleTcp(Action action, AccessListAddress source, AccessListAddress destination) {
+  public AccessListRuleTcp(
+      Action action, AccessListAddress source, AccessListAddress destination, String lineText) {
     _action = action;
     _source = source;
     _destination = destination;
+    _lineText = lineText;
   }
 
   @Nonnull private final Action _action;
   @Nonnull private final AccessListAddress _source;
   @Nonnull private final AccessListAddress _destination;
   @Nullable private SubRange _destinationRange;
+  @Nonnull private final String _lineText;
 }

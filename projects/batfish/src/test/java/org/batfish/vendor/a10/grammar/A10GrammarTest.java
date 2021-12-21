@@ -2213,6 +2213,11 @@ public class A10GrammarTest {
     assertThat(rule3.getDestinationRange(), equalTo(new SubRange(2, 99)));
   }
 
+  /**
+   * Basic end-to-endy test confirming ip access-lists are converted and applied as expected. More
+   * comprehensive conversion tests are covered in {@link
+   * org.batfish.vendor.a10.representation.A10ConversionTest}.
+   */
   @Test
   public void testAccessListConversion() {
     String hostname = "access_list_convert";

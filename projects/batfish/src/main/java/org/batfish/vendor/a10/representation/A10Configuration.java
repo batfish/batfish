@@ -8,6 +8,7 @@ import static org.batfish.datamodel.Prefix.MAX_PREFIX_LENGTH;
 import static org.batfish.vendor.a10.representation.A10Conversion.VIRTUAL_TCP_PORT_TYPES;
 import static org.batfish.vendor.a10.representation.A10Conversion.VIRTUAL_UDP_PORT_TYPES;
 import static org.batfish.vendor.a10.representation.A10Conversion.computeAclName;
+import static org.batfish.vendor.a10.representation.A10Conversion.convertAccessList;
 import static org.batfish.vendor.a10.representation.A10Conversion.createBgpProcess;
 import static org.batfish.vendor.a10.representation.A10Conversion.getEnabledVrids;
 import static org.batfish.vendor.a10.representation.A10Conversion.getFloatingIpKernelRoutes;
@@ -25,7 +26,6 @@ import static org.batfish.vendor.a10.representation.A10Conversion.getVirtualServ
 import static org.batfish.vendor.a10.representation.A10Conversion.getVirtualServerKernelRoutes;
 import static org.batfish.vendor.a10.representation.A10Conversion.haAppliesToInterface;
 import static org.batfish.vendor.a10.representation.A10Conversion.isVrrpAEnabled;
-import static org.batfish.vendor.a10.representation.A10Conversion.toAclLines;
 import static org.batfish.vendor.a10.representation.A10Conversion.toDstTransformationSteps;
 import static org.batfish.vendor.a10.representation.A10Conversion.toMatchExpr;
 import static org.batfish.vendor.a10.representation.A10Conversion.toSnatTransformationStep;
@@ -66,7 +66,6 @@ import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
@@ -99,8 +98,6 @@ import org.batfish.vendor.a10.representation.Interface.Type;
 
 /** Datamodel class representing an A10 device configuration. */
 public final class A10Configuration extends VendorConfiguration {
-
-  private static final String VIRTUAL_SERVERS_ACL_NAME = "~VIRTUAL_SERVERS_ACL~";
 
   private static final String VIRTUAL_SERVERS_PACKET_POLICY_NAME =
       "~VIRTUAL_SERVERS_PACKET_POLICY~";
@@ -610,16 +607,7 @@ public final class A10Configuration extends VendorConfiguration {
   }
 
   private void convertAccessLists() {
-    _accessLists.forEach((name, acl) -> convertAccessList(acl));
-  }
-
-  /** Convert the specified {@link AccessList} into a VI ACL and attach to the VI configuration. */
-  private void convertAccessList(AccessList acl) {
-    IpAccessList.builder()
-        .setLines(toAclLines(acl).collect(ImmutableList.toImmutableList()))
-        .setOwner(_c)
-        .setName(computeAclName(acl.getName()))
-        .build();
+    _accessLists.forEach((name, acl) -> convertAccessList(acl, _c, _filename));
   }
 
   /**

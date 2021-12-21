@@ -3,7 +3,7 @@ hostname access_list_convert
 !
 ! 10.0.0.0/24 - real servers
 ! 10.0.1.0/24 - VIPs
-! 10.0.2.0/24 - client hosts
+! 10.0.2.0/24 - real client
 ! 10.0.3.0/24 - source nat pool
 !
 !
@@ -29,6 +29,8 @@ slb virtual-server VS1 10.0.1.101
   port 443 tcp
     access-list name ACL1
     service-group SG1
+    ! source-NAT shouldn't have an effect on ACL matching
+    source-nat pool POOL1
 !
 !
 interface ethernet 10

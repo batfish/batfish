@@ -19,5 +19,9 @@ public interface AccessListRule extends Serializable {
   @Nonnull
   AccessListAddress getDestination();
 
+  /** Text of the ACL line in the original configuration. */
+  @Nonnull
+  String getLineText();
+
   <T> T accept(AccessListRuleVisitor<T> visitor);
 }

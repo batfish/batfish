@@ -22,19 +22,26 @@ public class AccessListRuleIcmp implements AccessListRule {
     return _destination;
   }
 
+  @Nonnull
+  public String getLineText() {
+    return _lineText;
+  }
+
   @Override
   public <T> T accept(AccessListRuleVisitor<T> visitor) {
     return visitor.visitIcmp(this);
   }
 
   public AccessListRuleIcmp(
-      Action action, AccessListAddress source, AccessListAddress destination) {
+      Action action, AccessListAddress source, AccessListAddress destination, String lineText) {
     _action = action;
     _source = source;
     _destination = destination;
+    _lineText = lineText;
   }
 
   @Nonnull private final Action _action;
   @Nonnull private final AccessListAddress _source;
   @Nonnull private final AccessListAddress _destination;
+  @Nonnull private final String _lineText;
 }
