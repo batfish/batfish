@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
+import javax.annotation.Nullable;
 
 /**
  * Binary Decision Diagrams (BDDs) are used for efficient computation of many common problems. This
@@ -1537,22 +1538,11 @@ public abstract class BDD {
    */
   public abstract int[] varProfile();
 
-  /**
-   * Returns true if this BDD equals that BDD, false otherwise.
-   *
-   * @param that the BDD to compare with
-   * @return true iff the two BDDs are equal
-   */
-  public abstract boolean equals(BDD that);
-
+  // override so implementations are forced to implement
   @Override
-  public boolean equals(Object o) {
-    if (!(o instanceof BDD)) {
-      return false;
-    }
-    return equals((BDD) o);
-  }
+  public abstract boolean equals(@Nullable Object o);
 
+  // override so implementations are forced to implement
   @Override
   public abstract int hashCode();
 

@@ -1,0 +1,16 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname interface-acl
+!
+ipv4 access-list acl-in
+ipv4 access-list acl-out
+!
+ipv6 access-list acl6-in
+ipv6 access-list acl6-out
+!
+interface Bundle-Ether1
+ ipv4 access-group acl-in ingress
+ ipv4 access-group acl-out egress
+ ipv6 access-group acl6-in ingress
+ ipv6 access-group acl6-out egress
+!

@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -17,7 +18,7 @@ import org.batfish.datamodel.eigrp.EigrpProcess;
 import org.batfish.datamodel.ospf.OspfNeighborConfig;
 import org.batfish.datamodel.ospf.OspfNeighborConfigId;
 import org.batfish.datamodel.ospf.OspfProcess;
-import org.batfish.datamodel.vxlan.Layer2Vni;
+import org.batfish.datamodel.vxlan.Vni;
 
 /**
  * Represents a set of configurations in a network. Has helper methods to "walk the configuration
@@ -168,16 +169,17 @@ public final class NetworkConfigurations {
         .map(oc -> oc.get(ospfConfigId));
   }
 
-  /** Return {@link Layer2Vni} identificated by {@code hostname} and {@code vni} number. */
+  /** Return {@link Vni} identificated by {@code hostname} and {@code vni} number. */
   @Nonnull
-  public Optional<Layer2Vni> getVniSettings(String hostname, int vni) {
+  public <V extends Vni> Optional<V> getVniSettings(
+      String hostname, int vni, Function<Vrf, Map<Integer, V>> vniGetter) {
     // implementation assumes a given VNI can be present in at most one VRF.
     return get(hostname)
         .map(Configuration::getVrfs)
         .map(
             vrfs ->
                 vrfs.values().stream()
-                    .map(Vrf::getLayer2Vnis)
+                    .map(vniGetter)
                     .map(vniSettingsMap -> vniSettingsMap.get(vni))
                     .filter(Objects::nonNull)
                     .findAny()

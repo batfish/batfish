@@ -1,7 +1,7 @@
 package org.batfish.representation.frr;
 
-import static org.batfish.representation.frr.CumulusStructureType.ROUTE_MAP_ENTRY;
 import static org.batfish.representation.frr.FrrConversions.computeRouteMapEntryName;
+import static org.batfish.representation.frr.FrrStructureType.ROUTE_MAP_ENTRY;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;

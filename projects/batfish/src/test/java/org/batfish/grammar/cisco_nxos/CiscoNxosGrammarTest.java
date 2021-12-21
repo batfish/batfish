@@ -14,6 +14,7 @@ import static org.batfish.datamodel.Ip.ZERO;
 import static org.batfish.datamodel.IpWildcard.ipWithWildcardMask;
 import static org.batfish.datamodel.Names.generatedBgpIndependentNetworkPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
+import static org.batfish.datamodel.Names.generatedEvpnToBgpv4VrfLeakPolicyName;
 import static org.batfish.datamodel.OriginMechanism.REDISTRIBUTE;
 import static org.batfish.datamodel.Route.UNSET_NEXT_HOP_INTERFACE;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
@@ -77,12 +78,13 @@ import static org.batfish.datamodel.matchers.NssaSettingsMatchers.hasSuppressTyp
 import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasNssa;
 import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasStub;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasArea;
-import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasBumTransportIps;
-import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasBumTransportMethod;
-import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasSourceAddress;
-import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasUdpPort;
-import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasVni;
-import static org.batfish.datamodel.matchers.VrfMatchers.hasL2VniSettings;
+import static org.batfish.datamodel.matchers.VniMatchers.hasBumTransportIps;
+import static org.batfish.datamodel.matchers.VniMatchers.hasBumTransportMethod;
+import static org.batfish.datamodel.matchers.VniMatchers.hasLearnedNexthopVtepIps;
+import static org.batfish.datamodel.matchers.VniMatchers.hasSourceAddress;
+import static org.batfish.datamodel.matchers.VniMatchers.hasUdpPort;
+import static org.batfish.datamodel.matchers.VniMatchers.hasVni;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasLayer2Vnis;
 import static org.batfish.datamodel.routing_policy.Common.SUMMARY_ONLY_SUPPRESSION_POLICY_NAME;
 import static org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform.NEXUS_3000;
 import static org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform.NEXUS_5000;
@@ -188,6 +190,7 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.Bgpv4ToEvpnVrfLeakConfig;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -198,6 +201,8 @@ import org.batfish.datamodel.DscpType;
 import org.batfish.datamodel.EigrpExternalRoute;
 import org.batfish.datamodel.EigrpInternalRoute;
 import org.batfish.datamodel.EigrpRoute;
+import org.batfish.datamodel.EvpnToBgpv4VrfLeakConfig;
+import org.batfish.datamodel.EvpnType5Route;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Flow.Builder;
 import org.batfish.datamodel.GeneratedRoute;
@@ -217,6 +222,7 @@ import org.batfish.datamodel.LocalRoute;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.Names;
+import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfExternalRoute;
 import org.batfish.datamodel.OspfInterAreaRoute;
@@ -232,6 +238,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.datamodel.VrfLeakConfig;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -257,7 +264,7 @@ import org.batfish.datamodel.matchers.OspfAreaMatchers;
 import org.batfish.datamodel.matchers.Route6FilterListMatchers;
 import org.batfish.datamodel.matchers.RouteFilterListMatchers;
 import org.batfish.datamodel.matchers.StubSettingsMatchers;
-import org.batfish.datamodel.matchers.VniSettingsMatchers;
+import org.batfish.datamodel.matchers.VniMatchers;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfAreaSummary.SummaryRouteBehavior;
 import org.batfish.datamodel.ospf.OspfMetricType;
@@ -270,6 +277,7 @@ import org.batfish.datamodel.packet_policy.PacketPolicyEvaluator;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
+import org.batfish.datamodel.route.nh.NextHopVtep;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.communities.CommunityContext;
@@ -1592,6 +1600,7 @@ public final class CiscoNxosGrammarTest {
 
     String tenantVrfName = "tenant1";
     Ip routerId = Ip.parse("10.1.1.1");
+    int tenantVrfPosition = 3;
     // All defined VXLAN Vnis
     ImmutableSortedSet<Layer2VniConfig> expectedL2Vnis =
         ImmutableSortedSet.of(
@@ -1615,7 +1624,7 @@ public final class CiscoNxosGrammarTest {
                 .setVni(3333)
                 .setVrf(tenantVrfName)
                 .setAdvertiseV4Unicast(true)
-                .setRouteDistinguisher(RouteDistinguisher.from(routerId, 3))
+                .setRouteDistinguisher(RouteDistinguisher.from(routerId, tenantVrfPosition))
                 .setRouteTarget(ExtendedCommunity.target(1, 3333))
                 .setImportRouteTarget(ExtendedCommunity.target(1, 3333).matchString())
                 .build());
@@ -1626,6 +1635,65 @@ public final class CiscoNxosGrammarTest {
     assertThat(peer.getEvpnAddressFamily().getL3VNIs(), equalTo(expectedL3Vnis));
     assertThat(peer.getEvpnAddressFamily().getNveIp(), equalTo(Ip.parse("1.1.1.1")));
     assertThat(c.getVrfs().get(tenantVrfName).getBgpProcess(), notNullValue());
+
+    // check leak configs
+    {
+      // bgpv4 -> evpn
+      VrfLeakConfig leak = c.getDefaultVrf().getVrfLeakConfig();
+
+      assertNotNull(leak);
+      assertTrue(leak.getLeakAsBgp());
+      assertThat(
+          leak.getBgpv4ToEvpnVrfLeakConfigs(),
+          contains(
+              Bgpv4ToEvpnVrfLeakConfig.builder()
+                  .setAttachRouteTargets(ExtendedCommunity.target(1, 3333))
+                  .setImportFromVrf(tenantVrfName)
+                  .setSrcVrfRouteDistinguisher(RouteDistinguisher.from(routerId, tenantVrfPosition))
+                  .build()));
+    }
+    {
+      // evpn -> bgpv4
+      VrfLeakConfig leak = c.getVrfs().get(tenantVrfName).getVrfLeakConfig();
+      assertNotNull(leak);
+      assertTrue(leak.getLeakAsBgp());
+      String importPolicyName = generatedEvpnToBgpv4VrfLeakPolicyName(tenantVrfName);
+
+      assertThat(
+          leak.getEvpnToBgpv4VrfLeakConfigs(),
+          contains(
+              EvpnToBgpv4VrfLeakConfig.builder()
+                  .setImportFromVrf(DEFAULT_VRF_NAME)
+                  .setImportPolicy(importPolicyName)
+                  .build()));
+
+      EvpnType5Route.Builder rb =
+          EvpnType5Route.builder()
+              .setNetwork(Prefix.strict("10.0.0.0/24"))
+              .setNextHop(NextHopVtep.of(3333, Ip.parse("5.6.7.8")))
+              .setVni(3333)
+              .setProtocol(RoutingProtocol.BGP)
+              .setOriginMechanism(OriginMechanism.LEARNED)
+              .setOriginType(OriginType.IGP)
+              .setOriginatorIp(Ip.parse("5.6.7.8"))
+              .setRouteDistinguisher(RouteDistinguisher.from(routerId, tenantVrfPosition));
+      EvpnType5Route permittedRouteSingleRouteTarget =
+          rb.setCommunities(CommunitySet.of(ExtendedCommunity.target(1, 3333))).build();
+      EvpnType5Route permittedRouteMultipleRouteTargets =
+          rb.setCommunities(
+                  CommunitySet.of(
+                      ExtendedCommunity.target(1, 3333), ExtendedCommunity.target(5, 3333)))
+              .build();
+      EvpnType5Route deniedRouteWrongRouteTarget =
+          rb.setCommunities(CommunitySet.of(ExtendedCommunity.target(5, 3333))).build();
+      EvpnType5Route deniedRouteNoRouteTarget = rb.setCommunities(CommunitySet.of()).build();
+      RoutingPolicy importPolicy = c.getRoutingPolicies().get(importPolicyName);
+
+      assertRoutingPolicyPermitsRoute(importPolicy, permittedRouteSingleRouteTarget);
+      assertRoutingPolicyPermitsRoute(importPolicy, permittedRouteMultipleRouteTargets);
+      assertRoutingPolicyDeniesRoute(importPolicy, deniedRouteWrongRouteTarget);
+      assertRoutingPolicyDeniesRoute(importPolicy, deniedRouteNoRouteTarget);
+    }
   }
 
   @Test
@@ -5256,7 +5324,7 @@ public final class CiscoNxosGrammarTest {
   public void testNveVnisConversion() throws IOException {
     Configuration c = parseConfig("nxos_nve_vnis");
 
-    assertThat(c, hasDefaultVrf(hasL2VniSettings(hasKey(10001))));
+    assertThat(c, hasDefaultVrf(hasLayer2Vnis(hasKey(10001))));
     assertThat(
         c.getDefaultVrf().getLayer2Vnis().get(10001),
         allOf(
@@ -5264,7 +5332,7 @@ public final class CiscoNxosGrammarTest {
             hasBumTransportMethod(equalTo(BumTransportMethod.MULTICAST_GROUP)),
             hasSourceAddress(nullValue()),
             hasUdpPort(equalTo(DEFAULT_UDP_PORT)),
-            VniSettingsMatchers.hasVlan(equalTo(2)),
+            VniMatchers.hasVlan(equalTo(2)),
             hasVni(10001)));
 
     String tenant1 = "tenant1"; // 20001 is an L3 VNI so it should be mapped to a VRF
@@ -5272,14 +5340,17 @@ public final class CiscoNxosGrammarTest {
     assertThat(
         c.getVrfs().get(tenant1).getLayer3Vnis().get(20001),
         allOf(
-            // L3 mcast IP
-            hasBumTransportIps(equalTo(ImmutableSortedSet.of(Ip.parse("234.0.0.0")))),
-            hasBumTransportMethod(equalTo(BumTransportMethod.MULTICAST_GROUP)),
+            // TODO: support conversion of Tenant Routed Multicast (TRM) settings
+            hasLearnedNexthopVtepIps(empty()),
             hasSourceAddress(nullValue()),
             hasUdpPort(equalTo(DEFAULT_UDP_PORT)),
             hasVni(20001)));
+    // Make sure Vlan3 - associated with VNI 20001 - is up after post-processing. While it has no
+    // associated switchports and is in autostate, it should stay up since it is associated with a
+    // Layer3Vni.
+    assertThat(c, hasInterface("Vlan3", isActive()));
 
-    assertThat(c, hasDefaultVrf(hasL2VniSettings(hasKey(30001))));
+    assertThat(c, hasDefaultVrf(hasLayer2Vnis(hasKey(30001))));
     assertThat(
         c.getDefaultVrf().getLayer2Vnis().get(30001),
         allOf(
@@ -5288,10 +5359,10 @@ public final class CiscoNxosGrammarTest {
             hasBumTransportMethod(equalTo(BumTransportMethod.MULTICAST_GROUP)),
             hasSourceAddress(nullValue()),
             hasUdpPort(equalTo(DEFAULT_UDP_PORT)),
-            VniSettingsMatchers.hasVlan(equalTo(4)),
+            VniMatchers.hasVlan(equalTo(4)),
             hasVni(30001)));
 
-    assertThat(c, hasDefaultVrf(hasL2VniSettings(hasKey(40001))));
+    assertThat(c, hasDefaultVrf(hasLayer2Vnis(hasKey(40001))));
     assertThat(
         c.getDefaultVrf().getLayer2Vnis().get(40001),
         allOf(
@@ -5299,11 +5370,11 @@ public final class CiscoNxosGrammarTest {
             hasBumTransportMethod(equalTo(BumTransportMethod.UNICAST_FLOOD_GROUP)),
             hasSourceAddress(equalTo(Ip.parse("1.1.1.1"))),
             hasUdpPort(equalTo(DEFAULT_UDP_PORT)),
-            VniSettingsMatchers.hasVlan(equalTo(5)),
+            VniMatchers.hasVlan(equalTo(5)),
             hasVni(40001)));
 
     // Even though IRB for vlan6<->VNI 50001 is shutdown, should still communicate about VNI
-    assertThat(c, hasDefaultVrf(hasL2VniSettings(hasKey(50001))));
+    assertThat(c, hasDefaultVrf(hasLayer2Vnis(hasKey(50001))));
   }
 
   @Test

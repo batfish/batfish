@@ -153,7 +153,6 @@ import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -184,6 +183,7 @@ import org.batfish.datamodel.ospf.OspfTopologyUtils;
 import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.vxlan.Layer2Vni;
+import org.batfish.datamodel.vxlan.Layer3Vni;
 import org.batfish.dataplane.TracerouteEngineImpl;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BatfishParseException;
@@ -813,6 +813,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
         public Table<String, String, Set<Layer2Vni>> getLayer2Vnis() {
           throw new UnsupportedOperationException();
         }
+
+        @Override
+        public Table<String, String, Set<Layer3Vni>> getLayer3Vnis() {
+          throw new UnsupportedOperationException();
+        }
       };
 
   @Override
@@ -960,11 +965,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 vlanId -> vlanMemberCounts.compute(vlanId, (k, v) -> (v == null) ? 1 : (v + 1)));
       }
       // Disable all "normal" vlan interfaces with zero member counts:
-      SubRange normalVlanRange = c.getNormalVlanRange();
+      IntegerSpace normalVlanRange = c.getNormalVlanRange();
       for (Map.Entry<Integer, Integer> entry : vlanMemberCounts.entrySet()) {
         if (entry.getValue() == 0) {
           int vlanNumber = entry.getKey();
-          if (normalVlanRange.includes(vlanNumber)) {
+          if (normalVlanRange.contains(vlanNumber)) {
             Interface iface = vlanInterfaces.get(vlanNumber);
             if ((iface != null) && iface.getAutoState()) {
               _logger.warnf(
@@ -2710,7 +2715,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         // add devices in the sonic_configs folder
         try (Stream<String> keys = _storage.listInputSonicConfigsKeys(snapshot)) {
           Map<String, String> sonicObjects = readAllInputObjects(keys, snapshot);
-          makeSonicFilePairs(sonicObjects.keySet(), answerElement).parallelStream()
+          makeSonicFilePairs(sonicObjects.keySet(), answerElement).stream()
               .map(
                   files ->
                       makeParseVendorConfigurationJob(

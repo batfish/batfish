@@ -5,8 +5,10 @@ import static com.google.common.collect.ImmutableTable.toImmutableTable;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableTable;
+import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Streams;
 import com.google.common.collect.Table;
 import com.google.common.collect.Tables;
@@ -14,14 +16,17 @@ import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import net.sf.javabdd.BDD;
+import net.sf.javabdd.BDDFactory;
 import org.batfish.bddreachability.transition.Transition;
 import org.batfish.bddreachability.transition.Transitions;
 import org.batfish.common.BatfishException;
@@ -47,10 +52,7 @@ public final class BDDReachabilityUtils {
   static Table<StateExpr, StateExpr, Transition> computeForwardEdgeTable(Stream<Edge> edges) {
     return edges.collect(
         toImmutableTable(
-            Edge::getPreState,
-            Edge::getPostState,
-            Edge::getTransition,
-            (t1, t2) -> Transitions.or(t1, t2)));
+            Edge::getPreState, Edge::getPostState, Edge::getTransition, Transitions::or));
   }
 
   /** Apply edges to the reachableSets until a fixed point is reached. */
@@ -62,38 +64,66 @@ public final class BDDReachabilityUtils {
     Span span = GlobalTracer.get().buildSpan("BDDReachabilityAnalysis.fixpoint").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
-      Set<StateExpr> dirtyStates = ImmutableSet.copyOf(reachableSets.keySet());
+
+      if (reachableSets.isEmpty()) {
+        // No work to do.
+        return;
+      }
+      // Get a BDDFactory for zero and orAll.
+      BDDFactory factory = reachableSets.entrySet().iterator().next().getValue().getFactory();
+
+      // For each state to process in the next round, all the incoming BDDs.
+      SetMultimap<StateExpr, BDD> dirtyInputs = HashMultimap.create();
+
+      // To (try to) minimize how many times we're transiting the same edges, dirtyStates will be
+      // removed in order of increasing visitCounts.
+      // invariants:
+      // 1. the queue never contains duplicate elements.
+      // 2. visitCounts are never incremented while the state is in the queue.
+      HashMap<StateExpr, Integer> visitCounts = new HashMap<>();
+      PriorityQueue<StateExpr> dirtyStates =
+          new PriorityQueue<>(Comparator.comparingInt(st -> visitCounts.getOrDefault(st, 0)));
+
+      // Seed the dirty inputs with the initial reachable sets, then clear the reachable sets.
+      reachableSets.forEach(
+          (key, value) -> {
+            dirtyInputs.put(key, value);
+            dirtyStates.add(key);
+          });
+      reachableSets.clear();
 
       while (!dirtyStates.isEmpty()) {
-        Set<StateExpr> newDirtyStates = new HashSet<>();
+        StateExpr dirtyState = dirtyStates.remove();
+        visitCounts.compute(dirtyState, (unused, oldCount) -> oldCount == null ? 1 : oldCount + 1);
+        Set<BDD> inputs = dirtyInputs.removeAll(dirtyState);
+        assert !inputs.isEmpty();
+        BDD prior = reachableSets.get(dirtyState);
+        BDD learned = factory.orAll(inputs);
+        BDD newValue = prior == null ? learned : learned.or(prior);
+        if (newValue.equals(prior)) {
+          // No change, so no need to update neighbors.
+          continue;
+        }
+        reachableSets.put(dirtyState, newValue);
 
-        dirtyStates.forEach(
-            dirtyState -> {
-              Map<StateExpr, Transition> dirtyStateEdges = edges.row(dirtyState);
-              if (dirtyStateEdges == null) {
-                // dirtyState has no edges
-                return;
+        Map<StateExpr, Transition> dirtyStateEdges = edges.row(dirtyState);
+        if (dirtyStateEdges.isEmpty()) {
+          // dirtyState has no edges, so no neighbors to update.
+          continue;
+        }
+
+        dirtyStateEdges.forEach(
+            (neighbor, edge) -> {
+              BDD result = traverse.apply(edge, learned);
+              if (!result.isZero()) {
+                // this is a new result. add it to neighbor's inputs. if neighbor isn't already in
+                // the dirtyStates queue, add it.
+                if (!dirtyInputs.containsKey(neighbor)) {
+                  dirtyStates.add(neighbor);
+                }
+                dirtyInputs.put(neighbor, result);
               }
-
-              BDD dirtyStateBDD = reachableSets.get(dirtyState);
-              dirtyStateEdges.forEach(
-                  (neighbor, edge) -> {
-                    BDD result = traverse.apply(edge, dirtyStateBDD);
-                    if (result.isZero()) {
-                      return;
-                    }
-
-                    // update neighbor's reachable set
-                    BDD oldReach = reachableSets.get(neighbor);
-                    BDD newReach = oldReach == null ? result : oldReach.or(result);
-                    if (oldReach == null || !oldReach.equals(newReach)) {
-                      reachableSets.put(neighbor, newReach);
-                      newDirtyStates.add(neighbor);
-                    }
-                  });
             });
-
-        dirtyStates = newDirtyStates;
       }
     } finally {
       span.finish();

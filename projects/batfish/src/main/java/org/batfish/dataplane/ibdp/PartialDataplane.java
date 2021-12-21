@@ -26,6 +26,7 @@ import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.vxlan.Layer2Vni;
+import org.batfish.datamodel.vxlan.Layer3Vni;
 
 /**
  * Partial dataplane to be used during dataplane computation. Should not be used outside of the
@@ -48,7 +49,13 @@ public final class PartialDataplane implements DataPlane {
   @Nonnull
   @Override
   public Table<String, String, Set<Layer2Vni>> getLayer2Vnis() {
-    return _vniSettings;
+    return _layer2VniSettings;
+  }
+
+  @Nonnull
+  @Override
+  public Table<String, String, Set<Layer3Vni>> getLayer3Vnis() {
+    return _layer3VniSettings;
   }
 
   @Nonnull
@@ -127,7 +134,8 @@ public final class PartialDataplane implements DataPlane {
 
   @Nonnull private final Map<String, Map<String, Fib>> _fibs;
   @Nonnull private final ForwardingAnalysis _forwardingAnalysis;
-  @Nonnull private final Table<String, String, Set<Layer2Vni>> _vniSettings;
+  @Nonnull private final Table<String, String, Set<Layer2Vni>> _layer2VniSettings;
+  @Nonnull private final Table<String, String, Set<Layer3Vni>> _layer3VniSettings;
   @Nonnull private final Topology _layer3Topology;
   @Nonnull private final L3Adjacencies _l3Adjacencies;
 
@@ -141,7 +149,8 @@ public final class PartialDataplane implements DataPlane {
     _fibs = computeFibs(nodes);
     _forwardingAnalysis =
         computeForwardingAnalysis(_fibs, configs, builder._layer3Topology, builder._l3Adjacencies);
-    _vniSettings = DataplaneUtil.computeVniSettings(nodes);
+    _layer2VniSettings = DataplaneUtil.computeLayer2VniSettings(nodes);
+    _layer3VniSettings = DataplaneUtil.computeLayer3VniSettings(nodes);
     _l3Adjacencies = builder._l3Adjacencies;
     _layer3Topology = builder._layer3Topology;
   }

@@ -13,6 +13,8 @@ import static org.batfish.datamodel.transformation.TransformationStep.assignDest
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationPort;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourcePort;
+import static org.batfish.vendor.a10.representation.TraceElements.traceElementForVirtualServer;
+import static org.batfish.vendor.a10.representation.TraceElements.traceElementForVirtualServerPort;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -55,8 +57,6 @@ import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
-import org.batfish.datamodel.acl.DeniedByAcl;
-import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
@@ -76,7 +76,6 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.transformation.ApplyAll;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
-import org.batfish.vendor.VendorStructureId;
 import org.batfish.vendor.a10.representation.BgpNeighbor.SendCommunity;
 
 /** Conversion helpers for converting VS model {@link A10Configuration} to the VI model. */
@@ -246,13 +245,17 @@ public class A10Conversion {
     return Optional.ofNullable(current);
   }
 
-  static boolean isVirtualServerEnabled(VirtualServer virtualServer) {
-    return firstNonNull(virtualServer.getEnable(), true)
+  public static boolean isVirtualServerEnabled(VirtualServer virtualServer) {
+    return firstNonNull(virtualServer.getEnable(), true);
+  }
+
+  static boolean isAnyVirtualServerPortEnabled(VirtualServer virtualServer) {
+    return isVirtualServerEnabled(virtualServer)
         && virtualServer.getPorts().values().stream()
             .anyMatch(A10Conversion::isVirtualServerPortEnabled);
   }
 
-  static boolean isVirtualServerPortEnabled(VirtualServerPort port) {
+  public static boolean isVirtualServerPortEnabled(VirtualServerPort port) {
     return firstNonNull(port.getEnable(), true);
   }
 
@@ -331,7 +334,7 @@ public class A10Conversion {
   static @Nonnull Stream<Ip> getVirtualServerIps(
       Collection<VirtualServer> virtualServers, int vrid) {
     return virtualServers.stream()
-        .filter(A10Conversion::isVirtualServerEnabled)
+        .filter(A10Conversion::isAnyVirtualServerPortEnabled)
         .filter(vs -> vrid == getVirtualServerVrid(vs))
         .map(VirtualServerTargetVirtualAddressExtractor::extractIp);
   }
@@ -343,7 +346,7 @@ public class A10Conversion {
   static @Nonnull Stream<Ip> getVirtualServerIpsByHaGroup(
       Collection<VirtualServer> virtualServers, int haGroup) {
     return virtualServers.stream()
-        .filter(A10Conversion::isVirtualServerEnabled)
+        .filter(A10Conversion::isAnyVirtualServerPortEnabled)
         .filter(vs -> haGroup == getVirtualServerHaGroup(vs))
         .map(VirtualServerTargetVirtualAddressExtractor::extractIp);
   }
@@ -356,7 +359,7 @@ public class A10Conversion {
   static @Nonnull Stream<Ip> getVirtualServerIpsForAllVrids(
       Collection<VirtualServer> virtualServers) {
     return virtualServers.stream()
-        .filter(A10Conversion::isVirtualServerEnabled)
+        .filter(A10Conversion::isAnyVirtualServerPortEnabled)
         .map(VirtualServerTargetVirtualAddressExtractor::extractIp);
   }
 
@@ -364,7 +367,7 @@ public class A10Conversion {
   static @Nonnull Stream<KernelRoute> getVirtualServerKernelRoutes(
       Collection<VirtualServer> virtualServers) {
     return virtualServers.stream()
-        .filter(A10Conversion::isVirtualServerEnabled)
+        .filter(A10Conversion::isAnyVirtualServerPortEnabled)
         .map(A10Conversion::toKernelRoute);
   }
 
@@ -835,75 +838,6 @@ public class A10Conversion {
   }
 
   /**
-   * Convert a {@link Stream} of {@link AclLine} representing the {@link AccessList} for the
-   * specified {@link VirtualServerPort} in the specified {@link VirtualServer}.
-   */
-  @VisibleForTesting
-  public static @Nonnull Stream<AclLine> toAclLines(
-      VirtualServer server, VirtualServerPort port, String aclName, String filename) {
-    // TODO structure links
-    return Stream.of(
-        new ExprAclLine(
-            LineAction.PERMIT,
-            AclLineMatchExprs.and(
-                traceElementForVirtualServer(server, filename),
-                toMatchExpr(server),
-                toMatchExpr(port),
-                new PermittedByAcl(
-                    computeAclName(aclName), traceElementForAccessList(aclName, filename, true))),
-            "placeholder"),
-        new ExprAclLine(
-            LineAction.DENY,
-            AclLineMatchExprs.and(
-                traceElementForVirtualServer(server, filename),
-                toMatchExpr(server),
-                toMatchExpr(port),
-                new DeniedByAcl(
-                    computeAclName(aclName), traceElementForAccessList(aclName, filename, false))),
-            "placeholder"));
-  }
-
-  private static @Nonnull AclLineMatchExpr toMatchExpr(
-      VirtualServer server, VirtualServerPort port, String filename) {
-    return AclLineMatchExprs.and(
-        traceElementForVirtualServer(server, filename), toMatchExpr(server), toMatchExpr(port));
-  }
-
-  public static TraceElement traceElementForAccessList(
-      String aclName, String filename, boolean permitted) {
-    return TraceElement.builder()
-        .add(String.format("%s by access-list", permitted ? "Permitted" : "Denied"))
-        .add(
-            aclName,
-            new VendorStructureId(filename, A10StructureType.ACCESS_LIST.getDescription(), aclName))
-        .build();
-  }
-
-  public static TraceElement traceElementForVirtualServer(VirtualServer server, String filename) {
-    String serverName = server.getName();
-    return TraceElement.builder()
-        .add("Matched virtual-server")
-        .add(
-            serverName,
-            new VendorStructureId(
-                filename, A10StructureType.VIRTUAL_SERVER.getDescription(), serverName))
-        .build();
-  }
-
-  public static TraceElement traceElementForVirtualServerPort(VirtualServerPort port) {
-    return TraceElement.builder()
-        .add(String.format("Matched %s %s", port.getType().toString(), toPortString(port)))
-        .build();
-  }
-
-  public static String toPortString(VirtualServerPort port) {
-    if (port.getRange() != null) {
-      return String.format("ports %d-%d", port.getNumber(), port.getNumber() + port.getRange());
-    }
-    return String.format("port %d", port.getNumber());
-  }
-
-  /**
    * Compute the VI {@link org.batfish.datamodel.IpAccessList} name for the specified {@link
    * AccessList}.
    */
@@ -976,8 +910,10 @@ public class A10Conversion {
   }
 
   @VisibleForTesting
-  public static @Nonnull AclLineMatchExpr toMatchExpr(VirtualServer server) {
-    return VirtualServerTargetToMatchExpr.INSTANCE.visit(server.getTarget());
+  public static @Nonnull AclLineMatchExpr toMatchExpr(VirtualServer server, String filename) {
+    return AclLineMatchExprs.and(
+        traceElementForVirtualServer(server, filename),
+        VirtualServerTargetToMatchExpr.INSTANCE.visit(server.getTarget()));
   }
 
   @VisibleForTesting
@@ -1002,7 +938,7 @@ public class A10Conversion {
   }
 
   /** Convert a {@link AccessListRule} to its corresponding {@link AclLineMatchExpr}. */
-  private static final class RuleToMatchExpr implements AccessListRuleVisitor<AclLineMatchExpr> {
+  static final class RuleToMatchExpr implements AccessListRuleVisitor<AclLineMatchExpr> {
     static final RuleToMatchExpr INSTANCE = new RuleToMatchExpr();
 
     @Override
@@ -1045,8 +981,8 @@ public class A10Conversion {
     }
 
     /**
-     * Build final {@link AclLineMatchExpr} for the generic {@link AccessListRule} given its
-     * rule-type-specific {@code specificExpr}.
+     * Helper to build final {@link AclLineMatchExpr} for the generic {@link AccessListRule} given
+     * its rule-type-specific {@code specificExpr}.
      */
     private AclLineMatchExpr buildFinalExpr(
         AccessListRule rule, List<AclLineMatchExpr> specificExprs) {

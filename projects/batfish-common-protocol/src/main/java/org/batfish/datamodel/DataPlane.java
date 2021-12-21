@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.vxlan.Layer2Vni;
+import org.batfish.datamodel.vxlan.Layer3Vni;
 
 public interface DataPlane extends Serializable {
 
@@ -52,4 +53,12 @@ public interface DataPlane extends Serializable {
    */
   @Nonnull
   Table<String, String, Set<Layer2Vni>> getLayer2Vnis();
+
+  /**
+   * Return {@link Layer3Vni} for each node/VRF. Returned settings are based on the vni settings in
+   * a {@link Vrf}, but may include additional information obtained during dataplane computation,
+   * such as updated VTEPs due to EVPN route exchange.
+   */
+  @Nonnull
+  Table<String, String, Set<Layer3Vni>> getLayer3Vnis();
 }

@@ -25,10 +25,8 @@ import static org.batfish.vendor.a10.representation.A10Conversion.getVirtualServ
 import static org.batfish.vendor.a10.representation.A10Conversion.getVirtualServerKernelRoutes;
 import static org.batfish.vendor.a10.representation.A10Conversion.haAppliesToInterface;
 import static org.batfish.vendor.a10.representation.A10Conversion.isVrrpAEnabled;
-import static org.batfish.vendor.a10.representation.A10Conversion.orElseChain;
 import static org.batfish.vendor.a10.representation.A10Conversion.toAclLines;
 import static org.batfish.vendor.a10.representation.A10Conversion.toDstTransformationSteps;
-import static org.batfish.vendor.a10.representation.A10Conversion.toMatchCondition;
 import static org.batfish.vendor.a10.representation.A10Conversion.toMatchExpr;
 import static org.batfish.vendor.a10.representation.A10Conversion.toSnatTransformationStep;
 import static org.batfish.vendor.a10.representation.A10Conversion.toVrrpGroupBuilder;
@@ -58,7 +56,6 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.VendorConversionException;
-import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -70,6 +67,7 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SwitchportMode;
@@ -377,8 +375,8 @@ public final class A10Configuration extends VendorConfiguration {
 
     markStructures();
 
-    // add a reference book for virtual addresses
     generateReferenceBook();
+    generateNatPoolIpSpaces();
 
     return ImmutableList.of(_c);
   }
@@ -403,6 +401,19 @@ public final class A10Configuration extends VendorConfiguration {
                                     vServer.getName()))
                         .collect(ImmutableList.toImmutableList()))
                 .build());
+  }
+
+  /** Creates named IpSpaces from configured NAT pools. */
+  private void generateNatPoolIpSpaces() {
+    _natPools.forEach(
+        (name, pool) ->
+            _c.getIpSpaces()
+                .put(ipSpaceNameForNatPool(name), IpRange.range(pool.getStart(), pool.getEnd())));
+  }
+
+  @VisibleForTesting
+  static String ipSpaceNameForNatPool(String natPoolName) {
+    return String.format("NatPool~%s", natPoolName);
   }
 
   private void convertBgp() {
@@ -618,51 +629,19 @@ public final class A10Configuration extends VendorConfiguration {
    */
   private void convertVirtualServers() {
     // Build transformations
-    Optional<Transformation> xform =
-        orElseChain(
-            _virtualServers.values().stream()
-                .filter(A10Conversion::isVirtualServerEnabled)
-                .flatMap(vs -> toSimpleTransformations(vs).stream())
-                .collect(ImmutableList.toImmutableList()));
-
-    // Build ACLs
-    ImmutableList<AclLine> lines =
-        _virtualServers.values().stream()
-            .filter(A10Conversion::isVirtualServerEnabled)
-            .flatMap(
-                vs ->
-                    vs.getPorts().values().stream()
-                        .filter(A10Conversion::isVirtualServerPortEnabled)
-                        .filter(
-                            vp ->
-                                vp.getAccessList() != null
-                                    && _accessLists.containsKey(vp.getAccessList()))
-                        .flatMap(vp -> toAclLines(vs, vp, vp.getAccessList(), _filename)))
-            .collect(ImmutableList.toImmutableList());
-    IpAccessList virtServerAcl =
-        IpAccessList.builder()
-            .setName(VIRTUAL_SERVERS_ACL_NAME)
-            .setOwner(_c)
-            .setLines(lines)
-            .build();
-
     createPacketPolicy();
 
-    xform.ifPresent(
-        x ->
-            _c.getAllInterfaces()
-                .forEach(
-                    (name, iface) -> {
-                      iface.setFirewallSessionInterfaceInfo(
-                          new FirewallSessionInterfaceInfo(
-                              POST_NAT_FIB_LOOKUP, ImmutableList.of(iface.getName()), null, null));
-                      // iface.setIncomingTransformation(x);
-                      // iface.setIncomingFilter(virtServerAcl);
-                      iface.setPacketPolicy(VIRTUAL_SERVERS_PACKET_POLICY_NAME);
-                    }));
+    _c.getAllInterfaces()
+        .forEach(
+            (name, iface) -> {
+              iface.setFirewallSessionInterfaceInfo(
+                  new FirewallSessionInterfaceInfo(
+                      POST_NAT_FIB_LOOKUP, ImmutableList.of(iface.getName()), null, null));
+              iface.setPacketPolicy(VIRTUAL_SERVERS_PACKET_POLICY_NAME);
+            });
   }
 
-  /** */
+  /** Create a {@link PacketPolicy} which encodes the NAT transformations for this device. */
   private void createPacketPolicy() {
     Return returnFibLookup = new Return(new FibLookup(IngressInterfaceVrf.instance()));
 
@@ -673,18 +652,26 @@ public final class A10Configuration extends VendorConfiguration {
     PacketPolicy policy =
         new PacketPolicy(VIRTUAL_SERVERS_PACKET_POLICY_NAME, statements.build(), returnFibLookup);
     _c.getPacketPolicies().put(VIRTUAL_SERVERS_PACKET_POLICY_NAME, policy);
-    // TODO add to interfaces
   }
 
+  /**
+   * Convert specified {@link VirtualServer}'s transformations into a packet policy {@link
+   * Statement}.
+   */
   private Statement toStatement(VirtualServer vs) {
     return new If(
-        new PacketMatchExpr(toMatchExpr(vs)),
+        new PacketMatchExpr(toMatchExpr(vs, _filename)),
         vs.getPorts().values().stream()
-            .map(vp -> toStatement(vs, vp))
+            .filter(A10Conversion::isVirtualServerPortEnabled)
+            .map(this::toStatement)
             .collect(ImmutableList.toImmutableList()));
   }
 
-  private Statement toStatement(VirtualServer server, VirtualServerPort port) {
+  /**
+   * Convert specified {@link VirtualServerPort}'s transformations into a packet policy {@link
+   * Statement}.
+   */
+  private Statement toStatement(VirtualServerPort port) {
     ImmutableList.Builder<Statement> trueStatements = ImmutableList.builder();
     String aclName = port.getAccessList();
     if (aclName != null) {
@@ -695,23 +682,6 @@ public final class A10Configuration extends VendorConfiguration {
             new Transformation(
                 TrueExpr.INSTANCE, ImmutableList.of(toTransformationStep(port)), null, null)));
     return new If(new PacketMatchExpr(toMatchExpr(port)), trueStatements.build());
-  }
-
-  /**
-   * Returns the list of intermediate {@link SimpleTransformation}s used to build the VI {@link
-   * Transformation}. Each element corresponds to the transformation for a {@link Server} member of
-   * the specified {@link VirtualServer}.
-   */
-  @Nonnull
-  private List<SimpleTransformation> toSimpleTransformations(VirtualServer server) {
-    return server.getPorts().values().stream()
-        .filter(A10Conversion::isVirtualServerPortEnabled)
-        .map(
-            p ->
-                new SimpleTransformation(
-                    toMatchCondition(server.getTarget(), p, VirtualServerTargetToIpSpace.INSTANCE),
-                    toTransformationStep(p)))
-        .collect(ImmutableList.toImmutableList());
   }
 
   /**

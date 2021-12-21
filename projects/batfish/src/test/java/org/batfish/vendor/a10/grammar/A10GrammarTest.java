@@ -32,6 +32,8 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isProxyArp;
+import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
+import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.matchers.StaticRouteMatchers.hasRecursive;
@@ -47,6 +49,7 @@ import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_T
 import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_VIRTUAL_SERVER_FLAGGED;
 import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_VIRTUAL_SERVER_UNFLAGGED;
 import static org.batfish.vendor.a10.representation.A10Conversion.SNAT_PORT_POOL_START;
+import static org.batfish.vendor.a10.representation.A10Conversion.computeAclName;
 import static org.batfish.vendor.a10.representation.A10StructureType.ACCESS_LIST;
 import static org.batfish.vendor.a10.representation.A10StructureType.HEALTH_MONITOR;
 import static org.batfish.vendor.a10.representation.A10StructureType.INTERFACE;
@@ -81,6 +84,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Iterables;
@@ -110,6 +114,7 @@ import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.KernelRoute;
@@ -1875,7 +1880,9 @@ public class A10GrammarTest {
     assertInbound(Iterables.getOnlyElement(traces.get(flowNoMatchProtocol)));
 
     // Since dst IP is that of a disabled virtual-server, the flow is forwarded untransformed.
-    assertNull(getTransformedFlow(Iterables.getOnlyElement(traces.get(flowNoMatchEnable))));
+    assertThat(
+        getTransformedFlow(Iterables.getOnlyElement(traces.get(flowNoMatchEnable))),
+        equalTo(flowNoMatchEnable));
   }
 
   /**
@@ -2207,6 +2214,30 @@ public class A10GrammarTest {
   }
 
   @Test
+  public void testAccessListConversion() {
+    String hostname = "access_list_convert";
+    Configuration c = parseConfig(hostname);
+
+    Flow permitted =
+        Flow.builder()
+            .setIngressNode(hostname)
+            .setIngressInterface("ethernet12")
+            .setIpProtocol(IpProtocol.TCP)
+            .setSrcIp(Ip.parse("10.0.2.11"))
+            // Arbitrary source port
+            .setSrcPort(4096)
+            .setDstIp(Ip.parse("10.0.1.101"))
+            .setDstPort(443)
+            .build();
+    Flow denied = permitted.toBuilder().setSrcIp(Ip.parse("10.0.2.10")).build();
+
+    assertThat(c.getIpAccessLists(), hasKey(computeAclName("ACL1")));
+    IpAccessList acl = c.getIpAccessLists().get(computeAclName("ACL1"));
+    assertThat(acl, accepts(permitted, "ethernet12", ImmutableMap.of(), ImmutableMap.of()));
+    assertThat(acl, rejects(denied, "ethernet12", ImmutableMap.of(), ImmutableMap.of()));
+  }
+
+  @Test
   public void testAccessListWarn() throws IOException {
     String filename = "access_list_warn";
     Batfish batfish = getBatfishForConfigurationNames(filename);
@@ -2272,18 +2303,5 @@ public class A10GrammarTest {
 
     assertThat(ccae, hasNumReferrers(filename, SERVICE_GROUP, "SG1", 1));
     assertThat(ccae, hasNumReferrers(filename, SERVICE_GROUP, "SG2", 0));
-  }
-
-  @Test
-  public void testAccessListConversion() {
-    String hostname = "access_list";
-    Configuration c = parseConfig(hostname);
-
-    String i1Name = getInterfaceName(Type.ETHERNET, 1);
-    String i2Name = getInterfaceName(Type.ETHERNET, 2);
-    String i3Name = getInterfaceName(Type.ETHERNET, 3);
-    int haGroup = 1;
-
-    assertThat(c.getAllInterfaces(), hasKeys(i1Name, i2Name, i3Name));
   }
 }

@@ -1,4 +1,4 @@
-package org.batfish.representation.frr;
+package org.batfish.representation.cumulus_concatenated;
 
 import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;

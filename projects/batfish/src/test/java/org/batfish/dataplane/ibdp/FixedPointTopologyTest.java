@@ -5,6 +5,7 @@ import static org.batfish.common.topology.TopologyUtil.computeLayer2Topology;
 import static org.batfish.common.topology.TopologyUtil.computeLayer3Topology;
 import static org.batfish.common.topology.TopologyUtil.computeRawLayer3Topology;
 import static org.batfish.datamodel.IpsecSession.IPSEC_UDP_PORT;
+import static org.batfish.datamodel.vxlan.VniLayer.LAYER_2;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
@@ -209,7 +210,9 @@ public final class FixedPointTopologyTest {
     // There should be an active VXLAN tunnel
     assertThat(
         topologies.getVxlanTopology().getGraph().edges(),
-        contains(EndpointPair.unordered(new VxlanNode(S1_NAME, VNI), new VxlanNode(S2_NAME, VNI))));
+        contains(
+            EndpointPair.unordered(
+                new VxlanNode(S1_NAME, VNI, LAYER_2), new VxlanNode(S2_NAME, VNI, LAYER_2))));
 
     // The two host interfaces should be in the same broadcast domain due to VXLAN tunnel
     assertTrue(

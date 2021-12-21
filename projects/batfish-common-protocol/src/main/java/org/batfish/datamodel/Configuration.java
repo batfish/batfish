@@ -264,8 +264,11 @@ public final class Configuration implements Serializable {
   private final String _name;
   private @Nullable String _humanName;
 
-  /** Normal =&gt; Excluding extended and reserved vlans that should not be modified or deleted. */
-  private SubRange _normalVlanRange;
+  /**
+   * Normal =&gt; Excluding extended and reserved vlans that should not be modified or deleted. Also
+   * excludes vlans on relevant devices (e.g. NX-OS) that are associated with an L3 VNI.
+   */
+  private @Nonnull IntegerSpace _normalVlanRange;
 
   private Set<String> _ntpServers;
 
@@ -336,7 +339,8 @@ public final class Configuration implements Serializable {
     _ipsecPhase2Proposals = ImmutableSortedMap.of();
     _loggingServers = new TreeSet<>();
     _mlags = ImmutableSortedMap.of();
-    _normalVlanRange = new SubRange(VLAN_NORMAL_MIN_DEFAULT, VLAN_NORMAL_MAX_DEFAULT);
+    _normalVlanRange =
+        IntegerSpace.of(new SubRange(VLAN_NORMAL_MIN_DEFAULT, VLAN_NORMAL_MAX_DEFAULT));
     _ntpServers = new TreeSet<>();
     _packetPolicies = new TreeMap<>();
     _routeFilterLists = new TreeMap<>();
@@ -687,7 +691,7 @@ public final class Configuration implements Serializable {
   }
 
   @JsonIgnore
-  public SubRange getNormalVlanRange() {
+  public @Nonnull IntegerSpace getNormalVlanRange() {
     return _normalVlanRange;
   }
 
@@ -962,7 +966,7 @@ public final class Configuration implements Serializable {
   }
 
   @JsonIgnore
-  public void setNormalVlanRange(SubRange normalVlanRange) {
+  public void setNormalVlanRange(@Nonnull IntegerSpace normalVlanRange) {
     _normalVlanRange = normalVlanRange;
   }
 

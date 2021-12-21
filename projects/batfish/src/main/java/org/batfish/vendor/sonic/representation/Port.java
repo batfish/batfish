@@ -1,6 +1,7 @@
 package org.batfish.vendor.sonic.representation;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import java.io.Serializable;
@@ -10,19 +11,26 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /** Represents PORT object: https://github.com/Azure/SONiC/wiki/Configuration#port */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Port implements Serializable {
   private static final String PROP_ADMIN_STATUS = "admin_status";
+  private static final String PROP_ALIAS = "alias";
   private static final String PROP_DESCRIPTION = "description";
   private static final String PROP_MTU = "mtu";
   private static final String PROP_SPEED = "speed";
 
   private @Nullable final Boolean _adminStatusUp;
+  private @Nullable final String _alias;
   private @Nullable final String _description;
   private @Nullable final Integer _mtu;
   private @Nullable final Integer _speed;
 
   public @Nonnull Optional<Boolean> getAdminStatusUp() {
     return Optional.ofNullable(_adminStatusUp);
+  }
+
+  public @Nonnull Optional<String> getAlias() {
+    return Optional.ofNullable(_alias);
   }
 
   public @Nonnull Optional<String> getDescription() {
@@ -40,11 +48,13 @@ public class Port implements Serializable {
   @JsonCreator
   private @Nonnull static Port create(
       @Nullable @JsonProperty(PROP_ADMIN_STATUS) String adminStatus,
+      @Nullable @JsonProperty(PROP_ALIAS) String alias,
       @Nullable @JsonProperty(PROP_DESCRIPTION) String description,
       @Nullable @JsonProperty(PROP_MTU) String mtu,
       @Nullable @JsonProperty(PROP_SPEED) String speed) {
     return Port.builder()
         .setAdminStatusUp(Optional.ofNullable(adminStatus).map("up"::equals).orElse(null))
+        .setAlias(alias)
         .setDescription(description)
         .setMtu(Optional.ofNullable(mtu).map(Integer::parseInt).orElse(null))
         .setSpeed(Optional.ofNullable(speed).map(Integer::parseInt).orElse(null))
@@ -53,10 +63,12 @@ public class Port implements Serializable {
 
   private @Nonnull Port(
       @Nullable Boolean adminStatus,
+      @Nullable String alias,
       @Nullable String description,
       @Nullable Integer mtu,
       @Nullable Integer speed) {
     _adminStatusUp = adminStatus;
+    _alias = alias;
     _description = description;
     _mtu = mtu;
     _speed = speed;
@@ -72,6 +84,7 @@ public class Port implements Serializable {
     }
     Port that = (Port) o;
     return Objects.equals(_adminStatusUp, that._adminStatusUp)
+        && Objects.equals(_alias, that._alias)
         && Objects.equals(_description, that._description)
         && Objects.equals(_mtu, that._mtu)
         && Objects.equals(_speed, that._speed);
@@ -79,7 +92,7 @@ public class Port implements Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_adminStatusUp, _description, _mtu, _speed);
+    return Objects.hash(_adminStatusUp, _alias, _description, _mtu, _speed);
   }
 
   @Override
@@ -87,6 +100,7 @@ public class Port implements Serializable {
     return MoreObjects.toStringHelper(this)
         .omitNullValues()
         .add("adminStatusUp", _adminStatusUp)
+        .add("alias", _alias)
         .add("description", _description)
         .add("mtu", _mtu)
         .add("speed", _speed)
@@ -99,12 +113,18 @@ public class Port implements Serializable {
 
   public static final class Builder {
     private Boolean _adminStatusUp;
+    private String _alias;
     private String _description;
     private Integer _mtu;
     private Integer _speed;
 
     public @Nonnull Builder setAdminStatusUp(@Nullable Boolean adminStatusUp) {
       this._adminStatusUp = adminStatusUp;
+      return this;
+    }
+
+    public @Nonnull Builder setAlias(@Nullable String alias) {
+      this._alias = alias;
       return this;
     }
 
@@ -124,7 +144,7 @@ public class Port implements Serializable {
     }
 
     public @Nonnull Port build() {
-      return new Port(_adminStatusUp, _description, _mtu, _speed);
+      return new Port(_adminStatusUp, _alias, _description, _mtu, _speed);
     }
   }
 }

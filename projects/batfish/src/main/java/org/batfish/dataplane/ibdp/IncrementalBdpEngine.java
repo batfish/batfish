@@ -136,7 +136,8 @@ final class IncrementalBdpEngine {
     LOGGER.info("Updating VXLAN topology");
     VxlanTopology newVxlanTopology =
         prunedVxlanTopology(
-            computeVxlanTopology(currentDataplane.getLayer2Vnis()),
+            computeVxlanTopology(
+                currentDataplane.getLayer2Vnis(), currentDataplane.getLayer3Vnis()),
             configurations,
             trEngCurrentL3Topology);
 
@@ -168,7 +169,11 @@ final class IncrementalBdpEngine {
 
     // Update L3 adjacencies if necessary.
     L3Adjacencies newAdjacencies;
-    if (!currentTopologyContext.getVxlanTopology().equals(newVxlanTopology)) {
+    if (!currentTopologyContext
+        .getVxlanTopology()
+        .getLayer2VniEdges()
+        .collect(ImmutableSet.toImmutableSet())
+        .equals(newVxlanTopology.getLayer2VniEdges().collect(ImmutableSet.toImmutableSet()))) {
       LOGGER.info("Updating Layer 3 adjacencies");
       if (L3Adjacencies.USE_NEW_METHOD) {
         newAdjacencies =
@@ -193,7 +198,15 @@ final class IncrementalBdpEngine {
     Topology newLayer3Topology;
     if (!newIpsecTopology.equals(currentTopologyContext.getIpsecTopology())
         || !newTunnelTopology.equals(currentTopologyContext.getTunnelTopology())
-        || !newAdjacencies.equals(currentTopologyContext.getL3Adjacencies())) {
+        || !newAdjacencies.equals(currentTopologyContext.getL3Adjacencies())
+        || !newVxlanTopology
+            .getLayer3VniEdges()
+            .collect(ImmutableSet.toImmutableSet())
+            .equals(
+                currentTopologyContext
+                    .getVxlanTopology()
+                    .getLayer3VniEdges()
+                    .collect(ImmutableSet.toImmutableSet()))) {
       LOGGER.info("Updating Layer 3 topology");
       newLayer3Topology =
           computeLayer3Topology(
@@ -508,6 +521,21 @@ final class IncrementalBdpEngine {
 
       // Merge BGP routes from BGP process into the main RIB
       vrs.parallelStream().forEach(VirtualRouter::mergeBgpRoutesToMainRib);
+    } finally {
+      propSpan.finish();
+    }
+
+    Span layer3VniSpan =
+        GlobalTracer.get()
+            .buildSpan(iterationLabel + ": Update learned VTEP IPs for Layer3Vnis")
+            .start();
+    LOGGER.info("{}: Update learned VTEP IPs for Layer3Vnis", iterationLabel);
+
+    try (Scope innerScope = GlobalTracer.get().scopeManager().activate(layer3VniSpan)) {
+      assert innerScope != null; // avoid unused warning
+
+      // Merge BGP routes from BGP process into the main RIB
+      vrs.parallelStream().forEach(VirtualRouter::updateLayer3Vnis);
     } finally {
       propSpan.finish();
     }

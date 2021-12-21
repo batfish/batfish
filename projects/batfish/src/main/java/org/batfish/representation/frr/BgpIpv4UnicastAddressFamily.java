@@ -13,8 +13,7 @@ public class BgpIpv4UnicastAddressFamily implements Serializable {
   private final @Nonnull Map<Prefix, BgpVrfAddressFamilyAggregateNetworkConfiguration>
       _aggregateNetworks;
   private final @Nonnull Map<Prefix, BgpNetwork> _networks;
-  private final @Nonnull Map<CumulusRoutingProtocol, BgpRedistributionPolicy>
-      _redistributionPolicies;
+  private final @Nonnull Map<FrrRoutingProtocol, BgpRedistributionPolicy> _redistributionPolicies;
 
   public BgpIpv4UnicastAddressFamily() {
     _aggregateNetworks = new HashMap<>();
@@ -31,7 +30,7 @@ public class BgpIpv4UnicastAddressFamily implements Serializable {
     return _networks;
   }
 
-  public @Nonnull Map<CumulusRoutingProtocol, BgpRedistributionPolicy> getRedistributionPolicies() {
+  public @Nonnull Map<FrrRoutingProtocol, BgpRedistributionPolicy> getRedistributionPolicies() {
     return _redistributionPolicies;
   }
 }

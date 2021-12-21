@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -50,6 +51,17 @@ public class MockFrrVendorConfiguration extends FrrVendorConfiguration {
   @Override
   public Map<String, Vxlan> getVxlans() {
     return _vxlans;
+  }
+
+  @Override
+  public void referenceStructure(
+      FrrStructureType type, String name, FrrStructureUsage usage, int line) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void defineStructure(FrrStructureType type, String name, ParserRuleContext ctx) {
+    throw new UnsupportedOperationException();
   }
 
   public static Builder builder() {

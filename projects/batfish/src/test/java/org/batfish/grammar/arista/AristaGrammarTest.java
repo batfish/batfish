@@ -61,13 +61,13 @@ import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.matchers.MlagMatchers.hasId;
 import static org.batfish.datamodel.matchers.MlagMatchers.hasPeerAddress;
 import static org.batfish.datamodel.matchers.MlagMatchers.hasPeerInterface;
-import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasBumTransportIps;
-import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasBumTransportMethod;
-import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasSourceAddress;
-import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasUdpPort;
-import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasVlan;
+import static org.batfish.datamodel.matchers.VniMatchers.hasBumTransportIps;
+import static org.batfish.datamodel.matchers.VniMatchers.hasBumTransportMethod;
+import static org.batfish.datamodel.matchers.VniMatchers.hasSourceAddress;
+import static org.batfish.datamodel.matchers.VniMatchers.hasUdpPort;
+import static org.batfish.datamodel.matchers.VniMatchers.hasVlan;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
-import static org.batfish.datamodel.matchers.VrfMatchers.hasL2VniSettings;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasLayer2Vnis;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasName;
 import static org.batfish.datamodel.routing_policy.Common.SUMMARY_ONLY_SUPPRESSION_POLICY_NAME;
 import static org.batfish.datamodel.transformation.Transformation.when;
@@ -1693,19 +1693,19 @@ public class AristaGrammarTest {
             hostnameBase, hostnameNoSourceIface, hostnameNoLoopbackAddr);
     // Config with proper loopback iface, VLAN-specific unicast, explicit UDP port
     Configuration configBase = batfish.loadConfigurations(batfish.getSnapshot()).get(hostnameBase);
-    assertThat(configBase, hasDefaultVrf(hasL2VniSettings(hasKey(10002))));
+    assertThat(configBase, hasDefaultVrf(hasLayer2Vnis(hasKey(10002))));
     Layer2Vni vnisBase = configBase.getDefaultVrf().getLayer2Vnis().get(10002);
 
     // Config with no loopback address, using multicast, and default UDP port
     Configuration configNoLoopbackAddr =
         batfish.loadConfigurations(batfish.getSnapshot()).get(hostnameNoLoopbackAddr);
-    assertThat(configNoLoopbackAddr, hasDefaultVrf(hasL2VniSettings(hasKey(10002))));
+    assertThat(configNoLoopbackAddr, hasDefaultVrf(hasLayer2Vnis(hasKey(10002))));
     Layer2Vni vnisNoAddr = configNoLoopbackAddr.getDefaultVrf().getLayer2Vnis().get(10002);
 
     // Config with no source interface and general VXLAN unicast address
     Configuration configNoSourceIface =
         batfish.loadConfigurations(batfish.getSnapshot()).get(hostnameNoSourceIface);
-    assertThat(configNoSourceIface, hasDefaultVrf(hasL2VniSettings(hasKey(10002))));
+    assertThat(configNoSourceIface, hasDefaultVrf(hasLayer2Vnis(hasKey(10002))));
     Layer2Vni vnisNoIface = configNoSourceIface.getDefaultVrf().getLayer2Vnis().get(10002);
 
     // Confirm VLAN-specific unicast address takes priority over the other addresses
@@ -1743,7 +1743,7 @@ public class AristaGrammarTest {
     Configuration config = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
 
     // Make sure that misconfigured VXLAN is still converted into VI model properly
-    assertThat(config, hasDefaultVrf(hasL2VniSettings(hasKey(10002))));
+    assertThat(config, hasDefaultVrf(hasLayer2Vnis(hasKey(10002))));
     Layer2Vni vnisMisconfig = config.getDefaultVrf().getLayer2Vnis().get(10002);
 
     // No BUM IPs specified
@@ -2211,9 +2211,8 @@ public class AristaGrammarTest {
     Configuration config = parseConfig("arista_vxlan");
     {
       Layer3Vni vniSettings = config.getVrfs().get("TENANT").getLayer3Vnis().get(10000);
-      assertThat(
-          vniSettings.getBumTransportMethod(), equalTo(BumTransportMethod.UNICAST_FLOOD_GROUP));
-      assertThat(vniSettings.getBumTransportIps(), empty());
+      assertThat(vniSettings.getSrcVrf(), equalTo(DEFAULT_VRF_NAME));
+      assertThat(vniSettings.getLearnedNexthopVtepIps(), empty());
     }
     {
       Layer2Vni vniSettings = config.getDefaultVrf().getLayer2Vnis().get(10001);
@@ -2227,6 +2226,14 @@ public class AristaGrammarTest {
           vniSettings.getBumTransportMethod(), equalTo(BumTransportMethod.UNICAST_FLOOD_GROUP));
       assertThat(vniSettings.getBumTransportIps(), empty());
     }
+  }
+
+  // xfail until we support activating Vlan interfaces via VXLAN
+  @Test(expected = AssertionError.class)
+  public void testVxlanVlanActivationConversion() {
+    Configuration config = parseConfig("arista_vxlan_vlan_activation");
+    assertThat(config, hasInterface("Vlan6", isActive(false)));
+    assertThat(config, hasInterface("Vlan5", isActive()));
   }
 
   @Test
