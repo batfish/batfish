@@ -165,8 +165,8 @@ public final class BgpRoute {
    * #getNextHopIp()} for retrieving this field in a manner suitable for internal processing.
    */
   @JsonProperty(PROP_NEXT_HOP_IP)
-  public @Nullable Ip getNextHopIpJson() {
-    return _nextHopIp == Route.UNSET_ROUTE_NEXT_HOP_IP ? null : _nextHopIp;
+  private @Nullable Ip getNextHopIpJson() {
+    return _nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP) ? null : _nextHopIp;
   }
 
   @Nonnull
