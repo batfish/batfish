@@ -117,7 +117,32 @@ public class ConfigDb implements Serializable {
 
   /** Properties that are knowingly ignored and we won't warn the user about ignoring them */
   public static final Set<String> IGNORED_PROPERTIES =
-      ImmutableSet.of("BUFFER_QUEUE", "DSCP_TO_TC_MAP", "ZTP");
+      ImmutableSet.of(
+          "BREAKOUT_CFG",
+          "BREAKOUT_PORTS",
+          "BUFFER_PG",
+          "BUFFER_POOL",
+          "BUFFER_PROFILE",
+          "BUFFER_QUEUE",
+          "CLASSIFIER_TABLE",
+          "COREDUMP",
+          "DSCP_TO_TC_MAP",
+          "ECMP_LOADSHARE_TABLE_IPV4",
+          "ECMP_LOADSHARE_TABLE_IPV6",
+          "FLEX_COUNTER_TABLE",
+          "HARDWARE",
+          "KDUMP",
+          "POLICY_BINDING_TABLE",
+          "POLICY_SECTIONS_TABLE",
+          "POLICY_TABLE",
+          "PORT_QOS_MAP",
+          "QUEUE",
+          "SCHEDULER",
+          "SWITCH",
+          "TC_TO_QUEUE_MAP",
+          "TELEMETRY",
+          "VERSIONS",
+          "ZTP");
 
   private final @Nonnull Map<String, AclTable> _aclTables;
   private final @Nonnull Map<String, AclRule> _aclRules;
@@ -365,97 +390,101 @@ public class ConfigDb implements Serializable {
       while (fieldIterator.hasNext()) {
         String field = fieldIterator.next();
         TreeNode value = tree.get(field);
-        switch (field) {
-          case PROP_ACL_RULE:
-            configDb.setAclRules(
-                mapper.convertValue(value, new TypeReference<Map<String, AclRule>>() {}));
-            break;
-          case PROP_ACL_TABLE:
-            configDb.setAclTables(
-                mapper.convertValue(value, new TypeReference<Map<String, AclTable>>() {}));
-            break;
-          case PROP_DEVICE_METADATA:
-            configDb.setDeviceMetadata(
-                mapper.convertValue(value, new TypeReference<Map<String, DeviceMetadata>>() {}));
-            break;
-          case PROP_INTERFACE:
-            configDb.setInterfaces(
-                createInterfaces(
-                    mapper
-                        .convertValue(value, new TypeReference<Map<String, Object>>() {})
-                        .keySet()));
-            break;
-          case PROP_LOOPBACK_INTERFACE:
-            configDb.setLoopbackInterfaces(
-                createInterfaces(
-                    mapper
-                        .convertValue(value, new TypeReference<Map<String, Object>>() {})
-                        .keySet()));
-            break;
-          case PROP_MGMT_INTERFACE:
-            {
-              Map<String, Map<String, Object>> mgmtInterfaceMap =
-                  mapper.convertValue(
-                      value, new TypeReference<Map<String, Map<String, Object>>>() {});
-              configDb.setMgmtInterfaces(createInterfaces(mgmtInterfaceMap.keySet()));
-              Set<String> innerProperties =
-                  mgmtInterfaceMap.values().stream()
-                      .flatMap(map -> map.keySet().stream())
-                      .collect(ImmutableSet.toImmutableSet());
-              innerProperties.forEach(
-                  key ->
-                      _warnings.unimplemented(
-                          String.format("Unimplemented MGMT_INTERFACE property '%s'", key)));
+        try {
+          switch (field) {
+            case PROP_ACL_RULE:
+              configDb.setAclRules(
+                  mapper.convertValue(value, new TypeReference<Map<String, AclRule>>() {}));
               break;
-            }
-          case PROP_MGMT_PORT:
-            configDb.setMgmtPorts(
-                mapper.convertValue(value, new TypeReference<Map<String, Port>>() {}));
-            break;
-          case PROP_MGMT_VRF_CONFIG:
-            configDb.setMgmtVrfs(
-                mapper.convertValue(value, new TypeReference<Map<String, MgmtVrf>>() {}));
-            break;
-          case PROP_NTP_SERVER:
-            configDb.setNtpServers(
-                mapper.convertValue(value, new TypeReference<Map<String, Object>>() {}).keySet());
-            break;
-          case PROP_PORT:
-            configDb.setPorts(
-                mapper.convertValue(value, new TypeReference<Map<String, Port>>() {}));
-            break;
-          case PROP_SYSLOG_SERVER:
-            configDb.setSyslogServers(
-                mapper.convertValue(value, new TypeReference<Map<String, Object>>() {}).keySet());
-            break;
-          case PROP_TACPLUS:
-            configDb.setTacplusses(
-                mapper.convertValue(value, new TypeReference<Map<String, Tacplus>>() {}));
-            break;
-          case PROP_TACPLUS_SERVER:
-            // ignoring properties of individual servers
-            configDb.setTacplusServers(
-                mapper.convertValue(value, new TypeReference<Map<String, Object>>() {}).keySet());
-            break;
-          case PROP_VLAN:
-            configDb.setVlans(
-                mapper.convertValue(value, new TypeReference<Map<String, Vlan>>() {}));
-            break;
-          case PROP_VLAN_INTERFACE:
-            configDb.setVlanInterfaces(
-                createInterfaces(
-                    mapper
-                        .convertValue(value, new TypeReference<Map<String, Object>>() {})
-                        .keySet()));
-            break;
-          case PROP_VLAN_MEMBER:
-            configDb.setVlanMembers(
-                mapper.convertValue(value, new TypeReference<Map<String, VlanMember>>() {}));
-            break;
-          default:
-            if (!IGNORED_PROPERTIES.contains(field)) {
-              _warnings.unimplemented(String.format("Unimplemented configdb table '%s'", field));
-            }
+            case PROP_ACL_TABLE:
+              configDb.setAclTables(
+                  mapper.convertValue(value, new TypeReference<Map<String, AclTable>>() {}));
+              break;
+            case PROP_DEVICE_METADATA:
+              configDb.setDeviceMetadata(
+                  mapper.convertValue(value, new TypeReference<Map<String, DeviceMetadata>>() {}));
+              break;
+            case PROP_INTERFACE:
+              configDb.setInterfaces(
+                  createInterfaces(
+                      mapper
+                          .convertValue(value, new TypeReference<Map<String, Object>>() {})
+                          .keySet()));
+              break;
+            case PROP_LOOPBACK_INTERFACE:
+              configDb.setLoopbackInterfaces(
+                  createInterfaces(
+                      mapper
+                          .convertValue(value, new TypeReference<Map<String, Object>>() {})
+                          .keySet()));
+              break;
+            case PROP_MGMT_INTERFACE:
+              {
+                Map<String, Map<String, Object>> mgmtInterfaceMap =
+                    mapper.convertValue(
+                        value, new TypeReference<Map<String, Map<String, Object>>>() {});
+                configDb.setMgmtInterfaces(createInterfaces(mgmtInterfaceMap.keySet()));
+                Set<String> innerProperties =
+                    mgmtInterfaceMap.values().stream()
+                        .flatMap(map -> map.keySet().stream())
+                        .collect(ImmutableSet.toImmutableSet());
+                innerProperties.forEach(
+                    key ->
+                        _warnings.unimplemented(
+                            String.format("Unimplemented MGMT_INTERFACE property '%s'", key)));
+                break;
+              }
+            case PROP_MGMT_PORT:
+              configDb.setMgmtPorts(
+                  mapper.convertValue(value, new TypeReference<Map<String, Port>>() {}));
+              break;
+            case PROP_MGMT_VRF_CONFIG:
+              configDb.setMgmtVrfs(
+                  mapper.convertValue(value, new TypeReference<Map<String, MgmtVrf>>() {}));
+              break;
+            case PROP_NTP_SERVER:
+              configDb.setNtpServers(
+                  mapper.convertValue(value, new TypeReference<Map<String, Object>>() {}).keySet());
+              break;
+            case PROP_PORT:
+              configDb.setPorts(
+                  mapper.convertValue(value, new TypeReference<Map<String, Port>>() {}));
+              break;
+            case PROP_SYSLOG_SERVER:
+              configDb.setSyslogServers(
+                  mapper.convertValue(value, new TypeReference<Map<String, Object>>() {}).keySet());
+              break;
+            case PROP_TACPLUS:
+              configDb.setTacplusses(
+                  mapper.convertValue(value, new TypeReference<Map<String, Tacplus>>() {}));
+              break;
+            case PROP_TACPLUS_SERVER:
+              // ignoring properties of individual servers
+              configDb.setTacplusServers(
+                  mapper.convertValue(value, new TypeReference<Map<String, Object>>() {}).keySet());
+              break;
+            case PROP_VLAN:
+              configDb.setVlans(
+                  mapper.convertValue(value, new TypeReference<Map<String, Vlan>>() {}));
+              break;
+            case PROP_VLAN_INTERFACE:
+              configDb.setVlanInterfaces(
+                  createInterfaces(
+                      mapper
+                          .convertValue(value, new TypeReference<Map<String, Object>>() {})
+                          .keySet()));
+              break;
+            case PROP_VLAN_MEMBER:
+              configDb.setVlanMembers(
+                  mapper.convertValue(value, new TypeReference<Map<String, VlanMember>>() {}));
+              break;
+            default:
+              if (!IGNORED_PROPERTIES.contains(field)) {
+                _warnings.unimplemented(String.format("Unimplemented configdb table '%s'", field));
+              }
+          }
+        } catch (IllegalArgumentException e) { // thrown by convertValue
+          _warnings.redFlag(String.format("Failed to deserialize %s: %s", field, e.getMessage()));
         }
       }
       return configDb.build();

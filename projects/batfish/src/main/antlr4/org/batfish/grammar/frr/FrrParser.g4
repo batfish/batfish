@@ -11,7 +11,7 @@ options {
 // goal rule
 frr_configuration
 :
-  statement+ EOF
+  NEWLINE* statement+ EOF
 ;
 
 // other rules
