@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.OriginMechanism.LEARNED;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSortedSet;
@@ -149,10 +150,23 @@ public final class BgpRoute {
     return _network;
   }
 
+  /**
+   * Returns next hop IP suitable for internal consumption. See {@link #getNextHopIpJson()} for
+   * retrieving this field in a manner that is suitable for external deserialization.
+   */
   @Nonnull
-  @JsonProperty(PROP_NEXT_HOP_IP)
+  @JsonIgnore
   public Ip getNextHopIp() {
     return _nextHopIp;
+  }
+
+  /**
+   * Returns next hop IP in a manner suitable for deserialization to JSON. See {@link
+   * #getNextHopIp()} for retrieving this field in a manner suitable for internal processing.
+   */
+  @JsonProperty(PROP_NEXT_HOP_IP)
+  private @Nullable Ip getNextHopIpJson() {
+    return _nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP) ? null : _nextHopIp;
   }
 
   @Nonnull
