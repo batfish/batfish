@@ -147,6 +147,23 @@ public class JFactoryTest {
   }
 
   @Test
+  public void testOrAll_free() {
+    _factory.setVarNum(10);
+    BDD[] vars = new BDD[10];
+    for (int i = 0; i < 10; ++i) {
+      vars[i] = _factory.ithVar(i);
+    }
+    BDD result = _factory.orAll(vars);
+    result.free();
+
+    // Trigger garbage collection so cached result BDD will be removed.
+    _factory.bdd_gbc();
+
+    result = _factory.orAll(vars);
+    result.free();
+  }
+
+  @Test
   public void testNand() {
     _factory.setVarNum(10);
     BDD x = _factory.ithVar(0);
