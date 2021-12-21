@@ -36,6 +36,7 @@ import java.util.Collection;
 import java.util.Random;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
+import java.util.stream.StreamSupport;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
@@ -854,9 +855,9 @@ public final class JFactory extends BDDFactory {
   }
 
   @Override
-  public BDD orAll(Collection<BDD> bddOperands) {
+  public BDD orAll(Iterable<BDD> bddOperands) {
     int[] operands =
-        bddOperands.stream()
+        StreamSupport.stream(bddOperands.spliterator(), false)
             .mapToInt(bdd -> ((BDDImpl) bdd)._index)
             .peek(this::CHECK)
             .filter(i -> i != 0)
