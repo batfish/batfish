@@ -74,6 +74,22 @@ public class SonicConversions {
     }
   }
 
+  /** Converts loopbacks under LOOPBACK_INTERFACE table */
+  static void convertLoopbacks(Configuration c, Map<String, L3Interface> loopbacks, Vrf vrf) {
+
+    // TODO: set bandwidth appropriately
+
+    for (String ifaceName : loopbacks.keySet()) {
+      Interface.builder()
+          .setName(ifaceName)
+          .setOwner(c)
+          .setVrf(vrf)
+          .setType(InterfaceType.LOOPBACK)
+          .setAddress(loopbacks.get(ifaceName).getAddress())
+          .build();
+    }
+  }
+
   /**
    * Converts vlan information under the VLAN, VLAN_MEMBER, and VLAN_INTERFACE tables.
    *
@@ -331,7 +347,7 @@ public class SonicConversions {
   }
 
   /**
-   * Attaches the {@code ipAccessList} derived from {@cide aclTable} to the appropriate interfaces
+   * Attaches the {@code ipAccessList} derived from {@code aclTable} to the appropriate interfaces
    * in {@code c}.
    */
   @VisibleForTesting

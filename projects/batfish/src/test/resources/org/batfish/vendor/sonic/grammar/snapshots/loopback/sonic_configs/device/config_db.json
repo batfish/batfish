@@ -1,0 +1,12 @@
+{
+  "DEVICE_METADATA": {
+    "localhost": {
+      "hostname": "loopback"
+    }
+  },
+  "LOOPBACK_INTERFACE": {
+    "Loopback0": {},
+    "Loopback0|172.19.31.1/32": {},
+    "Loopback0|2620:0:512:ff:0:0:0:1/128": {}
+  }
+}

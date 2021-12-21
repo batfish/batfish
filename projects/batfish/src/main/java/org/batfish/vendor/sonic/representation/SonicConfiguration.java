@@ -2,7 +2,9 @@ package org.batfish.vendor.sonic.representation;
 
 import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.representation.frr.FrrConversions.convertFrr;
 import static org.batfish.vendor.sonic.representation.SonicConversions.convertAcls;
+import static org.batfish.vendor.sonic.representation.SonicConversions.convertLoopbacks;
 import static org.batfish.vendor.sonic.representation.SonicConversions.convertPorts;
 import static org.batfish.vendor.sonic.representation.SonicConversions.convertVlans;
 import static org.batfish.vendor.sonic.representation.SonicStructureType.fromFrrStructureType;
@@ -82,6 +84,8 @@ public class SonicConfiguration extends FrrVendorConfiguration {
         _configDb.getMgmtInterfaces(),
         c.getVrfs().get(getMgmtVrfName(_configDb.getMgmtVrfs())));
 
+    convertLoopbacks(c, _configDb.getLoopbacks(), c.getDefaultVrf());
+
     convertVlans(
         c,
         _configDb.getVlans(),
@@ -92,8 +96,14 @@ public class SonicConfiguration extends FrrVendorConfiguration {
 
     convertAcls(c, _configDb.getAclTables(), _configDb.getAclRules(), _w);
 
+    c.setNtpServers(_configDb.getNtpServers());
+    c.setLoggingServers(_configDb.getSyslogServers());
     c.setTacacsServers(_configDb.getTacplusServers());
     c.setTacacsSourceInterface(_configDb.getTacplusSourceInterface().orElse(null));
+
+    convertFrr(c, this);
+
+    markStructures();
 
     return ImmutableList.of(c);
   }
@@ -113,6 +123,11 @@ public class SonicConfiguration extends FrrVendorConfiguration {
 
   private static String getMgmtVrfName(Map<String, MgmtVrf> mgmtVrfs) {
     return mgmtVrfs.keySet().stream().sorted().findFirst().orElse(DEFAULT_MGMT_VRF_NAME);
+  }
+
+  private void markStructures() {
+    SonicStructureType.CONCRETE_STRUCTURES.forEach(this::markConcreteStructure);
+    SonicStructureType.ABSTRACT_STRUCTURES.asMap().forEach(this::markAbstractStructureAllUsages);
   }
 
   /* Overrides for FrrVendorConfiguration follow. They are called during FRR control plane extraction, to get information on what is in ConfigDb. */
