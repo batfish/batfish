@@ -1,0 +1,43 @@
+!BATFISH_FORMAT: a10_acos
+hostname access_list_convert
+!
+! 10.0.0.0/24 - real servers
+! 10.0.1.0/24 - VIPs
+! 10.0.2.0/24 - client hosts
+! 10.0.3.0/24 - source nat pool
+!
+!
+ip nat pool POOL1 10.0.3.1 10.0.3.100 netmask /24
+!
+!
+ip access-list ACL1
+  deny tcp host 10.0.2.10 any
+  permit ip any any
+!
+!
+slb server SERVER1 10.0.0.101
+  port 443 tcp
+!
+!
+slb service-group SG1 tcp
+  member SERVER1 443
+    enable
+!
+!
+slb virtual-server VS1 10.0.1.101
+  enable
+  port 443 tcp
+    access-list name ACL1
+    service-group SG1
+!
+!
+interface ethernet 10
+  ip address 10.0.0.1 255.255.255.0
+  name "real servers"
+  enable
+!
+interface ethernet 12
+  ip address 10.0.2.1 255.255.255.0
+  name "real client hosts"
+  enable
+!
