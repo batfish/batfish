@@ -98,7 +98,7 @@ COMMENT_LINE
 
   F_NonNewline*
   (
-    F_Newline+
+    F_Newline
     | EOF
   ) -> channel ( HIDDEN )
 ;
@@ -480,7 +480,7 @@ METRIC_TYPE: 'metric-type';
 
 NEWLINE
 :
-  F_Newline+
+  F_Newline
 ;
 
 NEXT_HOP: 'next-hop';
@@ -553,13 +553,6 @@ WS
 ;
 
 // Complex tokens
-
-BLANK_LINE
-:
-  F_Whitespace* F_Newline+
-  {lastTokenType() == NEWLINE|| lastTokenType() == -1}?
-    -> channel ( HIDDEN )
-;
 
 DASH: '-';
 
@@ -859,11 +852,19 @@ F_WordChar
   | '-'
 ;
 
+// Any number of newlines, allowing whitespace in between
 fragment
 F_Newline
 :
-  [\n\r] // carriage return or line feed
+  F_NewlineChar (F_Whitespace* F_NewlineChar+)*
+;
 
+// A single newline character [sequence - allowing \r, \r\n, or \n]
+fragment
+F_NewlineChar
+:
+  '\r' '\n'?
+  | '\n'
 ;
 
 fragment
@@ -916,7 +917,7 @@ M_DoubleQuote_DOUBLE_QUOTE
 M_DoubleQuote_NEWLINE
 :
 // Break out if termination does not occur on same line
-  F_Newline+ -> type ( NEWLINE ) , popMode
+  F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_DoubleQuote_QUOTED_TEXT
@@ -1006,7 +1007,7 @@ M_Import_VRF
 
 M_Import_NEWLINE
 :
-  F_Newline+ -> type ( NEWLINE ) , popMode
+  F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_Import_WS
@@ -1029,7 +1030,7 @@ M_ImportVrf_WORD
 
 M_ImportVrf_NEWLINE
 :
-  F_Newline+ -> type ( NEWLINE ) , popMode
+  F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_ImportVrf_WS
@@ -1082,7 +1083,7 @@ mode M_Word;
 
 M_Word_NEWLINE
 :
-  F_Newline+ -> type ( NEWLINE ) , popMode
+  F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_Word_WORD
@@ -1099,7 +1100,7 @@ mode M_Words;
 
 M_Words_NEWLINE
 :
-  F_Newline+ -> type ( NEWLINE ) , popMode
+  F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_Words_WORD
@@ -1121,7 +1122,7 @@ M_Remark_REMARK_TEXT
 
 M_Remark_NEWLINE
 :
-  F_Newline+ -> type ( NEWLINE ), popMode
+  F_Newline -> type ( NEWLINE ), popMode
 ;
 
 M_Remark_WS
@@ -1148,7 +1149,7 @@ M_Update_Source_WS
 
 M_Update_NEWLINE
 :
-  F_Newline+ -> type ( NEWLINE ), popMode
+  F_Newline -> type ( NEWLINE ), popMode
 ;
 
 mode M_AccessList;
@@ -1175,7 +1176,7 @@ M_AsPathAccessList_WORD
 
 M_AccessList_NEWLINE
 :
-   F_Newline+ -> type (NEWLINE) , popMode
+   F_Newline -> type (NEWLINE) , popMode
 ;
 
 M_AccessList_WS

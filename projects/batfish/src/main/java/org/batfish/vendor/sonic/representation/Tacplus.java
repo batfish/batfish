@@ -1,6 +1,7 @@
 package org.batfish.vendor.sonic.representation;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import java.io.Serializable;
@@ -10,8 +11,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /** Represents the settings of TACPLUS object */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Tacplus implements Serializable {
-  private static final String PROP_AUTH_TYPE = "auth_type";
   private static final String PROP_SRC_INTF = "src_intf";
 
   private @Nullable final String _srcIntf;
@@ -20,11 +21,8 @@ public class Tacplus implements Serializable {
     return Optional.ofNullable(_srcIntf);
   }
 
-  @SuppressWarnings("unused") // "parse" and ignore PROP_AUTH_TYPE
   @JsonCreator
-  private @Nonnull static Tacplus create(
-      @Nullable @JsonProperty(PROP_AUTH_TYPE) String authType,
-      @Nullable @JsonProperty(PROP_SRC_INTF) String srcIntf) {
+  private @Nonnull static Tacplus create(@Nullable @JsonProperty(PROP_SRC_INTF) String srcIntf) {
     return Tacplus.builder().setSrcIntf(srcIntf).build();
   }
 
