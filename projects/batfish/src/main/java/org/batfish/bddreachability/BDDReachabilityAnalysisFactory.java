@@ -33,7 +33,6 @@ import com.google.common.collect.Streams;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -329,10 +328,10 @@ public final class BDDReachabilityAnalysisFactory {
       _nextVrfBDDs = computeNextVrfBDDs(vrfForwardingBehavior, _dstIpSpaceToBDD);
       _interfacesToVrfsMap = computeInterfacesToVrfsMap(configs);
 
-      _dstIpVars = Arrays.stream(_bddPacket.getDstIp().getBitvec()).reduce(_one, BDD::and);
-      _sourceIpVars = Arrays.stream(_bddPacket.getSrcIp().getBitvec()).reduce(_one, BDD::and);
-      _dstPortVars = Arrays.stream(_bddPacket.getDstPort().getBitvec()).reduce(_one, BDD::and);
-      _sourcePortVars = Arrays.stream(_bddPacket.getSrcPort().getBitvec()).reduce(_one, BDD::and);
+      _dstIpVars = _bddPacket.getFactory().andAll(_bddPacket.getDstIp().getBitvec());
+      _sourceIpVars = _bddPacket.getFactory().andAll(_bddPacket.getSrcIp().getBitvec());
+      _dstPortVars = _bddPacket.getFactory().andAll(_bddPacket.getDstPort().getBitvec());
+      _sourcePortVars = _bddPacket.getFactory().andAll(_bddPacket.getSrcPort().getBitvec());
 
       RangeComputer rangeComputer = computeTransformationRanges();
       _transformationPortRanges = rangeComputer.getPortRanges();
