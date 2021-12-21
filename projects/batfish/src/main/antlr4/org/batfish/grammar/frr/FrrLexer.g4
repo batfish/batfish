@@ -98,7 +98,7 @@ COMMENT_LINE
 
   F_NonNewline*
   (
-    F_Newline+
+    F_Newline
     | EOF
   ) -> channel ( HIDDEN )
 ;
@@ -917,7 +917,7 @@ M_DoubleQuote_DOUBLE_QUOTE
 M_DoubleQuote_NEWLINE
 :
 // Break out if termination does not occur on same line
-  F_Newline+ -> type ( NEWLINE ) , popMode
+  F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_DoubleQuote_QUOTED_TEXT
@@ -1007,7 +1007,7 @@ M_Import_VRF
 
 M_Import_NEWLINE
 :
-  F_Newline+ -> type ( NEWLINE ) , popMode
+  F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_Import_WS
@@ -1030,7 +1030,7 @@ M_ImportVrf_WORD
 
 M_ImportVrf_NEWLINE
 :
-  F_Newline+ -> type ( NEWLINE ) , popMode
+  F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_ImportVrf_WS
@@ -1083,7 +1083,7 @@ mode M_Word;
 
 M_Word_NEWLINE
 :
-  F_Newline+ -> type ( NEWLINE ) , popMode
+  F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_Word_WORD
@@ -1100,7 +1100,7 @@ mode M_Words;
 
 M_Words_NEWLINE
 :
-  F_Newline+ -> type ( NEWLINE ) , popMode
+  F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_Words_WORD
@@ -1122,7 +1122,7 @@ M_Remark_REMARK_TEXT
 
 M_Remark_NEWLINE
 :
-  F_Newline+ -> type ( NEWLINE ), popMode
+  F_Newline -> type ( NEWLINE ), popMode
 ;
 
 M_Remark_WS
@@ -1149,7 +1149,7 @@ M_Update_Source_WS
 
 M_Update_NEWLINE
 :
-  F_Newline+ -> type ( NEWLINE ), popMode
+  F_Newline -> type ( NEWLINE ), popMode
 ;
 
 mode M_AccessList;
@@ -1176,7 +1176,7 @@ M_AsPathAccessList_WORD
 
 M_AccessList_NEWLINE
 :
-   F_Newline+ -> type (NEWLINE) , popMode
+   F_Newline -> type (NEWLINE) , popMode
 ;
 
 M_AccessList_WS
