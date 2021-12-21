@@ -480,7 +480,7 @@ METRIC_TYPE: 'metric-type';
 
 NEWLINE
 :
-  F_Newline+
+  F_Newline
 ;
 
 NEXT_HOP: 'next-hop';
@@ -553,13 +553,6 @@ WS
 ;
 
 // Complex tokens
-
-BLANK_LINE
-:
-  F_Whitespace* F_Newline+
-  {lastTokenType() == NEWLINE|| lastTokenType() == -1}?
-    -> channel ( HIDDEN )
-;
 
 DASH: '-';
 
@@ -859,11 +852,19 @@ F_WordChar
   | '-'
 ;
 
+// Any number of newlines, allowing whitespace in between
 fragment
 F_Newline
 :
-  [\n\r] // carriage return or line feed
+  F_NewlineChar (F_Whitespace* F_NewlineChar+)*
+;
 
+// A single newline character [sequence - allowing \r, \r\n, or \n]
+fragment
+F_NewlineChar
+:
+  '\r' '\n'?
+  | '\n'
 ;
 
 fragment
