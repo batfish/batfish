@@ -105,6 +105,23 @@ public class SonicGrammarTest {
             hasDescription("basic-port")));
   }
 
+  /** Test that loopback interfaces are created and put in the right VRF. */
+  @Test
+  public void testLoopback() throws IOException {
+    String snapshotName = "loopback";
+    Batfish batfish = getBatfish(snapshotName, "device/frr.conf", "device/config_db.json");
+
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    SonicConfiguration vc =
+        (SonicConfiguration) batfish.loadVendorConfigurations(snapshot).get("loopback");
+    vc.setWarnings(new Warnings());
+
+    Configuration c = getOnlyElement(vc.toVendorIndependentConfigurations());
+    assertThat(
+        Iterables.getOnlyElement(c.getAllInterfaces().values()),
+        allOf(hasName("Loopback0"), hasVrfName("default"), hasAddress("172.19.31.1/32")));
+  }
+
   /** Test that management interfaces are created and put in the right VRF. */
   @Test
   public void testMgmt() throws IOException {
@@ -136,6 +153,20 @@ public class SonicGrammarTest {
         allOf(hasName("eth0"), hasVrfName("vrf_global_not_default"), hasAddress("1.1.1.1/24")));
   }
 
+  @Test
+  public void testNtpServer() throws IOException {
+    String snapshotName = "ntp_server";
+    Batfish batfish = getBatfish(snapshotName, "device/frr.conf", "device/config_db.json");
+
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    SonicConfiguration vc =
+        (SonicConfiguration) batfish.loadVendorConfigurations(snapshot).get("ntp_server");
+    vc.setWarnings(new Warnings());
+
+    Configuration c = getOnlyElement(vc.toVendorIndependentConfigurations());
+    assertThat(c.getNtpServers(), equalTo(ImmutableSet.of("10.128.255.33", "10.128.255.65")));
+  }
+
   /** Test that TACPLUS related tables are processed. */
   @Test
   public void testTacplus() throws IOException {
@@ -150,6 +181,20 @@ public class SonicGrammarTest {
 
     assertThat(c.getTacacsServers(), equalTo(ImmutableSet.of("10.128.255.35", "10.128.255.67")));
     assertThat(c.getTacacsSourceInterface(), equalTo("Loopback0"));
+  }
+
+  @Test
+  public void testSyslogServer() throws IOException {
+    String snapshotName = "syslog_server";
+    Batfish batfish = getBatfish(snapshotName, "device/frr.conf", "device/config_db.json");
+
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    SonicConfiguration vc =
+        (SonicConfiguration) batfish.loadVendorConfigurations(snapshot).get("syslog_server");
+    vc.setWarnings(new Warnings());
+
+    Configuration c = getOnlyElement(vc.toVendorIndependentConfigurations());
+    assertThat(c.getLoggingServers(), equalTo(ImmutableSet.of("10.128.255.33", "10.128.255.65")));
   }
 
   /** Test that VLAN related tables are processed. */

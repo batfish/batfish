@@ -51,7 +51,7 @@ public class ConfigDb implements Serializable {
   }
 
   public @Nonnull Map<String, L3Interface> getLoopbacks() {
-    return _loopbacks;
+    return _loopbackInterfaces;
   }
 
   public @Nonnull Set<String> getNtpServers() {
@@ -102,7 +102,7 @@ public class ConfigDb implements Serializable {
   private static final String PROP_ACL_TABLE = "ACL_TABLE";
   private static final String PROP_DEVICE_METADATA = "DEVICE_METADATA";
   private static final String PROP_INTERFACE = "INTERFACE";
-  private static final String PROP_LOOPBACK = "LOOPBACK";
+  private static final String PROP_LOOPBACK_INTERFACE = "LOOPBACK_INTERFACE";
   private static final String PROP_MGMT_INTERFACE = "MGMT_INTERFACE";
   private static final String PROP_MGMT_PORT = "MGMT_PORT";
   private static final String PROP_MGMT_VRF_CONFIG = "MGMT_VRF_CONFIG";
@@ -123,7 +123,7 @@ public class ConfigDb implements Serializable {
   private final @Nonnull Map<String, AclRule> _aclRules;
   private final @Nonnull Map<String, DeviceMetadata> _deviceMetadata;
   private final @Nonnull Map<String, L3Interface> _interfaces;
-  private final @Nonnull Map<String, L3Interface> _loopbacks;
+  private final @Nonnull Map<String, L3Interface> _loopbackInterfaces;
   private final @Nonnull Map<String, L3Interface> _mgmtInterfaces;
   private final @Nonnull Map<String, Port> _mgmtPorts;
   private final @Nonnull Map<String, MgmtVrf> _mgmtVrfs;
@@ -157,7 +157,7 @@ public class ConfigDb implements Serializable {
     _aclTables = aclTables;
     _deviceMetadata = deviceMetadata;
     _interfaces = interfaces;
-    _loopbacks = loopbacks;
+    _loopbackInterfaces = loopbacks;
     _mgmtInterfaces = mgmtInterfaces;
     _mgmtPorts = mgmtPorts;
     _mgmtVrfs = mgmtVrfs;
@@ -219,7 +219,7 @@ public class ConfigDb implements Serializable {
     private Map<String, AclTable> _aclTables;
     private Map<String, DeviceMetadata> _deviceMetadata;
     private Map<String, L3Interface> _interfaces;
-    private Map<String, L3Interface> _loopbacks;
+    private Map<String, L3Interface> _loopbackInterfaces;
     private Map<String, L3Interface> _mgmtInterfaces;
     private Map<String, Port> _mgmtPorts;
     private Map<String, MgmtVrf> _mgmtVrfs;
@@ -255,8 +255,8 @@ public class ConfigDb implements Serializable {
       return this;
     }
 
-    public @Nonnull Builder setLoopbacks(@Nullable Map<String, L3Interface> loopbacks) {
-      this._loopbacks = loopbacks;
+    public @Nonnull Builder setLoopbackInterfaces(@Nullable Map<String, L3Interface> loopbacks) {
+      this._loopbackInterfaces = loopbacks;
       return this;
     }
 
@@ -321,7 +321,7 @@ public class ConfigDb implements Serializable {
           ImmutableMap.copyOf(firstNonNull(_aclTables, ImmutableMap.of())),
           ImmutableMap.copyOf(firstNonNull(_deviceMetadata, ImmutableMap.of())),
           ImmutableMap.copyOf(firstNonNull(_interfaces, ImmutableMap.of())),
-          ImmutableMap.copyOf(firstNonNull(_loopbacks, ImmutableMap.of())),
+          ImmutableMap.copyOf(firstNonNull(_loopbackInterfaces, ImmutableMap.of())),
           ImmutableMap.copyOf(firstNonNull(_mgmtInterfaces, ImmutableMap.of())),
           ImmutableMap.copyOf(firstNonNull(_mgmtPorts, ImmutableMap.of())),
           ImmutableMap.copyOf(firstNonNull(_mgmtVrfs, ImmutableMap.of())),
@@ -385,8 +385,8 @@ public class ConfigDb implements Serializable {
                         .convertValue(value, new TypeReference<Map<String, Object>>() {})
                         .keySet()));
             break;
-          case PROP_LOOPBACK:
-            configDb.setLoopbacks(
+          case PROP_LOOPBACK_INTERFACE:
+            configDb.setLoopbackInterfaces(
                 createInterfaces(
                     mapper
                         .convertValue(value, new TypeReference<Map<String, Object>>() {})
