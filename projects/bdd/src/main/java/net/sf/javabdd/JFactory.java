@@ -858,6 +858,7 @@ public final class JFactory extends BDDFactory {
     int[] operands =
         bddOperands.stream()
             .mapToInt(bdd -> ((BDDImpl) bdd)._index)
+            .peek(this::CHECK)
             .filter(i -> i != 0)
             .sorted()
             .distinct()
@@ -3354,7 +3355,7 @@ public final class JFactory extends BDDFactory {
     return size;
   }
 
-  private void bdd_gbc() {
+  void bdd_gbc() {
     long c2, c1 = System.currentTimeMillis();
 
     // if (gbc_handler != NULL)
@@ -4098,24 +4099,34 @@ public final class JFactory extends BDDFactory {
     }
   }
 
+  private boolean invalidEntry(MultiOpBddCacheData entry) {
+    if (entry.a == -1) {
+      // unused entry
+      return false;
+    }
+    if (LOW(entry.b) == INVALID_BDD) {
+      // invalid result
+      return true;
+    }
+    for (int i = 0; i < entry.operands.length; i++) {
+      if (LOW(entry.operands[i]) == INVALID_BDD) {
+        // invalid operand
+        return true;
+      }
+    }
+    // all valid
+    return false;
+  }
+
   private void BddCache_clean_multiop(BddCache cache) {
     if (cache == null) {
       return;
     }
     for (int n = 0; n < cache.tablesize; n++) {
       MultiOpBddCacheData entry = (MultiOpBddCacheData) cache.table[n];
-      if (entry.a != -1) {
-        boolean invalid = false;
-        for (int i = 0; i < entry.operands.length; i++) {
-          if (LOW(entry.operands[i]) == INVALID_BDD) {
-            invalid = true;
-            break;
-          }
-        }
-        if (invalid) {
-          entry.a = -1;
-          entry.operands = null;
-        }
+      if (invalidEntry(entry)) {
+        entry.a = -1;
+        entry.operands = null;
       }
     }
   }
