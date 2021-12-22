@@ -19,8 +19,13 @@ public class Vlan implements Serializable {
   private static final String PROP_MEMBERS = "members";
   private static final String PROP_VLANID = "vlanid";
 
+  private @Nonnull final List<String> _dhcpServers;
   private @Nonnull final List<String> _members;
   private @Nullable final Integer _vlanId;
+
+  public @Nonnull List<String> getDhcpServers() {
+    return _dhcpServers;
+  }
 
   public @Nonnull List<String> getMembers() {
     return _members;
@@ -30,16 +35,16 @@ public class Vlan implements Serializable {
     return Optional.ofNullable(_vlanId);
   }
 
-  @SuppressWarnings("unused")
   @JsonCreator
   private @Nonnull static Vlan create(
-      @Nullable @JsonProperty(PROP_DHCP_SERVERS) List<String> dhcpServers, // ignored
+      @Nullable @JsonProperty(PROP_DHCP_SERVERS) List<String> dhcpServers,
       @Nullable @JsonProperty(PROP_MEMBERS) ImmutableList<String> members,
       @Nullable @JsonProperty(PROP_VLANID) Integer vlanId) {
-    return Vlan.builder().setMembers(members).setVlanId(vlanId).build();
+    return Vlan.builder().setDhcpServers(dhcpServers).setMembers(members).setVlanId(vlanId).build();
   }
 
-  private Vlan(List<String> members, @Nullable Integer vlanId) {
+  private Vlan(List<String> dhcpServers, List<String> members, @Nullable Integer vlanId) {
+    _dhcpServers = dhcpServers;
     _members = members;
     _vlanId = vlanId;
   }
@@ -53,18 +58,21 @@ public class Vlan implements Serializable {
       return false;
     }
     Vlan that = (Vlan) o;
-    return _members.equals(that._members) && Objects.equals(_vlanId, that._vlanId);
+    return _dhcpServers.equals(that._dhcpServers)
+        && _members.equals(that._members)
+        && Objects.equals(_vlanId, that._vlanId);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_members, _vlanId);
+    return Objects.hash(_dhcpServers, _members, _vlanId);
   }
 
   @Override
   public @Nonnull String toString() {
     return MoreObjects.toStringHelper(this)
         .omitNullValues()
+        .add("dhcp_servers", _dhcpServers)
         .add("members", _members)
         .add("vlanid", _vlanId)
         .toString();
@@ -75,10 +83,16 @@ public class Vlan implements Serializable {
   }
 
   public static final class Builder {
-    private ImmutableList<String> _members;
+    private List<String> _dhcpServers;
+    private List<String> _members;
     private Integer _vlanId;
 
-    public @Nonnull Builder setMembers(@Nullable ImmutableList<String> members) {
+    public @Nonnull Builder setDhcpServers(@Nullable List<String> dhcpServers) {
+      this._dhcpServers = dhcpServers;
+      return this;
+    }
+
+    public @Nonnull Builder setMembers(@Nullable List<String> members) {
       this._members = members;
       return this;
     }
@@ -89,7 +103,10 @@ public class Vlan implements Serializable {
     }
 
     public @Nonnull Vlan build() {
-      return new Vlan(firstNonNull(_members, ImmutableList.of()), _vlanId);
+      return new Vlan(
+          ImmutableList.copyOf(firstNonNull(_dhcpServers, ImmutableList.of())),
+          ImmutableList.copyOf(firstNonNull(_members, ImmutableList.of())),
+          _vlanId);
     }
   }
 }

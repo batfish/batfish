@@ -234,7 +234,11 @@ public class ConfigDbTest {
         equalTo(
             ImmutableMap.of(
                 "Vlan2",
-                Vlan.builder().setMembers(ImmutableList.of("Ethernet0")).setVlanId(2).build())));
+                Vlan.builder()
+                    .setDhcpServers(ImmutableList.of("1.1.1.1"))
+                    .setMembers(ImmutableList.of("Ethernet0"))
+                    .setVlanId(2)
+                    .build())));
   }
 
   @Test
