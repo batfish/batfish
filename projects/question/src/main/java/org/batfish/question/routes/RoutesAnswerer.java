@@ -227,12 +227,12 @@ public class RoutesAnswerer extends Answerer {
         dp = _batfish.loadDataPlane(snapshot);
         ipOwners = _batfish.getTopologyProvider().getIpOwners(snapshot).getNodeOwners(true);
         routesGroupedByKeyInBase =
-            groupRoutes(dp.getRibs(), matchingNodes, network, vrfRegex, protocolSpec, ipOwners);
+            groupRoutes(dp.getRibs(), matchingNodes, network, vrfRegex, protocolSpec);
 
         dp = _batfish.loadDataPlane(reference);
         ipOwners = _batfish.getTopologyProvider().getIpOwners(snapshot).getNodeOwners(true);
         routesGroupedByKeyInDelta =
-            groupRoutes(dp.getRibs(), matchingNodes, network, vrfRegex, protocolSpec, ipOwners);
+            groupRoutes(dp.getRibs(), matchingNodes, network, vrfRegex, protocolSpec);
 
         routesDiffRaw = getRoutesDiff(routesGroupedByKeyInBase, routesGroupedByKeyInDelta);
         rows = getAbstractRouteRowsDiff(routesDiffRaw);

@@ -22,12 +22,10 @@ import org.batfish.datamodel.questions.BgpRouteStatus;
 
 /**
  * Contains the non-key attributes of {@link BgpRoute}s and {@link AbstractRoute}s and defines a
- * sorting order for these attributes
+ * sorting order for these attributes.
  */
 @ParametersAreNullableByDefault
 public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
-  @Nullable private final String _nextHop;
-
   @Nullable private final String _nextHopInterface;
 
   @Nullable private final AsPath _asPath;
@@ -55,7 +53,6 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
   @Nullable private final Integer _weight;
 
   private RouteRowAttribute(
-      String nextHop,
       String nextHopInterface,
       Integer adminDistance,
       Long metric,
@@ -69,7 +66,6 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
       Long tag,
       BgpRouteStatus status,
       Integer weight) {
-    _nextHop = nextHop;
     _nextHopInterface = nextHopInterface;
     _adminDistance = adminDistance;
     _metric = metric;
@@ -108,11 +104,6 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
   @Nonnull
   public List<String> getCommunities() {
     return _communities;
-  }
-
-  @Nullable
-  public String getNextHop() {
-    return _nextHop;
   }
 
   @Nullable
@@ -159,8 +150,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
   }
 
   private static final Comparator<RouteRowAttribute> COMPARATOR =
-      comparing(RouteRowAttribute::getNextHop, nullsLast(String::compareTo))
-          .thenComparing(RouteRowAttribute::getNextHopInterface, nullsLast(String::compareTo))
+      comparing(RouteRowAttribute::getNextHopInterface, nullsLast(String::compareTo))
           .thenComparing(RouteRowAttribute::getAdminDistance, nullsLast(Integer::compareTo))
           .thenComparing(RouteRowAttribute::getMetric, nullsLast(Long::compareTo))
           .thenComparing(RouteRowAttribute::getAsPath, nullsLast(AsPath::compareTo))
@@ -191,8 +181,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
       return false;
     }
     RouteRowAttribute that = (RouteRowAttribute) o;
-    return Objects.equals(_nextHop, that._nextHop)
-        && Objects.equals(_nextHopInterface, that._nextHopInterface)
+    return Objects.equals(_nextHopInterface, that._nextHopInterface)
         && Objects.equals(_adminDistance, that._adminDistance)
         && Objects.equals(_metric, that._metric)
         && Objects.equals(_asPath, that._asPath)
@@ -210,8 +199,6 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
   @Override
   public int hashCode() {
     return Objects.hash(
-        _nextHop,
-        _nextHopInterface,
         _adminDistance,
         _metric,
         _asPath,
@@ -227,7 +214,6 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
 
   /** Builder for {@link RouteRowAttribute} */
   public static final class Builder {
-    @Nullable private String _nextHop;
     @Nullable private String _nextHopInterface;
     @Nullable private Integer _adminDistance;
     @Nullable private Long _metric;
@@ -247,7 +233,6 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
         _tag = null;
       }
       return new RouteRowAttribute(
-          _nextHop,
           _nextHopInterface,
           _adminDistance,
           _metric,
@@ -285,11 +270,6 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
 
     public Builder setCommunities(List<String> communities) {
       _communities = communities;
-      return this;
-    }
-
-    public Builder setNextHop(String nextHop) {
-      _nextHop = nextHop;
       return this;
     }
 

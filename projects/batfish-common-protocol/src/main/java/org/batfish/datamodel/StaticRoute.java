@@ -15,6 +15,7 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.route.nh.LegacyNextHops;
 import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopVrf;
@@ -84,7 +85,7 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
   @Nullable
   @JsonProperty(PROP_NEXT_VRF)
   private String getNextVrf() {
-    return NEXT_VRF_EXTRACTOR.visit(_nextHop);
+    return LegacyNextHops.getNextVrf(_nextHop).orElse(null);
   }
 
   @Override

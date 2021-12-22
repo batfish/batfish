@@ -26,7 +26,6 @@ import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.FibEntry;
 import org.batfish.datamodel.FilterResult;
@@ -56,14 +55,14 @@ import org.batfish.datamodel.flow.StepAction;
 import org.batfish.datamodel.flow.TransformationStep;
 import org.batfish.datamodel.flow.TransformationStep.TransformationStepDetail;
 import org.batfish.datamodel.flow.TransformationStep.TransformationType;
+import org.batfish.datamodel.route.nh.LegacyNextHops;
 import org.batfish.datamodel.transformation.Transformation;
 
 @ParametersAreNonnullByDefault
 public final class TracerouteUtils {
 
   /**
-   * Does a basic validation of input to {@link
-   * TracerouteEngineImplContext#buildTracesAndReturnFlows()}
+   * Does a basic validation of input to {@link TracerouteEngineImplContext#buildTraceDags()}
    *
    * @param configurations {@link Map} of {@link Configuration}s
    * @param flow {@link Flow} for which input validation is to be done
@@ -95,7 +94,7 @@ public final class TracerouteUtils {
                     route.getProtocol(),
                     route.getNetwork(),
                     route.getNextHopIp(),
-                    AbstractRoute.NEXT_VRF_EXTRACTOR.visit(route.getNextHop()),
+                    LegacyNextHops.getNextVrf(route.getNextHop()).orElse(null),
                     route.getAdministrativeCost(),
                     route.getMetric()))
         .distinct()

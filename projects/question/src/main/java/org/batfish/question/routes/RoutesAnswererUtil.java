@@ -74,6 +74,7 @@ import org.batfish.datamodel.Route;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.BgpRouteStatus;
+import org.batfish.datamodel.route.nh.LegacyNextHops;
 import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
@@ -554,7 +555,6 @@ public class RoutesAnswererUtil {
       RouteRowSecondaryKey routeRowSecondaryKey,
       KeyPresenceStatus secondaryKeyPresence,
       RowBuilder rowBuilder) {
-    Ip nextHopIp = routeRowSecondaryKey.getNextHopIp();
     NextHop nextHop = routeRowSecondaryKey.getNextHop();
     String protocol = routeRowSecondaryKey.getProtocol();
     // populating base columns for secondary key if it is present in base snapshot or in both
@@ -563,7 +563,9 @@ public class RoutesAnswererUtil {
         || secondaryKeyPresence == KeyPresenceStatus.ONLY_IN_SNAPSHOT) {
       rowBuilder
           .put(COL_BASE_PREFIX + COL_NEXT_HOP, nextHop)
-          .put(COL_BASE_PREFIX + COL_NEXT_HOP_IP, nextHopIp)
+          .put(
+              COL_BASE_PREFIX + COL_NEXT_HOP_IP,
+              LegacyNextHops.getNextHopIp(nextHop).orElse(Route.UNSET_ROUTE_NEXT_HOP_IP))
           .put(COL_BASE_PREFIX + COL_PROTOCOL, protocol);
     }
     // populating reference columns for secondary key if it is present in reference snapshot or in
@@ -572,7 +574,9 @@ public class RoutesAnswererUtil {
         || secondaryKeyPresence == KeyPresenceStatus.ONLY_IN_REFERENCE) {
       rowBuilder
           .put(COL_DELTA_PREFIX + COL_NEXT_HOP, nextHop)
-          .put(COL_DELTA_PREFIX + COL_NEXT_HOP_IP, nextHopIp)
+          .put(
+              COL_DELTA_PREFIX + COL_NEXT_HOP_IP,
+              LegacyNextHops.getNextHopIp(nextHop).orElse(Route.UNSET_ROUTE_NEXT_HOP_IP))
           .put(COL_DELTA_PREFIX + COL_PROTOCOL, protocol);
     }
   }
@@ -714,7 +718,6 @@ public class RoutesAnswererUtil {
    * @param network {@link Prefix}
    * @param vrfRegex Regex to filter the VRF
    * @param protocolSpec {@link RoutingProtocolSpecifier} to filter the protocols of the routes
-   * @param ipOwners {@link Map} of {@link Ip} to {@link Set} of owner nodes
    * @return {@link Map} of {@link RouteRowKey}s to corresponding sub{@link Map}s of {@link
    *     RouteRowSecondaryKey} to {@link SortedSet} of {@link RouteRowAttribute}s
    */
@@ -724,8 +727,7 @@ public class RoutesAnswererUtil {
           Set<String> matchingNodes,
           @Nullable Prefix network,
           String vrfRegex,
-          RoutingProtocolSpecifier protocolSpec,
-          @Nullable Map<Ip, Set<String>> ipOwners) {
+          RoutingProtocolSpecifier protocolSpec) {
     Map<RouteRowKey, Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>>> routesGroups =
         new HashMap<>();
     Pattern compiledVrfRegex = Pattern.compile(vrfRegex);
@@ -748,14 +750,10 @@ public class RoutesAnswererUtil {
                                         k -> new HashMap<>())
                                     .computeIfAbsent(
                                         new RouteRowSecondaryKey(
-                                            route.getNextHop(),
-                                            route.getNextHopIp(),
-                                            route.getProtocol().protocolName()),
+                                            route.getNextHop(), route.getProtocol().protocolName()),
                                         k -> new TreeSet<>())
                                     .add(
                                         RouteRowAttribute.builder()
-                                            .setNextHop(
-                                                computeNextHopNode(route.getNextHopIp(), ipOwners))
                                             .setNextHopInterface(route.getNextHopInterface())
                                             .setAdminDistance(route.getAdministrativeCost())
                                             .setMetric(route.getMetric())
@@ -834,7 +832,6 @@ public class RoutesAnswererUtil {
                                                 .computeIfAbsent(
                                                     new RouteRowSecondaryKey(
                                                         route.getNextHop(),
-                                                        route.getNextHopIp(),
                                                         route.getProtocol().protocolName()),
                                                     k -> new TreeSet<>())
                                                 .add(
