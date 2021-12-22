@@ -240,7 +240,7 @@ public final class InterfaceMatchers {
   }
 
   /**
-   * Provides a matcher that matches if the interface's channelGroupMembers are matched by the
+   * Provides a matcher that matches if the interface's dhcpRelayAddresses are matched by the
    * provided {@code subMatcher}.
    */
   public static @Nonnull Matcher<Interface> hasDhcpRelayAddresses(
