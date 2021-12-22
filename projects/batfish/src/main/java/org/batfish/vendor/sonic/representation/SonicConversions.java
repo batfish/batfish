@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
@@ -32,6 +33,7 @@ import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceType;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Vrf;
@@ -120,6 +122,7 @@ public class SonicConversions {
             .setVlan(vlanId)
             .setActive(true)
             .setAddress(vlanInterfaces.get(vlanName).getAddress())
+            .setDhcpRelayAddresses(convertDhcpServers(vlan.getDhcpServers(), w))
             .build();
       }
 
@@ -167,6 +170,30 @@ public class SonicConversions {
         }
       }
     }
+  }
+
+  /**
+   * Converts a list of configured DHCP servers to a list of IPs.
+   *
+   * <p>Batfish VI datamodel currently expects DHCP relays to be IP addresses, while SONiC allows
+   * DHCP servers to be names. This method converts those it can and warns about the remaining
+   * entries.
+   */
+  @VisibleForTesting
+  static List<Ip> convertDhcpServers(List<String> dhcpServers, Warnings w) {
+    return dhcpServers.stream()
+        .map(
+            server -> {
+              try {
+                return Ip.parse(server);
+              } catch (IllegalArgumentException e) {
+                w.redFlag(
+                    String.format("Cannot add a non-IP address value '%s' as DHCP server", server));
+                return null;
+              }
+            })
+        .filter(Objects::nonNull)
+        .collect(ImmutableList.toImmutableList());
   }
 
   private static void warnMissingVlans(Set<String> vlans, Set<String> vlanInterfaces, Warnings w) {

@@ -9,6 +9,7 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAccessVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddress;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDhcpRelayAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInterfaceType;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
@@ -37,6 +38,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.InterfaceType;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SwitchportMode;
@@ -216,7 +218,8 @@ public class SonicGrammarTest {
             hasVlan(1),
             hasVrfName("default"),
             hasAddress("172.19.0.1/24"),
-            hasInterfaceType(InterfaceType.VLAN)));
+            hasInterfaceType(InterfaceType.VLAN),
+            hasDhcpRelayAddresses(contains(Ip.parse("10.5.0.138"), Ip.parse("10.5.0.139")))));
 
     assertThat(
         c.getAllInterfaces().get("Ethernet0"),
