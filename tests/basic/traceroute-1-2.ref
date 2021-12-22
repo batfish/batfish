@@ -80,8 +80,8 @@
                       "arpIp" : "1.0.1.1",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
-                        "arpIp" : "1.0.1.1",
-                        "outputInterface" : "GigabitEthernet1/0"
+                        "outputInterface" : "GigabitEthernet1/0",
+                        "resolvedNextHopIp" : "1.0.1.1"
                       },
                       "outputInterface" : "GigabitEthernet1/0",
                       "routes" : [
@@ -136,8 +136,8 @@
                       "arpIp" : "10.12.11.2",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
-                        "arpIp" : "10.12.11.2",
-                        "outputInterface" : "GigabitEthernet1/0"
+                        "outputInterface" : "GigabitEthernet1/0",
+                        "resolvedNextHopIp" : "10.12.11.2"
                       },
                       "outputInterface" : "GigabitEthernet1/0",
                       "routes" : [
@@ -224,8 +224,8 @@
                       "arpIp" : "2.12.11.2",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
-                        "arpIp" : "2.12.11.2",
-                        "outputInterface" : "GigabitEthernet1/0"
+                        "outputInterface" : "GigabitEthernet1/0",
+                        "resolvedNextHopIp" : "2.12.11.2"
                       },
                       "outputInterface" : "GigabitEthernet1/0",
                       "routes" : [
@@ -291,8 +291,8 @@
                       "arpIp" : "2.23.11.3",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
-                        "arpIp" : "2.23.11.3",
-                        "outputInterface" : "GigabitEthernet2/0"
+                        "outputInterface" : "GigabitEthernet2/0",
+                        "resolvedNextHopIp" : "2.23.11.3"
                       },
                       "outputInterface" : "GigabitEthernet2/0",
                       "routes" : [
@@ -347,8 +347,8 @@
                       "arpIp" : "2.34.101.4",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
-                        "arpIp" : "2.34.101.4",
-                        "outputInterface" : "GigabitEthernet2/0"
+                        "outputInterface" : "GigabitEthernet2/0",
+                        "resolvedNextHopIp" : "2.34.101.4"
                       },
                       "outputInterface" : "GigabitEthernet2/0",
                       "routes" : [
@@ -403,7 +403,6 @@
                       "arpIp" : "AUTO/NONE(-1l)",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
-                        "arpIp" : "AUTO/NONE(-1l)",
                         "outputInterface" : "GigabitEthernet2/0"
                       },
                       "outputInterface" : "GigabitEthernet2/0",
@@ -515,8 +514,8 @@
                       "arpIp" : "1.0.1.1",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
-                        "arpIp" : "1.0.1.1",
-                        "outputInterface" : "GigabitEthernet1/0"
+                        "outputInterface" : "GigabitEthernet1/0",
+                        "resolvedNextHopIp" : "1.0.1.1"
                       },
                       "outputInterface" : "GigabitEthernet1/0",
                       "routes" : [
@@ -571,8 +570,8 @@
                       "arpIp" : "10.12.11.2",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
-                        "arpIp" : "10.12.11.2",
-                        "outputInterface" : "GigabitEthernet1/0"
+                        "outputInterface" : "GigabitEthernet1/0",
+                        "resolvedNextHopIp" : "10.12.11.2"
                       },
                       "outputInterface" : "GigabitEthernet1/0",
                       "routes" : [
@@ -659,8 +658,8 @@
                       "arpIp" : "2.12.11.2",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
-                        "arpIp" : "2.12.11.2",
-                        "outputInterface" : "GigabitEthernet1/0"
+                        "outputInterface" : "GigabitEthernet1/0",
+                        "resolvedNextHopIp" : "2.12.11.2"
                       },
                       "outputInterface" : "GigabitEthernet1/0",
                       "routes" : [
@@ -726,8 +725,8 @@
                       "arpIp" : "2.23.12.3",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
-                        "arpIp" : "2.23.12.3",
-                        "outputInterface" : "GigabitEthernet3/0"
+                        "outputInterface" : "GigabitEthernet3/0",
+                        "resolvedNextHopIp" : "2.23.12.3"
                       },
                       "outputInterface" : "GigabitEthernet3/0",
                       "routes" : [
@@ -782,8 +781,8 @@
                       "arpIp" : "2.34.201.4",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
-                        "arpIp" : "2.34.201.4",
-                        "outputInterface" : "GigabitEthernet2/0"
+                        "outputInterface" : "GigabitEthernet2/0",
+                        "resolvedNextHopIp" : "2.34.201.4"
                       },
                       "outputInterface" : "GigabitEthernet2/0",
                       "routes" : [
@@ -838,7 +837,6 @@
                       "arpIp" : "AUTO/NONE(-1l)",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
-                        "arpIp" : "AUTO/NONE(-1l)",
                         "outputInterface" : "GigabitEthernet2/0"
                       },
                       "outputInterface" : "GigabitEthernet2/0",
@@ -950,8 +948,8 @@
                       "arpIp" : "1.0.1.1",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
-                        "arpIp" : "1.0.1.1",
-                        "outputInterface" : "GigabitEthernet1/0"
+                        "outputInterface" : "GigabitEthernet1/0",
+                        "resolvedNextHopIp" : "1.0.1.1"
                       },
                       "outputInterface" : "GigabitEthernet1/0",
                       "routes" : [
@@ -1006,8 +1004,8 @@
                       "arpIp" : "10.12.11.2",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
-                        "arpIp" : "10.12.11.2",
-                        "outputInterface" : "GigabitEthernet1/0"
+                        "outputInterface" : "GigabitEthernet1/0",
+                        "resolvedNextHopIp" : "10.12.11.2"
                       },
                       "outputInterface" : "GigabitEthernet1/0",
                       "routes" : [
@@ -1094,8 +1092,8 @@
                       "arpIp" : "2.12.12.2",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
-                        "arpIp" : "2.12.12.2",
-                        "outputInterface" : "GigabitEthernet2/0"
+                        "outputInterface" : "GigabitEthernet2/0",
+                        "resolvedNextHopIp" : "2.12.12.2"
                       },
                       "outputInterface" : "GigabitEthernet2/0",
                       "routes" : [
@@ -1161,8 +1159,8 @@
                       "arpIp" : "2.23.22.3",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
-                        "arpIp" : "2.23.22.3",
-                        "outputInterface" : "GigabitEthernet2/0"
+                        "outputInterface" : "GigabitEthernet2/0",
+                        "resolvedNextHopIp" : "2.23.22.3"
                       },
                       "outputInterface" : "GigabitEthernet2/0",
                       "routes" : [
@@ -1217,8 +1215,8 @@
                       "arpIp" : "2.34.201.4",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
-                        "arpIp" : "2.34.201.4",
-                        "outputInterface" : "GigabitEthernet2/0"
+                        "outputInterface" : "GigabitEthernet2/0",
+                        "resolvedNextHopIp" : "2.34.201.4"
                       },
                       "outputInterface" : "GigabitEthernet2/0",
                       "routes" : [
@@ -1273,7 +1271,6 @@
                       "arpIp" : "AUTO/NONE(-1l)",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
-                        "arpIp" : "AUTO/NONE(-1l)",
                         "outputInterface" : "GigabitEthernet2/0"
                       },
                       "outputInterface" : "GigabitEthernet2/0",
@@ -1385,8 +1382,8 @@
                       "arpIp" : "1.0.1.1",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
-                        "arpIp" : "1.0.1.1",
-                        "outputInterface" : "GigabitEthernet1/0"
+                        "outputInterface" : "GigabitEthernet1/0",
+                        "resolvedNextHopIp" : "1.0.1.1"
                       },
                       "outputInterface" : "GigabitEthernet1/0",
                       "routes" : [
@@ -1441,8 +1438,8 @@
                       "arpIp" : "10.12.11.2",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
-                        "arpIp" : "10.12.11.2",
-                        "outputInterface" : "GigabitEthernet1/0"
+                        "outputInterface" : "GigabitEthernet1/0",
+                        "resolvedNextHopIp" : "10.12.11.2"
                       },
                       "outputInterface" : "GigabitEthernet1/0",
                       "routes" : [
@@ -1529,8 +1526,8 @@
                       "arpIp" : "2.12.12.2",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
-                        "arpIp" : "2.12.12.2",
-                        "outputInterface" : "GigabitEthernet2/0"
+                        "outputInterface" : "GigabitEthernet2/0",
+                        "resolvedNextHopIp" : "2.12.12.2"
                       },
                       "outputInterface" : "GigabitEthernet2/0",
                       "routes" : [
@@ -1596,8 +1593,8 @@
                       "arpIp" : "2.23.21.3",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
-                        "arpIp" : "2.23.21.3",
-                        "outputInterface" : "GigabitEthernet3/0"
+                        "outputInterface" : "GigabitEthernet3/0",
+                        "resolvedNextHopIp" : "2.23.21.3"
                       },
                       "outputInterface" : "GigabitEthernet3/0",
                       "routes" : [
@@ -1652,8 +1649,8 @@
                       "arpIp" : "2.34.101.4",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
-                        "arpIp" : "2.34.101.4",
-                        "outputInterface" : "GigabitEthernet2/0"
+                        "outputInterface" : "GigabitEthernet2/0",
+                        "resolvedNextHopIp" : "2.34.101.4"
                       },
                       "outputInterface" : "GigabitEthernet2/0",
                       "routes" : [
@@ -1708,7 +1705,6 @@
                       "arpIp" : "AUTO/NONE(-1l)",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
-                        "arpIp" : "AUTO/NONE(-1l)",
                         "outputInterface" : "GigabitEthernet2/0"
                       },
                       "outputInterface" : "GigabitEthernet2/0",
@@ -1848,8 +1844,8 @@
                       "arpIp" : "1.0.1.1",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
-                        "arpIp" : "1.0.1.1",
-                        "outputInterface" : "GigabitEthernet1/0"
+                        "outputInterface" : "GigabitEthernet1/0",
+                        "resolvedNextHopIp" : "1.0.1.1"
                       },
                       "outputInterface" : "GigabitEthernet1/0",
                       "routes" : [
@@ -1904,8 +1900,8 @@
                       "arpIp" : "10.12.11.2",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
-                        "arpIp" : "10.12.11.2",
-                        "outputInterface" : "GigabitEthernet1/0"
+                        "outputInterface" : "GigabitEthernet1/0",
+                        "resolvedNextHopIp" : "10.12.11.2"
                       },
                       "outputInterface" : "GigabitEthernet1/0",
                       "routes" : [
@@ -1992,8 +1988,8 @@
                       "arpIp" : "2.12.11.2",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
-                        "arpIp" : "2.12.11.2",
-                        "outputInterface" : "GigabitEthernet1/0"
+                        "outputInterface" : "GigabitEthernet1/0",
+                        "resolvedNextHopIp" : "2.12.11.2"
                       },
                       "outputInterface" : "GigabitEthernet1/0",
                       "routes" : [
@@ -2059,8 +2055,8 @@
                       "arpIp" : "2.23.11.3",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
-                        "arpIp" : "2.23.11.3",
-                        "outputInterface" : "GigabitEthernet2/0"
+                        "outputInterface" : "GigabitEthernet2/0",
+                        "resolvedNextHopIp" : "2.23.11.3"
                       },
                       "outputInterface" : "GigabitEthernet2/0",
                       "routes" : [
@@ -2115,8 +2111,8 @@
                       "arpIp" : "2.34.101.4",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
-                        "arpIp" : "2.34.101.4",
-                        "outputInterface" : "GigabitEthernet2/0"
+                        "outputInterface" : "GigabitEthernet2/0",
+                        "resolvedNextHopIp" : "2.34.101.4"
                       },
                       "outputInterface" : "GigabitEthernet2/0",
                       "routes" : [
@@ -2171,7 +2167,6 @@
                       "arpIp" : "AUTO/NONE(-1l)",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
-                        "arpIp" : "AUTO/NONE(-1l)",
                         "outputInterface" : "GigabitEthernet2/0"
                       },
                       "outputInterface" : "GigabitEthernet2/0",
@@ -2283,8 +2278,8 @@
                       "arpIp" : "1.0.1.1",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
-                        "arpIp" : "1.0.1.1",
-                        "outputInterface" : "GigabitEthernet1/0"
+                        "outputInterface" : "GigabitEthernet1/0",
+                        "resolvedNextHopIp" : "1.0.1.1"
                       },
                       "outputInterface" : "GigabitEthernet1/0",
                       "routes" : [
@@ -2339,8 +2334,8 @@
                       "arpIp" : "10.12.11.2",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
-                        "arpIp" : "10.12.11.2",
-                        "outputInterface" : "GigabitEthernet1/0"
+                        "outputInterface" : "GigabitEthernet1/0",
+                        "resolvedNextHopIp" : "10.12.11.2"
                       },
                       "outputInterface" : "GigabitEthernet1/0",
                       "routes" : [
@@ -2427,8 +2422,8 @@
                       "arpIp" : "2.12.11.2",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
-                        "arpIp" : "2.12.11.2",
-                        "outputInterface" : "GigabitEthernet1/0"
+                        "outputInterface" : "GigabitEthernet1/0",
+                        "resolvedNextHopIp" : "2.12.11.2"
                       },
                       "outputInterface" : "GigabitEthernet1/0",
                       "routes" : [
@@ -2494,8 +2489,8 @@
                       "arpIp" : "2.23.12.3",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
-                        "arpIp" : "2.23.12.3",
-                        "outputInterface" : "GigabitEthernet3/0"
+                        "outputInterface" : "GigabitEthernet3/0",
+                        "resolvedNextHopIp" : "2.23.12.3"
                       },
                       "outputInterface" : "GigabitEthernet3/0",
                       "routes" : [
@@ -2550,8 +2545,8 @@
                       "arpIp" : "2.34.201.4",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
-                        "arpIp" : "2.34.201.4",
-                        "outputInterface" : "GigabitEthernet2/0"
+                        "outputInterface" : "GigabitEthernet2/0",
+                        "resolvedNextHopIp" : "2.34.201.4"
                       },
                       "outputInterface" : "GigabitEthernet2/0",
                       "routes" : [
@@ -2606,7 +2601,6 @@
                       "arpIp" : "AUTO/NONE(-1l)",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
-                        "arpIp" : "AUTO/NONE(-1l)",
                         "outputInterface" : "GigabitEthernet2/0"
                       },
                       "outputInterface" : "GigabitEthernet2/0",
@@ -2718,8 +2712,8 @@
                       "arpIp" : "1.0.1.1",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
-                        "arpIp" : "1.0.1.1",
-                        "outputInterface" : "GigabitEthernet1/0"
+                        "outputInterface" : "GigabitEthernet1/0",
+                        "resolvedNextHopIp" : "1.0.1.1"
                       },
                       "outputInterface" : "GigabitEthernet1/0",
                       "routes" : [
@@ -2774,8 +2768,8 @@
                       "arpIp" : "10.12.11.2",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
-                        "arpIp" : "10.12.11.2",
-                        "outputInterface" : "GigabitEthernet1/0"
+                        "outputInterface" : "GigabitEthernet1/0",
+                        "resolvedNextHopIp" : "10.12.11.2"
                       },
                       "outputInterface" : "GigabitEthernet1/0",
                       "routes" : [
@@ -2862,8 +2856,8 @@
                       "arpIp" : "2.12.12.2",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
-                        "arpIp" : "2.12.12.2",
-                        "outputInterface" : "GigabitEthernet2/0"
+                        "outputInterface" : "GigabitEthernet2/0",
+                        "resolvedNextHopIp" : "2.12.12.2"
                       },
                       "outputInterface" : "GigabitEthernet2/0",
                       "routes" : [
@@ -2929,8 +2923,8 @@
                       "arpIp" : "2.23.22.3",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
-                        "arpIp" : "2.23.22.3",
-                        "outputInterface" : "GigabitEthernet2/0"
+                        "outputInterface" : "GigabitEthernet2/0",
+                        "resolvedNextHopIp" : "2.23.22.3"
                       },
                       "outputInterface" : "GigabitEthernet2/0",
                       "routes" : [
@@ -2985,8 +2979,8 @@
                       "arpIp" : "2.34.201.4",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
-                        "arpIp" : "2.34.201.4",
-                        "outputInterface" : "GigabitEthernet2/0"
+                        "outputInterface" : "GigabitEthernet2/0",
+                        "resolvedNextHopIp" : "2.34.201.4"
                       },
                       "outputInterface" : "GigabitEthernet2/0",
                       "routes" : [
@@ -3041,7 +3035,6 @@
                       "arpIp" : "AUTO/NONE(-1l)",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
-                        "arpIp" : "AUTO/NONE(-1l)",
                         "outputInterface" : "GigabitEthernet2/0"
                       },
                       "outputInterface" : "GigabitEthernet2/0",
@@ -3153,8 +3146,8 @@
                       "arpIp" : "1.0.1.1",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
-                        "arpIp" : "1.0.1.1",
-                        "outputInterface" : "GigabitEthernet1/0"
+                        "outputInterface" : "GigabitEthernet1/0",
+                        "resolvedNextHopIp" : "1.0.1.1"
                       },
                       "outputInterface" : "GigabitEthernet1/0",
                       "routes" : [
@@ -3209,8 +3202,8 @@
                       "arpIp" : "10.12.11.2",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
-                        "arpIp" : "10.12.11.2",
-                        "outputInterface" : "GigabitEthernet1/0"
+                        "outputInterface" : "GigabitEthernet1/0",
+                        "resolvedNextHopIp" : "10.12.11.2"
                       },
                       "outputInterface" : "GigabitEthernet1/0",
                       "routes" : [
@@ -3297,8 +3290,8 @@
                       "arpIp" : "2.12.12.2",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
-                        "arpIp" : "2.12.12.2",
-                        "outputInterface" : "GigabitEthernet2/0"
+                        "outputInterface" : "GigabitEthernet2/0",
+                        "resolvedNextHopIp" : "2.12.12.2"
                       },
                       "outputInterface" : "GigabitEthernet2/0",
                       "routes" : [
@@ -3364,8 +3357,8 @@
                       "arpIp" : "2.23.21.3",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
-                        "arpIp" : "2.23.21.3",
-                        "outputInterface" : "GigabitEthernet3/0"
+                        "outputInterface" : "GigabitEthernet3/0",
+                        "resolvedNextHopIp" : "2.23.21.3"
                       },
                       "outputInterface" : "GigabitEthernet3/0",
                       "routes" : [
@@ -3420,8 +3413,8 @@
                       "arpIp" : "2.34.101.4",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
-                        "arpIp" : "2.34.101.4",
-                        "outputInterface" : "GigabitEthernet2/0"
+                        "outputInterface" : "GigabitEthernet2/0",
+                        "resolvedNextHopIp" : "2.34.101.4"
                       },
                       "outputInterface" : "GigabitEthernet2/0",
                       "routes" : [
@@ -3476,7 +3469,6 @@
                       "arpIp" : "AUTO/NONE(-1l)",
                       "forwardingDetail" : {
                         "type" : "ForwardedOutInterface",
-                        "arpIp" : "AUTO/NONE(-1l)",
                         "outputInterface" : "GigabitEthernet2/0"
                       },
                       "outputInterface" : "GigabitEthernet2/0",

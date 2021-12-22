@@ -1358,7 +1358,7 @@ public final class FlowTracerTest {
         equalTo(
             RoutingStepDetail.builder()
                 .setVrf(srcVrfName)
-                .setForwardingDetail(ForwardedOutInterface.of(finalNhip, finalNhif))
+                .setForwardingDetail(ForwardedOutInterface.of(finalNhif, finalNhip))
                 .setOutputInterface(finalNhif)
                 .setArpIp(finalNhip)
                 .setRoutes(

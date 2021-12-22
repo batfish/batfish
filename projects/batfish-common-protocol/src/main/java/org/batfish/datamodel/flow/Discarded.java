@@ -16,6 +16,8 @@ public final class Discarded implements ForwardingDetail {
     return INSTANCE;
   }
 
+  private Discarded() {}
+
   @Override
   public boolean equals(@Nullable Object obj) {
     return this == obj || obj instanceof Discarded;

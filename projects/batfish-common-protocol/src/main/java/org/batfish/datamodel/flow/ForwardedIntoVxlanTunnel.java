@@ -16,7 +16,7 @@ public final class ForwardedIntoVxlanTunnel implements ForwardingDetail {
     return new ForwardedIntoVxlanTunnel(vni, vtep);
   }
 
-  public ForwardedIntoVxlanTunnel(int vni, Ip vtep) {
+  private ForwardedIntoVxlanTunnel(int vni, Ip vtep) {
     _vni = vni;
     _vtep = vtep;
   }

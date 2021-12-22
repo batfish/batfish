@@ -42,7 +42,7 @@ public final class HopTestUtils {
                 .setDetail(
                     RoutingStepDetail.builder()
                         .setForwardingDetail(
-                            ForwardedOutInterface.of(Ip.parse("192.0.2.1"), "outIface"))
+                            ForwardedOutInterface.of("outIface", Ip.parse("192.0.2.1")))
                         .setVrf(vrf)
                         .build())
                 .build(),

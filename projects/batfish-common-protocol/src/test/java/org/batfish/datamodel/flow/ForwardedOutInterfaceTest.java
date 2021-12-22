@@ -13,17 +13,17 @@ public final class ForwardedOutInterfaceTest {
 
   @Test
   public void testJacksonSerialization() {
-    ForwardedOutInterface obj = ForwardedOutInterface.of(Ip.parse("1.1.1.1"), "a");
+    ForwardedOutInterface obj = ForwardedOutInterface.of("a", Ip.parse("1.1.1.1"));
     assertThat(BatfishObjectMapper.clone(obj, ForwardingDetail.class), equalTo(obj));
   }
 
   @Test
   public void testEquals() {
-    ForwardedOutInterface obj = ForwardedOutInterface.of(Ip.parse("1.1.1.1"), "a");
+    ForwardedOutInterface obj = ForwardedOutInterface.of("a", Ip.parse("1.1.1.1"));
     new EqualsTester()
-        .addEqualityGroup(obj, ForwardedOutInterface.of(Ip.parse("1.1.1.1"), "a"))
-        .addEqualityGroup(ForwardedOutInterface.of(Ip.parse("2.2.2.2"), "a"))
-        .addEqualityGroup(ForwardedOutInterface.of(Ip.parse("1.1.1.1"), "b"))
+        .addEqualityGroup(obj, ForwardedOutInterface.of("a", Ip.parse("1.1.1.1")))
+        .addEqualityGroup(ForwardedOutInterface.of("a", Ip.parse("2.2.2.2")))
+        .addEqualityGroup(ForwardedOutInterface.of("b", Ip.parse("1.1.1.1")))
         .testEquals();
   }
 }

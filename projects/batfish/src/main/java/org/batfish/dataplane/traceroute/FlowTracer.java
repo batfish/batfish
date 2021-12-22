@@ -1485,8 +1485,15 @@ class FlowTracer {
               routingStepDetailBuilder.setForwardingDetail(
                   ForwardedIntoVxlanTunnel.of(nhVtep.getVni(), nhVtep.getVtepIp()));
             } else {
-              routingStepDetailBuilder.setForwardingDetail(
-                  ForwardedOutInterface.of(fibForward.getArpIp(), fibForward.getInterfaceName()));
+              // TODO: prevent FibForward from containing Ip.AUTO, and rewrite logic below
+              Ip resolvedNextHopIp = fibForward.getArpIp();
+              if (resolvedNextHopIp.equals(Ip.AUTO)) {
+                routingStepDetailBuilder.setForwardingDetail(
+                    ForwardedOutInterface.of(fibForward.getInterfaceName()));
+              } else {
+                routingStepDetailBuilder.setForwardingDetail(
+                    ForwardedOutInterface.of(fibForward.getInterfaceName(), resolvedNextHopIp));
+              }
             }
             routingStepDetailBuilder
                 .setArpIp(fibForward.getArpIp())
