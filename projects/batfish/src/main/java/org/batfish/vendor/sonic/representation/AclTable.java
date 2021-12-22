@@ -20,6 +20,7 @@ import javax.annotation.Nullable;
 public class AclTable implements Serializable {
 
   public enum Type {
+    CTRLPLANE,
     MIRROR,
     MIRRORV6,
     L3,
@@ -47,7 +48,9 @@ public class AclTable implements Serializable {
     return portName.equalsIgnoreCase("CtrlPlane");
   }
 
+  private static final String PROP_POLICY_DESC = "policy_desc";
   private static final String PROP_PORTS = "ports";
+  private static final String PROP_SERVICES = "services";
   private static final String PROP_STAGE = "stage";
   private static final String PROP_TYPE = "type";
 
@@ -55,9 +58,12 @@ public class AclTable implements Serializable {
   private @Nullable final Stage _stage;
   private @Nullable final Type _type;
 
+  @SuppressWarnings("unused")
   @JsonCreator
   private @Nonnull static AclTable create(
-      @Nullable @JsonProperty(PROP_PORTS) ImmutableList<String> ports,
+      @Nullable @JsonProperty(PROP_POLICY_DESC) String policyDesc, // ignore
+      @Nullable @JsonProperty(PROP_PORTS) List<String> ports,
+      @Nullable @JsonProperty(PROP_SERVICES) List<String> services, // TODO: Do something with this
       @Nullable @JsonProperty(PROP_STAGE) Stage stage,
       @Nullable @JsonProperty(PROP_TYPE) Type type) {
     return AclTable.builder().setPorts(ports).setStage(stage).setType(type).build();
@@ -104,11 +110,11 @@ public class AclTable implements Serializable {
   }
 
   public static final class Builder {
-    private ImmutableList<String> _ports;
+    private List<String> _ports;
     private Stage _stage;
     private Type _type;
 
-    public @Nonnull Builder setPorts(@Nullable ImmutableList<String> ports) {
+    public @Nonnull Builder setPorts(@Nullable List<String> ports) {
       this._ports = ports;
       return this;
     }
