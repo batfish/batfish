@@ -170,7 +170,7 @@ final class InterfaceMatchersImpl {
 
   static final class HasDhcpRelayAddresses extends FeatureMatcher<Interface, List<Ip>> {
     HasDhcpRelayAddresses(@Nonnull Matcher<? super List<Ip>> subMatcher) {
-      super(subMatcher, "An Interface with dhcpRelayAddress", "dhcpRelayAddresses");
+      super(subMatcher, "An Interface with dhcpRelayAddresses", "dhcpRelayAddresses");
     }
 
     @Override
