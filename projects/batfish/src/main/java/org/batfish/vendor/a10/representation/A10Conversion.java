@@ -13,6 +13,7 @@ import static org.batfish.datamodel.transformation.TransformationStep.assignDest
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationPort;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourcePort;
+import static org.batfish.vendor.a10.representation.TraceElements.traceElementForAccessList;
 import static org.batfish.vendor.a10.representation.TraceElements.traceElementForVirtualServer;
 import static org.batfish.vendor.a10.representation.TraceElements.traceElementForVirtualServerPort;
 
@@ -34,15 +35,19 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.KernelRoute;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.Names;
 import org.batfish.datamodel.Prefix;
@@ -70,6 +75,7 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.transformation.ApplyAll;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
+import org.batfish.vendor.VendorStructureId;
 import org.batfish.vendor.a10.representation.BgpNeighbor.SendCommunity;
 
 /** Conversion helpers for converting VS model {@link A10Configuration} to the VI model. */
@@ -115,10 +121,7 @@ public class A10Conversion {
   @VisibleForTesting
   @Nonnull
   static IntegerSpace toIntegerSpace(ServerPort port) {
-    return IntegerSpace.of(
-            new SubRange(
-                port.getNumber(),
-                port.getNumber() + Optional.ofNullable(port.getRange()).orElse(0)))
+    return IntegerSpace.of(new SubRange(port.getNumber(), getEndPort(port)))
         .intersection(IntegerSpace.PORTS);
   }
 
@@ -131,9 +134,18 @@ public class A10Conversion {
     return IntegerSpace.of(toSubRange(port)).intersection(IntegerSpace.PORTS);
   }
 
+  /** Determine the last/highest port represented by the specified {@link ServerPort}. */
+  public static int getEndPort(ServerPort port) {
+    return port.getNumber() + Optional.ofNullable(port.getRange()).orElse(0);
+  }
+
+  /** Determine the last/highest port represented by the specified {@link VirtualServerPort}. */
+  public static int getEndPort(VirtualServerPort port) {
+    return port.getNumber() + Optional.ofNullable(port.getRange()).orElse(0);
+  }
+
   private static @Nonnull SubRange toSubRange(VirtualServerPort port) {
-    return new SubRange(
-        port.getNumber(), port.getNumber() + Optional.ofNullable(port.getRange()).orElse(0));
+    return new SubRange(port.getNumber(), getEndPort(port));
   }
 
   /** Returns the {@link IpProtocol} corresponding to the specified virtual-server port. */
@@ -810,6 +822,46 @@ public class A10Conversion {
     }
   }
 
+  /**
+   * Convert the specified {@link AccessList} into a VI {@link IpAccessList} and attach to the
+   * specified VI {@link Configuration}.
+   */
+  static void convertAccessList(AccessList acl, Configuration c, String filename) {
+    IpAccessList.builder()
+        .setLines(toAclLines(acl, filename))
+        .setOwner(c)
+        .setName(computeAclName(acl.getName()))
+        .build();
+  }
+
+  /** Convert the specified {@link AccessList} to a list of {@link AclLine}s. */
+  private static @Nonnull List<AclLine> toAclLines(AccessList acl, String filename) {
+    VendorStructureId vsid =
+        new VendorStructureId(
+            filename, A10StructureType.ACCESS_LIST.getDescription(), acl.getName());
+    ImmutableList.Builder<AclLine> lines = ImmutableList.builder();
+    acl.getRules()
+        .forEach(
+            rule ->
+                lines.add(
+                    new ExprAclLine(
+                        toLineAction(rule),
+                        AccessListRuleToMatchExpr.INSTANCE.visit(rule),
+                        rule.getLineText(),
+                        traceElementForAccessList(
+                            acl.getName(),
+                            filename,
+                            rule.getAction() == AccessListRule.Action.PERMIT),
+                        vsid)));
+    return lines.build();
+  }
+
+  /** Compute the VI {@link IpAccessList} name for the specified {@link AccessList}. */
+  @VisibleForTesting
+  public static String computeAclName(String aclName) {
+    return String.format("IP_ACCESS_LIST~%s", aclName);
+  }
+
   /** Convert a {@link VirtualServerTarget} to its corresponding {@link AclLineMatchExpr}. */
   static final class VirtualServerTargetToMatchExpr
       implements VirtualServerTargetVisitor<AclLineMatchExpr> {
@@ -840,5 +892,14 @@ public class A10Conversion {
         traceElementForVirtualServerPort(port),
         AclLineMatchExprs.matchIpProtocol(protocol.get()),
         AclLineMatchExprs.matchDstPort(toIntegerSpace(port)));
+  }
+
+  /** Get the {@link LineAction} for the specified {@link AccessList}. */
+  private static @Nonnull LineAction toLineAction(AccessListRule rule) {
+    if (rule.getAction() == AccessListRule.Action.PERMIT) {
+      return LineAction.PERMIT;
+    }
+    assert rule.getAction() == AccessListRule.Action.DENY;
+    return LineAction.DENY;
   }
 }

@@ -7,6 +7,8 @@ import static org.batfish.datamodel.FirewallSessionInterfaceInfo.Action.POST_NAT
 import static org.batfish.datamodel.Prefix.MAX_PREFIX_LENGTH;
 import static org.batfish.vendor.a10.representation.A10Conversion.VIRTUAL_TCP_PORT_TYPES;
 import static org.batfish.vendor.a10.representation.A10Conversion.VIRTUAL_UDP_PORT_TYPES;
+import static org.batfish.vendor.a10.representation.A10Conversion.computeAclName;
+import static org.batfish.vendor.a10.representation.A10Conversion.convertAccessList;
 import static org.batfish.vendor.a10.representation.A10Conversion.createBgpProcess;
 import static org.batfish.vendor.a10.representation.A10Conversion.getEnabledVrids;
 import static org.batfish.vendor.a10.representation.A10Conversion.getFloatingIpKernelRoutes;
@@ -71,6 +73,7 @@ import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.acl.TrueExpr;
+import org.batfish.datamodel.packet_policy.ApplyFilter;
 import org.batfish.datamodel.packet_policy.ApplyTransformation;
 import org.batfish.datamodel.packet_policy.FibLookup;
 import org.batfish.datamodel.packet_policy.If;
@@ -358,6 +361,8 @@ public final class A10Configuration extends VendorConfiguration {
         (prefix, manager) ->
             manager.getVariants().forEach((ip, sr) -> convertStaticRoute(vrf, prefix, sr)));
 
+    convertAccessLists();
+
     // Must be done after interface conversion
     convertVirtualServers();
     convertVrrpA();
@@ -601,9 +606,14 @@ public final class A10Configuration extends VendorConfiguration {
         .forEach(i -> i.setVrrpGroups(toVrrpGroups(i, vrrpGroupBuildersBuilder.build())));
   }
 
+  private void convertAccessLists() {
+    _accessLists.forEach((name, acl) -> convertAccessList(acl, _c, _filename));
+  }
+
   /**
-   * Convert virtual-servers to load-balancing VI constructs and attach resulting transformations to
-   * interfaces. Modifies VI interfaces and must be called after those are created.
+   * Convert virtual-servers to load-balancing VI constructs and attach resulting ACLs and
+   * transformations to interfaces. Modifies VI interfaces and must be called after those are
+   * created.
    */
   private void convertVirtualServers() {
     // Build transformations
@@ -651,7 +661,12 @@ public final class A10Configuration extends VendorConfiguration {
    */
   private Statement toStatement(VirtualServerPort port) {
     ImmutableList.Builder<Statement> trueStatements = ImmutableList.builder();
-    // TODO apply acl here, if applicable
+    String aclName = port.getAccessList();
+    if (aclName != null) {
+      String viAclName = computeAclName(aclName);
+      assert _c.getIpAccessLists().containsKey(viAclName);
+      trueStatements.add(new ApplyFilter(viAclName));
+    }
     trueStatements.add(
         new ApplyTransformation(
             new Transformation(

@@ -21,6 +21,9 @@ import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasActiveNeighbo
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEbgp;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathIbgp;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasRouterId;
+import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
+import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
+import static org.batfish.datamodel.matchers.TraceTreeMatchers.isTraceTree;
 import static org.batfish.vendor.a10.representation.A10Configuration.arePortTypesCompatible;
 import static org.batfish.vendor.a10.representation.A10Conversion.DEFAULT_EBGP_ADMIN_COST;
 import static org.batfish.vendor.a10.representation.A10Conversion.DEFAULT_IBGP_ADMIN_COST;
@@ -31,7 +34,9 @@ import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_T
 import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_NAT_POOL;
 import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_VIRTUAL_SERVER_FLAGGED;
 import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_VIRTUAL_SERVER_UNFLAGGED;
+import static org.batfish.vendor.a10.representation.A10Conversion.computeAclName;
 import static org.batfish.vendor.a10.representation.A10Conversion.computeUpdateSource;
+import static org.batfish.vendor.a10.representation.A10Conversion.convertAccessList;
 import static org.batfish.vendor.a10.representation.A10Conversion.createAndAttachBgpNeighbor;
 import static org.batfish.vendor.a10.representation.A10Conversion.createBgpProcess;
 import static org.batfish.vendor.a10.representation.A10Conversion.getInterfaceEnabledEffective;
@@ -48,12 +53,18 @@ import static org.batfish.vendor.a10.representation.A10Conversion.toVrrpGroupBui
 import static org.batfish.vendor.a10.representation.A10Conversion.toVrrpGroups;
 import static org.batfish.vendor.a10.representation.A10Conversion.vrrpADisabledAppliesToInterface;
 import static org.batfish.vendor.a10.representation.A10Conversion.vrrpAEnabledAppliesToInterface;
+import static org.batfish.vendor.a10.representation.TraceElements.traceElementForAccessList;
+import static org.batfish.vendor.a10.representation.TraceElements.traceElementForDestAddressAny;
+import static org.batfish.vendor.a10.representation.TraceElements.traceElementForProtocol;
+import static org.batfish.vendor.a10.representation.TraceElements.traceElementForSourceHost;
 import static org.batfish.vendor.a10.representation.TraceElements.traceElementForVirtualServer;
 import static org.batfish.vendor.a10.representation.TraceElements.traceElementForVirtualServerPort;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.junit.Assert.assertFalse;
@@ -67,6 +78,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import javax.annotation.Nonnull;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.BddTestbed;
@@ -74,10 +86,12 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRoute;
+import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.KernelRoute;
 import org.batfish.datamodel.Names;
@@ -87,7 +101,9 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
+import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.trace.TraceTree;
 import org.batfish.datamodel.transformation.ApplyAll;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.vendor.a10.representation.BgpNeighbor.SendCommunity;
@@ -231,6 +247,97 @@ public class A10ConversionTest {
                     AclLineMatchExprs.matchIpProtocol(IpProtocol.UDP),
                     AclLineMatchExprs.matchDstPort(IntegerSpace.of(new SubRange(10, 11)))))));
     assertThat(matchExpr.getTraceElement(), equalTo(traceElementForVirtualServerPort(vsp)));
+  }
+
+  @Test
+  public void testConvertAccessList() {
+    /* Test conversion and tracing of an ACL with:
+     *   1. explicit permit line
+     *   2. explicit deny line
+     *   3. implicit deny all at the end
+     * */
+    Configuration c = new Configuration("dummy", ConfigurationFormat.A10_ACOS);
+    String filename = "filename";
+    String aclName = "aclName";
+    String viAclName = computeAclName(aclName);
+    String ifaceName = "Ethernet1"; // Arbitrary interface
+    Ip permittedHost = Ip.parse("10.0.0.1");
+    Ip deniedHost = Ip.parse("10.0.0.2");
+    Ip unmatchedHost = Ip.parse("10.0.0.3");
+    Flow permittedFlow =
+        Flow.builder()
+            .setIngressNode("node")
+            .setIngressInterface(ifaceName)
+            .setIpProtocol(IpProtocol.TCP)
+            .setSrcIp(permittedHost)
+            // Arbitrary ports and dest ip
+            .setDstIp(Ip.parse("10.0.0.4"))
+            .setSrcPort(4096)
+            .setDstPort(443)
+            .build();
+    Flow deniedFlow = permittedFlow.toBuilder().setSrcIp(deniedHost).build();
+    Flow unmatchedFlow = permittedFlow.toBuilder().setSrcIp(unmatchedHost).build();
+
+    AccessList acl = new AccessList(aclName);
+    acl.addRule(
+        new AccessListRuleTcp(
+            AccessListRule.Action.PERMIT,
+            new AccessListAddressHost(permittedHost),
+            AccessListAddressAny.INSTANCE,
+            "permit"));
+    acl.addRule(
+        new AccessListRuleTcp(
+            AccessListRule.Action.DENY,
+            new AccessListAddressHost(deniedHost),
+            AccessListAddressAny.INSTANCE,
+            "deny"));
+    convertAccessList(acl, c, filename);
+    assertThat(c.getIpAccessLists(), hasKey(viAclName));
+    IpAccessList viAcl = c.getIpAccessLists().get(viAclName);
+    Function<Flow, List<TraceTree>> trace =
+        (flow) ->
+            AclTracer.trace(
+                viAcl,
+                flow,
+                ifaceName,
+                c.getIpAccessLists(),
+                c.getIpSpaces(),
+                c.getIpSpaceMetadata());
+
+    // Explicit permit line match
+    {
+      assertThat(viAcl, accepts(permittedFlow, ifaceName, ImmutableMap.of(), ImmutableMap.of()));
+      List<TraceTree> traces = trace.apply(permittedFlow);
+      assertThat(
+          traces,
+          contains(
+              isTraceTree(
+                  traceElementForAccessList(aclName, filename, true),
+                  isTraceTree(traceElementForDestAddressAny()),
+                  isTraceTree(traceElementForSourceHost(new AccessListAddressHost(permittedHost))),
+                  isTraceTree(traceElementForProtocol(IpProtocol.TCP)))));
+    }
+
+    // Explicit deny line match
+    {
+      assertThat(viAcl, rejects(deniedFlow, ifaceName, ImmutableMap.of(), ImmutableMap.of()));
+      List<TraceTree> traces = trace.apply(deniedFlow);
+      assertThat(
+          traces,
+          contains(
+              isTraceTree(
+                  traceElementForAccessList(aclName, filename, false),
+                  isTraceTree(traceElementForDestAddressAny()),
+                  isTraceTree(traceElementForSourceHost(new AccessListAddressHost(deniedHost))),
+                  isTraceTree(traceElementForProtocol(IpProtocol.TCP)))));
+    }
+
+    // No explicit match, implicit deny
+    {
+      assertThat(viAcl, rejects(unmatchedFlow, ifaceName, ImmutableMap.of(), ImmutableMap.of()));
+      // No traces exist in this case
+      assertThat(trace.apply(unmatchedFlow), emptyIterable());
+    }
   }
 
   @Test

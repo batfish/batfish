@@ -5,4 +5,9 @@ public class AccessListAddressAny implements AccessListAddress {
   public static final AccessListAddressAny INSTANCE = new AccessListAddressAny();
 
   private AccessListAddressAny() {}
+
+  @Override
+  public <T> T accept(AccessListAddressVisitor<T> visitor) {
+    return visitor.visitAny(this);
+  }
 }

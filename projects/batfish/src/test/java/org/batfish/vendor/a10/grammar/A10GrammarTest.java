@@ -2208,6 +2208,39 @@ public class A10GrammarTest {
     assertThat(rule3.getDestinationRange(), equalTo(new SubRange(2, 99)));
   }
 
+  /**
+   * Basic end-to-endy test confirming ip access-lists are converted and applied as expected. More
+   * comprehensive conversion tests are covered elsewhere.
+   */
+  @Test
+  public void testAccessListConversion() throws IOException {
+    String hostname = "access_list_convert";
+    Configuration c = parseConfig(hostname);
+    Batfish batfish = getBatfish(ImmutableSortedMap.of(hostname, c), _folder);
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+
+    Flow permitted =
+        Flow.builder()
+            .setIngressNode(hostname)
+            .setIngressInterface("Ethernet12")
+            .setIpProtocol(IpProtocol.TCP)
+            .setSrcIp(Ip.parse("10.0.2.11"))
+            // Arbitrary source port
+            .setSrcPort(4096)
+            .setDstIp(Ip.parse("10.0.1.101"))
+            .setDstPort(443)
+            .build();
+    Flow denied = permitted.toBuilder().setSrcIp(Ip.parse("10.0.2.10")).build();
+    SortedMap<Flow, List<Trace>> traces =
+        batfish
+            .getTracerouteEngine(snapshot)
+            .computeTraces(ImmutableSet.of(permitted, denied), false);
+
+    assertTrue(traces.get(permitted).get(0).getDisposition().isSuccessful());
+    assertFalse(traces.get(denied).get(0).getDisposition().isSuccessful());
+  }
+
   @Test
   public void testAccessListWarn() throws IOException {
     String filename = "access_list_warn";
