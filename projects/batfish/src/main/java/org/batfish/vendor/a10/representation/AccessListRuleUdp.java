@@ -36,6 +36,7 @@ public class AccessListRuleUdp implements AccessListRule {
   }
 
   @Nonnull
+  @Override
   public String getLineText() {
     return _lineText;
   }

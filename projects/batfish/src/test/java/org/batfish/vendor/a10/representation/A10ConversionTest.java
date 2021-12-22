@@ -21,6 +21,8 @@ import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasActiveNeighbo
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEbgp;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathIbgp;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasRouterId;
+import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
+import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.TraceTreeMatchers.isTraceTree;
 import static org.batfish.vendor.a10.representation.A10Configuration.arePortTypesCompatible;
 import static org.batfish.vendor.a10.representation.A10Conversion.DEFAULT_EBGP_ADMIN_COST;
@@ -105,7 +107,6 @@ import org.batfish.datamodel.trace.TraceTree;
 import org.batfish.datamodel.transformation.ApplyAll;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.vendor.a10.representation.BgpNeighbor.SendCommunity;
-import org.junit.Assert;
 import org.junit.Test;
 
 /** Tests of {@link A10Conversion}. */
@@ -250,11 +251,16 @@ public class A10ConversionTest {
 
   @Test
   public void testConvertAccessList() {
+    /* Test conversion and tracing of an ACL with:
+     *   1. explicit permit line
+     *   2. explicit deny line
+     *   3. implicit deny all at the end
+     * */
     Configuration c = new Configuration("dummy", ConfigurationFormat.A10_ACOS);
     String filename = "filename";
     String aclName = "aclName";
     String viAclName = computeAclName(aclName);
-    String ifaceName = "ethernet1";
+    String ifaceName = "Ethernet1"; // Arbitrary interface
     Ip permittedHost = Ip.parse("10.0.0.1");
     Ip deniedHost = Ip.parse("10.0.0.2");
     Ip unmatchedHost = Ip.parse("10.0.0.3");
@@ -300,32 +306,37 @@ public class A10ConversionTest {
 
     // Explicit permit line match
     {
+      assertThat(viAcl, accepts(permittedFlow, ifaceName, ImmutableMap.of(), ImmutableMap.of()));
       List<TraceTree> traces = trace.apply(permittedFlow);
-      Assert.assertThat(
+      assertThat(
           traces,
           contains(
               isTraceTree(
                   traceElementForAccessList(aclName, filename, true),
                   isTraceTree(traceElementForDestAddressAny()),
-                  isTraceTree(traceElementForSourceHost(permittedHost)),
+                  isTraceTree(traceElementForSourceHost(new AccessListAddressHost(permittedHost))),
                   isTraceTree(traceElementForProtocol(IpProtocol.TCP)))));
     }
+
     // Explicit deny line match
     {
+      assertThat(viAcl, rejects(deniedFlow, ifaceName, ImmutableMap.of(), ImmutableMap.of()));
       List<TraceTree> traces = trace.apply(deniedFlow);
-      Assert.assertThat(
+      assertThat(
           traces,
           contains(
               isTraceTree(
                   traceElementForAccessList(aclName, filename, false),
                   isTraceTree(traceElementForDestAddressAny()),
-                  isTraceTree(traceElementForSourceHost(deniedHost)),
+                  isTraceTree(traceElementForSourceHost(new AccessListAddressHost(deniedHost))),
                   isTraceTree(traceElementForProtocol(IpProtocol.TCP)))));
     }
+
     // No explicit match, implicit deny
     {
+      assertThat(viAcl, rejects(unmatchedFlow, ifaceName, ImmutableMap.of(), ImmutableMap.of()));
       List<TraceTree> traces = trace.apply(unmatchedFlow);
-      Assert.assertThat(
+      assertThat(
           traces, contains(isTraceTree(traceElementForAccessListDefaultDeny(aclName, filename))));
     }
   }

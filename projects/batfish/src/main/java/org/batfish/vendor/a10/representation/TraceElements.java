@@ -2,7 +2,6 @@ package org.batfish.vendor.a10.representation;
 
 import static org.batfish.vendor.a10.representation.A10Conversion.getEndPort;
 
-import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TraceElement;
@@ -47,12 +46,16 @@ public final class TraceElements {
     return TraceElement.builder().add("Matched destination address any").build();
   }
 
-  public static TraceElement traceElementForSourceHost(Ip host) {
-    return TraceElement.builder().add(String.format("Matched source host %s", host)).build();
+  public static TraceElement traceElementForSourceHost(AccessListAddressHost host) {
+    return TraceElement.builder()
+        .add(String.format("Matched source host %s", host.getHost()))
+        .build();
   }
 
-  public static TraceElement traceElementForDestHost(Ip host) {
-    return TraceElement.builder().add(String.format("Matched destination host %s", host)).build();
+  public static TraceElement traceElementForDestHost(AccessListAddressHost host) {
+    return TraceElement.builder()
+        .add(String.format("Matched destination host %s", host.getHost()))
+        .build();
   }
 
   public static TraceElement traceElementForVirtualServer(VirtualServer server, String filename) {

@@ -828,7 +828,7 @@ public class A10Conversion {
    * Convert the specified {@link AccessList} into a VI {@link IpAccessList} and attach to the
    * specified VI {@link Configuration}.
    */
-  public static void convertAccessList(AccessList acl, Configuration c, String filename) {
+  static void convertAccessList(AccessList acl, Configuration c, String filename) {
     IpAccessList.builder()
         .setLines(toAclLines(acl, filename))
         .setOwner(c)
@@ -837,8 +837,7 @@ public class A10Conversion {
   }
 
   /** Convert the specified {@link AccessList} to a list of {@link AclLine}s. */
-  @VisibleForTesting
-  public static @Nonnull List<AclLine> toAclLines(AccessList acl, String filename) {
+  private static @Nonnull List<AclLine> toAclLines(AccessList acl, String filename) {
     VendorStructureId vsid =
         new VendorStructureId(
             filename, A10StructureType.ACCESS_LIST.getDescription(), acl.getName());

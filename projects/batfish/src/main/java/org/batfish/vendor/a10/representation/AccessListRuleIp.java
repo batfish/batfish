@@ -23,6 +23,7 @@ public class AccessListRuleIp implements AccessListRule {
   }
 
   @Nonnull
+  @Override
   public String getLineText() {
     return _lineText;
   }

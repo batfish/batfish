@@ -35,8 +35,8 @@ public class AccessListRuleTcp implements AccessListRule {
     return _destinationRange;
   }
 
-  /** Text of the ACL line in the original configuration. */
   @Nonnull
+  @Override
   public String getLineText() {
     return _lineText;
   }

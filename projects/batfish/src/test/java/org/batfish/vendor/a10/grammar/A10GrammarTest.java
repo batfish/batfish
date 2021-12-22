@@ -32,8 +32,6 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isProxyArp;
-import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
-import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.matchers.StaticRouteMatchers.hasRecursive;
@@ -49,7 +47,6 @@ import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_T
 import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_VIRTUAL_SERVER_FLAGGED;
 import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_VIRTUAL_SERVER_UNFLAGGED;
 import static org.batfish.vendor.a10.representation.A10Conversion.SNAT_PORT_POOL_START;
-import static org.batfish.vendor.a10.representation.A10Conversion.computeAclName;
 import static org.batfish.vendor.a10.representation.A10StructureType.ACCESS_LIST;
 import static org.batfish.vendor.a10.representation.A10StructureType.HEALTH_MONITOR;
 import static org.batfish.vendor.a10.representation.A10StructureType.INTERFACE;
@@ -84,7 +81,6 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Iterables;
@@ -114,7 +110,6 @@ import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.KernelRoute;
@@ -2215,18 +2210,20 @@ public class A10GrammarTest {
 
   /**
    * Basic end-to-endy test confirming ip access-lists are converted and applied as expected. More
-   * comprehensive conversion tests are covered in {@link
-   * org.batfish.vendor.a10.representation.A10ConversionTest}.
+   * comprehensive conversion tests are covered elsewhere.
    */
   @Test
-  public void testAccessListConversion() {
+  public void testAccessListConversion() throws IOException {
     String hostname = "access_list_convert";
     Configuration c = parseConfig(hostname);
+    Batfish batfish = getBatfish(ImmutableSortedMap.of(hostname, c), _folder);
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
 
     Flow permitted =
         Flow.builder()
             .setIngressNode(hostname)
-            .setIngressInterface("ethernet12")
+            .setIngressInterface("Ethernet12")
             .setIpProtocol(IpProtocol.TCP)
             .setSrcIp(Ip.parse("10.0.2.11"))
             // Arbitrary source port
@@ -2235,11 +2232,13 @@ public class A10GrammarTest {
             .setDstPort(443)
             .build();
     Flow denied = permitted.toBuilder().setSrcIp(Ip.parse("10.0.2.10")).build();
+    SortedMap<Flow, List<Trace>> traces =
+        batfish
+            .getTracerouteEngine(snapshot)
+            .computeTraces(ImmutableSet.of(permitted, denied), false);
 
-    assertThat(c.getIpAccessLists(), hasKey(computeAclName("ACL1")));
-    IpAccessList acl = c.getIpAccessLists().get(computeAclName("ACL1"));
-    assertThat(acl, accepts(permitted, "ethernet12", ImmutableMap.of(), ImmutableMap.of()));
-    assertThat(acl, rejects(denied, "ethernet12", ImmutableMap.of(), ImmutableMap.of()));
+    assertTrue(traces.get(permitted).get(0).getDisposition().isSuccessful());
+    assertFalse(traces.get(denied).get(0).getDisposition().isSuccessful());
   }
 
   @Test

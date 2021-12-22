@@ -10,7 +10,6 @@ import static org.batfish.vendor.a10.representation.TraceElements.traceElementFo
 import com.google.common.collect.ImmutableList;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.IntegerSpace;
-import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.SubRange;
@@ -95,9 +94,8 @@ public final class AccessListRuleToMatchExpr implements AccessListRuleVisitor<Ac
       }
 
       @Override
-      public AclLineMatchExpr visitHost(AccessListAddressHost address) {
-        Ip host = address.getHost();
-        IpSpace ip = host.toIpSpace();
+      public AclLineMatchExpr visitHost(AccessListAddressHost host) {
+        IpSpace ip = host.getHost().toIpSpace();
         return _isSource
             ? AclLineMatchExprs.matchSrc(ip, traceElementForSourceHost(host))
             : AclLineMatchExprs.matchDst(ip, traceElementForDestHost(host));
@@ -115,6 +113,8 @@ public final class AccessListRuleToMatchExpr implements AccessListRuleVisitor<Ac
     }
 
     public static AclLineMatchExpr visitDst(AccessListAddress address) {
+      // TODO confirm dest address matching behavior
+      // Docs aren't clear if this matches original or translated destination address
       return _dest.visit(address);
     }
   }
