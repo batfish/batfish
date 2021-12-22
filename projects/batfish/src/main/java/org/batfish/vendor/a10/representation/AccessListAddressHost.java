@@ -15,4 +15,9 @@ public class AccessListAddressHost implements AccessListAddress {
   }
 
   @Nonnull private final Ip _host;
+
+  @Override
+  public <T> T accept(AccessListAddressVisitor<T> visitor) {
+    return visitor.visitHost(this);
+  }
 }

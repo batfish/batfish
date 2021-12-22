@@ -24,24 +24,38 @@ public class AccessListRuleUdp implements AccessListRule {
     return _destination;
   }
 
+  @Override
+  public <T> T accept(AccessListRuleVisitor<T> visitor) {
+    return visitor.visitUdp(this);
+  }
+
   /** Destination port range this rule matches on. */
   @Nullable
   public SubRange getDestinationRange() {
     return _destinationRange;
   }
 
+  @Nonnull
+  @Override
+  public String getLineText() {
+    return _lineText;
+  }
+
   public void setDestinationRange(@Nullable SubRange destinationRange) {
     _destinationRange = destinationRange;
   }
 
-  public AccessListRuleUdp(Action action, AccessListAddress source, AccessListAddress destination) {
+  public AccessListRuleUdp(
+      Action action, AccessListAddress source, AccessListAddress destination, String lineText) {
     _action = action;
     _source = source;
     _destination = destination;
+    _lineText = lineText;
   }
 
   @Nonnull private final Action _action;
   @Nonnull private final AccessListAddress _source;
   @Nonnull private final AccessListAddress _destination;
   @Nullable private SubRange _destinationRange;
+  @Nonnull private final String _lineText;
 }

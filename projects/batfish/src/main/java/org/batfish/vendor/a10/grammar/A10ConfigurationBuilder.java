@@ -262,6 +262,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
    * Optional#empty()} if the definition is not valid.
    */
   private Optional<AccessListRule> toAclRule(A10Parser.Sial_rule_definitionContext ctx) {
+    String lineText = getFullText(ctx);
     AccessListRule.Action action = toAclAction(ctx.sialr_action());
     AccessListAddress source = toAclAddress(ctx.source);
     AccessListAddress destination = toAclAddress(ctx.destination);
@@ -276,16 +277,16 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     }
 
     if (ctx.sialr_protocol().ICMP() != null) {
-      return Optional.of(new AccessListRuleIcmp(action, source, destination));
+      return Optional.of(new AccessListRuleIcmp(action, source, destination, lineText));
     } else if (ctx.sialr_protocol().IP() != null) {
-      return Optional.of(new AccessListRuleIp(action, source, destination));
+      return Optional.of(new AccessListRuleIp(action, source, destination, lineText));
     } else if (ctx.sialr_protocol().TCP() != null) {
-      AccessListRuleTcp tcp = new AccessListRuleTcp(action, source, destination);
+      AccessListRuleTcp tcp = new AccessListRuleTcp(action, source, destination, lineText);
       maybeDestRange.ifPresent(tcp::setDestinationRange);
       return Optional.of(tcp);
     }
     assert ctx.sialr_protocol().UDP() != null;
-    AccessListRuleUdp udp = new AccessListRuleUdp(action, source, destination);
+    AccessListRuleUdp udp = new AccessListRuleUdp(action, source, destination, lineText);
     maybeDestRange.ifPresent(udp::setDestinationRange);
     return Optional.of(udp);
   }
