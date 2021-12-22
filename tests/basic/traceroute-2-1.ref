@@ -74,12 +74,22 @@
                     "action" : "FORWARDED",
                     "detail" : {
                       "arpIp" : "2.128.1.1",
+                      "forwardingDetail" : {
+                        "type" : "ForwardedOutInterface",
+                        "arpIp" : "2.128.1.1",
+                        "outputInterface" : "eth0"
+                      },
                       "outputInterface" : "eth0",
                       "routes" : [
                         {
                           "admin" : 1,
                           "metric" : 0,
                           "network" : "0.0.0.0/0",
+                          "nextHop" : {
+                            "type" : "interface",
+                            "interface" : "eth0",
+                            "ip" : "2.128.1.1"
+                          },
                           "nextHopIp" : "2.128.1.1",
                           "protocol" : "static"
                         }
@@ -184,12 +194,21 @@
                     "action" : "FORWARDED",
                     "detail" : {
                       "arpIp" : "2.34.101.3",
+                      "forwardingDetail" : {
+                        "type" : "ForwardedOutInterface",
+                        "arpIp" : "2.34.101.3",
+                        "outputInterface" : "GigabitEthernet0/0"
+                      },
                       "outputInterface" : "GigabitEthernet0/0",
                       "routes" : [
                         {
                           "admin" : 20,
                           "metric" : 50,
                           "network" : "1.0.1.0/24",
+                          "nextHop" : {
+                            "type" : "ip",
+                            "ip" : "2.34.101.3"
+                          },
                           "nextHopIp" : "2.34.101.3",
                           "protocol" : "bgp"
                         }
@@ -231,12 +250,21 @@
                     "action" : "FORWARDED",
                     "detail" : {
                       "arpIp" : "2.23.11.2",
+                      "forwardingDetail" : {
+                        "type" : "ForwardedOutInterface",
+                        "arpIp" : "2.23.11.2",
+                        "outputInterface" : "GigabitEthernet0/0"
+                      },
                       "outputInterface" : "GigabitEthernet0/0",
                       "routes" : [
                         {
                           "admin" : 200,
                           "metric" : 50,
                           "network" : "1.0.1.0/24",
+                          "nextHop" : {
+                            "type" : "ip",
+                            "ip" : "10.12.11.1"
+                          },
                           "nextHopIp" : "10.12.11.1",
                           "protocol" : "ibgp"
                         }
@@ -310,12 +338,21 @@
                     "action" : "FORWARDED",
                     "detail" : {
                       "arpIp" : "2.12.11.1",
+                      "forwardingDetail" : {
+                        "type" : "ForwardedOutInterface",
+                        "arpIp" : "2.12.11.1",
+                        "outputInterface" : "GigabitEthernet0/0"
+                      },
                       "outputInterface" : "GigabitEthernet0/0",
                       "routes" : [
                         {
                           "admin" : 200,
                           "metric" : 50,
                           "network" : "1.0.1.0/24",
+                          "nextHop" : {
+                            "type" : "ip",
+                            "ip" : "10.12.11.1"
+                          },
                           "nextHopIp" : "10.12.11.1",
                           "protocol" : "ibgp"
                         }
@@ -357,12 +394,21 @@
                     "action" : "FORWARDED",
                     "detail" : {
                       "arpIp" : "10.12.11.1",
+                      "forwardingDetail" : {
+                        "type" : "ForwardedOutInterface",
+                        "arpIp" : "10.12.11.1",
+                        "outputInterface" : "GigabitEthernet0/0"
+                      },
                       "outputInterface" : "GigabitEthernet0/0",
                       "routes" : [
                         {
                           "admin" : 20,
                           "metric" : 50,
                           "network" : "1.0.1.0/24",
+                          "nextHop" : {
+                            "type" : "ip",
+                            "ip" : "10.12.11.1"
+                          },
                           "nextHopIp" : "10.12.11.1",
                           "protocol" : "bgp"
                         }
@@ -463,12 +509,22 @@
                     "action" : "FORWARDED",
                     "detail" : {
                       "arpIp" : "2.128.1.1",
+                      "forwardingDetail" : {
+                        "type" : "ForwardedOutInterface",
+                        "arpIp" : "2.128.1.1",
+                        "outputInterface" : "eth0"
+                      },
                       "outputInterface" : "eth0",
                       "routes" : [
                         {
                           "admin" : 1,
                           "metric" : 0,
                           "network" : "0.0.0.0/0",
+                          "nextHop" : {
+                            "type" : "interface",
+                            "interface" : "eth0",
+                            "ip" : "2.128.1.1"
+                          },
                           "nextHopIp" : "2.128.1.1",
                           "protocol" : "static"
                         }
@@ -573,12 +629,21 @@
                     "action" : "FORWARDED",
                     "detail" : {
                       "arpIp" : "2.34.101.3",
+                      "forwardingDetail" : {
+                        "type" : "ForwardedOutInterface",
+                        "arpIp" : "2.34.101.3",
+                        "outputInterface" : "GigabitEthernet0/0"
+                      },
                       "outputInterface" : "GigabitEthernet0/0",
                       "routes" : [
                         {
                           "admin" : 20,
                           "metric" : 50,
                           "network" : "1.0.1.0/24",
+                          "nextHop" : {
+                            "type" : "ip",
+                            "ip" : "2.34.101.3"
+                          },
                           "nextHopIp" : "2.34.101.3",
                           "protocol" : "bgp"
                         }
@@ -620,12 +685,21 @@
                     "action" : "FORWARDED",
                     "detail" : {
                       "arpIp" : "2.23.21.2",
+                      "forwardingDetail" : {
+                        "type" : "ForwardedOutInterface",
+                        "arpIp" : "2.23.21.2",
+                        "outputInterface" : "GigabitEthernet1/0"
+                      },
                       "outputInterface" : "GigabitEthernet1/0",
                       "routes" : [
                         {
                           "admin" : 200,
                           "metric" : 50,
                           "network" : "1.0.1.0/24",
+                          "nextHop" : {
+                            "type" : "ip",
+                            "ip" : "10.12.11.1"
+                          },
                           "nextHopIp" : "10.12.11.1",
                           "protocol" : "ibgp"
                         }
@@ -667,12 +741,21 @@
                     "action" : "FORWARDED",
                     "detail" : {
                       "arpIp" : "2.12.12.1",
+                      "forwardingDetail" : {
+                        "type" : "ForwardedOutInterface",
+                        "arpIp" : "2.12.12.1",
+                        "outputInterface" : "GigabitEthernet1/0"
+                      },
                       "outputInterface" : "GigabitEthernet1/0",
                       "routes" : [
                         {
                           "admin" : 200,
                           "metric" : 50,
                           "network" : "1.0.1.0/24",
+                          "nextHop" : {
+                            "type" : "ip",
+                            "ip" : "10.12.11.1"
+                          },
                           "nextHopIp" : "10.12.11.1",
                           "protocol" : "ibgp"
                         }
@@ -714,12 +797,21 @@
                     "action" : "FORWARDED",
                     "detail" : {
                       "arpIp" : "10.12.11.1",
+                      "forwardingDetail" : {
+                        "type" : "ForwardedOutInterface",
+                        "arpIp" : "10.12.11.1",
+                        "outputInterface" : "GigabitEthernet0/0"
+                      },
                       "outputInterface" : "GigabitEthernet0/0",
                       "routes" : [
                         {
                           "admin" : 20,
                           "metric" : 50,
                           "network" : "1.0.1.0/24",
+                          "nextHop" : {
+                            "type" : "ip",
+                            "ip" : "10.12.11.1"
+                          },
                           "nextHopIp" : "10.12.11.1",
                           "protocol" : "bgp"
                         }
@@ -820,12 +912,22 @@
                     "action" : "FORWARDED",
                     "detail" : {
                       "arpIp" : "2.128.1.1",
+                      "forwardingDetail" : {
+                        "type" : "ForwardedOutInterface",
+                        "arpIp" : "2.128.1.1",
+                        "outputInterface" : "eth0"
+                      },
                       "outputInterface" : "eth0",
                       "routes" : [
                         {
                           "admin" : 1,
                           "metric" : 0,
                           "network" : "0.0.0.0/0",
+                          "nextHop" : {
+                            "type" : "interface",
+                            "interface" : "eth0",
+                            "ip" : "2.128.1.1"
+                          },
                           "nextHopIp" : "2.128.1.1",
                           "protocol" : "static"
                         }
@@ -930,12 +1032,21 @@
                     "action" : "FORWARDED",
                     "detail" : {
                       "arpIp" : "2.34.201.3",
+                      "forwardingDetail" : {
+                        "type" : "ForwardedOutInterface",
+                        "arpIp" : "2.34.201.3",
+                        "outputInterface" : "GigabitEthernet1/0"
+                      },
                       "outputInterface" : "GigabitEthernet1/0",
                       "routes" : [
                         {
                           "admin" : 20,
                           "metric" : 50,
                           "network" : "1.0.1.0/24",
+                          "nextHop" : {
+                            "type" : "ip",
+                            "ip" : "2.34.201.3"
+                          },
                           "nextHopIp" : "2.34.201.3",
                           "protocol" : "bgp"
                         }
@@ -977,12 +1088,21 @@
                     "action" : "FORWARDED",
                     "detail" : {
                       "arpIp" : "2.23.22.2",
+                      "forwardingDetail" : {
+                        "type" : "ForwardedOutInterface",
+                        "arpIp" : "2.23.22.2",
+                        "outputInterface" : "GigabitEthernet0/0"
+                      },
                       "outputInterface" : "GigabitEthernet0/0",
                       "routes" : [
                         {
                           "admin" : 200,
                           "metric" : 50,
                           "network" : "1.0.1.0/24",
+                          "nextHop" : {
+                            "type" : "ip",
+                            "ip" : "10.12.11.1"
+                          },
                           "nextHopIp" : "10.12.11.1",
                           "protocol" : "ibgp"
                         }
@@ -1024,12 +1144,21 @@
                     "action" : "FORWARDED",
                     "detail" : {
                       "arpIp" : "2.12.12.1",
+                      "forwardingDetail" : {
+                        "type" : "ForwardedOutInterface",
+                        "arpIp" : "2.12.12.1",
+                        "outputInterface" : "GigabitEthernet1/0"
+                      },
                       "outputInterface" : "GigabitEthernet1/0",
                       "routes" : [
                         {
                           "admin" : 200,
                           "metric" : 50,
                           "network" : "1.0.1.0/24",
+                          "nextHop" : {
+                            "type" : "ip",
+                            "ip" : "10.12.11.1"
+                          },
                           "nextHopIp" : "10.12.11.1",
                           "protocol" : "ibgp"
                         }
@@ -1071,12 +1200,21 @@
                     "action" : "FORWARDED",
                     "detail" : {
                       "arpIp" : "10.12.11.1",
+                      "forwardingDetail" : {
+                        "type" : "ForwardedOutInterface",
+                        "arpIp" : "10.12.11.1",
+                        "outputInterface" : "GigabitEthernet0/0"
+                      },
                       "outputInterface" : "GigabitEthernet0/0",
                       "routes" : [
                         {
                           "admin" : 20,
                           "metric" : 50,
                           "network" : "1.0.1.0/24",
+                          "nextHop" : {
+                            "type" : "ip",
+                            "ip" : "10.12.11.1"
+                          },
                           "nextHopIp" : "10.12.11.1",
                           "protocol" : "bgp"
                         }
@@ -1177,12 +1315,22 @@
                     "action" : "FORWARDED",
                     "detail" : {
                       "arpIp" : "2.128.1.1",
+                      "forwardingDetail" : {
+                        "type" : "ForwardedOutInterface",
+                        "arpIp" : "2.128.1.1",
+                        "outputInterface" : "eth0"
+                      },
                       "outputInterface" : "eth0",
                       "routes" : [
                         {
                           "admin" : 1,
                           "metric" : 0,
                           "network" : "0.0.0.0/0",
+                          "nextHop" : {
+                            "type" : "interface",
+                            "interface" : "eth0",
+                            "ip" : "2.128.1.1"
+                          },
                           "nextHopIp" : "2.128.1.1",
                           "protocol" : "static"
                         }
@@ -1287,12 +1435,21 @@
                     "action" : "FORWARDED",
                     "detail" : {
                       "arpIp" : "2.34.201.3",
+                      "forwardingDetail" : {
+                        "type" : "ForwardedOutInterface",
+                        "arpIp" : "2.34.201.3",
+                        "outputInterface" : "GigabitEthernet1/0"
+                      },
                       "outputInterface" : "GigabitEthernet1/0",
                       "routes" : [
                         {
                           "admin" : 20,
                           "metric" : 50,
                           "network" : "1.0.1.0/24",
+                          "nextHop" : {
+                            "type" : "ip",
+                            "ip" : "2.34.201.3"
+                          },
                           "nextHopIp" : "2.34.201.3",
                           "protocol" : "bgp"
                         }
@@ -1334,12 +1491,21 @@
                     "action" : "FORWARDED",
                     "detail" : {
                       "arpIp" : "2.23.12.2",
+                      "forwardingDetail" : {
+                        "type" : "ForwardedOutInterface",
+                        "arpIp" : "2.23.12.2",
+                        "outputInterface" : "GigabitEthernet1/0"
+                      },
                       "outputInterface" : "GigabitEthernet1/0",
                       "routes" : [
                         {
                           "admin" : 200,
                           "metric" : 50,
                           "network" : "1.0.1.0/24",
+                          "nextHop" : {
+                            "type" : "ip",
+                            "ip" : "10.12.11.1"
+                          },
                           "nextHopIp" : "10.12.11.1",
                           "protocol" : "ibgp"
                         }
@@ -1413,12 +1579,21 @@
                     "action" : "FORWARDED",
                     "detail" : {
                       "arpIp" : "2.12.11.1",
+                      "forwardingDetail" : {
+                        "type" : "ForwardedOutInterface",
+                        "arpIp" : "2.12.11.1",
+                        "outputInterface" : "GigabitEthernet0/0"
+                      },
                       "outputInterface" : "GigabitEthernet0/0",
                       "routes" : [
                         {
                           "admin" : 200,
                           "metric" : 50,
                           "network" : "1.0.1.0/24",
+                          "nextHop" : {
+                            "type" : "ip",
+                            "ip" : "10.12.11.1"
+                          },
                           "nextHopIp" : "10.12.11.1",
                           "protocol" : "ibgp"
                         }
@@ -1460,12 +1635,21 @@
                     "action" : "FORWARDED",
                     "detail" : {
                       "arpIp" : "10.12.11.1",
+                      "forwardingDetail" : {
+                        "type" : "ForwardedOutInterface",
+                        "arpIp" : "10.12.11.1",
+                        "outputInterface" : "GigabitEthernet0/0"
+                      },
                       "outputInterface" : "GigabitEthernet0/0",
                       "routes" : [
                         {
                           "admin" : 20,
                           "metric" : 50,
                           "network" : "1.0.1.0/24",
+                          "nextHop" : {
+                            "type" : "ip",
+                            "ip" : "10.12.11.1"
+                          },
                           "nextHopIp" : "10.12.11.1",
                           "protocol" : "bgp"
                         }

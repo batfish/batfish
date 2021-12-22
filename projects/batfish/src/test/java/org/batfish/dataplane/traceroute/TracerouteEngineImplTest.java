@@ -132,6 +132,7 @@ import org.batfish.datamodel.flow.TraceAndReverseFlow;
 import org.batfish.datamodel.flow.TransformationStep;
 import org.batfish.datamodel.flow.TransformationStep.TransformationStepDetail;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.transformation.PortField;
 import org.batfish.datamodel.transformation.Transformation;
@@ -673,7 +674,14 @@ public class TracerouteEngineImplTest {
     assertThat(
         step1.getDetail().getRoutes(),
         contains(
-            new RouteInfo(RoutingProtocol.STATIC, Prefix.parse("0.0.0.0/0"), Ip.AUTO, null, 1, 0)));
+            new RouteInfo(
+                RoutingProtocol.STATIC,
+                Prefix.ZERO,
+                NextHopInterface.of(i2.getName()),
+                Ip.AUTO,
+                null,
+                1,
+                0)));
 
     FilterStep step2 = (FilterStep) steps.get(2);
     assertThat(step2.getAction(), equalTo(StepAction.PERMITTED));

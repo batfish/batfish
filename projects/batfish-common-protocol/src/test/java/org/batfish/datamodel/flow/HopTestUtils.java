@@ -1,6 +1,7 @@
 package org.batfish.datamodel.flow;
 
 import com.google.common.collect.ImmutableList;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.EnterInputIfaceStep.EnterInputIfaceStepDetail;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep.ExitOutputIfaceStepDetail;
@@ -38,7 +39,12 @@ public final class HopTestUtils {
             enterInputIfaceStep(node),
             RoutingStep.builder()
                 .setAction(StepAction.FORWARDED)
-                .setDetail(RoutingStepDetail.builder().setVrf(vrf).build())
+                .setDetail(
+                    RoutingStepDetail.builder()
+                        .setForwardingDetail(
+                            ForwardedOutInterface.of(Ip.parse("192.0.2.1"), "outIface"))
+                        .setVrf(vrf)
+                        .build())
                 .build(),
             ExitOutputIfaceStep.builder()
                 .setAction(StepAction.TRANSMITTED)
@@ -60,7 +66,11 @@ public final class HopTestUtils {
             enterInputIfaceStep(node),
             RoutingStep.builder()
                 .setAction(StepAction.NO_ROUTE)
-                .setDetail(RoutingStepDetail.builder().setVrf("vrf").build())
+                .setDetail(
+                    RoutingStepDetail.builder()
+                        .setForwardingDetail(Discarded.instance())
+                        .setVrf("vrf")
+                        .build())
                 .build()));
   }
 }
