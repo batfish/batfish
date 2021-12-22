@@ -24,20 +24,6 @@ public final class TraceElements {
         .build();
   }
 
-  /**
-   * Returns a {@link TraceElement} indicating no line matched the specified access-list, and
-   * therefore the default-deny action was taken.
-   */
-  public static TraceElement traceElementForAccessListDefaultDeny(String aclName, String filename) {
-    return TraceElement.builder()
-        .add("Denied by access-list")
-        .add(
-            aclName,
-            new VendorStructureId(filename, A10StructureType.ACCESS_LIST.getDescription(), aclName))
-        .add("(implicit deny all, no line matched)")
-        .build();
-  }
-
   public static TraceElement traceElementForSourceAddressAny() {
     return TraceElement.builder().add("Matched source address any").build();
   }

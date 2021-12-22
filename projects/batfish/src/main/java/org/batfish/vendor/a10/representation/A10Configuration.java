@@ -663,7 +663,9 @@ public final class A10Configuration extends VendorConfiguration {
     ImmutableList.Builder<Statement> trueStatements = ImmutableList.builder();
     String aclName = port.getAccessList();
     if (aclName != null) {
-      trueStatements.add(new ApplyFilter(computeAclName(aclName)));
+      String viAclName = computeAclName(aclName);
+      assert _c.getIpAccessLists().containsKey(viAclName);
+      trueStatements.add(new ApplyFilter(viAclName));
     }
     trueStatements.add(
         new ApplyTransformation(

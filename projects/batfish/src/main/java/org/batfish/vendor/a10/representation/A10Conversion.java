@@ -14,7 +14,6 @@ import static org.batfish.datamodel.transformation.TransformationStep.assignDest
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourcePort;
 import static org.batfish.vendor.a10.representation.TraceElements.traceElementForAccessList;
-import static org.batfish.vendor.a10.representation.TraceElements.traceElementForAccessListDefaultDeny;
 import static org.batfish.vendor.a10.representation.TraceElements.traceElementForVirtualServer;
 import static org.batfish.vendor.a10.representation.TraceElements.traceElementForVirtualServerPort;
 
@@ -58,7 +57,6 @@ import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
-import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -855,13 +853,6 @@ public class A10Conversion {
                             filename,
                             rule.getAction() == AccessListRule.Action.PERMIT),
                         vsid)));
-    lines.add(
-        new ExprAclLine(
-            LineAction.DENY,
-            TrueExpr.INSTANCE,
-            "Default deny all",
-            traceElementForAccessListDefaultDeny(acl.getName(), filename),
-            vsid));
     return lines.build();
   }
 

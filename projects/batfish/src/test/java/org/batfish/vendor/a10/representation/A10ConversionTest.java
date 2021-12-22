@@ -54,7 +54,6 @@ import static org.batfish.vendor.a10.representation.A10Conversion.toVrrpGroups;
 import static org.batfish.vendor.a10.representation.A10Conversion.vrrpADisabledAppliesToInterface;
 import static org.batfish.vendor.a10.representation.A10Conversion.vrrpAEnabledAppliesToInterface;
 import static org.batfish.vendor.a10.representation.TraceElements.traceElementForAccessList;
-import static org.batfish.vendor.a10.representation.TraceElements.traceElementForAccessListDefaultDeny;
 import static org.batfish.vendor.a10.representation.TraceElements.traceElementForDestAddressAny;
 import static org.batfish.vendor.a10.representation.TraceElements.traceElementForProtocol;
 import static org.batfish.vendor.a10.representation.TraceElements.traceElementForSourceHost;
@@ -65,6 +64,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.junit.Assert.assertFalse;
@@ -335,9 +335,8 @@ public class A10ConversionTest {
     // No explicit match, implicit deny
     {
       assertThat(viAcl, rejects(unmatchedFlow, ifaceName, ImmutableMap.of(), ImmutableMap.of()));
-      List<TraceTree> traces = trace.apply(unmatchedFlow);
-      assertThat(
-          traces, contains(isTraceTree(traceElementForAccessListDefaultDeny(aclName, filename))));
+      // No traces exist in this case
+      assertThat(trace.apply(unmatchedFlow), emptyIterable());
     }
   }
 
