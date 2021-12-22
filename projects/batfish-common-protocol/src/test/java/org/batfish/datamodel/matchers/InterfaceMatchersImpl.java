@@ -1,5 +1,6 @@
 package org.batfish.datamodel.matchers;
 
+import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -13,6 +14,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.SwitchportEncapsulationType;
@@ -163,6 +165,17 @@ final class InterfaceMatchersImpl {
     @Override
     protected String featureValueOf(Interface actual) {
       return actual.getDescription();
+    }
+  }
+
+  static final class HasDhcpRelayAddresses extends FeatureMatcher<Interface, List<Ip>> {
+    HasDhcpRelayAddresses(@Nonnull Matcher<? super List<Ip>> subMatcher) {
+      super(subMatcher, "An Interface with dhcpRelayAddress", "dhcpRelayAddresses");
+    }
+
+    @Override
+    protected List<Ip> featureValueOf(Interface actual) {
+      return actual.getDhcpRelayAddresses();
     }
   }
 

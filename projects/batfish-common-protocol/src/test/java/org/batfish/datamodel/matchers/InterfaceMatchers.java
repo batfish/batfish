@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableSet;
+import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -17,6 +18,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
@@ -36,6 +38,7 @@ import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasChannelGroupMembe
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasDeclaredNames;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasDependencies;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasDescription;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasDhcpRelayAddresses;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasEigrp;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasEncapsulationVlan;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasFirewallSessionInterfaceInfo;
@@ -234,6 +237,15 @@ public final class InterfaceMatchers {
    */
   public static Matcher<Interface> hasDescription(Matcher<? super String> subMatcher) {
     return new HasDescription(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the interface's channelGroupMembers are matched by the
+   * provided {@code subMatcher}.
+   */
+  public static @Nonnull Matcher<Interface> hasDhcpRelayAddresses(
+      @Nonnull Matcher<? super List<Ip>> subMatcher) {
+    return new HasDhcpRelayAddresses(subMatcher);
   }
 
   /**
