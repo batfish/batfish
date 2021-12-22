@@ -14,6 +14,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAccessVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddress;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDhcpRelayAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasHumanName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInterfaceType;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
@@ -26,6 +27,7 @@ import static org.batfish.representation.frr.FrrConversions.SPEED_CONVERSION_FAC
 import static org.batfish.vendor.sonic.representation.SonicConversions.attachAcl;
 import static org.batfish.vendor.sonic.representation.SonicConversions.checkVlanId;
 import static org.batfish.vendor.sonic.representation.SonicConversions.convertAcls;
+import static org.batfish.vendor.sonic.representation.SonicConversions.convertDhcpServers;
 import static org.batfish.vendor.sonic.representation.SonicConversions.convertPorts;
 import static org.batfish.vendor.sonic.representation.SonicConversions.convertVlans;
 import static org.hamcrest.Matchers.allOf;
@@ -55,6 +57,7 @@ import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceType;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Prefix;
@@ -121,7 +124,9 @@ public class SonicConversionsTest {
       Vrf vrf = Vrf.builder().setOwner(c).setName(DEFAULT_VRF_NAME).build();
       convertVlans(
           c,
-          ImmutableMap.of("Vlan1", Vlan.builder().setVlanId(1).build()),
+          ImmutableMap.of(
+              "Vlan1",
+              Vlan.builder().setDhcpServers(ImmutableList.of("10.1.1.1")).setVlanId(1).build()),
           ImmutableMap.of(),
           ImmutableMap.of("Vlan1", new L3Interface(ConcreteInterfaceAddress.parse("1.1.1.1/24"))),
           vrf,
@@ -132,7 +137,8 @@ public class SonicConversionsTest {
               hasName("Vlan1"),
               hasVrfName(vrf.getName()),
               hasAddress("1.1.1.1/24"),
-              hasInterfaceType(InterfaceType.VLAN)));
+              hasInterfaceType(InterfaceType.VLAN),
+              hasDhcpRelayAddresses(contains(Ip.parse("10.1.1.1")))));
     }
     {
       // no vlan interface
@@ -255,6 +261,26 @@ public class SonicConversionsTest {
     assertFalse(checkVlanId("Vlan0", 1, new Warnings()));
     assertFalse(checkVlanId("VlanXX", 1, new Warnings()));
     assertTrue(checkVlanId("Vlan1", 1, new Warnings()));
+  }
+
+  @Test
+  public void testConvertDhcpServers() {
+    {
+      Warnings w = new Warnings(true, true, true);
+      assertEquals(
+          ImmutableList.of(Ip.parse("1.1.1.1"), Ip.parse("1.1.1.2")),
+          convertDhcpServers(ImmutableList.of("1.1.1.1", "1.1.1.2"), w));
+      assertTrue(w.getRedFlagWarnings().isEmpty());
+    }
+    {
+      Warnings w = new Warnings(true, true, true);
+      assertEquals(
+          ImmutableList.of(Ip.parse("1.1.1.2")),
+          convertDhcpServers(ImmutableList.of("dhcp", "1.1.1.2"), w));
+      assertThat(
+          w.getRedFlagWarnings(),
+          contains(hasText("Cannot add a non-IP address value 'dhcp' as DHCP server")));
+    }
   }
 
   private String ruleKey(String aclName, String ruleName) {
