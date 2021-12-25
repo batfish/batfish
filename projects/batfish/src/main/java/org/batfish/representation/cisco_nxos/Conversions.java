@@ -177,6 +177,22 @@ public final class Conversions {
       return lowestLoopback.get();
     }
 
+    // Next, NX-OS prefers "physical" interfaces.
+    Optional<Ip> lowestPhysical =
+        interfaces.stream()
+            .filter(
+                i ->
+                    // all three are physical interfaces for this computation
+                    i.getInterfaceType() == InterfaceType.AGGREGATED
+                        || i.getInterfaceType() == InterfaceType.AGGREGATE_CHILD
+                        || i.getInterfaceType() == InterfaceType.PHYSICAL)
+            .map(org.batfish.datamodel.Interface::getConcreteAddress)
+            .map(ConcreteInterfaceAddress::getIp)
+            .min(Comparator.naturalOrder());
+    if (lowestPhysical.isPresent()) {
+      return lowestPhysical.get();
+    }
+
     // Finally, NX-OS uses the first non-loopback interface defined in the vrf, assuming no loopback
     // addresses with IP address are present in the vrf. Older versions of NX-OS are
     // non-deterministic, newer ones choose the smallest IP.
