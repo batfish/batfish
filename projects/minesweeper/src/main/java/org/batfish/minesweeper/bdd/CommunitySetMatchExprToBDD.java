@@ -59,7 +59,7 @@ public class CommunitySetMatchExprToBDD
   public BDD visitCommunitySetAcl(CommunitySetAcl communitySetAcl, Arg arg) {
     List<CommunitySetAclLine> lines = new ArrayList<>(communitySetAcl.getLines());
     Collections.reverse(lines);
-    BDD acc = BDDRoute.factory.zero();
+    BDD acc = arg.getTransferBDD().getFactory().zero();
     for (CommunitySetAclLine line : lines) {
       boolean action = (line.getAction() == LineAction.PERMIT);
       BDD lineBDD = line.getCommunitySetMatchExpr().accept(this, arg);
@@ -72,15 +72,17 @@ public class CommunitySetMatchExprToBDD
   public BDD visitCommunitySetMatchAll(CommunitySetMatchAll communitySetMatchAll, Arg arg) {
     return communitySetMatchAll.getExprs().stream()
         .map(expr -> expr.accept(this, arg))
-        .reduce(BDDRoute.factory.one(), BDD::and);
+        .reduce(arg.getTransferBDD().getFactory().one(), BDD::and);
   }
 
   @Override
   public BDD visitCommunitySetMatchAny(CommunitySetMatchAny communitySetMatchAny, Arg arg) {
-    return BDDRoute.factory.orAll(
-        communitySetMatchAny.getExprs().stream()
-            .map(expr -> expr.accept(this, arg))
-            .collect(ImmutableList.toImmutableList()));
+    return arg.getTransferBDD()
+        .getFactory()
+        .orAll(
+            communitySetMatchAny.getExprs().stream()
+                .map(expr -> expr.accept(this, arg))
+                .collect(ImmutableList.toImmutableList()));
   }
 
   @Override
@@ -125,13 +127,16 @@ public class CommunitySetMatchExprToBDD
      * !ap2), for example.
      */
     IntStream disjuncts =
-        IntStream.range(0, aps.length).filter(i -> !exactlyOneAP(aps, i).diffSat(matchExprBDD));
+        IntStream.range(0, aps.length)
+            .filter(i -> !exactlyOneAP(aps, i, arg).diffSat(matchExprBDD));
     /**
      * now return a disjunction of all of the satisfying atomic predicates. here we do NOT use the
      * exactlyOneAP function, because we are returning a BDD for a community set, which can satisfy
      * multiple atomic predicates due to multiple elements of the set.
      */
-    return BDDRoute.factory.orAll(disjuncts.mapToObj(i -> aps[i]).collect(Collectors.toList()));
+    return arg.getTransferBDD()
+        .getFactory()
+        .orAll(disjuncts.mapToObj(i -> aps[i]).collect(Collectors.toList()));
   }
 
   static BDD communityVarsToBDD(Set<CommunityVar> commVars, Arg arg) {
@@ -149,9 +154,9 @@ public class CommunitySetMatchExprToBDD
   Return a BDD that represents the scenario where the ith BDD in aps is satisfied and all others
   are falsified.
    */
-  static BDD exactlyOneAP(BDD[] aps, int i) {
+  static BDD exactlyOneAP(BDD[] aps, int i, Arg arg) {
     ArrayList<BDD> negs = new ArrayList<>(Arrays.asList(aps));
     negs.remove(i);
-    return aps[i].and(negs.stream().reduce(BDDRoute.factory.one(), BDD::diff));
+    return aps[i].and(negs.stream().reduce(arg.getTransferBDD().getFactory().one(), BDD::diff));
   }
 }

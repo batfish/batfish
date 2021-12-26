@@ -50,8 +50,8 @@ public class AsPathMatchExprToBDDTest {
     Graph g =
         new Graph(
             batfish, batfish.getSnapshot(), null, null, null, ImmutableSet.of(ASPATH1, ASPATH2));
-    BDDRoute bddRoute = new BDDRoute(g);
     TransferBDD transferBDD = new TransferBDD(g, _baseConfig, ImmutableList.of());
+    BDDRoute bddRoute = new BDDRoute(transferBDD.getFactory(), g);
     _arg = new CommunitySetMatchExprToBDD.Arg(transferBDD, bddRoute);
     _matchExprToBDD = new AsPathMatchExprToBDD();
 

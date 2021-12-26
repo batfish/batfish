@@ -65,8 +65,8 @@ public class CommunitySetMatchExprToBDDTest {
                 CommunityVar.from(StandardCommunity.parse("20:30")),
                 CommunityVar.from(StandardCommunity.parse("21:30"))),
             null);
-    BDDRoute bddRoute = new BDDRoute(_g);
     TransferBDD transferBDD = new TransferBDD(_g, _baseConfig, ImmutableList.of());
+    BDDRoute bddRoute = new BDDRoute(transferBDD.getFactory(), _g);
     _arg = new CommunitySetMatchExprToBDD.Arg(transferBDD, bddRoute);
 
     _communitySetMatchExprToBDD = new CommunitySetMatchExprToBDD();
@@ -177,7 +177,9 @@ public class CommunitySetMatchExprToBDDTest {
     BDD[] aps = _arg.getBDDRoute().getCommunityAtomicPredicates();
     Map<CommunityVar, Set<Integer>> regexAtomicPredicates =
         _g.getCommunityAtomicPredicates().getRegexAtomicPredicates();
-    return BDDRoute.factory.orAll(
-        regexAtomicPredicates.get(cvar).stream().map(i -> aps[i]).collect(Collectors.toList()));
+    return _arg.getTransferBDD()
+        .getFactory()
+        .orAll(
+            regexAtomicPredicates.get(cvar).stream().map(i -> aps[i]).collect(Collectors.toList()));
   }
 }

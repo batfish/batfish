@@ -12,10 +12,10 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public class TransferBDDState {
 
-  @Nonnull private final TransferParam<BDDRoute> _param;
+  @Nonnull private final TransferParam _param;
   @Nonnull private final TransferResult _result;
 
-  public TransferBDDState(TransferParam<BDDRoute> param, TransferResult result) {
+  public TransferBDDState(TransferParam param, TransferResult result) {
     // There should only be one 'active' BDDRoute at any time during symbolic route analysis.
     // Eventually we may want to refactor things so the BDDRoute does not live in both
     // the TransferParam and the TransferResult, but it would require non-trivial updates
@@ -27,7 +27,7 @@ public class TransferBDDState {
     _result = result;
   }
 
-  public TransferParam<BDDRoute> getTransferParam() {
+  public TransferParam getTransferParam() {
     return _param;
   }
 

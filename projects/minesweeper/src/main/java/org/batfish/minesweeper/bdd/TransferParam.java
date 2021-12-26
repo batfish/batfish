@@ -3,10 +3,9 @@ package org.batfish.minesweeper.bdd;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
-import org.batfish.minesweeper.IDeepCopy;
 import org.batfish.minesweeper.collections.PList;
 
-public class TransferParam<T extends IDeepCopy<T>> {
+public class TransferParam {
 
   public enum CallContext {
     EXPR_CALL,
@@ -20,7 +19,7 @@ public class TransferParam<T extends IDeepCopy<T>> {
     NONE
   }
 
-  private T _data;
+  private BDDRoute _data;
 
   private int _indent;
 
@@ -38,19 +37,19 @@ public class TransferParam<T extends IDeepCopy<T>> {
 
   private boolean _debug;
 
-  public TransferParam(T data, boolean debug) {
+  public TransferParam(BDDRoute data, boolean debug) {
     _data = data;
     _callContext = CallContext.NONE;
     _chainContext = ChainContext.NONE;
     _indent = 0;
     _scopes = PList.empty();
-    _defaultAccept = BDDRoute.factory.zero();
-    _defaultAcceptLocal = BDDRoute.factory.zero();
+    _defaultAccept = data.getFactory().zero();
+    _defaultAcceptLocal = data.getFactory().zero();
     _defaultPolicy = null;
     _debug = debug;
   }
 
-  private TransferParam(TransferParam<T> p) {
+  private TransferParam(TransferParam p) {
     _data = p._data;
     _callContext = p._callContext;
     _chainContext = p._chainContext;
@@ -62,7 +61,7 @@ public class TransferParam<T extends IDeepCopy<T>> {
     _debug = p._debug;
   }
 
-  public T getData() {
+  public BDDRoute getData() {
     return _data;
   }
 
@@ -94,61 +93,61 @@ public class TransferParam<T extends IDeepCopy<T>> {
     return _scopes.get(0);
   }
 
-  public TransferParam<T> deepCopy() {
-    TransferParam<T> ret = new TransferParam<>(this);
+  public TransferParam deepCopy() {
+    TransferParam ret = new TransferParam(this);
     ret._data = ret._data.deepCopy();
     return ret;
   }
 
-  public TransferParam<T> setData(T other) {
-    TransferParam<T> ret = new TransferParam<>(this);
+  public TransferParam setData(BDDRoute other) {
+    TransferParam ret = new TransferParam(this);
     ret._data = other;
     return ret;
   }
 
-  public TransferParam<T> setCallContext(CallContext cc) {
-    TransferParam<T> ret = new TransferParam<>(this);
+  public TransferParam setCallContext(CallContext cc) {
+    TransferParam ret = new TransferParam(this);
     ret._callContext = cc;
     return ret;
   }
 
-  public TransferParam<T> setChainContext(ChainContext cc) {
-    TransferParam<T> ret = new TransferParam<>(this);
+  public TransferParam setChainContext(ChainContext cc) {
+    TransferParam ret = new TransferParam(this);
     ret._chainContext = cc;
     return ret;
   }
 
-  public TransferParam<T> setDefaultAccept(BDD defaultAccept) {
-    TransferParam<T> ret = new TransferParam<>(this);
+  public TransferParam setDefaultAccept(BDD defaultAccept) {
+    TransferParam ret = new TransferParam(this);
     ret._defaultAccept = defaultAccept;
     return ret;
   }
 
-  public TransferParam<T> setDefaultPolicy(@Nullable SetDefaultPolicy defaultPolicy) {
-    TransferParam<T> ret = new TransferParam<>(this);
+  public TransferParam setDefaultPolicy(@Nullable SetDefaultPolicy defaultPolicy) {
+    TransferParam ret = new TransferParam(this);
     ret._defaultPolicy = defaultPolicy;
     return ret;
   }
 
-  public TransferParam<T> setDefaultAcceptLocal(BDD defaultAcceptLocal) {
-    TransferParam<T> ret = new TransferParam<>(this);
+  public TransferParam setDefaultAcceptLocal(BDD defaultAcceptLocal) {
+    TransferParam ret = new TransferParam(this);
     ret._defaultAcceptLocal = defaultAcceptLocal;
     return ret;
   }
 
-  public TransferParam<T> setDefaultActionsFrom(TransferParam<T> updatedParam) {
+  public TransferParam setDefaultActionsFrom(TransferParam updatedParam) {
     return setDefaultAccept(updatedParam._defaultAccept)
         .setDefaultAcceptLocal(updatedParam._defaultAcceptLocal);
   }
 
-  public TransferParam<T> enterScope(String name) {
-    TransferParam<T> ret = new TransferParam<>(this);
+  public TransferParam enterScope(String name) {
+    TransferParam ret = new TransferParam(this);
     ret._scopes = ret._scopes.plus(name);
     return ret;
   }
 
-  public TransferParam<T> indent() {
-    TransferParam<T> ret = new TransferParam<>(this);
+  public TransferParam indent() {
+    TransferParam ret = new TransferParam(this);
     ret._indent = _indent + 1;
     return ret;
   }

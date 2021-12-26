@@ -244,7 +244,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
             .setOriginMechanism(OriginMechanism.LEARNED)
             .setOriginType(OriginType.IGP);
 
-    BDDRoute r = new BDDRoute(g);
+    BDDRoute r = new BDDRoute(fullModel.getFactory(), g);
 
     Ip ip = Ip.create(r.getPrefix().satAssignmentToLong(fullModel));
     long len = r.getPrefixLength().satAssignmentToLong(fullModel);
@@ -277,7 +277,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   // the constraints.  The same approach could be used to provide default values for other fields in
   // the future.
   private BDD constraintsToModel(BDD constraints, Graph g) {
-    BDDRoute route = new BDDRoute(g);
+    BDDRoute route = new BDDRoute(constraints.getFactory(), g);
     // set the protocol field to BGP if it is consistent with the constraints
     BDD isBGP = route.getProtocolHistory().getConstraintForValue(RoutingProtocol.BGP);
     BDD augmentedConstraints = constraints.and(isBGP);
@@ -493,7 +493,9 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outputRoute = result.getFirst();
     BDD intersection;
-    BDD inConstraints = routeConstraintsToBDD(_inputConstraints, new BDDRoute(g), false, g);
+    BDD inConstraints =
+        routeConstraintsToBDD(
+            _inputConstraints, new BDDRoute(outputRoute.getFactory(), g), false, g);
     if (_action == PERMIT) {
       // incorporate the constraints on the output route as well
       BDD outConstraints = routeConstraintsToBDD(_outputConstraints, outputRoute, true, g);

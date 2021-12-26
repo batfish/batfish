@@ -91,8 +91,8 @@ public class CommunityMatchExprToBDDTest {
                 CommunityVar.from(ExtendedCommunity.of(0x0010, 1, 1)),
                 CommunityVar.from(LargeCommunity.of(20, 20, 20))),
             null);
-    BDDRoute bddRoute = new BDDRoute(_g);
     TransferBDD transferBDD = new TransferBDD(_g, _baseConfig, ImmutableList.of());
+    BDDRoute bddRoute = new BDDRoute(transferBDD.getFactory(), _g);
     _arg = new CommunitySetMatchExprToBDD.Arg(transferBDD, bddRoute);
 
     _communityMatchExprToBDD = new CommunityMatchExprToBDD();
@@ -105,14 +105,16 @@ public class CommunityMatchExprToBDDTest {
             AllExtendedCommunities.instance(), _arg);
 
     BDD expected =
-        BDDRoute.factory.orAll(
-            ImmutableSet.of(
-                    CommunityVar.from(ExtendedCommunity.target(1, 65555)),
-                    CommunityVar.from(ExtendedCommunity.of(0x0003, 1, 1)),
-                    CommunityVar.from(ExtendedCommunity.of(0x0010, 1, 1)))
-                .stream()
-                .map(this::cvarToBDD)
-                .collect(ImmutableSet.toImmutableSet()));
+        _arg.getTransferBDD()
+            .getFactory()
+            .orAll(
+                ImmutableSet.of(
+                        CommunityVar.from(ExtendedCommunity.target(1, 65555)),
+                        CommunityVar.from(ExtendedCommunity.of(0x0003, 1, 1)),
+                        CommunityVar.from(ExtendedCommunity.of(0x0010, 1, 1)))
+                    .stream()
+                    .map(this::cvarToBDD)
+                    .collect(ImmutableSet.toImmutableSet()));
 
     assertEquals(expected, result);
   }
@@ -132,14 +134,16 @@ public class CommunityMatchExprToBDDTest {
             AllStandardCommunities.instance(), _arg);
 
     BDD expected =
-        BDDRoute.factory.orAll(
-            _arg.getTransferBDD().getCommunityAtomicPredicates().keySet().stream()
-                .filter(
-                    c ->
-                        c.getType() == Type.REGEX
-                            || c.getLiteralValue() instanceof StandardCommunity)
-                .map(this::cvarToBDD)
-                .collect(ImmutableSet.toImmutableSet()));
+        _arg.getTransferBDD()
+            .getFactory()
+            .orAll(
+                _arg.getTransferBDD().getCommunityAtomicPredicates().keySet().stream()
+                    .filter(
+                        c ->
+                            c.getType() == Type.REGEX
+                                || c.getLiteralValue() instanceof StandardCommunity)
+                    .map(this::cvarToBDD)
+                    .collect(ImmutableSet.toImmutableSet()));
 
     assertEquals(expected, result);
   }
@@ -331,7 +335,9 @@ public class CommunityMatchExprToBDDTest {
     BDD[] aps = _arg.getBDDRoute().getCommunityAtomicPredicates();
     Map<CommunityVar, Set<Integer>> regexAtomicPredicates =
         _g.getCommunityAtomicPredicates().getRegexAtomicPredicates();
-    return BDDRoute.factory.orAll(
-        regexAtomicPredicates.get(cvar).stream().map(i -> aps[i]).collect(Collectors.toList()));
+    return _arg.getTransferBDD()
+        .getFactory()
+        .orAll(
+            regexAtomicPredicates.get(cvar).stream().map(i -> aps[i]).collect(Collectors.toList()));
   }
 }

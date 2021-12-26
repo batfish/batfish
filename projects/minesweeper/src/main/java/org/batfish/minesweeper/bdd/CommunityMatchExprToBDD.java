@@ -80,7 +80,7 @@ public class CommunityMatchExprToBDD implements CommunityMatchExprVisitor<BDD, A
   public BDD visitCommunityAcl(CommunityAcl communityAcl, Arg arg) {
     List<CommunityAclLine> lines = new ArrayList<>(communityAcl.getLines());
     Collections.reverse(lines);
-    BDD acc = BDDRoute.factory.zero();
+    BDD acc = arg.getTransferBDD().getFactory().zero();
     for (CommunityAclLine line : lines) {
       boolean action = (line.getAction() == LineAction.PERMIT);
       BDD lineBDD = line.getCommunityMatchExpr().accept(this, arg);
@@ -107,15 +107,17 @@ public class CommunityMatchExprToBDD implements CommunityMatchExprVisitor<BDD, A
   public BDD visitCommunityMatchAll(CommunityMatchAll communityMatchAll, Arg arg) {
     return communityMatchAll.getExprs().stream()
         .map(expr -> expr.accept(this, arg))
-        .reduce(BDDRoute.factory.one(), BDD::and);
+        .reduce(arg.getTransferBDD().getFactory().one(), BDD::and);
   }
 
   @Override
   public BDD visitCommunityMatchAny(CommunityMatchAny communityMatchAny, Arg arg) {
-    return BDDRoute.factory.orAll(
-        communityMatchAny.getExprs().stream()
-            .map(expr -> expr.accept(this, arg))
-            .collect(ImmutableList.toImmutableList()));
+    return arg.getTransferBDD()
+        .getFactory()
+        .orAll(
+            communityMatchAny.getExprs().stream()
+                .map(expr -> expr.accept(this, arg))
+                .collect(ImmutableList.toImmutableList()));
   }
 
   @Override
