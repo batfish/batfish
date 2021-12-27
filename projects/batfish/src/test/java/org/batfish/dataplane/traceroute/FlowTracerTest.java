@@ -107,6 +107,7 @@ import org.batfish.datamodel.flow.EnterInputIfaceStep;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep;
 import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.ForwardOutInterface;
+import org.batfish.datamodel.flow.ForwardedOutInterface;
 import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.InboundStep;
 import org.batfish.datamodel.flow.IncomingSessionScope;
@@ -129,6 +130,7 @@ import org.batfish.datamodel.flow.TransformationStep.TransformationStepDetail;
 import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.main.Batfish;
@@ -1356,14 +1358,23 @@ public final class FlowTracerTest {
         equalTo(
             RoutingStepDetail.builder()
                 .setVrf(srcVrfName)
+                .setForwardingDetail(ForwardedOutInterface.of(finalNhif, finalNhip))
                 .setOutputInterface(finalNhif)
                 .setArpIp(finalNhip)
                 .setRoutes(
                     ImmutableList.of(
                         new RouteInfo(
-                            RoutingProtocol.STATIC, Prefix.ZERO, Ip.parse("1.2.3.4"), null, 1, 0),
+                            RoutingProtocol.STATIC,
+                            Prefix.ZERO,
+                            NextHopIp.of(Ip.parse("1.2.3.4")),
+                            1,
+                            0),
                         new RouteInfo(
-                            RoutingProtocol.STATIC, Prefix.ZERO, Ip.parse("2.3.4.5"), null, 1, 0)))
+                            RoutingProtocol.STATIC,
+                            Prefix.ZERO,
+                            NextHopIp.of(Ip.parse("2.3.4.5")),
+                            1,
+                            0)))
                 .build()));
   }
 
@@ -1593,7 +1604,8 @@ public final class FlowTracerTest {
         routingStep.getDetail().getRoutes(),
         equalTo(
             ImmutableList.of(
-                new RouteInfo(RoutingProtocol.STATIC, prefix, Ip.parse("2.2.2.2"), null, 1, 0))));
+                new RouteInfo(
+                    RoutingProtocol.STATIC, prefix, NextHopIp.of(Ip.parse("2.2.2.2")), 1, 0))));
     assertThat(routingStep.getDetail().getArpIp(), equalTo(Ip.parse("1.1.1.1")));
     assertThat(routingStep.getDetail().getOutputInterface(), equalTo("iface1"));
   }
@@ -1621,7 +1633,8 @@ public final class FlowTracerTest {
         routingStep.getDetail().getRoutes(),
         equalTo(
             ImmutableList.of(
-                new RouteInfo(RoutingProtocol.STATIC, prefix, Ip.parse("2.2.2.2"), null, 1, 0))));
+                new RouteInfo(
+                    RoutingProtocol.STATIC, prefix, NextHopIp.of(Ip.parse("2.2.2.2")), 1, 0))));
     assertThat(routingStep.getDetail().getArpIp(), nullValue());
     assertThat(routingStep.getDetail().getOutputInterface(), nullValue());
   }
@@ -1649,7 +1662,8 @@ public final class FlowTracerTest {
         routingStep.getDetail().getRoutes(),
         equalTo(
             ImmutableList.of(
-                new RouteInfo(RoutingProtocol.STATIC, prefix, Ip.parse("2.2.2.2"), null, 1, 0))));
+                new RouteInfo(
+                    RoutingProtocol.STATIC, prefix, NextHopIp.of(Ip.parse("2.2.2.2")), 1, 0))));
     assertThat(routingStep.getDetail().getArpIp(), nullValue());
     assertThat(routingStep.getDetail().getOutputInterface(), nullValue());
   }

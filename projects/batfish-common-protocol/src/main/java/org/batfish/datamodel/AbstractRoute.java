@@ -154,14 +154,18 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
   /** Return a {@link AbstractRouteBuilder} pre-populated with the values for this route. */
   public abstract AbstractRouteBuilder<?, ?> toBuilder();
 
-  // Private implementation
-
-  // Helper package methods
-  @Nonnull
-  static NextHopVisitor<Ip> nextHopIpExtractor() {
+  /**
+   * Temporary helper to extract legacy next hop IP (can be UNSET_ROUTE_NEXT_HOP_IP) until usages
+   * are eliminated.
+   */
+  public static @Nonnull NextHopVisitor<Ip> nextHopIpExtractor() {
+    // TODO: Make package-private and/or eliminate
     return NEXT_HOP_IP_EXTRACTOR;
   }
 
+  // Private implementation
+
+  // Helper package methods
   @Nonnull
   static NextHopVisitor<String> nextHopInterfaceExtractor() {
     return NEXT_HOP_INTERFACE_EXTRACTOR;

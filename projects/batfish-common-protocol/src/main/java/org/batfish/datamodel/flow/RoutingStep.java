@@ -6,7 +6,6 @@ import static com.google.common.base.Preconditions.checkState;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.Objects;
@@ -22,7 +21,6 @@ import org.batfish.datamodel.flow.RoutingStep.RoutingStepDetail;
  * {@link Step} to represent the selection of the outgoing {@link Interface} on a node for a {@link
  * org.batfish.datamodel.Flow}
  */
-@JsonTypeName("Routing")
 public final class RoutingStep extends Step<RoutingStepDetail> {
 
   /**
@@ -34,6 +32,7 @@ public final class RoutingStep extends Step<RoutingStepDetail> {
     private static final String PROP_ROUTES = "routes";
     private static final String PROP_ARP_IP = "arpIp";
     private static final String PROP_OUTPUT_INTERFACE = "outputInterface";
+    private static final String PROP_FORWARDING_DETAIL = "forwardingDetail";
 
     /** The name of the VRF in which routing was done. */
     @Nonnull private final String _vrf;
@@ -47,17 +46,22 @@ public final class RoutingStep extends Step<RoutingStepDetail> {
     /** Output interface which was resolved using the {@code _routes} */
     @Nullable private final String _outputInterface;
 
+    @Nonnull private final ForwardingDetail _forwardingDetail;
+
     @JsonCreator
     private RoutingStepDetail(
         @JsonProperty(PROP_VRF) @Nullable String vrf,
         @JsonProperty(PROP_ROUTES) @Nullable List<RouteInfo> routes,
         @JsonProperty(PROP_ARP_IP) @Nullable Ip arpIp,
-        @JsonProperty(PROP_OUTPUT_INTERFACE) @Nullable String outputInterface) {
+        @JsonProperty(PROP_OUTPUT_INTERFACE) @Nullable String outputInterface,
+        @JsonProperty(PROP_FORWARDING_DETAIL) @Nullable ForwardingDetail forwardingDetail) {
       checkArgument(vrf != null, "Missing %s", PROP_VRF);
+      checkArgument(forwardingDetail != null, "Missing %s", PROP_FORWARDING_DETAIL);
       _vrf = vrf;
       _routes = firstNonNull(routes, ImmutableList.of());
       _arpIp = arpIp;
       _outputInterface = outputInterface;
+      _forwardingDetail = forwardingDetail;
     }
 
     @JsonProperty(PROP_ROUTES)
@@ -83,6 +87,12 @@ public final class RoutingStep extends Step<RoutingStepDetail> {
       return _vrf;
     }
 
+    @JsonProperty(PROP_FORWARDING_DETAIL)
+    @Nonnull
+    public ForwardingDetail getForwardingDetail() {
+      return _forwardingDetail;
+    }
+
     public static Builder builder() {
       return new Builder();
     }
@@ -99,12 +109,13 @@ public final class RoutingStep extends Step<RoutingStepDetail> {
       return _vrf.equals(that._vrf)
           && _routes.equals(that._routes)
           && Objects.equals(_arpIp, that._arpIp)
-          && Objects.equals(_outputInterface, that._outputInterface);
+          && Objects.equals(_outputInterface, that._outputInterface)
+          && _forwardingDetail.equals(that._forwardingDetail);
     }
 
     @Override
     public int hashCode() {
-      return Objects.hash(_vrf, _routes, _arpIp, _outputInterface);
+      return Objects.hash(_vrf, _routes, _arpIp, _outputInterface, _forwardingDetail);
     }
 
     /** Chained builder to create a {@link RoutingStepDetail} object */
@@ -113,28 +124,34 @@ public final class RoutingStep extends Step<RoutingStepDetail> {
       private @Nullable List<RouteInfo> _routes;
       private @Nullable Ip _arpIp;
       private @Nullable String _outputInterface;
+      private @Nullable ForwardingDetail _forwardingDetail;
 
       public RoutingStepDetail build() {
-        return new RoutingStepDetail(_vrf, _routes, _arpIp, _outputInterface);
+        return new RoutingStepDetail(_vrf, _routes, _arpIp, _outputInterface, _forwardingDetail);
       }
 
-      public Builder setVrf(String vrf) {
+      public @Nonnull Builder setVrf(String vrf) {
         _vrf = vrf;
         return this;
       }
 
-      public Builder setRoutes(List<RouteInfo> routes) {
+      public @Nonnull Builder setRoutes(List<RouteInfo> routes) {
         _routes = routes;
         return this;
       }
 
-      public Builder setArpIp(@Nullable Ip arpIp) {
+      public @Nonnull Builder setArpIp(@Nullable Ip arpIp) {
         _arpIp = arpIp;
         return this;
       }
 
-      public Builder setOutputInterface(@Nullable String outputInterface) {
+      public @Nonnull Builder setOutputInterface(@Nullable String outputInterface) {
         _outputInterface = outputInterface;
+        return this;
+      }
+
+      public @Nonnull Builder setForwardingDetail(@Nullable ForwardingDetail forwardingDetail) {
+        _forwardingDetail = forwardingDetail;
         return this;
       }
 
