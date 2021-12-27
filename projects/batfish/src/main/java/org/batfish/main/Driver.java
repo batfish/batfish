@@ -1,8 +1,6 @@
 package org.batfish.main;
 
 import com.google.common.base.Throwables;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import io.jaegertracing.Configuration.ReporterConfiguration;
 import io.jaegertracing.Configuration.SamplerConfiguration;
 import io.jaegertracing.Configuration.SenderConfiguration;
@@ -15,18 +13,15 @@ import io.opentracing.util.GlobalTracer;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.core.UriBuilder;
-import org.apache.commons.collections4.map.LRUMap;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -37,12 +32,8 @@ import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.QuestionException;
 import org.batfish.common.Task;
 import org.batfish.config.Settings;
-import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
-import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
-import org.batfish.vendor.VendorConfiguration;
 import org.batfish.version.BatfishVersion;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
@@ -65,17 +56,6 @@ public class Driver {
 
   private static Settings _mainSettings = null;
 
-  private static final Cache<NetworkSnapshot, DataPlane> CACHED_DATA_PLANES = buildDataPlaneCache();
-
-  private static final Map<NetworkSnapshot, SortedMap<String, BgpAdvertisementsByVrf>>
-      CACHED_ENVIRONMENT_BGP_TABLES = buildEnvironmentBgpTablesCache();
-
-  private static final Cache<NetworkSnapshot, SortedMap<String, Configuration>> CACHED_TESTRIGS =
-      buildTestrigCache();
-
-  private static final Cache<NetworkSnapshot, Map<String, VendorConfiguration>>
-      CACHED_VENDOR_CONFIGURATIONS = buildVendorConfigurationCache();
-
   private static final int COORDINATOR_CHECK_INTERVAL_MS = 1 * 60 * 1000; // 1 min
 
   private static final int COORDINATOR_POLL_TIMEOUT_MS = 30 * 1000; // 30 secs
@@ -84,37 +64,8 @@ public class Driver {
 
   static Logger httpServerLogger = Logger.getLogger(HttpServer.class.getName());
 
-  private static final int MAX_CACHED_DATA_PLANES = 2;
-
-  private static final int MAX_CACHED_ENVIRONMENT_BGP_TABLES = 4;
-
-  private static final int MAX_CACHED_TESTRIGS = 5;
-
-  private static final int MAX_CACHED_VENDOR_CONFIGURATIONS = 2;
-
   static Logger networkListenerLogger =
       Logger.getLogger("org.glassfish.grizzly.http.server.NetworkListener");
-
-  private static Cache<NetworkSnapshot, DataPlane> buildDataPlaneCache() {
-    return CacheBuilder.newBuilder().softValues().maximumSize(MAX_CACHED_DATA_PLANES).build();
-  }
-
-  private static Map<NetworkSnapshot, SortedMap<String, BgpAdvertisementsByVrf>>
-      buildEnvironmentBgpTablesCache() {
-    return Collections.synchronizedMap(new LRUMap<>(MAX_CACHED_ENVIRONMENT_BGP_TABLES));
-  }
-
-  private static Cache<NetworkSnapshot, SortedMap<String, Configuration>> buildTestrigCache() {
-    return CacheBuilder.newBuilder().softValues().maximumSize(MAX_CACHED_TESTRIGS).build();
-  }
-
-  private static Cache<NetworkSnapshot, Map<String, VendorConfiguration>>
-      buildVendorConfigurationCache() {
-    return CacheBuilder.newBuilder()
-        .softValues()
-        .maximumSize(MAX_CACHED_VENDOR_CONFIGURATIONS)
-        .build();
-  }
 
   private static synchronized boolean claimIdle() {
     if (_idle) {
@@ -282,10 +233,10 @@ public class Driver {
       Batfish batfish =
           new Batfish(
               settings,
-              CACHED_TESTRIGS,
-              CACHED_DATA_PLANES,
-              CACHED_ENVIRONMENT_BGP_TABLES,
-              CACHED_VENDOR_CONFIGURATIONS,
+              BfCache.CACHED_TESTRIGS,
+              BfCache.CACHED_DATA_PLANES,
+              BfCache.CACHED_ENVIRONMENT_BGP_TABLES,
+              BfCache.CACHED_VENDOR_CONFIGURATIONS,
               null,
               null);
 
