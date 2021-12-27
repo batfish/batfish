@@ -199,6 +199,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
   @Override
   public int hashCode() {
     return Objects.hash(
+        _nextHopInterface,
         _adminDistance,
         _metric,
         _asPath,

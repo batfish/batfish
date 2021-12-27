@@ -17,10 +17,12 @@ public final class LegacyNextHops {
     return NEXT_HOP_INTERFACE_EXTRACTOR.visit(nextHop);
   }
 
+  /** Returns the next hop IP, if any, for the given {@link NextHop}. */
   public static @Nonnull Optional<Ip> getNextHopIp(NextHop nextHop) {
     return NEXT_HOP_IP_EXTRACTOR.visit(nextHop);
   }
 
+  /** Returns the next VRF, if any, for the given {@link NextHop}. */
   public static @Nonnull Optional<String> getNextVrf(NextHop nextHop) {
     return NEXT_VRF_EXTRACTOR.visit(nextHop);
   }
