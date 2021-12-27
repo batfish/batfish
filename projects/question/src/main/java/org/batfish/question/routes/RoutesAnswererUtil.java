@@ -708,6 +708,19 @@ public class RoutesAnswererUtil {
             routeRowAttribute != null ? routeRowAttribute.getTag() : null);
   }
 
+  @Deprecated
+  @SuppressWarnings("unused")
+  public static <T extends AbstractRouteDecorator>
+      Map<RouteRowKey, Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>>> groupRoutes(
+          SortedMap<String, SortedMap<String, GenericRib<T>>> ribs,
+          Set<String> matchingNodes,
+          @Nullable Prefix network,
+          String vrfRegex,
+          RoutingProtocolSpecifier protocolSpec,
+          Map<Ip, Set<String>> ipo) {
+    return groupRoutes(ribs, matchingNodes, network, vrfRegex, protocolSpec);
+  }
+
   /**
    * Given a {@link Map} of all RIBs groups the routes in them by the fields of {@link RouteRowKey}
    * and further sub-groups them by {@link RouteRowSecondaryKey} and for routes in the same

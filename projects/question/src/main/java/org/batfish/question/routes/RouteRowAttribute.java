@@ -273,6 +273,12 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
       return this;
     }
 
+    @Deprecated
+    @SuppressWarnings("unused")
+    public Builder setNextHop(String nextHop) {
+      return this;
+    }
+
     public Builder setNextHopInterface(String nextHopInterface) {
       _nextHopInterface = nextHopInterface;
       return this;
