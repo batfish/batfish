@@ -5746,8 +5746,6 @@ VIRTUAL_AP: 'virtual-ap';
 
 VIRTUAL_REASSEMBLY: 'virtual-reassembly';
 
-VIRTUAL_ROUTER: 'virtual-router';
-
 VIRTUAL_SERVICE: 'virtual-service';
 
 VIRTUAL_TEMPLATE: 'virtual-template';

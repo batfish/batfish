@@ -104,7 +104,6 @@ null_block
             | SDR
             | SOURCE
             | SYSLOG
-            | VIRTUAL_ROUTER
             |
             (
                VRF ~NEWLINE
@@ -516,7 +515,6 @@ null_inner
       | USERS
       | VERSION
       | VIRTUAL
-      | VIRTUAL_ROUTER
       | VM_CPU
       | VM_MEMORY
       | VPN_FILTER
