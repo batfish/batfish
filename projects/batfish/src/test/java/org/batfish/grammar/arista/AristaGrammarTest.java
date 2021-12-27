@@ -359,6 +359,13 @@ public class AristaGrammarTest {
   }
 
   @Test
+  public void testIpVirtualRouterParsing() {
+    // TODO: change to extraction and conversion tests for the two cases
+    parseVendorConfig("arista_ip_virtual_router");
+    parseVendorConfig("arista_ip_virtual_router_no_mac");
+  }
+
+  @Test
   public void testTopLevelBgpExtraction() {
     AristaConfiguration config = parseVendorConfig("arista_bgp");
     // Basic VRF config

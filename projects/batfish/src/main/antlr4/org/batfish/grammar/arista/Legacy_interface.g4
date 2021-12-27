@@ -615,7 +615,7 @@ ifip_verify_unicast_eos
 
 if_ip_virtual_router
 :
-   VIRTUAL_ROUTER ADDRESS address = IP_ADDRESS NEWLINE
+   VIRTUAL_ROUTER ADDRESS (address = IP_ADDRESS | prefix = IP_PREFIX) NEWLINE
 ;
 
 if_ipv6
