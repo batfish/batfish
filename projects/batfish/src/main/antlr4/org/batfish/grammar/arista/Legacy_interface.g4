@@ -1,6 +1,6 @@
 parser grammar Legacy_interface;
 
-import Legacy_common;
+import Legacy_common, Arista_interface;
 
 options {
    tokenVocab = AristaLexer;
@@ -611,11 +611,6 @@ ifip_verify_unicast_eos
     | RX ALLOW_DEFAULT?
   )
   NEWLINE
-;
-
-if_ip_virtual_router
-:
-   VIRTUAL_ROUTER ADDRESS (address = IP_ADDRESS | prefix = IP_PREFIX) NEWLINE
 ;
 
 if_ipv6
