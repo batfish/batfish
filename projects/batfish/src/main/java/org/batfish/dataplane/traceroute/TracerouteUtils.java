@@ -2,7 +2,6 @@ package org.batfish.dataplane.traceroute;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Comparator.comparing;
-import static java.util.Comparator.nullsFirst;
 import static org.batfish.datamodel.flow.StepAction.DELIVERED_TO_SUBNET;
 import static org.batfish.datamodel.flow.StepAction.EXITS_NETWORK;
 import static org.batfish.datamodel.flow.StepAction.INSUFFICIENT_INFO;
@@ -26,7 +25,7 @@ import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.AbstractRoute;
+import org.batfish.common.util.NextHopComparator;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.FibEntry;
 import org.batfish.datamodel.FilterResult;
@@ -94,15 +93,13 @@ public final class TracerouteUtils {
                 new RouteInfo(
                     route.getProtocol(),
                     route.getNetwork(),
-                    route.getNextHopIp(),
-                    AbstractRoute.NEXT_VRF_EXTRACTOR.visit(route.getNextHop()),
+                    route.getNextHop(),
                     route.getAdministrativeCost(),
                     route.getMetric()))
         .distinct()
         .sorted(
             comparing(RouteInfo::getNetwork)
-                .thenComparing(RouteInfo::getNextHopIp)
-                .thenComparing(RouteInfo::getNextVrf, nullsFirst(String::compareTo))
+                .thenComparing(RouteInfo::getNextHop, NextHopComparator.instance())
                 .thenComparing(RouteInfo::getProtocol))
         .collect(ImmutableList.toImmutableList());
   }
