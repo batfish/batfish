@@ -1367,16 +1367,12 @@ public final class FlowTracerTest {
                             RoutingProtocol.STATIC,
                             Prefix.ZERO,
                             NextHopIp.of(Ip.parse("1.2.3.4")),
-                            Ip.parse("1.2.3.4"),
-                            null,
                             1,
                             0),
                         new RouteInfo(
                             RoutingProtocol.STATIC,
                             Prefix.ZERO,
                             NextHopIp.of(Ip.parse("2.3.4.5")),
-                            Ip.parse("2.3.4.5"),
-                            null,
                             1,
                             0)))
                 .build()));
@@ -1609,13 +1605,7 @@ public final class FlowTracerTest {
         equalTo(
             ImmutableList.of(
                 new RouteInfo(
-                    RoutingProtocol.STATIC,
-                    prefix,
-                    NextHopIp.of(Ip.parse("2.2.2.2")),
-                    Ip.parse("2.2.2.2"),
-                    null,
-                    1,
-                    0))));
+                    RoutingProtocol.STATIC, prefix, NextHopIp.of(Ip.parse("2.2.2.2")), 1, 0))));
     assertThat(routingStep.getDetail().getArpIp(), equalTo(Ip.parse("1.1.1.1")));
     assertThat(routingStep.getDetail().getOutputInterface(), equalTo("iface1"));
   }
@@ -1644,13 +1634,7 @@ public final class FlowTracerTest {
         equalTo(
             ImmutableList.of(
                 new RouteInfo(
-                    RoutingProtocol.STATIC,
-                    prefix,
-                    NextHopIp.of(Ip.parse("2.2.2.2")),
-                    Ip.parse("2.2.2.2"),
-                    null,
-                    1,
-                    0))));
+                    RoutingProtocol.STATIC, prefix, NextHopIp.of(Ip.parse("2.2.2.2")), 1, 0))));
     assertThat(routingStep.getDetail().getArpIp(), nullValue());
     assertThat(routingStep.getDetail().getOutputInterface(), nullValue());
   }
@@ -1679,13 +1663,7 @@ public final class FlowTracerTest {
         equalTo(
             ImmutableList.of(
                 new RouteInfo(
-                    RoutingProtocol.STATIC,
-                    prefix,
-                    NextHopIp.of(Ip.parse("2.2.2.2")),
-                    Ip.parse("2.2.2.2"),
-                    null,
-                    1,
-                    0))));
+                    RoutingProtocol.STATIC, prefix, NextHopIp.of(Ip.parse("2.2.2.2")), 1, 0))));
     assertThat(routingStep.getDetail().getArpIp(), nullValue());
     assertThat(routingStep.getDetail().getOutputInterface(), nullValue());
   }

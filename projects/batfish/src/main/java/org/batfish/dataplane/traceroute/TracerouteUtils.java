@@ -26,7 +26,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.util.NextHopComparator;
-import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.FibEntry;
 import org.batfish.datamodel.FilterResult;
@@ -95,8 +94,6 @@ public final class TracerouteUtils {
                     route.getProtocol(),
                     route.getNetwork(),
                     route.getNextHop(),
-                    route.getNextHopIp(),
-                    AbstractRoute.NEXT_VRF_EXTRACTOR.visit(route.getNextHop()),
                     route.getAdministrativeCost(),
                     route.getMetric()))
         .distinct()

@@ -675,13 +675,7 @@ public class TracerouteEngineImplTest {
         step1.getDetail().getRoutes(),
         contains(
             new RouteInfo(
-                RoutingProtocol.STATIC,
-                Prefix.ZERO,
-                NextHopInterface.of(i2.getName()),
-                Ip.AUTO,
-                null,
-                1,
-                0)));
+                RoutingProtocol.STATIC, Prefix.ZERO, NextHopInterface.of(i2.getName()), 1, 0)));
 
     FilterStep step2 = (FilterStep) steps.get(2);
     assertThat(step2.getAction(), equalTo(StepAction.PERMITTED));

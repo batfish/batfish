@@ -1,6 +1,8 @@
 package org.batfish.datamodel.flow;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.datamodel.AbstractRoute.NEXT_VRF_EXTRACTOR;
+import static org.batfish.datamodel.AbstractRoute.nextHopIpExtractor;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -48,18 +50,12 @@ public final class RouteInfo {
   private final long _metric;
 
   public RouteInfo(
-      RoutingProtocol protocol,
-      Prefix network,
-      NextHop nextHop,
-      @Nullable Ip nextHopIp,
-      @Nullable String nextVrf,
-      int adminDistance,
-      long metric) {
+      RoutingProtocol protocol, Prefix network, NextHop nextHop, int adminDistance, long metric) {
     _protocol = protocol;
     _network = network;
     _nextHop = nextHop;
-    _nextHopIp = nextHopIp;
-    _nextVrf = nextVrf;
+    _nextHopIp = nextHopIpExtractor().visit(_nextHop);
+    _nextVrf = NEXT_VRF_EXTRACTOR.visit(_nextHop);
     _adminDistance = adminDistance;
     _metric = metric;
   }
@@ -78,7 +74,7 @@ public final class RouteInfo {
     checkArgument(adminDistance != null, "Missing %s", PROP_ADMIN_DISTANCE);
     checkArgument(metric != null, "Missing %s", PROP_METRIC);
     checkArgument(nextHop != null, "Missing %s", PROP_NEXT_HOP);
-    return new RouteInfo(protocol, network, nextHop, nextHopIp, nextVrf, adminDistance, metric);
+    return new RouteInfo(protocol, network, nextHop, adminDistance, metric);
   }
 
   @Override

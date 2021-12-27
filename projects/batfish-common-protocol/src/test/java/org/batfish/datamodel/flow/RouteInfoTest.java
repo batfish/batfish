@@ -17,13 +17,7 @@ public class RouteInfoTest {
   public void testJsonSerialization() {
     RouteInfo orig =
         new RouteInfo(
-            RoutingProtocol.BGP,
-            Prefix.parse("1.1.1.1/30"),
-            NextHopDiscard.instance(),
-            null,
-            null,
-            0,
-            1);
+            RoutingProtocol.BGP, Prefix.parse("1.1.1.1/30"), NextHopDiscard.instance(), 0, 1);
     RouteInfo clone = BatfishObjectMapper.clone(orig, RouteInfo.class);
     assertEquals(orig, clone);
   }
@@ -45,23 +39,15 @@ public class RouteInfoTest {
 
     new EqualsTester()
         .addEqualityGroup(
-            new RouteInfo(proto1, p1, NextHopDiscard.instance(), nhip1, nextVrf1, ad1, met1),
-            new RouteInfo(proto1, p1, NextHopDiscard.instance(), nhip1, nextVrf1, ad1, met1))
-        .addEqualityGroup(
-            new RouteInfo(proto2, p1, NextHopDiscard.instance(), nhip1, nextVrf1, ad1, met1))
-        .addEqualityGroup(
-            new RouteInfo(proto1, p2, NextHopDiscard.instance(), nhip1, nextVrf1, ad1, met1))
-        .addEqualityGroup(
-            new RouteInfo(
-                proto1, p1, NextHopIp.of(Ip.parse("1.1.1.1")), nhip1, nextVrf1, ad1, met1))
-        .addEqualityGroup(
-            new RouteInfo(proto1, p1, NextHopDiscard.instance(), nhip2, nextVrf1, ad1, met1))
-        .addEqualityGroup(
-            new RouteInfo(proto1, p1, NextHopDiscard.instance(), nhip1, nextVrf2, ad1, met1))
-        .addEqualityGroup(
-            new RouteInfo(proto1, p1, NextHopDiscard.instance(), nhip1, nextVrf1, ad2, met1))
-        .addEqualityGroup(
-            new RouteInfo(proto1, p1, NextHopDiscard.instance(), nhip1, nextVrf1, ad1, met2))
+            new RouteInfo(proto1, p1, NextHopDiscard.instance(), ad1, met1),
+            new RouteInfo(proto1, p1, NextHopDiscard.instance(), ad1, met1))
+        .addEqualityGroup(new RouteInfo(proto2, p1, NextHopDiscard.instance(), ad1, met1))
+        .addEqualityGroup(new RouteInfo(proto1, p2, NextHopDiscard.instance(), ad1, met1))
+        .addEqualityGroup(new RouteInfo(proto1, p1, NextHopIp.of(Ip.parse("1.1.1.1")), ad1, met1))
+        .addEqualityGroup(new RouteInfo(proto1, p1, NextHopDiscard.instance(), ad1, met1))
+        .addEqualityGroup(new RouteInfo(proto1, p1, NextHopDiscard.instance(), ad1, met1))
+        .addEqualityGroup(new RouteInfo(proto1, p1, NextHopDiscard.instance(), ad2, met1))
+        .addEqualityGroup(new RouteInfo(proto1, p1, NextHopDiscard.instance(), ad1, met2))
         .testEquals();
   }
 }

@@ -25,13 +25,7 @@ public class RoutingStepDetailTest {
             .setRoutes(
                 ImmutableList.of(
                     new RouteInfo(
-                        RoutingProtocol.BGP,
-                        Prefix.ZERO,
-                        NextHopDiscard.instance(),
-                        Ip.parse("1.1.1.1"),
-                        "a",
-                        5,
-                        6L)))
+                        RoutingProtocol.BGP, Prefix.ZERO, NextHopDiscard.instance(), 5, 6L)))
             .setOutputInterface("iface")
             .setArpIp(Ip.parse("2.3.4.5"))
             .build();
@@ -47,13 +41,7 @@ public class RoutingStepDetailTest {
             .setRoutes(
                 ImmutableList.of(
                     new RouteInfo(
-                        RoutingProtocol.BGP,
-                        Prefix.ZERO,
-                        NextHopDiscard.instance(),
-                        Ip.parse("1.1.1.1"),
-                        "a",
-                        5,
-                        6L)))
+                        RoutingProtocol.BGP, Prefix.ZERO, NextHopDiscard.instance(), 5, 6L)))
             .setOutputInterface("iface")
             .setArpIp(Ip.parse("2.3.4.5"));
     new EqualsTester()
