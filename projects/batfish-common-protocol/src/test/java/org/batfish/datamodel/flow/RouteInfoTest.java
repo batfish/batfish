@@ -28,10 +28,6 @@ public class RouteInfoTest {
     RoutingProtocol proto2 = RoutingProtocol.STATIC;
     Prefix p1 = Prefix.parse("1.1.1.1/32");
     Prefix p2 = Prefix.parse("2.2.2.2/32");
-    Ip nhip1 = null;
-    Ip nhip2 = Ip.parse("3.3.3.3");
-    String nextVrf1 = null;
-    String nextVrf2 = "nextVrf";
     int ad1 = 0;
     int ad2 = 1;
     int met1 = 0;
@@ -44,8 +40,6 @@ public class RouteInfoTest {
         .addEqualityGroup(new RouteInfo(proto2, p1, NextHopDiscard.instance(), ad1, met1))
         .addEqualityGroup(new RouteInfo(proto1, p2, NextHopDiscard.instance(), ad1, met1))
         .addEqualityGroup(new RouteInfo(proto1, p1, NextHopIp.of(Ip.parse("1.1.1.1")), ad1, met1))
-        .addEqualityGroup(new RouteInfo(proto1, p1, NextHopDiscard.instance(), ad1, met1))
-        .addEqualityGroup(new RouteInfo(proto1, p1, NextHopDiscard.instance(), ad1, met1))
         .addEqualityGroup(new RouteInfo(proto1, p1, NextHopDiscard.instance(), ad2, met1))
         .addEqualityGroup(new RouteInfo(proto1, p1, NextHopDiscard.instance(), ad1, met2))
         .testEquals();

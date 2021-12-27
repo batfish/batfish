@@ -60,6 +60,7 @@ public final class RouteInfo {
     _metric = metric;
   }
 
+  @SuppressWarnings("unused") // until nextHopIp and nextVrf are removed entirely
   @JsonCreator
   private static RouteInfo jsonCreator(
       @JsonProperty(PROP_PROTOCOL) @Nullable RoutingProtocol protocol,
