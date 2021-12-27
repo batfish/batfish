@@ -80,14 +80,18 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.Accept;
 import org.batfish.datamodel.flow.ArpErrorStep;
 import org.batfish.datamodel.flow.ArpErrorStep.ArpErrorStepDetail;
+import org.batfish.datamodel.flow.DelegatedToNextVrf;
 import org.batfish.datamodel.flow.DeliveredStep;
 import org.batfish.datamodel.flow.DeliveredStep.DeliveredStepDetail;
+import org.batfish.datamodel.flow.Discarded;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep.ExitOutputIfaceStepDetail;
 import org.batfish.datamodel.flow.FilterStep;
 import org.batfish.datamodel.flow.FilterStep.FilterType;
 import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.ForwardOutInterface;
+import org.batfish.datamodel.flow.ForwardedIntoVxlanTunnel;
+import org.batfish.datamodel.flow.ForwardedOutInterface;
 import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.InboundStep;
 import org.batfish.datamodel.flow.InboundStep.InboundStepDetail;
@@ -102,6 +106,7 @@ import org.batfish.datamodel.flow.PolicyStep;
 import org.batfish.datamodel.flow.PolicyStep.PolicyStepDetail;
 import org.batfish.datamodel.flow.PostNatFibLookup;
 import org.batfish.datamodel.flow.PreNatFibLookup;
+import org.batfish.datamodel.flow.RouteInfo;
 import org.batfish.datamodel.flow.RoutingStep;
 import org.batfish.datamodel.flow.RoutingStep.Builder;
 import org.batfish.datamodel.flow.RoutingStep.RoutingStepDetail;
@@ -124,6 +129,7 @@ import org.batfish.datamodel.packet_policy.PacketPolicyEvaluator;
 import org.batfish.datamodel.packet_policy.PacketPolicyEvaluator.PacketPolicyResult;
 import org.batfish.datamodel.packet_policy.VrfExprNameExtractor;
 import org.batfish.datamodel.pojo.Node;
+import org.batfish.datamodel.route.nh.NextHopVtep;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationEvaluator;
 import org.batfish.datamodel.transformation.TransformationEvaluator.TransformationResult;
@@ -1130,7 +1136,11 @@ class FlowTracer {
   private void buildNoRouteTrace(String vrf) {
     Builder routingStepBuilder = RoutingStep.builder();
     routingStepBuilder
-        .setDetail(RoutingStepDetail.builder().setVrf(vrf).build())
+        .setDetail(
+            RoutingStepDetail.builder()
+                .setForwardingDetail(Discarded.instance())
+                .setVrf(vrf)
+                .build())
         .setAction(StepAction.NO_ROUTE);
     _steps.add(routingStepBuilder.build());
     _hops.add(
@@ -1461,26 +1471,48 @@ class FlowTracer {
   @VisibleForTesting
   static RoutingStep buildRoutingStep(String vrf, FibAction fibAction, Set<FibEntry> fibEntries) {
     RoutingStep.Builder routingStepBuilder = RoutingStep.builder();
+    List<RouteInfo> routeInfos = fibEntriesToRouteInfos(fibEntries);
     RoutingStepDetail.Builder routingStepDetailBuilder =
-        RoutingStepDetail.builder().setVrf(vrf).setRoutes(fibEntriesToRouteInfos(fibEntries));
+        RoutingStepDetail.builder().setVrf(vrf).setRoutes(routeInfos);
     fibAction.accept(
         new FibActionVisitor<Void>() {
           @Override
           public Void visitFibForward(FibForward fibForward) {
-            routingStepDetailBuilder.setArpIp(fibForward.getArpIp());
-            routingStepDetailBuilder.setOutputInterface(fibForward.getInterfaceName());
+            assert !routeInfos.isEmpty();
+            RouteInfo primaryRouteInfo = routeInfos.get(0);
+            if (primaryRouteInfo.getNextHop() instanceof NextHopVtep) {
+              NextHopVtep nhVtep = (NextHopVtep) primaryRouteInfo.getNextHop();
+              routingStepDetailBuilder.setForwardingDetail(
+                  ForwardedIntoVxlanTunnel.of(nhVtep.getVni(), nhVtep.getVtepIp()));
+            } else {
+              // TODO: prevent FibForward from containing Ip.AUTO, and rewrite logic below
+              Ip resolvedNextHopIp = fibForward.getArpIp();
+              if (resolvedNextHopIp.equals(Ip.AUTO)) {
+                routingStepDetailBuilder.setForwardingDetail(
+                    ForwardedOutInterface.of(fibForward.getInterfaceName()));
+              } else {
+                routingStepDetailBuilder.setForwardingDetail(
+                    ForwardedOutInterface.of(fibForward.getInterfaceName(), resolvedNextHopIp));
+              }
+            }
+            routingStepDetailBuilder
+                .setArpIp(fibForward.getArpIp())
+                .setOutputInterface(fibForward.getInterfaceName());
             routingStepBuilder.setAction(FORWARDED);
             return null;
           }
 
           @Override
           public Void visitFibNextVrf(FibNextVrf fibNextVrf) {
+            routingStepDetailBuilder.setForwardingDetail(
+                DelegatedToNextVrf.of(fibNextVrf.getNextVrf()));
             routingStepBuilder.setAction(FORWARDED_TO_NEXT_VRF);
             return null;
           }
 
           @Override
           public Void visitFibNullRoute(FibNullRoute fibNullRoute) {
+            routingStepDetailBuilder.setForwardingDetail(Discarded.instance());
             routingStepBuilder.setAction(NULL_ROUTED);
             return null;
           }

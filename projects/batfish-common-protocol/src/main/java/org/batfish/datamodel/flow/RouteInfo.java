@@ -11,6 +11,8 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.route.nh.LegacyNextHops;
+import org.batfish.datamodel.route.nh.NextHop;
 
 /**
  * Contains information about the {@link Route}s which led to the selection of the outgoing
@@ -19,6 +21,7 @@ import org.batfish.datamodel.RoutingProtocol;
 public final class RouteInfo {
   private static final String PROP_PROTOCOL = "protocol";
   private static final String PROP_NETWORK = "network";
+  private static final String PROP_NEXT_HOP = "nextHop";
   private static final String PROP_NEXT_HOP_IP = "nextHopIp";
   private static final String PROP_NEXT_VRF = "nextVrf";
   private static final String PROP_ADMIN_DISTANCE = "admin";
@@ -29,6 +32,9 @@ public final class RouteInfo {
 
   /** Network of this route */
   private @Nonnull final Prefix _network;
+
+  /** Next Hop for this route */
+  private final @Nonnull NextHop _nextHop;
 
   /** Next Hop IP for this route */
   private @Nullable final Ip _nextHopIp;
@@ -43,24 +49,22 @@ public final class RouteInfo {
   private final long _metric;
 
   public RouteInfo(
-      RoutingProtocol protocol,
-      Prefix network,
-      @Nullable Ip nextHopIp,
-      @Nullable String nextVrf,
-      int adminDistance,
-      long metric) {
+      RoutingProtocol protocol, Prefix network, NextHop nextHop, int adminDistance, long metric) {
     _protocol = protocol;
     _network = network;
-    _nextHopIp = nextHopIp;
-    _nextVrf = nextVrf;
+    _nextHop = nextHop;
+    _nextHopIp = LegacyNextHops.getNextHopIp(_nextHop).orElse(Route.UNSET_ROUTE_NEXT_HOP_IP);
+    _nextVrf = LegacyNextHops.getNextVrf(_nextHop).orElse(null);
     _adminDistance = adminDistance;
     _metric = metric;
   }
 
+  @SuppressWarnings("unused") // until nextHopIp and nextVrf are removed entirely
   @JsonCreator
   private static RouteInfo jsonCreator(
       @JsonProperty(PROP_PROTOCOL) @Nullable RoutingProtocol protocol,
       @JsonProperty(PROP_NETWORK) @Nullable Prefix network,
+      @JsonProperty(PROP_NEXT_HOP) @Nullable NextHop nextHop,
       @JsonProperty(PROP_NEXT_HOP_IP) @Nullable Ip nextHopIp,
       @JsonProperty(PROP_NEXT_VRF) @Nullable String nextVrf,
       @JsonProperty(PROP_ADMIN_DISTANCE) @Nullable Integer adminDistance,
@@ -69,7 +73,8 @@ public final class RouteInfo {
     checkArgument(network != null, "Missing %s", PROP_NETWORK);
     checkArgument(adminDistance != null, "Missing %s", PROP_ADMIN_DISTANCE);
     checkArgument(metric != null, "Missing %s", PROP_METRIC);
-    return new RouteInfo(protocol, network, nextHopIp, nextVrf, adminDistance, metric);
+    checkArgument(nextHop != null, "Missing %s", PROP_NEXT_HOP);
+    return new RouteInfo(protocol, network, nextHop, adminDistance, metric);
   }
 
   @Override
@@ -82,6 +87,7 @@ public final class RouteInfo {
     RouteInfo other = (RouteInfo) o;
     return _protocol.equals(other._protocol)
         && _network.equals(other._network)
+        && _nextHop.equals(other._nextHop)
         && Objects.equals(_nextHopIp, other._nextHopIp)
         && Objects.equals(_nextVrf, other._nextVrf)
         && _adminDistance == other._adminDistance
@@ -90,7 +96,8 @@ public final class RouteInfo {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_protocol, _network, _nextHopIp, _nextVrf, _adminDistance, _metric);
+    return Objects.hash(
+        _protocol, _network, _nextHop, _nextHopIp, _nextVrf, _adminDistance, _metric);
   }
 
   @JsonProperty(PROP_PROTOCOL)
@@ -103,6 +110,12 @@ public final class RouteInfo {
   @Nonnull
   public Prefix getNetwork() {
     return _network;
+  }
+
+  @JsonProperty(PROP_NEXT_HOP)
+  @Nonnull
+  public NextHop getNextHop() {
+    return _nextHop;
   }
 
   @JsonProperty(PROP_NEXT_HOP_IP)
