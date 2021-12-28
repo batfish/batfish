@@ -1,6 +1,5 @@
 package org.batfish.datamodel;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -11,13 +10,9 @@ import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.route.nh.LegacyNextHops;
 import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
-import org.batfish.datamodel.route.nh.NextHopInterface;
-import org.batfish.datamodel.route.nh.NextHopIp;
-import org.batfish.datamodel.route.nh.NextHopVisitor;
-import org.batfish.datamodel.route.nh.NextHopVrf;
-import org.batfish.datamodel.route.nh.NextHopVtep;
 
 /**
  * A base class for all types of routes supported in the dataplane computation, making this the most
@@ -92,7 +87,7 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
   @JsonProperty(PROP_NEXT_HOP_INTERFACE)
   @Nonnull
   public final String getNextHopInterface() {
-    return nextHopInterfaceExtractor().visit(_nextHop);
+    return LegacyNextHops.getNextHopInterface(_nextHop).orElse(Route.UNSET_NEXT_HOP_INTERFACE);
   }
 
   /**
@@ -102,7 +97,7 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
   @JsonProperty(PROP_NEXT_HOP_IP)
   @Nonnull
   public final Ip getNextHopIp() {
-    return nextHopIpExtractor().visit(_nextHop);
+    return LegacyNextHops.getNextHopIp(_nextHop).orElse(Route.UNSET_ROUTE_NEXT_HOP_IP);
   }
 
   /**
@@ -153,111 +148,4 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
 
   /** Return a {@link AbstractRouteBuilder} pre-populated with the values for this route. */
   public abstract AbstractRouteBuilder<?, ?> toBuilder();
-
-  /**
-   * Temporary helper to extract legacy next hop IP (can be UNSET_ROUTE_NEXT_HOP_IP) until usages
-   * are eliminated.
-   */
-  public static @Nonnull NextHopVisitor<Ip> nextHopIpExtractor() {
-    // TODO: Make package-private and/or eliminate
-    return NEXT_HOP_IP_EXTRACTOR;
-  }
-
-  // Private implementation
-
-  // Helper package methods
-  @Nonnull
-  static NextHopVisitor<String> nextHopInterfaceExtractor() {
-    return NEXT_HOP_INTERFACE_EXTRACTOR;
-  }
-
-  private static final NextHopVisitor<Ip> NEXT_HOP_IP_EXTRACTOR =
-      new NextHopVisitor<Ip>() {
-
-        @Override
-        public Ip visitNextHopIp(NextHopIp nextHopIp) {
-          return nextHopIp.getIp();
-        }
-
-        @Override
-        public Ip visitNextHopInterface(NextHopInterface nextHopInterface) {
-          return firstNonNull(nextHopInterface.getIp(), Route.UNSET_ROUTE_NEXT_HOP_IP);
-        }
-
-        @Override
-        public Ip visitNextHopDiscard(NextHopDiscard nextHopDiscard) {
-          return Route.UNSET_ROUTE_NEXT_HOP_IP;
-        }
-
-        @Override
-        public Ip visitNextHopVrf(NextHopVrf nextHopVrf) {
-          return Route.UNSET_ROUTE_NEXT_HOP_IP;
-        }
-
-        @Override
-        public Ip visitNextHopVtep(NextHopVtep nextHopVtep) {
-          return Route.UNSET_ROUTE_NEXT_HOP_IP;
-        }
-      };
-
-  private static final NextHopVisitor<String> NEXT_HOP_INTERFACE_EXTRACTOR =
-      new NextHopVisitor<String>() {
-        @Override
-        public String visitNextHopIp(NextHopIp nextHopIp) {
-          return Route.UNSET_NEXT_HOP_INTERFACE;
-        }
-
-        @Override
-        public String visitNextHopInterface(NextHopInterface nextHopInterface) {
-          return nextHopInterface.getInterfaceName();
-        }
-
-        @Override
-        public String visitNextHopDiscard(NextHopDiscard nextHopDiscard) {
-          return Interface.NULL_INTERFACE_NAME;
-        }
-
-        @Override
-        public String visitNextHopVrf(NextHopVrf nextHopVrf) {
-          return Route.UNSET_NEXT_HOP_INTERFACE;
-        }
-
-        @Override
-        public String visitNextHopVtep(NextHopVtep nextHopVtep) {
-          return Route.UNSET_NEXT_HOP_INTERFACE;
-        }
-      };
-
-  /** Returns the name of next VRF for a given route or {@code null} otherwise. */
-  public static final NextHopVisitor<String> NEXT_VRF_EXTRACTOR =
-      new NextHopVisitor<String>() {
-
-        @Override
-        @Nullable
-        public String visitNextHopIp(NextHopIp nextHopIp) {
-          return null;
-        }
-
-        @Override
-        @Nullable
-        public String visitNextHopInterface(NextHopInterface nextHopInterface) {
-          return null;
-        }
-
-        @Override
-        @Nullable
-        public String visitNextHopDiscard(NextHopDiscard nextHopDiscard) {
-          return null;
-        }
-
-        @Override
-        public String visitNextHopVrf(NextHopVrf nextHopVrf) {
-          return nextHopVrf.getVrfName();
-        }
-
-        @Override
-        public String visitNextHopVtep(NextHopVtep nextHopVtep) {
-          return null;
-        }
-      };
 }

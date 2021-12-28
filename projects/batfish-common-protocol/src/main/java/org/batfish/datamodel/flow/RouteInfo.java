@@ -1,8 +1,6 @@
 package org.batfish.datamodel.flow;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.datamodel.AbstractRoute.NEXT_VRF_EXTRACTOR;
-import static org.batfish.datamodel.AbstractRoute.nextHopIpExtractor;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -13,6 +11,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.route.nh.LegacyNextHops;
 import org.batfish.datamodel.route.nh.NextHop;
 
 /**
@@ -54,8 +53,8 @@ public final class RouteInfo {
     _protocol = protocol;
     _network = network;
     _nextHop = nextHop;
-    _nextHopIp = nextHopIpExtractor().visit(_nextHop);
-    _nextVrf = NEXT_VRF_EXTRACTOR.visit(_nextHop);
+    _nextHopIp = LegacyNextHops.getNextHopIp(_nextHop).orElse(Route.UNSET_ROUTE_NEXT_HOP_IP);
+    _nextVrf = LegacyNextHops.getNextVrf(_nextHop).orElse(null);
     _adminDistance = adminDistance;
     _metric = metric;
   }

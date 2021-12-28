@@ -34,7 +34,6 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.NextHopComparator;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
-import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
@@ -192,7 +191,6 @@ public class RoutesAnswerer extends Answerer {
         routesGroupedByKeyInBase;
     Map<RouteRowKey, Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>>>
         routesGroupedByKeyInDelta;
-    Map<Ip, Set<String>> ipOwners;
     DataPlane dp;
 
     List<DiffRoutesOutput> routesDiffRaw;
@@ -225,14 +223,12 @@ public class RoutesAnswerer extends Answerer {
       case MAIN:
       default:
         dp = _batfish.loadDataPlane(snapshot);
-        ipOwners = _batfish.getTopologyProvider().getIpOwners(snapshot).getNodeOwners(true);
         routesGroupedByKeyInBase =
-            groupRoutes(dp.getRibs(), matchingNodes, network, vrfRegex, protocolSpec, ipOwners);
+            groupRoutes(dp.getRibs(), matchingNodes, network, vrfRegex, protocolSpec);
 
         dp = _batfish.loadDataPlane(reference);
-        ipOwners = _batfish.getTopologyProvider().getIpOwners(snapshot).getNodeOwners(true);
         routesGroupedByKeyInDelta =
-            groupRoutes(dp.getRibs(), matchingNodes, network, vrfRegex, protocolSpec, ipOwners);
+            groupRoutes(dp.getRibs(), matchingNodes, network, vrfRegex, protocolSpec);
 
         routesDiffRaw = getRoutesDiff(routesGroupedByKeyInBase, routesGroupedByKeyInDelta);
         rows = getAbstractRouteRowsDiff(routesDiffRaw);
