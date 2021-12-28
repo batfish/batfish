@@ -287,12 +287,6 @@ public class OspfArea implements Serializable {
     return _metricOfDefaultRoute;
   }
 
-  /** @deprecated Use {@link #getAreaNumber} */
-  @Deprecated
-  public long getName() {
-    return getAreaNumber();
-  }
-
   @Nullable
   @JsonProperty(PROP_NSSA)
   public NssaSettings getNssa() {
