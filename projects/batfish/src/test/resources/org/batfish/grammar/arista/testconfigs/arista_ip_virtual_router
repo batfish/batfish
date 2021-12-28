@@ -1,0 +1,13 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname arista_ip_virtual_router
+!
+boot system flash fake.swi
+!
+ip virtual-router mac-address 00:11:22:33:44:55
+!
+interface Ethernet1
+   no switchport
+   no shutdown
+   ip virtual-router address 10.0.0.2/24
+!

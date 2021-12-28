@@ -1119,7 +1119,7 @@
         "Lines" : {
           "filename" : "configs/cisco_interface",
           "lines" : [
-            137
+            136
           ]
         }
       },
@@ -1179,8 +1179,8 @@
         "Lines" : {
           "filename" : "configs/cisco_interface",
           "lines" : [
-            209,
-            210
+            208,
+            209
           ]
         }
       },
@@ -1192,7 +1192,7 @@
         "Lines" : {
           "filename" : "configs/cisco_interface",
           "lines" : [
-            135
+            134
           ]
         }
       },
@@ -1216,7 +1216,7 @@
         "Lines" : {
           "filename" : "configs/cisco_interface",
           "lines" : [
-            279
+            278
           ]
         }
       },

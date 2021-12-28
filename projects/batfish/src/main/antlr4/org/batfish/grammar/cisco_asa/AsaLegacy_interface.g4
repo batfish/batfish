@@ -223,7 +223,6 @@ if_ip
     | if_ip_summary_address
     | if_ip_tcp
     | if_ip_verify
-    | if_ip_virtual_router
     | if_ip_vrf_autoclassify
     | if_ip_vrf_receive
     | if_ip_vrf_select
@@ -535,11 +534,6 @@ if_ip_verify
          )* acl = dec?
       )
    ) NEWLINE
-;
-
-if_ip_virtual_router
-:
-   VIRTUAL_ROUTER ADDRESS address = IP_ADDRESS NEWLINE
 ;
 
 if_ip_vrf_autoclassify

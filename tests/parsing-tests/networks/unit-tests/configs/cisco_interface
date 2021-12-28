@@ -127,7 +127,6 @@ interface Ethernet0
  no ip unreachables
  no ip verify source dhcp-snooping-vlan
  ip verify unicast source reachable-via rx 167
- ip virtual-router address 2.3.4.1
  ip vrf autoclassify source
  ip vrf forwarding U_VRF downstream D_VRF
  ip vrf receive R_VRF
