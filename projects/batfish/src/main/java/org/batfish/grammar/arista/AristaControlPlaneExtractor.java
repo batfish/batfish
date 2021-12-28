@@ -591,6 +591,7 @@ import org.batfish.grammar.arista.AristaParser.If_eos_mlagContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_helper_addressContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_inband_access_groupContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_local_proxy_arp_eosContext;
+import org.batfish.grammar.arista.AristaParser.If_ip_virtual_routerContext;
 import org.batfish.grammar.arista.AristaParser.If_ipv6_traffic_filterContext;
 import org.batfish.grammar.arista.AristaParser.If_isis_metricContext;
 import org.batfish.grammar.arista.AristaParser.If_member_interfaceContext;
@@ -780,6 +781,7 @@ import org.batfish.grammar.arista.AristaParser.S_ip_routeContext;
 import org.batfish.grammar.arista.AristaParser.S_ip_source_routeContext;
 import org.batfish.grammar.arista.AristaParser.S_ip_sshContext;
 import org.batfish.grammar.arista.AristaParser.S_ip_tacacs_source_interfaceContext;
+import org.batfish.grammar.arista.AristaParser.S_ip_virtual_routerContext;
 import org.batfish.grammar.arista.AristaParser.S_l2tp_classContext;
 import org.batfish.grammar.arista.AristaParser.S_loggingContext;
 import org.batfish.grammar.arista.AristaParser.S_no_router_ospfContext;
@@ -7294,6 +7296,16 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       int line = ctx.service_list.getStart().getLine();
       _configuration.referenceStructure(IP_ACCESS_LIST, name, WCCP_SERVICE_LIST, line);
     }
+  }
+
+  @Override
+  public void exitIf_ip_virtual_router(If_ip_virtual_routerContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitS_ip_virtual_router(S_ip_virtual_routerContext ctx) {
+    todo(ctx);
   }
 
   private String getCanonicalInterfaceName(String ifaceName) {

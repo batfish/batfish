@@ -15463,14 +15463,6 @@
             "      (if_inner*",
             "        (if_ip*",
             "          IP:'ip'",
-            "          (if_ip_virtual_router*",
-            "            VIRTUAL_ROUTER:'virtual-router'",
-            "            ADDRESS:'address'",
-            "            address = IP_ADDRESS:'2.3.4.1'",
-            "            NEWLINE:'\\n')))",
-            "      (if_inner*",
-            "        (if_ip*",
-            "          IP:'ip'",
             "          (if_ip_vrf_autoclassify*",
             "            VRF:'vrf'",
             "            AUTOCLASSIFY:'autoclassify'",
@@ -70162,13 +70154,13 @@
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 278,
+              "Line" : 277,
               "Parser_Context" : "[if_zone_member if_inner s_interface stanza cisco_configuration]",
               "Text" : "zone-member t1"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 309,
+              "Line" : 308,
               "Parser_Context" : "[iftunnel_mode if_tunnel if_inner s_interface stanza cisco_configuration]",
               "Text" : "mode gre multipoint"
             }
@@ -72601,99 +72593,99 @@
           },
           "interface" : {
             "Async1" : {
-              "definitionLines" : "281",
+              "definitionLines" : "280",
               "numReferrers" : 1
             },
             "Cable1/2/3:4" : {
-              "definitionLines" : "283",
+              "definitionLines" : "282",
               "numReferrers" : 1
             },
             "Crypto-Engine1/2/3" : {
-              "definitionLines" : "285",
+              "definitionLines" : "284",
               "numReferrers" : 1
             },
             "Dot11Radio0" : {
-              "definitionLines" : "287",
+              "definitionLines" : "286",
               "numReferrers" : 1
             },
             "Ethernet0" : {
-              "definitionLines" : "7-279",
+              "definitionLines" : "7-278",
               "numReferrers" : 1
             },
             "Ethernet1/11" : {
-              "definitionLines" : "289",
+              "definitionLines" : "288",
               "numReferrers" : 1
             },
             "Ethernet1/12" : {
-              "definitionLines" : "337-338",
+              "definitionLines" : "336-337",
               "numReferrers" : 1
             },
             "GigabitEthernet0/0" : {
-              "definitionLines" : "291-293",
+              "definitionLines" : "290-292",
               "numReferrers" : 1
             },
             "Loopback0" : {
-              "definitionLines" : "295-296",
+              "definitionLines" : "294-295",
               "numReferrers" : 1
             },
             "Modular-Cable1/2/3:4" : {
-              "definitionLines" : "298",
+              "definitionLines" : "297",
               "numReferrers" : 1
             },
             "Null0" : {
-              "definitionLines" : "300",
+              "definitionLines" : "299",
               "numReferrers" : 1
             },
             "Tunnel0" : {
-              "definitionLines" : "304-314",
+              "definitionLines" : "303-313",
               "numReferrers" : 1
             },
             "Vlan1" : {
-              "definitionLines" : "317",
+              "definitionLines" : "316",
               "numReferrers" : 1
             },
             "Vlan1005" : {
-              "definitionLines" : "323",
+              "definitionLines" : "322",
               "numReferrers" : 1
             },
             "Vlan1006" : {
-              "definitionLines" : "325",
+              "definitionLines" : "324",
               "numReferrers" : 1
             },
             "Vlan111" : {
-              "definitionLines" : "315",
+              "definitionLines" : "314",
               "numReferrers" : 1
             },
             "Vlan1234" : {
-              "definitionLines" : "327",
+              "definitionLines" : "326",
               "numReferrers" : 1
             },
             "Vlan2" : {
-              "definitionLines" : "319",
+              "definitionLines" : "318",
               "numReferrers" : 1
             },
             "Vlan3" : {
-              "definitionLines" : "321",
+              "definitionLines" : "320",
               "numReferrers" : 1
             },
             "Vlan4094" : {
-              "definitionLines" : "329",
+              "definitionLines" : "328",
               "numReferrers" : 1
             },
             "Wideband-Cable1/2/3:4" : {
-              "definitionLines" : "331",
+              "definitionLines" : "330",
               "numReferrers" : 1
             },
             "Wlan-GigabitEthernet0" : {
-              "definitionLines" : "335",
+              "definitionLines" : "334",
               "numReferrers" : 1
             },
             "Wlan-ap0" : {
-              "definitionLines" : "333",
+              "definitionLines" : "332",
               "numReferrers" : 1
             },
             "tunnel-ip6" : {
-              "definitionLines" : "302",
+              "definitionLines" : "301",
               "numReferrers" : 1
             }
           }
@@ -78319,27 +78311,27 @@
           "interface" : {
             "Async1" : {
               "interface" : [
-                281
+                280
               ]
             },
             "Cable1/2/3:4" : {
               "interface" : [
-                283
+                282
               ]
             },
             "Cellular0" : {
               "tunnel source" : [
-                312
+                311
               ]
             },
             "Crypto-Engine1/2/3" : {
               "interface" : [
-                285
+                284
               ]
             },
             "Dot11Radio0" : {
               "interface" : [
-                287
+                286
               ]
             },
             "Ethernet0" : {
@@ -78347,102 +78339,102 @@
                 7
               ],
               "tunnel source" : [
-                313
+                312
               ]
             },
             "Ethernet1/11" : {
               "interface" : [
-                289
+                288
               ]
             },
             "Ethernet1/12" : {
               "interface" : [
-                337
+                336
               ]
             },
             "GigabitEthernet0/0" : {
               "interface" : [
-                291
+                290
               ]
             },
             "Loopback0" : {
               "interface" : [
-                295
+                294
               ]
             },
             "Modular-Cable1/2/3:4" : {
               "interface" : [
-                298
+                297
               ]
             },
             "Null0" : {
               "interface" : [
-                300
+                299
               ]
             },
             "Tunnel0" : {
               "interface" : [
-                304
+                303
               ]
             },
             "Vlan1" : {
               "interface" : [
-                317
+                316
               ]
             },
             "Vlan1005" : {
               "interface" : [
-                323
+                322
               ]
             },
             "Vlan1006" : {
               "interface" : [
-                325
+                324
               ]
             },
             "Vlan111" : {
               "interface" : [
-                315
+                314
               ]
             },
             "Vlan1234" : {
               "interface" : [
-                327
+                326
               ]
             },
             "Vlan2" : {
               "interface" : [
-                319
+                318
               ]
             },
             "Vlan3" : {
               "interface" : [
-                321
+                320
               ]
             },
             "Vlan4094" : {
               "interface" : [
-                329
+                328
               ]
             },
             "Wideband-Cable1/2/3:4" : {
               "interface" : [
-                331
+                330
               ]
             },
             "Wlan-GigabitEthernet0" : {
               "interface" : [
-                335
+                334
               ]
             },
             "Wlan-ap0" : {
               "interface" : [
-                333
+                332
               ]
             },
             "tunnel-ip6" : {
               "interface" : [
-                302
+                301
               ]
             }
           },
@@ -78454,7 +78446,7 @@
             },
             "310-systems" : {
               "interface outgoing ip access-list" : [
-                137
+                136
               ]
             },
             "ag1" : {
@@ -78483,15 +78475,15 @@
           "policy-map" : {
             "limit-access-to-1Gbps" : {
               "interface service-instance service-policy" : [
-                209,
-                210
+                208,
+                209
               ]
             }
           },
           "route-map" : {
             "SITEMAP" : {
               "interface ip vrf sitemap" : [
-                135
+                134
               ]
             },
             "eigrp-leak-map" : {
@@ -78503,14 +78495,14 @@
           "zone" : {
             "t1" : {
               "interface zone-member" : [
-                278
+                277
               ]
             }
           },
           "zone security" : {
             "z1" : {
               "interface zone-member security" : [
-                279
+                278
               ]
             }
           }
@@ -84219,7 +84211,7 @@
             },
             "310-systems" : {
               "interface outgoing ip access-list" : [
-                137
+                136
               ]
             },
             "ag1" : {
@@ -84248,15 +84240,15 @@
           "policy-map" : {
             "limit-access-to-1Gbps" : {
               "interface service-instance service-policy" : [
-                209,
-                210
+                208,
+                209
               ]
             }
           },
           "route-map" : {
             "SITEMAP" : {
               "interface ip vrf sitemap" : [
-                135
+                134
               ]
             },
             "eigrp-leak-map" : {
@@ -84268,7 +84260,7 @@
           "zone security" : {
             "z1" : {
               "interface zone-member security" : [
-                279
+                278
               ]
             }
           }
