@@ -61,8 +61,7 @@ import org.batfish.datamodel.transformation.Transformation;
 public final class TracerouteUtils {
 
   /**
-   * Does a basic validation of input to {@link
-   * TracerouteEngineImplContext#buildTracesAndReturnFlows()}
+   * Does a basic validation of input to {@link TracerouteEngineImplContext#buildTraceDags()}
    *
    * @param configurations {@link Map} of {@link Configuration}s
    * @param flow {@link Flow} for which input validation is to be done

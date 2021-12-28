@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.route.nh.LegacyNextHops;
 import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
@@ -67,7 +68,7 @@ public abstract class AbstractRouteBuilder<
     if (_nextHop == null) {
       return Route.UNSET_ROUTE_NEXT_HOP_IP;
     }
-    return AbstractRoute.nextHopIpExtractor().visit(_nextHop);
+    return LegacyNextHops.getNextHopIp(_nextHop).orElse(Route.UNSET_ROUTE_NEXT_HOP_IP);
   }
 
   @Nonnull
@@ -113,7 +114,7 @@ public abstract class AbstractRouteBuilder<
     if (_nextHop == null) {
       return Route.UNSET_NEXT_HOP_INTERFACE;
     }
-    return AbstractRoute.nextHopInterfaceExtractor().visit(_nextHop);
+    return LegacyNextHops.getNextHopInterface(_nextHop).orElse(Route.UNSET_NEXT_HOP_INTERFACE);
   }
 
   /**
