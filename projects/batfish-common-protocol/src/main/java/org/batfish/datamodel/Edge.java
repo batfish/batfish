@@ -71,26 +71,10 @@ public class Edge implements Serializable, Comparable<Edge> {
     return _head.getInterface();
   }
 
-  /** @deprecated Use {@link #getTail()} */
-  @Deprecated
-  @JsonIgnore
-  @Nonnull
-  public NodeInterfacePair getInterface1() {
-    return getTail();
-  }
-
   @JsonIgnore
   @Nonnull
   public NodeInterfacePair getTail() {
     return _tail;
-  }
-
-  /** @deprecated Use {@link #getHead()} */
-  @JsonIgnore
-  @Deprecated
-  @Nonnull
-  public NodeInterfacePair getInterface2() {
-    return getHead();
   }
 
   @JsonIgnore
