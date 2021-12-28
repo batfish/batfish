@@ -4,7 +4,6 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.BgpRoute;
-import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.route.nh.NextHop;
 
 /**
@@ -21,12 +20,6 @@ public class RouteRowSecondaryKey {
   public RouteRowSecondaryKey(NextHop nextHop, String protocol) {
     _nextHop = nextHop;
     _protocol = protocol;
-  }
-
-  @Deprecated
-  @SuppressWarnings("unused")
-  public RouteRowSecondaryKey(NextHop nextHop, Ip nhip, String protocol) {
-    this(nextHop, protocol);
   }
 
   @Override
