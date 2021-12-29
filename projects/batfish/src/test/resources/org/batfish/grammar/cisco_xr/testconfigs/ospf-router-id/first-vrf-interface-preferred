@@ -1,0 +1,55 @@
+! if no valid loopbacks are present, the first interface in the vrf is picked,
+!   independent of whether its higher or lower address
+!
+!! IOS XR Configuration 6.3.1
+!! Last configuration change at Wed Dec 29 19:16:12 2021 by cisco
+!
+hostname first-vrf-interface-preferred
+!
+vrf other
+!
+interface GigabitEthernet0/0/0/0
+ ipv4 address 2.2.2.1 255.255.255.252
+ no shutdown
+!
+interface GigabitEthernet0/0/0/1
+ ipv4 address 200.200.200.1 255.255.255.252
+ no shutdown
+!
+interface GigabitEthernet0/0/0/2
+ vrf other
+ ipv4 address 210.210.210.1/30
+ no shutdown
+!
+interface GigabitEthernet0/0/0/3
+ vrf other
+ ipv4 address 3.3.3.1/30
+ no shutdown
+!
+router ospf 100
+ area 0
+  interface GigabitEthernet0/0/0/0
+     cost 100
+  !
+  interface GigabitEthernet0/0/0/1
+     cost 100
+  !
+ !
+!
+router ospf 101
+ vrf other
+   area 0
+    interface GigabitEthernet0/0/0/2
+       cost 100
+    !
+    interface GigabitEthernet0/0/0/3
+       cost 100
+    !
+   !
+ !
+!
+! #show ospf
+!  Routing Process "ospf 100" with ID 2.2.2.1
+!  Routing Process "ospf 101" with ID 0.0.0.0
+! #show ospf vrf other
+!  VRF other in Routing Process "ospf 101" with ID 210.210.210.1

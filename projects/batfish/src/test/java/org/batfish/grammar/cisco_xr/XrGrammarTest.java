@@ -3943,4 +3943,58 @@ public final class XrGrammarTest {
                             + " this line."),
                     hasText("rewrite ingress tag pop 1 symmetric")))));
   }
+
+  @Test(expected = AssertionError.class) // https://github.com/batfish/batfish/issues/7868
+  public void testOspfRouterId_firstLoopbackPreferred() {
+    String hostname = "first-loopback-preferred";
+    Batfish batfish = getBatfishForConfigurationNames("ospf-router-id/" + hostname);
+
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+    assertEquals(
+        Ip.parse("10.10.10.10"), c.getDefaultVrf().getOspfProcesses().get("100").getRouterId());
+    assertEquals(
+        Ip.parse("0.0.0.0"), c.getDefaultVrf().getOspfProcesses().get("101").getRouterId());
+    assertEquals(
+        Ip.parse("10.10.10.10"),
+        c.getVrfs().get("other").getOspfProcesses().get("101").getRouterId());
+  }
+
+  @Test(expected = AssertionError.class) // https://github.com/batfish/batfish/issues/7868
+  public void testOspfRouterId_firstVrfInterfacePreferred() {
+    String hostname = "first-vrf-interface-preferred";
+    Batfish batfish = getBatfishForConfigurationNames("ospf-router-id/" + hostname);
+
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+    assertEquals(
+        Ip.parse("2.2.2.2"), c.getDefaultVrf().getOspfProcesses().get("100").getRouterId());
+    assertEquals(
+        Ip.parse("0.0.0.0"), c.getDefaultVrf().getOspfProcesses().get("101").getRouterId());
+    assertEquals(
+        Ip.parse("210.210.210.1"),
+        c.getVrfs().get("other").getOspfProcesses().get("101").getRouterId());
+  }
+
+  @Test(expected = AssertionError.class) // https://github.com/batfish/batfish/issues/7868
+  public void testOspfRouterId_vrfLoopbackIgnored() {
+    String hostname = "vrf-loopback-ignored";
+    Batfish batfish = getBatfishForConfigurationNames("ospf-router-id/" + hostname);
+
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+    assertEquals(
+        Ip.parse("1.1.1.1"), c.getDefaultVrf().getOspfProcesses().get("100").getRouterId());
+    assertEquals(
+        Ip.parse("0.0.0.0"), c.getDefaultVrf().getOspfProcesses().get("101").getRouterId());
+    assertEquals(
+        Ip.parse("1.1.1.1"), c.getVrfs().get("other").getOspfProcesses().get("101").getRouterId());
+  }
+
+  @Test(expected = AssertionError.class) // https://github.com/batfish/batfish/issues/7868
+  public void testOspfRouterId_noActiveInterface() {
+    String hostname = "no-active-interface";
+    Batfish batfish = getBatfishForConfigurationNames("ospf-router-id/" + hostname);
+
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+    assertEquals(
+        Ip.parse("0.0.0.0"), c.getDefaultVrf().getOspfProcesses().get("100").getRouterId());
+  }
 }
