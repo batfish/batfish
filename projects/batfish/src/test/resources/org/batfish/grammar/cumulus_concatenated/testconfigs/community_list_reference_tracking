@@ -1,0 +1,15 @@
+community_list_reference_tracking
+# This file describes the network interfaces
+### end /etc/network/interfaces
+# ports.conf --
+### start of frr.conf
+frr version
+
+bgp community-list standard STANDARD permit 64512:1
+bgp community-list expanded EXPANDED permit 64512:1
+
+route-map RM permit 10
+  match community STANDARD
+  match community EXPANDED
+
+!### end frr.conf
