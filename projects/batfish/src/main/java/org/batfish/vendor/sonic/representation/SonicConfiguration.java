@@ -84,7 +84,8 @@ public class SonicConfiguration extends FrrVendorConfiguration {
         _configDb.getMgmtInterfaces(),
         c.getVrfs().get(getMgmtVrfName(_configDb.getMgmtVrfs())));
 
-    convertLoopbacks(c, _configDb.getLoopbacks(), c.getDefaultVrf());
+    convertLoopbacks(
+        c, _configDb.getLoopbacks(), _configDb.getLoopbackInterfaces(), c.getDefaultVrf());
 
     convertVlans(
         c,
@@ -135,7 +136,7 @@ public class SonicConfiguration extends FrrVendorConfiguration {
   @Override
   public boolean hasInterface(String ifaceName) {
     return _configDb.getPorts().containsKey(ifaceName)
-        || _configDb.getLoopbacks().containsKey(ifaceName)
+        || _configDb.getLoopbackInterfaces().containsKey(ifaceName)
         || _configDb.getMgmtPorts().containsKey(ifaceName)
         || (_configDb.getVlans().containsKey(ifaceName)
             && _configDb.getVlanInterfaces().containsKey(ifaceName));
@@ -154,7 +155,7 @@ public class SonicConfiguration extends FrrVendorConfiguration {
     if (_configDb.getPorts().containsKey(ifaceName)) {
       return DEFAULT_VRF_NAME; // only have default VRF for ports in PORT object
     }
-    if (_configDb.getLoopbacks().containsKey(ifaceName)) {
+    if (_configDb.getLoopbackInterfaces().containsKey(ifaceName)) {
       return DEFAULT_VRF_NAME; // only have default VRF for loopbacks
     }
     if (_configDb.getMgmtPorts().containsKey(ifaceName)) {
@@ -178,8 +179,8 @@ public class SonicConfiguration extends FrrVendorConfiguration {
           .flatMap(iface -> Optional.ofNullable(iface.getAddress()).map(ImmutableList::of))
           .orElse(ImmutableList.of());
     }
-    if (_configDb.getLoopbacks().containsKey(ifaceName)) {
-      return Optional.ofNullable(_configDb.getLoopbacks().get(ifaceName))
+    if (_configDb.getLoopbackInterfaces().containsKey(ifaceName)) {
+      return Optional.ofNullable(_configDb.getLoopbackInterfaces().get(ifaceName))
           .flatMap(iface -> Optional.ofNullable(iface.getAddress()).map(ImmutableList::of))
           .orElse(ImmutableList.of());
     }

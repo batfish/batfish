@@ -28,6 +28,7 @@ import static org.batfish.vendor.sonic.representation.SonicConversions.attachAcl
 import static org.batfish.vendor.sonic.representation.SonicConversions.checkVlanId;
 import static org.batfish.vendor.sonic.representation.SonicConversions.convertAcls;
 import static org.batfish.vendor.sonic.representation.SonicConversions.convertDhcpServers;
+import static org.batfish.vendor.sonic.representation.SonicConversions.convertLoopbacks;
 import static org.batfish.vendor.sonic.representation.SonicConversions.convertPorts;
 import static org.batfish.vendor.sonic.representation.SonicConversions.convertVlans;
 import static org.hamcrest.Matchers.allOf;
@@ -43,6 +44,7 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import java.util.Map;
 import javax.annotation.Nonnull;
@@ -484,6 +486,59 @@ public class SonicConversionsTest {
           warnings.getRedFlagWarnings(),
           contains(hasText("Port 'other' referenced in ACL_TABLE 'testAcl' does not exist.")));
       assertEquals(aclName, c.getAllInterfaces().get(ifaceName).getOutgoingFilter().getName());
+    }
+  }
+
+  @Test
+  public void testConvertLoopbacks() {
+    {
+      // interface only in LOOPBACK_INTERFACE
+      Configuration c =
+          Configuration.builder().setHostname("host").setConfigurationFormat(SONIC).build();
+      Vrf vrf = Vrf.builder().setOwner(c).setName("vrf").build();
+      convertLoopbacks(
+          c,
+          ImmutableSet.of(),
+          ImmutableMap.of(
+              "Loopback0", new L3Interface(ConcreteInterfaceAddress.parse("1.1.1.1/24"))),
+          vrf);
+      assertThat(
+          c.getAllInterfaces().get("Loopback0"),
+          allOf(
+              hasVrfName("vrf"),
+              hasInterfaceType(InterfaceType.LOOPBACK),
+              hasAddress("1.1.1.1/24")));
+    }
+    {
+      // interface only in LOOPBACK
+      Configuration c =
+          Configuration.builder().setHostname("host").setConfigurationFormat(SONIC).build();
+      Vrf vrf = Vrf.builder().setOwner(c).setName("vrf").build();
+      convertLoopbacks(c, ImmutableSet.of("Loopback0"), ImmutableMap.of(), vrf);
+      assertThat(
+          c.getAllInterfaces().get("Loopback0"),
+          allOf(
+              hasVrfName("vrf"),
+              hasInterfaceType(InterfaceType.LOOPBACK),
+              hasAddress(nullValue())));
+    }
+    {
+      // interface in both tables
+      Configuration c =
+          Configuration.builder().setHostname("host").setConfigurationFormat(SONIC).build();
+      Vrf vrf = Vrf.builder().setOwner(c).setName("vrf").build();
+      convertLoopbacks(
+          c,
+          ImmutableSet.of("Loopback0"),
+          ImmutableMap.of(
+              "Loopback0", new L3Interface(ConcreteInterfaceAddress.parse("1.1.1.1/24"))),
+          vrf);
+      assertThat(
+          c.getAllInterfaces().get("Loopback0"),
+          allOf(
+              hasVrfName("vrf"),
+              hasInterfaceType(InterfaceType.LOOPBACK),
+              hasAddress("1.1.1.1/24")));
     }
   }
 }

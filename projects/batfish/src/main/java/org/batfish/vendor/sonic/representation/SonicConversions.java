@@ -76,19 +76,35 @@ public class SonicConversions {
     }
   }
 
-  /** Converts loopbacks under LOOPBACK_INTERFACE table */
-  static void convertLoopbacks(Configuration c, Map<String, L3Interface> loopbacks, Vrf vrf) {
+  /** Converts loopbacks under LOOPBACK and LOOPBACK_INTERFACE tables */
+  static void convertLoopbacks(
+      Configuration c,
+      Set<String> loopbacks,
+      Map<String, L3Interface> loopbackInterfaces,
+      Vrf vrf) {
 
     // TODO: set bandwidth appropriately
 
-    for (String ifaceName : loopbacks.keySet()) {
+    for (String ifaceName : loopbacks) {
       Interface.builder()
           .setName(ifaceName)
           .setOwner(c)
           .setVrf(vrf)
           .setType(InterfaceType.LOOPBACK)
-          .setAddress(loopbacks.get(ifaceName).getAddress())
           .build();
+    }
+
+    for (String ifaceName : loopbackInterfaces.keySet()) {
+      Interface viIface =
+          c.getActiveInterfaces().containsKey(ifaceName)
+              ? c.getAllInterfaces().get(ifaceName)
+              : Interface.builder()
+                  .setName(ifaceName)
+                  .setOwner(c)
+                  .setVrf(vrf)
+                  .setType(InterfaceType.LOOPBACK)
+                  .build();
+      viIface.setAddress(loopbackInterfaces.get(ifaceName).getAddress());
     }
   }
 
