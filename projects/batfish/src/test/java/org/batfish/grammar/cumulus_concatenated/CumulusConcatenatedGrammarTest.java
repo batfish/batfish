@@ -80,6 +80,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.BgpAggregate;
 import org.batfish.datamodel.bgp.BgpConfederation;
@@ -137,6 +138,16 @@ public class CumulusConcatenatedGrammarTest {
     settings.setThrowOnParserError(true);
 
     return parseFromTextWithSettings(src, settings);
+  }
+
+  private static CumulusConcatenatedConfiguration parseFrrLines(String hostname, String... lines) {
+    return parse(
+        String.join(
+                "\n",
+                ImmutableList.of(hostname, INTERFACES_DELIMITER, PORTS_DELIMITER, FRR_DELIMITER))
+            + "\n"
+            + String.join("\n", lines)
+            + "\n");
   }
 
   private static CumulusConcatenatedConfiguration parseLines(String... lines) {
@@ -1250,5 +1261,16 @@ public class CumulusConcatenatedGrammarTest {
             equalTo(Prefix.parse("5.0.0.0/16")),
             // TODO: implement matching-med-only and origin
             equalTo(BgpAggregate.of(Prefix.parse("5.0.0.0/16"), null, null, null))));
+  }
+
+  @Test
+  public void testCommunityListReferenceTracking() throws IOException {
+    String hostname = "community_list_reference_tracking";
+    IBatfish batfish = getBatfishForConfigurationNames(hostname);
+
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertTrue(ccae.getUndefinedReferences().get("configs/" + hostname).isEmpty());
   }
 }

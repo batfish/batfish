@@ -33,7 +33,11 @@ public enum SonicStructureType implements StructureType {
 
   // TODO: Add abstract structures here after adding structures from configdb
   public static final Multimap<SonicStructureType, SonicStructureType> ABSTRACT_STRUCTURES =
-      ImmutableListMultimap.<SonicStructureType, SonicStructureType>builder().build();
+      ImmutableListMultimap.<SonicStructureType, SonicStructureType>builder()
+          .putAll(
+              BGP_COMMUNITY_LIST,
+              ImmutableSet.of(IP_COMMUNITY_LIST_STANDARD, IP_COMMUNITY_LIST_EXPANDED))
+          .build();
 
   public static final Set<SonicStructureType> CONCRETE_STRUCTURES =
       ImmutableSet.copyOf(
