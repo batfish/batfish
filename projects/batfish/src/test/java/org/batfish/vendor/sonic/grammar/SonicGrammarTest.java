@@ -20,6 +20,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -42,6 +43,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -279,5 +281,16 @@ public class SonicGrammarTest {
                         matchIpProtocol(17),
                         matchDstPort(161),
                         matchSrc(Prefix.parse("10.1.4.0/22")))))));
+  }
+
+  @Test
+  public void testCommunityListReferenceTracking() throws IOException {
+    String snapshotName = "community_list_reference_tracking";
+    Batfish batfish = getBatfish(snapshotName, "device/frr.conf", "device/config_db.json");
+
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertTrue(ccae.getUndefinedReferences().get("sonic_configs/device/frr.conf").isEmpty());
   }
 }

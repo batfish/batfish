@@ -3,6 +3,7 @@ package org.batfish.representation.cumulus_concatenated;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.representation.cumulus_concatenated.CumulusStructureType.BGP_COMMUNITY_LIST;
 import static org.batfish.representation.cumulus_concatenated.CumulusStructureType.fromFrrStructureType;
 import static org.batfish.representation.cumulus_concatenated.CumulusStructureUsage.fromFrrStructureUsage;
 import static org.batfish.representation.cumulus_concatenated.InterfaceConverter.BRIDGE_NAME;
@@ -773,10 +774,14 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
         CumulusStructureType.ABSTRACT_INTERFACE,
         CumulusStructureUsage.PORT_SPEED,
         ImmutableSet.of(CumulusStructureType.INTERFACE));
+    markAbstractStructureAllUsages(
+        BGP_COMMUNITY_LIST,
+        ImmutableSet.of(
+            CumulusStructureType.IP_COMMUNITY_LIST_STANDARD,
+            CumulusStructureType.IP_COMMUNITY_LIST_EXPANDED));
     markConcreteStructure(CumulusStructureType.BOND);
     markConcreteStructure(CumulusStructureType.INTERFACE);
     markConcreteStructure(CumulusStructureType.BGP_AS_PATH_ACCESS_LIST);
-    markConcreteStructure(CumulusStructureType.BGP_COMMUNITY_LIST);
     markConcreteStructure(CumulusStructureType.IP_PREFIX_LIST);
     markConcreteStructure(CumulusStructureType.LOOPBACK);
     markConcreteStructure(CumulusStructureType.ROUTE_MAP);
