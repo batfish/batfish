@@ -140,16 +140,6 @@ public class CumulusConcatenatedGrammarTest {
     return parseFromTextWithSettings(src, settings);
   }
 
-  private static CumulusConcatenatedConfiguration parseFrrLines(String hostname, String... lines) {
-    return parse(
-        String.join(
-                "\n",
-                ImmutableList.of(hostname, INTERFACES_DELIMITER, PORTS_DELIMITER, FRR_DELIMITER))
-            + "\n"
-            + String.join("\n", lines)
-            + "\n");
-  }
-
   private static CumulusConcatenatedConfiguration parseLines(String... lines) {
     return parse(String.join("\n", lines) + "\n");
   }
