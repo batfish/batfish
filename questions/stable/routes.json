@@ -1,91 +1,93 @@
 {
-    "class": "org.batfish.question.routes.RoutesQuestion",
-    "differential": false,
-    "instance": {
-        "description": "Returns routing tables.",
-        "instanceName": "routes",
-        "longDescription": "Shows routes for specified RIB, VRF, and node(s).",
-        "orderedVariableNames": [
-            "nodes",
-            "network",
-            "prefixMatchType",
-            "protocols",
-            "vrfs",
-            "rib"
+  "class": "org.batfish.question.routes.RoutesQuestion",
+  "differential": false,
+  "instance": {
+    "description": "Returns routing tables.",
+    "instanceName": "routes",
+    "longDescription": "Shows routes for specified RIB, VRF, and node(s).",
+    "orderedVariableNames": [
+      "nodes",
+      "network",
+      "prefixMatchType",
+      "protocols",
+      "vrfs",
+      "rib"
+    ],
+    "tags": [
+      "dataplane",
+      "routing"
+    ],
+    "variables": {
+      "nodes": {
+        "description": "Return routes on nodes matching this specifier",
+        "type": "nodeSpec",
+        "optional": true,
+        "displayName": "Nodes"
+      },
+      "vrfs": {
+        "description": "Return routes on VRFs matching this name or regex",
+        "type": "vrf",
+        "optional": true,
+        "displayName": "VRFs"
+      },
+      "network": {
+        "description": "Return routes for networks matching this prefix",
+        "type": "prefix",
+        "optional": true,
+        "displayName": "Network"
+      },
+      "prefixMatchType": {
+        "description": "Use this prefix matching criterion: EXACT, LONGEST_PREFIX_MATCH, LONGER_PREFIXES, SHORTER_PREFIXES",
+        "optional": true,
+        "type": "string",
+        "value": "EXACT",
+        "values": [
+          {
+            "name": "EXACT"
+          },
+          {
+            "name": "LONGEST_PREFIX_MATCH"
+          },
+          {
+            "name": "LONGER_PREFIXES"
+          },
+          {
+            "name": "SHORTER_PREFIXES"
+          }
         ],
-        "tags": [
-            "dataplane",
-            "routing"
+        "displayName": "Prefix match type"
+      },
+      "protocols": {
+        "description": "Return routes for protocols matching this specifier",
+        "type": "routingProtocolSpec",
+        "optional": true,
+        "value": "ALL",
+        "displayName": "Protocols"
+      },
+      "rib": {
+        "description": "Only return routes from a given RIB (main, bgp, evpn). This option is deprecated and may be removed in the future. Use BGP and EVPN RIB questions for those RIBs.",
+        "optional": true,
+        "type": "string",
+        "value": "main",
+        "values": [
+          {
+            "name": "main"
+          },
+          {
+            "name": "bgp"
+          },
+          {
+            "name": "evpn"
+          }
         ],
-        "variables": {
-            "nodes": {
-                "description": "Return routes on nodes matching this specifier",
-                "type": "nodeSpec",
-                "optional": true,
-                "displayName": "Nodes"
-            },
-            "vrfs": {
-                "description": "Return routes on VRFs matching this name or regex",
-                "type": "vrf",
-                "optional": true,
-                "displayName": "VRFs"
-            },
-            "network": {
-                "description": "Return routes for networks matching this prefix",
-                "type": "prefix",
-                "optional": true,
-                "displayName": "Network"
-            },
-            "prefixMatchType": {
-                "description": "Use this prefix matching criterion: EXACT, LONGEST_PREFIX_MATCH, LONGER_PREFIXES, SHORTER_PREFIXES",
-                "optional": true,
-                "type": "string",
-                "value": "EXACT",
-                "values": [
-                    {
-                        "name": "EXACT"
-                    },
-                    {
-                        "name": "LONGEST_PREFIX_MATCH"
-                    },
-                    {
-                        "name": "LONGER_PREFIXES"
-                    },
-                    {
-                        "name": "SHORTER_PREFIXES"
-                    }
-                ],
-                "displayName": "Prefix match type"
-            },
-            "protocols": {
-                "description": "Return routes for protocols matching this specifier",
-                "type": "routingProtocolSpec",
-                "optional": true,
-                "displayName": "Protocols"
-            },
-            "rib": {
-                "description": "Only return routes from a given protocol RIB",
-                "optional": true,
-                "type": "string",
-                "values": [
-                    {
-                        "name": "main"
-                    },
-                    {
-                        "name": "bgp"
-                    },
-                    {
-                        "name": "evpn"
-                    }
-                ],
-                "displayName": "RIB"
-            }
-        }
-    },
-    "network": "${network}",
-    "nodes": "${nodes}",
-    "prefixMatchType": "${prefixMatchType}",
-    "protocols": "${protocols}",
-    "rib": "${rib}",
-    "vrfs": "${vrfs}"
+        "displayName": "RIB"
+      }
+    }
+  },
+  "network": "${network}",
+  "nodes": "${nodes}",
+  "prefixMatchType": "${prefixMatchType}",
+  "protocols": "${protocols}",
+  "rib": "${rib}",
+  "vrfs": "${vrfs}"
 }

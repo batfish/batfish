@@ -60,6 +60,7 @@
                "description": "Examine routes whose status matches this specifier",
                "type": "bgpRouteStatusSpec",
                "optional": true,
+                "value": "BEST",
                "displayName": "Status"
             }
         }

@@ -19,13 +19,13 @@
             "nodes": {
                 "description": "Examine routes on nodes matching this specifier",
                 "type": "nodeSpec",
-                "value": ".*",
+                "value": "/.*/",
                 "displayName": "Nodes"
             },
             "vrfs": {
                 "description": "Examine routes on VRFs matching this name or regex",
                 "type": "vrf",
-                "value": ".*",
+                "value": "/.*/",
                 "displayName": "VRFs"
             }
         },
