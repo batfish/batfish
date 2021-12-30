@@ -36,7 +36,7 @@ public enum SonicStructureType implements StructureType {
       ImmutableListMultimap.<SonicStructureType, SonicStructureType>builder()
           .putAll(
               BGP_COMMUNITY_LIST,
-              ImmutableSet.of(IP_COMMUNITY_LIST_STANDARD, IP_COMMUNITY_LIST_EXPANDED))
+              ImmutableSet.of(BGP_COMMUNITY_LIST_STANDARD, BGP_COMMUNITY_LIST_EXPANDED))
           .build();
 
   public static final Set<SonicStructureType> CONCRETE_STRUCTURES =
