@@ -1,4 +1,5 @@
 ! the first loopback should be selected independent of its address
+!   even if the loopback is not in OSPF
 !
 !! IOS XR Configuration 6.3.1
 !! Last configuration change at Wed Dec 29 19:16:12 2021 by cisco

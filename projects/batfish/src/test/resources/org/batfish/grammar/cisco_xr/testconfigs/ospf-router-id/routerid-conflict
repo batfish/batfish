@@ -1,0 +1,42 @@
+! Two process in the default VRF are not allocated the same routerid.
+! (Multiple processes are not allowed in non-default VRF.)
+! When two processes are defined for the default VRF, one of them gets
+! loopback-based routerid and the other gets inprocess-interface-based
+! address.
+!
+!! IOS XR Configuration 6.3.1
+!! Last configuration change at Wed Dec 29 19:16:12 2021 by cisco
+!
+hostname routerid-conflict
+!
+interface Loopback0
+ ipv4 address 1.1.1.1 255.255.255.255
+!
+interface Loopback1
+ ipv4 address 2.1.1.1 255.255.255.255
+!
+interface GigabitEthernet0/0/0/0
+ ipv4 address 100.100.100.1 255.255.255.252
+ no shutdown
+!
+interface GigabitEthernet0/0/0/1
+ ipv4 address 200.100.100.1 255.255.255.252
+ no shutdown
+!
+router ospf 100
+ area 0
+  interface GigabitEthernet0/0/0/0
+   cost 100
+  !
+ !
+!
+router ospf 101
+ area 0
+  interface GigabitEthernet0/0/0/1
+   cost 100
+  !
+ !
+!
+! #show ospf <-- the allocation below is not deterministic
+!   Routing Process "ospf 100" with ID 1.1.1.1
+!   Routing Process "ospf 101" with ID 200.100.100.1

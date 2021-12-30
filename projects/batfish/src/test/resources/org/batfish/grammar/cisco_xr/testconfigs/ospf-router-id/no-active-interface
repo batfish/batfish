@@ -14,7 +14,7 @@ interface GigabitEthernet0/0/0/0
 !
 router ospf 100
  area 0
-  interface GigabitEthernet0/0/0/2
+  interface GigabitEthernet0/0/0/0
    cost 100
   !
  !

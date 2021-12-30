@@ -1,25 +1,23 @@
-! loopback interfaces in a vrf are ignored, even by processes in the vrf
+! loopback interfaces in a vrf are acceptable when they are in the process
+!    and no other loopbacks are available
 !
 !! IOS XR Configuration 6.3.1
 !! Last configuration change at Wed Dec 29 19:16:12 2021 by cisco
 !
-hostname vrf-loopback-ignored
+hostname vrf-loopback-accepted
 !
-vrf other
+vrf vrf101
 !
 interface Loopback0
- vrf other
+ vrf vrf101
  ipv4 address 10.10.10.10 255.255.255.255
-!
-interface Loopback1
- ipv4 address 1.1.1.1 255.255.255.255
 !
 interface GigabitEthernet0/0/0/0
  ipv4 address 2.2.2.1 255.255.255.252
  no shutdown
 !
 interface GigabitEthernet0/0/0/2
- vrf other
+ vrf vrf101
  ipv4 address 3.3.3.1/30
  no shutdown
 !
@@ -31,8 +29,11 @@ router ospf 100
  !
 !
 router ospf 101
- vrf other
+ vrf vrf101
    area 0
+    interface Loopback0
+       cost 100
+    !
     interface GigabitEthernet0/0/0/2
        cost 100
     !
@@ -40,7 +41,6 @@ router ospf 101
  !
 !
 ! #show ospf
-!  Routing Process "ospf 100" with ID 1.1.1.1
-!  Routing Process "ospf 101" with ID 0.0.0.0
-! #show ospf vrf other
-!   VRF other in Routing Process "ospf 101" with ID 1.1.1.1
+!  Routing Process "ospf 100" with ID 2.2.2.1  <-- Loopback0 is not acceptable, so pick other interface
+! #show ospf vrf all
+!  VRF vrf101 in Routing Process "ospf 101" with ID 10.10.10.10 <-- Loopback0 is acceptable

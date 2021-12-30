@@ -1,10 +1,10 @@
-! if no valid loopbacks are present, the first interface in the vrf is picked,
+! if no valid loopbacks are present, the first active interface in the process is picked,
 !   independent of whether its higher or lower address
 !
 !! IOS XR Configuration 6.3.1
 !! Last configuration change at Wed Dec 29 19:16:12 2021 by cisco
 !
-hostname first-vrf-interface-preferred
+hostname first-inprocess-interface-preferred
 !
 vrf other
 !
