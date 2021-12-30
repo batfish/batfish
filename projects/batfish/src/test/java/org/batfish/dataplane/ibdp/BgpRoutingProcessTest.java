@@ -9,14 +9,17 @@ import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasA
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHop;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasProtocol;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasTag;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.isNonRouting;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasCommunities;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasOriginType;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasWeight;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpv4RouteThat;
 import static org.batfish.datamodel.vxlan.Layer2Vni.testBuilder;
+import static org.batfish.dataplane.ibdp.BgpRoutingProcess.evpnRouteToBgpv4Route;
 import static org.batfish.dataplane.ibdp.BgpRoutingProcess.initEvpnType3Route;
 import static org.batfish.dataplane.ibdp.BgpRoutingProcess.processExternalBgpAdvertisementImport;
+import static org.batfish.dataplane.ibdp.BgpRoutingProcess.toEvpnType5Route;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
@@ -51,6 +54,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.EvpnType3Route;
+import org.batfish.datamodel.EvpnType5Route;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OriginMechanism;
@@ -910,5 +914,32 @@ public class BgpRoutingProcessTest {
 
     // policy application will overwrite the next hop ip
     assertThat(outputRouteBuilder.build().getNextHopIp(), equalTo(neighborIp));
+  }
+
+  @Test
+  public void testToEvpnType5Route() {
+    // ensure tag is copied
+    Bgpv4Route inputRoute = Bgpv4Route.testBuilder().setTag(5L).setNetwork(Prefix.ZERO).build();
+    assertThat(
+        toEvpnType5Route(inputRoute, RouteDistinguisher.from(Ip.ZERO, 1), ImmutableSet.of(), 1),
+        hasTag(5L));
+  }
+
+  @Test
+  public void testEvpnRouteToBgpv4Route() {
+    // ensure tag is copied
+    EvpnType5Route inputRoute =
+        EvpnType5Route.builder()
+            .setTag(5L)
+            .setNetwork(Prefix.ZERO)
+            .setRouteDistinguisher(RouteDistinguisher.from(Ip.ZERO, 1))
+            .setVni(1)
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setOriginType(OriginType.IGP)
+            .setOriginatorIp(Ip.ZERO)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHop(NextHopDiscard.instance())
+            .build();
+    assertThat(evpnRouteToBgpv4Route(inputRoute, 1).build(), hasTag(5L));
   }
 }

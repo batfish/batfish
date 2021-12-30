@@ -2144,7 +2144,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   }
 
   /** Convert a BGP v4 route to a EVPN type 5 route. */
-  private static @Nonnull EvpnType5Route toEvpnType5Route(
+  @VisibleForTesting
+  static @Nonnull EvpnType5Route toEvpnType5Route(
       Bgpv4Route route, RouteDistinguisher rd, Set<ExtendedCommunity> rt, int vni) {
     return EvpnType5Route.builder()
         .setNetwork(route.getNetwork())
@@ -2162,6 +2163,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         .setReceivedFromRouteReflectorClient(route.getReceivedFromRouteReflectorClient())
         .setRouteDistinguisher(rd)
         .setSrcProtocol(route.getSrcProtocol())
+        .setTag(route.getTag())
         .setVni(vni)
         .setWeight(route.getWeight())
         .build();
@@ -2232,7 +2234,11 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         assert route.getProtocol() == RoutingProtocol.IBGP;
         admin = _process.getIbgpAdminCost();
     }
+    return evpnRouteToBgpv4Route(route, admin);
+  }
 
+  @VisibleForTesting
+  static @Nonnull Bgpv4Route.Builder evpnRouteToBgpv4Route(EvpnType5Route route, int admin) {
     return Bgpv4Route.builder()
         .setNetwork(route.getNetwork())
         .setAdmin(admin)
@@ -2248,6 +2254,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         .setReceivedFromIp(route.getReceivedFromIp())
         .setReceivedFromRouteReflectorClient(route.getReceivedFromRouteReflectorClient())
         .setSrcProtocol(route.getSrcProtocol())
+        .setTag(route.getTag())
         .setWeight(route.getWeight());
   }
 
