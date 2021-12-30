@@ -1,0 +1,77 @@
+! loopback interfaces in a vrf are ignored even by processes in the vrf
+!    and by processes with the loopback in them. but in-process,
+!    in-vrf loopbacks are OK if no there are no other loopbacks (see vrf-loopback-accepted)
+! loopback interfaces that are shutdown are ignored
+!
+!! IOS XR Configuration 6.3.1
+!! Last configuration change at Wed Dec 29 19:16:12 2021 by cisco
+!
+hostname shut-vrf-loopback-ignored
+!
+vrf vrf101
+vrf vrf102
+!
+interface Loopback0
+ ! in an OSPF process's VRF but not in the process
+ vrf vrf101
+ ipv4 address 10.10.10.10 255.255.255.255
+!
+interface Loopback1
+ ipv4 address 1.1.1.1 255.255.255.255
+ shutdown
+!
+interface Loopback2
+ ! in an OSPF process
+ vrf vrf102
+ ipv4 address 2.1.1.1 255.255.255.255
+!
+interface Loopback3
+ ipv4 address 3.1.1.1 255.255.255.255
+!
+interface GigabitEthernet0/0/0/0
+ ipv4 address 2.2.2.1 255.255.255.252
+ no shutdown
+!
+interface GigabitEthernet0/0/0/2
+ vrf vrf101
+ ipv4 address 3.3.3.1/30
+ no shutdown
+!
+interface GigabitEthernet0/0/0/3
+ vrf vrf102
+ ipv4 address 4.3.3.1/30
+ no shutdown
+!
+router ospf 100
+ area 0
+  interface GigabitEthernet0/0/0/0
+     cost 100
+  !
+ !
+!
+router ospf 101
+ vrf vrf101
+   area 0
+    interface GigabitEthernet0/0/0/2
+       cost 100
+    !
+   !
+ !
+!
+router ospf 102
+ vrf vrf102
+   area 0
+    interface Loopback2
+       cost 100
+    !
+    interface GigabitEthernet0/0/0/3
+       cost 100
+    !
+   !
+ !
+!
+! #show ospf
+!  Routing Process "ospf 100" with ID 3.1.1.1
+! #show ospf vrf all
+!   VRF vrf101 in Routing Process "ospf 101" with ID 3.1.1.1
+!   VRF vrf102 in Routing Process "ospf 101" with ID 3.1.1.1

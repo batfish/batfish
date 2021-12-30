@@ -1,0 +1,33 @@
+! non-loopback interfaces that are shut or not in the process are ignored
+!
+!! IOS XR Configuration 6.3.1
+!! Last configuration change at Wed Dec 29 19:16:12 2021 by cisco
+!
+hostname shut-outprocess-interface-ignored
+!
+interface GigabitEthernet0/0/0/0
+ ! ignored because it is shut even though it is in the process
+ ipv4 address 2.2.2.1 255.255.255.252
+ shutdown
+!
+interface GigabitEthernet0/0/0/1
+ ! ignored because it is not in the process
+ ipv4 address 200.200.200.1 255.255.255.252
+ no shutdown
+!
+interface GigabitEthernet0/0/0/2
+ ipv4 address 10.10.10.1/30
+ no shutdown
+!
+router ospf 100
+ area 0
+  interface GigabitEthernet0/0/0/0
+     cost 100
+  !
+  interface GigabitEthernet0/0/0/2
+     cost 100
+  !
+ !
+!
+! #show ospf
+!  Routing Process "ospf 100" with ID 10.10.10.1

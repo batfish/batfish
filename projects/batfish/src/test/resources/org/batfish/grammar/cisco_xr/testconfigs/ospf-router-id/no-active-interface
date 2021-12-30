@@ -1,0 +1,23 @@
+! when there is no active interface in the ospf process, the router-id is zero
+!
+!! IOS XR Configuration 6.3.1
+!! Last configuration change at Wed Dec 29 19:16:12 2021 by cisco
+!
+hostname no-active-interface
+!
+interface Loopback0
+ ipv4 address 1.1.1.1 255.255.255.255
+!
+interface GigabitEthernet0/0/0/0
+ ipv4 address 100.100.100.1 255.255.255.252
+ shutdown
+!
+router ospf 100
+ area 0
+  interface GigabitEthernet0/0/0/0
+   cost 100
+  !
+ !
+!
+! #show ospf
+!   Routing Process "ospf 100" with ID 0.0.0.0
