@@ -38,6 +38,7 @@
                 "description": "Use this prefix matching criterion: EXACT, LONGEST_PREFIX_MATCH, LONGER_PREFIXES, SHORTER_PREFIXES",
                 "optional": true,
                 "type": "string",
+                "value": "EXACT",
                 "values": [
                     {
                         "name": "EXACT"
