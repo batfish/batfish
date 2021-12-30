@@ -777,8 +777,8 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
     markAbstractStructureAllUsages(
         BGP_COMMUNITY_LIST,
         ImmutableSet.of(
-            CumulusStructureType.IP_COMMUNITY_LIST_STANDARD,
-            CumulusStructureType.IP_COMMUNITY_LIST_EXPANDED));
+            CumulusStructureType.BGP_COMMUNITY_LIST_STANDARD,
+            CumulusStructureType.BGP_COMMUNITY_LIST_EXPANDED));
     markConcreteStructure(CumulusStructureType.BOND);
     markConcreteStructure(CumulusStructureType.INTERFACE);
     markConcreteStructure(CumulusStructureType.BGP_AS_PATH_ACCESS_LIST);
