@@ -9,9 +9,9 @@ import static org.batfish.representation.frr.FrrConversions.computeRouteMapEntry
 import static org.batfish.representation.frr.FrrStructureType.ABSTRACT_INTERFACE;
 import static org.batfish.representation.frr.FrrStructureType.BGP_AS_PATH_ACCESS_LIST;
 import static org.batfish.representation.frr.FrrStructureType.BGP_COMMUNITY_LIST;
+import static org.batfish.representation.frr.FrrStructureType.BGP_COMMUNITY_LIST_EXPANDED;
+import static org.batfish.representation.frr.FrrStructureType.BGP_COMMUNITY_LIST_STANDARD;
 import static org.batfish.representation.frr.FrrStructureType.IPV6_PREFIX_LIST;
-import static org.batfish.representation.frr.FrrStructureType.IP_COMMUNITY_LIST_EXPANDED;
-import static org.batfish.representation.frr.FrrStructureType.IP_COMMUNITY_LIST_STANDARD;
 import static org.batfish.representation.frr.FrrStructureType.IP_PREFIX_LIST;
 import static org.batfish.representation.frr.FrrStructureType.ROUTE_MAP;
 import static org.batfish.representation.frr.FrrStructureType.ROUTE_MAP_ENTRY;
@@ -1786,7 +1786,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
     communityListExpanded
         .getLines()
         .add(new BgpCommunityListExpandedLine(toLineAction(ctx.action), regex));
-    _vc.defineStructure(IP_COMMUNITY_LIST_EXPANDED, name, ctx);
+    _vc.defineStructure(BGP_COMMUNITY_LIST_EXPANDED, name, ctx);
   }
 
   @Override
@@ -1814,7 +1814,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
     communityListStandard
         .getLines()
         .add(new BgpCommunityListStandardLine(toLineAction(ctx.action), communities.get()));
-    _vc.defineStructure(IP_COMMUNITY_LIST_STANDARD, name, ctx);
+    _vc.defineStructure(BGP_COMMUNITY_LIST_STANDARD, name, ctx);
   }
 
   private @Nonnull Optional<Set<StandardCommunity>> toStandardCommunitySet(
