@@ -108,7 +108,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
   }
 
   private Stream<Result> testPolicy(RoutingPolicy policy) {
-    return _inputRoutes.stream().map(route -> testPolicy(policy, route, _direction));
+    return _inputRoutes.parallelStream().map(route -> testPolicy(policy, route, _direction));
   }
 
   private static Result testPolicy(
@@ -140,7 +140,8 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         getResults(context, policies)
             .flatMap(
                 policy ->
-                    _inputRoutes.stream().map(route -> rowResultFor(policy, route, _direction)))
+                    _inputRoutes.parallelStream()
+                        .map(route -> rowResultFor(policy, route, _direction)))
             .collect(ImmutableMultiset.toImmutableMultiset());
 
     TableAnswerElement answerElement = new TableAnswerElement(metadata());
