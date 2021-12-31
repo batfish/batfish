@@ -7,6 +7,10 @@
         "description": "Returns where IP addresses are attached in the network.",
         "instanceName": "ipOwners",
         "longDescription": "For each device, lists the mapping from IPs to corresponding interface(s) and VRF(s).",
+        "orderedVariableNames" : [
+            "ips",
+            "duplicatesOnly"
+        ],
         "tags": [
             "configuration"
         ],
