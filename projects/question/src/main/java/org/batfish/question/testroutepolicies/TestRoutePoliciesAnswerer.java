@@ -1,7 +1,5 @@
 package org.batfish.question.testroutepolicies;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.datamodel.LineAction.DENY;
 import static org.batfish.datamodel.LineAction.PERMIT;
 import static org.batfish.datamodel.answers.Schema.BGP_ROUTE;
@@ -15,19 +13,14 @@ import static org.batfish.specifier.NameRegexRoutingPolicySpecifier.ALL_ROUTING_
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Multiset;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.SortedSet;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -35,7 +28,6 @@ import org.batfish.common.Answerer;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Bgpv4Route;
-import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -49,6 +41,7 @@ import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.datamodel.trace.Tracer;
+import org.batfish.question.testroutepolicies.Result.Key;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.NodeSpecifier;
 import org.batfish.specifier.RoutingPolicySpecifier;
@@ -95,6 +88,13 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
   }
 
+  public Result getResult(SpecifierContext context, Result.Key key, Direction direction) {
+    RoutingPolicyId policyId = key.getPolicyId();
+    RoutingPolicy policy =
+        context.getConfigs().get(policyId.getNode()).getRoutingPolicies().get(policyId.getPolicy());
+    return testPolicy(policy, key.getInputRoute(), direction);
+  }
+
   /**
    * Produce the results of simulating the given route policy on the given input route.
    *
@@ -105,10 +105,6 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
    */
   public static Row rowResultFor(RoutingPolicy policy, Bgpv4Route inputRoute, Direction direction) {
     return toRow(testPolicy(policy, inputRoute, direction));
-  }
-
-  private Stream<Result> testPolicy(RoutingPolicy policy) {
-    return _inputRoutes.stream().map(route -> testPolicy(policy, route, _direction));
   }
 
   private static Result testPolicy(
@@ -135,27 +131,22 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
   @Override
   public TableAnswerElement answer(NetworkSnapshot snapshot) {
     SpecifierContext context = _batfish.specifierContext(snapshot);
-    SortedSet<RoutingPolicyId> policies = resolvePolicies(context);
-    Multiset<Row> rows =
-        getResults(context, policies)
-            .flatMap(
-                policy ->
-                    _inputRoutes.stream().map(route -> rowResultFor(policy, route, _direction)))
-            .collect(ImmutableMultiset.toImmutableMultiset());
+
+    // Materialized for efficient parallelism.
+    List<Result.Key> tasks =
+        resolvePolicies(context).stream()
+            .flatMap(rpid -> _inputRoutes.stream().map(r -> new Key(rpid, r)))
+            .collect(ImmutableList.toImmutableList());
+
+    List<Row> rows =
+        tasks.parallelStream()
+            .map(key -> getResult(context, key, _direction))
+            .map(TestRoutePoliciesAnswerer::toRow)
+            .collect(ImmutableList.toImmutableList());
 
     TableAnswerElement answerElement = new TableAnswerElement(metadata());
     answerElement.postProcessAnswer(_question, rows);
     return answerElement;
-  }
-
-  @Nonnull
-  private Stream<RoutingPolicy> getResults(
-      SpecifierContext context, SortedSet<RoutingPolicyId> policies) {
-    Map<String, Configuration> configs = context.getConfigs();
-    return policies.stream()
-        .map(
-            policyId ->
-                configs.get(policyId.getNode()).getRoutingPolicies().get(policyId.getPolicy()));
   }
 
   @Nullable
@@ -215,38 +206,26 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
     SpecifierContext context = _batfish.specifierContext(snapshot);
     SpecifierContext referenceCtx = _batfish.specifierContext(reference);
 
-    SortedSet<RoutingPolicyId> basePolicies = resolvePolicies(context);
+    // Only test policies that exist in both snapshots.
+    Set<RoutingPolicyId> policiesToTest =
+        Sets.intersection(resolvePolicies(context), resolvePolicies(referenceCtx));
 
-    SortedSet<RoutingPolicyId> deltaPolicies = resolvePolicies(referenceCtx);
+    // Materialized for efficient parallelism.
+    List<Result.Key> tasks =
+        policiesToTest.stream()
+            .flatMap(rpid -> _inputRoutes.stream().map(r -> new Key(rpid, r)))
+            .collect(ImmutableList.toImmutableList());
 
-    SortedSet<RoutingPolicyId> policies =
-        Sets.intersection(basePolicies, deltaPolicies).stream()
-            .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
-
-    Map<Result.Key, Result> baseResults =
-        getResults(context, policies)
-            .flatMap(this::testPolicy)
-            .collect(ImmutableMap.toImmutableMap(Result::getKey, Function.identity()));
-    Map<Result.Key, Result> deltaResults =
-        getResults(referenceCtx, policies)
-            .flatMap(this::testPolicy)
-            .collect(ImmutableMap.toImmutableMap(Result::getKey, Function.identity()));
-
-    checkState(
-        baseResults.keySet().equals(deltaResults.keySet()),
-        "base and delta results should have the same keySets");
-
-    Multiset<Row> rows =
-        baseResults.entrySet().stream()
+    List<Row> rows =
+        tasks.parallelStream()
             .map(
-                baseEntry -> {
-                  Result.Key key = baseEntry.getKey();
-                  Result baseResult = baseEntry.getValue();
-                  Result deltaResult = deltaResults.get(key);
-                  return baseResult.equals(deltaResult) ? null : toDiffRow(baseResult, deltaResult);
+                key -> {
+                  Result snapshotResult = getResult(context, key, _direction);
+                  Result referenceResult = getResult(referenceCtx, key, _direction);
+                  return toDiffRow(snapshotResult, referenceResult);
                 })
             .filter(Objects::nonNull)
-            .collect(ImmutableMultiset.toImmutableMultiset());
+            .collect(ImmutableList.toImmutableList());
 
     TableAnswerElement answerElement = new TableAnswerElement(diffMetadata());
     answerElement.postProcessAnswer(_question, rows);
@@ -344,33 +323,38 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         .build();
   }
 
-  private static Row toDiffRow(Result baseResult, Result deltaResult) {
-    checkArgument(
-        baseResult.getKey().equals(deltaResult.getKey()),
-        "results must be for the same policy and input route");
-    Bgpv4Route baseOutputRoute = baseResult.getOutputRoute();
-    Bgpv4Route deltaOutputRoute = deltaResult.getOutputRoute();
-    boolean equalAction = baseResult.getAction() == deltaResult.getAction();
-    boolean equalOutputRoutes = Objects.equals(baseOutputRoute, deltaOutputRoute);
-    checkArgument(
-        !(equalAction && equalOutputRoutes), "Results must have different action or output route");
+  private static @Nullable Row toDiffRow(Result snapshotResult, Result referenceResult) {
+    assert snapshotResult.getKey().equals(referenceResult.getKey());
 
-    // delta is reference, base is current. so show diffs from delta -> base
+    if (snapshotResult.equals(referenceResult)) {
+      return null;
+    }
+
+    Bgpv4Route snapshotOutputRoute = snapshotResult.getOutputRoute();
+    Bgpv4Route referenceOutputRoute = referenceResult.getOutputRoute();
+
+    boolean equalAction = snapshotResult.getAction() == referenceResult.getAction();
+    boolean equalOutputRoutes = Objects.equals(snapshotOutputRoute, referenceOutputRoute);
+    assert !(equalAction && equalOutputRoutes);
+
     BgpRouteDiffs routeDiffs =
         new BgpRouteDiffs(
             routeDiffs(
-                toQuestionsBgpRoute(deltaOutputRoute), toQuestionsBgpRoute(baseOutputRoute)));
+                toQuestionsBgpRoute(referenceOutputRoute),
+                toQuestionsBgpRoute(snapshotOutputRoute)));
 
-    RoutingPolicyId policyId = baseResult.getPolicyId();
-    Bgpv4Route inputRoute = baseResult.getInputRoute();
+    RoutingPolicyId policyId = snapshotResult.getPolicyId();
+    Bgpv4Route inputRoute = snapshotResult.getInputRoute();
     return Row.builder()
         .put(COL_NODE, new Node(policyId.getNode()))
         .put(COL_POLICY_NAME, policyId.getPolicy())
         .put(COL_INPUT_ROUTE, toQuestionsBgpRoute(inputRoute))
-        .put(baseColumnName(COL_ACTION), baseResult.getAction())
-        .put(deltaColumnName(COL_ACTION), deltaResult.getAction())
-        .put(baseColumnName(COL_OUTPUT_ROUTE), toQuestionsBgpRoute(baseResult.getOutputRoute()))
-        .put(deltaColumnName(COL_OUTPUT_ROUTE), toQuestionsBgpRoute(deltaResult.getOutputRoute()))
+        .put(baseColumnName(COL_ACTION), snapshotResult.getAction())
+        .put(deltaColumnName(COL_ACTION), referenceResult.getAction())
+        .put(baseColumnName(COL_OUTPUT_ROUTE), toQuestionsBgpRoute(snapshotResult.getOutputRoute()))
+        .put(
+            deltaColumnName(COL_OUTPUT_ROUTE),
+            toQuestionsBgpRoute(referenceResult.getOutputRoute()))
         .put(COL_DIFF, routeDiffs)
         .build();
   }
