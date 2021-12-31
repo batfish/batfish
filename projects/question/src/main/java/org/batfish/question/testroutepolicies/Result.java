@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.List;
 import java.util.Objects;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.LineAction;
@@ -12,13 +13,21 @@ import org.batfish.datamodel.trace.TraceTree;
 /** A {@link TestRoutePoliciesQuestion} result for a single policy and input route. */
 final class Result {
   /** A key to relate results by policy and input route. */
-  public final class Key {
+  public static final class Key {
     private final RoutingPolicyId _policyId;
     private final Bgpv4Route _inputRoute;
 
-    private Key(RoutingPolicyId policyId, Bgpv4Route inputRoute) {
+    public Key(RoutingPolicyId policyId, Bgpv4Route inputRoute) {
       _policyId = policyId;
       _inputRoute = inputRoute;
+    }
+
+    public @Nonnull Bgpv4Route getInputRoute() {
+      return _inputRoute;
+    }
+
+    public @Nonnull RoutingPolicyId getPolicyId() {
+      return _policyId;
     }
 
     @Override
