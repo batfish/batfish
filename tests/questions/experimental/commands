@@ -1,7 +1,7 @@
 load-questions questions/experimental
 
 # validate a10VirtualServerConfiguration
-test -raw tests/questions/experimental/a10VirtualServerConfiguration.ref validate-template a10VirtualServerConfiguration nodes="abcd"
+test -raw tests/questions/experimental/a10VirtualServerConfiguration.ref validate-template a10VirtualServerConfiguration nodes="abcd", virtualServerIps="1.1.1.1"
 
 # validate filterLineReachability
 test -raw tests/questions/experimental/filterLineReachability.ref validate-template filterLineReachability filters=".*", ignoreComposites=false, nodes=".*"

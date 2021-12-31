@@ -55,7 +55,7 @@ public class A10VirtualServerConfigurationAnswererTest {
     Batfish batfish = getBatfishForConfigurationNames(hostname1);
 
     A10VirtualServerConfigurationQuestion question =
-        new A10VirtualServerConfigurationQuestion(".*");
+        new A10VirtualServerConfigurationQuestion(null, null);
     A10VirtualServerConfigurationAnswerer answerer =
         new A10VirtualServerConfigurationAnswerer(question, batfish);
     TableAnswerElement answer = answerer.answer(batfish.getSnapshot());
@@ -105,6 +105,42 @@ public class A10VirtualServerConfigurationAnswererTest {
                         equalTo(ImmutableSet.of()),
                         Schema.set(Schema.list(Schema.STRING))),
                     hasColumn(COL_SOURCE_NAT_POOL_NAME, nullValue(), Schema.STRING)),
+                allOf(
+                    hasColumn(COL_NODE, equalTo(new Node(hostname1)), Schema.NODE),
+                    hasColumn(COL_VIRTUAL_SERVER_NAME, equalTo("vs2NoSG"), Schema.STRING),
+                    hasColumn(COL_VIRTUAL_SERVER_ENABLED, equalTo(true), Schema.BOOLEAN),
+                    hasColumn(COL_VIRTUAL_SERVER_IP, equalTo(Ip.parse("10.10.10.2")), Schema.IP),
+                    hasColumn(COL_VIRTUAL_SERVER_PORT, equalTo(443), Schema.INTEGER),
+                    hasColumn(COL_VIRTUAL_SERVER_PORT_ENABLED, equalTo(true), Schema.BOOLEAN),
+                    hasColumn(COL_VIRTUAL_SERVER_TYPE, equalTo("TCP"), Schema.STRING),
+                    hasColumn(COL_VIRTUAL_SERVER_PORT_TYPE_NAME, nullValue(), Schema.STRING),
+                    hasColumn(COL_SERVICE_GROUP_NAME, nullValue(), Schema.STRING),
+                    hasColumn(COL_SERVICE_GROUP_TYPE, nullValue(), Schema.STRING),
+                    hasColumn(
+                        COL_SERVERS,
+                        equalTo(ImmutableSet.of()),
+                        Schema.set(Schema.list(Schema.STRING))),
+                    hasColumn(COL_SOURCE_NAT_POOL_NAME, nullValue(), Schema.STRING)))));
+  }
+
+  @Test
+  public void testAnswer_virtualServerIpFiltering() throws IOException {
+    String hostname1 = "a10_virtual_server_configuration";
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname1);
+
+    A10VirtualServerConfigurationQuestion question =
+        new A10VirtualServerConfigurationQuestion(null, "10.10.10.2");
+    A10VirtualServerConfigurationAnswerer answerer =
+        new A10VirtualServerConfigurationAnswerer(question, batfish);
+    TableAnswerElement answer = answerer.answer(batfish.getSnapshot());
+
+    assertThat(answer.getRows(), hasSize(1));
+
+    assertThat(
+        answer,
+        hasRows(
+            containsInAnyOrder(
                 allOf(
                     hasColumn(COL_NODE, equalTo(new Node(hostname1)), Schema.NODE),
                     hasColumn(COL_VIRTUAL_SERVER_NAME, equalTo("vs2NoSG"), Schema.STRING),
