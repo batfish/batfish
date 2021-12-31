@@ -1,5 +1,6 @@
 package org.batfish.question.vrrpproperties;
 
+import static org.batfish.question.vrrpproperties.VrrpPropertiesAnswerer.COL_ACTIVE;
 import static org.batfish.question.vrrpproperties.VrrpPropertiesAnswerer.COL_GROUP_ID;
 import static org.batfish.question.vrrpproperties.VrrpPropertiesAnswerer.COL_INTERFACE;
 import static org.batfish.question.vrrpproperties.VrrpPropertiesAnswerer.COL_PREEMPT;
@@ -11,6 +12,7 @@ import static org.batfish.question.vrrpproperties.VrrpPropertiesAnswerer.populat
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.ImmutableSet;
@@ -22,11 +24,15 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Row.RowBuilder;
+import org.batfish.specifier.AllInterfacesInterfaceSpecifier;
+import org.batfish.specifier.AllNodesNodeSpecifier;
+import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.MockSpecifierContext;
 import org.batfish.specifier.NameNodeSpecifier;
 import org.batfish.specifier.NameRegexInterfaceSpecifier;
@@ -36,8 +42,15 @@ import org.junit.Test;
 public final class VrrpPropertiesAnswererTest {
 
   private static final Map<String, ColumnMetadata> _columnMap =
-      VrrpPropertiesAnswerer.createTableMetadata(new VrrpPropertiesQuestion(null, null, false))
+      VrrpPropertiesAnswerer.createTableMetadata(
+              new VrrpPropertiesQuestion(null, null, null, false))
           .toColumnMap();
+
+  private static RowBuilder createRowBuilder(String hostname, Interface iface) {
+    return Row.builder()
+        .put(COL_INTERFACE, NodeInterfacePair.of(hostname, iface.getName()))
+        .put(COL_ACTIVE, iface.getActive());
+  }
 
   @Test
   public void testGetProperties() {
@@ -79,21 +92,15 @@ public final class VrrpPropertiesAnswererTest {
     MockSpecifierContext ctxt =
         MockSpecifierContext.builder().setConfigs(ImmutableMap.of("node1", conf1)).build();
 
-    RowBuilder expectedRow1Builder =
-        Row.builder().put(COL_INTERFACE, NodeInterfacePair.of("node1", "iface1"));
-    populateRow(expectedRow1Builder, 0, group);
-    Row expectedRow1 = expectedRow1Builder.build();
-
-    RowBuilder expectedRow2Builder =
-        Row.builder().put(COL_INTERFACE, NodeInterfacePair.of("node1", "iface2"));
-    populateRow(expectedRow2Builder, 0, group);
-    Row expectedRow2 = expectedRow2Builder.build();
+    Row expectedRow1 = populateRow(createRowBuilder("node1", iface1), 0, group).build();
+    Row expectedRow2 = populateRow(createRowBuilder("node1", iface2), 0, group).build();
 
     assertThat(
         getProperties(
             ctxt,
             new NameNodeSpecifier("node1"),
             new NameRegexInterfaceSpecifier(Pattern.compile(".*")),
+            new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE),
             false,
             _columnMap),
         equalTo(ImmutableMultiset.of(expectedRow1, expectedRow2)));
@@ -102,9 +109,72 @@ public final class VrrpPropertiesAnswererTest {
             ctxt,
             new NameNodeSpecifier("node1"),
             new NameRegexInterfaceSpecifier(Pattern.compile(".*")),
+            new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE),
             true,
             _columnMap),
         equalTo(ImmutableMultiset.of(expectedRow1)));
+  }
+
+  @Test
+  public void testGetProperties_virtualAddressFiltering() {
+    Configuration conf = new Configuration("node", ConfigurationFormat.CISCO_IOS);
+
+    VrrpGroup group =
+        VrrpGroup.builder()
+            .setVirtualAddresses(ImmutableList.of(Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2")))
+            .setSourceAddress(ConcreteInterfaceAddress.create(Ip.parse("1.1.1.2"), 29))
+            .setPriority(23)
+            .setPreempt(true)
+            .build();
+
+    Interface iface =
+        Interface.builder()
+            .setName("iface")
+            .setOwner(conf)
+            .setVrrpGroups(ImmutableSortedMap.of(0, group))
+            .setActive(true)
+            .build();
+
+    conf.getAllInterfaces().putAll(ImmutableMap.of(iface.getName(), iface));
+    MockSpecifierContext ctxt =
+        MockSpecifierContext.builder()
+            .setConfigs(ImmutableMap.of(conf.getHostname(), conf))
+            .build();
+
+    Row expectedRow = populateRow(createRowBuilder(conf.getHostname(), iface), 0, group).build();
+
+    // row is included when there is no address filtering
+    assertThat(
+        getProperties(
+            ctxt,
+            AllNodesNodeSpecifier.INSTANCE,
+            AllInterfacesInterfaceSpecifier.INSTANCE,
+            new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE),
+            false,
+            _columnMap),
+        equalTo(ImmutableMultiset.of(expectedRow)));
+
+    // row is included when one address matches
+    assertThat(
+        getProperties(
+            ctxt,
+            AllNodesNodeSpecifier.INSTANCE,
+            AllInterfacesInterfaceSpecifier.INSTANCE,
+            new ConstantIpSpaceSpecifier(Ip.parse("1.1.1.1").toIpSpace()),
+            false,
+            _columnMap),
+        equalTo(ImmutableMultiset.of(expectedRow)));
+
+    // row is not included no address matches
+    assertThat(
+        getProperties(
+            ctxt,
+            AllNodesNodeSpecifier.INSTANCE,
+            AllInterfacesInterfaceSpecifier.INSTANCE,
+            new ConstantIpSpaceSpecifier(Ip.parse("3.3.3.3").toIpSpace()),
+            false,
+            _columnMap),
+        equalTo(ImmutableMultiset.of()));
   }
 
   @Test

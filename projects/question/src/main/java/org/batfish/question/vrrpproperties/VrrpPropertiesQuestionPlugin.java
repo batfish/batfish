@@ -23,6 +23,6 @@ public final class VrrpPropertiesQuestionPlugin extends QuestionPlugin {
 
   @Override
   protected Question createQuestion() {
-    return new VrrpPropertiesQuestion(null, null, false);
+    return new VrrpPropertiesQuestion(null, null, null, false);
   }
 }

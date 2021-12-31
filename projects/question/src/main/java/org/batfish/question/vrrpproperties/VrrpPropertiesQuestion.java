@@ -8,23 +8,26 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.specifier.AllInterfacesInterfaceSpecifier;
 import org.batfish.specifier.AllNodesNodeSpecifier;
+import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.InterfaceSpecifier;
+import org.batfish.specifier.IpSpaceSpecifier;
 import org.batfish.specifier.NodeSpecifier;
 import org.batfish.specifier.SpecifierFactories;
 
 /** A question that returns a table with VRRP groups on interfaces and their properties. */
-@ParametersAreNonnullByDefault
 public final class VrrpPropertiesQuestion extends Question {
   private static final String PROP_NODES = "nodes";
   private static final String PROP_INTERFACES = "interfaces";
+  private static final String PROP_VIRTUAL_ADDRESSES = "virtualAddresses";
   private static final String PROP_EXCLUDE_SHUT_INTERFACES = "excludeShutInterfaces";
 
   @Nullable private final String _nodes;
   @Nullable private final String _interfaces;
+  @Nullable private final String _virtualAddresses;
   private final boolean _excludeShutInterfaces;
 
   @Override
@@ -41,15 +44,20 @@ public final class VrrpPropertiesQuestion extends Question {
   private static @Nonnull VrrpPropertiesQuestion create(
       @Nullable @JsonProperty(PROP_NODES) String nodes,
       @Nullable @JsonProperty(PROP_INTERFACES) String interfaces,
+      @Nullable @JsonProperty(PROP_VIRTUAL_ADDRESSES) String virtualAddresses,
       @Nullable @JsonProperty(PROP_EXCLUDE_SHUT_INTERFACES) Boolean excludeShutInterfaces) {
     return new VrrpPropertiesQuestion(
-        nodes, interfaces, firstNonNull(excludeShutInterfaces, false));
+        nodes, interfaces, virtualAddresses, firstNonNull(excludeShutInterfaces, false));
   }
 
   public VrrpPropertiesQuestion(
-      @Nullable String nodes, @Nullable String interfaces, boolean excludeShutInterfaces) {
+      @Nullable String nodes,
+      @Nullable String interfaces,
+      @Nullable String virtualAddresses,
+      boolean excludeShutInterfaces) {
     _nodes = nodes;
     _interfaces = interfaces;
+    _virtualAddresses = virtualAddresses;
     _excludeShutInterfaces = excludeShutInterfaces;
   }
 
@@ -61,6 +69,11 @@ public final class VrrpPropertiesQuestion extends Question {
   @JsonProperty(PROP_INTERFACES)
   public @Nullable String getInterfaces() {
     return _interfaces;
+  }
+
+  @JsonProperty(PROP_VIRTUAL_ADDRESSES)
+  public @Nullable String getVirtualAddresses() {
+    return _virtualAddresses;
   }
 
   @JsonProperty(PROP_EXCLUDE_SHUT_INTERFACES)
@@ -77,6 +90,12 @@ public final class VrrpPropertiesQuestion extends Question {
   public @Nonnull InterfaceSpecifier getInterfacesSpecifier() {
     return SpecifierFactories.getInterfaceSpecifierOrDefault(
         _interfaces, AllInterfacesInterfaceSpecifier.INSTANCE);
+  }
+
+  @JsonIgnore
+  public @Nonnull IpSpaceSpecifier getVirtualAddressSpecifier() {
+    return SpecifierFactories.getIpSpaceSpecifierOrDefault(
+        _interfaces, new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE));
   }
 
   @Override

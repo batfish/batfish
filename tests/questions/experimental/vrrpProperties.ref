@@ -3,6 +3,7 @@
   "excludeShutInterfaces" : true,
   "interfaces" : "i1",
   "nodes" : "n1",
+  "virtualAddresses" : "1.1.1.1",
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
@@ -12,6 +13,7 @@
     "orderedVariableNames" : [
       "nodes",
       "interfaces",
+      "virtualAddresses",
       "excludeShutInterfaces"
     ],
     "tags" : [
@@ -39,6 +41,13 @@
         "optional" : true,
         "type" : "nodeSpec",
         "value" : "n1"
+      },
+      "virtualAddresses" : {
+        "description" : "Include only groups with at least one virtual address matching this specifier",
+        "displayName" : "Virtual Addresses",
+        "optional" : true,
+        "type" : "ipSpaceSpec",
+        "value" : "1.1.1.1"
       }
     }
   }
