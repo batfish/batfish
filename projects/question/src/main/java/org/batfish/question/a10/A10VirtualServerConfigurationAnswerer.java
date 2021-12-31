@@ -6,6 +6,7 @@ import static org.batfish.vendor.a10.representation.A10Conversion.isVirtualServe
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multiset;
 import java.util.List;
@@ -17,6 +18,7 @@ import org.batfish.common.Answerer;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.DisplayHints;
@@ -121,6 +123,7 @@ public class A10VirtualServerConfigurationAnswerer extends Answerer {
   public static Multiset<Row> getAnswerRows(
       Map<String, VendorConfiguration> vendorConfigurations,
       Set<String> nodes,
+      IpSpace virtualServerIpSpace,
       Map<String, ColumnMetadata> columnMetadata) {
     Multiset<Row> rows = HashMultiset.create();
     for (String nodeName : nodes) {
@@ -131,6 +134,12 @@ public class A10VirtualServerConfigurationAnswerer extends Answerer {
       A10Configuration a10Vc = (A10Configuration) vc;
       Node node = new Node(nodeName);
       for (VirtualServer virtualServer : a10Vc.getVirtualServers().values()) {
+        Ip virtualServerIp =
+            ((VirtualServerTargetVisitor<Ip>) VirtualServerTargetAddress::getAddress)
+                .visit(virtualServer.getTarget());
+        if (!virtualServerIpSpace.containsIp(virtualServerIp, ImmutableMap.of())) {
+          continue;
+        }
         for (VirtualServerPort virtualServerPort : virtualServer.getPorts().values()) {
           String serviceGroupName = virtualServerPort.getServiceGroup();
           ServiceGroup serviceGroup =
@@ -154,8 +163,7 @@ public class A10VirtualServerConfigurationAnswerer extends Answerer {
                   node,
                   virtualServer.getName(),
                   isVirtualServerEnabled(virtualServer),
-                  ((VirtualServerTargetVisitor<Ip>) VirtualServerTargetAddress::getAddress)
-                      .visit(virtualServer.getTarget()),
+                  virtualServerIp,
                   virtualServerPort.getNumber(),
                   isVirtualServerPortEnabled(virtualServerPort),
                   virtualServerPort.getType(),
@@ -239,10 +247,13 @@ public class A10VirtualServerConfigurationAnswerer extends Answerer {
     Map<String, VendorConfiguration> vendorConfigurations =
         _batfish.loadVendorConfigurations(snapshot);
     Set<String> nodes = question.getNodeSpecifier().resolve(_batfish.specifierContext(snapshot));
+    IpSpace virtualServerIpSpace =
+        question.getVirtualServerIpSpecifier().resolve(_batfish.specifierContext(snapshot));
     TableMetadata tableMetadata = createTableMetadata(question);
     TableAnswerElement answer = new TableAnswerElement(tableMetadata);
     Multiset<Row> propertyRows =
-        getAnswerRows(vendorConfigurations, nodes, tableMetadata.toColumnMap());
+        getAnswerRows(
+            vendorConfigurations, nodes, virtualServerIpSpace, tableMetadata.toColumnMap());
     answer.postProcessAnswer(question, propertyRows);
     return answer;
   }
