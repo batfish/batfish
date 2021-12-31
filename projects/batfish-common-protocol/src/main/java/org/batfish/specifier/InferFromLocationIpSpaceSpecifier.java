@@ -19,4 +19,10 @@ public final class InferFromLocationIpSpaceSpecifier implements IpSpaceSpecifier
         location -> builder.assign(location, ctxt.getLocationInfo(location).getSourceIps()));
     return builder.build();
   }
+
+  @Override
+  public IpSpace resolve(SpecifierContext ctxt) {
+    throw new UnsupportedOperationException(
+        "Location-independent resolution is not valid for " + getClass().getSimpleName());
+  }
 }

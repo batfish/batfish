@@ -39,6 +39,11 @@ public final class ConstantIpSpaceSpecifier implements IpSpaceSpecifier {
   }
 
   @Override
+  public IpSpace resolve(SpecifierContext ctxt) {
+    return _ipSpace;
+  }
+
+  @Override
   public String toString() {
     return MoreObjects.toStringHelper(ConstantIpSpaceSpecifier.class)
         .add("ipSpace", _ipSpace)

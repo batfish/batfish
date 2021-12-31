@@ -9,6 +9,7 @@ import org.batfish.specifier.AllFiltersFilterSpecifier;
 import org.batfish.specifier.AllInterfacesInterfaceSpecifier;
 import org.batfish.specifier.AllInterfacesLocationSpecifier;
 import org.batfish.specifier.AllNodesNodeSpecifier;
+import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
 import org.batfish.specifier.SpecifierFactories;
 import org.batfish.specifier.SpecifierFactories.Version;
@@ -28,7 +29,10 @@ public final class SpecifiersQuestionTest {
     SpecifiersQuestion question = new SpecifiersQuestion(QueryType.FILTER);
     assertThat(question.getFilterSpecifier(), equalTo(AllFiltersFilterSpecifier.INSTANCE));
     assertThat(question.getInterfaceSpecifier(), equalTo(AllInterfacesInterfaceSpecifier.INSTANCE));
-    assertThat(question.getIpSpaceSpecifier(), instanceOf(InferFromLocationIpSpaceSpecifier.class));
+    assertThat(question.getIpSpaceSpecifier(), instanceOf(ConstantIpSpaceSpecifier.class));
+    assertThat(
+        question.getIpSpaceOfLocationSpecifier(),
+        instanceOf(InferFromLocationIpSpaceSpecifier.class));
     assertThat(question.getLocationSpecifier(), instanceOf(AllInterfacesLocationSpecifier.class));
     assertThat(question.getNodeSpecifier(), instanceOf(AllNodesNodeSpecifier.class));
   }
@@ -53,6 +57,9 @@ public final class SpecifiersQuestionTest {
         instanceOf(SpecifierFactories.getInterfaceSpecifierOrDefault("input", null).getClass()));
     assertThat(
         question.getIpSpaceSpecifier(),
+        instanceOf(SpecifierFactories.getIpSpaceSpecifierOrDefault("input", null).getClass()));
+    assertThat(
+        question.getIpSpaceOfLocationSpecifier(),
         instanceOf(SpecifierFactories.getIpSpaceSpecifierOrDefault("input", null).getClass()));
     assertThat(
         question.getLocationSpecifier(),
@@ -94,6 +101,11 @@ public final class SpecifiersQuestionTest {
                 .getClass()));
     assertThat(
         question.getIpSpaceSpecifier(),
+        instanceOf(
+            SpecifierFactories.getIpSpaceSpecifierOrDefault("1.1.1.1", null, otherVersion)
+                .getClass()));
+    assertThat(
+        question.getIpSpaceOfLocationSpecifier(),
         instanceOf(
             SpecifierFactories.getIpSpaceSpecifierOrDefault("1.1.1.1", null, otherVersion)
                 .getClass()));

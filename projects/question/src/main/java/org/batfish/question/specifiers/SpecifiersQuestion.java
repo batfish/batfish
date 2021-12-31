@@ -9,11 +9,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.specifier.AllFiltersFilterSpecifier;
 import org.batfish.specifier.AllInterfacesInterfaceSpecifier;
 import org.batfish.specifier.AllInterfacesLocationSpecifier;
 import org.batfish.specifier.AllNodesNodeSpecifier;
+import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.FilterSpecifier;
 import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
 import org.batfish.specifier.InterfaceSpecifier;
@@ -90,6 +92,14 @@ public final class SpecifiersQuestion extends Question {
 
   @JsonIgnore
   IpSpaceSpecifier getIpSpaceSpecifier() {
+    return SpecifierFactories.getIpSpaceSpecifierOrDefault(
+        _ipSpaceSpecifierInput,
+        new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE),
+        _specifierFactoryVersion);
+  }
+
+  @JsonIgnore
+  IpSpaceSpecifier getIpSpaceOfLocationSpecifier() {
     return SpecifierFactories.getIpSpaceSpecifierOrDefault(
         _ipSpaceSpecifierInput,
         InferFromLocationIpSpaceSpecifier.INSTANCE,

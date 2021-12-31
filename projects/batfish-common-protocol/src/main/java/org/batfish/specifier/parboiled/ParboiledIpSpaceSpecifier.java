@@ -184,6 +184,11 @@ public final class ParboiledIpSpaceSpecifier implements IpSpaceSpecifier {
     return IpSpaceAssignment.builder().assign(locations, ipSpace).build();
   }
 
+  @Override
+  public IpSpace resolve(SpecifierContext ctxt) {
+    return computeIpSpace(_ast, ctxt);
+  }
+
   @VisibleForTesting
   @Nonnull
   static IpSpace computeIpSpace(IpSpaceAstNode ast, SpecifierContext ctxt) {

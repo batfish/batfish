@@ -53,6 +53,11 @@ public final class LocationIpSpaceSpecifier implements IpSpaceSpecifier {
     return IpSpaceAssignment.builder().assign(key, computeIpSpace(locations, ctxt)).build();
   }
 
+  @Override
+  public IpSpace resolve(SpecifierContext ctxt) {
+    return computeIpSpace(_locationSpecifier.resolve(ctxt), ctxt);
+  }
+
   @Nonnull
   public static IpSpace computeIpSpace(Set<Location> locations, SpecifierContext ctxt) {
     return firstNonNull(

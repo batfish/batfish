@@ -6,9 +6,9 @@ import org.batfish.datamodel.IpSpace;
 /** An abstract specifier of {@link IpSpace}s by some means. */
 public interface IpSpaceSpecifier {
   /**
-   * Resolve the specifier into concrete {@link IpSpace}s.
+   * Resolve the specifier into a concrete {@link IpSpace} for each specified location.
    *
-   * @param locations The @{link Location}s for which concrete {@link IpSpace}s are needed. Which
+   * @param locations The {@link Location}s for which concrete {@link IpSpace}s are needed. Which
    *     concrete {@link IpSpace} is specified may (or may not) vary with {@link Location}.
    * @param ctxt Information about the network that may be used to resolve concrete {@link
    *     IpSpace}s.
@@ -17,4 +17,7 @@ public interface IpSpaceSpecifier {
    *     Location}s, and that no {@link Location} is assigned more than one {@link IpSpace}.
    */
   IpSpaceAssignment resolve(Set<Location> locations, SpecifierContext ctxt);
+
+  /** Resolve the specifier into concrete {@link IpSpace}s. */
+  IpSpace resolve(SpecifierContext ctxt);
 }

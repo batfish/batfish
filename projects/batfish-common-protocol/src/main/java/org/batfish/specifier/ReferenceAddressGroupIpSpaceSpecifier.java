@@ -51,6 +51,11 @@ public final class ReferenceAddressGroupIpSpaceSpecifier implements IpSpaceSpeci
     return IpSpaceAssignment.builder().assign(locations, ipSpace).build();
   }
 
+  @Override
+  public IpSpace resolve(SpecifierContext ctxt) {
+    return computeIpSpace(_addressGroupName, _bookName, ctxt);
+  }
+
   /**
    * Computes the IpSpace in the address group. Returns {@link EmptyIpSpace} if the addressgroup is
    * empty.
