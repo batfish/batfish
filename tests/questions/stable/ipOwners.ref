@@ -1,6 +1,7 @@
 {
   "class" : "org.batfish.question.ipowners.IpOwnersQuestion",
   "duplicatesOnly" : false,
+  "ips" : "1.1.1.1",
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
@@ -17,6 +18,13 @@
         "optional" : false,
         "type" : "boolean",
         "value" : false
+      },
+      "ips" : {
+        "description" : "Restrict output to only specified IP addresses",
+        "displayName" : "IP specifier",
+        "optional" : true,
+        "type" : "ipSpaceSpec",
+        "value" : "1.1.1.1"
       }
     }
   }

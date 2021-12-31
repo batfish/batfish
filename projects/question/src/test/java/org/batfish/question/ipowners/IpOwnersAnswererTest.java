@@ -19,6 +19,7 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Multiset;
 import java.util.Map;
 import java.util.Set;
@@ -28,6 +29,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
@@ -38,10 +40,10 @@ import org.junit.Test;
 
 /** Tests for {@link IpOwnersAnswerer} */
 public class IpOwnersAnswererTest {
-  private Ip _uniqueIp = Ip.parse("1.1.1.1");
-  private Ip _duplicateIp = Ip.parse("2.2.2.2");
-  private Ip _noOwnersIp = Ip.parse("3.3.3.3");
-  private Ip _secondaryUniqueIp = Ip.parse("4.4.4.4");
+  private static final Ip _uniqueIp = Ip.parse("1.1.1.1");
+  private static final Ip _duplicateIp = Ip.parse("2.2.2.2");
+  private static final Ip _noOwnersIp = Ip.parse("3.3.3.3");
+  private static final Ip _secondaryUniqueIp = Ip.parse("4.4.4.4");
   private ImmutableMap<Ip, Set<String>> _ownersMap;
   private Map<String, Set<Interface>> _interfaceMap;
 
@@ -85,11 +87,14 @@ public class IpOwnersAnswererTest {
   @Test
   public void testRowGenerationAllIps() {
     // Generate rows with no IP owners, no Interface Ips
-    Multiset<Row> rows = IpOwnersAnswerer.generateRows(ImmutableMap.of(), ImmutableMap.of(), false);
+    Multiset<Row> rows =
+        IpOwnersAnswerer.generateRows(
+            ImmutableMap.of(), ImmutableMap.of(), UniverseIpSpace.INSTANCE, false);
     assertThat(rows, empty());
 
     // Generate rows for actual data
-    rows = IpOwnersAnswerer.generateRows(_ownersMap, _interfaceMap, false);
+    rows =
+        IpOwnersAnswerer.generateRows(_ownersMap, _interfaceMap, UniverseIpSpace.INSTANCE, false);
 
     /*
      * Test that:
@@ -127,11 +132,20 @@ public class IpOwnersAnswererTest {
   public void testRowGenerationDuplicatesOnly() {
 
     // Expect two rows for _duplicateIp only
-    Multiset<Row> rows = IpOwnersAnswerer.generateRows(_ownersMap, _interfaceMap, true);
+    Multiset<Row> rows =
+        IpOwnersAnswerer.generateRows(_ownersMap, _interfaceMap, UniverseIpSpace.INSTANCE, true);
     assertThat(rows, hasSize(2));
     for (Row row : rows) {
       assertThat(row.getIp(COL_IP), equalTo(_duplicateIp));
     }
+  }
+
+  @Test
+  public void testRowGenerationIpSpace() {
+    // expect one row for _uniqueIp
+    Multiset<Row> rows =
+        IpOwnersAnswerer.generateRows(_ownersMap, _interfaceMap, _uniqueIp.toIpSpace(), false);
+    assertThat(Iterables.getOnlyElement(rows).getIp(COL_IP), equalTo(_uniqueIp));
   }
 
   @Test
