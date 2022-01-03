@@ -92,6 +92,7 @@ import org.batfish.common.runtime.SnapshotRuntimeData;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CollectionUtil;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.NextHopComparator;
 import org.batfish.common.util.UnzipUtility;
 import org.batfish.common.util.WorkItemBuilder;
 import org.batfish.coordinator.AnalysisMetadataMgr.AnalysisType;
@@ -2293,6 +2294,8 @@ public class WorkMgr extends AbstractCoordinator {
       return lexicographical(nullsFirst(schemaComparator));
     } else if (schema.equals(Schema.LONG)) {
       return naturalOrder();
+    } else if (schema.equals(Schema.NEXT_HOP)) {
+      return NextHopComparator.instance();
     } else if (schema.equals(Schema.NODE)) {
       return COMPARATOR_NODE;
     } else if (schema.equals(Schema.PREFIX)) {
