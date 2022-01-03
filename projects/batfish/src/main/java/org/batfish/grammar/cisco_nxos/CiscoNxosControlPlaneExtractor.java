@@ -5734,6 +5734,32 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
+  public void exitI_no_vrf_member(CiscoNxosParser.I_no_vrf_memberContext ctx) {
+    String name = null;
+    if (ctx.name != null) {
+      Optional<String> nameOrErr = toString(ctx, ctx.name);
+      if (!nameOrErr.isPresent()) {
+        return;
+      }
+      name = nameOrErr.get();
+    }
+    // TODO: Should the command fail on every affected interface if it's invalid on any one of them?
+    for (Interface iface : _currentInterfaces) {
+      String currentIfaceVrf = iface.getVrfMember();
+      if (name != null && !name.equals(currentIfaceVrf)) {
+        // No effect (CLI says "ERROR: VRF foo not configured on interface Ethernet1/1")
+        warn(ctx, String.format("VRF %s not configured on interface %s", name, iface.getName()));
+        continue;
+      } else if (currentIfaceVrf == null) {
+        // Interface is already in default VRF; no effect
+        continue;
+      }
+      clearLayer3Configuration(iface);
+      iface.setVrfMember(null);
+    }
+  }
+
+  @Override
   public void exitI_ip_proxy_arp(I_ip_proxy_arpContext ctx) {
     _currentInterfaces.forEach(i -> i.setIpProxyArp(true));
   }
