@@ -25,7 +25,7 @@ import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.specifier.IpSpaceAssignment.Entry;
 import org.junit.Test;
 
-public class IpSpaceSpecifierTest {
+public class IpSpaceAssignmentSpecifierTest {
   private static final Set<Location> _allLocations;
 
   private static final Map<String, Configuration> _configs;
@@ -92,7 +92,8 @@ public class IpSpaceSpecifierTest {
   @Test
   public void testConstantIpSpaceSpecifier() {
     IpSpaceAssignment assignment =
-        new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE).resolve(_allLocations, _context);
+        new ConstantIpSpaceAssignmentSpecifier(UniverseIpSpace.INSTANCE)
+            .resolve(_allLocations, _context);
     assertThat(assignment, hasEntry(equalTo(UniverseIpSpace.INSTANCE), equalTo(_allLocations)));
   }
 
@@ -100,7 +101,7 @@ public class IpSpaceSpecifierTest {
   public void testInferFromLocationIpSpaceSpecifier() {
     Set<Location> interfaceLocations = AllInterfacesLocationSpecifier.INSTANCE.resolve(_context);
     IpSpaceAssignment assignment =
-        InferFromLocationIpSpaceSpecifier.INSTANCE.resolve(interfaceLocations, _context);
+        InferFromLocationIpSpaceAssignmentSpecifier.INSTANCE.resolve(interfaceLocations, _context);
 
     // all locations are present
     Set<Location> assignmentLocations =
@@ -119,13 +120,5 @@ public class IpSpaceSpecifierTest {
         hasEntry(
             equalTo(EmptyIpSpace.INSTANCE),
             contains(new InterfaceLocation(_i3.getOwner().getHostname(), _i3.getName()))));
-  }
-
-  @Test
-  public void testLocationIpSpaceSpecifier() {
-    IpSpaceAssignment assignment =
-        new LocationIpSpaceSpecifier(AllInterfacesLocationSpecifier.INSTANCE)
-            .resolve(ImmutableSet.of(), _context);
-    assertThat(assignment, hasEntry(containsIp(Ip.parse("1.0.0.1")), equalTo(ImmutableSet.of())));
   }
 }

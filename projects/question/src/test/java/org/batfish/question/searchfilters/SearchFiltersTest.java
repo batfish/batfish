@@ -55,7 +55,7 @@ import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.question.SearchFiltersParameters;
 import org.batfish.question.searchfilters.SearchFiltersAnswerer.NonDiffConfigContext;
 import org.batfish.question.testfilters.TestFiltersAnswerer;
-import org.batfish.specifier.ConstantIpSpaceSpecifier;
+import org.batfish.specifier.ConstantIpSpaceAssignmentSpecifier;
 import org.batfish.specifier.NameRegexInterfaceLinkLocationSpecifier;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -218,8 +218,9 @@ public final class SearchFiltersTest {
   public void testPermittedFlows_headerSpace() {
     SearchFiltersParameters.Builder paramsBuilder =
         DEFAULT_PARAMS.toBuilder()
-            .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(IP0.toIpSpace()))
-            .setSourceIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE));
+            .setDestinationIpSpaceSpecifier(new ConstantIpSpaceAssignmentSpecifier(IP0.toIpSpace()))
+            .setSourceIpSpaceSpecifier(
+                new ConstantIpSpaceAssignmentSpecifier(UniverseIpSpace.INSTANCE));
 
     SearchFiltersParameters params = paramsBuilder.build();
     NonDiffConfigContext configContext = getConfigContextWithParams(params);
@@ -470,8 +471,10 @@ public final class SearchFiltersTest {
     Ip constraintIp = Ip.parse("21.21.21.21");
     SearchFiltersParameters params =
         DEFAULT_PARAMS.toBuilder()
-            .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(constraintIp.toIpSpace()))
-            .setSourceIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
+            .setDestinationIpSpaceSpecifier(
+                new ConstantIpSpaceAssignmentSpecifier(constraintIp.toIpSpace()))
+            .setSourceIpSpaceSpecifier(
+                new ConstantIpSpaceAssignmentSpecifier(UniverseIpSpace.INSTANCE))
             .build();
 
     NonDiffConfigContext configContext = getConfigContextWithParams(params);
@@ -485,8 +488,10 @@ public final class SearchFiltersTest {
     Ip constraintIp = Ip.parse("21.21.21.21");
     SearchFiltersParameters params =
         DEFAULT_PARAMS.toBuilder()
-            .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
-            .setSourceIpSpaceSpecifier(new ConstantIpSpaceSpecifier(constraintIp.toIpSpace()))
+            .setDestinationIpSpaceSpecifier(
+                new ConstantIpSpaceAssignmentSpecifier(UniverseIpSpace.INSTANCE))
+            .setSourceIpSpaceSpecifier(
+                new ConstantIpSpaceAssignmentSpecifier(constraintIp.toIpSpace()))
             .build();
 
     NonDiffConfigContext configContext = getConfigContextWithParams(params);
@@ -503,8 +508,10 @@ public final class SearchFiltersTest {
     hs.setIpProtocols(ImmutableList.of(IpProtocol.TCP));
     SearchFiltersParameters params =
         DEFAULT_PARAMS.toBuilder()
-            .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
-            .setSourceIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
+            .setDestinationIpSpaceSpecifier(
+                new ConstantIpSpaceAssignmentSpecifier(UniverseIpSpace.INSTANCE))
+            .setSourceIpSpaceSpecifier(
+                new ConstantIpSpaceAssignmentSpecifier(UniverseIpSpace.INSTANCE))
             .setHeaderSpaceExpr(match(hs))
             .build();
 

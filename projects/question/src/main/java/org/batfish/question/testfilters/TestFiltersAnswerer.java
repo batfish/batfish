@@ -44,9 +44,9 @@ import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.datamodel.trace.TraceTree;
-import org.batfish.specifier.ConstantIpSpaceSpecifier;
+import org.batfish.specifier.ConstantIpSpaceAssignmentSpecifier;
 import org.batfish.specifier.FilterSpecifier;
-import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
+import org.batfish.specifier.InferFromLocationIpSpaceAssignmentSpecifier;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.IpSpaceAssignment.Entry;
 import org.batfish.specifier.Location;
@@ -126,13 +126,14 @@ public class TestFiltersAnswerer extends Answerer {
     // if src ip is not specified and location is specified, srcIpAssignments would have a set of
     // entries of (srcLocation, IpSpacePerLocation)
     IpSpaceAssignment srcIpAssignments =
-        SpecifierFactories.getIpSpaceSpecifierOrDefault(
-                constraints.getSrcIps(), InferFromLocationIpSpaceSpecifier.INSTANCE)
+        SpecifierFactories.getIpSpaceAssignmentSpecifierOrDefault(
+                constraints.getSrcIps(), InferFromLocationIpSpaceAssignmentSpecifier.INSTANCE)
             .resolve(srcLocations, context);
 
     IpSpace dstIps =
-        SpecifierFactories.getIpSpaceSpecifierOrDefault(
-                constraints.getDstIps(), new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
+        SpecifierFactories.getIpSpaceAssignmentSpecifierOrDefault(
+                constraints.getDstIps(),
+                new ConstantIpSpaceAssignmentSpecifier(UniverseIpSpace.INSTANCE))
             .resolve(ImmutableSet.of(), context)
             .getEntries()
             .stream()

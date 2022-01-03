@@ -38,7 +38,7 @@ import org.batfish.datamodel.flow.TraceWrapperAsAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.question.ReachabilityParameters;
-import org.batfish.specifier.ConstantIpSpaceSpecifier;
+import org.batfish.specifier.ConstantIpSpaceAssignmentSpecifier;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.NameRegexNodeSpecifier;
@@ -187,9 +187,10 @@ public class BDDReachabilityAnalysisIgnoreFiltersTest {
             .setFinalNodesSpecifier(new NameRegexNodeSpecifier(Pattern.compile(NODE2)))
             .setSourceLocationSpecifier(
                 new NodeNameRegexInterfaceLocationSpecifier(Pattern.compile(NODE1)))
-            .setSourceIpSpaceSpecifier(new ConstantIpSpaceSpecifier(DENIED_OUT_SRC_IP.toIpSpace()))
+            .setSourceIpSpaceSpecifier(
+                new ConstantIpSpaceAssignmentSpecifier(DENIED_OUT_SRC_IP.toIpSpace()))
             .setDestinationIpSpaceSpecifier(
-                new ConstantIpSpaceSpecifier(NODE2_ADDR.getIp().toIpSpace()));
+                new ConstantIpSpaceAssignmentSpecifier(NODE2_ADDR.getIp().toIpSpace()));
 
     TraceWrapperAsAnswerElement traceWrapper =
         (TraceWrapperAsAnswerElement)

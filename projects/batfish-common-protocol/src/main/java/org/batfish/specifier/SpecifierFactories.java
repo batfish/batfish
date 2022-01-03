@@ -85,6 +85,18 @@ public final class SpecifierFactories {
     }
   }
 
+  public static IpSpaceAssignmentSpecifier getIpSpaceAssignmentSpecifier(
+      String input, Version version) {
+    switch (version) {
+      case V1:
+        throw new IllegalArgumentException("V1 IpSpace grammar has been nixed");
+      case V2:
+        return ParboiledIpSpaceSpecifier.parse(input);
+      default:
+        throw new IllegalStateException("Unhandled grammar version " + version);
+    }
+  }
+
   public static LocationSpecifier getLocationSpecifier(String input, Version version) {
     switch (version) {
       case V1:
@@ -164,6 +176,11 @@ public final class SpecifierFactories {
     return getIpSpaceSpecifierOrDefault(input, defaultSpecifier, ACTIVE_VERSION);
   }
 
+  public static IpSpaceAssignmentSpecifier getIpSpaceAssignmentSpecifierOrDefault(
+      @Nullable String input, IpSpaceAssignmentSpecifier defaultSpecifier) {
+    return getIpSpaceAssignmentSpecifierOrDefault(input, defaultSpecifier, ACTIVE_VERSION);
+  }
+
   public static LocationSpecifier getLocationSpecifierOrDefault(
       @Nullable String input, LocationSpecifier defaultSpecifier) {
     return getLocationSpecifierOrDefault(input, defaultSpecifier, ACTIVE_VERSION);
@@ -212,6 +229,13 @@ public final class SpecifierFactories {
   public static IpSpaceSpecifier getIpSpaceSpecifierOrDefault(
       @Nullable String input, IpSpaceSpecifier defaultSpecifier, Version v) {
     return input == null || input.isEmpty() ? defaultSpecifier : getIpSpaceSpecifier(input, v);
+  }
+
+  public static IpSpaceAssignmentSpecifier getIpSpaceAssignmentSpecifierOrDefault(
+      @Nullable String input, IpSpaceAssignmentSpecifier defaultSpecifier, Version v) {
+    return input == null || input.isEmpty()
+        ? defaultSpecifier
+        : getIpSpaceAssignmentSpecifier(input, v);
   }
 
   public static LocationSpecifier getLocationSpecifierOrDefault(

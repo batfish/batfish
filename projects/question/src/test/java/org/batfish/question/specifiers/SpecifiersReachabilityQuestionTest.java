@@ -28,8 +28,8 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.specifier.AllNodesNodeSpecifier;
-import org.batfish.specifier.ConstantIpSpaceSpecifier;
-import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
+import org.batfish.specifier.ConstantIpSpaceAssignmentSpecifier;
+import org.batfish.specifier.InferFromLocationIpSpaceAssignmentSpecifier;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.Location;
@@ -56,10 +56,10 @@ public class SpecifiersReachabilityQuestionTest {
         equalTo(ImmutableSortedSet.of(ACCEPTED, DELIVERED_TO_SUBNET, EXITS_NETWORK)));
     assertThat(
         question.getReachabilityParameters().getDestinationIpSpaceSpecifier(),
-        equalTo(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE)));
+        equalTo(new ConstantIpSpaceAssignmentSpecifier(UniverseIpSpace.INSTANCE)));
     assertThat(
         question.getReachabilityParameters().getSourceIpSpaceSpecifier(),
-        equalTo(InferFromLocationIpSpaceSpecifier.INSTANCE));
+        equalTo(InferFromLocationIpSpaceAssignmentSpecifier.INSTANCE));
     assertThat(
         question.getPathConstraints().getTransitLocations(),
         equalTo(NoNodesNodeSpecifier.INSTANCE));

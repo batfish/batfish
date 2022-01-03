@@ -26,7 +26,7 @@ import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.question.SearchFiltersParameters;
 import org.batfish.specifier.IpSpaceAssignment.Entry;
-import org.batfish.specifier.IpSpaceSpecifier;
+import org.batfish.specifier.IpSpaceAssignmentSpecifier;
 import org.batfish.specifier.LocationSpecifier;
 import org.batfish.specifier.MockSpecifierContext;
 import org.junit.Rule;
@@ -76,7 +76,7 @@ public class SearchFiltersQuestionTest {
     SearchFiltersParameters parameters = q.toSearchFiltersParameters();
     assertThat(parameters.getStartLocationSpecifier(), equalTo(LocationSpecifier.ALL_LOCATIONS));
 
-    for (IpSpaceSpecifier s :
+    for (IpSpaceAssignmentSpecifier s :
         Arrays.asList(
             parameters.getSourceIpSpaceSpecifier(), parameters.getDestinationIpSpaceSpecifier())) {
       assertThat(

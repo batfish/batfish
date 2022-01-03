@@ -14,9 +14,9 @@ import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.specifier.AllInterfacesLocationSpecifier;
 import org.batfish.specifier.AllNodesNodeSpecifier;
-import org.batfish.specifier.ConstantIpSpaceSpecifier;
-import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
-import org.batfish.specifier.IpSpaceSpecifier;
+import org.batfish.specifier.ConstantIpSpaceAssignmentSpecifier;
+import org.batfish.specifier.InferFromLocationIpSpaceAssignmentSpecifier;
+import org.batfish.specifier.IpSpaceAssignmentSpecifier;
 import org.batfish.specifier.LocationSpecifier;
 import org.batfish.specifier.NoNodesNodeSpecifier;
 import org.batfish.specifier.NodeSpecifier;
@@ -34,8 +34,8 @@ public final class ReachabilityParameters {
   public static class Builder {
     private @Nonnull SortedSet<FlowDisposition> _actions = ImmutableSortedSet.of();
 
-    private @Nonnull IpSpaceSpecifier _destinationIpSpaceSpecifier =
-        new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE);
+    private @Nonnull IpSpaceAssignmentSpecifier _destinationIpSpaceSpecifier =
+        new ConstantIpSpaceAssignmentSpecifier(UniverseIpSpace.INSTANCE);
 
     private @Nonnull NodeSpecifier _finalNodesSpecifier = AllNodesNodeSpecifier.INSTANCE;
 
@@ -52,8 +52,8 @@ public final class ReachabilityParameters {
     private @Nonnull LocationSpecifier _sourceLocationSpecifier =
         AllInterfacesLocationSpecifier.INSTANCE;
 
-    private @Nonnull IpSpaceSpecifier _sourceIpSpaceSpecifier =
-        InferFromLocationIpSpaceSpecifier.INSTANCE;
+    private @Nonnull IpSpaceAssignmentSpecifier _sourceIpSpaceSpecifier =
+        InferFromLocationIpSpaceAssignmentSpecifier.INSTANCE;
 
     private @Nonnull SrcNattedConstraint _srcNatted = SrcNattedConstraint.UNCONSTRAINED;
 
@@ -67,7 +67,7 @@ public final class ReachabilityParameters {
     }
 
     public Builder setDestinationIpSpaceSpecifier(
-        @Nonnull IpSpaceSpecifier destinationIpSpaceSpecifier) {
+        @Nonnull IpSpaceAssignmentSpecifier destinationIpSpaceSpecifier) {
       _destinationIpSpaceSpecifier = destinationIpSpaceSpecifier;
       return this;
     }
@@ -93,7 +93,8 @@ public final class ReachabilityParameters {
       return this;
     }
 
-    public Builder setSourceIpSpaceSpecifier(@Nonnull IpSpaceSpecifier sourceIpSpaceSpecifier) {
+    public Builder setSourceIpSpaceSpecifier(
+        @Nonnull IpSpaceAssignmentSpecifier sourceIpSpaceSpecifier) {
       _sourceIpSpaceSpecifier = sourceIpSpaceSpecifier;
       return this;
     }
@@ -126,7 +127,7 @@ public final class ReachabilityParameters {
 
   private final SortedSet<FlowDisposition> _actions;
 
-  private final @Nonnull IpSpaceSpecifier _destinationIpSpaceSpecifier;
+  private final @Nonnull IpSpaceAssignmentSpecifier _destinationIpSpaceSpecifier;
 
   private final @Nonnull NodeSpecifier _finalNodesSpecifier;
 
@@ -140,7 +141,7 @@ public final class ReachabilityParameters {
 
   private final LocationSpecifier _sourceLocationSpecifier;
 
-  private final IpSpaceSpecifier _sourceIpSpaceSpecifier;
+  private final IpSpaceAssignmentSpecifier _sourceIpSpaceSpecifier;
 
   private final SrcNattedConstraint _sourceNatted;
 
@@ -169,7 +170,7 @@ public final class ReachabilityParameters {
   }
 
   @Nonnull
-  public IpSpaceSpecifier getDestinationIpSpaceSpecifier() {
+  public IpSpaceAssignmentSpecifier getDestinationIpSpaceSpecifier() {
     return _destinationIpSpaceSpecifier;
   }
 
@@ -199,7 +200,7 @@ public final class ReachabilityParameters {
     return _sourceLocationSpecifier;
   }
 
-  public IpSpaceSpecifier getSourceIpSpaceSpecifier() {
+  public IpSpaceAssignmentSpecifier getSourceIpSpaceSpecifier() {
     return _sourceIpSpaceSpecifier;
   }
 

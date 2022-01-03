@@ -17,9 +17,9 @@ import org.batfish.datamodel.questions.Question;
 import org.batfish.question.SearchFiltersParameters;
 import org.batfish.specifier.AllFiltersFilterSpecifier;
 import org.batfish.specifier.AllNodesNodeSpecifier;
-import org.batfish.specifier.ConstantIpSpaceSpecifier;
+import org.batfish.specifier.ConstantIpSpaceAssignmentSpecifier;
 import org.batfish.specifier.FilterSpecifier;
-import org.batfish.specifier.IpSpaceSpecifier;
+import org.batfish.specifier.IpSpaceAssignmentSpecifier;
 import org.batfish.specifier.LocationSpecifier;
 import org.batfish.specifier.NodeSpecifier;
 import org.batfish.specifier.SpecifierFactories;
@@ -173,15 +173,17 @@ public final class SearchFiltersQuestion extends Question {
   }
 
   @Nonnull
-  private IpSpaceSpecifier getSourceSpecifier() {
-    return SpecifierFactories.getIpSpaceSpecifierOrDefault(
-        _headerConstraints.getSrcIps(), new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE));
+  private IpSpaceAssignmentSpecifier getSourceSpecifier() {
+    return SpecifierFactories.getIpSpaceAssignmentSpecifierOrDefault(
+        _headerConstraints.getSrcIps(),
+        new ConstantIpSpaceAssignmentSpecifier(UniverseIpSpace.INSTANCE));
   }
 
   @Nonnull
-  private IpSpaceSpecifier getDestinationSpecifier() {
-    return SpecifierFactories.getIpSpaceSpecifierOrDefault(
-        _headerConstraints.getDstIps(), new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE));
+  private IpSpaceAssignmentSpecifier getDestinationSpecifier() {
+    return SpecifierFactories.getIpSpaceAssignmentSpecifierOrDefault(
+        _headerConstraints.getDstIps(),
+        new ConstantIpSpaceAssignmentSpecifier(UniverseIpSpace.INSTANCE));
   }
 
   @Nonnull

@@ -9,14 +9,17 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.specifier.AllFiltersFilterSpecifier;
 import org.batfish.specifier.AllInterfacesInterfaceSpecifier;
 import org.batfish.specifier.AllInterfacesLocationSpecifier;
 import org.batfish.specifier.AllNodesNodeSpecifier;
+import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.FilterSpecifier;
-import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
+import org.batfish.specifier.InferFromLocationIpSpaceAssignmentSpecifier;
 import org.batfish.specifier.InterfaceSpecifier;
+import org.batfish.specifier.IpSpaceAssignmentSpecifier;
 import org.batfish.specifier.IpSpaceSpecifier;
 import org.batfish.specifier.LocationSpecifier;
 import org.batfish.specifier.NodeSpecifier;
@@ -25,7 +28,7 @@ import org.batfish.specifier.SpecifierFactories.Version;
 
 /**
  * Allows users to see how different specifiers ({@link LocationSpecifier}, {@link
- * IpSpaceSpecifier}, {@link NodeSpecifier}, {@link FilterSpecifier}, and {@link
+ * IpSpaceAssignmentSpecifier}, {@link NodeSpecifier}, {@link FilterSpecifier}, and {@link
  * InterfaceSpecifier}) are resolved.
  */
 @ParametersAreNonnullByDefault
@@ -92,7 +95,15 @@ public final class SpecifiersQuestion extends Question {
   IpSpaceSpecifier getIpSpaceSpecifier() {
     return SpecifierFactories.getIpSpaceSpecifierOrDefault(
         _ipSpaceSpecifierInput,
-        InferFromLocationIpSpaceSpecifier.INSTANCE,
+        new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE),
+        _specifierFactoryVersion);
+  }
+
+  @JsonIgnore
+  IpSpaceAssignmentSpecifier getIpSpaceAssignmentSpecifier() {
+    return SpecifierFactories.getIpSpaceAssignmentSpecifierOrDefault(
+        _ipSpaceSpecifierInput,
+        InferFromLocationIpSpaceAssignmentSpecifier.INSTANCE,
         _specifierFactoryVersion);
   }
 

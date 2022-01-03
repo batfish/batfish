@@ -232,7 +232,7 @@ import org.batfish.role.NodeRolesData.Type;
 import org.batfish.role.RoleMapping;
 import org.batfish.specifier.AllInterfaceLinksLocationSpecifier;
 import org.batfish.specifier.AllInterfacesLocationSpecifier;
-import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
+import org.batfish.specifier.InferFromLocationIpSpaceAssignmentSpecifier;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
@@ -3238,7 +3238,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 AllInterfacesLocationSpecifier.INSTANCE,
                 AllInterfaceLinksLocationSpecifier.INSTANCE)
             .resolve(specifierContext);
-    return InferFromLocationIpSpaceSpecifier.INSTANCE.resolve(locations, specifierContext);
+    return InferFromLocationIpSpaceAssignmentSpecifier.INSTANCE.resolve(
+        locations, specifierContext);
   }
 
   @Nonnull
