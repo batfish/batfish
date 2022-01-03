@@ -527,16 +527,16 @@ rb_neighbor
 ;
 
 rb_proc_vrf_common_no
- :
-   NO
-   (
-     rb_no_neighbor
-   )
- ;
+:
+  NO
+  (
+    rb_no_neighbor
+  )
+;
 
 rb_no_neighbor
- :
-  NEIGHBOR
+:
+ NEIGHBOR
   (
     ip = ip_address
     | prefix = ip_prefix
@@ -546,7 +546,7 @@ rb_no_neighbor
   (
     REMOTE_AS asn = bgp_asn
   )? NEWLINE
- ;
+;
 
 // We might get to this level of the hierarchy in four ways:
 //  1. configuring an actual neighbor (router bgp ; (optional vrf) ; neighbor)
