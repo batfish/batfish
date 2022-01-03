@@ -75,8 +75,8 @@ public class Schema {
   public static final Schema ISSUE = new Schema("Issue");
   public static final Schema LONG = new Schema("Long");
   public static final Schema NEXT_HOP = new Schema("NextHop");
-  public static final Schema OBJECT = new Schema("Object");
   public static final Schema NODE = new Schema("Node");
+  public static final Schema OBJECT = new Schema("Object");
   public static final Schema PREFIX = new Schema("Prefix");
   public static final Schema SELF_DESCRIBING = new Schema("SelfDescribing");
   public static final Schema STRING = new Schema("String");
