@@ -758,6 +758,47 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testBgpNoNeighbor() throws IOException {
+    /*
+     For each neighbor type (IPv4 active/passive, IPv6 active/passive), both within and outside of
+     VRF context, tests that:
+     - `no neighbor [IP or prefix]` removes the specified neighbor if it exists
+     - `no neighbor [IP or prefix]` has no effect if the specified neighbor does not exist
+     - `no neighbor [IP or prefix] remote-as X` removes the specified neighbor, regardless of
+        whether the specified remote AS matches the neighbor's remote AS
+     For each neighbor type in each context, one neighbor is left unremoved to sanity check that
+     the removed neighbors were in fact added and removed.
+    */
+    String hostname = "nxos_bgp_no_neighbor";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    CiscoNxosConfiguration vc =
+        (CiscoNxosConfiguration)
+            batfish.loadVendorConfigurations(batfish.getSnapshot()).get(hostname);
+    // Configuration should not have generated any parse warnings
+    assertThat(
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot()).getWarnings(),
+        anEmptyMap());
+
+    BgpGlobalConfiguration bgpGlobal = vc.getBgpGlobalConfiguration();
+    assertThat(bgpGlobal, notNullValue());
+    assertThat(bgpGlobal.getVrfs(), hasKeys(DEFAULT_VRF_NAME, "vrf1"));
+    {
+      BgpVrfConfiguration vrf = bgpGlobal.getOrCreateVrf(DEFAULT_VRF_NAME);
+      assertThat(vrf.getNeighbors(), hasKeys(Ip.parse("10.0.0.4")));
+      assertThat(vrf.getPassiveNeighbors(), hasKeys(Prefix.parse("10.1.4.0/24")));
+      assertThat(vrf.getNeighbors6(), hasKeys(Ip6.parse("10:10::10:4")));
+      assertThat(vrf.getPassiveNeighbors6(), hasKeys(Prefix6.parse("10:4::/112")));
+    }
+    {
+      BgpVrfConfiguration vrf = bgpGlobal.getOrCreateVrf("vrf1");
+      assertThat(vrf.getNeighbors(), hasKeys(Ip.parse("11.0.0.4")));
+      assertThat(vrf.getPassiveNeighbors(), hasKeys(Prefix.parse("11.1.4.0/24")));
+      assertThat(vrf.getNeighbors6(), hasKeys(Ip6.parse("11:10::10:4")));
+      assertThat(vrf.getPassiveNeighbors6(), hasKeys(Prefix6.parse("11:4::/112")));
+    }
+  }
+
+  @Test
   public void testBgpNextHopUnchanged() throws IOException {
     Configuration c = parseConfig("nxos_bgp_nh_unchanged");
     RoutingPolicy nhipUnchangedPolicy = c.getRoutingPolicies().get("NHIP-UNCHANGED");
