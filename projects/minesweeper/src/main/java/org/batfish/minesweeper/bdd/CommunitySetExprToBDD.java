@@ -63,10 +63,12 @@ public class CommunitySetExprToBDD implements CommunitySetExprVisitor<BDD, Arg> 
 
   @Override
   public BDD visitCommunitySetUnion(CommunitySetUnion communitySetUnion, Arg arg) {
-    return BDDRoute.factory.orAll(
-        communitySetUnion.getExprs().stream()
-            .map(expr -> expr.accept(this, arg))
-            .collect(Collectors.toList()));
+    return arg.getTransferBDD()
+        .getFactory()
+        .orAll(
+            communitySetUnion.getExprs().stream()
+                .map(expr -> expr.accept(this, arg))
+                .collect(Collectors.toList()));
   }
 
   @Override

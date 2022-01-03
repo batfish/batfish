@@ -3,6 +3,7 @@ package org.batfish.minesweeper.bdd;
 import static org.batfish.minesweeper.bdd.TransferBDD.isRelevantForDestination;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
@@ -16,6 +17,8 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.stream.Collectors;
 import net.sf.javabdd.BDD;
+import net.sf.javabdd.BDDFactory;
+import net.sf.javabdd.JFactory;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDFiniteDomain;
 import org.batfish.common.bdd.BDDInteger;
@@ -120,7 +123,6 @@ public class TransferBDDTest {
   private IBatfish _batfish;
   private Configuration _baseConfig;
   private Graph _g;
-  private BDDRoute _anyRoute;
 
   @Rule public ExpectedException _exception = ExpectedException.none();
 
@@ -171,7 +173,10 @@ public class TransferBDDTest {
     _policyBuilder = _nf.routingPolicyBuilder().setOwner(_baseConfig).setName(POLICY_NAME);
 
     _batfish = new MockBatfish(ImmutableSortedMap.of(HOSTNAME, _baseConfig));
-    _anyRoute = new BDDRoute(1, 1);
+  }
+
+  private BDDRoute anyRoute(BDDFactory factory) {
+    return new BDDRoute(factory, 1, 1);
   }
 
   private MatchPrefixSet matchPrefixSet(List<PrefixRange> prList) {
@@ -194,7 +199,7 @@ public class TransferBDDTest {
     assertTrue(acceptedAnnouncements.isOne());
 
     // the policy does not perform any updates
-    assertEquals(_anyRoute, outAnnouncements);
+    assertEquals(anyRoute(tbdd.getFactory()), outAnnouncements);
   }
 
   @Test
@@ -245,12 +250,14 @@ public class TransferBDDTest {
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
 
+    BDDRoute anyRoute = anyRoute(tbdd.getFactory());
+
     BDD expectedBDD =
         isRelevantForDestination(
-            _anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
+            anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
     assertEquals(acceptedAnnouncements, expectedBDD);
 
-    assertEquals(tbdd.iteZero(acceptedAnnouncements, _anyRoute), outAnnouncements);
+    assertEquals(tbdd.iteZero(acceptedAnnouncements, anyRoute), outAnnouncements);
   }
 
   @Test
@@ -276,7 +283,7 @@ public class TransferBDDTest {
 
     assertTrue(acceptedAnnouncements.isOne());
 
-    assertEquals(_anyRoute, outAnnouncements);
+    assertEquals(anyRoute(tbdd.getFactory()), outAnnouncements);
   }
 
   @Test
@@ -345,13 +352,15 @@ public class TransferBDDTest {
     BDD acceptedAnnouncements = ret.getSecond();
     BDDRoute outAnnouncements = ret.getFirst();
 
+    BDDRoute anyRoute = anyRoute(tbdd.getFactory());
+
     BDD expectedBDD =
         isRelevantForDestination(
-                _anyRoute, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)))
+                anyRoute, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)))
             .not();
     assertEquals(acceptedAnnouncements, expectedBDD);
 
-    assertEquals(tbdd.iteZero(expectedBDD, _anyRoute), outAnnouncements);
+    assertEquals(tbdd.iteZero(expectedBDD, anyRoute), outAnnouncements);
   }
 
   @Test
@@ -377,15 +386,17 @@ public class TransferBDDTest {
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
 
+    BDDRoute anyRoute = anyRoute(tbdd.getFactory());
+
     BDD expectedBDD =
         isRelevantForDestination(
-                _anyRoute, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)))
+                anyRoute, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)))
             .or(
                 isRelevantForDestination(
-                        _anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(31, 32)))
+                        anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(31, 32)))
                     .not());
 
-    BDDRoute expected = tbdd.iteZero(expectedBDD, _anyRoute);
+    BDDRoute expected = tbdd.iteZero(expectedBDD, anyRoute);
 
     assertEquals(expectedBDD, acceptedAnnouncements);
 
@@ -406,7 +417,7 @@ public class TransferBDDTest {
 
     assertTrue(acceptedAnnouncements.isOne());
 
-    assertEquals(_anyRoute, outAnnouncements);
+    assertEquals(anyRoute(tbdd.getFactory()), outAnnouncements);
   }
 
   @Test
@@ -433,17 +444,19 @@ public class TransferBDDTest {
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
 
+    BDDRoute anyRoute = anyRoute(tbdd.getFactory());
+
     BDD expectedBDD =
         isRelevantForDestination(
-                _anyRoute, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)))
+                anyRoute, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)))
             .or(
                 isRelevantForDestination(
-                    _anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(31, 32))));
+                    anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(31, 32))));
 
     BDD reachesSecondIf =
         isRelevantForDestination(
-            _anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(31, 31)));
-    BDDRoute expected = tbdd.iteZero(expectedBDD, _anyRoute);
+            anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(31, 31)));
+    BDDRoute expected = tbdd.iteZero(expectedBDD, anyRoute);
     BDDInteger localPref = expected.getLocalPref();
     expected.setLocalPref(
         BDDInteger.makeFromValue(localPref.getFactory(), 32, 3).ite(reachesSecondIf, localPref));
@@ -476,13 +489,15 @@ public class TransferBDDTest {
     TransferResult result = tbdd.compute(ImmutableSet.of());
     TransferReturn ret = result.getReturnValue();
 
+    BDDRoute anyRoute = anyRoute(tbdd.getFactory());
+
     BDD returnAssigned =
         isRelevantForDestination(
-            _anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(31, 31)));
+            anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(31, 31)));
 
     BDD permitted =
         isRelevantForDestination(
-            _anyRoute, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)));
+            anyRoute, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)));
 
     assertEquals(returnAssigned, result.getReturnAssignedValue());
 
@@ -491,7 +506,7 @@ public class TransferBDDTest {
     assertEquals(permitted, ret.getSecond());
     // at the top level, the update to local preference is ignored since it only occurs on
     // paths that return false
-    assertEquals(tbdd.iteZero(permitted, _anyRoute), ret.getFirst());
+    assertEquals(tbdd.iteZero(permitted, anyRoute), ret.getFirst());
   }
 
   @Test
@@ -520,19 +535,21 @@ public class TransferBDDTest {
     // indenting the parameter ensures that this will not be considered a top-level call,
     // so a default exit reject will not be added, and route updates on paths that return
     // false will not be removed
-    TransferParam<BDDRoute> p = new TransferParam<>(new BDDRoute(_g), false).indent();
+    TransferParam p = new TransferParam(new BDDRoute(tbdd.getFactory(), _g), false).indent();
     TransferResult result = tbdd.compute(stmts, p);
     TransferReturn ret = result.getReturnValue();
 
+    BDDRoute anyRoute = anyRoute(tbdd.getFactory());
+
     BDD returnAssigned =
         isRelevantForDestination(
-            _anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(31, 31)));
+            anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(31, 31)));
 
     BDD exitAssigned =
         isRelevantForDestination(
-            _anyRoute, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)));
+            anyRoute, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)));
 
-    BDDRoute expectedOut = new BDDRoute(_anyRoute);
+    BDDRoute expectedOut = new BDDRoute(anyRoute);
     BDDInteger localPref2 = BDDInteger.makeFromValue(expectedOut.getFactory(), 32, 2);
     BDDInteger localPref3 = BDDInteger.makeFromValue(expectedOut.getFactory(), 32, 3);
     expectedOut.setLocalPref(
@@ -568,12 +585,14 @@ public class TransferBDDTest {
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
 
+    BDDRoute anyRoute = anyRoute(tbdd.getFactory());
+
     BDD expectedBDD =
         isRelevantForDestination(
-            _anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(32, 32)));
+            anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(32, 32)));
     assertEquals(acceptedAnnouncements, expectedBDD);
 
-    assertEquals(tbdd.iteZero(acceptedAnnouncements, _anyRoute), outAnnouncements);
+    assertEquals(tbdd.iteZero(acceptedAnnouncements, anyRoute), outAnnouncements);
   }
 
   @Test
@@ -614,7 +633,7 @@ public class TransferBDDTest {
 
     // currently we assume announcements are IPv4
     assertTrue(acceptedAnnouncements.isOne());
-    assertEquals(_anyRoute, outAnnouncements);
+    assertEquals(anyRoute(tbdd.getFactory()), outAnnouncements);
   }
 
   @Test
@@ -658,12 +677,14 @@ public class TransferBDDTest {
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
 
+    BDDRoute anyRoute = anyRoute(tbdd.getFactory());
+
     BDD expectedBDD =
         isRelevantForDestination(
-            _anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(24, 24)));
+            anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(24, 24)));
     assertEquals(acceptedAnnouncements, expectedBDD);
 
-    assertEquals(tbdd.iteZero(acceptedAnnouncements, _anyRoute), outAnnouncements);
+    assertEquals(tbdd.iteZero(acceptedAnnouncements, anyRoute), outAnnouncements);
   }
 
   @Test
@@ -699,7 +720,7 @@ public class TransferBDDTest {
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
 
-    BDDRoute expectedOut = new BDDRoute(_anyRoute);
+    BDDRoute expectedOut = anyRoute(tbdd.getFactory());
     expectedOut.setLocalPref(BDDInteger.makeFromValue(expectedOut.getFactory(), 32, 300));
 
     // the policy is applicable to all announcements
@@ -783,10 +804,12 @@ public class TransferBDDTest {
 
     assertTrue(acceptedAnnouncements.isOne());
 
+    BDDRoute anyRoute = anyRoute(tbdd.getFactory());
+
     BDD firstConjunctBDD =
         isRelevantForDestination(
-            _anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
-    BDDRoute expected = new BDDRoute(_anyRoute);
+            anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
+    BDDRoute expected = new BDDRoute(anyRoute);
     BDDInteger localPref = expected.getLocalPref();
     expected.setLocalPref(
         BDDInteger.makeFromValue(localPref.getFactory(), 32, 300).ite(firstConjunctBDD, localPref));
@@ -811,7 +834,8 @@ public class TransferBDDTest {
 
     assertEquals(acceptedAnnouncements, outAnnouncements.getFactory().one());
 
-    assertEquals(tbdd.iteZero(acceptedAnnouncements, _anyRoute), outAnnouncements);
+    assertEquals(
+        tbdd.iteZero(acceptedAnnouncements, anyRoute(tbdd.getFactory())), outAnnouncements);
   }
 
   @Test
@@ -835,15 +859,17 @@ public class TransferBDDTest {
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
 
+    BDDRoute anyRoute = anyRoute(tbdd.getFactory());
+
     BDD expectedBDD =
         isRelevantForDestination(
-                _anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)))
+                anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)))
             .or(
                 isRelevantForDestination(
-                    _anyRoute, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(24, 32))));
+                    anyRoute, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(24, 32))));
     assertEquals(acceptedAnnouncements, expectedBDD);
 
-    assertEquals(tbdd.iteZero(acceptedAnnouncements, _anyRoute), outAnnouncements);
+    assertEquals(tbdd.iteZero(acceptedAnnouncements, anyRoute), outAnnouncements);
   }
 
   @Test
@@ -884,10 +910,12 @@ public class TransferBDDTest {
 
     assertTrue(acceptedAnnouncements.isOne());
 
+    BDDRoute anyRoute = anyRoute(tbdd.getFactory());
+
     BDD firstDisjunctBDD =
         isRelevantForDestination(
-            _anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
-    BDDRoute expected = new BDDRoute(_anyRoute);
+            anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
+    BDDRoute expected = new BDDRoute(anyRoute);
     BDDInteger localPref = expected.getLocalPref();
     expected.setLocalPref(
         BDDInteger.makeFromValue(localPref.getFactory(), 32, 300)
@@ -913,7 +941,8 @@ public class TransferBDDTest {
 
     assertEquals(acceptedAnnouncements, outAnnouncements.getFactory().zero());
 
-    assertEquals(tbdd.iteZero(acceptedAnnouncements, _anyRoute), outAnnouncements);
+    assertEquals(
+        tbdd.iteZero(acceptedAnnouncements, anyRoute(tbdd.getFactory())), outAnnouncements);
   }
 
   @Test
@@ -933,13 +962,15 @@ public class TransferBDDTest {
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
 
+    BDDRoute anyRoute = anyRoute(tbdd.getFactory());
+
     BDD expectedBDD =
         isRelevantForDestination(
-                _anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)))
+                anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)))
             .not();
     assertEquals(acceptedAnnouncements, expectedBDD);
 
-    assertEquals(tbdd.iteZero(acceptedAnnouncements, _anyRoute), outAnnouncements);
+    assertEquals(tbdd.iteZero(acceptedAnnouncements, anyRoute), outAnnouncements);
   }
 
   @Test
@@ -959,15 +990,17 @@ public class TransferBDDTest {
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
 
+    BDDRoute anyRoute = anyRoute(tbdd.getFactory());
+
     BDD expectedBDD1 =
         isRelevantForDestination(
-            _anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
+            anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
     BDD expectedBDD2 =
         isRelevantForDestination(
-            _anyRoute, new PrefixRange(Prefix.parse("1.2.0.0/16"), new SubRange(25, 32)));
+            anyRoute, new PrefixRange(Prefix.parse("1.2.0.0/16"), new SubRange(25, 32)));
     assertEquals(acceptedAnnouncements, expectedBDD1.or(expectedBDD2));
 
-    assertEquals(tbdd.iteZero(acceptedAnnouncements, _anyRoute), outAnnouncements);
+    assertEquals(tbdd.iteZero(acceptedAnnouncements, anyRoute), outAnnouncements);
   }
 
   @Test
@@ -991,12 +1024,14 @@ public class TransferBDDTest {
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
 
+    BDDRoute anyRoute = anyRoute(tbdd.getFactory());
+
     BDD expectedBDD =
         isRelevantForDestination(
-            _anyRoute, new PrefixRange(Prefix.parse("1.2.0.0/16"), new SubRange(20, 24)));
+            anyRoute, new PrefixRange(Prefix.parse("1.2.0.0/16"), new SubRange(20, 24)));
     assertEquals(acceptedAnnouncements, expectedBDD);
 
-    assertEquals(tbdd.iteZero(acceptedAnnouncements, _anyRoute), outAnnouncements);
+    assertEquals(tbdd.iteZero(acceptedAnnouncements, anyRoute), outAnnouncements);
   }
 
   @Test
@@ -1041,12 +1076,14 @@ public class TransferBDDTest {
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
 
+    BDDRoute anyRoute = anyRoute(tbdd.getFactory());
+
     BDD expectedBDD =
         isRelevantForDestination(
-            _anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(31, 31)));
+            anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(31, 31)));
     assertEquals(acceptedAnnouncements, expectedBDD);
 
-    assertEquals(tbdd.iteZero(acceptedAnnouncements, _anyRoute), outAnnouncements);
+    assertEquals(tbdd.iteZero(acceptedAnnouncements, anyRoute), outAnnouncements);
   }
 
   @Test
@@ -1067,7 +1104,7 @@ public class TransferBDDTest {
     assertTrue(acceptedAnnouncements.isOne());
 
     // the local preference is now 42
-    BDDRoute expected = new BDDRoute(_anyRoute);
+    BDDRoute expected = anyRoute(tbdd.getFactory());
     BDDInteger localPref = expected.getLocalPref();
     expected.setLocalPref(BDDInteger.makeFromValue(localPref.getFactory(), 32, 42));
     assertEquals(expected, outAnnouncements);
@@ -1091,7 +1128,7 @@ public class TransferBDDTest {
     assertTrue(acceptedAnnouncements.isOne());
 
     // the metric is now 50
-    BDDInteger expectedMed = BDDInteger.makeFromValue(_anyRoute.getFactory(), 32, 50);
+    BDDInteger expectedMed = BDDInteger.makeFromValue(tbdd.getFactory(), 32, 50);
     assertEquals(expectedMed, outAnnouncements.getMed());
   }
 
@@ -1113,7 +1150,7 @@ public class TransferBDDTest {
     assertTrue(acceptedAnnouncements.isOne());
 
     // the tag is now 42
-    BDDRoute expected = new BDDRoute(_anyRoute);
+    BDDRoute expected = anyRoute(tbdd.getFactory());
     BDDInteger tag = expected.getTag();
     expected.setTag(BDDInteger.makeFromValue(tag.getFactory(), 32, 42));
     assertEquals(expected, outAnnouncements);
@@ -1135,8 +1172,10 @@ public class TransferBDDTest {
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
 
-    assertEquals(acceptedAnnouncements, _anyRoute.getTag().value(42));
-    assertEquals(tbdd.iteZero(acceptedAnnouncements, _anyRoute), outAnnouncements);
+    BDDRoute anyRoute = anyRoute(tbdd.getFactory());
+
+    assertEquals(acceptedAnnouncements, anyRoute.getTag().value(42));
+    assertEquals(tbdd.iteZero(acceptedAnnouncements, anyRoute), outAnnouncements);
   }
 
   @Test
@@ -1156,9 +1195,12 @@ public class TransferBDDTest {
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
+
+    BDDRoute anyRoute = anyRoute(tbdd.getFactory());
+
     // the original route's tag must be 42
-    assertEquals(acceptedAnnouncements, _anyRoute.getTag().value(42));
-    assertEquals(tbdd.iteZero(acceptedAnnouncements, _anyRoute), outAnnouncements);
+    assertEquals(acceptedAnnouncements, anyRoute.getTag().value(42));
+    assertEquals(tbdd.iteZero(acceptedAnnouncements, anyRoute), outAnnouncements);
 
     // now do the analysis again but use the output attributes for matching
     tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), true);
@@ -1168,7 +1210,7 @@ public class TransferBDDTest {
     // the original route's tag is irrelevant
     assertTrue(acceptedAnnouncements.isOne());
     // the tag is now 42
-    BDDRoute expected = new BDDRoute(_anyRoute);
+    BDDRoute expected = new BDDRoute(anyRoute);
     BDDInteger tag = expected.getTag();
     expected.setTag(BDDInteger.makeFromValue(tag.getFactory(), 32, 42));
     assertEquals(expected, outAnnouncements);
@@ -1190,9 +1232,10 @@ public class TransferBDDTest {
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
 
-    assertEquals(
-        acceptedAnnouncements, _anyRoute.getTag().value(0).or(_anyRoute.getTag().value(1)));
-    assertEquals(tbdd.iteZero(acceptedAnnouncements, _anyRoute), outAnnouncements);
+    BDDRoute anyRoute = anyRoute(tbdd.getFactory());
+
+    assertEquals(acceptedAnnouncements, anyRoute.getTag().value(0).or(anyRoute.getTag().value(1)));
+    assertEquals(tbdd.iteZero(acceptedAnnouncements, anyRoute), outAnnouncements);
   }
 
   @Test
@@ -1213,12 +1256,14 @@ public class TransferBDDTest {
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
 
+    BDDRoute anyRoute = anyRoute(tbdd.getFactory());
+
     BDD expectedBDD =
         TransferBDD.firstBitsEqual(
-            _anyRoute.getNextHop().getBitvec(), Prefix.parse("1.0.0.0/8"), 8);
+            anyRoute.getNextHop().getBitvec(), Prefix.parse("1.0.0.0/8"), 8, anyRoute.getFactory());
     assertEquals(acceptedAnnouncements, expectedBDD);
 
-    assertEquals(tbdd.iteZero(acceptedAnnouncements, _anyRoute), outAnnouncements);
+    assertEquals(tbdd.iteZero(acceptedAnnouncements, anyRoute), outAnnouncements);
   }
 
   @Test
@@ -1255,7 +1300,7 @@ public class TransferBDDTest {
 
     assertTrue(acceptedAnnouncements.isOne());
 
-    BDDRoute expected = new BDDRoute(_anyRoute);
+    BDDRoute expected = anyRoute(tbdd.getFactory());
     expected.setNextHopDiscarded(expected.getFactory().one());
     expected.setNextHopSet(expected.getFactory().one());
     assertEquals(expected, outAnnouncements);
@@ -1276,7 +1321,7 @@ public class TransferBDDTest {
 
     assertTrue(acceptedAnnouncements.isOne());
 
-    BDDRoute expected = new BDDRoute(_anyRoute);
+    BDDRoute expected = anyRoute(tbdd.getFactory());
     expected.setNextHopSet(expected.getFactory().one());
     expected.setNextHop(
         BDDInteger.makeFromValue(expected.getFactory(), 32, Ip.parse("1.1.1.1").asLong()));
@@ -1310,13 +1355,15 @@ public class TransferBDDTest {
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
 
-    BDDFiniteDomain<RoutingProtocol> protocol = _anyRoute.getProtocolHistory();
+    BDDRoute anyRoute = anyRoute(tbdd.getFactory());
+
+    BDDFiniteDomain<RoutingProtocol> protocol = anyRoute.getProtocolHistory();
     assertEquals(
         acceptedAnnouncements,
         protocol
             .getConstraintForValue(RoutingProtocol.BGP)
             .or(protocol.getConstraintForValue(RoutingProtocol.OSPF)));
-    assertEquals(tbdd.iteZero(acceptedAnnouncements, _anyRoute), outAnnouncements);
+    assertEquals(tbdd.iteZero(acceptedAnnouncements, anyRoute), outAnnouncements);
   }
 
   @Test
@@ -1338,7 +1385,7 @@ public class TransferBDDTest {
     BDDRoute outAnnouncements = result.getFirst();
 
     assertTrue(acceptedAnnouncements.isOne());
-    assertEquals(_anyRoute, outAnnouncements);
+    assertEquals(anyRoute(tbdd.getFactory()), outAnnouncements);
   }
 
   @Test
@@ -1360,12 +1407,14 @@ public class TransferBDDTest {
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
 
+    BDDRoute anyRoute = anyRoute(tbdd.getFactory());
+
     BDD expectedBDD =
         isRelevantForDestination(
-            _anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
+            anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
     assertEquals(acceptedAnnouncements, expectedBDD);
 
-    assertEquals(tbdd.iteZero(acceptedAnnouncements, _anyRoute), outAnnouncements);
+    assertEquals(tbdd.iteZero(acceptedAnnouncements, anyRoute), outAnnouncements);
   }
 
   @Test
@@ -1413,7 +1462,7 @@ public class TransferBDDTest {
     BDDRoute outAnnouncements = result.getFirst();
 
     assertTrue(acceptedAnnouncements.isOne());
-    assertEquals(_anyRoute, outAnnouncements);
+    assertEquals(anyRoute(tbdd.getFactory()), outAnnouncements);
   }
 
   @Test
@@ -1434,7 +1483,7 @@ public class TransferBDDTest {
     assertTrue(acceptedAnnouncements.isOne());
 
     // the local preference is now 42
-    BDDRoute expected = new BDDRoute(_anyRoute);
+    BDDRoute expected = anyRoute(tbdd.getFactory());
     BDDInteger localPref = expected.getLocalPref();
     expected.setLocalPref(BDDInteger.makeFromValue(localPref.getFactory(), 32, 42));
     assertEquals(expected, outAnnouncements);
@@ -1462,7 +1511,7 @@ public class TransferBDDTest {
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
 
-    BDDRoute anyRouteWithAPs = new BDDRoute(_g);
+    BDDRoute anyRouteWithAPs = new BDDRoute(tbdd.getFactory(), _g);
     BDD[] aps = anyRouteWithAPs.getAsPathRegexAtomicPredicates();
 
     // get the unique atomic predicate that corresponds to " 40$"
@@ -1496,7 +1545,7 @@ public class TransferBDDTest {
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
 
-    BDDRoute anyRouteWithAPs = new BDDRoute(_g);
+    BDDRoute anyRouteWithAPs = new BDDRoute(tbdd.getFactory(), _g);
     BDD[] aps = anyRouteWithAPs.getAsPathRegexAtomicPredicates();
 
     assertEquals(3, _g.getAsPathRegexAtomicPredicates().getNumAtomicPredicates());
@@ -1530,7 +1579,7 @@ public class TransferBDDTest {
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
 
-    BDDRoute anyRouteWithAPs = new BDDRoute(_g);
+    BDDRoute anyRouteWithAPs = new BDDRoute(tbdd.getFactory(), _g);
     BDD[] aps = anyRouteWithAPs.getAsPathRegexAtomicPredicates();
 
     assertEquals(3, _g.getAsPathRegexAtomicPredicates().getNumAtomicPredicates());
@@ -1574,7 +1623,7 @@ public class TransferBDDTest {
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
 
-    BDDRoute anyRoute = new BDDRoute(_g);
+    BDDRoute anyRoute = new BDDRoute(tbdd.getFactory(), _g);
 
     // the policy is applicable to all announcements
     assertTrue(acceptedAnnouncements.isOne());
@@ -1629,7 +1678,7 @@ public class TransferBDDTest {
     // the policy is applicable to all announcements
     assertTrue(acceptedAnnouncements.isOne());
 
-    BDDRoute anyRoute = new BDDRoute(_g);
+    BDDRoute anyRoute = new BDDRoute(tbdd.getFactory(), _g);
 
     // each atomic predicate for community 4:44 has the 1 BDD
     for (int ap :
@@ -1767,7 +1816,7 @@ public class TransferBDDTest {
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
 
-    BDDRoute anyRoute = new BDDRoute(_g);
+    BDDRoute anyRoute = new BDDRoute(tbdd.getFactory(), _g);
     BDD[] aps = anyRoute.getCommunityAtomicPredicates();
 
     // get the atomic predicates that correspond to ^30:
@@ -1775,7 +1824,7 @@ public class TransferBDDTest {
         _g.getCommunityAtomicPredicates().getRegexAtomicPredicates().get(CommunityVar.from("^30:"));
 
     BDD expectedBDD =
-        BDDRoute.factory.orAll(ap30.stream().map(i -> aps[i]).collect(Collectors.toList()));
+        tbdd.getFactory().orAll(ap30.stream().map(i -> aps[i]).collect(Collectors.toList()));
     assertEquals(expectedBDD, acceptedAnnouncements);
 
     assertEquals(tbdd.iteZero(acceptedAnnouncements, anyRoute), outAnnouncements);
@@ -1806,7 +1855,7 @@ public class TransferBDDTest {
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
 
-    BDDRoute anyRoute = new BDDRoute(_g);
+    BDDRoute anyRoute = new BDDRoute(tbdd.getFactory(), _g);
     BDD[] aps = anyRoute.getCommunityAtomicPredicates();
 
     // only the APs that belong to both ^30: and :20$ should be allowed
@@ -1819,7 +1868,8 @@ public class TransferBDDTest {
     intersection.retainAll(ap20);
 
     BDD expectedBDD =
-        BDDRoute.factory.orAll(intersection.stream().map(i -> aps[i]).collect(Collectors.toList()));
+        tbdd.getFactory()
+            .orAll(intersection.stream().map(i -> aps[i]).collect(Collectors.toList()));
     assertEquals(expectedBDD, acceptedAnnouncements);
 
     assertEquals(tbdd.iteZero(acceptedAnnouncements, anyRoute), outAnnouncements);
@@ -1843,20 +1893,21 @@ public class TransferBDDTest {
             .build();
     _g = new Graph(_batfish, _batfish.getSnapshot());
 
-    BDDRoute anyRoute = new BDDRoute(_g);
-    BDD[] aps = anyRoute.getCommunityAtomicPredicates();
-    // get the atomic predicates that correspond to 30:40
-    Set<Integer> ap3040 =
-        _g.getCommunityAtomicPredicates().getRegexAtomicPredicates().get(CommunityVar.from(comm));
-
     // the analysis will use the original route for matching
     TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
+
+    BDDRoute anyRoute = new BDDRoute(tbdd.getFactory(), _g);
+    BDD[] aps = anyRoute.getCommunityAtomicPredicates();
+    // get the atomic predicates that correspond to 30:40
+    Set<Integer> ap3040 =
+        _g.getCommunityAtomicPredicates().getRegexAtomicPredicates().get(CommunityVar.from(comm));
+
     // the original route must have the community 30:40
     BDD expectedBDD =
-        BDDRoute.factory.orAll(ap3040.stream().map(i -> aps[i]).collect(Collectors.toList()));
+        tbdd.getFactory().orAll(ap3040.stream().map(i -> aps[i]).collect(Collectors.toList()));
     assertEquals(expectedBDD, acceptedAnnouncements);
     BDDRoute expected = tbdd.iteZero(acceptedAnnouncements, anyRoute);
     assertEquals(expected, outAnnouncements);
@@ -1905,7 +1956,7 @@ public class TransferBDDTest {
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
 
-    BDDRoute expectedOut = new BDDRoute(_anyRoute);
+    BDDRoute expectedOut = anyRoute(tbdd.getFactory());
     expectedOut.setLocalPref(BDDInteger.makeFromValue(expectedOut.getFactory(), 32, 300));
 
     // the policy is applicable to all announcements
@@ -1946,7 +1997,7 @@ public class TransferBDDTest {
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
 
-    BDDRoute expectedOut = new BDDRoute(_anyRoute);
+    BDDRoute expectedOut = anyRoute(tbdd.getFactory());
     expectedOut.setLocalPref(BDDInteger.makeFromValue(expectedOut.getFactory(), 32, 300));
 
     // the policy is applicable to all announcements
@@ -1994,10 +2045,12 @@ public class TransferBDDTest {
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
 
+    BDDRoute anyRoute = anyRoute(tbdd.getFactory());
+
     BDD expected =
         isRelevantForDestination(
-            _anyRoute, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)));
-    BDDRoute expectedOut = new BDDRoute(_anyRoute);
+            anyRoute, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)));
+    BDDRoute expectedOut = new BDDRoute(anyRoute);
     expectedOut.setLocalPref(BDDInteger.makeFromValue(expectedOut.getFactory(), 32, 300));
     expectedOut = tbdd.ite(expected, expectedOut, tbdd.zeroedRecord());
 
@@ -2062,7 +2115,7 @@ public class TransferBDDTest {
     assertTrue(acceptedAnnouncements.isOne());
 
     // the tag is now 42 and local pref is 44
-    BDDRoute expected = new BDDRoute(_anyRoute);
+    BDDRoute expected = anyRoute(tbdd.getFactory());
     BDDInteger tag = expected.getTag();
     expected.setTag(BDDInteger.makeFromValue(tag.getFactory(), 32, 42));
     BDDInteger localPref = expected.getLocalPref();
@@ -2073,7 +2126,7 @@ public class TransferBDDTest {
 
   @Test
   public void testIsRelevantFor() {
-    BDDRoute bddRoute = _anyRoute;
+    BDDRoute bddRoute = anyRoute(JFactory.init(100, 100));
     IpSpaceToBDD ipSpaceToBDD = new IpSpaceToBDD(bddRoute.getPrefix());
 
     PrefixRange range = new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24));
@@ -2094,7 +2147,7 @@ public class TransferBDDTest {
 
   @Test
   public void testIsRelevantFor_range32() {
-    BDDRoute bddRoute = _anyRoute;
+    BDDRoute bddRoute = anyRoute(JFactory.init(100, 100));
 
     PrefixRange range = new PrefixRange(Prefix.parse("0.0.0.0/0"), SubRange.singleton(32));
     BDD rangeBdd = isRelevantForDestination(bddRoute, range);
@@ -2118,5 +2171,13 @@ public class TransferBDDTest {
     _g = new Graph(_batfish, _batfish.getSnapshot());
     tbdd = new TransferBDD(_g, _baseConfig, ImmutableList.of());
     assertTrue(tbdd.getUseOutputAttributes());
+  }
+
+  @Test
+  public void testDistinctBDDFactories() {
+    _g = new Graph(_batfish, _batfish.getSnapshot());
+    TransferBDD tbdd1 = new TransferBDD(_g, _baseConfig, ImmutableList.of());
+    TransferBDD tbdd2 = new TransferBDD(_g, _baseConfig, ImmutableList.of());
+    assertNotSame(tbdd1.getFactory(), tbdd2.getFactory());
   }
 }
