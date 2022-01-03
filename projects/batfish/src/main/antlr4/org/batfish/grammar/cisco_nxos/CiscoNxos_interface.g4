@@ -990,6 +990,7 @@ i_no
     | i_no_null
     | i_no_shutdown
     | i_no_switchport
+    | i_no_vrf_member
   )
 ;
 
@@ -1169,6 +1170,11 @@ inos_switchport
 :
   // just newline, for `no switchport`
   NEWLINE
+;
+
+i_no_vrf_member
+:
+  VRF MEMBER (name = vrf_name)? NEWLINE
 ;
 
 i_null

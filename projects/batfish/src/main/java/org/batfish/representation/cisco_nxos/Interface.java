@@ -564,7 +564,7 @@ public final class Interface implements Serializable {
     _switchportMonitor = switchportMonitor;
   }
 
-  public void setVrfMember(String vrfMember) {
+  public void setVrfMember(@Nullable String vrfMember) {
     _vrfMember = vrfMember;
   }
 }
