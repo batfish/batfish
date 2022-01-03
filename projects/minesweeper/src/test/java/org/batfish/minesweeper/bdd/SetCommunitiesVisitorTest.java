@@ -62,8 +62,8 @@ public class SetCommunitiesVisitorTest {
                 CommunityVar.from(StandardCommunity.parse("21:30"))),
             null);
 
-    BDDRoute bddRoute = new BDDRoute(_g);
     TransferBDD transferBDD = new TransferBDD(_g, _baseConfig, ImmutableList.of());
+    BDDRoute bddRoute = new BDDRoute(transferBDD.getFactory(), _g);
     _arg = new CommunitySetMatchExprToBDD.Arg(transferBDD, bddRoute);
 
     _scVisitor = new SetCommunitiesVisitor();

@@ -14,13 +14,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
-import net.sf.javabdd.BDDPairing;
-import net.sf.javabdd.JFactory;
-import org.batfish.common.BatfishException;
 import org.batfish.common.bdd.BDDFiniteDomain;
 import org.batfish.common.bdd.BDDInteger;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.minesweeper.Graph;
 import org.batfish.minesweeper.IDeepCopy;
@@ -47,11 +43,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
    * symbolic integer, along with integer-specific operations.
    */
 
-  static BDDFactory factory;
-
   private static List<OspfType> allMetricTypes;
-
-  private static BDDPairing pairing;
 
   private int _hcode = 0;
 
@@ -61,24 +53,9 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     allMetricTypes.add(OspfType.OIA);
     allMetricTypes.add(OspfType.E1);
     allMetricTypes.add(OspfType.E2);
-
-    factory = JFactory.init(100000, 10000);
-    // factory.disableReorder();
-    factory.setCacheRatio(64);
-    /*
-    try {
-      // Disables printing
-      CallbackHandler handler = new CallbackHandler();
-      Method m = handler.getClass().getDeclaredMethod("handle", (Class<?>[]) null);
-      factory.registerGCCallback(handler, m);
-      factory.registerResizeCallback(handler, m);
-      factory.registerReorderCallback(handler, m);
-    } catch (NoSuchMethodException e) {
-      e.printStackTrace();
-    }
-    */
-    pairing = factory.makePair();
   }
+
+  private final BDDFactory _factory;
 
   private BDDInteger _adminDist;
 
@@ -139,8 +116,9 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
    * A constructor that obtains the number of atomic predicates for community and AS-path regexes
    * from a given {@link org.batfish.minesweeper.Graph} object.
    */
-  public BDDRoute(Graph g) {
+  public BDDRoute(BDDFactory factory, Graph g) {
     this(
+        factory,
         g.getCommunityAtomicPredicates().getNumAtomicPredicates(),
         g.getAsPathRegexAtomicPredicates().getNumAtomicPredicates());
   }
@@ -151,7 +129,10 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
    * BDD variable and a BDD, and similarly for the atomic predicates for AS-path regexes, so the
    * number of such atomic predicates is provided.
    */
-  public BDDRoute(int numCommAtomicPredicates, int numAsPathRegexAtomicPredicates) {
+  public BDDRoute(
+      BDDFactory factory, int numCommAtomicPredicates, int numAsPathRegexAtomicPredicates) {
+    _factory = factory;
+
     int numVars = factory.varNum();
     int numNeeded =
         32 * 6
@@ -223,6 +204,8 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
    * there is no need for a deep copy.
    */
   public BDDRoute(BDDRoute other) {
+    _factory = other._factory;
+
     _asPathRegexAtomicPredicates = other._asPathRegexAtomicPredicates.clone();
     _communityAtomicPredicates = other._communityAtomicPredicates.clone();
     _prefixLength = new BDDInteger(other._prefixLength);
@@ -270,7 +253,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
    * @return the bdd
    */
   public BDD anyCommunity() {
-    return factory.orAll(_communityAtomicPredicates);
+    return _factory.orAll(_communityAtomicPredicates);
   }
 
   /**
@@ -281,7 +264,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
    * @return the BDD representing this constraint
    */
   public BDD anyProtocolIn(Set<RoutingProtocol> protocols) {
-    return factory.orAll(
+    return _factory.orAll(
         protocols.stream()
             .map(_protocolHistory::getConstraintForValue)
             .collect(Collectors.toList()));
@@ -313,17 +296,16 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     // regexes are all pairwise disjoint
     // Note: the same constraint does not apply to community regexes because a route has a set
     // of communities, so more than one regex can be simultaneously true
-    BDD asPathConstraint = factory.one();
+    BDD asPathConstraint = _factory.one();
     for (int i = 0; i < _asPathRegexAtomicPredicates.length; i++) {
       for (int j = i + 1; j < _asPathRegexAtomicPredicates.length; j++) {
         asPathConstraint.andWith(
             _asPathRegexAtomicPredicates[i].nand(_asPathRegexAtomicPredicates[j]));
       }
     }
-    // the next hop should be neither the min or max possible IP
+    // the next hop should be neither the min nor the max possible IP
     // this constraint is enforced by NextHopIp's constructor
-    BDD nextHopConstraint =
-        _nextHop.geq(Ip.ZERO.asLong() + 1).and(_nextHop.leq(Ip.MAX.asLong() - 1));
+    BDD nextHopConstraint = _nextHop.range(Ip.ZERO.asLong() + 1, Ip.MAX.asLong() - 1);
 
     return protocolConstraint
         .andWith(prefLenConstraint)
@@ -403,7 +385,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
   }
 
   public BDDFactory getFactory() {
-    return factory;
+    return _factory;
   }
 
   public BDDInteger getLocalPref() {
@@ -517,108 +499,5 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
         && Objects.equals(_nextHopSet, other._nextHopSet)
         && Objects.equals(_tag, other._tag)
         && Objects.equals(_adminDist, other._adminDist);
-  }
-
-  /*
-   * Take the point-wise disjunction of two BDDRecords
-   */
-  public void orWith(BDDRoute other) {
-    BDD[] adminDist = getAdminDist().getBitvec();
-    BDD[] med = getMed().getBitvec();
-    BDD[] localPref = getLocalPref().getBitvec();
-    BDD[] nextHop = getNextHop().getBitvec();
-    BDD nextHopDiscarded = getNextHopDiscarded();
-    BDD nextHopSet = getNextHopSet();
-    BDD[] tag = getTag().getBitvec();
-    BDD[] ospfMet = getOspfMetric().getInteger().getBitvec();
-
-    BDD[] adminDist2 = other.getAdminDist().getBitvec();
-    BDD[] med2 = other.getMed().getBitvec();
-    BDD[] localPref2 = other.getLocalPref().getBitvec();
-    BDD[] nextHop2 = other.getNextHop().getBitvec();
-    BDD nextHopDiscarded2 = other.getNextHopDiscarded();
-    BDD nextHopSet2 = other.getNextHopSet();
-    BDD[] tag2 = other.getTag().getBitvec();
-    BDD[] ospfMet2 = other.getOspfMetric().getInteger().getBitvec();
-
-    for (int i = 0; i < 32; i++) {
-      adminDist[i].orWith(adminDist2[i]);
-      med[i].orWith(med2[i]);
-      localPref[i].orWith(localPref2[i]);
-      nextHop[i].orWith(nextHop2[i]);
-      tag[i].orWith(tag2[i]);
-    }
-    nextHopDiscarded.orWith(nextHopDiscarded2);
-    nextHopSet.orWith(nextHopSet2);
-    for (int i = 0; i < ospfMet.length; i++) {
-      ospfMet[i].orWith(ospfMet2[i]);
-    }
-    for (int i = 0; i < _communityAtomicPredicates.length; i++) {
-      _communityAtomicPredicates[i].orWith(other.getCommunityAtomicPredicates()[i]);
-    }
-    for (int i = 0; i < _asPathRegexAtomicPredicates.length; i++) {
-      _asPathRegexAtomicPredicates[i].orWith(other.getAsPathRegexAtomicPredicates()[i]);
-    }
-  }
-
-  public BDDRoute restrict(Prefix pfx) {
-    int len = pfx.getPrefixLength();
-    long bits = pfx.getStartIp().asLong();
-    int[] vars = new int[len];
-    BDD[] vals = new BDD[len];
-    // NOTE: do not create a new pairing each time
-    // JavaBDD will start to memory leak
-    pairing.reset();
-    for (int i = 0; i < len; i++) {
-      int var = _prefix.getBitvec()[i].var(); // prefixIndex + i;
-      BDD subst = Ip.getBitAtPosition(bits, i) ? factory.one() : factory.zero();
-      vars[i] = var;
-      vals[i] = subst;
-    }
-    pairing.set(vars, vals);
-
-    BDDRoute rec = new BDDRoute(this);
-    BDD[] adminDist = rec.getAdminDist().getBitvec();
-    BDD[] med = rec.getMed().getBitvec();
-    BDD[] localPref = rec.getLocalPref().getBitvec();
-    BDD[] nextHop = rec.getNextHop().getBitvec();
-    BDD nextHopDiscarded = rec.getNextHopDiscarded();
-    BDD nextHopSet = rec.getNextHopSet();
-    BDD[] tag = rec.getTag().getBitvec();
-    BDD[] ospfMet = rec.getOspfMetric().getInteger().getBitvec();
-    for (int i = 0; i < 32; i++) {
-      adminDist[i] = adminDist[i].veccompose(pairing);
-      med[i] = med[i].veccompose(pairing);
-      localPref[i] = localPref[i].veccompose(pairing);
-      nextHop[i] = nextHop[i].veccompose(pairing);
-      tag[i] = tag[i].veccompose(pairing);
-    }
-    rec.setNextHopDiscarded(nextHopDiscarded.veccompose(pairing));
-    rec.setNextHopSet(nextHopSet.veccompose(pairing));
-    for (int i = 0; i < ospfMet.length; i++) {
-      ospfMet[i] = ospfMet[i].veccompose(pairing);
-    }
-    BDD[] commAPs = rec.getCommunityAtomicPredicates();
-    for (int i = 0; i < commAPs.length; i++) {
-      commAPs[i] = commAPs[i].veccompose(pairing);
-    }
-    BDD[] asPathAPs = rec.getAsPathRegexAtomicPredicates();
-    for (int i = 0; i < asPathAPs.length; i++) {
-      asPathAPs[i] = asPathAPs[i].veccompose(pairing);
-    }
-    return rec;
-  }
-
-  public BDDRoute restrict(List<Prefix> prefixes) {
-    if (prefixes.isEmpty()) {
-      throw new BatfishException("Empty prefix list in BDDRecord restrict");
-    }
-    BDDRoute r = restrict(prefixes.get(0));
-    for (int i = 1; i < prefixes.size(); i++) {
-      Prefix p = prefixes.get(i);
-      BDDRoute x = restrict(p);
-      r.orWith(x);
-    }
-    return r;
   }
 }

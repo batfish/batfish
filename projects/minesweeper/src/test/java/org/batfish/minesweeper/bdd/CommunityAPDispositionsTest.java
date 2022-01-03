@@ -5,6 +5,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableSet;
+import net.sf.javabdd.JFactory;
 import org.batfish.datamodel.IntegerSpace;
 import org.junit.Test;
 
@@ -15,7 +16,7 @@ public class CommunityAPDispositionsTest {
   private final CommunityAPDispositions _cAPD2 =
       new CommunityAPDispositions(
           4, IntegerSpace.of(1), IntegerSpace.builder().including(0, 2, 3).build());
-  private final BDDRoute _bddRoute = new BDDRoute(4, 0);
+  private final BDDRoute _bddRoute = new BDDRoute(JFactory.init(100, 100), 4, 0);
 
   @Test
   public void testUnion() {
