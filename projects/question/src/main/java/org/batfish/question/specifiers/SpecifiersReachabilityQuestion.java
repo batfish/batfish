@@ -17,16 +17,16 @@ import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.question.ReachabilityParameters;
-import org.batfish.specifier.ConstantIpSpaceSpecifier;
+import org.batfish.specifier.ConstantIpSpaceAssignmentSpecifier;
 import org.batfish.specifier.DispositionSpecifier;
-import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
-import org.batfish.specifier.IpSpaceSpecifier;
+import org.batfish.specifier.InferFromLocationIpSpaceAssignmentSpecifier;
+import org.batfish.specifier.IpSpaceAssignmentSpecifier;
 import org.batfish.specifier.LocationSpecifier;
 import org.batfish.specifier.SpecifierFactories;
 
 /**
  * A version of reachability question that supports {@link LocationSpecifier location} and {@link
- * IpSpaceSpecifier ipSpace} specifiers.
+ * IpSpaceAssignmentSpecifier ipSpace} specifiers.
  */
 public final class SpecifiersReachabilityQuestion extends Question {
   private static final String PROP_ACTIONS = "actions";
@@ -126,14 +126,15 @@ public final class SpecifiersReachabilityQuestion extends Question {
     return "specifiersReachability";
   }
 
-  private IpSpaceSpecifier getDestinationIpSpaceSpecifier() {
-    return SpecifierFactories.getIpSpaceSpecifierOrDefault(
-        _headerConstraints.getDstIps(), new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE));
+  private IpSpaceAssignmentSpecifier getDestinationIpSpaceSpecifier() {
+    return SpecifierFactories.getIpSpaceAssignmentSpecifierOrDefault(
+        _headerConstraints.getDstIps(),
+        new ConstantIpSpaceAssignmentSpecifier(UniverseIpSpace.INSTANCE));
   }
 
-  private IpSpaceSpecifier getSourceIpSpaceSpecifier() {
-    return SpecifierFactories.getIpSpaceSpecifierOrDefault(
-        _headerConstraints.getSrcIps(), InferFromLocationIpSpaceSpecifier.INSTANCE);
+  private IpSpaceAssignmentSpecifier getSourceIpSpaceSpecifier() {
+    return SpecifierFactories.getIpSpaceAssignmentSpecifierOrDefault(
+        _headerConstraints.getSrcIps(), InferFromLocationIpSpaceAssignmentSpecifier.INSTANCE);
   }
 
   ReachabilityParameters getReachabilityParameters() {

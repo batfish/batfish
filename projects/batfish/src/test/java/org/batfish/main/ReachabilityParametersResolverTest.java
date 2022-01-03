@@ -25,7 +25,7 @@ import org.batfish.question.ReachabilityParameters;
 import org.batfish.question.ReachabilityParameters.Builder;
 import org.batfish.question.ResolvedReachabilityParameters;
 import org.batfish.specifier.AllNodesNodeSpecifier;
-import org.batfish.specifier.ConstantIpSpaceSpecifier;
+import org.batfish.specifier.ConstantIpSpaceAssignmentSpecifier;
 import org.batfish.specifier.NodeNameRegexInterfaceLinkLocationSpecifier;
 import org.junit.Before;
 import org.junit.Rule;
@@ -60,7 +60,8 @@ public class ReachabilityParametersResolverTest {
     Builder reachabilityParametersBuilder =
         ReachabilityParameters.builder()
             .setActions(ImmutableSortedSet.of(ACCEPTED))
-            .setSourceIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
+            .setSourceIpSpaceSpecifier(
+                new ConstantIpSpaceAssignmentSpecifier(UniverseIpSpace.INSTANCE))
             .setFinalNodesSpecifier(AllNodesNodeSpecifier.INSTANCE);
 
     // test default destination IpSpace
@@ -77,7 +78,7 @@ public class ReachabilityParametersResolverTest {
     IpIpSpace dstIpSpace = Ip.parse("1.1.1.1").toIpSpace();
     reachabilityParameters =
         reachabilityParametersBuilder
-            .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(dstIpSpace))
+            .setDestinationIpSpaceSpecifier(new ConstantIpSpaceAssignmentSpecifier(dstIpSpace))
             .build();
     resolvedReachabilityParameters =
         resolveReachabilityParameters(_batfish, reachabilityParameters, _snapshot);
@@ -94,7 +95,8 @@ public class ReachabilityParametersResolverTest {
         ReachabilityParameters.builder()
             .setActions(ImmutableSortedSet.of(ACCEPTED))
             .setFinalNodesSpecifier(AllNodesNodeSpecifier.INSTANCE)
-            .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(EmptyIpSpace.INSTANCE))
+            .setDestinationIpSpaceSpecifier(
+                new ConstantIpSpaceAssignmentSpecifier(EmptyIpSpace.INSTANCE))
             .build();
 
     exception.expect(InvalidReachabilityParametersException.class);
@@ -110,7 +112,8 @@ public class ReachabilityParametersResolverTest {
         ReachabilityParameters.builder()
             .setActions(ImmutableSortedSet.of(ACCEPTED))
             .setFinalNodesSpecifier(AllNodesNodeSpecifier.INSTANCE)
-            .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(EmptyIpSpace.INSTANCE))
+            .setDestinationIpSpaceSpecifier(
+                new ConstantIpSpaceAssignmentSpecifier(EmptyIpSpace.INSTANCE))
             .setSourceLocationSpecifier(
                 new NodeNameRegexInterfaceLinkLocationSpecifier(Pattern.compile("")))
             .build();
@@ -130,7 +133,8 @@ public class ReachabilityParametersResolverTest {
         ReachabilityParameters.builder()
             .setActions(ImmutableSortedSet.of(ACCEPTED))
             .setFinalNodesSpecifier(AllNodesNodeSpecifier.INSTANCE)
-            .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(EmptyIpSpace.INSTANCE))
+            .setDestinationIpSpaceSpecifier(
+                new ConstantIpSpaceAssignmentSpecifier(EmptyIpSpace.INSTANCE))
             .setSourceLocationSpecifier(
                 new NodeNameRegexInterfaceLinkLocationSpecifier(Pattern.compile(".*")))
             .build();
@@ -151,7 +155,8 @@ public class ReachabilityParametersResolverTest {
         ReachabilityParameters.builder()
             .setActions(ImmutableSortedSet.of(ACCEPTED))
             .setFinalNodesSpecifier(AllNodesNodeSpecifier.INSTANCE)
-            .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
+            .setDestinationIpSpaceSpecifier(
+                new ConstantIpSpaceAssignmentSpecifier(UniverseIpSpace.INSTANCE))
             .setRequiredTransitNodesSpecifier(AllNodesNodeSpecifier.INSTANCE)
             .setForbiddenTransitNodesSpecifier(AllNodesNodeSpecifier.INSTANCE)
             .setSourceLocationSpecifier(

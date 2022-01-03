@@ -118,14 +118,11 @@ public final class SpecifiersAnswerer extends Answerer {
     TableAnswerElement table = new TableAnswerElement(new TableMetadata(columns));
     Map<String, ColumnMetadata> columnMap = table.getMetadata().toColumnMap();
 
-    // this will yield all default locations for the factory
-    Set<Location> locations = question.getLocationSpecifier().resolve(context);
-    IpSpaceAssignment ipSpaceAssignment =
-        question.getIpSpaceSpecifier().resolve(locations, context);
-
-    for (IpSpaceAssignment.Entry entry : ipSpaceAssignment.getEntries()) {
-      table.addRow(Row.of(columnMap, COL_IP_SPACE, Objects.toString(entry.getIpSpace())));
-    }
+    table.addRow(
+        Row.of(
+            columnMap,
+            COL_IP_SPACE,
+            Objects.toString(question.getIpSpaceSpecifier().resolve(context))));
     return table;
   }
 
@@ -142,7 +139,7 @@ public final class SpecifiersAnswerer extends Answerer {
 
     Set<Location> locations = question.getLocationSpecifier().resolve(context);
     IpSpaceAssignment ipSpaceAssignment =
-        question.getIpSpaceSpecifier().resolve(locations, context);
+        question.getIpSpaceAssignmentSpecifier().resolve(locations, context);
 
     for (IpSpaceAssignment.Entry entry : ipSpaceAssignment.getEntries()) {
       table.addRow(

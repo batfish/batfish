@@ -34,6 +34,7 @@ import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.batfish.question.traceroute.TracerouteAnswerer;
 import org.batfish.specifier.DispositionSpecifier;
+import org.batfish.specifier.InferFromLocationIpSpaceAssignmentSpecifier;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
@@ -73,7 +74,7 @@ public class SpecifiersReachabilityTest {
 
   /**
    * Test that the results we get with the default source IpSpace specifier ({@link
-   * org.batfish.specifier.InferFromLocationIpSpaceSpecifier}) are correct for the network.
+   * InferFromLocationIpSpaceAssignmentSpecifier}) are correct for the network.
    */
   @Test
   public void testInferSrcIpFromLocation() {

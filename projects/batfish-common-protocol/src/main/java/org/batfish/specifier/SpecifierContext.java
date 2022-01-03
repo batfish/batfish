@@ -10,7 +10,7 @@ import org.batfish.role.NodeRoleDimension;
 
 /**
  * Collects all the information about the network that is needed by {@link NodeSpecifier}s, {@link
- * LocationSpecifier}s, and {@link IpSpaceSpecifier}s to resolve themselves.
+ * LocationSpecifier}s, and {@link IpSpaceAssignmentSpecifier}s to resolve themselves.
  */
 public interface SpecifierContext {
   /** @return The network configurations. */
