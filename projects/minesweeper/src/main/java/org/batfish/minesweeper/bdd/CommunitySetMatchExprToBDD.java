@@ -157,6 +157,6 @@ public class CommunitySetMatchExprToBDD
   static BDD exactlyOneAP(BDD[] aps, int i, Arg arg) {
     ArrayList<BDD> negs = new ArrayList<>(Arrays.asList(aps));
     negs.remove(i);
-    return aps[i].and(negs.stream().reduce(arg.getTransferBDD().getFactory().one(), BDD::diff));
+    return aps[i].diff(arg.getTransferBDD().getFactory().orAll(negs));
   }
 }
