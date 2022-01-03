@@ -32,7 +32,7 @@ import org.batfish.question.ReachabilityParameters;
 import org.batfish.question.specifiers.PathConstraintsInput;
 import org.batfish.question.traceroute.BidirectionalTracerouteAnswerer;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
-import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
+import org.batfish.specifier.InferFromLocationIpSpaceAssignmentSpecifier;
 import org.batfish.specifier.Location;
 
 /** Answerer for {@link BidirectionalReachabilityQuestion}. */
@@ -69,7 +69,8 @@ public final class BidirectionalReachabilityAnswerer extends Answerer {
             .setSourceLocationSpecifier(pathConstraints.getStartLocation())
             .setSourceIpSpaceSpecifier(
                 getIpSpaceSpecifierOrDefault(
-                    _headerConstraints.getSrcIps(), InferFromLocationIpSpaceSpecifier.INSTANCE))
+                    _headerConstraints.getSrcIps(),
+                    InferFromLocationIpSpaceAssignmentSpecifier.INSTANCE))
             .build();
 
     BDDPacket bddPacket = new BDDPacket();

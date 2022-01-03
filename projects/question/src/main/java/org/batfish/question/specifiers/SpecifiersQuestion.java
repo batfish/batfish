@@ -15,9 +15,9 @@ import org.batfish.specifier.AllInterfacesInterfaceSpecifier;
 import org.batfish.specifier.AllInterfacesLocationSpecifier;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.FilterSpecifier;
-import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
+import org.batfish.specifier.InferFromLocationIpSpaceAssignmentSpecifier;
 import org.batfish.specifier.InterfaceSpecifier;
-import org.batfish.specifier.IpSpaceSpecifier;
+import org.batfish.specifier.IpSpaceAssignmentSpecifier;
 import org.batfish.specifier.LocationSpecifier;
 import org.batfish.specifier.NodeSpecifier;
 import org.batfish.specifier.SpecifierFactories;
@@ -25,7 +25,7 @@ import org.batfish.specifier.SpecifierFactories.Version;
 
 /**
  * Allows users to see how different specifiers ({@link LocationSpecifier}, {@link
- * IpSpaceSpecifier}, {@link NodeSpecifier}, {@link FilterSpecifier}, and {@link
+ * IpSpaceAssignmentSpecifier}, {@link NodeSpecifier}, {@link FilterSpecifier}, and {@link
  * InterfaceSpecifier}) are resolved.
  */
 @ParametersAreNonnullByDefault
@@ -89,10 +89,10 @@ public final class SpecifiersQuestion extends Question {
   }
 
   @JsonIgnore
-  IpSpaceSpecifier getIpSpaceSpecifier() {
+  IpSpaceAssignmentSpecifier getIpSpaceSpecifier() {
     return SpecifierFactories.getIpSpaceSpecifierOrDefault(
         _ipSpaceSpecifierInput,
-        InferFromLocationIpSpaceSpecifier.INSTANCE,
+        InferFromLocationIpSpaceAssignmentSpecifier.INSTANCE,
         _specifierFactoryVersion);
   }
 

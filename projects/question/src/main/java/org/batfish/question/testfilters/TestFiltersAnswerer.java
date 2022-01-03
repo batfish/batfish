@@ -46,7 +46,7 @@ import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.datamodel.trace.TraceTree;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.FilterSpecifier;
-import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
+import org.batfish.specifier.InferFromLocationIpSpaceAssignmentSpecifier;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.IpSpaceAssignment.Entry;
 import org.batfish.specifier.Location;
@@ -127,7 +127,7 @@ public class TestFiltersAnswerer extends Answerer {
     // entries of (srcLocation, IpSpacePerLocation)
     IpSpaceAssignment srcIpAssignments =
         SpecifierFactories.getIpSpaceSpecifierOrDefault(
-                constraints.getSrcIps(), InferFromLocationIpSpaceSpecifier.INSTANCE)
+                constraints.getSrcIps(), InferFromLocationIpSpaceAssignmentSpecifier.INSTANCE)
             .resolve(srcLocations, context);
 
     IpSpace dstIps =

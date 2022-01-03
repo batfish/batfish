@@ -19,7 +19,7 @@ import org.batfish.specifier.AllFiltersFilterSpecifier;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.FilterSpecifier;
-import org.batfish.specifier.IpSpaceSpecifier;
+import org.batfish.specifier.IpSpaceAssignmentSpecifier;
 import org.batfish.specifier.LocationSpecifier;
 import org.batfish.specifier.NodeSpecifier;
 import org.batfish.specifier.SpecifierFactories;
@@ -173,13 +173,13 @@ public final class SearchFiltersQuestion extends Question {
   }
 
   @Nonnull
-  private IpSpaceSpecifier getSourceSpecifier() {
+  private IpSpaceAssignmentSpecifier getSourceSpecifier() {
     return SpecifierFactories.getIpSpaceSpecifierOrDefault(
         _headerConstraints.getSrcIps(), new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE));
   }
 
   @Nonnull
-  private IpSpaceSpecifier getDestinationSpecifier() {
+  private IpSpaceAssignmentSpecifier getDestinationSpecifier() {
     return SpecifierFactories.getIpSpaceSpecifierOrDefault(
         _headerConstraints.getDstIps(), new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE));
   }

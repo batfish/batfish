@@ -10,10 +10,10 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.visitors.IpSpaceRepresentative;
-import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
+import org.batfish.specifier.InferFromLocationIpSpaceAssignmentSpecifier;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.IpSpaceAssignment.Entry;
-import org.batfish.specifier.IpSpaceSpecifier;
+import org.batfish.specifier.IpSpaceAssignmentSpecifier;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.SpecifierContext;
 import org.batfish.specifier.SpecifierFactories;
@@ -68,9 +68,9 @@ public class IpFieldExtractorContext {
   /** resolve IP by the specifier context */
   private IpSpaceAssignment resolverHeaderIp(String headerIp) {
     // interpret given IP "flexibly"
-    IpSpaceSpecifier ipSpecifier =
+    IpSpaceAssignmentSpecifier ipSpecifier =
         SpecifierFactories.getIpSpaceSpecifierOrDefault(
-            headerIp, InferFromLocationIpSpaceSpecifier.INSTANCE);
+            headerIp, InferFromLocationIpSpaceAssignmentSpecifier.INSTANCE);
 
     // Resolve to set of locations/IPs
     return ipSpecifier.resolve(ImmutableSet.of(), _specifierContext);

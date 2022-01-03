@@ -57,7 +57,7 @@ import org.batfish.datamodel.flow.Trace;
 import org.batfish.question.differentialreachability.DifferentialReachabilityParameters;
 import org.batfish.question.differentialreachability.DifferentialReachabilityResult;
 import org.batfish.question.loop.LoopNetwork;
-import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
+import org.batfish.specifier.InferFromLocationIpSpaceAssignmentSpecifier;
 import org.batfish.specifier.LocationSpecifier;
 import org.junit.Before;
 import org.junit.Rule;
@@ -164,7 +164,7 @@ public class BatfishBDDDifferentialReachabilityTest {
         headerSpace,
         ignoreFilters,
         invertSearch,
-        InferFromLocationIpSpaceSpecifier.INSTANCE.resolve(
+        InferFromLocationIpSpaceAssignmentSpecifier.INSTANCE.resolve(
             LocationSpecifier.ALL_LOCATIONS.resolve(
                 batfish.specifierContext(batfish.getSnapshot())),
             batfish.specifierContext(batfish.getSnapshot())),

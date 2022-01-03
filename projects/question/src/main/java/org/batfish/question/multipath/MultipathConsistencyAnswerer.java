@@ -24,7 +24,7 @@ import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.question.traceroute.TracerouteAnswerer;
-import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
+import org.batfish.specifier.InferFromLocationIpSpaceAssignmentSpecifier;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.IpSpaceAssignment.Entry;
 import org.batfish.specifier.Location;
@@ -61,13 +61,14 @@ public class MultipathConsistencyAnswerer extends Answerer {
 
     IpSpaceAssignment ipSpaceAssignment =
         SpecifierFactories.getIpSpaceSpecifierOrDefault(
-                headerConstraints.getSrcIps(), InferFromLocationIpSpaceSpecifier.INSTANCE)
+                headerConstraints.getSrcIps(), InferFromLocationIpSpaceAssignmentSpecifier.INSTANCE)
             .resolve(startLocations, ctxt);
     IpSpace dstIps =
         firstNonNull(
             AclIpSpace.union(
                 SpecifierFactories.getIpSpaceSpecifierOrDefault(
-                        headerConstraints.getDstIps(), InferFromLocationIpSpaceSpecifier.INSTANCE)
+                        headerConstraints.getDstIps(),
+                        InferFromLocationIpSpaceAssignmentSpecifier.INSTANCE)
                     .resolve(ImmutableSet.of(), ctxt)
                     .getEntries()
                     .stream()

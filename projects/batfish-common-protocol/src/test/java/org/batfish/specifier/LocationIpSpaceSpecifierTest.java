@@ -17,7 +17,7 @@ public class LocationIpSpaceSpecifierTest {
   @Test
   public void testNoLocations() {
     MockSpecifierContext ctxt = MockSpecifierContext.builder().build();
-    IpSpaceSpecifier specifier =
+    IpSpaceAssignmentSpecifier specifier =
         new LocationIpSpaceSpecifier(new MockLocationSpecifier(ImmutableSet.of()));
     assertThat(
         specifier.resolve(ImmutableSet.of(), ctxt),

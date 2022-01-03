@@ -118,7 +118,7 @@ import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.InterfaceLinkLocation;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
-import org.batfish.specifier.IpSpaceSpecifier;
+import org.batfish.specifier.IpSpaceAssignmentSpecifier;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationSpecifier;
 import org.batfish.specifier.SpecifierContext;
@@ -167,7 +167,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
   private final BDD _one = _pkt.getFactory().one();
   private final BDD _zero = _pkt.getFactory().zero();
 
-  private static final IpSpaceSpecifier CONSTANT_UNIVERSE_IPSPACE_SPECIFIER =
+  private static final IpSpaceAssignmentSpecifier CONSTANT_UNIVERSE_IPSPACE_SPECIFIER =
       new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE);
   private static final String INGRESS_NODE = "ingress_node";
   private static final String INGRESS_IFACE = "ingressIface";

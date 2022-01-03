@@ -122,7 +122,7 @@ public final class ReachabilityParametersResolver {
       throw new InvalidReachabilityParametersException("No matching source locations");
     }
 
-    // resolve the IpSpaceSpecifier, and filter out entries with empty IpSpaces
+    // resolve the IpSpaceAssignmentSpecifier, and filter out entries with empty IpSpaces
     IpSpaceAssignment sourceIpSpaceAssignment =
         IpSpaceAssignment.of(
             _params

@@ -100,7 +100,7 @@ public class IpSpaceSpecifierTest {
   public void testInferFromLocationIpSpaceSpecifier() {
     Set<Location> interfaceLocations = AllInterfacesLocationSpecifier.INSTANCE.resolve(_context);
     IpSpaceAssignment assignment =
-        InferFromLocationIpSpaceSpecifier.INSTANCE.resolve(interfaceLocations, _context);
+        InferFromLocationIpSpaceAssignmentSpecifier.INSTANCE.resolve(interfaceLocations, _context);
 
     // all locations are present
     Set<Location> assignmentLocations =

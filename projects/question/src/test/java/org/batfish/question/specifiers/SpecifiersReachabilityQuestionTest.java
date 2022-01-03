@@ -29,7 +29,7 @@ import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
-import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
+import org.batfish.specifier.InferFromLocationIpSpaceAssignmentSpecifier;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.Location;
@@ -59,7 +59,7 @@ public class SpecifiersReachabilityQuestionTest {
         equalTo(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE)));
     assertThat(
         question.getReachabilityParameters().getSourceIpSpaceSpecifier(),
-        equalTo(InferFromLocationIpSpaceSpecifier.INSTANCE));
+        equalTo(InferFromLocationIpSpaceAssignmentSpecifier.INSTANCE));
     assertThat(
         question.getPathConstraints().getTransitLocations(),
         equalTo(NoNodesNodeSpecifier.INSTANCE));

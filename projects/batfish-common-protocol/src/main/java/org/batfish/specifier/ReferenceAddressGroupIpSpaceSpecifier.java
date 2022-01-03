@@ -15,10 +15,10 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.referencelibrary.AddressGroup;
 
 /**
- * An {@link IpSpaceSpecifier} that looks up an {@link AddressGroup} in a {@link
+ * An {@link IpSpaceAssignmentSpecifier} that looks up an {@link AddressGroup} in a {@link
  * org.batfish.referencelibrary.ReferenceBook}.
  */
-public final class ReferenceAddressGroupIpSpaceSpecifier implements IpSpaceSpecifier {
+public final class ReferenceAddressGroupIpSpaceSpecifier implements IpSpaceAssignmentSpecifier {
   private final String _addressGroupName;
   private final String _bookName;
 

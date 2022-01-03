@@ -31,7 +31,7 @@ import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.question.ReachabilityParameters;
-import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
+import org.batfish.specifier.InferFromLocationIpSpaceAssignmentSpecifier;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.IpSpaceAssignment.Entry;
 import org.batfish.specifier.Location;
@@ -91,13 +91,14 @@ public class DifferentialReachabilityAnswerer extends Answerer {
     // TODO generate better IpSpaceAssignments for differential context
     IpSpaceAssignment ipSpaceAssignment =
         SpecifierFactories.getIpSpaceSpecifierOrDefault(
-                headerConstraints.getSrcIps(), InferFromLocationIpSpaceSpecifier.INSTANCE)
+                headerConstraints.getSrcIps(), InferFromLocationIpSpaceAssignmentSpecifier.INSTANCE)
             .resolve(startLocations, snapshotCtxt);
     IpSpace dstIps =
         firstNonNull(
             AclIpSpace.union(
                 SpecifierFactories.getIpSpaceSpecifierOrDefault(
-                        headerConstraints.getDstIps(), InferFromLocationIpSpaceSpecifier.INSTANCE)
+                        headerConstraints.getDstIps(),
+                        InferFromLocationIpSpaceAssignmentSpecifier.INSTANCE)
                     .resolve(ImmutableSet.of(), snapshotCtxt)
                     .getEntries()
                     .stream()

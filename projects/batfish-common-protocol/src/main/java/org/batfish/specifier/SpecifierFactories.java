@@ -74,7 +74,7 @@ public final class SpecifierFactories {
     }
   }
 
-  public static IpSpaceSpecifier getIpSpaceSpecifier(String input, Version version) {
+  public static IpSpaceAssignmentSpecifier getIpSpaceSpecifier(String input, Version version) {
     switch (version) {
       case V1:
         throw new IllegalArgumentException("V1 IpSpace grammar has been nixed");
@@ -159,8 +159,8 @@ public final class SpecifierFactories {
     return getIpProtocolSpecifierOrDefault(input, defaultSpecifier, ACTIVE_VERSION);
   }
 
-  public static IpSpaceSpecifier getIpSpaceSpecifierOrDefault(
-      @Nullable String input, IpSpaceSpecifier defaultSpecifier) {
+  public static IpSpaceAssignmentSpecifier getIpSpaceSpecifierOrDefault(
+      @Nullable String input, IpSpaceAssignmentSpecifier defaultSpecifier) {
     return getIpSpaceSpecifierOrDefault(input, defaultSpecifier, ACTIVE_VERSION);
   }
 
@@ -209,8 +209,8 @@ public final class SpecifierFactories {
     return input == null || input.isEmpty() ? defaultSpecifier : getIpProtocolSpecifier(input, v);
   }
 
-  public static IpSpaceSpecifier getIpSpaceSpecifierOrDefault(
-      @Nullable String input, IpSpaceSpecifier defaultSpecifier, Version v) {
+  public static IpSpaceAssignmentSpecifier getIpSpaceSpecifierOrDefault(
+      @Nullable String input, IpSpaceAssignmentSpecifier defaultSpecifier, Version v) {
     return input == null || input.isEmpty() ? defaultSpecifier : getIpSpaceSpecifier(input, v);
   }
 

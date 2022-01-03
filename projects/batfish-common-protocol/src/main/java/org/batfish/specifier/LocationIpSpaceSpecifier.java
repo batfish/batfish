@@ -23,7 +23,7 @@ import org.batfish.specifier.IpSpaceAssignment.Entry;
  * the packets look like they were sent from some set of hosts. Here, the {@link IpSpace} locations
  * are the host locations, and the assignment locations are the core router locations.
  */
-public final class LocationIpSpaceSpecifier implements IpSpaceSpecifier {
+public final class LocationIpSpaceSpecifier implements IpSpaceAssignmentSpecifier {
   private final @Nonnull LocationSpecifier _locationSpecifier;
 
   LocationIpSpaceSpecifier(@Nonnull LocationSpecifier locationSpecifier) {
@@ -57,7 +57,7 @@ public final class LocationIpSpaceSpecifier implements IpSpaceSpecifier {
   public static IpSpace computeIpSpace(Set<Location> locations, SpecifierContext ctxt) {
     return firstNonNull(
         AclIpSpace.union(
-            InferFromLocationIpSpaceSpecifier.INSTANCE
+            InferFromLocationIpSpaceAssignmentSpecifier.INSTANCE
                 .resolve(locations, ctxt)
                 .getEntries()
                 .stream()

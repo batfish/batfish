@@ -15,22 +15,22 @@ import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.specifier.IpSpaceAssignment.Entry;
-import org.batfish.specifier.IpSpaceSpecifier;
+import org.batfish.specifier.IpSpaceAssignmentSpecifier;
 import org.batfish.specifier.LocationSpecifier;
 import org.batfish.specifier.SpecifierContext;
 
 /** A set of parameters for ACL filter analysis that uses high-level specifiers. */
 public final class SearchFiltersParameters {
-  private final @Nonnull IpSpaceSpecifier _destinationIpSpaceSpecifier;
+  private final @Nonnull IpSpaceAssignmentSpecifier _destinationIpSpaceSpecifier;
   private final @Nonnull AclLineMatchExpr _headerSpaceExpr;
   private final @Nonnull LocationSpecifier _startLocationSpecifier;
-  private final @Nonnull IpSpaceSpecifier _sourceIpSpaceSpecifier;
+  private final @Nonnull IpSpaceAssignmentSpecifier _sourceIpSpaceSpecifier;
   private final boolean _complementHeaderSpace;
 
   private SearchFiltersParameters(
-      @Nonnull IpSpaceSpecifier destinationIpSpaceSpecifier,
+      @Nonnull IpSpaceAssignmentSpecifier destinationIpSpaceSpecifier,
       @Nonnull LocationSpecifier startLocationSpecifier,
-      @Nonnull IpSpaceSpecifier sourceIpSpaceSpecifier,
+      @Nonnull IpSpaceAssignmentSpecifier sourceIpSpaceSpecifier,
       @Nonnull AclLineMatchExpr headerSpaceExpr,
       boolean complementHeaderSpace) {
     _destinationIpSpaceSpecifier = destinationIpSpaceSpecifier;
@@ -41,7 +41,7 @@ public final class SearchFiltersParameters {
   }
 
   @Nonnull
-  public IpSpaceSpecifier getDestinationIpSpaceSpecifier() {
+  public IpSpaceAssignmentSpecifier getDestinationIpSpaceSpecifier() {
     return _destinationIpSpaceSpecifier;
   }
 
@@ -51,7 +51,7 @@ public final class SearchFiltersParameters {
   }
 
   @Nonnull
-  public IpSpaceSpecifier getSourceIpSpaceSpecifier() {
+  public IpSpaceAssignmentSpecifier getSourceIpSpaceSpecifier() {
     return _sourceIpSpaceSpecifier;
   }
 
@@ -66,7 +66,8 @@ public final class SearchFiltersParameters {
   }
 
   @Nonnull
-  private static IpSpace resolveIpSpaceSpecifier(IpSpaceSpecifier specifier, SpecifierContext ctx) {
+  private static IpSpace resolveIpSpaceSpecifier(
+      IpSpaceAssignmentSpecifier specifier, SpecifierContext ctx) {
     return firstNonNull(
         AclIpSpace.union(
             specifier.resolve(ImmutableSet.of(), ctx).getEntries().stream()
@@ -85,10 +86,10 @@ public final class SearchFiltersParameters {
   }
 
   public static final class Builder {
-    private IpSpaceSpecifier _destinationIpSpaceSpecifier;
+    private IpSpaceAssignmentSpecifier _destinationIpSpaceSpecifier;
     private AclLineMatchExpr _headerSpaceExpr;
     private LocationSpecifier _startLocationSpecifier;
-    private IpSpaceSpecifier _sourceIpSpaceSpecifier;
+    private IpSpaceAssignmentSpecifier _sourceIpSpaceSpecifier;
     private boolean _complementHeaderSpace;
 
     private Builder() {}
@@ -99,7 +100,7 @@ public final class SearchFiltersParameters {
     }
 
     public Builder setDestinationIpSpaceSpecifier(
-        @Nonnull IpSpaceSpecifier destinationIpSpaceSpecifier) {
+        @Nonnull IpSpaceAssignmentSpecifier destinationIpSpaceSpecifier) {
       _destinationIpSpaceSpecifier = destinationIpSpaceSpecifier;
       return this;
     }
@@ -109,7 +110,8 @@ public final class SearchFiltersParameters {
       return this;
     }
 
-    public Builder setSourceIpSpaceSpecifier(@Nonnull IpSpaceSpecifier sourceIpSpaceSpecifier) {
+    public Builder setSourceIpSpaceSpecifier(
+        @Nonnull IpSpaceAssignmentSpecifier sourceIpSpaceSpecifier) {
       _sourceIpSpaceSpecifier = sourceIpSpaceSpecifier;
       return this;
     }

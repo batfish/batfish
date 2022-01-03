@@ -20,11 +20,11 @@ import org.batfish.datamodel.PacketHeaderConstraintsUtil;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.phc_to_flow.IpFieldExtractorContext;
 import org.batfish.specifier.AllInterfacesLocationSpecifier;
-import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
+import org.batfish.specifier.InferFromLocationIpSpaceAssignmentSpecifier;
 import org.batfish.specifier.InterfaceLinkLocation;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
-import org.batfish.specifier.IpSpaceSpecifier;
+import org.batfish.specifier.IpSpaceAssignmentSpecifier;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationSpecifier;
 import org.batfish.specifier.LocationVisitor;
@@ -98,9 +98,9 @@ public final class TracerouteAnswererHelper {
         SpecifierFactories.getLocationSpecifierOrDefault(
             sourceLocation, AllInterfacesLocationSpecifier.INSTANCE);
 
-    IpSpaceSpecifier sourceIpSpaceSpecifier =
+    IpSpaceAssignmentSpecifier sourceIpSpaceSpecifier =
         SpecifierFactories.getIpSpaceSpecifierOrDefault(
-            sourceIps, InferFromLocationIpSpaceSpecifier.INSTANCE);
+            sourceIps, InferFromLocationIpSpaceAssignmentSpecifier.INSTANCE);
 
     /* resolve specifiers */
     Set<Location> sourceLocations = sourceLocationSpecifier.resolve(specifierContext);

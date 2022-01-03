@@ -6,10 +6,10 @@ import java.util.Set;
 import org.batfish.datamodel.IpSpace;
 
 /**
- * An {@link IpSpaceSpecifier} that is constant (independent of the input {@link Location}). All
- * input {@link Location}s are assigned the specified {@link IpSpace}.
+ * An {@link IpSpaceAssignmentSpecifier} that is constant (independent of the input {@link
+ * Location}). All input {@link Location}s are assigned the specified {@link IpSpace}.
  */
-public final class ConstantIpSpaceSpecifier implements IpSpaceSpecifier {
+public final class ConstantIpSpaceSpecifier implements IpSpaceAssignmentSpecifier {
   private final IpSpace _ipSpace;
 
   public ConstantIpSpaceSpecifier(IpSpace ipSpace) {
