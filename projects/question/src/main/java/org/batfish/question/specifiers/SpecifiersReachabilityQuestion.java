@@ -127,13 +127,13 @@ public final class SpecifiersReachabilityQuestion extends Question {
   }
 
   private IpSpaceAssignmentSpecifier getDestinationIpSpaceSpecifier() {
-    return SpecifierFactories.getIpSpaceSpecifierOrDefault(
+    return SpecifierFactories.getIpSpaceAssignmentSpecifierOrDefault(
         _headerConstraints.getDstIps(),
         new ConstantIpSpaceAssignmentSpecifier(UniverseIpSpace.INSTANCE));
   }
 
   private IpSpaceAssignmentSpecifier getSourceIpSpaceSpecifier() {
-    return SpecifierFactories.getIpSpaceSpecifierOrDefault(
+    return SpecifierFactories.getIpSpaceAssignmentSpecifierOrDefault(
         _headerConstraints.getSrcIps(), InferFromLocationIpSpaceAssignmentSpecifier.INSTANCE);
   }
 

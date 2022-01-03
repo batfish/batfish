@@ -4,7 +4,6 @@ import static org.batfish.datamodel.FlowDisposition.SUCCESS_DISPOSITIONS;
 import static org.batfish.datamodel.PacketHeaderConstraintsUtil.toAclLineMatchExpr;
 import static org.batfish.datamodel.SetFlowStartLocation.setStartLocation;
 import static org.batfish.question.specifiers.PathConstraintsUtil.createPathConstraints;
-import static org.batfish.specifier.SpecifierFactories.getIpSpaceSpecifierOrDefault;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
@@ -34,6 +33,7 @@ import org.batfish.question.traceroute.BidirectionalTracerouteAnswerer;
 import org.batfish.specifier.ConstantIpSpaceAssignmentSpecifier;
 import org.batfish.specifier.InferFromLocationIpSpaceAssignmentSpecifier;
 import org.batfish.specifier.Location;
+import org.batfish.specifier.SpecifierFactories;
 
 /** Answerer for {@link BidirectionalReachabilityQuestion}. */
 public final class BidirectionalReachabilityAnswerer extends Answerer {
@@ -57,7 +57,7 @@ public final class BidirectionalReachabilityAnswerer extends Answerer {
         ReachabilityParameters.builder()
             .setActions(ImmutableSortedSet.copyOf(SUCCESS_DISPOSITIONS))
             .setDestinationIpSpaceSpecifier(
-                getIpSpaceSpecifierOrDefault(
+                SpecifierFactories.getIpSpaceAssignmentSpecifierOrDefault(
                     _headerConstraints.getDstIps(),
                     new ConstantIpSpaceAssignmentSpecifier(UniverseIpSpace.INSTANCE)))
             .setFinalNodesSpecifier(pathConstraints.getEndLocation())
@@ -68,7 +68,7 @@ public final class BidirectionalReachabilityAnswerer extends Answerer {
             .setRequiredTransitNodesSpecifier(pathConstraints.getTransitLocations())
             .setSourceLocationSpecifier(pathConstraints.getStartLocation())
             .setSourceIpSpaceSpecifier(
-                getIpSpaceSpecifierOrDefault(
+                SpecifierFactories.getIpSpaceAssignmentSpecifierOrDefault(
                     _headerConstraints.getSrcIps(),
                     InferFromLocationIpSpaceAssignmentSpecifier.INSTANCE))
             .build();

@@ -174,14 +174,14 @@ public final class SearchFiltersQuestion extends Question {
 
   @Nonnull
   private IpSpaceAssignmentSpecifier getSourceSpecifier() {
-    return SpecifierFactories.getIpSpaceSpecifierOrDefault(
+    return SpecifierFactories.getIpSpaceAssignmentSpecifierOrDefault(
         _headerConstraints.getSrcIps(),
         new ConstantIpSpaceAssignmentSpecifier(UniverseIpSpace.INSTANCE));
   }
 
   @Nonnull
   private IpSpaceAssignmentSpecifier getDestinationSpecifier() {
-    return SpecifierFactories.getIpSpaceSpecifierOrDefault(
+    return SpecifierFactories.getIpSpaceAssignmentSpecifierOrDefault(
         _headerConstraints.getDstIps(),
         new ConstantIpSpaceAssignmentSpecifier(UniverseIpSpace.INSTANCE));
   }

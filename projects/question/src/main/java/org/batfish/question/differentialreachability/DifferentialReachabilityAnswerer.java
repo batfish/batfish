@@ -90,13 +90,13 @@ public class DifferentialReachabilityAnswerer extends Answerer {
 
     // TODO generate better IpSpaceAssignments for differential context
     IpSpaceAssignment ipSpaceAssignment =
-        SpecifierFactories.getIpSpaceSpecifierOrDefault(
+        SpecifierFactories.getIpSpaceAssignmentSpecifierOrDefault(
                 headerConstraints.getSrcIps(), InferFromLocationIpSpaceAssignmentSpecifier.INSTANCE)
             .resolve(startLocations, snapshotCtxt);
     IpSpace dstIps =
         firstNonNull(
             AclIpSpace.union(
-                SpecifierFactories.getIpSpaceSpecifierOrDefault(
+                SpecifierFactories.getIpSpaceAssignmentSpecifierOrDefault(
                         headerConstraints.getDstIps(),
                         InferFromLocationIpSpaceAssignmentSpecifier.INSTANCE)
                     .resolve(ImmutableSet.of(), snapshotCtxt)

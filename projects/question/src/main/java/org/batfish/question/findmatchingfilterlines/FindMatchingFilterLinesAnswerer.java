@@ -268,7 +268,7 @@ public final class FindMatchingFilterLinesAnswerer extends Answerer {
 
   private static IpSpace resolveIpSpace(@Nullable String ips, SpecifierContext ctx) {
     IpSpaceAssignmentSpecifier specifier =
-        SpecifierFactories.getIpSpaceSpecifierOrDefault(
+        SpecifierFactories.getIpSpaceAssignmentSpecifierOrDefault(
             ips, new ConstantIpSpaceAssignmentSpecifier(UniverseIpSpace.INSTANCE));
     return firstNonNull(
         AclIpSpace.union(

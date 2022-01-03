@@ -99,7 +99,7 @@ public final class TracerouteAnswererHelper {
             sourceLocation, AllInterfacesLocationSpecifier.INSTANCE);
 
     IpSpaceAssignmentSpecifier sourceIpSpaceSpecifier =
-        SpecifierFactories.getIpSpaceSpecifierOrDefault(
+        SpecifierFactories.getIpSpaceAssignmentSpecifierOrDefault(
             sourceIps, InferFromLocationIpSpaceAssignmentSpecifier.INSTANCE);
 
     /* resolve specifiers */

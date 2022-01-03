@@ -60,13 +60,13 @@ public class MultipathConsistencyAnswerer extends Answerer {
     Set<String> finalNodes = pathConstraints.getEndLocation().resolve(ctxt);
 
     IpSpaceAssignment ipSpaceAssignment =
-        SpecifierFactories.getIpSpaceSpecifierOrDefault(
+        SpecifierFactories.getIpSpaceAssignmentSpecifierOrDefault(
                 headerConstraints.getSrcIps(), InferFromLocationIpSpaceAssignmentSpecifier.INSTANCE)
             .resolve(startLocations, ctxt);
     IpSpace dstIps =
         firstNonNull(
             AclIpSpace.union(
-                SpecifierFactories.getIpSpaceSpecifierOrDefault(
+                SpecifierFactories.getIpSpaceAssignmentSpecifierOrDefault(
                         headerConstraints.getDstIps(),
                         InferFromLocationIpSpaceAssignmentSpecifier.INSTANCE)
                     .resolve(ImmutableSet.of(), ctxt)

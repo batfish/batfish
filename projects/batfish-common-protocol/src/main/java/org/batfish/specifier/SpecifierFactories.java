@@ -74,7 +74,19 @@ public final class SpecifierFactories {
     }
   }
 
-  public static IpSpaceAssignmentSpecifier getIpSpaceSpecifier(String input, Version version) {
+  public static IpSpaceSpecifier getIpSpaceSpecifier(String input, Version version) {
+    switch (version) {
+      case V1:
+        throw new IllegalArgumentException("V1 IpSpace grammar has been nixed");
+      case V2:
+        return ParboiledIpSpaceSpecifier.parse(input);
+      default:
+        throw new IllegalStateException("Unhandled grammar version " + version);
+    }
+  }
+
+  public static IpSpaceAssignmentSpecifier getIpSpaceAssignmentSpecifier(
+      String input, Version version) {
     switch (version) {
       case V1:
         throw new IllegalArgumentException("V1 IpSpace grammar has been nixed");
@@ -159,9 +171,14 @@ public final class SpecifierFactories {
     return getIpProtocolSpecifierOrDefault(input, defaultSpecifier, ACTIVE_VERSION);
   }
 
-  public static IpSpaceAssignmentSpecifier getIpSpaceSpecifierOrDefault(
-      @Nullable String input, IpSpaceAssignmentSpecifier defaultSpecifier) {
+  public static IpSpaceSpecifier getIpSpaceSpecifierOrDefault(
+      @Nullable String input, IpSpaceSpecifier defaultSpecifier) {
     return getIpSpaceSpecifierOrDefault(input, defaultSpecifier, ACTIVE_VERSION);
+  }
+
+  public static IpSpaceAssignmentSpecifier getIpSpaceAssignmentSpecifierOrDefault(
+      @Nullable String input, IpSpaceAssignmentSpecifier defaultSpecifier) {
+    return getIpSpaceAssignmentSpecifierOrDefault(input, defaultSpecifier, ACTIVE_VERSION);
   }
 
   public static LocationSpecifier getLocationSpecifierOrDefault(
@@ -209,9 +226,16 @@ public final class SpecifierFactories {
     return input == null || input.isEmpty() ? defaultSpecifier : getIpProtocolSpecifier(input, v);
   }
 
-  public static IpSpaceAssignmentSpecifier getIpSpaceSpecifierOrDefault(
-      @Nullable String input, IpSpaceAssignmentSpecifier defaultSpecifier, Version v) {
+  public static IpSpaceSpecifier getIpSpaceSpecifierOrDefault(
+      @Nullable String input, IpSpaceSpecifier defaultSpecifier, Version v) {
     return input == null || input.isEmpty() ? defaultSpecifier : getIpSpaceSpecifier(input, v);
+  }
+
+  public static IpSpaceAssignmentSpecifier getIpSpaceAssignmentSpecifierOrDefault(
+      @Nullable String input, IpSpaceAssignmentSpecifier defaultSpecifier, Version v) {
+    return input == null || input.isEmpty()
+        ? defaultSpecifier
+        : getIpSpaceAssignmentSpecifier(input, v);
   }
 
   public static LocationSpecifier getLocationSpecifierOrDefault(

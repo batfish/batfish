@@ -126,12 +126,12 @@ public class TestFiltersAnswerer extends Answerer {
     // if src ip is not specified and location is specified, srcIpAssignments would have a set of
     // entries of (srcLocation, IpSpacePerLocation)
     IpSpaceAssignment srcIpAssignments =
-        SpecifierFactories.getIpSpaceSpecifierOrDefault(
+        SpecifierFactories.getIpSpaceAssignmentSpecifierOrDefault(
                 constraints.getSrcIps(), InferFromLocationIpSpaceAssignmentSpecifier.INSTANCE)
             .resolve(srcLocations, context);
 
     IpSpace dstIps =
-        SpecifierFactories.getIpSpaceSpecifierOrDefault(
+        SpecifierFactories.getIpSpaceAssignmentSpecifierOrDefault(
                 constraints.getDstIps(),
                 new ConstantIpSpaceAssignmentSpecifier(UniverseIpSpace.INSTANCE))
             .resolve(ImmutableSet.of(), context)

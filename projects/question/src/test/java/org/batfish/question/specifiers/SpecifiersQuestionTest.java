@@ -4,11 +4,13 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertThat;
 
+import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.question.specifiers.SpecifiersQuestion.QueryType;
 import org.batfish.specifier.AllFiltersFilterSpecifier;
 import org.batfish.specifier.AllInterfacesInterfaceSpecifier;
 import org.batfish.specifier.AllInterfacesLocationSpecifier;
 import org.batfish.specifier.AllNodesNodeSpecifier;
+import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.InferFromLocationIpSpaceAssignmentSpecifier;
 import org.batfish.specifier.SpecifierFactories;
 import org.batfish.specifier.SpecifierFactories.Version;
@@ -30,6 +32,9 @@ public final class SpecifiersQuestionTest {
     assertThat(question.getInterfaceSpecifier(), equalTo(AllInterfacesInterfaceSpecifier.INSTANCE));
     assertThat(
         question.getIpSpaceSpecifier(),
+        equalTo(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE)));
+    assertThat(
+        question.getIpSpaceAssignmentSpecifier(),
         instanceOf(InferFromLocationIpSpaceAssignmentSpecifier.class));
     assertThat(question.getLocationSpecifier(), instanceOf(AllInterfacesLocationSpecifier.class));
     assertThat(question.getNodeSpecifier(), instanceOf(AllNodesNodeSpecifier.class));
@@ -56,6 +61,10 @@ public final class SpecifiersQuestionTest {
     assertThat(
         question.getIpSpaceSpecifier(),
         instanceOf(SpecifierFactories.getIpSpaceSpecifierOrDefault("input", null).getClass()));
+    assertThat(
+        question.getIpSpaceAssignmentSpecifier(),
+        instanceOf(
+            SpecifierFactories.getIpSpaceAssignmentSpecifierOrDefault("input", null).getClass()));
     assertThat(
         question.getLocationSpecifier(),
         instanceOf(SpecifierFactories.getLocationSpecifierOrDefault("input", null).getClass()));
@@ -95,9 +104,9 @@ public final class SpecifiersQuestionTest {
             SpecifierFactories.getInterfaceSpecifierOrDefault("input", null, otherVersion)
                 .getClass()));
     assertThat(
-        question.getIpSpaceSpecifier(),
+        question.getIpSpaceAssignmentSpecifier(),
         instanceOf(
-            SpecifierFactories.getIpSpaceSpecifierOrDefault("1.1.1.1", null, otherVersion)
+            SpecifierFactories.getIpSpaceAssignmentSpecifierOrDefault("1.1.1.1", null, otherVersion)
                 .getClass()));
     assertThat(
         question.getLocationSpecifier(),

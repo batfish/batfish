@@ -69,7 +69,7 @@ public class IpFieldExtractorContext {
   private IpSpaceAssignment resolverHeaderIp(String headerIp) {
     // interpret given IP "flexibly"
     IpSpaceAssignmentSpecifier ipSpecifier =
-        SpecifierFactories.getIpSpaceSpecifierOrDefault(
+        SpecifierFactories.getIpSpaceAssignmentSpecifierOrDefault(
             headerIp, InferFromLocationIpSpaceAssignmentSpecifier.INSTANCE);
 
     // Resolve to set of locations/IPs
