@@ -14,7 +14,7 @@ import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.specifier.AllInterfacesLocationSpecifier;
 import org.batfish.specifier.AllNodesNodeSpecifier;
-import org.batfish.specifier.ConstantIpSpaceSpecifier;
+import org.batfish.specifier.ConstantIpSpaceAssignmentSpecifier;
 import org.batfish.specifier.InferFromLocationIpSpaceAssignmentSpecifier;
 import org.batfish.specifier.IpSpaceAssignmentSpecifier;
 import org.batfish.specifier.LocationSpecifier;
@@ -35,7 +35,7 @@ public final class ReachabilityParameters {
     private @Nonnull SortedSet<FlowDisposition> _actions = ImmutableSortedSet.of();
 
     private @Nonnull IpSpaceAssignmentSpecifier _destinationIpSpaceSpecifier =
-        new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE);
+        new ConstantIpSpaceAssignmentSpecifier(UniverseIpSpace.INSTANCE);
 
     private @Nonnull NodeSpecifier _finalNodesSpecifier = AllNodesNodeSpecifier.INSTANCE;
 

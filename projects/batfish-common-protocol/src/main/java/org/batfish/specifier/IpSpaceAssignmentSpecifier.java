@@ -3,7 +3,7 @@ package org.batfish.specifier;
 import java.util.Set;
 import org.batfish.datamodel.IpSpace;
 
-/** An abstract specifier of {@link IpSpace}s by some means. */
+/** An abstract specifier of assigning {@link IpSpace} to location by some means. */
 public interface IpSpaceAssignmentSpecifier {
   /**
    * Resolve the specifier into concrete {@link IpSpace}s.

@@ -5,9 +5,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.google.common.base.MoreObjects;
 import java.util.NoSuchElementException;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
-import javax.annotation.Nonnull;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.IpSpace;
@@ -18,7 +16,7 @@ import org.batfish.referencelibrary.AddressGroup;
  * An {@link IpSpaceAssignmentSpecifier} that looks up an {@link AddressGroup} in a {@link
  * org.batfish.referencelibrary.ReferenceBook}.
  */
-public final class ReferenceAddressGroupIpSpaceSpecifier implements IpSpaceAssignmentSpecifier {
+public final class ReferenceAddressGroupIpSpaceSpecifier implements IpSpaceSpecifier {
   private final String _addressGroupName;
   private final String _bookName;
 
@@ -46,9 +44,8 @@ public final class ReferenceAddressGroupIpSpaceSpecifier implements IpSpaceAssig
   }
 
   @Override
-  public IpSpaceAssignment resolve(Set<Location> locations, SpecifierContext ctxt) {
-    IpSpace ipSpace = computeIpSpace(_addressGroupName, _bookName, ctxt);
-    return IpSpaceAssignment.builder().assign(locations, ipSpace).build();
+  public IpSpace resolve(SpecifierContext ctxt) {
+    return computeIpSpace(_addressGroupName, _bookName, ctxt);
   }
 
   /**
@@ -58,7 +55,6 @@ public final class ReferenceAddressGroupIpSpaceSpecifier implements IpSpaceAssig
    * @throws NoSuchElementException if {@code bookName} does not exist or if {@code
    *     addressGroupName} or one of its descendants do not exist in the Reference Book.
    */
-  @Nonnull
   public static IpSpace computeIpSpace(
       String addressGroupName, String bookName, SpecifierContext ctxt) {
     return firstNonNull(

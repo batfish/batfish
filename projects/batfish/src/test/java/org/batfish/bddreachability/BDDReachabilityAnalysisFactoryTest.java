@@ -114,7 +114,7 @@ import org.batfish.question.ReachabilityParameters;
 import org.batfish.question.loop.LoopNetwork;
 import org.batfish.specifier.AllInterfacesLocationSpecifier;
 import org.batfish.specifier.AllNodesNodeSpecifier;
-import org.batfish.specifier.ConstantIpSpaceSpecifier;
+import org.batfish.specifier.ConstantIpSpaceAssignmentSpecifier;
 import org.batfish.specifier.InterfaceLinkLocation;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
@@ -168,7 +168,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
   private final BDD _zero = _pkt.getFactory().zero();
 
   private static final IpSpaceAssignmentSpecifier CONSTANT_UNIVERSE_IPSPACE_SPECIFIER =
-      new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE);
+      new ConstantIpSpaceAssignmentSpecifier(UniverseIpSpace.INSTANCE);
   private static final String INGRESS_NODE = "ingress_node";
   private static final String INGRESS_IFACE = "ingressIface";
   private static final String INGRESS_VRF = "ingressVrf";

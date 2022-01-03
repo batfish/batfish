@@ -17,7 +17,7 @@ import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.question.ReachabilityParameters;
-import org.batfish.specifier.ConstantIpSpaceSpecifier;
+import org.batfish.specifier.ConstantIpSpaceAssignmentSpecifier;
 import org.batfish.specifier.DispositionSpecifier;
 import org.batfish.specifier.InferFromLocationIpSpaceAssignmentSpecifier;
 import org.batfish.specifier.IpSpaceAssignmentSpecifier;
@@ -128,7 +128,8 @@ public final class SpecifiersReachabilityQuestion extends Question {
 
   private IpSpaceAssignmentSpecifier getDestinationIpSpaceSpecifier() {
     return SpecifierFactories.getIpSpaceSpecifierOrDefault(
-        _headerConstraints.getDstIps(), new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE));
+        _headerConstraints.getDstIps(),
+        new ConstantIpSpaceAssignmentSpecifier(UniverseIpSpace.INSTANCE));
   }
 
   private IpSpaceAssignmentSpecifier getSourceIpSpaceSpecifier() {

@@ -47,7 +47,7 @@ import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.question.findmatchingfilterlines.FindMatchingFilterLinesQuestion.Action;
-import org.batfish.specifier.ConstantIpSpaceSpecifier;
+import org.batfish.specifier.ConstantIpSpaceAssignmentSpecifier;
 import org.batfish.specifier.IpSpaceAssignment.Entry;
 import org.batfish.specifier.IpSpaceAssignmentSpecifier;
 import org.batfish.specifier.SpecifierContext;
@@ -269,7 +269,7 @@ public final class FindMatchingFilterLinesAnswerer extends Answerer {
   private static IpSpace resolveIpSpace(@Nullable String ips, SpecifierContext ctx) {
     IpSpaceAssignmentSpecifier specifier =
         SpecifierFactories.getIpSpaceSpecifierOrDefault(
-            ips, new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE));
+            ips, new ConstantIpSpaceAssignmentSpecifier(UniverseIpSpace.INSTANCE));
     return firstNonNull(
         AclIpSpace.union(
             specifier.resolve(ImmutableSet.of(), ctx).getEntries().stream()

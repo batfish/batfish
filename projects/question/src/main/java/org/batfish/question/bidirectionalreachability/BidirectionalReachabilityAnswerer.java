@@ -31,7 +31,7 @@ import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.question.specifiers.PathConstraintsInput;
 import org.batfish.question.traceroute.BidirectionalTracerouteAnswerer;
-import org.batfish.specifier.ConstantIpSpaceSpecifier;
+import org.batfish.specifier.ConstantIpSpaceAssignmentSpecifier;
 import org.batfish.specifier.InferFromLocationIpSpaceAssignmentSpecifier;
 import org.batfish.specifier.Location;
 
@@ -59,7 +59,7 @@ public final class BidirectionalReachabilityAnswerer extends Answerer {
             .setDestinationIpSpaceSpecifier(
                 getIpSpaceSpecifierOrDefault(
                     _headerConstraints.getDstIps(),
-                    new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE)))
+                    new ConstantIpSpaceAssignmentSpecifier(UniverseIpSpace.INSTANCE)))
             .setFinalNodesSpecifier(pathConstraints.getEndLocation())
             .setForbiddenTransitNodesSpecifier(pathConstraints.getForbiddenLocations())
             .setHeaderSpace(headerSpace)
