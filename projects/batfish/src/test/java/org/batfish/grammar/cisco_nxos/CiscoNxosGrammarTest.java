@@ -6,6 +6,7 @@ import static com.google.common.collect.MoreCollectors.onlyElement;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
 import static org.batfish.common.matchers.WarningMatchers.hasText;
+import static org.batfish.common.matchers.WarningsMatchers.hasParseWarning;
 import static org.batfish.common.matchers.WarningsMatchers.hasRedFlags;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.BgpRoute.DEFAULT_LOCAL_PREFERENCE;
@@ -8549,7 +8550,7 @@ public final class CiscoNxosGrammarTest {
     assertThat(c.getVrfs(), hasKeys(DEFAULT_VRF_NAME, MANAGEMENT_VRF_NAME, "Vrf1", "vrf3"));
     {
       Map<String, org.batfish.datamodel.Interface> vrfIfaces = c.getAllInterfaces(DEFAULT_VRF_NAME);
-      assertThat(vrfIfaces, hasKey("Ethernet1/2"));
+      assertThat(vrfIfaces, hasKeys("Ethernet1/2", "Ethernet1/5", "Ethernet1/6", "Ethernet1/7"));
     }
     {
       Map<String, org.batfish.datamodel.Interface> vrfIfaces = c.getAllInterfaces("Vrf1");
@@ -8557,12 +8558,20 @@ public final class CiscoNxosGrammarTest {
     }
     {
       Map<String, org.batfish.datamodel.Interface> vrfIfaces = c.getAllInterfaces("vrf3");
-      assertThat(vrfIfaces, hasKeys("Ethernet1/5"));
+      assertThat(vrfIfaces, hasKeys("Ethernet1/8"));
     }
 
     assertThat(
         c.getAllInterfaces(),
-        hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/3", "Ethernet1/4", "Ethernet1/5"));
+        hasKeys(
+            "Ethernet1/1",
+            "Ethernet1/2",
+            "Ethernet1/3",
+            "Ethernet1/4",
+            "Ethernet1/5",
+            "Ethernet1/6",
+            "Ethernet1/7",
+            "Ethernet1/8"));
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/1");
       assertThat(iface, isActive());
@@ -8583,15 +8592,37 @@ public final class CiscoNxosGrammarTest {
     }
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/5");
+      assertThat(iface, isActive());
+      assertThat(iface, hasAddress(nullValue()));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/6");
+      assertThat(iface, isActive());
+      assertThat(iface, hasAddress(nullValue()));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/7");
+      assertThat(iface, isActive());
+      assertThat(iface, hasAddress("10.0.7.1/24"));
+    }
+    {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/8");
       assertThat(iface, isActive(false));
-      assertThat(iface, hasAddress("10.0.5.1/24"));
+      assertThat(iface, hasAddress("10.0.8.1/24"));
     }
   }
 
   @Test
-  public void testVrfExtraction() {
+  public void testVrfExtraction() throws IOException {
     String hostname = "nxos_vrf";
-    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    CiscoNxosConfiguration vc =
+        (CiscoNxosConfiguration)
+            batfish.loadVendorConfigurations(batfish.getSnapshot()).get(hostname);
+    // All configuration here is valid and should not have generated any parse warnings
+    assertThat(
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot()).getWarnings(),
+        anEmptyMap());
 
     assertThat(vc.getDefaultVrf(), not(nullValue()));
     assertThat(vc.getDefaultVrf().getId(), equalTo(DEFAULT_VRF_ID));
@@ -8633,7 +8664,15 @@ public final class CiscoNxosGrammarTest {
 
     assertThat(
         vc.getInterfaces(),
-        hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/3", "Ethernet1/4", "Ethernet1/5"));
+        hasKeys(
+            "Ethernet1/1",
+            "Ethernet1/2",
+            "Ethernet1/3",
+            "Ethernet1/4",
+            "Ethernet1/5",
+            "Ethernet1/6",
+            "Ethernet1/7",
+            "Ethernet1/8"));
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/1");
       assertFalse(iface.getShutdown());
@@ -8660,22 +8699,72 @@ public final class CiscoNxosGrammarTest {
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/5");
       assertFalse(iface.getShutdown());
+      assertThat(iface.getVrfMember(), nullValue());
+      assertThat(iface.getAddress(), nullValue());
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/6");
+      assertFalse(iface.getShutdown());
+      assertThat(iface.getVrfMember(), nullValue());
+      assertThat(iface.getAddress(), nullValue());
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/7");
+      assertFalse(iface.getShutdown());
+      assertThat(iface.getVrfMember(), nullValue());
+      assertThat(
+          iface.getAddress().getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.7.1/24")));
+    }
+    {
+      Interface iface = vc.getInterfaces().get("Ethernet1/8");
+      assertFalse(iface.getShutdown());
       assertThat(iface.getVrfMember(), equalTo("vrf3"));
       assertThat(
-          iface.getAddress().getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.5.1/24")));
+          iface.getAddress().getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.8.1/24")));
     }
   }
 
   @Test
-  public void testVrfExtractionInvalid() {
+  public void testVrfExtractionInvalid() throws IOException {
     String hostname = "nxos_vrf_invalid";
-    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    CiscoNxosConfiguration vc =
+        (CiscoNxosConfiguration)
+            batfish.loadVendorConfigurations(batfish.getSnapshot()).get(hostname);
+    Warnings warnings =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
 
-    assertThat(vc.getVrfs(), hasKeys(DEFAULT_VRF_NAME, MANAGEMENT_VRF_NAME, "vrf1"));
-    assertThat(vc.getInterfaces(), hasKeys("Ethernet1/1"));
+    assertThat(vc.getVrfs(), hasKeys(DEFAULT_VRF_NAME, MANAGEMENT_VRF_NAME, "vrf1", "vrf2"));
+    assertThat(vc.getInterfaces(), hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/3"));
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/1");
       assertThat(iface.getVrfMember(), nullValue());
+      assertThat(
+          warnings, hasParseWarning(hasComment("Cannot assign VRF to switchport interface(s)")));
+    }
+    {
+      // "no vrf member vrf1" did not affect interface in default vrf
+      Interface iface = vc.getInterfaces().get("Ethernet1/2");
+      assertThat(iface.getVrfMember(), nullValue());
+      assertThat(
+          iface.getAddress().getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.2.1/24")));
+      assertThat(
+          warnings,
+          hasParseWarning(hasComment("VRF vrf1 not configured on interface Ethernet1/2")));
+    }
+    {
+      // "no vrf member vrf2" did not affect interface in vrf1
+      Interface iface = vc.getInterfaces().get("Ethernet1/3");
+      assertThat(iface.getVrfMember(), equalTo("vrf1"));
+      assertThat(
+          iface.getAddress().getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.3.1/24")));
+      assertThat(
+          warnings,
+          hasParseWarning(hasComment("VRF vrf2 not configured on interface Ethernet1/3")));
     }
   }
 

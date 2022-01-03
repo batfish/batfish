@@ -44,15 +44,50 @@ interface Ethernet1/4
   ip address 10.0.4.1/24
 !
 
+! Add interface to vrf1, apply l3 configuration, then remove it from vrf1
+! - shutdown = false
+! - active = true
+! - address = null (erased by clearing vrf member)
+interface Ethernet1/5
+  no switchport
+  no shutdown
+  vrf member vrf1
+  ip address 10.0.5.1/24
+  no vrf member vrf1
+!
+
+! Add interface to vrf1, then remove it without specifying vrf (same effect as above)
+! - shutdown = false
+! - active = true
+! - address = null
+interface Ethernet1/6
+  no switchport
+  no shutdown
+  vrf member vrf1
+  ip address 10.0.6.1/24
+  no vrf member
+!
+
+! Use "no vrf member" on an interface already in the default VRF: no effect, no warnings
+! - shutdown = false
+! - active = true
+! - address = 10.0.7.1/24
+interface Ethernet1/7
+  no switchport
+  no shutdown
+  ip address 10.0.7.1/24
+  no vrf member
+!
+
 ! Add interface to shutdown VRF vrf3
 ! - shutdown = false
 ! - active = false (vrf3 is shutdown)
 ! - address = 10.0.5.1/24
-interface Ethernet1/5
+interface Ethernet1/8
   no switchport
   no shutdown
   vrf member vrf3
-  ip address 10.0.5.1/24
+  ip address 10.0.8.1/24
 !
 
 !!! Keep VRF definitions under default VRF configuration to avoid accidental leakage

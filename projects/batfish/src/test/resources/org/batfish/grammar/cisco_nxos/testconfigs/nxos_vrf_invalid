@@ -14,8 +14,25 @@ interface Ethernet1/1
   vrf member vrf1
 !
 
+! Cannot remove interface from a VRF it's not in (whether it's in a non-default VRF or not)
+! Attempting to do so should generate a warning and should not clear L3 configuration
+interface Ethernet1/2
+  no switchport
+  no shutdown
+  ip address 10.0.2.1/24
+  no vrf member vrf1
+!
+interface Ethernet1/3
+  no switchport
+  no shutdown
+  vrf member vrf1
+  ip address 10.0.3.1/24
+  no vrf member vrf2
+!
+
 !!! Keep VRF definitions under default VRF configuration to avoid accidental leakage
 vrf context vrf1
+vrf context vrf2
 
 ! VRF name is too long (exceeds 32 characters)
 vrf context .........1.........2.........3...
