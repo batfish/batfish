@@ -111,7 +111,15 @@ vc_ipv6
 
 vc_no
 :
-  NO vc_no_shutdown
+  NO (
+    vc_no_ip
+    | vc_no_shutdown
+  )
+;
+
+vc_no_ip
+:
+  IP no_ip_route
 ;
 
 vc_no_shutdown
