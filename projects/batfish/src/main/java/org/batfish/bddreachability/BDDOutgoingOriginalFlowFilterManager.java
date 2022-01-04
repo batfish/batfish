@@ -6,7 +6,6 @@ import static org.batfish.common.bdd.IpAccessListToBdd.toBdds;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.HashMap;
@@ -14,7 +13,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -72,8 +70,7 @@ public final class BDDOutgoingOriginalFlowFilterManager {
 
   private final BDD _falseBdd;
   private final BDD _trueBdd;
-  private final Supplier<BDD> _outgoingOriginalFlowFiltersConstraint =
-      Suppliers.memoize(this::computeOutgoingOriginalFlowFiltersConstraint);
+  private final BDD _outgoingOriginalFlowFiltersConstraint;
 
   private BDDOutgoingOriginalFlowFilterManager(
       BDDFiniteDomain<String> finiteDomain,
@@ -93,6 +90,7 @@ public final class BDDOutgoingOriginalFlowFilterManager {
             : _finiteDomain.getValueBdds().entrySet().stream()
                 .filter(e -> !e.getKey().equals(_activeButNoOriginalFlowFilterRepresentative))
                 .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
+    _outgoingOriginalFlowFiltersConstraint = computeOutgoingOriginalFlowFiltersConstraint();
   }
 
   private static BDD allocatePermitVar(BDDPacket pkt) {
@@ -239,10 +237,11 @@ public final class BDDOutgoingOriginalFlowFilterManager {
    * org.batfish.bddreachability.transition.Transitions#addOutgoingOriginalFlowFiltersConstraint(BDDOutgoingOriginalFlowFilterManager)
    * addOutgoingOriginalFlowFiltersConstraint} to apply this constraint to edges; otherwise
    * backwards transition will not erase vars.
+   *
+   * <p>The returned {@link BDD} is owned by the caller (and may be freed).
    */
   public BDD outgoingOriginalFlowFiltersConstraint() {
-    // Callers may free the returned BDD.
-    return _outgoingOriginalFlowFiltersConstraint.get().id();
+    return _outgoingOriginalFlowFiltersConstraint.id();
   }
 
   private BDD computeOutgoingOriginalFlowFiltersConstraint() {
