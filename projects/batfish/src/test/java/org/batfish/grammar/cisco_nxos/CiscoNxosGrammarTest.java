@@ -5407,9 +5407,9 @@ public final class CiscoNxosGrammarTest {
             hasSourceAddress(nullValue()),
             hasUdpPort(equalTo(DEFAULT_UDP_PORT)),
             hasVni(20001)));
-    // Make sure Vlan3 and Vlan7 - associated with vn-segments - are up after post-processing.
-    // While they has no associated switchports and are in autostate, they should stay up since they
-    // are associated with vn-segments.
+    // Make sure Vlan3 and Vlan7 are up after post-processing. While they have no associated
+    // switchports and are in autostate, they should stay up since they are associated with
+    // vn-segments.
     assertThat(c, hasInterface("Vlan3", isActive()));
     assertThat(c, hasInterface("Vlan7", isActive()));
 
