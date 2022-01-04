@@ -3874,7 +3874,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         (vlanId, vlan) -> {
           if (vlan.getVni() != null) {
             // Ensure IRB stays up even if it has no associated switchports
-            //
             _c.setNormalVlanRange(_c.getNormalVlanRange().difference(IntegerSpace.of(vlanId)));
           }
         });
