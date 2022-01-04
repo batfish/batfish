@@ -10,7 +10,7 @@ test -raw tests/questions/stable/definedStructures.ref validate-template defined
 test -raw tests/questions/stable/fileParseStatus.ref validate-template fileParseStatus
 
 # validate ipOwners
-test -raw tests/questions/stable/ipOwners.ref validate-template ipOwners duplicatesOnly=false
+test -raw tests/questions/stable/ipOwners.ref validate-template ipOwners ips="1.1.1.1", duplicatesOnly=false
 
 # validate initIssues
 test -raw tests/questions/stable/initIssues.ref validate-template initIssues

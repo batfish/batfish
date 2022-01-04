@@ -5,6 +5,7 @@ import static org.batfish.common.topology.TopologyUtil.computeNodeInterfaces;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multiset;
 import java.util.List;
@@ -16,6 +17,7 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
@@ -48,7 +50,14 @@ class IpOwnersAnswerer extends Answerer {
     TableAnswerElement answerElement = new TableAnswerElement(getTableMetadata());
 
     answerElement.postProcessAnswer(
-        _question, generateRows(ipNodeOwners, interfaces, question.getDuplicatesOnly()));
+        _question,
+        generateRows(
+            ipNodeOwners,
+            interfaces,
+            question
+                .getIpSpaceSpecifier()
+                .resolve(_batfish.specifierContext(_batfish.getSnapshot())),
+            question.getDuplicatesOnly()));
     return answerElement;
   }
 
@@ -56,32 +65,34 @@ class IpOwnersAnswerer extends Answerer {
   static Multiset<Row> generateRows(
       Map<Ip, Set<String>> ipNodeOwners,
       Map<String, Set<Interface>> interfaces,
+      IpSpace ipSpace,
       boolean duplicatesOnly) {
     Multiset<Row> rows = HashMultiset.create();
 
     interfaces.forEach(
         (hostname, interfaceSet) ->
             interfaceSet.forEach(
-                iface -> {
-                  iface
-                      .getAllConcreteAddresses()
-                      .forEach(
-                          address -> {
-                            if (ipNodeOwners.getOrDefault(address.getIp(), ImmutableSet.of()).size()
-                                    > 1
-                                || !duplicatesOnly) {
-                              rows.add(
-                                  Row.builder()
-                                      .put(COL_NODE, new Node(hostname))
-                                      .put(COL_VRFNAME, iface.getVrfName())
-                                      .put(COL_INTERFACE_NAME, iface.getName())
-                                      .put(COL_IP, address.getIp())
-                                      .put(COL_MASK, address.getNetworkBits())
-                                      .put(COL_ACTIVE, iface.getActive())
-                                      .build());
-                            }
-                          });
-                }));
+                iface ->
+                    iface.getAllConcreteAddresses().stream()
+                        .filter(
+                            address ->
+                                ipSpace.containsIp(address.getIp(), ImmutableMap.of())
+                                    && (!duplicatesOnly
+                                        || ipNodeOwners
+                                                .getOrDefault(address.getIp(), ImmutableSet.of())
+                                                .size()
+                                            > 1))
+                        .forEach(
+                            address ->
+                                rows.add(
+                                    Row.builder()
+                                        .put(COL_NODE, new Node(hostname))
+                                        .put(COL_VRFNAME, iface.getVrfName())
+                                        .put(COL_INTERFACE_NAME, iface.getName())
+                                        .put(COL_IP, address.getIp())
+                                        .put(COL_MASK, address.getNetworkBits())
+                                        .put(COL_ACTIVE, iface.getActive())
+                                        .build()))));
     return rows;
   }
 
