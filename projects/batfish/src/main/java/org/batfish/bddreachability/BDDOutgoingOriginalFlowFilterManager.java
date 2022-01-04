@@ -15,6 +15,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
@@ -59,7 +60,7 @@ public final class BDDOutgoingOriginalFlowFilterManager {
   /**
    * BDD assignments for interfaces with {@link Interface#getOutgoingOriginalFlowFilter()
    * outgoingOriginalFlowFilters}. (Does not include entry for {@link
-   * #_activeButNoOriginalFlowFilterRepresentative}.
+   * #_activeButNoOriginalFlowFilterRepresentative}.)
    */
   private final Map<String, BDD> _interfaceBdds;
 
@@ -245,20 +246,23 @@ public final class BDDOutgoingOriginalFlowFilterManager {
   }
 
   private BDD computeOutgoingOriginalFlowFiltersConstraint() {
-    return getInterfaceBDDs().keySet().stream()
-        .map(this::constraintForIface)
-        .reduce(BDD::and)
-        .orElse(_trueBdd); // only resorts to this if finite domain is empty
+    return _falseBdd
+        .getFactory()
+        .andAllAndFree(
+            _interfaceBdds.keySet().stream()
+                .map(this::constraintForIface)
+                .collect(Collectors.toList()));
   }
 
+  // invariant: returned BDD should be freed by caller
   private BDD constraintForIface(String iface) {
-    BDD ifaceBdd = getInterfaceBDDs().get(iface);
-    if (ifaceBdd == null) {
-      // this interface doesn't have an outgoingOriginalFlowFilter; no constraint to add
-      return _trueBdd;
-    }
-    BDD permittedByFilter = _filterBdds.get(iface);
-    return ifaceBdd.imp(permittedByFilter.biimp(_permitVar));
+    BDD ifaceBdd = _interfaceBdds.get(iface);
+    assert ifaceBdd != null; // invariant of caller
+    BDD originalFlowsPermittedByIface = _filterBdds.get(iface);
+    BDD permittedIffPermittedByIface = _permitVar.biimp(originalFlowsPermittedByIface);
+    BDD ifaceConstraint = ifaceBdd.imp(permittedIffPermittedByIface);
+    permittedIffPermittedByIface.free(); // other BDDs are internal
+    return ifaceConstraint;
   }
 
   /**
