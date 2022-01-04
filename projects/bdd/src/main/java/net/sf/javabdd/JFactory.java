@@ -863,29 +863,25 @@ public final class JFactory extends BDDFactory {
   public BDD andAll(Iterable<BDD> bddOperands, boolean free) {
     int[] operands =
         StreamSupport.stream(bddOperands.spliterator(), false)
-            .mapToInt(
-                bdd -> {
-                  int index = ((BDDImpl) bdd)._index;
-                  if (free) {
-                    bdd.free();
-                  }
-                  return index;
-                })
+            .mapToInt(bdd -> ((BDDImpl) bdd)._index)
             .filter(i -> i != BDDONE)
             .sorted()
             .distinct()
             .peek(this::CHECK)
             .toArray();
-    if (operands.length == 0) {
-      return one();
-    } else if (ISZERO(operands[0])) {
-      return zero();
-    } else {
-      return makeBDD(bdd_andAll(operands));
+    int ret = bdd_andAll(operands);
+    if (free) {
+      bddOperands.forEach(BDD::free);
     }
+    return makeBDD(ret);
   }
 
   private int bdd_andAll(int[] operands) {
+    if (operands.length == 0) {
+      return BDDONE;
+    } else if (ISZERO(operands[0])) {
+      return BDDZERO;
+    }
     if (applycache == null) {
       applycache = BddCacheI_init(cachesize);
     }
@@ -904,29 +900,25 @@ public final class JFactory extends BDDFactory {
   protected BDD orAll(Iterable<BDD> bddOperands, boolean free) {
     int[] operands =
         StreamSupport.stream(bddOperands.spliterator(), false)
-            .mapToInt(
-                bdd -> {
-                  int index = ((BDDImpl) bdd)._index;
-                  if (free) {
-                    bdd.free();
-                  }
-                  return index;
-                })
+            .mapToInt(bdd -> ((BDDImpl) bdd)._index)
             .filter(i -> i != BDDZERO)
             .sorted()
             .distinct()
             .peek(this::CHECK)
             .toArray();
-    if (operands.length == 0) {
-      return zero();
-    } else if (ISONE(operands[0])) {
-      return one();
-    } else {
-      return makeBDD(bdd_orAll(operands));
+    int ret = bdd_orAll(operands);
+    if (free) {
+      bddOperands.forEach(BDD::free);
     }
+    return makeBDD(ret);
   }
 
   private int bdd_orAll(int[] operands) {
+    if (operands.length == 0) {
+      return BDDZERO;
+    } else if (ISONE(operands[0])) {
+      return BDDONE;
+    }
     if (applycache == null) {
       applycache = BddCacheI_init(cachesize);
     }
