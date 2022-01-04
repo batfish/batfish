@@ -544,7 +544,11 @@ rb_no_neighbor
     | prefix6 = ipv6_prefix
   )
   (
-    REMOTE_AS asn = bgp_asn
+    REMOTE_AS
+    (
+      asn = bgp_asn?
+      | ROUTE_MAP mapname = route_map_name
+    )
   )? NEWLINE
 ;
 

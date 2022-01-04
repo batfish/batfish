@@ -4045,17 +4045,25 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     // specified remote AS does not match the removed neighbor's remote AS.
     if (ctx.ip != null) {
       Ip ip = toIp(ctx.ip);
-      _currentBgpVrfConfiguration.removeNeighbor(ip);
+      if (!_currentBgpVrfConfiguration.removeNeighbor(ip)) {
+        warn(ctx, String.format("Neighbor %s does not exist", ip));
+      }
     } else if (ctx.prefix != null) {
       Prefix prefix = toPrefix(ctx.prefix);
-      _currentBgpVrfConfiguration.removePassiveNeighbor(prefix);
+      if (!_currentBgpVrfConfiguration.removePassiveNeighbor(prefix)) {
+        warn(ctx, String.format("Neighbor %s does not exist", prefix));
+      }
     } else if (ctx.ip6 != null) {
       Ip6 ip = toIp6(ctx.ip6);
-      _currentBgpVrfConfiguration.removeNeighbor(ip);
+      if (!_currentBgpVrfConfiguration.removeNeighbor(ip)) {
+        warn(ctx, String.format("Neighbor %s does not exist", ip));
+      }
     } else {
       assert ctx.prefix6 != null;
       Prefix6 prefix = toPrefix6(ctx.prefix6);
-      _currentBgpVrfConfiguration.removePassiveNeighbor(prefix);
+      if (!_currentBgpVrfConfiguration.removePassiveNeighbor(prefix)) {
+        warn(ctx, String.format("Neighbor %s does not exist", prefix));
+      }
     }
   }
 

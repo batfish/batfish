@@ -83,20 +83,20 @@ public final class BgpVrfConfiguration implements Serializable {
     return _passiveNeighbors6.computeIfAbsent(prefix, p -> new BgpVrfNeighborConfiguration());
   }
 
-  public void removeNeighbor(Ip address) {
-    _neighbors.remove(address);
+  public boolean removeNeighbor(Ip address) {
+    return _neighbors.remove(address) != null;
   }
 
-  public void removeNeighbor(Ip6 address) {
-    _neighbors6.remove(address);
+  public boolean removeNeighbor(Ip6 address) {
+    return _neighbors6.remove(address) != null;
   }
 
-  public void removePassiveNeighbor(Prefix prefix) {
-    _passiveNeighbors.remove(prefix);
+  public boolean removePassiveNeighbor(Prefix prefix) {
+    return _passiveNeighbors.remove(prefix) != null;
   }
 
-  public void removePassiveNeighbor(Prefix6 prefix) {
-    _passiveNeighbors6.remove(prefix);
+  public boolean removePassiveNeighbor(Prefix6 prefix) {
+    return _passiveNeighbors6.remove(prefix) != null;
   }
 
   public Map<Ip, BgpVrfNeighborConfiguration> getNeighbors() {

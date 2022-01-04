@@ -7,6 +7,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
 import static org.batfish.common.matchers.WarningMatchers.hasText;
 import static org.batfish.common.matchers.WarningsMatchers.hasParseWarning;
+import static org.batfish.common.matchers.WarningsMatchers.hasParseWarnings;
 import static org.batfish.common.matchers.WarningsMatchers.hasRedFlags;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.BgpRoute.DEFAULT_LOCAL_PREFERENCE;
@@ -763,7 +764,7 @@ public final class CiscoNxosGrammarTest {
      For each neighbor type (IPv4 active/passive, IPv6 active/passive), both within and outside of
      VRF context, tests that:
      - `no neighbor [IP or prefix]` removes the specified neighbor if it exists
-     - `no neighbor [IP or prefix]` has no effect if the specified neighbor does not exist
+     - `no neighbor [IP or prefix]` results in a warning if the specified neighbor does not exist
      - `no neighbor [IP or prefix] remote-as X` removes the specified neighbor, regardless of
         whether the specified remote AS matches the neighbor's remote AS
      For each neighbor type in each context, one neighbor is left unremoved to sanity check that
@@ -774,10 +775,29 @@ public final class CiscoNxosGrammarTest {
     CiscoNxosConfiguration vc =
         (CiscoNxosConfiguration)
             batfish.loadVendorConfigurations(batfish.getSnapshot()).get(hostname);
-    // Configuration should not have generated any parse warnings
+
+    // Check warnings for each undefined neighbor we attempted to remove
+    Warnings warnings =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
     assertThat(
-        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot()).getWarnings(),
-        anEmptyMap());
+        warnings,
+        hasParseWarnings(
+            containsInAnyOrder(
+                // default vrf
+                hasComment("Neighbor 5.5.5.5 does not exist"),
+                hasComment("Neighbor 5.5.5.0/24 does not exist"),
+                hasComment(String.format("Neighbor %s does not exist", Ip6.parse("5:5::5:5"))),
+                hasComment(String.format("Neighbor %s does not exist", Prefix6.parse("5:5::/112"))),
+                // vrf1
+                hasComment("Neighbor 6.6.6.6 does not exist"),
+                hasComment("Neighbor 6.6.6.0/24 does not exist"),
+                hasComment(String.format("Neighbor %s does not exist", Ip6.parse("6:6::6:6"))),
+                hasComment(
+                    String.format("Neighbor %s does not exist", Prefix6.parse("6:6::/112"))))));
 
     BgpGlobalConfiguration bgpGlobal = vc.getBgpGlobalConfiguration();
     assertThat(bgpGlobal, notNullValue());
