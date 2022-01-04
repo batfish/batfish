@@ -27,6 +27,9 @@ vlan 6
   name Name-Of-Vlan-6
   vn-segment 50001
 !
+vlan 7
+  name Name-Of-Vlan-7
+  vn-segment 60001
 interface loopback0
   ip address 1.1.1.1/32
 !
@@ -92,4 +95,7 @@ interface Vlan5
   no shutdown
 !
 interface Vlan6
+!
+interface Vlan7
+  no shutdown
 !
