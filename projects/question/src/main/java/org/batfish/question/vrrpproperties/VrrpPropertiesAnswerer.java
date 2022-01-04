@@ -3,6 +3,7 @@ package org.batfish.question.vrrpproperties;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multiset;
@@ -13,6 +14,7 @@ import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -23,6 +25,7 @@ import org.batfish.datamodel.table.Row.RowBuilder;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.specifier.InterfaceSpecifier;
+import org.batfish.specifier.IpSpaceSpecifier;
 import org.batfish.specifier.NodeSpecifier;
 import org.batfish.specifier.SpecifierContext;
 
@@ -35,6 +38,7 @@ public final class VrrpPropertiesAnswerer extends Answerer {
   public static final String COL_SOURCE_ADDRESS = "Source_Address";
   public static final String COL_PRIORITY = "Priority";
   public static final String COL_PREEMPT = "Preempt";
+  public static final String COL_ACTIVE = "Active";
 
   /** Creates {@link ColumnMetadata}s for the answer */
   public static List<ColumnMetadata> createColumnMetadata() {
@@ -44,9 +48,20 @@ public final class VrrpPropertiesAnswerer extends Answerer {
         .add(
             new ColumnMetadata(
                 COL_VIRTUAL_ADDRESSES, Schema.set(Schema.IP), "Virtual Addresses", false, true))
-        .add(new ColumnMetadata(COL_SOURCE_ADDRESS, Schema.STRING, "Source Address", false, true))
-        .add(new ColumnMetadata(COL_PRIORITY, Schema.INTEGER, "Priority", false, true))
-        .add(new ColumnMetadata(COL_PREEMPT, Schema.BOOLEAN, "Preempt", false, true))
+        .add(
+            new ColumnMetadata(
+                COL_SOURCE_ADDRESS,
+                Schema.STRING,
+                "Source Address used for VRRP messages",
+                false,
+                true))
+        .add(new ColumnMetadata(COL_PRIORITY, Schema.INTEGER, "VRRP router priority", false, true))
+        .add(
+            new ColumnMetadata(
+                COL_PREEMPT, Schema.BOOLEAN, "Whether preemption is allowed", false, true))
+        .add(
+            new ColumnMetadata(
+                COL_ACTIVE, Schema.BOOLEAN, "Whether the interface is active", false, true))
         .build();
   }
 
@@ -77,6 +92,7 @@ public final class VrrpPropertiesAnswerer extends Answerer {
             _batfish.specifierContext(snapshot),
             question.getNodesSpecifier(),
             question.getInterfacesSpecifier(),
+            question.getVirtualAddressSpecifier(),
             question.getExcludeShutInterfaces(),
             tableMetadata.toColumnMap());
     answer.postProcessAnswer(question, propertyRows);
@@ -94,10 +110,12 @@ public final class VrrpPropertiesAnswerer extends Answerer {
       SpecifierContext ctxt,
       NodeSpecifier nodeSpecifier,
       InterfaceSpecifier interfaceSpecifier,
+      IpSpaceSpecifier virtualAddressSpecifier,
       boolean excludeShutInterfaces,
       Map<String, ColumnMetadata> columns) {
     Multiset<Row> rows = HashMultiset.create();
     Map<String, Configuration> configs = ctxt.getConfigs();
+    IpSpace virtualAddressSpace = virtualAddressSpecifier.resolve(ctxt);
 
     for (String nodeName : nodeSpecifier.resolve(ctxt)) {
       for (NodeInterfacePair ifaceId :
@@ -112,21 +130,28 @@ public final class VrrpPropertiesAnswerer extends Answerer {
         }
         RowBuilder row =
             Row.builder(columns)
-                .put(COL_INTERFACE, NodeInterfacePair.of(nodeName, iface.getName()));
-        iface.getVrrpGroups().forEach((id, group) -> populateRow(row, id, group));
-        rows.add(row.build());
+                .put(COL_INTERFACE, NodeInterfacePair.of(nodeName, iface.getName()))
+                .put(COL_ACTIVE, iface.getActive());
+        iface.getVrrpGroups().entrySet().stream()
+            .filter(
+                e ->
+                    e.getValue().getVirtualAddresses().stream()
+                        .anyMatch(
+                            address -> virtualAddressSpace.containsIp(address, ImmutableMap.of())))
+            .forEach(e -> rows.add(populateRow(row, e.getKey(), e.getValue()).build()));
       }
     }
     return rows;
   }
 
   @VisibleForTesting
-  static void populateRow(RowBuilder row, Integer id, VrrpGroup group) {
+  static RowBuilder populateRow(RowBuilder row, Integer id, VrrpGroup group) {
     row.put(COL_GROUP_ID, id)
         .put(COL_VIRTUAL_ADDRESSES, ImmutableSortedSet.copyOf(group.getVirtualAddresses()))
         .put(COL_SOURCE_ADDRESS, group.getSourceAddress())
         .put(COL_PRIORITY, group.getPriority())
         .put(COL_PREEMPT, group.getPreempt());
+    return row;
   }
 
   public VrrpPropertiesAnswerer(VrrpPropertiesQuestion question, IBatfish batfish) {
