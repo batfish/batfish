@@ -17,6 +17,6 @@ public class A10VirtualServerConfigurationPlugin extends QuestionPlugin {
 
   @Override
   protected Question createQuestion() {
-    return new A10VirtualServerConfigurationQuestion(null);
+    return new A10VirtualServerConfigurationQuestion(null, null);
   }
 }
