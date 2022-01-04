@@ -37,14 +37,17 @@ public final class AddOutgoingOriginalFlowFiltersConstraint implements Transitio
   @Override
   public BDD transitForward(BDD bdd) {
     // Ensure the BDD is unconstrained for outgoing interface
-    assert bdd.equals(_mgr.erase(bdd));
-    return bdd.and(_mgr.outgoingOriginalFlowFiltersConstraint());
+    assert !_mgr.isConstrained(bdd);
+    return _mgr.outgoingOriginalFlowFiltersConstraint().andEq(bdd);
   }
 
   @Override
   public BDD transitBackward(BDD bdd) {
     // No assertion that the BDD is constrained, because there are cases where it legitimately
     // shouldn't be (for example if the final state is NO_ROUTE in this node).
-    return _mgr.erase(bdd.and(_mgr.outgoingOriginalFlowFiltersConstraint()));
+    BDD onlyWithConstraint = _mgr.outgoingOriginalFlowFiltersConstraint().andEq(bdd);
+    BDD ret = _mgr.erase(onlyWithConstraint);
+    onlyWithConstraint.free();
+    return ret;
   }
 }
