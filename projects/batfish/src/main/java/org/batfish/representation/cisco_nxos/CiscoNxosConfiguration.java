@@ -1489,9 +1489,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                       && iface.getVrfName().equals(vsTenantVrfForL3Vni.getName()))) {
         return;
       }
-      // Ensure IRB stays up even if it has no associated switchports
-      //
-      _c.setNormalVlanRange(_c.getNormalVlanRange().difference(IntegerSpace.of(vlan)));
       Layer3Vni vniSettings =
           Layer3Vni.builder()
               .setSourceAddress(
@@ -3862,6 +3859,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     convertStaticRoutes();
     computeImplicitOspfAreas();
     convertOspfProcesses();
+    convertVlans();
     convertNves();
     convertBgp();
     convertEigrp();
@@ -3869,6 +3867,17 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
     markStructures();
     return _c;
+  }
+
+  private void convertVlans() {
+    _vlans.forEach(
+        (vlanId, vlan) -> {
+          if (vlan.getVni() != null) {
+            // Ensure IRB stays up even if it has no associated switchports
+            //
+            _c.setNormalVlanRange(_c.getNormalVlanRange().difference(IntegerSpace.of(vlanId)));
+          }
+        });
   }
 
   private void makeLeakConfigs() {
