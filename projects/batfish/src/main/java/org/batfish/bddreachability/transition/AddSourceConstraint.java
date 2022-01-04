@@ -45,7 +45,10 @@ public final class AddSourceConstraint implements Transition {
 
   @Override
   public BDD transitBackward(BDD bdd) {
-    return _mgr.existsSource(bdd.and(_sourceBdd));
+    BDD onlyWithConstraint = bdd.and(_sourceBdd);
+    BDD ret = _mgr.existsSource(onlyWithConstraint);
+    onlyWithConstraint.free();
+    return ret;
   }
 
   @Override
