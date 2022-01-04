@@ -69,6 +69,7 @@ rb_proc_vrf_common
   | rb_log_neighbor_changes
   | rb_maxas_limit
   | rb_neighbor
+  | rb_proc_vrf_common_no
   | rb_reconnect_interval
   | rb_router_id
   | rb_suppress_fib_pending
@@ -523,6 +524,32 @@ rb_neighbor
       | ROUTE_MAP mapname = route_map_name
     )
   )? NEWLINE rb_n_inner*
+;
+
+rb_proc_vrf_common_no
+:
+  NO
+  (
+    rb_no_neighbor
+  )
+;
+
+rb_no_neighbor
+:
+ NEIGHBOR
+  (
+    ip = ip_address
+    | prefix = ip_prefix
+    | ip6 = ipv6_address
+    | prefix6 = ipv6_prefix
+  )
+  (
+    REMOTE_AS
+    (
+      asn = bgp_asn?
+      | ROUTE_MAP mapname = route_map_name
+    )
+  )? NEWLINE
 ;
 
 // We might get to this level of the hierarchy in four ways:

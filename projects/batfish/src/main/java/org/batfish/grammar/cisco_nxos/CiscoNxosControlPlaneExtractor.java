@@ -347,6 +347,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ipv6_address_dhcpContext
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_mtuContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_no_autostateContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_no_descriptionContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_no_vrf_memberContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_private_vlanContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_shutdownContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_speed_numberContext;
@@ -572,6 +573,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_n_shutdownContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_n_update_sourceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_neighborContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_no_enforce_first_asContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_no_neighborContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_router_idContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_template_peerContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rb_template_peer_policyContext;
@@ -4038,6 +4040,34 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
+  public void exitRb_no_neighbor(Rb_no_neighborContext ctx) {
+    // Note that although ctx may specify remote-as, it doesn't affect the outcome, even if the
+    // specified remote AS does not match the removed neighbor's remote AS.
+    if (ctx.ip != null) {
+      Ip ip = toIp(ctx.ip);
+      if (!_currentBgpVrfConfiguration.removeNeighbor(ip)) {
+        warn(ctx, String.format("Neighbor %s does not exist", ip));
+      }
+    } else if (ctx.prefix != null) {
+      Prefix prefix = toPrefix(ctx.prefix);
+      if (!_currentBgpVrfConfiguration.removePassiveNeighbor(prefix)) {
+        warn(ctx, String.format("Neighbor %s does not exist", prefix));
+      }
+    } else if (ctx.ip6 != null) {
+      Ip6 ip = toIp6(ctx.ip6);
+      if (!_currentBgpVrfConfiguration.removeNeighbor(ip)) {
+        warn(ctx, String.format("Neighbor %s does not exist", ip));
+      }
+    } else {
+      assert ctx.prefix6 != null;
+      Prefix6 prefix = toPrefix6(ctx.prefix6);
+      if (!_currentBgpVrfConfiguration.removePassiveNeighbor(prefix)) {
+        warn(ctx, String.format("Neighbor %s does not exist", prefix));
+      }
+    }
+  }
+
+  @Override
   public void enterRb_n_address_family(Rb_n_address_familyContext ctx) {
     String familyStr = ctx.first.getText() + '-' + ctx.second.getText();
     _currentBgpVrfNeighborAddressFamily =
@@ -5734,7 +5764,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
-  public void exitI_no_vrf_member(CiscoNxosParser.I_no_vrf_memberContext ctx) {
+  public void exitI_no_vrf_member(I_no_vrf_memberContext ctx) {
     String name = null;
     if (ctx.name != null) {
       Optional<String> nameOrErr = toString(ctx, ctx.name);

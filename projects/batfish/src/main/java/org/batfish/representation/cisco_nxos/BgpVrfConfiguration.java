@@ -1,5 +1,6 @@
 package org.batfish.representation.cisco_nxos;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
@@ -82,12 +83,38 @@ public final class BgpVrfConfiguration implements Serializable {
     return _passiveNeighbors6.computeIfAbsent(prefix, p -> new BgpVrfNeighborConfiguration());
   }
 
+  public boolean removeNeighbor(Ip address) {
+    return _neighbors.remove(address) != null;
+  }
+
+  public boolean removeNeighbor(Ip6 address) {
+    return _neighbors6.remove(address) != null;
+  }
+
+  public boolean removePassiveNeighbor(Prefix prefix) {
+    return _passiveNeighbors.remove(prefix) != null;
+  }
+
+  public boolean removePassiveNeighbor(Prefix6 prefix) {
+    return _passiveNeighbors6.remove(prefix) != null;
+  }
+
   public Map<Ip, BgpVrfNeighborConfiguration> getNeighbors() {
     return Collections.unmodifiableMap(_neighbors);
   }
 
+  @VisibleForTesting // IPv6 neighbors not supported past extraction
+  public Map<Ip6, BgpVrfNeighborConfiguration> getNeighbors6() {
+    return _neighbors6;
+  }
+
   public Map<Prefix, BgpVrfNeighborConfiguration> getPassiveNeighbors() {
     return Collections.unmodifiableMap(_passiveNeighbors);
+  }
+
+  @VisibleForTesting // IPv6 neighbors not supported past extraction
+  public Map<Prefix6, BgpVrfNeighborConfiguration> getPassiveNeighbors6() {
+    return _passiveNeighbors6;
   }
 
   public boolean getBestpathAlwaysCompareMed() {
