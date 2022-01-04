@@ -28,14 +28,14 @@ public final class RemoveOutgoingInterfaceConstraints implements Transition {
   @Override
   public BDD transitForward(BDD bdd) {
     // Ensure BDD is correctly constrained, then clear outgoingOriginalFlowFilterConstraints
-    assert !_mgr.erase(bdd).equals(bdd);
+    assert _mgr.isConstrained(bdd);
     return _mgr.erase(bdd);
   }
 
   @Override
   public BDD transitBackward(BDD bdd) {
-    // Ensure BDD's egress interface is not already constrained
-    assert bdd.equals(_mgr.erase(bdd));
+    // No-op in reverse, but ensure BDD's egress interface is not already constrained
+    assert !_mgr.isConstrained(bdd);
     return bdd.id();
   }
 }

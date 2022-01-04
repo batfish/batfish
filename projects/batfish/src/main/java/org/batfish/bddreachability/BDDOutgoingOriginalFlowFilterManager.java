@@ -261,6 +261,17 @@ public final class BDDOutgoingOriginalFlowFilterManager {
     return ifaceBdd.imp(permittedByFilter.biimp(_permitVar));
   }
 
+  /**
+   * Returns {@code true} if the given {@link BDD} is constrained by this {@link
+   * BDDOutgoingOriginalFlowFilterManager}.
+   */
+  public boolean isConstrained(BDD bdd) {
+    BDD erased = erase(bdd);
+    boolean ret = !erased.equals(bdd);
+    erased.free();
+    return ret;
+  }
+
   /** Existentially quantify the source variable. */
   public BDD erase(BDD bdd) {
     return _finiteDomain.existsValue(bdd).existEq(_permitVar);
