@@ -109,7 +109,10 @@ public final class LastHopOutgoingInterfaceManager {
 
   /** Return whether the input {@link BDD} has a constraint on the last hop variable. */
   public boolean hasLastHopConstraint(BDD bdd) {
-    return !existsLastHop(bdd).equals(bdd);
+    BDD withoutConstraint = existsLastHop(bdd);
+    boolean different = !withoutConstraint.equals(bdd);
+    withoutConstraint.free();
+    return different;
   }
 
   public BDD getNoLastHopOutgoingInterfaceBdd(String node, String iface) {
