@@ -34,7 +34,7 @@ public final class Or implements Transition {
   @Override
   public BDD transitForward(BDD bdd) {
     return bdd.getFactory()
-        .orAll(
+        .orAllAndFree(
             _transitions.stream()
                 .map(transition -> transition.transitForward(bdd))
                 .toArray(BDD[]::new));
@@ -43,7 +43,7 @@ public final class Or implements Transition {
   @Override
   public BDD transitBackward(BDD bdd) {
     return bdd.getFactory()
-        .orAll(
+        .orAllAndFree(
             _transitions.stream()
                 .map(transition -> transition.transitBackward(bdd))
                 .toArray(BDD[]::new));

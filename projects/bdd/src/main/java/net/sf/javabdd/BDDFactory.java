@@ -108,6 +108,12 @@ public abstract class BDDFactory {
     return JFactory.init(nodenum, cachesize);
   }
 
+  /**
+   * Returns the total number of {@link BDD BDDs} allocated from this {@link BDDFactory factory}
+   * that were never {@link BDD#free() freed}.
+   */
+  public abstract long numOutstandingBDDs();
+
   /** Logical 'and'. */
   public static final BDDOp and = new BDDOp(0, "and");
 
@@ -331,13 +337,12 @@ public abstract class BDDFactory {
   public abstract int setCacheRatio(int x);
 
   /**
-   * Returns the logical 'and' of zero or more BDDs. None of the input BDDs are consumed or mutated.
-   * More efficient than using {@link BDD::and} or {@link BDD::andWith} iteratively, especially for
-   * large numbers of operands, because it creates fewer intermediate BDDs.
-   *
-   * @param bddOperands the BDDs to 'and' together
+   * @see #andAll(Iterable) for the description of this function
+   * @see #andAllAndFree(Iterable) for a variant that also {@link BDD#free() frees} the operands.
    */
-  public abstract BDD andAll(BDD... bddOperands);
+  public final BDD andAll(BDD... bddOperands) {
+    return andAll(Arrays.asList(bddOperands), false);
+  }
 
   /**
    * Returns the logical 'and' of zero or more BDDs. None of the input BDDs are consumed or mutated.
@@ -346,7 +351,35 @@ public abstract class BDDFactory {
    *
    * @param bddOperands the BDDs to 'and' together
    */
-  public abstract BDD andAll(Collection<BDD> bddOperands);
+  public final BDD andAll(Iterable<BDD> bddOperands) {
+    return andAll(bddOperands, false);
+  }
+
+  /** @see #andAllAndFree(Iterable) */
+  public final BDD andAllAndFree(BDD... bddOperands) {
+    return andAll(Arrays.asList(bddOperands), true);
+  }
+
+  /**
+   * Returns the logical 'and' of zero or more BDDs. None of the input BDDs are consumed or mutated.
+   * More efficient than using {@link BDD::and} or {@link BDD::andWith} iteratively, especially for
+   * large numbers of operands, because it creates fewer intermediate BDDs.
+   *
+   * <p>The input BDDs are {@link BDD#free() freed} after the result is computed.
+   *
+   * @param bddOperands the BDDs to 'and' together
+   */
+  public final BDD andAllAndFree(Iterable<BDD> bddOperands) {
+    return andAll(bddOperands, true);
+  }
+
+  /** Implementation of {@link #andAll(Iterable)} and {@link #andAllAndFree(Iterable)}. */
+  protected abstract BDD andAll(Iterable<BDD> bdds, boolean free);
+
+  /** @see #orAll(Iterable) */
+  public final BDD orAll(BDD... bddOperands) {
+    return orAll(Arrays.asList(bddOperands), false);
+  }
 
   /**
    * Returns the logical 'or' of zero or more BDDs. None of the input BDDs are consumed or mutated.
@@ -355,16 +388,30 @@ public abstract class BDDFactory {
    *
    * @param bddOperands the BDDs to 'or' together
    */
-  public abstract BDD orAll(BDD... bddOperands);
+  public final BDD orAll(Iterable<BDD> bddOperands) {
+    return orAll(bddOperands, false);
+  }
+
+  /** @see #orAllAndFree(Iterable) */
+  public final BDD orAllAndFree(BDD... bddOperands) {
+    return orAll(Arrays.asList(bddOperands), true);
+  }
 
   /**
    * Returns the logical 'or' of zero or more BDDs. None of the input BDDs are consumed or mutated.
    * More efficient than using {@link BDD::or} or {@link BDD::orWith} iteratively, especially for
    * large numbers of operands, because it creates fewer intermediate BDDs.
    *
+   * <p>The input BDDs are {@link BDD#free() freed} after the result is computed.
+   *
    * @param bddOperands the BDDs to 'or' together
    */
-  public abstract BDD orAll(Iterable<BDD> bddOperands);
+  public final BDD orAllAndFree(Iterable<BDD> bddOperands) {
+    return orAll(bddOperands, true);
+  }
+
+  /** Implementation of {@link #orAll(Iterable)} and {@link #orAllAndFree(Iterable)}. */
+  protected abstract BDD orAll(Iterable<BDD> bdds, boolean free);
 
   /**
    * Sets the node table size.
