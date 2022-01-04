@@ -6,7 +6,6 @@ import static org.batfish.common.bdd.IpAccessListToBdd.toBdds;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.HashMap;
@@ -14,7 +13,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
@@ -59,7 +58,7 @@ public final class BDDOutgoingOriginalFlowFilterManager {
   /**
    * BDD assignments for interfaces with {@link Interface#getOutgoingOriginalFlowFilter()
    * outgoingOriginalFlowFilters}. (Does not include entry for {@link
-   * #_activeButNoOriginalFlowFilterRepresentative}.
+   * #_activeButNoOriginalFlowFilterRepresentative}.)
    */
   private final Map<String, BDD> _interfaceBdds;
 
@@ -71,8 +70,7 @@ public final class BDDOutgoingOriginalFlowFilterManager {
 
   private final BDD _falseBdd;
   private final BDD _trueBdd;
-  private final Supplier<BDD> _outgoingOriginalFlowFiltersConstraint =
-      Suppliers.memoize(this::computeOutgoingOriginalFlowFiltersConstraint);
+  private final BDD _outgoingOriginalFlowFiltersConstraint;
 
   private BDDOutgoingOriginalFlowFilterManager(
       BDDFiniteDomain<String> finiteDomain,
@@ -92,6 +90,7 @@ public final class BDDOutgoingOriginalFlowFilterManager {
             : _finiteDomain.getValueBdds().entrySet().stream()
                 .filter(e -> !e.getKey().equals(_activeButNoOriginalFlowFilterRepresentative))
                 .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
+    _outgoingOriginalFlowFiltersConstraint = computeOutgoingOriginalFlowFiltersConstraint();
   }
 
   private static BDD allocatePermitVar(BDDPacket pkt) {
@@ -238,27 +237,31 @@ public final class BDDOutgoingOriginalFlowFilterManager {
    * org.batfish.bddreachability.transition.Transitions#addOutgoingOriginalFlowFiltersConstraint(BDDOutgoingOriginalFlowFilterManager)
    * addOutgoingOriginalFlowFiltersConstraint} to apply this constraint to edges; otherwise
    * backwards transition will not erase vars.
+   *
+   * <p>The returned {@link BDD} is owned by the caller (and may be freed).
    */
   public BDD outgoingOriginalFlowFiltersConstraint() {
-    // Callers may free the returned BDD.
-    return _outgoingOriginalFlowFiltersConstraint.get().id();
+    return _outgoingOriginalFlowFiltersConstraint.id();
   }
 
   private BDD computeOutgoingOriginalFlowFiltersConstraint() {
-    return getInterfaceBDDs().keySet().stream()
-        .map(this::constraintForIface)
-        .reduce(BDD::and)
-        .orElse(_trueBdd); // only resorts to this if finite domain is empty
+    return _falseBdd
+        .getFactory()
+        .andAllAndFree(
+            _interfaceBdds.keySet().stream()
+                .map(this::constraintForIface)
+                .collect(Collectors.toList()));
   }
 
+  // invariant: returned BDD should be freed by caller
   private BDD constraintForIface(String iface) {
-    BDD ifaceBdd = getInterfaceBDDs().get(iface);
-    if (ifaceBdd == null) {
-      // this interface doesn't have an outgoingOriginalFlowFilter; no constraint to add
-      return _trueBdd;
-    }
-    BDD permittedByFilter = _filterBdds.get(iface);
-    return ifaceBdd.imp(permittedByFilter.biimp(_permitVar));
+    BDD ifaceBdd = _interfaceBdds.get(iface);
+    assert ifaceBdd != null; // invariant of caller
+    BDD originalFlowsPermittedByIface = _filterBdds.get(iface);
+    BDD permittedIffPermittedByIface = _permitVar.biimp(originalFlowsPermittedByIface);
+    BDD ifaceConstraint = ifaceBdd.imp(permittedIffPermittedByIface);
+    permittedIffPermittedByIface.free(); // other BDDs are internal
+    return ifaceConstraint;
   }
 
   /**
