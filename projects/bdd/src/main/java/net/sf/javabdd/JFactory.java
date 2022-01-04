@@ -85,8 +85,17 @@ public final class JFactory extends BDDFactory {
     return f;
   }
 
+  private long madeBDDs;
+  private long freedBDDs;
+
+  @Override
+  public long numOutstandingBDDs() {
+    return madeBDDs - freedBDDs;
+  }
+
   /** Private helper function to create BDD objects. */
   private BDDImpl makeBDD(int id) {
+    madeBDDs++;
     return new BDDImpl(id);
   }
 
@@ -412,6 +421,7 @@ public final class JFactory extends BDDFactory {
     public void free() {
       bdd_delref(_index);
       _index = INVALID_BDD;
+      ++freedBDDs;
     }
   }
 
@@ -850,18 +860,21 @@ public final class JFactory extends BDDFactory {
   private static final int bddop_diffsat = 13;
 
   @Override
-  public BDD andAll(BDD... bddOperands) {
-    return andAll(Arrays.asList(bddOperands));
-  }
-
-  @Override
-  public BDD andAll(Collection<BDD> bddOperands) {
+  public BDD andAll(Iterable<BDD> bddOperands, boolean free) {
     int[] operands =
-        bddOperands.stream()
-            .mapToInt(bdd -> ((BDDImpl) bdd)._index)
+        StreamSupport.stream(bddOperands.spliterator(), false)
+            .mapToInt(
+                bdd -> {
+                  int index = ((BDDImpl) bdd)._index;
+                  if (free) {
+                    bdd.free();
+                  }
+                  return index;
+                })
             .filter(i -> i != BDDONE)
             .sorted()
             .distinct()
+            .peek(this::CHECK)
             .toArray();
     if (operands.length == 0) {
       return one();
@@ -888,19 +901,21 @@ public final class JFactory extends BDDFactory {
   }
 
   @Override
-  public BDD orAll(BDD... bddOperands) {
-    return orAll(Arrays.asList(bddOperands));
-  }
-
-  @Override
-  public BDD orAll(Iterable<BDD> bddOperands) {
+  protected BDD orAll(Iterable<BDD> bddOperands, boolean free) {
     int[] operands =
         StreamSupport.stream(bddOperands.spliterator(), false)
-            .mapToInt(bdd -> ((BDDImpl) bdd)._index)
-            .peek(this::CHECK)
+            .mapToInt(
+                bdd -> {
+                  int index = ((BDDImpl) bdd)._index;
+                  if (free) {
+                    bdd.free();
+                  }
+                  return index;
+                })
             .filter(i -> i != BDDZERO)
             .sorted()
             .distinct()
+            .peek(this::CHECK)
             .toArray();
     if (operands.length == 0) {
       return zero();
