@@ -4,6 +4,7 @@
     "excludeShutInterfaces": "${excludeShutInterfaces}",
     "interfaces": "${interfaces}",
     "nodes": "${nodes}",
+    "virtualAddresses": "${virtualAddresses}",
     "instance": {
         "description": "Returns configuration settings of VRRP groups.",
         "instanceName": "vrrpProperties",
@@ -11,6 +12,7 @@
         "orderedVariableNames": [
             "nodes",
             "interfaces",
+            "virtualAddresses",
             "excludeShutInterfaces"
         ],
         "tags": [
@@ -35,6 +37,12 @@
                 "type": "nodeSpec",
                 "optional": true,
                 "displayName": "Nodes"
+            },
+            "virtualAddresses": {
+                "description": "Include only groups with at least one virtual address matching this specifier",
+                "type": "ipSpaceSpec",
+                "optional": true,
+                "displayName": "Virtual Addresses"
             }
         }
     }
