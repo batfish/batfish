@@ -8388,19 +8388,30 @@ public final class CiscoNxosGrammarTest {
     String hostname = "nxos_no_static_route";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
-    assertThat(vc.getVrfs(), hasKeys(DEFAULT_VRF_NAME, MANAGEMENT_VRF_NAME));
-    assertThat(vc.getDefaultVrf().getStaticRoutes().asMap(), hasKeys(Prefix.strict("10.0.1.0/24")));
-
-    Collection<StaticRoute> routes =
-        vc.getDefaultVrf().getStaticRoutes().get(Prefix.strict("10.0.1.0/24"));
-    assertThat(
-        routes,
-        contains(
-            StaticRoute.builder()
-                .setPrefix(Prefix.parse("10.0.1.0/24"))
-                .setNextHopInterface("Ethernet1/1")
-                .setNextHopIp(Ip.parse("10.0.1.1"))
-                .build()));
+    assertThat(vc.getVrfs(), hasKeys(DEFAULT_VRF_NAME, MANAGEMENT_VRF_NAME, "vrf1"));
+    {
+      // Default VRF
+      Collection<StaticRoute> routes = vc.getDefaultVrf().getStaticRoutes().values();
+      assertThat(
+          routes,
+          contains(
+              StaticRoute.builder()
+                  .setPrefix(Prefix.parse("10.0.1.0/24"))
+                  .setNextHopInterface("Ethernet1/1")
+                  .setNextHopIp(Ip.parse("10.0.1.1"))
+                  .build()));
+    }
+    {
+      // vrf1
+      Collection<StaticRoute> routes = vc.getVrfs().get("vrf1").getStaticRoutes().values();
+      assertThat(
+          routes,
+          contains(
+              StaticRoute.builder()
+                  .setPrefix(Prefix.parse("11.0.1.0/24"))
+                  .setNextHopIp(Ip.parse("11.0.1.1"))
+                  .build()));
+    }
 
     assertThat(
         vc.getWarnings().getParseWarnings(),
