@@ -111,20 +111,6 @@ public class BDDPacket {
   public BDDPacket() {
     _factory = JFactory.init(JFACTORY_INITIAL_NODE_TABLE_SIZE, JFACTORY_INITIAL_NODE_CACHE_SIZE);
     _factory.setCacheRatio(JFACTORY_CACHE_RATIO);
-    // Do not impose a maximum node table increase
-    _factory.setMaxIncrease(0);
-    // Disables printing
-    /*
-    try {
-      CallbackHandler handler = new CallbackHandler();
-      Method m = handler.getClass().getDeclaredMethod("handle", (Class<?>[]) null);
-      factory.registerGCCallback(handler, m);
-      factory.registerResizeCallback(handler, m);
-      factory.registerReorderCallback(handler, m);
-    } catch (NoSuchMethodException e) {
-      e.printStackTrace();
-    }
-    */
     // Make sure we have the right number of variables
     int numNeeded =
         IP_LENGTH * 2
