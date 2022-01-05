@@ -286,16 +286,6 @@ public abstract class BDDFactory {
   /** ** CACHE/TABLE PARAMETERS *** */
 
   /**
-   * Set the maximum available number of BDD nodes.
-   *
-   * <p>Compare to bdd_setmaxnodenum.
-   *
-   * @param size maximum number of nodes
-   * @return old value
-   */
-  public abstract int setMaxNodeNum(int size);
-
-  /**
    * Set minimum percentage of nodes to be reclaimed after a garbage collection. If this percentage
    * is not reclaimed, the node table will be grown. The range of x is 0..1. The default is .20.
    *
@@ -307,18 +297,7 @@ public abstract class BDDFactory {
   public abstract double setMinFreeNodes(double x);
 
   /**
-   * Set maximum number of nodes by which to increase node table after a garbage collection.
-   *
-   * <p>Compare to bdd_setmaxincrease.
-   *
-   * @param x maximum number of nodes by which to increase node table
-   * @return old value
-   */
-  public abstract int setMaxIncrease(int x);
-
-  /**
-   * Set factor by which to increase node table after a garbage collection. The amount of growth is
-   * still limited by <tt>setMaxIncrease()</tt>.
+   * Set factor by which to increase node table after a garbage collection.
    *
    * @param x factor by which to increase node table after GC
    * @return old value
