@@ -28,6 +28,7 @@ public final class StaticRoute implements Serializable {
         @Nullable String nextHopInterface,
         @Nullable Ip nextHopIp,
         @Nullable String nextHopVrf) {
+      checkNextHopFields(discard, nextHopInterface, nextHopIp, nextHopVrf);
       _discard = discard;
       _nextHopInterface = nextHopInterface;
       _nextHopIp = nextHopIp;
@@ -84,12 +85,7 @@ public final class StaticRoute implements Serializable {
     }
 
     public @Nonnull StaticRoute build() {
-      checkArgument(
-          _discard || _nextHopInterface != null || _nextHopIp != null,
-          "Must specify either discard or next-hop options");
-      checkArgument(
-          !_discard || (_nextHopInterface == null && _nextHopIp == null && _nextHopVrf == null),
-          "Discard static route mutually exclusive with next-hop options");
+      checkNextHopFields(_discard, _nextHopInterface, _nextHopIp, _nextHopVrf);
       checkArgument(
           STATIC_ROUTE_PREFERENCE_RANGE.contains(_preference),
           "Invalid preference %s outside of %s",
@@ -155,6 +151,24 @@ public final class StaticRoute implements Serializable {
       _track = track;
       return this;
     }
+  }
+
+  /**
+   * Checks that the given set of next hop properties are compatible.
+   *
+   * @throws IllegalArgumentException if next hop properties are incompatible
+   */
+  private static void checkNextHopFields(
+      boolean discard,
+      @Nullable String nextHopInterface,
+      @Nullable Ip nextHopIp,
+      @Nullable String nextHopVrf) {
+    checkArgument(
+        discard || nextHopInterface != null || nextHopIp != null,
+        "Must specify either discard or next-hop options");
+    checkArgument(
+        !discard || (nextHopInterface == null && nextHopIp == null && nextHopVrf == null),
+        "Discard static route mutually exclusive with next-hop options");
   }
 
   public static final IntegerSpace STATIC_ROUTE_PREFERENCE_RANGE =

@@ -20,4 +20,18 @@ public class StaticRouteTest {
         .addEqualityGroup(builder.setTrack(3).build())
         .testEquals();
   }
+
+  @Test
+  public void testEqualsStaticRouteKey() {
+    Prefix prefix = Prefix.strict("1.1.1.0/24");
+    Ip nhip = Ip.parse("2.2.2.2");
+    new EqualsTester()
+        .addEqualityGroup(
+            new StaticRoute.StaticRouteKey(prefix, true, null, null, null),
+            new StaticRoute.StaticRouteKey(prefix, true, null, null, null))
+        .addEqualityGroup(new StaticRoute.StaticRouteKey(prefix, false, "iface", null, null))
+        .addEqualityGroup(new StaticRoute.StaticRouteKey(prefix, false, "iface", nhip, null))
+        .addEqualityGroup(new StaticRoute.StaticRouteKey(prefix, false, "iface", nhip, "vrf"))
+        .testEquals();
+  }
 }
