@@ -40,6 +40,8 @@ java_library(
         "//projects/batfish-common-protocol:common",
         "//projects/coordinator",
         "@maven//:com_google_guava_guava",
+                        "@maven//:commons_cli_commons_cli",
+
         "@maven//:io_jaegertracing_jaeger_core",
         "@maven//:io_opentracing_opentracing_util",
     ],

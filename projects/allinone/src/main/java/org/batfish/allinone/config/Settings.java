@@ -2,6 +2,7 @@ package org.batfish.allinone.config;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
+import org.apache.commons.cli.Options;
 import org.batfish.common.BaseSettings;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -48,11 +49,21 @@ public class Settings extends BaseSettings {
   private boolean _tracingEnable;
 
   public Settings(String[] args) {
+    this(args, new Options());
+  }
+
+  /**
+   * @param args the CLI arguments.
+   * @param options {@link Options} configuration to use (useful when callers have additional
+   *     options).
+   */
+  public Settings(String[] args, Options options) {
     super(
         getConfig(
             BfConsts.PROP_ALLINONE_PROPERTIES_PATH,
             BfConsts.ABSPATH_CONFIG_FILE_NAME_ALLINONE,
-            ConfigurationLocator.class));
+            ConfigurationLocator.class),
+        options);
 
     initConfigDefaults();
 
