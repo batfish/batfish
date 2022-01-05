@@ -203,7 +203,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import com.google.common.collect.Table;
 import com.google.common.primitives.Ints;
-import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -5952,58 +5951,68 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   /**
-   * Converts {@link Static_route_definitionContext} to a {@link StaticRoute} if possible. Returns
-   * {@link Optional#empty()} if the static route isn't valid.
+   * Converts {@link Static_route_definitionContext} to a {@link StaticRoute.StaticRouteKey} if
+   * possible. Returns {@link Optional#empty()} if a key property of the static route isn't valid.
    */
-  private Optional<StaticRoute> toStaticRoute(Static_route_definitionContext ctx) {
+  private Optional<StaticRoute.StaticRouteKey> toStaticRouteKey(
+      Static_route_definitionContext ctx) {
     int line = ctx.getStart().getLine();
-    StaticRoute.Builder builder = StaticRoute.builder().setPrefix(toPrefix(ctx.network));
-    if (ctx.name != null) {
-      String name = toString(ctx, ctx.name);
-      if (name == null) {
-        return Optional.empty();
-      }
-      builder.setName(name);
-    }
+    boolean discard = ctx.null0 != null;
+    String nhint = null;
     if (ctx.nhint != null) {
       // TODO: if ctx.nhip is null and this version of NX-OS does not allow next-hop-int-only static
       // route, do something smart
-      String nhint = _c.canonicalizeInterfaceName(ctx.nhint.getText());
-      builder.setNextHopInterface(nhint);
+      nhint = _c.canonicalizeInterfaceName(ctx.nhint.getText());
       _c.referenceStructure(INTERFACE, nhint, IP_ROUTE_NEXT_HOP_INTERFACE, line);
     }
-    if (ctx.nhip != null) {
-      builder.setNextHopIp(toIp(ctx.nhip));
-    }
+    Ip nhip = ctx.nhip == null ? null : toIp(ctx.nhip);
+    String nhvrf = null;
     if (ctx.nhvrf != null) {
       Optional<String> vrfOrErr = toString(ctx, ctx.nhvrf);
       if (!vrfOrErr.isPresent()) {
         return Optional.empty();
       }
-      String vrf = vrfOrErr.get();
-      _c.referenceStructure(VRF, vrf, IP_ROUTE_NEXT_HOP_VRF, line);
-      builder.setNextHopVrf(vrf);
+      nhvrf = vrfOrErr.get();
+      _c.referenceStructure(VRF, nhvrf, IP_ROUTE_NEXT_HOP_VRF, line);
     }
-    if (ctx.null0 != null) {
-      builder.setDiscard(true);
+    Prefix prefix = toPrefix(ctx.network);
+    return Optional.of(new StaticRoute.StaticRouteKey(prefix, discard, nhint, nhip, nhvrf));
+  }
+
+  /**
+   * Applies non-key properties (preference, name, tag, and track) to the given static route based
+   * on the given static route definition. If any of these properties has an invalid definition,
+   * returns {@code false} without modifying {@code route}.
+   *
+   * @return {code true} if all non-key properties in the static route definition were valid.
+   */
+  private boolean setNonKeyAttributesOfStaticRouteIfValid(
+      StaticRoute route, Static_route_definitionContext ctx) {
+    // Collect properties. Don't modify route until we know all properties to be set are valid.
+    String name = null;
+    Integer pref = null;
+    Long tag = ctx.tag != null ? toLong(ctx.tag) : null;
+    Integer trackNumber = null;
+    if (ctx.name != null) {
+      name = toString(ctx, ctx.name);
+      if (name == null) {
+        return false;
+      }
     }
     if (ctx.pref != null) {
-      Optional<Integer> pref = toInteger(ctx, ctx.pref);
-      if (!pref.isPresent()) {
-        return Optional.empty();
+      Optional<Integer> prefOptional = toInteger(ctx, ctx.pref);
+      if (!prefOptional.isPresent()) {
+        return false;
       }
-      builder.setPreference(pref.get());
-    }
-    if (ctx.tag != null) {
-      builder.setTag(toLong(ctx.tag));
+      pref = prefOptional.get();
     }
     CiscoNxosParser.Ip_route_network_trackContext track_ctx = ctx.ip_route_network_track();
     if (track_ctx != null) {
-      Optional<Integer> track = toInteger(track_ctx, track_ctx.track);
-      if (!track.isPresent()) {
-        return Optional.empty();
+      Optional<Integer> trackOptional = toInteger(track_ctx, track_ctx.track);
+      if (!trackOptional.isPresent()) {
+        return false;
       }
-      Integer trackNumber = track.get();
+      trackNumber = trackOptional.get();
       if (!_c.getTracks().containsKey(trackNumber)) {
         warn(
             ctx,
@@ -6014,7 +6023,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
             trackNumber.toString(),
             CiscoNxosStructureUsage.IP_ROUTE_TRACK,
             track_ctx.start.getLine());
-        return Optional.empty();
+        return false;
       }
       _c.referenceStructure(
           CiscoNxosStructureType.TRACK,
@@ -6022,34 +6031,62 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
           CiscoNxosStructureUsage.IP_ROUTE_TRACK,
           track_ctx.start.getLine());
 
-      builder.setTrack(trackNumber);
       // TODO: support track object number
       todo(track_ctx);
     }
-    return Optional.of(builder.build());
+    // All properties were valid. Update route and return true.
+    Optional.ofNullable(name).ifPresent(route::setName);
+    Optional.ofNullable(pref).ifPresent(route::setPreference);
+    Optional.ofNullable(tag).ifPresent(route::setTag);
+    Optional.ofNullable(trackNumber).ifPresent(route::setTrack);
+    return true;
   }
 
   @Override
   public void exitIp_route_network(Ip_route_networkContext ctx) {
-    toStaticRoute(ctx.static_route_definition())
-        .ifPresent(sr -> _currentVrf.getStaticRoutes().put(sr.getPrefix(), sr));
+    Optional<StaticRoute.StaticRouteKey> srkOptional =
+        toStaticRouteKey(ctx.static_route_definition());
+    if (!srkOptional.isPresent()) {
+      // Definition is invalid
+      return;
+    }
+    StaticRoute.StaticRouteKey routeKey = srkOptional.get();
+
+    StaticRoute existingRoute = _currentVrf.getStaticRoutes().get(routeKey);
+    StaticRoute route = existingRoute != null ? existingRoute : routeKey.toRoute();
+
+    // Apply non-key attributes from the definition to the route. This will NOT affect the route if
+    // the definition is not valid.
+    boolean definitionIsValid =
+        setNonKeyAttributesOfStaticRouteIfValid(route, ctx.static_route_definition());
+    if (definitionIsValid && existingRoute == null) {
+      // New route created
+      _currentVrf.getStaticRoutes().put(routeKey, route);
+    }
   }
 
   @Override
   public void exitNo_ip_route_network(No_ip_route_networkContext ctx) {
-    toStaticRoute(ctx.static_route_definition())
-        .ifPresent(
-            sr -> {
-              Collection<StaticRoute> staticRoutes =
-                  _currentVrf.getStaticRoutes().get(sr.getPrefix());
-              // TODO smarter "equality" checking
-              // Some attributes don't need to match the original route, like tag, priority, name
-              if (!staticRoutes.contains(sr)) {
-                warn(ctx, "Cannot delete non-existent route");
-                return;
-              }
-              staticRoutes.remove(sr);
-            });
+    Optional<StaticRoute.StaticRouteKey> srkOptional =
+        toStaticRouteKey(ctx.static_route_definition());
+    if (!srkOptional.isPresent()) {
+      // Definition is invalid
+      return;
+    }
+    StaticRoute.StaticRouteKey routeKey = srkOptional.get();
+    StaticRoute removedRoute = _currentVrf.getStaticRoutes().remove(routeKey);
+    if (removedRoute == null) {
+      warn(ctx, "Cannot delete non-existent route");
+      return;
+    }
+    // The `no ip route` command may specify non-key attributes (name, preference, tag, track).
+    // These specifications have no effect unless any of the provided values are invalid, in which
+    // case the command will be rejected.
+    if (!setNonKeyAttributesOfStaticRouteIfValid(removedRoute, ctx.static_route_definition())) {
+      // The `no ip route` command contains an invalid value for a non-key property. Put the route
+      // back (setNonKeyAttributesOfStaticRouteIfValid() didn't modify it).
+      _currentVrf.getStaticRoutes().put(routeKey, removedRoute);
+    }
   }
 
   @Override

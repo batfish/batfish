@@ -2,6 +2,9 @@
 !
 hostname nxos_no_static_route
 !
+! Must exist or lines referencing this below will be rejected
+track 500 interface Ethernet1/1 line-protocol
+!
 interface Ethernet1/1
   no switchport
   no shutdown
@@ -17,6 +20,17 @@ no ip route 10.0.1.0/24 Ethernet1/1 10.0.1.2
 !no ip route
 ! Ignored, nhip does not match
 no ip route 10.0.1.0/24 Ethernet1/1
+!
+! Test that `no` command still works if missing non-key attributes
+ip route 10.0.2.0/24 10.0.1.1 track 500 name foo tag 1000 5
+no ip route 10.0.2.0/24 10.0.1.1
+!
+! Test that `no` command still works if it has mismatched non-key attributes
+ip route 10.0.3.0/24 10.0.1.1
+no ip route 10.0.3.0/24 10.0.1.1 track 500 name foo tag 1000 5
+!
+! Test that `no` command does NOT work if it has invalid non-key attributes (256 exceeds max preference)
+no ip route 10.0.1.0/24 Ethernet1/1 10.0.1.1 track 500 name foo tag 1000 256
 !
 ! Test in vrf context
 vrf context vrf1

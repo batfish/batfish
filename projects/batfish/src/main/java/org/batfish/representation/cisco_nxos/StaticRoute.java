@@ -14,6 +14,59 @@ import org.batfish.datamodel.Prefix;
 /** An IPv4 static route */
 public final class StaticRoute implements Serializable {
 
+  /** Uniquely identifies a static route. */
+  public static final class StaticRouteKey implements Serializable {
+    private final boolean _discard;
+    private final @Nullable String _nextHopInterface;
+    private final @Nullable Ip _nextHopIp;
+    private final @Nullable String _nextHopVrf;
+    private final @Nonnull Prefix _prefix;
+
+    public StaticRouteKey(
+        Prefix prefix,
+        boolean discard,
+        @Nullable String nextHopInterface,
+        @Nullable Ip nextHopIp,
+        @Nullable String nextHopVrf) {
+      _discard = discard;
+      _nextHopInterface = nextHopInterface;
+      _nextHopIp = nextHopIp;
+      _nextHopVrf = nextHopVrf;
+      _prefix = prefix;
+    }
+
+    /** Creates a {@link StaticRoute} with this key's properties. Non-key properties are not set. */
+    public StaticRoute toRoute() {
+      return StaticRoute.builder()
+          .setDiscard(_discard)
+          .setNextHopInterface(_nextHopInterface)
+          .setNextHopIp(_nextHopIp)
+          .setNextHopVrf(_nextHopVrf)
+          .setPrefix(_prefix)
+          .build();
+    }
+
+    @Override
+    public boolean equals(@Nullable Object o) {
+      if (this == o) {
+        return true;
+      } else if (!(o instanceof StaticRouteKey)) {
+        return false;
+      }
+      StaticRouteKey that = (StaticRouteKey) o;
+      return _discard == that._discard
+          && Objects.equals(_nextHopInterface, that._nextHopInterface)
+          && Objects.equals(_nextHopIp, that._nextHopIp)
+          && Objects.equals(_nextHopVrf, that._nextHopVrf)
+          && _prefix.equals(that._prefix);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(_discard, _nextHopInterface, _nextHopIp, _nextHopVrf, _prefix);
+    }
+  }
+
   public static final class Builder {
 
     private boolean _discard;
@@ -144,15 +197,14 @@ public final class StaticRoute implements Serializable {
   }
 
   private final boolean _discard;
-  private final @Nullable String _name;
+  private @Nullable String _name;
   private final @Nullable String _nextHopInterface;
   private final @Nullable Ip _nextHopIp;
   private final @Nullable String _nextHopVrf;
-  private final int _preference;
+  private int _preference;
   private final @Nonnull Prefix _prefix;
-  private final long _tag;
-
-  private final @Nullable Integer _track;
+  private long _tag;
+  private @Nullable Integer _track;
 
   private StaticRoute(
       boolean discard,
@@ -183,6 +235,10 @@ public final class StaticRoute implements Serializable {
     return _name;
   }
 
+  public void setName(String name) {
+    _name = name;
+  }
+
   /**
    * The interface used for ARP lookup and forwarding. If not {@code null}, must be a member of
    * {@link #getNextHopVrf}.
@@ -207,6 +263,10 @@ public final class StaticRoute implements Serializable {
     return _preference;
   }
 
+  public void setPreference(int preference) {
+    _preference = preference;
+  }
+
   public @Nonnull Prefix getPrefix() {
     return _prefix;
   }
@@ -215,7 +275,15 @@ public final class StaticRoute implements Serializable {
     return _tag;
   }
 
+  public void setTag(long tag) {
+    _tag = tag;
+  }
+
   public @Nullable Integer getTrack() {
     return _track;
+  }
+
+  public void setTrack(int track) {
+    _track = track;
   }
 }
