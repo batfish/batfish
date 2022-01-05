@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 
 /** A virtual routing and forwarding instance. */
@@ -26,7 +25,7 @@ public final class Vrf implements Serializable {
     _id = id;
     _addressFamilies = new HashMap<>();
     _nameServers = new ArrayList<>(1);
-    _staticRoutes = HashMultimap.create();
+    _staticRoutes = new HashMap<>();
     _staticRoutesV6 = HashMultimap.create();
   }
 
@@ -87,10 +86,15 @@ public final class Vrf implements Serializable {
     _shutdown = shutdown;
   }
 
-  public @Nonnull Multimap<Prefix, StaticRoute> getStaticRoutes() {
+  public @Nonnull Map<StaticRoute.StaticRouteKey, StaticRoute> getStaticRoutes() {
     return _staticRoutes;
   }
 
+  /**
+   * Returns V6 static routes.
+   *
+   * <p>TODO V6 static routes should probably be keyed on a set of key properties, not on prefix
+   */
   public @Nonnull Multimap<Prefix6, StaticRouteV6> getStaticRoutesV6() {
     return _staticRoutesV6;
   }
@@ -114,7 +118,7 @@ public final class Vrf implements Serializable {
   @Nonnull private final List<NameServer> _nameServers;
   private @Nullable RouteDistinguisherOrAuto _rd;
   private boolean _shutdown;
-  private final Multimap<Prefix, StaticRoute> _staticRoutes;
+  private final Map<StaticRoute.StaticRouteKey, StaticRoute> _staticRoutes;
   private final Multimap<Prefix6, StaticRouteV6> _staticRoutesV6;
   private @Nullable Integer _vni;
 }
