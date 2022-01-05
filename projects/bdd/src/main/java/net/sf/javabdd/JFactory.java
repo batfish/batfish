@@ -37,6 +37,7 @@ import java.util.Random;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -4012,13 +4013,16 @@ public final class JFactory extends BDDFactory {
   }
 
   private void bdd_operator_clean() {
-    BddCache_clean_ab(applycache);
-    BddCache_clean_a(quantcache);
-    BddCache_clean_ab(appexcache);
-    BddCache_clean_ab(replacecache);
-    BddCache_clean_ab(misccache);
-    BddCache_clean_multiop(multiopcache);
-    BddCache_clean_d(countcache);
+    Stream.<Runnable>of(
+            () -> BddCache_clean_ab(applycache),
+            () -> BddCache_clean_a(quantcache),
+            () -> BddCache_clean_ab(appexcache),
+            () -> BddCache_clean_ab(replacecache),
+            () -> BddCache_clean_ab(misccache),
+            () -> BddCache_clean_multiop(multiopcache),
+            () -> BddCache_clean_d(countcache))
+        .parallel()
+        .forEach(Runnable::run);
   }
 
   private void bdd_operator_varresize() {
