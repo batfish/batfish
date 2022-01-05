@@ -5609,6 +5609,7 @@ public final class CiscoNxosGrammarTest {
             "r_mp_warn",
             "r_mp_withdraw",
             "r_mp_withdraw_n",
+            "r_no_redistribute",
             "r_static",
             "router_id",
             "sa",
@@ -5912,6 +5913,7 @@ public final class CiscoNxosGrammarTest {
   public void testOspfExtraction() {
     String hostname = "nxos_ospf";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+    Warnings warnings = vc.getWarnings();
 
     assertThat(
         vc.getOspfProcesses(),
@@ -5961,6 +5963,7 @@ public final class CiscoNxosGrammarTest {
             "r_mp_warn",
             "r_mp_withdraw",
             "r_mp_withdraw_n",
+            "r_no_redistribute",
             "r_static",
             "router_id",
             "sa",
@@ -6211,6 +6214,27 @@ public final class CiscoNxosGrammarTest {
           equalTo(new RedistributionPolicy(RoutingProtocolInstance.direct(), "rm1")));
     }
     // TODO: extract and test redistribute maximum-prefix
+    {
+      OspfProcess proc = vc.getOspfProcesses().get("r_no_redistribute");
+      assertThat(
+          proc.getRedistributionPolicies(),
+          contains(new RedistributionPolicy(RoutingProtocolInstance.staticc(), "rm1")));
+      // Make sure warnings were filed for unsuccessful `no redistribute` commands.
+      assertThat(
+          warnings,
+          hasParseWarnings(
+              allOf(
+                  // "no redistribute direct" when already not redistributing direct
+                  hasItem(
+                      allOf(
+                          hasComment("No matching redistribution policy to remove"),
+                          ParseWarningMatchers.hasText("redistribute direct"))),
+                  // "no redistribute static route-map rm2" when redistributing static via rm1
+                  hasItem(
+                      allOf(
+                          hasComment("No matching redistribution policy to remove"),
+                          ParseWarningMatchers.hasText("redistribute static route-map rm2"))))));
+    }
     {
       OspfProcess proc = vc.getOspfProcesses().get("r_static");
       assertThat(proc.getRedistributionPolicies(), hasSize(1));

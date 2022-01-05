@@ -106,6 +106,16 @@ public abstract class OspfProcess implements Serializable {
     _redistributionPolicies.put(instance, new RedistributionPolicy(instance, routeMap));
   }
 
+  public final boolean deleteRedistributionPolicy(
+      RoutingProtocolInstance instance, @Nullable String routeMap) {
+    if (routeMap == null) {
+      // Doesn't matter what route-map is assigned to the redistribution policy
+      return _redistributionPolicies.remove(instance) != null;
+    }
+    // Only remove the redistribution policy if it uses the specified route-map
+    return _redistributionPolicies.remove(instance, new RedistributionPolicy(instance, routeMap));
+  }
+
   public @Nullable Ip getRouterId() {
     return _routerId;
   }

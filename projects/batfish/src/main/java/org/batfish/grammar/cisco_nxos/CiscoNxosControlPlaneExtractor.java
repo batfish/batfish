@@ -2978,6 +2978,27 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
+  public void exitRo_no_redistribute(CiscoNxosParser.Ro_no_redistributeContext ctx) {
+    Optional<RoutingProtocolInstance> rpiOrError =
+        toRoutingProtocolInstance(ctx, ctx.routing_instance_v4());
+    if (!rpiOrError.isPresent()) {
+      return;
+    }
+    RoutingProtocolInstance rpi = rpiOrError.get();
+    String routeMap = null;
+    if (ctx.route_map_name() != null) {
+      Optional<String> mapOrError = toString(ctx, ctx.route_map_name());
+      if (!mapOrError.isPresent()) {
+        return;
+      }
+      routeMap = mapOrError.get();
+    }
+    if (!_currentOspfProcess.deleteRedistributionPolicy(rpi, routeMap)) {
+      warn(ctx, "No matching redistribution policy to remove");
+    }
+  }
+
+  @Override
   public void exitRo_router_id(Ro_router_idContext ctx) {
     _currentOspfProcess.setRouterId(toIp(ctx.id));
   }
