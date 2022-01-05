@@ -48,17 +48,18 @@ public abstract class BaseSettings {
    * @param config {@link Configuration} containing the desired settings
    */
   public BaseSettings(Configuration config) {
-    _options = new Options();
-    _config = ConfigurationUtils.cloneConfiguration(config);
+    this(config, new Options());
   }
 
   /**
-   * Initialize settings from a Java properties file
+   * Initialize settings from an existing configuration
    *
-   * @param configFile configuration file
+   * @param config {@link Configuration} containing the desired settings
+   * @param options {@link Options} containing the desired options
    */
-  public BaseSettings(Path configFile) {
-    this(loadFileConfiguration(configFile.toFile()));
+  public BaseSettings(Configuration config, Options options) {
+    _options = options;
+    _config = ConfigurationUtils.cloneConfiguration(config);
   }
 
   protected static Configuration getConfig(
