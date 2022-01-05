@@ -3755,7 +3755,7 @@ public final class JFactory extends BDDFactory {
       /* Try to allocate more nodes */
       bdd_gbc();
 
-      if ((bddfreenum * 100) / bddnodesize <= minfreenodes) {
+      if ((bddfreenum * 100L) / bddnodesize <= minfreenodes) {
         bdd_noderesize(true);
         hash2 = NODEHASH(level, low, high);
       }
