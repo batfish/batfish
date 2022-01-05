@@ -36,6 +36,7 @@ import java.util.Collection;
 import java.util.Random;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
+import java.util.stream.IntStream;
 import java.util.stream.StreamSupport;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -558,6 +559,10 @@ public final class JFactory extends BDDFactory {
   }
 
   private abstract static class BddCacheData {
+    protected BddCacheData() {
+      a = -1;
+    }
+
     int a, b, c;
     int hash;
   }
@@ -4059,11 +4064,7 @@ public final class JFactory extends BDDFactory {
 
     BddCache cache = new BddCache();
     cache.table = new BddCacheDataI[size];
-
-    for (int n = 0; n < size; n++) {
-      cache.table[n] = new BddCacheDataI();
-      cache.table[n].a = -1;
-    }
+    Arrays.parallelSetAll(cache.table, i -> new BddCacheDataI());
     cache.tablesize = size;
 
     return cache;
@@ -4074,11 +4075,7 @@ public final class JFactory extends BDDFactory {
 
     BddCache cache = new BddCache();
     cache.table = new MultiOpBddCacheData[size];
-
-    for (int n = 0; n < size; n++) {
-      cache.table[n] = new MultiOpBddCacheData();
-      cache.table[n].a = -1;
-    }
+    Arrays.parallelSetAll(cache.table, i -> new MultiOpBddCacheData());
     cache.tablesize = size;
 
     return cache;
@@ -4089,11 +4086,7 @@ public final class JFactory extends BDDFactory {
 
     BddCache cache = new BddCache();
     cache.table = new BigIntegerBddCacheData[size];
-
-    for (int n = 0; n < size; n++) {
-      cache.table[n] = new BigIntegerBddCacheData();
-      cache.table[n].a = -1;
-    }
+    Arrays.parallelSetAll(cache.table, i -> new BigIntegerBddCacheData());
     cache.tablesize = size;
 
     return cache;
@@ -4136,16 +4129,18 @@ public final class JFactory extends BDDFactory {
   private static <T extends BddCacheData> T[] reallocateAndResize(
       T[] oldTable, int newsize, IntFunction<T[]> newTable, Supplier<T> constructor) {
     T[] ret = newTable.apply(newsize);
-    for (T entry : oldTable) {
-      ret[Math.abs(entry.hash % newsize)] = entry;
-    }
-    for (int i = 0; i < newsize; ++i) {
-      if (ret[i] != null) {
-        continue;
-      }
-      ret[i] = constructor.get();
-      ret[i].a = -1;
-    }
+    Arrays.stream(oldTable)
+        .parallel()
+        .forEach(entry -> ret[Math.abs(entry.hash % newsize)] = entry);
+    IntStream.range(0, newsize)
+        .parallel()
+        .forEach(
+            i -> {
+              if (ret[i] != null) {
+                return;
+              }
+              ret[i] = constructor.get();
+            });
     return ret;
   }
 
@@ -4208,71 +4203,60 @@ public final class JFactory extends BDDFactory {
           cache.table.length);
     }
 
-    for (int n = 0; n < cache.tablesize; n++) {
-      cache.table[n].a = -1;
-    }
+    Arrays.stream(cache.table).parallel().forEach(e -> e.a = -1);
   }
 
   private void BddCache_clean_d(BddCache cache) {
     if (cache == null) {
       return;
     }
-    for (int n = 0; n < cache.tablesize; n++) {
-      int a = cache.table[n].a;
-      if (a >= 0 && LOW(a) == INVALID_BDD) {
-        cache.table[n].a = -1;
-      }
-    }
+    Arrays.stream(cache.table)
+        .parallel()
+        .forEach(
+            entry -> {
+              int a = entry.a;
+              if (a >= 0 && LOW(a) == INVALID_BDD) {
+                entry.a = -1;
+              }
+            });
   }
 
   private void BddCache_clean_a(BddCache cache) {
     if (cache == null) {
       return;
     }
-    for (int n = 0; n < cache.tablesize; n++) {
-      int a = cache.table[n].a;
-      if (a < 0) {
-        continue;
-      }
-      if (LOW(a) == INVALID_BDD || LOW(((BddCacheDataI) cache.table[n]).res) == INVALID_BDD) {
-        cache.table[n].a = -1;
-      }
-    }
+    Arrays.stream(cache.table)
+        .parallel()
+        .forEach(
+            entry -> {
+              int a = entry.a;
+              if (a < 0) {
+                return;
+              }
+              if (LOW(a) == INVALID_BDD || LOW(((BddCacheDataI) entry).res) == INVALID_BDD) {
+                entry.a = -1;
+              }
+            });
   }
 
   private void BddCache_clean_ab(BddCache cache) {
     if (cache == null) {
       return;
     }
-    for (int n = 0; n < cache.tablesize; n++) {
-      int a = cache.table[n].a;
-      if (a < 0) {
-        continue;
-      }
-      if (LOW(a) == INVALID_BDD
-          || (cache.table[n].b != 0 && LOW(cache.table[n].b) == INVALID_BDD)
-          || LOW(((BddCacheDataI) cache.table[n]).res) == INVALID_BDD) {
-        cache.table[n].a = -1;
-      }
-    }
-  }
-
-  private void BddCache_clean_abc(BddCache cache) {
-    if (cache == null) {
-      return;
-    }
-    for (int n = 0; n < cache.tablesize; n++) {
-      int a = cache.table[n].a;
-      if (a < 0) {
-        continue;
-      }
-      if (LOW(a) == -1
-          || LOW(cache.table[n].b) == INVALID_BDD
-          || LOW(cache.table[n].c) == INVALID_BDD
-          || LOW(((BddCacheDataI) cache.table[n]).res) == INVALID_BDD) {
-        cache.table[n].a = -1;
-      }
-    }
+    Arrays.stream(cache.table)
+        .parallel()
+        .forEach(
+            entry -> {
+              int a = entry.a;
+              if (a < 0) {
+                return;
+              }
+              if (LOW(a) == INVALID_BDD
+                  || (entry.b != 0 && LOW(entry.b) == INVALID_BDD)
+                  || LOW(((BddCacheDataI) entry).res) == INVALID_BDD) {
+                entry.a = -1;
+              }
+            });
   }
 
   private boolean invalidEntry(MultiOpBddCacheData entry) {
@@ -4298,13 +4282,16 @@ public final class JFactory extends BDDFactory {
     if (cache == null) {
       return;
     }
-    for (int n = 0; n < cache.tablesize; n++) {
-      MultiOpBddCacheData entry = (MultiOpBddCacheData) cache.table[n];
-      if (invalidEntry(entry)) {
-        entry.a = -1;
-        entry.operands = null;
-      }
-    }
+    Arrays.stream(cache.table)
+        .parallel()
+        .forEach(
+            e -> {
+              MultiOpBddCacheData entry = (MultiOpBddCacheData) e;
+              if (invalidEntry(entry)) {
+                entry.a = -1;
+                entry.operands = null;
+              }
+            });
   }
 
   private void bdd_setpair(bddPair pair, int oldvar, int newvar) {
