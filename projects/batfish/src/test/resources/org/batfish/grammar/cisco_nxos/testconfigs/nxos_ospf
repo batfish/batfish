@@ -185,6 +185,19 @@ router ospf r_mp_withdraw_n
 router ospf r_static
   redistribute static route-map rm1
 
+!!! no redistribute
+router ospf r_no_redistribute
+  ! Should warn
+  no redistribute direct
+  ! Should successfully add and remove redistribution policies
+  redistribute bgp 1 route-map rm1
+  no redistribute bgp 1
+  redistribute direct route-map rm1
+  no redistribute direct route-map rm1
+  ! Should fail to remove policy and warn because route-map doesn't match
+  redistribute static route-map rm1
+  no redistribute static route-map rm2
+
 !!! router-id
 router ospf router_id
   router-id 192.0.2.1

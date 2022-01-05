@@ -27,6 +27,7 @@ ro_common
   | ro_max_metric
   | ro_name_lookup
   | ro_network
+  | ro_no
   | ro_passive_interface
   | ro_redistribute
   | ro_router_id
@@ -196,6 +197,19 @@ ro_network
     ip = ip_address wildcard = ip_address
     | prefix = ip_prefix
   ) AREA id = ospf_area_id NEWLINE
+;
+
+ro_no
+:
+  NO
+  (
+    ro_no_redistribute
+  )
+;
+
+ro_no_redistribute
+:
+  REDISTRIBUTE routing_instance_v4 (ROUTE_MAP mapname = route_map_name)? NEWLINE
 ;
 
 ro_passive_interface
