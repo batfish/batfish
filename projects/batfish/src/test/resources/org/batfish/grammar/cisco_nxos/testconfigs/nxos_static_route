@@ -55,13 +55,28 @@ ip route 10.0.9.0/24 10.255.2.254 vrf vrf2 track 500 name foo 5 tag 1000
 ! ..with next-hop interface
 ip route 10.0.10.0/24 Ethernet1/2 10.255.2.254 vrf vrf2 track 500 name foo 5 tag 1000
 
-!!! Keep VRF definitions under default VRF configuration to avoid accidental leakage
+! Routes that differ in next-hop attributes are separate routes
+ip route 10.0.14.0/24 null0
+ip route 10.0.14.0/24 10.255.1.254
+ip route 10.0.14.0/24 Ethernet1/1 10.255.1.254
+ip route 10.0.14.0/24 Ethernet1/1
+! Unrealistic for NHIP not to be owned by vrf2, but would defeat the point of this line to change.
+! Need to see that this is considered a different route from the version with no VRF specified.
+ip route 10.0.14.0/24 Ethernet1/1 10.255.1.254 vrf vrf2
+
+! Route commands that only differ in non-key attributes are edits to the same route
+ip route 10.0.15.0/24 10.255.1.254 name foo
+ip route 10.0.15.0/24 10.255.1.254 name bar
+ip route 10.0.15.0/24 10.255.1.254 track 500 tag 1000 5
+
+!!! Keep VRF definitions under default VRF configuration to avoid accidental leakage.
+!!! Technically vrf1's routes should use a NHIP owned by vrf1, but doesn't matter for current tests.
 vrf context vrf1
   ! route in non-default vrf
-  ip route 10.0.11.0/24 10.255.2.254
+  ip route 10.0.11.0/24 10.255.1.254
 
   ! undefined reference to next hop interface Ethernet1/100
-  ip route 10.0.12.0/24 Ethernet1/100 10.255.2.254
+  ip route 10.0.12.0/24 Ethernet1/100 10.255.1.254
 
 !!! static route bfd detection
 ip route static bfd Ethernet1/1 10.255.1.50
