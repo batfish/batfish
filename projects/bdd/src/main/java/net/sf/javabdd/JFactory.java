@@ -439,6 +439,11 @@ public final class JFactory extends BDDFactory {
   private static final int offset__hash = 3;
   private static final int offset__next = 4;
   private static final int __node_size = 5;
+  /**
+   * The maximum number of BDD nodes that can {@link #bddnodesize} can ever be measured is the
+   * largest array that can be allocated.
+   */
+  private static final int MAX_NODESIZE = Integer.MAX_VALUE / __node_size;
 
   private boolean HASREF(int node) {
     boolean r = (bddnodes[node * __node_size + offset__refcou_and_level] & REF_MASK) != 0;
@@ -599,8 +604,6 @@ public final class JFactory extends BDDFactory {
   private boolean bddrunning; /* Flag - package initialized */
   private int bdderrorcond; /* Some error condition */
   private int bddnodesize; /* Number of allocated nodes */
-  private int bddmaxnodesize; /* Maximum allowed number of nodes */
-  private int bddmaxnodeincrease; /* Max. # of nodes used to inc. table */
   private int[] bddnodes; /* All of the bdd nodes */
   private int bddfreepos; /* First free node */
   private int bddfreenum; /* Number of free nodes */
@@ -635,8 +638,6 @@ public final class JFactory extends BDDFactory {
   /* Vars. not in order for vector based functions */
   private static final int BDD_BREAK = -9; /* User called break */
   private static final int BDD_VARNUM = -10;
-  /* Different number of vars. for vector pair */
-  private static final int BDD_NODES = -11;
   /* Tried to set max. number of nodes to be fewer */
   /* than there already has been allocated */
   private static final int BDD_OP = -12; /* Unknown operator */
@@ -649,7 +650,6 @@ public final class JFactory extends BDDFactory {
   private static final int BDD_NODENUM = -17;
   /* Number of nodes reached user defined maximum */
   private static final int BDD_ILLBDD = -18; /* Illegal bdd argument */
-  private static final int BDD_SIZE = -19; /* Illegal size argument */
 
   private static final int BVEC_SIZE = -20; /* Mismatch in bitvector size */
   private static final int BVEC_SHIFT = -21;
@@ -684,8 +684,6 @@ public final class JFactory extends BDDFactory {
     "Illegal shift-left/right parameter",
     "Division by zero"
   };
-
-  private static final int DEFAULTMAXNODEINC = 10000000;
 
   /*=== OTHER INTERNAL DEFINITIONS =======================================*/
 
@@ -3785,15 +3783,9 @@ public final class JFactory extends BDDFactory {
     return res;
   }
 
-  private int bdd_noderesize(boolean doRehash) {
+  private void bdd_noderesize(boolean doRehash) {
     int oldsize = bddnodesize;
     int newsize = bddnodesize;
-
-    if (bddmaxnodesize > 0) {
-      if (newsize >= bddmaxnodesize) {
-        return -1;
-      }
-    }
 
     if (increasefactor > 0) {
       newsize += (int) (newsize * increasefactor);
@@ -3801,19 +3793,16 @@ public final class JFactory extends BDDFactory {
       newsize = newsize << 1;
     }
 
-    if (bddmaxnodeincrease > 0) {
-      if (newsize > oldsize + bddmaxnodeincrease) {
-        newsize = oldsize + bddmaxnodeincrease;
-      }
+    if (newsize < 0 || newsize > MAX_NODESIZE) {
+      // prevent integer overflow
+      newsize = MAX_NODESIZE;
     }
 
-    if (bddmaxnodesize > 0) {
-      if (newsize > bddmaxnodesize) {
-        newsize = bddmaxnodesize;
-      }
+    if (newsize <= oldsize) {
+      return;
     }
 
-    return doResize(doRehash, oldsize, newsize);
+    doResize(doRehash, oldsize, newsize);
   }
 
   @Override
@@ -3823,12 +3812,10 @@ public final class JFactory extends BDDFactory {
     return old;
   }
 
-  private int doResize(boolean doRehash, int oldsize, int newsize) {
-
+  private void doResize(boolean doRehash, int oldsize, int newsize) {
     newsize = bdd_prime_lte(newsize);
-
-    if (oldsize > newsize) {
-      return 0;
+    if (newsize <= oldsize) {
+      return;
     }
 
     resize_handler(oldsize, newsize);
@@ -3859,10 +3846,7 @@ public final class JFactory extends BDDFactory {
     if (doRehash) {
       bdd_gbc_rehash();
     }
-
     bddresized = true;
-
-    return 0;
   }
 
   @Override
@@ -3902,7 +3886,6 @@ public final class JFactory extends BDDFactory {
     gbcollectnum = 0;
     gbcclock = 0;
     cachesize = cs;
-    bddmaxnodeincrease = DEFAULTMAXNODEINC;
 
     bdderrorcond = 0;
 
@@ -4517,7 +4500,6 @@ public final class JFactory extends BDDFactory {
 
     bddrunning = false;
     bddnodesize = 0;
-    bddmaxnodesize = 0;
     bddvarnum = 0;
     bddproduced = 0;
 
@@ -4537,21 +4519,6 @@ public final class JFactory extends BDDFactory {
   }
 
   @Override
-  public int setMaxNodeNum(int size) {
-    return bdd_setmaxnodenum(size);
-  }
-
-  private int bdd_setmaxnodenum(int size) {
-    if (size > bddnodesize || size == 0) {
-      int old = bddmaxnodesize;
-      bddmaxnodesize = size;
-      return old;
-    }
-
-    return bdd_error(BDD_NODES);
-  }
-
-  @Override
   public double setMinFreeNodes(double x) {
     return bdd_setminfreenodes((int) (x * 100.)) / 100.;
   }
@@ -4564,22 +4531,6 @@ public final class JFactory extends BDDFactory {
     }
 
     minfreenodes = mf;
-    return old;
-  }
-
-  @Override
-  public int setMaxIncrease(int x) {
-    return bdd_setmaxincrease(x);
-  }
-
-  private int bdd_setmaxincrease(int size) {
-    int old = bddmaxnodeincrease;
-
-    if (size < 0) {
-      return bdd_error(BDD_SIZE);
-    }
-
-    bddmaxnodeincrease = size;
     return old;
   }
 
