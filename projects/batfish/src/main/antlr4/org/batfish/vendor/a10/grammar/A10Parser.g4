@@ -48,11 +48,13 @@ s_ip: IP si;
 
 si: si_access_list | si_nat | si_route;
 
-s_no: NO (sn_ha | sn_ip);
+s_no: NO (sn_ha | sn_ip | sn_slb);
 
 sn_ip: IP sni;
 
 sni: sni_route;
+
+sn_slb: SLB sns_server;
 
 s_hostname: HOSTNAME hostname NEWLINE;
 

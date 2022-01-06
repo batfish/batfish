@@ -17,3 +17,8 @@ slb server SERVER2
 ! TODO enforce no target reuse
 !slb server SERVER3 10.0.0.1
 !
+! Can't delete a server that's not defined
+no slb server SERVER4
+!
+! Deletion won't work because the specified target doesn't match
+no slb server SERVER1 10.10.10.10

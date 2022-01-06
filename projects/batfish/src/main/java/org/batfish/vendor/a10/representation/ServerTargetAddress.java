@@ -5,7 +5,7 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 
 /** Datamodel class representing an IP address for a load balancer server */
-public final class ServerTargetAddress implements ServerTarget {
+public final class ServerTargetAddress extends ServerTarget {
   @Override
   public int hashCode() {
     return _address.hashCode();
