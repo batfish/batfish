@@ -1,5 +1,6 @@
 package org.batfish.question.vrrpproperties;
 
+import static junit.framework.TestCase.assertTrue;
 import static org.batfish.question.vrrpproperties.VrrpPropertiesAnswerer.COL_ACTIVE;
 import static org.batfish.question.vrrpproperties.VrrpPropertiesAnswerer.COL_GROUP_ID;
 import static org.batfish.question.vrrpproperties.VrrpPropertiesAnswerer.COL_INTERFACE;
@@ -7,35 +8,31 @@ import static org.batfish.question.vrrpproperties.VrrpPropertiesAnswerer.COL_PRE
 import static org.batfish.question.vrrpproperties.VrrpPropertiesAnswerer.COL_PRIORITY;
 import static org.batfish.question.vrrpproperties.VrrpPropertiesAnswerer.COL_SOURCE_ADDRESS;
 import static org.batfish.question.vrrpproperties.VrrpPropertiesAnswerer.COL_VIRTUAL_ADDRESSES;
-import static org.batfish.question.vrrpproperties.VrrpPropertiesAnswerer.getProperties;
 import static org.batfish.question.vrrpproperties.VrrpPropertiesAnswerer.populateRow;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import java.util.Map;
-import java.util.regex.Pattern;
+import org.batfish.common.NetworkSnapshot;
+import org.batfish.common.plugin.IBatfish;
+import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Row.RowBuilder;
-import org.batfish.specifier.AllInterfacesInterfaceSpecifier;
-import org.batfish.specifier.AllNodesNodeSpecifier;
-import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.MockSpecifierContext;
-import org.batfish.specifier.NameNodeSpecifier;
-import org.batfish.specifier.NameRegexInterfaceSpecifier;
+import org.batfish.specifier.SpecifierContext;
 import org.junit.Test;
 
 /** Test of {@link VrrpPropertiesAnswerer}. */
@@ -52,8 +49,21 @@ public final class VrrpPropertiesAnswererTest {
         .put(COL_ACTIVE, iface.getActive());
   }
 
+  private static class MockBatfish extends IBatfishTestAdapter {
+    private final SpecifierContext _context;
+
+    MockBatfish(SpecifierContext context) {
+      _context = context;
+    }
+
+    @Override
+    public SpecifierContext specifierContext(NetworkSnapshot snapshot) {
+      return _context;
+    }
+  }
+
   @Test
-  public void testGetProperties() {
+  public void testAnswer() {
     Configuration conf1 = new Configuration("node1", ConfigurationFormat.CISCO_IOS);
 
     VrrpGroup.Builder group =
@@ -96,28 +106,24 @@ public final class VrrpPropertiesAnswererTest {
     Row expectedRow1 = populateRow(createRowBuilder("node1", iface1), 0, group1).build();
     Row expectedRow2 = populateRow(createRowBuilder("node1", iface2), 0, group2).build();
 
+    IBatfish mockBatfish = new MockBatfish(ctxt);
+
     assertThat(
-        getProperties(
-            ctxt,
-            new NameNodeSpecifier("node1"),
-            new NameRegexInterfaceSpecifier(Pattern.compile(".*")),
-            new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE),
-            false,
-            _columnMap),
-        equalTo(ImmutableMultiset.of(expectedRow1, expectedRow2)));
+        new VrrpPropertiesAnswerer(
+                new VrrpPropertiesQuestion("node1", "/.*/", null, false), mockBatfish)
+            .answer(null)
+            .getRowsList(),
+        contains(expectedRow1, expectedRow2));
     assertThat(
-        getProperties(
-            ctxt,
-            new NameNodeSpecifier("node1"),
-            new NameRegexInterfaceSpecifier(Pattern.compile(".*")),
-            new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE),
-            true,
-            _columnMap),
-        equalTo(ImmutableMultiset.of(expectedRow1)));
+        new VrrpPropertiesAnswerer(
+                new VrrpPropertiesQuestion("node1", "/.*/", null, true), mockBatfish)
+            .answer(null)
+            .getRowsList(),
+        contains(expectedRow1));
   }
 
   @Test
-  public void testGetProperties_virtualAddressFiltering() {
+  public void testAnswer_virtualAddressFiltering() {
     Configuration conf = new Configuration("node", ConfigurationFormat.CISCO_IOS);
 
     VrrpGroup group =
@@ -145,38 +151,30 @@ public final class VrrpPropertiesAnswererTest {
 
     Row expectedRow = populateRow(createRowBuilder(conf.getHostname(), iface), 0, group).build();
 
+    IBatfish mockBatfish = new MockBatfish(ctxt);
+
     // row is included when there is no address filtering
     assertThat(
-        getProperties(
-            ctxt,
-            AllNodesNodeSpecifier.INSTANCE,
-            AllInterfacesInterfaceSpecifier.INSTANCE,
-            new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE),
-            false,
-            _columnMap),
-        equalTo(ImmutableMultiset.of(expectedRow)));
+        new VrrpPropertiesAnswerer(new VrrpPropertiesQuestion(null, null, null, false), mockBatfish)
+            .answer(null)
+            .getRowsList(),
+        contains(expectedRow));
 
     // row is included when one address matches
     assertThat(
-        getProperties(
-            ctxt,
-            AllNodesNodeSpecifier.INSTANCE,
-            AllInterfacesInterfaceSpecifier.INSTANCE,
-            new ConstantIpSpaceSpecifier(Ip.parse("1.1.1.1").toIpSpace()),
-            false,
-            _columnMap),
-        equalTo(ImmutableMultiset.of(expectedRow)));
+        new VrrpPropertiesAnswerer(
+                new VrrpPropertiesQuestion(null, null, "1.1.1.1", false), mockBatfish)
+            .answer(null)
+            .getRowsList(),
+        contains(expectedRow));
 
     // row is not included no address matches
-    assertThat(
-        getProperties(
-            ctxt,
-            AllNodesNodeSpecifier.INSTANCE,
-            AllInterfacesInterfaceSpecifier.INSTANCE,
-            new ConstantIpSpaceSpecifier(Ip.parse("3.3.3.3").toIpSpace()),
-            false,
-            _columnMap),
-        equalTo(ImmutableMultiset.of()));
+    assertTrue(
+        new VrrpPropertiesAnswerer(
+                new VrrpPropertiesQuestion(null, null, "3.3.3.3", false), mockBatfish)
+            .answer(null)
+            .getRowsList()
+            .isEmpty());
   }
 
   @Test
