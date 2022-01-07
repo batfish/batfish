@@ -89,6 +89,8 @@ public final class VendorConfigurationFormatDetector {
   private static final Pattern PALO_ALTO_DEVICECONFIG_PATTERN = Pattern.compile("(?m)deviceconfig");
   private static final Pattern PALO_ALTO_PANORAMA_PATTERN =
       Pattern.compile("(?m)(send-to-panorama|panorama-server)");
+  // open brace not likely to be opening a string literal of a JSON object
+  private static final Pattern PALO_ALTO_NESTED_PATTERN = Pattern.compile("(?m)[^\"']\\{");
 
   private String _fileText;
 
@@ -340,7 +342,7 @@ public final class VendorConfigurationFormatDetector {
     } else if (preMatch
         || fileTextMatches(PALO_ALTO_DEVICECONFIG_PATTERN)
         || fileTextMatches(PALO_ALTO_PANORAMA_PATTERN)) {
-      if (_fileText.contains("{")) {
+      if (fileTextMatches(PALO_ALTO_NESTED_PATTERN)) {
         return ConfigurationFormat.PALO_ALTO_NESTED;
       }
       return ConfigurationFormat.PALO_ALTO;
