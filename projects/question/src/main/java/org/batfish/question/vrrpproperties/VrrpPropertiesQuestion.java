@@ -95,7 +95,7 @@ public final class VrrpPropertiesQuestion extends Question {
   @JsonIgnore
   public @Nonnull IpSpaceSpecifier getVirtualAddressSpecifier() {
     return SpecifierFactories.getIpSpaceSpecifierOrDefault(
-        _interfaces, new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE));
+        _virtualAddresses, new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE));
   }
 
   @Override
