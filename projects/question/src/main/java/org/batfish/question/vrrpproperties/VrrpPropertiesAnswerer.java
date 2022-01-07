@@ -7,6 +7,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multiset;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import org.batfish.common.Answerer;
@@ -135,7 +137,8 @@ public final class VrrpPropertiesAnswerer extends Answerer {
         iface.getVrrpGroups().entrySet().stream()
             .filter(
                 e ->
-                    e.getValue().getVirtualAddresses().stream()
+                    e.getValue().getVirtualAddresses().values().stream()
+                        .flatMap(Collection::stream) // all addresses for all receiving interfaces
                         .anyMatch(
                             address -> virtualAddressSpace.containsIp(address, ImmutableMap.of())))
             .forEach(e -> rows.add(populateRow(row, e.getKey(), e.getValue()).build()));
@@ -147,7 +150,12 @@ public final class VrrpPropertiesAnswerer extends Answerer {
   @VisibleForTesting
   static RowBuilder populateRow(RowBuilder row, Integer id, VrrpGroup group) {
     row.put(COL_GROUP_ID, id)
-        .put(COL_VIRTUAL_ADDRESSES, ImmutableSortedSet.copyOf(group.getVirtualAddresses()))
+        // TODO: expose receivingInterface structure
+        .put(
+            COL_VIRTUAL_ADDRESSES,
+            group.getVirtualAddresses().values().stream()
+                .flatMap(Collection::stream)
+                .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())))
         .put(COL_SOURCE_ADDRESS, group.getSourceAddress())
         .put(COL_PRIORITY, group.getPriority())
         .put(COL_PREEMPT, group.getPreempt());

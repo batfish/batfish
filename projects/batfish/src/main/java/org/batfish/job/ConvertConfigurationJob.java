@@ -8,6 +8,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
@@ -42,6 +43,7 @@ import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpIpSpace;
@@ -56,6 +58,7 @@ import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.DeniedByAcl;
@@ -421,6 +424,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     c.simplifyRoutingPolicies();
     c.computeRoutingPolicySources(w);
     verifyInterfaces(c, w);
+    verifyVrrpGroups(c, w);
 
     c.setAsPathAccessLists(
         verifyAndToImmutableMap(c.getAsPathAccessLists(), AsPathAccessList::getName, w));
@@ -473,6 +477,42 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
   private static void verifyCommunityStructures(Configuration c) {
     // TODO: crash on undefined/circular refs (conversion is responsible for preventing them)
     CommunityStructuresVerifier.verify(c);
+  }
+
+  /**
+   * Warns on and removes virtual addresses of {@link VrrpGroup}s corresponding to missing
+   * interfaces.
+   */
+  private static void verifyVrrpGroups(Configuration c, Warnings w) {
+    for (Interface i : c.getAllInterfaces().values()) {
+      boolean modified = false;
+      ImmutableSortedMap.Builder<Integer, VrrpGroup> groupsBuilder =
+          ImmutableSortedMap.naturalOrder();
+      for (Entry<Integer, VrrpGroup> vrrpGroupByVrid : i.getVrrpGroups().entrySet()) {
+        int vrid = vrrpGroupByVrid.getKey();
+        VrrpGroup vrrpGroup = vrrpGroupByVrid.getValue();
+        ImmutableMap.Builder<String, Set<Ip>> addressesBuilder = ImmutableMap.builder();
+        for (Entry<String, Set<Ip>> addressesByInterface :
+            vrrpGroup.getVirtualAddresses().entrySet()) {
+          String referencedIface = addressesByInterface.getKey();
+          if (!c.getAllInterfaces().containsKey(referencedIface)) {
+            w.redFlag(
+                String.format(
+                    "Removing virtual addresses to be assigned to non-existent interface '%s' for"
+                        + " VRID %d on sync interface '%s'",
+                    referencedIface, vrid, i.getName()));
+            modified = true;
+          } else {
+            addressesBuilder.put(referencedIface, addressesByInterface.getValue());
+          }
+        }
+        groupsBuilder.put(
+            vrid, vrrpGroup.toBuilder().setVirtualAddresses(addressesBuilder.build()).build());
+      }
+      if (modified) {
+        i.setVrrpGroups(groupsBuilder.build());
+      }
+    }
   }
 
   /** Warns on and removes interfaces with VI-invalid settings. */

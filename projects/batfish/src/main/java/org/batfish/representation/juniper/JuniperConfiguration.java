@@ -1931,7 +1931,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                   .setPreempt(vrrpGroup.getPreempt())
                   .setPriority(vrrpGroup.getPriority())
                   .setSourceAddress(vrrpGroup.getSourceAddress())
-                  .setVirtualAddresses(virtualAddresses)
+                  .setVirtualAddresses(ifaceName, virtualAddresses)
                   .build());
         });
     return groupsBuilder.build();

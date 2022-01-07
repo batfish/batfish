@@ -6,17 +6,39 @@ import static com.google.common.base.MoreObjects.toStringHelper;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
-/** Configuration for a VRID on a router. */
+/**
+ * Configuration for a VRID on a router.
+ *
+ * <p>Hybrid model supporting RFC VRRP, VRRP-A (A10), and CheckPoint cluster IPs.
+ *
+ * <ul>
+ *   <li>For RFC VRRP, all IPs should be assigned to a single interface, and that interface should
+ *       be the same as the sync inteface on which the {@link VrrpGroup} sits.
+ *   <li>TODO: document virtual addresses for VRRP-A (A10)
+ *   <li>For CheckPoint cluster IPs, each entry should be a physical or logical interface interface
+ *       on the device other than the Sync interface, and this VrrpGroup should sit on the Sync
+ *       interface.
+ * </ul>
+ *
+ * TODO: Current limitation: for CheckPoint, if an interface on which to assign IPs is down and this
+ * virtual router is master, the IPs to be assigned to that interface will not be assigned to any
+ * other cluster member.
+ */
 @ParametersAreNonnullByDefault
 public final class VrrpGroup implements Serializable {
 
@@ -26,10 +48,17 @@ public final class VrrpGroup implements Serializable {
     private boolean _preempt;
     private int _priority;
     private @Nullable ConcreteInterfaceAddress _sourceAddress;
-    private @Nonnull ImmutableSet.Builder<Ip> _virtualAddresses;
+    private @Nonnull Map<String, ImmutableSet.Builder<Ip>> _virtualAddresses;
 
     public @Nonnull VrrpGroup build() {
-      return new VrrpGroup(_preempt, _priority, _sourceAddress, _virtualAddresses.build());
+      return new VrrpGroup(_preempt, _priority, _sourceAddress, buildVirtualAddresses());
+    }
+
+    private @Nonnull Map<String, Set<Ip>> buildVirtualAddresses() {
+      ImmutableMap.Builder<String, Set<Ip>> virtualAddressesBuilder = ImmutableMap.builder();
+      _virtualAddresses.forEach(
+          (iface, ipsBuilder) -> virtualAddressesBuilder.put(iface, ipsBuilder.build()));
+      return virtualAddressesBuilder.build();
     }
 
     public @Nonnull Builder setPriority(int priority) {
@@ -42,33 +71,51 @@ public final class VrrpGroup implements Serializable {
       return this;
     }
 
+    public @Nonnull Map<String, Set<Ip>> getVirtualAddresses() {
+      return buildVirtualAddresses();
+    }
+
     public @Nonnull Builder setSourceAddress(@Nullable ConcreteInterfaceAddress sourceAddress) {
       _sourceAddress = sourceAddress;
       return this;
     }
 
-    public @Nonnull Builder addVirtualAddress(Ip virtualAddress) {
-      _virtualAddresses.add(virtualAddress);
+    public @Nonnull Builder addVirtualAddress(String receivingInterface, Ip virtualAddress) {
+      _virtualAddresses
+          .computeIfAbsent(receivingInterface, iface -> ImmutableSet.builder())
+          .add(virtualAddress);
       return this;
     }
 
-    public @Nonnull Builder addVirtualAddresses(Iterable<Ip> virtualAddresses) {
-      _virtualAddresses.addAll(virtualAddresses);
+    public @Nonnull Builder addVirtualAddresses(
+        String receivingInterface, Iterable<Ip> virtualAddresses) {
+      _virtualAddresses
+          .computeIfAbsent(receivingInterface, iface -> ImmutableSet.builder())
+          .addAll(virtualAddresses);
       return this;
     }
 
-    public @Nonnull Builder setVirtualAddresses(Ip virtualAddress) {
-      _virtualAddresses = ImmutableSet.<Ip>builder().add(virtualAddress);
+    public @Nonnull Builder setVirtualAddresses(String receivingInterface, Ip virtualAddress) {
+      _virtualAddresses = new HashMap<>();
+      addVirtualAddress(receivingInterface, virtualAddress);
       return this;
     }
 
-    public @Nonnull Builder setVirtualAddresses(Iterable<Ip> virtualAddresses) {
-      _virtualAddresses = ImmutableSet.<Ip>builder().addAll(virtualAddresses);
+    public @Nonnull Builder setVirtualAddresses(
+        String receivingInterface, Iterable<Ip> virtualAddresses) {
+      _virtualAddresses = new HashMap<>();
+      addVirtualAddresses(receivingInterface, virtualAddresses);
+      return this;
+    }
+
+    public @Nonnull Builder setVirtualAddresses(Map<String, Set<Ip>> virtualAddresses) {
+      _virtualAddresses = new HashMap<>();
+      virtualAddresses.forEach(this::addVirtualAddresses);
       return this;
     }
 
     private Builder() {
-      _virtualAddresses = ImmutableSet.builder();
+      _virtualAddresses = new HashMap<>();
     }
   }
 
@@ -80,7 +127,7 @@ public final class VrrpGroup implements Serializable {
   private boolean _preempt;
   private int _priority;
   private @Nullable ConcreteInterfaceAddress _sourceAddress;
-  private @Nonnull Set<Ip> _virtualAddresses;
+  private @Nonnull Map<String, Set<Ip>> _virtualAddresses;
 
   public static Builder builder() {
     return new Builder();
@@ -90,7 +137,7 @@ public final class VrrpGroup implements Serializable {
       boolean preempt,
       int priority,
       @Nullable ConcreteInterfaceAddress sourceAddress,
-      Set<Ip> virtualAddresses) {
+      Map<String, Set<Ip>> virtualAddresses) {
     _preempt = preempt;
     _priority = priority;
     _sourceAddress = sourceAddress;
@@ -102,12 +149,22 @@ public final class VrrpGroup implements Serializable {
       @JsonProperty(PROP_PREEMPT) @Nullable Boolean preempt,
       @JsonProperty(PROP_PRIORITY) @Nullable Integer priority,
       @JsonProperty(PROP_SOURCE_ADDRESS) @Nullable ConcreteInterfaceAddress sourceAddress,
-      @JsonProperty(PROP_VIRTUAL_ADDRESSES) @Nullable Iterable<Ip> virtualAddresses) {
+      @JsonProperty(PROP_VIRTUAL_ADDRESSES) @Nullable Map<String, Set<Ip>> virtualAddresses) {
     return new VrrpGroup(
         firstNonNull(preempt, Boolean.FALSE),
         firstNonNull(priority, 0),
         sourceAddress,
-        ImmutableSet.copyOf(firstNonNull(virtualAddresses, ImmutableSet.of())));
+        ImmutableMap.copyOf(firstNonNull(virtualAddresses, ImmutableMap.of())));
+  }
+
+  public @Nonnull Builder toBuilder() {
+    Builder builder =
+        VrrpGroup.builder()
+            .setPreempt(_preempt)
+            .setPriority(_priority)
+            .setSourceAddress(_sourceAddress)
+            .setVirtualAddresses(_virtualAddresses);
+    return builder;
   }
 
   @Override
@@ -139,28 +196,42 @@ public final class VrrpGroup implements Serializable {
         .toString();
   }
 
+  /**
+   * Whether this virtual router should overtake a lower-priority existing master. This property is
+   * informational only, since Batfish does not model VRRP activation order.
+   */
   @JsonProperty(PROP_PREEMPT)
   public boolean getPreempt() {
     return _preempt;
   }
 
+  /** Priority during an election for this VRID. Higher priority is more preferred. */
   @JsonProperty(PROP_PRIORITY)
   public int getPriority() {
     return _priority;
   }
 
+  /** The address from which VRRP control traffic is sent. */
   @JsonProperty(PROP_SOURCE_ADDRESS)
   public @Nullable ConcreteInterfaceAddress getSourceAddress() {
     return _sourceAddress;
   }
 
+  /**
+   * Virtual addresses assigned to interfaces if this virtual router is the winner of the election
+   * for this VRID.
+   *
+   * <p>Map: interface on which to assign one or more IPs -> IPs to assign to that interface.
+   */
   @JsonIgnore
-  public @Nonnull Set<Ip> getVirtualAddresses() {
+  public @Nonnull Map<String, Set<Ip>> getVirtualAddresses() {
     return _virtualAddresses;
   }
 
   @JsonProperty(PROP_VIRTUAL_ADDRESSES)
-  private @Nonnull SortedSet<Ip> getVirtualAddressesSorted() {
-    return ImmutableSortedSet.copyOf(_virtualAddresses);
+  private @Nonnull SortedMap<String, SortedSet<Ip>> getVirtualAddressesSorted() {
+    ImmutableSortedMap.Builder<String, SortedSet<Ip>> builder = ImmutableSortedMap.naturalOrder();
+    _virtualAddresses.forEach((iface, ips) -> builder.put(iface, ImmutableSortedSet.copyOf(ips)));
+    return builder.build();
   }
 }

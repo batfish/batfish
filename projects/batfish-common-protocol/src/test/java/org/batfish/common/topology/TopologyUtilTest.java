@@ -60,6 +60,7 @@ import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LinkLocalAddress;
+import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
@@ -1462,7 +1463,7 @@ public final class TopologyUtilTest {
 
   /**
    * Tests that inactive and blacklisted interfaces are properly included or excluded from the
-   * output of {@link IpOwners#computeIpInterfaceOwners(Map, boolean, L3Adjacencies)}
+   * output of {@link IpOwners#computeIpInterfaceOwners}
    */
   @Test
   public void testIpInterfaceOwnersActiveInclusion() {
@@ -1474,15 +1475,18 @@ public final class TopologyUtilTest {
                 iface("shut", "1.1.1.1/32", false, false),
                 iface("active-black", "1.1.1.1/32", true, true),
                 iface("shut-black", "1.1.1.1/32", false, true)));
+    NetworkConfigurations nc =
+        NetworkConfigurations.of(
+            ImmutableMap.of("node", Configuration.builder().setHostname("node").build()));
 
     assertThat(
-        computeIpInterfaceOwners(nodeInterfaces, true, null),
+        computeIpInterfaceOwners(nodeInterfaces, true, null, nc),
         equalTo(
             ImmutableMap.of(
                 Ip.parse("1.1.1.1"), ImmutableMap.of("node", ImmutableSet.of("active")))));
 
     assertThat(
-        computeIpInterfaceOwners(nodeInterfaces, false, null),
+        computeIpInterfaceOwners(nodeInterfaces, false, null, nc),
         equalTo(
             ImmutableMap.of(
                 Ip.parse("1.1.1.1"),

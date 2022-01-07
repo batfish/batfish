@@ -21,6 +21,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Iterables;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -476,6 +477,9 @@ public class A10Conversion {
     return Optional.ofNullable(virtualServer.getVrid()).orElse(0);
   }
 
+  @VisibleForTesting
+  static final String RECEIVING_INTERFACE_PLACEHOOLDER = "~RECEIVING_INTERFACE_PLACEHOLDER~";
+
   /**
    * Create a {@link VrrpGroup.Builder} from the configuration for a {@code vrrp-a vrid} and a set
    * of virtual addresses.
@@ -486,12 +490,12 @@ public class A10Conversion {
       return VrrpGroup.builder()
           .setPreempt(DEFAULT_VRRP_A_PREEMPT)
           .setPriority(DEFAULT_VRRP_A_PRIORITY)
-          .setVirtualAddresses(virtualAddresses);
+          .setVirtualAddresses(RECEIVING_INTERFACE_PLACEHOOLDER, virtualAddresses);
     } else {
       return VrrpGroup.builder()
           .setPreempt(getVrrpAVridPreempt(vridConfig))
           .setPriority(getVrrpAVridPriority(vridConfig))
-          .setVirtualAddresses(virtualAddresses);
+          .setVirtualAddresses(RECEIVING_INTERFACE_PLACEHOOLDER, virtualAddresses);
     }
   }
 
@@ -504,7 +508,7 @@ public class A10Conversion {
     return VrrpGroup.builder()
         .setPreempt(getHaPreemptionEnable(ha))
         .setPriority(getHaGroupPriority(ha.getGroups().get(haGroupId)))
-        .setVirtualAddresses(virtualAddresses);
+        .setVirtualAddresses(RECEIVING_INTERFACE_PLACEHOOLDER, virtualAddresses);
   }
 
   private static int getHaGroupPriority(HaGroup haGroup) {
@@ -536,7 +540,15 @@ public class A10Conversion {
     ImmutableSortedMap.Builder<Integer, VrrpGroup> builder = ImmutableSortedMap.naturalOrder();
     vrrpGroupBuilders.forEach(
         (vrid, vrrpGroupBuilder) ->
-            builder.put(vrid, vrrpGroupBuilder.setSourceAddress(sourceAddress).build()));
+            // TODO: implement vrrp over sync interface
+            builder.put(
+                vrid,
+                vrrpGroupBuilder
+                    .setSourceAddress(sourceAddress)
+                    .setVirtualAddresses(
+                        iface.getName(),
+                        Iterables.getOnlyElement(vrrpGroupBuilder.getVirtualAddresses().values()))
+                    .build()));
     return builder.build();
   }
 

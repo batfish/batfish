@@ -12,6 +12,7 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.transformation.Transformation.always;
 import static org.batfish.datamodel.transformation.Transformation.when;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.aclName;
+import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.createClusterVrrpGroup;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.toIpAccessLists;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.HIDE_BEHIND_GATEWAY_IP;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.automaticHideRuleTransformationStep;
@@ -30,7 +31,6 @@ import static org.batfish.vendor.check_point_management.AddressSpaceToIpSpaceMet
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -55,7 +55,6 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
-import org.batfish.datamodel.Interface.Builder;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
@@ -66,7 +65,6 @@ import org.batfish.datamodel.IpSpaceMetadata;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.packet_policy.ApplyFilter;
@@ -111,6 +109,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
 
   public static final String VRF_NAME = "default";
   public static final String INTERFACE_ACL_NAME = "~INTERFACE_ACL~";
+  public static final String SYNC_INTERFACE_NAME = "Sync";
 
   public CheckPointGatewayConfiguration() {
     _bondingGroups = new HashMap<>();
@@ -807,6 +806,8 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
         return InterfaceType.AGGREGATE_CHILD;
       }
       return InterfaceType.AGGREGATED;
+    } else if (name.equals(SYNC_INTERFACE_NAME)) {
+      return InterfaceType.PHYSICAL;
     }
     return InterfaceType.UNKNOWN;
   }
@@ -885,40 +886,11 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
         new FirewallSessionInterfaceInfo(
             POST_NAT_FIB_LOOKUP, ImmutableList.of(ifaceName), null, null));
 
-    org.batfish.vendor.check_point_management.Interface clusterInterface =
-        Optional.ofNullable(_clusterInterfaces).orElse(ImmutableMap.of()).get(ifaceName);
-    if (clusterInterface != null) {
-      createClusterVrrpGroup(iface, clusterInterface, newIface);
+    if (ifaceName.equals(SYNC_INTERFACE_NAME)) {
+      createClusterVrrpGroup(iface, newIface, _clusterInterfaces, _clusterMemberIndex, _w);
     }
 
     newIface.build();
-  }
-
-  /** Create a VRRP group for the virtual IP the cluster associates with this interface. */
-  private void createClusterVrrpGroup(
-      Interface iface,
-      org.batfish.vendor.check_point_management.Interface clusterInterface,
-      Builder newIface) {
-    ConcreteInterfaceAddress sourceAddress = iface.getAddress();
-    if (sourceAddress == null) {
-      _w.redFlag(
-          String.format(
-              "Cannot assign virtual IP on interface '%s' since it has no source IP for control"
-                  + " traffic",
-              iface.getName()));
-    }
-    Ip virtualIp = clusterInterface.getIpv4Address();
-    assert virtualIp != null;
-    newIface.setVrrpGroups(
-        ImmutableSortedMap.of(
-            0,
-            VrrpGroup.builder()
-                .setSourceAddress(sourceAddress)
-                .setVirtualAddresses(virtualIp)
-                // prefer member with lowest cluster member index
-                .setPriority(VrrpGroup.MAX_PRIORITY - _clusterMemberIndex)
-                .setPreempt(true)
-                .build()));
   }
 
   /**

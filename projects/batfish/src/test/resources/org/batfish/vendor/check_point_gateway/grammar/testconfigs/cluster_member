@@ -10,4 +10,6 @@ set interface eth0 state on
 set interface eth0 ipv4-address 10.0.0.2 mask-length 24
 set interface eth1 state on
 set interface eth1 ipv4-address 1.0.0.1 mask-length 24
+set interface Sync state on
+set interface Sync ipv4-address 192.0.2.1 mask-length 24
 #

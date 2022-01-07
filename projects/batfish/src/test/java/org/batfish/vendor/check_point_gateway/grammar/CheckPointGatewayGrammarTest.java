@@ -34,6 +34,7 @@ import static org.batfish.datamodel.transformation.TransformationStep.assignSour
 import static org.batfish.main.BatfishTestUtils.DUMMY_SNAPSHOT_1;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConfiguration.INTERFACE_ACL_NAME;
+import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConfiguration.SYNC_INTERFACE_NAME;
 import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConversions.aclName;
 import static org.batfish.vendor.check_point_gateway.representation.CheckpointNatConversions.HIDE_BEHIND_GATEWAY_IP;
 import static org.batfish.vendor.check_point_gateway.representation.Interface.DEFAULT_ETH_SPEED;
@@ -2104,9 +2105,9 @@ public class CheckPointGatewayGrammarTest {
     Uid memberUid = Uid.of("1");
     Uid clusterUid = Uid.of("2");
     String memberName = "cluster_member";
-    String ifaceName = "eth0";
+    String receivingIfaceName = "eth0";
     int prefixLength = 24;
-    Ip memberIp = Ip.parse("10.0.0.2");
+    Ip syncIp = Ip.parse("192.0.2.1");
     Ip clusterIp = Ip.parse("10.0.0.1");
     ImmutableMap<Uid, GatewayOrServer> gateways =
         ImmutableMap.of(
@@ -2116,7 +2117,7 @@ public class CheckPointGatewayGrammarTest {
                 memberName,
                 ImmutableList.of(
                     new org.batfish.vendor.check_point_management.Interface(
-                        ifaceName, new InterfaceTopology(false), memberIp, prefixLength)),
+                        receivingIfaceName, new InterfaceTopology(false), syncIp, prefixLength)),
                 new GatewayOrServerPolicy(null, null),
                 memberUid),
             clusterUid,
@@ -2127,7 +2128,7 @@ public class CheckPointGatewayGrammarTest {
                 "cluster",
                 ImmutableList.of(
                     new org.batfish.vendor.check_point_management.Interface(
-                        ifaceName, new InterfaceTopology(false), clusterIp, prefixLength)),
+                        receivingIfaceName, new InterfaceTopology(false), clusterIp, prefixLength)),
                 new GatewayOrServerPolicy(null, null),
                 memberUid));
 
@@ -2136,14 +2137,18 @@ public class CheckPointGatewayGrammarTest {
 
     Map<String, Configuration> configs = parseTextConfigs(mgmt, hostname);
     Configuration c1 = configs.get(hostname);
-    assertThat(c1, hasInterface(ifaceName));
-    VrrpGroup vrrpGroup = c1.getAllInterfaces().get(ifaceName).getVrrpGroups().get(0);
+
+    assertThat(c1.getAllInterfaces(), hasKeys(receivingIfaceName, SYNC_INTERFACE_NAME, "eth1"));
+
+    VrrpGroup vrrpGroup = c1.getAllInterfaces().get(SYNC_INTERFACE_NAME).getVrrpGroups().get(0);
 
     assertNotNull(vrrpGroup);
-    assertThat(vrrpGroup.getVirtualAddresses(), contains(clusterIp));
+    assertThat(
+        vrrpGroup.getVirtualAddresses(),
+        equalTo(ImmutableMap.of(receivingIfaceName, ImmutableSet.of(clusterIp))));
     assertThat(
         vrrpGroup.getSourceAddress(),
-        equalTo(ConcreteInterfaceAddress.create(memberIp, prefixLength)));
+        equalTo(ConcreteInterfaceAddress.create(syncIp, prefixLength)));
     assertTrue(vrrpGroup.getPreempt());
     assertThat(vrrpGroup.getPriority(), equalTo(VrrpGroup.MAX_PRIORITY - 1));
   }
