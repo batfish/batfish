@@ -485,7 +485,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
                         newGroup.setSourceAddress(ifaceAddress);
                         Ip virtualAddress = vrrpGroup.getVirtualAddress();
                         if (virtualAddress != null) {
-                          newGroup.setVirtualAddresses(virtualAddress);
+                          newGroup.setVirtualAddresses(ifaceName, virtualAddress);
                         } else {
                           _w.redFlag(
                               "No virtual address set for VRRP on interface: '" + ifaceName + "'");

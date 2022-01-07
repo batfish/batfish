@@ -45,17 +45,20 @@ public class VrrpComputationTest {
     ConcreteInterfaceAddress i1SourceAddress = ConcreteInterfaceAddress.parse("1.1.1.22/32");
     ConcreteInterfaceAddress i2SourceAddress = ConcreteInterfaceAddress.parse("1.1.1.33/32");
 
+    String i1Name = "i1";
+    String i2Name = "i2";
+
     int vrrpGroupId = 1;
     int priority = 100;
     VrrpGroup.Builder vg1 =
         VrrpGroup.builder()
             .setPriority(priority)
             .setSourceAddress(i1SourceAddress)
-            .setVirtualAddresses(_virtInterfaceAddr);
+            .setVirtualAddresses(i1Name, _virtInterfaceAddr);
     VrrpGroup.Builder vg2 =
         VrrpGroup.builder()
             .setSourceAddress(i2SourceAddress)
-            .setVirtualAddresses(_virtInterfaceAddr);
+            .setVirtualAddresses(i2Name, _virtInterfaceAddr);
     if (equalPriority) {
       vg2.setPriority(priority);
     } else {
@@ -71,12 +74,14 @@ public class VrrpComputationTest {
         ib.setOwner(c1)
             .setAddress(i1SourceAddress)
             .setVrrpGroups(ImmutableSortedMap.of(vrrpGroupId, vg1.build()))
+            .setName(i1Name)
             .build();
 
     _i2 =
         ib.setOwner(c2)
             .setAddress(i2SourceAddress)
             .setVrrpGroups(ImmutableSortedMap.of(vrrpGroupId, vg2.build()))
+            .setName(i2Name)
             .build();
 
     return ImmutableSortedMap.of("n1", c1, "n2", c2);

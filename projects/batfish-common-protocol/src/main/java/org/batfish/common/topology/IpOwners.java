@@ -34,6 +34,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
+import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.hsrp.HsrpGroup;
@@ -79,9 +80,13 @@ public final class IpOwners {
 
     {
       _allDeviceOwnedIps =
-          ImmutableMap.copyOf(computeIpInterfaceOwners(allInterfaces, false, l3Adjacencies));
+          ImmutableMap.copyOf(
+              computeIpInterfaceOwners(
+                  allInterfaces, false, l3Adjacencies, NetworkConfigurations.of(configurations)));
       _activeDeviceOwnedIps =
-          ImmutableMap.copyOf(computeIpInterfaceOwners(allInterfaces, true, l3Adjacencies));
+          ImmutableMap.copyOf(
+              computeIpInterfaceOwners(
+                  allInterfaces, true, l3Adjacencies, NetworkConfigurations.of(configurations)));
     }
 
     {
@@ -219,10 +224,11 @@ public final class IpOwners {
   static Map<Ip, Map<String, Set<String>>> computeIpInterfaceOwners(
       Map<String, Set<Interface>> allInterfaces,
       boolean excludeInactive,
-      L3Adjacencies l3Adjacencies) {
+      L3Adjacencies l3Adjacencies,
+      NetworkConfigurations nc) {
     Map<Ip, Map<String, Set<String>>> ipOwners = new HashMap<>();
-    // vrid -> interface -> ips owned by interface if it wins election
-    Map<Integer, Map<Interface, Set<Ip>>> vrrpGroups = new HashMap<>();
+    // vrid -> sync interface -> interface to own IPs if sync interface wins election -> IPs
+    Map<Integer, Map<NodeInterfacePair, Map<String, Set<Ip>>>> vrrpGroups = new HashMap<>();
     Table<Ip, Integer, Set<Interface>> hsrpGroups = HashBasedTable.create();
     allInterfaces.forEach(
         (hostname, interfaces) ->
@@ -243,7 +249,7 @@ public final class IpOwners {
                                   .computeIfAbsent(hostname, k -> new HashSet<>())
                                   .add(i.getName()));
                 }));
-    processVrrpGroups(ipOwners, vrrpGroups, l3Adjacencies);
+    processVrrpGroups(ipOwners, vrrpGroups, l3Adjacencies, nc);
     processHsrpGroups(ipOwners, hsrpGroups);
 
     // freeze
@@ -345,9 +351,15 @@ public final class IpOwners {
     return hsrpEvaluator.getPriority();
   }
 
-  /** extract VRRP info from a given interface and add it to the {@code vrrpGroups} table */
+  /**
+   * extract VRRP info from a given interface and add it to the {@code vrrpGroups} table.
+   *
+   * @param vrrpGroups Output map: vrid -> sync interface -> interface to own IPs if sync interface
+   *     wins election -> IPs
+   */
   @VisibleForTesting
-  static void extractVrrp(Map<Integer, Map<Interface, Set<Ip>>> vrrpGroups, Interface i) {
+  static void extractVrrp(
+      Map<Integer, Map<NodeInterfacePair, Map<String, Set<Ip>>>> vrrpGroups, Interface i) {
     // Inactive interfaces could never win a VRRP election
     if (!i.getActive() || i.getBlacklisted()) {
       return;
@@ -371,12 +383,14 @@ public final class IpOwners {
                  */
                 return;
               }
-              Map<Interface, Set<Ip>> candidates = vrrpGroups.get(vrid);
+              // sync interface -> interface to receive IPs -> IPs
+              Map<NodeInterfacePair, Map<String, Set<Ip>>> candidates = vrrpGroups.get(vrid);
               if (candidates == null) {
-                candidates = new IdentityHashMap<>();
+                candidates = new HashMap<>();
                 vrrpGroups.put(vrid, candidates);
               }
-              candidates.put(i, i.getVrrpGroups().get(vrid).getVirtualAddresses());
+              candidates.put(
+                  NodeInterfacePair.of(i), i.getVrrpGroups().get(vrid).getVirtualAddresses());
             });
   }
 
@@ -386,37 +400,45 @@ public final class IpOwners {
    */
   static void processVrrpGroups(
       Map<Ip, Map<String, Set<String>>> ipOwners,
-      Map<Integer, Map<Interface, Set<Ip>>> vrrpGroups,
-      L3Adjacencies l3Adjacencies) {
+      Map<Integer, Map<NodeInterfacePair, Map<String, Set<Ip>>>> vrrpGroups,
+      L3Adjacencies l3Adjacencies,
+      NetworkConfigurations nc) {
     vrrpGroups.forEach(
         (vrid, ipSpaceByCandidate) -> {
           assert vrid != null;
-          Set<Interface> candidates = ipSpaceByCandidate.keySet();
+          Set<NodeInterfacePair> candidates = ipSpaceByCandidate.keySet();
 
-          List<List<Interface>> candidatePartitions =
+          List<List<NodeInterfacePair>> candidatePartitions =
               partitionVrrpCandidates(candidates, l3Adjacencies);
 
           candidatePartitions.forEach(
               cp -> {
+                List<Interface> partitionInterfaces =
+                    cp.stream()
+                        .map(nip -> nc.getInterface(nip.getHostname(), nip.getInterface()).get())
+                        .collect(ImmutableList.toImmutableList());
                 /*
                  * Compare priorities first, then highest interface IP, then hostname, then interface name.
                  */
-                Interface vrrpMaster =
-                    Collections.max(
-                        cp,
-                        Comparator.comparingInt(
-                                (Interface o) -> o.getVrrpGroups().get(vrid).getPriority())
-                            .thenComparing(o -> o.getConcreteAddress().getIp())
-                            .thenComparing(o -> NodeInterfacePair.of(o)));
+                NodeInterfacePair vrrpMaster =
+                    NodeInterfacePair.of(
+                        Collections.max(
+                            partitionInterfaces,
+                            Comparator.comparingInt(
+                                    (Interface o) -> o.getVrrpGroups().get(vrid).getPriority())
+                                .thenComparing(o -> o.getConcreteAddress().getIp())
+                                .thenComparing(o -> NodeInterfacePair.of(o))));
                 ipSpaceByCandidate
                     .get(vrrpMaster)
                     .forEach(
-                        ip ->
-                            ipOwners
-                                .computeIfAbsent(ip, k -> new HashMap<>())
-                                .computeIfAbsent(
-                                    vrrpMaster.getOwner().getHostname(), k -> new HashSet<>())
-                                .add(vrrpMaster.getName()));
+                        (receivingInterface, ips) ->
+                            ips.forEach(
+                                ip ->
+                                    ipOwners
+                                        .computeIfAbsent(ip, k -> new HashMap<>())
+                                        .computeIfAbsent(
+                                            vrrpMaster.getHostname(), k -> new HashSet<>())
+                                        .add(vrrpMaster.getInterface())));
               });
         });
   }
@@ -426,22 +448,21 @@ public final class IpOwners {
    * broadcast domain. This disambiguates VRRP groups that have the same IP and group ID
    */
   @VisibleForTesting
-  static List<List<Interface>> partitionVrrpCandidates(
-      Set<Interface> candidates, L3Adjacencies l3Adjacencies) {
-    Map<NodeInterfacePair, List<Interface>> partitions = new HashMap<>();
-    for (Interface c : candidates) {
+  static List<List<NodeInterfacePair>> partitionVrrpCandidates(
+      Set<NodeInterfacePair> candidates, L3Adjacencies l3Adjacencies) {
+    Map<NodeInterfacePair, List<NodeInterfacePair>> partitions = new HashMap<>();
+    for (NodeInterfacePair cni : candidates) {
       boolean foundRepresentative = false;
-      NodeInterfacePair cni = NodeInterfacePair.of(c);
       for (NodeInterfacePair representative : partitions.keySet()) {
         if (l3Adjacencies.inSameBroadcastDomain(representative, cni)) {
-          partitions.get(representative).add(c);
+          partitions.get(representative).add(cni);
           foundRepresentative = true;
           break;
         }
       }
       if (!foundRepresentative) {
         partitions.put(cni, new LinkedList<>());
-        partitions.get(cni).add(c);
+        partitions.get(cni).add(cni);
       }
     }
     return ImmutableList.copyOf(partitions.values());
