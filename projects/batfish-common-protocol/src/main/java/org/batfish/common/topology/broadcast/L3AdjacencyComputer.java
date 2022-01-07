@@ -285,6 +285,11 @@ public class L3AdjacencyComputer {
       return;
     }
 
+    if (i.getInterfaceType() == InterfaceType.TUNNEL) {
+      // These interfaces do not use L2 broadcast domains / adjacency to establish edges
+      return;
+    }
+
     if (i.getInterfaceType() == InterfaceType.VLAN) {
       Integer vlan = i.getVlan();
       if (vlan == null) {
@@ -306,7 +311,10 @@ public class L3AdjacencyComputer {
       return;
     }
 
-    LOGGER.warn("Surprised by L3 interface {}: unsure how to connect", nip);
+    LOGGER.warn(
+        "Surprised by L3 interface {} of type {}: unsure how to connect",
+        nip,
+        i.getInterfaceType());
   }
 
   @VisibleForTesting
