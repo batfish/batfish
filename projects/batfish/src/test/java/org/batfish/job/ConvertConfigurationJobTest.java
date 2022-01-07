@@ -1,12 +1,19 @@
 package org.batfish.job;
 
+import static org.batfish.common.matchers.WarningMatchers.hasText;
+import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.job.ConvertConfigurationJob.finalizeConfiguration;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSortedMap;
+import java.util.SortedMap;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclAclLine;
@@ -16,9 +23,11 @@ import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceType;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.NotMatchExpr;
@@ -131,5 +140,60 @@ public final class ConvertConfigurationJobTest {
     _thrown.expect(VendorConversionException.class);
     _thrown.expectMessage(containsString("Undefined reference"));
     finalizeConfiguration(c, new Warnings());
+  }
+
+  @Test
+  public void testFInalizeConfigurationVerifyVrrpGroups() {
+    {
+      // Test that undefined interface is removed from VrrpGroup, and warning is added.
+      Configuration c = new Configuration("c", ConfigurationFormat.CISCO_IOS);
+      c.setDefaultCrossZoneAction(LineAction.PERMIT);
+      c.setDefaultInboundAction(LineAction.PERMIT);
+
+      Interface.builder()
+          .setOwner(c)
+          .setName("exists")
+          .setVrrpGroups(
+              ImmutableSortedMap.of(
+                  1,
+                  VrrpGroup.builder()
+                      .addVirtualAddress("exists", Ip.parse("1.1.1.1"))
+                      .addVirtualAddress("missing", Ip.parse("2.2.2.2"))
+                      .build()))
+          .build();
+      Warnings w = new Warnings(false, true, false);
+      finalizeConfiguration(c, w);
+
+      assertThat(
+          c.getAllInterfaces().get("exists").getVrrpGroups().get(1).getVirtualAddresses(),
+          hasKeys("exists"));
+      assertThat(
+          w.getRedFlagWarnings(),
+          contains(
+              hasText(
+                  "Removing virtual addresses to be assigned to non-existent interface 'missing'"
+                      + " for VRID 1 on sync interface 'exists'")));
+    }
+    {
+      // Test that there are no warnings when all VrrpGroup referenced interfaces exist.
+      Configuration c = new Configuration("c", ConfigurationFormat.CISCO_IOS);
+      c.setDefaultCrossZoneAction(LineAction.PERMIT);
+      c.setDefaultInboundAction(LineAction.PERMIT);
+
+      SortedMap<Integer, VrrpGroup> vrrpGroups =
+          ImmutableSortedMap.of(
+              1,
+              VrrpGroup.builder()
+                  .addVirtualAddress("exists", Ip.parse("1.1.1.1"))
+                  .addVirtualAddress("alsoExists", Ip.parse("2.2.2.2"))
+                  .build());
+      Interface.builder().setOwner(c).setName("exists").setVrrpGroups(vrrpGroups).build();
+      Interface.builder().setOwner(c).setName("alsoExists").build();
+      Warnings w = new Warnings(false, true, false);
+      finalizeConfiguration(c, w);
+
+      assertThat(c.getAllInterfaces().get("exists").getVrrpGroups(), equalTo(vrrpGroups));
+      assertThat(w.getRedFlagWarnings(), empty());
+    }
   }
 }

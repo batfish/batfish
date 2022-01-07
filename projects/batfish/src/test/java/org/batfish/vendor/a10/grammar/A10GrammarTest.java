@@ -1447,6 +1447,7 @@ public class A10GrammarTest {
                       .setPreempt(true)
                       .setPriority(DEFAULT_VRRP_A_PRIORITY)
                       .setVirtualAddresses(
+                          i.getName(),
                           ImmutableSet.of(
                               Ip.parse("1.0.0.1"),
                               Ip.parse("1.0.0.2"),
@@ -2132,6 +2133,7 @@ public class A10GrammarTest {
                       .setPreempt(false)
                       .setPriority(200)
                       .setVirtualAddresses(
+                          i.getName(),
                           ImmutableSet.of(
                               Ip.parse("10.0.2.1"),
                               Ip.parse("10.0.3.1"),

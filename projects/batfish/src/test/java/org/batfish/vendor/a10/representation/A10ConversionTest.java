@@ -34,6 +34,7 @@ import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_T
 import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_NAT_POOL;
 import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_VIRTUAL_SERVER_FLAGGED;
 import static org.batfish.vendor.a10.representation.A10Conversion.KERNEL_ROUTE_TAG_VIRTUAL_SERVER_UNFLAGGED;
+import static org.batfish.vendor.a10.representation.A10Conversion.RECEIVING_INTERFACE_PLACEHOOLDER;
 import static org.batfish.vendor.a10.representation.A10Conversion.computeAclName;
 import static org.batfish.vendor.a10.representation.A10Conversion.computeUpdateSource;
 import static org.batfish.vendor.a10.representation.A10Conversion.convertAccessList;
@@ -431,7 +432,7 @@ public class A10ConversionTest {
             VrrpGroup.builder()
                 .setPreempt(DEFAULT_VRRP_A_PREEMPT)
                 .setPriority(DEFAULT_VRRP_A_PRIORITY)
-                .setVirtualAddresses(ImmutableSet.of(ip))
+                .setVirtualAddresses(RECEIVING_INTERFACE_PLACEHOOLDER, ImmutableSet.of(ip))
                 .build()));
 
     // non-null vrid config
@@ -445,7 +446,7 @@ public class A10ConversionTest {
             VrrpGroup.builder()
                 .setPreempt(false)
                 .setPriority(5)
-                .setVirtualAddresses(ImmutableSet.of(ip))
+                .setVirtualAddresses(RECEIVING_INTERFACE_PLACEHOOLDER, ImmutableSet.of(ip))
                 .build()));
   }
 
@@ -457,7 +458,7 @@ public class A10ConversionTest {
             VrrpGroup.builder()
                 .setPriority(5)
                 .setPreempt(true)
-                .setVirtualAddresses(Ip.parse("1.1.1.1")));
+                .setVirtualAddresses(RECEIVING_INTERFACE_PLACEHOOLDER, Ip.parse("1.1.1.1")));
     ConcreteInterfaceAddress sourceAddress =
         ConcreteInterfaceAddress.create(Ip.parse("2.2.2.2"), 24);
     org.batfish.datamodel.Interface iface =
@@ -471,7 +472,7 @@ public class A10ConversionTest {
                 VrrpGroup.builder()
                     .setPriority(5)
                     .setPreempt(true)
-                    .setVirtualAddresses(Ip.parse("1.1.1.1"))
+                    .setVirtualAddresses(iface.getName(), Ip.parse("1.1.1.1"))
                     .setSourceAddress(sourceAddress)
                     .build())));
   }

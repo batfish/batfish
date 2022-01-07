@@ -6330,13 +6330,16 @@ public final class FlatJuniperGrammarTest {
     {
       org.batfish.datamodel.VrrpGroup v = i.getVrrpGroups().get(1);
       assertThat(v.getSourceAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.0.1/24")));
-      assertThat(v.getVirtualAddresses(), contains(Ip.parse("10.0.0.2")));
+      assertThat(v.getVirtualAddresses(), hasKeys(i.getName()));
+      assertThat(v.getVirtualAddresses().get(i.getName()), contains(Ip.parse("10.0.0.2")));
     }
     {
       org.batfish.datamodel.VrrpGroup v = i.getVrrpGroups().get(2);
       assertThat(v.getSourceAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.1.1/24")));
+      assertThat(v.getVirtualAddresses(), hasKeys(i.getName()));
       assertThat(
-          v.getVirtualAddresses(), containsInAnyOrder(Ip.parse("10.0.1.2"), Ip.parse("10.0.1.3")));
+          v.getVirtualAddresses().get(i.getName()),
+          containsInAnyOrder(Ip.parse("10.0.1.2"), Ip.parse("10.0.1.3")));
     }
   }
 

@@ -1,8 +1,11 @@
 package org.batfish.vendor.check_point_gateway.representation;
 
+import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConfiguration.SYNC_INTERFACE_NAME;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSortedMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -14,11 +17,13 @@ import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.AclLine;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.FalseExpr;
@@ -433,4 +438,32 @@ public final class CheckPointGatewayConversions {
   }
 
   private CheckPointGatewayConversions() {}
+
+  /** Create a VRRP group for the virtual IP the cluster associates with this interface. */
+  static void createClusterVrrpGroup(
+      Interface syncInterface,
+      org.batfish.datamodel.Interface.Builder newSyncIface,
+      Map<String, org.batfish.vendor.check_point_management.Interface> clusterInterfaces,
+      int clusterMemberIndex,
+      Warnings warnings) {
+    assert syncInterface.getName().equals(SYNC_INTERFACE_NAME);
+    ConcreteInterfaceAddress sourceAddress = syncInterface.getAddress();
+    if (sourceAddress == null) {
+      warnings.redFlag(
+          String.format(
+              "Cannot assign virtual IPs since Sync interface has no source IP for"
+                  + " control traffic"));
+    }
+    VrrpGroup.Builder vgBuilder =
+        VrrpGroup.builder()
+            .setSourceAddress(sourceAddress)
+            // prefer member with lowest cluster member index
+            .setPriority(VrrpGroup.MAX_PRIORITY - clusterMemberIndex)
+            .setPreempt(true);
+    clusterInterfaces.forEach(
+        (receivingIfaceName, clusterInterface) ->
+            vgBuilder.addVirtualAddress(receivingIfaceName, clusterInterface.getIpv4Address()));
+
+    newSyncIface.setVrrpGroups(ImmutableSortedMap.of(0, vgBuilder.build()));
+  }
 }

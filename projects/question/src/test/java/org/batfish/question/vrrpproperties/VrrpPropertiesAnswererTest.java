@@ -56,20 +56,21 @@ public final class VrrpPropertiesAnswererTest {
   public void testGetProperties() {
     Configuration conf1 = new Configuration("node1", ConfigurationFormat.CISCO_IOS);
 
-    VrrpGroup group =
+    VrrpGroup.Builder group =
         VrrpGroup.builder()
-            .setVirtualAddresses(Ip.parse("1.1.1.1"))
             .setSourceAddress(ConcreteInterfaceAddress.create(Ip.parse("1.1.1.2"), 29))
             .setPriority(23)
-            .setPreempt(true)
-            .build();
+            .setPreempt(true);
+
+    VrrpGroup group1 = group.setVirtualAddresses("iface1", Ip.parse("1.1.1.1")).build();
+    VrrpGroup group2 = group.setVirtualAddresses("iface2", Ip.parse("1.1.1.1")).build();
 
     // active interface with VRRP group
     Interface iface1 =
         Interface.builder()
             .setName("iface1")
             .setOwner(conf1)
-            .setVrrpGroups(ImmutableSortedMap.of(0, group))
+            .setVrrpGroups(ImmutableSortedMap.of(0, group1))
             .setActive(true)
             .build();
 
@@ -78,7 +79,7 @@ public final class VrrpPropertiesAnswererTest {
         Interface.builder()
             .setName("iface2")
             .setOwner(conf1)
-            .setVrrpGroups(ImmutableSortedMap.of(0, group))
+            .setVrrpGroups(ImmutableSortedMap.of(0, group2))
             .setActive(false)
             .build();
 
@@ -92,8 +93,8 @@ public final class VrrpPropertiesAnswererTest {
     MockSpecifierContext ctxt =
         MockSpecifierContext.builder().setConfigs(ImmutableMap.of("node1", conf1)).build();
 
-    Row expectedRow1 = populateRow(createRowBuilder("node1", iface1), 0, group).build();
-    Row expectedRow2 = populateRow(createRowBuilder("node1", iface2), 0, group).build();
+    Row expectedRow1 = populateRow(createRowBuilder("node1", iface1), 0, group1).build();
+    Row expectedRow2 = populateRow(createRowBuilder("node1", iface2), 0, group2).build();
 
     assertThat(
         getProperties(
@@ -121,7 +122,8 @@ public final class VrrpPropertiesAnswererTest {
 
     VrrpGroup group =
         VrrpGroup.builder()
-            .setVirtualAddresses(ImmutableList.of(Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2")))
+            .setVirtualAddresses(
+                "iface", ImmutableList.of(Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2")))
             .setSourceAddress(ConcreteInterfaceAddress.create(Ip.parse("1.1.1.2"), 29))
             .setPriority(23)
             .setPreempt(true)
@@ -185,7 +187,7 @@ public final class VrrpPropertiesAnswererTest {
         ConcreteInterfaceAddress.create(Ip.parse("2.2.2.1"), 29);
     VrrpGroup group =
         VrrpGroup.builder()
-            .setVirtualAddresses(address)
+            .setVirtualAddresses("foo", address)
             .setSourceAddress(sourceAddress)
             .setPriority(23)
             .setPreempt(true)

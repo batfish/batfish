@@ -16,7 +16,7 @@ public class VrrpGroupTest {
         VrrpGroup.builder()
             .setPreempt(true)
             .setPriority(1)
-            .setVirtualAddresses(Ip.parse("2.2.2.2"))
+            .setVirtualAddresses("i1", Ip.parse("2.2.2.2"))
             .setSourceAddress(ConcreteInterfaceAddress.create(Ip.parse("1.1.1.1"), 24))
             .build();
     assertThat(SerializationUtils.clone(obj), equalTo(obj));
@@ -34,7 +34,7 @@ public class VrrpGroupTest {
             builder
                 .setSourceAddress(ConcreteInterfaceAddress.create(Ip.parse("1.1.1.1"), 24))
                 .build())
-        .addEqualityGroup(builder.setVirtualAddresses(Ip.parse("2.2.2.2")).build())
+        .addEqualityGroup(builder.setVirtualAddresses("i1", Ip.parse("2.2.2.2")).build())
         .testEquals();
   }
 }

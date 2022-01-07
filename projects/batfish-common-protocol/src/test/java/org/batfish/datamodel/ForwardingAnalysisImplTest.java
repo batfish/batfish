@@ -299,8 +299,11 @@ public class ForwardingAnalysisImplTest {
     Vrf vrf2 = _vb.build();
     ConcreteInterfaceAddress i1SourceAddress =
         ConcreteInterfaceAddress.create(P1.getFirstHostIp(), P1.getPrefixLength());
+    String i1Name = "i1";
+    String i2Name = "i2";
     Interface i1 =
         _ib.setVrf(vrf1)
+            .setName(i1Name)
             .setAddress(i1SourceAddress)
             .setVrrpGroups(
                 ImmutableSortedMap.of(
@@ -308,7 +311,7 @@ public class ForwardingAnalysisImplTest {
                     VrrpGroup.builder()
                         .setPriority(100)
                         .setSourceAddress(i1SourceAddress)
-                        .setVirtualAddresses(Ip.parse("1.1.1.1"))
+                        .setVirtualAddresses(i1Name, Ip.parse("1.1.1.1"))
                         .build()))
             .build();
 
@@ -316,6 +319,7 @@ public class ForwardingAnalysisImplTest {
         ConcreteInterfaceAddress.create(P1.getLastHostIp(), P1.getPrefixLength());
     Interface i2 =
         _ib.setVrf(vrf2)
+            .setName(i2Name)
             .setAddress(i2SourceAddress)
             .setVrrpGroups(
                 ImmutableSortedMap.of(
@@ -323,7 +327,7 @@ public class ForwardingAnalysisImplTest {
                     VrrpGroup.builder()
                         .setPriority(110)
                         .setSourceAddress(i2SourceAddress)
-                        .setVirtualAddresses(Ip.parse("1.1.1.1"))
+                        .setVirtualAddresses(i2Name, Ip.parse("1.1.1.1"))
                         .build()))
             .build();
 
