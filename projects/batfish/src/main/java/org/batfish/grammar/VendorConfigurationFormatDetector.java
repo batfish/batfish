@@ -132,12 +132,16 @@ public final class VendorConfigurationFormatDetector {
       Pattern.compile("(?m)^! device: .*\\(.*EOS-\\d.*");
   private static final Pattern ARISTA_FLASH_PATTERN =
       Pattern.compile("(?m)^.*boot system flash.*\\.swi");
+  private static final Pattern ARISTA_TELLS =
+      Pattern.compile("(?m)^ip (ext)?community-list regexp");
 
   @Nullable
   private ConfigurationFormat checkArista() {
     if (fileTextMatches(ARISTA_FLASH_PATTERN)) {
       return ConfigurationFormat.ARISTA;
     } else if (fileTextMatches(ARISTA_EOS_PATTERN)) {
+      return ConfigurationFormat.ARISTA;
+    } else if (fileTextMatches(ARISTA_TELLS)) {
       return ConfigurationFormat.ARISTA;
     }
 
