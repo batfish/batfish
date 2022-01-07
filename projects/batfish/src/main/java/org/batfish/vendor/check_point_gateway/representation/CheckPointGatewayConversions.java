@@ -443,16 +443,19 @@ public final class CheckPointGatewayConversions {
   static void createClusterVrrpGroup(
       Interface syncInterface,
       org.batfish.datamodel.Interface.Builder newSyncIface,
-      Map<String, org.batfish.vendor.check_point_management.Interface> clusterInterfaces,
+      @Nullable Map<String, org.batfish.vendor.check_point_management.Interface> clusterInterfaces,
       int clusterMemberIndex,
       Warnings warnings) {
     assert syncInterface.getName().equals(SYNC_INTERFACE_NAME);
+    if (clusterInterfaces == null) {
+      return;
+    }
+
     ConcreteInterfaceAddress sourceAddress = syncInterface.getAddress();
     if (sourceAddress == null) {
       warnings.redFlag(
-          String.format(
-              "Cannot assign virtual IPs since Sync interface has no source IP for"
-                  + " control traffic"));
+          "Cannot assign virtual IPs since Sync interface has no source IP for"
+              + " control traffic");
     }
     VrrpGroup.Builder vgBuilder =
         VrrpGroup.builder()

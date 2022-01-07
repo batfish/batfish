@@ -934,7 +934,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
   /** destination prefix -> static route definition */
   private Map<Prefix, StaticRoute> _staticRoutes;
 
-  private transient Map<String, org.batfish.vendor.check_point_management.Interface>
+  private transient @Nullable Map<String, org.batfish.vendor.check_point_management.Interface>
       _clusterInterfaces;
 
   private transient int _clusterMemberIndex;
