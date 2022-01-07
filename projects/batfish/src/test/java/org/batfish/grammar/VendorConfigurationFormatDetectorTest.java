@@ -255,18 +255,36 @@ public class VendorConfigurationFormatDetectorTest {
     String flatPanorama = "set deviceconfig system panorama-server 1.2.3.4\n}";
     String flatSendPanorama = "set alarm informational send-to-panorama yes\n";
     String flatDeviceConfig = "set deviceconfig system blah\n";
+    String flatBraceNotMeaningNested =
+        "set panorama log-settings http FOO format system payload '{\"text\": \"*BAR Panorama"
+            + " System Log*\\n"
+            + "*Device Name*:panorama01or panorama01\\n"
+            + "*Receive Time*: $receive_time *Severity:* $severity *Type*: $subtype\\n"
+            + "*Log Message:* $opaque\"}'\n";
     String flattened = "####BATFISH FLATTENED PALO ALTO CONFIG####\n";
 
     /* Confirm hierarchical PAN configs are correctly identified */
     for (String fileText :
-        ImmutableList.of(rancid, rancid2, panorama, sendPanorama, deviceConfig)) {
+        ImmutableList.of(
+            rancid,
+            rancid2,
+            panorama,
+            sendPanorama,
+            deviceConfig,
+            panorama + flatBraceNotMeaningNested)) {
       assertThat(identifyConfigurationFormat(fileText), equalTo(PALO_ALTO_NESTED));
     }
 
     /* Confirm flat (set-style) PAN configs are correctly identified */
     for (String fileText :
         ImmutableList.of(
-            flatRancid, flatRancid2, flatPanorama, flatSendPanorama, flatDeviceConfig, flattened)) {
+            flatRancid,
+            flatRancid2,
+            flatPanorama,
+            flatSendPanorama,
+            flatDeviceConfig,
+            flatPanorama + flatBraceNotMeaningNested,
+            flattened)) {
       assertThat(identifyConfigurationFormat(fileText), equalTo(PALO_ALTO));
     }
   }
