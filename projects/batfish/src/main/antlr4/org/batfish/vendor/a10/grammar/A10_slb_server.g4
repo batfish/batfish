@@ -6,6 +6,9 @@ options {
    tokenVocab = A10Lexer;
 }
 
+// Same syntax as ss_server, except in `no` context (so no definition lines can follow)
+sns_server: SERVER slb_server_name slb_server_target? NEWLINE;
+
 ss_server: SERVER slb_server_name slb_server_target? NEWLINE sss_definition*;
 
 // TODO support other target types, like hostname or interface

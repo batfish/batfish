@@ -43,3 +43,10 @@ slb server SERVER2 10.0.0.2
 slb server SERVER2
   weight 1000
 !
+! Server is successfully deleted without specifying target
+slb server SERVER4 10.0.0.4
+no slb server SERVER4
+
+! Server is successfully deleted when correct target is specified
+slb server SERVER5 10.0.0.5
+no slb server SERVER5 10.0.0.5
