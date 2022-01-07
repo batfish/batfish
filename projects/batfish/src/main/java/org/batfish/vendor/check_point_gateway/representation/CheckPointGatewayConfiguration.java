@@ -794,7 +794,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
 
   InterfaceType getInterfaceType(Interface iface) {
     String name = iface.getName();
-    if (name.startsWith("eth") || name.equals(SYNC_INTERFACE_NAME)) {
+    if (name.startsWith("eth")) {
       if (name.contains(".")) {
         return InterfaceType.LOGICAL;
       }
@@ -806,6 +806,8 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
         return InterfaceType.AGGREGATE_CHILD;
       }
       return InterfaceType.AGGREGATED;
+    } else if (name.equals(SYNC_INTERFACE_NAME)) {
+      return InterfaceType.PHYSICAL;
     }
     return InterfaceType.UNKNOWN;
   }

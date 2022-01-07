@@ -21,7 +21,24 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
-/** Configuration for a VRID on a router. */
+/**
+ * Configuration for a VRID on a router.
+ *
+ * <p>Hybrid model supporting RFC VRRP, VRRP-A (A10), and CheckPoint cluster IPs.
+ *
+ * <ul>
+ *   <li>For RFC VRRP, all IPs should be assigned to a single interface, and that interface should
+ *       be the same as the sync inteface on which the {@link VrrpGroup} sits.
+ *   <li>TODO: document virtual addresses for VRRP-A (A10)
+ *   <li>For CheckPoint cluster IPs, each entry should be a physical or logical interface interface
+ *       on the device other than the Sync interface, and this VrrpGroup should sit on the Sync
+ *       interface.
+ * </ul>
+ *
+ * TODO: Current limitation: for CheckPoint, if an interface on which to assign IPs is down and this
+ * virtual router is master, the IPs to be assigned to that interface will not be assigned to any
+ * other cluster member.
+ */
 @ParametersAreNonnullByDefault
 public final class VrrpGroup implements Serializable {
 
@@ -163,22 +180,33 @@ public final class VrrpGroup implements Serializable {
         .toString();
   }
 
+  /**
+   * Whether this virtual router should overtake a lower-priority existing master. This property is
+   * informational only, since Batfish does not model VRRP activation order.
+   */
   @JsonProperty(PROP_PREEMPT)
   public boolean getPreempt() {
     return _preempt;
   }
 
+  /** Priority during an election for this VRID. Higher priority is more preferred. */
   @JsonProperty(PROP_PRIORITY)
   public int getPriority() {
     return _priority;
   }
 
+  /** The address from which VRRP control traffic is sent. */
   @JsonProperty(PROP_SOURCE_ADDRESS)
   public @Nullable ConcreteInterfaceAddress getSourceAddress() {
     return _sourceAddress;
   }
 
-  /** interface receiving IPs -> IPs */
+  /**
+   * Virtual addresses assigned to interfaces if this virtual router is the winner of the election
+   * for this VRID.
+   *
+   * <p>Map: interface on which to assign one or more IPs -> IPs to assign to that interface.
+   */
   @JsonIgnore
   public @Nonnull Map<String, Set<Ip>> getVirtualAddresses() {
     return _virtualAddresses;
