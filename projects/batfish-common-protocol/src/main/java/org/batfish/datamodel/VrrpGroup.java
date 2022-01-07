@@ -108,6 +108,12 @@ public final class VrrpGroup implements Serializable {
       return this;
     }
 
+    public @Nonnull Builder setVirtualAddresses(Map<String, Set<Ip>> virtualAddresses) {
+      _virtualAddresses = new HashMap<>();
+      virtualAddresses.forEach(this::addVirtualAddresses);
+      return this;
+    }
+
     private Builder() {
       _virtualAddresses = new HashMap<>();
     }
@@ -149,6 +155,16 @@ public final class VrrpGroup implements Serializable {
         firstNonNull(priority, 0),
         sourceAddress,
         ImmutableMap.copyOf(firstNonNull(virtualAddresses, ImmutableMap.of())));
+  }
+
+  public @Nonnull Builder toBuilder() {
+    Builder builder =
+        VrrpGroup.builder()
+            .setPreempt(_preempt)
+            .setPriority(_priority)
+            .setSourceAddress(_sourceAddress)
+            .setVirtualAddresses(_virtualAddresses);
+    return builder;
   }
 
   @Override
