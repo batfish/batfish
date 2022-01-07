@@ -50,8 +50,18 @@ public class VendorConfigurationFormatDetectorTest {
     String aristaBatfish = "!BATFISH_FORMAT: arista\n";
     String aristaRancid = "!RANCID-CONTENT-TYPE: arista\n";
     String aristaEos = "! device: some-host (DCS-7250QX-64, EOS-4.14.9M)\n";
+    String aristaNewSyntaxCL = "foo\nip community-list regexp FOO permit .....:5000\nbar";
+    String aristaNewSyntaxCL2 =
+        "foo\nip extcommunity-list regexp list_1 deny RT:10:[2-3][0-4]_\nbar";
 
-    for (String fileText : ImmutableList.of(eosFlash, aristaBatfish, aristaRancid, aristaEos)) {
+    for (String fileText :
+        ImmutableList.of(
+            eosFlash,
+            aristaBatfish,
+            aristaRancid,
+            aristaEos,
+            aristaNewSyntaxCL,
+            aristaNewSyntaxCL2)) {
       assertThat(identifyConfigurationFormat(fileText), equalTo(ARISTA));
     }
   }
