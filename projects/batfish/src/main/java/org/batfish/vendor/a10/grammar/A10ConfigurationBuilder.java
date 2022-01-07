@@ -1739,6 +1739,27 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     _currentServer.setTarget(target);
   }
 
+  @Override
+  public void exitSns_server(A10Parser.Sns_serverContext ctx) {
+    Optional<String> maybeName = toString(ctx, ctx.slb_server_name());
+    if (!maybeName.isPresent()) {
+      return;
+    }
+    String name = maybeName.get();
+    Server removedServer = _c.getServers().remove(name);
+    if (removedServer != null && ctx.slb_server_target() != null) {
+      // Ensure that specified target is correct; if it isn't, server should not be deleted.
+      ServerTarget target = toServerTarget(ctx.slb_server_target());
+      if (!target.equals(removedServer.getTarget())) {
+        _c.getServers().put(name, removedServer);
+        removedServer = null;
+      }
+    }
+    if (removedServer == null) {
+      warn(ctx, "No matching server to remove");
+    }
+  }
+
   @Nonnull
   ServerTarget toServerTarget(A10Parser.Slb_server_targetContext ctx) {
     assert ctx.ip_address() != null;

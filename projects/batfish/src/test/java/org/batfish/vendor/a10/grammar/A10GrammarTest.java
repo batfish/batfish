@@ -1691,7 +1691,11 @@ public class A10GrammarTest {
                         + " 42 in server SERVER1"),
                 hasComment(
                     "Cannot reference non-existent health monitor UNDEFINED_SERVER_HM for server"
-                        + " SERVER1"))));
+                        + " SERVER1"),
+                allOf(hasComment("No matching server to remove"), hasText("server SERVER4")),
+                allOf(
+                    hasComment("No matching server to remove"),
+                    hasText("server SERVER1 10.10.10.10")))));
   }
 
   @Test
