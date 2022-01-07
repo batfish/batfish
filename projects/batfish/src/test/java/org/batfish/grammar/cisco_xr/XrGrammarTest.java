@@ -3944,7 +3944,7 @@ public final class XrGrammarTest {
                     hasText("rewrite ingress tag pop 1 symmetric")))));
   }
 
-  @Test(expected = AssertionError.class) // https://github.com/batfish/batfish/issues/7868
+  @Test
   public void testOspfRouterId_firstLoopbackPreferred() {
     String hostname = "first-loopback-preferred";
     Batfish batfish = getBatfishForConfigurationNames("ospf-router-id/" + hostname);
@@ -3952,14 +3952,14 @@ public final class XrGrammarTest {
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
     assertEquals(
         Ip.parse("10.10.10.10"), c.getDefaultVrf().getOspfProcesses().get("100").getRouterId());
-    assertEquals(
-        Ip.parse("0.0.0.0"), c.getDefaultVrf().getOspfProcesses().get("101").getRouterId());
+    // We don't create a VI OSPF process if router ID is zero (indicates no active interfaces)
+    assertNull(c.getDefaultVrf().getOspfProcesses().get("101"));
     assertEquals(
         Ip.parse("10.10.10.10"),
         c.getVrfs().get("other").getOspfProcesses().get("101").getRouterId());
   }
 
-  @Test(expected = AssertionError.class) // https://github.com/batfish/batfish/issues/7868
+  @Test
   public void testOspfRouterId_shutVrfLoopbackIgnored() {
     String hostname = "shut-vrf-loopback-ignored";
     Batfish batfish = getBatfishForConfigurationNames("ospf-router-id/" + hostname);
@@ -3973,7 +3973,7 @@ public final class XrGrammarTest {
         Ip.parse("3.1.1.1"), c.getVrfs().get("vrf102").getOspfProcesses().get("102").getRouterId());
   }
 
-  @Test(expected = AssertionError.class) // https://github.com/batfish/batfish/issues/7868
+  @Test
   public void testOspfRouterId_vrfLoopbackAccepted() {
     String hostname = "vrf-loopback-accepted";
     Batfish batfish = getBatfishForConfigurationNames("ospf-router-id/" + hostname);
@@ -3986,7 +3986,7 @@ public final class XrGrammarTest {
         c.getVrfs().get("vrf101").getOspfProcesses().get("101").getRouterId());
   }
 
-  @Test(expected = AssertionError.class) // https://github.com/batfish/batfish/issues/7868
+  @Test
   public void testOspfRouterId_firstInprocessInterfacePreferred() {
     String hostname = "first-inprocess-interface-preferred";
     Batfish batfish = getBatfishForConfigurationNames("ospf-router-id/" + hostname);
@@ -3994,14 +3994,14 @@ public final class XrGrammarTest {
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
     assertEquals(
         Ip.parse("2.2.2.1"), c.getDefaultVrf().getOspfProcesses().get("100").getRouterId());
-    assertEquals(
-        Ip.parse("0.0.0.0"), c.getDefaultVrf().getOspfProcesses().get("101").getRouterId());
+    // We don't create a VI OSPF process if there are no active interfaces in proc
+    assertNull(c.getDefaultVrf().getOspfProcesses().get("101"));
     assertEquals(
         Ip.parse("210.210.210.1"),
         c.getVrfs().get("other").getOspfProcesses().get("101").getRouterId());
   }
 
-  @Test(expected = AssertionError.class) // https://github.com/batfish/batfish/issues/7868
+  @Test
   public void testOspfRouterId_shutOutprocessInterfaceIgnored() {
     String hostname = "shut-outprocess-interface-ignored";
     Batfish batfish = getBatfishForConfigurationNames("ospf-router-id/" + hostname);
@@ -4011,14 +4011,14 @@ public final class XrGrammarTest {
         Ip.parse("10.10.10.1"), c.getDefaultVrf().getOspfProcesses().get("100").getRouterId());
   }
 
-  @Test(expected = AssertionError.class) // https://github.com/batfish/batfish/issues/7868
+  @Test
   public void testOspfRouterId_noActiveInterface() {
     String hostname = "no-active-interface";
     Batfish batfish = getBatfishForConfigurationNames("ospf-router-id/" + hostname);
 
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
-    assertEquals(
-        Ip.parse("0.0.0.0"), c.getDefaultVrf().getOspfProcesses().get("100").getRouterId());
+    // We don't create a VI OSPF process if there are no active interfaces in proc
+    assertNull(c.getDefaultVrf().getOspfProcesses().get("100"));
   }
 
   @Test(expected = AssertionError.class) // https://github.com/batfish/batfish/issues/7868

@@ -1398,7 +1398,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       OspfProcess proc, String vrfName, Configuration c, CiscoXrConfiguration oldConfig) {
     Ip routerId = proc.getRouterId();
     if (routerId == null) {
-      routerId = CiscoXrConversions.getHighestIp(oldConfig.getInterfaces());
+      routerId = CiscoXrConversions.getOspfRouterId(proc, vrfName, oldConfig.getInterfaces());
       if (routerId == Ip.ZERO) {
         _w.redFlag("No candidates for OSPF router-id");
         return null;
