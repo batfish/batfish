@@ -590,10 +590,13 @@ public class IpOwnersTest {
     ConcreteInterfaceAddress i2SourceAddress = ConcreteInterfaceAddress.parse("1.2.3.5/24");
     Interface i2 =
         Interface.builder().setOwner(c2).setName("i2").setAddress(i2SourceAddress).build();
+    Interface i3 =
+        Interface.builder().setOwner(c2).setName("i3").setAddress(i2SourceAddress).build();
 
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip12 = Ip.parse("1.1.1.2");
     Ip ip22 = Ip.parse("2.2.2.2");
+    Ip ip3 = Ip.parse("3.3.3.3");
 
     Set<Ip> i1VirtualAddresses = ImmutableSet.of(ip1, ip12);
     i1.setVrrpGroups(
@@ -612,6 +615,7 @@ public class IpOwnersTest {
                 .setPriority(200)
                 .setSourceAddress(i2SourceAddress)
                 .setVirtualAddresses(i2.getName(), i2VirtualAddresses)
+                .addVirtualAddress(i3.getName(), ip3)
                 .build()));
     extractVrrp(groups, i1);
     extractVrrp(groups, i2);
@@ -622,11 +626,12 @@ public class IpOwnersTest {
         groups,
         GlobalBroadcastNoPointToPoint.instance(),
         NetworkConfigurations.of(ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2)));
-    assertThat(ipOwners, hasKeys(ip1, ip22));
+    assertThat(ipOwners, hasKeys(ip1, ip22, ip3));
     assertThat(ipOwners.get(ip1), hasKeys(c2.getHostname()));
     assertThat(ipOwners.get(ip22), hasKeys(c2.getHostname()));
     assertThat(ipOwners.get(ip1).get(c2.getHostname()), equalTo(ImmutableSet.of(i2.getName())));
     assertThat(ipOwners.get(ip22).get(c2.getHostname()), equalTo(ImmutableSet.of(i2.getName())));
+    assertThat(ipOwners.get(ip3).get(c2.getHostname()), equalTo(ImmutableSet.of(i3.getName())));
   }
 
   @Test

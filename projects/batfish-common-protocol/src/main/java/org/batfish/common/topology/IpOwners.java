@@ -438,7 +438,7 @@ public final class IpOwners {
                                         .computeIfAbsent(ip, k -> new HashMap<>())
                                         .computeIfAbsent(
                                             vrrpMaster.getHostname(), k -> new HashSet<>())
-                                        .add(vrrpMaster.getInterface())));
+                                        .add(receivingInterface)));
               });
         });
   }
