@@ -3,6 +3,7 @@ package org.batfish.vendor.check_point_gateway.representation;
 import static com.google.common.collect.Maps.immutableEntry;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
+import static org.batfish.common.util.CommonUtil.forEachWithIndex;
 import static org.batfish.datamodel.FirewallSessionInterfaceInfo.Action.POST_NAT_FIB_LOOKUP;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
@@ -48,6 +49,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
+import org.batfish.common.topology.Layer1Edge;
 import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -243,12 +245,19 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
 
   /** Populates cluster virtual IP metadata for this gateway. */
   private void convertCluster(Cluster cluster) {
+    _cluster = cluster;
     _clusterInterfaces =
         cluster.getInterfaces().stream()
             .collect(
                 ImmutableMap.toImmutableMap(
                     org.batfish.vendor.check_point_management.Interface::getName,
                     Function.identity()));
+    String memberName = cluster.getClusterMemberNames().get(_clusterMemberIndex);
+    assert getConversionContext() != null;
+    assert getConversionContext().getCheckpointManagementConfiguration() != null;
+    ((CheckpointManagementConfiguration)
+            getConversionContext().getCheckpointManagementConfiguration())
+        .recordClusterMemberNameToHostname(memberName, getHostname());
   }
 
   private void convertAccessLayers(
@@ -887,6 +896,11 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
             POST_NAT_FIB_LOOKUP, ImmutableList.of(ifaceName), null, null));
 
     if (ifaceName.equals(SYNC_INTERFACE_NAME)) {
+      if (getConversionContext().getCheckpointManagementConfiguration() != null) {
+        ((CheckpointManagementConfiguration)
+                getConversionContext().getCheckpointManagementConfiguration())
+            .recordSyncInterface(_hostname);
+      }
       createClusterVrrpGroup(iface, newIface, _clusterInterfaces, _clusterMemberIndex, _w);
     }
 
@@ -920,6 +934,52 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
         .map(BondingGroup::getNumber);
   }
 
+  @Override
+  public @Nonnull Set<Layer1Edge> getLayer1Edges() {
+    if (_cluster == null) {
+      return ImmutableSet.of();
+    }
+    assert getConversionContext() != null;
+    assert getConversionContext().getCheckpointManagementConfiguration() != null;
+    CheckpointManagementConfiguration mc =
+        ((CheckpointManagementConfiguration)
+            getConversionContext().getCheckpointManagementConfiguration());
+    ImmutableSet.Builder<Layer1Edge> builder = ImmutableSet.builder();
+    forEachWithIndex(
+        _cluster.getClusterMemberNames(),
+        (i, memberName) -> {
+          if (_clusterMemberIndex == i) {
+            // no self-edges
+            return;
+          }
+          Optional<String> maybeRemoteHost = mc.getHostnameForGateway(memberName);
+          if (!_c.getAllInterfaces().containsKey(SYNC_INTERFACE_NAME)) {
+            _w.redFlag("Cannot generate Sync interface edges because Sync interface is missing");
+            return;
+          }
+          if (!maybeRemoteHost.isPresent()) {
+            _w.redFlag(
+                String.format(
+                    "Cannot generate Sync interface edge to cluster member '%s' whose hostname"
+                        + " cannot be determined",
+                    memberName));
+            return;
+          }
+          String remoteHost = maybeRemoteHost.get();
+          if (!mc.hasSyncInterface(remoteHost)) {
+            _w.redFlag(
+                String.format(
+                    "Cannot generate Sync interface edge to remote host '%s' because it lacks a"
+                        + " Sync interface",
+                    remoteHost));
+            return;
+          }
+          builder.add(
+              new Layer1Edge(_hostname, SYNC_INTERFACE_NAME, remoteHost, SYNC_INTERFACE_NAME));
+        });
+    return builder.build();
+  }
+
   /** Get bonding interface name from its bonding group number. */
   @Nonnull
   public static String getBondInterfaceName(int groupNumber) {
@@ -936,6 +996,8 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
 
   private transient @Nullable Map<String, org.batfish.vendor.check_point_management.Interface>
       _clusterInterfaces;
+
+  private transient @Nullable Cluster _cluster;
 
   private transient int _clusterMemberIndex;
 
