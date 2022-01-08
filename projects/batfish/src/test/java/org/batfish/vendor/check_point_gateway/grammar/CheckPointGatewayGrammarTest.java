@@ -77,8 +77,11 @@ import org.apache.commons.lang3.function.TriFunction;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.matchers.ParseWarningMatchers;
+import org.batfish.common.matchers.WarningMatchers;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.runtime.SnapshotRuntimeData;
+import org.batfish.common.topology.Layer1Edge;
+import org.batfish.common.topology.Layer1Topology;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -2151,6 +2154,101 @@ public class CheckPointGatewayGrammarTest {
         equalTo(ConcreteInterfaceAddress.create(syncIp, prefixLength)));
     assertTrue(vrrpGroup.getPreempt());
     assertThat(vrrpGroup.getPriority(), equalTo(VrrpGroup.MAX_PRIORITY - 1));
+  }
+
+  @Test
+  public void testClusterGeneratedEdges() throws IOException {
+    // Test generation of L1 edges between Sync interfaces
+    // There should be edges only between cluster members 1 and 2.
+    // - member 3 is missing a sync interface
+    // - member 4 is missing a gateway configuration
+
+    String hostname1 = "cluster_member";
+    String hostname2 = "cluster_member2";
+    String hostname3 = "cluster_member3";
+    Uid member1Uid = Uid.of("1");
+    Uid member2Uid = Uid.of("2");
+    Uid member3Uid = Uid.of("3");
+    Uid member4Uid = Uid.of("4");
+    Uid clusterUid = Uid.of("5");
+    String memberName1 = "cm1";
+    String memberName2 = "cm2";
+    String memberName3 = "cm3";
+    String memberName4 = "cm4";
+    ImmutableMap<Uid, GatewayOrServer> gateways =
+        ImmutableMap.of(
+            member1Uid,
+            new CpmiClusterMember(
+                Ip.parse("1.0.0.1"),
+                memberName1,
+                ImmutableList.of(),
+                new GatewayOrServerPolicy(null, null),
+                member1Uid),
+            member2Uid,
+            new CpmiClusterMember(
+                Ip.parse("1.0.0.2"),
+                memberName2,
+                ImmutableList.of(),
+                new GatewayOrServerPolicy(null, null),
+                member2Uid),
+            member3Uid,
+            new CpmiClusterMember(
+                Ip.parse("1.0.0.3"),
+                memberName3,
+                ImmutableList.of(),
+                new GatewayOrServerPolicy(null, null),
+                member3Uid),
+            member4Uid,
+            new CpmiClusterMember(
+                Ip.parse("1.0.0.4"),
+                memberName4,
+                ImmutableList.of(),
+                new GatewayOrServerPolicy(null, null),
+                member4Uid),
+            clusterUid,
+            new CpmiGatewayCluster(
+                ImmutableList.of(memberName1, memberName2, memberName3, memberName4),
+                Ip.parse("1.0.0.5"),
+                "cluster",
+                ImmutableList.of(),
+                new GatewayOrServerPolicy(null, null),
+                clusterUid));
+
+    CheckpointManagementConfiguration mgmt =
+        toCheckpointMgmtConfig(gateways, ImmutableMap.of(), ImmutableList.of());
+
+    Batfish batfish = getBatfishForConfigurationNames(mgmt, hostname1, hostname2, hostname3);
+    Map<String, Warnings> warnings =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot()).getWarnings();
+    Layer1Topology generatedTopology =
+        batfish.getTopologyProvider().getLayer1Topologies(batfish.getSnapshot()).getSynthesizedL1();
+
+    assertThat(
+        generatedTopology.getGraph().edges(),
+        containsInAnyOrder(
+            new Layer1Edge(hostname1, SYNC_INTERFACE_NAME, hostname2, SYNC_INTERFACE_NAME),
+            new Layer1Edge(hostname2, SYNC_INTERFACE_NAME, hostname1, SYNC_INTERFACE_NAME)));
+    ImmutableList.of(hostname1, hostname2)
+        .forEach(
+            host ->
+                assertThat(
+                    warnings.get(host).getRedFlagWarnings().stream()
+                        .filter(w -> w.getText().contains("Cannot generate Sync interface edge"))
+                        .collect(ImmutableList.toImmutableList()),
+                    containsInAnyOrder(
+                        WarningMatchers.hasText(
+                            "Cannot generate Sync interface edge to remote host 'cluster_member3'"
+                                + " because it lacks a Sync interface"),
+                        WarningMatchers.hasText(
+                            "Cannot generate Sync interface edge to cluster member 'cm4' whose"
+                                + " hostname cannot be determined"))));
+    assertThat(
+        warnings.get(hostname3).getRedFlagWarnings().stream()
+            .filter(w -> w.getText().contains("Cannot generate Sync interface edge"))
+            .collect(ImmutableList.toImmutableList()),
+        contains(
+            WarningMatchers.hasText(
+                "Cannot generate Sync interface edges because Sync interface is missing")));
   }
 
   /**
