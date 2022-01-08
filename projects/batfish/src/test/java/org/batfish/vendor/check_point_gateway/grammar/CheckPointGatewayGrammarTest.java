@@ -2242,6 +2242,13 @@ public class CheckPointGatewayGrammarTest {
                         WarningMatchers.hasText(
                             "Cannot generate Sync interface edge to cluster member 'cm4' whose"
                                 + " hostname cannot be determined"))));
+    assertThat(
+        warnings.get(hostname3).getRedFlagWarnings().stream()
+            .filter(w -> w.getText().contains("Cannot generate Sync interface edge"))
+            .collect(ImmutableList.toImmutableList()),
+        contains(
+            WarningMatchers.hasText(
+                "Cannot generate Sync interface edges because Sync interface is missing")));
   }
 
   /**
