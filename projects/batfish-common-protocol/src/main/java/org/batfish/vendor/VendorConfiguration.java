@@ -515,8 +515,9 @@ public abstract class VendorConfiguration implements Serializable {
    * interfaces that are present in configurations need to be present in the topology.
    *
    * <p>This function should be overridden by classes like AwsConfiguration that synthesize their
-   * connectivity. For classes that represent router configs, the default implementation should be
-   * used.
+   * connectivity. For classes that represent router configs without access to information about
+   * presence of other nodes and interfafces (e.g. via {@link ConversionContext}), the default
+   * implementation should be used.
    *
    * <p>It is the responsibility of the implementation to enforce the invariant above.
    */
