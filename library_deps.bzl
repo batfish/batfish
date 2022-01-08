@@ -2,14 +2,14 @@ load("@rules_jvm_external//:specs.bzl", "maven")
 
 # See: https://github.com/bazelbuild/rules_jvm_external#exporting-and-consuming-artifacts-from-external-repositories
 BATFISH_MAVEN_ARTIFACTS = [
-    "com.fasterxml.jackson.core:jackson-annotations:2.10.5",
-    "com.fasterxml.jackson.core:jackson-core:2.10.5",
-    "com.fasterxml.jackson.core:jackson-databind:2.10.5.1",
-    "com.fasterxml.jackson.datatype:jackson-datatype-guava:2.10.5",
-    "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.10.5",
-    "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.10.5",
-    "com.fasterxml.jackson.jaxrs:jackson-jaxrs-base:2.10.5",
-    "com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.10.5",
+    "com.fasterxml.jackson.core:jackson-annotations:2.11.4",
+    "com.fasterxml.jackson.core:jackson-core:2.11.4",
+    "com.fasterxml.jackson.core:jackson-databind:2.11.4",
+    "com.fasterxml.jackson.datatype:jackson-datatype-guava:2.11.4",
+    "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.11.4",
+    "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.11.4",
+    "com.fasterxml.jackson.jaxrs:jackson-jaxrs-base:2.11.4",
+    "com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.11.4",
     "com.github.ben-manes.caffeine:caffeine:2.9.2",
     "com.google.auto.service:auto-service:1.0-rc6",
     "com.google.auto.service:auto-service-annotations:1.0-rc6",
