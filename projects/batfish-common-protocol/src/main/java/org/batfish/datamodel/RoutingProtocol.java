@@ -25,6 +25,7 @@ public enum RoutingProtocol {
   LDP("ldp"),
   LISP("lisp"),
   LOCAL("local"),
+  HMM("hmm"),
   MSDP("msdp"),
   /** OSPF Intra-area */
   OSPF("ospf"),
