@@ -223,6 +223,7 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LocalRoute;
 import org.batfish.datamodel.LongSpace;
+import org.batfish.datamodel.MacAddress;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.Names;
 import org.batfish.datamodel.OriginMechanism;
@@ -9643,5 +9644,52 @@ public final class CiscoNxosGrammarTest {
       assertTrue(redistributePolicy.processReadOnly(routeRedistributeOnly));
       assertTrue(redistributePolicy.processReadOnly(routeRedistributeAndNetwork));
     }
+  }
+
+  @Test
+  public void testFabricForwardingExtraction() {
+    String hostname = "nxos_fabric_forwarding";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getFabricForwardingAdminDistance(), equalTo(123));
+    assertThat(
+        vc.getFabricForwardingAnycastGatewayMac(), equalTo(MacAddress.parse("fe:ed:de:ad:be:ef")));
+    assertThat(vc.getInterfaces(), hasKeys("Vlan2", "Vlan3", "Ethernet1/1"));
+    assertTrue(vc.getInterfaces().get("Vlan2").isFabricForwardingModeAnycastGateway());
+    assertFalse(vc.getInterfaces().get("Vlan3").isFabricForwardingModeAnycastGateway());
+    assertThat(
+        vc.getWarnings(),
+        hasParseWarning(
+            hasComment("fabric forwarding mode anycast-gateway only valid on Vlan interfaces")));
+  }
+
+  @Test
+  public void testFabricForwardingConversion() throws IOException {
+    String hostname = "nxos_fabric_forwarding";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c.getAllInterfaces(), hasKeys("Vlan2", "Vlan3", "Ethernet1/1"));
+    assertTrue(c.getAllInterfaces().get("Vlan2").getHmm());
+    assertFalse(c.getAllInterfaces().get("Vlan3").getHmm());
+    assertFalse(c.getAllInterfaces().get("Ethernet1/1").getHmm());
+    // TODO: convert fabric forwarding admin-distance
+  }
+
+  @Test
+  public void testFabricForwardingNoMacWarning() throws IOException {
+    String hostname = "nxos_fabric_forwarding_no_mac";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+
+    assertThat(c.getAllInterfaces(), hasKeys("Vlan2"));
+    assertFalse(c.getAllInterfaces().get("Vlan2").getHmm());
+    assertThat(
+        ccae.getWarnings().get(hostname).getRedFlagWarnings(),
+        contains(
+            hasText(
+                "Could not enable HMM on interface 'Vlan2' because fabric forwarding"
+                    + " anycast-gateway-mac is unset")));
   }
 }

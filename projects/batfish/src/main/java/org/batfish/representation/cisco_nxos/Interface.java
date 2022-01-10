@@ -156,6 +156,7 @@ public final class Interface implements Serializable {
   private @Nullable DistributeList _eigrpInboundDistributeList;
   private @Nullable DistributeList _eigrpOutboundDistributeList;
   private @Nullable Integer _encapsulationVlan;
+  private boolean _fabricForwardingModeAnycastGateway;
   private @Nullable InterfaceHsrp _hsrp;
   private @Nullable String _ipAccessGroupIn;
   private @Nullable String _ipAccessGroupOut;
@@ -277,6 +278,14 @@ public final class Interface implements Serializable {
 
   public @Nullable Integer getEncapsulationVlan() {
     return _encapsulationVlan;
+  }
+
+  public boolean isFabricForwardingModeAnycastGateway() {
+    return _fabricForwardingModeAnycastGateway;
+  }
+
+  public void setFabricForwardingModeAnycastGateway(boolean fabricForwardingModeAnycastGateway) {
+    _fabricForwardingModeAnycastGateway = fabricForwardingModeAnycastGateway;
   }
 
   public @Nullable InterfaceHsrp getHsrp() {
