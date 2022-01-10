@@ -12,9 +12,17 @@ interface GigabitEthernet0/0/0/0
  ipv4 address 100.100.100.1 255.255.255.252
  shutdown
 !
+interface GigabitEthernet0/0/0/1
+ no shutdown
+!
 router ospf 100
  area 0
+  ! Inactive interface
   interface GigabitEthernet0/0/0/0
+   cost 100
+  !
+  ! Active interface, but no address
+  interface GigabitEthernet0/0/0/1
    cost 100
   !
  !

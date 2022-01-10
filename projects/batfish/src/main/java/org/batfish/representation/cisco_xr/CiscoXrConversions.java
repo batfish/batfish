@@ -3,6 +3,7 @@ package org.batfish.representation.cisco_xr;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Collections.singletonList;
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.IkePhase1Policy.PREFIX_ISAKMP_KEY;
 import static org.batfish.datamodel.IkePhase1Policy.PREFIX_RSA_PUB;
 import static org.batfish.datamodel.Interface.INVALID_LOCAL_INTERFACE;
@@ -194,9 +195,9 @@ public class CiscoXrConversions {
   static int DEFAULT_OSPF_DEAD_INTERVAL =
       OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER * DEFAULT_OSPF_HELLO_INTERVAL;
 
-  static Ip getHighestIp(Map<String, Interface> allInterfaces) {
-    Map<String, Interface> interfacesToCheck;
-    Map<String, Interface> loopbackInterfaces = new HashMap<>();
+  private static Map<String, Interface> getActiveLoopbackInterfacesWithAddresses(
+      Map<String, Interface> allInterfaces) {
+    ImmutableMap.Builder<String, Interface> loopbackInterfaces = ImmutableMap.builder();
     for (Entry<String, Interface> e : allInterfaces.entrySet()) {
       String ifaceName = e.getKey();
       Interface iface = e.getValue();
@@ -206,6 +207,61 @@ public class CiscoXrConversions {
         loopbackInterfaces.put(ifaceName, iface);
       }
     }
+    return loopbackInterfaces.build();
+  }
+
+  static Ip getOspfRouterId(OspfProcess proc, String vrf, Map<String, Interface> allInterfaces) {
+    // If none of the interfaces in this process are active and addressed, this process does
+    // nothing. Return 0.0.0.0; this prevents creation of a VI OSPF process.
+    if (proc.getAreas().values().stream()
+        .flatMap(area -> area.getInterfaceSettings().keySet().stream())
+        .map(allInterfaces::get)
+        .noneMatch(iface -> iface != null && iface.getActive() && iface.getAddress() != null)) {
+      return Ip.ZERO;
+    }
+
+    Map<String, Interface> loopbackIfaces = getActiveLoopbackInterfacesWithAddresses(allInterfaces);
+
+    // If there's a usable loopback address in the default VRF, use that
+    Optional<Ip> firstDefaultVrfLoopbackIp =
+        loopbackIfaces.entrySet().stream()
+            .filter(e -> e.getValue().getVrf().equals(DEFAULT_VRF_NAME))
+            .sorted(Map.Entry.comparingByKey())
+            .map(e -> e.getValue().getAddress().getIp())
+            .findFirst();
+    if (firstDefaultVrfLoopbackIp.isPresent()) {
+      return firstDefaultVrfLoopbackIp.get();
+    }
+
+    // If there's a usable loopback address in the OSPF process's VRF, use that
+    Optional<Ip> firstProcVrfLoopbackIp =
+        loopbackIfaces.entrySet().stream()
+            .filter(e -> e.getValue().getVrf().equals(vrf))
+            .sorted(Map.Entry.comparingByKey())
+            .map(e -> e.getValue().getAddress().getIp())
+            .findFirst();
+    if (firstProcVrfLoopbackIp.isPresent()) {
+      return firstProcVrfLoopbackIp.get();
+    }
+
+    // No valid loopback interfaces. Use the first interface in the process.
+    Optional<Ip> firstProcIfaceIp =
+        // TODO Source router-id from all areas? In area ID order?
+        proc.getAreas().entrySet().stream()
+            .sorted(Map.Entry.comparingByKey())
+            .flatMap(e -> e.getValue().getInterfaceSettings().keySet().stream().sorted())
+            .map(allInterfaces::get)
+            .filter(iface -> iface != null && iface.getActive() && iface.getAddress() != null)
+            .map(iface -> iface.getAddress().getIp())
+            .findFirst();
+    assert firstProcIfaceIp.isPresent(); // otherwise already would've returned 0.0.0.0
+    return firstProcIfaceIp.get();
+  }
+
+  static Ip getHighestIp(Map<String, Interface> allInterfaces) {
+    Map<String, Interface> interfacesToCheck;
+    Map<String, Interface> loopbackInterfaces =
+        getActiveLoopbackInterfacesWithAddresses(allInterfaces);
     if (loopbackInterfaces.isEmpty()) {
       interfacesToCheck = allInterfaces;
     } else {
@@ -2012,7 +2068,7 @@ public class CiscoXrConversions {
 
     // Create non-default VRF <-> non-default VRF leaking configs for each VRF with import RT
     for (Vrf importingVrf : vrfsWithImportRt) {
-      assert !importingVrf.getName().equals(Configuration.DEFAULT_VRF_NAME);
+      assert !importingVrf.getName().equals(DEFAULT_VRF_NAME);
       VrfAddressFamily ipv4uaf = importingVrf.getIpv4UnicastAddressFamily();
       assert ipv4uaf != null;
       org.batfish.datamodel.Vrf viVrf = c.getVrfs().get(importingVrf.getName());
@@ -2063,7 +2119,7 @@ public class CiscoXrConversions {
                     .build());
       }
     }
-    org.batfish.datamodel.Vrf viDefaultVrf = c.getVrfs().get(Configuration.DEFAULT_VRF_NAME);
+    org.batfish.datamodel.Vrf viDefaultVrf = c.getVrfs().get(DEFAULT_VRF_NAME);
     for (Vrf nonDefaultVrf : vrfsWithIpv4Af) {
       org.batfish.datamodel.Vrf viNonDefaultVrf = c.getVrfs().get(nonDefaultVrf.getName());
       VrfAddressFamily af = nonDefaultVrf.getIpv4UnicastAddressFamily();
@@ -2082,7 +2138,7 @@ public class CiscoXrConversions {
                                     .getExportToDefaultVrfPolicy(),
                                 c),
                             nonDefaultVrf.getIpv4UnicastAddressFamily().getRouteTargetExport(),
-                            Configuration.DEFAULT_VRF_NAME,
+                            DEFAULT_VRF_NAME,
                             null,
                             null,
                             c))
@@ -2093,10 +2149,10 @@ public class CiscoXrConversions {
             .addBgpVrfLeakConfig(
                 bgpVrfLeakConfigBuilderWithDefaultAdminAndWeight()
                     // RT handled by policy
-                    .setImportFromVrf(Configuration.DEFAULT_VRF_NAME)
+                    .setImportFromVrf(DEFAULT_VRF_NAME)
                     .setImportPolicy(
                         vrfExportImportPolicy(
-                            Configuration.DEFAULT_VRF_NAME,
+                            DEFAULT_VRF_NAME,
                             routePolicyOrDrop(
                                 nonDefaultVrf
                                     .getIpv4UnicastAddressFamily()
@@ -2161,8 +2217,7 @@ public class CiscoXrConversions {
     // 4. Apply the import route-policy if it exists. This route-policy may permit with or without
     //    further modification, or may reject the route.
     boolean defaultVrfInvolved =
-        importingVrf.equals(Configuration.DEFAULT_VRF_NAME)
-            || exportingVrf.equals(Configuration.DEFAULT_VRF_NAME);
+        importingVrf.equals(DEFAULT_VRF_NAME) || exportingVrf.equals(DEFAULT_VRF_NAME);
     checkArgument(
         (routeTargetImport != null && !defaultVrfInvolved)
             || (routeTargetImport == null && defaultVrfInvolved),
