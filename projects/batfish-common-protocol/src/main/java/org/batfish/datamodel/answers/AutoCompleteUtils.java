@@ -798,7 +798,7 @@ public final class AutoCompleteUtils {
    * sources are considered. In the latter mode, natural sources are ranked higher.
    */
   @Nonnull
-  static List<AutocompleteSuggestion> autoCompleteSourceLocation(
+  public static List<AutocompleteSuggestion> autoCompleteSourceLocation(
       String query, boolean tracerouteSource, @Nullable CompletionMetadata completionMetadata) {
     checkNotNull(
         completionMetadata, "Cannot autocomplete source locations without completion metadata");
