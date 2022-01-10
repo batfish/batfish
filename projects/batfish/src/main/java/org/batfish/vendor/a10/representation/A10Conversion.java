@@ -109,14 +109,18 @@ public class A10Conversion {
   /** Set of {@link VirtualServerPort.Type}s that use {@code tcp} protocol */
   static final Set<VirtualServerPort.Type> VIRTUAL_TCP_PORT_TYPES =
       ImmutableSet.of(
+          VirtualServerPort.Type.DIAMETER,
           VirtualServerPort.Type.HTTP,
           VirtualServerPort.Type.HTTPS,
+          VirtualServerPort.Type.SMTP,
+          VirtualServerPort.Type.SSL_PROXY,
           VirtualServerPort.Type.TCP,
           VirtualServerPort.Type.TCP_PROXY);
 
   /** Set of {@link VirtualServerPort.Type}s that use {@code udp} protocol */
   static final Set<VirtualServerPort.Type> VIRTUAL_UDP_PORT_TYPES =
-      ImmutableSet.of(VirtualServerPort.Type.RADIUS, VirtualServerPort.Type.UDP);
+      ImmutableSet.of(
+          VirtualServerPort.Type.RADIUS, VirtualServerPort.Type.SIP, VirtualServerPort.Type.UDP);
 
   /** Returns the {@link IntegerSpace} representing the specified {@link ServerPort}'s ports. */
   @VisibleForTesting

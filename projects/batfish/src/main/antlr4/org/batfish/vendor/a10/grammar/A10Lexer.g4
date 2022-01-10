@@ -272,6 +272,7 @@ SOURCE_IP: 'source-ip';
 SOURCE_NAT: 'source-nat';
 SPEED: 'speed';
 SSL_CIPHERS: 'ssl-ciphers' -> pushMode(M_Word);
+SSL_PROXY: 'ssl-proxy';
 STANDARD: 'standard';
 STATIC: 'static';
 STATS_DATA_DISABLE: 'stats-data-disable';
