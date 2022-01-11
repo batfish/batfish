@@ -373,7 +373,6 @@ public final class VirtualRouter {
               }
               Set<NodeInterfacePair> neighbors = l3.getNeighbors(NodeInterfacePair.of(iface));
               for (NodeInterfacePair neighbor : neighbors) {
-                // Should be present since it's in topology
                 Set<Ip> neighborIps =
                     interfaceOwners
                         .getOrDefault(neighbor.getHostname(), ImmutableMap.of())
