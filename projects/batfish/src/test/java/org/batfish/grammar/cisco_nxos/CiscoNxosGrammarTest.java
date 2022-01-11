@@ -9657,6 +9657,7 @@ public final class CiscoNxosGrammarTest {
     assertThat(vc.getInterfaces(), hasKeys("Vlan2", "Vlan3", "Ethernet1/1"));
     assertTrue(vc.getInterfaces().get("Vlan2").isFabricForwardingModeAnycastGateway());
     assertFalse(vc.getInterfaces().get("Vlan3").isFabricForwardingModeAnycastGateway());
+    assertFalse(vc.getInterfaces().get("Ethernet1/1").isFabricForwardingModeAnycastGateway());
     assertThat(
         vc.getWarnings(),
         hasParseWarning(

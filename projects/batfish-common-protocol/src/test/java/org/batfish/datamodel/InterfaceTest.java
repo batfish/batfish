@@ -88,17 +88,18 @@ public class InterfaceTest {
   @Test
   public void testJacksonSerialization() {
     // TODO: more thorough testing
-    Interface obj = Interface.builder().setMtu(7).setName("ifaceName").setHmm(true).build();
+    Interface obj = Interface.builder().setName("ifaceName").setHmm(true).build();
     assertEquals(obj, BatfishObjectMapper.clone(obj, Interface.class));
   }
 
   @Test
   public void testEquals() {
     // TODO: more thorough testing
-    Interface.Builder b = Interface.builder().setMtu(7).setName("ifaceName");
+    Interface.Builder b = Interface.builder().setName("ifaceName");
     new EqualsTester()
         .addEqualityGroup(b.build(), b.build())
         .addEqualityGroup(b.setHmm(true).build())
+        .addEqualityGroup(b.setName("iface2").build())
         .testEquals();
   }
 }

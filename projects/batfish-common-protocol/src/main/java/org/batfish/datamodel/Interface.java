@@ -943,8 +943,9 @@ public final class Interface extends ComparableStructure<String> {
     _vrrpGroups = ImmutableSortedMap.of();
   }
 
+  // TODO: add missing fields, clean up, implement hashCode
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (o == this) {
       return true;
     } else if (!(o instanceof Interface)) {
