@@ -57,6 +57,7 @@ statement
   | s_control_plane
   | s_crypto
   | s_evpn
+  | s_fabric
   | s_fex
   | s_flow
   | s_hostname
@@ -150,6 +151,34 @@ cp_service_policy
 :
   SERVICE_POLICY INPUT name = policy_map_cp_name NEWLINE
 ;
+
+s_fabric: FABRIC (s_fabric_forwarding | s_fabric_null);
+
+s_fabric_forwarding
+:
+  FORWARDING
+  (
+    ff_admin_distance
+    | ff_anycast_gateway_mac
+    | ff_null
+  )
+;
+
+ff_admin_distance: ADMIN_DISTANCE dist = protocol_distance NEWLINE;
+
+ff_anycast_gateway_mac: ANYCAST_GATEWAY_MAC mac = mac_address_literal NEWLINE;
+
+ff_null
+:
+  (
+    DUP_HOST_IP_ADDR_DETECTION
+    | DUP_HOST_RECOVERY_TIMER
+    | DUP_HOST_UNFREEZE_TIMER
+    | LIMIT_VLAN_MAC
+  ) null_rest_of_line
+;
+
+s_fabric_null: DATABASE null_rest_of_line;
 
 s_hostname
 :

@@ -21,6 +21,10 @@ errdisable recovery cause psecure-violation
 errdisable recovery cause security-violation
 errdisable recovery cause storm-control
 errdisable recovery cause udld
+fabric database internal instance 0 0
+fabric forwarding dup-host-ip-addr-detection 1 2
+fabric forwarding dup-host-recovery-timer 30 recover-count 1
+fabric forwarding dup-host-unfreeze-timer 30 unfreeze-count 0
 no ip domain-lookup
 ip domain-list example.com
 rmon event 1 log trap public description FATAL(1) owner PMON@FATAL

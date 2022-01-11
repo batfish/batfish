@@ -5,6 +5,7 @@ import static org.batfish.datamodel.Interface.isRealInterfaceName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -70,15 +71,35 @@ public class InterfaceTest {
 
   @Test
   public void testSerialization() {
+    // TODO: more thorough testing
     Interface i =
         Interface.builder()
             .setMtu(7)
             .setName("ifaceName")
             .setOspfSettings(OspfInterfaceSettings.defaultSettingsBuilder().build())
+            .setHmm(true)
             .build();
 
     // test (de)serialization
     Interface iDeserial = BatfishObjectMapper.clone(i, Interface.class);
     assertThat(i, equalTo(iDeserial));
+  }
+
+  @Test
+  public void testJacksonSerialization() {
+    // TODO: more thorough testing
+    Interface obj = Interface.builder().setName("ifaceName").setHmm(true).build();
+    assertEquals(obj, BatfishObjectMapper.clone(obj, Interface.class));
+  }
+
+  @Test
+  public void testEquals() {
+    // TODO: more thorough testing
+    Interface.Builder b = Interface.builder().setName("ifaceName");
+    new EqualsTester()
+        .addEqualityGroup(b.build(), b.build())
+        .addEqualityGroup(b.setHmm(true).build())
+        .addEqualityGroup(b.setName("iface2").build())
+        .testEquals();
   }
 }

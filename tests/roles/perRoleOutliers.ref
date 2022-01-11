@@ -28,6 +28,7 @@
           "declaredNames" : [
             "GigabitEthernet2/0"
           ],
+          "hmm" : false,
           "incomingFilter" : "blocktelnet",
           "mtu" : 1500,
           "ospfSettings" : {
@@ -82,6 +83,7 @@
           "declaredNames" : [
             "GigabitEthernet3/0"
           ],
+          "hmm" : false,
           "incomingFilter" : "blocktelnet",
           "mtu" : 1500,
           "ospfSettings" : {

@@ -110,6 +110,7 @@ ADJACENCY: 'adjacency';
 
 ADJMGR: 'adjmgr';
 
+ADMIN_DISTANCE: 'admin-distance';
 ADMINISTRATIVELY_PROHIBITED: 'administratively-prohibited';
 
 ADVERTISE: 'advertise';
@@ -174,6 +175,8 @@ ALWAYS: 'always';
 ALWAYS_COMPARE_MED: 'always-compare-med';
 
 ANY: 'any';
+ANYCAST_GATEWAY: 'anycast-gateway';
+ANYCAST_GATEWAY_MAC: 'anycast-gateway-mac';
 
 AMT: 'amt';
 
@@ -478,6 +481,7 @@ DAMPEN_IGP_METRIC: 'dampen-igp-metric';
 
 DAMPENING: 'dampening';
 
+DATABASE: 'database';
 DAYTIME: 'daytime';
 
 DEAD_INTERVAL: 'dead-interval';
@@ -613,6 +617,10 @@ DST_MAC: 'dst-mac';
 
 DUAL_AS: 'dual-as';
 
+DUP_HOST_IP_ADDR_DETECTION: 'dup-host-ip-addr-detection';
+DUP_HOST_RECOVERY_TIMER: 'dup-host-recovery-timer';
+DUP_HOST_UNFREEZE_TIMER: 'dup-host-unfreeze-timer';
+
 DUPLEX: 'duplex';
 
 DVMRP: 'dvmrp';
@@ -738,6 +746,7 @@ EXTERNAL: 'external';
 
 EXTERNAL_LSA: 'external-lsa';
 
+FABRIC: 'fabric';
 FACILITY: 'facility';
 
 FAST_EXTERNAL_FALLOVER: 'fast-external-fallover';
@@ -789,7 +798,7 @@ FORCE: 'force';
 FORCE_ORDER: 'force-order';
 
 FORWARD: 'forward';
-
+FORWARDING: 'forwarding';
 FORWARDING_THRESHOLD: 'forwarding-threshold';
 
 FLUSH_ROUTES: 'flush-routes';
@@ -980,7 +989,7 @@ INFORMS: 'informs';
 INGRESS_REPLICATION: 'ingress-replication';
 
 INHERIT: 'inherit';
-
+INHERIT_PROFILE_MAP: 'inherit-profile-map';
 INJECT_MAP: 'inject-map';
 
 INPUT
@@ -996,7 +1005,7 @@ INPUT
 INSPECTION: 'inspection';
 
 INSTALL: 'install';
-
+INSTANCE: 'instance';
 INTER_AREA_PREFIX_LSA: 'inter-area-prefix-lsa';
 
 INTERFACE
@@ -1141,6 +1150,7 @@ LEVEL: 'level';
 LICENSE: 'license';
 
 LIMIT_RESOURCE: 'limit-resource' -> pushMode ( M_Remark );
+LIMIT_VLAN_MAC: 'limit-vlan-mac';
 
 LINE: 'line';
 
@@ -1865,6 +1875,7 @@ RECORD
   'record' -> pushMode(M_Word)
 ;
 
+RECOVER_COUNT: 'recover-count';
 RECOVERY: 'recovery';
 
 REDIRECT: 'redirect';
@@ -2417,7 +2428,7 @@ UDP_JITTER
 ;
 
 UNCHANGED: 'unchanged';
-
+UNFREEZE_COUNT: 'unfreeze-count';
 UNICAST: 'unicast';
 
 UNREACHABLE: 'unreachable';
@@ -2895,6 +2906,11 @@ F_Ipv6PrefixLength
 fragment
 F_MacAddress
 :
+  // TODO: support all options.
+  //       Option 1: E.E.E
+  //       Option 2: EE-EE-EE-EE-EE-EE
+  //       Option 3: EE:EE:EE:EE:EE:EE
+  //       Option 4: EEEE.EEEE.EEEE (supported, canonical)
   F_HexDigit F_HexDigit F_HexDigit F_HexDigit '.'
   F_HexDigit F_HexDigit F_HexDigit F_HexDigit '.'
   F_HexDigit F_HexDigit F_HexDigit F_HexDigit

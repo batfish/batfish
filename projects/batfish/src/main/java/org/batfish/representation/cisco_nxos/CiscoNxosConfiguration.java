@@ -103,6 +103,7 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.MacAddress;
 import org.batfish.datamodel.Names;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
@@ -429,6 +430,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private @Nullable String _bootSystemSup2;
   private final @Nonnull Map<String, EigrpProcessConfiguration> _eigrpProcesses;
   private @Nullable Evpn _evpn;
+  private @Nullable Integer _fabricForwardingAdminDistance;
+  private @Nullable MacAddress _fabricForwardingAnycastGatewayMac;
   private @Nullable String _hostname;
   private @Nullable String _rawHostname;
   private final @Nonnull Map<String, Interface> _interfaces;
@@ -1680,6 +1683,23 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _evpn = evpn;
   }
 
+  public @Nullable Integer getFabricForwardingAdminDistance() {
+    return _fabricForwardingAdminDistance;
+  }
+
+  public void setFabricForwardingAdminDistance(@Nullable Integer fabricForwardingAdminDistance) {
+    _fabricForwardingAdminDistance = fabricForwardingAdminDistance;
+  }
+
+  public @Nullable MacAddress getFabricForwardingAnycastGatewayMac() {
+    return _fabricForwardingAnycastGatewayMac;
+  }
+
+  public void setFabricForwardingAnycastGatewayMac(
+      @Nullable MacAddress fabricForwardingAnycastGatewayMac) {
+    _fabricForwardingAnycastGatewayMac = fabricForwardingAnycastGatewayMac;
+  }
+
   @Override
   public @Nullable String getHostname() {
     return _hostname;
@@ -2006,6 +2026,20 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     newIfaceBuilder.setMtu(iface.getMtu());
 
     newIfaceBuilder.setProxyArp(firstNonNull(iface.getIpProxyArp(), Boolean.FALSE));
+
+    if (iface.isFabricForwardingModeAnycastGateway()) {
+      // guaranteed by extractor
+      assert iface.getType() == CiscoNxosInterfaceType.VLAN;
+      if (_fabricForwardingAnycastGatewayMac != null) {
+        newIfaceBuilder.setHmm(true);
+      } else {
+        _w.redFlag(
+            String.format(
+                "Could not enable HMM on interface '%s' because fabric forwarding"
+                    + " anycast-gateway-mac is unset",
+                ifaceName));
+      }
+    }
 
     // filters
     String ipAccessGroupIn = iface.getIpAccessGroupIn();
