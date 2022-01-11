@@ -1192,6 +1192,14 @@ public class A10GrammarTest {
         new VirtualServerPort.PortAndType(103, VirtualServerPort.Type.HTTPS);
     VirtualServerPort.PortAndType radius104 =
         new VirtualServerPort.PortAndType(104, VirtualServerPort.Type.RADIUS);
+    VirtualServerPort.PortAndType diameter105 =
+        new VirtualServerPort.PortAndType(105, VirtualServerPort.Type.DIAMETER);
+    VirtualServerPort.PortAndType smtp106 =
+        new VirtualServerPort.PortAndType(106, VirtualServerPort.Type.SMTP);
+    VirtualServerPort.PortAndType sslProxy107 =
+        new VirtualServerPort.PortAndType(107, VirtualServerPort.Type.SSL_PROXY);
+    VirtualServerPort.PortAndType sip108 =
+        new VirtualServerPort.PortAndType(108, VirtualServerPort.Type.SIP);
 
     assertThat(c.getVirtualServers().keySet(), containsInAnyOrder("VS1", "VS2", "VS3"));
 
@@ -1238,7 +1246,16 @@ public class A10GrammarTest {
       Map<VirtualServerPort.PortAndType, VirtualServerPort> server3Ports = server3.getPorts();
       assertThat(
           server3Ports.keySet(),
-          containsInAnyOrder(udp81, tcpProxy101, http102, https103, radius104));
+          containsInAnyOrder(
+              udp81,
+              tcpProxy101,
+              http102,
+              https103,
+              radius104,
+              diameter105,
+              smtp106,
+              sslProxy107,
+              sip108));
       VirtualServerPort server3Port81 = server3Ports.get(udp81);
       assertNull(server3Port81.getAccessList());
       assertNull(server3Port81.getAflex());
@@ -1259,6 +1276,11 @@ public class A10GrammarTest {
       assertThat(server3Ports.get(http102).getType(), equalTo(VirtualServerPort.Type.HTTP));
       assertThat(server3Ports.get(https103).getType(), equalTo(VirtualServerPort.Type.HTTPS));
       assertThat(server3Ports.get(radius104).getType(), equalTo(VirtualServerPort.Type.RADIUS));
+      assertThat(server3Ports.get(diameter105).getType(), equalTo(VirtualServerPort.Type.DIAMETER));
+      assertThat(server3Ports.get(smtp106).getType(), equalTo(VirtualServerPort.Type.SMTP));
+      assertThat(
+          server3Ports.get(sslProxy107).getType(), equalTo(VirtualServerPort.Type.SSL_PROXY));
+      assertThat(server3Ports.get(sip108).getType(), equalTo(VirtualServerPort.Type.SIP));
     }
   }
 

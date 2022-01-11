@@ -99,9 +99,13 @@ traffic_bucket_count: uint16;
 // TODO add many more types
 virtual_server_port_type
 :
-   HTTP
+   DIAMETER
+   | HTTP
    | HTTPS
    | RADIUS
+   | SIP
+   | SMTP
+   | SSL_PROXY
    | TCP
    | TCP_PROXY
    | UDP
