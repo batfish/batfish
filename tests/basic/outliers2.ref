@@ -36,6 +36,7 @@
           "declaredNames" : [
             "Ethernet0/0"
           ],
+          "hmm" : false,
           "mtu" : 1500,
           "proxyArp" : true,
           "ripEnabled" : false,
@@ -87,6 +88,7 @@
           "declaredNames" : [
             "GigabitEthernet0/0"
           ],
+          "hmm" : false,
           "mtu" : 1500,
           "ospfSettings" : {
             "area" : 1,
@@ -150,6 +152,7 @@
           "declaredNames" : [
             "GigabitEthernet1/0"
           ],
+          "hmm" : false,
           "mtu" : 1500,
           "prefix" : "10.12.11.1/24",
           "proxyArp" : true,
@@ -202,6 +205,7 @@
           "declaredNames" : [
             "Loopback0"
           ],
+          "hmm" : false,
           "mtu" : 1500,
           "ospfSettings" : {
             "area" : 1,
