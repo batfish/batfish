@@ -64,6 +64,7 @@ import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.FibImpl;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.GenericRibReadOnly;
+import org.batfish.datamodel.HmmRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IsisRoute;
@@ -83,6 +84,7 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.VrfLeakConfig;
 import org.batfish.datamodel.bgp.BgpTopology;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.dataplane.rib.RibGroup;
 import org.batfish.datamodel.dataplane.rib.RibId;
 import org.batfish.datamodel.isis.IsisEdge;
@@ -319,8 +321,11 @@ public final class VirtualRouter {
    */
   @VisibleForTesting
   void initForIgpComputation(
-      TopologyContext topologyContext, Map<Ip, Map<String, Set<String>>> ipVrfOwners) {
+      TopologyContext topologyContext,
+      Map<Ip, Map<String, Set<String>>> ipVrfOwners,
+      Map<String, Map<String, Set<Ip>>> interfaceOwners) {
     initConnectedRib();
+    initHmmRoutes(topologyContext, interfaceOwners);
     initKernelRib(ipVrfOwners);
     initLocalRib();
     initStaticRibs();
@@ -354,6 +359,37 @@ public final class VirtualRouter {
 
     initEigrp();
     initBaseRipRoutes();
+  }
+
+  /** Initialize HMM routes, and import them into independent RIB. */
+  private void initHmmRoutes(
+      TopologyContext topologyContext, Map<String, Map<String, Set<Ip>>> interfaceOwners) {
+    Topology l3 = topologyContext.getLayer3Topology();
+    _c.getAllInterfaces(_vrf.getName())
+        .forEach(
+            (ifaceName, iface) -> {
+              if (!iface.getHmm()) {
+                return;
+              }
+              Set<NodeInterfacePair> neighbors = l3.getNeighbors(NodeInterfacePair.of(iface));
+              for (NodeInterfacePair neighbor : neighbors) {
+                Set<Ip> neighborIps =
+                    interfaceOwners
+                        .getOrDefault(neighbor.getHostname(), ImmutableMap.of())
+                        .getOrDefault(neighbor.getInterface(), ImmutableSet.of());
+                // add an hmm route for every owned IP address on every neighbor of this interface
+                neighborIps.stream()
+                    .map(
+                        ip ->
+                            HmmRoute.builder()
+                                .setNetwork(Prefix.create(ip, Prefix.MAX_PREFIX_LENGTH))
+                                // TODO: set custom administrative distance
+                                .setNextHop(NextHopInterface.of(iface.getName()))
+                                .build())
+                    .map(this::<AbstractRoute>annotateRoute)
+                    .forEach(_independentRib::mergeRoute);
+              }
+            });
   }
 
   /** Apply a rib group to a given source rib (which belongs to this VRF) */
