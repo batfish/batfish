@@ -598,7 +598,7 @@ DOT1Q
 ;
 
 DOT1Q_TUNNEL: 'dot1q-tunnel';
-
+DOWN: 'down';
 DR_DELAY: 'dr-delay';
 
 DR_PRIORITY: 'dr-priority';
@@ -2436,7 +2436,7 @@ UNREACHABLE: 'unreachable';
 UNREACHABLES: 'unreachables';
 
 UNSUPPRESS_MAP: 'unsuppress-map' -> pushMode(M_Word);
-
+UP: 'up';
 UPDATE: 'update';
 
 UPDATE_SOURCE: 'update-source';

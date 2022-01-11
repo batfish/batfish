@@ -31,9 +31,11 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
 
   static final long DEFAULT_STATIC_ROUTE_METRIC = 0L;
   private static final String PROP_NEXT_VRF = "nextVrf";
+  private static final String PROP_TRACK = "track";
 
   private final long _metric;
   private final boolean _recursive;
+  private final @Nullable Integer _track;
 
   private transient int _hashCode;
 
@@ -45,7 +47,8 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
       @Nullable @JsonProperty(PROP_NEXT_VRF) String nextVrf,
       @JsonProperty(PROP_ADMINISTRATIVE_COST) int administrativeCost,
       @JsonProperty(PROP_METRIC) long metric,
-      @JsonProperty(PROP_TAG) long tag) {
+      @JsonProperty(PROP_TAG) long tag,
+      @JsonProperty(PROP_TRACK) @Nullable Integer track) {
     return new StaticRoute(
         requireNonNull(network),
         nextVrf != null
@@ -56,7 +59,8 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
         tag,
         false,
         false,
-        true);
+        true,
+        track);
   }
 
   private StaticRoute(
@@ -67,11 +71,13 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
       long tag,
       boolean nonForwarding,
       boolean nonRouting,
-      boolean recursive) {
+      boolean recursive,
+      @Nullable Integer track) {
     super(network, administrativeCost, tag, nonRouting, nonForwarding);
     _metric = metric;
     _nextHop = nextHop;
     _recursive = recursive;
+    _track = track;
   }
 
   @Override
@@ -98,6 +104,11 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
     return _recursive;
   }
 
+  @JsonProperty(PROP_TRACK)
+  public @Nullable Integer getTrack() {
+    return _track;
+  }
+
   public static Builder builder() {
     return new Builder();
   }
@@ -118,6 +129,7 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
   public static final class Builder extends AbstractRouteBuilder<Builder, StaticRoute> {
 
     private boolean _recursive;
+    private @Nullable Integer _track;
 
     private Builder() {
       // Tmp hack until parent builder is fixed and doesn't default to primitives
@@ -142,7 +154,8 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
           getTag(),
           getNonForwarding(),
           getNonRouting(),
-          _recursive);
+          _recursive,
+          _track);
     }
 
     @Nonnull
@@ -163,6 +176,11 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
       _recursive = recursive;
       return this;
     }
+
+    public @Nonnull Builder setTrack(@Nullable Integer track) {
+      _track = track;
+      return this;
+    }
   }
 
   /////// Keep COMPARATOR, #toBuilder, #equals, and #hashCode in sync ////////
@@ -178,7 +196,8 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
           .thenComparing(StaticRoute::getTag)
           .thenComparing(StaticRoute::getNonRouting)
           .thenComparing(StaticRoute::getNonForwarding)
-          .thenComparing(StaticRoute::getRecursive);
+          .thenComparing(StaticRoute::getRecursive)
+          .thenComparing(StaticRoute::getTrack);
 
   @Override
   public Builder toBuilder() {
@@ -190,7 +209,8 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
         .setAdmin(getAdministrativeCost())
         .setNonRouting(getNonRouting())
         .setNonForwarding(getNonForwarding())
-        .setRecursive(getRecursive());
+        .setRecursive(getRecursive())
+        .setTrack(_track);
   }
 
   @Override
@@ -209,7 +229,8 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
         && _metric == rhs._metric
         && _nextHop.equals(rhs._nextHop)
         && _tag == rhs._tag
-        && _recursive == rhs._recursive;
+        && _recursive == rhs._recursive
+        && Objects.equals(_track, rhs._track);
   }
 
   @Override
@@ -225,7 +246,8 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
               _metric,
               _nextHop,
               _tag,
-              _recursive);
+              _recursive,
+              _track);
       _hashCode = h;
     }
     return h;
@@ -234,12 +256,14 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(this)
+        .omitNullValues()
         .add(PROP_NETWORK, _network)
         .add("nextHop", _nextHop)
         .add(PROP_ADMINISTRATIVE_COST, _admin)
         .add(PROP_METRIC, _metric)
         .add("recursive", _recursive)
         .add(PROP_TAG, _tag)
+        .add(PROP_TRACK, _track)
         .toString();
   }
 }

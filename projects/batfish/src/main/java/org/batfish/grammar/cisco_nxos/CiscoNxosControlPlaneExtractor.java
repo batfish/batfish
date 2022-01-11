@@ -192,6 +192,7 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.SYSQ
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.SYSQOS_QUEUING;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.TACACS_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.TRACK_INTERFACE;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.TRACK_IP_ROUTE_VRF;
 import static org.batfish.representation.cisco_nxos.Interface.VLAN_RANGE;
 import static org.batfish.representation.cisco_nxos.Interface.newNonVlanInterface;
 import static org.batfish.representation.cisco_nxos.Interface.newVlanInterface;
@@ -707,9 +708,11 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Tcp_flags_maskContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Tcp_portContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Tcp_port_numberContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Template_nameContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Track_definitionContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Tir_vrfContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Track_interfaceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Track_interface_modeContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Track_ip_routeContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Track_ip_slaContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Track_object_idContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ts_hostContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Udp_portContext;
@@ -861,6 +864,7 @@ import org.batfish.representation.cisco_nxos.TacacsServer;
 import org.batfish.representation.cisco_nxos.TcpOptions;
 import org.batfish.representation.cisco_nxos.Track;
 import org.batfish.representation.cisco_nxos.TrackInterface;
+import org.batfish.representation.cisco_nxos.TrackIpRoute;
 import org.batfish.representation.cisco_nxos.TrackUnsupported;
 import org.batfish.representation.cisco_nxos.UdpOptions;
 import org.batfish.representation.cisco_nxos.Vlan;
@@ -1370,6 +1374,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private List<Vlan> _currentVlans;
   private Vrf _currentVrf;
   private boolean _inIpv6BgpPeer;
+  private Track _currentTrack;
+  private TrackIpRoute _currentTrackIpRoute;
 
   /**
    * On NX-OS, many structure names are case-insensitive but capitalized according to how they were
@@ -4886,27 +4892,29 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitS_track(S_trackContext ctx) {
+    if (_currentTrack == null) {
+      // inner track rule was invalid, so no track was created
+      return;
+    }
     toInteger(ctx, ctx.num)
         .ifPresent(
             id -> {
               _c.defineStructure(CiscoNxosStructureType.TRACK, id.toString(), ctx);
-              // Create a placeholder to avoid incorrectly rejecting lines for undefined references
-              Track track = toTrack(ctx.track_definition()).orElse(TrackUnsupported.INSTANCE);
-              _c.getTracks().put(id, track);
+              _c.getTracks().put(id, _currentTrack);
             });
+    _currentTrack = null;
   }
 
-  private Optional<Track> toTrack(Track_definitionContext ctx) {
-    // Interface tracking is the only method Batfish currently parses and extracts
-    if (ctx.track_interface() != null) {
-      return toTrack(ctx.track_interface());
-    }
-    warn(ctx, "This track method is not yet supported and will be ignored.");
-    return Optional.empty();
+  @Override
+  public void exitTrack_ip_sla(Track_ip_slaContext ctx) {
+    warn(
+        ctx.getParent().getParent(), "This track method is not yet supported and will be ignored.");
+    _currentTrack = TrackUnsupported.INSTANCE;
   }
 
-  private Optional<Track> toTrack(Track_interfaceContext ctx) {
-    Optional<String> interfaceName =
+  @Override
+  public void exitTrack_interface(Track_interfaceContext ctx) {
+    Optional<String> maybeIfaceName =
         toString(
             ctx,
             ctx.interface_name(),
@@ -4915,7 +4923,12 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
                 CiscoNxosInterfaceType.ETHERNET,
                 CiscoNxosInterfaceType.PORT_CHANNEL,
                 CiscoNxosInterfaceType.LOOPBACK));
-    return interfaceName.map(s -> new TrackInterface(s, toMode(ctx.track_interface_mode())));
+    if (!maybeIfaceName.isPresent()) {
+      return;
+    }
+    String ifaceName = maybeIfaceName.get();
+    _c.referenceStructure(INTERFACE, ifaceName, TRACK_INTERFACE, ctx.getStart().getLine());
+    _currentTrack = new TrackInterface(ifaceName, toMode(ctx.track_interface_mode()));
   }
 
   private TrackInterface.Mode toMode(Track_interface_modeContext ctx) {
@@ -4926,6 +4939,28 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     }
     assert ctx.IPV6() != null;
     return TrackInterface.Mode.IPV6_ROUTING;
+  }
+
+  @Override
+  public void enterTrack_ip_route(Track_ip_routeContext ctx) {
+    _currentTrackIpRoute = new TrackIpRoute(toPrefix(ctx.prefix), ctx.HMM() != null);
+  }
+
+  @Override
+  public void exitTrack_ip_route(Track_ip_routeContext ctx) {
+    _currentTrack = _currentTrackIpRoute;
+    _currentTrackIpRoute = null;
+  }
+
+  @Override
+  public void exitTir_vrf(Tir_vrfContext ctx) {
+    Optional<String> maybeVrf = toString(ctx, ctx.name);
+    if (!maybeVrf.isPresent()) {
+      return;
+    }
+    String vrf = maybeVrf.get();
+    _c.referenceStructure(VRF, vrf, TRACK_IP_ROUTE_VRF, ctx.getStart().getLine());
+    _currentTrackIpRoute.setVrf(vrf);
   }
 
   @Override
@@ -4958,16 +4993,6 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       _c.referenceStructure(
           INTERFACE, name.get(), SNMP_SERVER_SOURCE_INTERFACE, ctx.name.getStart().getLine());
     }
-  }
-
-  @Override
-  public void exitTrack_interface(Track_interfaceContext ctx) {
-    Optional<String> iface = toString(ctx, ctx.interface_name());
-    if (!iface.isPresent()) {
-      return;
-    }
-    // already warning at parent stanza
-    _c.referenceStructure(INTERFACE, iface.get(), TRACK_INTERFACE, ctx.getStart().getLine());
   }
 
   @Override
@@ -6056,9 +6081,6 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
           trackNumber.toString(),
           CiscoNxosStructureUsage.IP_ROUTE_TRACK,
           track_ctx.start.getLine());
-
-      // TODO: support track object number
-      todo(track_ctx);
     }
     // All properties were valid. Update route and return true.
     Optional.ofNullable(name).ifPresent(route::setName);
