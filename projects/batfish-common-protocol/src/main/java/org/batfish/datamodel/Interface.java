@@ -56,6 +56,7 @@ public final class Interface extends ComparableStructure<String> {
     private @Nonnull SortedSet<Ip> _dhcpRelayAddresses;
     @Nullable private EigrpInterfaceSettings _eigrp;
     @Nullable private Integer _encapsulationVlan;
+    private boolean _hmm;
     private Map<Integer, HsrpGroup> _hsrpGroups;
     private String _hsrpVersion;
     private @Nullable String _humanName;
@@ -138,6 +139,7 @@ public final class Interface extends ComparableStructure<String> {
       iface.setDhcpRelayAddresses(ImmutableList.copyOf(_dhcpRelayAddresses));
       iface.setEigrp(_eigrp);
       iface.setEncapsulationVlan(_encapsulationVlan);
+      iface.setHmm(_hmm);
       iface.setHsrpGroups(_hsrpGroups);
       iface.setHsrpVersion(_hsrpVersion);
       iface.setHumanName(_humanName);
@@ -316,6 +318,11 @@ public final class Interface extends ComparableStructure<String> {
     public Builder setFirewallSessionInterfaceInfo(
         @Nullable FirewallSessionInterfaceInfo firewallSessionInterfaceInfo) {
       _firewallSessionInterfaceInfo = firewallSessionInterfaceInfo;
+      return this;
+    }
+
+    public @Nonnull Builder setHmm(boolean hmm) {
+      _hmm = hmm;
       return this;
     }
 
@@ -524,7 +531,7 @@ public final class Interface extends ComparableStructure<String> {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(@Nullable Object o) {
       if (this == o) {
         return true;
       }
@@ -573,6 +580,7 @@ public final class Interface extends ComparableStructure<String> {
   private static final String PROP_EIGRP = "eigrp";
   private static final String PROP_ENCAPSULATION_VLAN = "encapsulationVlan";
   private static final String PROP_FIREWALL_SESSION_INTERFACE_INFO = "firewallSessionInterfaceInfo";
+  private static final String PROP_HMM = "hmm";
   private static final String PROP_HSRP_GROUPS = "hsrpGroups";
   private static final String PROP_HSRP_VERSION = "hsrpVersion";
   private static final String PROP_HUMAN_NAME = "humanName";
@@ -856,6 +864,7 @@ public final class Interface extends ComparableStructure<String> {
   @Nullable private EigrpInterfaceSettings _eigrp;
   @Nullable private Integer _encapsulationVlan;
   @Nullable private FirewallSessionInterfaceInfo _firewallSessionInterfaceInfo;
+  private boolean _hmm;
   private Map<Integer, HsrpGroup> _hsrpGroups;
   private @Nullable String _humanName;
   private IpAccessList _inboundFilter;
@@ -934,8 +943,9 @@ public final class Interface extends ComparableStructure<String> {
     _vrrpGroups = ImmutableSortedMap.of();
   }
 
+  // TODO: add missing fields, clean up, implement hashCode
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (o == this) {
       return true;
     } else if (!(o instanceof Interface)) {
@@ -1030,7 +1040,7 @@ public final class Interface extends ComparableStructure<String> {
         _preTransformationOutgoingFilter, other._preTransformationOutgoingFilter)) {
       return false;
     }
-    return true;
+    return _hmm == other._hmm;
   }
 
   /** Number of access VLAN when switchport mode is ACCESS. */
@@ -1173,6 +1183,12 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_FIREWALL_SESSION_INTERFACE_INFO)
   public @Nullable FirewallSessionInterfaceInfo getFirewallSessionInterfaceInfo() {
     return _firewallSessionInterfaceInfo;
+  }
+
+  /** Whether Host Mobility Manager (HMM) route generation for neighbor IPs is enabled. */
+  @JsonProperty(PROP_HMM)
+  public boolean getHmm() {
+    return _hmm;
   }
 
   /** Mapping: hsrpGroupID -&gt; HsrpGroup */
@@ -1628,6 +1644,11 @@ public final class Interface extends ComparableStructure<String> {
   public void setFirewallSessionInterfaceInfo(
       @Nullable FirewallSessionInterfaceInfo firewallSessionInterfaceInfo) {
     _firewallSessionInterfaceInfo = firewallSessionInterfaceInfo;
+  }
+
+  @JsonProperty(PROP_HMM)
+  public void setHmm(boolean hmm) {
+    _hmm = hmm;
   }
 
   @JsonProperty(PROP_HSRP_GROUPS)

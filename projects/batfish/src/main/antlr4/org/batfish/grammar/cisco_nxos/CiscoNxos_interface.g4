@@ -43,6 +43,7 @@ s_interface_regular
     | i_delay
     | i_description
     | i_encapsulation
+    | i_fabric
     | i_hsrp
     | i_ip
     | i_ipv6
@@ -126,6 +127,12 @@ i_encapsulation
 :
   ENCAPSULATION DOT1Q vlan = unreserved_vlan_id NEWLINE
 ;
+
+i_fabric: FABRIC (i_fabric_forwarding | i_fabric_null);
+
+i_fabric_forwarding: FORWARDING MODE ANYCAST_GATEWAY NEWLINE;
+
+i_fabric_null: DATABASE null_rest_of_line;
 
 i_hsrp
 :

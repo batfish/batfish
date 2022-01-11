@@ -1,0 +1,16 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_fabric_forwarding_no_mac
+
+feature fabric forwarding
+
+! missing fabric forwarding anycast-gateway-mac
+
+vlan 1-2
+
+interface Vlan2
+  no shutdown
+  ip address 192.0.2.1/24
+  fabric forwarding mode anycast-gateway
+!
+

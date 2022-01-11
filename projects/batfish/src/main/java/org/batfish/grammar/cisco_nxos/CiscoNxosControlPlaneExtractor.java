@@ -233,6 +233,7 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.LongSpace;
+import org.batfish.datamodel.MacAddress;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
@@ -314,6 +315,8 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Evv_rdContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Evv_route_targetContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Fe_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Fe_sourceContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ff_admin_distanceContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ff_anycast_gateway_macContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Flow_exporterContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Flow_monitorContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Flow_recordContext;
@@ -328,6 +331,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_channel_groupContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_delayContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_descriptionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_encapsulationContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_fabric_forwardingContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_access_groupContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_address_concreteContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_address_dhcpContext;
@@ -455,6 +459,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Lv6_access_classContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Lv_access_classContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Mac_access_listContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Mac_access_list_nameContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Mac_address_literalContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Maxas_limitContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Maximum_pathsContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Monitor_session_destinationContext;
@@ -6823,6 +6828,59 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     }
     Integer vni = vniOrError.get();
     _currentVrf.setVni(vni);
+  }
+
+  @Override
+  public void exitFf_admin_distance(Ff_admin_distanceContext ctx) {
+    // TODO: conversion
+    todo(ctx);
+    toInteger(ctx, ctx.dist).ifPresent(_c::setFabricForwardingAdminDistance);
+  }
+
+  @Override
+  public void exitFf_anycast_gateway_mac(Ff_anycast_gateway_macContext ctx) {
+    _c.setFabricForwardingAnycastGatewayMac(toMacAddress(ctx.mac));
+  }
+
+  private static @Nonnull MacAddress toMacAddress(Mac_address_literalContext ctx) {
+    // TODO: support all options.
+    //       Option 1: E.E.E
+    //       Option 2: EE-EE-EE-EE-EE-EE
+    //       Option 3: EE:EE:EE:EE:EE:EE
+    //       Option 4: EEEE.EEEE.EEEE (supported, canonical)
+    char[] letters = ctx.getText().replace(".", "").toCharArray();
+    String datamodelFormat =
+        String.format(
+            "%c%c:%c%c:%c%c:%c%c:%c%c:%c%c",
+            letters[0],
+            letters[1],
+            letters[2],
+            letters[3],
+            letters[4],
+            letters[5],
+            letters[6],
+            letters[7],
+            letters[8],
+            letters[9],
+            letters[10],
+            letters[11]);
+    return MacAddress.parse(datamodelFormat);
+  }
+
+  @Override
+  public void exitI_fabric_forwarding(I_fabric_forwardingContext ctx) {
+    boolean warnInvalid = false;
+    for (Interface i : _currentInterfaces) {
+      CiscoNxosInterfaceType type = i.getType();
+      if (type != CiscoNxosInterfaceType.VLAN) {
+        warnInvalid = true;
+        continue;
+      }
+      i.setFabricForwardingModeAnycastGateway(true);
+    }
+    if (warnInvalid) {
+      warn(ctx, "fabric forwarding mode anycast-gateway only valid on Vlan interfaces");
+    }
   }
 
   private static void setRouteTarget(
