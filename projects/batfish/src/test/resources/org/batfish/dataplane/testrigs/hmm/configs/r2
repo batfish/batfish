@@ -1,0 +1,7 @@
+!RANCID-CONTENT-TYPE: cisco
+hostname r2
+
+interface GigabitEthernet0/0
+  ip address 192.0.2.2 255.255.255.0
+  vrrp 10 ip 192.0.2.3
+!

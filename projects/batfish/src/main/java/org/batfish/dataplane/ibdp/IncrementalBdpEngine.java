@@ -243,8 +243,9 @@ final class IncrementalBdpEngine {
       LOGGER.info("Computing Data Plane using iBDP");
 
       // TODO: switch to topologies and owners from TopologyProvider
-      Map<Ip, Map<String, Set<String>>> ipVrfOwners =
-          new IpOwners(configurations, initialTopologyContext.getL3Adjacencies()).getIpVrfOwners();
+      IpOwners ipOwners = new IpOwners(configurations, initialTopologyContext.getL3Adjacencies());
+      Map<Ip, Map<String, Set<String>>> ipVrfOwners = ipOwners.getIpVrfOwners();
+      Map<String, Map<String, Set<Ip>>> activeInterfaceOwners = ipOwners.getInterfaceOwners(true);
 
       // Generate our nodes, keyed by name, sorted for determinism
       SortedMap<String, Node> nodes =
@@ -266,7 +267,8 @@ final class IncrementalBdpEngine {
        */
       IncrementalBdpAnswerElement answerElement = new IncrementalBdpAnswerElement();
       // TODO: eventually, IGP needs to be part of fixed-point below, because tunnels.
-      computeIgpDataPlane(nodes, vrs, initialTopologyContext, ipVrfOwners, answerElement);
+      computeIgpDataPlane(
+          nodes, vrs, initialTopologyContext, ipVrfOwners, activeInterfaceOwners, answerElement);
 
       LOGGER.info("Initialize virtual routers before topology fixed point");
       Span initializationSpan =
@@ -586,13 +588,13 @@ final class IncrementalBdpEngine {
    * @param nodes A dictionary of configuration-wrapping Bdp nodes keyed by name
    * @param topologyContext The topology context in which various adjacencies are stored
    * @param ae The output answer element in which to store a report of the computation. Also
-   *     contains the current recovery iteration.
    */
   private void computeIgpDataPlane(
       SortedMap<String, Node> nodes,
       List<VirtualRouter> vrs,
       TopologyContext topologyContext,
       Map<Ip, Map<String, Set<String>>> ipVrfOwners,
+      Map<String, Map<String, Set<Ip>>> interfaceOwners,
       IncrementalBdpAnswerElement ae) {
     Span span = GlobalTracer.get().buildSpan("Compute IGP").start();
     LOGGER.info("Compute IGP");
@@ -609,7 +611,8 @@ final class IncrementalBdpEngine {
       LOGGER.info("Initialize for IGP computation");
       try (Scope innerScope = GlobalTracer.get().scopeManager().activate(initializeSpan)) {
         assert innerScope != null; // avoid unused warning
-        vrs.parallelStream().forEach(vr -> vr.initForIgpComputation(topologyContext, ipVrfOwners));
+        vrs.parallelStream()
+            .forEach(vr -> vr.initForIgpComputation(topologyContext, ipVrfOwners, interfaceOwners));
       } finally {
         initializeSpan.finish();
       }
