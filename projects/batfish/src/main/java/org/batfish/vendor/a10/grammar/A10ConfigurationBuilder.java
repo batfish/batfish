@@ -2317,12 +2317,20 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   private @Nonnull static VirtualServerPort.Type toType(
       A10Parser.Virtual_server_port_typeContext ctx) {
-    if (ctx.HTTP() != null) {
+    if (ctx.DIAMETER() != null) {
+      return VirtualServerPort.Type.DIAMETER;
+    } else if (ctx.HTTP() != null) {
       return VirtualServerPort.Type.HTTP;
     } else if (ctx.HTTPS() != null) {
       return VirtualServerPort.Type.HTTPS;
     } else if (ctx.RADIUS() != null) {
       return VirtualServerPort.Type.RADIUS;
+    } else if (ctx.SIP() != null) {
+      return VirtualServerPort.Type.SIP;
+    } else if (ctx.SMTP() != null) {
+      return VirtualServerPort.Type.SMTP;
+    } else if (ctx.SSL_PROXY() != null) {
+      return VirtualServerPort.Type.SSL_PROXY;
     } else if (ctx.TCP() != null) {
       return VirtualServerPort.Type.TCP;
     } else if (ctx.TCP_PROXY() != null) {
