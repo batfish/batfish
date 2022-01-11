@@ -382,7 +382,7 @@ public final class VirtualRouter {
                     .map(
                         ip ->
                             HmmRoute.builder()
-                                .setNetwork(Prefix.create(ip, Prefix.MAX_PREFIX_LENGTH))
+                                .setNetwork(ip.toPrefix())
                                 // TODO: set custom administrative distance
                                 .setNextHop(NextHopInterface.of(iface.getName()))
                                 .build())
