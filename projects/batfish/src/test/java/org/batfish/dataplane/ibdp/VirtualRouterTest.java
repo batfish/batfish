@@ -989,7 +989,7 @@ public class VirtualRouterTest {
     Map<Ip, Map<String, Set<String>>> ipVrfOwners =
         new IpOwners(ImmutableMap.of(c.getHostname(), c), emptyTopology.getL3Adjacencies())
             .getIpVrfOwners();
-    vr.initForIgpComputation(emptyTopology, ipVrfOwners);
+    vr.initForIgpComputation(emptyTopology, ipVrfOwners, ImmutableMap.of());
 
     assertNotEquals(vrInitialHashcode, vr.computeIterationHashCode());
   }
