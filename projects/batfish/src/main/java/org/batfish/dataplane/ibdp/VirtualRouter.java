@@ -620,15 +620,15 @@ public final class VirtualRouter {
     return true;
   }
 
-  private static boolean isConditionalStaticRoute(StaticRoute sr) {
+  private boolean isConditionalStaticRoute(StaticRoute sr) {
     return isConditionalStaticRouteNextHop(sr.getNextHop()) || sr.getTrack() != null;
   }
 
-  private static boolean isConditionalStaticRouteNextHop(NextHop nextHop) {
+  private boolean isConditionalStaticRouteNextHop(NextHop nextHop) {
     return IS_CONDITIONAL_STATIC_ROUTE_NEXT_HOP.visit(nextHop);
   }
 
-  private static final NextHopVisitor<Boolean> IS_CONDITIONAL_STATIC_ROUTE_NEXT_HOP =
+  private final NextHopVisitor<Boolean> IS_CONDITIONAL_STATIC_ROUTE_NEXT_HOP =
       new NextHopVisitor<Boolean>() {
         @Override
         public Boolean visitNextHopIp(NextHopIp nextHopIp) {
@@ -637,6 +637,12 @@ public final class VirtualRouter {
 
         @Override
         public Boolean visitNextHopInterface(NextHopInterface nextHopInterface) {
+          // TODO: remove invalid static routes in post-processing, and change to assertion
+          checkState(
+              _c.getAllInterfaces().containsKey(nextHopInterface.getInterfaceName()),
+              "Static route on node '%s' refers to missing interface: '%s'",
+              _c.getHostname(),
+              nextHopInterface.getInterfaceName());
           return true;
         }
 
