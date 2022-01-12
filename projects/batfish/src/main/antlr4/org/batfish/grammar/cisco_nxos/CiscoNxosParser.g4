@@ -604,13 +604,19 @@ track_ip
 
 track_ip_route
 :
-  ROUTE null_rest_of_line tir_vrf*
+  ROUTE prefix = ip_prefix REACHABILITY HMM? NEWLINE
+  track_ip_route_inner*
 ;
 
-tir_vrf
+track_ip_route_inner
 :
-  VRF MEMBER name = vrf_name NEWLINE
+  tir_vrf
+  | tir_null
 ;
+
+tir_vrf: VRF MEMBER name = vrf_name NEWLINE;
+
+tir_null: DELAY null_rest_of_line;
 
 track_ip_sla
 :

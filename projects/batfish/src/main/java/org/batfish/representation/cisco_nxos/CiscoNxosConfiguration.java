@@ -223,6 +223,7 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.datamodel.tracking.DecrementPriority;
+import org.batfish.datamodel.tracking.TrackRoute;
 import org.batfish.datamodel.vendor_family.cisco_nxos.CiscoNxosFamily;
 import org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform;
 import org.batfish.datamodel.vendor_family.cisco_nxos.NxosMajorVersion;
@@ -1932,6 +1933,13 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
           String.format(
               "Interface track mode %s is not yet supported and will be ignored.",
               trackInterface.getMode()));
+    } else if (track instanceof TrackIpRoute) {
+      TrackIpRoute trackIpRoute = (TrackIpRoute) track;
+      return Optional.of(
+          TrackRoute.of(
+              trackIpRoute.getPrefix(),
+              trackIpRoute.getHmm() ? ImmutableSet.of(RoutingProtocol.HMM) : ImmutableSet.of(),
+              firstNonNull(trackIpRoute.getVrf(), DEFAULT_VRF_NAME)));
     }
     // Warnings for unsupported track methods should be handled by parse warnings
     return Optional.empty();
@@ -3827,7 +3835,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     if (staticRoute.getNextHopVrf() != null) {
       return null;
     }
-    // TODO: support track object number
     String nextHopInterface = staticRoute.getNextHopInterface();
     NextHop nh;
     if (staticRoute.getDiscard()) {
@@ -3850,12 +3857,15 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
               "Could not determine a next hop for static route: %s", staticRoute.getPrefix()));
       return null;
     }
+    Integer track = staticRoute.getTrack();
     return org.batfish.datamodel.StaticRoute.builder()
         .setAdministrativeCost(staticRoute.getPreference())
         .setMetric(0L)
         .setNetwork(staticRoute.getPrefix())
         .setNextHop(nh)
         .setTag(staticRoute.getTag())
+        // guaranteed to exist by extractor if non-null
+        .setTrack(track != null ? track.toString() : null)
         .build();
   }
 

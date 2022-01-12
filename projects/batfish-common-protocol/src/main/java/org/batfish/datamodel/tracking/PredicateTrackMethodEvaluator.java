@@ -6,9 +6,12 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 
 /**
- * Evaluates a {@link TrackMethod} as a predicate. Visiting the method returns {@code true} if the
- * {@link TrackMethod} would be triggered and execute associated {@link TrackAction}s and {@code
- * false} otherwise.
+ * Evaluator for {@link TrackMethod}s whose value may be determined solely from the contents of a
+ * {@link Configuration}. Visiting the method returns {@code true} if the {@link TrackMethod} would
+ * be triggered and execute associated {@link TrackAction}s and {@code false} otherwise.
+ *
+ * <p>For {@link TrackMethod}s requiring data plane information for evaluation, throws {@link
+ * UnsupportedOperationException}.
  */
 @ParametersAreNonnullByDefault
 public class PredicateTrackMethodEvaluator implements GenericTrackMethodVisitor<Boolean> {
@@ -25,6 +28,11 @@ public class PredicateTrackMethodEvaluator implements GenericTrackMethodVisitor<
       return false;
     }
     return !trackedInterface.getActive() || trackedInterface.getBlacklisted();
+  }
+
+  @Override
+  public Boolean visitTrackRoute(TrackRoute trackRoute) {
+    throw new UnsupportedOperationException("Unsupported method for HSRP priority evaluation");
   }
 
   @Nonnull private final Configuration _configuration;

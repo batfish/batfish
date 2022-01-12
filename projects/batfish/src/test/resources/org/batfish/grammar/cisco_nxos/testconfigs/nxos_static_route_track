@@ -1,0 +1,35 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_static_route_track
+!
+
+! vrf default
+interface Ethernet1/1
+  no switchport
+  no shutdown
+  ip address 10.1.0.1/24
+!
+interface Ethernet1/2
+  no switchport
+  no shutdown
+  ip address 10.2.0.1/24
+!
+track 10 interface Ethernet1/2 line-protocol
+!
+ip route 10.0.1.0/24 10.1.0.2 track 10
+!
+
+! vrf foo
+interface Ethernet1/3
+  no switchport
+  no shutdown
+  vrf member foo
+  ip address 10.3.0.1/24
+!
+track 20 ip route 10.3.0.2/32 reachability hmm
+  vrf member foo
+  delay up 0 down 0
+!
+vrf context foo
+  ip route 10.0.3.0/24 10.3.0.2 track 20
+!
