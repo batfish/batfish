@@ -11,23 +11,22 @@ import org.junit.Test;
 public final class DecrementPriorityTest {
   @Test
   public void testJavaSerialization() {
-    DecrementPriority obj = new DecrementPriority(1, true);
+    DecrementPriority obj = new DecrementPriority(1);
     assertEquals(obj, SerializationUtils.clone(obj));
   }
 
   @Test
   public void testJacksonSerialization() {
-    DecrementPriority obj = new DecrementPriority(1, true);
+    DecrementPriority obj = new DecrementPriority(1);
     assertEquals(obj, BatfishObjectMapper.clone(obj, TrackAction.class));
   }
 
   @Test
   public void testEquals() {
-    DecrementPriority obj = new DecrementPriority(1, true);
+    DecrementPriority obj = new DecrementPriority(1);
     new EqualsTester()
-        .addEqualityGroup(obj, new DecrementPriority(1, true))
-        .addEqualityGroup(new DecrementPriority(2, true))
-        .addEqualityGroup(new DecrementPriority(1, false))
+        .addEqualityGroup(obj, new DecrementPriority(1))
+        .addEqualityGroup(new DecrementPriority(2))
         .testEquals();
   }
 }

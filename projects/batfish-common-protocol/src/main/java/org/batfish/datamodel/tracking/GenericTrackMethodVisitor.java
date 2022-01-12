@@ -6,7 +6,11 @@ public interface GenericTrackMethodVisitor<R> {
     return trackMethod.accept(this);
   }
 
+  R visitNegatedTrackMethod(NegatedTrackMethod negatedTrackMethod);
+
   R visitTrackInterface(TrackInterface trackInterface);
+
+  R visitTrackMethodReference(TrackMethodReference trackMethodReference);
 
   R visitTrackRoute(TrackRoute trackRoute);
 }

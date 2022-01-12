@@ -12,14 +12,10 @@ public class DecrementPriority implements TrackAction {
   private static final String PROP_SUBTRAHEND = "subtrahend";
 
   private final int _subtrahend;
-  private final boolean _negateTrack;
 
   @JsonCreator
-  public DecrementPriority(
-      @JsonProperty(PROP_SUBTRAHEND) int subtrahend,
-      @JsonProperty(PROP_NEGATE_TRACK) boolean negateTrack) {
+  public DecrementPriority(@JsonProperty(PROP_SUBTRAHEND) int subtrahend) {
     _subtrahend = subtrahend;
-    _negateTrack = negateTrack;
   }
 
   @Override
@@ -31,7 +27,7 @@ public class DecrementPriority implements TrackAction {
       return false;
     }
     DecrementPriority that = (DecrementPriority) obj;
-    return _subtrahend == that._subtrahend && _negateTrack == that._negateTrack;
+    return _subtrahend == that._subtrahend;
   }
 
   @JsonProperty(PROP_SUBTRAHEND)
@@ -39,15 +35,9 @@ public class DecrementPriority implements TrackAction {
     return _subtrahend;
   }
 
-  @JsonProperty(PROP_NEGATE_TRACK)
-  @Override
-  public boolean getNegateTrack() {
-    return _negateTrack;
-  }
-
   @Override
   public int hashCode() {
-    return Objects.hash(_subtrahend, _negateTrack);
+    return Objects.hash(_subtrahend);
   }
 
   @Override

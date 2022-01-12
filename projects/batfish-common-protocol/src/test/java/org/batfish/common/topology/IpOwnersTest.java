@@ -47,6 +47,7 @@ import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.hsrp.HsrpGroup;
 import org.batfish.datamodel.tracking.DecrementPriority;
+import org.batfish.datamodel.tracking.NegatedTrackMethod;
 import org.batfish.datamodel.tracking.TrackInterface;
 import org.junit.Before;
 import org.junit.Test;
@@ -399,9 +400,9 @@ public class IpOwnersTest {
             .setTrackActions(
                 ImmutableSortedMap.of(
                     "1",
-                    new DecrementPriority(track1Decrement, true),
+                    new DecrementPriority(track1Decrement),
                     "2",
-                    new DecrementPriority(track2Decrement, true)))
+                    new DecrementPriority(track2Decrement)))
             .setGroupNumber(1)
             .setIps(ImmutableSet.of(Ip.parse("10.10.10.1")))
             .build();
@@ -415,7 +416,10 @@ public class IpOwnersTest {
 
     c1.setTrackingGroups(
         ImmutableMap.of(
-            "1", new TrackInterface("i1tracked"), "2", new TrackInterface("i1trackedAlso")));
+            "1",
+            NegatedTrackMethod.of(new TrackInterface("i1tracked")),
+            "2",
+            NegatedTrackMethod.of(new TrackInterface("i1trackedAlso"))));
     // Tracked by track "1"
     Interface.builder()
         .setOwner(c1)
@@ -449,8 +453,7 @@ public class IpOwnersTest {
         HsrpGroup.builder()
             .setPriority(basePriority)
             // Reference to undefined track method
-            .setTrackActions(
-                ImmutableSortedMap.of("1", new DecrementPriority(track1Decrement, true)))
+            .setTrackActions(ImmutableSortedMap.of("1", new DecrementPriority(track1Decrement)))
             .setGroupNumber(1)
             .setIps(ImmutableSet.of(Ip.parse("10.10.10.1")))
             .build();

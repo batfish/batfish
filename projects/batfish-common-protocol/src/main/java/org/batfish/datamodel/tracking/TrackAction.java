@@ -7,12 +7,4 @@ import java.io.Serializable;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
 public interface TrackAction extends Serializable {
   void accept(GenericTrackActionVisitor visitor);
-
-  /**
-   * Whether the action should be performed when evaluation of the {@link TrackMethod} returns
-   * {@code false} rather than {@code true}.
-   */
-  boolean getNegateTrack();
-
-  String PROP_NEGATE_TRACK = "negateTrack";
 }

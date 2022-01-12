@@ -1,7 +1,6 @@
 package org.batfish.datamodel.tracking;
 
 import javax.annotation.Nonnull;
-import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 
@@ -10,16 +9,17 @@ import org.batfish.datamodel.Interface;
  * {@link Configuration}. Visiting the method returns {@code true} if the {@link TrackMethod} would
  * be triggered and execute associated {@link TrackAction}s and {@code false} otherwise.
  *
- * <p>Note that caller is responsible for negating the result of evaluation if {@link
- * TrackAction#getNegateTrack()} is {@code true} for an associated action.
- *
  * <p>For {@link TrackMethod}s requiring data plane information for evaluation, throws {@link
  * UnsupportedOperationException}.
  */
-@ParametersAreNonnullByDefault
 public class StaticTrackMethodEvaluator implements GenericTrackMethodVisitor<Boolean> {
   public StaticTrackMethodEvaluator(Configuration configuration) {
     _configuration = configuration;
+  }
+
+  @Override
+  public Boolean visitNegatedTrackMethod(NegatedTrackMethod negatedTrackMethod) {
+    return !visit(negatedTrackMethod.getTrackMethod());
   }
 
   @Override
@@ -34,6 +34,13 @@ public class StaticTrackMethodEvaluator implements GenericTrackMethodVisitor<Boo
       return false;
     }
     return trackedInterface.getActive() && !trackedInterface.getBlacklisted();
+  }
+
+  @Override
+  public Boolean visitTrackMethodReference(TrackMethodReference trackMethodReference) {
+    TrackMethod target = _configuration.getTrackingGroups().get(trackMethodReference.getId());
+    assert target != null;
+    return visit(target);
   }
 
   @Override

@@ -10,9 +10,9 @@ public class HsrpPriorityEvaluatorTest {
 
   @Test
   public void testVisitDecrementPriority() {
-    DecrementPriority decrement25 = new DecrementPriority(25, true);
-    DecrementPriority decrement125 = new DecrementPriority(125, true);
-    DecrementPriority decrementNegative200 = new DecrementPriority(-200, true);
+    DecrementPriority decrement25 = new DecrementPriority(25);
+    DecrementPriority decrement125 = new DecrementPriority(125);
+    DecrementPriority decrementNegative200 = new DecrementPriority(-200);
 
     {
       HsrpPriorityEvaluator evaluator = new HsrpPriorityEvaluator(100);
@@ -36,8 +36,8 @@ public class HsrpPriorityEvaluatorTest {
   @Test
   public void testVisitDecrementPriorityCumulative() {
     HsrpPriorityEvaluator evaluator = new HsrpPriorityEvaluator(250);
-    DecrementPriority decrement25 = new DecrementPriority(25, true);
-    DecrementPriority decrement125 = new DecrementPriority(125, true);
+    DecrementPriority decrement25 = new DecrementPriority(25);
+    DecrementPriority decrement125 = new DecrementPriority(125);
 
     evaluator.visitDecrementPriority(decrement25);
     assertThat(evaluator.getPriority(), equalTo(225));

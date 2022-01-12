@@ -344,8 +344,7 @@ public final class IpOwners {
         .forEach(
             (trackName, action) -> {
               TrackMethod trackMethod = trackMethods.get(trackName);
-              if (trackMethod != null
-                  && (trackMethod.accept(trackMethodEvaluator) ^ action.getNegateTrack())) {
+              if (trackMethod != null && (trackMethod.accept(trackMethodEvaluator))) {
                 action.accept(hsrpEvaluator);
               }
             });
