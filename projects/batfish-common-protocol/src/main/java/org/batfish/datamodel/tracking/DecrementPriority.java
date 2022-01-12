@@ -4,7 +4,6 @@ import static com.google.common.base.MoreObjects.toStringHelper;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.Objects;
 import javax.annotation.Nullable;
 
 /** Decrements HSRP/VRRP priority by a given subtrahend when the tracked object is not available */
@@ -37,7 +36,7 @@ public class DecrementPriority implements TrackAction {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_subtrahend);
+    return _subtrahend;
   }
 
   @Override
