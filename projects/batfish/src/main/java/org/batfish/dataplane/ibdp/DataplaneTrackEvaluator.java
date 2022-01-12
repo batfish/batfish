@@ -8,8 +8,11 @@ import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.GenericRibReadOnly;
 import org.batfish.datamodel.tracking.GenericTrackMethodVisitor;
+import org.batfish.datamodel.tracking.NegatedTrackMethod;
 import org.batfish.datamodel.tracking.StaticTrackMethodEvaluator;
 import org.batfish.datamodel.tracking.TrackInterface;
+import org.batfish.datamodel.tracking.TrackMethod;
+import org.batfish.datamodel.tracking.TrackMethodReference;
 import org.batfish.datamodel.tracking.TrackRoute;
 
 /**
@@ -24,13 +27,26 @@ public class DataplaneTrackEvaluator implements GenericTrackMethodVisitor<Boolea
 
   public DataplaneTrackEvaluator(
       Configuration configuration, GenericRibReadOnly<AnnotatedRoute<AbstractRoute>> mainRib) {
+    _configuration = configuration;
     _staticEvaluator = new StaticTrackMethodEvaluator(configuration);
     _mainRib = mainRib;
   }
 
   @Override
+  public Boolean visitNegatedTrackMethod(NegatedTrackMethod negatedTrackMethod) {
+    return !visit(negatedTrackMethod.getTrackMethod());
+  }
+
+  @Override
   public Boolean visitTrackInterface(TrackInterface trackInterface) {
     return _staticEvaluator.visit(trackInterface);
+  }
+
+  @Override
+  public Boolean visitTrackMethodReference(TrackMethodReference trackMethodReference) {
+    TrackMethod method = _configuration.getTrackingGroups().get(trackMethodReference.getId());
+    assert method != null;
+    return visit(method);
   }
 
   @Override
@@ -44,6 +60,7 @@ public class DataplaneTrackEvaluator implements GenericTrackMethodVisitor<Boolea
     }
   }
 
+  private final @Nonnull Configuration _configuration;
   private final @Nonnull GenericRibReadOnly<AnnotatedRoute<AbstractRoute>> _mainRib;
   private final @Nonnull StaticTrackMethodEvaluator _staticEvaluator;
 }

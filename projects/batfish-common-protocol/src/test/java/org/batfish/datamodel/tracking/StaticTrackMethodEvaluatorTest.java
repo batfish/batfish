@@ -76,7 +76,7 @@ public class StaticTrackMethodEvaluatorTest {
         .setAddress(ConcreteInterfaceAddress.parse("1.2.3.4/24"))
         .setActive(true)
         .build();
-    PredicateTrackMethodEvaluator evaluator = new PredicateTrackMethodEvaluator(c1);
+    StaticTrackMethodEvaluator evaluator = new StaticTrackMethodEvaluator(c1);
     // Iface is active
     TrackInterface trackInterface1 = new TrackInterface("i1");
 
@@ -102,7 +102,7 @@ public class StaticTrackMethodEvaluatorTest {
         .setAddress(ConcreteInterfaceAddress.parse("1.2.3.4/24"))
         .setActive(true)
         .build();
-    PredicateTrackMethodEvaluator evaluator = new PredicateTrackMethodEvaluator(c1);
+    StaticTrackMethodEvaluator evaluator = new StaticTrackMethodEvaluator(c1);
 
     assertTrue(evaluator.visit(trackInterface1));
     assertTrue(evaluator.visit(TrackMethodReference.of("1")));
