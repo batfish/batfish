@@ -13,11 +13,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.route.nh.LegacyNextHops;
 import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
-import org.batfish.datamodel.route.nh.NextHopInterface;
-import org.batfish.datamodel.route.nh.NextHopIp;
-import org.batfish.datamodel.route.nh.NextHopVisitor;
-import org.batfish.datamodel.route.nh.NextHopVrf;
-import org.batfish.datamodel.route.nh.NextHopVtep;
 
 /**
  * A base class for all types of routes supported in the dataplane computation, making this the most
@@ -104,39 +99,6 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
   public final Ip getNextHopIp() {
     return LegacyNextHops.getNextHopIp(_nextHop).orElse(Route.UNSET_ROUTE_NEXT_HOP_IP);
   }
-
-  @JsonIgnore
-  public final boolean hasNextHopIp() {
-    return HAS_NEXT_HOP_IP.visit(_nextHop);
-  }
-
-  private static final NextHopVisitor<Boolean> HAS_NEXT_HOP_IP =
-      new NextHopVisitor<Boolean>() {
-        @Override
-        public Boolean visitNextHopIp(NextHopIp nextHopIp) {
-          return true;
-        }
-
-        @Override
-        public Boolean visitNextHopInterface(NextHopInterface nextHopInterface) {
-          return nextHopInterface.getIp() != null;
-        }
-
-        @Override
-        public Boolean visitNextHopDiscard(NextHopDiscard nextHopDiscard) {
-          return false;
-        }
-
-        @Override
-        public Boolean visitNextHopVrf(NextHopVrf nextHopVrf) {
-          return false;
-        }
-
-        @Override
-        public Boolean visitNextHopVtep(NextHopVtep nextHopVtep) {
-          return false;
-        }
-      };
 
   /**
    * The generic {@link NextHop} for this route. Preferred method to reason about next hops, as
