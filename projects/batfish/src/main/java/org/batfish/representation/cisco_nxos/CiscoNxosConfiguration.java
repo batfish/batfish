@@ -1973,7 +1973,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                     Comparator.naturalOrder(),
                     trackEntry -> trackEntry.getKey().toString(),
                     trackEntry ->
-                        new DecrementPriority(trackEntry.getValue().getDecrementEffective()))));
+                        new DecrementPriority(
+                            trackEntry.getValue().getDecrementEffective(), true))));
     return builder.build();
   }
 

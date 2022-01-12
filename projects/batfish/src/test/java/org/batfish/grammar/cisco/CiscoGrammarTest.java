@@ -1558,7 +1558,7 @@ public final class CiscoGrammarTest {
     assertThat(
         i,
         hasHsrpGroup(
-            1001, hasTrackActions(equalTo(ImmutableMap.of("1", new DecrementPriority(20))))));
+            1001, hasTrackActions(equalTo(ImmutableMap.of("1", new DecrementPriority(20, true))))));
     assertThat(i, hasHsrpVersion("2"));
   }
 

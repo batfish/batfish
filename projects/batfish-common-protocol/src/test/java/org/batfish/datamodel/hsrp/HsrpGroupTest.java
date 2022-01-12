@@ -26,7 +26,7 @@ public class HsrpGroupTest {
             .setPreempt(true)
             .setAuthentication("auth")
             .setIps(ImmutableSet.of(Ip.ZERO, Ip.MAX))
-            .setTrackActions(ImmutableSortedMap.of("1", new DecrementPriority(12)))
+            .setTrackActions(ImmutableSortedMap.of("1", new DecrementPriority(12, true)))
             .build();
     assertThat(obj, equalTo(BatfishObjectMapper.clone(obj, HsrpGroup.class)));
   }

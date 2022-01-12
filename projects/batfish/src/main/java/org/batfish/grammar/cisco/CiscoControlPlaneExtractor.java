@@ -2324,7 +2324,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private @Nullable TrackAction toTrackAction(Track_actionContext ctx) {
     if (ctx.track_action_decrement() != null) {
       int subtrahend = toInteger(ctx.track_action_decrement().subtrahend);
-      return new DecrementPriority(subtrahend);
+      return new DecrementPriority(subtrahend, true);
     } else {
       return convProblem(TrackAction.class, ctx, null);
     }

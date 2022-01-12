@@ -2229,7 +2229,10 @@ public final class CiscoNxosGrammarTest {
                   hasTrackActions(
                       equalTo(
                           ImmutableSortedMap.of(
-                              "1", new DecrementPriority(10), "2", new DecrementPriority(20)))))));
+                              "1",
+                              new DecrementPriority(10, true),
+                              "2",
+                              new DecrementPriority(20, true)))))));
       assertThat(iface, hasHsrpGroup(3, hasPreempt(false)));
       // TODO: convert and test ip secondary
     }

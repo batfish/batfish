@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.toStringHelper;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Objects;
 import javax.annotation.Nullable;
 
 /** Decrements HSRP/VRRP priority by a given subtrahend when the tracked object is not available */
@@ -11,10 +12,14 @@ public class DecrementPriority implements TrackAction {
   private static final String PROP_SUBTRAHEND = "subtrahend";
 
   private final int _subtrahend;
+  private final boolean _negateTrack;
 
   @JsonCreator
-  public DecrementPriority(@JsonProperty(PROP_SUBTRAHEND) int subtrahend) {
+  public DecrementPriority(
+      @JsonProperty(PROP_SUBTRAHEND) int subtrahend,
+      @JsonProperty(PROP_NEGATE_TRACK) boolean negateTrack) {
     _subtrahend = subtrahend;
+    _negateTrack = negateTrack;
   }
 
   @Override
@@ -25,7 +30,8 @@ public class DecrementPriority implements TrackAction {
     if (!(obj instanceof DecrementPriority)) {
       return false;
     }
-    return _subtrahend == ((DecrementPriority) obj)._subtrahend;
+    DecrementPriority that = (DecrementPriority) obj;
+    return _subtrahend == that._subtrahend && _negateTrack == that._negateTrack;
   }
 
   @JsonProperty(PROP_SUBTRAHEND)
@@ -33,9 +39,15 @@ public class DecrementPriority implements TrackAction {
     return _subtrahend;
   }
 
+  @JsonProperty(PROP_NEGATE_TRACK)
+  @Override
+  public boolean getNegateTrack() {
+    return _negateTrack;
+  }
+
   @Override
   public int hashCode() {
-    return _subtrahend;
+    return Objects.hash(_subtrahend, _negateTrack);
   }
 
   @Override

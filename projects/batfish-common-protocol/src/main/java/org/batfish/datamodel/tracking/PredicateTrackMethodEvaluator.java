@@ -10,6 +10,9 @@ import org.batfish.datamodel.Interface;
  * {@link Configuration}. Visiting the method returns {@code true} if the {@link TrackMethod} would
  * be triggered and execute associated {@link TrackAction}s and {@code false} otherwise.
  *
+ * <p>Note that caller is responsible for negating the result of evaluation if {@link
+ * TrackAction#getNegateTrack()} is {@code true} for an associated action.
+ *
  * <p>For {@link TrackMethod}s requiring data plane information for evaluation, throws {@link
  * UnsupportedOperationException}.
  */
@@ -27,7 +30,7 @@ public class PredicateTrackMethodEvaluator implements GenericTrackMethodVisitor<
       // Assume an undefined interface cannot trigger this track methood
       return false;
     }
-    return !trackedInterface.getActive() || trackedInterface.getBlacklisted();
+    return trackedInterface.getActive() && !trackedInterface.getBlacklisted();
   }
 
   @Override

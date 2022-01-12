@@ -399,9 +399,9 @@ public class IpOwnersTest {
             .setTrackActions(
                 ImmutableSortedMap.of(
                     "1",
-                    new DecrementPriority(track1Decrement),
+                    new DecrementPriority(track1Decrement, true),
                     "2",
-                    new DecrementPriority(track2Decrement)))
+                    new DecrementPriority(track2Decrement, true)))
             .setGroupNumber(1)
             .setIps(ImmutableSet.of(Ip.parse("10.10.10.1")))
             .build();
@@ -449,7 +449,8 @@ public class IpOwnersTest {
         HsrpGroup.builder()
             .setPriority(basePriority)
             // Reference to undefined track method
-            .setTrackActions(ImmutableSortedMap.of("1", new DecrementPriority(track1Decrement)))
+            .setTrackActions(
+                ImmutableSortedMap.of("1", new DecrementPriority(track1Decrement, true)))
             .setGroupNumber(1)
             .setIps(ImmutableSet.of(Ip.parse("10.10.10.1")))
             .build();
