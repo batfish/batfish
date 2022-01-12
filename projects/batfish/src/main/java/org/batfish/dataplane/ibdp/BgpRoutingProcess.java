@@ -2035,20 +2035,30 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     assert _ebgpv4DeltaBestPathBuilder.isEmpty();
     assert _bgpv4DeltaBuilder.isEmpty();
     assert _bgpv4DeltaBestPathBuilder.isEmpty();
-    return Stream.of(
-            // RIBs
-            _bgpv4Rib.getTypedRoutes(),
-            _evpnType3Rib.getTypedRoutes(),
-            _evpnType5Rib.getTypedRoutes(),
-            // Outgoing RIB deltas
-            _ebgpv4DeltaPrev,
-            _ebgpv4DeltaPrevBestPath,
-            _bgpv4DeltaPrev,
-            _bgpv4DeltaPrevBestPath,
-            // Message queues
-            _evpnType3IncomingRoutes,
-            _evpnType5IncomingRoutes)
+    return Streams.concat(
+            Stream.of(
+                // RIBs
+                _bgpv4Rib.getTypedRoutes(),
+                _evpnType3Rib.getTypedRoutes(),
+                _evpnType5Rib.getTypedRoutes(),
+                // Outgoing RIB deltas
+                _ebgpv4DeltaPrev,
+                _ebgpv4DeltaPrevBestPath,
+                _bgpv4DeltaPrev,
+                _bgpv4DeltaPrevBestPath),
+            messageQueueStream(_evpnType3IncomingRoutes),
+            messageQueueStream(_evpnType5IncomingRoutes))
         .collect(toOrderedHashCode());
+  }
+
+  private static <T> Stream<Object> edgeQueueStream(
+      Entry<EdgeId, Queue<RouteAdvertisement<T>>> entry) {
+    return Streams.concat(Stream.of(entry.getKey()), entry.getValue().stream());
+  }
+
+  private static <T> Stream<Object> messageQueueStream(
+      Map<EdgeId, Queue<RouteAdvertisement<T>>> input) {
+    return input.entrySet().stream().flatMap(BgpRoutingProcess::edgeQueueStream);
   }
 
   public void importCrossVrfV4Routes(
