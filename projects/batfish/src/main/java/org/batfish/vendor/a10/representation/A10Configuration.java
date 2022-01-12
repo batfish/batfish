@@ -5,6 +5,11 @@ import static java.util.Comparator.naturalOrder;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.FirewallSessionInterfaceInfo.Action.POST_NAT_FIB_LOOKUP;
 import static org.batfish.datamodel.Prefix.MAX_PREFIX_LENGTH;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIcmp;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocol;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
 import static org.batfish.vendor.a10.representation.A10Conversion.VIRTUAL_TCP_PORT_TYPES;
 import static org.batfish.vendor.a10.representation.A10Conversion.VIRTUAL_UDP_PORT_TYPES;
 import static org.batfish.vendor.a10.representation.A10Conversion.computeAclName;
@@ -56,25 +61,31 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.VendorConversionException;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
+import org.batfish.datamodel.IcmpCode;
+import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.VrrpGroup;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.packet_policy.ApplyFilter;
 import org.batfish.datamodel.packet_policy.ApplyTransformation;
+import org.batfish.datamodel.packet_policy.Drop;
 import org.batfish.datamodel.packet_policy.FibLookup;
 import org.batfish.datamodel.packet_policy.If;
 import org.batfish.datamodel.packet_policy.IngressInterfaceVrf;
@@ -632,11 +643,36 @@ public final class A10Configuration extends VendorConfiguration {
   /** Create a {@link PacketPolicy} which encodes the NAT transformations for this device. */
   private void createPacketPolicy() {
     Return returnFibLookup = new Return(new FibLookup(IngressInterfaceVrf.instance()));
-
     ImmutableList.Builder<Statement> statements = ImmutableList.builder();
+
+    // Apply transformations to traffic matching virtual servers. These statements return FibLookup
+    // after applying the transformation.
     _virtualServers.values().stream()
         .filter(A10Conversion::isVirtualServerEnabled)
-        .forEach(vs -> statements.add(toStatement(vs)));
+        .forEach(vs -> statements.add(toStatement(vs, returnFibLookup)));
+
+    // Drop any remaining non-ping traffic destined to a VIP.
+    Set<Ip> vips =
+        _virtualServers.values().stream()
+            .filter(A10Conversion::isVirtualServerEnabled)
+            .map(VirtualServer::getTarget)
+            .map(VirtualServerTargetVirtualAddressExtractor.INSTANCE::visit)
+            .collect(ImmutableSet.toImmutableSet());
+    if (!vips.isEmpty()) {
+      AclLineMatchExpr matchesVip =
+          matchDst(
+              AclIpSpace.union(
+                  vips.stream().map(Ip::toIpSpace).collect(ImmutableSet.toImmutableSet())));
+      AclLineMatchExpr ping =
+          and(
+              matchIpProtocol(IpProtocol.ICMP),
+              matchIcmp(IcmpType.ECHO_REQUEST, IcmpCode.NETWORK_UNREACHABLE));
+      statements.add(
+          new If(
+              new PacketMatchExpr(and(matchesVip, not(ping))),
+              ImmutableList.of(new Return(Drop.instance()))));
+    }
+
     PacketPolicy policy =
         new PacketPolicy(VIRTUAL_SERVERS_PACKET_POLICY_NAME, statements.build(), returnFibLookup);
     _c.getPacketPolicies().put(VIRTUAL_SERVERS_PACKET_POLICY_NAME, policy);
@@ -646,20 +682,21 @@ public final class A10Configuration extends VendorConfiguration {
    * Convert specified {@link VirtualServer}'s transformations into a packet policy {@link
    * Statement}.
    */
-  private Statement toStatement(VirtualServer vs) {
+  private Statement toStatement(VirtualServer vs, Return returnFibLookup) {
     return new If(
         new PacketMatchExpr(toMatchExpr(vs, _filename)),
         vs.getPorts().values().stream()
             .filter(A10Conversion::isVirtualServerPortEnabled)
-            .map(this::toStatement)
+            .map(vsPort -> toStatement(vsPort, returnFibLookup))
             .collect(ImmutableList.toImmutableList()));
   }
 
   /**
    * Convert specified {@link VirtualServerPort}'s transformations into a packet policy {@link
-   * Statement}.
+   * Statement}. This statement returns a {@link FibLookup} for matching traffic, or a {@link Drop}
+   * for matching traffic not permitted by the virtual server's (optional) ACL.
    */
-  private Statement toStatement(VirtualServerPort port) {
+  private Statement toStatement(VirtualServerPort port, Return returnFibLookup) {
     ImmutableList.Builder<Statement> trueStatements = ImmutableList.builder();
     String aclName = port.getAccessList();
     if (aclName != null) {
@@ -671,6 +708,7 @@ public final class A10Configuration extends VendorConfiguration {
         new ApplyTransformation(
             new Transformation(
                 TrueExpr.INSTANCE, ImmutableList.of(toTransformationStep(port)), null, null)));
+    trueStatements.add(returnFibLookup);
     return new If(new PacketMatchExpr(toMatchExpr(port)), trueStatements.build());
   }
 
