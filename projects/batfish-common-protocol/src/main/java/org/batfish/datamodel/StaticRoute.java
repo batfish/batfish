@@ -197,7 +197,7 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
           .thenComparing(StaticRoute::getNonRouting)
           .thenComparing(StaticRoute::getNonForwarding)
           .thenComparing(StaticRoute::getRecursive)
-          .thenComparing(StaticRoute::getTrack);
+          .thenComparing(StaticRoute::getTrack, nullsFirst(Integer::compareTo));
 
   @Override
   public Builder toBuilder() {
