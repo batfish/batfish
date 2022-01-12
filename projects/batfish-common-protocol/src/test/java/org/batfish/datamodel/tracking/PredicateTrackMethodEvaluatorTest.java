@@ -46,15 +46,15 @@ public class PredicateTrackMethodEvaluatorTest {
     PredicateTrackMethodEvaluator evaluator = new PredicateTrackMethodEvaluator(c1);
     // Iface is active
     TrackInterface trackInterface1 = new TrackInterface("i1");
-    assertFalse(trackInterface1.accept(evaluator));
+    assertTrue(trackInterface1.accept(evaluator));
 
     // Iface is not active
     TrackInterface trackInterface2 = new TrackInterface("i2");
-    assertTrue(trackInterface2.accept(evaluator));
+    assertFalse(trackInterface2.accept(evaluator));
 
     // Iface is active, but blacklisted
     TrackInterface trackInterface3 = new TrackInterface("i3");
-    assertTrue(trackInterface3.accept(evaluator));
+    assertFalse(trackInterface3.accept(evaluator));
 
     // Non-existent iface
     TrackInterface trackInterface4 = new TrackInterface("i4");

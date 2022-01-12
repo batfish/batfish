@@ -27,7 +27,10 @@ public class PredicateTrackMethodEvaluator implements GenericTrackMethodVisitor<
     Interface trackedInterface =
         _configuration.getAllInterfaces().get(trackInterface.getTrackedInterface());
     if (trackedInterface == null) {
-      // Assume an undefined interface cannot trigger this track methood
+      // Assume an undefined interface cannot trigger this track method
+      // TODO: Don't convert TrackInterface for undefined interface.
+      //       Instead, use a singleton true TrackMethod or false TrackMethod as appropriate for
+      //       vendor.
       return false;
     }
     return trackedInterface.getActive() && !trackedInterface.getBlacklisted();
