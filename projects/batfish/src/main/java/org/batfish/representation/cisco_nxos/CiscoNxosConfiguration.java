@@ -1935,12 +1935,11 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
               trackInterface.getMode()));
     } else if (track instanceof TrackIpRoute) {
       TrackIpRoute trackIpRoute = (TrackIpRoute) track;
-      String vrf = trackIpRoute.getVrf();
       return Optional.of(
           TrackRoute.of(
               trackIpRoute.getPrefix(),
               trackIpRoute.getHmm() ? ImmutableSet.of(RoutingProtocol.HMM) : ImmutableSet.of(),
-              vrf != null ? trackIpRoute.getVrf() : DEFAULT_VRF_NAME));
+              firstNonNull(trackIpRoute.getVrf(), DEFAULT_VRF_NAME)));
     }
     // Warnings for unsupported track methods should be handled by parse warnings
     return Optional.empty();
