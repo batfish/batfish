@@ -18,6 +18,7 @@ import static org.batfish.datamodel.Flow.builder;
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
+import static org.batfish.datamodel.Names.generatedNegatedTrackMethodId;
 import static org.batfish.datamodel.OriginMechanism.GENERATED;
 import static org.batfish.datamodel.OriginMechanism.LEARNED;
 import static org.batfish.datamodel.OriginMechanism.REDISTRIBUTE;
@@ -401,6 +402,7 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.tracking.TrackInterface;
+import org.batfish.datamodel.tracking.TrackMethodReference;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.dataplane.protocols.BgpProtocolHelper;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
@@ -1543,7 +1545,12 @@ public final class CiscoGrammarTest {
     assertThat(
         c,
         ConfigurationMatchers.hasTrackingGroups(
-            equalTo(ImmutableMap.of("1", new TrackInterface("Tunnel1")))));
+            equalTo(
+                ImmutableMap.of(
+                    "1",
+                    new TrackInterface("Tunnel1"),
+                    generatedNegatedTrackMethodId("1"),
+                    TrackMethodReference.negated("1")))));
     assertThat(
         i,
         hasHsrpGroup(
@@ -1558,7 +1565,11 @@ public final class CiscoGrammarTest {
     assertThat(
         i,
         hasHsrpGroup(
-            1001, hasTrackActions(equalTo(ImmutableMap.of("1", new DecrementPriority(20))))));
+            1001,
+            hasTrackActions(
+                equalTo(
+                    ImmutableMap.of(
+                        generatedNegatedTrackMethodId("1"), new DecrementPriority(20))))));
     assertThat(i, hasHsrpVersion("2"));
   }
 

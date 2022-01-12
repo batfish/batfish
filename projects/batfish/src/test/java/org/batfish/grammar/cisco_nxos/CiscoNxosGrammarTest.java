@@ -17,6 +17,7 @@ import static org.batfish.datamodel.IpWildcard.ipWithWildcardMask;
 import static org.batfish.datamodel.Names.generatedBgpIndependentNetworkPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
 import static org.batfish.datamodel.Names.generatedEvpnToBgpv4VrfLeakPolicyName;
+import static org.batfish.datamodel.Names.generatedNegatedTrackMethodId;
 import static org.batfish.datamodel.OriginMechanism.REDISTRIBUTE;
 import static org.batfish.datamodel.Route.UNSET_NEXT_HOP_INTERFACE;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
@@ -2229,7 +2230,10 @@ public final class CiscoNxosGrammarTest {
                   hasTrackActions(
                       equalTo(
                           ImmutableSortedMap.of(
-                              "1", new DecrementPriority(10), "2", new DecrementPriority(20)))))));
+                              generatedNegatedTrackMethodId("1"),
+                              new DecrementPriority(10),
+                              generatedNegatedTrackMethodId("2"),
+                              new DecrementPriority(20)))))));
       assertThat(iface, hasHsrpGroup(3, hasPreempt(false)));
       // TODO: convert and test ip secondary
     }

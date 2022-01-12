@@ -9,6 +9,7 @@ import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PAT
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
 import static org.batfish.datamodel.Names.generatedBgpIndependentNetworkPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
+import static org.batfish.datamodel.Names.generatedNegatedTrackMethodId;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
@@ -223,6 +224,7 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.datamodel.tracking.DecrementPriority;
+import org.batfish.datamodel.tracking.TrackMethodReference;
 import org.batfish.datamodel.tracking.TrackRoute;
 import org.batfish.datamodel.vendor_family.cisco_nxos.CiscoNxosFamily;
 import org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform;
@@ -927,7 +929,9 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   }
 
   private static void convertHsrp(
-      InterfaceHsrp hsrp, org.batfish.datamodel.Interface.Builder newIfaceBuilder) {
+      InterfaceHsrp hsrp,
+      org.batfish.datamodel.Interface.Builder newIfaceBuilder,
+      Set<Integer> trackMethodIds) {
     Optional.ofNullable(hsrp.getVersion())
         .map(Object::toString)
         .ifPresent(newIfaceBuilder::setHsrpVersion);
@@ -935,7 +939,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         hsrp.getIpv4Groups().entrySet().stream()
             .collect(
                 ImmutableMap.toImmutableMap(
-                    Entry::getKey, hsrpGroupEntry -> toHsrpGroup(hsrpGroupEntry.getValue()))));
+                    Entry::getKey,
+                    hsrpGroupEntry -> toHsrpGroup(hsrpGroupEntry.getValue(), trackMethodIds))));
   }
 
   private void convertDomainName() {
@@ -1296,9 +1301,30 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   }
 
   private void convertTracks() {
+    Set<Integer> negatedTracks =
+        _interfaces.values().stream()
+            .flatMap(
+                i ->
+                    i.getHsrp() != null
+                        ? i.getHsrp().getIpv4Groups().values().stream()
+                        : Stream.of())
+            .flatMap(ig -> ig.getTracks().keySet().stream())
+            .distinct()
+            .filter(_tracks::containsKey)
+            .collect(ImmutableSet.toImmutableSet());
     _tracks.forEach(
         (num, track) ->
-            toTrackMethod(track, _w).ifPresent(m -> _c.getTrackingGroups().put(num.toString(), m)));
+            toTrackMethod(track, _w)
+                .ifPresent(
+                    m -> {
+                      _c.getTrackingGroups().put(num.toString(), m);
+                      if (negatedTracks.contains(num)) {
+                        _c.getTrackingGroups()
+                            .put(
+                                generatedNegatedTrackMethodId(num.toString()),
+                                TrackMethodReference.negated(num.toString()));
+                      }
+                    }));
   }
 
   private void convertIpPrefixLists() {
@@ -1945,7 +1971,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     return Optional.empty();
   }
 
-  private static @Nonnull org.batfish.datamodel.hsrp.HsrpGroup toHsrpGroup(HsrpGroupIpv4 group) {
+  private static @Nonnull org.batfish.datamodel.hsrp.HsrpGroup toHsrpGroup(
+      HsrpGroupIpv4 group, Set<Integer> trackMethodIds) {
     Optional<Ip> groupIp = Optional.ofNullable(group.getIp());
     Set<Ip> groupIpSecondary = group.getIpSecondaries();
     ImmutableSet.Builder<Ip> hsrpIps = ImmutableSet.builder();
@@ -1968,10 +1995,11 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     }
     builder.setTrackActions(
         group.getTracks().entrySet().stream()
+            .filter(trackById -> trackMethodIds.contains(trackById.getKey()))
             .collect(
                 ImmutableSortedMap.toImmutableSortedMap(
                     Comparator.naturalOrder(),
-                    trackEntry -> trackEntry.getKey().toString(),
+                    trackEntry -> generatedNegatedTrackMethodId(trackEntry.getKey().toString()),
                     trackEntry ->
                         new DecrementPriority(trackEntry.getValue().getDecrementEffective()))));
     return builder.build();
@@ -2194,7 +2222,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     }
 
     if (iface.getHsrp() != null) {
-      convertHsrp(iface.getHsrp(), newIfaceBuilder);
+      convertHsrp(iface.getHsrp(), newIfaceBuilder, _tracks.keySet());
     }
 
     // PBR policy

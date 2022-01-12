@@ -29,6 +29,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +37,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -75,6 +77,7 @@ import org.batfish.datamodel.IpsecPhase2Policy;
 import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.IpsecStaticPeerConfig;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.Names;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
@@ -133,6 +136,7 @@ import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.datamodel.tracking.TrackAction;
 import org.batfish.datamodel.visitors.HeaderSpaceConverter;
 import org.batfish.representation.cisco_asa.DistributeList.DistributeListFilterType;
 import org.batfish.vendor.VendorStructureId;
@@ -562,8 +566,21 @@ public class AsaConversions {
     return new AsPathAccessList(pathList.getName(), lines);
   }
 
-  static org.batfish.datamodel.hsrp.HsrpGroup toHsrpGroup(HsrpGroup hsrpGroup) {
+  static org.batfish.datamodel.hsrp.HsrpGroup toHsrpGroup(
+      HsrpGroup hsrpGroup, Set<String> trackMethodIds) {
     Ip groupIp = hsrpGroup.getIp();
+    // TODO: make and use vendor class for source track actions
+    // HSRP track uses negated value of referenced TrackMethod
+    SortedMap<String, TrackAction> trackActions =
+        hsrpGroup.getTrackActions().entrySet().stream()
+            .filter(
+                actionByTrackMethodId -> trackMethodIds.contains(actionByTrackMethodId.getKey()))
+            .collect(
+                ImmutableSortedMap.toImmutableSortedMap(
+                    Comparator.naturalOrder(),
+                    actionByTrackMethodId ->
+                        Names.generatedNegatedTrackMethodId(actionByTrackMethodId.getKey()),
+                    Entry::getValue));
     return org.batfish.datamodel.hsrp.HsrpGroup.builder()
         .setAuthentication(hsrpGroup.getAuthentication())
         .setHelloTime(hsrpGroup.getHelloTime())
@@ -572,7 +589,7 @@ public class AsaConversions {
         .setGroupNumber(hsrpGroup.getGroupNumber())
         .setPreempt(hsrpGroup.getPreempt())
         .setPriority(hsrpGroup.getPriority())
-        .setTrackActions(hsrpGroup.getTrackActions())
+        .setTrackActions(trackActions)
         .build();
   }
 

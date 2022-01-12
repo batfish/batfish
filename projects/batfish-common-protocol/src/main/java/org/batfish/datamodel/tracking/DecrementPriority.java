@@ -25,7 +25,8 @@ public class DecrementPriority implements TrackAction {
     if (!(obj instanceof DecrementPriority)) {
       return false;
     }
-    return _subtrahend == ((DecrementPriority) obj)._subtrahend;
+    DecrementPriority that = (DecrementPriority) obj;
+    return _subtrahend == that._subtrahend;
   }
 
   @JsonProperty(PROP_SUBTRAHEND)
