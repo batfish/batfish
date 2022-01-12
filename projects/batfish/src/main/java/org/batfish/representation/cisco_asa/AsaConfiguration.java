@@ -11,6 +11,7 @@ import static org.batfish.datamodel.Interface.isRealInterfaceName;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
 import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
+import static org.batfish.datamodel.Names.generatedNegatedTrackMethodId;
 import static org.batfish.datamodel.Names.generatedOspfDefaultRouteGenerationPolicyName;
 import static org.batfish.datamodel.Names.generatedOspfExportPolicyName;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
@@ -188,6 +189,7 @@ import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.tracking.TrackMethod;
+import org.batfish.datamodel.tracking.TrackMethodReference;
 import org.batfish.datamodel.vendor_family.cisco.Aaa;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthentication;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthenticationLogin;
@@ -1585,7 +1587,9 @@ public final class AsaConfiguration extends VendorConfiguration {
     newIface.setCryptoMap(iface.getCryptoMap());
     newIface.setHsrpGroups(
         CollectionUtil.toImmutableMap(
-            iface.getHsrpGroups(), Entry::getKey, e -> AsaConversions.toHsrpGroup(e.getValue())));
+            iface.getHsrpGroups(),
+            Entry::getKey,
+            e -> AsaConversions.toHsrpGroup(e.getValue(), _trackingGroups.keySet())));
     newIface.setHsrpVersion(iface.getHsrpVersion());
     newIface.setVrf(c.getVrfs().get(vrfName));
     newIface.setSpeed(
@@ -3044,6 +3048,16 @@ public final class AsaConfiguration extends VendorConfiguration {
 
     // copy tracking groups
     c.getTrackingGroups().putAll(_trackingGroups);
+    // create negated tracking groups
+    _interfaces.values().stream()
+        .flatMap(i -> i.getHsrpGroups().values().stream())
+        .flatMap(group -> group.getTrackActions().keySet().stream())
+        .distinct()
+        .filter(_trackingGroups::containsKey)
+        .forEach(
+            id ->
+                c.getTrackingGroups()
+                    .put(generatedNegatedTrackMethodId(id), TrackMethodReference.negated(id)));
 
     // apply vrrp settings to interfaces
     applyVrrp(c);

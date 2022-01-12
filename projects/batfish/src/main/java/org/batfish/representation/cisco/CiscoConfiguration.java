@@ -10,6 +10,7 @@ import static org.batfish.datamodel.Interface.isRealInterfaceName;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
 import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
+import static org.batfish.datamodel.Names.generatedNegatedTrackMethodId;
 import static org.batfish.datamodel.Names.generatedOspfDefaultRouteGenerationPolicyName;
 import static org.batfish.datamodel.Names.generatedOspfExportPolicyName;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
@@ -200,6 +201,7 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.datamodel.tracking.TrackMethod;
+import org.batfish.datamodel.tracking.TrackMethodReference;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.vendor_family.cisco.Aaa;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthentication;
@@ -1372,7 +1374,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
     newIface.setCryptoMap(iface.getCryptoMap());
     newIface.setHsrpGroups(
         CollectionUtil.toImmutableMap(
-            iface.getHsrpGroups(), Entry::getKey, e -> CiscoConversions.toHsrpGroup(e.getValue())));
+            iface.getHsrpGroups(),
+            Entry::getKey,
+            e -> CiscoConversions.toHsrpGroup(e.getValue(), _trackingGroups.keySet())));
     newIface.setHsrpVersion(iface.getHsrpVersion());
     newIface.setVrf(c.getVrfs().get(vrfName));
     newIface.setSpeed(
@@ -2610,6 +2614,18 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // create zone policies
     createZoneAcls(c);
+
+    // generate negated track methods
+    _interfaces.values().stream()
+        .flatMap(i -> i.getHsrpGroups().values().stream())
+        .flatMap(hsrpGroup -> hsrpGroup.getTrackActions().keySet().stream())
+        .distinct()
+        .filter(_trackingGroups::containsKey)
+        .forEach(
+            trackMethodId ->
+                _trackingGroups.put(
+                    generatedNegatedTrackMethodId(trackMethodId),
+                    TrackMethodReference.negated(trackMethodId)));
 
     // convert interfaces
     _interfaces.forEach(

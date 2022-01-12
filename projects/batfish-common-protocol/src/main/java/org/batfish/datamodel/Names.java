@@ -92,6 +92,10 @@ public final class Names {
         type.getExplanation());
   }
 
+  public static String generatedNegatedTrackMethodId(String trackMethodId) {
+    return String.format("~!%s~", trackMethodId);
+  }
+
   public static String generatedBgpCommonExportPolicyName(String vrf) {
     return String.format("~BGP_COMMON_EXPORT_POLICY:%s~", vrf);
   }

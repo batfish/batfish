@@ -2300,7 +2300,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
   private @Nullable TrackAction toTrackAction(Track_actionContext ctx) {
     if (ctx.track_action_decrement() != null) {
       int subtrahend = toInteger(ctx.track_action_decrement().subtrahend);
-      return new DecrementPriority(subtrahend, true);
+      return new DecrementPriority(subtrahend);
     } else {
       return convProblem(TrackAction.class, ctx, null);
     }
