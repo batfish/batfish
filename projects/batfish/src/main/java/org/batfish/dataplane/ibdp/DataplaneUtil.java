@@ -8,13 +8,16 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Sets;
+import com.google.common.collect.Streams;
 import com.google.common.collect.Table;
 import com.google.common.collect.Table.Cell;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Queue;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.batfish.common.topology.IpOwners;
 import org.batfish.common.topology.L3Adjacencies;
@@ -30,6 +33,7 @@ import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.Layer3Vni;
+import org.batfish.dataplane.rib.RouteAdvertisement;
 
 /** Utility functions to convert dataplane {@link Node} into other structures */
 public final class DataplaneUtil {
@@ -156,6 +160,17 @@ public final class DataplaneUtil {
       }
     }
     return result.build();
+  }
+
+  private static <E, R> Stream<Object> edgeQueueStream(
+      Entry<E, Queue<RouteAdvertisement<R>>> entry) {
+    E key = entry.getKey();
+    Stream<RouteAdvertisement<R>> advertisementStream = entry.getValue().stream();
+    return Streams.concat(Stream.of(key), advertisementStream);
+  }
+
+  static <E, R> Stream<Object> messageQueueStream(Map<E, Queue<RouteAdvertisement<R>>> input) {
+    return input.entrySet().stream().flatMap(DataplaneUtil::edgeQueueStream);
   }
 
   private DataplaneUtil() {}

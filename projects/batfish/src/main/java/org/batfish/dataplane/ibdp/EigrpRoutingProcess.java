@@ -3,6 +3,7 @@ package org.batfish.dataplane.ibdp;
 import static java.util.Objects.requireNonNull;
 import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
 import static org.batfish.common.util.CollectionUtil.toOrderedHashCode;
+import static org.batfish.dataplane.ibdp.DataplaneUtil.messageQueueStream;
 import static org.batfish.dataplane.rib.RibDelta.importRibDelta;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -600,8 +601,8 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
     assert _initializationDelta.isEmpty(); // expected invariant
     return Streams.concat(
             Stream.of(_rib),
-            _incomingInternalRoutes.values().stream(),
-            _incomingExternalRoutes.values().stream(),
+            messageQueueStream(_incomingInternalRoutes),
+            messageQueueStream(_incomingExternalRoutes),
             _changeSet.build().getActions())
         .collect(toOrderedHashCode());
   }

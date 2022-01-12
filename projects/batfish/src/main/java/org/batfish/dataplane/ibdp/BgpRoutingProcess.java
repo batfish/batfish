@@ -12,6 +12,7 @@ import static org.batfish.datamodel.OriginMechanism.NETWORK;
 import static org.batfish.datamodel.OriginMechanism.REDISTRIBUTE;
 import static org.batfish.datamodel.routing_policy.Environment.Direction.IN;
 import static org.batfish.datamodel.routing_policy.Environment.Direction.OUT;
+import static org.batfish.dataplane.ibdp.DataplaneUtil.messageQueueStream;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.toBgpv4Route;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.transformBgpRouteOnImport;
 import static org.batfish.dataplane.rib.RibDelta.importDeltaToBuilder;
@@ -2046,19 +2047,10 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                 _ebgpv4DeltaPrevBestPath,
                 _bgpv4DeltaPrev,
                 _bgpv4DeltaPrevBestPath),
+            // Message queues
             messageQueueStream(_evpnType3IncomingRoutes),
             messageQueueStream(_evpnType5IncomingRoutes))
         .collect(toOrderedHashCode());
-  }
-
-  private static <T> Stream<Object> edgeQueueStream(
-      Entry<EdgeId, Queue<RouteAdvertisement<T>>> entry) {
-    return Streams.concat(Stream.of(entry.getKey()), entry.getValue().stream());
-  }
-
-  private static <T> Stream<Object> messageQueueStream(
-      Map<EdgeId, Queue<RouteAdvertisement<T>>> input) {
-    return input.entrySet().stream().flatMap(BgpRoutingProcess::edgeQueueStream);
   }
 
   public void importCrossVrfV4Routes(

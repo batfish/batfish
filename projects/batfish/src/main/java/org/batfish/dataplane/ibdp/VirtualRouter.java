@@ -6,6 +6,7 @@ import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
 import static org.batfish.common.util.CollectionUtil.toOrderedHashCode;
 import static org.batfish.datamodel.ResolutionRestriction.alwaysTrue;
 import static org.batfish.datamodel.routing_policy.Environment.Direction.IN;
+import static org.batfish.dataplane.ibdp.DataplaneUtil.messageQueueStream;
 import static org.batfish.dataplane.protocols.IsisProtocolHelper.convertRouteLevel1ToLevel2;
 import static org.batfish.dataplane.protocols.IsisProtocolHelper.exportNonIsisRouteToIsis;
 import static org.batfish.dataplane.protocols.IsisProtocolHelper.setOverloadOnAllRoutes;
@@ -1353,10 +1354,10 @@ public final class VirtualRouter {
     return Streams.concat(
             // RIB State
             Stream.of(_mainRib.getTypedRoutes()),
-            // Exported routes
             // Message queues
-            _isisIncomingRoutes.values().stream().flatMap(Queue::stream),
-            _crossVrfIncomingRoutes.values().stream().flatMap(Queue::stream),
+            messageQueueStream(_isisIncomingRoutes),
+            messageQueueStream(_crossVrfIncomingRoutes),
+            // Exported routes
             _routesForIsisRedistribution.build().getActions(),
             // Processes
             _ospfProcesses.values().stream().map(OspfRoutingProcess::iterationHashCode),
