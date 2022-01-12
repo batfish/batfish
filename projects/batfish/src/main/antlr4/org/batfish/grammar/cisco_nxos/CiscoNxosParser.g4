@@ -602,9 +602,17 @@ track_ip
   )
 ;
 
-track_ip_route: ROUTE prefix = ip_prefix REACHABILITY HMM? NEWLINE track_ip_route_inner*;
+track_ip_route
+:
+  ROUTE prefix = ip_prefix REACHABILITY HMM? NEWLINE
+  track_ip_route_inner*
+;
 
-track_ip_route_inner: tir_vrf | tir_null;
+track_ip_route_inner
+:
+  tir_vrf
+  | tir_null
+;
 
 tir_vrf: VRF MEMBER name = vrf_name NEWLINE;
 

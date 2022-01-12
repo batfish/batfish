@@ -6,6 +6,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Objects;
@@ -72,6 +73,7 @@ public final class TrackRoute implements TrackMethod {
   }
 
   public static @Nonnull TrackRoute of(Prefix prefix, Set<RoutingProtocol> protocols, String vrf) {
+    checkArgument(!Strings.isNullOrEmpty(vrf), "vrf name must be non-empty");
     return new TrackRoute(prefix, protocols, vrf);
   }
 

@@ -1839,9 +1839,14 @@ public final class CiscoNxosGrammarTest {
         c.getTrackingGroups(),
         equalTo(
             ImmutableMap.of(
-                "1", new org.batfish.datamodel.tracking.TrackInterface("port-channel1"),
-                "100", TrackRoute.of(Prefix.strict("192.0.2.1/32"), ImmutableSet.of(HMM), "v1"),
-                "500", new org.batfish.datamodel.tracking.TrackInterface("Ethernet1/1"))));
+                "1",
+                new org.batfish.datamodel.tracking.TrackInterface("port-channel1"),
+                "100",
+                TrackRoute.of(Prefix.strict("192.0.2.1/32"), ImmutableSet.of(HMM), "v1"),
+                "200",
+                TrackRoute.of(Prefix.strict("192.0.2.2/32"), ImmutableSet.of(), DEFAULT_VRF_NAME),
+                "500",
+                new org.batfish.datamodel.tracking.TrackInterface("Ethernet1/1"))));
   }
 
   @Test
