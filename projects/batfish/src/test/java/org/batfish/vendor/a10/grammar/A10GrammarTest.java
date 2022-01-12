@@ -35,6 +35,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.isProxyArp;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.matchers.StaticRouteMatchers.hasRecursive;
+import static org.batfish.datamodel.matchers.TraceMatchers.hasDisposition;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.main.BatfishTestUtils.DUMMY_SNAPSHOT_1;
@@ -67,9 +68,7 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
-import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.notNullValue;
@@ -106,7 +105,10 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.ForwardingAnalysis;
+import org.batfish.datamodel.IcmpCode;
+import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
@@ -120,9 +122,9 @@ import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep;
 import org.batfish.datamodel.flow.Hop;
-import org.batfish.datamodel.flow.InboundStep;
 import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.Trace;
+import org.batfish.datamodel.flow.TransformationStep;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
@@ -1859,13 +1861,11 @@ public class A10GrammarTest {
   @Test
   public void testVirtualServerConversion() throws IOException {
     Configuration c = parseConfig("virtual_server_convert");
-
     Batfish batfish = getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _folder);
     NetworkSnapshot snapshot = batfish.getSnapshot();
     batfish.computeDataPlane(snapshot);
 
-    // This flow matches the virtual-server and should get SNAT and DNAT
-    Flow flowMatch =
+    Flow matchingVsFlow =
         Flow.builder()
             .setIngressNode(c.getHostname())
             .setIngressInterface("Ethernet1")
@@ -1876,45 +1876,78 @@ public class A10GrammarTest {
             .setDstPort(81)
             .setIpProtocol(IpProtocol.TCP)
             .build();
-    // These flows don't match a(n enabled) virtual-server
-    Flow flowNoMatchProtocol = flowMatch.toBuilder().setIpProtocol(IpProtocol.UDP).build();
-    Flow flowNoMatchEnable = flowMatch.toBuilder().setDstIp(Ip.parse("10.0.0.101")).build();
+    Flow pingToVipFlow =
+        matchingVsFlow.toBuilder()
+            .setIpProtocol(IpProtocol.ICMP)
+            .setIcmpCode(IcmpCode.NETWORK_UNREACHABLE)
+            .setIcmpType(IcmpType.ECHO_REQUEST)
+            .build();
+    Flow nonPingToVipFlow = matchingVsFlow.toBuilder().setIpProtocol(IpProtocol.UDP).build();
+    Flow matchingDisabledVsFlow =
+        matchingVsFlow.toBuilder().setDstIp(Ip.parse("10.0.0.101")).build();
 
     SortedMap<Flow, List<Trace>> traces =
         batfish
             .getTracerouteEngine(snapshot)
             .computeTraces(
-                ImmutableSet.of(flowMatch, flowNoMatchProtocol, flowNoMatchEnable), false);
-
-    // Flow matching the virtual-server should get both SNAT and DNAT
-    assertThat(
-        getTransformedFlow(Iterables.getOnlyElement(traces.get(flowMatch))),
-        equalTo(
-            flowMatch.toBuilder()
-                .setSrcIp(Ip.parse("10.10.10.10"))
-                .setSrcPort(SNAT_PORT_POOL_START)
-                .setDstIp(Ip.parse("10.0.0.3"))
-                .setDstPort(80)
-                .build()));
+                ImmutableSet.of(
+                    matchingVsFlow, pingToVipFlow, nonPingToVipFlow, matchingDisabledVsFlow),
+                false);
+    {
+      // Flow matching the virtual-server should get both SNAT and DNAT
+      Trace trace = Iterables.getOnlyElement(traces.get(matchingVsFlow));
+      assertThat(trace, hasDisposition(FlowDisposition.DELIVERED_TO_SUBNET));
+      List<Step<?>> steps = getStepsInSingleHopTrace(trace);
+      assert steps.stream().anyMatch(TransformationStep.class::isInstance);
+      assertThat(
+          getTransformedFlow(steps),
+          equalTo(
+              matchingVsFlow.toBuilder()
+                  .setSrcIp(Ip.parse("10.10.10.10"))
+                  .setSrcPort(SNAT_PORT_POOL_START)
+                  .setDstIp(Ip.parse("10.0.0.3"))
+                  .setDstPort(80)
+                  .build()));
+    }
     //// No transformations for flows *not* matching a virtual-server.
-
-    // Since dst IP is that of an enabled virtual-server, the flow is accepted
-    assertInbound(Iterables.getOnlyElement(traces.get(flowNoMatchProtocol)));
-
-    // Since dst IP is that of a disabled virtual-server, the flow is forwarded untransformed.
-    assertThat(
-        getTransformedFlow(Iterables.getOnlyElement(traces.get(flowNoMatchEnable))),
-        equalTo(flowNoMatchEnable));
+    {
+      // Ping to VIP of an enabled virtual-server is accepted without transformation
+      Trace trace = Iterables.getOnlyElement(traces.get(pingToVipFlow));
+      assertThat(trace, hasDisposition(FlowDisposition.ACCEPTED));
+      List<Step<?>> steps = getStepsInSingleHopTrace(trace);
+      assert steps.stream().noneMatch(TransformationStep.class::isInstance);
+    }
+    {
+      // Other traffic to VIP of an enabled virtual-server is dropped
+      Trace trace = Iterables.getOnlyElement(traces.get(nonPingToVipFlow));
+      assertThat(trace, hasDisposition(FlowDisposition.DENIED_IN));
+      List<Step<?>> steps = getStepsInSingleHopTrace(trace);
+      assert steps.stream().noneMatch(TransformationStep.class::isInstance);
+    }
+    {
+      // Since dst IP is that of a disabled virtual-server, the flow is forwarded untransformed.
+      Trace trace = Iterables.getOnlyElement(traces.get(matchingDisabledVsFlow));
+      assertThat(trace, hasDisposition(FlowDisposition.DELIVERED_TO_SUBNET));
+      List<Step<?>> steps = getStepsInSingleHopTrace(trace);
+      assert steps.stream().noneMatch(TransformationStep.class::isInstance);
+    }
   }
 
   /**
-   * Extracts transformed flow from a trace that is expected to contain one hop with one {@link
-   * ExitOutputIfaceStep}. The transformed flow is taken from that step.
+   * Returns steps in the one hop in the given trace, and crashes if the trace does not have exactly
+   * one hop.
    */
-  private static Flow getTransformedFlow(Trace trace) {
+  private static List<Step<?>> getStepsInSingleHopTrace(Trace trace) {
     List<Hop> hops = trace.getHops();
     assert hops.size() == 1;
-    List<Step<?>> steps = hops.get(0).getSteps();
+    return hops.get(0).getSteps();
+  }
+
+  /**
+   * Extracts transformed flow from a list of steps that is expected to contain one {@link
+   * ExitOutputIfaceStep}. The transformed flow is taken from that step.
+   */
+  private static Flow getTransformedFlow(List<Step<?>> steps) {
     List<ExitOutputIfaceStep> exitIfaceSteps =
         steps.stream()
             .filter(s -> s instanceof ExitOutputIfaceStep)
@@ -1922,14 +1955,6 @@ public class A10GrammarTest {
             .collect(ImmutableList.toImmutableList());
     assert exitIfaceSteps.size() == 1;
     return exitIfaceSteps.get(0).getDetail().getTransformedFlow();
-  }
-
-  /** Assert that trace has a single hop with an inbound step. */
-  private static void assertInbound(Trace trace) {
-    List<Hop> hops = trace.getHops();
-    assertThat(hops, hasSize(1));
-    List<Step<?>> steps = hops.get(0).getSteps();
-    assertThat(steps, hasItem(instanceOf(InboundStep.class)));
   }
 
   @Test
