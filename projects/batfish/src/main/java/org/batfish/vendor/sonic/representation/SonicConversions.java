@@ -416,7 +416,7 @@ public class SonicConversions {
         continue;
       }
       if (aclStage == Stage.INGRESS) {
-        viIface.setInboundFilter(ipAccessList);
+        viIface.setIncomingFilter(ipAccessList);
       } else { // EGRESS
         viIface.setOutgoingFilter(ipAccessList);
       }

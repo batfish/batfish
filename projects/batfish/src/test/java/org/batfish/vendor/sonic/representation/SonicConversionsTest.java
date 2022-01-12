@@ -339,7 +339,7 @@ public class SonicConversionsTest {
     // ACL exists in the VI model and is attached properly
     IpAccessList ipAccessList = c.getIpAccessLists().get(aclName);
     assertNotNull(ipAccessList);
-    assertEquals(aclName, c.getAllInterfaces().get(ifaceName).getInboundFilter().getName());
+    assertEquals(aclName, c.getAllInterfaces().get(ifaceName).getIncomingFilter().getName());
 
     // ACL has all and only the expected rules
     assertEquals(
@@ -407,7 +407,7 @@ public class SonicConversionsTest {
     // ACLs are still converted with whatever is left
     IpAccessList ipAccessList = c.getIpAccessLists().get(aclName);
     assertNotNull(ipAccessList);
-    assertEquals(aclName, c.getAllInterfaces().get(ifaceName).getInboundFilter().getName());
+    assertEquals(aclName, c.getAllInterfaces().get(ifaceName).getIncomingFilter().getName());
     assertEquals(
         ImmutableList.of("GoodRule"),
         ipAccessList.getLines().stream()
@@ -456,7 +456,7 @@ public class SonicConversionsTest {
       attachAcl(c, aclName, ipAccessList, aclTable, warnings);
 
       assertTrue(warnings.getRedFlagWarnings().isEmpty());
-      assertNull(c.getAllInterfaces().get(ifaceName).getInboundFilter());
+      assertNull(c.getAllInterfaces().get(ifaceName).getIncomingFilter());
     }
     {
       // missing stage
@@ -467,7 +467,7 @@ public class SonicConversionsTest {
       attachAcl(c, aclName, ipAccessList, aclTable, warnings);
 
       assertThat(warnings.getRedFlagWarnings(), contains(hasText("Unimplemented ACL stage: null")));
-      assertNull(c.getAllInterfaces().get(ifaceName).getInboundFilter());
+      assertNull(c.getAllInterfaces().get(ifaceName).getIncomingFilter());
     }
     {
       // one of the ports is missing

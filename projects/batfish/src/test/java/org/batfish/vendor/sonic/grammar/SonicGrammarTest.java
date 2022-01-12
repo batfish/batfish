@@ -269,7 +269,7 @@ public class SonicGrammarTest {
                     .build())));
 
     Configuration c = getOnlyElement(vc.toVendorIndependentConfigurations());
-    IpAccessList ipAccessList = c.getAllInterfaces().get("Ethernet0").getInboundFilter();
+    IpAccessList ipAccessList = c.getAllInterfaces().get("Ethernet0").getIncomingFilter();
     assertThat(
         ipAccessList.getLines().stream()
             .map(SonicGrammarTest::toMatchBDD)
