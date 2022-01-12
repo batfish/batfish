@@ -20,6 +20,7 @@ import static org.batfish.datamodel.Names.generatedEvpnToBgpv4VrfLeakPolicyName;
 import static org.batfish.datamodel.OriginMechanism.REDISTRIBUTE;
 import static org.batfish.datamodel.Route.UNSET_NEXT_HOP_INTERFACE;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
+import static org.batfish.datamodel.RoutingProtocol.HMM;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDscp;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDstPort;
@@ -126,6 +127,7 @@ import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_TIMERS_L
 import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_TIMERS_THROTTLE_LSA_HOLD_INTERVAL_MS;
 import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_TIMERS_THROTTLE_LSA_MAX_INTERVAL_MS;
 import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_TIMERS_THROTTLE_LSA_START_INTERVAL_MS;
+import static org.batfish.representation.cisco_nxos.TrackInterface.Mode.LINE_PROTOCOL;
 import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
@@ -296,7 +298,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.tracking.DecrementPriority;
-import org.batfish.datamodel.tracking.TrackMethod;
+import org.batfish.datamodel.tracking.TrackRoute;
 import org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform;
 import org.batfish.dataplane.protocols.BgpProtocolHelper;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
@@ -412,12 +414,14 @@ import org.batfish.representation.cisco_nxos.RouteMapSetWeight;
 import org.batfish.representation.cisco_nxos.RoutingProtocolInstance;
 import org.batfish.representation.cisco_nxos.SnmpCommunity;
 import org.batfish.representation.cisco_nxos.StaticRoute;
+import org.batfish.representation.cisco_nxos.StaticRoute.StaticRouteKey;
 import org.batfish.representation.cisco_nxos.StaticRouteV6;
 import org.batfish.representation.cisco_nxos.SwitchportMode;
 import org.batfish.representation.cisco_nxos.TcpOptions;
 import org.batfish.representation.cisco_nxos.Track;
 import org.batfish.representation.cisco_nxos.TrackInterface;
 import org.batfish.representation.cisco_nxos.TrackInterface.Mode;
+import org.batfish.representation.cisco_nxos.TrackIpRoute;
 import org.batfish.representation.cisco_nxos.TrackUnsupported;
 import org.batfish.representation.cisco_nxos.UdpOptions;
 import org.batfish.representation.cisco_nxos.Vlan;
@@ -1772,7 +1776,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(track, instanceOf(TrackInterface.class));
       TrackInterface trackInterface = (TrackInterface) track;
       assertThat(trackInterface.getInterface(), equalTo("port-channel1"));
-      assertThat(trackInterface.getMode(), equalTo(Mode.LINE_PROTOCOL));
+      assertThat(trackInterface.getMode(), equalTo(LINE_PROTOCOL));
     }
 
     {
@@ -1790,9 +1794,15 @@ public final class CiscoNxosGrammarTest {
       assertThat(trackInterface.getInterface(), equalTo("loopback1"));
       assertThat(trackInterface.getMode(), equalTo(Mode.IPV6_ROUTING));
     }
-
+    {
+      Track track = vc.getTracks().get(100);
+      assertThat(track, instanceOf(TrackIpRoute.class));
+      TrackIpRoute trackIpRoute = (TrackIpRoute) track;
+      assertThat(trackIpRoute.getPrefix(), equalTo(Prefix.strict("192.0.2.1/32")));
+      assertTrue(trackIpRoute.getHmm());
+      assertThat(trackIpRoute.getVrf(), equalTo("v1"));
+    }
     // Should have placeholders for unsupported track types in the VS model
-    assertThat(vc.getTracks().get(100), instanceOf(TrackUnsupported.class));
     assertThat(vc.getTracks().get(101), instanceOf(TrackUnsupported.class));
   }
 
@@ -1810,9 +1820,6 @@ public final class CiscoNxosGrammarTest {
                 "Unsupported interface type: Vlan, expected [ETHERNET, PORT_CHANNEL, LOOPBACK]"),
             allOf(
                 hasComment("This track method is not yet supported and will be ignored."),
-                ParseWarningMatchers.hasText(containsString("ip route 192.0.2.1/32 reachability"))),
-            allOf(
-                hasComment("This track method is not yet supported and will be ignored."),
                 ParseWarningMatchers.hasText(containsString("ip sla 1 reachability"))),
             hasComment("Expected track object-id in range 1-500, but got '0'"),
             hasComment("Expected track object-id in range 1-500, but got '501'"),
@@ -1828,23 +1835,18 @@ public final class CiscoNxosGrammarTest {
     String hostname = "nxos_track_conversion";
     Configuration c = parseConfig(hostname);
 
-    assertThat(c.getTrackingGroups(), hasKeys("1", "500"));
-
-    {
-      TrackMethod trackMethod = c.getTrackingGroups().get("1");
-      assertThat(trackMethod, instanceOf(org.batfish.datamodel.tracking.TrackInterface.class));
-      org.batfish.datamodel.tracking.TrackInterface trackInterface =
-          (org.batfish.datamodel.tracking.TrackInterface) trackMethod;
-      assertThat(trackInterface.getTrackedInterface(), equalTo("port-channel1"));
-    }
-
-    {
-      TrackMethod trackMethod = c.getTrackingGroups().get("500");
-      assertThat(trackMethod, instanceOf(org.batfish.datamodel.tracking.TrackInterface.class));
-      org.batfish.datamodel.tracking.TrackInterface trackInterface =
-          (org.batfish.datamodel.tracking.TrackInterface) trackMethod;
-      assertThat(trackInterface.getTrackedInterface(), equalTo("Ethernet1/1"));
-    }
+    assertThat(
+        c.getTrackingGroups(),
+        equalTo(
+            ImmutableMap.of(
+                "1",
+                new org.batfish.datamodel.tracking.TrackInterface("port-channel1"),
+                "100",
+                TrackRoute.of(Prefix.strict("192.0.2.1/32"), ImmutableSet.of(HMM), "v1"),
+                "200",
+                TrackRoute.of(Prefix.strict("192.0.2.2/32"), ImmutableSet.of(), DEFAULT_VRF_NAME),
+                "500",
+                new org.batfish.datamodel.tracking.TrackInterface("Ethernet1/1"))));
   }
 
   @Test
@@ -8524,10 +8526,7 @@ public final class CiscoNxosGrammarTest {
                     containsString("10.0.1.0/24 Ethernet1/1 10.0.1.1 vrf management"))),
             allOf(
                 hasComment("Cannot delete non-existent route"),
-                ParseWarningMatchers.hasText("10.0.1.0/24 Ethernet1/1")),
-            // caused by route definitions with `track`
-            hasComment("This feature is not currently supported"),
-            hasComment("This feature is not currently supported")));
+                ParseWarningMatchers.hasText("10.0.1.0/24 Ethernet1/1"))));
   }
 
   @Test
@@ -9692,5 +9691,97 @@ public final class CiscoNxosGrammarTest {
             hasText(
                 "Could not enable HMM on interface 'Vlan2' because fabric forwarding"
                     + " anycast-gateway-mac is unset")));
+  }
+
+  @Test
+  public void testStaticRouteTrackExtraction() {
+    String hostname = "nxos_static_route_track";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    // tracks
+    assertThat(vc.getTracks(), hasKeys(10, 20));
+    {
+      Track track = vc.getTracks().get(10);
+      assertThat(track, instanceOf(TrackInterface.class));
+      TrackInterface ti = (TrackInterface) track;
+      assertThat(ti.getInterface(), equalTo("Ethernet1/2"));
+      assertThat(ti.getMode(), equalTo(LINE_PROTOCOL));
+    }
+    {
+      Track track = vc.getTracks().get(20);
+      assertThat(track, instanceOf(TrackIpRoute.class));
+      TrackIpRoute tr = (TrackIpRoute) track;
+      assertTrue(tr.getHmm());
+      assertThat(tr.getPrefix(), equalTo(Prefix.strict("10.3.0.2/32")));
+      assertThat(tr.getVrf(), equalTo("foo"));
+    }
+
+    // static routes
+    assertThat(
+        vc.getDefaultVrf().getStaticRoutes(),
+        hasKeys(
+            new StaticRouteKey(
+                Prefix.strict("10.0.1.0/24"), false, null, Ip.parse("10.1.0.2"), null)));
+    {
+      StaticRoute sr =
+          vc.getDefaultVrf()
+              .getStaticRoutes()
+              .get(
+                  new StaticRouteKey(
+                      Prefix.strict("10.0.1.0/24"), false, null, Ip.parse("10.1.0.2"), null));
+      assertThat(sr.getPrefix(), equalTo(Prefix.strict("10.0.1.0/24")));
+      assertThat(sr.getTrack(), equalTo(10));
+    }
+    assertThat(
+        vc.getVrfs().get("foo").getStaticRoutes(),
+        hasKeys(
+            new StaticRouteKey(
+                Prefix.strict("10.0.3.0/24"), false, null, Ip.parse("10.3.0.2"), null)));
+    {
+      StaticRoute sr =
+          vc.getVrfs()
+              .get("foo")
+              .getStaticRoutes()
+              .get(
+                  new StaticRouteKey(
+                      Prefix.strict("10.0.3.0/24"), false, null, Ip.parse("10.3.0.2"), null));
+      assertThat(sr.getPrefix(), equalTo(Prefix.strict("10.0.3.0/24")));
+      assertThat(sr.getTrack(), equalTo(20));
+    }
+  }
+
+  @Test
+  public void testStaticRouteTrackConversion() throws IOException {
+    String hostname = "nxos_static_route_track";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(
+        c.getTrackingGroups(),
+        equalTo(
+            ImmutableMap.of(
+                "10",
+                new org.batfish.datamodel.tracking.TrackInterface("Ethernet1/2"),
+                "20",
+                TrackRoute.of(Prefix.strict("10.3.0.2/32"), ImmutableSet.of(HMM), "foo"))));
+    assertThat(
+        c.getDefaultVrf().getStaticRoutes(),
+        contains(
+            org.batfish.datamodel.StaticRoute.builder()
+                .setNetwork(Prefix.strict("10.0.1.0/24"))
+                .setNextHop(NextHopIp.of(Ip.parse("10.1.0.2")))
+                .setTrack("10")
+                .setAdmin(1)
+                .setTag(0)
+                .build()));
+    assertThat(
+        c.getVrfs().get("foo").getStaticRoutes(),
+        contains(
+            org.batfish.datamodel.StaticRoute.builder()
+                .setNetwork(Prefix.strict("10.0.3.0/24"))
+                .setNextHop(NextHopIp.of(Ip.parse("10.3.0.2")))
+                .setTrack("20")
+                .setAdmin(1)
+                .setTag(0)
+                .build()));
   }
 }
