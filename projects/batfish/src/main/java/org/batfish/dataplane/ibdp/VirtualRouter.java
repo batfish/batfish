@@ -106,6 +106,8 @@ import org.batfish.datamodel.route.nh.NextHopVtep;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.MainRib;
 import org.batfish.datamodel.routing_policy.expr.RibExpr;
+import org.batfish.datamodel.tracking.TrackMethod;
+import org.batfish.datamodel.tracking.TrackRoute;
 import org.batfish.datamodel.visitors.RibExprVisitor;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.Layer3Vni;
@@ -216,7 +218,7 @@ public final class VirtualRouter {
   RipInternalRib _ripInternalStagingRib;
   RipRib _ripRib;
   StaticRib _staticUnconditionalRib;
-  StaticRib _staticNextHopRib;
+  StaticRib _staticConditionalRib;
 
   /** FIB (forwarding information base) built from the main RIB */
   private Fib _fib;
@@ -245,6 +247,7 @@ public final class VirtualRouter {
   final Vrf _vrf;
 
   @Nonnull private final RibExprEvaluator _ribExprEvaluator;
+  @Nonnull private final DataplaneTrackEvaluator _trackEvaluator;
 
   @Nonnull
   private final ResolutionRestriction<AnnotatedRoute<AbstractRoute>> _resolutionRestriction;
@@ -281,6 +284,7 @@ public final class VirtualRouter {
               _vrf.getBgpProcess(), _c, _name, _mainRib, BgpTopology.EMPTY, _prefixTracer);
     }
     _ribExprEvaluator = new RibExprEvaluator(_mainRib);
+    _trackEvaluator = new DataplaneTrackEvaluator(_c, _mainRib);
   }
 
   @VisibleForTesting
@@ -572,14 +576,18 @@ public final class VirtualRouter {
   }
 
   /**
-   * Activate static routes with next hop IP. Adds a static route {@code route} to the main RIB if
-   * there exists an active route to the {@code routes}'s next-hop-ip.
+   * Activate conditional static routes, i.e. static routes with next hop IP or track. Adds a static
+   * route {@code route} to the main RIB if there exists an active route to the {@code routes}'s
+   * next-hop-ip (if present), and if the track succeeds (if present).
    *
    * <p>Removes static route from the main RIB for which next-hop-ip has become unreachable.
    */
   void activateStaticRoutes() {
-    for (StaticRoute sr : _staticNextHopRib.getTypedRoutes()) {
-      if (shouldActivateNextHopIpRoute(sr, _mainRib, _resolutionRestriction)) {
+    for (StaticRoute sr : _staticConditionalRib.getTypedRoutes()) {
+      // property of conditioanl RIB
+      assert sr.hasNextHopIp() || sr.getTrack() != null;
+      if ((!sr.hasNextHopIp() || shouldActivateNextHopIpRoute(sr, _mainRib, _resolutionRestriction))
+          && (sr.getTrack() == null || evaluateTrack(sr.getTrack()))) {
         _mainRibRouteDeltaBuilder.from(_mainRib.mergeRouteGetDelta(annotateRoute(sr)));
       } else {
         /*
@@ -588,6 +596,22 @@ public final class VirtualRouter {
         _mainRibRouteDeltaBuilder.from(_mainRib.removeRouteGetDelta(annotateRoute(sr)));
       }
     }
+  }
+
+  /**
+   * Evaluates the {@link TrackMethod} indexed by {@code trackName} and returns {@code true} iff the
+   * track succeeds.
+   */
+  private boolean evaluateTrack(String trackName) {
+    TrackMethod method = _c.getTrackingGroups().get(trackName);
+    assert method != null;
+    if (method instanceof TrackRoute && !((TrackRoute) method).getVrf().equals(_vrf.getName())) {
+      // TODO: Support tracking a route in a different VRF
+      //       This change will be complicated, because in the current implementation this method is
+      //       called while other VRFs' main RIBs are being updated.
+      return false;
+    }
+    return _trackEvaluator.visit(method);
   }
 
   /** Compute the FIB from the main RIB */
@@ -959,7 +983,7 @@ public final class VirtualRouter {
     _ripRib = new RipRib();
 
     // Static
-    _staticNextHopRib = new StaticRib();
+    _staticConditionalRib = new StaticRib();
     _staticUnconditionalRib = new StaticRib();
   }
 
@@ -973,8 +997,8 @@ public final class VirtualRouter {
 
   /**
    * Initialize the static route RIBs from the VRF config. Interface and next-vrf routes go into
-   * {@link #_staticUnconditionalRib}; routes that only have next-hop-ip go into {@link
-   * #_staticNextHopRib}
+   * {@link #_staticUnconditionalRib}; routes that only have next-hop-ip or have a track go into
+   * {@link #_staticConditionalRib}
    */
   @VisibleForTesting
   void initStaticRibs() {
@@ -983,8 +1007,8 @@ public final class VirtualRouter {
 
         @Override
         public Void visitNextHopIp(NextHopIp nextHopIp) {
-          // We have a next-hop-ip route, keep in it that RIB
-          _staticNextHopRib.mergeRouteGetDelta(sr);
+          // Always conditional when there is only a next-hop IP
+          _staticConditionalRib.mergeRouteGetDelta(sr);
           return null;
         }
 
@@ -995,21 +1019,31 @@ public final class VirtualRouter {
           if (iface == null || !iface.getActive()) {
             return null;
           }
-          _staticUnconditionalRib.mergeRouteGetDelta(sr);
+          if (sr.getTrack() != null) {
+            _staticConditionalRib.mergeRouteGetDelta(sr);
+          } else {
+            _staticUnconditionalRib.mergeRouteGetDelta(sr);
+          }
           return null;
         }
 
         @Override
         public Void visitNextHopDiscard(NextHopDiscard nextHopDiscard) {
-          // Null routes are always active unconditionally
-          _staticUnconditionalRib.mergeRouteGetDelta(sr);
+          if (sr.getTrack() != null) {
+            _staticConditionalRib.mergeRouteGetDelta(sr);
+          } else {
+            _staticUnconditionalRib.mergeRouteGetDelta(sr);
+          }
           return null;
         }
 
         @Override
         public Void visitNextHopVrf(NextHopVrf nextHopVrf) {
-          // next vrf routes are always active unconditionally
-          _staticUnconditionalRib.mergeRouteGetDelta(sr);
+          if (sr.getTrack() != null) {
+            _staticConditionalRib.mergeRouteGetDelta(sr);
+          } else {
+            _staticUnconditionalRib.mergeRouteGetDelta(sr);
+          }
           return null;
         }
 

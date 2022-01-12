@@ -10,8 +10,8 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.junit.Test;
 
-/** Tests of {@link PredicateTrackMethodEvaluator} */
-public class PredicateTrackMethodEvaluatorTest {
+/** Tests of {@link StaticTrackMethodEvaluator} */
+public class StaticTrackMethodEvaluatorTest {
   @Test
   public void testVisitTrackInterface() {
     Configuration c1 =
@@ -43,7 +43,7 @@ public class PredicateTrackMethodEvaluatorTest {
         .setBlacklisted(true)
         .build();
 
-    PredicateTrackMethodEvaluator evaluator = new PredicateTrackMethodEvaluator(c1);
+    StaticTrackMethodEvaluator evaluator = new StaticTrackMethodEvaluator(c1);
     // Iface is active
     TrackInterface trackInterface1 = new TrackInterface("i1");
     assertTrue(trackInterface1.accept(evaluator));

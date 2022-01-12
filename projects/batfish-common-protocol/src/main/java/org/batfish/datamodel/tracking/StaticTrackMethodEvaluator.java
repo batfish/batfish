@@ -17,8 +17,8 @@ import org.batfish.datamodel.Interface;
  * UnsupportedOperationException}.
  */
 @ParametersAreNonnullByDefault
-public class PredicateTrackMethodEvaluator implements GenericTrackMethodVisitor<Boolean> {
-  public PredicateTrackMethodEvaluator(Configuration configuration) {
+public class StaticTrackMethodEvaluator implements GenericTrackMethodVisitor<Boolean> {
+  public StaticTrackMethodEvaluator(Configuration configuration) {
     _configuration = configuration;
   }
 

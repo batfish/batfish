@@ -1,0 +1,50 @@
+version 9.2(3) Bios:version
+hostname r1
+
+boot nxos bootflash:/nxos.9.2.3.bin
+
+feature fabric forwarding
+
+fabric forwarding anycast-gateway-mac feed.dead.beef
+
+vlan 1-2
+
+interface Vlan2
+  no shutdown
+  ip address 192.0.2.1/24
+  fabric forwarding mode anycast-gateway
+!
+interface Ethernet1/1
+  switchport
+  switchport mode access
+  switchport access vlan 2
+!
+interface Ethernet1/2
+  no switchport
+  no shutdown
+  ip address 10.2.0.1/24
+
+interface Ethernet1/3
+  no switchport
+  shutdown
+  ip address 10.3.0.1/24
+!
+track 10 ip route 192.0.2.2/32 reachability hmm
+!
+track 20 ip route 10.2.0.0/24 reachability
+!
+track 30 interface Ethernet1/2 line-protocol
+!
+track 40 ip route 192.0.2.3/32 reachability hmm
+!
+track 50 ip route 10.3.0.0/24 reachability
+!
+track 60 interface Ethernet1/3 line-protocol
+!
+ip route 10.0.1.0/24 192.0.2.10 track 10
+ip route 10.0.2.0/24 192.0.2.20 track 20
+ip route 10.0.3.0/24 192.0.2.30 track 30
+ip route 10.0.4.0/24 192.0.2.40 track 40
+ip route 10.0.5.0/24 192.0.2.50 track 50
+ip route 10.0.6.0/24 192.0.2.60 track 60
+!

@@ -434,7 +434,7 @@ public class VirtualRouterTest {
     assertThat(
         vr._staticUnconditionalRib.getTypedRoutes(),
         containsInAnyOrder(routes.get(0), routes.get(2), routes.get(3)));
-    assertThat(vr._staticNextHopRib.getTypedRoutes(), containsInAnyOrder(routes.get(1)));
+    assertThat(vr._staticConditionalRib.getTypedRoutes(), containsInAnyOrder(routes.get(1)));
   }
 
   @Test
@@ -446,7 +446,7 @@ public class VirtualRouterTest {
 
     // Simple RIBs
     assertThat(vr.getConnectedRib().getRoutes(), empty());
-    assertThat(vr._staticNextHopRib.getRoutes(), empty());
+    assertThat(vr._staticConditionalRib.getRoutes(), empty());
     assertThat(vr._staticUnconditionalRib.getRoutes(), empty());
     assertThat(vr._independentRib.getRoutes(), empty());
 
@@ -514,7 +514,7 @@ public class VirtualRouterTest {
     // Test
     vr.initStaticRibs();
 
-    assertThat(vr._staticNextHopRib.getTypedRoutes(), equalTo(routeSet));
+    assertThat(vr._staticConditionalRib.getTypedRoutes(), equalTo(routeSet));
   }
 
   /** Test basic message queuing operations */
