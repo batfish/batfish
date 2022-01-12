@@ -9764,7 +9764,7 @@ public final class CiscoNxosGrammarTest {
             org.batfish.datamodel.StaticRoute.builder()
                 .setNetwork(Prefix.strict("10.0.1.0/24"))
                 .setNextHop(NextHopIp.of(Ip.parse("10.1.0.2")))
-                .setTrack(10)
+                .setTrack("10")
                 .setAdmin(1)
                 .setTag(0)
                 .build()));
@@ -9774,7 +9774,7 @@ public final class CiscoNxosGrammarTest {
             org.batfish.datamodel.StaticRoute.builder()
                 .setNetwork(Prefix.strict("10.0.3.0/24"))
                 .setNextHop(NextHopIp.of(Ip.parse("10.3.0.2")))
-                .setTrack(20)
+                .setTrack("20")
                 .setAdmin(1)
                 .setTag(0)
                 .build()));

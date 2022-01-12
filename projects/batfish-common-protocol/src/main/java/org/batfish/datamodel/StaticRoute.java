@@ -35,7 +35,7 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
 
   private final long _metric;
   private final boolean _recursive;
-  private final @Nullable Integer _track;
+  private final @Nullable String _track;
 
   private transient int _hashCode;
 
@@ -48,7 +48,7 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
       @JsonProperty(PROP_ADMINISTRATIVE_COST) int administrativeCost,
       @JsonProperty(PROP_METRIC) long metric,
       @JsonProperty(PROP_TAG) long tag,
-      @JsonProperty(PROP_TRACK) @Nullable Integer track) {
+      @JsonProperty(PROP_TRACK) @Nullable String track) {
     return new StaticRoute(
         requireNonNull(network),
         nextVrf != null
@@ -72,7 +72,7 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
       boolean nonForwarding,
       boolean nonRouting,
       boolean recursive,
-      @Nullable Integer track) {
+      @Nullable String track) {
     super(network, administrativeCost, tag, nonRouting, nonForwarding);
     _metric = metric;
     _nextHop = nextHop;
@@ -105,7 +105,7 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
   }
 
   @JsonProperty(PROP_TRACK)
-  public @Nullable Integer getTrack() {
+  public @Nullable String getTrack() {
     return _track;
   }
 
@@ -129,7 +129,7 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
   public static final class Builder extends AbstractRouteBuilder<Builder, StaticRoute> {
 
     private boolean _recursive;
-    private @Nullable Integer _track;
+    private @Nullable String _track;
 
     private Builder() {
       // Tmp hack until parent builder is fixed and doesn't default to primitives
@@ -177,7 +177,7 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
       return this;
     }
 
-    public @Nonnull Builder setTrack(@Nullable Integer track) {
+    public @Nonnull Builder setTrack(@Nullable String track) {
       _track = track;
       return this;
     }
@@ -197,7 +197,7 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
           .thenComparing(StaticRoute::getNonRouting)
           .thenComparing(StaticRoute::getNonForwarding)
           .thenComparing(StaticRoute::getRecursive)
-          .thenComparing(StaticRoute::getTrack, nullsFirst(Integer::compareTo));
+          .thenComparing(StaticRoute::getTrack, nullsFirst(String::compareTo));
 
   @Override
   public Builder toBuilder() {

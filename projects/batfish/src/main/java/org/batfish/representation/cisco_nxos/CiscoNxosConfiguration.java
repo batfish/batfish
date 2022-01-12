@@ -3857,6 +3857,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
               "Could not determine a next hop for static route: %s", staticRoute.getPrefix()));
       return null;
     }
+    Integer track = staticRoute.getTrack();
     return org.batfish.datamodel.StaticRoute.builder()
         .setAdministrativeCost(staticRoute.getPreference())
         .setMetric(0L)
@@ -3864,7 +3865,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         .setNextHop(nh)
         .setTag(staticRoute.getTag())
         // guaranteed to exist by extractor if non-null
-        .setTrack(staticRoute.getTrack())
+        .setTrack(track != null ? track.toString() : null)
         .build();
   }
 
