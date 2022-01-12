@@ -2,6 +2,7 @@ package org.batfish.dataplane.ibdp;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.common.util.CollectionUtil.toOrderedHashCode;
+import static org.batfish.dataplane.ibdp.DataplaneUtil.messageQueueStream;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -1681,13 +1682,10 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   int iterationHashCode() {
     return Streams.concat(
             // Message queues
-            Stream.of(
-                    _intraAreaIncomingRoutes,
-                    _interAreaIncomingRoutes,
-                    _type1IncomingRoutes,
-                    _type2IncomingRoutes)
-                .flatMap(m -> m.values().stream())
-                .flatMap(Queue::stream),
+            messageQueueStream(_intraAreaIncomingRoutes),
+            messageQueueStream(_interAreaIncomingRoutes),
+            messageQueueStream(_type1IncomingRoutes),
+            messageQueueStream(_type2IncomingRoutes),
             // Deltas
             _activatedGeneratedRoutes.getActions(),
             // RIB state
