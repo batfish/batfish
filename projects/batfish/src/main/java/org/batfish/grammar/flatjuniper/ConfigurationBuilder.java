@@ -6563,14 +6563,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     }
     if (unit != null) {
       Map<String, Interface> units = iface.getUnits();
-      iface = units.get(unitFullName);
-      if (iface == null) {
+      Interface unitIface = units.get(unitFullName);
+      if (unitIface == null) {
         // TODO: this is not ideal, interface should not be created here as we are not sure if the
         // interface was defined
-        iface = new Interface(unitFullName);
-        iface.setRoutingInstance(_currentLogicalSystem.getDefaultRoutingInstance().getName());
-        units.put(unitFullName, iface);
+        unitIface = new Interface(unitFullName);
+        unitIface.setRoutingInstance(_currentLogicalSystem.getDefaultRoutingInstance().getName());
+        units.put(unitFullName, unitIface);
+        unitIface.setParent(iface);
       }
+      iface = unitIface;
     }
     return iface;
   }
